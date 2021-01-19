@@ -1,0 +1,1 @@
+This works as a preminarly port to Python to figure out the objects and methods required for the actual port.
