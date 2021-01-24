@@ -1,13 +1,27 @@
-from typing import Any
-
-class vp(object):
+class VP(object):
     """
     Variational Posterior class
     """
-    
-    
+       
 
     def __init__(self):
+        self.K = None
+        self.D = None
+        self.optimize_mu = None
+        self.optimize_weights = None
+        self.mu = None
+        self.mode = None
+        self.gp = None
+        self.w = None
+        self.sigma = None
+        self.Lambda = None
+        # vp.stats.entropy, vp.stats.stable
+        # vp.stats.elbo,vp.stats.elbo_sd
+        #vp_fields = {"elbo", "elbo_sd", "G", "H", "varG", "varH"}
+        self.stats = dict()
+        #vp.trinfo.lb_orig
+        #vp.trinfo.ub_orig
+        self.trinfo = None
         pass
 
     def vbmc_moments(self, origflag, Ns) -> (mu, cov):
@@ -55,26 +69,6 @@ class vp(object):
     def vbmc_plot(self, vp_array,stats):
         """
         docstring
-        """
-        pass
-
-    #VP entropy methods
-
-    def entlb_vbmc(self, grad_flags,jacobian_flag):
-        """
-        ENTLB_VBMC Entropy lower bound for variational posterior
-        """
-        pass
-
-    def entub_vbmc(self, grad_flags,jacobian_flag):
-        """
-        ENTUB_VBMC Entropy upper bound for variational posterior
-        """
-        pass
-
-    def entmc_vbmc(self, Ns,grad_flags,jacobian_flag):
-        """
-        ENTMC_VBMC Monte Carlo estimate of entropy of variational posterior
         """
         pass
 
