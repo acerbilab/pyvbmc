@@ -1,5 +1,5 @@
 from math import sqrt
-from gaussianProcess import gplite
+from gaussian_process import GP_Lite
 from .optimstate import OptimState
 from entropy.entlb_vbmc import entlb_vbmc
 from entropy.entub_vbmc import entub_vbmc
@@ -193,7 +193,7 @@ class VBMC(object):
             sKL = max(0, 0.5 * sum(vbmc_kldiv(vp, vp_old, Nkl, options.KLgauss)))
 
             # Evaluate max LCB of GP prediction on all training inputs
-            _, _, fmu, fs2 = gplite.gplite_pred(gp, gp.X, gp.y, gp.s2)
+            _, _, fmu, fs2 = GP_Lite.gplite_pred(gp, gp.X, gp.y, gp.s2)
             optimState.lcbmax = max(fmu - options.ELCBOImproWeight * sqrt(fs2))
 
             if options.AdaptiveEntropyAlpha:
