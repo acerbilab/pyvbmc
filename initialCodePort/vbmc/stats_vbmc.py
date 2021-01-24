@@ -22,7 +22,7 @@ class Stats(object):
         self.rindex = None
         self.sKL = None
         self.sKL_true = None
-        self.t = None   
+        self.t = None
         self.timer = None
         self.vp = None
         self.vpK = None

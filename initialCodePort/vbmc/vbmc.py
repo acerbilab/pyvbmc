@@ -4,12 +4,15 @@ from .optimstate import OptimState
 from .options_vbmc import Options_VBMC
 from entropy.entlb_vbmc import entlb_vbmc
 from entropy.entub_vbmc import entub_vbmc
+from .stats_vbmc import Stats
+from variationalPosterior import VPf
+
 
 class VBMC(object):
     """
     The VBMC algorithm class
     """
-    
+
     def __init__(self):
         pass
 
@@ -20,15 +23,15 @@ class VBMC(object):
 
         gp = None
         hypstruct = None
-        stats = None
+        stats = Stats()
 
-        prnt = 1 #configurate verbosity of the algorithm 
+        prnt = 1  # configurate verbosity of the algorithm
 
         optimState = OptimState()
 
         loopiter = 0
 
-        vp = None
+        vp = VP()
         isFinished_flag = False
 
         while not isFinished_flag:
@@ -57,7 +60,6 @@ class VBMC(object):
                 else:
                     action += "entropy switch"  # [action ', entropy switch']
 
-
             """
             Actively sample new points into the training set
             """
@@ -75,7 +77,11 @@ class VBMC(object):
             if optimState.SkipActiveSampling:
                 optimState.SkipActiveSampling = False
             else:
-                if gp and options.SeparateSearchGP and not options.VarActiveSample:
+                if (
+                    gp
+                    and options.SeparateSearchGP
+                    and not options.VarActiveSample
+                ):
                     # Train a distinct GP for active sampling
                     if loopiter % 2 == 0:
                         meantemp = optimState.gpMeanfun
@@ -110,7 +116,7 @@ class VBMC(object):
                     )
                     hypstruct = optimState.hypstruct
 
-            optimState.N = optimState.Xn #Number of training inputs
+            optimState.N = optimState.Xn  # Number of training inputs
             optimState.Neff = sum(optimState.nevals(optimState.X_flag))
 
             """
@@ -124,7 +130,10 @@ class VBMC(object):
             # timer.gpTrain = timer.gpTrain + toc(t)
 
             # Check if reached stable sampling regime
-            if Ns_gp == options.StableGPSamples and optimState.StopSampling == 0:
+            if (
+                Ns_gp == options.StableGPSamples
+                and optimState.StopSampling == 0
+            ):
                 optimState.StopSampling = optimState.N
 
             # Estimate of GP noise around the top high posterior density region
@@ -167,7 +176,14 @@ class VBMC(object):
                 pruned = 0
             else:
                 [vp, varss, pruned] = self.__3vpoptimize_vbmc(
-                    Nfastopts, Nslowopts, vp, gp, Knew, optimState, options, prnt
+                    Nfastopts,
+                    Nslowopts,
+                    vp,
+                    gp,
+                    Knew,
+                    optimState,
+                    options,
+                    prnt,
                 )
                 # optimState.vp_repo{end+1} = get_vptheta(vp)
 
@@ -189,7 +205,9 @@ class VBMC(object):
 
             # Compute symmetrized KL-divergence between old and new posteriors
             Nkl = 1e5
-            sKL = max(0, 0.5 * sum(vbmc_kldiv(vp, vp_old, Nkl, options.KLgauss)))
+            sKL = max(
+                0, 0.5 * sum(vbmc_kldiv(vp, vp_old, Nkl, options.KLgauss))
+            )
 
             # Evaluate max LCB of GP prediction on all training inputs
             _, _, fmu, fs2 = GP_Lite.gplite_pred(gp, gp.X, gp.y, gp.s2)
@@ -224,7 +242,9 @@ class VBMC(object):
                 Nnew = optimState.N - optimState.LastRunAvg
                 wRun = options.MomentsRunWeight ^ Nnew
                 # optimState.RunMean = wRun*optimState.RunMean + (1-wRun)*mubar(:)
-                optimState.RunCov = wRun * optimState.RunCov + (1 - wRun) * Sigma
+                optimState.RunCov = (
+                    wRun * optimState.RunCov + (1 - wRun) * Sigma
+                )
                 optimState.LastRunAvg = optimState.N
 
             # timer.finalize = toc(t);
@@ -293,7 +313,10 @@ class VBMC(object):
             stats.warmup[loopiter] = optimState.Warmup
 
             # Check and update fitness shaping / output warping threshold
-            if optimState.OutwarpDelta and optimState.R < options.WarpTolReliability:
+            if (
+                optimState.OutwarpDelta
+                and optimState.R < options.WarpTolReliability
+            ):
                 Xrnd = vp.vbmc_rnd(2e4, 0)
                 ymu = gp.gplite_pred(gp, Xrnd, [], [], 0, 1)
                 ydelta = max([0, optimState.ymax - quantile(ymu, 1e-3)])
@@ -308,37 +331,82 @@ class VBMC(object):
             if options.AcqHedge:
                 # Update hedge values
                 optimState.hedge = acqhedge_vbmc(
-                    "upd", optimState.hedge, stats, options 
-                            )
+                    "upd", optimState.hedge, stats, options
+                )
 
             """
             Write iteration output
             """
-        
-            #Stopped GP sampling this iteration?
-            if(Ns_gp == options.StableGPSamples and stats.gpNsamples(max(1,loopiter-1)) > options.StableGPSamples):
-                if(Ns_gp == 0):
-                    if (not action):
-                            action = 'switch to GP opt'
+
+            # Stopped GP sampling this iteration?
+            if (
+                Ns_gp == options.StableGPSamples
+                and stats.gpNsamples(max(1, loopiter - 1))
+                > options.StableGPSamples
+            ):
+                if Ns_gp == 0:
+                    if not action:
+                        action = "switch to GP opt"
                     else:
-                        action += ', switch to GP opt' #[action ', switch to GP opt']
+                        action += ", switch to GP opt"  # [action ', switch to GP opt']
                 else:
-                    if(not action):
-                        action = 'stable GP sampling'
+                    if not action:
+                        action = "stable GP sampling"
                     else:
-                        action += ', stable GP sampling' #[action ', stable GP sampling']
-            
-            if(prnt > 2):
-                if(options.BOWarmup and optimState.Warmup):
-                    print(displayFormat_warmup,loopiter,optimState.funccount,max(optimState.y_orig),action)            
+                        action += ", stable GP sampling"  # [action ', stable GP sampling']
+
+            if prnt > 2:
+                if options.BOWarmup and optimState.Warmup:
+                    print(
+                        displayFormat_warmup,
+                        loopiter,
+                        optimState.funccount,
+                        max(optimState.y_orig),
+                        action,
+                    )
                 else:
-                    if(optimState.Cache.active):
-                        print(displayFormat,loopiter,optimState.funccount,optimState.cachecount,elbo,elbo_sd,sKL,vp.K,optimState.R,action)
-                    elif(optimState.UncertaintyHandlingLevel > 0  and options.MaxRepeatedObservations > 0):
-                        print(displayFormat,loopiter,optimState.funccount,optimState.N,elbo,elbo_sd,sKL,vp.K,optimState.R,action)              
+                    if optimState.Cache.active:
+                        print(
+                            displayFormat,
+                            loopiter,
+                            optimState.funccount,
+                            optimState.cachecount,
+                            elbo,
+                            elbo_sd,
+                            sKL,
+                            vp.K,
+                            optimState.R,
+                            action,
+                        )
+                    elif (
+                        optimState.UncertaintyHandlingLevel > 0
+                        and options.MaxRepeatedObservations > 0
+                    ):
+                        print(
+                            displayFormat,
+                            loopiter,
+                            optimState.funccount,
+                            optimState.N,
+                            elbo,
+                            elbo_sd,
+                            sKL,
+                            vp.K,
+                            optimState.R,
+                            action,
+                        )
                     else:
-                        print(displayFormat,loopiter,optimState.funccount,elbo,elbo_sd,sKL,vp.K,optimState.R,action)
-            
+                        print(
+                            displayFormat,
+                            loopiter,
+                            optimState.funccount,
+                            elbo,
+                            elbo_sd,
+                            sKL,
+                            vp.K,
+                            optimState.R,
+                            action,
+                        )
+
             stats.timer(loopiter).totalruntime = toc(t0)
 
         """
@@ -351,59 +419,71 @@ class VBMC(object):
         Pick "best" variational solution to return (and real vp, if train vp differs)    
         """
 
-        vp,elbo,elbo_sd,idx_best = self.__5best_vbmc(stats,loopiter,options.BestSafeSD,options.BestFracBack,options.RankCriterion,0)
-        #new_final_vp_flag = idx_best ~= loopiter
+        vp, elbo, elbo_sd, idx_best = self.__5best_vbmc(
+            stats,
+            loopiter,
+            options.BestSafeSD,
+            options.BestFracBack,
+            options.RankCriterion,
+            0,
+        )
+        # new_final_vp_flag = idx_best ~= loopiter
         gp = stats.gp(idx_best)
-        vp.gp = gp; #Add GP to variational posterior
+        vp.gp = gp
+        # Add GP to variational posterior
 
         """
         Last variational optimization with large number of components
         """
 
-        vp,elbo,elbo_sd,changedflag = self.__5finalboost_vbmc(vp,idx_best,optimState,stats,options)
-        if(changedflag):
+        vp, elbo, elbo_sd, changedflag = self.__5finalboost_vbmc(
+            vp, idx_best, optimState, stats, options
+        )
+        if changedflag:
             new_final_vp_flag = True
 
-        if(new_final_vp_flag and prnt > 2):
-            #Recompute symmetrized KL-divergence
-            sKL = max(0,0.5*sum(vbmc_kldiv(vp,vp_old,Nkl,options.KLgauss)))
+        if new_final_vp_flag and prnt > 2:
+            # Recompute symmetrized KL-divergence
+            sKL = max(
+                0, 0.5 * sum(vbmc_kldiv(vp, vp_old, Nkl, options.KLgauss))
+            )
 
+    # Initial methods
 
+    # Initial:
 
-    #Initial methods
+    # - boundscheck_vbmc(x0,LB,UB,PLB,PUB,prnt) -> BOUNDSCHECK Initial check of bounds.
 
-        # Initial:
+    # - setupoptions_vbmc(nvars,defopts,options) %SETUPOPTIONS_VBMC Initialize OPTIONS struct for VBMC.
 
-        # - boundscheck_vbmc(x0,LB,UB,PLB,PUB,prnt) -> BOUNDSCHECK Initial check of bounds.
+    # - setupvars_vbmc(x0,LB,UB,PLB,PUB,K,optimState,options,prnt) %INITVARS Initialize variational posterior, transforms and variables for VBMC.
 
-        # - setupoptions_vbmc(nvars,defopts,options) %SETUPOPTIONS_VBMC Initialize OPTIONS struct for VBMC.
+    # - timer_init() %TIMER_INIT Initialize iteration timer.
 
-        # - setupvars_vbmc(x0,LB,UB,PLB,PUB,K,optimState,options,prnt) %INITVARS Initialize variational posterior, transforms and variables for VBMC.
+    # - initFromVP(vp,LB,UB,PLB,PUB,prnt)
 
-        # - timer_init() %TIMER_INIT Initialize iteration timer.
+    # VMBC loop
 
-        # - initFromVP(vp,LB,UB,PLB,PUB,prnt)
+    # Warping
 
-    #VMBC loop
+    # - warp_input_vbmc(vp,optimState,gp,options) %WARP_INPUT_VBMC Perform input warping of variables.
 
-    #Warping
+    # - warp_gpandvp_vbmc(trinfo,vp_old,gp_old) %WARP_GPANDVP_VBMC Update GP hyps and variational posterior after warping.
 
-		# - warp_input_vbmc(vp,optimState,gp,options) %WARP_INPUT_VBMC Perform input warping of variables.
+    # Active Sampling
 
-		# - warp_gpandvp_vbmc(trinfo,vp_old,gp_old) %WARP_GPANDVP_VBMC Update GP hyps and variational posterior after warping.
-
-    #Active Sampling
-
-    def __1activesample_vbmc(self, optimState,Ns,funwrapper,vp,vp_old,gp,stats,timer,options):
+    def __1activesample_vbmc(
+        self, optimState, Ns, funwrapper, vp, vp_old, gp, stats, timer, options
+    ):
         """
         Actively sample points iteratively based on acquisition function.
         """
 
-        #return optimState,vp,gp,timer
+        # return optimState,vp,gp,timer
         return (optimState, vp, gp, timer)
         pass
 
-    def __1acqhedge_vbmc(self, action,hedge,stats,options):
+    def __1acqhedge_vbmc(self, action, hedge, stats, options):
         """
         ACQPORTFOLIO Evaluate and update portfolio of acquisition functions. (unused)
         """
@@ -415,75 +495,80 @@ class VBMC(object):
         """
         pass
 
-    def __1gpreupdate(self, gp,optimState,options):
+    def __1gpreupdate(self, gp, optimState, options):
         """
         GPREUPDATE Quick posterior reupdate of Gaussian process
         """
         pass
 
     # GP Training
-    
-    def __2gptrain_vbmc(self, hypstruct,optimState,stats,options):
+
+    def __2gptrain_vbmc(self, hypstruct, optimState, stats, options):
         """
         GPTRAIN_VBMC Train Gaussian process model.
         """
-        #return [gp,hypstruct,Ns_gp,optimState]
+        # return [gp,hypstruct,Ns_gp,optimState]
         pass
 
-    #Variational optimization / training of variational posterior:
+    # Variational optimization / training of variational posterior:
 
-    def __3updateK(self, optimState,stats,options):
+    def __3updateK(self, optimState, stats, options):
         """
-		UPDATEK Update number of variational mixture components.
+        UPDATEK Update number of variational mixture components.
         """
         pass
 
-    def __3vpoptimize_vbmc(self, Nfastopts,Nslowopts,vp,gp,K,optimState,options,prnt):
+    def __3vpoptimize_vbmc(
+        self, Nfastopts, Nslowopts, vp, gp, K, optimState, options, prnt
+    ):
         """
         VPOPTIMIZE Optimize variational posterior.
         """
         pass
 
-    #Loop termination:
-    
-    def __4vbmc_warmup(self, optimState,stats,action,options):
+    # Loop termination:
+
+    def __4vbmc_warmup(self, optimState, stats, action, options):
         """
         check if warmup ends
         """
-        pass    
+        pass
 
-    def __4vbmc_termination(self, optimState,action,stats,options):
+    def __4vbmc_termination(self, optimState, action, stats, options):
         """
         Compute stability index and check termination conditions.
         """
         pass
 
-    def __4recompute_lcbmax(self, gp,optimState,stats,options):
+    def __4recompute_lcbmax(self, gp, optimState, stats, options):
         """
         RECOMPUTE_LCBMAX Recompute moving LCB maximum based on current GP.
         """
         pass
 
-    #Finalizing:
+    # Finalizing:
 
-    def __5finalboost_vbmc(self, vp,idx_best,optimState,stats,options):
+    def __5finalboost_vbmc(self, vp, idx_best, optimState, stats, options):
         """
         FINALBOOST_VBMC Final boost of variational components.
         """
         pass
 
-    def __5best_vbmc(self, stats,idx,SafeSD,FracBack,RankCriterion,RealFlag):
+    def __5best_vbmc(
+        self, stats, idx, SafeSD, FracBack, RankCriterion, RealFlag
+    ):
         """
         VBMC_BEST Return best variational posterior from stats structure.
         """
         pass
 
-	# helper functions:
 
-	# - savestats(stats, optimState,vp,elbo,elbo_sd,varss,sKL,sKL_true,gp,hypstruct.full, Ns_gp,pruned,timer,options.Diagnostics);    
+# helper functions:
 
-	# - funlogger_vbmc(fun,x,optimState,state,varargin) %FUNLOGGER_VBMC Call objective function and do some bookkeeping.
+# - savestats(stats, optimState,vp,elbo,elbo_sd,varss,sKL,sKL_true,gp,hypstruct.full, Ns_gp,pruned,timer,options.Diagnostics);
 
-	# - evaloption_vbmc(option,N) %GETVALUE_VBMC Return option value that could be a function handle.
+# - funlogger_vbmc(fun,x,optimState,state,varargin) %FUNLOGGER_VBMC Call objective function and do some bookkeeping.
 
-	# - mvnkl(Mu1,Sigma1,Mu2,Sigma2) %MVNKL Kullback-Leibler divergence between two multivariate normal pdfs.
+# - evaloption_vbmc(option,N) %GETVALUE_VBMC Return option value that could be a function handle.
+
+# - mvnkl(Mu1,Sigma1,Mu2,Sigma2) %MVNKL Kullback-Leibler divergence between two multivariate normal pdfs.
