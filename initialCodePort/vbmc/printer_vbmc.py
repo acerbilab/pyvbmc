@@ -1,4 +1,4 @@
-class Printer(object):
+class Printer_VBMC(object):
     """
     Prints the status messages of the VBMC algorithm
     """
