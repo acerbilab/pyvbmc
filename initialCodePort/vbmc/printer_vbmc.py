@@ -5,6 +5,7 @@ class Printer_VBMC(object):
 
     def __init__(self, verbose_level):
         self.verbose_level = verbose_level
+        self.action = ''
 
     def print_final_message(self, exitflag):
         # Print final message

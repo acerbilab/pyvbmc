@@ -27,3 +27,9 @@ class Stats(object):
         self.vp = None
         self.vpK = None
         self.warmup = None
+
+    def save_iteration(self, iteration):
+        """
+        Save the stats for the given iteration
+        """
+        self.iter = iteration

@@ -1,7 +1,8 @@
 class Options_VBMC(object):
     """
     Default Options of VBMC algorithm
-    Inspired by https://stackoverflow.com/questions/211695/what-is-an-easy-way-to-create-a-trivial-one-off-python-object
+    Appoach to model as a class inspired by
+    https://stackoverflow.com/questions/211695/what-is-an-easy-way-to-create-a-trivial-one-off-python-object
     """
 
     """
