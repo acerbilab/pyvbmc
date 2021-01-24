@@ -1,6 +1,7 @@
 from math import sqrt
 from gaussian_process import GP_Lite
 from .optimstate import OptimState
+from .options_vbmc import Options_VBMC
 from entropy.entlb_vbmc import entlb_vbmc
 from entropy.entub_vbmc import entub_vbmc
 
@@ -12,7 +13,7 @@ class VBMC(object):
     def __init__(self):
         pass
 
-    def algorithm(self):
+    def algorithm(self, options=Options_VBMC):
         """
         This is a perliminary version of the VBMC loop in order to identify possible objects
         """
@@ -24,8 +25,6 @@ class VBMC(object):
         prnt = 1 #configurate verbosity of the algorithm 
 
         optimState = OptimState()
-
-        options = dict()
 
         loopiter = 0
 
