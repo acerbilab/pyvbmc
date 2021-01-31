@@ -25,7 +25,7 @@ class VBMC(object):
         hypstruct = None
         stats = Stats()
 
-        prnt = 1  # configurate verbosity of the algorithm
+        prnt = 1  # configure verbosity of the algorithm
 
         optimState = OptimState()
 
@@ -136,9 +136,6 @@ class VBMC(object):
             ):
                 optimState.StopSampling = optimState.N
 
-            # Estimate of GP noise around the top high posterior density region
-            # optimState.sn2hpd = estimate_GPnoise(gp)
-
             """
             Optimize variational parameters
             """
@@ -212,15 +209,6 @@ class VBMC(object):
             # Evaluate max LCB of GP prediction on all training inputs
             _, _, fmu, fs2 = GP_Lite.gplite_pred(gp, gp.X, gp.y, gp.s2)
             optimState.lcbmax = max(fmu - options.ELCBOImproWeight * sqrt(fs2))
-
-            if options.AdaptiveEntropyAlpha:
-                # Evaluate deterministic entropy
-                Hl = entlb_vbmc(0, 0)
-                Hu = entub_vbmc(0, 0)
-                optimState.entropy_alpha = max(
-                    0, min(1, (vp.stats.entropy - Hl) / (Hu - Hl))
-                )
-                # optimState.entropy_alpha
 
             # Compare variational posterior's moments with ground truth
             if (
