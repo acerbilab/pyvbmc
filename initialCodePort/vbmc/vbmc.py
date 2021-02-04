@@ -577,20 +577,11 @@ class VBMC(object):
                     LB_extra = min(gp.X) - 0.1 * xrange
                     UB_extra = max(gp.X) + 0.1 * xrange
 
-                    # why if 0?
-                    # if 0
-                    #     x0 = vbmc_rnd(vp,1,0)
-                    #     xx = gplite_sample(gp,NsFromGP,x0,[],[],gpbeta,Inf,[],[],[LB_extra;UB_extra])
-                    # elseif 0:
-                    #     K = 2*(vp.D+1)
-                    #     x0 = vbmc_rnd(vp,K,0)
-                    #     xx = gplite_sample(gp,NsFromGP,x0,'parallel',[],gpbeta,Inf,[],[],[LB_extra;UB_extra])
-                    # else
-                    #     [X_hpd,y_hpd] = gethpd_vbmc(gp.X,gp.y,options.HPDFrac)
-                    #     Nextra = min(size(X_hpd,1),Nextra)
-                    #     xx = gp.X(randperm(size(X_hpd,1),Nextra),:)
-                    #     xx = gp.X
-                    #     Nextra = size(xx,1)
+                    [X_hpd, y_hpd] = gethpd_vbmc(gp.X, gp.y, options.HPDFrac)
+                    Nextra = min(size(X_hpd, 1), Nextra)
+                    # xx = gp.X(randperm(size(X_hpd,1),Nextra),:)
+                    xx = gp.X
+                    Nextra = size(xx, 1)
 
                     OptimizeMu = vp.optimize_mu
                     OptimizeWeights = vp.optimize_weights
@@ -906,12 +897,11 @@ class VBMC(object):
 
                 tnew = optimState.funevaltime(idx_new)
 
-                if 1:
-                    if ~isfield(optimState, "acqtable"):
-                        optimState.acqtable = []
-                    [_, _, fmu, fs2] = gplite_pred(gp, xnew)
-                    v = [idxAcq, ynew, fmu, sqrt(fs2)]
-                    optimState.acqtable = [optimState.acqtable, v]
+                if ~isfield(optimState, "acqtable"):
+                    optimState.acqtable = []
+                [_, _, fmu, fs2] = gplite_pred(gp, xnew)
+                v = [idxAcq, ynew, fmu, sqrt(fs2)]
+                optimState.acqtable = [optimState.acqtable, v]
 
                 if Nextra > 0:
                     vp = vp_base
