@@ -415,7 +415,7 @@ class VBMC(object):
             options.RankCriterion,
             0,
         )
-        # new_final_vp_flag = idx_best ~= loopiter
+        # new_final_vp_flag = idx_best != loopiter
         gp = stats.gp(idx_best)
         vp.gp = gp
         # Add GP to variational posterior
@@ -609,7 +609,7 @@ class VBMC(object):
                     vp.optimize_mu = OptimizeMu
                     vp.optimize_weights = OptimizeWeights
 
-                if ~options.AcqHedge:
+                if not options.AcqHedge:
                     idxAcq = randi(numel(SearchAcqFcn))
 
                 """
@@ -720,7 +720,7 @@ class VBMC(object):
                 # idx_cache(idx) = []
 
                 # Additional search via optimization
-                if ~strcmpi(options.SearchOptimizer, "none"):
+                if not strcmpi(options.SearchOptimizer, "none"):
                     # fval_old = acqEval(Xacq(1,:),vp,gp,optimState,0)
                     # x0 = real2int_vbmc(Xacq(1,:),vp.trinfo,optimState.integervars)
                     if all(
@@ -745,8 +745,8 @@ class VBMC(object):
                 #                 switch lower(options.SearchOptimizer)
                 #                     case 'cmaes':
                 #                         if options.SearchCMAESVPInit
-                #                             [~,Sigma] = vbmc_moments(vp,0);
-                #                             %[~,idx_nearest] = min(sum(bsxfun(@minus,vp.mu,x0(:)).^2,1));
+                #                             [_,Sigma] = vbmc_moments(vp,0);
+                #                             %[_,idx_nearest] = min(sum(bsxfun(@minus,vp.mu,x0(:)).^2,1));
                 #                             %Sigma = diag(vp.sigma(idx_nearest)^2.*vp.lambda.^2);
                 #                         else
                 #                             X_hpd = gethpd_vbmc(gp.X,gp.y,options.HPDFrac);
@@ -758,8 +758,8 @@ class VBMC(object):
                 #                         cmaes_opts.MaxFunEvals = options.SearchMaxFunEvals;
                 #                         cmaes_opts.LBounds = LB(:);
                 #                         cmaes_opts.UBounds = UB(:);
-                # %                        [xsearch_optim,fval_optim,~,~,out_optim,bestever] = cmaes_modded(func2str(SearchAcqFcn{idxAcq}),x0(:),insigma,cmaes_opts,vp,gp,optimState,1);
-                #                         [xsearch_optim,fval_optim,~,~,out_optim,bestever] = ...
+                # %                        [xsearch_optim,fval_optim,_,_,out_optim,bestever] = cmaes_modded(func2str(SearchAcqFcn{idxAcq}),x0(:),insigma,cmaes_opts,vp,gp,optimState,1);
+                #                         [xsearch_optim,fval_optim,_,_,out_optim,bestever] = ...
                 #                             cmaes_modded('acqwrapper_vbmc',x0(:),insigma,cmaes_opts,vp,gp,optimState,1,SearchAcqFcn{idxAcq},optimState.acqInfo{idxAcq});
                 #                         nevals = out_optim.evals;
                 #                         if options.SearchCMAESbest
@@ -772,14 +772,14 @@ class VBMC(object):
                 #                         fmincon_opts.Display = 'off';
                 #                         fmincon_opts.TolFun = TolFun;
                 #                         fmincon_opts.MaxFunEvals = options.SearchMaxFunEvals;
-                #                         [xsearch_optim,fval_optim,~,out_optim] = fmincon(@(x) acqEval(x,vp,gp,optimState,0),x0,[],[],[],[],LB,UB,[],fmincon_opts);
+                #                         [xsearch_optim,fval_optim,_,out_optim] = fmincon(@(x) acqEval(x,vp,gp,optimState,0),x0,[],[],[],[],LB,UB,[],fmincon_opts);
                 #                         nevals = out_optim.funcCount;
                 #                         % out_optim
                 #                     case 'bads'
                 #                         bads_opts.Display = 'off';
                 #                         bads_opts.TolFun = TolFun;
                 #                         bads_opts.MaxFunEvals = options.SearchMaxFunEvals;
-                #                         [xsearch_optim,fval_optim,~,out_optim] = bads(@(x) acqEval(x,vp,gp,optimState,0),x0,LB,UB,LB,UB,[],bads_opts);
+                #                         [xsearch_optim,fval_optim,_,out_optim] = bads(@(x) acqEval(x,vp,gp,optimState,0),x0,LB,UB,LB,UB,[],bads_opts);
                 #                     otherwise
                 #                         error('vbmc:UnknownOptimizer','Unknown acquisition function search optimization method.');
                 #                 end
@@ -858,7 +858,7 @@ class VBMC(object):
 
                 # y_orig = [NaN; optimState.Cache.y_orig(:)]; #First position is NaN (not from cache)
                 yacq = y_orig(idx_cache_acq + 1)
-                idx_nn = ~isnan(yacq)
+                idx_nn = not isnan(yacq)
                 # if any(idx_nn):
                 #    yacq(idx_nn) = yacq(idx_nn) + warpvars_vbmc(Xacq(idx_nn,:),'logp',optimState.trinfo)
 
@@ -897,7 +897,7 @@ class VBMC(object):
 
                 tnew = optimState.funevaltime(idx_new)
 
-                if ~isfield(optimState, "acqtable"):
+                if not isfield(optimState, "acqtable"):
                     optimState.acqtable = []
                 [_, _, fmu, fs2] = gplite_pred(gp, xnew)
                 v = [idxAcq, ynew, fmu, sqrt(fs2)]
@@ -908,7 +908,7 @@ class VBMC(object):
 
                 if iS < Ns:
 
-                    if ~isempty(gp_old):
+                    if not isempty(gp_old):
                         gp = gp_old
 
                     if ActiveSampleFullUpdate_flag:
@@ -982,8 +982,8 @@ class VBMC(object):
                         t = tic
                         update1 = (
                             (isempty(s2new) or optimState.nevals(idx_new) == 1)
-                            and ~options.NoiseShaping
-                            and ~options.IntegrateGPMean
+                            and not options.NoiseShaping
+                            and not options.IntegrateGPMean
                         )
                         if update1:
                             gp = gplite_post(
