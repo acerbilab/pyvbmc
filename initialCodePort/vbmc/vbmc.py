@@ -502,6 +502,7 @@ class VBMC(object):
                 deltaNeff = stats.Neff(1)
 
             timer_iter = stats.timer(optimState.iter - 1)
+
             gpTrain_vec = [stats.timer.gpTrain]
 
             if options.ActiveVariationalSamples > 0:
@@ -543,12 +544,6 @@ class VBMC(object):
                 vp0 = vp
 
             for iS in range(Ns):
-
-                intmeangpSearch = 0
-
-                if intmeangpSearch:
-                    gp_old = gp
-                    gp = trainintmeangp_vbmc(gp, optimState, options)
 
                 optimState.N = optimState.Xn  # Number of training inputs
                 optimState.Neff = sum(optimState.nevals(optimState.X_flag))
@@ -617,11 +612,9 @@ class VBMC(object):
                 """
 
                 # Re-evaluate variance of the log joint if requested
-                # fix if statement
-                # if isfield(optimState.acqInfo{idxAcq},'compute_varlogjoint') and optimState.acqInfo{idxAcq}.compute_varlogjoint:
-                #     [_,_,varF] = gplogjoint(vp,gp,0,0,0,1)
-                #     optimState.varlogjoint_samples = varF
-                # end
+                if optimState.acqInfo[idxAcq].get("compute_varlogjoint"):
+                    _, _, varF = gplogjoint(vp, gp, 0, 0, 0, 1)
+                    optimState.varlogjoint_samples = varF
 
                 # Evaluate noise at each training point
                 Ns_gp = numel(gp.post)
@@ -630,13 +623,13 @@ class VBMC(object):
                 # fix in python
                 # for s in range(Ns_gp):
                 # hyp_noise = gp.post(s).hyp(gp.Ncov+1:gp.Ncov+gp.Nnoise) #Get noise hyperparameters
-                # if isfield(optimState,'S'):
+                # if 'S' in optimState:
                 #     s2 = (optimState.S(optimState.X_flag).^2).*optimState.nevals(optimState.X_flag)
                 # else:
                 #     s2 = []
 
-                # if options.NoiseShaping:
-                #     s2 = noiseshaping_vbmc(s2,gp.y,options)
+                if options.NoiseShaping:
+                    s2 = noiseshaping_vbmc(s2,gp.y,options)
 
                 # sn2new(:,s) = gplite_noisefun(hyp_noise,gp.X,gp.noisefun,gp.y,s2)
 
@@ -682,14 +675,13 @@ class VBMC(object):
                 )
 
                 # Prepare for importance sampling based acquisition function
-                # fix if
-                # if isfield(optimState.acqInfo{idxAcq},'importance_sampling') and optimState.acqInfo{idxAcq}.importance_sampling:
-                #     optimState.ActiveImportanceSampling = activeimportancesampling_vbmc(vp,gp,SearchAcqFcn{idxAcq},optimState.acqInfo{idxAcq},options)
+                if optimState.acqInfo[idxAcq].get('importance_sampling'):
+                    optimState.ActiveImportanceSampling = activeimportancesampling_vbmc(vp,gp,SearchAcqFcn[idxAcq],optimState.acqInfo[idxAcq],options)
 
                 # Start active search
 
-                optimState.acqrand = rand()
-                # Seed for random acquisition fcn
+                optimState.acqrand = rand() # Seed for random acquisition fcn
+                
 
                 # Create search set from cache and randomly generated
                 [Xsearch, idx_cache] = getSearchPoints(
@@ -741,52 +733,15 @@ class VBMC(object):
                         TolFun = max(1e-12, abs(fval_old * 1e-3))
 
                 # check if necessary in python
-                #            try:
-                #                 switch lower(options.SearchOptimizer)
-                #                     case 'cmaes':
-                #                         if options.SearchCMAESVPInit
-                #                             [_,Sigma] = vbmc_moments(vp,0);
-                #                             %[_,idx_nearest] = min(sum(bsxfun(@minus,vp.mu,x0(:)).^2,1));
-                #                             %Sigma = diag(vp.sigma(idx_nearest)^2.*vp.lambda.^2);
-                #                         else
-                #                             X_hpd = gethpd_vbmc(gp.X,gp.y,options.HPDFrac);
-                #                             Sigma = cov(X_hpd,1);
-                #                         end
-                #                         insigma = sqrt(diag(Sigma));
-                #                         cmaes_opts = options.CMAESopts;
-                #                         cmaes_opts.TolFun = TolFun;
-                #                         cmaes_opts.MaxFunEvals = options.SearchMaxFunEvals;
-                #                         cmaes_opts.LBounds = LB(:);
-                #                         cmaes_opts.UBounds = UB(:);
-                # %                        [xsearch_optim,fval_optim,_,_,out_optim,bestever] = cmaes_modded(func2str(SearchAcqFcn{idxAcq}),x0(:),insigma,cmaes_opts,vp,gp,optimState,1);
-                #                         [xsearch_optim,fval_optim,_,_,out_optim,bestever] = ...
-                #                             cmaes_modded('acqwrapper_vbmc',x0(:),insigma,cmaes_opts,vp,gp,optimState,1,SearchAcqFcn{idxAcq},optimState.acqInfo{idxAcq});
-                #                         nevals = out_optim.evals;
-                #                         if options.SearchCMAESbest
-                #                             xsearch_optim = bestever.x;
-                #                             fval_optim = bestever.f;
-                #                         end
-                #                         % out_optim.evals
-                #                         xsearch_optim = xsearch_optim';
-                #                     case 'fmincon'
-                #                         fmincon_opts.Display = 'off';
-                #                         fmincon_opts.TolFun = TolFun;
-                #                         fmincon_opts.MaxFunEvals = options.SearchMaxFunEvals;
-                #                         [xsearch_optim,fval_optim,_,out_optim] = fmincon(@(x) acqEval(x,vp,gp,optimState,0),x0,[],[],[],[],LB,UB,[],fmincon_opts);
-                #                         nevals = out_optim.funcCount;
-                #                         % out_optim
-                #                     case 'bads'
-                #                         bads_opts.Display = 'off';
-                #                         bads_opts.TolFun = TolFun;
-                #                         bads_opts.MaxFunEvals = options.SearchMaxFunEvals;
-                #                         [xsearch_optim,fval_optim,_,out_optim] = bads(@(x) acqEval(x,vp,gp,optimState,0),x0,LB,UB,LB,UB,[],bads_opts);
-                #                     otherwise
-                #                         error('vbmc:UnknownOptimizer','Unknown acquisition function search optimization method.');
-                #                 end
-                #             catch
-                #                 fprintf('Active search failed.\n');
-                #                 fval_optim = Inf;
-                #             end
+                fmincon_opts.Display = 'off'
+                fmincon_opts.TolFun = TolFun
+                fmincon_opts.MaxFunEvals = options.SearchMaxFunEvals
+                try:
+                    #xsearch_optim,fval_optim,_,out_optim = fmincon(@(x) acqEval(x,vp,gp,optimState,0),x0,[],[],[],[],LB,UB,[],fmincon_opts)
+                    nevals = out_optim.funcCount
+                except:
+                    print('Active search failed.\n')
+                    fval_optim = Inf
 
                 # if fval_optim < fval_old:
                 #     Xacq(1,:) = real2int_vbmc(xsearch_optim,vp.trinfo,optimState.integervars)
@@ -890,14 +845,14 @@ class VBMC(object):
 
                 t_func = t_func + toc(timer_func)
 
-                if isfield(optimState, "S"):
+                if "S" in optimState:
                     s2new = optimState.S(idx_new) ^ 2
                 else:
                     s2new = []
 
                 tnew = optimState.funevaltime(idx_new)
 
-                if not isfield(optimState, "acqtable"):
+                if not "acqtable" in optimState:
                     optimState.acqtable = []
                 [_, _, fmu, fs2] = gplite_pred(gp, xnew)
                 v = [idxAcq, ynew, fmu, sqrt(fs2)]
