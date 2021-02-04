@@ -7,6 +7,7 @@ from entropy.entlb_vbmc import entlb_vbmc
 from entropy.entub_vbmc import entub_vbmc
 from .stats_vbmc import Stats
 from variational_posterior import VP
+import math
 
 
 class VBMC(object):
@@ -476,7 +477,7 @@ class VBMC(object):
         NSsearch = options.NSsearch  # Number of points for acquisition fcn
         t_func = 0
 
-        time_active = tic
+        #time_active = tic
 
         if isempty(gp):
 
@@ -501,13 +502,13 @@ class VBMC(object):
             if optimState.iter > 2:
                 deltaNeff = max(
                     1,
-                    stats.Neff(optimState.iter - 1)
-                    - stats.Neff(optimState.iter - 2),
+                    stats.Neff[optimState.iter - 1]
+                    - stats.Neff[optimState.iter - 2],
                 )
             else:
-                deltaNeff = stats.Neff(1)
+                deltaNeff = stats.Neff[0]
 
-            timer_iter = stats.timer(optimState.iter - 1)
+            timer_iter = stats.timer[optimState.iter - 1]
 
             gpTrain_vec = [stats.timer.gpTrain]
 
@@ -574,9 +575,9 @@ class VBMC(object):
                     Nextra = evaloption_vbmc(options.SampleExtraVPMeans, vp.K)
                     gpbeta = -options.OptimisticVariationalBound
 
-                    xrange = max(gp.X) - min(gp.X)
-                    LB_extra = min(gp.X) - 0.1 * xrange
-                    UB_extra = max(gp.X) + 0.1 * xrange
+                    x_range = max(gp.X) - min(gp.X)
+                    LB_extra = min(gp.X) - 0.1 * x_range
+                    UB_extra = max(gp.X) + 0.1 * x_range
 
                     [X_hpd, y_hpd] = gethpd_vbmc(gp.X, gp.y, options.HPDFrac)
                     Nextra = min(size(X_hpd, 1), Nextra)
@@ -734,13 +735,13 @@ class VBMC(object):
                         LB = min([x0, optimState.LB_search])
                         UB = max([x0, optimState.UB_search])
                     else:
-                        xrange = max(gp.X) - min(gp.X)
-                        # LB = min([gp.X;x0]) - 0.1*xrange
-                        # UB = max([gp.X;x0]) + 0.1*xrange
+                        x_range = max(gp.X) - min(gp.X)
+                        # LB = min([gp.X;x0]) - 0.1*x_range
+                        # UB = max([gp.X;x0]) + 0.1*x_range
 
                     # if isfield(optimState.acqInfo{idxAcq},'log_flag') and optimState.acqInfo{idxAcq}.log_flag:
                     # maybe in python:
-                    if optimState.acqInfo[idxAcq].log_flag:
+                    if optimState.acqInfo[idxAcq].get(log_flag):
                         TolFun = 1e-2
                     else:
                         TolFun = max(1e-12, abs(fval_old * 1e-3))
@@ -754,7 +755,7 @@ class VBMC(object):
                     nevals = out_optim.funcCount
                 except:
                     print("Active search failed.\n")
-                    fval_optim = Inf
+                    fval_optim = float('inf')
 
                 # if fval_optim < fval_old:
                 #     Xacq(1,:) = real2int_vbmc(xsearch_optim,vp.trinfo,optimState.integervars)
@@ -784,7 +785,7 @@ class VBMC(object):
 
                         # Disable variance-based regularization first
                         oldflag = optimState.VarianceRegularizedAcqFcn
-                        optimState.VarianceRegularizedAcqFcn = false
+                        optimState.VarianceRegularizedAcqFcn = False
 
                         # Use current cost of GP instead of future cost
                         old_t_algoperfuneval = optimState.t_algoperfuneval
@@ -813,7 +814,7 @@ class VBMC(object):
 
                     # Disable variance-based regularization first
                     oldflag = optimState.VarianceRegularizedAcqFcn
-                    optimState.VarianceRegularizedAcqFcn = false
+                    optimState.VarianceRegularizedAcqFcn = False
 
                     # Use current cost of GP instead of future cost
                     old_t_algoperfuneval = optimState.t_algoperfuneval
@@ -826,7 +827,7 @@ class VBMC(object):
 
                 # y_orig = [NaN; optimState.Cache.y_orig(:)]; #First position is NaN (not from cache)
                 yacq = y_orig(idx_cache_acq + 1)
-                idx_nn = not isnan(yacq)
+                idx_nn = not math.isnan(yacq)
                 # if any(idx_nn):
                 #    yacq(idx_nn) = yacq(idx_nn) + warpvars_vbmc(Xacq(idx_nn,:),'logp',optimState.trinfo)
 
@@ -838,9 +839,9 @@ class VBMC(object):
                 if idx > 0:
                     y_orig = optimState.Cache.y_orig(idx)
                 else:
-                    y_orig = NaN
+                    y_orig = float("nan")
                 timer_func = tic
-                if isnan(y_orig):  # Function value is not available, evaluate
+                if math.isnan(y_orig):  # Function value is not available, evaluate
                     try:
                         [ynew, optimState, idx_new] = funlogger_vbmc(
                             funwrapper, xnew, optimState, "iter"
@@ -949,7 +950,7 @@ class VBMC(object):
                         # Perform simple rank-1 update if no noise and first sample
                         t = tic
                         update1 = (
-                            (isempty(s2new) or optimState.nevals(idx_new) == 1)
+                            (len(s2new) == 0 or optimState.nevals(idx_new) == 1)
                             and not options.NoiseShaping
                             and not options.IntegrateGPMean
                         )
@@ -961,8 +962,7 @@ class VBMC(object):
                         else:
                             gp = gpreupdate(gp, optimState, options)
 
-                        # timer.start_gpTrain()
-                        timer.gpTrain = timer.gpTrain + toc(t)
+                        #timer.gpTrain = timer.gpTrain + toc(t)
 
                 # Check if active search bounds need to be expanded
                 delta_search = 0.05 * (
@@ -977,8 +977,8 @@ class VBMC(object):
                 )
                 idx = abs(xnew - optimState.UB_search) < delta_search
                 optimState.UB_search[idx] = min(
-                    optimState.UB(idx),
-                    optimState.UB_search(idx) + delta_search(idx),
+                    optimState.UB[idx],
+                    optimState.UB_search[idx] + delta_search[idx],
                 )
 
                 # Hard lower/upper bounds on search
