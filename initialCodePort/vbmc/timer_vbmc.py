@@ -4,5 +4,11 @@ class Timer(object):
     """
 
     def __init__(self):
-        self.starttime = None
-        
+        self.finalize = 0
+        self.variationalFit = 0
+        self.gpTrain = 0
+
+    
+    @property
+    def totalruntime(self):
+        return self.finalize + self.variationalFit + self.gpTrain
