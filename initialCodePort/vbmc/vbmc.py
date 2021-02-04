@@ -2,6 +2,7 @@ from math import sqrt
 from gaussian_process import GP_Lite
 from .optimstate_vbmc import OptimState
 from .options_vbmc import Options_VBMC
+from .timer_vbmc import Timer
 from entropy.entlb_vbmc import entlb_vbmc
 from entropy.entub_vbmc import entub_vbmc
 from .stats_vbmc import Stats
@@ -24,6 +25,7 @@ class VBMC(object):
         gp = None
         hypstruct = None
         stats = Stats()
+        timer = Timer()
 
         prnt = 1  # configure verbosity of the algorithm
 
@@ -64,7 +66,7 @@ class VBMC(object):
             Actively sample new points into the training set
             """
 
-            # t = tic;
+            timer.start_timer('activeSampling')
             optimState.trinfo = vp.trinfo
             if loopiter == 1:
                 new_funevals = options.FunEvalStart
@@ -119,15 +121,19 @@ class VBMC(object):
             optimState.N = optimState.Xn  # Number of training inputs
             optimState.Neff = sum(optimState.nevals(optimState.X_flag))
 
+            timer.stop_timer('activeSampling')
+
             """
             Train GP
             """
 
-            # t = tic
+            timer.start_timer('gpTrain')
+
             gp, hypstruct, Ns_gp, optimState = self.__2gptrain_vbmc(
                 hypstruct, optimState, stats, options
             )
-            # timer.gpTrain = timer.gpTrain + toc(t)
+
+            timer.stop_timer('gpTrain')
 
             # Check if reached stable sampling regime
             if (
@@ -140,7 +146,7 @@ class VBMC(object):
             Optimize variational parameters
             """
 
-            # t = tic;
+            timer.start_timer('variationalFit')
 
             if not vp.optimize_mu:
                 # Variational components fixed to training inputs
@@ -192,13 +198,13 @@ class VBMC(object):
             elbo = vp_real.stats.elbo
             elbo_sd = vp_real.stats.elbo_sd
 
-            # timer.variationalFit = timer.variationalFit + toc(t)
+            timer.stop_timer('variationalFit')
 
             """
             Finalize iteration
             """
 
-            # t = tic;
+            timer.start_timer('finalize')
 
             # Compute symmetrized KL-divergence between old and new posteriors
             Nkl = 1e5
@@ -235,7 +241,7 @@ class VBMC(object):
                 )
                 optimState.LastRunAvg = optimState.N
 
-            # timer.finalize = toc(t);
+            timer.stop_timer('finalize')
             # timer.totalruntime = NaN;   # Update at the end of iteration
             # timer
 
@@ -509,7 +515,7 @@ class VBMC(object):
                 options_activevar = options
                 options_activevar.TolWeight = 0
                 options_activevar.NSentFine = options.NSent
-                options_activevar.ELCBOmidpoint = false
+                options_activevar.ELCBOmidpoint = False
                 Ns_activevar = options.ActiveVariationalSamples
 
             # Perform GP (and possibly variational) update after each active sample
@@ -558,7 +564,7 @@ class VBMC(object):
                         options_activevar,
                         options.ScaleLowerBound,
                     )
-                    if isfield(output, "stepsize"):
+                    if "stepsize" in output:
                         optimState.mcmc_stepsize = output.stepsize
 
                 Nextra = evaloption_vbmc(options.SampleExtraVPMeans, vp.K)
@@ -629,7 +635,7 @@ class VBMC(object):
                 #     s2 = []
 
                 if options.NoiseShaping:
-                    s2 = noiseshaping_vbmc(s2,gp.y,options)
+                    s2 = noiseshaping_vbmc(s2, gp.y, options)
 
                 # sn2new(:,s) = gplite_noisefun(hyp_noise,gp.X,gp.noisefun,gp.y,s2)
 
@@ -675,13 +681,20 @@ class VBMC(object):
                 )
 
                 # Prepare for importance sampling based acquisition function
-                if optimState.acqInfo[idxAcq].get('importance_sampling'):
-                    optimState.ActiveImportanceSampling = activeimportancesampling_vbmc(vp,gp,SearchAcqFcn[idxAcq],optimState.acqInfo[idxAcq],options)
+                if optimState.acqInfo[idxAcq].get("importance_sampling"):
+                    optimState.ActiveImportanceSampling = (
+                        activeimportancesampling_vbmc(
+                            vp,
+                            gp,
+                            SearchAcqFcn[idxAcq],
+                            optimState.acqInfo[idxAcq],
+                            options,
+                        )
+                    )
 
                 # Start active search
 
-                optimState.acqrand = rand() # Seed for random acquisition fcn
-                
+                optimState.acqrand = rand()  # Seed for random acquisition fcn
 
                 # Create search set from cache and randomly generated
                 [Xsearch, idx_cache] = getSearchPoints(
@@ -733,14 +746,14 @@ class VBMC(object):
                         TolFun = max(1e-12, abs(fval_old * 1e-3))
 
                 # check if necessary in python
-                fmincon_opts.Display = 'off'
+                fmincon_opts.Display = "off"
                 fmincon_opts.TolFun = TolFun
                 fmincon_opts.MaxFunEvals = options.SearchMaxFunEvals
                 try:
-                    #xsearch_optim,fval_optim,_,out_optim = fmincon(@(x) acqEval(x,vp,gp,optimState,0),x0,[],[],[],[],LB,UB,[],fmincon_opts)
+                    # xsearch_optim,fval_optim,_,out_optim = fmincon(@(x) acqEval(x,vp,gp,optimState,0),x0,[],[],[],[],LB,UB,[],fmincon_opts)
                     nevals = out_optim.funcCount
                 except:
-                    print('Active search failed.\n')
+                    print("Active search failed.\n")
                     fval_optim = Inf
 
                 # if fval_optim < fval_old:
@@ -948,6 +961,7 @@ class VBMC(object):
                         else:
                             gp = gpreupdate(gp, optimState, options)
 
+                        # timer.start_gpTrain()
                         timer.gpTrain = timer.gpTrain + toc(t)
 
                 # Check if active search bounds need to be expanded
