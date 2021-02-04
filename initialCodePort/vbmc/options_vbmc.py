@@ -200,3 +200,9 @@ class Options_VBMC(object):
     FeatureTest        = None #no                % Test a new experimental feature';
     BOWarmup           = None #no                % Bayesian-optimization-like warmup stage';
     gpOutwarpFun       = None #[]                % GP default output warping function';
+
+def _validateOptions():
+    '''
+    We need the functionality to validate the options
+    '''
+    pass
