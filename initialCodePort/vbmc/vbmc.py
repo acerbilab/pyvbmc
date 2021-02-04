@@ -1,4 +1,4 @@
-from math import sqrt
+import math
 from gaussian_process import GP_Lite
 from .optimstate_vbmc import OptimState
 from .options_vbmc import Options_VBMC
@@ -7,7 +7,6 @@ from entropy.entlb_vbmc import entlb_vbmc
 from entropy.entub_vbmc import entub_vbmc
 from .stats_vbmc import Stats
 from variational_posterior import VP
-import math
 
 
 class VBMC(object):
@@ -67,7 +66,7 @@ class VBMC(object):
             Actively sample new points into the training set
             """
 
-            timer.start_timer('activeSampling')
+            timer.start_timer("activeSampling")
             optimState.trinfo = vp.trinfo
             if loopiter == 1:
                 new_funevals = options.FunEvalStart
@@ -122,19 +121,19 @@ class VBMC(object):
             optimState.N = optimState.Xn  # Number of training inputs
             optimState.Neff = sum(optimState.nevals(optimState.X_flag))
 
-            timer.stop_timer('activeSampling')
+            timer.stop_timer("activeSampling")
 
             """
             Train GP
             """
 
-            timer.start_timer('gpTrain')
+            timer.start_timer("gpTrain")
 
             gp, hypstruct, Ns_gp, optimState = self.__2gptrain_vbmc(
                 hypstruct, optimState, stats, options
             )
 
-            timer.stop_timer('gpTrain')
+            timer.stop_timer("gpTrain")
 
             # Check if reached stable sampling regime
             if (
@@ -147,7 +146,7 @@ class VBMC(object):
             Optimize variational parameters
             """
 
-            timer.start_timer('variationalFit')
+            timer.start_timer("variationalFit")
 
             if not vp.optimize_mu:
                 # Variational components fixed to training inputs
@@ -199,13 +198,13 @@ class VBMC(object):
             elbo = vp_real.stats.elbo
             elbo_sd = vp_real.stats.elbo_sd
 
-            timer.stop_timer('variationalFit')
+            timer.stop_timer("variationalFit")
 
             """
             Finalize iteration
             """
 
-            timer.start_timer('finalize')
+            timer.start_timer("finalize")
 
             # Compute symmetrized KL-divergence between old and new posteriors
             Nkl = 1e5
@@ -242,7 +241,7 @@ class VBMC(object):
                 )
                 optimState.LastRunAvg = optimState.N
 
-            timer.stop_timer('finalize')
+            timer.stop_timer("finalize")
             # timer.totalruntime = NaN;   # Update at the end of iteration
             # timer
 
@@ -325,7 +324,7 @@ class VBMC(object):
 
             if options.AcqHedge:
                 # Update hedge values
-                optimState.hedge = acqhedge_vbmc(
+                optimState.hedge = self.acqhedge_vbmc(
                     "upd", optimState.hedge, stats, options
                 )
 
@@ -477,7 +476,7 @@ class VBMC(object):
         NSsearch = options.NSsearch  # Number of points for acquisition fcn
         t_func = 0
 
-        #time_active = tic
+        # time_active = tic
 
         if isempty(gp):
 
@@ -556,7 +555,7 @@ class VBMC(object):
                 optimState.Neff = sum(optimState.nevals(optimState.X_flag))
 
                 if options.ActiveVariationalSamples > 0:
-                    [vp, _, output] = vpsample_vbmc(
+                    vp, _, output = vpsample_vbmc(
                         Ns_activevar,
                         0,
                         vp,
@@ -693,7 +692,9 @@ class VBMC(object):
                         )
                     )
 
-                # Start active search
+                """
+                Start active search
+                """
 
                 optimState.acqrand = rand()  # Seed for random acquisition fcn
 
@@ -739,8 +740,6 @@ class VBMC(object):
                         # LB = min([gp.X;x0]) - 0.1*x_range
                         # UB = max([gp.X;x0]) + 0.1*x_range
 
-                    # if isfield(optimState.acqInfo{idxAcq},'log_flag') and optimState.acqInfo{idxAcq}.log_flag:
-                    # maybe in python:
                     if optimState.acqInfo[idxAcq].get(log_flag):
                         TolFun = 1e-2
                     else:
@@ -755,7 +754,7 @@ class VBMC(object):
                     nevals = out_optim.funcCount
                 except:
                     print("Active search failed.\n")
-                    fval_optim = float('inf')
+                    fval_optim = float("inf")
 
                 # if fval_optim < fval_old:
                 #     Xacq(1,:) = real2int_vbmc(xsearch_optim,vp.trinfo,optimState.integervars)
@@ -841,7 +840,8 @@ class VBMC(object):
                 else:
                     y_orig = float("nan")
                 timer_func = tic
-                if math.isnan(y_orig):  # Function value is not available, evaluate
+                if math.isnan(y_orig):
+                    # Function value is not available, evaluate
                     try:
                         [ynew, optimState, idx_new] = funlogger_vbmc(
                             funwrapper, xnew, optimState, "iter"
@@ -901,7 +901,7 @@ class VBMC(object):
                                     hypstruct,
                                     Ns_gp,
                                     optimState,
-                                ] = gptrain_vbmc(
+                                ] = self.__2gptrain_vbmc(
                                     hypstruct,
                                     optimState,
                                     stats,
@@ -950,7 +950,10 @@ class VBMC(object):
                         # Perform simple rank-1 update if no noise and first sample
                         t = tic
                         update1 = (
-                            (len(s2new) == 0 or optimState.nevals(idx_new) == 1)
+                            (
+                                len(s2new) == 0
+                                or optimState.nevals(idx_new) == 1
+                            )
                             and not options.NoiseShaping
                             and not options.IntegrateGPMean
                         )
@@ -962,7 +965,7 @@ class VBMC(object):
                         else:
                             gp = gpreupdate(gp, optimState, options)
 
-                        #timer.gpTrain = timer.gpTrain + toc(t)
+                        # timer.gpTrain = timer.gpTrain + toc(t)
 
                 # Check if active search bounds need to be expanded
                 delta_search = 0.05 * (
@@ -1070,6 +1073,9 @@ class VBMC(object):
         """
         VBMC_BEST Return best variational posterior from stats structure.
         """
+        pass
+
+    def acqhedge_vbmc(self):
         pass
 
 
