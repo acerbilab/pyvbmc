@@ -246,8 +246,7 @@ class VBMC(object):
             # timer
 
             # Record all useful stats
-            stats = savestats(
-                stats,
+            stats.save_iteration(
                 optimState,
                 vp,
                 elbo,
@@ -260,7 +259,7 @@ class VBMC(object):
                 Ns_gp,
                 pruned,
                 timer,
-                options.Diagnostics,
+                options.Diagnostics
             )
 
             """
