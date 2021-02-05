@@ -12,7 +12,7 @@ class Options_VBMC(object):
     Plot                    = None #'off         % Plot marginals of variational posterior at each iteration';
     MaxIter                 = None #'50*(2+nvars)% Max number of iterations';
     MaxFunEvals             = None #50*(2+nvars) % Max number of target fcn evals';
-    FunEvalsPerIter         = None #5            % Number of target fcn evals per iteration';
+    FunEvalsPerIter         = 5    #5            % Number of target fcn evals per iteration';
     TolStableCount          = None #60           % Required stable fcn evals for termination';
     RetryMaxFunEvals        = None #0            % Max number of target fcn evals on retry (0 = no retry)';
     MinFinalComponents      = None #50           % Number of variational components to refine posterior at termination';
@@ -30,7 +30,7 @@ class Options_VBMC(object):
     FunEvalStart            = None #max(D,10)    % Number of initial target fcn evals';
     SGDStepSize             = None #0.005        % Base step size for stochastic gradient descent';
     SkipActiveSamplingAfterWarmup  = None #no    % Skip active sampling the first iteration after warmup';
-    RankCriterion           = None #yes          % Use ranking criterion to pick best non-converged solution';
+    RankCriterion           = True #yes          % Use ranking criterion to pick best non-converged solution';
     TolStableEntropyIters   = None #6            % Required stable iterations to switch entropy approximation';
     VariableMeans           = None #yes          % Use variable component means for variational posterior';
     VariableWeights         = None #yes          % Use variable mixture weight for variational posterior';
@@ -43,7 +43,7 @@ class Options_VBMC(object):
     ProposalFcn             = None #[]           % Weighted proposal fcn for uncertainty search';
     NonlinearScaling   = None #on                % Automatic nonlinear rescaling of variables';
     SearchAcqFcn       = None #@acqf_vbmc        % Fast search acquisition fcn(s)';
-    NSsearch           = None #2^13              % Samples for fast acquisition fcn eval per new point';
+    NSsearch           = 2**13 #2^13              % Samples for fast acquisition fcn eval per new point';
     NSent              = None #@(K) 100*K.^(2/3) % Total samples for Monte Carlo approx. of the entropy';
     NSentFast          = None #0                 % Total samples for preliminary Monte Carlo approx. of the entropy';
     NSentFine          = None #@(K) 2^12*K       % Total samples for refined Monte Carlo approx. of the entropy';
@@ -54,8 +54,8 @@ class Options_VBMC(object):
     NSentFastActive    = None #0                 % Total samples for preliminary Monte Carlo approx. of the entropy (active sampling)';
     NSentFineActive    = None #@(K) 200*K        % Total samples for refined Monte Carlo approx. of the entropy (active sampling)';
     NSelbo             = None #@(K) 50*K         % Samples for fast approximation of the ELBO';
-    NSelboIncr         = None #0.1               % Multiplier to samples for fast approx. of ELBO for incremental iterations';
-    ElboStarts         = None #2                 % Starting points to refine optimization of the ELBO';
+    NSelboIncr         = 0.1  #0.1               % Multiplier to samples for fast approx. of ELBO for incremental iterations';
+    ElboStarts         = 2    #2                 % Starting points to refine optimization of the ELBO';
     NSgpMax            = None #80                % Max GP hyperparameter samples (decreases with training points)';
     NSgpMaxWarmup      = None #8                 % Max GP hyperparameter samples during warmup';
     NSgpMaxMain        = None #Inf               % Max GP hyperparameter samples during main algorithm';
@@ -63,7 +63,7 @@ class Options_VBMC(object):
     WarmupCheckMax     = None #yes               % Also check for max fcn value improvement before stopping warmup';
     StableGPSampling   = None #200 + 10*nvars    % Force stable GP hyperparameter sampling (reduce samples or start optimizing)';
     StableGPvpK        = None #Inf               % Force stable GP hyperparameter sampling after reaching this number of components';
-    StableGPSamples    = None #0                 % Number of GP samples when GP is stable (0 = optimize)';
+    StableGPSamples    = 0    #0                 % Number of GP samples when GP is stable (0 = optimize)';
     GPSampleThin       = None #5                 % Thinning for GP hyperparameter sampling';
     GPTrainNinit       = None #1024              % Initial design points for GP hyperparameter training';
     GPTrainNinitFinal  = None #64                % Final design points for GP hyperparameter training';
@@ -93,7 +93,7 @@ class Options_VBMC(object):
     TolStableWarmup    = None #15                % Number of stable fcn evals for stopping warmup';
     VariationalSampler = None #malasample        % MCMC sampler for variational posteriors';
     TolImprovement     = None #0.01              % Required ELCBO improvement per fcn eval before termination';
-    KLgauss            = None #yes               % Use Gaussian approximation for symmetrized KL-divergence b\w iters';
+    KLgauss            = True #yes               % Use Gaussian approximation for symmetrized KL-divergence b\w iters';
     TrueMean           = None #[]                % True mean of the target density (for debugging)';
     TrueCov            = None #[]                % True covariance of the target density (for debugging)';
     MinFunEvals        = None #5*nvars           % Min number of fcn evals';
@@ -103,7 +103,7 @@ class Options_VBMC(object):
     HPDSearchFrac      = None #0                 % Fraction of search points from multivariate normal fitted to HPD points';
     BoxSearchFrac      = None #0.25              % Fraction of search points from uniform random box based on training inputs';
     SearchCacheFrac    = None #0                 % Fraction of search points from previous iterations';
-    AlwaysRefitVarPost = None #no                % Always fully refit variational posterior';
+    AlwaysRefitVarPost = False #no                % Always fully refit variational posterior';
     Warmup             = None #on                % Perform warm-up stage';
     WarmupOptions      = None #[]                % Special OPTIONS struct for warmup stage';
     StopWarmupThresh   = None #0.2               % Stop warm-up when ELCBO increase below threshold (per fcn eval)';
@@ -114,7 +114,7 @@ class Options_VBMC(object):
     SearchCMAESVPInit  = None #yes               % Initialize CMA-ES search SIGMA from variational posterior';
     SearchCMAESbest    = None #no                % Take bestever solution from CMA-ES search';
     SearchMaxFunEvals  = None #500*(nvars+2)     % Max number of acquisition fcn evaluations during search';
-    MomentsRunWeight   = None #0.9               % Weight of previous trials (per trial) for running avg of variational posterior moments';
+    MomentsRunWeight   = 0.9  #0.9               % Weight of previous trials (per trial) for running avg of variational posterior moments';
     GPRetrainThreshold = None #1                 % Upper threshold on reliability index for full retraining of GP hyperparameters';
     ELCBOmidpoint      = None #on                % Compute full ELCBO also at best midpoint';
     GPSampleWidths     = None #5                 % Multiplier to widths from previous posterior for GP sampling (Inf = do not use previous widths)';
@@ -124,15 +124,15 @@ class Options_VBMC(object):
     GPHypSampler       = None #slicesample       % MCMC sampler for GP hyperparameters';
     CovSampleThresh    = None #10                % Switch to covariance sampling below this threshold of stability index';
     DetEntTolOpt       = None #1e-3              % Optimality tolerance for optimization of deterministic entropy';
-    EntropySwitch      = None #off               % Switch from deterministic entropy to stochastic entropy when reaching stability';
-    EntropyForceSwitch = None #0.8               % Force switch to stochastic entropy at this fraction of total fcn evals';
+    EntropySwitch      = False #off              % Switch from deterministic entropy to stochastic entropy when reaching stability';
+    EntropyForceSwitch = 0.8 #0.8                % Force switch to stochastic entropy at this fraction of total fcn evals';
     DetEntropyAlpha    = None #0                 % Alpha value for lower/upper deterministic entropy interpolation';
     UpdateRandomAlpha  = None #no                % Randomize deterministic entropy alpha during active sample updates';
     AdaptiveEntropyAlpha = None #no              % Online adaptation of alpha value for lower/upper deterministic entropy interpolation';
     DetEntropyMinD     = None #5                 % Start with deterministic entropy only with this number of vars or more';
     TolConLoss         = None #0.01              % Fractional tolerance for constraint violation of variational parameters';
-    BestSafeSD         = None #5                 % SD multiplier of ELCBO for computing best variational solution';
-    BestFracBack       = None #0.25              % When computing best solution, lacking stability go back up to this fraction of iterations';
+    BestSafeSD         = 5    #5                 % SD multiplier of ELCBO for computing best variational solution';
+    BestFracBack       = 0.25 #0.25              % When computing best solution, lacking stability go back up to this fraction of iterations';
     TolWeight          = None #1e-2              % Threshold mixture component weight for pruning';
     PruningThresholdMultiplier = None #@(K) 1/sqrt(K)   % Multiplier to threshold for pruning mixture weights';
     AnnealedGPMean     = None #@(N,NMAX) 0       % Annealing for hyperprior width of GP negative quadratic mean';
@@ -150,7 +150,7 @@ class Options_VBMC(object):
     OutwarpThreshMult  = None #1.25              % Output warping threshold multiplier when failed sub-threshold check';
     OutwarpThreshTol   = None #0.8               % Output warping base threshold tolerance (fraction of current threshold)';
     Temperature        = None #1                 % Temperature for posterior tempering (allowed values T = 1,2,3,4)';
-    SeparateSearchGP   = None #no                % Use separate GP with constant mean for active search';
+    SeparateSearchGP   = False #no               % Use separate GP with constant mean for active search';
     NoiseShaping       = None #no                % Discount observations from from extremely low-density regions';
     NoiseShapingThreshold = None #10*nvars       % Threshold from max observed value to start discounting';
     NoiseShapingFactor = None #0.05              % Proportionality factor of added noise wrt distance from threshold';
@@ -175,7 +175,7 @@ class Options_VBMC(object):
     ActiveSearchBound  = None #2                  % Active search bound multiplier';
     IntegrateGPMean    = None #no                   % Try integrating GP mean function';
     TolBoundX          = None #1e-5              % Tolerance on closeness to bound constraints (fraction of total range)';
-    RecomputeLCBmax    = None #yes              % Recompute LCB max for each iteration based on current GP estimate';
+    RecomputeLCBmax    = True #yes              % Recompute LCB max for each iteration based on current GP estimate';
     BoundedTransform   = None #logit            % Input transform for bounded variables';
     DoubleGP           = None #no                % Use double GP';
     WarpEveryIters     = None #5                 % Warp every this number of iterations';
@@ -196,13 +196,22 @@ class Options_VBMC(object):
     ELCBOWeight        = None #0                 % Uncertainty weight during ELCBO optimization';
     VarParamsBack      = None #0                 % Check variational posteriors back to these previous iterations';
     AltMCEntropy       = None #no                % Use alternative Monte Carlo computation for the entropy';
-    VarActiveSample    = None #no                % Variational active sampling';
+    VarActiveSample    = False #no               % Variational active sampling';
     FeatureTest        = None #no                % Test a new experimental feature';
-    BOWarmup           = None #no                % Bayesian-optimization-like warmup stage';
+    BOWarmup           = False #no               % Bayesian-optimization-like warmup stage';
     gpOutwarpFun       = None #[]                % GP default output warping function';
 
-def _validateOptions():
+def _validateOptions(self):
     '''
     We need the functionality to validate the options
     '''
+    if self.Temperature not in range(5):
+        print('vbmc:PosterioTemperature: OPTIONS.Temperature should be a small positive integer (allowed T = 1,2,3,4).')
+        exit(1)
+    pass
+
+def _initializeOptions(nvars, D, K):
+    """
+    Either initilize Options once or as a property
+    """
     pass
