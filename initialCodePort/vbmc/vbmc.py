@@ -1,4 +1,5 @@
 import math
+import sys
 from gaussian_process import GP_Lite
 from .optimstate_vbmc import OptimState
 from .options_vbmc import Options_VBMC
@@ -17,7 +18,7 @@ class VBMC(object):
     def __init__(self):
         pass
 
-    def algorithm(self, options=Options_VBMC):
+    def algorithm(self, fun, x0, LB, UB, PLB, PUB, options=Options_VBMC):
         """
         This is a perliminary version of the VBMC loop in order to identify possible objects
         """
@@ -26,8 +27,83 @@ class VBMC(object):
         hypstruct = None
         stats = Stats()
         timer = Timer()
-
         prnt = 1  # configure verbosity of the algorithm
+
+        # Start timer
+        timer.start_timer("total_runtime")
+
+        # Input arguments
+
+        # isempty(LB); LB = -Inf
+        # isempty(UB) UB = Inf
+
+        # Initialize variables and algorithm structures
+
+        if x0 is None:
+            if prnt > 2:
+                print(
+                    "X0 not specified. Taking the number of dimensions from PLB and PUB..."
+                )
+
+            if PLB is None or PUB is None:
+                sys.exit(
+                    "vbmc:UnknownDims: If no starting point is provided, PLB and PUB need to be specified."
+                )
+            x0 = NaN(size(PLB))
+            if prnt > 2:
+                print(" D = %d.\n", numel(x0))
+
+        # Initialize from variational posterior
+        # if vbmc_isavp(x0):
+        #     init_from_vp_flag = True
+        #     vp0 = x0
+        #     [x0,LB,UB,PLB,PUB,Xvp] = initFromVP(vp0,LB,UB,PLB,PUB,prnt)
+        # else:
+        #     init_from_vp_flag = False
+
+        D = size(x0, 2)  # Number of variables
+
+        # Setup algorithm options
+        options = setupoptions_vbmc(D, defopts, options)
+        if options.Warmup:
+            options_main = options
+            # Use special options during Warmup
+            if "WarmupOptions" in options:
+                WarmupOptions = options.WarmupOptions
+                # Copy these fields to avoid re-update in SETUPOPTIONS_VBMC
+                copyfields = [
+                    "MaxFunEvals",
+                    "TolStableCount",
+                    "ActiveSampleGPUpdate",
+                    "ActiveSampleVPUpdate",
+                    "SearchAcqFcn",
+                ]
+                for f in copyfields:
+                    if f not in WarmupOptions:
+                        WarmupOptions.f = options.f
+                options = setupoptions_vbmc(D, options, WarmupOptions)
+
+        # if init_from_vp_flag:    # Finish initialization from variational posterior
+        #     x0 = [x0; robustSampleFromVP(vp0,options.FunEvalStart-1,Xvp)]
+        #     clear Xvp vp0
+
+        # Check/fix boundaries and starting points
+        x0, LB, UB, PLB, PUB = boundscheck_vbmc(x0, LB, UB, PLB, PUB, prnt)
+
+        # Setup and transform variables, prepare OPTIMSTATE settings struct
+        K = options.Kwarmup
+
+        # Store target density function
+        optimState.fun = fun
+        # funwrapper = @(u_) fun(u_,varargin{:});
+
+        # Get information from acquisition function(s)
+        optimState.acqInfo = getAcqInfo(options.SearchAcqFcn)
+
+        # Initialize function logger
+        [_, optimState] = funlogger_vbmc(
+            [], D, optimState, "init", options.CacheSize
+        )
 
         optimState = OptimState()
 
@@ -101,11 +177,10 @@ class VBMC(object):
                 if options.VarActiveSample:
                     # FIX TIMER HERE IF USING THIS
                     # [optimState,vp,t_active,t_func] = variationalactivesample_vbmc(optimState,new_funevals,funwrapper,vp,vp_old,gp_search,options)
-                    print("Function currently not supported")
-                    exit(1)
+                    sys.exit("Function currently not supported")
                 else:
                     optimState.hypstruct = hypstruct
-                    optimState, vp, gp, timer = self.__1activesample_vbmc(
+                    optimState, vp, gp, timer = self.__activesample_vbmc(
                         optimState,
                         new_funevals,
                         funwrapper,
@@ -259,8 +334,10 @@ class VBMC(object):
                 Ns_gp,
                 pruned,
                 timer,
-                options.Diagnostics
+                options.Diagnostics,
             )
+
+            # stats.warmup[loopiter] = optimState.Warmup
 
             """
             Check termination conditions and warmup
@@ -302,8 +379,6 @@ class VBMC(object):
                     optimState.acqInfo = getAcqInfo(
                         options.SearchAcqFcn
                     )  # Re-get acq info
-
-            stats.warmup[loopiter] = optimState.Warmup
 
             # Check and update fitness shaping / output warping threshold
             if (
@@ -400,7 +475,11 @@ class VBMC(object):
                             action,
                         )
 
-            stats.timer(loopiter).totalruntime = toc(t0)
+            timer.stop_timer("total_runtime")
+
+            stats.timer[loopiter].totalruntime = timer.get_duration(
+                "total_runtime"
+            )
 
         """
         End of VBMC loop
@@ -465,7 +544,7 @@ class VBMC(object):
 
     # Active Sampling
 
-    def __1activesample_vbmc(
+    def __activesample_vbmc(
         self, optimState, Ns, funwrapper, vp, vp_old, gp, stats, timer, options
     ):
         """
