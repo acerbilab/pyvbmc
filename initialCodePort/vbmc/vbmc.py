@@ -520,27 +520,6 @@ class VBMC(object):
                 0, 0.5 * sum(vbmc_kldiv(vp, vp_old, Nkl, options.KLgauss))
             )
 
-    # Initial methods
-
-    # Initial:
-
-    # - boundscheck_vbmc(x0,LB,UB,PLB,PUB,prnt) -> BOUNDSCHECK Initial check of bounds.
-
-    # - setupoptions_vbmc(nvars,defopts,options) %SETUPOPTIONS_VBMC Initialize OPTIONS struct for VBMC.
-
-    # - setupvars_vbmc(x0,LB,UB,PLB,PUB,K,optimState,options,prnt) %INITVARS Initialize variational posterior, transforms and variables for VBMC.
-
-    # - timer_init() %TIMER_INIT Initialize iteration timer.
-
-    # - initFromVP(vp,LB,UB,PLB,PUB,prnt)
-
-    # VMBC loop
-
-    # Warping
-
-    # - warp_input_vbmc(vp,optimState,gp,options) %WARP_INPUT_VBMC Perform input warping of variables.
-
-    # - warp_gpandvp_vbmc(trinfo,vp_old,gp_old) %WARP_GPANDVP_VBMC Update GP hyps and variational posterior after warping.
 
     # Active Sampling
 
