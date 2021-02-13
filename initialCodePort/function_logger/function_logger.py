@@ -3,11 +3,11 @@ import numpy as np
 from vbmc.timer_vbmc import Timer
 
 
-class Function_Logger(object):
+class FunctionLogger(object):
     """
-    Function_Logger Evaluates a function and caches results
+    FunctionLogger Evaluates a function and caches results
     """
-    def __init__(self, fun, nvars: int, noise_flag: bool):
+    def __init__(self, fun, nvars: int, noise_flag: bool, cache_size=500):
         """
         __init__
 
@@ -22,30 +22,30 @@ class Function_Logger(object):
             number of dimensions that the function takes as input
         noise_flag : bool
             whether the function fun is stochastic
+        cache_size : int, optional
+            initial size of caching table (default 500)
         """
         self.fun = fun
         self.nvars: int = nvars
         self.noise_flag: bool = noise_flag
 
-        nmax = 500
-
         self.func_count: int = 0
         self.cache_count: int = 0
-        self.x_orig = np.empty((nmax, self.nvars))
-        self.y_orig = np.empty((nmax, 1))
-        self.x = np.empty((nmax, self.nvars))
-        self.y = np.empty((nmax, 1))
+        self.x_orig = np.empty((cache_size, self.nvars))
+        self.y_orig = np.empty((cache_size, 1))
+        self.x = np.empty((cache_size, self.nvars))
+        self.y = np.empty((cache_size, 1))
 
         if noise_flag:
-            self.S = np.empty((nmax, 1))
+            self.S = np.empty((cache_size, 1))
 
         self.Xn: int = 0  # Last filled entry
-        self.X_flag = np.full((nmax, 1), True, dtype=bool)
+        self.X_flag = np.full((cache_size, 1), True, dtype=bool)
         self.y_max = float("-Inf")
-        self.fun_evaltime = np.empty((nmax, 1))
+        self.fun_evaltime = np.empty((cache_size, 1))
         self.total_fun_evaltime = 0
 
-    def iter(self, x, uncertaintyHandlingLevel):
+    def iter(self, x, uncertaintyHandlingLevel: int):
         """
         iter evaluates function FUN at X and caches values
 
@@ -84,7 +84,7 @@ class Function_Logger(object):
                 or not np.isreal(fval_orig)
             ):
                 sys.exit(
-                    "Function_Logger:InvalidFuncValue"
+                    "FunctionLogger:InvalidFuncValue"
                     + "The returned function value must be a finite real-valued scalar"
                     + "(returned value: "
                     + str(fval_orig)
@@ -98,7 +98,7 @@ class Function_Logger(object):
                 or not np.isreal(fsd)
             ):
                 sys.exit(
-                    "Function_Logger:InvalidNoiseValue"
+                    "FunctionLogger:InvalidNoiseValue"
                     + "The returned estimated SD (second function output)"
                     + "must be a finite, positive real-valued scalar (returned SD: "
                     + str(fsd)
@@ -107,7 +107,7 @@ class Function_Logger(object):
 
         except:
             sys.exit(
-                "Function_Logger:FuncError "
+                "FunctionLogger:FuncError "
                 + "Error in executing the logged function: "
                 + str(fun)
                 + "with input: "
@@ -141,15 +141,18 @@ class Function_Logger(object):
 
         return fval, fsd
 
-    def _expand_arrays(self, resize_amount=500):
+    def _expand_arrays(self, resize_amount=None):
         """
         _expand_arrays a private function to extend the rows of the object attribute arrays
 
         Parameters
         ----------
         resize_amount : int, optional
-            additional rows, by default 500
+            additional rows, by default expand current table by 50%
         """
+        
+        if resize_amount == None:
+            resize_amount = int(np.max((np.ceil(self.Xn/2),1)))        
 
         self.x_orig = np.append(
             self.x_orig, np.empty((resize_amount, self.nvars)), axis=0

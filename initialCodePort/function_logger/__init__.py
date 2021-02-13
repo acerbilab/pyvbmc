@@ -1,2 +1,2 @@
 # __init__.py
-from .function_logger import Function_Logger
+from .function_logger import FunctionLogger
