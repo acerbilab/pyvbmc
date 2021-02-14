@@ -1,1 +1,1 @@
-from .gplite import GP_Lite
+from .gplite import GPLite

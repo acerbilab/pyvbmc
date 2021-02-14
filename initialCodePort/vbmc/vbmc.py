@@ -1,13 +1,13 @@
 import math
 import sys
-from gaussian_process import GP_Lite
+from ..gaussian_process import GP_Lite
 from .optimstate_vbmc import OptimState
 from .options_vbmc import Options_VBMC
-from .timer_vbmc import Timer
-from entropy.entlb_vbmc import entlb_vbmc
-from entropy.entub_vbmc import entub_vbmc
+from ..timer import Timer
+from ..entropy.entlb_vbmc import entlb_vbmc
+from ..entropy.entub_vbmc import entub_vbmc
 from .stats_vbmc import Stats
-from variational_posterior import VP
+from ..variational_posterior import VP
 
 
 class VBMC(object):
@@ -519,7 +519,6 @@ class VBMC(object):
             sKL = max(
                 0, 0.5 * sum(vbmc_kldiv(vp, vp_old, Nkl, options.KLgauss))
             )
-
 
     # Active Sampling
 

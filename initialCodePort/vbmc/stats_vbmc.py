@@ -1,5 +1,5 @@
 from .optimstate_vbmc import OptimState
-from variational_posterior import VP
+from ..variational_posterior import VP
 
 
 class Stats(object):
@@ -79,4 +79,4 @@ class Stats(object):
         else:
             self.outwarp_threshold[iteration] = NaN
         self.lcbmax[iteration] = optimState.lcbmax
-        self.t[iteration] = NaN    #Fill it at the end of the iteration
+        self.t[iteration] = NaN  # Fill it at the end of the iteration

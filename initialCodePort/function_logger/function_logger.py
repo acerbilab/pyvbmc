@@ -1,6 +1,6 @@
 import sys
 import numpy as np
-from vbmc.timer_vbmc import Timer
+from ..timer import Timer
 
 
 class FunctionLogger(object):

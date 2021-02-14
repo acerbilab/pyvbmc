@@ -1,11 +1,11 @@
-class Printer_VBMC(object):
+class PrinterVBMC(object):
     """
     Prints the status messages of the VBMC algorithm
     """
 
     def __init__(self, verbose_level):
         self.verbose_level = verbose_level
-        self.action = ''
+        self.action = ""
 
     def print_final_message(self, exitflag):
         # Print final message

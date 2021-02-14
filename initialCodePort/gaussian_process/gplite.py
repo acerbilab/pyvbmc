@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class GP_Lite(ABC):
+class GPLite(ABC):
     """
     ​Use interface and common GP library for first version of pyVBMC
     """

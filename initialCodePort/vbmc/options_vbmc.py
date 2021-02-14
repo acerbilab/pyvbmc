@@ -1,4 +1,4 @@
-class Options_VBMC(object):
+class OptionsVBMC(object):
     """
     Default Options of VBMC algorithm
     Appoach to model as a class inspired by
