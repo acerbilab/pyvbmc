@@ -6,6 +6,13 @@ from ..timer import Timer
 class FunctionLogger(object):
     """
     FunctionLogger Evaluates a function and caches results
+
+    Porting status
+    --------------
+     - _record(...) is missing, and in particular all the part
+     about checking (and dealing with) identical inputs
+     - warping of the parameters (vbmc specific) has to be
+     addressed
     """
 
     def __init__(
@@ -23,7 +30,7 @@ class FunctionLogger(object):
         ----------
         fun : callable
             The function to be logged
-            FUN must take a vector input and return a scalar value and,
+            fun must take a vector input and return a scalar value and,
             optionally, the (estimated) SD of the returned value (if the
             function fun is stochastic)
         nvars : int
@@ -59,12 +66,18 @@ class FunctionLogger(object):
 
     def __call__(self, x: np.ndarray):
         """
-        evaluates function FUN at x and caches values
+        __call__ evaluates function FUN at x and caches values
 
         Parameters
         ----------
         x : np.ndarray
             The point at which the function will be evaluated
+
+        Returns
+        -------
+        (int, int)
+            result of the evaluatation and
+            optionally the (estimated) SD of the returned value
         """
 
         timer = Timer()
@@ -200,6 +213,7 @@ class FunctionLogger(object):
         self.y = self.y[
             : self.Xn + 1,
         ]
+
         if self.noise_flag:
             self.S = self.S[
                 : self.Xn + 1,
@@ -210,4 +224,3 @@ class FunctionLogger(object):
         self.fun_evaltime = self.fun_evaltime[
             : self.Xn + 1,
         ]
-        
