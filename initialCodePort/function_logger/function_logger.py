@@ -51,7 +51,7 @@ class FunctionLogger(object):
         if self.noise_flag:
             self.S = np.empty((cache_size, 1))
 
-        self.Xn: int = 0  # Last filled entry
+        self.Xn: int = -1  # Last filled entry
         self.X_flag = np.full((cache_size, 1), True, dtype=bool)
         self.y_max = float("-Inf")
         self.fun_evaltime = np.empty((cache_size, 1))
@@ -76,9 +76,9 @@ class FunctionLogger(object):
         try:
             timer.start_timer("funtime")
             if self.noise_flag and self.uncertaintyHandlingLevel == 2:
-                fval_orig, fsd = fun(x)
+                fval_orig, fsd = self.fun(x)
             else:
-                fval_orig = fun(x)
+                fval_orig = self.fun(x)
                 if self.noise_flag:
                     fsd = 1
                 else:
@@ -123,7 +123,7 @@ class FunctionLogger(object):
             )
 
         self.func_count += 1
-        self.total_fun_evaltime += timer.get_duration["funtime"]
+        self.total_fun_evaltime += timer.get_duration("funtime")
 
         self.Xn += 1
         if self.Xn > self.x_orig.shape[0] - 1:
@@ -131,23 +131,23 @@ class FunctionLogger(object):
 
         self.x_orig[
             self.Xn,
-        ] = x_orig
+        ] = x  # x_orig
         self.x[
             self.Xn,
         ] = x
         self.y_orig[self.Xn] = fval_orig
-        self.y[self.Xn] = fvalx
+        self.y[self.Xn] = fval_orig  # fvalx
         if fsd:
             self.S[self.Xn] = fsd
         self.X_flag[self.Xn] = True
-        self.fun_evaltime[self.Xn] = timer.get_duration["funtime"]
-        self.nevals = max(1, self.nevals[self.xn] + 1)
+        self.fun_evaltime[self.Xn] = timer.get_duration("funtime")
+        # self.nevals = max(1, self.nevals[self.xn] + 1)
         self.ymax = np.amax(self.y[self.X_flag])
 
-        optimstate.N = self.Xn
-        optimstate.Neff = np.sum(self.nevals[self.X_flag])
+        # optimstate.N = self.Xn
+        # optimstate.Neff = np.sum(self.nevals[self.X_flag])
 
-        return fval, fsd
+        return fval_orig, fsd
 
     def _expand_arrays(self, resize_amount: int = None):
         """
@@ -187,26 +187,27 @@ class FunctionLogger(object):
         finalize remove unused caching entries
         """
         self.x_orig = self.x_orig[
-            : self.Xn,
+            : self.Xn + 1,
         ]
         self.y_orig = self.y_orig[
-            : self.Xn,
+            : self.Xn + 1,
         ]
 
         # in the original matlab version X and Y get deleted
         self.x = self.x[
-            : self.Xn,
+            : self.Xn + 1,
         ]
         self.y = self.y[
-            : self.Xn,
+            : self.Xn + 1,
         ]
         if self.noise_flag:
             self.S = self.S[
-                : self.Xn,
+                : self.Xn + 1,
             ]
         self.X_flag = self.X_flag[
-            : self.Xn,
+            : self.Xn + 1,
         ]
         self.fun_evaltime = self.fun_evaltime[
-            : self.Xn,
+            : self.Xn + 1,
         ]
+        

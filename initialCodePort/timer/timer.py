@@ -5,8 +5,8 @@ class Timer(object):
 
     def __init__(self):
         """
-        __init__ 
-        """        
+        __init__
+        """
         self._start_times = dict()
         self._durations = dict()
 
@@ -18,7 +18,7 @@ class Timer(object):
         ----------
         name : str
             the name of the timer
-        """        
+        """
         self._start_times[name] = 0
 
     def stop_timer(self, name: str):
@@ -29,12 +29,15 @@ class Timer(object):
         ----------
         name : str
             the name of the timer
-        """        
+        """
 
         if name in self._start_times:
-            self._durations[name] = (
-                self._durations[name] + 0 - self._start_times[name]
-            )
+            if name in self._durations:
+                self._durations[name] = (
+                    self._durations[name] + 0 - self._start_times[name]
+                )
+            else:
+                self._durations[name] = 0 - self._start_times[name]
 
     def get_duration(self, name: str):
         """
@@ -50,5 +53,5 @@ class Timer(object):
         float
             the duration of the timer
             or None when not existing
-        """        
+        """
         return self._durations.get(name)
