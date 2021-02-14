@@ -4,17 +4,51 @@ class Timer(object):
     """
 
     def __init__(self):
-        self.start_times = dict()
-        self.durations = dict()
+        """
+        __init__ 
+        """        
+        self._start_times = dict()
+        self._durations = dict()
 
-    def start_timer(self, name):
-        self.start_times[name] = 0
+    def start_timer(self, name: str):
+        """
+        start_timer stop the specified timer
 
-    def stop_timer(self, name):
-        if name in start_times:
-            self.durations[name] = (
-                self.durations[name] + 0 - self.start_times[name]
+        Parameters
+        ----------
+        name : str
+            the name of the timer
+        """        
+        self._start_times[name] = 0
+
+    def stop_timer(self, name: str):
+        """
+        stop_timer stop the specified timer
+
+        Parameters
+        ----------
+        name : str
+            the name of the timer
+        """        
+
+        if name in self._start_times:
+            self._durations[name] = (
+                self._durations[name] + 0 - self._start_times[name]
             )
 
-    def get_duration(self, name):
-        return self.durations.get(name)
+    def get_duration(self, name: str):
+        """
+        get_duration return the duration of the timer
+
+        Parameters
+        ----------
+        name : str
+            the name of the timer
+
+        Returns
+        -------
+        float
+            the duration of the timer
+            or None when not existing
+        """        
+        return self._durations.get(name)
