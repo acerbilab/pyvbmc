@@ -182,5 +182,31 @@ class FunctionLogger(object):
             self.fun_evaltime, np.empty((resize_amount, 1)), axis=0
         )
 
-    def add(self):
-        pass
+    def finalize(self):
+        """
+        finalize remove unused caching entries
+        """
+        self.x_orig = self.x_orig[
+            : self.Xn,
+        ]
+        self.y_orig = self.y_orig[
+            : self.Xn,
+        ]
+
+        # in the original matlab version X and Y get deleted
+        self.x = self.x[
+            : self.Xn,
+        ]
+        self.y = self.y[
+            : self.Xn,
+        ]
+        if self.noise_flag:
+            self.S = self.S[
+                : self.Xn,
+            ]
+        self.X_flag = self.X_flag[
+            : self.Xn,
+        ]
+        self.fun_evaltime = self.fun_evaltime[
+            : self.Xn,
+        ]
