@@ -7,7 +7,15 @@ class FunctionLogger(object):
     """
     FunctionLogger Evaluates a function and caches results
     """
-    def __init__(self, fun, nvars: int, noise_flag: bool, cache_size=500):
+
+    def __init__(
+        self,
+        fun,
+        nvars: int,
+        noise_flag: bool,
+        uncertaintyHandlingLevel: int,
+        cache_size: int = 500,
+    ):
         """
         __init__
 
@@ -22,12 +30,16 @@ class FunctionLogger(object):
             number of dimensions that the function takes as input
         noise_flag : bool
             whether the function fun is stochastic
+        uncertaintyHandlingLevel : int
+            uncertainty handling level
+            (0: none; 1: unkown noise level; 2: user-provided noise)
         cache_size : int, optional
             initial size of caching table (default 500)
         """
         self.fun = fun
         self.nvars: int = nvars
         self.noise_flag: bool = noise_flag
+        self.uncertaintyHandlingLevel: int = uncertaintyHandlingLevel
 
         self.func_count: int = 0
         self.cache_count: int = 0
@@ -36,7 +48,7 @@ class FunctionLogger(object):
         self.x = np.empty((cache_size, self.nvars))
         self.y = np.empty((cache_size, 1))
 
-        if noise_flag:
+        if self.noise_flag:
             self.S = np.empty((cache_size, 1))
 
         self.Xn: int = 0  # Last filled entry
@@ -45,29 +57,25 @@ class FunctionLogger(object):
         self.fun_evaltime = np.empty((cache_size, 1))
         self.total_fun_evaltime = 0
 
-    def iter(self, x, uncertaintyHandlingLevel: int):
+    def __call__(self, x: np.ndarray):
         """
-        iter evaluates function FUN at X and caches values
+        evaluates function FUN at x and caches values
 
         Parameters
         ----------
-        x : nd.array
+        x : np.ndarray
             The point at which the function will be evaluated
-        uncertaintyHandlingLevel : int
-            uncertainty handling level
-            (0: none; 1: unkown noise level; 2: user-provided noise)
         """
-        # optimstate uncertaintyHandlingLevel
-        self.noise_flag = uncertaintyHandlingLevel > 0
+
         timer = Timer()
 
         # missing:
         # x_orig = warpvars_vbmc(x,'inv',optimState.trinfo);
-        # Convert back to original space 
+        # Convert back to original space
 
         try:
             timer.start_timer("funtime")
-            if self.noise_flag and uncertaintyHandlingLevel == 2:
+            if self.noise_flag and self.uncertaintyHandlingLevel == 2:
                 fval_orig, fsd = fun(x)
             else:
                 fval_orig = fun(x)
@@ -92,7 +100,7 @@ class FunctionLogger(object):
                 )
 
             # Check returned function SD
-            if noise_flag and (
+            if self.noise_flag and (
                 not np.isscalar(fsd)
                 or not np.isfinite(fsd)
                 or not np.isreal(fsd)
@@ -128,7 +136,7 @@ class FunctionLogger(object):
             self.Xn,
         ] = x
         self.y_orig[self.Xn] = fval_orig
-        self.y[self.Xn] = fval
+        self.y[self.Xn] = fvalx
         if fsd:
             self.S[self.Xn] = fsd
         self.X_flag[self.Xn] = True
@@ -141,7 +149,7 @@ class FunctionLogger(object):
 
         return fval, fsd
 
-    def _expand_arrays(self, resize_amount=None):
+    def _expand_arrays(self, resize_amount: int = None):
         """
         _expand_arrays a private function to extend the rows of the object attribute arrays
 
@@ -150,9 +158,9 @@ class FunctionLogger(object):
         resize_amount : int, optional
             additional rows, by default expand current table by 50%
         """
-        
-        if resize_amount == None:
-            resize_amount = int(np.max((np.ceil(self.Xn/2),1)))        
+
+        if resize_amount is None:
+            resize_amount = int(np.max((np.ceil(self.Xn / 2), 1)))
 
         self.x_orig = np.append(
             self.x_orig, np.empty((resize_amount, self.nvars)), axis=0
@@ -165,7 +173,7 @@ class FunctionLogger(object):
         )
         self.y = np.append(self.y, np.empty((resize_amount, 1)), axis=0)
 
-        if noise_flag:
+        if self.noise_flag:
             self.S = np.append(self.S, np.empty((resize_amount, 1)), axis=0)
         self.X_flag = np.append(
             self.X_flag, np.full((resize_amount, 1), True, dtype=bool), axis=0
