@@ -1,8 +1,8 @@
 import math
 import sys
-from ..gaussian_process import GP_Lite
+from ..gaussian_process import GPLite
 from .optimstate_vbmc import OptimState
-from .options_vbmc import Options_VBMC
+from .options_vbmc import OptionsVBMC
 from ..timer import Timer
 from ..entropy.entlb_vbmc import entlb_vbmc
 from ..entropy.entub_vbmc import entub_vbmc
@@ -18,7 +18,7 @@ class VBMC(object):
     def __init__(self):
         pass
 
-    def algorithm(self, fun, x0, LB, UB, PLB, PUB, options=Options_VBMC):
+    def algorithm(self, fun, x0, LB, UB, PLB, PUB, options=OptionsVBMC):
         """
         This is a perliminary version of the VBMC loop in order to identify possible objects
         """
