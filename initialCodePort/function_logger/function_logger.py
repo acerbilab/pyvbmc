@@ -136,34 +136,26 @@ class FunctionLogger(object):
                 + str(y)
             )
 
+        # record timer stats
+        funtime = timer.get_duration("funtime")
+        self.fun_evaltime[self.Xn] = funtime
+        self.total_fun_evaltime += funtime
+
         self.func_count += 1
-        self.total_fun_evaltime += timer.get_duration("funtime")
-
-        self.Xn += 1
-        if self.Xn > self.x_orig.shape[0] - 1:
-            self._expand_arrays()
-
-        self.x_orig[
-            self.Xn,
-        ] = x  # x_orig
-        self.x[
-            self.Xn,
-        ] = x
-        self.y_orig[self.Xn] = fval_orig
-        self.y[self.Xn] = fval_orig  # fvalx
-        if fsd is not None:
-            self.S[self.Xn] = fsd
-        self.X_flag[self.Xn] = True
-        self.fun_evaltime[self.Xn] = timer.get_duration("funtime")
-        # self.nevals = max(1, self.nevals[self.xn] + 1)
-        self.ymax = np.amax(self.y[self.X_flag])
+        fval, idx = _record(x_orig, x, fval_orig, fsd)
 
         # optimstate.N = self.Xn
         # optimstate.Neff = np.sum(self.nevals[self.X_flag])
+        # optimState.totalfunevaltime = optimState.totalfunevaltime + t;
+        return fval, fsd, idx
 
-        return fval_orig, fsd, self.Xn
-
-    def add_sample(self, x: np.ndarray, y: np.ndarray):
+    def add(
+        self,
+        x: np.ndarray,
+        y: np.ndarray,
+        fval_orig: np.ndarray,
+        fsd: np.ndarray,
+    ):
         """
         add_sample Add previously evaluated function sample
 
@@ -174,7 +166,44 @@ class FunctionLogger(object):
         y : np.ndarray
             the result of the function evaluation
         """
-        pass
+        # Convert back to original space
+        x_orig = x  # warpvars_vbmc(x,'inv',optimState.trinfo);
+        if self.noise_flag:
+            if fsd is None:
+                fsd = 1
+        else:
+            fsd = None
+
+        # Check function value
+        if (
+            not np.isscalar(fval_orig)
+            or not np.isfinite(fval_orig)
+            or not np.isreal(fval_orig)
+        ):
+            sys.exit(
+                "FunctionLogger:InvalidFuncValue"
+                + "The returned function value must be a finite real-valued scalar"
+                + "(returned value: "
+                + str(fval_orig)
+                + ")"
+            )
+
+        # Check returned function SD
+        if self.noise_flag and (
+            not np.isscalar(fsd) or not np.isfinite(fsd) or not np.isreal(fsd)
+        ):
+            sys.exit(
+                "FunctionLogger:InvalidNoiseValue"
+                + "The returned estimated SD (second function output)"
+                + "must be a finite, positive real-valued scalar (returned SD: "
+                + str(fsd)
+                + ")."
+            )
+
+        self.cachecount += 1
+        fval, idx = _record(x_orig, x, fval_orig, fsd)
+        # ?!
+        return fsd, idx
 
     def finalize(self):
         """
@@ -238,3 +267,31 @@ class FunctionLogger(object):
         self.fun_evaltime = np.append(
             self.fun_evaltime, np.empty((resize_amount, 1)), axis=0
         )
+
+    def _record(self, x_orig, x, fval_orig, fsd):
+        duplicateFlag = False
+
+        if duplicateFlag:
+            # toDo: handling of duplicate entries
+            pass
+        else:
+            self.Xn += 1
+            if self.Xn > self.x_orig.shape[0] - 1:
+                self._expand_arrays()
+
+            self.x_orig[
+                self.Xn,
+            ] = x  # x_orig
+            self.x[
+                self.Xn,
+            ] = x
+            self.y_orig[self.Xn] = fval_orig
+            fval = fval_orig  # + warpvars_vbmc(x,'logp',optimState.trinfo)/T;
+            self.y[self.Xn] = fval  # fvalx
+            if fsd is not None:
+                self.S[self.Xn] = fsd
+            self.X_flag[self.Xn] = True
+            self.nevals = max(1, self.nevals[self.Xn] + 1)
+            self.ymax = np.amax(self.y[self.X_flag])
+
+            return fval, self.Xn

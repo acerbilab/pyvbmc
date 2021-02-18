@@ -101,7 +101,7 @@ def active_sample(
                 # value is not available, evaluate it
                 ys[sample_idx], _, _ = function_logger(Xs[sample_idx])
             else:
-                function_logger.add_sample(Xs[sample_idx], ys[sample_idx])
+                function_logger.add(Xs[sample_idx], ys[sample_idx])
 
         timer.stop_timer("timer_func")
         function_time += timer.get_duration("timer_func")
