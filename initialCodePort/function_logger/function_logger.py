@@ -163,6 +163,49 @@ class FunctionLogger(object):
 
         return fval_orig, fsd, self.Xn
 
+    def add_sample(self, x: np.ndarray, y: np.ndarray):
+        """
+        add_sample Add previously evaluated function sample
+
+        Parameters
+        ----------
+        x : np.ndarray
+            the point at which the function has been evaluated
+        y : np.ndarray
+            the result of the function evaluation
+        """
+        pass
+
+    def finalize(self):
+        """
+        finalize remove unused caching entries
+        """
+        self.x_orig = self.x_orig[
+            : self.Xn + 1,
+        ]
+        self.y_orig = self.y_orig[
+            : self.Xn + 1,
+        ]
+
+        # in the original matlab version X and Y get deleted
+        self.x = self.x[
+            : self.Xn + 1,
+        ]
+        self.y = self.y[
+            : self.Xn + 1,
+        ]
+
+        if self.noise_flag:
+            self.S = self.S[
+                : self.Xn + 1,
+            ]
+        self.X_flag = self.X_flag[
+            : self.Xn + 1,
+        ]
+        self.fun_evaltime = self.fun_evaltime[
+            : self.Xn + 1,
+        ]
+
     def _expand_arrays(self, resize_amount: int = None):
         """
         _expand_arrays a private function to extend the rows of the object attribute arrays
@@ -195,47 +238,3 @@ class FunctionLogger(object):
         self.fun_evaltime = np.append(
             self.fun_evaltime, np.empty((resize_amount, 1)), axis=0
         )
-
-    def finalize(self):
-        """
-        finalize remove unused caching entries
-        """
-        self.x_orig = self.x_orig[
-            : self.Xn + 1,
-        ]
-        self.y_orig = self.y_orig[
-            : self.Xn + 1,
-        ]
-
-        # in the original matlab version X and Y get deleted
-        self.x = self.x[
-            : self.Xn + 1,
-        ]
-        self.y = self.y[
-            : self.Xn + 1,
-        ]
-
-        if self.noise_flag:
-            self.S = self.S[
-                : self.Xn + 1,
-            ]
-        self.X_flag = self.X_flag[
-            : self.Xn + 1,
-        ]
-        self.fun_evaltime = self.fun_evaltime[
-            : self.Xn + 1,
-        ]
-
-    def add_sample(self, x: np.ndarray, y: np.ndarray):
-        """
-        add_sample Add previously evaluated function sample
-
-        Parameters
-        ----------
-        x : np.ndarray
-            the point at which the function has been evaluated
-        y : np.ndarray
-            the result of the function evaluation
-        """
-
-        pass
