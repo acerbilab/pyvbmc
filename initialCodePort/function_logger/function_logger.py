@@ -75,9 +75,10 @@ class FunctionLogger(object):
 
         Returns
         -------
-        (int, int)
+        (float, float, int)
             result of the evaluatation and
             optionally the (estimated) SD of the returned value
+            and the index of the last updated entry
         """
 
         timer = Timer()
@@ -150,7 +151,7 @@ class FunctionLogger(object):
         ] = x
         self.y_orig[self.Xn] = fval_orig
         self.y[self.Xn] = fval_orig  # fvalx
-        if fsd:
+        if fsd is not None:
             self.S[self.Xn] = fsd
         self.X_flag[self.Xn] = True
         self.fun_evaltime[self.Xn] = timer.get_duration("funtime")
@@ -160,7 +161,7 @@ class FunctionLogger(object):
         # optimstate.N = self.Xn
         # optimstate.Neff = np.sum(self.nevals[self.X_flag])
 
-        return fval_orig, fsd
+        return fval_orig, fsd, self.Xn
 
     def _expand_arrays(self, resize_amount: int = None):
         """
