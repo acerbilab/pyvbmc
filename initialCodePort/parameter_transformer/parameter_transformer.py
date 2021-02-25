@@ -122,7 +122,7 @@ class ParameterTransformer:
             z = (constrained_variables[:, mask] - self.lower_bounds_orig) / (
                 self.upper_bounds_orig - self.lower_bounds_orig
             )
-            unconstrained_variables[:, mask] = np.log(z / (1 - z))
+            unconstrained_variables[:, mask] = np.log(np.divide(z, (1 - z)))
             unconstrained_variables[:, mask] = (
                 unconstrained_variables[:, mask] - self.mu[mask]
             ) / self.delta[mask]
@@ -140,7 +140,52 @@ class ParameterTransformer:
 
     def inverse_transform(self, unconstrained_variables: np.ndarray):
         # performs inverse transform of unconstrained variables Y into constrained variables X.
-        constrained_variables = 3
+        self.R_mat = None
+        scale = None
+        # rotate output (copy array before)
+        if self.R_mat is not None:
+            unconstrained_variables = unconstrained_variables * self.R_mat
+        # rescale input
+        if scale is not None:
+            print(scale)
+
+        constrained_variables = np.copy(unconstrained_variables)
+
+        # Unbounded scalars (possibly unscale and uncenter)
+        mask = self.type == 0
+        if np.any(mask):
+            constrained_variables[:, mask] = (
+                unconstrained_variables[:, mask] * self.delta[mask]
+                + self.mu[mask]
+            )
+
+        # Lower and upper bounded scalars
+        mask = self.type == 3
+        if np.any(mask):
+            constrained_variables[:, mask] = (
+                unconstrained_variables[:, mask] * self.delta[mask]
+                + self.mu[mask]
+            )
+            constrained_variables[:, mask] = self.lower_bounds_orig[
+                :, mask
+            ] + (
+                (
+                    self.upper_bounds_orig[:, mask]
+                    - self.lower_bounds_orig[:, mask]
+                )
+                * (1 / (1 + np.exp(-constrained_variables[:, mask])))
+            )
+
+        # Force to stay within bounds
+        # mask = np.isfinite(self.lower_bounds_orig)[0]
+        # constrained_variables[:, mask] = np.max(
+        #     constrained_variables, self.upper_bounds_orig[:, mask]
+        # )
+
+        # mask = np.isfinite(self.upper_bounds_orig)[0]
+        # constrained_variables[:, mask] = np.max(
+        #     constrained_variables[:, mask], self.upper_bounds_orig[:, mask]
+        # )
         return constrained_variables
 
     def log_jacobian(self):
