@@ -16,21 +16,21 @@ X = -4*ones(10,NVARS);
 % WARPVARS(X,'dir',TRINFO) performs direct transform of constrained 
 Y = warpvars_vbmc_trimmed(X, 'dir', TRINFO)
 
-% test_direct_transform_type1_within
+% test_direct_transform_type1
 NVARS = 3;
 LB = -10*ones(1,NVARS);
 UB = 10*ones(1,NVARS);
-TRINFO = warpvars_vbmc_trimmed(NVARS, [], []);
+TRINFO = warpvars_vbmc_trimmed(NVARS, LB, []);
 TRINFO.type
 X = 3*ones(10,NVARS);
 % WARPVARS(X,'dir',TRINFO) performs direct transform of constrained 
 Y = warpvars_vbmc_trimmed(X, 'dir', TRINFO)
 
-% test_direct_transform_type1_within_negative
+% test_direct_transform_type1
 NVARS = 3;
 LB = -10*ones(1,NVARS);
 UB = 10*ones(1,NVARS);
-TRINFO = warpvars_vbmc_trimmed(NVARS, [], []);
+TRINFO = warpvars_vbmc_trimmed(NVARS, LB, []);
 X = -4*ones(10,NVARS);
 % WARPVARS(X,'dir',TRINFO) performs direct transform of constrained 
 Y = warpvars_vbmc_trimmed(X, 'dir', TRINFO)
@@ -53,6 +53,25 @@ X = -4*ones(10,NVARS);
 % WARPVARS(X,'dir',TRINFO) performs direct transform of constrained 
 Y = warpvars_vbmc_trimmed(X, 'inv', TRINFO)
 
+% test_inverse_transform_type1
+NVARS = 3;
+LB = -1*ones(1,NVARS);
+UB = 10*ones(1,NVARS);
+TRINFO = warpvars_vbmc_trimmed(NVARS, LB, []);
+TRINFO.type
+X = 3*ones(10,NVARS);
+% WARPVARS(X,'dir',TRINFO) performs direct transform of constrained 
+Y = warpvars_vbmc_trimmed(X, 'inv', TRINFO)
+
+% test_direct_transform_type1
+NVARS = 3;
+LB = -1*ones(1,NVARS);
+UB = 10*ones(1,NVARS);
+TRINFO = warpvars_vbmc_trimmed(NVARS, LB, []);
+X = -4*ones(10,NVARS);
+% WARPVARS(X,'dir',TRINFO) performs direct transform of constrained 
+Y = warpvars_vbmc_trimmed(X, 'inv', TRINFO)
+
 % check divide by zero error
 a = trinfo.lb_orig;
 b = trinfo.ub_orig;
@@ -66,4 +85,4 @@ if any(idx)
     z = bsxfun(@rdivide, bsxfun(@minus, x(:,idx), a(idx)), b(idx) - a(idx)); 
     y(:,idx) = log(z./(1-z));
 end   
-y
+y;

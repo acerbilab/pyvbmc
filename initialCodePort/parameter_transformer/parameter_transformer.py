@@ -177,15 +177,15 @@ class ParameterTransformer:
             )
 
         # Force to stay within bounds
-        # mask = np.isfinite(self.lower_bounds_orig)[0]
-        # constrained_variables[:, mask] = np.max(
-        #     constrained_variables, self.upper_bounds_orig[:, mask]
-        # )
+        mask = np.isfinite(self.lower_bounds_orig)[0]
+        constrained_variables[:, mask] = np.maximum(
+            constrained_variables[:, mask], self.lower_bounds_orig[:, mask]
+        )
 
-        # mask = np.isfinite(self.upper_bounds_orig)[0]
-        # constrained_variables[:, mask] = np.max(
-        #     constrained_variables[:, mask], self.upper_bounds_orig[:, mask]
-        # )
+        mask = np.isfinite(self.upper_bounds_orig)[0]
+        constrained_variables[:, mask] = np.minimum(
+            constrained_variables[:, mask], self.upper_bounds_orig[:, mask]
+        )
         return constrained_variables
 
     def log_jacobian(self):
