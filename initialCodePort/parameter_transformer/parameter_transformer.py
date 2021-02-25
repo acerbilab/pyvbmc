@@ -113,14 +113,12 @@ class ParameterTransformer:
             u[:, mask] = np.log(np.divide(z, (1 - z)))
             u[:, mask] = (u[:, mask] - self.mu[mask]) / self.delta[mask]
 
-        self.R_mat = None
-        scale = None
-        # rotate output
-        if self.R_mat is not None:
-            u = u * self.R_mat
-        # rescale input
-        if scale is not None:
-            print(scale)
+        # # rotate output
+        # if self.R_mat is not None:
+        #     u = u * self.R_mat
+        # # rescale input
+        # if scale is not None:
+        #     print(scale)
 
         return u
 
@@ -139,14 +137,12 @@ class ParameterTransformer:
         np.ndarray
             [description]
         """
-        self.R_mat = None
-        scale = None
-        # rotate input (copy array before)
-        if self.R_mat is not None:
-            u = u * self.R_mat
-        # rescale input
-        if scale is not None:
-            print(scale)
+        # # rotate input (copy array before)
+        # if self.R_mat is not None:
+        #     u = u * self.R_mat
+        # # rescale input
+        # if scale is not None:
+        #     print(scale)
 
         x = np.copy(u)
 
@@ -189,14 +185,12 @@ class ParameterTransformer:
         """
         u_c = np.copy(u)
 
-        self.R_mat = None
-        scale = None
-        # rotate input (copy array before)
-        if self.R_mat is not None:
-            u_c = u_c * self.R_mat
-        # rescale input
-        if scale is not None:
-            print(scale)
+        # # rotate input (copy array before)
+        # if self.R_mat is not None:
+        #     u_c = u_c * self.R_mat
+        # # rescale input
+        # if scale is not None:
+        #     print(scale)
 
         p = np.zeros(u_c.shape)
 
@@ -216,7 +210,7 @@ class ParameterTransformer:
             p[:, mask] = p[:, mask] + np.log(self.delta[mask])
 
         # Scale transform
-        if scale is not None:
-            p + np.log(scale)
+        # if scale is not None:
+        #     p + np.log(scale)
         p = np.sum(p, axis=1)
         return p

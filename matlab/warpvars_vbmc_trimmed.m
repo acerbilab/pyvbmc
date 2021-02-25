@@ -68,7 +68,7 @@ if nargin == 3 && (isstruct(varargin{3}) || ischar(varargin{2}))
             scale = trinfo.scale;
         end
 
-        if ~isfield(trinfo,'R_mat'); trinfo.R_mat = []; end
+        if ~isfield(trinfo,'	'); trinfo.R_mat = []; end
         
         nvars = numel(trinfo.lb_orig);  % Number of variables
         
