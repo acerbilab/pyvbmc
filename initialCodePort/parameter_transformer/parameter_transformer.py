@@ -30,9 +30,9 @@ class ParameterTransformer:
         """
         # Empty LB and UB are Infs
         if lower_bounds is None:
-            lower_bounds = np.ones(nvars) * -np.inf
+            lower_bounds = np.ones((1, nvars)) * -np.inf
         if upper_bounds is None:
-            upper_bounds = np.ones(nvars) * np.inf
+            upper_bounds = np.ones((1, nvars)) * np.inf
 
         # Empty plausible bounds equal hard bounds
         if plausible_lower_bounds is None:
@@ -57,14 +57,18 @@ class ParameterTransformer:
 
         self.type = np.zeros((nvars))
         for i in range(nvars):
-            if np.isfinite(lower_bounds[i]) and np.isinf(upper_bounds[i]):
+            if np.isfinite(lower_bounds[:, i]) and np.isinf(
+                upper_bounds[:, i]
+            ):
                 self.type[i] = 1
-            if np.isinf(lower_bounds[i]) and np.isfinite(upper_bounds[i]):
+            if np.isinf(lower_bounds[:, i]) and np.isfinite(
+                upper_bounds[:, i]
+            ):
                 self.type[i] = 2
             if (
-                np.isfinite(lower_bounds[i])
-                and np.isfinite(upper_bounds[i])
-                and lower_bounds[i] < upper_bounds[i]
+                np.isfinite(lower_bounds[:, i])
+                and np.isfinite(upper_bounds[:, i])
+                and lower_bounds[:, i] < upper_bounds[:, i]
             ):
                 self.type[i] = 3
 
@@ -78,15 +82,15 @@ class ParameterTransformer:
 
         # Center in transformed space
         for i in range(nvars):
-             if np.isfinite(plausible_lower_bounds[i]) and np.isfinite(
-                 plausible_upper_bounds[i]
-             ):
-                 self.mu[i] = 0.5 * (
-                     plausible_lower_bounds[i] + plausible_upper_bounds[i]
-                 )
-                 self.delta[i] = (
-                     plausible_lower_bounds[i] - plausible_upper_bounds[i]
-                 )
+            if np.isfinite(plausible_lower_bounds[:, i]) and np.isfinite(
+                plausible_upper_bounds[:, i]
+            ):
+                self.mu[i] = 0.5 * (
+                    plausible_lower_bounds[:, i] + plausible_upper_bounds[:, i]
+                )
+                self.delta[i] = (
+                    plausible_lower_bounds[:, i] - plausible_upper_bounds[:, i]
+                )
 
     def direct_transform(self, constrained_variables: np.ndarray):
         """
@@ -108,21 +112,19 @@ class ParameterTransformer:
         # Unbounded scalars (possibly center and rescale)
         mask = self.type == 0
         if np.any(mask):
-            unconstrained_variables[mask] = (
-                constrained_variables[mask] - self.mu[mask]
+            unconstrained_variables[:, mask] = (
+                constrained_variables[:, mask] - self.mu[mask]
             ) / self.delta[mask]
 
         # Lower and upper bounded scalars
         mask = self.type == 3
         if np.any(mask):
-            z = (
-                constrained_variables[mask]
-                - self.lower_bounds_orig / self.upper_bounds_orig
-                - self.lower_bounds_orig
+            z = (constrained_variables[:, mask] - self.lower_bounds_orig) / (
+                self.upper_bounds_orig - self.lower_bounds_orig
             )
-            unconstrained_variables[mask] = np.log(z / (1 - z))
-            unconstrained_variables[mask] = (
-                unconstrained_variables[mask] - self.mu[mask]
+            unconstrained_variables[:, mask] = np.log(z / (1 - z))
+            unconstrained_variables[:, mask] = (
+                unconstrained_variables[:, mask] - self.mu[mask]
             ) / self.delta[mask]
 
         self.R_mat = None
