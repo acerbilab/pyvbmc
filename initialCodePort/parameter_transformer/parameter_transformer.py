@@ -125,10 +125,23 @@ class ParameterTransformer:
         return u
 
     def inverse_transform(self, u: np.ndarray):
-        # performs inverse transform of unconstrained variables u into constrained variables X.
+        """
+        inverse_transform performs inverse transform of
+        unconstrained variables u into constrained variables x.
+
+        Parameters
+        ----------
+        u : np.ndarray
+            [description]
+
+        Returns
+        -------
+        np.ndarray
+            [description]
+        """
         self.R_mat = None
         scale = None
-        # rotate output (copu arrau before)
+        # rotate input (copy array before)
         if self.R_mat is not None:
             u = u * self.R_mat
         # rescale input
@@ -137,7 +150,7 @@ class ParameterTransformer:
 
         x = np.copy(u)
 
-        # Unbounded scalars (possiblu unscale and uncenter)
+        # Unbounded scalars (possibly unscale and uncenter)
         mask = self.type == 0
         if np.any(mask):
             x[:, mask] = u[:, mask] * self.delta[mask] + self.mu[mask]
@@ -151,7 +164,7 @@ class ParameterTransformer:
                 * (1 / (1 + np.exp(-x[:, mask])))
             )
 
-        # Force to stau within bounds
+        # Force to stay within bounds
         mask = np.isfinite(self.lb_orig)[0]
         x[:, mask] = np.maximum(x[:, mask], self.lb_orig[:, mask])
 
@@ -159,5 +172,51 @@ class ParameterTransformer:
         x[:, mask] = np.minimum(x[:, mask], self.ub_orig[:, mask])
         return x
 
-    def log_jacobian(self):
-        pass
+    def log_jacobian(self, u: np.ndarray):
+        """
+        log_jacobian returns log probability term for the
+        original log pdf evaluated at f^{-1}(Y).
+
+        Parameters
+        ----------
+        u : np.ndarray
+            [description]
+
+        Returns
+        -------
+        np.array
+            log probability term
+        """
+        u_c = np.copy(u)
+
+        self.R_mat = None
+        scale = None
+        # rotate input (copy array before)
+        if self.R_mat is not None:
+            u_c = u_c * self.R_mat
+        # rescale input
+        if scale is not None:
+            print(scale)
+
+        p = np.zeros(u_c.shape)
+
+        # Unbounded scalars
+        mask = self.type == 0
+        if np.any(mask):
+            p[:, mask] = np.log(self.delta[mask])[np.newaxis]
+
+        # Lower and upper bounded scalars
+        mask = self.type == 3
+        if np.any(mask):
+            u_c[:, mask] = u_c[:, mask] * self.delta[mask] + self.mu[mask]
+            z = -np.log1p(np.exp(-u_c[:, mask]))
+            p[:, mask] = (
+                np.log(self.ub_orig - self.lb_orig) - u_c[:, mask] + 2 * z
+            )
+            p[:, mask] = p[:, mask] + np.log(self.delta[mask])
+
+        # Scale transform
+        if scale is not None:
+            p + np.log(scale)
+        p = np.sum(p, axis=1)
+        return p

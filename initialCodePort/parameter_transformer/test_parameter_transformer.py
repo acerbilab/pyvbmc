@@ -152,3 +152,41 @@ def test_inverse_transform_type3_max_space():
     Y = np.ones((10, NVARS)) * 3000
     X = parameter_transformer.inverse_transform(Y)
     assert np.all(X == np.ones((10, NVARS)) * 10)
+
+def test_log_jacobian_type3_within():
+    parameter_transformer = ParameterTransformer(
+        nvars=NVARS,
+        lower_bounds=np.ones((1, NVARS)) * -10,
+        upper_bounds=np.ones((1, NVARS)) * 10,
+    )
+    U = np.ones((10, NVARS)) * 3
+    log_j = parameter_transformer.log_jacobian(U)
+    log_j2 = np.ones((10)) * -0.3043
+    assert np.all(np.isclose(log_j, log_j2, atol=1e-04))
+
+
+def test_log_jacobian_type3_within_negative():
+    parameter_transformer = ParameterTransformer(
+        nvars=NVARS,
+        lower_bounds=np.ones((1, NVARS)) * -10,
+        upper_bounds=np.ones((1, NVARS)) * 10,
+    )
+    U = np.ones((10, NVARS)) * -4
+    log_j = parameter_transformer.log_jacobian(U)
+    log_j2 = np.ones((10)) * -3.1217
+    assert np.all(np.isclose(log_j, log_j2))
+
+def test_log_jacobian_type0():
+    parameter_transformer = ParameterTransformer(nvars=NVARS)
+    U = np.ones((10, NVARS)) * 5
+    log_j = parameter_transformer.log_jacobian(U)
+    log_j2 = np.ones((10)) * 0
+    assert np.all(np.isclose(log_j, log_j2, atol=1e-04))
+
+
+def test_log_jacobian_type0_negative():
+    parameter_transformer = ParameterTransformer(nvars=NVARS)
+    U = np.ones((10, NVARS)) * -6
+    log_j = parameter_transformer.log_jacobian(U)
+    log_j2 = np.ones((10)) * 0
+    assert np.all(np.isclose(log_j, log_j2))
