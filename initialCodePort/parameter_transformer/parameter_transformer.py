@@ -57,14 +57,6 @@ class ParameterTransformer:
 
         self.type = np.zeros((nvars))
         for i in range(nvars):
-            if np.isfinite(lower_bounds[:, i]) and np.isinf(
-                upper_bounds[:, i]
-            ):
-                self.type[i] = 1
-            if np.isinf(lower_bounds[:, i]) and np.isfinite(
-                upper_bounds[:, i]
-            ):
-                self.type[i] = 2
             if (
                 np.isfinite(lower_bounds[:, i])
                 and np.isfinite(upper_bounds[:, i])
