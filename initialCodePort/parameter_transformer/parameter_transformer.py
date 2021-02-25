@@ -105,14 +105,14 @@ class ParameterTransformer:
 
         unconstrained_variables = np.copy(constrained_variables)
 
-        # Unboundsed scalars (possibly center and rescale)
+        # Unbounded scalars (possibly center and rescale)
         mask = self.type == 0
         if np.any(mask):
             unconstrained_variables[mask] = (
                 constrained_variables[mask] - self.mu[mask]
             ) / self.delta[mask]
 
-        # Lower and upper boundsed scalars
+        # Lower and upper bounded scalars
         mask = self.type == 3
         if np.any(mask):
             z = (
