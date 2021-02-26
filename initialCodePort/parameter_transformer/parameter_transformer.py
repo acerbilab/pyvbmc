@@ -18,15 +18,19 @@ class ParameterTransformer:
         Parameters
         ----------
         nvars : int
-            [description]
+            the number of dimensions
         lower_bounds : np.ndarray, optional
-            [description], by default None
+            lower_bound (LB) LB and UB define a set of strict
+            lower and upper bounds coordinate vector, by default None
         upper_bounds : np.ndarray, optional
-            [description], by default None
+            upper_bounds (UB) LB and UB define a set of strict
+            lower and upper bounds coordinate vector, by default None
         plausible_lower_bounds : np.ndarray, optional
-            [description], by default None
+            plausible_lower_bound (PLB) such that LB < PLB < PUB < UB. 
+            PLB and PUB represent a "plausible" range, by default None
         plausible_upper_bounds : np.ndarray, optional
-            [description], by default None
+            plausible_upper_bound (PUB) such that LB < PLB < PUB < UB. 
+            PLB and PUB represent a "plausible" range, by default None
         """
         # Empty LB and UB are Infs
         if lower_bounds is None:
@@ -136,12 +140,12 @@ class ParameterTransformer:
         Parameters
         ----------
         u : np.ndarray
-            [description]
+            unconstrained variables
 
         Returns
         -------
         np.ndarray
-            [description]
+            constrained variables
         """
         # # rotate input (copy array before)
         # if self.R_mat is not None:
