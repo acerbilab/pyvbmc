@@ -127,63 +127,63 @@ def test_direct_transform_type0_negative():
     assert np.all(Y == X)
 
 
-def test_inverse_transform_type3_within():
+def test_inverse_type3_within():
     parameter_transformer = ParameterTransformer(
         nvars=NVARS,
         lower_bounds=np.ones((1, NVARS)) * -10,
         upper_bounds=np.ones((1, NVARS)) * 10,
     )
     Y = np.ones((10, NVARS)) * 3
-    X = parameter_transformer.inverse_transform(Y)
+    X = parameter_transformer.inverse(Y)
     X2 = np.ones((10, NVARS)) * 9.0515
     assert np.all(np.isclose(X, X2))
 
 
-def test_inverse_transform_type3_within_negative():
+def test_inverse_type3_within_negative():
     parameter_transformer = ParameterTransformer(
         nvars=NVARS,
         lower_bounds=np.ones((1, NVARS)) * -10,
         upper_bounds=np.ones((1, NVARS)) * 10,
     )
     Y = np.ones((10, NVARS)) * -4
-    X = parameter_transformer.inverse_transform(Y)
+    X = parameter_transformer.inverse(Y)
     X2 = np.ones((10, NVARS)) * -9.6403
     assert np.all(np.isclose(X, X2))
 
 
-def test_inverse_transform_type0():
+def test_inverse_type0():
     parameter_transformer = ParameterTransformer(nvars=NVARS)
     Y = np.ones((10, NVARS)) * 3
-    X = parameter_transformer.inverse_transform(Y)
+    X = parameter_transformer.inverse(Y)
     assert np.all(Y == X)
 
 
-def test_inverse_transform_type0_negative():
+def test_inverse_type0_negative():
     parameter_transformer = ParameterTransformer(nvars=NVARS)
     Y = np.ones((10, NVARS)) * -4
-    X = parameter_transformer.inverse_transform(Y)
+    X = parameter_transformer.inverse(Y)
     assert np.all(Y == X)
 
 
-def test_inverse_transform_type3_min_space():
+def test_inverse_type3_min_space():
     parameter_transformer = ParameterTransformer(
         nvars=NVARS,
         lower_bounds=np.ones((1, NVARS)) * -10,
         upper_bounds=np.ones((1, NVARS)) * 10,
     )
     Y = np.ones((10, NVARS)) * -500
-    X = parameter_transformer.inverse_transform(Y)
+    X = parameter_transformer.inverse(Y)
     assert np.all(X == np.ones((1, NVARS)) * -10)
 
 
-def test_inverse_transform_type3_max_space():
+def test_inverse_type3_max_space():
     parameter_transformer = ParameterTransformer(
         nvars=NVARS,
         lower_bounds=np.ones((1, NVARS)) * -10,
         upper_bounds=np.ones((1, NVARS)) * 10,
     )
     Y = np.ones((10, NVARS)) * 3000
-    X = parameter_transformer.inverse_transform(Y)
+    X = parameter_transformer.inverse(Y)
     assert np.all(X == np.ones((10, NVARS)) * 10)
 
 
@@ -195,7 +195,7 @@ def test_transform_direct_inverse():
     )
     X = np.ones((10, NVARS)) * 0.05
     U = parameter_transformer.direct_transform(X)
-    X2 = parameter_transformer.inverse_transform(U)
+    X2 = parameter_transformer.inverse(U)
     assert np.all(np.isclose(X, X2, rtol=1e-12, atol=1e-14))
 
 
@@ -206,7 +206,7 @@ def test_transform_inverse_direct():
         upper_bounds=np.ones((1, NVARS)) * 10,
     )
     U = np.ones((10, NVARS)) * 0.2
-    X = parameter_transformer.inverse_transform(U)
+    X = parameter_transformer.inverse(U)
     U2 = parameter_transformer.direct_transform(X)
     assert np.all(np.isclose(U, U2, rtol=1e-12, atol=1e-14))
 
@@ -219,7 +219,7 @@ def test_transform_direct_inverse_largeN():
     )
     X = np.ones((10^6, NVARS)) * 0.4
     U = parameter_transformer.direct_transform(X)
-    X2 = parameter_transformer.inverse_transform(U)
+    X2 = parameter_transformer.inverse(U)
     assert np.all(np.isclose(X, X2, rtol=1e-12, atol=1e-14))
 
 
@@ -230,7 +230,7 @@ def test_transform_inverse_direct_largeN():
         upper_bounds=np.ones((1, NVARS)) * 10,
     )
     U = np.ones((10^6, NVARS)) * 0.11
-    X = parameter_transformer.inverse_transform(U)
+    X = parameter_transformer.inverse(U)
     U2 = parameter_transformer.direct_transform(X)
     assert np.all(np.isclose(U, U2, rtol=1e-12, atol=1e-14))
 

@@ -135,9 +135,9 @@ class ParameterTransformer:
 
         return u
 
-    def inverse_transform(self, u: np.ndarray):
+    def inverse(self, u: np.ndarray):
         """
-        inverse_transform performs inverse transform of
+        inverse performs inverse transform of
         unconstrained variables u into constrained variables x.
 
         Parameters
