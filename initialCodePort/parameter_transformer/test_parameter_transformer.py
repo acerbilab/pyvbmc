@@ -55,22 +55,27 @@ def test_init_delta_inf_bounds():
     parameter_transformer = ParameterTransformer(nvars=NVARS)
     assert np.all(parameter_transformer.delta == np.ones(NVARS))
 
+
 def test_init_type3_mu_all_params():
     parameter_transformer = ParameterTransformer(
         nvars=NVARS,
         lower_bounds=np.ones((1, NVARS)) * -10,
         upper_bounds=np.ones((1, NVARS)) * 10,
         plausible_lower_bounds=np.ones((1, NVARS)) * 2,
-        plausible_upper_bounds=np.ones((1, NVARS)) * 4
+        plausible_upper_bounds=np.ones((1, NVARS)) * 4,
     )
     parameter_transformer2 = ParameterTransformer(
         nvars=NVARS,
         lower_bounds=np.ones((1, NVARS)) * -10,
-        upper_bounds=np.ones((1, NVARS)) * 10)
-    plb = parameter_transformer2.direct_transform(np.ones((1, NVARS)) * 2)
-    pub = parameter_transformer2.direct_transform(np.ones((1, NVARS)) * 4)
-    mu2 = (plb + pub)*0.5
-    assert np.all(np.isclose(parameter_transformer.mu, mu2, rtol=1e-12, atol=1e-14))
+        upper_bounds=np.ones((1, NVARS)) * 10,
+    )
+    plb = parameter_transformer2(np.ones((1, NVARS)) * 2)
+    pub = parameter_transformer2(np.ones((1, NVARS)) * 4)
+    mu2 = (plb + pub) * 0.5
+    assert np.all(
+        np.isclose(parameter_transformer.mu, mu2, rtol=1e-12, atol=1e-14)
+    )
+
 
 def test_init_type3_delta_all_params():
     parameter_transformer = ParameterTransformer(
@@ -78,16 +83,20 @@ def test_init_type3_delta_all_params():
         lower_bounds=np.ones((1, NVARS)) * -10,
         upper_bounds=np.ones((1, NVARS)) * 10,
         plausible_lower_bounds=np.ones((1, NVARS)) * 2,
-        plausible_upper_bounds=np.ones((1, NVARS)) * 4
+        plausible_upper_bounds=np.ones((1, NVARS)) * 4,
     )
     parameter_transformer2 = ParameterTransformer(
         nvars=NVARS,
         lower_bounds=np.ones((1, NVARS)) * -10,
-        upper_bounds=np.ones((1, NVARS)) * 10)
-    plb = parameter_transformer2.direct_transform(np.ones((1, NVARS)) * 2)
-    pub = parameter_transformer2.direct_transform(np.ones((1, NVARS)) * 4)
-    delta2 = (plb - pub)
-    assert np.all(np.isclose(parameter_transformer.delta, delta2, rtol=1e-12, atol=1e-14))
+        upper_bounds=np.ones((1, NVARS)) * 10,
+    )
+    plb = parameter_transformer2(np.ones((1, NVARS)) * 2)
+    pub = parameter_transformer2(np.ones((1, NVARS)) * 4)
+    delta2 = plb - pub
+    assert np.all(
+        np.isclose(parameter_transformer.delta, delta2, rtol=1e-12, atol=1e-14)
+    )
+
 
 def test_direct_transform_type3_within():
     parameter_transformer = ParameterTransformer(
@@ -96,7 +105,7 @@ def test_direct_transform_type3_within():
         upper_bounds=np.ones((1, NVARS)) * 10,
     )
     X = np.ones((10, NVARS)) * 3
-    Y = parameter_transformer.direct_transform(X)
+    Y = parameter_transformer(X)
     Y2 = np.ones((10, NVARS)) * 0.619
     assert np.all(np.isclose(Y, Y2, atol=1e-04))
 
@@ -108,7 +117,7 @@ def test_direct_transform_type3_within_negative():
         upper_bounds=np.ones((1, NVARS)) * 10,
     )
     X = np.ones((10, NVARS)) * -4
-    Y = parameter_transformer.direct_transform(X)
+    Y = parameter_transformer(X)
     Y2 = np.ones((10, NVARS)) * -0.8473
     assert np.all(np.isclose(Y, Y2))
 
@@ -116,14 +125,14 @@ def test_direct_transform_type3_within_negative():
 def test_direct_transform_type0():
     parameter_transformer = ParameterTransformer(nvars=NVARS)
     X = np.ones((10, NVARS)) * 3
-    Y = parameter_transformer.direct_transform(X)
+    Y = parameter_transformer(X)
     assert np.all(Y == X)
 
 
 def test_direct_transform_type0_negative():
     parameter_transformer = ParameterTransformer(nvars=NVARS)
     X = np.ones((10, NVARS)) * -4
-    Y = parameter_transformer.direct_transform(X)
+    Y = parameter_transformer(X)
     assert np.all(Y == X)
 
 
@@ -194,7 +203,7 @@ def test_transform_direct_inverse():
         upper_bounds=np.ones((1, NVARS)) * 10,
     )
     X = np.ones((10, NVARS)) * 0.05
-    U = parameter_transformer.direct_transform(X)
+    U = parameter_transformer(X)
     X2 = parameter_transformer.inverse(U)
     assert np.all(np.isclose(X, X2, rtol=1e-12, atol=1e-14))
 
@@ -207,7 +216,7 @@ def test_transform_inverse_direct():
     )
     U = np.ones((10, NVARS)) * 0.2
     X = parameter_transformer.inverse(U)
-    U2 = parameter_transformer.direct_transform(X)
+    U2 = parameter_transformer(X)
     assert np.all(np.isclose(U, U2, rtol=1e-12, atol=1e-14))
 
 
@@ -217,8 +226,8 @@ def test_transform_direct_inverse_largeN():
         lower_bounds=np.ones((1, NVARS)) * -10,
         upper_bounds=np.ones((1, NVARS)) * 10,
     )
-    X = np.ones((10^6, NVARS)) * 0.4
-    U = parameter_transformer.direct_transform(X)
+    X = np.ones((10 ^ 6, NVARS)) * 0.4
+    U = parameter_transformer(X)
     X2 = parameter_transformer.inverse(U)
     assert np.all(np.isclose(X, X2, rtol=1e-12, atol=1e-14))
 
@@ -229,9 +238,9 @@ def test_transform_inverse_direct_largeN():
         lower_bounds=np.ones((1, NVARS)) * -10,
         upper_bounds=np.ones((1, NVARS)) * 10,
     )
-    U = np.ones((10^6, NVARS)) * 0.11
+    U = np.ones((10 ^ 6, NVARS)) * 0.11
     X = parameter_transformer.inverse(U)
-    U2 = parameter_transformer.direct_transform(X)
+    U2 = parameter_transformer(X)
     assert np.all(np.isclose(U, U2, rtol=1e-12, atol=1e-14))
 
 

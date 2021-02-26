@@ -73,15 +73,8 @@ class ParameterTransformer:
             np.all(plausible_lower_bounds == self.lb_orig)
             and np.all(plausible_upper_bounds == self.ub_orig)
         ):
-            plausible_lower_bounds = self.direct_transform(
-                plausible_lower_bounds
-            )
-            plausible_upper_bounds = self.direct_transform(
-                plausible_upper_bounds
-            )
-
-            print(plausible_lower_bounds)
-            print(plausible_upper_bounds)
+            plausible_lower_bounds = self.__call__(plausible_lower_bounds)
+            plausible_upper_bounds = self.__call__(plausible_upper_bounds)
 
             # Center in transformed space
             for i in range(nvars):
@@ -97,9 +90,9 @@ class ParameterTransformer:
                         - plausible_upper_bounds[:, i]
                     )
 
-    def direct_transform(self, x: np.ndarray):
+    def __call__(self, x: np.ndarray):
         """
-        direct_transform performs direct transform of constrained variables X into unconstrained variables Y
+        __call__ performs direct transform of constrained variables X into unconstrained variables Y
 
         Parameters
         ----------
