@@ -160,10 +160,10 @@ def test_transform_direct_inverse():
         lower_bounds=np.ones((1, NVARS)) * -10,
         upper_bounds=np.ones((1, NVARS)) * 10,
     )
-    X = np.ones((10, NVARS)) * 5
+    X = np.ones((10, NVARS)) * 0.05
     U = parameter_transformer.direct_transform(X)
     X2 = parameter_transformer.inverse_transform(U)
-    assert np.all(X == X2)
+    assert np.all(np.isclose(X, X2, rtol=1e-12, atol=1e-14))
 
 
 def test_transform_inverse_direct():
@@ -172,10 +172,10 @@ def test_transform_inverse_direct():
         lower_bounds=np.ones((1, NVARS)) * -10,
         upper_bounds=np.ones((1, NVARS)) * 10,
     )
-    U = np.ones((10, NVARS)) * 0.4
+    U = np.ones((10, NVARS)) * 0.2
     X = parameter_transformer.inverse_transform(U)
     U2 = parameter_transformer.direct_transform(X)
-    assert np.all(U == U2)
+    assert np.all(np.isclose(U, U2, rtol=1e-12, atol=1e-14))
 
 
 def test_log_jacobian_type3_within():
