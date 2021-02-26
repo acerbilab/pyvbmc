@@ -39,7 +39,7 @@ class FunctionLogger(object):
             whether the function fun is stochastic
         uncertaintyHandlingLevel : int
             uncertainty handling level
-            (0: none; 1: unkown noise level; 2: user-provided noise)
+            (0: none; 1: unknown noise level; 2: user-provided noise)
         cache_size : int, optional
             initial size of caching table (default 500)
         """

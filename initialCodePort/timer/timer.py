@@ -23,7 +23,8 @@ class Timer(object):
             the name of the timer
         """
         if name not in self._start_times:
-            self._durations[name] = 0
+            if name in self._durations:
+                self._durations.pop(name)
             self._start_times[name] = time.time()
 
     def stop_timer(self, name: str):
@@ -38,12 +39,7 @@ class Timer(object):
 
         if name in self._start_times:
             end_time = time.time()
-            if name in self._durations:
-                self._durations[name] = (
-                    self._durations[name] + end_time - self._start_times[name]
-                )
-            else:
-                self._durations[name] = end_time - self._start_times[name]
+            self._durations[name] = end_time - self._start_times[name]
             self._start_times.pop(name)
 
     def get_duration(self, name: str):
