@@ -15,7 +15,7 @@ class Timer(object):
 
     def start_timer(self, name: str):
         """
-        start_timer stop the specified timer
+        start_timer start the specified timer
 
         Parameters
         ----------
@@ -23,6 +23,7 @@ class Timer(object):
             the name of the timer
         """
         if name not in self._start_times:
+            self._durations[name] = 0
             self._start_times[name] = time.time()
 
     def stop_timer(self, name: str):

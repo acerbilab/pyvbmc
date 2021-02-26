@@ -1,6 +1,6 @@
 import sys
 import numpy as np
-from ..timer import Timer
+from timer import Timer
 
 
 class FunctionLogger(object):
@@ -59,9 +59,9 @@ class FunctionLogger(object):
             self.S = np.empty((cache_size, 1))
 
         self.Xn: int = -1  # Last filled entry
-        self.X_flag = np.full((cache_size, 1), True, dtype=bool)
+        self.X_flag = np.full((cache_size, 1), False, dtype=bool)
         self.y_max = float("-Inf")
-        self.fun_evaltime = np.empty((cache_size, 1))
+        self.fun_evaltime = np.zeros((cache_size, 1))
         self.total_fun_evaltime = 0
 
     def __call__(self, x: np.ndarray):
@@ -86,6 +86,8 @@ class FunctionLogger(object):
         # missing:
         # x_orig = warpvars_vbmc(x,'inv',optimState.trinfo);
         # Convert back to original space
+
+        x_orig = x
 
         try:
             timer.start_timer("funtime")
@@ -138,33 +140,33 @@ class FunctionLogger(object):
 
         # record timer stats
         funtime = timer.get_duration("funtime")
-        self.fun_evaltime[self.Xn] = funtime
-        self.total_fun_evaltime += funtime
 
         self.func_count += 1
-        fval, idx = _record(x_orig, x, fval_orig, fsd)
+        fval, idx = self._record(x_orig, x, fval_orig, fsd, funtime)
 
         # optimstate.N = self.Xn
         # optimstate.Neff = np.sum(self.nevals[self.X_flag])
         # optimState.totalfunevaltime = optimState.totalfunevaltime + t;
         return fval, fsd, idx
 
-    def add(
-        self,
-        x: np.ndarray,
-        y: np.ndarray,
-        fval_orig: np.ndarray,
-        fsd: np.ndarray,
-    ):
+    def add(self, x: np.ndarray, fval_orig: float, fsd: float):
         """
-        add_sample Add previously evaluated function sample
+        add Add previously evaluated function sample
 
         Parameters
         ----------
         x : np.ndarray
             the point at which the function has been evaluated
-        y : np.ndarray
-            the result of the function evaluation
+        fval_orig : float
+            the result of the evaluatation
+        fsd : float
+            (estimated) SD of the returned value
+            (if heteroskedastic noise handling is on).
+
+        Returns
+        -------
+        None
+            ???
         """
         # Convert back to original space
         x_orig = x  # warpvars_vbmc(x,'inv',optimState.trinfo);
@@ -200,40 +202,24 @@ class FunctionLogger(object):
                 + ")."
             )
 
-        self.cachecount += 1
-        fval, idx = _record(x_orig, x, fval_orig, fsd)
-        # ?!
-        return fsd, idx
+        self.cache_count += 1
+        fval, idx = self._record(x_orig, x, fval_orig, fsd, None)
 
     def finalize(self):
         """
         finalize remove unused caching entries
         """
-        self.x_orig = self.x_orig[
-            : self.Xn + 1,
-        ]
-        self.y_orig = self.y_orig[
-            : self.Xn + 1,
-        ]
+        self.x_orig = self.x_orig[: self.Xn + 1]
+        self.y_orig = self.y_orig[: self.Xn + 1]
 
         # in the original matlab version X and Y get deleted
-        self.x = self.x[
-            : self.Xn + 1,
-        ]
-        self.y = self.y[
-            : self.Xn + 1,
-        ]
+        self.x = self.x[: self.Xn + 1]
+        self.y = self.y[: self.Xn + 1]
 
         if self.noise_flag:
-            self.S = self.S[
-                : self.Xn + 1,
-            ]
-        self.X_flag = self.X_flag[
-            : self.Xn + 1,
-        ]
-        self.fun_evaltime = self.fun_evaltime[
-            : self.Xn + 1,
-        ]
+            self.S = self.S[: self.Xn + 1]
+        self.X_flag = self.X_flag[: self.Xn + 1]
+        self.fun_evaltime = self.fun_evaltime[: self.Xn + 1]
 
     def _expand_arrays(self, resize_amount: int = None):
         """
@@ -268,7 +254,7 @@ class FunctionLogger(object):
             self.fun_evaltime, np.empty((resize_amount, 1)), axis=0
         )
 
-    def _record(self, x_orig, x, fval_orig, fsd):
+    def _record(self, x_orig, x, fval_orig, fsd, fun_evaltime):
         duplicateFlag = False
 
         if duplicateFlag:
@@ -279,19 +265,19 @@ class FunctionLogger(object):
             if self.Xn > self.x_orig.shape[0] - 1:
                 self._expand_arrays()
 
-            self.x_orig[
-                self.Xn,
-            ] = x  # x_orig
-            self.x[
-                self.Xn,
-            ] = x
+            # record function time
+            if fun_evaltime is not None:
+                self.fun_evaltime[self.Xn] = fun_evaltime
+                self.total_fun_evaltime += fun_evaltime
+
+            self.x_orig[self.Xn] = x  # x_orig
+            self.x[self.Xn] = x
             self.y_orig[self.Xn] = fval_orig
             fval = fval_orig  # + warpvars_vbmc(x,'logp',optimState.trinfo)/T;
             self.y[self.Xn] = fval  # fvalx
             if fsd is not None:
                 self.S[self.Xn] = fsd
             self.X_flag[self.Xn] = True
-            self.nevals = max(1, self.nevals[self.Xn] + 1)
+            # self.nevals = max(1, self.nevals[self.Xn] + 1)
             self.ymax = np.amax(self.y[self.X_flag])
-
             return fval, self.Xn

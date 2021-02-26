@@ -1,0 +1,125 @@
+import pytest
+import numpy as np
+from function_logger import FunctionLogger
+
+non_noisy_function = lambda x: np.sum(x + 2)
+noisy_function = lambda x: (np.sum(x + 2), np.sum(x))
+
+
+def test_call_index():
+    f_logger = FunctionLogger(non_noisy_function, 3, False, 0)
+    _, _, idx = f_logger(np.array([3, 4, 5]))
+    assert idx == 0
+
+
+def test_call_fval():
+    x = np.array([3, 4, 5])
+    f_logger = FunctionLogger(non_noisy_function, 3, False, 0)
+    fval, _, _ = f_logger(x)
+    assert np.all(fval == non_noisy_function(x))
+
+
+def test_call_noisy_function_level_1():
+    x = np.array([3, 4, 5])
+    f_logger = FunctionLogger(non_noisy_function, 3, True, 1)
+    fval, fsd, idx = f_logger(x)
+    fval2 = non_noisy_function(x)
+    assert fval == fval2
+    assert fsd == 1
+    assert idx == 0
+    assert f_logger.S[0] == 1
+
+
+def test_call_noisy_function_level_2():
+    x = np.array([3, 4, 5])
+    f_logger = FunctionLogger(noisy_function, 3, True, 2)
+    fval, fsd, idx = f_logger(x)
+    fval2, fsd2 = noisy_function(x)
+    assert fval == fval2
+    assert fsd == fsd2
+    assert idx == 0
+    assert f_logger.S[0] == fsd2
+
+
+def test_call_expand_cache():
+    x = np.array([3, 4, 5])
+    f_logger = FunctionLogger(non_noisy_function, 3, False, 0, cache_size=1)
+    assert f_logger.x.shape[0] == 1
+    f_logger(x)
+    f_logger(x * 2)
+    y = non_noisy_function(x * 2)
+    assert np.all(f_logger.y_orig[1] == y)
+
+
+def test_add_expand_cache():
+    x = np.array([3, 4, 5])
+    y = non_noisy_function(x)
+    f_logger = FunctionLogger(non_noisy_function, 3, False, 0, cache_size=1)
+    assert f_logger.x.shape[0] == 1
+    f_logger.add(x, y, None)
+    f_logger.add(x, y, None)
+    assert np.all(f_logger.x[1] == x)
+    assert np.all(f_logger.y_orig[1] == y)
+    assert f_logger.cache_count == 2
+
+
+def test_call_record_stats():
+    x = np.array([3, 4, 5])
+    f_logger = FunctionLogger(non_noisy_function, 3, False, 0)
+    for i in range(10):
+        f_logger(x * i)
+    assert f_logger.total_fun_evaltime == np.sum(f_logger.fun_evaltime)
+    assert np.all(f_logger.x_orig[9] == x * 9)
+    assert f_logger.y_orig[9] == non_noisy_function(x * 9)
+    assert f_logger.ymax == non_noisy_function(x * 9)
+    assert np.sum(f_logger.X_flag) == 10
+    assert f_logger.Xn == 9
+    assert f_logger.cache_count == 0
+
+
+def test_add_record_stats():
+    x = np.array([3, 4, 5])
+    f_logger = FunctionLogger(non_noisy_function, 3, False, 0)
+    for i in range(10):
+        y = non_noisy_function(x * i)
+        f_logger.add(x * i, y, None)
+    assert f_logger.total_fun_evaltime == 0
+    assert np.sum(f_logger.fun_evaltime[:11]) == 0
+    assert np.all(f_logger.x_orig[9] == x * 9)
+    assert f_logger.y_orig[9] == non_noisy_function(x * 9)
+    assert f_logger.ymax == non_noisy_function(x * 9)
+    assert np.sum(f_logger.X_flag) == 10
+    assert f_logger.Xn == 9
+    assert f_logger.func_count == 0
+    assert f_logger.cache_count == 10
+
+
+def test_finalize():
+    x = np.array([3, 4, 5])
+    f_logger = FunctionLogger(non_noisy_function, 3, False, 0)
+    for i in range(10):
+        f_logger(x * i)
+    f_logger.finalize()
+    assert f_logger.total_fun_evaltime == np.sum(f_logger.fun_evaltime)
+    assert np.all(f_logger.x_orig[9] == x * 9)
+    assert f_logger.y_orig[9] == non_noisy_function(x * 9)
+    assert f_logger.ymax == non_noisy_function(x * 9)
+    assert np.sum(f_logger.X_flag) == 10
+    assert f_logger.Xn == 9
+    assert f_logger.func_count == 10
+    assert f_logger.x_orig.shape[0] == 10
+    assert f_logger.y_orig.shape[0] == 10
+    assert f_logger.x.shape[0] == 10
+    assert f_logger.y.shape[0] == 10
+    assert f_logger.X_flag.shape[0] == 10
+    assert f_logger.fun_evaltime.shape[0] == 10
+
+    # noise level 2
+    f_logger = FunctionLogger(noisy_function, 3, True, 2)
+    for i in range(10):
+        f_logger(x * i)
+    f_logger.finalize()
+    fval, fsd = noisy_function(x * 9)
+    assert f_logger.S[9] == fsd
+    assert f_logger.y_orig[9] == fval
+    assert f_logger.S.shape[0] == 10
