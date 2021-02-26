@@ -181,9 +181,9 @@ class ParameterTransformer:
         x[:, mask] = np.minimum(x[:, mask], self.ub_orig[:, mask])
         return x
 
-    def log_jacobian(self, u: np.ndarray):
+    def log_abs_det_jacobian(self, u: np.ndarray):
         """
-        log_jacobian returns log probability term for the
+        log_abs_det_jacobian returns log probability term for the
         original log pdf evaluated at f^{-1}(Y).
 
         Parameters

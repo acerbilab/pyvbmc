@@ -235,41 +235,41 @@ def test_transform_inverse_direct_largeN():
     assert np.all(np.isclose(U, U2, rtol=1e-12, atol=1e-14))
 
 
-def test_log_jacobian_type3_within():
+def test_log_abs_det_jacobian_type3_within():
     parameter_transformer = ParameterTransformer(
         nvars=NVARS,
         lower_bounds=np.ones((1, NVARS)) * -10,
         upper_bounds=np.ones((1, NVARS)) * 10,
     )
     U = np.ones((10, NVARS)) * 3
-    log_j = parameter_transformer.log_jacobian(U)
+    log_j = parameter_transformer.log_abs_det_jacobian(U)
     log_j2 = np.ones((10)) * -0.3043
     assert np.all(np.isclose(log_j, log_j2, atol=1e-04))
 
 
-def test_log_jacobian_type3_within_negative():
+def test_log_abs_det_jacobian_type3_within_negative():
     parameter_transformer = ParameterTransformer(
         nvars=NVARS,
         lower_bounds=np.ones((1, NVARS)) * -10,
         upper_bounds=np.ones((1, NVARS)) * 10,
     )
     U = np.ones((10, NVARS)) * -4
-    log_j = parameter_transformer.log_jacobian(U)
+    log_j = parameter_transformer.log_abs_det_jacobian(U)
     log_j2 = np.ones((10)) * -3.1217
     assert np.all(np.isclose(log_j, log_j2))
 
 
-def test_log_jacobian_type0():
+def test_log_abs_det_jacobian_type0():
     parameter_transformer = ParameterTransformer(nvars=NVARS)
     U = np.ones((10, NVARS)) * 5
-    log_j = parameter_transformer.log_jacobian(U)
+    log_j = parameter_transformer.log_abs_det_jacobian(U)
     log_j2 = np.ones((10)) * 0
     assert np.all(np.isclose(log_j, log_j2, atol=1e-04))
 
 
-def test_log_jacobian_type0_negative():
+def test_log_abs_det_jacobian_type0_negative():
     parameter_transformer = ParameterTransformer(nvars=NVARS)
     U = np.ones((10, NVARS)) * -6
-    log_j = parameter_transformer.log_jacobian(U)
+    log_j = parameter_transformer.log_abs_det_jacobian(U)
     log_j2 = np.ones((10)) * 0
     assert np.all(np.isclose(log_j, log_j2))
