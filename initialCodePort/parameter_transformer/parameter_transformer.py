@@ -69,20 +69,33 @@ class ParameterTransformer:
         self.delta = np.ones(nvars)
 
         # Get transformed PLB and ULB
-        plausible_lower_bounds = self.direct_transform(plausible_lower_bounds)
-        plausible_upper_bounds = self.direct_transform(plausible_upper_bounds)
+        if not (
+            np.all(plausible_lower_bounds == self.lb_orig)
+            and np.all(plausible_upper_bounds == self.ub_orig)
+        ):
+            plausible_lower_bounds = self.direct_transform(
+                plausible_lower_bounds
+            )
+            plausible_upper_bounds = self.direct_transform(
+                plausible_upper_bounds
+            )
 
-        # Center in transformed space
-        for i in range(nvars):
-            if np.isfinite(plausible_lower_bounds[:, i]) and np.isfinite(
-                plausible_upper_bounds[:, i]
-            ):
-                self.mu[i] = 0.5 * (
-                    plausible_lower_bounds[:, i] + plausible_upper_bounds[:, i]
-                )
-                self.delta[i] = (
-                    plausible_lower_bounds[:, i] - plausible_upper_bounds[:, i]
-                )
+            print(plausible_lower_bounds)
+            print(plausible_upper_bounds)
+
+            # Center in transformed space
+            for i in range(nvars):
+                if np.isfinite(plausible_lower_bounds[:, i]) and np.isfinite(
+                    plausible_upper_bounds[:, i]
+                ):
+                    self.mu[i] = 0.5 * (
+                        plausible_lower_bounds[:, i]
+                        + plausible_upper_bounds[:, i]
+                    )
+                    self.delta[i] = (
+                        plausible_lower_bounds[:, i]
+                        - plausible_upper_bounds[:, i]
+                    )
 
     def direct_transform(self, x: np.ndarray):
         """
