@@ -1,2 +1,2 @@
 # __init__.py
-from .vp import VP
+from .variational_posterior import VariationalPosterior
