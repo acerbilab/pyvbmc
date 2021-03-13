@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
 from function_logger import FunctionLogger
+from parameter_transformer.parameter_transformer import ParameterTransformer
 
 non_noisy_function = lambda x: np.sum(x + 2)
 noisy_function = lambda x: (np.sum(x + 2), np.sum(x))
@@ -123,3 +124,29 @@ def test_finalize():
     assert f_logger.S[9] == fsd
     assert f_logger.y_orig[9] == fval
     assert f_logger.S.shape[0] == 10
+
+
+def test_call_parameter_transform_no_constraints():
+    x = np.array([3, 4, 5])
+    parameter_transformer = ParameterTransformer(3)
+    f_logger = FunctionLogger(
+        non_noisy_function, 3, False, 0, 500, parameter_transformer
+    )
+    fval, _, _ = f_logger(x)
+    assert np.all(f_logger.x[0] == f_logger.x_orig[0])
+    assert np.all(f_logger.y[0] == f_logger.y_orig[0])
+    assert np.all(fval == non_noisy_function(x))
+
+
+def test_add_parameter_transform():
+    x = np.array([3, 4, 5])
+    parameter_transformer = ParameterTransformer(3)
+    f_logger = FunctionLogger(
+        non_noisy_function, 3, False, 0, 500, parameter_transformer
+    )
+    fval_orig = non_noisy_function(x)
+    f_logger.add(x, fval_orig)
+    assert np.all(f_logger.x[0] == f_logger.x_orig[0])
+    assert np.all(f_logger.y[0] == f_logger.y_orig[0])
+    assert np.all(f_logger.y_orig[0] == fval_orig)
+

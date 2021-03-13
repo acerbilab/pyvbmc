@@ -1,5 +1,6 @@
 import sys
 import numpy as np
+from parameter_transformer import ParameterTransformer
 from timer import Timer
 
 
@@ -9,10 +10,9 @@ class FunctionLogger(object):
 
     Porting status
     --------------
-     - _record(...) is missing, and in particular all the part
+     - in _record(...) all the part
      about checking (and dealing with) identical inputs
-     - warping of the parameters (vbmc specific) has to be
-     addressed
+     is missing
     """
 
     def __init__(
@@ -20,11 +20,12 @@ class FunctionLogger(object):
         fun,
         nvars: int,
         noise_flag: bool,
-        uncertaintyHandlingLevel: int,
+        uncertainty_handling_level: int,
         cache_size: int = 500,
+        parameter_transformer: ParameterTransformer = None,
     ):
         """
-        __init__
+        __init__ [summary]
 
         Parameters
         ----------
@@ -37,16 +38,21 @@ class FunctionLogger(object):
             number of dimensions that the function takes as input
         noise_flag : bool
             whether the function fun is stochastic
-        uncertaintyHandlingLevel : int
+        uncertainty_handling_level : int
             uncertainty handling level
             (0: none; 1: unknown noise level; 2: user-provided noise)
         cache_size : int, optional
             initial size of caching table (default 500)
+        parameter_transformer : ParameterTransformer, optional
+            required to transform the parameters between
+            constrained and unconstrained space, by default None
         """
         self.fun = fun
         self.nvars: int = nvars
         self.noise_flag: bool = noise_flag
-        self.uncertaintyHandlingLevel: int = uncertaintyHandlingLevel
+        self.uncertainty_handling_level: int = uncertainty_handling_level
+        self.transform_parameters = parameter_transformer is not None
+        self.parameter_transformer = parameter_transformer
 
         self.func_count: int = 0
         self.cache_count: int = 0
@@ -54,6 +60,7 @@ class FunctionLogger(object):
         self.y_orig = np.empty((cache_size, 1))
         self.x = np.empty((cache_size, self.nvars))
         self.y = np.empty((cache_size, 1))
+        self.nevals = np.zeros((cache_size, 1))
 
         if self.noise_flag:
             self.S = np.empty((cache_size, 1))
@@ -83,18 +90,20 @@ class FunctionLogger(object):
 
         timer = Timer()
 
-        # missing:
-        # x_orig = warpvars_vbmc(x,'inv',optimState.trinfo);
         # Convert back to original space
-
-        x_orig = x
+        if self.transform_parameters:
+            x_orig = self.parameter_transformer.inverse(
+                np.reshape(x, (1, x.shape[0]))
+            )[0]
+        else:
+            x_orig = x
 
         try:
             timer.start_timer("funtime")
-            if self.noise_flag and self.uncertaintyHandlingLevel == 2:
-                fval_orig, fsd = self.fun(x)
+            if self.noise_flag and self.uncertainty_handling_level == 2:
+                fval_orig, fsd = self.fun(x_orig)
             else:
-                fval_orig = self.fun(x)
+                fval_orig = self.fun(x_orig)
                 if self.noise_flag:
                     fsd = 1
                 else:
@@ -149,7 +158,7 @@ class FunctionLogger(object):
         # optimState.totalfunevaltime = optimState.totalfunevaltime + t;
         return fval, fsd, idx
 
-    def add(self, x: np.ndarray, fval_orig: float, fsd: float):
+    def add(self, x: np.ndarray, fval_orig: float, fsd: float = None):
         """
         add Add previously evaluated function sample
 
@@ -159,9 +168,9 @@ class FunctionLogger(object):
             the point at which the function has been evaluated
         fval_orig : float
             the result of the evaluatation
-        fsd : float
+        fsd : float, optional
             (estimated) SD of the returned value
-            (if heteroskedastic noise handling is on).
+            (if heteroskedastic noise handling is on), by default None
 
         Returns
         -------
@@ -169,7 +178,13 @@ class FunctionLogger(object):
             ???
         """
         # Convert back to original space
-        x_orig = x  # warpvars_vbmc(x,'inv',optimState.trinfo);
+        if self.transform_parameters:
+            x_orig = self.parameter_transformer.inverse(
+                np.reshape(x, (1, x.shape[0]))
+            )[0]
+        else:
+            x_orig = x
+
         if self.noise_flag:
             if fsd is None:
                 fsd = 1
@@ -253,6 +268,9 @@ class FunctionLogger(object):
         self.fun_evaltime = np.append(
             self.fun_evaltime, np.empty((resize_amount, 1)), axis=0
         )
+        self.nevals = np.append(
+            self.nevals, np.zeros((resize_amount, 1)), axis=0
+        )
 
     def _record(self, x_orig, x, fval_orig, fsd, fun_evaltime):
         duplicateFlag = False
@@ -270,14 +288,18 @@ class FunctionLogger(object):
                 self.fun_evaltime[self.Xn] = fun_evaltime
                 self.total_fun_evaltime += fun_evaltime
 
-            self.x_orig[self.Xn] = x  # x_orig
+            self.x_orig[self.Xn] = x_orig
             self.x[self.Xn] = x
             self.y_orig[self.Xn] = fval_orig
-            fval = fval_orig  # + warpvars_vbmc(x,'logp',optimState.trinfo)/T;
-            self.y[self.Xn] = fval  # fvalx
+            fval = fval_orig
+            if self.transform_parameters:
+                fval += self.parameter_transformer.log_abs_det_jacobian(
+                    np.reshape(x, (1, x.shape[0]))
+                )[0]
+            self.y[self.Xn] = fval
             if fsd is not None:
                 self.S[self.Xn] = fsd
             self.X_flag[self.Xn] = True
-            # self.nevals = max(1, self.nevals[self.Xn] + 1)
+            self.nevals[self.Xn] = max(1, self.nevals[self.Xn] + 1)
             self.ymax = np.amax(self.y[self.X_flag])
             return fval, self.Xn
