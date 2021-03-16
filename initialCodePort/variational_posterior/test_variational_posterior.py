@@ -91,6 +91,7 @@ def test_sample_df():
     assert 0 in i
     assert 1 in i
 
+
 def test_sample_no_origflag():
     vp = mock_init_vbmc(k=1, nvars=3)
     n = 11
@@ -99,3 +100,120 @@ def test_sample_no_origflag():
     assert np.all(i.shape[0] == n)
     unique, counts = np.unique(i, return_counts=True)
     assert counts[0] == n
+
+
+def test_pdf_default_no_origflag():
+    n = 20
+    d = 3
+    vp = mock_init_vbmc(k=2, nvars=d)
+    vp.mu = np.ones((3, 2)) * 5
+    x = np.ones((n, d)) * 4.996
+    y = vp.pdf(x, origflag=False)
+    assert y.shape == (n, 1)
+    assert np.isscalar(y[0, 0])
+    assert np.all(
+        np.isclose(
+            y, 0.002396970183585 * np.ones((n, 1)), rtol=1e-12, atol=1e-14
+        )
+    )
+
+
+def test_pdf_grad_default_no_origflag():
+    n = 20
+    d = 3
+    vp = mock_init_vbmc(k=2, nvars=d)
+    vp.mu = np.ones((3, 2)) * 5
+    x = np.ones((n, d)) * 4.996
+    y, dy = vp.pdf(x, origflag=False, gradflag=True)
+    assert y.shape == (n, 1)
+    assert np.isscalar(y[0, 0])
+    assert np.all(
+        np.isclose(
+            y, 0.002396970183585 * np.ones((n, 1)), rtol=1e-12, atol=1e-14
+        )
+    )
+    assert dy.shape == x.shape
+    assert np.isscalar(dy[0, 0])
+    assert np.all(
+        np.isclose(
+            dy, 9.58788073433898 * np.ones((n, 3)), rtol=1e-12, atol=1e-14
+        )
+    )
+
+
+def test_pdf_grad_logflag_no_origflag():
+    n = 20
+    d = 3
+    vp = mock_init_vbmc(k=2, nvars=d)
+    vp.mu = np.ones((3, 2)) * 5
+    x = np.ones((n, d)) * 4.996
+    y, dy = vp.pdf(x, origflag=False, logflag=True, gradflag=True)
+    assert y.shape == (n, 1)
+    assert np.isscalar(y[0, 0])
+    assert np.all(
+        np.isclose(
+            y,
+            np.log(0.002396970183585 * np.ones((n, 1))),
+            rtol=1e-12,
+            atol=1e-14,
+        )
+    )
+    assert dy.shape == x.shape
+    assert np.isscalar(dy[0, 0])
+    assert np.all(
+        np.isclose(
+            dy,
+            9.58788073433898 * np.ones((n, 3)) / np.exp(y),
+            rtol=1e-12,
+            atol=1e-14,
+        )
+    )
+
+
+def test_pdf_grad_origflag():
+    n = 20
+    d = 3
+    vp = mock_init_vbmc(k=2, nvars=d)
+    vp.mu = np.ones((3, 2)) * 5
+    x = np.ones((n, d)) * 4.996
+    y, dy = vp.pdf(x, gradflag=True)
+    assert y.shape == (n, 1)
+    assert np.isscalar(y[0, 0])
+    assert np.all(
+        np.isclose(
+            y, 0.002396970183585 * np.ones((n, 1)), rtol=1e-12, atol=1e-14
+        )
+    )
+    assert dy.shape == x.shape
+    assert np.isscalar(dy[0, 0])
+    assert np.all(
+        np.isclose(
+            dy, 9.58788073433898 * np.ones((n, 3)), rtol=1e-12, atol=1e-14
+        )
+    )
+
+
+def test_pdf_df_real_positive():
+    n = 20
+    d = 3
+    vp = mock_init_vbmc(k=2, nvars=d)
+    vp.mu = np.ones((3, 2)) * 5
+    x = np.repeat([4.99, 4.996], [10, 10])[:, np.newaxis] * np.ones((1, d))
+    y = vp.pdf(x, origflag=False, df=10)
+    assert y.shape == (n, 1)
+    assert np.isscalar(y[0, 0])
+    assert np.all(np.isclose(y[:10], 0.01378581338784, rtol=1e-12, atol=1e-14))
+    assert np.all(np.isclose(y[10:], 743.0216137262, rtol=1e-12, atol=1e-14))
+
+
+def test_pdf_df_real_negative():
+    n = 20
+    d = 3
+    vp = mock_init_vbmc(k=2, nvars=d)
+    vp.mu = np.ones((3, 2)) * 5
+    x = np.repeat([4.995, 4.99], [10, 10])[:, np.newaxis] * np.ones((1, d))
+    y = vp.pdf(x, origflag=False, df=-2)
+    assert y.shape == (n, 1)
+    assert np.isscalar(y[0, 0])
+    assert np.all(np.isclose(y[:10], 362.1287964795, rtol=1e-12, atol=1e-14))
+    assert np.all(np.isclose(y[10:], 0.914743278670, rtol=1e-12, atol=1e-14))

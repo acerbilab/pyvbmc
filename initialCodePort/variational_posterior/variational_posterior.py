@@ -1,4 +1,6 @@
+import sys
 import numpy as np
+from scipy.special import gammaln
 
 
 class VariationalPosterior(object):
@@ -143,10 +145,12 @@ class VariationalPosterior(object):
         origflag: bool = True,
         logflag: bool = False,
         transflag: bool = False,
+        gradflag: bool = False,
         df: float = np.inf,
     ):
         """
         pdf probability density function of VBMC posterior approximation
+        gradientflag part missing
 
         Parameters
         ----------
@@ -185,12 +189,133 @@ class VariationalPosterior(object):
         """
         # Convert points to transformed space
         if origflag and not transflag:
-            x = self.parameter_tranformer(x)
+            x = self.parameter_transformer(x)
 
         n, d = x.shape
-        y = np.zeros(n, 1)
-        pass
-        return y
+        y = np.zeros((n, 1))
+        if gradflag:
+            dy = np.zeros((n, d))
+
+        if not np.isfinite(df) or df == 0:
+            # compute pdf of variational posterior
+
+            # common normalization factor
+            nf = 1 / (2 * np.pi) ** (d / 2) / np.prod(self.lamb.conj().T)
+            for k in range(self.k):
+                d2 = np.sum(
+                    (
+                        (x - self.mu.conj().T[k])
+                        / (self.sigma[:, k].dot(self.lamb.conj().T))
+                    )
+                    ** 2,
+                    axis=1,
+                )
+                nn = (
+                    nf
+                    * self.w[:, k]
+                    / self.sigma[:, k] ** d
+                    * np.exp(-0.5 * d2)[:, np.newaxis]
+                )
+                y += nn
+                if gradflag:
+                    dy -= (
+                        nn
+                        * (x - self.mu.conj().T[k])
+                        / ((self.lamb.conj().T ** 2) * self.sigma[:, k] ** 2)
+                    )
+
+        else:
+            # Compute pdf of heavy-tailed variant of variational posterior
+
+            if df > 0:
+                # (This uses a multivariate t-distribution which is not the same thing
+                # as the product of D univariate t-distributions)
+
+                # common normalization factor
+                nf = (
+                    np.exp(gammaln((df + d) / 2) - gammaln(df / 2))
+                    / (df * np.pi) ** (d / 2)
+                    / np.prod(self.lamb)
+                )
+
+                for k in range(self.k):
+                    d2 = np.sum(
+                        (
+                            (x - self.mu.conj().T[k])
+                            / (self.sigma[:, k].dot(self.lamb.conj().T))
+                        )
+                        ** 2,
+                        axis=1,
+                    )
+                    nn = (
+                        nf
+                        * self.w[:, k]
+                        / self.sigma[:, k] ** d
+                        * (1 + d2 / df) ** (-(df + d) / 2)
+                    )[:, np.newaxis]
+                    y += nn
+                    if gradflag:
+                        print(
+                            "Gradient of heavy-tailed pdf not supported yet."
+                        )
+                        sys.exit(1)
+            else:
+                # (This uses a product of D univariate t-distributions)
+
+                df_abs = abs(df)
+
+                # Common normalization factor
+                nf = (
+                    np.exp(gammaln((df_abs + 1) / 2) - gammaln(df_abs / 2))
+                    / np.sqrt(df_abs * np.pi)
+                ) ** d / np.prod(self.lamb)
+
+                for k in range(self.k):
+                    d2 = (
+                        (x - self.mu.conj().T[k])
+                        / (self.sigma[:, k].dot(self.lamb.conj().T))
+                    ) ** 2
+                    nn = (
+                        nf
+                        * self.w[:, k]
+                        / self.sigma[:, k] ** d
+                        * np.prod(
+                            (1 + d2 / df_abs) ** (-(df_abs + 1) / 2), axis=1
+                        )[:, np.newaxis]
+                    )
+                    print(nf)
+                    y += nn
+                    if gradflag:
+                        print(
+                            "Gradient of heavy-tailed pdf not supported yet."
+                        )
+                        sys.exit(1)
+
+        if logflag:
+            if gradflag:
+                dy = dy / y
+            y = np.log(y)
+
+        # apply jacobian correction
+        if origflag:
+            if logflag:
+                y -= self.parameter_transformer.log_abs_det_jacobian(x)
+                if gradflag:
+                    print(
+                        "vbmc_pdf:NoOriginalGrad: Gradient computation in original space not supported yet."
+                    )
+                    sys.exit(1)
+            else:
+                y /= np.exp(
+                    self.parameter_transformer.log_abs_det_jacobian(x)[
+                        :, np.newaxis
+                    ]
+                )
+
+        if gradflag:
+            return y, dy
+        else:
+            return y
 
     def vbmc_moments(self, origflag, Ns):
         """
