@@ -318,7 +318,12 @@ class VariationalPosterior(object):
             return y
 
     def get_parameters(
-        self, optimize_mu, optimize_sigma, optimize_lambda, optimize_weights, rawflag = True
+        self,
+        optimize_mu,
+        optimize_sigma,
+        optimize_lambda,
+        optimize_weights,
+        rawflag=True,
     ):
         """
         Get vector of variational parameters from variational posterior.
@@ -327,13 +332,56 @@ class VariationalPosterior(object):
         """
         pass
 
-    def set_parameters(rawflag = True):
+    def set_parameters(self, theta: np.ndarray, rawflag=True):
         """
-        set_parameters
-        Opposite of get parameters
-        (takes as input an array and assigns it to the vp parameters). The function that does it now in VBMC is this one: https://github.com/lacerbi/vbmc/blob/master/misc/rescale_params.m
+        set_parameters takes as input an np array and assigns it to the
+        variational posterior parameters
+
+        Parameters
+        ----------
+        theta : np.ndarray
+            array with the parameters
+        rawflag : bool, optional
+            specifies whether the sigma and lambda are
+            passed as raw (unconstrained) or not, by default True
         """
-        pass
+        if self.optimize_mu:
+            self.mu = np.reshape(theta[: self.d * self.k], (self.d, self.k))
+            start_idx = self.d * self.k
+        else:
+            start_idx = 0
+
+        if self.optimize_sigma:
+            if rawflag:
+                self.sigma = np.exp(theta[start_idx : start_idx + self.k])
+            else:
+                self.sigma = theta[start_idx : start_idx + self.k]
+            start_idx += self.k
+
+        if self.optimize_lamb:
+            if rawflag:
+                self.lamb = np.exp(theta[start_idx : start_idx + self.d]).T
+            else:
+                self.lamb = theta[start_idx : start_idx + self.d].T
+
+        if self.optimize_weights:
+            eta = theta[-self.k :]
+            eta = eta - np.amax(eta)
+            if rawflag:
+                self.w = np.exp(eta.T)[:, np.newaxis]
+            else:
+                self.w = eta.T[:, np.newaxis]
+
+        nl = np.sqrt(np.sum(self.lamb ** 2) / self.d)
+
+        self.lamb = self.lamb / nl
+        self.sigma = self.sigma.conj().T * nl
+
+        # Ensure that weights are normalized
+        if self.optimize_weights:
+            self.w = self.w.conj().T / np.sum(self.w)
+
+        # remove mode (at least this is done in Matlab)
 
     def vbmc_moments(self, origflag, Ns):
         """

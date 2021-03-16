@@ -217,3 +217,49 @@ def test_pdf_df_real_negative():
     assert np.isscalar(y[0, 0])
     assert np.all(np.isclose(y[:10], 362.1287964795, rtol=1e-12, atol=1e-14))
     assert np.all(np.isclose(y[10:], 0.914743278670, rtol=1e-12, atol=1e-14))
+
+
+def test_set_parameters_raw():
+    k = 2
+    d = 3
+    vp = mock_init_vbmc(k=k, nvars=d)
+    theta_size = d * k + 2 * k + d
+    rng = np.random.default_rng()
+    theta = rng.random(theta_size)
+    vp.optimize_weights = True
+    vp.set_parameters(theta)
+    assert vp.mu.shape == (d, k)
+    assert np.all(vp.mu[: d * k] == np.reshape(theta[: d * k], (d, k)))
+    lamb = np.exp(theta[d * k + k : d * k + k + d])
+    nl = np.sqrt(np.sum(lamb ** 2) / d)
+    assert vp.sigma.shape == (k,)
+    assert np.all(vp.sigma == np.exp(theta[d * k : d * k + k]).conj().T * nl)
+    assert vp.lamb.shape == (d,)
+    assert np.all(vp.lamb == lamb / nl)
+    assert vp.w.shape == (1, k)
+    w = np.exp(theta[-k:] - np.amax(theta[-k:]))
+    w = w.conj().T / np.sum(w)
+    assert np.all(vp.w == w)
+
+
+def test_set_parameters_not_raw():
+    k = 2
+    d = 3
+    vp = mock_init_vbmc(k=k, nvars=d)
+    theta_size = d * k + 2 * k + d
+    rng = np.random.default_rng()
+    theta = rng.random(theta_size)
+    vp.optimize_weights = True
+    vp.set_parameters(theta, rawflag=False)
+    assert vp.mu.shape == (d, k)
+    assert np.all(vp.mu[: d * k] == np.reshape(theta[: d * k], (d, k)))
+    lamb = theta[d * k + k : d * k + k + d]
+    nl = np.sqrt(np.sum(lamb ** 2) / d)
+    assert vp.sigma.shape == (k,)
+    assert np.all(vp.sigma == theta[d * k : d * k + k].conj().T * nl)
+    assert vp.lamb.shape == (d,)
+    assert np.all(vp.lamb == lamb / nl)
+    assert vp.w.shape == (1, k)
+    w = theta[-k:] - np.amax(theta[-k:])
+    w = w.conj().T / np.sum(w)
+    assert np.all(vp.w == w)
