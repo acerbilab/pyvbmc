@@ -317,6 +317,24 @@ class VariationalPosterior(object):
         else:
             return y
 
+    def get_parameters(
+        self, optimize_mu, optimize_sigma, optimize_lambda, optimize_weights, rawflag = True
+    ):
+        """
+        Get vector of variational parameters from variational posterior.
+        (Former get_vptheta in Matlab)
+        This function should return all the active VP parameters flattened as a 1D (numpy) array and properly transformed (see below).
+        """
+        pass
+
+    def set_parameters(rawflag = True):
+        """
+        set_parameters
+        Opposite of get parameters
+        (takes as input an array and assigns it to the vp parameters). The function that does it now in VBMC is this one: https://github.com/lacerbi/vbmc/blob/master/misc/rescale_params.m
+        """
+        pass
+
     def vbmc_moments(self, origflag, Ns):
         """
         VBMC_MOMENTS(VP) computes the mean MU and covariance
@@ -349,28 +367,8 @@ class VariationalPosterior(object):
 
     # private methods of vp class
 
-    def __get_vptheta(
-        self, optimize_mu, optimize_sigma, optimize_lambda, optimize_weights
-    ):
-        """
-        Get vector of variational parameters from variational posterior.
-        """
-        pass
-
     def __robustSampleFromVP(self, Ns, Xrnd, quantile_thresh):
         """
         Robust sample from variational posterior
-        """
-        pass
-
-    def __vbmc_output(self, parameter_list):
-        """
-        create output struct -> essentially a print?
-        """
-        pass
-
-    def __vbmc_iterplot(self, parameter_list):
-        """
-        plot vp
         """
         pass
