@@ -97,7 +97,7 @@ class VariationalPosterior(object):
                         i = np.append(i, i_extra)
 
                     rng.shuffle(i)
-                    i = i[0:n]
+                    i = i[:n]
                 else:
                     i = rng.choice(range(self.k), size=n, p=self.w.flatten())
 
@@ -173,6 +173,8 @@ class VariationalPosterior(object):
             that X is already specified in transformed VBMC space.
             Otherwise, X is specified
             in the original parameter space, by default False
+        gradflag : bool, optional
+            gradflag = True returns gradient as well, by default False
         df : float, optional
             pdf of a heavy-tailed version
             of the variational posterior, in which
@@ -186,6 +188,9 @@ class VariationalPosterior(object):
         nd.array
             probability density of the variational posterior
             evaluated at each row of x.
+        (nd.array, nd.array)
+            if gradflag is True, the function returns
+            a tuple of (pdf, gradient)
         """
         # Convert points to transformed space
         if origflag and not transflag:
@@ -283,7 +288,6 @@ class VariationalPosterior(object):
                             (1 + d2 / df_abs) ** (-(df_abs + 1) / 2), axis=1
                         )[:, np.newaxis]
                     )
-                    print(nf)
                     y += nn
                     if gradflag:
                         print(
@@ -396,7 +400,6 @@ class VariationalPosterior(object):
             if self.optimize_sigma:
                 check_idx -= self.k
             if np.any(theta[-check_idx:] < 0.0):
-                print(theta[-check_idx:])
                 print(
                     "sigma, lambda and weights must be positive when rawflag = False"
                 )
@@ -440,11 +443,57 @@ class VariationalPosterior(object):
 
         # remove mode (at least this is done in Matlab)
 
-    def vbmc_moments(self, origflag, Ns):
+    def moments(self, n: int = int(1e6), origflag=True, covflag=False):
         """
-        VBMC_MOMENTS(VP) computes the mean MU and covariance
+        moments computes the mean MU and covariance matrix SIGMA
+        of the variational posterior via Monte Carlo sampling.
+
+        Parameters
+        ----------
+        n : int, optional
+            number of samples to compute
+            moments from, by default int(1e6)
+        origflag : bool, optional
+            samples in the original parameter space
+            if origflag=True (default),
+            or in the transformed VBMC space
+            if origflag=False, by default True,
+        covflag : bool, optional
+            returns covariance as second return value
+            if covflag = True, by default False
+
+        Returns
+        -------
+        nd.array
+            mean of the variational posterior
+        (nd.array, nd.array)
+            if covflag is True, the function returns
+            a tuple of (mean, covariance) of the
+            variational posterior
+
         """
-        pass
+        if origflag:
+            x, _ = self.sample(int(n), origflag=True, balanceflag=True)
+            mubar = np.mean(x, axis=0)
+            if covflag:
+                sigma = np.cov(x.T)
+        else:
+            mubar = np.sum(self.w * self.mu, axis=1)
+
+            if covflag:
+                sigma = (
+                    np.sum(self.w * self.sigma ** 2)
+                    * np.eye(len(self.lamb))
+                    * self.lamb
+                )
+                for k in range(self.k):
+                    sigma += self.w[:, k] * (
+                        (self.mu[:, k] - mubar)[:, np.newaxis]
+                    ).dot((self.mu[:, k] - mubar)[:, np.newaxis].conj().T)
+        if covflag:
+            return mubar.conj().T, sigma
+        else:
+            return mubar.conj().T
 
     def vbmc_mode(self, nmax, origflag):
         """

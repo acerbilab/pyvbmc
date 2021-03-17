@@ -302,8 +302,6 @@ def test_get_set_parameters_roundtrip():
     k = 2
     d = 3
     vp = mock_init_vbmc(k=k, nvars=d)
-    theta_size = d * k + 2 * k + d
-    rng = np.random.default_rng()
     vp.optimize_weights = True
     theta = vp.get_parameters(rawflag=True)
     vp.set_parameters(theta, rawflag=True)
@@ -324,3 +322,33 @@ def test_get_set_parameters_roundtrip_non_raw():
     theta2 = vp.get_parameters(rawflag=False)
     assert theta.shape == theta2.shape
     assert np.all(theta == theta2)
+
+
+@pytest.fixture
+def test_moments_origflag(mocker):
+    rng = np.random.default_rng()
+    mocker.patch("vp.sample", return_value=rng.random((20, 3)))
+    vp = mock_init_vbmc(k=2, nvars=3)
+    mubar, sigma = vp.moments(n=1e6, covflag=True)
+    x2, _ = vp.sample(origflag=True, balanceflag=True)
+    assert mubar.shape == (3,)
+    assert np.all(mubar == np.mean(x2, axis=0))
+    assert sigma.shape == (3, 3)
+    assert np.all(sigma == np.cov(x2.T))
+
+
+def test_moments_no_origflag():
+    vp = mock_init_vbmc(k=2, nvars=3)
+    vp.mu = np.ones((3, 2)) * [1, 4]
+    mubar, sigma = vp.moments(n=1e6, covflag=True, origflag=False)
+    assert mubar.shape == (3,)
+    assert sigma.shape == (3, 3)
+    assert np.all(mubar == 2.5)
+    sigma2 = np.ones((3, 3)) * 2.25 + np.eye(3) * 1e-3 ** 2
+    assert np.all(sigma == sigma2)
+
+
+def test_moments_no_covflag():
+    vp = mock_init_vbmc(k=2, nvars=3)
+    mubar = vp.moments(n=1e6, origflag=False)
+    assert mubar.shape == (3,)
