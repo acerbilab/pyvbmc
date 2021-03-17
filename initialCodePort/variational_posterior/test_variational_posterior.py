@@ -260,6 +260,67 @@ def test_set_parameters_not_raw():
     assert vp.lamb.shape == (d,)
     assert np.all(vp.lamb == lamb / nl)
     assert vp.w.shape == (1, k)
-    w = theta[-k:] - np.amax(theta[-k:])
+    w = theta[-k:]
     w = w.conj().T / np.sum(w)
     assert np.all(vp.w == w)
+
+
+def test_get_parameters_raw():
+    k = 2
+    d = 3
+    vp = mock_init_vbmc(k=k, nvars=d)
+    vp.optimize_weights = True
+    theta = vp.get_parameters(rawflag=True)
+    assert np.all(vp.mu[: d * k] == np.reshape(theta[: d * k], (d, k)))
+    assert np.all(
+        np.isclose(
+            vp.sigma.flatten(),
+            np.exp(theta[d * k : d * k + k]),
+            rtol=1e-12,
+            atol=1e-14,
+        )
+    )
+    assert np.all(
+        vp.lamb.flatten() == np.exp(theta[d * k + k : d * k + k + d])
+    )
+    assert np.all(vp.w.flatten() == np.exp(theta[-k:]))
+
+
+def test_get_parameters_not_raw():
+    k = 2
+    d = 3
+    vp = mock_init_vbmc(k=k, nvars=d)
+    vp.optimize_weights = True
+    theta = vp.get_parameters(rawflag=False)
+    assert np.all(vp.mu[: d * k] == np.reshape(theta[: d * k], (d, k)))
+    assert np.all(vp.sigma.flatten() == theta[d * k : d * k + k])
+    assert np.all(vp.lamb.flatten() == theta[d * k + k : d * k + k + d])
+    assert np.all(vp.w.flatten() == theta[-k:])
+
+
+def test_get_set_parameters_roundtrip():
+    k = 2
+    d = 3
+    vp = mock_init_vbmc(k=k, nvars=d)
+    theta_size = d * k + 2 * k + d
+    rng = np.random.default_rng()
+    vp.optimize_weights = True
+    theta = vp.get_parameters(rawflag=True)
+    vp.set_parameters(theta, rawflag=True)
+    theta2 = vp.get_parameters(rawflag=True)
+    assert theta.shape == theta2.shape
+    assert np.all(theta == theta2)
+
+
+def test_get_set_parameters_roundtrip_non_raw():
+    k = 2
+    d = 3
+    vp = mock_init_vbmc(k=k, nvars=d)
+    theta_size = d * k + 2 * k + d
+    rng = np.random.default_rng()
+    vp.optimize_weights = True
+    theta = vp.get_parameters(rawflag=False)
+    vp.set_parameters(theta, rawflag=False)
+    theta2 = vp.get_parameters(rawflag=False)
+    assert theta.shape == theta2.shape
+    assert np.all(theta == theta2)

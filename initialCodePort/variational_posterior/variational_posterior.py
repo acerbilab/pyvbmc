@@ -317,20 +317,60 @@ class VariationalPosterior(object):
         else:
             return y
 
-    def get_parameters(
-        self,
-        optimize_mu,
-        optimize_sigma,
-        optimize_lambda,
-        optimize_weights,
-        rawflag=True,
-    ):
+    def get_parameters(self, rawflag=True):
         """
-        Get vector of variational parameters from variational posterior.
-        (Former get_vptheta in Matlab)
-        This function should return all the active VP parameters flattened as a 1D (numpy) array and properly transformed (see below).
+        get_parameters return all the active VariationalPosterior parameters
+        flattened as a 1D (numpy) array and properly transformed
+
+        Parameters
+        ----------
+        rawflag : bool, optional
+            specifies whether the sigma and lambda are
+            returned as raw (unconstrained) or not, by default True
+
+        Returns
+        -------
+        np.ndarray
+            parameters flattenend as a 1D array
         """
-        pass
+
+        nl = np.sqrt(np.sum(self.lamb ** 2) / self.d)
+
+        self.lamb = self.lamb / nl
+        self.sigma = self.sigma.conj().T * nl
+
+        # Ensure that weights are normalized
+        if self.optimize_weights:
+            self.w = self.w.conj().T / np.sum(self.w)
+
+        # remove mode (at least this is done in Matlab)
+
+        if self.optimize_mu:
+            theta = self.mu.flatten()
+        else:
+            theta = np.array(list())
+
+        constrained_parameters = np.array(list())
+
+        if self.optimize_sigma:
+            constrained_parameters = np.concatenate(
+                (constrained_parameters, self.sigma.flatten())
+            )
+
+        if self.optimize_lamb:
+            constrained_parameters = np.concatenate(
+                (constrained_parameters, self.lamb.flatten())
+            )
+
+        if self.optimize_weights:
+            constrained_parameters = np.concatenate(
+                (constrained_parameters, self.w.flatten())
+            )
+
+        if rawflag:
+            return np.concatenate((theta, np.log(constrained_parameters)))
+        else:
+            return np.concatenate((theta, constrained_parameters))
 
     def set_parameters(self, theta: np.ndarray, rawflag=True):
         """
@@ -345,6 +385,23 @@ class VariationalPosterior(object):
             specifies whether the sigma and lambda are
             passed as raw (unconstrained) or not, by default True
         """
+
+        # check if sigma, lambda and weights are positive when rawflag = False
+        if not rawflag:
+            check_idx = 0
+            if self.optimize_weights:
+                check_idx -= self.k
+            if self.optimize_lamb:
+                check_idx -= self.d
+            if self.optimize_sigma:
+                check_idx -= self.k
+            if np.any(theta[-check_idx:] < 0.0):
+                print(theta[-check_idx:])
+                print(
+                    "sigma, lambda and weights must be positive when rawflag = False"
+                )
+                sys.exit(1)
+
         if self.optimize_mu:
             self.mu = np.reshape(theta[: self.d * self.k], (self.d, self.k))
             start_idx = self.d * self.k
@@ -366,8 +423,8 @@ class VariationalPosterior(object):
 
         if self.optimize_weights:
             eta = theta[-self.k :]
-            eta = eta - np.amax(eta)
             if rawflag:
+                eta = eta - np.amax(eta)
                 self.w = np.exp(eta.T)[:, np.newaxis]
             else:
                 self.w = eta.T[:, np.newaxis]
