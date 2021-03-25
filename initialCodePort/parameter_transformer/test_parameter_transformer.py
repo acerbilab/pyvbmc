@@ -2,16 +2,7 @@ import pytest
 import numpy as np
 from parameter_transformer import ParameterTransformer
 
-"""
-    toDo:
-    - test init < < for bounds
-"""
-
-"""
-__Init__ method
-"""
 NVARS = 3
-
 
 def test_init_no_lower_bounds():
     parameter_transformer = ParameterTransformer(nvars=NVARS)
@@ -44,6 +35,37 @@ def test_init_type_3():
         upper_bounds=np.ones((1, NVARS)) * 2,
     )
     assert np.all(parameter_transformer.type == np.ones(NVARS) * 3)
+
+
+def test_init_bounds_check():
+    with pytest.raises(ValueError):
+        ParameterTransformer(
+            nvars=NVARS,
+            lower_bounds=np.ones((1, NVARS)) * 3,
+            upper_bounds=np.ones((1, NVARS)) * 2,
+        )
+    with pytest.raises(ValueError):
+        ParameterTransformer(
+            nvars=NVARS,
+            lower_bounds=np.ones((1, NVARS)) * 0,
+            upper_bounds=np.ones((1, NVARS)) * 10,
+            plausible_lower_bounds=np.ones((1, NVARS)) * -1,
+        )
+    with pytest.raises(ValueError):
+        ParameterTransformer(
+            nvars=NVARS,
+            lower_bounds=np.ones((1, NVARS)) * 0,
+            upper_bounds=np.ones((1, NVARS)) * 10,
+            plausible_upper_bounds=np.ones((1, NVARS)) * 11,
+        )
+    with pytest.raises(ValueError):
+        ParameterTransformer(
+            nvars=NVARS,
+            lower_bounds=np.ones((1, NVARS)) * 0,
+            upper_bounds=np.ones((1, NVARS)) * 10,
+            plausible_lower_bounds=np.ones((1, NVARS)) * 100,
+            plausible_upper_bounds=np.ones((1, NVARS)) * -20,
+        )
 
 
 def test_init_mu_inf_bounds():

@@ -1,5 +1,3 @@
-import sys
-
 import numpy as np
 
 
@@ -26,10 +24,10 @@ class ParameterTransformer:
             upper_bounds (UB) LB and UB define a set of strict
             lower and upper bounds coordinate vector, by default None
         plausible_lower_bounds : np.ndarray, optional
-            plausible_lower_bound (PLB) such that LB < PLB < PUB < UB. 
+            plausible_lower_bound (PLB) such that LB < PLB < PUB < UB.
             PLB and PUB represent a "plausible" range, by default None
         plausible_upper_bounds : np.ndarray, optional
-            plausible_upper_bound (PUB) such that LB < PLB < PUB < UB. 
+            plausible_upper_bound (PUB) such that LB < PLB < PUB < UB.
             PLB and PUB represent a "plausible" range, by default None
         """
         # Empty LB and UB are Infs
@@ -46,12 +44,12 @@ class ParameterTransformer:
 
         # Convert scalar inputs to row vectors (I do not think it is necessary)
 
-        if (
-            not np.all(lower_bounds <= plausible_lower_bounds)
+        if not (
+            np.all(lower_bounds <= plausible_lower_bounds)
             and np.all(plausible_lower_bounds < plausible_upper_bounds)
             and np.all(plausible_upper_bounds <= upper_bounds)
         ):
-            sys.error(
+            raise ValueError(
                 "Variable bounds should be LB <= PLB < PUB <= UB for all variables."
             )
 
