@@ -1,6 +1,8 @@
-import sys
 import numpy as np
 from scipy.special import gammaln
+from scipy.optimize import fmin_l_bfgs_b
+
+from parameter_transformer import ParameterTransformer
 
 
 class VariationalPosterior(object):
@@ -15,7 +17,6 @@ class VariationalPosterior(object):
         self.mu = None
         self.sigma = None
         self.lamb = None
-        self.parameter_transformer = None
         self.optimize_mu = None
         self.optimize_sigma = None
         self.optimize_lamb = None
@@ -192,6 +193,10 @@ class VariationalPosterior(object):
             if gradflag is True, the function returns
             a tuple of (pdf, gradient)
         """
+        if np.ndim(x) == 1:
+            n = 1
+            x = x.reshape((1, x.shape[0]))
+
         # Convert points to transformed space
         if origflag and not transflag:
             x = self.parameter_transformer(x)
@@ -260,10 +265,9 @@ class VariationalPosterior(object):
                     )[:, np.newaxis]
                     y += nn
                     if gradflag:
-                        print(
+                        raise NotImplementedError(
                             "Gradient of heavy-tailed pdf not supported yet."
                         )
-                        sys.exit(1)
             else:
                 # (This uses a product of D univariate t-distributions)
 
@@ -290,10 +294,9 @@ class VariationalPosterior(object):
                     )
                     y += nn
                     if gradflag:
-                        print(
+                        raise NotImplementedError(
                             "Gradient of heavy-tailed pdf not supported yet."
                         )
-                        sys.exit(1)
 
         if logflag:
             if gradflag:
@@ -305,10 +308,9 @@ class VariationalPosterior(object):
             if logflag:
                 y -= self.parameter_transformer.log_abs_det_jacobian(x)
                 if gradflag:
-                    print(
+                    raise NotImplementedError(
                         "vbmc_pdf:NoOriginalGrad: Gradient computation in original space not supported yet."
                     )
-                    sys.exit(1)
             else:
                 y /= np.exp(
                     self.parameter_transformer.log_abs_det_jacobian(x)[
@@ -400,10 +402,9 @@ class VariationalPosterior(object):
             if self.optimize_sigma:
                 check_idx -= self.k
             if np.any(theta[-check_idx:] < 0.0):
-                print(
+                raise ValueError(
                     "sigma, lambda and weights must be positive when rawflag = False"
                 )
-                sys.exit(1)
 
         if self.optimize_mu:
             self.mu = np.reshape(theta[: self.d * self.k], (self.d, self.k))
@@ -495,11 +496,78 @@ class VariationalPosterior(object):
         else:
             return mubar.conj().T
 
-    def vbmc_mode(self, nmax, origflag):
+    def mode(self, nmax: int = 20, origflag=True):
         """
-        Find mode of VBMC posterior approximation.
+        get_mode Find mode of VBMC posterior approximation
+
+        Parameters
+        ----------
+        nmax : int, optional
+            [description], by default 20
+        origflag : bool, optional
+            mode of the variational posterior
+            in the original parameter space
+            if origflag=True (default),
+            or in the transformed VBMC space
+            if origflag=False, by default True
+
+        Returns
+        -------
+        np.ndarray
+            the mode of the variational posterior
         """
-        pass
+
+        def nlnpdf(x0, origflag=origflag):
+            y, dy = self.pdf(
+                x0, origflag=origflag, logflag=True, gradflag=True
+            )
+            return -y, -dy
+
+        if origflag and hasattr(self, "_mode") and self._mode is not None:
+            return self._mode
+        else:
+            x0_mat = self.mu.conj().T
+
+            if nmax < self.k:
+                # First, evaluate pdf at all modes
+                y0_vec = -1 * self.pdf(x0_mat, origflag=True, logflag=True)
+                # Start from first NMAX solutions
+                y0_idx = np.argsort(y0_vec)[:-1]
+                x0_mat = x0_mat[y0_idx]
+
+            x_min = np.zeros((x0_mat.shape[0], self.d))
+            ff = np.full((x0_mat.shape[0], 1), np.inf)
+
+            for k in range(x0_mat.shape[0]):
+                x0 = x0_mat[k]
+
+                if origflag:
+                    x0 = self.parameter_transformer.inverse(x0[np.newaxis, :])[
+                        0
+                    ]
+
+                if origflag:
+                    bounds = [
+                        [
+                            self.parameter_transformer.lb_orig[:, k],
+                            self.parameter_transformer.ub_orig[:, k],
+                        ]
+                        for x in x0
+                    ]
+                    x_min[k], ff[k], _ = fmin_l_bfgs_b(
+                        func=nlnpdf, x0=x0, bounds=bounds
+                    )
+                else:
+                    x_min[k], ff[k], _ = fmin_l_bfgs_b(func=nlnpdf, x0=x0)
+
+            # Get mode and store it
+            idx_min = np.argmin(ff)
+            x = x_min[idx_min]
+
+            if origflag:
+                self._mode = x
+
+            return x
 
     def vbmc_mtv(self, vp2, Ns):
         """
@@ -521,7 +589,7 @@ class VariationalPosterior(object):
 
     # private methods of vp class
 
-    def __robustSampleFromVP(self, Ns, Xrnd, quantile_thresh):
+    def _robustSampleFromVP(self, Ns, Xrnd, quantile_thresh):
         """
         Robust sample from variational posterior
         """

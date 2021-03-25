@@ -14,7 +14,7 @@ def mock_init_vbmc(k=2, nvars=3):
     vp.mu = x0_start.T + 1e-6 * np.random.randn(vp.d, vp.k)
     vp.sigma = 1e-3 * np.ones((1, k))
     vp.lamb = np.ones((vp.d, 1))
-    vp.parameter_transformer = ParameterTransformer(nvars=nvars)
+    vp.parameter_transformer = ParameterTransformer(3)
     vp.optimize_sigma = True
     vp.optimize_lamb = True
     vp.optimize_mu = True
@@ -265,6 +265,18 @@ def test_set_parameters_not_raw():
     assert np.all(vp.w == w)
 
 
+def test_set_parameters_not_raw_negative_error():
+    k = 2
+    d = 3
+    vp = mock_init_vbmc(k=k, nvars=d)
+    vp.optimize_weights = True
+    theta_size = d * k + 2 * k + d
+    rng = np.random.default_rng()
+    theta = rng.random(theta_size) * -1
+    with pytest.raises(ValueError):
+        vp.set_parameters(theta, rawflag=False)
+
+
 def test_get_parameters_raw():
     k = 2
     d = 3
@@ -352,3 +364,24 @@ def test_moments_no_covflag():
     vp = mock_init_vbmc(k=2, nvars=3)
     mubar = vp.moments(n=1e6, origflag=False)
     assert mubar.shape == (3,)
+
+
+def test_mode_exists_already():
+    vp = mock_init_vbmc()
+    vp._mode = np.ones(3)
+    mode2 = vp.mode()
+    assert np.all(mode2 == vp._mode)
+
+
+def test_mode_no_origflag():
+    vp = mock_init_vbmc()
+    vp.mu = np.ones((3, 2)) * [1, 4]
+    mode2 = vp.mode(origflag=False)
+    assert np.all(1 == mode2)
+
+
+def test_mode_origflag():
+    vp = mock_init_vbmc()
+    vp.mu = np.ones((3, 2)) * [1, 4]
+    with pytest.raises(NotImplementedError):
+        vp.mode(origflag=True)
