@@ -315,13 +315,15 @@ def test_1D_input_call():
     Y2 = parameter_transformer(x=X)
     assert X.shape == Y2.shape
 
+
 def test_1D_input_inverse():
     parameter_transformer = ParameterTransformer(nvars=NVARS)
     Y = np.ones((NVARS))
     X = parameter_transformer.inverse(Y)
     assert X.shape == Y.shape
     X2 = parameter_transformer.inverse(u=Y)
-    assert X2.shape == Y.shape    
+    assert X2.shape == Y.shape
+
 
 def test_1D_input_log_abs_det_jacobian_():
     parameter_transformer = ParameterTransformer(nvars=NVARS)
