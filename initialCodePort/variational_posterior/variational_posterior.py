@@ -542,9 +542,7 @@ class VariationalPosterior(object):
                 x0 = x0_mat[k]
 
                 if origflag:
-                    x0 = self.parameter_transformer.inverse(x0[np.newaxis, :])[
-                        0
-                    ]
+                    x0 = self.parameter_transformer.inverse(x0)
 
                 if origflag:
                     bounds = [

@@ -1,6 +1,56 @@
 import numpy as np
 
 
+def _handle_1D_input(method):
+    """
+    _handle_1D_input a decorator to handle 1D inputs
+    in several ParameterTransformer methods
+
+    Parameters
+    ----------
+    method : method
+        the method wrapped by the decorator
+    """
+
+    def wrapper(self, *args, **kwargs):
+        possible_kwargs = np.array(["x", "u"])
+        kwargs_present = np.array([k in kwargs for k in possible_kwargs])
+
+        if np.any(kwargs_present):
+            # for keyword arguments
+            kwarg = possible_kwargs[kwargs_present][0]
+            input_array = kwargs.get(kwarg)
+            input_dims = np.ndim(input_array)
+            if input_dims == 1:
+                kwargs[kwarg] = np.reshape(
+                    input_array, (1, input_array.shape[0])
+                )
+
+        elif len(args) > 0:
+            # for positional arguments
+            input_array = args[0]
+            input_dims = np.ndim(input_array)
+            if input_dims == 1:
+                arg_list = list(args)
+                arg_list[0] = np.reshape(
+                    input_array, (1, input_array.shape[0])
+                )
+                args = tuple(arg_list)
+
+        res = method(self, *args, **kwargs)
+
+        # return value 1D or scalar when 1D input
+        if np.ndim(res) != 0 and input_dims == 1:
+            if method.__name__ == "log_abs_det_jacobian":
+                return res.flatten()[0]
+            else:
+                return res.flatten()
+        else:
+            return res
+
+    return wrapper
+
+
 class ParameterTransformer:
     def __init__(
         self,
@@ -92,6 +142,7 @@ class ParameterTransformer:
                         - plausible_upper_bounds[:, i]
                     )
 
+    @_handle_1D_input
     def __call__(self, x: np.ndarray):
         """
         __call__ performs direct transform of constrained variables X into unconstrained variables Y
@@ -130,6 +181,7 @@ class ParameterTransformer:
 
         return u
 
+    @_handle_1D_input
     def inverse(self, u: np.ndarray):
         """
         inverse performs inverse transform of
@@ -176,6 +228,7 @@ class ParameterTransformer:
         x[:, mask] = np.minimum(x[:, mask], self.ub_orig[:, mask])
         return x
 
+    @_handle_1D_input
     def log_abs_det_jacobian(self, u: np.ndarray):
         """
         log_abs_det_jacobian returns log probability term for the

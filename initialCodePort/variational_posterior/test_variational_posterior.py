@@ -326,8 +326,6 @@ def test_get_set_parameters_roundtrip_non_raw():
     k = 2
     d = 3
     vp = mock_init_vbmc(k=k, nvars=d)
-    theta_size = d * k + 2 * k + d
-    rng = np.random.default_rng()
     vp.optimize_weights = True
     theta = vp.get_parameters(rawflag=False)
     vp.set_parameters(theta, rawflag=False)

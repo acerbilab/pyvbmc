@@ -4,6 +4,7 @@ from parameter_transformer import ParameterTransformer
 
 NVARS = 3
 
+
 def test_init_no_lower_bounds():
     parameter_transformer = ParameterTransformer(nvars=NVARS)
     assert np.all(np.isinf(parameter_transformer.lb_orig))
@@ -304,3 +305,28 @@ def test_log_abs_det_jacobian_type0_negative():
     log_j = parameter_transformer.log_abs_det_jacobian(U)
     log_j2 = np.ones((10)) * 0
     assert np.all(np.isclose(log_j, log_j2))
+
+
+def test_1D_input_call():
+    parameter_transformer = ParameterTransformer(nvars=NVARS)
+    X = np.ones(NVARS)
+    Y = parameter_transformer(X)
+    assert X.shape == Y.shape
+    Y2 = parameter_transformer(x=X)
+    assert X.shape == Y2.shape
+
+def test_1D_input_inverse():
+    parameter_transformer = ParameterTransformer(nvars=NVARS)
+    Y = np.ones((NVARS))
+    X = parameter_transformer.inverse(Y)
+    assert X.shape == Y.shape
+    X2 = parameter_transformer.inverse(u=Y)
+    assert X2.shape == Y.shape    
+
+def test_1D_input_log_abs_det_jacobian_():
+    parameter_transformer = ParameterTransformer(nvars=NVARS)
+    U = np.ones((NVARS))
+    log_j = parameter_transformer.log_abs_det_jacobian(U)
+    assert np.ndim(log_j) == 0
+    log_j2 = parameter_transformer.log_abs_det_jacobian(u=U)
+    assert np.ndim(log_j2) == 0
