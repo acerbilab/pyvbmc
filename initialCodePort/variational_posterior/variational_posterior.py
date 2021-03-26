@@ -2,6 +2,7 @@ import numpy as np
 from scipy.special import gammaln
 from scipy.optimize import fmin_l_bfgs_b
 
+from decorators import handle_1D_input
 from parameter_transformer import ParameterTransformer
 
 
@@ -140,6 +141,7 @@ class VariationalPosterior(object):
                 x = self.parameter_transformer.inverse(x)
         return x, i
 
+    @handle_1D_input(kwarg="x", argpos=0)
     def pdf(
         self,
         x: np.ndarray,
@@ -193,9 +195,6 @@ class VariationalPosterior(object):
             if gradflag is True, the function returns
             a tuple of (pdf, gradient)
         """
-        if np.ndim(x) == 1:
-            n = 1
-            x = x.reshape((1, x.shape[0]))
 
         # Convert points to transformed space
         if origflag and not transflag:

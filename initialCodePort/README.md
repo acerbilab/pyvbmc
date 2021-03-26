@@ -49,6 +49,14 @@ Currently, the aim is to use the standard python exceptions whenever it is sensi
 
 Please use fixtures when sensible and try to keep the total runtime of the tests as low as possible.
 
+## Modules and code organization
+
+We have decided against general util/misc modules for now. This means that general purpose functions should be included in a fitting existing module or in their own module. The reason for this is to force us to think about the generalization of a function and prevent incohesion of those general collections. Furthermore, it improves readability for new collaborators. See some reading about that [here](https://breadcrumbscollector.tech/stop-naming-your-python-modules-utils/). One example for this are the decorators that are included in the decorator module.
+
+## Decorators
+
+Try to evaluate if pre- and postprocessing in a function can be generalized with a decorator. One example is the handling of arrays of shape (N, ) to (N, 1) with the handle_1D_decorator in the decorator module.
+
 ## Render class diagrams
 The diagrams can be rendered using pyreverse which is a part of [pylint](https://pypi.org/project/pylint/)
 
