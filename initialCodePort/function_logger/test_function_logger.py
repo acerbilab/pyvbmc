@@ -1,5 +1,6 @@
-import pytest
 import numpy as np
+import pytest
+
 from function_logger import FunctionLogger
 from parameter_transformer.parameter_transformer import ParameterTransformer
 

@@ -2,6 +2,7 @@ import numpy as np
 
 from decorators import handle_1D_input
 
+
 class ParameterTransformer:
     def __init__(
         self,

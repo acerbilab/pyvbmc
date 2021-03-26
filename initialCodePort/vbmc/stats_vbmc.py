@@ -1,5 +1,5 @@
-from .optimstate_vbmc import OptimState
 from ..variational_posterior import VP
+from .optimstate_vbmc import OptimState
 
 
 class Stats(object):

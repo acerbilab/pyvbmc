@@ -1,5 +1,6 @@
-import pytest
 import numpy as np
+import pytest
+
 from parameter_transformer import ParameterTransformer
 
 NVARS = 3

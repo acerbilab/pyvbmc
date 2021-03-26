@@ -3,8 +3,8 @@ import sys
 import numpy as np
 
 from ..function_logger import FunctionLogger
-from .options_vbmc import OptionsVBMC
 from ..timer import Timer
+from .options_vbmc import OptionsVBMC
 
 
 def active_sample(

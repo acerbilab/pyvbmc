@@ -1,13 +1,14 @@
 import math
 import sys
-from ..gaussian_process import GPLite
-from .optimstate_vbmc import OptimState
-from .options_vbmc import OptionsVBMC
-from ..timer import Timer
+
 from ..entropy.entlb_vbmc import entlb_vbmc
 from ..entropy.entub_vbmc import entub_vbmc
-from .stats_vbmc import Stats
+from ..gaussian_process import GPLite
+from ..timer import Timer
 from ..variational_posterior import VP
+from .optimstate_vbmc import OptimState
+from .options_vbmc import OptionsVBMC
+from .stats_vbmc import Stats
 
 
 class VBMC(object):
