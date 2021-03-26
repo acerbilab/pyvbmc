@@ -150,3 +150,42 @@ def test_add_parameter_transform():
     assert np.all(f_logger.y[0] == f_logger.y_orig[0])
     assert np.all(f_logger.y_orig[0] == fval_orig)
 
+
+def test_call_invalid_func_value():
+    x = np.array([3, 4, 5])
+    return_inf_function = lambda x: x * np.inf
+    f_logger = FunctionLogger(return_inf_function, 3, False, 0)
+    with pytest.raises(ValueError):
+        f_logger(x)
+
+
+def test_call_invalid_sd_value():
+    x = np.array([3, 4, 5])
+    return_inf_function = lambda x: (np.sum(x), np.inf * 1)
+    f_logger = FunctionLogger(return_inf_function, 3, True, 2)
+    with pytest.raises(ValueError):
+        f_logger(x)
+
+
+def test_call_function_error():
+    x = np.array([3, 4, 5])
+    def error_function(x):
+        return 3 / 0
+    f_logger = FunctionLogger(error_function, 3, False, 0)
+    with pytest.raises(ZeroDivisionError) as err:
+        f_logger(x)
+        assert "FunctionLogger:FuncError" in err.value
+
+
+def test_add_invalid_func_value():
+    x = np.array([3, 4, 5])
+    f_logger = FunctionLogger(non_noisy_function, 3, False, 0)
+    with pytest.raises(ValueError):
+        f_logger.add(x, np.inf)
+
+
+def test_add_invalid_sd_value():
+    x = np.array([3, 4, 5])
+    f_logger = FunctionLogger(noisy_function, 3, True, 2)
+    with pytest.raises(ValueError):
+        f_logger.add(x, 3, np.inf)

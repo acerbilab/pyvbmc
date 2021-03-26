@@ -1,4 +1,3 @@
-import sys
 import numpy as np
 from parameter_transformer import ParameterTransformer
 from timer import Timer
@@ -110,41 +109,39 @@ class FunctionLogger(object):
                     fsd = None
             timer.stop_timer("funtime")
 
-            # Check function value
-            if (
-                not np.isscalar(fval_orig)
-                or not np.isfinite(fval_orig)
-                or not np.isreal(fval_orig)
-            ):
-                sys.exit(
-                    "FunctionLogger:InvalidFuncValue"
-                    + "The returned function value must be a finite real-valued scalar"
-                    + "(returned value: "
-                    + str(fval_orig)
-                    + ")"
-                )
-
-            # Check returned function SD
-            if self.noise_flag and (
-                not np.isscalar(fsd)
-                or not np.isfinite(fsd)
-                or not np.isreal(fsd)
-            ):
-                sys.exit(
-                    "FunctionLogger:InvalidNoiseValue"
-                    + "The returned estimated SD (second function output)"
-                    + "must be a finite, positive real-valued scalar (returned SD: "
-                    + str(fsd)
-                    + ")."
-                )
-
-        except:
-            sys.exit(
+        except Exception as err:
+            err.args += ((
                 "FunctionLogger:FuncError "
-                + "Error in executing the logged function: "
-                + str(fun)
+                + "Error in executing the logged function"
                 + "with input: "
-                + str(y)
+                + str(x_orig), )
+            )
+            raise
+
+        # Check function value
+        if np.any(
+            not np.isscalar(fval_orig)
+            or not np.isfinite(fval_orig)
+            or not np.isreal(fval_orig)
+        ):
+            raise ValueError(
+                "FunctionLogger:InvalidFuncValue"
+                + "The returned function value must be a finite real-valued scalar"
+                + "(returned value: "
+                + str(fval_orig)
+                + ")"
+            )
+
+        # Check returned function SD
+        if self.noise_flag and (
+            not np.isscalar(fsd) or not np.isfinite(fsd) or not np.isreal(fsd)
+        ):
+            raise ValueError(
+                "FunctionLogger:InvalidNoiseValue"
+                + "The returned estimated SD (second function output)"
+                + "must be a finite, positive real-valued scalar (returned SD: "
+                + str(fsd)
+                + ")."
             )
 
         # record timer stats
@@ -197,7 +194,7 @@ class FunctionLogger(object):
             or not np.isfinite(fval_orig)
             or not np.isreal(fval_orig)
         ):
-            sys.exit(
+            raise ValueError(
                 "FunctionLogger:InvalidFuncValue"
                 + "The returned function value must be a finite real-valued scalar"
                 + "(returned value: "
@@ -209,7 +206,7 @@ class FunctionLogger(object):
         if self.noise_flag and (
             not np.isscalar(fsd) or not np.isfinite(fsd) or not np.isreal(fsd)
         ):
-            sys.exit(
+            raise ValueError(
                 "FunctionLogger:InvalidNoiseValue"
                 + "The returned estimated SD (second function output)"
                 + "must be a finite, positive real-valued scalar (returned SD: "
