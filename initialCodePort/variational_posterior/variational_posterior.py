@@ -13,7 +13,7 @@ class VariationalPosterior(object):
 
     def __init__(self):
         self.d = None  # number of dimensions
-        self.k = None  # number of components
+        self.k : int = None  # number of components
         self.w = None
         self.mu = None
         self.sigma = None
@@ -23,6 +23,7 @@ class VariationalPosterior(object):
         self.optimize_lamb = None
         self.optimize_weights = None
         self.bounds = None
+        self.parameter_transformer = ParameterTransformer(3)
 
     def sample(
         self,

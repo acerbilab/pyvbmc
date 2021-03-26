@@ -48,7 +48,7 @@ def test_sample_balance_no_extra():
     x, i = vp.sample(n, balanceflag=True)
     assert np.all(x.shape == (n, 3))
     assert np.all(i.shape[0] == n)
-    unique, counts = np.unique(i, return_counts=True)
+    _, counts = np.unique(i, return_counts=True)
     assert np.all(counts == n / 2)
 
 
@@ -58,7 +58,7 @@ def test_sample_balance_extra():
     x, i = vp.sample(n, balanceflag=True)
     assert np.all(x.shape == (n, 3))
     assert np.all(i.shape[0] == n)
-    unique, counts = np.unique(i, return_counts=True)
+    _, counts = np.unique(i, return_counts=True)
     assert np.all(np.isin(counts, np.array([n // 2, n // 2 + 1])))
 
 
@@ -68,7 +68,7 @@ def test_sample_one_k():
     x, i = vp.sample(n)
     assert np.all(x.shape == (n, 3))
     assert np.all(i.shape[0] == n)
-    unique, counts = np.unique(i, return_counts=True)
+    _, counts = np.unique(i, return_counts=True)
     assert counts[0] == n
 
 
@@ -78,7 +78,7 @@ def test_sample_one_k_df():
     x, i = vp.sample(n, df=20)
     assert np.all(x.shape == (n, 3))
     assert np.all(i.shape[0] == n)
-    unique, counts = np.unique(i, return_counts=True)
+    _, counts = np.unique(i, return_counts=True)
     assert counts[0] == n
 
 
@@ -98,7 +98,7 @@ def test_sample_no_origflag():
     x, i = vp.sample(n, origflag=False)
     assert np.all(x.shape == (n, 3))
     assert np.all(i.shape[0] == n)
-    unique, counts = np.unique(i, return_counts=True)
+    _, counts = np.unique(i, return_counts=True)
     assert counts[0] == n
 
 
@@ -340,7 +340,7 @@ def test_moments_origflag(mocker):
     mocker.patch("vp.sample", return_value=rng.random((20, 3)))
     vp = mock_init_vbmc(k=2, nvars=3)
     mubar, sigma = vp.moments(n=1e6, covflag=True)
-    x2, _ = vp.sample(origflag=True, balanceflag=True)
+    x2, _ = vp.sample(n=1e6, origflag=True, balanceflag=True)
     assert mubar.shape == (3,)
     assert np.all(mubar == np.mean(x2, axis=0))
     assert sigma.shape == (3, 3)
