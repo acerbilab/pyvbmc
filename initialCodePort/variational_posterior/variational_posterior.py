@@ -1,6 +1,12 @@
+# for annotating VP as input of itself in mtv
+from __future__ import annotations
+
 import numpy as np
-from scipy.special import gammaln
+from scipy.integrate import simpson
+from scipy.interpolate import interp1d
 from scipy.optimize import fmin_l_bfgs_b
+from scipy.special import gammaln
+from scipy.stats import gaussian_kde
 
 from decorators import handle_1D_input
 from parameter_transformer import ParameterTransformer
@@ -13,7 +19,7 @@ class VariationalPosterior(object):
 
     def __init__(self):
         self.d = None  # number of dimensions
-        self.k : int = None  # number of components
+        self.k: int = None  # number of components
         self.w = None
         self.mu = None
         self.sigma = None
@@ -567,11 +573,117 @@ class VariationalPosterior(object):
 
             return x
 
-    def vbmc_mtv(self, vp2, Ns):
+    def mtv(
+        self,
+        vp2: VariationalPosterior = None,
+        samples: np.ndarray = None,
+        N : int = int(1e5),
+    ):
         """
-        Marginal Total Variation distances between two variational posteriors.
-        """
-        pass
+        mtv Marginal Total Variation distances between two variational posteriors.
+
+        Parameters
+        ----------
+        vp2 : VariationalPosterior, optional
+            other VariationalPosterior, by default None
+        samples : np.ndarray, optional
+            N-by-D matrices of samples from variational 
+            posteriors, by default None
+        N : int, optional
+            number of random draws
+            to estimate the MTV, by default int(1e5)
+
+        Returns
+        -------
+        np.ndarray
+            D-element vector whose elements are the total variation
+            distance between the marginal distributions of VP and VP2 or samples,
+            for each coordinate dimension. 
+
+        Raises
+        ------
+        ValueError
+            If neither vp2 nor samples are specified
+        """    
+        if vp2 is None and samples is None:
+            raise ValueError("Either vp2 or samples have to be not None")
+
+        xx1, _ = self.sample(N, True, True)
+        if vp2 is not None:
+            xx2, _ = vp2.sample(N, True, True)
+            lb2 = vp2.parameter_transformer.lb_orig
+            ub2 = vp2.parameter_transformer.ub_orig
+        else:
+            xx2 = samples
+            lb2 = np.full((1, xx2.shape[1]), -np.inf)
+            ub2 = np.full((1, xx2.shape[1]), np.inf)
+
+        nkde = 2 ** 13
+        mtv = np.zeros((1, self.d))
+        # Set bounds for kernel density estimate
+        lb1_xx = np.amin(xx1, axis=0)
+        ub1_xx = np.amax(xx1, axis=0)
+        range1 = ub1_xx - lb1_xx
+        lb1 = np.maximum(
+            lb1_xx - range1 / 10, self.parameter_transformer.lb_orig
+        )
+        ub1 = np.minimum(
+            ub1_xx + range1 / 10, self.parameter_transformer.ub_orig
+        )
+
+        lb2_xx = np.amin(xx2, axis=0)
+        ub2_xx = np.amax(xx2, axis=0)
+        range2 = ub2_xx - lb2_xx
+        lb2 = np.maximum(lb2_xx - range2 / 10, lb2)
+        ub2 = np.minimum(ub2_xx + range2 / 10, ub2)
+
+        def compute_density(data, n, min, max):
+            # set up the grid over which the density estimate is computed
+            r = max - min
+            xmesh = (np.linspace(0, r, num=n) + min).T
+            kernel = gaussian_kde(dataset=data)
+            return kernel(xmesh), xmesh[0]
+
+        # Compute marginal total variation
+        for d in range(self.d):
+
+            yy1, x1mesh = compute_density(
+                xx1[:, d], nkde, lb1[:, d], ub1[:, d]
+            )
+            # Ensure normalization
+            yy1 = yy1 / (simpson(yy1) * (x1mesh[1] - x1mesh[0]))
+            yy2, x2mesh = compute_density(
+                xx2[:, d], nkde, lb2[:, d], ub2[:, d]
+            )
+            # Ensure normalization
+            yy2 = yy2 / (simpson(yy2) * (x2mesh[1] - x2mesh[0]))
+
+            f = lambda x: np.abs(
+                interp1d(
+                    x1mesh,
+                    yy1,
+                    kind="cubic",
+                    fill_value=0,
+                    bounds_error=False,
+                )(x)
+                - interp1d(
+                    x2mesh,
+                    yy2,
+                    kind="cubic",
+                    fill_value=0,
+                    bounds_error=False,
+                )(x)
+            )
+            bb = np.sort(
+                np.array([x1mesh[0], x1mesh[-1], x2mesh[0], x2mesh[-1]])
+            )
+            for j in range(3):
+                xx_range = np.linspace(bb[j], bb[j + 1], num=int(1e5))
+                mtv[:, d] = mtv[:, d] + 0.5 * simpson(f(xx_range)) * (
+                    xx_range[1] - xx_range[0]
+                )
+
+        return mtv
 
     def vbmc_power(self, n, cutoff):
         """
