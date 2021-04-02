@@ -639,8 +639,7 @@ class VariationalPosterior(object):
 
         def compute_density(data, n, min, max):
             # set up the grid over which the density estimate is computed
-            r = max - min
-            xmesh = (np.linspace(0, r, num=n) + min).T
+            xmesh = (np.linspace(0, max - min, num=n) + min).T
             kernel = gaussian_kde(dataset=data)
             return kernel(xmesh), xmesh[0]
 
