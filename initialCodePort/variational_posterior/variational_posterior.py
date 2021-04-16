@@ -2,14 +2,13 @@
 from __future__ import annotations
 
 import numpy as np
-from scipy.integrate import simpson
+from decorators import handle_1D_input
+from parameter_transformer import ParameterTransformer
+from scipy.integrate import trapezoid
 from scipy.interpolate import interp1d
 from scipy.optimize import fmin_l_bfgs_b
 from scipy.special import gammaln
 from scipy.stats import gaussian_kde
-
-from decorators import handle_1D_input
-from parameter_transformer import ParameterTransformer
 
 
 class VariationalPosterior(object):
@@ -577,7 +576,7 @@ class VariationalPosterior(object):
         self,
         vp2: VariationalPosterior = None,
         samples: np.ndarray = None,
-        N : int = int(1e5),
+        N: int = int(1e5),
     ):
         """
         mtv Marginal Total Variation distances between two variational posteriors.
@@ -587,7 +586,7 @@ class VariationalPosterior(object):
         vp2 : VariationalPosterior, optional
             other VariationalPosterior, by default None
         samples : np.ndarray, optional
-            N-by-D matrices of samples from variational 
+            N-by-D matrices of samples from variational
             posteriors, by default None
         N : int, optional
             number of random draws
@@ -598,13 +597,13 @@ class VariationalPosterior(object):
         np.ndarray
             D-element vector whose elements are the total variation
             distance between the marginal distributions of VP and VP2 or samples,
-            for each coordinate dimension. 
+            for each coordinate dimension.
 
         Raises
         ------
         ValueError
             If neither vp2 nor samples are specified
-        """    
+        """
         if vp2 is None and samples is None:
             raise ValueError("Either vp2 or samples have to be not None")
 
@@ -650,26 +649,27 @@ class VariationalPosterior(object):
                 xx1[:, d], nkde, lb1[:, d], ub1[:, d]
             )
             # Ensure normalization
-            yy1 = yy1 / (simpson(yy1) * (x1mesh[1] - x1mesh[0]))
+            yy1 = yy1 / (trapezoid(yy1) * (x1mesh[1] - x1mesh[0]))
+
             yy2, x2mesh = compute_density(
                 xx2[:, d], nkde, lb2[:, d], ub2[:, d]
             )
             # Ensure normalization
-            yy2 = yy2 / (simpson(yy2) * (x2mesh[1] - x2mesh[0]))
+            yy2 = yy2 / (trapezoid(yy2) * (x2mesh[1] - x2mesh[0]))
 
             f = lambda x: np.abs(
                 interp1d(
                     x1mesh,
                     yy1,
                     kind="cubic",
-                    fill_value=0,
+                    fill_value=np.array([0]),
                     bounds_error=False,
                 )(x)
                 - interp1d(
                     x2mesh,
                     yy2,
                     kind="cubic",
-                    fill_value=0,
+                    fill_value=np.array([0]),
                     bounds_error=False,
                 )(x)
             )
@@ -678,10 +678,9 @@ class VariationalPosterior(object):
             )
             for j in range(3):
                 xx_range = np.linspace(bb[j], bb[j + 1], num=int(1e5))
-                mtv[:, d] = mtv[:, d] + 0.5 * simpson(f(xx_range)) * (
+                mtv[:, d] = mtv[:, d] + 0.5 * trapezoid(f(xx_range)) * (
                     xx_range[1] - xx_range[0]
                 )
-
         return mtv
 
     def vbmc_power(self, n, cutoff):
