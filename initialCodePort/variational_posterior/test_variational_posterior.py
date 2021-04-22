@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 from parameter_transformer import ParameterTransformer
+
 from variational_posterior import VariationalPosterior
 
 
@@ -383,3 +384,68 @@ def test_mode_origflag():
     vp.mu = np.ones((3, 2)) * [1, 4]
     with pytest.raises(NotImplementedError):
         vp.mode(origflag=True)
+
+
+def test_kldiv_missing_params():
+    vp = mock_init_vbmc()
+    with pytest.raises(ValueError):
+        vp.kldiv()
+
+
+def test_kldiv_no_gaussianflag_and_samples():
+    vp = mock_init_vbmc()
+    with pytest.raises(ValueError):
+        vp.kldiv(samples=np.ones(3), gaussflag=False)
+
+
+def test_kldiv_two_vp_identical_gaussflag():
+    vp = mock_init_vbmc()
+    kldivs = vp.kldiv(vp2=vp, gaussflag=True, N=int(1e6))
+    assert np.all(np.isclose(np.zeros(2), kldivs, atol=1e-4))
+
+
+def test_kldiv_two_vp_identical_samples_gaussflag():
+    vp = mock_init_vbmc()
+    samples, _ = vp.sample(int(1e5))
+    kldivs = vp.kldiv(samples=samples, gaussflag=True, N=int(1e6))
+    assert np.all(np.isclose(np.zeros(2), kldivs, atol=1e-3))
+
+
+def test_kldiv_two_vp_gaussflag():
+    vp = mock_init_vbmc(k=1, nvars=1)
+    vp2 = mock_init_vbmc(k=1, nvars=1)
+    vp.mu = np.zeros((1, 1))
+    vp.sigma = np.ones((1, 1))
+    vp2.mu = np.ones((1, 1)) * 10
+    vp2.sigma = np.ones((1, 1))
+    kldivs = vp.kldiv(vp2=vp2, gaussflag=True, N=int(1e6))
+    assert np.all(np.isclose(50, kldivs, atol=5e-1))
+
+
+def test_kldiv_two_vp_samples_gaussflag():
+    vp = mock_init_vbmc(k=1, nvars=1)
+    vp2 = mock_init_vbmc(k=1, nvars=1)
+    vp.mu = np.ones((1, 1)) * 0.5
+    vp.sigma = np.ones((1, 1))
+    vp2.mu = np.zeros((1, 1))
+    vp2.sigma = np.ones((1, 1))
+    samples, _ = vp2.sample(int(1e6))
+    kldivs = vp.kldiv(samples=samples, gaussflag=True, N=int(1e6))
+    assert np.all(np.isclose(np.ones(2) * 0.1244, kldivs, atol=1e-2))
+
+
+def test_kldiv_two_vp_identical_no_gaussflag():
+    vp = mock_init_vbmc()
+    kldivs = vp.kldiv(vp2=vp, gaussflag=False, N=int(1e6))
+    assert np.all(np.isclose(np.zeros(2), kldivs, atol=1e-4))
+
+
+def test_kldiv_two_vp_no_gaussflag():
+    vp = mock_init_vbmc(k=1, nvars=1)
+    vp2 = mock_init_vbmc(k=1, nvars=1)
+    vp.mu = np.ones((1, 1)) * 10
+    vp.sigma = np.ones((1, 1))
+    vp2.mu = np.zeros((1, 1))
+    vp2.sigma = np.ones((1, 1))
+    kldivs = vp.kldiv(vp2=vp2, gaussflag=False, N=int(1e6))
+    assert np.all(np.isclose(50, kldivs, atol=5e-1))

@@ -1,6 +1,8 @@
 # for annotating VP as input of itself in mtv
 from __future__ import annotations
 
+import sys
+
 import numpy as np
 from decorators import handle_1D_input
 from parameter_transformer import ParameterTransformer
@@ -682,6 +684,111 @@ class VariationalPosterior(object):
                     xx_range[1] - xx_range[0]
                 )
         return mtv
+
+    def kldiv(
+        self,
+        vp2: VariationalPosterior = None,
+        samples: np.ndarray = None,
+        N: int = int(1e5),
+        gaussflag: bool = False,
+    ):
+        """
+        kldiv Kullback-Leibler divergence between two variational posteriors
+
+        Parameters
+        ----------
+        vp2 : VariationalPosterior, optional
+            other VariationalPosterior, by default None
+        samples : np.ndarray, optional
+            N-by-D matrices of samples from variational
+            posteriors, by default None
+        N : int, optional
+            number of random draws
+            to estimate the MTV, by default int(1e5)
+        gaussflag : bool, optional
+            returns "Gaussianized" KL-divergence if GAUSSFLAG=True,
+            that is the KL divergence between two
+            multivariate normal distibutions with the same moments
+            as the variational posteriors given as inputs, by default False
+
+        Returns
+        -------
+        np.ndarray
+             Kullback-Leibler divergence
+
+        Raises
+        ------
+        ValueError
+            If neither vp2 nor samples are specified
+        ValueError
+            if vp2 is not provided but gaussflag true
+        """
+
+        if samples is None and vp2 is None:
+            raise ValueError("Either vp2 or samples have to be not None")
+
+        if not gaussflag and vp2 is None:
+            raise ValueError(
+                "Unless the KL divergence is gaussianized, VP2 is required."
+            )
+
+        def mvnkl(mu1, sigma1, mu2, sigma2):
+            # Kullback-Leibler divergence between two multivariate normal pdfs
+            if np.ndim(sigma1) == 0:
+                sigma1 = np.array([np.array([sigma1])])
+            if np.ndim(sigma2) == 0:
+                sigma2 = np.array([np.array([sigma2])])
+            if np.ndim(mu1) == 1:
+                mu1 = np.array([mu1])
+            if np.ndim(mu2) == 1:
+                mu2 = np.array([mu2])
+
+            d = mu1.shape[1]
+            dmu = (mu1 - mu2).T
+            detq1 = np.linalg.det(sigma1)
+            detq2 = np.linalg.det(sigma2)
+            lndet = np.log(detq2 / detq1)
+            a, _, _, _ = np.linalg.lstsq(sigma2, sigma1, rcond=None)
+            b, _, _, _ = np.linalg.lstsq(sigma2, dmu, rcond=None)
+            kl1 = 0.5 * (np.trace(a) + dmu.T @ b - d + lndet)
+            a, _, _, _ = np.linalg.lstsq(sigma1, sigma2, rcond=None)
+            b, _, _, _ = np.linalg.lstsq(sigma1, dmu, rcond=None)
+            kl2 = 0.5 * (np.trace(a) + dmu.T @ b - d - lndet)
+            return np.concatenate((kl1, kl2), axis=None)
+
+        if gaussflag:
+            if N == 0:
+                pass
+            else:
+                q1mu, q1sigma = self.moments(N, True, True)
+                if vp2 is not None:
+                    q2mu, q2sigma = vp2.moments(N, True, True)
+                else:
+                    q2mu = np.mean(samples)
+                    q2sigma = np.cov(samples.T)
+
+            kls = mvnkl(q1mu, q1sigma, q2mu, q2sigma)
+        else:
+            minp = sys.float_info.min
+
+            xx1, _ = self.sample(N, True, True)
+            q1 = self.pdf(xx1, True)
+            q2 = vp2.pdf(xx1, True)
+            q1[np.logical_or(q1 == 0, np.isinf(q1))] = 1
+            q2[np.logical_or(q2 == 0, np.isinf(q2))] = minp
+            kl1 = -np.mean(np.log(q2) - np.log(q1))
+
+            xx2, _ = vp2.sample(N, True, True)
+            q1 = self.pdf(xx2, True)
+            q2 = vp2.pdf(xx2, True)
+            q1[np.logical_or(q1 == 0, np.isinf(q1))] = minp
+            q2[np.logical_or(q2 == 0, np.isinf(q2))] = 1
+            kl2 = -np.mean(np.log(q1) - np.log(q2))
+            kls = np.concatenate((kl1, kl2), axis=None)
+
+        # Correct for numerical errors
+        kls[kls < 0] = 0
+        return kls
 
     def vbmc_power(self, n, cutoff):
         """
