@@ -451,7 +451,9 @@ class VariationalPosterior(object):
         if self.optimize_weights:
             self.w = self.w.conj().T / np.sum(self.w)
 
-        # remove mode (at least this is done in Matlab)
+        # remove mode
+        if(hasattr(self, "_mode")):
+            delattr(self, '_mode')
 
     def moments(self, n: int = int(1e6), origflag=True, covflag=False):
         """
@@ -804,23 +806,3 @@ class VariationalPosterior(object):
         # Correct for numerical errors
         kls[kls < 0] = 0
         return kls
-
-    def vbmc_power(self, n, cutoff):
-        """
-        Compute power posterior of variational approximation.
-        """
-        pass
-
-    def vbmc_plot(self, vp_array, stats):
-        """
-        docstring
-        """
-        pass
-
-    # private methods of vp class
-
-    def _robustSampleFromVP(self, Ns, Xrnd, quantile_thresh):
-        """
-        Robust sample from variational posterior
-        """
-        pass

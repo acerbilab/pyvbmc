@@ -1,5 +1,5 @@
 import numpy as np
-
+from functools import wraps
 
 def handle_1D_input(kwarg: str, argpos: int, return_scalar=False):
     """
@@ -16,6 +16,7 @@ def handle_1D_input(kwarg: str, argpos: int, return_scalar=False):
     """
 
     def decorator(function):
+        @wraps(function)
         def wrapper(self, *args, **kwargs):
 
             if kwarg in kwargs:

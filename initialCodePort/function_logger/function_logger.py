@@ -7,12 +7,6 @@ from timer import Timer
 class FunctionLogger(object):
     """
     FunctionLogger Evaluates a function and caches results
-
-    Porting status
-    --------------
-     - in _record(...) all the part
-     about checking (and dealing with) identical inputs
-     is missing
     """
 
     def __init__(

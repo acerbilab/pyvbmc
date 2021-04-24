@@ -4,6 +4,10 @@ from decorators import handle_1D_input
 
 
 class ParameterTransformer:
+    """
+    ParameterTransformer class
+    """
+
     def __init__(
         self,
         nvars: int,
