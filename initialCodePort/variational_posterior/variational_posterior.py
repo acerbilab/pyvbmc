@@ -313,7 +313,9 @@ class VariationalPosterior(object):
         # apply jacobian correction
         if origflag:
             if logflag:
-                y -= self.parameter_transformer.log_abs_det_jacobian(x)
+                y -= self.parameter_transformer.log_abs_det_jacobian(x)[
+                    :, np.newaxis
+                ]
                 if gradflag:
                     raise NotImplementedError(
                         "vbmc_pdf:NoOriginalGrad: Gradient computation in original space not supported yet."
@@ -525,10 +527,14 @@ class VariationalPosterior(object):
         """
 
         def nlnpdf(x0, origflag=origflag):
-            y, dy = self.pdf(
-                x0, origflag=origflag, logflag=True, gradflag=True
-            )
-            return -y, -dy
+            if origflag:
+                y = self.pdf(x0, origflag=True, logflag=True, gradflag=False)
+                return -y
+            else:
+                y, dy = self.pdf(
+                    x0, origflag=False, logflag=True, gradflag=True
+                )
+                return -y, -dy
 
         if origflag and hasattr(self, "_mode") and self._mode is not None:
             return self._mode
@@ -545,22 +551,31 @@ class VariationalPosterior(object):
             x_min = np.zeros((x0_mat.shape[0], self.d))
             ff = np.full((x0_mat.shape[0], 1), np.inf)
 
-            for k in range(x0_mat.shape[0]):
+            for k in range(x0_mat.shape[1]):
                 x0 = x0_mat[k]
 
                 if origflag:
                     x0 = self.parameter_transformer.inverse(x0)
 
                 if origflag:
-                    bounds = [
+                    bounds = np.asarray(
                         [
-                            self.parameter_transformer.lb_orig[:, k],
-                            self.parameter_transformer.ub_orig[:, k],
+                            np.concatenate(
+                                (
+                                    self.parameter_transformer.lb_orig[:, k],
+                                    self.parameter_transformer.ub_orig[:, k],
+                                ),
+                                axis=None,
+                            )
                         ]
-                        for x in x0
-                    ]
+                        * x0.size
+                    )
+                    x0 = np.minimum(
+                        self.parameter_transformer.ub_orig,
+                        np.maximum(x0, self.parameter_transformer.lb_orig),
+                    )
                     x_min[k], ff[k], _ = fmin_l_bfgs_b(
-                        func=nlnpdf, x0=x0, bounds=bounds
+                        func=nlnpdf, x0=x0, bounds=bounds, approx_grad=True
                     )
                 else:
                     x_min[k], ff[k], _ = fmin_l_bfgs_b(func=nlnpdf, x0=x0)

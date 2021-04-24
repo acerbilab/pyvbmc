@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 from parameter_transformer import ParameterTransformer
+from scipy.io import loadmat
 
 from variational_posterior import VariationalPosterior
 
@@ -21,6 +22,23 @@ def mock_init_vbmc(k=2, nvars=3):
     vp.optimize_mu = True
     vp.optimize_weights = False
     vp.bounds = list()
+    return vp
+
+
+def get_matlab_vp():
+    mat = loadmat("variational_posterior/vp-test.mat")
+    vp = VariationalPosterior()
+    vp.d = mat["D"][0, 0]
+    vp.k = mat["K"][0, 0]
+    vp.w = mat["w"]
+    vp.mu = mat["mu"]
+    vp.sigma = mat["sigma"]
+    vp.lamb = mat["lambda"]
+    vp.optimize_lamb = True if mat["optimize_lambda"][0, 0] == 1 else False
+    vp.optimize_mu = True if mat["optimize_mu"][0, 0] == 1 else False
+    vp.optimize_sigma = True if mat["optimize_sigma"][0, 0] == 1 else False
+    vp.optimize_weights = True if mat["optimize_weights"][0, 0] == 1 else False
+    vp.parameter_transformer = ParameterTransformer(vp.d)
     return vp
 
 
@@ -373,17 +391,17 @@ def test_mode_exists_already():
 
 
 def test_mode_no_origflag():
-    vp = mock_init_vbmc()
-    vp.mu = np.ones((3, 2)) * [1, 4]
-    mode2 = vp.mode(origflag=False)
-    assert np.all(1 == mode2)
+    vp = get_matlab_vp()
+    assert np.all(
+        np.isclose([0.0540, -0.1818], vp.mode(origflag=False), atol=1e-4)
+    )
 
 
 def test_mode_origflag():
-    vp = mock_init_vbmc()
-    vp.mu = np.ones((3, 2)) * [1, 4]
-    with pytest.raises(NotImplementedError):
-        vp.mode(origflag=True)
+    vp = get_matlab_vp()
+    assert np.all(
+        np.isclose([0.0540, -0.1818], vp.mode(origflag=True), atol=1e-4)
+    )
 
 
 def test_kldiv_missing_params():
