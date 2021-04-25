@@ -206,13 +206,13 @@ class VariationalPosterior(object):
         Raises
         ------
         NotImplementedError
-            np.isfinite(df) and df > 0 and gradflag=True 
+            np.isfinite(df) and df > 0 and gradflag=True
             (Gradient of heavy-tailed pdf not supported yet)
         NotImplementedError
-            np.isfinite(df) and df < 0 and gradflag=True 
+            np.isfinite(df) and df < 0 and gradflag=True
             (Gradient of heavy-tailed pdf not supported yet)
         NotImplementedError
-            oriflag=True and logflag=True and gradflag=True 
+            oriflag=True and logflag=True and gradflag=True
             (Gradient computation in original space not supported yet)
         """
         # Convert points to transformed space
@@ -415,7 +415,7 @@ class VariationalPosterior(object):
         ------
         ValueError
             sigma, lambda and weights must be positive when rawflag = False
-        """ 
+        """
 
         # check if sigma, lambda and weights are positive when rawflag = False
         if not rawflag:
@@ -468,8 +468,8 @@ class VariationalPosterior(object):
             self.w = self.w.conj().T / np.sum(self.w)
 
         # remove mode
-        if(hasattr(self, "_mode")):
-            delattr(self, '_mode')
+        if hasattr(self, "_mode"):
+            delattr(self, "_mode")
 
     def moments(self, n: int = int(1e6), origflag=True, covflag=False):
         """
@@ -791,7 +791,9 @@ class VariationalPosterior(object):
 
         if gaussflag:
             if N == 0:
-                pass
+                raise ValueError(
+                    "Analytical moments are available only for the transformed space."
+                )
             else:
                 q1mu, q1sigma = self.moments(N, True, True)
                 if vp2 is not None:

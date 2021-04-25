@@ -237,6 +237,7 @@ def test_pdf_df_real_negative():
     assert np.all(np.isclose(y[:10], 362.1287964795, rtol=1e-12, atol=1e-14))
     assert np.all(np.isclose(y[10:], 0.914743278670, rtol=1e-12, atol=1e-14))
 
+
 def test_pdf_heavy_tailed_pdf_gradient():
     vp = mock_init_vbmc(k=2, nvars=3)
     x = np.ones((1, 3))
@@ -245,10 +246,12 @@ def test_pdf_heavy_tailed_pdf_gradient():
     with pytest.raises(NotImplementedError):
         vp.pdf(x, df=-300, gradflag=True)
 
+
 def test_pdf_origflag_gradient():
     vp = mock_init_vbmc(k=2, nvars=3)
     with pytest.raises(NotImplementedError):
         vp.pdf(vp.mu.T, origflag=True, logflag=True, gradflag=True)
+
 
 def test_set_parameters_raw():
     k = 2
@@ -352,6 +355,7 @@ def test_get_set_parameters_roundtrip():
     assert theta.shape == theta2.shape
     assert np.all(theta == theta2)
 
+
 def test_get_set_parameters_roundtrip_no_mu():
     k = 2
     d = 3
@@ -363,6 +367,7 @@ def test_get_set_parameters_roundtrip_no_mu():
     assert theta.shape == theta2.shape
     assert np.all(theta == theta2)
 
+
 def test_get_set_parameters_delete_mode():
     k = 2
     d = 3
@@ -372,6 +377,7 @@ def test_get_set_parameters_delete_mode():
     assert hasattr(vp, "_mode") == True
     vp.set_parameters(theta, rawflag=True)
     assert hasattr(vp, "_mode") == False
+
 
 def test_get_set_parameters_roundtrip_non_raw():
     k = 2
@@ -496,3 +502,9 @@ def test_kldiv_two_vp_no_gaussflag():
     vp2.sigma = np.ones((1, 1))
     kldivs = vp.kldiv(vp2=vp2, gaussflag=False, N=int(1e6))
     assert np.all(np.isclose(50, kldivs, atol=5e-1))
+
+
+def test_kldiv_no_samples_gaussflag():
+    vp = mock_init_vbmc(k=1, nvars=1)
+    with pytest.raises(ValueError):
+        vp.kldiv(vp, gaussflag=True, N=0)

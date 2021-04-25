@@ -13,8 +13,7 @@ Porting status
 Matlab references of ported methods
 -----------------------------------
 - get_parameters(): `get_vptheta.m <https://github.com/lacerbi/vbmc/blob/master/misc/get_vptheta.m>`_ ✓
-- kldiv(): `vbmc_kldiv.m <https://github.com/lacerbi/vbmc/blob/master/vbmc_kldiv.m>`_ 
-   - if N == 0 for kldiv missing
+- kldiv(): `vbmc_kldiv.m <https://github.com/lacerbi/vbmc/blob/master/vbmc_kldiv.m>`_ ✓
 - mode(): `vbmc_mode.m <https://github.com/lacerbi/vbmc/blob/master/vbmc_mode.m>`_ ✓
 - moments(): `vbmc_moments.m <https://github.com/lacerbi/vbmc/blob/master/vbmc_moments.m>`_ ✓
 - mtv(): `vbmc_mtv.m <https://github.com/lacerbi/vbmc/blob/master/vbmc_mtv.m>`_  ✓
@@ -25,7 +24,7 @@ Matlab references of ported methods
 
 Known issues:
 -----------------------------------
-- mtv(): known issue with vps of more than one mode with high variance between the modes (due to the bandwidth computation of scipy.stats.gaussian_kde)
+- mtv(): known issue with vps of more than one mode with high variance between the modes (due to the bandwidth computation of  `scipy.stats.gaussian_kde <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.gaussian_kde.html>`_)
 
 Python documentation
 ====================
