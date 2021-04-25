@@ -19,7 +19,7 @@ class FunctionLogger(object):
         parameter_transformer: ParameterTransformer = None,
     ):
         """
-        __init__ [summary]
+        __init__ Initialize FunctionLogger object
 
         Parameters
         ----------
@@ -76,10 +76,20 @@ class FunctionLogger(object):
 
         Returns
         -------
-        (float, float, int)
-            result of the evaluatation and
-            optionally the (estimated) SD of the returned value
-            and the index of the last updated entry
+        fval : float
+            result of the evaluation
+        SD : float
+            the (estimated) SD of the returned value
+        idx : int
+            index of the last updated entry
+
+        Raises
+        ------
+        ValueError
+            function value must be a finite real-valued scalar
+        ValueError
+            (estimated) SD (second function output)
+            must be a finite, positive real-valued scalar
         """
 
         timer = Timer()
@@ -105,11 +115,11 @@ class FunctionLogger(object):
             timer.stop_timer("funtime")
 
         except Exception as err:
-            err.args += ((
+            err.args += (
                 "FunctionLogger:FuncError "
                 + "Error in executing the logged function"
                 + "with input: "
-                + str(x_orig), )
+                + str(x_orig),
             )
             raise
 
@@ -152,14 +162,14 @@ class FunctionLogger(object):
 
     def add(self, x: np.ndarray, fval_orig: float, fsd: float = None):
         """
-        add Add previously evaluated function sample
+        add previously evaluated function sample
 
         Parameters
         ----------
         x : np.ndarray
             the point at which the function has been evaluated
         fval_orig : float
-            the result of the evaluatation
+            the result of the evaluation
         fsd : float, optional
             (estimated) SD of the returned value
             (if heteroskedastic noise handling is on), by default None
@@ -264,7 +274,40 @@ class FunctionLogger(object):
             self.nevals, np.zeros((resize_amount, 1)), axis=0
         )
 
-    def _record(self, x_orig, x, fval_orig, fsd, fun_evaltime):
+    def _record(
+        self,
+        x_orig: float,
+        x: float,
+        fval_orig: float,
+        fsd: float,
+        fun_evaltime: float,
+    ):
+        """
+        _record a private method to save function values to class attributes
+
+        Parameters
+        ----------
+        x_orig : float
+            the point at which the function has been evaluated
+            (in original space)
+        x : float
+            the point at which the function has been evaluated
+            (in transformed space)
+        fval_orig : float
+            the result of the evaluation
+        fsd : float
+            (estimated) SD of the returned value
+            (if heteroskedastic noise handling is on)
+        fun_evaltime : float
+            the duration of the time it took to evaluate the function
+
+        Returns
+        -------
+        fval : float
+            the result of the evaluation
+        idx : int
+            index of the last updated entry
+        """
         duplicateFlag = False
 
         if duplicateFlag:

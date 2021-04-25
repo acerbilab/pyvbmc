@@ -64,6 +64,16 @@ def test_add_expand_cache():
     assert np.all(f_logger.y_orig[1] == y)
     assert f_logger.cache_count == 2
 
+def test_add_no_fsd():
+    x = np.array([3, 4, 5])
+    y = non_noisy_function(x)
+    f_logger = FunctionLogger(non_noisy_function, 3, True, 1, cache_size=1)
+    f_logger.add(x, y, None)
+    f_logger.add(x, y, None)
+    assert np.all(f_logger.x[1] == x)
+    assert np.all(f_logger.y_orig[1] == y)
+    assert np.all(f_logger.S[1] == 1)
+
 
 def test_call_record_stats():
     x = np.array([3, 4, 5])
@@ -175,7 +185,7 @@ def test_call_function_error():
     f_logger = FunctionLogger(error_function, 3, False, 0)
     with pytest.raises(ZeroDivisionError) as err:
         f_logger(x)
-        assert "FunctionLogger:FuncError" in err.value
+    assert "FunctionLogger:FuncError" in str(err.value)
 
 
 def test_add_invalid_func_value():

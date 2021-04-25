@@ -6,6 +6,9 @@ Porting status
 ==============
 .. todo::
      - in _record(...) all the part about checking (and dealing with) identical inputs is missing
+     - what does add() return
+     - general checks for return values
+     - general checks for orig / non original space in descriptions
 
 Matlab references
 -----------------
