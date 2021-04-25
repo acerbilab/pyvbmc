@@ -18,9 +18,7 @@ sys.path.insert(0, os.path.abspath("../.."))
 # -- Project information -----------------------------------------------------
 
 project = "pyvmbc"
-copyright = (
-    "2021, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki)"
-)
+copyright = "2021, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki)"
 author = "Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki)"
 
 
@@ -34,6 +32,7 @@ extensions = [
     "numpydoc",
     "sphinx.ext.autosummary",
     "sphinx.ext.todo",
+    "sphinx.ext.coverage",
 ]
 numpydoc_show_class_members = False
 
@@ -43,6 +42,8 @@ autodoc_default_options = {
     "undoc-members": True,
     "exclude-members": "__weakref__",
 }
+
+coverage_show_missing_items = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]

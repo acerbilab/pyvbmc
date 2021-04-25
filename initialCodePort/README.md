@@ -41,6 +41,7 @@ They can be run with:
 
 ```
 pytest
+pytest --cov=. --cov-report html:cov_html
 ```
 
 ## Exceptions
