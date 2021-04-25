@@ -615,7 +615,8 @@ class VariationalPosterior(object):
     ):
         """
         mtv Marginal Total Variation distances between two variational posteriors.
-
+        The other can be specified either by another VP or with samples
+        
         Parameters
         ----------
         vp2 : VariationalPosterior, optional
@@ -727,6 +728,7 @@ class VariationalPosterior(object):
     ):
         """
         kldiv Kullback-Leibler divergence between two variational posteriors
+        The other can be specified either by another VP or with samples
 
         Parameters
         ----------
