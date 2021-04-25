@@ -237,6 +237,18 @@ def test_pdf_df_real_negative():
     assert np.all(np.isclose(y[:10], 362.1287964795, rtol=1e-12, atol=1e-14))
     assert np.all(np.isclose(y[10:], 0.914743278670, rtol=1e-12, atol=1e-14))
 
+def test_pdf_heavy_tailed_pdf_gradient():
+    vp = mock_init_vbmc(k=2, nvars=3)
+    x = np.ones((1, 3))
+    with pytest.raises(NotImplementedError):
+        vp.pdf(x, df=300, gradflag=True)
+    with pytest.raises(NotImplementedError):
+        vp.pdf(x, df=-300, gradflag=True)
+
+def test_pdf_origflag_gradient():
+    vp = mock_init_vbmc(k=2, nvars=3)
+    with pytest.raises(NotImplementedError):
+        vp.pdf(vp.mu.T, origflag=True, logflag=True, gradflag=True)
 
 def test_set_parameters_raw():
     k = 2
@@ -340,6 +352,26 @@ def test_get_set_parameters_roundtrip():
     assert theta.shape == theta2.shape
     assert np.all(theta == theta2)
 
+def test_get_set_parameters_roundtrip_no_mu():
+    k = 2
+    d = 3
+    vp = mock_init_vbmc(k=k, nvars=d)
+    vp.optimize_mu = False
+    theta = vp.get_parameters(rawflag=True)
+    vp.set_parameters(theta, rawflag=True)
+    theta2 = vp.get_parameters(rawflag=True)
+    assert theta.shape == theta2.shape
+    assert np.all(theta == theta2)
+
+def test_get_set_parameters_delete_mode():
+    k = 2
+    d = 3
+    vp = mock_init_vbmc(k=k, nvars=d)
+    theta = vp.get_parameters(rawflag=True)
+    vp._mode = np.ones(d)
+    assert hasattr(vp, "_mode") == True
+    vp.set_parameters(theta, rawflag=True)
+    assert hasattr(vp, "_mode") == False
 
 def test_get_set_parameters_roundtrip_non_raw():
     k = 2
@@ -353,17 +385,14 @@ def test_get_set_parameters_roundtrip_non_raw():
     assert np.all(theta == theta2)
 
 
-@pytest.fixture
-def test_moments_origflag(mocker):
-    rng = np.random.default_rng()
-    mocker.patch("vp.sample", return_value=rng.random((20, 3)))
+def test_moments_origflag():
     vp = mock_init_vbmc(k=2, nvars=3)
-    mubar, sigma = vp.moments(n=1e6, covflag=True)
-    x2, _ = vp.sample(n=1e6, origflag=True, balanceflag=True)
+    mubar, sigma = vp.moments(n=int(1e6), covflag=True)
+    x2, _ = vp.sample(n=int(1e6), origflag=True, balanceflag=True)
     assert mubar.shape == (3,)
-    assert np.all(mubar == np.mean(x2, axis=0))
+    assert np.all(np.isclose(mubar, np.mean(x2, axis=0)))
     assert sigma.shape == (3, 3)
-    assert np.all(sigma == np.cov(x2.T))
+    assert np.all(np.isclose(sigma, np.cov(x2.T)))
 
 
 def test_moments_no_origflag():

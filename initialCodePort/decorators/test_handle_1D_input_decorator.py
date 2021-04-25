@@ -7,9 +7,7 @@ def test_1D_kwarg():
     class Foo:
         @handle_1D_input(kwarg="x", argpos=0)
         def bar(self, x):
-            if np.ndim(x) == 1:
-                return np.reshape(x, (1, x.shape[1]))
-            else:
+            if np.ndim(x) > 1:
                 return x
 
     x = np.ones(10)
@@ -20,9 +18,7 @@ def test_1D_posarg():
     class Foo:
         @handle_1D_input(kwarg="x", argpos=0)
         def bar(self, x):
-            if np.ndim(x) == 1:
-                return np.reshape(x, (1, x.shape[1]))
-            else:
+            if np.ndim(x) > 1:
                 return x
 
     x = np.ones(10)
@@ -33,9 +29,7 @@ def test_1D_ignoring_2D():
     class Foo:
         @handle_1D_input(kwarg="x", argpos=0)
         def bar(self, x):
-            if np.ndim(x) == 1:
-                return np.reshape(x, (1, x.shape[1]))
-            else:
+            if np.ndim(x) > 1:
                 return x
 
     x = np.ones((10, 20))
@@ -56,10 +50,7 @@ def test_1D_return_multiple_returns():
     class Foo:
         @handle_1D_input(kwarg="x", argpos=0)
         def bar(self, x):
-            if np.ndim(x) == 1:
-                y = np.reshape(x, (1, x.shape[1]))
-                return y, y
-            else:
+            if np.ndim(x) > 1:
                 return x, x
 
     x = np.ones(10)

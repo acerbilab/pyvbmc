@@ -69,13 +69,14 @@ class VariationalPosterior(object):
 
         Returns
         -------
-        (X : np.ndarray, I : np.ndarray)
-            X : N-by-D matrix X of random vectors chosen
+        X : np.ndarray
+            N-by-D matrix X of random vectors chosen
             from the variational posterior
-            I : N-by-1 array such that the n-th
-                element of I indicates the index of the
-                variational mixture component from which
-                the n-th row of X has been generated.
+        I : np.ndarray
+            N-by-1 array such that the n-th
+            element of I indicates the index of the
+            variational mixture component from which
+            the n-th row of X has been generated.
         """
         # missing to sample from gp
         gp_sample = False
@@ -161,7 +162,6 @@ class VariationalPosterior(object):
     ):
         """
         pdf probability density function of VBMC posterior approximation
-        gradientflag part missing
 
         Parameters
         ----------
@@ -196,14 +196,25 @@ class VariationalPosterior(object):
 
         Returns
         -------
-        nd.array
+        pdf: np.ndarray
             probability density of the variational posterior
             evaluated at each row of x.
-        (nd.array, nd.array)
+        gradient: np.ndarray
             if gradflag is True, the function returns
-            a tuple of (pdf, gradient)
-        """
+            the gradient as well
 
+        Raises
+        ------
+        NotImplementedError
+            np.isfinite(df) and df > 0 and gradflag=True 
+            (Gradient of heavy-tailed pdf not supported yet)
+        NotImplementedError
+            np.isfinite(df) and df < 0 and gradflag=True 
+            (Gradient of heavy-tailed pdf not supported yet)
+        NotImplementedError
+            oriflag=True and logflag=True and gradflag=True 
+            (Gradient computation in original space not supported yet)
+        """
         # Convert points to transformed space
         if origflag and not transflag:
             x = self.parameter_transformer(x)
@@ -345,7 +356,7 @@ class VariationalPosterior(object):
 
         Returns
         -------
-        np.ndarray
+        theta : np.ndarray
             parameters flattenend as a 1D array
         """
 
@@ -399,7 +410,12 @@ class VariationalPosterior(object):
         rawflag : bool, optional
             specifies whether the sigma and lambda are
             passed as raw (unconstrained) or not, by default True
-        """
+
+        Raises
+        ------
+        ValueError
+            sigma, lambda and weights must be positive when rawflag = False
+        """ 
 
         # check if sigma, lambda and weights are positive when rawflag = False
         if not rawflag:
@@ -476,9 +492,9 @@ class VariationalPosterior(object):
 
         Returns
         -------
-        nd.array
+        mean: np.ndarray
             mean of the variational posterior
-        (nd.array, nd.array)
+        cov: np.ndarray
             if covflag is True, the function returns
             a tuple of (mean, covariance) of the
             variational posterior
@@ -524,7 +540,7 @@ class VariationalPosterior(object):
 
         Returns
         -------
-        np.ndarray
+        mode: np.ndarray
             the mode of the variational posterior
         """
 
@@ -613,7 +629,7 @@ class VariationalPosterior(object):
 
         Returns
         -------
-        np.ndarray
+        mtv: np.ndarray
             D-element vector whose elements are the total variation
             distance between the marginal distributions of VP and VP2 or samples,
             for each coordinate dimension.
@@ -730,7 +746,7 @@ class VariationalPosterior(object):
 
         Returns
         -------
-        np.ndarray
+        kldiv: np.ndarray
              Kullback-Leibler divergence
 
         Raises
