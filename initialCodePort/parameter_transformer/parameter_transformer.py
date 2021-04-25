@@ -17,7 +17,7 @@ class ParameterTransformer:
         plausible_upper_bounds: np.ndarray = None,
     ):
         """
-        __init__ [summary]
+        __init__ Initialize ParameterTransformer
 
         Parameters
         ----------
@@ -105,12 +105,12 @@ class ParameterTransformer:
 
         Parameters
         ----------
-        x : nd.array
+        x : np.ndarray
             a N x NVARS array, where N is the number of input data and NVARS is the number of dimensions.
 
         Returns
         -------
-        nd.array
+        u : np.ndarray
             the variables transformed to unconstrained variables
         """
 
@@ -150,7 +150,7 @@ class ParameterTransformer:
 
         Returns
         -------
-        np.ndarray
+        x : np.ndarray
             constrained variables
         """
         # # rotate input (copy array before)
@@ -193,11 +193,11 @@ class ParameterTransformer:
         Parameters
         ----------
         u : np.ndarray
-            [description]
+            point where the pdf should be evaluated
 
         Returns
         -------
-        np.array
+        p : np.ndarray
             log probability term
         """
         u_c = np.copy(u)
