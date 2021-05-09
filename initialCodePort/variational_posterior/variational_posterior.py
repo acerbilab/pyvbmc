@@ -18,19 +18,63 @@ class VariationalPosterior(object):
     Variational Posterior class
     """
 
-    def __init__(self):
-        self.d = None  # number of dimensions
-        self.k: int = None  # number of components
-        self.w = None
-        self.mu = None
-        self.sigma = None
-        self.lamb = None
-        self.optimize_mu = None
-        self.optimize_sigma = None
-        self.optimize_lamb = None
-        self.optimize_weights = None
+    def __init__(
+            self,
+            d: int,
+            k: int = 2,
+            x0 = None,
+            parameter_transformer = None
+            ):
+        """
+        __init__ Initialize VariationalPosterior
+
+        Parameters
+        ----------
+        d : int
+            number of dimensions
+        k : int, optional
+            number of mixture components, default 2
+        x0 : np.ndarray, optional
+            starting vector for the mixture components means, it can be a 
+            single array or multiple rows (up to k); missing rows are 
+            duplicated by making copies of x0, default np.zeros
+        parameter_transformer : ParameterTransformer, optional
+            a ParameterTransformer object specifying the transformation of the
+            input space that leads to the current representation used by the 
+            variational posterior, by default uses an identity transform
+        """
+        
+        self.d = d          # number of dimensions
+        self.k: int = k     # number of components
+        
+        if x0 is None:
+            x0 = np.zeros(d,k)
+        elif x0.size == d:
+            x0.reshape(-1,1)            # reshape to vertical array
+            x0 = np.tile(x0, (1,k))     # copy vector
+        else:
+            x0 = x0.T
+            x0 = np.tile(x0, int(np.ceil(self.k / x0.shape[1])))
+            x0 = x0[:,0:self.k]
+                    
+        self.w = np.ones((1, k)) / k
+        self.mu = x0 + 1e-6 * np.random.randn(self.d, self.k)
+        self.sigma = 1e-3 * np.ones((1, k))
+        self.lamb = np.ones((self.d, 1))
+        
+        # By default, optimize all variational parameters
+        self.optimize_weights = True
+        self.optimize_mu = True
+        self.optimize_sigma = True
+        self.optimize_lamb = True
+                
+        if parameter_transformer is None:
+            self.parameter_transformer = ParameterTransformer(self.d)
+        else:
+            self.parameter_transformer = parameter_transformer
+        
         self.bounds = None
-        self.parameter_transformer = ParameterTransformer(3)
+        self.stats = None
 
     def sample(
         self,
