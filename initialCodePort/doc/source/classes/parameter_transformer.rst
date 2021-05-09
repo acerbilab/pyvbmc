@@ -5,8 +5,7 @@ ParameterTransformer
 Porting status
 ==============
 .. todo::
-     - ask Luigi what is missing, because this is based on a trimmed version of warpvars_vbmc.m
-     - how about scale and rotate?
+     - scale and rotate? (do later)
 
 Matlab references
 -----------------
