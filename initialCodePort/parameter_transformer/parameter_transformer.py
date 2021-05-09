@@ -101,12 +101,12 @@ class ParameterTransformer:
     @handle_1D_input(kwarg="x", argpos=0)
     def __call__(self, x: np.ndarray):
         """
-        __call__ performs direct transform of constrained variables X into unconstrained variables Y
+        __call__ performs direct transform of original variables X into unconstrained variables U
 
         Parameters
         ----------
         x : np.ndarray
-            a N x NVARS array, where N is the number of input data and NVARS is the number of dimensions.
+            a N x NVARS array, where N is the number of input data and NVARS is the number of dimensions
 
         Returns
         -------
@@ -140,8 +140,8 @@ class ParameterTransformer:
     @handle_1D_input(kwarg="u", argpos=0)
     def inverse(self, u: np.ndarray):
         """
-        inverse performs inverse transform of
-        unconstrained variables u into constrained variables x.
+        inverse performs inverse transform of unconstrained variables u 
+        into variables x in the original space
 
         Parameters
         ----------
@@ -151,7 +151,7 @@ class ParameterTransformer:
         Returns
         -------
         x : np.ndarray
-            constrained variables
+            original variables
         """
         # # rotate input (copy array before)
         # if self.R_mat is not None:
@@ -187,18 +187,20 @@ class ParameterTransformer:
     @handle_1D_input(kwarg="u", argpos=0, return_scalar=True)
     def log_abs_det_jacobian(self, u: np.ndarray):
         """
-        log_abs_det_jacobian returns log probability term for the
-        original log pdf evaluated at f^{-1}(Y).
+        log_abs_det_jacobian returns the log absolute value of the determinant 
+        of the Jacobian of the parameter transformation evaluated at U, that is 
+        log |d\du(g^-1(u))|
 
         Parameters
         ----------
         u : np.ndarray
-            point where the pdf should be evaluated
+            points where the log determinant of the Jacobian should be 
+            evaluated (in transformed space)
 
         Returns
         -------
         p : np.ndarray
-            log probability term
+            log absolute determinant of the Jacobian
         """
         u_c = np.copy(u)
 

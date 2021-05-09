@@ -176,8 +176,12 @@ class FunctionLogger(object):
 
         Returns
         -------
-        None
-            ???
+        fval : float
+            result of the evaluation
+        SD : float
+            the (estimated) SD of the returned value
+        idx : int
+            index of the last updated entry
         """
         # Convert back to original space
         if self.transform_parameters:
@@ -201,7 +205,7 @@ class FunctionLogger(object):
         ):
             raise ValueError(
                 "FunctionLogger:InvalidFuncValue"
-                + "The returned function value must be a finite real-valued scalar"
+                + "The provided function value must be a finite real-valued scalar"
                 + "(returned value: "
                 + str(fval_orig)
                 + ")"
@@ -213,7 +217,7 @@ class FunctionLogger(object):
         ):
             raise ValueError(
                 "FunctionLogger:InvalidNoiseValue"
-                + "The returned estimated SD (second function output)"
+                + "The provided estimated SD (second function output)"
                 + "must be a finite, positive real-valued scalar (returned SD: "
                 + str(fsd)
                 + ")."
@@ -221,6 +225,7 @@ class FunctionLogger(object):
 
         self.cache_count += 1
         fval, idx = self._record(x_orig, x, fval_orig, fsd, None)
+        return fval, fsd, idx
 
     def finalize(self):
         """
