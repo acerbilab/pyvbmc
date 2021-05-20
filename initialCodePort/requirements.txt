@@ -1,0 +1,7 @@
+# run: pip install -i requirements.txt
+numpy==1.19.2
+numpydoc==1.1.0
+scipy==1.6.1
+pytest-cov==2.11.1
+pytest-profiling==1.7.0
+sphinx==3.5.2
