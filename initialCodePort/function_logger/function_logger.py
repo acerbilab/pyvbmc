@@ -50,14 +50,14 @@ class FunctionLogger(object):
 
         self.func_count: int = 0
         self.cache_count: int = 0
-        self.x_orig = np.empty((cache_size, self.nvars))
-        self.y_orig = np.empty((cache_size, 1))
-        self.x = np.empty((cache_size, self.nvars))
-        self.y = np.empty((cache_size, 1))
+        self.x_orig = np.full([cache_size, self.nvars], np.nan)
+        self.y_orig = np.full([cache_size, 1], np.nan)
+        self.x = np.full([cache_size, self.nvars], np.nan)
+        self.y = np.full([cache_size, 1], np.nan)
         self.nevals = np.zeros((cache_size, 1))
 
         if self.noise_flag:
-            self.S = np.empty((cache_size, 1))
+            self.S = np.full([cache_size, 1], np.nan)
 
         self.Xn: int = -1  # Last filled entry
         self.X_flag = np.full((cache_size, 1), False, dtype=bool)
