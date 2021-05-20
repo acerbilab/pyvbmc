@@ -59,8 +59,8 @@ def test_add_expand_cache():
     f_logger = FunctionLogger(non_noisy_function, 3, False, 0, cache_size=1)
     assert f_logger.x.shape[0] == 1
     f_logger.add(x, y, None)
-    f_logger.add(x*2, y, None)
-    assert np.all(f_logger.x[1] == x*2)
+    f_logger.add(x * 2, y, None)
+    assert np.all(f_logger.x[1] == x * 2)
     assert np.all(f_logger.y_orig[1] == y)
     assert f_logger.cache_count == 2
 
@@ -70,8 +70,8 @@ def test_add_no_fsd():
     y = non_noisy_function(x)
     f_logger = FunctionLogger(non_noisy_function, 3, True, 1, cache_size=1)
     f_logger.add(x, y, None)
-    f_logger.add(x*2, y, None)
-    assert np.all(f_logger.x[1] == x*2)
+    f_logger.add(x * 2, y, None)
+    assert np.all(f_logger.x[1] == x * 2)
     assert np.all(f_logger.y_orig[1] == y)
     assert np.all(f_logger.S[1] == 1)
 
@@ -152,7 +152,7 @@ def test_record_duplicate_fsd():
     assert np.isclose(f_logger.y[1], 5, rtol=1e-12, atol=1e-14)
     assert np.isclose(f_logger.y_orig[1], 5, rtol=1e-12, atol=1e-14)
     assert f_logger.fun_evaltime[1] == 5
-    assert f_logger.S[1] ==  1/np.sqrt(1/9 + 1/9)
+    assert f_logger.S[1] == 1 / np.sqrt(1 / 9 + 1 / 9)
 
 
 def test_finalize():
