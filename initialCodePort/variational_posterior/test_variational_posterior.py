@@ -6,28 +6,9 @@ from scipy.io import loadmat
 from variational_posterior import VariationalPosterior
 
 
-def mock_init_vbmc(k=2, nvars=3):
-    vp = VariationalPosterior()
-    vp.d = nvars
-    vp.k = k
-    x0 = np.array([5])
-    x0_start = np.tile(x0, int(np.ceil(vp.k / x0.shape[0])))
-    vp.w = np.ones((1, k)) / k
-    vp.mu = x0_start.T + 1e-6 * np.random.randn(vp.d, vp.k)
-    vp.sigma = 1e-3 * np.ones((1, k))
-    vp.lamb = np.ones((vp.d, 1))
-    vp.parameter_transformer = ParameterTransformer(nvars)
-    vp.optimize_sigma = True
-    vp.optimize_lamb = True
-    vp.optimize_mu = True
-    vp.optimize_weights = False
-    vp.bounds = list()
-    return vp
-
-
 def get_matlab_vp():
     mat = loadmat("variational_posterior/vp-test.mat")
-    vp = VariationalPosterior()
+    vp = VariationalPosterior(2, 2, np.array([[5]]))
     vp.d = mat["D"][0, 0]
     vp.k = mat["K"][0, 0]
     vp.w = mat["w"]
@@ -43,7 +24,7 @@ def get_matlab_vp():
 
 
 def test_sample_n_lower_1():
-    vp = mock_init_vbmc(k=2, nvars=3)
+    vp = VariationalPosterior(3, 2, np.array([[5]]))
     x, i = vp.sample(0)
     assert np.all(x.shape == np.zeros((0, 3)).shape)
     assert np.all(i.shape == np.zeros((0, 1)).shape)
@@ -52,7 +33,7 @@ def test_sample_n_lower_1():
 
 
 def test_sample_default():
-    vp = mock_init_vbmc(k=2, nvars=3)
+    vp = VariationalPosterior(3, 2, np.array([[5]]))
     n = int(1e6)
     x, i = vp.sample(n)
     assert np.all(x.shape == (n, 3))
@@ -62,7 +43,7 @@ def test_sample_default():
 
 
 def test_sample_balance_no_extra():
-    vp = mock_init_vbmc(k=2, nvars=3)
+    vp = VariationalPosterior(3, 2, np.array([[5]]))
     n = 10
     x, i = vp.sample(n, balanceflag=True)
     assert np.all(x.shape == (n, 3))
@@ -72,7 +53,7 @@ def test_sample_balance_no_extra():
 
 
 def test_sample_balance_extra():
-    vp = mock_init_vbmc(k=2, nvars=3)
+    vp = VariationalPosterior(3, 2, np.array([[5]]))
     n = 11
     x, i = vp.sample(n, balanceflag=True)
     assert np.all(x.shape == (n, 3))
@@ -82,7 +63,7 @@ def test_sample_balance_extra():
 
 
 def test_sample_one_k():
-    vp = mock_init_vbmc(k=1, nvars=3)
+    vp = VariationalPosterior(3, 1, np.array([[5]]))
     n = 11
     x, i = vp.sample(n)
     assert np.all(x.shape == (n, 3))
@@ -92,7 +73,7 @@ def test_sample_one_k():
 
 
 def test_sample_one_k_df():
-    vp = mock_init_vbmc(k=1, nvars=3)
+    vp = VariationalPosterior(3, 1, np.array([[5]]))
     n = 11
     x, i = vp.sample(n, df=20)
     assert np.all(x.shape == (n, 3))
@@ -102,7 +83,7 @@ def test_sample_one_k_df():
 
 
 def test_sample_df():
-    vp = mock_init_vbmc(k=2, nvars=3)
+    vp = VariationalPosterior(3, 2, np.array([[5]]))
     n = int(1e4)
     x, i = vp.sample(n, df=20)
     assert np.all(x.shape == (n, 3))
@@ -112,7 +93,7 @@ def test_sample_df():
 
 
 def test_sample_no_origflag():
-    vp = mock_init_vbmc(k=1, nvars=3)
+    vp = VariationalPosterior(3, 1, np.array([[5]]))
     n = 11
     x, i = vp.sample(n, origflag=False)
     assert np.all(x.shape == (n, 3))
@@ -124,7 +105,7 @@ def test_sample_no_origflag():
 def test_pdf_default_no_origflag():
     n = 20
     d = 3
-    vp = mock_init_vbmc(k=2, nvars=d)
+    vp = VariationalPosterior(d, 2, np.array([[5]]))
     vp.mu = np.ones((3, 2)) * 5
     x = np.ones((n, d)) * 4.996
     y = vp.pdf(x, origflag=False)
@@ -140,7 +121,7 @@ def test_pdf_default_no_origflag():
 def test_pdf_grad_default_no_origflag():
     n = 20
     d = 3
-    vp = mock_init_vbmc(k=2, nvars=d)
+    vp = VariationalPosterior(d, 2, np.array([[5]]))
     vp.mu = np.ones((3, 2)) * 5
     x = np.ones((n, d)) * 4.996
     y, dy = vp.pdf(x, origflag=False, gradflag=True)
@@ -163,7 +144,7 @@ def test_pdf_grad_default_no_origflag():
 def test_pdf_grad_logflag_no_origflag():
     n = 20
     d = 3
-    vp = mock_init_vbmc(k=2, nvars=d)
+    vp = VariationalPosterior(d, 2, np.array([[5]]))
     vp.mu = np.ones((3, 2)) * 5
     x = np.ones((n, d)) * 4.996
     y, dy = vp.pdf(x, origflag=False, logflag=True, gradflag=True)
@@ -192,7 +173,7 @@ def test_pdf_grad_logflag_no_origflag():
 def test_pdf_grad_origflag():
     n = 20
     d = 3
-    vp = mock_init_vbmc(k=2, nvars=d)
+    vp = VariationalPosterior(d, 2, np.array([[5]]))
     vp.mu = np.ones((3, 2)) * 5
     x = np.ones((n, d)) * 4.996
     y, dy = vp.pdf(x, gradflag=True)
@@ -215,7 +196,7 @@ def test_pdf_grad_origflag():
 def test_pdf_df_real_positive():
     n = 20
     d = 3
-    vp = mock_init_vbmc(k=2, nvars=d)
+    vp = VariationalPosterior(d, 2, np.array([[5]]))
     vp.mu = np.ones((3, 2)) * 5
     x = np.repeat([4.99, 4.996], [10, 10])[:, np.newaxis] * np.ones((1, d))
     y = vp.pdf(x, origflag=False, df=10)
@@ -228,7 +209,7 @@ def test_pdf_df_real_positive():
 def test_pdf_df_real_negative():
     n = 20
     d = 3
-    vp = mock_init_vbmc(k=2, nvars=d)
+    vp = VariationalPosterior(d, 2, np.array([[5]]))
     vp.mu = np.ones((3, 2)) * 5
     x = np.repeat([4.995, 4.99], [10, 10])[:, np.newaxis] * np.ones((1, d))
     y = vp.pdf(x, origflag=False, df=-2)
@@ -239,7 +220,7 @@ def test_pdf_df_real_negative():
 
 
 def test_pdf_heavy_tailed_pdf_gradient():
-    vp = mock_init_vbmc(k=2, nvars=3)
+    vp = VariationalPosterior(3, 2, np.array([[5]]))
     x = np.ones((1, 3))
     with pytest.raises(NotImplementedError):
         vp.pdf(x, df=300, gradflag=True)
@@ -248,7 +229,7 @@ def test_pdf_heavy_tailed_pdf_gradient():
 
 
 def test_pdf_origflag_gradient():
-    vp = mock_init_vbmc(k=2, nvars=3)
+    vp = VariationalPosterior(3, 2, np.array([[5]]))
     with pytest.raises(NotImplementedError):
         vp.pdf(vp.mu.T, origflag=True, logflag=True, gradflag=True)
 
@@ -256,7 +237,7 @@ def test_pdf_origflag_gradient():
 def test_set_parameters_raw():
     k = 2
     d = 3
-    vp = mock_init_vbmc(k=k, nvars=d)
+    vp = VariationalPosterior(d, k, np.array([[5]]))
     theta_size = d * k + 2 * k + d
     rng = np.random.default_rng()
     theta = rng.random(theta_size)
@@ -279,7 +260,7 @@ def test_set_parameters_raw():
 def test_set_parameters_not_raw():
     k = 2
     d = 3
-    vp = mock_init_vbmc(k=k, nvars=d)
+    vp = VariationalPosterior(d, k, np.array([[5]]))
     theta_size = d * k + 2 * k + d
     rng = np.random.default_rng()
     theta = rng.random(theta_size)
@@ -302,7 +283,7 @@ def test_set_parameters_not_raw():
 def test_set_parameters_not_raw_negative_error():
     k = 2
     d = 3
-    vp = mock_init_vbmc(k=k, nvars=d)
+    vp = VariationalPosterior(d, k, np.array([[5]]))
     vp.optimize_weights = True
     theta_size = d * k + 2 * k + d
     rng = np.random.default_rng()
@@ -314,7 +295,7 @@ def test_set_parameters_not_raw_negative_error():
 def test_get_parameters_raw():
     k = 2
     d = 3
-    vp = mock_init_vbmc(k=k, nvars=d)
+    vp = VariationalPosterior(d, k, np.array([[5]]))
     vp.optimize_weights = True
     theta = vp.get_parameters(rawflag=True)
     assert np.all(vp.mu[: d * k] == np.reshape(theta[: d * k], (d, k)))
@@ -335,7 +316,7 @@ def test_get_parameters_raw():
 def test_get_parameters_not_raw():
     k = 2
     d = 3
-    vp = mock_init_vbmc(k=k, nvars=d)
+    vp = VariationalPosterior(d, k, np.array([[5]]))
     vp.optimize_weights = True
     theta = vp.get_parameters(rawflag=False)
     assert np.all(vp.mu[: d * k] == np.reshape(theta[: d * k], (d, k)))
@@ -347,7 +328,7 @@ def test_get_parameters_not_raw():
 def test_get_set_parameters_roundtrip():
     k = 2
     d = 3
-    vp = mock_init_vbmc(k=k, nvars=d)
+    vp = VariationalPosterior(d, k, np.array([[5]]))
     vp.optimize_weights = True
     theta = vp.get_parameters(rawflag=True)
     vp.set_parameters(theta, rawflag=True)
@@ -359,7 +340,7 @@ def test_get_set_parameters_roundtrip():
 def test_get_set_parameters_roundtrip_no_mu():
     k = 2
     d = 3
-    vp = mock_init_vbmc(k=k, nvars=d)
+    vp = VariationalPosterior(d, k, np.array([[5]]))
     vp.optimize_mu = False
     theta = vp.get_parameters(rawflag=True)
     vp.set_parameters(theta, rawflag=True)
@@ -371,7 +352,7 @@ def test_get_set_parameters_roundtrip_no_mu():
 def test_get_set_parameters_delete_mode():
     k = 2
     d = 3
-    vp = mock_init_vbmc(k=k, nvars=d)
+    vp = VariationalPosterior(d, k, np.array([[5]]))
     theta = vp.get_parameters(rawflag=True)
     vp._mode = np.ones(d)
     assert hasattr(vp, "_mode") == True
@@ -382,7 +363,7 @@ def test_get_set_parameters_delete_mode():
 def test_get_set_parameters_roundtrip_non_raw():
     k = 2
     d = 3
-    vp = mock_init_vbmc(k=k, nvars=d)
+    vp = VariationalPosterior(d, k, np.array([[5]]))
     vp.optimize_weights = True
     theta = vp.get_parameters(rawflag=False)
     vp.set_parameters(theta, rawflag=False)
@@ -392,7 +373,7 @@ def test_get_set_parameters_roundtrip_non_raw():
 
 
 def test_moments_origflag():
-    vp = mock_init_vbmc(k=2, nvars=3)
+    vp = VariationalPosterior(3, 2, np.array([[5]]))
     mubar, sigma = vp.moments(n=int(1e6), covflag=True)
     x2, _ = vp.sample(n=int(1e6), origflag=True, balanceflag=True)
     assert mubar.shape == (3,)
@@ -402,7 +383,7 @@ def test_moments_origflag():
 
 
 def test_moments_no_origflag():
-    vp = mock_init_vbmc(k=2, nvars=3)
+    vp = VariationalPosterior(3, 2, np.array([[5]]))
     vp.mu = np.ones((3, 2)) * [1, 4]
     mubar, sigma = vp.moments(n=1e6, covflag=True, origflag=False)
     assert mubar.shape == (3,)
@@ -413,13 +394,13 @@ def test_moments_no_origflag():
 
 
 def test_moments_no_covflag():
-    vp = mock_init_vbmc(k=2, nvars=3)
+    vp = VariationalPosterior(3, 2, np.array([[5]]))
     mubar = vp.moments(n=1e6, origflag=False)
     assert mubar.shape == (3,)
 
 
 def test_mode_exists_already():
-    vp = mock_init_vbmc()
+    vp = VariationalPosterior(3, 2, np.array([[5]]))
     vp._mode = np.ones(3)
     mode2 = vp.mode()
     assert np.all(mode2 == vp._mode)
@@ -440,33 +421,33 @@ def test_mode_origflag():
 
 
 def test_kldiv_missing_params():
-    vp = mock_init_vbmc()
+    vp = VariationalPosterior(3, 2, np.array([[5]]))
     with pytest.raises(ValueError):
         vp.kldiv()
 
 
 def test_kldiv_no_gaussianflag_and_samples():
-    vp = mock_init_vbmc()
+    vp = VariationalPosterior(3, 2, np.array([[5]]))
     with pytest.raises(ValueError):
         vp.kldiv(samples=np.ones(3), gaussflag=False)
 
 
 def test_kldiv_two_vp_identical_gaussflag():
-    vp = mock_init_vbmc()
+    vp = VariationalPosterior(3, 2, np.array([[5]]))
     kldivs = vp.kldiv(vp2=vp, gaussflag=True, N=int(1e6))
     assert np.all(np.isclose(np.zeros(2), kldivs, atol=1e-4))
 
 
 def test_kldiv_two_vp_identical_samples_gaussflag():
-    vp = mock_init_vbmc()
+    vp = VariationalPosterior(3, 2, np.array([[5]]))
     samples, _ = vp.sample(int(1e5))
     kldivs = vp.kldiv(samples=samples, gaussflag=True, N=int(1e6))
     assert np.all(np.isclose(np.zeros(2), kldivs, atol=1e-3))
 
 
 def test_kldiv_two_vp_gaussflag():
-    vp = mock_init_vbmc(k=1, nvars=1)
-    vp2 = mock_init_vbmc(k=1, nvars=1)
+    vp = VariationalPosterior(1, 1, np.array([[5]]))
+    vp2 = VariationalPosterior(1, 1, np.array([[5]]))
     vp.mu = np.zeros((1, 1))
     vp.sigma = np.ones((1, 1))
     vp2.mu = np.ones((1, 1)) * 10
@@ -476,8 +457,8 @@ def test_kldiv_two_vp_gaussflag():
 
 
 def test_kldiv_two_vp_samples_gaussflag():
-    vp = mock_init_vbmc(k=1, nvars=1)
-    vp2 = mock_init_vbmc(k=1, nvars=1)
+    vp = VariationalPosterior(1, 1, np.array([[5]]))
+    vp2 = VariationalPosterior(1, 1, np.array([[5]]))
     vp.mu = np.ones((1, 1)) * 0.5
     vp.sigma = np.ones((1, 1))
     vp2.mu = np.zeros((1, 1))
@@ -488,14 +469,14 @@ def test_kldiv_two_vp_samples_gaussflag():
 
 
 def test_kldiv_two_vp_identical_no_gaussflag():
-    vp = mock_init_vbmc()
+    vp = VariationalPosterior(1, 1, np.array([[5]]))
     kldivs = vp.kldiv(vp2=vp, gaussflag=False, N=int(1e6))
     assert np.all(np.isclose(np.zeros(2), kldivs, atol=1e-4))
 
 
 def test_kldiv_two_vp_no_gaussflag():
-    vp = mock_init_vbmc(k=1, nvars=1)
-    vp2 = mock_init_vbmc(k=1, nvars=1)
+    vp = VariationalPosterior(1, 1, np.array([[5]]))
+    vp2 = VariationalPosterior(1, 1, np.array([[5]]))
     vp.mu = np.ones((1, 1)) * 10
     vp.sigma = np.ones((1, 1))
     vp2.mu = np.zeros((1, 1))
@@ -505,6 +486,6 @@ def test_kldiv_two_vp_no_gaussflag():
 
 
 def test_kldiv_no_samples_gaussflag():
-    vp = mock_init_vbmc(k=1, nvars=1)
+    vp = VariationalPosterior(1, 1, np.array([[5]]))
     with pytest.raises(ValueError):
         vp.kldiv(vp, gaussflag=True, N=0)
