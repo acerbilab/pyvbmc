@@ -50,8 +50,8 @@ make html
 
 Refer to existing documentation for an overview. So far the documentation includes the following:
 
-- Status of the Pprt (what is missing?)
-- Reference to the respective Matlab file
+- Status of the Port (what is missing?)
+- Reference to the respective file of the original [MATLAB](https://github.com/lacerbi/vbmc) implementation
 - known issues (if something is currently suboptimal in pyvbmc)
 - the documentation of the Python code (generated from the docstrings)
 
@@ -78,12 +78,12 @@ git push -u origin <new-feature>
 
 ### Modules and code organization
 
-We have decided against general util/misc modules for now. This means that general purpose functions should be included in a fitting existing module or in their own module. The reason for this is to force us to think about the generalization of a function and prevent incohesion of those general collections. Furthermore, it improves readability for new collaborators. See some reading about that [here](https://breadcrumbscollector.tech/stop-naming-your-python-modules-utils/). One example for this are the decorators that are included in the decorator module.
+We have decided against general util/misc modules for now. This means that general-purpose functions should be included in a fitting existing module or in their own module. The reason for this is to force us to think about the generalization of a function and prevent incohesion of those general collections. Furthermore, it improves readability for new collaborators. See some reading about that [here](https://breadcrumbscollector.tech/stop-naming-your-python-modules-utils/). One example of this are the decorators that are included in the decorator module.
 
 ### Testing
 
 The testing is done using pytest with unit tests for each class in the respective folder.
-Most methods are also tested against testcases produced with the original [matlab](https://github.com/lacerbi/vbmc) implementation.
+Most methods are also tested against test cases produced with the original [MATLAB](https://github.com/lacerbi/vbmc) implementation.
 
 They can be run with (occasionally look at the coverage):
 
