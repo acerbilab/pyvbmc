@@ -4,8 +4,9 @@ FunctionLogger
 
 Porting status
 ==============
-.. todo::
-     - in _record(...) all the part about checking (and dealing with) identical inputs is missing
+..
+     .. todo::
+     
 
 Matlab references
 -----------------
