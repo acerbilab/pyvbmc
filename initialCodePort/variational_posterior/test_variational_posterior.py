@@ -247,13 +247,15 @@ def test_set_parameters_raw():
     assert np.all(vp.mu[: d * k] == np.reshape(theta[: d * k], (d, k)))
     lamb = np.exp(theta[d * k + k : d * k + k + d])
     nl = np.sqrt(np.sum(lamb ** 2) / d)
-    assert vp.sigma.shape == (k,)
-    assert np.all(vp.sigma == np.exp(theta[d * k : d * k + k]).conj().T * nl)
-    assert vp.lamb.shape == (d,)
-    assert np.all(vp.lamb == lamb / nl)
+    assert vp.sigma.shape == (1, k)
+    assert np.all(
+        vp.sigma == np.exp(theta[d * k : d * k + k]).reshape(1, -1) * nl
+    )
+    assert vp.lamb.shape == (d, 1)
+    assert np.all(vp.lamb == np.array([lamb]).reshape(-1, 1) / nl)
     assert vp.w.shape == (1, k)
     w = np.exp(theta[-k:] - np.amax(theta[-k:]))
-    w = w.conj().T / np.sum(w)
+    w = w.reshape(1, -1) / np.sum(w)
     assert np.all(vp.w == w)
 
 
@@ -270,13 +272,13 @@ def test_set_parameters_not_raw():
     assert np.all(vp.mu[: d * k] == np.reshape(theta[: d * k], (d, k)))
     lamb = theta[d * k + k : d * k + k + d]
     nl = np.sqrt(np.sum(lamb ** 2) / d)
-    assert vp.sigma.shape == (k,)
-    assert np.all(vp.sigma == theta[d * k : d * k + k].conj().T * nl)
-    assert vp.lamb.shape == (d,)
-    assert np.all(vp.lamb == lamb / nl)
+    assert vp.sigma.shape == (1, k)
+    assert np.all(vp.sigma == theta[d * k : d * k + k].reshape(1, -1) * nl)
+    assert vp.lamb.shape == (d, 1)
+    assert np.all(vp.lamb == np.array([lamb]).reshape(-1, 1) / nl)
     assert vp.w.shape == (1, k)
     w = theta[-k:]
-    w = w.conj().T / np.sum(w)
+    w = w.reshape(1, -1) / np.sum(w)
     assert np.all(vp.w == w)
 
 

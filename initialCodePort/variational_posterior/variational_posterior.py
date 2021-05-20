@@ -19,12 +19,8 @@ class VariationalPosterior(object):
     """
 
     def __init__(
-            self,
-            d: int,
-            k: int = 2,
-            x0 = None,
-            parameter_transformer = None
-            ):
+        self, d: int, k: int = 2, x0=None, parameter_transformer=None
+    ):
         """
         __init__ Initialize VariationalPosterior
 
@@ -35,44 +31,44 @@ class VariationalPosterior(object):
         k : int, optional
             number of mixture components, default 2
         x0 : np.ndarray, optional
-            starting vector for the mixture components means, it can be a 
-            single array or multiple rows (up to k); missing rows are 
+            starting vector for the mixture components means, it can be a
+            single array or multiple rows (up to k); missing rows are
             duplicated by making copies of x0, default np.zeros
         parameter_transformer : ParameterTransformer, optional
             a ParameterTransformer object specifying the transformation of the
-            input space that leads to the current representation used by the 
+            input space that leads to the current representation used by the
             variational posterior, by default uses an identity transform
         """
-        
-        self.d = d          # number of dimensions
-        self.k: int = k     # number of components
-        
+
+        self.d = d  # number of dimensions
+        self.k: int = k  # number of components
+
         if x0 is None:
-            x0 = np.zeros(d,k)
+            x0 = np.zeros(d, k)
         elif x0.size == d:
-            x0.reshape(-1,1)            # reshape to vertical array
-            x0 = np.tile(x0, (1,k))     # copy vector
+            x0.reshape(-1, 1)  # reshape to vertical array
+            x0 = np.tile(x0, (1, k))  # copy vector
         else:
             x0 = x0.T
             x0 = np.tile(x0, int(np.ceil(self.k / x0.shape[1])))
-            x0 = x0[:,0:self.k]
-                    
+            x0 = x0[:, 0 : self.k]
+
         self.w = np.ones((1, k)) / k
         self.mu = x0 + 1e-6 * np.random.randn(self.d, self.k)
         self.sigma = 1e-3 * np.ones((1, k))
         self.lamb = np.ones((self.d, 1))
-        
+
         # By default, optimize all variational parameters
         self.optimize_weights = True
         self.optimize_mu = True
         self.optimize_sigma = True
         self.optimize_lamb = True
-                
+
         if parameter_transformer is None:
             self.parameter_transformer = ParameterTransformer(self.d)
         else:
             self.parameter_transformer = parameter_transformer
-        
+
         self.bounds = None
         self.stats = None
 
@@ -406,12 +402,12 @@ class VariationalPosterior(object):
 
         nl = np.sqrt(np.sum(self.lamb ** 2) / self.d)
 
-        self.lamb = self.lamb / nl
-        self.sigma = self.sigma.conj().T * nl
+        self.lamb = self.lamb.reshape(-1, 1) / nl
+        self.sigma = self.sigma.reshape(1, -1) * nl
 
         # Ensure that weights are normalized
         if self.optimize_weights:
-            self.w = self.w.conj().T / np.sum(self.w)
+            self.w = self.w.reshape(1, -1) / np.sum(self.w)
 
         # remove mode (at least this is done in Matlab)
 
@@ -504,12 +500,12 @@ class VariationalPosterior(object):
 
         nl = np.sqrt(np.sum(self.lamb ** 2) / self.d)
 
-        self.lamb = self.lamb / nl
-        self.sigma = self.sigma.conj().T * nl
+        self.lamb = self.lamb.reshape(-1, 1) / nl
+        self.sigma = self.sigma.reshape(1, -1) * nl
 
         # Ensure that weights are normalized
         if self.optimize_weights:
-            self.w = self.w.conj().T / np.sum(self.w)
+            self.w = self.w.reshape(1, -1) / np.sum(self.w)
 
         # remove mode
         if hasattr(self, "_mode"):
@@ -660,7 +656,7 @@ class VariationalPosterior(object):
         """
         mtv Marginal Total Variation distances between two variational posteriors.
         The other can be specified either by another VP or with samples
-        
+
         Parameters
         ----------
         vp2 : VariationalPosterior, optional
