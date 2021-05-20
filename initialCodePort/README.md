@@ -24,8 +24,9 @@ conda env create --file environment.yml
 pip install -i requirements.txt
 ```
 
-## More detailed conventions.
- Please read!
+## More detailed conventions
+
+Please read those as well! :)
 
 ### Code formatting
 
