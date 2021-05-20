@@ -186,10 +186,10 @@ class ParameterTransformer:
 
     @handle_1D_input(kwarg="u", argpos=0, return_scalar=True)
     def log_abs_det_jacobian(self, u: np.ndarray):
-        """
+        r"""
         log_abs_det_jacobian returns the log absolute value of the determinant 
         of the Jacobian of the parameter transformation evaluated at U, that is 
-        log |d\du(g^-1(u))|
+        log \|d \du(g^-1(u))\|
 
         Parameters
         ----------

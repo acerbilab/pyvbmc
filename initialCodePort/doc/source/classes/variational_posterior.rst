@@ -8,7 +8,6 @@ Porting status
      - vbmc_plot: `vbmc_plot.m <https://github.com/lacerbi/vbmc/blob/master/vbmc_plot.m>`_ (more important)
      - vbmc_power: `vbmc_power.m <https://github.com/lacerbi/vbmc/blob/master/vbmc_power.m>`_ (less important for now)
      - _robustSampleFromVP: robustSampleFromVP in `vbmc.m <https://github.com/lacerbi/vbmc/blob/master/vbmc.m>`_
-     - _init__(): completely missing so far (mock for test exists) (Luigi)
 
 Matlab references of ported methods
 -----------------------------------
