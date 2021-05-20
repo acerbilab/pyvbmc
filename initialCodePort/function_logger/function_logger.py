@@ -273,7 +273,7 @@ class FunctionLogger(object):
             self.X_flag, np.full((resize_amount, 1), True, dtype=bool), axis=0
         )
         self.fun_evaltime = np.append(
-            self.fun_evaltime, np.empty((resize_amount, 1)), axis=0
+            self.fun_evaltime, np.zeros((resize_amount, 1)), axis=0
         )
         self.nevals = np.append(
             self.nevals, np.zeros((resize_amount, 1)), axis=0
@@ -313,11 +313,31 @@ class FunctionLogger(object):
         idx : int
             index of the last updated entry
         """
-        duplicateFlag = False
+        duplicate_flag = self.x == x
+        if np.any(duplicate_flag):
+            if np.sum((duplicate_flag).all(axis=1)) > 1:
+                raise ValueError("More than one match for duplicate entry.")
+            idx = np.argwhere(duplicate_flag)[0, 0]
+            N = self.nevals[idx]
+            if fsd is not None:
+                tau_n = 1 / self.S[idx] ** 2
+                tau_1 = 1 / fsd ** 2
+                self.y_orig[idx] = (
+                    tau_n * self.y_orig[idx] + tau_1 * fval_orig
+                ) / (tau_n + tau_1)
+                self.S[idx] = 1 / np.sqrt(tau_n + tau_1)
+            else:
+                self.y_orig[idx] = (N * self.y_orig[idx] + fval_orig) / (N + 1)
 
-        if duplicateFlag:
-            # toDo: handling of duplicate entries
-            pass
+            fval = self.y_orig[
+                idx
+            ] + self.parameter_transformer.log_abs_det_jacobian(x)
+            self.y[idx] = fval
+            self.fun_evaltime[idx] = (
+                N * self.fun_evaltime[idx] + fun_evaltime
+            ) / (N + 1)
+            self.nevals[idx] += 1
+            return fval, idx
         else:
             self.Xn += 1
             if self.Xn > self.x_orig.shape[0] - 1:

@@ -59,18 +59,19 @@ def test_add_expand_cache():
     f_logger = FunctionLogger(non_noisy_function, 3, False, 0, cache_size=1)
     assert f_logger.x.shape[0] == 1
     f_logger.add(x, y, None)
-    f_logger.add(x, y, None)
-    assert np.all(f_logger.x[1] == x)
+    f_logger.add(x*2, y, None)
+    assert np.all(f_logger.x[1] == x*2)
     assert np.all(f_logger.y_orig[1] == y)
     assert f_logger.cache_count == 2
+
 
 def test_add_no_fsd():
     x = np.array([3, 4, 5])
     y = non_noisy_function(x)
     f_logger = FunctionLogger(non_noisy_function, 3, True, 1, cache_size=1)
     f_logger.add(x, y, None)
-    f_logger.add(x, y, None)
-    assert np.all(f_logger.x[1] == x)
+    f_logger.add(x*2, y, None)
+    assert np.all(f_logger.x[1] == x*2)
     assert np.all(f_logger.y_orig[1] == y)
     assert np.all(f_logger.S[1] == 1)
 
@@ -104,6 +105,54 @@ def test_add_record_stats():
     assert f_logger.Xn == 9
     assert f_logger.func_count == 0
     assert f_logger.cache_count == 10
+
+
+def test_record_duplicate_existing_already():
+    x = np.array([3, 4, 5])
+    f_logger = FunctionLogger(
+        non_noisy_function, 3, False, 0, 500, ParameterTransformer(3)
+    )
+    f_logger._record(x, x, 9, None, 10)
+    f_logger.x[1] = x
+    with pytest.raises(ValueError):
+        f_logger._record(x, x, 9, None, 10)
+
+
+def test_record_duplicate():
+    x = np.array([3, 4, 5])
+    f_logger = FunctionLogger(
+        non_noisy_function, 3, False, 0, 500, ParameterTransformer(3)
+    )
+    f_logger._record(x * 2, x * 2, 18, None, 9)
+    f_logger._record(x, x, 9, None, 9)
+    _, idx = f_logger._record(x, x, 1, None, 1)
+    assert idx == 1
+    assert f_logger.Xn == 1
+    assert f_logger.nevals[0] == 1
+    assert f_logger.nevals[1] == 2
+    assert np.all(f_logger.x[1] == x)
+    assert f_logger.y[1] == 5
+    assert f_logger.y_orig[1] == 5
+    assert f_logger.fun_evaltime[1] == 5
+
+
+def test_record_duplicate_fsd():
+    x = np.array([3, 4, 5])
+    f_logger = FunctionLogger(
+        non_noisy_function, 3, True, 1, 500, ParameterTransformer(3)
+    )
+    f_logger._record(x * 2, x * 2, 18, 2, 9)
+    f_logger._record(x, x, 9, 3, 9)
+    _, idx = f_logger._record(x, x, 1, 3, 1)
+    assert idx == 1
+    assert f_logger.Xn == 1
+    assert f_logger.nevals[0] == 1
+    assert f_logger.nevals[1] == 2
+    assert np.all(f_logger.x[1] == x)
+    assert np.isclose(f_logger.y[1], 5, rtol=1e-12, atol=1e-14)
+    assert np.isclose(f_logger.y_orig[1], 5, rtol=1e-12, atol=1e-14)
+    assert f_logger.fun_evaltime[1] == 5
+    assert f_logger.S[1] ==  1/np.sqrt(1/9 + 1/9)
 
 
 def test_finalize():
@@ -180,8 +229,10 @@ def test_call_invalid_sd_value():
 
 def test_call_function_error():
     x = np.array([3, 4, 5])
+
     def error_function(x):
         return 3 / 0
+
     f_logger = FunctionLogger(error_function, 3, False, 0)
     with pytest.raises(ZeroDivisionError) as err:
         f_logger(x)
