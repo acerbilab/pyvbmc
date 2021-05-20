@@ -10,13 +10,17 @@ Some useful reading hints regarding that:
 - [Code style in The Hitchhiker's Guide to Python](https://docs.python-guide.org/writing/style/)
 
 ## Third party libraries
-So far we are using the following libraries:
+We are using the dependencies listed in the requirements.txt. Please list all libraries there.
 
-*tbd: how to lock dependencies*
+They can be installed with [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) or pip.
 
-- [numpy](https://numpy.org/)
-- [scipy](https://www.scipy.org/)
-- [pytest](https://docs.pytest.org/en/stable/) (for testing)
+```
+conda env create --file environment.yml
+```
+
+```
+pip install -i requirements.txt
+```
 
 ## Docstrings
 
@@ -30,14 +34,14 @@ The code is formatted using [Black](https://pypi.org/project/black/) with a line
 
 The git commits are following the [conventional commits convention](https://www.conventionalcommits.org/en/v1.0.0/). This makes it easier to collaborate on the project. A cheat sheet is can be found [here](https://cheatography.com/albelop/cheat-sheets/conventional-commits/)
 
-*tbd: branches and commiting of broken code*
+Please do not commit broken code (red tests, not finished) on the master branch, work on feature branches whenever possible and sensible. [Read this](https://martinfowler.com/bliki/FeatureBranch.html)
 
 ## Testing
 
 The testing is done using pytest with unit tests for each class in the respective folder.
 Most methods are also tested against testcases produced with the original [matlab](https://github.com/lacerbi/vbmc) implementation.
 
-They can be run with:
+They can be run with (occasionally looked the coverage):
 
 ```
 pytest
@@ -57,10 +61,3 @@ We have decided against general util/misc modules for now. This means that gener
 ## Decorators
 
 Try to evaluate if pre- and postprocessing in a function can be generalized with a decorator. One example is the handling of arrays of shape (N, ) to (N, 1) with the handle_1D_decorator in the decorator module.
-
-## Render class diagrams
-The diagrams can be rendered using pyreverse which is a part of [pylint](https://pypi.org/project/pylint/)
-
-```
-pyreverse -o png -f ALL entropy/* gaussian_process/* variational_posterior/* vbmc/* 
-```
