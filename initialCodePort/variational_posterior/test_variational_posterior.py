@@ -378,7 +378,7 @@ def test_moments_origflag():
     vp = VariationalPosterior(3, 2, np.array([[5]]))
     mubar, sigma = vp.moments(n=int(1e6), covflag=True)
     x2, _ = vp.sample(n=int(1e6), origflag=True, balanceflag=True)
-    assert mubar.shape == (3,)
+    assert mubar.shape == (1,3)
     assert np.all(np.isclose(mubar, np.mean(x2, axis=0)))
     assert sigma.shape == (3, 3)
     assert np.all(np.isclose(sigma, np.cov(x2.T)))
@@ -388,7 +388,7 @@ def test_moments_no_origflag():
     vp = VariationalPosterior(3, 2, np.array([[5]]))
     vp.mu = np.ones((3, 2)) * [1, 4]
     mubar, sigma = vp.moments(n=1e6, covflag=True, origflag=False)
-    assert mubar.shape == (3,)
+    assert mubar.shape == (1,3)
     assert sigma.shape == (3, 3)
     assert np.all(mubar == 2.5)
     sigma2 = np.ones((3, 3)) * 2.25 + np.eye(3) * 1e-3 ** 2
@@ -398,7 +398,7 @@ def test_moments_no_origflag():
 def test_moments_no_covflag():
     vp = VariationalPosterior(3, 2, np.array([[5]]))
     mubar = vp.moments(n=1e6, origflag=False)
-    assert mubar.shape == (3,)
+    assert mubar.shape == (1,3)
 
 
 def test_mode_exists_already():

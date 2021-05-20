@@ -127,6 +127,8 @@ class VariationalPosterior(object):
         elif gp_sample:
             pass
         else:
+            lamd_row = self.lamb.reshape(1, -1)
+
             rng = np.random.default_rng()
             if self.k > 1:
                 if balanceflag:
@@ -154,36 +156,34 @@ class VariationalPosterior(object):
 
                 if not np.isfinite(df) or df == 0:
                     x = (
-                        self.mu.conj().T[i]
-                        + self.lamb.conj().T
+                        self.mu.T[i]
+                        + lamd_row
                         * np.random.randn(n, self.d)
-                        * self.sigma.conj().T[i]
+                        * self.sigma[:, i].T
                     )
                 else:
                     t = df / 2 / np.sqrt(rng.gamma(df / 2, df / 2, (n, 1)))
                     x = (
-                        self.mu.conj().T[i]
-                        + self.lamb.conj().T
+                        self.mu.T[i]
+                        + lamd_row
                         * np.random.randn(n, self.d)
                         * t
-                        * self.sigma.conj().T[i]
+                        * self.sigma[:, i].T
                     )
             else:
                 if not np.isfinite(df) or df == 0:
                     x = (
-                        self.mu.conj().T
-                        + self.lamb.conj().T
-                        * np.random.randn(n, self.d)
-                        * self.sigma.conj().T
+                        self.mu.T
+                        + lamd_row * np.random.randn(n, self.d) * self.sigma
                     )
                 else:
                     t = df / 2 / np.sqrt(rng.gamma(df / 2, df / 2, (n, 1)))
                     x = (
-                        self.mu.conj().T
-                        + self.lamb.conj().T
+                        self.mu.T
+                        + lamd_row
                         * t
                         * np.random.randn(n, self.d)
-                        * self.sigma.conj().T
+                        * self.sigma
                     )
                 i = np.zeros(n)
             if origflag:
@@ -258,7 +258,7 @@ class VariationalPosterior(object):
         # Convert points to transformed space
         if origflag and not transflag:
             x = self.parameter_transformer(x)
-
+        lamd_row = self.lamb.reshape(1, -1)
         n, d = x.shape
         y = np.zeros((n, 1))
         if gradflag:
@@ -268,12 +268,12 @@ class VariationalPosterior(object):
             # compute pdf of variational posterior
 
             # common normalization factor
-            nf = 1 / (2 * np.pi) ** (d / 2) / np.prod(self.lamb.conj().T)
+            nf = 1 / (2 * np.pi) ** (d / 2) / np.prod(lamd_row)
             for k in range(self.k):
                 d2 = np.sum(
                     (
-                        (x - self.mu.conj().T[k])
-                        / (self.sigma[:, k].dot(self.lamb.conj().T))
+                        (x - self.mu.T[k])
+                        / (self.sigma[:, k].dot(lamd_row))
                     )
                     ** 2,
                     axis=1,
@@ -288,8 +288,8 @@ class VariationalPosterior(object):
                 if gradflag:
                     dy -= (
                         nn
-                        * (x - self.mu.conj().T[k])
-                        / ((self.lamb.conj().T ** 2) * self.sigma[:, k] ** 2)
+                        * (x - self.mu.T[k])
+                        / ((lamd_row ** 2) * self.sigma[:, k] ** 2)
                     )
 
         else:
@@ -309,8 +309,8 @@ class VariationalPosterior(object):
                 for k in range(self.k):
                     d2 = np.sum(
                         (
-                            (x - self.mu.conj().T[k])
-                            / (self.sigma[:, k].dot(self.lamb.conj().T))
+                            (x - self.mu.T[k])
+                            / (self.sigma[:, k].dot(lamd_row))
                         )
                         ** 2,
                         axis=1,
@@ -339,8 +339,8 @@ class VariationalPosterior(object):
 
                 for k in range(self.k):
                     d2 = (
-                        (x - self.mu.conj().T[k])
-                        / (self.sigma[:, k].dot(self.lamb.conj().T))
+                        (x - self.mu.T[k])
+                        / (self.sigma[:, k].dot(lamd_row))
                     ) ** 2
                     nn = (
                         nf
@@ -557,11 +557,11 @@ class VariationalPosterior(object):
                 for k in range(self.k):
                     sigma += self.w[:, k] * (
                         (self.mu[:, k] - mubar)[:, np.newaxis]
-                    ).dot((self.mu[:, k] - mubar)[:, np.newaxis].conj().T)
+                    ).dot((self.mu[:, k] - mubar)[:, np.newaxis].T)
         if covflag:
-            return mubar.conj().T, sigma
+            return mubar.reshape(1,-1), sigma
         else:
-            return mubar.conj().T
+            return mubar.reshape(1,-1)
 
     def mode(self, nmax: int = 20, origflag=True):
         """
@@ -597,7 +597,7 @@ class VariationalPosterior(object):
         if origflag and hasattr(self, "_mode") and self._mode is not None:
             return self._mode
         else:
-            x0_mat = self.mu.conj().T
+            x0_mat = self.mu.T
 
             if nmax < self.k:
                 # First, evaluate pdf at all modes
