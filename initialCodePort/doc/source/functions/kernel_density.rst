@@ -10,7 +10,7 @@ Porting status
 
 Matlab references
 -----------------
-- newly created
+- Luigi fills those out
 
 Python documentation
 ====================

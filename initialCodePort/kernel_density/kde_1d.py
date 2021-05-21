@@ -39,11 +39,27 @@ def _linear_binning(samples: np.ndarray, grid_points: np.ndarray):
 
 def _fixed_point(t: float, N: int, irange_squared: np.ndarray, a2: np.ndarray):
     """
-        Compute the fixed point according to Botev et al. (2010).
-        This implements the function t-zeta*gamma^[l](t).
-    ​
-        Based on an implementation by Daniel B. Smith, PhD:
-        https://github.com/Daniel-B-Smith/KDE-for-SciPy/blob/master/kde.py
+    _fixed_point Compute the fixed point according to Botev et al. (2010).
+    This implements the function t-zeta*gamma^[l](t).
+    Based on an implementation by Daniel B. Smith, PhD:
+    https://github.com/Daniel-B-Smith/KDE-for-SciPy/blob/master/kde.py
+
+
+    Parameters
+    ----------
+    t : float
+        [description]
+    N : int
+        [description]
+    irange_squared : np.ndarray
+        [description]
+    a2 : np.ndarray
+        [description]
+
+    Returns
+    -------
+    [type]
+        [description]
     """
 
     irange_squared = np.asfarray(irange_squared, dtype=np.float64)
@@ -87,6 +103,7 @@ def _fixed_point(t: float, N: int, irange_squared: np.ndarray, a2: np.ndarray):
 def _root(function: callable, N: int, args: tuple):
     """
     _root Root finding algorithm based on MATLAB implementation by Botev et al. (2010)
+    Try to find smallest root whenever there is more than one
 
     Parameters
     ----------
@@ -95,14 +112,13 @@ def _root(function: callable, N: int, args: tuple):
     N : int
         [description]
     args : tuple
-        Extra arguments for the function
+        extra arguments for the function
 
     Returns
     -------
-    [type]
+    root: float or none
         [description]
     """
-    # Try to find smallest root whenever there is more than one
     N = max(min(1050.0, N), 50.0)
     tol = 1e-12 + 0.01 * (N - 50.0) / 1000.0
     converged = False
@@ -148,29 +164,59 @@ def _scottrule1d(samples: np.ndarray):
     return sigma * np.power(len(samples), -1.0 / 5.0)
 
 
-def kde1d(samples: np.ndarray, n=2 ** 14, lower_bound=None, upper_bound=None):
+def kde1d(
+    samples: np.ndarray,
+    n: int = 2 ** 14,
+    lower_bound: float = None,
+    upper_bound: float = None,
+):
     """
-    kde1d [summary]
+    kde1d Reliable and extremely fast kernel density estimator for one-dimensional data
+    Gaussian kernel is assumed and the bandwidth is chosen automatically
+
+    Notes
+    -----
+    Unlike many other implementations, this one is immune to problems
+    caused by multimodal densities with widely separated modes (see example). The
+    estimation does not deteriorate for multimodal densities, because we never assume
+    a parametric model for the data.
+
+    Example:
+    
+    .. code-block:: python
+        
+        import numpy as np
+        from numpy.random import randn
+        samples = np.concatenate((randn(100,1),randn(100,1)*2+35,randn(100,1)+55))
+        kde1d(samples,2^14,min(samples)-5,max(samples)+5)
 
     Parameters
     ----------
     samples : np.ndarray
-        [description]
-    n : [type], optional
-        [description], by default 2**14
-    lower_bound : [type], optional
-        [description], by default None
-    upper_bound : [type], optional
-        [description], by default None
+        the points from which the density estimate is computed
+    n : int, optional
+        the number of mesh points used in the uniform discretization of the
+        interval [lower_bound, upper_bound]; n has to be a power of two;
+        if n is not a power of two, then n is rounded up to the next power of two,
+        i.e., n is set to n=2^ceil(log2(n)), by default 2**14
+    lower_bound : float, optional
+        the lower bound of the interval in which the density is being computed,
+        if not given the default value is lower_bound=min(samples)-Range/10,
+        where Range=max(samples)-min(samples), by default None
+    upper_bound : float, optional
+        the lower bound of the interval in which the density is being computed,
+        if not given the default value is lower_bound=max(data)+Range/10,
+        where Range=max(samples)-min(samples), by default None
 
     Returns
     -------
-    density:
-        [description]
-    xmesh:
-        [description]
-    bandwidth:
-        [description]
+    density: np.ndarray
+        column vector of length n with the values of the density
+        estimate at the grid points;
+    xmesh: np.ndarray
+        the grid over which the density estimate is computed
+    bandwidth: np.ndarray
+        the optimal bandwidth (Gaussian kernel assumed)
     """
     samples = samples.ravel()  # make samples a 1D array
     n = np.int(2 ** np.ceil(np.log2(n)))  # round up to the next power of 2
