@@ -164,6 +164,15 @@ def _scottrule1d(samples: np.ndarray):
     return sigma * np.power(len(samples), -1.0 / 5.0)
 
 
+def _validate_kde1d_args(samples, n, lower_bound, upper_bound):
+    if n <= 0:
+        raise ValueError("n cannot be <= 0")
+
+    if lower_bound is not None and upper_bound is not None:
+        if lower_bound > upper_bound:
+            raise ValueError("lower_bound cannot be > upper_bound")
+
+
 def kde1d(
     samples: np.ndarray,
     n: int = 2 ** 14,
@@ -182,13 +191,13 @@ def kde1d(
     a parametric model for the data.
 
     Example:
-    
+
     .. code-block:: python
-        
+
         import numpy as np
         from numpy.random import randn
         samples = np.concatenate((randn(100,1),randn(100,1)*2+35,randn(100,1)+55))
-        kde1d(samples,2^14,min(samples)-5,max(samples)+5)
+        kde1d(samples,2 ** 14,min(samples)-5,max(samples)+5)
 
     Parameters
     ----------
@@ -211,23 +220,27 @@ def kde1d(
     Returns
     -------
     density: np.ndarray
-        column vector of length n with the values of the density
+        1D vector of length n with the values of the density
         estimate at the grid points;
     xmesh: np.ndarray
-        the grid over which the density estimate is computed
+        1D vector of grid over which the density estimate is computed
     bandwidth: np.ndarray
         the optimal bandwidth (Gaussian kernel assumed)
     """
     samples = samples.ravel()  # make samples a 1D array
+
+    # validate values passed to the function
+    _validate_kde1d_args(samples, n, lower_bound, upper_bound)
+
     n = np.int(2 ** np.ceil(np.log2(n)))  # round up to the next power of 2
     if lower_bound is None or upper_bound is None:
         minimum = np.min(samples)
         maximum = np.max(samples)
         delta = maximum - minimum
         if lower_bound is None:
-            lower_bound = minimum - 0.1 * delta
+            lower_bound = np.array([minimum - 0.1 * delta])
         if upper_bound is None:
-            upper_bound = maximum + 0.1 * delta
+            upper_bound = np.array([maximum + 0.1 * delta])
 
     delta = upper_bound - lower_bound
     xmesh = np.linspace(lower_bound, upper_bound, n)
@@ -260,4 +273,4 @@ def kde1d(
     density = fftpack.idct(a_t) / (2.0 * delta)
     density[density < 0] = 0.0  # remove negatives due to round-off error
 
-    return density, xmesh, bandwidth
+    return density.ravel(), xmesh.ravel(), bandwidth
