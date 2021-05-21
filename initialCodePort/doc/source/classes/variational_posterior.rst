@@ -22,9 +22,6 @@ Matlab references of ported methods
    - gp_sample is missing
 - set_parameters(): `rescale_params.m <https://github.com/lacerbi/vbmc/blob/master/misc/rescale_params.m>`_ ✓
 
-Known issues:
------------------------------------
-- mtv(): known issue with vps of more than one mode with high variance between the modes (due to the bandwidth computation of  `scipy.stats.gaussian_kde <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.gaussian_kde.html>`_)
 
 Python documentation
 ====================
