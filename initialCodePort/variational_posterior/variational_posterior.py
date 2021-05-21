@@ -710,12 +710,10 @@ class VariationalPosterior(object):
         for d in range(self.d):
 
             yy1, x1mesh, _ = kde1d(xx1[:, d], nkde, lb1[:, d], ub1[:, d])
-            x1mesh = x1mesh.flatten()
             # Ensure normalization
             yy1 = yy1 / (trapezoid(yy1) * (x1mesh[1] - x1mesh[0]))
 
             yy2, x2mesh, _ = kde1d(xx2[:, d], nkde, lb2[:, d], ub2[:, d])
-            x2mesh = x2mesh.flatten()
             # Ensure normalization
             yy2 = yy2 / (trapezoid(yy2) * (x2mesh[1] - x2mesh[0]))
 
