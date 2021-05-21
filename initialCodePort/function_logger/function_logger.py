@@ -54,7 +54,7 @@ class FunctionLogger(object):
         self.y_orig = np.full([cache_size, 1], np.nan)
         self.x = np.full([cache_size, self.nvars], np.nan)
         self.y = np.full([cache_size, 1], np.nan)
-        self.nevals = np.zeros((cache_size, 1))
+        self.nevals = np.full([cache_size, 1], np.nan)
 
         if self.noise_flag:
             self.S = np.full([cache_size, 1], np.nan)
@@ -62,7 +62,7 @@ class FunctionLogger(object):
         self.Xn: int = -1  # Last filled entry
         self.X_flag = np.full((cache_size, 1), False, dtype=bool)
         self.y_max = float("-Inf")
-        self.fun_evaltime = np.zeros((cache_size, 1))
+        self.fun_evaltime = np.full([cache_size, 1], np.nan)
         self.total_fun_evaltime = 0
 
     def __call__(self, x: np.ndarray):
@@ -224,7 +224,7 @@ class FunctionLogger(object):
             )
 
         self.cache_count += 1
-        fval, idx = self._record(x_orig, x, fval_orig, fsd, None)
+        fval, idx = self._record(x_orig, x, fval_orig, fsd, np.nan)
         return fval, fsd, idx
 
     def finalize(self):
@@ -257,26 +257,28 @@ class FunctionLogger(object):
             resize_amount = int(np.max((np.ceil(self.Xn / 2), 1)))
 
         self.x_orig = np.append(
-            self.x_orig, np.empty((resize_amount, self.nvars)), axis=0
+            self.x_orig, np.full([resize_amount, self.nvars], np.nan), axis=0
         )
         self.y_orig = np.append(
-            self.y_orig, np.empty((resize_amount, 1)), axis=0
+            self.y_orig, np.full([resize_amount, 1], np.nan), axis=0
         )
         self.x = np.append(
-            self.x, np.empty((resize_amount, self.nvars)), axis=0
+            self.x, np.full([resize_amount, self.nvars], np.nan), axis=0
         )
-        self.y = np.append(self.y, np.empty((resize_amount, 1)), axis=0)
+        self.y = np.append(self.y, np.full([resize_amount, 1], np.nan), axis=0)
 
         if self.noise_flag:
-            self.S = np.append(self.S, np.empty((resize_amount, 1)), axis=0)
+            self.S = np.append(
+                self.S, np.full([resize_amount, 1], np.nan), axis=0
+            )
         self.X_flag = np.append(
             self.X_flag, np.full((resize_amount, 1), True, dtype=bool), axis=0
         )
         self.fun_evaltime = np.append(
-            self.fun_evaltime, np.zeros((resize_amount, 1)), axis=0
+            self.fun_evaltime, np.full([resize_amount, 1], np.nan), axis=0
         )
         self.nevals = np.append(
-            self.nevals, np.zeros((resize_amount, 1)), axis=0
+            self.nevals, np.full([resize_amount, 1], np.nan), axis=0
         )
 
     def _record(
@@ -344,7 +346,7 @@ class FunctionLogger(object):
                 self._expand_arrays()
 
             # record function time
-            if fun_evaltime is not None:
+            if fun_evaltime is not np.NaN:
                 self.fun_evaltime[self.Xn] = fun_evaltime
                 self.total_fun_evaltime += fun_evaltime
 

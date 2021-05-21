@@ -81,7 +81,7 @@ def test_call_record_stats():
     f_logger = FunctionLogger(non_noisy_function, 3, False, 0)
     for i in range(10):
         f_logger(x * i)
-    assert f_logger.total_fun_evaltime == np.sum(f_logger.fun_evaltime)
+    assert f_logger.total_fun_evaltime == np.nansum(f_logger.fun_evaltime)
     assert np.all(f_logger.x_orig[9] == x * 9)
     assert f_logger.y_orig[9] == non_noisy_function(x * 9)
     assert f_logger.ymax == non_noisy_function(x * 9)
@@ -97,7 +97,7 @@ def test_add_record_stats():
         y = non_noisy_function(x * i)
         f_logger.add(x * i, y, None)
     assert f_logger.total_fun_evaltime == 0
-    assert np.sum(f_logger.fun_evaltime[:11]) == 0
+    assert np.nansum(f_logger.fun_evaltime) == 0
     assert np.all(f_logger.x_orig[9] == x * 9)
     assert f_logger.y_orig[9] == non_noisy_function(x * 9)
     assert f_logger.ymax == non_noisy_function(x * 9)
