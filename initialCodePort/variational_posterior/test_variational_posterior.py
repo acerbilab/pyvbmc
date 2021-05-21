@@ -378,7 +378,7 @@ def test_moments_origflag():
     vp = VariationalPosterior(3, 2, np.array([[5]]))
     mubar, sigma = vp.moments(n=int(1e6), covflag=True)
     x2, _ = vp.sample(n=int(1e6), origflag=True, balanceflag=True)
-    assert mubar.shape == (1,3)
+    assert mubar.shape == (1, 3)
     assert np.all(np.isclose(mubar, np.mean(x2, axis=0)))
     assert sigma.shape == (3, 3)
     assert np.all(np.isclose(sigma, np.cov(x2.T)))
@@ -388,7 +388,7 @@ def test_moments_no_origflag():
     vp = VariationalPosterior(3, 2, np.array([[5]]))
     vp.mu = np.ones((3, 2)) * [1, 4]
     mubar, sigma = vp.moments(n=1e6, covflag=True, origflag=False)
-    assert mubar.shape == (1,3)
+    assert mubar.shape == (1, 3)
     assert sigma.shape == (3, 3)
     assert np.all(mubar == 2.5)
     sigma2 = np.ones((3, 3)) * 2.25 + np.eye(3) * 1e-3 ** 2
@@ -398,7 +398,7 @@ def test_moments_no_origflag():
 def test_moments_no_covflag():
     vp = VariationalPosterior(3, 2, np.array([[5]]))
     mubar = vp.moments(n=1e6, origflag=False)
-    assert mubar.shape == (1,3)
+    assert mubar.shape == (1, 3)
 
 
 def test_mode_exists_already():
@@ -420,6 +420,75 @@ def test_mode_origflag():
     assert np.all(
         np.isclose([0.0540, -0.1818], vp.mode(origflag=True), atol=1e-4)
     )
+
+
+def test_mtv_not_enough_arguments():
+    vp = VariationalPosterior(1, 1, np.array([[5]]))
+    with pytest.raises(ValueError):
+        vp.mtv()
+
+
+def test_mtv_vp_identical():
+    vp1 = VariationalPosterior(1, 1, np.array([[5]]))
+    vp1.mu = np.zeros((1, 1))
+    vp1.sigma = np.array([[1]])
+    vp2 = VariationalPosterior(1, 2, np.array([[5]]))
+    vp2.mu = np.array([[0, 100]])
+    vp2.sigma = np.ones((1, 2))
+    vp2.w = np.array([[1, 0]])
+    mtv = vp1.mtv(vp2)
+    assert np.isclose(0, mtv, atol=1e-2)
+
+
+def test_mtv_vp_no_overlap():
+    vp1 = VariationalPosterior(1, 1, np.array([[5]]))
+    vp1.mu = np.zeros((1, 1))
+    vp1.sigma = np.array([[1]])
+    vp2 = VariationalPosterior(1, 2, np.array([[5]]))
+    vp2.mu = np.array([[0, 100]])
+    vp2.sigma = np.ones((1, 2))
+    vp2.w = np.array([[0, 1]])
+    mtv = vp1.mtv(vp2)
+    assert np.isclose(1, mtv, atol=1e-2)
+
+
+def test_mtv_sample_identical():
+    vp1 = VariationalPosterior(1, 1, np.array([[5]]))
+    vp1.mu = np.zeros((1, 1))
+    vp1.sigma = np.array([[1]])
+    vp2 = VariationalPosterior(1, 2, np.array([[5]]))
+    vp2.mu = np.array([[0, 100]])
+    vp2.sigma = np.ones((1, 2))
+    vp2.w = np.array([[1, 0]])
+    samples, _ = vp2.sample(int(1e5))
+    mtv = vp1.mtv(samples=samples, N=int(1e5))
+    assert np.isclose(0, mtv, atol=1e-2)
+
+
+def test_mtv_sample_no_overlap():
+    vp1 = VariationalPosterior(1, 1, np.array([[5]]))
+    vp1.mu = np.zeros((1, 1))
+    vp1.sigma = np.array([[1]])
+    vp2 = VariationalPosterior(1, 2, np.array([[5]]))
+    vp2.mu = np.array([[0, 100000]])
+    vp2.sigma = np.ones((1, 2))
+    vp2.w = np.array([[0, 1]])
+    samples, _ = vp2.sample(int(1e5))
+    mtv = vp1.mtv(samples=samples, N=int(1e5))
+    assert np.isclose(1, mtv, atol=1e-2)
+
+
+def test_mtv_sample_some_overlap():
+    vp1 = VariationalPosterior(1, 1, np.array([[5]]))
+    vp1.mu = np.zeros((1, 1))
+    vp1.sigma = np.array([[1]])
+    vp2 = VariationalPosterior(1, 2, np.array([[5]]))
+    vp2.mu = np.array([[0, 10000]])
+    vp2.sigma = np.ones((1, 2))
+    vp2.w = np.array([[0.5, 0.5]])
+    samples, _ = vp2.sample(int(1e5))
+    mtv = vp1.mtv(samples=samples, N=int(1e5))
+    assert np.isclose(0.5, mtv, atol=1e-2)
 
 
 def test_kldiv_missing_params():
