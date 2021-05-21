@@ -64,6 +64,15 @@ def test_add_expand_cache():
     assert np.all(f_logger.y_orig[1] == y)
     assert f_logger.cache_count == 2
 
+def test_add_record_funtime():
+    x = np.array([3, 4, 5])
+    y = non_noisy_function(x)
+    f_logger = FunctionLogger(non_noisy_function, 3, False, 0)
+    f_logger.add(x, y, None, 10)
+    f_logger.add(x * 2, y, None, 10)
+    f_logger.add(x * 3, y, None)
+    assert f_logger.total_fun_evaltime == np.nansum(f_logger.fun_evaltime)
+    assert f_logger.total_fun_evaltime == 20
 
 def test_add_no_fsd():
     x = np.array([3, 4, 5])

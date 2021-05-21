@@ -160,7 +160,7 @@ class FunctionLogger(object):
         # optimState.totalfunevaltime = optimState.totalfunevaltime + t;
         return fval, fsd, idx
 
-    def add(self, x: np.ndarray, fval_orig: float, fsd: float = None):
+    def add(self, x: np.ndarray, fval_orig: float, fsd: float = None, fun_evaltime=np.nan):
         """
         add previously evaluated function sample
 
@@ -173,7 +173,8 @@ class FunctionLogger(object):
         fsd : float, optional
             (estimated) SD of the returned value
             (if heteroskedastic noise handling is on), by default None
-
+        fun_evaltime : float
+            the duration of the time it took to evaluate the function, by default np.nan
         Returns
         -------
         fval : float
@@ -224,7 +225,7 @@ class FunctionLogger(object):
             )
 
         self.cache_count += 1
-        fval, idx = self._record(x_orig, x, fval_orig, fsd, np.nan)
+        fval, idx = self._record(x_orig, x, fval_orig, fsd, fun_evaltime)
         return fval, fsd, idx
 
     def finalize(self):
