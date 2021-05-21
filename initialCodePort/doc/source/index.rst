@@ -17,3 +17,8 @@ This works as a documentation to port the VBMC algorithm to Python3.
    classes/timer
    classes/variational_posterior
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Functions:
+
+   functions/kernel_density
