@@ -2,28 +2,22 @@ import numpy as np
 from scipy import fftpack
 from scipy.optimize import brentq
 
-"""
-Created on Wed May 19 22:20:51 2021
-​
-@author: Luigi Acerbi
-"""
-
 
 def _linear_binning(samples: np.ndarray, grid_points: np.ndarray):
-    """
-    linear_binning [summary]
-
+    """Fast computation of histogram counts using a linearly spaced grid.
+    
     Parameters
     ----------
     samples : np.ndarray
-        the samples to assign weights to
+        The samples to be binned.
     grid_points : np.ndarray
-        [description]
+        The grid points represent the bin centers. The grid points need to be
+        linearly spaced (no check is performed to ensure that).
 
     Returns
     -------
-    np.ndarray
-        [description]
+    counts : np.ndarray
+        Number of samples in each bin.
     """
     samples = samples[
         np.logical_and(samples >= grid_points[0], samples <= grid_points[-1])
@@ -38,30 +32,14 @@ def _linear_binning(samples: np.ndarray, grid_points: np.ndarray):
 
 
 def _fixed_point(t: float, N: int, irange_squared: np.ndarray, a2: np.ndarray):
-    """
-    _fixed_point Compute the fixed point according to Botev et al. (2010).
-    This implements the function t-zeta*gamma^[l](t).
-    Based on an implementation by Daniel B. Smith, PhD:
+    """Compute the fixed point according to Botev et al. (2010).
+    
+    This function implements the function t-zeta*gamma^[l](t). Based on an 
+    implementation by Daniel B. Smith:
     https://github.com/Daniel-B-Smith/KDE-for-SciPy/blob/master/kde.py
-
-
-    Parameters
-    ----------
-    t : float
-        [description]
-    N : int
-        [description]
-    irange_squared : np.ndarray
-        [description]
-    a2 : np.ndarray
-        [description]
-
-    Returns
-    -------
-    [type]
-        [description]
+    Note that the factor of 2.0 in the definition of f is correct. See longer
+    discussion here: https://github.com/tommyod/KDEpy/issues/95    
     """
-
     irange_squared = np.asfarray(irange_squared, dtype=np.float64)
     a2 = np.asfarray(a2, dtype=np.float64)
     ell = 7
@@ -101,23 +79,9 @@ def _fixed_point(t: float, N: int, irange_squared: np.ndarray, a2: np.ndarray):
 
 
 def _root(function: callable, N: int, args: tuple):
-    """
-    _root Root finding algorithm based on MATLAB implementation by Botev et al. (2010)
-    Try to find smallest root whenever there is more than one
+    """Try to find the smallest root whenever there is more than one.
 
-    Parameters
-    ----------
-    function : callable
-        [description]
-    N : int
-        [description]
-    args : tuple
-        extra arguments for the function
-
-    Returns
-    -------
-    root: float or none
-        [description]
+    Root finding algorithm based on the MATLAB code by Botev et al. (2010).
     """
     N = max(min(1050.0, N), 50.0)
     tol = 1e-12 + 0.01 * (N - 50.0) / 1000.0
@@ -143,18 +107,17 @@ def _root(function: callable, N: int, args: tuple):
 
 
 def _scottrule1d(samples: np.ndarray):
-    """
-    _scottrule1d Compute the scotts rule for 1D samples
+    """Compute the kernel bandwidth according to Scott's rule for 1D samples.
 
     Parameters
     ----------
     samples : np.ndarray
-        the 1D samples for which the scott rule is being computed
+        The 1D samples for which Scott's rule is being computed.
 
     Returns
     -------
-    float
-        Scott's factor
+    bandwidth : float
+        Scott's bandwidth.
     """
     sigma = np.std(samples, ddof=1)
     sigma_iqr = (
@@ -179,54 +142,68 @@ def kde1d(
     lower_bound: float = None,
     upper_bound: float = None,
 ):
-    """
-    kde1d Reliable and extremely fast kernel density estimator for one-dimensional data
-    Gaussian kernel is assumed and the bandwidth is chosen automatically
+    r"""Reliable and extremely fast kernel density estimator for 1D data.
+    
+    One-dimensional kernel density estimator based on fast Fourier transform. 
+    A Gaussian kernel is assumed and the bandwidth is chosen automatically
+    using the technique developed by Botev et al. (2010) [1]_.
 
+    Parameters
+    ----------
+    samples : np.ndarray
+        The samples from which the density estimate is computed.
+    n : int, optional
+        The number of mesh points used in the uniform discretization of the
+        interval [lower_bound, upper_bound]; n has to be a power of two;
+        if n is not a power of two, it is rounded up to the next power of two, 
+        i.e., n is set to n=2^ceil(log2(n)), by default 2**14.
+    lower_bound : float, optional
+        The lower bound of the interval in which the density is being computed,
+        if not given the default value is lower_bound=min(samples)-range/10,
+        where range=max(samples)-min(samples), by default None.
+    upper_bound : float, optional
+        The upper bound of the interval in which the density is being computed,
+        if not given the default value is upper_bound=max(data)+Range/10,
+        where range=max(samples)-min(samples), by default None.
+
+    Returns
+    -------
+    density: np.ndarray
+        1D vector of length n with the values of the kernel density estimate
+        at the grid points.
+    xmesh: np.ndarray
+        1D vector of grid over which the density estimate is computed.
+    bandwidth: np.ndarray
+        The optimal bandwidth (Gaussian kernel assumed).
+        
     Notes
-    -----
-    Unlike many other implementations, this one is immune to problems
-    caused by multimodal densities with widely separated modes (see example). The
-    estimation does not deteriorate for multimodal densities, because we never assume
-    a parametric model for the data.
+    -----    
+    This implementation is based on the MATLAB implementation by Zdravko Botev,
+    and was further inspired by the Python implementations by Daniel B. Smith 
+    and the bandwidth selection code in KDEpy [2]_. We thank Zdravko Botev for
+    useful clarifications on the implementation of the fixed_point function.
 
+    Unlike other implementations, this one is immune to problems caused by 
+    multimodal densities with widely separated modes (see example). The
+    bandwidth estimation does not deteriorate for multimodal densities because 
+    a parametric model is never assumed for the data.
+
+    References
+    ----------
+    .. [1] Z. I. Botev, J. F. Grotowski, and D. P. Kroese. Kernel density
+       estimation via diffusion. The Annals of Statistics, 38(5):2916-2957, 2010.
+    .. [2] https://github.com/tommyod/KDEpy/blob/master/KDEpy/bw_selection.py
+    
     Example:
-
+    --------
     .. code-block:: python
 
         import numpy as np
         from numpy.random import randn
         samples = np.concatenate((randn(100,1),randn(100,1)*2+35,randn(100,1)+55))
-        kde1d(samples,2 ** 14,min(samples)-5,max(samples)+5)
-
-    Parameters
-    ----------
-    samples : np.ndarray
-        the points from which the density estimate is computed
-    n : int, optional
-        the number of mesh points used in the uniform discretization of the
-        interval [lower_bound, upper_bound]; n has to be a power of two;
-        if n is not a power of two, then n is rounded up to the next power of two,
-        i.e., n is set to n=2^ceil(log2(n)), by default 2**14
-    lower_bound : float, optional
-        the lower bound of the interval in which the density is being computed,
-        if not given the default value is lower_bound=min(samples)-Range/10,
-        where Range=max(samples)-min(samples), by default None
-    upper_bound : float, optional
-        the lower bound of the interval in which the density is being computed,
-        if not given the default value is lower_bound=max(data)+Range/10,
-        where Range=max(samples)-min(samples), by default None
-
-    Returns
-    -------
-    density: np.ndarray
-        1D vector of length n with the values of the density
-        estimate at the grid points;
-    xmesh: np.ndarray
-        1D vector of grid over which the density estimate is computed
-    bandwidth: np.ndarray
-        the optimal bandwidth (Gaussian kernel assumed)
-    """
+        kde1d(samples,2 ** 14,min(samples)-5,max(samples)+5)        
+        
+    """    
     samples = samples.ravel()  # make samples a 1D array
 
     # validate values passed to the function
