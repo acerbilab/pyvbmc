@@ -115,7 +115,7 @@ def test_kde_density_valid_input_one_gaussian():
     samples = norm.rvs(loc=0, scale=1, size=int(1e5))
     density_kde, xmesh, _ = kde1d(samples, 2 ** 14)
     density_gaussian = norm.pdf(xmesh, loc=0, scale=1)
-    assert mtv(xmesh, density_kde, density_gaussian) < 0.1
+    assert mtv(xmesh, density_kde, density_gaussian) < 0.03
 
 
 def test_kde_density_valid_input_two_gaussians():
@@ -129,11 +129,11 @@ def test_kde_density_valid_input_two_gaussians():
     density_gaussian = 0.5 * (
         norm.pdf(xmesh, loc=0, scale=1) + norm.pdf(xmesh, loc=10, scale=1)
     )
-    assert mtv(xmesh, density_kde, density_gaussian) < 0.1
+    assert mtv(xmesh, density_kde, density_gaussian) < 0.03
 
 
 def test_kde_density_valid_input_uniform():
     samples = uniform.rvs(loc=0, scale=1, size=int(1e5))
     density_kde, xmesh, _ = kde1d(samples, 2 ** 14)
     density_uniform = uniform.pdf(xmesh, loc=0, scale=1)
-    assert mtv(xmesh, density_kde, density_uniform) < 0.1
+    assert mtv(xmesh, density_kde, density_uniform) < 0.03
