@@ -11,19 +11,19 @@ Created on Wed May 19 22:20:51 2021
 
 def _linear_binning(samples: np.ndarray, grid_points: np.ndarray):
     """
-    linear_binning [summary]
+    _linear_binning Performs linear binning for samples into grid_points.
 
     Parameters
     ----------
     samples : np.ndarray
-        the samples to assign weights to
+        the samples which are binned
     grid_points : np.ndarray
-        [description]
+        the points to which counts are assigned
 
     Returns
     -------
     np.ndarray
-        [description]
+        counts for the grid points
     """
     samples = samples[
         np.logical_and(samples >= grid_points[0], samples <= grid_points[-1])
@@ -43,23 +43,6 @@ def _fixed_point(t: float, N: int, irange_squared: np.ndarray, a2: np.ndarray):
     This implements the function t-zeta*gamma^[l](t).
     Based on an implementation by Daniel B. Smith, PhD:
     https://github.com/Daniel-B-Smith/KDE-for-SciPy/blob/master/kde.py
-
-
-    Parameters
-    ----------
-    t : float
-        [description]
-    N : int
-        [description]
-    irange_squared : np.ndarray
-        [description]
-    a2 : np.ndarray
-        [description]
-
-    Returns
-    -------
-    [type]
-        [description]
     """
 
     irange_squared = np.asfarray(irange_squared, dtype=np.float64)
@@ -104,20 +87,6 @@ def _root(function: callable, N: int, args: tuple):
     """
     _root Root finding algorithm based on MATLAB implementation by Botev et al. (2010)
     Try to find smallest root whenever there is more than one
-
-    Parameters
-    ----------
-    function : callable
-        [description]
-    N : int
-        [description]
-    args : tuple
-        extra arguments for the function
-
-    Returns
-    -------
-    root: float or none
-        [description]
     """
     N = max(min(1050.0, N), 50.0)
     tol = 1e-12 + 0.01 * (N - 50.0) / 1000.0
@@ -145,16 +114,6 @@ def _root(function: callable, N: int, args: tuple):
 def _scottrule1d(samples: np.ndarray):
     """
     _scottrule1d Compute the scotts rule for 1D samples
-
-    Parameters
-    ----------
-    samples : np.ndarray
-        the 1D samples for which the scott rule is being computed
-
-    Returns
-    -------
-    float
-        Scott's factor
     """
     sigma = np.std(samples, ddof=1)
     sigma_iqr = (
@@ -165,6 +124,9 @@ def _scottrule1d(samples: np.ndarray):
 
 
 def _validate_kde1d_args(samples, n, lower_bound, upper_bound):
+    """
+    _validate_kde1d_args and raise value exception
+    """
     if n <= 0:
         raise ValueError("n cannot be <= 0")
 
