@@ -128,6 +128,9 @@ def _scottrule1d(samples: np.ndarray):
 
 
 def _validate_kde1d_args(samples, n, lower_bound, upper_bound):
+    """
+    _validate_kde1d_args and raise value exception
+    """
     if n <= 0:
         raise ValueError("n cannot be <= 0")
 
