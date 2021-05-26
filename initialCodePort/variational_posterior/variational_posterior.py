@@ -10,7 +10,8 @@ from scipy.integrate import trapezoid
 from scipy.interpolate import interp1d
 from scipy.optimize import fmin_l_bfgs_b
 from scipy.special import gammaln
-from scipy.stats import gaussian_kde
+
+from kernel_density import kde1d
 
 
 class VariationalPosterior(object):
@@ -271,10 +272,7 @@ class VariationalPosterior(object):
             nf = 1 / (2 * np.pi) ** (d / 2) / np.prod(lamd_row)
             for k in range(self.k):
                 d2 = np.sum(
-                    (
-                        (x - self.mu.T[k])
-                        / (self.sigma[:, k].dot(lamd_row))
-                    )
+                    ((x - self.mu.T[k]) / (self.sigma[:, k].dot(lamd_row)))
                     ** 2,
                     axis=1,
                 )
@@ -308,10 +306,7 @@ class VariationalPosterior(object):
 
                 for k in range(self.k):
                     d2 = np.sum(
-                        (
-                            (x - self.mu.T[k])
-                            / (self.sigma[:, k].dot(lamd_row))
-                        )
+                        ((x - self.mu.T[k]) / (self.sigma[:, k].dot(lamd_row)))
                         ** 2,
                         axis=1,
                     )
@@ -339,8 +334,7 @@ class VariationalPosterior(object):
 
                 for k in range(self.k):
                     d2 = (
-                        (x - self.mu.T[k])
-                        / (self.sigma[:, k].dot(lamd_row))
+                        (x - self.mu.T[k]) / (self.sigma[:, k].dot(lamd_row))
                     ) ** 2
                     nn = (
                         nf
@@ -559,9 +553,9 @@ class VariationalPosterior(object):
                         (self.mu[:, k] - mubar)[:, np.newaxis]
                     ).dot((self.mu[:, k] - mubar)[:, np.newaxis].T)
         if covflag:
-            return mubar.reshape(1,-1), sigma
+            return mubar.reshape(1, -1), sigma
         else:
-            return mubar.reshape(1,-1)
+            return mubar.reshape(1, -1)
 
     def mode(self, nmax: int = 20, origflag=True):
         """
@@ -712,24 +706,14 @@ class VariationalPosterior(object):
         lb2 = np.maximum(lb2_xx - range2 / 10, lb2)
         ub2 = np.minimum(ub2_xx + range2 / 10, ub2)
 
-        def compute_density(data, n, min, max):
-            # set up the grid over which the density estimate is computed
-            xmesh = (np.linspace(0, max - min, num=n) + min).T
-            kernel = gaussian_kde(dataset=data)
-            return kernel(xmesh), xmesh[0]
-
         # Compute marginal total variation
         for d in range(self.d):
 
-            yy1, x1mesh = compute_density(
-                xx1[:, d], nkde, lb1[:, d], ub1[:, d]
-            )
+            yy1, x1mesh, _ = kde1d(xx1[:, d], nkde, lb1[:, d], ub1[:, d])
             # Ensure normalization
             yy1 = yy1 / (trapezoid(yy1) * (x1mesh[1] - x1mesh[0]))
 
-            yy2, x2mesh = compute_density(
-                xx2[:, d], nkde, lb2[:, d], ub2[:, d]
-            )
+            yy2, x2mesh, _ = kde1d(xx2[:, d], nkde, lb2[:, d], ub2[:, d])
             # Ensure normalization
             yy2 = yy2 / (trapezoid(yy2) * (x2mesh[1] - x2mesh[0]))
 
