@@ -3,24 +3,24 @@ import time
 
 class Timer(object):
     """
-    Timer class
+    A small Timer class used in the context of VBMC.
     """
 
     def __init__(self):
         """
-        __init__
+        Initialize a new timer.
         """
         self._start_times = dict()
         self._durations = dict()
 
     def start_timer(self, name: str):
         """
-        start_timer start the specified timer
+        Start the specified timer.
 
         Parameters
         ----------
         name : str
-            the name of the timer
+            The name of the timer that should be started.
         """
         if name not in self._start_times:
             if name in self._durations:
@@ -29,12 +29,12 @@ class Timer(object):
 
     def stop_timer(self, name: str):
         """
-        stop_timer stop the specified timer
+        Stop the specified timer
 
         Parameters
         ----------
         name : str
-            the name of the timer
+            The name of the timer that should be started.
         """
 
         if name in self._start_times:
@@ -44,17 +44,16 @@ class Timer(object):
 
     def get_duration(self, name: str):
         """
-        get_duration return the duration of the timer
+        Return the duration of the specified timer.
 
         Parameters
         ----------
         name : str
-            the name of the timer
+            The name of the timer which time should be returned.
 
         Returns
         -------
-        float
-            the duration of the timer
-            or None when not existing
+        duration : float
+            The duration of the timer or None when the timer is not existing.
         """
         return self._durations.get(name)
