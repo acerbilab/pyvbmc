@@ -5,13 +5,12 @@ import sys
 
 import numpy as np
 from decorators import handle_1D_input
+from kernel_density import kde1d
 from parameter_transformer import ParameterTransformer
 from scipy.integrate import trapezoid
 from scipy.interpolate import interp1d
 from scipy.optimize import fmin_l_bfgs_b
 from scipy.special import gammaln
-
-from kernel_density import kde1d
 
 
 class VariationalPosterior(object):
@@ -20,20 +19,20 @@ class VariationalPosterior(object):
     """
 
     def __init__(
-        self, d: int, k: int = 2, x0=None, parameter_transformer=None
+        self, D: int, K: int = 2, x0=None, parameter_transformer=None
     ):
         """
         __init__ Initialize VariationalPosterior
 
         Parameters
         ----------
-        d : int
+        D : int
             number of dimensions
-        k : int, optional
+        K : int, optional
             number of mixture components, default 2
         x0 : np.ndarray, optional
             starting vector for the mixture components means, it can be a
-            single array or multiple rows (up to k); missing rows are
+            single array or multiple rows (up to K); missing rows are
             duplicated by making copies of x0, default np.zeros
         parameter_transformer : ParameterTransformer, optional
             a ParameterTransformer object specifying the transformation of the
@@ -41,23 +40,23 @@ class VariationalPosterior(object):
             variational posterior, by default uses an identity transform
         """
 
-        self.d = d  # number of dimensions
-        self.k: int = k  # number of components
+        self.D = D  # number of dimensions
+        self.K: int = K  # number of components
 
         if x0 is None:
-            x0 = np.zeros(d, k)
-        elif x0.size == d:
+            x0 = np.zeros(D, K)
+        elif x0.size == D:
             x0.reshape(-1, 1)  # reshape to vertical array
-            x0 = np.tile(x0, (1, k))  # copy vector
+            x0 = np.tile(x0, (1, K))  # copy vector
         else:
             x0 = x0.T
-            x0 = np.tile(x0, int(np.ceil(self.k / x0.shape[1])))
-            x0 = x0[:, 0 : self.k]
+            x0 = np.tile(x0, int(np.ceil(self.K / x0.shape[1])))
+            x0 = x0[:, 0 : self.K]
 
-        self.w = np.ones((1, k)) / k
-        self.mu = x0 + 1e-6 * np.random.randn(self.d, self.k)
-        self.sigma = 1e-3 * np.ones((1, k))
-        self.lamb = np.ones((self.d, 1))
+        self.w = np.ones((1, K)) / K
+        self.mu = x0 + 1e-6 * np.random.randn(self.D, self.K)
+        self.sigma = 1e-3 * np.ones((1, K))
+        self.lamb = np.ones((self.D, 1))
 
         # By default, optimize all variational parameters
         self.optimize_weights = True
@@ -66,7 +65,7 @@ class VariationalPosterior(object):
         self.optimize_lamb = True
 
         if parameter_transformer is None:
-            self.parameter_transformer = ParameterTransformer(self.d)
+            self.parameter_transformer = ParameterTransformer(self.D)
         else:
             self.parameter_transformer = parameter_transformer
 
@@ -75,7 +74,7 @@ class VariationalPosterior(object):
 
     def sample(
         self,
-        n: int,
+        N: int,
         origflag: bool = True,
         balanceflag: bool = False,
         df: float = np.inf,
@@ -114,15 +113,15 @@ class VariationalPosterior(object):
             N-by-D matrix X of random vectors chosen
             from the variational posterior
         I : np.ndarray
-            N-by-1 array such that the n-th
+            N-by-1 array such that the N-th
             element of I indicates the index of the
             variational mixture component from which
-            the n-th row of X has been generated.
+            the N-th row of X has been generated.
         """
         # missing to sample from gp
         gp_sample = False
-        if n < 1:
-            x = np.zeros((0, self.d))
+        if N < 1:
+            x = np.zeros((0, self.D))
             i = np.zeros((0, 1))
             return x, i
         elif gp_sample:
@@ -131,43 +130,43 @@ class VariationalPosterior(object):
             lamd_row = self.lamb.reshape(1, -1)
 
             rng = np.random.default_rng()
-            if self.k > 1:
+            if self.K > 1:
                 if balanceflag:
                     # exact split of samples according to mixture weigths
-                    repeats = np.floor(self.w * n).astype("int")
-                    i = np.repeat(range(self.k), repeats.flatten())
+                    repeats = np.floor(self.w * N).astype("int")
+                    i = np.repeat(range(self.K), repeats.flatten())
 
                     # compute remainder samples (with correct weights) if needed
-                    if n > i.shape[0]:
-                        w_extra = self.w * n - repeats
+                    if N > i.shape[0]:
+                        w_extra = self.w * N - repeats
                         repeats_extra = np.ceil(np.sum(w_extra))
                         w_extra += self.w * (repeats_extra - sum(w_extra))
                         w_extra /= np.sum(w_extra)
                         i_extra = rng.choice(
-                            range(self.k),
+                            range(self.K),
                             size=repeats_extra.astype("int"),
                             p=w_extra.flatten(),
                         )
                         i = np.append(i, i_extra)
 
                     rng.shuffle(i)
-                    i = i[:n]
+                    i = i[:N]
                 else:
-                    i = rng.choice(range(self.k), size=n, p=self.w.flatten())
+                    i = rng.choice(range(self.K), size=N, p=self.w.flatten())
 
                 if not np.isfinite(df) or df == 0:
                     x = (
                         self.mu.T[i]
                         + lamd_row
-                        * np.random.randn(n, self.d)
+                        * np.random.randn(N, self.D)
                         * self.sigma[:, i].T
                     )
                 else:
-                    t = df / 2 / np.sqrt(rng.gamma(df / 2, df / 2, (n, 1)))
+                    t = df / 2 / np.sqrt(rng.gamma(df / 2, df / 2, (N, 1)))
                     x = (
                         self.mu.T[i]
                         + lamd_row
-                        * np.random.randn(n, self.d)
+                        * np.random.randn(N, self.D)
                         * t
                         * self.sigma[:, i].T
                     )
@@ -175,18 +174,18 @@ class VariationalPosterior(object):
                 if not np.isfinite(df) or df == 0:
                     x = (
                         self.mu.T
-                        + lamd_row * np.random.randn(n, self.d) * self.sigma
+                        + lamd_row * np.random.randn(N, self.D) * self.sigma
                     )
                 else:
-                    t = df / 2 / np.sqrt(rng.gamma(df / 2, df / 2, (n, 1)))
+                    t = df / 2 / np.sqrt(rng.gamma(df / 2, df / 2, (N, 1)))
                     x = (
                         self.mu.T
                         + lamd_row
                         * t
-                        * np.random.randn(n, self.d)
+                        * np.random.randn(N, self.D)
                         * self.sigma
                     )
-                i = np.zeros(n)
+                i = np.zeros(N)
             if origflag:
                 x = self.parameter_transformer.inverse(x)
         return x, i
@@ -260,34 +259,34 @@ class VariationalPosterior(object):
         if origflag and not transflag:
             x = self.parameter_transformer(x)
         lamd_row = self.lamb.reshape(1, -1)
-        n, d = x.shape
-        y = np.zeros((n, 1))
+        N, D = x.shape
+        y = np.zeros((N, 1))
         if gradflag:
-            dy = np.zeros((n, d))
+            dy = np.zeros((N, D))
 
         if not np.isfinite(df) or df == 0:
             # compute pdf of variational posterior
 
             # common normalization factor
-            nf = 1 / (2 * np.pi) ** (d / 2) / np.prod(lamd_row)
-            for k in range(self.k):
+            nf = 1 / (2 * np.pi) ** (D / 2) / np.prod(lamd_row)
+            for K in range(self.K):
                 d2 = np.sum(
-                    ((x - self.mu.T[k]) / (self.sigma[:, k].dot(lamd_row)))
+                    ((x - self.mu.T[K]) / (self.sigma[:, K].dot(lamd_row)))
                     ** 2,
                     axis=1,
                 )
                 nn = (
                     nf
-                    * self.w[:, k]
-                    / self.sigma[:, k] ** d
+                    * self.w[:, K]
+                    / self.sigma[:, K] ** D
                     * np.exp(-0.5 * d2)[:, np.newaxis]
                 )
                 y += nn
                 if gradflag:
                     dy -= (
                         nn
-                        * (x - self.mu.T[k])
-                        / ((lamd_row ** 2) * self.sigma[:, k] ** 2)
+                        * (x - self.mu.T[K])
+                        / ((lamd_row ** 2) * self.sigma[:, K] ** 2)
                     )
 
         else:
@@ -299,22 +298,22 @@ class VariationalPosterior(object):
 
                 # common normalization factor
                 nf = (
-                    np.exp(gammaln((df + d) / 2) - gammaln(df / 2))
-                    / (df * np.pi) ** (d / 2)
+                    np.exp(gammaln((df + D) / 2) - gammaln(df / 2))
+                    / (df * np.pi) ** (D / 2)
                     / np.prod(self.lamb)
                 )
 
-                for k in range(self.k):
+                for K in range(self.K):
                     d2 = np.sum(
-                        ((x - self.mu.T[k]) / (self.sigma[:, k].dot(lamd_row)))
+                        ((x - self.mu.T[K]) / (self.sigma[:, K].dot(lamd_row)))
                         ** 2,
                         axis=1,
                     )
                     nn = (
                         nf
-                        * self.w[:, k]
-                        / self.sigma[:, k] ** d
-                        * (1 + d2 / df) ** (-(df + d) / 2)
+                        * self.w[:, K]
+                        / self.sigma[:, K] ** D
+                        * (1 + d2 / df) ** (-(df + D) / 2)
                     )[:, np.newaxis]
                     y += nn
                     if gradflag:
@@ -330,16 +329,16 @@ class VariationalPosterior(object):
                 nf = (
                     np.exp(gammaln((df_abs + 1) / 2) - gammaln(df_abs / 2))
                     / np.sqrt(df_abs * np.pi)
-                ) ** d / np.prod(self.lamb)
+                ) ** D / np.prod(self.lamb)
 
-                for k in range(self.k):
+                for K in range(self.K):
                     d2 = (
-                        (x - self.mu.T[k]) / (self.sigma[:, k].dot(lamd_row))
+                        (x - self.mu.T[K]) / (self.sigma[:, K].dot(lamd_row))
                     ) ** 2
                     nn = (
                         nf
-                        * self.w[:, k]
-                        / self.sigma[:, k] ** d
+                        * self.w[:, K]
+                        / self.sigma[:, K] ** D
                         * np.prod(
                             (1 + d2 / df_abs) ** (-(df_abs + 1) / 2), axis=1
                         )[:, np.newaxis]
@@ -394,7 +393,7 @@ class VariationalPosterior(object):
             parameters flattenend as a 1D array
         """
 
-        nl = np.sqrt(np.sum(self.lamb ** 2) / self.d)
+        nl = np.sqrt(np.sum(self.lamb ** 2) / self.D)
 
         self.lamb = self.lamb.reshape(-1, 1) / nl
         self.sigma = self.sigma.reshape(1, -1) * nl
@@ -455,44 +454,44 @@ class VariationalPosterior(object):
         if not rawflag:
             check_idx = 0
             if self.optimize_weights:
-                check_idx -= self.k
+                check_idx -= self.K
             if self.optimize_lamb:
-                check_idx -= self.d
+                check_idx -= self.D
             if self.optimize_sigma:
-                check_idx -= self.k
+                check_idx -= self.K
             if np.any(theta[-check_idx:] < 0.0):
                 raise ValueError(
                     "sigma, lambda and weights must be positive when rawflag = False"
                 )
 
         if self.optimize_mu:
-            self.mu = np.reshape(theta[: self.d * self.k], (self.d, self.k))
-            start_idx = self.d * self.k
+            self.mu = np.reshape(theta[: self.D * self.K], (self.D, self.K))
+            start_idx = self.D * self.K
         else:
             start_idx = 0
 
         if self.optimize_sigma:
             if rawflag:
-                self.sigma = np.exp(theta[start_idx : start_idx + self.k])
+                self.sigma = np.exp(theta[start_idx : start_idx + self.K])
             else:
-                self.sigma = theta[start_idx : start_idx + self.k]
-            start_idx += self.k
+                self.sigma = theta[start_idx : start_idx + self.K]
+            start_idx += self.K
 
         if self.optimize_lamb:
             if rawflag:
-                self.lamb = np.exp(theta[start_idx : start_idx + self.d]).T
+                self.lamb = np.exp(theta[start_idx : start_idx + self.D]).T
             else:
-                self.lamb = theta[start_idx : start_idx + self.d].T
+                self.lamb = theta[start_idx : start_idx + self.D].T
 
         if self.optimize_weights:
-            eta = theta[-self.k :]
+            eta = theta[-self.K :]
             if rawflag:
                 eta = eta - np.amax(eta)
                 self.w = np.exp(eta.T)[:, np.newaxis]
             else:
                 self.w = eta.T[:, np.newaxis]
 
-        nl = np.sqrt(np.sum(self.lamb ** 2) / self.d)
+        nl = np.sqrt(np.sum(self.lamb ** 2) / self.D)
 
         self.lamb = self.lamb.reshape(-1, 1) / nl
         self.sigma = self.sigma.reshape(1, -1) * nl
@@ -505,14 +504,14 @@ class VariationalPosterior(object):
         if hasattr(self, "_mode"):
             delattr(self, "_mode")
 
-    def moments(self, n: int = int(1e6), origflag=True, covflag=False):
+    def moments(self, N: int = int(1e6), origflag=True, covflag=False):
         """
         moments computes the mean MU and covariance matrix SIGMA
         of the variational posterior via Monte Carlo sampling.
 
         Parameters
         ----------
-        n : int, optional
+        N : int, optional
             number of samples to compute
             moments from, by default int(1e6)
         origflag : bool, optional
@@ -535,7 +534,7 @@ class VariationalPosterior(object):
 
         """
         if origflag:
-            x, _ = self.sample(int(n), origflag=True, balanceflag=True)
+            x, _ = self.sample(int(N), origflag=True, balanceflag=True)
             mubar = np.mean(x, axis=0)
             if covflag:
                 sigma = np.cov(x.T)
@@ -548,10 +547,10 @@ class VariationalPosterior(object):
                     * np.eye(len(self.lamb))
                     * self.lamb
                 )
-                for k in range(self.k):
-                    sigma += self.w[:, k] * (
-                        (self.mu[:, k] - mubar)[:, np.newaxis]
-                    ).dot((self.mu[:, k] - mubar)[:, np.newaxis].T)
+                for K in range(self.K):
+                    sigma += self.w[:, K] * (
+                        (self.mu[:, K] - mubar)[:, np.newaxis]
+                    ).dot((self.mu[:, K] - mubar)[:, np.newaxis].T)
         if covflag:
             return mubar.reshape(1, -1), sigma
         else:
@@ -593,18 +592,18 @@ class VariationalPosterior(object):
         else:
             x0_mat = self.mu.T
 
-            if nmax < self.k:
+            if nmax < self.K:
                 # First, evaluate pdf at all modes
                 y0_vec = -1 * self.pdf(x0_mat, origflag=True, logflag=True)
                 # Start from first NMAX solutions
                 y0_idx = np.argsort(y0_vec)[:-1]
                 x0_mat = x0_mat[y0_idx]
 
-            x_min = np.zeros((x0_mat.shape[0], self.d))
+            x_min = np.zeros((x0_mat.shape[0], self.D))
             ff = np.full((x0_mat.shape[0], 1), np.inf)
 
-            for k in range(x0_mat.shape[1]):
-                x0 = x0_mat[k]
+            for K in range(x0_mat.shape[1]):
+                x0 = x0_mat[K]
 
                 if origflag:
                     x0 = self.parameter_transformer.inverse(x0)
@@ -614,8 +613,8 @@ class VariationalPosterior(object):
                         [
                             np.concatenate(
                                 (
-                                    self.parameter_transformer.lb_orig[:, k],
-                                    self.parameter_transformer.ub_orig[:, k],
+                                    self.parameter_transformer.lb_orig[:, K],
+                                    self.parameter_transformer.ub_orig[:, K],
                                 ),
                                 axis=None,
                             )
@@ -626,11 +625,11 @@ class VariationalPosterior(object):
                         self.parameter_transformer.ub_orig,
                         np.maximum(x0, self.parameter_transformer.lb_orig),
                     )
-                    x_min[k], ff[k], _ = fmin_l_bfgs_b(
+                    x_min[K], ff[K], _ = fmin_l_bfgs_b(
                         func=nlnpdf, x0=x0, bounds=bounds, approx_grad=True
                     )
                 else:
-                    x_min[k], ff[k], _ = fmin_l_bfgs_b(func=nlnpdf, x0=x0)
+                    x_min[K], ff[K], _ = fmin_l_bfgs_b(func=nlnpdf, x0=x0)
 
             # Get mode and store it
             idx_min = np.argmin(ff)
@@ -688,7 +687,7 @@ class VariationalPosterior(object):
             ub2 = np.full((1, xx2.shape[1]), np.inf)
 
         nkde = 2 ** 13
-        mtv = np.zeros((1, self.d))
+        mtv = np.zeros((1, self.D))
         # Set bounds for kernel density estimate
         lb1_xx = np.amin(xx1, axis=0)
         ub1_xx = np.amax(xx1, axis=0)
@@ -707,13 +706,13 @@ class VariationalPosterior(object):
         ub2 = np.minimum(ub2_xx + range2 / 10, ub2)
 
         # Compute marginal total variation
-        for d in range(self.d):
+        for D in range(self.D):
 
-            yy1, x1mesh, _ = kde1d(xx1[:, d], nkde, lb1[:, d], ub1[:, d])
+            yy1, x1mesh, _ = kde1d(xx1[:, D], nkde, lb1[:, D], ub1[:, D])
             # Ensure normalization
             yy1 = yy1 / (trapezoid(yy1) * (x1mesh[1] - x1mesh[0]))
 
-            yy2, x2mesh, _ = kde1d(xx2[:, d], nkde, lb2[:, d], ub2[:, d])
+            yy2, x2mesh, _ = kde1d(xx2[:, D], nkde, lb2[:, D], ub2[:, D])
             # Ensure normalization
             yy2 = yy2 / (trapezoid(yy2) * (x2mesh[1] - x2mesh[0]))
 
@@ -738,7 +737,7 @@ class VariationalPosterior(object):
             )
             for j in range(3):
                 xx_range = np.linspace(bb[j], bb[j + 1], num=int(1e5))
-                mtv[:, d] = mtv[:, d] + 0.5 * trapezoid(f(xx_range)) * (
+                mtv[:, D] = mtv[:, D] + 0.5 * trapezoid(f(xx_range)) * (
                     xx_range[1] - xx_range[0]
                 )
         return mtv
@@ -802,17 +801,17 @@ class VariationalPosterior(object):
             if np.ndim(mu2) == 1:
                 mu2 = np.array([mu2])
 
-            d = mu1.shape[1]
+            D = mu1.shape[1]
             dmu = (mu1 - mu2).T
             detq1 = np.linalg.det(sigma1)
             detq2 = np.linalg.det(sigma2)
             lndet = np.log(detq2 / detq1)
             a, _, _, _ = np.linalg.lstsq(sigma2, sigma1, rcond=None)
             b, _, _, _ = np.linalg.lstsq(sigma2, dmu, rcond=None)
-            kl1 = 0.5 * (np.trace(a) + dmu.T @ b - d + lndet)
+            kl1 = 0.5 * (np.trace(a) + dmu.T @ b - D + lndet)
             a, _, _, _ = np.linalg.lstsq(sigma1, sigma2, rcond=None)
             b, _, _, _ = np.linalg.lstsq(sigma1, dmu, rcond=None)
-            kl2 = 0.5 * (np.trace(a) + dmu.T @ b - d - lndet)
+            kl2 = 0.5 * (np.trace(a) + dmu.T @ b - D - lndet)
             return np.concatenate((kl1, kl2), axis=None)
 
         if gaussflag:
