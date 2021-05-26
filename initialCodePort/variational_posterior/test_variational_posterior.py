@@ -9,8 +9,8 @@ from variational_posterior import VariationalPosterior
 def get_matlab_vp():
     mat = loadmat("variational_posterior/vp-test.mat")
     vp = VariationalPosterior(2, 2, np.array([[5]]))
-    vp.d = mat["D"][0, 0]
-    vp.k = mat["K"][0, 0]
+    vp.D = mat["D"][0, 0]
+    vp.K = mat["K"][0, 0]
     vp.w = mat["w"]
     vp.mu = mat["mu"]
     vp.sigma = mat["sigma"]
@@ -19,7 +19,7 @@ def get_matlab_vp():
     vp.optimize_mu = True if mat["optimize_mu"][0, 0] == 1 else False
     vp.optimize_sigma = True if mat["optimize_sigma"][0, 0] == 1 else False
     vp.optimize_weights = True if mat["optimize_weights"][0, 0] == 1 else False
-    vp.parameter_transformer = ParameterTransformer(vp.d)
+    vp.parameter_transformer = ParameterTransformer(vp.D)
     return vp
 
 
@@ -34,126 +34,126 @@ def test_sample_n_lower_1():
 
 def test_sample_default():
     vp = VariationalPosterior(3, 2, np.array([[5]]))
-    n = int(1e6)
-    x, i = vp.sample(n)
-    assert np.all(x.shape == (n, 3))
-    assert np.all(i.shape[0] == n)
+    N = int(1e6)
+    x, i = vp.sample(N)
+    assert np.all(x.shape == (N, 3))
+    assert np.all(i.shape[0] == N)
     assert 0 in i
     assert 1 in i
 
 
 def test_sample_balance_no_extra():
     vp = VariationalPosterior(3, 2, np.array([[5]]))
-    n = 10
-    x, i = vp.sample(n, balanceflag=True)
-    assert np.all(x.shape == (n, 3))
-    assert np.all(i.shape[0] == n)
+    N = 10
+    x, i = vp.sample(N, balanceflag=True)
+    assert np.all(x.shape == (N, 3))
+    assert np.all(i.shape[0] == N)
     _, counts = np.unique(i, return_counts=True)
-    assert np.all(counts == n / 2)
+    assert np.all(counts == N / 2)
 
 
 def test_sample_balance_extra():
     vp = VariationalPosterior(3, 2, np.array([[5]]))
-    n = 11
-    x, i = vp.sample(n, balanceflag=True)
-    assert np.all(x.shape == (n, 3))
-    assert np.all(i.shape[0] == n)
+    N = 11
+    x, i = vp.sample(N, balanceflag=True)
+    assert np.all(x.shape == (N, 3))
+    assert np.all(i.shape[0] == N)
     _, counts = np.unique(i, return_counts=True)
-    assert np.all(np.isin(counts, np.array([n // 2, n // 2 + 1])))
+    assert np.all(np.isin(counts, np.array([N // 2, N // 2 + 1])))
 
 
 def test_sample_one_k():
     vp = VariationalPosterior(3, 1, np.array([[5]]))
-    n = 11
-    x, i = vp.sample(n)
-    assert np.all(x.shape == (n, 3))
-    assert np.all(i.shape[0] == n)
+    N = 11
+    x, i = vp.sample(N)
+    assert np.all(x.shape == (N, 3))
+    assert np.all(i.shape[0] == N)
     _, counts = np.unique(i, return_counts=True)
-    assert counts[0] == n
+    assert counts[0] == N
 
 
 def test_sample_one_k_df():
     vp = VariationalPosterior(3, 1, np.array([[5]]))
-    n = 11
-    x, i = vp.sample(n, df=20)
-    assert np.all(x.shape == (n, 3))
-    assert np.all(i.shape[0] == n)
+    N = 11
+    x, i = vp.sample(N, df=20)
+    assert np.all(x.shape == (N, 3))
+    assert np.all(i.shape[0] == N)
     _, counts = np.unique(i, return_counts=True)
-    assert counts[0] == n
+    assert counts[0] == N
 
 
 def test_sample_df():
     vp = VariationalPosterior(3, 2, np.array([[5]]))
-    n = int(1e4)
-    x, i = vp.sample(n, df=20)
-    assert np.all(x.shape == (n, 3))
-    assert np.all(i.shape[0] == n)
+    N = int(1e4)
+    x, i = vp.sample(N, df=20)
+    assert np.all(x.shape == (N, 3))
+    assert np.all(i.shape[0] == N)
     assert 0 in i
     assert 1 in i
 
 
 def test_sample_no_origflag():
     vp = VariationalPosterior(3, 1, np.array([[5]]))
-    n = 11
-    x, i = vp.sample(n, origflag=False)
-    assert np.all(x.shape == (n, 3))
-    assert np.all(i.shape[0] == n)
+    N = 11
+    x, i = vp.sample(N, origflag=False)
+    assert np.all(x.shape == (N, 3))
+    assert np.all(i.shape[0] == N)
     _, counts = np.unique(i, return_counts=True)
-    assert counts[0] == n
+    assert counts[0] == N
 
 
 def test_pdf_default_no_origflag():
-    n = 20
-    d = 3
-    vp = VariationalPosterior(d, 2, np.array([[5]]))
+    N = 20
+    D = 3
+    vp = VariationalPosterior(D, 2, np.array([[5]]))
     vp.mu = np.ones((3, 2)) * 5
-    x = np.ones((n, d)) * 4.996
+    x = np.ones((N, D)) * 4.996
     y = vp.pdf(x, origflag=False)
-    assert y.shape == (n, 1)
+    assert y.shape == (N, 1)
     assert np.isscalar(y[0, 0])
     assert np.all(
         np.isclose(
-            y, 0.002396970183585 * np.ones((n, 1)), rtol=1e-12, atol=1e-14
+            y, 0.002396970183585 * np.ones((N, 1)), rtol=1e-12, atol=1e-14
         )
     )
 
 
 def test_pdf_grad_default_no_origflag():
-    n = 20
-    d = 3
-    vp = VariationalPosterior(d, 2, np.array([[5]]))
+    N = 20
+    D = 3
+    vp = VariationalPosterior(D, 2, np.array([[5]]))
     vp.mu = np.ones((3, 2)) * 5
-    x = np.ones((n, d)) * 4.996
+    x = np.ones((N, D)) * 4.996
     y, dy = vp.pdf(x, origflag=False, gradflag=True)
-    assert y.shape == (n, 1)
+    assert y.shape == (N, 1)
     assert np.isscalar(y[0, 0])
     assert np.all(
         np.isclose(
-            y, 0.002396970183585 * np.ones((n, 1)), rtol=1e-12, atol=1e-14
+            y, 0.002396970183585 * np.ones((N, 1)), rtol=1e-12, atol=1e-14
         )
     )
     assert dy.shape == x.shape
     assert np.isscalar(dy[0, 0])
     assert np.all(
         np.isclose(
-            dy, 9.58788073433898 * np.ones((n, 3)), rtol=1e-12, atol=1e-14
+            dy, 9.58788073433898 * np.ones((N, 3)), rtol=1e-12, atol=1e-14
         )
     )
 
 
 def test_pdf_grad_logflag_no_origflag():
-    n = 20
-    d = 3
-    vp = VariationalPosterior(d, 2, np.array([[5]]))
+    N = 20
+    D = 3
+    vp = VariationalPosterior(D, 2, np.array([[5]]))
     vp.mu = np.ones((3, 2)) * 5
-    x = np.ones((n, d)) * 4.996
+    x = np.ones((N, D)) * 4.996
     y, dy = vp.pdf(x, origflag=False, logflag=True, gradflag=True)
-    assert y.shape == (n, 1)
+    assert y.shape == (N, 1)
     assert np.isscalar(y[0, 0])
     assert np.all(
         np.isclose(
             y,
-            np.log(0.002396970183585 * np.ones((n, 1))),
+            np.log(0.002396970183585 * np.ones((N, 1))),
             rtol=1e-12,
             atol=1e-14,
         )
@@ -163,7 +163,7 @@ def test_pdf_grad_logflag_no_origflag():
     assert np.all(
         np.isclose(
             dy,
-            9.58788073433898 * np.ones((n, 3)) / np.exp(y),
+            9.58788073433898 * np.ones((N, 3)) / np.exp(y),
             rtol=1e-12,
             atol=1e-14,
         )
@@ -171,49 +171,49 @@ def test_pdf_grad_logflag_no_origflag():
 
 
 def test_pdf_grad_origflag():
-    n = 20
-    d = 3
-    vp = VariationalPosterior(d, 2, np.array([[5]]))
+    N = 20
+    D = 3
+    vp = VariationalPosterior(D, 2, np.array([[5]]))
     vp.mu = np.ones((3, 2)) * 5
-    x = np.ones((n, d)) * 4.996
+    x = np.ones((N, D)) * 4.996
     y, dy = vp.pdf(x, gradflag=True)
-    assert y.shape == (n, 1)
+    assert y.shape == (N, 1)
     assert np.isscalar(y[0, 0])
     assert np.all(
         np.isclose(
-            y, 0.002396970183585 * np.ones((n, 1)), rtol=1e-12, atol=1e-14
+            y, 0.002396970183585 * np.ones((N, 1)), rtol=1e-12, atol=1e-14
         )
     )
     assert dy.shape == x.shape
     assert np.isscalar(dy[0, 0])
     assert np.all(
         np.isclose(
-            dy, 9.58788073433898 * np.ones((n, 3)), rtol=1e-12, atol=1e-14
+            dy, 9.58788073433898 * np.ones((N, 3)), rtol=1e-12, atol=1e-14
         )
     )
 
 
 def test_pdf_df_real_positive():
-    n = 20
-    d = 3
-    vp = VariationalPosterior(d, 2, np.array([[5]]))
+    N = 20
+    D = 3
+    vp = VariationalPosterior(D, 2, np.array([[5]]))
     vp.mu = np.ones((3, 2)) * 5
-    x = np.repeat([4.99, 4.996], [10, 10])[:, np.newaxis] * np.ones((1, d))
+    x = np.repeat([4.99, 4.996], [10, 10])[:, np.newaxis] * np.ones((1, D))
     y = vp.pdf(x, origflag=False, df=10)
-    assert y.shape == (n, 1)
+    assert y.shape == (N, 1)
     assert np.isscalar(y[0, 0])
     assert np.all(np.isclose(y[:10], 0.01378581338784, rtol=1e-12, atol=1e-14))
     assert np.all(np.isclose(y[10:], 743.0216137262, rtol=1e-12, atol=1e-14))
 
 
 def test_pdf_df_real_negative():
-    n = 20
-    d = 3
-    vp = VariationalPosterior(d, 2, np.array([[5]]))
+    N = 20
+    D = 3
+    vp = VariationalPosterior(D, 2, np.array([[5]]))
     vp.mu = np.ones((3, 2)) * 5
-    x = np.repeat([4.995, 4.99], [10, 10])[:, np.newaxis] * np.ones((1, d))
+    x = np.repeat([4.995, 4.99], [10, 10])[:, np.newaxis] * np.ones((1, D))
     y = vp.pdf(x, origflag=False, df=-2)
-    assert y.shape == (n, 1)
+    assert y.shape == (N, 1)
     assert np.isscalar(y[0, 0])
     assert np.all(np.isclose(y[:10], 362.1287964795, rtol=1e-12, atol=1e-14))
     assert np.all(np.isclose(y[10:], 0.914743278670, rtol=1e-12, atol=1e-14))
@@ -235,59 +235,59 @@ def test_pdf_origflag_gradient():
 
 
 def test_set_parameters_raw():
-    k = 2
-    d = 3
-    vp = VariationalPosterior(d, k, np.array([[5]]))
-    theta_size = d * k + 2 * k + d
+    K = 2
+    D = 3
+    vp = VariationalPosterior(D, K, np.array([[5]]))
+    theta_size = D * K + 2 * K + D
     rng = np.random.default_rng()
     theta = rng.random(theta_size)
     vp.optimize_weights = True
     vp.set_parameters(theta)
-    assert vp.mu.shape == (d, k)
-    assert np.all(vp.mu[: d * k] == np.reshape(theta[: d * k], (d, k)))
-    lamb = np.exp(theta[d * k + k : d * k + k + d])
-    nl = np.sqrt(np.sum(lamb ** 2) / d)
-    assert vp.sigma.shape == (1, k)
+    assert vp.mu.shape == (D, K)
+    assert np.all(vp.mu[: D * K] == np.reshape(theta[: D * K], (D, K)))
+    lamb = np.exp(theta[D * K + K : D * K + K + D])
+    nl = np.sqrt(np.sum(lamb ** 2) / D)
+    assert vp.sigma.shape == (1, K)
     assert np.all(
-        vp.sigma == np.exp(theta[d * k : d * k + k]).reshape(1, -1) * nl
+        vp.sigma == np.exp(theta[D * K : D * K + K]).reshape(1, -1) * nl
     )
-    assert vp.lamb.shape == (d, 1)
+    assert vp.lamb.shape == (D, 1)
     assert np.all(vp.lamb == np.array([lamb]).reshape(-1, 1) / nl)
-    assert vp.w.shape == (1, k)
-    w = np.exp(theta[-k:] - np.amax(theta[-k:]))
+    assert vp.w.shape == (1, K)
+    w = np.exp(theta[-K:] - np.amax(theta[-K:]))
     w = w.reshape(1, -1) / np.sum(w)
     assert np.all(vp.w == w)
 
 
 def test_set_parameters_not_raw():
-    k = 2
-    d = 3
-    vp = VariationalPosterior(d, k, np.array([[5]]))
-    theta_size = d * k + 2 * k + d
+    K = 2
+    D = 3
+    vp = VariationalPosterior(D, K, np.array([[5]]))
+    theta_size = D * K + 2 * K + D
     rng = np.random.default_rng()
     theta = rng.random(theta_size)
     vp.optimize_weights = True
     vp.set_parameters(theta, rawflag=False)
-    assert vp.mu.shape == (d, k)
-    assert np.all(vp.mu[: d * k] == np.reshape(theta[: d * k], (d, k)))
-    lamb = theta[d * k + k : d * k + k + d]
-    nl = np.sqrt(np.sum(lamb ** 2) / d)
-    assert vp.sigma.shape == (1, k)
-    assert np.all(vp.sigma == theta[d * k : d * k + k].reshape(1, -1) * nl)
-    assert vp.lamb.shape == (d, 1)
+    assert vp.mu.shape == (D, K)
+    assert np.all(vp.mu[: D * K] == np.reshape(theta[: D * K], (D, K)))
+    lamb = theta[D * K + K : D * K + K + D]
+    nl = np.sqrt(np.sum(lamb ** 2) / D)
+    assert vp.sigma.shape == (1, K)
+    assert np.all(vp.sigma == theta[D * K : D * K + K].reshape(1, -1) * nl)
+    assert vp.lamb.shape == (D, 1)
     assert np.all(vp.lamb == np.array([lamb]).reshape(-1, 1) / nl)
-    assert vp.w.shape == (1, k)
-    w = theta[-k:]
+    assert vp.w.shape == (1, K)
+    w = theta[-K:]
     w = w.reshape(1, -1) / np.sum(w)
     assert np.all(vp.w == w)
 
 
 def test_set_parameters_not_raw_negative_error():
-    k = 2
-    d = 3
-    vp = VariationalPosterior(d, k, np.array([[5]]))
+    K = 2
+    D = 3
+    vp = VariationalPosterior(D, K, np.array([[5]]))
     vp.optimize_weights = True
-    theta_size = d * k + 2 * k + d
+    theta_size = D * K + 2 * K + D
     rng = np.random.default_rng()
     theta = rng.random(theta_size) * -1
     with pytest.raises(ValueError):
@@ -295,42 +295,42 @@ def test_set_parameters_not_raw_negative_error():
 
 
 def test_get_parameters_raw():
-    k = 2
-    d = 3
-    vp = VariationalPosterior(d, k, np.array([[5]]))
+    K = 2
+    D = 3
+    vp = VariationalPosterior(D, K, np.array([[5]]))
     vp.optimize_weights = True
     theta = vp.get_parameters(rawflag=True)
-    assert np.all(vp.mu[: d * k] == np.reshape(theta[: d * k], (d, k)))
+    assert np.all(vp.mu[: D * K] == np.reshape(theta[: D * K], (D, K)))
     assert np.all(
         np.isclose(
             vp.sigma.flatten(),
-            np.exp(theta[d * k : d * k + k]),
+            np.exp(theta[D * K : D * K + K]),
             rtol=1e-12,
             atol=1e-14,
         )
     )
     assert np.all(
-        vp.lamb.flatten() == np.exp(theta[d * k + k : d * k + k + d])
+        vp.lamb.flatten() == np.exp(theta[D * K + K : D * K + K + D])
     )
-    assert np.all(vp.w.flatten() == np.exp(theta[-k:]))
+    assert np.all(vp.w.flatten() == np.exp(theta[-K:]))
 
 
 def test_get_parameters_not_raw():
-    k = 2
-    d = 3
-    vp = VariationalPosterior(d, k, np.array([[5]]))
+    K = 2
+    D = 3
+    vp = VariationalPosterior(D, K, np.array([[5]]))
     vp.optimize_weights = True
     theta = vp.get_parameters(rawflag=False)
-    assert np.all(vp.mu[: d * k] == np.reshape(theta[: d * k], (d, k)))
-    assert np.all(vp.sigma.flatten() == theta[d * k : d * k + k])
-    assert np.all(vp.lamb.flatten() == theta[d * k + k : d * k + k + d])
-    assert np.all(vp.w.flatten() == theta[-k:])
+    assert np.all(vp.mu[: D * K] == np.reshape(theta[: D * K], (D, K)))
+    assert np.all(vp.sigma.flatten() == theta[D * K : D * K + K])
+    assert np.all(vp.lamb.flatten() == theta[D * K + K : D * K + K + D])
+    assert np.all(vp.w.flatten() == theta[-K:])
 
 
 def test_get_set_parameters_roundtrip():
-    k = 2
-    d = 3
-    vp = VariationalPosterior(d, k, np.array([[5]]))
+    K = 2
+    D = 3
+    vp = VariationalPosterior(D, K, np.array([[5]]))
     vp.optimize_weights = True
     theta = vp.get_parameters(rawflag=True)
     vp.set_parameters(theta, rawflag=True)
@@ -340,9 +340,9 @@ def test_get_set_parameters_roundtrip():
 
 
 def test_get_set_parameters_roundtrip_no_mu():
-    k = 2
-    d = 3
-    vp = VariationalPosterior(d, k, np.array([[5]]))
+    K = 2
+    D = 3
+    vp = VariationalPosterior(D, K, np.array([[5]]))
     vp.optimize_mu = False
     theta = vp.get_parameters(rawflag=True)
     vp.set_parameters(theta, rawflag=True)
@@ -352,20 +352,20 @@ def test_get_set_parameters_roundtrip_no_mu():
 
 
 def test_get_set_parameters_delete_mode():
-    k = 2
-    d = 3
-    vp = VariationalPosterior(d, k, np.array([[5]]))
+    K = 2
+    D = 3
+    vp = VariationalPosterior(D, K, np.array([[5]]))
     theta = vp.get_parameters(rawflag=True)
-    vp._mode = np.ones(d)
+    vp._mode = np.ones(D)
     assert hasattr(vp, "_mode") == True
     vp.set_parameters(theta, rawflag=True)
     assert hasattr(vp, "_mode") == False
 
 
 def test_get_set_parameters_roundtrip_non_raw():
-    k = 2
-    d = 3
-    vp = VariationalPosterior(d, k, np.array([[5]]))
+    K = 2
+    D = 3
+    vp = VariationalPosterior(D, K, np.array([[5]]))
     vp.optimize_weights = True
     theta = vp.get_parameters(rawflag=False)
     vp.set_parameters(theta, rawflag=False)
@@ -376,8 +376,8 @@ def test_get_set_parameters_roundtrip_non_raw():
 
 def test_moments_origflag():
     vp = VariationalPosterior(3, 2, np.array([[5]]))
-    mubar, sigma = vp.moments(n=int(1e6), covflag=True)
-    x2, _ = vp.sample(n=int(1e6), origflag=True, balanceflag=True)
+    mubar, sigma = vp.moments(N=int(1e6), covflag=True)
+    x2, _ = vp.sample(N=int(1e6), origflag=True, balanceflag=True)
     assert mubar.shape == (1, 3)
     assert np.all(np.isclose(mubar, np.mean(x2, axis=0)))
     assert sigma.shape == (3, 3)
@@ -387,7 +387,7 @@ def test_moments_origflag():
 def test_moments_no_origflag():
     vp = VariationalPosterior(3, 2, np.array([[5]]))
     vp.mu = np.ones((3, 2)) * [1, 4]
-    mubar, sigma = vp.moments(n=1e6, covflag=True, origflag=False)
+    mubar, sigma = vp.moments(N=1e6, covflag=True, origflag=False)
     assert mubar.shape == (1, 3)
     assert sigma.shape == (3, 3)
     assert np.all(mubar == 2.5)
@@ -397,7 +397,7 @@ def test_moments_no_origflag():
 
 def test_moments_no_covflag():
     vp = VariationalPosterior(3, 2, np.array([[5]]))
-    mubar = vp.moments(n=1e6, origflag=False)
+    mubar = vp.moments(N=1e6, origflag=False)
     assert mubar.shape == (1, 3)
 
 

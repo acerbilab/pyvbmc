@@ -1,63 +1,61 @@
 # for annotating VP as input of itself in mtv
 from __future__ import annotations
-
 import sys
 
 import numpy as np
 from decorators import handle_1D_input
+from kernel_density import kde1d
 from parameter_transformer import ParameterTransformer
 from scipy.integrate import trapezoid
 from scipy.interpolate import interp1d
 from scipy.optimize import fmin_l_bfgs_b
 from scipy.special import gammaln
 
-from kernel_density import kde1d
-
 
 class VariationalPosterior(object):
     """
-    Variational Posterior class
+    The Variational Posterior class used in the context of VBMC.
     """
 
     def __init__(
-        self, d: int, k: int = 2, x0=None, parameter_transformer=None
+        self, D: int, K: int = 2, x0=None, parameter_transformer=None
     ):
         """
-        __init__ Initialize VariationalPosterior
+        Initialize an instace of VariationalPosterior.
 
         Parameters
         ----------
-        d : int
-            number of dimensions
-        k : int, optional
-            number of mixture components, default 2
+        D : int
+            The number of dimensions of the Variational Posterior.
+        K : int, optional
+            The number of mixture components, default 2.
         x0 : np.ndarray, optional
-            starting vector for the mixture components means, it can be a
-            single array or multiple rows (up to k); missing rows are
-            duplicated by making copies of x0, default np.zeros
+            The starting vector for the mixture components means, it can be a
+            single array or multiple rows (up to K); missing rows are
+            duplicated by making copies of x0, default np.zeros.
         parameter_transformer : ParameterTransformer, optional
-            a ParameterTransformer object specifying the transformation of the
+            The ParameterTransformer object specifying the transformation of the
             input space that leads to the current representation used by the
-            variational posterior, by default uses an identity transform
+            variational posterior, by default uses an identity transform.
         """
 
-        self.d = d  # number of dimensions
-        self.k: int = k  # number of components
+        self.D = D  # number of dimensions
+        self.K = K  # number of components
 
         if x0 is None:
-            x0 = np.zeros(d, k)
-        elif x0.size == d:
+            x0 = np.zeros(D, K)
+        elif x0.size == D:
             x0.reshape(-1, 1)  # reshape to vertical array
-            x0 = np.tile(x0, (1, k))  # copy vector
+            x0 = np.tile(x0, (1, K))  # copy vector
         else:
             x0 = x0.T
-            x0 = np.tile(x0, int(np.ceil(self.k / x0.shape[1])))
-            x0 = x0[:, 0 : self.k]
+            x0 = np.tile(x0, int(np.ceil(self.K / x0.shape[1])))
+            x0 = x0[:, 0 : self.K]
 
-        self.w = np.ones((1, k)) / k
-        self.mu = x0 + 1e-6 * np.random.randn(self.d, self.k)
-        self.sigma = 1e-3 * np.ones((1, k))
-        self.lamb = np.ones((self.d, 1))
+        self.w = np.ones((1, K)) / K
+        self.mu = x0 + 1e-6 * np.random.randn(self.D, self.K)
+        self.sigma = 1e-3 * np.ones((1, K))
+        self.lamb = np.ones((self.D, 1))
 
         # By default, optimize all variational parameters
         self.optimize_weights = True
@@ -66,7 +64,7 @@ class VariationalPosterior(object):
         self.optimize_lamb = True
 
         if parameter_transformer is None:
-            self.parameter_transformer = ParameterTransformer(self.d)
+            self.parameter_transformer = ParameterTransformer(self.D)
         else:
             self.parameter_transformer = parameter_transformer
 
@@ -75,54 +73,54 @@ class VariationalPosterior(object):
 
     def sample(
         self,
-        n: int,
+        N: int,
         origflag: bool = True,
         balanceflag: bool = False,
         df: float = np.inf,
     ):
         """
-        sample random samples from variational posterior
+        Sample random samples from variational posterior-
 
         Parameters
         ----------
         N : int
-            number of samples
+            The number of samples to be sampled.
         origflag : bool, optional
-            returns the random vectors in the original
-            parameter space if origflag=True (default),
+            Controls if the the random vectors should be returned in the
+            original parameter space if origflag=True (default),
             or in the transformed VBMC space
-            if origflag=False, by default True
+            if origflag=False, by default True.
         balanceflag : bool, optional
-            balanceflag=True balances the generating process
+            The boolean balanceflag=True balances the generating process
             such that the random samples in X come from each
             mixture component exactly proportionally
             (or as close as possible) to the variational mixture weights.
             If balanceflag=False (default), the generating mixture
             for each sample is determined randomly according to
-            the mixture weights, by default False
+            the mixture weights, by default False.
         df : float, optional
-            samples generated from a heavy-tailed version
+            Generate the samples from a heavy-tailed version
             of the variational posterior, in which
             the multivariate normal components have been replaced by
             multivariate t-distributions with DF degrees of freedom.
             The default is df=Inf, limit in which the t-distribution
-            becomes a multivariate normal., by default np.inf
+            becomes a multivariate normal, by default np.inf.
 
         Returns
         -------
         X : np.ndarray
-            N-by-D matrix X of random vectors chosen
-            from the variational posterior
+            X is an N-by-D matrix of random vectors chosen
+            from the variational posterior.
         I : np.ndarray
-            N-by-1 array such that the n-th
+            I is an N-by-1 array such that the N-th
             element of I indicates the index of the
             variational mixture component from which
-            the n-th row of X has been generated.
+            the N-th row of X has been generated.
         """
         # missing to sample from gp
         gp_sample = False
-        if n < 1:
-            x = np.zeros((0, self.d))
+        if N < 1:
+            x = np.zeros((0, self.D))
             i = np.zeros((0, 1))
             return x, i
         elif gp_sample:
@@ -131,43 +129,43 @@ class VariationalPosterior(object):
             lamd_row = self.lamb.reshape(1, -1)
 
             rng = np.random.default_rng()
-            if self.k > 1:
+            if self.K > 1:
                 if balanceflag:
                     # exact split of samples according to mixture weigths
-                    repeats = np.floor(self.w * n).astype("int")
-                    i = np.repeat(range(self.k), repeats.flatten())
+                    repeats = np.floor(self.w * N).astype("int")
+                    i = np.repeat(range(self.K), repeats.flatten())
 
                     # compute remainder samples (with correct weights) if needed
-                    if n > i.shape[0]:
-                        w_extra = self.w * n - repeats
+                    if N > i.shape[0]:
+                        w_extra = self.w * N - repeats
                         repeats_extra = np.ceil(np.sum(w_extra))
                         w_extra += self.w * (repeats_extra - sum(w_extra))
                         w_extra /= np.sum(w_extra)
                         i_extra = rng.choice(
-                            range(self.k),
+                            range(self.K),
                             size=repeats_extra.astype("int"),
                             p=w_extra.flatten(),
                         )
                         i = np.append(i, i_extra)
 
                     rng.shuffle(i)
-                    i = i[:n]
+                    i = i[:N]
                 else:
-                    i = rng.choice(range(self.k), size=n, p=self.w.flatten())
+                    i = rng.choice(range(self.K), size=N, p=self.w.flatten())
 
                 if not np.isfinite(df) or df == 0:
                     x = (
                         self.mu.T[i]
                         + lamd_row
-                        * np.random.randn(n, self.d)
+                        * np.random.randn(N, self.D)
                         * self.sigma[:, i].T
                     )
                 else:
-                    t = df / 2 / np.sqrt(rng.gamma(df / 2, df / 2, (n, 1)))
+                    t = df / 2 / np.sqrt(rng.gamma(df / 2, df / 2, (N, 1)))
                     x = (
                         self.mu.T[i]
                         + lamd_row
-                        * np.random.randn(n, self.d)
+                        * np.random.randn(N, self.D)
                         * t
                         * self.sigma[:, i].T
                     )
@@ -175,18 +173,18 @@ class VariationalPosterior(object):
                 if not np.isfinite(df) or df == 0:
                     x = (
                         self.mu.T
-                        + lamd_row * np.random.randn(n, self.d) * self.sigma
+                        + lamd_row * np.random.randn(N, self.D) * self.sigma
                     )
                 else:
-                    t = df / 2 / np.sqrt(rng.gamma(df / 2, df / 2, (n, 1)))
+                    t = df / 2 / np.sqrt(rng.gamma(df / 2, df / 2, (N, 1)))
                     x = (
                         self.mu.T
                         + lamd_row
                         * t
-                        * np.random.randn(n, self.d)
+                        * np.random.randn(N, self.D)
                         * self.sigma
                     )
-                i = np.zeros(n)
+                i = np.zeros(N)
             if origflag:
                 x = self.parameter_transformer.inverse(x)
         return x, i
@@ -202,75 +200,72 @@ class VariationalPosterior(object):
         df: float = np.inf,
     ):
         """
-        pdf probability density function of VBMC posterior approximation
+        pdf Implements the probability density function of VP approximation.
 
         Parameters
         ----------
         x : np.ndarray
-            matrix of rows to evaluate the pdf at
-            Rows of the N-by-D matrix x
+            X is a matrix of rows to evaluate the pdf at.
+            The Rows of the N-by-D matrix x
             correspond to observations or points,
             and columns correspond to variables or coordinates.
         origflag : bool, optional
-            returns the random vectors in the original
-            parameter space if origflag=True (default),
-            or in the transformed VBMC space
-            if origflag=False, by default True
+            Controls if the value of the posterior density should be evaluated
+            in the original parameter space for origflag=True (default), or
+            in the transformed space if origflag=False, by default True.
         logflag : bool, optional
-            returns the value of the log pdf
-            if LOGFLAG=True, otherwise
-            the posterior density, by default False
+            Controls if the the log pdf should be returned if logflag=True,
+            this is by default False.
         transflag : bool, optional
-            transflag=True assumes
-            that X is already specified in transformed VBMC space.
-            Otherwise, X is specified
-            in the original parameter space, by default False
+            Specifies if X is already specified in transformed space.
+            TRANSFLAG=True assumes that X is already specified in tranformed
+            space. Otherwise, X is specified in the original parameter
+            space, by default False.
         gradflag : bool, optional
-            gradflag = True returns gradient as well, by default False
+            If gradflag=True the gradient should be returned, by default False.
         df : float, optional
-            pdf of a heavy-tailed version
-            of the variational posterior, in which
-            the multivariate normal components have been replaced by
-            multivariate t-distributions with DF degrees of freedom.
-            The default is df=Inf, limit in which the t-distribution
-            becomes a multivariate normal., by default np.inf
+            Compute the pdf of a heavy-tailed version of the
+            variational posterior, in which the multivariate normal components
+            have been replaced by  multivariate t-distributions with
+            DF degrees of freedom.The default is df=Inf, limit in which the
+            t-distribution becomes a multivariate normal., by default np.inf
 
         Returns
         -------
         pdf: np.ndarray
-            probability density of the variational posterior
+            The probability density of the variational posterior
             evaluated at each row of x.
         gradient: np.ndarray
-            if gradflag is True, the function returns
-            the gradient as well
+            If the gradflag=True, the function returns
+            the gradient as well.
 
         Raises
         ------
         NotImplementedError
-            np.isfinite(df) and df > 0 and gradflag=True
-            (Gradient of heavy-tailed pdf not supported yet)
+            Raised if np.isfinite(df) and df > 0 and gradflag=True
+            (Gradient of heavy-tailed pdf not supported yet).
         NotImplementedError
-            np.isfinite(df) and df < 0 and gradflag=True
-            (Gradient of heavy-tailed pdf not supported yet)
+            Raised if np.isfinite(df) and df < 0 and gradflag=True
+            (Gradient of heavy-tailed pdf not supported yet).
         NotImplementedError
-            oriflag=True and logflag=True and gradflag=True
-            (Gradient computation in original space not supported yet)
+            Raised if oriflag=True and logflag=True and gradflag=True
+            (Gradient computation in original space not supported yet).
         """
         # Convert points to transformed space
         if origflag and not transflag:
             x = self.parameter_transformer(x)
         lamd_row = self.lamb.reshape(1, -1)
-        n, d = x.shape
-        y = np.zeros((n, 1))
+        N, D = x.shape
+        y = np.zeros((N, 1))
         if gradflag:
-            dy = np.zeros((n, d))
+            dy = np.zeros((N, D))
 
         if not np.isfinite(df) or df == 0:
             # compute pdf of variational posterior
 
             # common normalization factor
-            nf = 1 / (2 * np.pi) ** (d / 2) / np.prod(lamd_row)
-            for k in range(self.k):
+            nf = 1 / (2 * np.pi) ** (D / 2) / np.prod(lamd_row)
+            for k in range(self.K):
                 d2 = np.sum(
                     ((x - self.mu.T[k]) / (self.sigma[:, k].dot(lamd_row)))
                     ** 2,
@@ -279,7 +274,7 @@ class VariationalPosterior(object):
                 nn = (
                     nf
                     * self.w[:, k]
-                    / self.sigma[:, k] ** d
+                    / self.sigma[:, k] ** D
                     * np.exp(-0.5 * d2)[:, np.newaxis]
                 )
                 y += nn
@@ -294,17 +289,17 @@ class VariationalPosterior(object):
             # Compute pdf of heavy-tailed variant of variational posterior
 
             if df > 0:
-                # (This uses a multivariate t-distribution which is not the same thing
-                # as the product of D univariate t-distributions)
+                # (This uses a multivariate t-distribution which is not the same
+                # thing as the product of D univariate t-distributions)
 
                 # common normalization factor
                 nf = (
-                    np.exp(gammaln((df + d) / 2) - gammaln(df / 2))
-                    / (df * np.pi) ** (d / 2)
+                    np.exp(gammaln((df + D) / 2) - gammaln(df / 2))
+                    / (df * np.pi) ** (D / 2)
                     / np.prod(self.lamb)
                 )
 
-                for k in range(self.k):
+                for k in range(self.K):
                     d2 = np.sum(
                         ((x - self.mu.T[k]) / (self.sigma[:, k].dot(lamd_row)))
                         ** 2,
@@ -313,8 +308,8 @@ class VariationalPosterior(object):
                     nn = (
                         nf
                         * self.w[:, k]
-                        / self.sigma[:, k] ** d
-                        * (1 + d2 / df) ** (-(df + d) / 2)
+                        / self.sigma[:, k] ** D
+                        * (1 + d2 / df) ** (-(df + D) / 2)
                     )[:, np.newaxis]
                     y += nn
                     if gradflag:
@@ -330,16 +325,16 @@ class VariationalPosterior(object):
                 nf = (
                     np.exp(gammaln((df_abs + 1) / 2) - gammaln(df_abs / 2))
                     / np.sqrt(df_abs * np.pi)
-                ) ** d / np.prod(self.lamb)
+                ) ** D / np.prod(self.lamb)
 
-                for k in range(self.k):
+                for k in range(self.K):
                     d2 = (
                         (x - self.mu.T[k]) / (self.sigma[:, k].dot(lamd_row))
                     ) ** 2
                     nn = (
                         nf
                         * self.w[:, k]
-                        / self.sigma[:, k] ** d
+                        / self.sigma[:, k] ** D
                         * np.prod(
                             (1 + d2 / df_abs) ** (-(df_abs + 1) / 2), axis=1
                         )[:, np.newaxis]
@@ -363,7 +358,8 @@ class VariationalPosterior(object):
                 ]
                 if gradflag:
                     raise NotImplementedError(
-                        "vbmc_pdf:NoOriginalGrad: Gradient computation in original space not supported yet."
+                        """vbmc_pdf:NoOriginalGrad: Gradient computation
+                         in original space not supported yet."""
                     )
             else:
                 y /= np.exp(
@@ -379,22 +375,22 @@ class VariationalPosterior(object):
 
     def get_parameters(self, rawflag=True):
         """
-        get_parameters return all the active VariationalPosterior parameters
-        flattened as a 1D (numpy) array and properly transformed
+        Return all the active VariationalPosterior parameters
+        flattened as a 1D (numpy) array and properly transformed.
 
         Parameters
         ----------
         rawflag : bool, optional
-            specifies whether the sigma and lambda are
-            returned as raw (unconstrained) or not, by default True
+            Specifies whether the sigma and lambda are
+            returned as raw (unconstrained) or not, by default True.
 
         Returns
         -------
         theta : np.ndarray
-            parameters flattenend as a 1D array
+            The VP parameters flattenend as an 1D array.
         """
 
-        nl = np.sqrt(np.sum(self.lamb ** 2) / self.d)
+        nl = np.sqrt(np.sum(self.lamb ** 2) / self.D)
 
         self.lamb = self.lamb.reshape(-1, 1) / nl
         self.sigma = self.sigma.reshape(1, -1) * nl
@@ -434,65 +430,67 @@ class VariationalPosterior(object):
 
     def set_parameters(self, theta: np.ndarray, rawflag=True):
         """
-        set_parameters takes as input an np array and assigns it to the
-        variational posterior parameters
+        Takes as input an np array and assigns it to the
+        variational posterior parameters.
 
         Parameters
         ----------
         theta : np.ndarray
-            array with the parameters
+            The array with the parameters that should be assigned.
         rawflag : bool, optional
-            specifies whether the sigma and lambda are
-            passed as raw (unconstrained) or not, by default True
+            Specifies whether the sigma and lambda are
+            passed as raw (unconstrained) or not, by default True.
 
         Raises
         ------
         ValueError
-            sigma, lambda and weights must be positive when rawflag = False
+            Raised if sigma, lambda and weights are not positive
+            and rawflag = False
         """
 
         # check if sigma, lambda and weights are positive when rawflag = False
         if not rawflag:
             check_idx = 0
             if self.optimize_weights:
-                check_idx -= self.k
+                check_idx -= self.K
             if self.optimize_lamb:
-                check_idx -= self.d
+                check_idx -= self.D
             if self.optimize_sigma:
-                check_idx -= self.k
+                check_idx -= self.K
             if np.any(theta[-check_idx:] < 0.0):
                 raise ValueError(
-                    "sigma, lambda and weights must be positive when rawflag = False"
+                    """sigma, lambda and weights must be positive
+                    when rawflag = False"""
                 )
 
         if self.optimize_mu:
-            self.mu = np.reshape(theta[: self.d * self.k], (self.d, self.k))
-            start_idx = self.d * self.k
+            self.mu = np.reshape(theta[: self.D * self.K], (self.D, self.K))
+            start_idx = self.D * self.K
         else:
             start_idx = 0
 
         if self.optimize_sigma:
             if rawflag:
-                self.sigma = np.exp(theta[start_idx : start_idx + self.k])
+                self.sigma = np.exp(theta[start_idx : start_idx + self.K])
             else:
-                self.sigma = theta[start_idx : start_idx + self.k]
-            start_idx += self.k
+                self.sigma = theta[start_idx : start_idx + self.K]
+            start_idx += self.K
 
         if self.optimize_lamb:
             if rawflag:
-                self.lamb = np.exp(theta[start_idx : start_idx + self.d]).T
+                self.lamb = np.exp(theta[start_idx : start_idx + self.D]).T
             else:
-                self.lamb = theta[start_idx : start_idx + self.d].T
+                self.lamb = theta[start_idx : start_idx + self.D].T
 
         if self.optimize_weights:
-            eta = theta[-self.k :]
+            eta = theta[-self.K :]
             if rawflag:
                 eta = eta - np.amax(eta)
                 self.w = np.exp(eta.T)[:, np.newaxis]
             else:
                 self.w = eta.T[:, np.newaxis]
 
-        nl = np.sqrt(np.sum(self.lamb ** 2) / self.d)
+        nl = np.sqrt(np.sum(self.lamb ** 2) / self.D)
 
         self.lamb = self.lamb.reshape(-1, 1) / nl
         self.sigma = self.sigma.reshape(1, -1) * nl
@@ -505,37 +503,32 @@ class VariationalPosterior(object):
         if hasattr(self, "_mode"):
             delattr(self, "_mode")
 
-    def moments(self, n: int = int(1e6), origflag=True, covflag=False):
+    def moments(self, N: int = int(1e6), origflag=True, covflag=False):
         """
-        moments computes the mean MU and covariance matrix SIGMA
+        Compute the mean MU and covariance matrix SIGMA
         of the variational posterior via Monte Carlo sampling.
 
         Parameters
         ----------
-        n : int, optional
-            number of samples to compute
-            moments from, by default int(1e6)
+        N : int, optional
+            The number of samples to compute moments from, by default int(1e6).
         origflag : bool, optional
-            samples in the original parameter space
-            if origflag=True (default),
-            or in the transformed VBMC space
-            if origflag=False, by default True,
+            if origflag=True (default) sample in the original parameter space or
+            if origflag=False sample in the transformed VBMC space,
+            by default True.
         covflag : bool, optional
-            returns covariance as second return value
-            if covflag = True, by default False
+            If covflag=True returns covariance as second return value,
+            by default False.
 
         Returns
         -------
         mean: np.ndarray
-            mean of the variational posterior
+            The mean of the variational posterior.
         cov: np.ndarray
-            if covflag is True, the function returns
-            a tuple of (mean, covariance) of the
-            variational posterior
-
+            If covflag=True returns covariance as second return value.
         """
         if origflag:
-            x, _ = self.sample(int(n), origflag=True, balanceflag=True)
+            x, _ = self.sample(int(N), origflag=True, balanceflag=True)
             mubar = np.mean(x, axis=0)
             if covflag:
                 sigma = np.cov(x.T)
@@ -548,7 +541,7 @@ class VariationalPosterior(object):
                     * np.eye(len(self.lamb))
                     * self.lamb
                 )
-                for k in range(self.k):
+                for k in range(self.K):
                     sigma += self.w[:, k] * (
                         (self.mu[:, k] - mubar)[:, np.newaxis]
                     ).dot((self.mu[:, k] - mubar)[:, np.newaxis].T)
@@ -559,23 +552,24 @@ class VariationalPosterior(object):
 
     def mode(self, nmax: int = 20, origflag=True):
         """
-        get_mode Find mode of VBMC posterior approximation
+        Find the mode of Variational Posterior.
 
         Parameters
         ----------
         nmax : int, optional
-            [description], by default 20
+            Maximum number of optimization runs to find the mode.
+            If nmax < self.K the starting points for the optimization are chosen
+            as the centers of the components with the highest values of the pdf
+            at those points, by default 20.
         origflag : bool, optional
-            mode of the variational posterior
-            in the original parameter space
-            if origflag=True (default),
-            or in the transformed VBMC space
-            if origflag=False, by default True
+            if origflag=True (default) find the  mode of the
+            variational posterior in the original parameter space or if
+            origflag=False in the transformed parameter space, by default True.
 
         Returns
         -------
         mode: np.ndarray
-            the mode of the variational posterior
+            The mode of the variational posterior.
         """
 
         def nlnpdf(x0, origflag=origflag):
@@ -593,14 +587,14 @@ class VariationalPosterior(object):
         else:
             x0_mat = self.mu.T
 
-            if nmax < self.k:
+            if nmax < self.K:
                 # First, evaluate pdf at all modes
                 y0_vec = -1 * self.pdf(x0_mat, origflag=True, logflag=True)
                 # Start from first NMAX solutions
                 y0_idx = np.argsort(y0_vec)[:-1]
                 x0_mat = x0_mat[y0_idx]
 
-            x_min = np.zeros((x0_mat.shape[0], self.d))
+            x_min = np.zeros((x0_mat.shape[0], self.D))
             ff = np.full((x0_mat.shape[0], 1), np.inf)
 
             for k in range(x0_mat.shape[1]):
@@ -648,31 +642,34 @@ class VariationalPosterior(object):
         N: int = int(1e5),
     ):
         """
-        mtv Marginal Total Variation distances between two variational posteriors.
-        The other can be specified either by another VP or with samples
+        Returns the marginal total variation (MTV) distances between the VP and
+        another variational posterior.
+
+        The other variational posterior can be specified as `vp2` (an instance
+        of the class VariationalPosterior) or using with `samples` from the
+        other VariationalPosterior. One of the two must be specified.
 
         Parameters
         ----------
         vp2 : VariationalPosterior, optional
-            other VariationalPosterior, by default None
+            The other VariationalPosterior, by default None.
         samples : np.ndarray, optional
-            N-by-D matrices of samples from variational
-            posteriors, by default None
+            An N-by-D matrix of samples from the other variational
+            posterior, by default None.
         N : int, optional
-            number of random draws
-            to estimate the MTV, by default int(1e5)
+            The number of random draws to estimate the MTV, by default int(1e5).
 
         Returns
         -------
         mtv: np.ndarray
-            D-element vector whose elements are the total variation
-            distance between the marginal distributions of VP and VP2 or samples,
+            A D-element vector whose elements are the total variation distance
+            between the marginal distributions of VP and VP2 or samples,
             for each coordinate dimension.
 
         Raises
         ------
         ValueError
-            If neither vp2 nor samples are specified
+            Raised if neither vp2 nor samples are specified.
         """
         if vp2 is None and samples is None:
             raise ValueError("Either vp2 or samples have to be not None")
@@ -688,7 +685,7 @@ class VariationalPosterior(object):
             ub2 = np.full((1, xx2.shape[1]), np.inf)
 
         nkde = 2 ** 13
-        mtv = np.zeros((1, self.d))
+        mtv = np.zeros((1, self.D))
         # Set bounds for kernel density estimate
         lb1_xx = np.amin(xx1, axis=0)
         ub1_xx = np.amax(xx1, axis=0)
@@ -707,7 +704,7 @@ class VariationalPosterior(object):
         ub2 = np.minimum(ub2_xx + range2 / 10, ub2)
 
         # Compute marginal total variation
-        for d in range(self.d):
+        for d in range(self.D):
 
             yy1, x1mesh, _ = kde1d(xx1[:, d], nkde, lb1[:, d], ub1[:, d])
             # Ensure normalization
@@ -751,36 +748,40 @@ class VariationalPosterior(object):
         gaussflag: bool = False,
     ):
         """
-        kldiv Kullback-Leibler divergence between two variational posteriors
-        The other can be specified either by another VP or with samples
+        Compute the Kullback-Leibler divergence between two variational
+        posteriors.
+
+        The other variational posterior can be specified as `vp2` (an instance
+        of the class VariationalPosterior) or using with `samples` from the
+        other VariationalPosterior. One of the two must be specified.
 
         Parameters
         ----------
         vp2 : VariationalPosterior, optional
-            other VariationalPosterior, by default None
+            The other VariationalPosterior, by default None.
         samples : np.ndarray, optional
-            N-by-D matrices of samples from variational
-            posteriors, by default None
+            An N-by-D matrix of samples from the other variational
+            posterior, by default None.
         N : int, optional
-            number of random draws
-            to estimate the MTV, by default int(1e5)
+            The number of random draws to estimate the kldiv,
+            by default int(1e5).
         gaussflag : bool, optional
-            returns "Gaussianized" KL-divergence if GAUSSFLAG=True,
+            Returns a "Gaussianized" KL-divergence if gaussflag=True,
             that is the KL divergence between two
             multivariate normal distibutions with the same moments
-            as the variational posteriors given as inputs, by default False
+            as the variational posteriors given as inputs, by default False.
 
         Returns
         -------
         kldiv: np.ndarray
-             Kullback-Leibler divergence
+            The Kullback-Leibler divergence between the two VPs.
 
         Raises
         ------
         ValueError
-            If neither vp2 nor samples are specified
+            Raised if neither vp2 nor samples are specified.
         ValueError
-            if vp2 is not provided but gaussflag true
+            Raised if vp2 is not provided but gaussflag=true.
         """
 
         if samples is None and vp2 is None:
@@ -802,23 +803,24 @@ class VariationalPosterior(object):
             if np.ndim(mu2) == 1:
                 mu2 = np.array([mu2])
 
-            d = mu1.shape[1]
+            D = mu1.shape[1]
             dmu = (mu1 - mu2).T
             detq1 = np.linalg.det(sigma1)
             detq2 = np.linalg.det(sigma2)
             lndet = np.log(detq2 / detq1)
             a, _, _, _ = np.linalg.lstsq(sigma2, sigma1, rcond=None)
             b, _, _, _ = np.linalg.lstsq(sigma2, dmu, rcond=None)
-            kl1 = 0.5 * (np.trace(a) + dmu.T @ b - d + lndet)
+            kl1 = 0.5 * (np.trace(a) + dmu.T @ b - D + lndet)
             a, _, _, _ = np.linalg.lstsq(sigma1, sigma2, rcond=None)
             b, _, _, _ = np.linalg.lstsq(sigma1, dmu, rcond=None)
-            kl2 = 0.5 * (np.trace(a) + dmu.T @ b - d - lndet)
+            kl2 = 0.5 * (np.trace(a) + dmu.T @ b - D - lndet)
             return np.concatenate((kl1, kl2), axis=None)
 
         if gaussflag:
             if N == 0:
                 raise ValueError(
-                    "Analytical moments are available only for the transformed space."
+                    """Analytical moments are available 
+                    only for the transformed space."""
                 )
             else:
                 q1mu, q1sigma = self.moments(N, True, True)

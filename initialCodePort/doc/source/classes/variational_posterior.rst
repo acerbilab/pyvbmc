@@ -14,7 +14,6 @@ Matlab references of ported methods
 - get_parameters(): `get_vptheta.m <https://github.com/lacerbi/vbmc/blob/master/misc/get_vptheta.m>`_ ✓
 - kldiv(): `vbmc_kldiv.m <https://github.com/lacerbi/vbmc/blob/master/vbmc_kldiv.m>`_ ✓
 - mode(): `vbmc_mode.m <https://github.com/lacerbi/vbmc/blob/master/vbmc_mode.m>`_ ✓
-   - specify meaning of nmax parameter
 - moments(): `vbmc_moments.m <https://github.com/lacerbi/vbmc/blob/master/vbmc_moments.m>`_ ✓
 - mtv(): `vbmc_mtv.m <https://github.com/lacerbi/vbmc/blob/master/vbmc_mtv.m>`_  ✓
 - pdf(): `vbmc_pdf.m <https://github.com/lacerbi/vbmc/blob/master/vbmc_pdf.m>`_  ✓

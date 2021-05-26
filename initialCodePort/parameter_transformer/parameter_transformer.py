@@ -1,46 +1,46 @@
 import numpy as np
-
 from decorators import handle_1D_input
 
 
 class ParameterTransformer:
     """
-    ParameterTransformer class
+    A class used to enable transforming of variables from unconstrained to
+    constrained space and vice versa.
     """
 
     def __init__(
         self,
-        nvars: int,
+        D: int,
         lower_bounds: np.ndarray = None,
         upper_bounds: np.ndarray = None,
         plausible_lower_bounds: np.ndarray = None,
         plausible_upper_bounds: np.ndarray = None,
     ):
         """
-        __init__ Initialize ParameterTransformer
+        Initialize an instance of ParameterTransformer.
 
         Parameters
         ----------
-        nvars : int
-            the number of dimensions
+        D : int
+            The number of dimensions of the spaces.
         lower_bounds : np.ndarray, optional
-            lower_bound (LB) LB and UB define a set of strict
-            lower and upper bounds coordinate vector, by default None
+            The lower_bound (LB) of the space. LB and UB define a set of strict
+            lower and upper bounds coordinate vector, by default None.
         upper_bounds : np.ndarray, optional
-            upper_bounds (UB) LB and UB define a set of strict
-            lower and upper bounds coordinate vector, by default None
+            The upper_bounds (UB) of the space. LB and UB define a set of strict
+            lower and upper bounds coordinate vector, by default None.
         plausible_lower_bounds : np.ndarray, optional
-            plausible_lower_bound (PLB) such that LB < PLB < PUB < UB.
-            PLB and PUB represent a "plausible" range, by default None
+            The plausible_lower_bound (PLB) such that LB < PLB < PUB < UB.
+            PLB and PUB represent a "plausible" range, by default None.
         plausible_upper_bounds : np.ndarray, optional
-            plausible_upper_bound (PUB) such that LB < PLB < PUB < UB.
-            PLB and PUB represent a "plausible" range, by default None
+            The plausible_upper_bound (PUB) such that LB < PLB < PUB < UB.
+            PLB and PUB represent a "plausible" range, by default None.
         """
         # Empty LB and UB are Infs
         if lower_bounds is None:
-            lower_bounds = np.ones((1, nvars)) * -np.inf
+            lower_bounds = np.ones((1, D)) * -np.inf
         if upper_bounds is None:
-            upper_bounds = np.ones((1, nvars)) * np.inf
+            upper_bounds = np.ones((1, D)) * np.inf
 
         # Empty plausible bounds equal hard bounds
         if plausible_lower_bounds is None:
@@ -56,15 +56,16 @@ class ParameterTransformer:
             and np.all(plausible_upper_bounds <= upper_bounds)
         ):
             raise ValueError(
-                "Variable bounds should be LB <= PLB < PUB <= UB for all variables."
+                """Variable bounds should be LB <= PLB < PUB <= UB
+                for all variables."""
             )
 
         # Transform to log coordinates
         self.lb_orig = lower_bounds
         self.ub_orig = upper_bounds
 
-        self.type = np.zeros((nvars))
-        for i in range(nvars):
+        self.type = np.zeros((D))
+        for i in range(D):
             if (
                 np.isfinite(lower_bounds[:, i])
                 and np.isfinite(upper_bounds[:, i])
@@ -73,8 +74,8 @@ class ParameterTransformer:
                 self.type[i] = 3
 
         # Centering (at the end of the transform)
-        self.mu = np.zeros(nvars)
-        self.delta = np.ones(nvars)
+        self.mu = np.zeros(D)
+        self.delta = np.ones(D)
 
         # Get transformed PLB and ULB
         if not (
@@ -85,7 +86,7 @@ class ParameterTransformer:
             plausible_upper_bounds = self.__call__(plausible_upper_bounds)
 
             # Center in transformed space
-            for i in range(nvars):
+            for i in range(D):
                 if np.isfinite(plausible_lower_bounds[:, i]) and np.isfinite(
                     plausible_upper_bounds[:, i]
                 ):
@@ -101,17 +102,19 @@ class ParameterTransformer:
     @handle_1D_input(kwarg="x", argpos=0)
     def __call__(self, x: np.ndarray):
         """
-        __call__ performs direct transform of original variables X into unconstrained variables U
+        Performs direct transform of original variables X into
+        unconstrained variables U.
 
         Parameters
         ----------
         x : np.ndarray
-            a N x NVARS array, where N is the number of input data and NVARS is the number of dimensions
+            A N x D array, where N is the number of input data
+            and D is the number of dimensions
 
         Returns
         -------
         u : np.ndarray
-            the variables transformed to unconstrained variables
+            The variables transformed to unconstrained variables.
         """
 
         u = np.copy(x)
@@ -140,18 +143,18 @@ class ParameterTransformer:
     @handle_1D_input(kwarg="u", argpos=0)
     def inverse(self, u: np.ndarray):
         """
-        inverse performs inverse transform of unconstrained variables u 
+        Performs inverse transform of unconstrained variables u
         into variables x in the original space
 
         Parameters
         ----------
         u : np.ndarray
-            unconstrained variables
+            The unconstrained variables that will be transformed.
 
         Returns
         -------
         x : np.ndarray
-            original variables
+            The original variables which result of the transformation.
         """
         # # rotate input (copy array before)
         # if self.R_mat is not None:
@@ -187,20 +190,20 @@ class ParameterTransformer:
     @handle_1D_input(kwarg="u", argpos=0, return_scalar=True)
     def log_abs_det_jacobian(self, u: np.ndarray):
         r"""
-        log_abs_det_jacobian returns the log absolute value of the determinant 
-        of the Jacobian of the parameter transformation evaluated at U, that is 
-        log \|d \du(g^-1(u))\|
+        log_abs_det_jacobian returns the log absolute value of the determinant
+        of the Jacobian of the parameter transformation evaluated at U, that is
+        log \|D \du(g^-1(u))\|
 
         Parameters
         ----------
         u : np.ndarray
-            points where the log determinant of the Jacobian should be 
-            evaluated (in transformed space)
+            The points where the log determinant of the Jacobian should be
+            evaluated (in transformed space).
 
         Returns
         -------
         p : np.ndarray
-            log absolute determinant of the Jacobian
+            The log absolute determinant of the Jacobian.
         """
         u_c = np.copy(u)
 
