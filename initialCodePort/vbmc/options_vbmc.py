@@ -1,9 +1,4 @@
 class OptionsVBMC(object):
-    """
-    Default Options of VBMC algorithm
-    Appoach to model as a class inspired by
-    https://stackoverflow.com/questions/211695/what-is-an-easy-way-to-create-a-trivial-one-off-python-object
-    """
 
     """
     Basic default options
@@ -200,18 +195,3 @@ class OptionsVBMC(object):
     FeatureTest        = None #no                % Test a new experimental feature';
     BOWarmup           = False #no               % Bayesian-optimization-like warmup stage';
     gpOutwarpFun       = None #[]                % GP default output warping function';
-
-def _validateOptions(self):
-    '''
-    We need the functionality to validate the options
-    '''
-    if self.Temperature not in range(5):
-        print('vbmc:PosterioTemperature: OPTIONS.Temperature should be a small positive integer (allowed T = 1,2,3,4).')
-        exit(1)
-    pass
-
-def _initializeOptions(nvars, D, K):
-    """
-    Either initilize Options once or as a property
-    """
-    pass
