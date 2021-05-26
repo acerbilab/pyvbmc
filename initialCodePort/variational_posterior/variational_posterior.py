@@ -265,24 +265,24 @@ class VariationalPosterior(object):
 
             # common normalization factor
             nf = 1 / (2 * np.pi) ** (D / 2) / np.prod(lamd_row)
-            for K in range(self.K):
+            for k in range(self.K):
                 d2 = np.sum(
-                    ((x - self.mu.T[K]) / (self.sigma[:, K].dot(lamd_row)))
+                    ((x - self.mu.T[k]) / (self.sigma[:, k].dot(lamd_row)))
                     ** 2,
                     axis=1,
                 )
                 nn = (
                     nf
-                    * self.w[:, K]
-                    / self.sigma[:, K] ** D
+                    * self.w[:, k]
+                    / self.sigma[:, k] ** D
                     * np.exp(-0.5 * d2)[:, np.newaxis]
                 )
                 y += nn
                 if gradflag:
                     dy -= (
                         nn
-                        * (x - self.mu.T[K])
-                        / ((lamd_row ** 2) * self.sigma[:, K] ** 2)
+                        * (x - self.mu.T[k])
+                        / ((lamd_row ** 2) * self.sigma[:, k] ** 2)
                     )
 
         else:
@@ -299,16 +299,16 @@ class VariationalPosterior(object):
                     / np.prod(self.lamb)
                 )
 
-                for K in range(self.K):
+                for k in range(self.K):
                     d2 = np.sum(
-                        ((x - self.mu.T[K]) / (self.sigma[:, K].dot(lamd_row)))
+                        ((x - self.mu.T[k]) / (self.sigma[:, k].dot(lamd_row)))
                         ** 2,
                         axis=1,
                     )
                     nn = (
                         nf
-                        * self.w[:, K]
-                        / self.sigma[:, K] ** D
+                        * self.w[:, k]
+                        / self.sigma[:, k] ** D
                         * (1 + d2 / df) ** (-(df + D) / 2)
                     )[:, np.newaxis]
                     y += nn
@@ -327,14 +327,14 @@ class VariationalPosterior(object):
                     / np.sqrt(df_abs * np.pi)
                 ) ** D / np.prod(self.lamb)
 
-                for K in range(self.K):
+                for k in range(self.K):
                     d2 = (
-                        (x - self.mu.T[K]) / (self.sigma[:, K].dot(lamd_row))
+                        (x - self.mu.T[k]) / (self.sigma[:, k].dot(lamd_row))
                     ) ** 2
                     nn = (
                         nf
-                        * self.w[:, K]
-                        / self.sigma[:, K] ** D
+                        * self.w[:, k]
+                        / self.sigma[:, k] ** D
                         * np.prod(
                             (1 + d2 / df_abs) ** (-(df_abs + 1) / 2), axis=1
                         )[:, np.newaxis]
@@ -541,10 +541,10 @@ class VariationalPosterior(object):
                     * np.eye(len(self.lamb))
                     * self.lamb
                 )
-                for K in range(self.K):
-                    sigma += self.w[:, K] * (
-                        (self.mu[:, K] - mubar)[:, np.newaxis]
-                    ).dot((self.mu[:, K] - mubar)[:, np.newaxis].T)
+                for k in range(self.K):
+                    sigma += self.w[:, k] * (
+                        (self.mu[:, k] - mubar)[:, np.newaxis]
+                    ).dot((self.mu[:, k] - mubar)[:, np.newaxis].T)
         if covflag:
             return mubar.reshape(1, -1), sigma
         else:
@@ -704,13 +704,13 @@ class VariationalPosterior(object):
         ub2 = np.minimum(ub2_xx + range2 / 10, ub2)
 
         # Compute marginal total variation
-        for D in range(self.D):
+        for d in range(self.D):
 
-            yy1, x1mesh, _ = kde1d(xx1[:, D], nkde, lb1[:, D], ub1[:, D])
+            yy1, x1mesh, _ = kde1d(xx1[:, d], nkde, lb1[:, d], ub1[:, d])
             # Ensure normalization
             yy1 = yy1 / (trapezoid(yy1) * (x1mesh[1] - x1mesh[0]))
 
-            yy2, x2mesh, _ = kde1d(xx2[:, D], nkde, lb2[:, D], ub2[:, D])
+            yy2, x2mesh, _ = kde1d(xx2[:, d], nkde, lb2[:, d], ub2[:, d])
             # Ensure normalization
             yy2 = yy2 / (trapezoid(yy2) * (x2mesh[1] - x2mesh[0]))
 
@@ -735,7 +735,7 @@ class VariationalPosterior(object):
             )
             for j in range(3):
                 xx_range = np.linspace(bb[j], bb[j + 1], num=int(1e5))
-                mtv[:, D] = mtv[:, D] + 0.5 * trapezoid(f(xx_range)) * (
+                mtv[:, d] = mtv[:, d] + 0.5 * trapezoid(f(xx_range)) * (
                     xx_range[1] - xx_range[0]
                 )
         return mtv
