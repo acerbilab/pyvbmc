@@ -77,6 +77,8 @@ git push -u origin <new-feature>
 [... when finished created pull request on github ...]
 ```
 
+If you switch to an existing branch using `git checkout`, remember to `pull` before making any change as it is not done automatically.
+
 ### Modules and code organization
 
 We have decided against general util/misc modules for now. This means that general-purpose functions should be included in a fitting existing module or in their own module. The reason for this is to force us to think about the generalization of a function and prevent incohesion of those general collections. Furthermore, it improves readability for new collaborators. See some reading about that [here](https://breadcrumbscollector.tech/stop-naming-your-python-modules-utils/). One example of this are the decorators that are included in the decorator module.
