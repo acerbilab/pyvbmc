@@ -11,7 +11,7 @@ class FunctionLogger(object):
     def __init__(
         self,
         fun,
-        nvars: int,
+        D: int,
         noise_flag: bool,
         uncertainty_handling_level: int,
         cache_size: int = 500,
@@ -27,7 +27,7 @@ class FunctionLogger(object):
             Fun must take a vector input and return a scalar value and,
             optionally, the (estimated) SD of the returned value (if the
             function fun is stochastic).
-        nvars : int
+        D : int
             The number of dimensions that the function takes as input.
         noise_flag : bool
             Whether the function fun is stochastic or not.
@@ -41,7 +41,7 @@ class FunctionLogger(object):
             between constrained and unconstrained space, by default None.
         """
         self.fun = fun
-        self.nvars: int = nvars
+        self.D: int = D
         self.noise_flag: bool = noise_flag
         self.uncertainty_handling_level: int = uncertainty_handling_level
         self.transform_parameters = parameter_transformer is not None
@@ -49,9 +49,9 @@ class FunctionLogger(object):
 
         self.func_count: int = 0
         self.cache_count: int = 0
-        self.x_orig = np.full([cache_size, self.nvars], np.nan)
+        self.x_orig = np.full([cache_size, self.D], np.nan)
         self.y_orig = np.full([cache_size, 1], np.nan)
-        self.x = np.full([cache_size, self.nvars], np.nan)
+        self.x = np.full([cache_size, self.D], np.nan)
         self.y = np.full([cache_size, 1], np.nan)
         self.nevals = np.full([cache_size, 1], np.nan)
 
@@ -262,13 +262,13 @@ class FunctionLogger(object):
             resize_amount = int(np.max((np.ceil(self.Xn / 2), 1)))
 
         self.x_orig = np.append(
-            self.x_orig, np.full([resize_amount, self.nvars], np.nan), axis=0
+            self.x_orig, np.full([resize_amount, self.D], np.nan), axis=0
         )
         self.y_orig = np.append(
             self.y_orig, np.full([resize_amount, 1], np.nan), axis=0
         )
         self.x = np.append(
-            self.x, np.full([resize_amount, self.nvars], np.nan), axis=0
+            self.x, np.full([resize_amount, self.D], np.nan), axis=0
         )
         self.y = np.append(self.y, np.full([resize_amount, 1], np.nan), axis=0)
 
