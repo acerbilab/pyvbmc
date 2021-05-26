@@ -1,18 +1,20 @@
 import numpy as np
 from functools import wraps
 
+
 def handle_1D_input(kwarg: str, argpos: int, return_scalar=False):
     """
-    handle_1D_input a decorator to handle 1D inputs
+    A decorator that handles 1D inputs.
 
     Parameters
     ----------
     kwarg : str
-        name of the keyword argument that should be handeled
+        The name of the keyword argument that should be handeled.
     argpos : int
-        position of the argument that should be handeled
+        The position of the argument that should be handeled.
     return_scalar : bool, optional
-        if 1D the function should return a scalar, by default False
+        If the input is 1D the function should return a scalar,
+        by default False.
     """
 
     def decorator(function):
