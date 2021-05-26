@@ -41,6 +41,8 @@ Try to evaluate if pre- and postprocessing in a function can be generalized with
 
 The docstrings are generated following the [numpy format](https://numpydoc.readthedocs.io/en/latest/format.html). There are addons to generate docstring blueprints using IDEs.
 
+See an example for a correct docstring [here](https://numpydoc.readthedocs.io/en/latest/example.html).
+
 ### Documentation
 
 We build the pyvbmc documentation using [Sphinx](https://www.sphinx-doc.org/en/master/usage/quickstart.html), the source code for that is in the [doc folder](./doc). From there new documentation can be compiled using the following command.
@@ -61,8 +63,6 @@ Please keep the documentation up to date. (Sphinx logs possible issues when comp
 ### Exceptions
 
 Currently, the aim is to use the standard python exceptions whenever it is sensible. Here is a list of those [exceptions](https://docs.python.org/3/library/exceptions.html).
-
-Please use fixtures when sensible and try to keep the total runtime of the tests as low as possible.
 
 ### Git commits
 
@@ -94,3 +94,5 @@ They can be run with (occasionally look at the coverage):
 pytest
 pytest --cov=. --cov-report html:cov_html
 ```
+
+Please try to keep the total runtime of the tests as low as sensible.
