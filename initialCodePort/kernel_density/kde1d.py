@@ -194,17 +194,22 @@ def kde1d(
     References
     ----------
     .. [1] Z. I. Botev, J. F. Grotowski, and D. P. Kroese. Kernel density
-       estimation via diffusion. The Annals of Statistics, 38(5):2916-2957, 2010.
+       estimation via diffusion. The Annals of Statistics, 
+       38(5):2916-2957, 2010.
     .. [2] https://github.com/tommyod/KDEpy/blob/master/KDEpy/bw_selection.py
     
-    Example:
+    Examples
     --------
+
     .. code-block:: python
 
         import numpy as np
         from numpy.random import randn
-        samples = np.concatenate((randn(100,1),randn(100,1)*2+35,randn(100,1)+55))
-        kde1d(samples,2 ** 14,min(samples)-5,max(samples)+5)        
+
+        samples = np.concatenate(
+            (randn(100, 1), randn(100, 1) * 2 + 35, randn(100, 1) + 55)
+        )
+        kde1d(samples, 2 ** 14, min(samples) - 5, max(samples) + 5)    
         
     """    
     samples = samples.ravel()  # make samples a 1D array
