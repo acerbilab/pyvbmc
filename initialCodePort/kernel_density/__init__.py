@@ -1,2 +1,2 @@
 # __init__.py
-from .kde_1d import kde1d
+from .kde1d import kde1d
