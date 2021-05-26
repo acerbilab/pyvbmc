@@ -1,12 +1,11 @@
 import numpy as np
-
 from parameter_transformer import ParameterTransformer
 from timer import Timer
 
 
 class FunctionLogger(object):
     """
-    FunctionLogger Evaluates a function and caches results
+    Class that evaluates a function and caches its values.
     """
 
     def __init__(
@@ -19,27 +18,27 @@ class FunctionLogger(object):
         parameter_transformer: ParameterTransformer = None,
     ):
         """
-        __init__ Initialize FunctionLogger object
+        Initialize an instance of FunctionLogger.
 
         Parameters
         ----------
         fun : callable
-            The function to be logged
-            fun must take a vector input and return a scalar value and,
+            The function to be logged.
+            Fun must take a vector input and return a scalar value and,
             optionally, the (estimated) SD of the returned value (if the
-            function fun is stochastic)
+            function fun is stochastic).
         nvars : int
-            number of dimensions that the function takes as input
+            The number of dimensions that the function takes as input.
         noise_flag : bool
-            whether the function fun is stochastic
+            Whether the function fun is stochastic or not.
         uncertainty_handling_level : int
-            uncertainty handling level
-            (0: none; 1: unknown noise level; 2: user-provided noise)
+            The uncertainty handling level which can be one of
+            (0: none; 1: unknown noise level; 2: user-provided noise).
         cache_size : int, optional
-            initial size of caching table (default 500)
+            The initial size of caching table (default 500).
         parameter_transformer : ParameterTransformer, optional
-            required to transform the parameters between
-            constrained and unconstrained space, by default None
+            A ParameterTransformer is required to transform the parameters
+            between constrained and unconstrained space, by default None.
         """
         self.fun = fun
         self.nvars: int = nvars
@@ -67,29 +66,29 @@ class FunctionLogger(object):
 
     def __call__(self, x: np.ndarray):
         """
-        __call__ evaluates function FUN at x and caches values
+        Evaluates the function FUN at x and caches values.
 
         Parameters
         ----------
         x : np.ndarray
-            The point at which the function will be evaluated
+            The point at which the function will be evaluated.
 
         Returns
         -------
         fval : float
-            result of the evaluation
+            The result of the evaluation.
         SD : float
-            the (estimated) SD of the returned value
+            The (estimated) SD of the returned value.
         idx : int
-            index of the last updated entry
+            The index of the last updated entry.
 
         Raises
         ------
         ValueError
-            function value must be a finite real-valued scalar
+            Raise if the function value is not a finite real-valued scalar.
         ValueError
-            (estimated) SD (second function output)
-            must be a finite, positive real-valued scalar
+            Raise if the (estimated) SD (second function output)
+            is not a finite, positive real-valued scalar.
         """
 
         timer = Timer()
@@ -129,25 +128,19 @@ class FunctionLogger(object):
             or not np.isfinite(fval_orig)
             or not np.isreal(fval_orig)
         ):
-            raise ValueError(
-                "FunctionLogger:InvalidFuncValue"
-                + "The returned function value must be a finite real-valued scalar"
-                + "(returned value: "
-                + str(fval_orig)
-                + ")"
-            )
+            error_message = """FunctionLogger:InvalidFuncValue:
+            The returned function value must be a finite real-valued scalar
+            (returned value {})"""
+            raise ValueError(error_message.format(str(fval_orig)))
 
         # Check returned function SD
         if self.noise_flag and (
             not np.isscalar(fsd) or not np.isfinite(fsd) or not np.isreal(fsd)
         ):
-            raise ValueError(
-                "FunctionLogger:InvalidNoiseValue"
-                + "The returned estimated SD (second function output)"
-                + "must be a finite, positive real-valued scalar (returned SD: "
-                + str(fsd)
-                + ")."
-            )
+            error_message = """FunctionLogger:InvalidNoiseValue
+                The returned estimated SD (second function output)
+                must be a finite, positive real-valued scalar (returned SD:{}"""
+            raise ValueError(error_message.format(str(fsd)))
 
         # record timer stats
         funtime = timer.get_duration("funtime")
@@ -160,29 +153,45 @@ class FunctionLogger(object):
         # optimState.totalfunevaltime = optimState.totalfunevaltime + t;
         return fval, fsd, idx
 
-    def add(self, x: np.ndarray, fval_orig: float, fsd: float = None, fun_evaltime=np.nan):
+    def add(
+        self,
+        x: np.ndarray,
+        fval_orig: float,
+        fsd: float = None,
+        fun_evaltime=np.nan,
+    ):
         """
-        add previously evaluated function sample
+        Add an previously evaluated function sample to the function cache.
 
         Parameters
         ----------
         x : np.ndarray
-            the point at which the function has been evaluated
+            The point at which the function has been evaluated.
         fval_orig : float
-            the result of the evaluation
+            The result of the evaluation of the function.
         fsd : float, optional
-            (estimated) SD of the returned value
-            (if heteroskedastic noise handling is on), by default None
+            The (estimated) SD of the returned value (if heteroskedastic noise
+            handling is on) of the evaluation of the function, by default None.
         fun_evaltime : float
-            the duration of the time it took to evaluate the function, by default np.nan
+            The duration of the time it took to evaluate the function,
+            by default np.nan.
+
         Returns
         -------
         fval : float
-            result of the evaluation
+            The result of the evaluation.
         SD : float
-            the (estimated) SD of the returned value
+            The (estimated) SD of the returned value.
         idx : int
-            index of the last updated entry
+            The index of the last updated entry.
+
+        Raises
+        ------
+        ValueError
+            Raise if the function value is not a finite real-valued scalar.
+        ValueError
+            Raise if the (estimated) SD (second function output)
+            is not a finite, positive real-valued scalar.
         """
         # Convert back to original space
         if self.transform_parameters:
@@ -204,25 +213,19 @@ class FunctionLogger(object):
             or not np.isfinite(fval_orig)
             or not np.isreal(fval_orig)
         ):
-            raise ValueError(
-                "FunctionLogger:InvalidFuncValue"
-                + "The provided function value must be a finite real-valued scalar"
-                + "(returned value: "
-                + str(fval_orig)
-                + ")"
-            )
+            error_message = """FunctionLogger:InvalidFuncValue:
+            The returned function value must be a finite real-valued scalar
+            (returned value {})"""
+            raise ValueError(error_message.format(str(fval_orig)))
 
         # Check returned function SD
         if self.noise_flag and (
             not np.isscalar(fsd) or not np.isfinite(fsd) or not np.isreal(fsd)
         ):
-            raise ValueError(
-                "FunctionLogger:InvalidNoiseValue"
-                + "The provided estimated SD (second function output)"
-                + "must be a finite, positive real-valued scalar (returned SD: "
-                + str(fsd)
-                + ")."
-            )
+            error_message = """FunctionLogger:InvalidNoiseValue
+                The returned estimated SD (second function output)
+                must be a finite, positive real-valued scalar (returned SD:{}"""
+            raise ValueError(error_message.format(str(fsd)))
 
         self.cache_count += 1
         fval, idx = self._record(x_orig, x, fval_orig, fsd, fun_evaltime)
@@ -230,7 +233,7 @@ class FunctionLogger(object):
 
     def finalize(self):
         """
-        finalize remove unused caching entries
+        Remove unused caching entries.
         """
         self.x_orig = self.x_orig[: self.Xn + 1]
         self.y_orig = self.y_orig[: self.Xn + 1]
@@ -246,12 +249,13 @@ class FunctionLogger(object):
 
     def _expand_arrays(self, resize_amount: int = None):
         """
-        _expand_arrays a private function to extend the rows of the object attribute arrays
+        A private function to extend the rows of the object attribute arrays.
 
         Parameters
         ----------
         resize_amount : int, optional
-            additional rows, by default expand current table by 50%
+            The number of additional rows, by default expand current table
+            by 50%.
         """
 
         if resize_amount is None:
@@ -291,30 +295,35 @@ class FunctionLogger(object):
         fun_evaltime: float,
     ):
         """
-        _record a private method to save function values to class attributes
+        A private method to save function values to class attributes.
 
         Parameters
         ----------
         x_orig : float
-            the point at which the function has been evaluated
-            (in original space)
+            The point at which the function has been evaluated
+            (in original space).
         x : float
-            the point at which the function has been evaluated
-            (in transformed space)
+            The point at which the function has been evaluated
+            (in transformed space).
         fval_orig : float
-            the result of the evaluation
+            The result of the evaluation.
         fsd : float
-            (estimated) SD of the returned value
-            (if heteroskedastic noise handling is on)
+            The (estimated) SD of the returned value
+            (if heteroskedastic noise handling is on).
         fun_evaltime : float
-            the duration of the time it took to evaluate the function
+            The duration of the time it took to evaluate the function.
 
         Returns
         -------
         fval : float
-            the result of the evaluation
+            The result of the evaluation.
         idx : int
-            index of the last updated entry
+            The index of the last updated entry.
+
+        Raises
+        ------
+        ValueError
+            Raise if there is more than one match for a duplicate entry.
         """
         duplicate_flag = self.x == x
         if np.any(duplicate_flag):
