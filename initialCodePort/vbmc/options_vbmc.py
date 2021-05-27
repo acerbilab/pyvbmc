@@ -1,14 +1,14 @@
 from collections.abc import MutableMapping
-from .default_options_advanced import default_options_advanced
-from .default_options_fixed import default_options_fixed
+from .default_options_advanced import get_default_options_advanced
+from .default_options_fixed import get_default_options_fixed
 
 
 class OptionsVBMC(MutableMapping, dict):
     def __init__(self, D, K, *args, **kwargs):
         # Advanced options (do not modify unless you *know* what you are doing)
-        self.update(default_options_advanced)
+        self.update(get_default_options_advanced(D))
         # Advanced options for unsupported/untested features (do *not* modify)
-        self.update(default_options_fixed)
+        self.update(get_default_options_fixed())
         self.update(*args, **kwargs)
 
     def __setitem__(self, key, val):

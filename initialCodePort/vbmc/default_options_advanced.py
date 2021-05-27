@@ -1,360 +1,378 @@
-# Advanced options (do not modify unless you *know* what you are doing)
 import numpy as np
 
-default_options_advanced = {
-    # Explicit noise handling'
-    "UncertaintyHandling": [],
-    # Array with indices of integer variables'
-    "IntegerVars": [],
-    # Base observation noise magnitude (standard deviation)'
-    "NoiseSize": [],
-    # Max number of consecutive repeated measurements for noisy inputs'
-    "MaxRepeatedObservations": 0,
-    # Multiplicative discount True acquisition fcn
-    # to repeat measurement at the same location'
-    "RepeatedAcqDiscount": 1,
-    # Number of initial target fcn evals'
-    "FunEvalStart": "max(D,10)",
-    # Base step size for stochastic gradient descent'
-    "SGDStepSize": 0.005,
-    # Skip active sampling the first iteration after warmup'
-    "SkipActiveSamplingAfterWarmup": False,
-    # Use ranking criterion to pick best non-converged solution'
-    "RankCriterion": True,
-    # Required stable iterations to switch entropy approximation'
-    "TolStableEntropyIters": 6,
-    # Use variable component means for variational posterior'
-    "VariableMeans": True,
-    # Use variable mixture weight for variational posterior'
-    "VariableWeights": True,
-    # Penalty multiplier for small mixture weights'
-    "WeightPenalty": 0.1,
-    # Run in diagnostics mode, get additional info'
-    "Diagnostics": False,
-    # Output function'
-    "OutputFcn": [],
-    # Fraction of allowed exceptions when computing iteration stability'
-    "TolStableExcptFrac": 0.2,
-    # Evaluated fcn values at X0'
-    "Fvals": [],
-    # Use Optimization Toolbox (if empty, determine at runtime)'
-    "OptimToolbox": [],
-    # Weighted proposal fcn for uncertainty search'
-    "ProposalFcn": [],
-    # Automatic nonlinear rescaling of variables'
-    "NonlinearScaling": True,
-    # Fast search acquisition fcn(s)'
-    "SearchAcqFcn": "@acqf_vbmc",
-    # Samples for fast acquisition fcn eval per new point'
-    "NSsearch": 2 ** 13,
-    # Total samples for Monte Carlo approx. of the entropy'
-    "NSent": lambda K: 100 * K ** (2 / 3),
-    # Total samples for preliminary Monte Carlo approx. of the entropy'
-    "NSentFast": 0,
-    # Total samples for refined Monte Carlo approx. of the entropy'
-    "NSentFine": lambda K: 2 ** 12 * K,
-    # Total samples for Monte Carlo approx. of the entropy (final boost)'
-    "NSentBoost": lambda K: 200 * K ** (2 / 3),
-    # Total samples for preliminary Monte Carlo
-    # approx. of the entropy (final boost)'
-    "NSentFastBoost": [],
-    # Total samples for refined Monte Carlo
-    # approx. of the entropy (final boost)'
-    "NSentFineBoost": [],
-    # Total samples for Monte Carlo approx. of the entropy (active sampling)'
-    "NSentActive": lambda K: 20 * K ** (2 / 3),
-    # Total samples for preliminary Monte Carlo
-    # approx. of the entropy (active sampling)'
-    "NSentFastActive": 0,
-    # Total samples for refined Monte Carlo
-    # approx. of the entropy (active sampling)'
-    "NSentFineActive": lambda K: 200 * K,
-    # Samples for fast approximation of the ELBO'
-    "NSelbo": lambda K: 50 * K,
-    # Multiplier to samples for fast approx. of ELBO for incremental iterations'
-    "NSelboIncr": 0.1,
-    # Starting points to refine optimization of the ELBO'
-    "ElboStarts": 2,
-    # Max GP hyperparameter samples (decreases with training points)'
-    "NSgpMax": 80,
-    # Max GP hyperparameter samples during warmup'
-    "NSgpMaxWarmup": 8,
-    # Max GP hyperparameter samples during main algorithm'
-    "NSgpMaxMain": np.Inf,
-    # Fcn evals without improvement before stopping warmup'
-    "WarmupNoImproThreshold": "20 + 5 * D",
-    # Also check for max fcn value improvement before stopping warmup'
-    "WarmupCheckMax": True,
-    # Force stable GP hyperparameter sampling
-    # (reduce samples or start optimizing)'
-    "StableGPSampling": "200 + 10 * D",
-    # Force stable GP hyperparameter sampling
-    # after reaching this number of components'
-    "StableGPvpK": "Inf",
-    # Number of GP samples when GP is stable (0 = optimize)'
-    "StableGPSamples": 0,
-    # Thinning for GP hyperparameter sampling'
-    "GPSampleThin": 5,
-    # Initial design points for GP hyperparameter training'
-    "GPTrainNinit": 1024,
-    # Final design points for GP hyperparameter training'
-    "GPTrainNinitFinal": 64,
-    # Initial design method for GP hyperparameter training'
-    "GPTrainInitMethod": "rand",
-    # Tolerance for optimization of GP hyperparameters'
-    "GPTolOpt": 1e-5,
-    # Tolerance for optimization of GP hyperparameters preliminary to MCMC'
-    "GPTolOptMCMC": 1e-2,
-    # Tolerance for optimization of GP hyperparameters during active sampling'
-    "GPTolOptActive": 1e-4,
-    # Tolerance for optimization of GP hyperparameters preliminary
-    # to MCMC during active sampling'
-    "GPTolOptMCMCActive": 1e-2,
-    # Threshold True GP variance used by regulatized acquisition fcns'
-    "TolGPVar": 1e-4,
-    # Threshold True GP variance, used to stabilize sampling'
-    "TolGPVarMCMC": 1e-4,
-    # GP mean function'
-    "gpMeanFun": "negquad",
-    # GP integrated mean function'
-    "gpIntMeanFun": 0,
-    # Max variational components as a function of training points'
-    "KfunMax": lambda N: N ** (2 / 3),
-    # Variational components during warmup'
-    "Kwarmup": 2,
-    # Added variational components for stable solution'
-    "AdaptiveK": 2,
-    # High Posterior Density region (fraction of training inputs)'
-    "HPDFrac": 0.8,
-    # Uncertainty weight True ELCBO for computing lower bound improvement'
-    "ELCBOImproWeight": 3,
-    # Minimum fractional length scale'
-    "TolLength": 1e-6,
-    # Size of cache for storing fcn evaluations'
-    "CacheSize": 500,
-    # Fraction of search points from starting cache (if nonempty)'
-    "CacheFrac": 0.5,
-    # Stochastic optimizer for varational parameters'
-    "StochasticOptimizer": "adam",
-    # Stopping threshold for stochastic optimization'
-    "TolFunStochastic": 1e-3,
-    # Max iterations for stochastic optimization'
-    "MaxIterStochastic": "100 * (2 + D)",
-    # Set stochastic optimization stepsize via GP hyperparameters'
-    "GPStochasticStepsize": False,
-    # Tolerance True ELBO uncertainty for stopping
-    # (if variational posterior is stable)'
-    "TolSD": 0.1,
-    # Stopping threshold True change of
-    # variational posterior per training point'
-    "TolsKL": "0.01 * sqrt(D)",
-    # Number of stable fcn evals for stopping warmup'
-    "TolStableWarmup": 15,
-    # MCMC sampler for variational posteriors'
-    "VariationalSampler": "malasample",
-    # Required ELCBO improvement per fcn eval before termination'
-    "TolImprovement": 0.01,
-    # Use Gaussian approximation for symmetrized KL-divergence b\w iters'
-    "KLgauss": True,
-    # True mean of the target density (for debugging)'
-    "TrueMean": [],
-    # True covariance of the target density (for debugging)'
-    "TrueCov": [],
-    # Min number of fcn evals'
-    "MinFunEvals": "5 * D",
-    # Min number of iterations'
-    "MinIter": "D",
-    # Fraction of search points from heavy-tailed variational posterior'
-    "HeavyTailSearchFrac": 0.25,
-    # Fraction of search points from multivariate normal'
-    "MVNSearchFrac": 0.25,
-    # Fraction of search points from multivariate normal fitted to HPD points'
-    "HPDSearchFrac": 0,
-    # Fraction of search points
-    # from uniform random box based True training inputs'
-    "BoxSearchFrac": 0.25,
-    # Fraction of search points from previous iterations'
-    "SearchCacheFrac": 0,
-    # Always fully refit variational posterior'
-    "AlwaysRefitVarPost": False,
-    # Perform warm-up stage'
-    "Warmup": True,
-    # Special OPTIONS struct for warmup stage'
-    "WarmupOptions": [],
-    # Stop warm-up when ELCBO increase below threshold (per fcn eval)'
-    "StopWarmupThresh": 0.2,
-    # Max log-likelihood difference for points kept after warmup'
-    "WarmupKeepThreshold": "10 * D",
-    # Max log-likelihood difference for points kept
-    # after a false-alarm warmup stop'
-    "WarmupKeepThresholdFalseAlarm": "100 * (D + 2)",
-    # Reliability index required to stop warmup'
-    "StopWarmupReliability": 100,
-    # Optimization method for active sampling'
-    "SearchOptimizer": "cmaes",
-    # Initialize CMA-ES search SIGMA from variational posterior'
-    "SearchCMAESVPInit": True,
-    # Take bestever solution from CMA-ES search'
-    "SearchCMAESbest": False,
-    # Max number of acquisition fcn evaluations during search'
-    "SearchMaxFunEvals": "500 * (D + 2)",
-    # Weight of previous trials (per trial)
-    # for running avg of variational posterior moments'
-    "MomentsRunWeight": 0.9,
-    # Upper threshold True reliability index
-    #  for full retraining of GP hyperparameters'
-    "GPRetrainThreshold": 1,
-    # Compute full ELCBO also at best midpoint'
-    "ELCBOmidpoint": True,
-    # Multiplier to widths from previous posterior for GP sampling
-    # (Inf = do not use previous widths)'
-    "GPSampleWidths": 5,
-    # Weight of previous trials (per trial)
-    # for running avg of GP hyperparameter covariance'
-    "HypRunWeight": 0.9,
-    # Use weighted hyperparameter posterior covariance'
-    "WeightedHypCov": True,
-    # Minimum weight for weighted hyperparameter posterior covariance'
-    "TolCovWeight": 0,
-    # MCMC sampler for GP hyperparameters'
-    "GPHypSampler": "slicesample",
-    # Switch to covariance sampling below this threshold of stability index'
-    "CovSampleThresh": 10,
-    # Optimality tolerance for optimization of deterministic entropy'
-    "DetEntTolOpt": 1e-3,
-    # Switch from deterministic entropy
-    # to stochastic entropy when reaching stability'
-    "EntropySwitch": False,
-    # Force switch to stochastic entropy at this fraction of total fcn evals'
-    "EntropyForceSwitch": 0.8,
-    # Alpha value for lower/upper deterministic entropy interpolation'
-    "DetEntropyAlpha": 0,
-    # Randomize deterministic entropy alpha during active sample updates'
-    "UpdateRandomAlpha": False,
-    # Online adaptation of alpha value
-    # for lower/upper deterministic entropy interpolation'
-    "AdaptiveEntropyAlpha": False,
-    # Start with deterministic entropy only with this number of vars or more'
-    "DetEntropyMinD": 5,
-    # Fractional tolerance for constraint violation of variational parameters'
-    "TolConLoss": 0.01,
-    # SD multiplier of ELCBO for computing best variational solution'
-    "BestSafeSD": 5,
-    # When computing best solution, lacking stability
-    # go back up to this fraction of iterations'
-    "BestFracBack": 0.25,
-    # Threshold mixture component weight for pruning'
-    "TolWeight": 1e-2,
-    # Multiplier to threshold for pruning mixture weights'
-    "PruningThresholdMultiplier": lambda K: 1 / np.sqrt(K),
-    # Annealing for hyperprior width of GP negative quadratic mean'
-    "AnnealedGPMean": lambda N, NMAX: 0,
-    # Strict hyperprior for GP negative quadratic mean'
-    "ConstrainedGPMean": False,
-    # Empirical Bayes prior over some GP hyperparameters'
-    "EmpiricalGPPrior": False,
-    # Minimum GP observation noise'
-    "TolGPNoise": np.sqrt(1e-5),
-    # Prior mean over GP input length scale (in plausible units)'
-    "GPLengthPriorMean": "sqrt(D/6)",
-    # Prior std over GP input length scale (in plausible units)'
-    "GPLengthPriorStd": 0.5 * np.log(1e3),
-    # Upper bound True GP input lengths based True plausible box (0 = ignore)'
-    "UpperGPLengthFactor": 0,
-    # Initial samples ("plausible" is uniform in the plausible box)'
-    "InitDesign": "plausible",
-    # Stricter upper bound True GP negative quadratic mean function'
-    "gpQuadraticMeanBound": True,
-    # Bandwidth parameter for GP smoothing (in units of plausible box)'
-    "Bandwidth": 0,
-    # Heuristic output warping ("fitness shaping")'
-    "FitnessShaping": False,
-    # Output warping starting threshold'
-    "OutwarpThreshBase": "10 * D",
-    # Output warping threshold multiplier when failed sub-threshold check'
-    "OutwarpThreshMult": 1.25,
-    # Output warping base threshold tolerance (fraction of current threshold)'
-    "OutwarpThreshTol": 0.8,
-    # Temperature for posterior tempering (allowed values T = 1,2,3,4)'
-    "Temperature": 1,
-    # Use separate GP with constant mean for active search'
-    "SeparateSearchGP": False,
-    # Discount observations from from extremely low-density regions'
-    "NoiseShaping": False,
-    # Threshold from max observed value to start discounting'
-    "NoiseShapingThreshold": "10 * D",
-    # Proportionality factor of added noise wrt distance from threshold'
-    "NoiseShapingFactor": 0.05,
-    # Hedge True multiple acquisition functions'
-    "AcqHedge": False,
-    # Past iterations window to judge acquisition fcn improvement'
-    "AcqHedgeIterWindow": 4,
-    # Portfolio value decay per function evaluation'
-    "AcqHedgeDecay": 0.9,
-    # MCMC variational steps before each active sampling'
-    "ActiveVariationalSamples": 0,
-    # Apply lower bound True variational components
-    # scale during variational sampling'
-    "ScaleLowerBound": True,
-    # Perform variational optimization after each active sample'
-    "ActiveSampleVPUpdate": False,
-    # Perform GP training after each active sample'
-    "ActiveSampleGPUpdate": False,
-    # # iters past warmup to continue update after each active sample'
-    "ActiveSampleFullUpdatePastWarmup": 2,
-    # Perform full update during active sampling if stability above threshold'
-    "ActiveSampleFullUpdateThreshold": 3,
-    # Use previous variational posteriors to initialize optimization'
-    "VariationalInitRepo": False,
-    # Extra variational components sampled from GP profile'
-    "SampleExtraVPMeans": 0,
-    # Uncertainty weight True ELCBO during active sampling'
-    "OptimisticVariationalBound": 0,
-    # # importance samples from smoothed variational posterior'
-    "ActiveImportanceSamplingVPSamples": 100,
-    # # importance samples from box-uniform centered True training inputs'
-    "ActiveImportanceSamplingBoxSamples": 100,
-    # # importance samples through MCMC'
-    "ActiveImportanceSamplingMCMCSamples": 100,
-    # Thinning for importance sampling MCMC'
-    "ActiveImportanceSamplingMCMCThin": 1,
-    # fractional ESS threhsold to update GP and VP'
-    "ActiveSamplefESSThresh": 1,
-    # % fractional ESS threhsold to do MCMC while active importance sampling'
-    "ActiveImportanceSamplingfESSThresh": 0.9,
-    # Active search bound multiplier'
-    "ActiveSearchBound": 2,
-    # Try integrating GP mean function'
-    "IntegrateGPMean": False,
-    # Tolerance True closeness to bound constraints (fraction of total range)'
-    "TolBoundX": 1e-5,
-    # Recompute LCB max for each iteration based True current GP estimate'
-    "RecomputeLCBmax": True,
-    # Input transform for bounded variables'
-    "BoundedTransform": "logit",
-    # Use double GP'
-    "DoubleGP": False,
-    # Warp every this number of iterations'
-    "WarpEveryIters": 5,
-    # Increase delay between warpings'
-    "IncrementalWarpDelay": True,
-    # Threshold True reliability index to perform warp'
-    "WarpTolReliability": 3,
-    # Rotate and scale input'
-    "WarpRotoScaling": True,
-    # Regularization weight towards
-    # diagonal covariance matrix for N training inputs'
-    "WarpCovReg": 0,
-    # Threshold True correlation matrix for roto-scaling'
-    "WarpRotoCorrThresh": 0.05,
-    # Min number of variational components to perform warp'
-    "WarpMinK": 5,
-    # Immediately undo warp if not improving ELBO'
-    "WarpUndoCheck": True,
-    # Improvement of ELBO required to keep a warp proposal'
-    "WarpTolImprovement": 0.1,
-    # Multiplier tolerance of ELBO SD after warp proposal'
-    "WarpTolSDMultiplier": 2,
-    # Base tolerance True ELBO SD after warp proposal'
-    "WarpTolSDBase": 1,
-}
+
+def get_default_options_advanced(D):
+    """
+    Retrieve default advanced options of VBMC which you should only modify
+    if you *know* what you are doing.
+
+    Parameters
+    ----------
+    D : int
+        The number of dimensions of the data.
+
+    Returns
+    -------
+    default_options_advanced : dict
+        These are the default advanced options of VBMC which you should only
+        modify if you *know* what you are doing.
+    """
+
+    default_options_advanced = {
+        # Explicit noise handling'
+        "UncertaintyHandling": [],
+        # Array with indices of integer variables'
+        "IntegerVars": [],
+        # Base observation noise magnitude (standard deviation)'
+        "NoiseSize": [],
+        # Max number of consecutive repeated measurements for noisy inputs'
+        "MaxRepeatedObservations": 0,
+        # Multiplicative discount True acquisition fcn
+        # to repeat measurement at the same location'
+        "RepeatedAcqDiscount": 1,
+        # Number of initial target fcn evals'
+        "FunEvalStart": np.maximum(D, 10),
+        # Base step size for stochastic gradient descent'
+        "SGDStepSize": 0.005,
+        # Skip active sampling the first iteration after warmup'
+        "SkipActiveSamplingAfterWarmup": False,
+        # Use ranking criterion to pick best non-converged solution'
+        "RankCriterion": True,
+        # Required stable iterations to switch entropy approximation'
+        "TolStableEntropyIters": 6,
+        # Use variable component means for variational posterior'
+        "VariableMeans": True,
+        # Use variable mixture weight for variational posterior'
+        "VariableWeights": True,
+        # Penalty multiplier for small mixture weights'
+        "WeightPenalty": 0.1,
+        # Run in diagnostics mode, get additional info'
+        "Diagnostics": False,
+        # Output function'
+        "OutputFcn": [],
+        # Fraction of allowed exceptions when computing iteration stability'
+        "TolStableExcptFrac": 0.2,
+        # Evaluated fcn values at X0'
+        "Fvals": [],
+        # Use Optimization Toolbox (if empty, determine at runtime)'
+        "OptimToolbox": [],
+        # Weighted proposal fcn for uncertainty search'
+        "ProposalFcn": [],
+        # Automatic nonlinear rescaling of variables'
+        "NonlinearScaling": True,
+        # Fast search acquisition fcn(s)'
+        "SearchAcqFcn": "@acqf_vbmc",
+        # Samples for fast acquisition fcn eval per new point'
+        "NSsearch": 2 ** 13,
+        # Total samples for Monte Carlo approx. of the entropy'
+        "NSent": lambda K: 100 * K ** (2 / 3),
+        # Total samples for preliminary Monte Carlo approx. of the entropy'
+        "NSentFast": 0,
+        # Total samples for refined Monte Carlo approx. of the entropy'
+        "NSentFine": lambda K: 2 ** 12 * K,
+        # Total samples for Monte Carlo approx. of the entropy (final boost)'
+        "NSentBoost": lambda K: 200 * K ** (2 / 3),
+        # Total samples for preliminary Monte Carlo
+        # approx. of the entropy (final boost)'
+        "NSentFastBoost": [],
+        # Total samples for refined Monte Carlo
+        # approx. of the entropy (final boost)'
+        "NSentFineBoost": [],
+        # Total samples for Monte Carlo approx. of the entropy (active sampling)'
+        "NSentActive": lambda K: 20 * K ** (2 / 3),
+        # Total samples for preliminary Monte Carlo
+        # approx. of the entropy (active sampling)'
+        "NSentFastActive": 0,
+        # Total samples for refined Monte Carlo
+        # approx. of the entropy (active sampling)'
+        "NSentFineActive": lambda K: 200 * K,
+        # Samples for fast approximation of the ELBO'
+        "NSelbo": lambda K: 50 * K,
+        # Multiplier to samples for fast approx. of ELBO for incremental iterations'
+        "NSelboIncr": 0.1,
+        # Starting points to refine optimization of the ELBO'
+        "ElboStarts": 2,
+        # Max GP hyperparameter samples (decreases with training points)'
+        "NSgpMax": 80,
+        # Max GP hyperparameter samples during warmup'
+        "NSgpMaxWarmup": 8,
+        # Max GP hyperparameter samples during main algorithm'
+        "NSgpMaxMain": np.Inf,
+        # Fcn evals without improvement before stopping warmup'
+        "WarmupNoImproThreshold": 20 + 5 * D,
+        # Also check for max fcn value improvement before stopping warmup'
+        "WarmupCheckMax": True,
+        # Force stable GP hyperparameter sampling
+        # (reduce samples or start optimizing)'
+        "StableGPSampling": 200 + 10 * D,
+        # Force stable GP hyperparameter sampling
+        # after reaching this number of components'
+        "StableGPvpK": np.Inf,
+        # Number of GP samples when GP is stable (0 = optimize)'
+        "StableGPSamples": 0,
+        # Thinning for GP hyperparameter sampling'
+        "GPSampleThin": 5,
+        # Initial design points for GP hyperparameter training'
+        "GPTrainNinit": 1024,
+        # Final design points for GP hyperparameter training'
+        "GPTrainNinitFinal": 64,
+        # Initial design method for GP hyperparameter training'
+        "GPTrainInitMethod": "rand",
+        # Tolerance for optimization of GP hyperparameters'
+        "GPTolOpt": 1e-5,
+        # Tolerance for optimization of GP hyperparameters preliminary to MCMC'
+        "GPTolOptMCMC": 1e-2,
+        # Tolerance for optimization of GP hyperparameters during active sampling'
+        "GPTolOptActive": 1e-4,
+        # Tolerance for optimization of GP hyperparameters preliminary
+        # to MCMC during active sampling'
+        "GPTolOptMCMCActive": 1e-2,
+        # Threshold True GP variance used by regulatized acquisition fcns'
+        "TolGPVar": 1e-4,
+        # Threshold True GP variance, used to stabilize sampling'
+        "TolGPVarMCMC": 1e-4,
+        # GP mean function'
+        "gpMeanFun": "negquad",
+        # GP integrated mean function'
+        "gpIntMeanFun": 0,
+        # Max variational components as a function of training points'
+        "KfunMax": lambda N: N ** (2 / 3),
+        # Variational components during warmup'
+        "Kwarmup": 2,
+        # Added variational components for stable solution'
+        "AdaptiveK": 2,
+        # High Posterior Density region (fraction of training inputs)'
+        "HPDFrac": 0.8,
+        # Uncertainty weight True ELCBO for computing lower bound improvement'
+        "ELCBOImproWeight": 3,
+        # Minimum fractional length scale'
+        "TolLength": 1e-6,
+        # Size of cache for storing fcn evaluations'
+        "CacheSize": 500,
+        # Fraction of search points from starting cache (if nonempty)'
+        "CacheFrac": 0.5,
+        # Stochastic optimizer for varational parameters'
+        "StochasticOptimizer": "adam",
+        # Stopping threshold for stochastic optimization'
+        "TolFunStochastic": 1e-3,
+        # Max iterations for stochastic optimization'
+        "MaxIterStochastic": 100 * (2 + D),
+        # Set stochastic optimization stepsize via GP hyperparameters'
+        "GPStochasticStepsize": False,
+        # Tolerance True ELBO uncertainty for stopping
+        # (if variational posterior is stable)'
+        "TolSD": 0.1,
+        # Stopping threshold True change of
+        # variational posterior per training point'
+        "TolsKL": 0.01 * np.sqrt(D),
+        # Number of stable fcn evals for stopping warmup'
+        "TolStableWarmup": 15,
+        # MCMC sampler for variational posteriors'
+        "VariationalSampler": "malasample",
+        # Required ELCBO improvement per fcn eval before termination'
+        "TolImprovement": 0.01,
+        # Use Gaussian approximation for symmetrized KL-divergence b\w iters'
+        "KLgauss": True,
+        # True mean of the target density (for debugging)'
+        "TrueMean": [],
+        # True covariance of the target density (for debugging)'
+        "TrueCov": [],
+        # Min number of fcn evals'
+        "MinFunEvals": 5 * D,
+        # Min number of iterations'
+        "MinIter": D,
+        # Fraction of search points from heavy-tailed variational posterior'
+        "HeavyTailSearchFrac": 0.25,
+        # Fraction of search points from multivariate normal'
+        "MVNSearchFrac": 0.25,
+        # Fraction of search points from multivariate normal fitted to HPD points'
+        "HPDSearchFrac": 0,
+        # Fraction of search points
+        # from uniform random box based True training inputs'
+        "BoxSearchFrac": 0.25,
+        # Fraction of search points from previous iterations'
+        "SearchCacheFrac": 0,
+        # Always fully refit variational posterior'
+        "AlwaysRefitVarPost": False,
+        # Perform warm-up stage'
+        "Warmup": True,
+        # Special OPTIONS struct for warmup stage'
+        "WarmupOptions": [],
+        # Stop warm-up when ELCBO increase below threshold (per fcn eval)'
+        "StopWarmupThresh": 0.2,
+        # Max log-likelihood difference for points kept after warmup'
+        "WarmupKeepThreshold": 10 * D,
+        # Max log-likelihood difference for points kept
+        # after a false-alarm warmup stop'
+        "WarmupKeepThresholdFalseAlarm": 100 * (D + 2),
+        # Reliability index required to stop warmup'
+        "StopWarmupReliability": 100,
+        # Optimization method for active sampling'
+        "SearchOptimizer": "cmaes",
+        # Initialize CMA-ES search SIGMA from variational posterior'
+        "SearchCMAESVPInit": True,
+        # Take bestever solution from CMA-ES search'
+        "SearchCMAESbest": False,
+        # Max number of acquisition fcn evaluations during search'
+        "SearchMaxFunEvals": 500 * (D + 2),
+        # Weight of previous trials (per trial)
+        # for running avg of variational posterior moments'
+        "MomentsRunWeight": 0.9,
+        # Upper threshold True reliability index
+        #  for full retraining of GP hyperparameters'
+        "GPRetrainThreshold": 1,
+        # Compute full ELCBO also at best midpoint'
+        "ELCBOmidpoint": True,
+        # Multiplier to widths from previous posterior for GP sampling
+        # (Inf = do not use previous widths)'
+        "GPSampleWidths": 5,
+        # Weight of previous trials (per trial)
+        # for running avg of GP hyperparameter covariance'
+        "HypRunWeight": 0.9,
+        # Use weighted hyperparameter posterior covariance'
+        "WeightedHypCov": True,
+        # Minimum weight for weighted hyperparameter posterior covariance'
+        "TolCovWeight": 0,
+        # MCMC sampler for GP hyperparameters'
+        "GPHypSampler": "slicesample",
+        # Switch to covariance sampling below this threshold of stability index'
+        "CovSampleThresh": 10,
+        # Optimality tolerance for optimization of deterministic entropy'
+        "DetEntTolOpt": 1e-3,
+        # Switch from deterministic entropy
+        # to stochastic entropy when reaching stability'
+        "EntropySwitch": False,
+        # Force switch to stochastic entropy at this fraction of total fcn evals'
+        "EntropyForceSwitch": 0.8,
+        # Alpha value for lower/upper deterministic entropy interpolation'
+        "DetEntropyAlpha": 0,
+        # Randomize deterministic entropy alpha during active sample updates'
+        "UpdateRandomAlpha": False,
+        # Online adaptation of alpha value
+        # for lower/upper deterministic entropy interpolation'
+        "AdaptiveEntropyAlpha": False,
+        # Start with deterministic entropy only with this number of vars or more'
+        "DetEntropyMinD": 5,
+        # Fractional tolerance for constraint violation of variational parameters'
+        "TolConLoss": 0.01,
+        # SD multiplier of ELCBO for computing best variational solution'
+        "BestSafeSD": 5,
+        # When computing best solution, lacking stability
+        # go back up to this fraction of iterations'
+        "BestFracBack": 0.25,
+        # Threshold mixture component weight for pruning'
+        "TolWeight": 1e-2,
+        # Multiplier to threshold for pruning mixture weights'
+        "PruningThresholdMultiplier": lambda K: 1 / np.sqrt(K),
+        # Annealing for hyperprior width of GP negative quadratic mean'
+        "AnnealedGPMean": lambda N, NMAX: 0,
+        # Strict hyperprior for GP negative quadratic mean'
+        "ConstrainedGPMean": False,
+        # Empirical Bayes prior over some GP hyperparameters'
+        "EmpiricalGPPrior": False,
+        # Minimum GP observation noise'
+        "TolGPNoise": np.sqrt(1e-5),
+        # Prior mean over GP input length scale (in plausible units)'
+        "GPLengthPriorMean": np.sqrt(D / 6),
+        # Prior std over GP input length scale (in plausible units)'
+        "GPLengthPriorStd": 0.5 * np.log(1e3),
+        # Upper bound True GP input lengths based True plausible box (0 = ignore)'
+        "UpperGPLengthFactor": 0,
+        # Initial samples ("plausible" is uniform in the plausible box)'
+        "InitDesign": "plausible",
+        # Stricter upper bound True GP negative quadratic mean function'
+        "gpQuadraticMeanBound": True,
+        # Bandwidth parameter for GP smoothing (in units of plausible box)'
+        "Bandwidth": 0,
+        # Heuristic output warping ("fitness shaping")'
+        "FitnessShaping": False,
+        # Output warping starting threshold'
+        "OutwarpThreshBase": 10 * D,
+        # Output warping threshold multiplier when failed sub-threshold check'
+        "OutwarpThreshMult": 1.25,
+        # Output warping base threshold tolerance (fraction of current threshold)'
+        "OutwarpThreshTol": 0.8,
+        # Temperature for posterior tempering (allowed values T = 1,2,3,4)'
+        "Temperature": 1,
+        # Use separate GP with constant mean for active search'
+        "SeparateSearchGP": False,
+        # Discount observations from from extremely low-density regions'
+        "NoiseShaping": False,
+        # Threshold from max observed value to start discounting'
+        "NoiseShapingThreshold": 10 * D,
+        # Proportionality factor of added noise wrt distance from threshold'
+        "NoiseShapingFactor": 0.05,
+        # Hedge True multiple acquisition functions'
+        "AcqHedge": False,
+        # Past iterations window to judge acquisition fcn improvement'
+        "AcqHedgeIterWindow": 4,
+        # Portfolio value decay per function evaluation'
+        "AcqHedgeDecay": 0.9,
+        # MCMC variational steps before each active sampling'
+        "ActiveVariationalSamples": 0,
+        # Apply lower bound True variational components
+        # scale during variational sampling'
+        "ScaleLowerBound": True,
+        # Perform variational optimization after each active sample'
+        "ActiveSampleVPUpdate": False,
+        # Perform GP training after each active sample'
+        "ActiveSampleGPUpdate": False,
+        # # iters past warmup to continue update after each active sample'
+        "ActiveSampleFullUpdatePastWarmup": 2,
+        # Perform full update during active sampling if stability above threshold'
+        "ActiveSampleFullUpdateThreshold": 3,
+        # Use previous variational posteriors to initialize optimization'
+        "VariationalInitRepo": False,
+        # Extra variational components sampled from GP profile'
+        "SampleExtraVPMeans": 0,
+        # Uncertainty weight True ELCBO during active sampling'
+        "OptimisticVariationalBound": 0,
+        # # importance samples from smoothed variational posterior'
+        "ActiveImportanceSamplingVPSamples": 100,
+        # # importance samples from box-uniform centered True training inputs'
+        "ActiveImportanceSamplingBoxSamples": 100,
+        # # importance samples through MCMC'
+        "ActiveImportanceSamplingMCMCSamples": 100,
+        # Thinning for importance sampling MCMC'
+        "ActiveImportanceSamplingMCMCThin": 1,
+        # fractional ESS threhsold to update GP and VP'
+        "ActiveSamplefESSThresh": 1,
+        # % fractional ESS threhsold to do MCMC while active importance sampling'
+        "ActiveImportanceSamplingfESSThresh": 0.9,
+        # Active search bound multiplier'
+        "ActiveSearchBound": 2,
+        # Try integrating GP mean function'
+        "IntegrateGPMean": False,
+        # Tolerance True closeness to bound constraints (fraction of total range)'
+        "TolBoundX": 1e-5,
+        # Recompute LCB max for each iteration based True current GP estimate'
+        "RecomputeLCBmax": True,
+        # Input transform for bounded variables'
+        "BoundedTransform": "logit",
+        # Use double GP'
+        "DoubleGP": False,
+        # Warp every this number of iterations'
+        "WarpEveryIters": 5,
+        # Increase delay between warpings'
+        "IncrementalWarpDelay": True,
+        # Threshold True reliability index to perform warp'
+        "WarpTolReliability": 3,
+        # Rotate and scale input'
+        "WarpRotoScaling": True,
+        # Regularization weight towards
+        # diagonal covariance matrix for N training inputs'
+        "WarpCovReg": 0,
+        # Threshold True correlation matrix for roto-scaling'
+        "WarpRotoCorrThresh": 0.05,
+        # Min number of variational components to perform warp'
+        "WarpMinK": 5,
+        # Immediately undo warp if not improving ELBO'
+        "WarpUndoCheck": True,
+        # Improvement of ELBO required to keep a warp proposal'
+        "WarpTolImprovement": 0.1,
+        # Multiplier tolerance of ELBO SD after warp proposal'
+        "WarpTolSDMultiplier": 2,
+        # Base tolerance True ELBO SD after warp proposal'
+        "WarpTolSDBase": 1,
+    }
+    return default_options_advanced
