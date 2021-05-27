@@ -4,13 +4,14 @@ OptionsVBMC
 
 Porting status
 ==============
-..
-     .. todo::
+    .. todo::
+        - validation of option inputs (discuss with Luigi)
+
      
 
 Matlab references
 -----------------
-- tbd
+- included in the first couple of lines of `vbmc.m <https://github.com/lacerbi/vbmc/blob/master/vbmc.m>`_
 
 Python documentation
 ====================
