@@ -13,7 +13,7 @@ This works as a documentation to port the VBMC algorithm to Python3.
    :caption: Classes:
 
    classes/function_logger
-   classes/options_vbmc
+   classes/options
    classes/parameter_transformer
    classes/timer
    classes/variational_posterior

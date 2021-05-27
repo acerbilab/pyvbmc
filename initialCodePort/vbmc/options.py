@@ -12,7 +12,7 @@ class Options(MutableMapping, dict):
     ----------
     UserOptions : set
         This set contains all options that have set by the user,
-        if there are none is empty.
+        if there are none it is empty.
     """
 
     def __init__(
@@ -31,7 +31,7 @@ class Options(MutableMapping, dict):
             The path to default options that can be overwritten by the user.
         evalutation_parameters : dict
             Parameters used to evaluate the options.
-        user_options: dict
+        user_options : dict
             User defined values to overwrite default options.
         """
 
