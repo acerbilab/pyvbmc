@@ -1,4 +1,6 @@
 # Advanced options (do not modify unless you *know* what you are doing)
+import numpy as np
+
 default_options_advanced = {
     # Explicit noise handling'
     "defopts.UncertaintyHandling": [],
@@ -42,17 +44,17 @@ default_options_advanced = {
     # Automatic nonlinear rescaling of variables'
     "defopts.NonlinearScaling": True,
     # Fast search acquisition fcn(s)'
-    "defopts.SearchAcqFcn": "@acqf_vbmc        ",
+    "defopts.SearchAcqFcn": "@acqf_vbmc",
     # Samples for fast acquisition fcn eval per new point'
-    "defopts.NSsearch": 2 ^ 13,
+    "defopts.NSsearch": 2 ** 13,
     # Total samples for Monte Carlo approx. of the entropy'
-    "defopts.NSent": "@(K) 100*K.^(2/3) ",
+    "defopts.NSent": lambda K: 100 * K ** (2 / 3),
     # Total samples for preliminary Monte Carlo approx. of the entropy'
     "defopts.NSentFast": 0,
     # Total samples for refined Monte Carlo approx. of the entropy'
-    "defopts.NSentFine": "@(K) 2^12*K       ",
+    "defopts.NSentFine": lambda K: 2 ** 12 * K,
     # Total samples for Monte Carlo approx. of the entropy (final boost)'
-    "defopts.NSentBoost": "@(K) 200*K.^(2/3) ",
+    "defopts.NSentBoost": lambda K: 200 * K ** (2 / 3),
     # Total samples for preliminary Monte Carlo
     # approx. of the entropy (final boost)'
     "defopts.NSentFastBoost": [],
@@ -60,15 +62,15 @@ default_options_advanced = {
     # approx. of the entropy (final boost)'
     "defopts.NSentFineBoost": [],
     # Total samples for Monte Carlo approx. of the entropy (active sampling)'
-    "defopts.NSentActive": "@(K) 20*K.^(2/3)  ",
+    "defopts.NSentActive": lambda K: 20 * K ** (2 / 3),
     # Total samples for preliminary Monte Carlo
     # approx. of the entropy (active sampling)'
     "defopts.NSentFastActive": 0,
     # Total samples for refined Monte Carlo
     # approx. of the entropy (active sampling)'
-    "defopts.NSentFineActive": "@(K) 200*K        ",
+    "defopts.NSentFineActive": lambda K: 200 * K,
     # Samples for fast approximation of the ELBO'
-    "defopts.NSelbo": "@(K) 50*K         ",
+    "defopts.NSelbo": lambda K: 50 * K,
     # Multiplier to samples for fast approx. of ELBO for incremental iterations'
     "defopts.NSelboIncr": 0.1,
     # Starting points to refine optimization of the ELBO'
@@ -78,14 +80,14 @@ default_options_advanced = {
     # Max GP hyperparameter samples during warmup'
     "defopts.NSgpMaxWarmup": 8,
     # Max GP hyperparameter samples during main algorithm'
-    "defopts.NSgpMaxMain": "Inf",
+    "defopts.NSgpMaxMain": np.Inf,
     # Fcn evals without improvement before stopping warmup'
-    "defopts.WarmupNoImproThreshold": "20 + 5 * nvars",
+    "defopts.WarmupNoImproThreshold": "20 + 5 * D",
     # Also check for max fcn value improvement before stopping warmup'
     "defopts.WarmupCheckMax": True,
     # Force stable GP hyperparameter sampling
     # (reduce samples or start optimizing)'
-    "defopts.StableGPSampling": "200 + 10 * nvars",
+    "defopts.StableGPSampling": "200 + 10 * D",
     # Force stable GP hyperparameter sampling
     # after reaching this number of components'
     "defopts.StableGPvpK": "Inf",
@@ -117,7 +119,7 @@ default_options_advanced = {
     # GP integrated mean function'
     "defopts.gpIntMeanFun": 0,
     # Max variational components as a function of training points'
-    "defopts.KfunMax": "@(N) N.^(2/3)     ",
+    "defopts.KfunMax": lambda N: N ** (2 / 3),
     # Variational components during warmup'
     "defopts.Kwarmup": 2,
     # Added variational components for stable solution'
@@ -137,7 +139,7 @@ default_options_advanced = {
     # Stopping threshold for stochastic optimization'
     "defopts.TolFunStochastic": 1e-3,
     # Max iterations for stochastic optimization'
-    "defopts.MaxIterStochastic": "100 * (2 + nvars)",
+    "defopts.MaxIterStochastic": "100 * (2 + D)",
     # Set stochastic optimization stepsize via GP hyperparameters'
     "defopts.GPStochasticStepsize": False,
     # Tolerance True ELBO uncertainty for stopping
@@ -145,7 +147,7 @@ default_options_advanced = {
     "defopts.TolSD": 0.1,
     # Stopping threshold True change of
     # variational posterior per training point'
-    "defopts.TolsKL": "0.01 * sqrt(nvars)",
+    "defopts.TolsKL": "0.01 * sqrt(D)",
     # Number of stable fcn evals for stopping warmup'
     "defopts.TolStableWarmup": 15,
     # MCMC sampler for variational posteriors'
@@ -159,9 +161,9 @@ default_options_advanced = {
     # True covariance of the target density (for debugging)'
     "defopts.TrueCov": [],
     # Min number of fcn evals'
-    "defopts.MinFunEvals": "5 * nvars",
+    "defopts.MinFunEvals": "5 * D",
     # Min number of iterations'
-    "defopts.MinIter": "nvars",
+    "defopts.MinIter": "D",
     # Fraction of search points from heavy-tailed variational posterior'
     "defopts.HeavyTailSearchFrac": 0.25,
     # Fraction of search points from multivariate normal'
@@ -182,10 +184,10 @@ default_options_advanced = {
     # Stop warm-up when ELCBO increase below threshold (per fcn eval)'
     "defopts.StopWarmupThresh": 0.2,
     # Max log-likelihood difference for points kept after warmup'
-    "defopts.WarmupKeepThreshold": "10 * nvars",
+    "defopts.WarmupKeepThreshold": "10 * D",
     # Max log-likelihood difference for points kept
     # after a false-alarm warmup stop'
-    "defopts.WarmupKeepThresholdFalseAlarm": "100 * (nvars + 2)",
+    "defopts.WarmupKeepThresholdFalseAlarm": "100 * (D + 2)",
     # Reliability index required to stop warmup'
     "defopts.StopWarmupReliability": 100,
     # Optimization method for active sampling'
@@ -195,7 +197,7 @@ default_options_advanced = {
     # Take bestever solution from CMA-ES search'
     "defopts.SearchCMAESbest": False,
     # Max number of acquisition fcn evaluations during search'
-    "defopts.SearchMaxFunEvals": "500 * (nvars + 2)",
+    "defopts.SearchMaxFunEvals": "500 * (D + 2)",
     # Weight of previous trials (per trial)
     # for running avg of variational posterior moments'
     "defopts.MomentsRunWeight": 0.9,
@@ -244,19 +246,19 @@ default_options_advanced = {
     # Threshold mixture component weight for pruning'
     "defopts.TolWeight": 1e-2,
     # Multiplier to threshold for pruning mixture weights'
-    "defopts.PruningThresholdMultiplier": "@(K) 1/sqrt(K)   ",
+    "defopts.PruningThresholdMultiplier": lambda K: 1 / np.sqrt(K),
     # Annealing for hyperprior width of GP negative quadratic mean'
-    "defopts.AnnealedGPMean": "@(N,NMAX) 0       ",
+    "defopts.AnnealedGPMean": lambda N, NMAX: 0,
     # Strict hyperprior for GP negative quadratic mean'
     "defopts.ConstrainedGPMean": False,
     # Empirical Bayes prior over some GP hyperparameters'
     "defopts.EmpiricalGPPrior": False,
     # Minimum GP observation noise'
-    "defopts.TolGPNoise": "sqrt(1e-5)",
+    "defopts.TolGPNoise": np.sqrt(1e-5),
     # Prior mean over GP input length scale (in plausible units)'
     "defopts.GPLengthPriorMean": "sqrt(D/6)",
     # Prior std over GP input length scale (in plausible units)'
-    "defopts.GPLengthPriorStd": "0.5*log(1e3)",
+    "defopts.GPLengthPriorStd": 0.5 * np.log(1e3),
     # Upper bound True GP input lengths based True plausible box (0 = ignore)'
     "defopts.UpperGPLengthFactor": 0,
     # Initial samples ("plausible" is uniform in the plausible box)'
@@ -268,7 +270,7 @@ default_options_advanced = {
     # Heuristic output warping ("fitness shaping")'
     "defopts.FitnessShaping": False,
     # Output warping starting threshold'
-    "defopts.OutwarpThreshBase": "10 * nvars",
+    "defopts.OutwarpThreshBase": "10 * D",
     # Output warping threshold multiplier when failed sub-threshold check'
     "defopts.OutwarpThreshMult": 1.25,
     # Output warping base threshold tolerance (fraction of current threshold)'
@@ -280,7 +282,7 @@ default_options_advanced = {
     # Discount observations from from extremely low-density regions'
     "defopts.NoiseShaping": False,
     # Threshold from max observed value to start discounting'
-    "defopts.NoiseShapingThreshold": "10 * nvars",
+    "defopts.NoiseShapingThreshold": "10 * D",
     # Proportionality factor of added noise wrt distance from threshold'
     "defopts.NoiseShapingFactor": 0.05,
     # Hedge True multiple acquisition functions'
