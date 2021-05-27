@@ -4,11 +4,65 @@ from .default_options_fixed import get_default_options_fixed
 
 
 class OptionsVBMC(MutableMapping, dict):
+    """
+    This class is responsible for the options of the VBMC algorithm.
+
+    The options can be devided into three types of options:
+        - **Basic default options:** We expect that these options are changed
+          by many users. You can find a description of those options in the
+          Parameters section below. 
+        - **Advanced options:** These options are for advanced users of VBMC.
+          Do not modify them unless you *know* what you are doing. You can find
+          them below the documentation of the class in the VBMC documentation. 
+        - **Advanced options for unsupported/untested features:** These are the
+          unsupported/untested features options of VBMC which you
+          should *never* modify. You can find them below the documentation of 
+          the class in the VBMC documentation.
+
+
+    Parameters
+    ----------
+    Display : {"iter", "notify", "final", "off"}
+        This specifies the level of display for log messages.
+    FunEvalsPerIter: int
+        The number of target function evaluations per iteration, by default 5.
+    MaxIter : int
+        The maximum number of iterations of VBMC, by default 50 * (2 + D).
+    MaxFunEvals : int
+        The maximum number of target function evaluations,
+        which is by default 50 * (2 + D).
+    MinFinalComponents: int
+        The Number of variational components to refine posterior at termination,
+        by default 50.
+    Plot : bool
+        Plot marginals of variational posterior at each iteration,
+        by default False.
+    RetryMaxFunEvals : int
+        The maximum number of target functions evals on retry,
+        where 0 means no retry and the default is 0.
+    SpecifyTargetNoise : bool
+        The Target log joint function returns noise estimate (SD) as second
+        output, by default this is False.
+    TolStableCount : int
+       The required number of stable function evals for termination,
+       by default this is 60.
+    """
+
     def __init__(self, D, K, *args, **kwargs):
         # Advanced options (do not modify unless you *know* what you are doing)
         self.update(get_default_options_advanced(D))
         # Advanced options for unsupported/untested features (do *not* modify)
         self.update(get_default_options_fixed())
+        # Basic default options
+        self.__setitem__("Display", "iter")
+        self.__setitem__("FunEvalsPerIter", 5)
+        self.__setitem__("MaxFunEvals", 50 * (2 + D))
+        self.__setitem__("MaxIter", 50 * (2 + D))
+        self.__setitem__("MinFinalComponents", 50)
+        self.__setitem__("Plot", False)
+        self.__setitem__("RetryMaxFunEvals", 0)
+        self.__setitem__("SpecifyTargetNoise", False)
+        self.__setitem__("TolStableCount", 60)
         self.update(*args, **kwargs)
 
     def __setitem__(self, key, val):
