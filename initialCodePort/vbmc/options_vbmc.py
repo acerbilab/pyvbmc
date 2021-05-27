@@ -31,12 +31,18 @@ class OptionsVBMC(MutableMapping, dict):
     MaxFunEvals : int
         The maximum number of target function evaluations,
         which is by default 50 * (2 + D).
-    MinFinalComponents: int
+    MinFinalComponents : int
         The Number of variational components to refine posterior at termination,
         by default 50.
+    ModifiedOptions : set
+        If RecordModifiedOptions == 1 this set contains all options that have
+        been modified after the initialization, otherwise it is always empty.
     Plot : bool
         Plot marginals of variational posterior at each iteration,
         by default False.
+    RecordModifiedOptions : bool
+        Record the modification of options after the initialization,
+        by default True.
     RetryMaxFunEvals : int
         The maximum number of target functions evals on retry,
         where 0 means no retry and the default is 0.
@@ -71,6 +77,7 @@ class OptionsVBMC(MutableMapping, dict):
         "off"
 
         """
+        self.__setitem__("RecordModifiedOptions", False)
         # Advanced options (do not modify unless you *know* what you are doing)
         self.update(get_default_options_advanced(D))
         # Advanced options for unsupported/untested features (do *not* modify)
@@ -86,9 +93,19 @@ class OptionsVBMC(MutableMapping, dict):
         self.__setitem__("SpecifyTargetNoise", False)
         self.__setitem__("TolStableCount", 60)
         self.update(*args, **kwargs)
+        self.__setitem__("ModifiedOptions", set())
+        self.__setitem__("RecordModifiedOptions", True)
 
     def __setitem__(self, key, val):
         dict.__setitem__(self, key, val)
+        if (
+            dict.__getitem__(self, "RecordModifiedOptions")
+            and key != "RecordModifiedOptions"
+            and key != "ModifiedOptions"
+        ):
+            modified_options = dict.__getitem__(self, "ModifiedOptions")
+            modified_options.add(key)
+            dict.__setitem__(self, "ModifiedOptions", modified_options)
 
     def __getitem__(self, key):
         return dict.__getitem__(self, key)

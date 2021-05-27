@@ -38,3 +38,17 @@ def test_options_set_user_options():
     user_options = {"Display": "off"}
     options = OptionsVBMC(D, user_options)
     assert options.get("Display") == "off"
+
+
+def test_options_record_modify():
+    D = 2
+    user_options = {"Display": "off"}
+    options = OptionsVBMC(D, user_options)
+    assert options.get("Display") == "off"
+    assert len(options.get("ModifiedOptions")) == 0
+    options['Display'] = "final"
+    assert len(options.get("ModifiedOptions")) == 1
+    assert 'Display' in options.get("ModifiedOptions")
+    options['Display'] = "notify"
+    assert len(options.get("ModifiedOptions")) == 1
+    assert 'Display' in options.get("ModifiedOptions")
