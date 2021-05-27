@@ -4,7 +4,6 @@ import sys
 from entropy import entlb_vbmc, entub_vbmc
 from timer import Timer
 from variational_posterior import VariationalPosterior
-from .options_vbmc import OptionsVBMC
 
 
 class VBMC(object):
@@ -15,7 +14,7 @@ class VBMC(object):
     def __init__(self):
         pass
 
-    def algorithm(self, fun, x0, LB, UB, PLB, PUB, options=OptionsVBMC):
+    def algorithm(self, fun, x0, LB, UB, PLB, PUB, options):
         """
         This is a perliminary version of the VBMC loop in order to identify possible objects
         """
