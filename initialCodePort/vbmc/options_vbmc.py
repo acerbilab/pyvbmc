@@ -54,7 +54,7 @@ class OptionsVBMC(MutableMapping, dict):
        by default this is 60.
     """
 
-    def __init__(self, D: int, *args, **kwargs):
+    def __init__(self, D: int, user_options : dict = None):
         r"""
         Initialize the options of VBMC using default options and specified
         options from the user.
@@ -63,7 +63,7 @@ class OptionsVBMC(MutableMapping, dict):
         ----------
         D : int
             The number of dimensions of the data.
-        *args, **kwargs
+        user_options: dict
             User defined values to overwrite default VBMC options.
 
         Examples
@@ -78,10 +78,13 @@ class OptionsVBMC(MutableMapping, dict):
 
         """
         self.__setitem__("RecordModifiedOptions", False)
+
         # Advanced options (do not modify unless you *know* what you are doing)
         self.update(get_default_options_advanced(D))
+
         # Advanced options for unsupported/untested features (do *not* modify)
         self.update(get_default_options_fixed())
+
         # Basic default options
         self.__setitem__("Display", "iter")
         self.__setitem__("FunEvalsPerIter", 5)
@@ -92,20 +95,16 @@ class OptionsVBMC(MutableMapping, dict):
         self.__setitem__("RetryMaxFunEvals", 0)
         self.__setitem__("SpecifyTargetNoise", False)
         self.__setitem__("TolStableCount", 60)
-        self.update(*args, **kwargs)
-        self.__setitem__("ModifiedOptions", set())
-        self.__setitem__("RecordModifiedOptions", True)
+
+        # User options
+        if user_options is not None:
+            self.update(user_options)
+            self.__setitem__("UserOptions", set(user_options.keys()))
+        else:
+            self.__setitem__("UserOptions", set())
 
     def __setitem__(self, key, val):
         dict.__setitem__(self, key, val)
-        if (
-            dict.__getitem__(self, "RecordModifiedOptions")
-            and key != "RecordModifiedOptions"
-            and key != "ModifiedOptions"
-        ):
-            modified_options = dict.__getitem__(self, "ModifiedOptions")
-            modified_options.add(key)
-            dict.__setitem__(self, "ModifiedOptions", modified_options)
 
     def __getitem__(self, key):
         return dict.__getitem__(self, key)
