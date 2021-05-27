@@ -1,9 +1,11 @@
 from collections.abc import MutableMapping
+import configparser
+import numpy as np
+
 
 class Options(MutableMapping, dict):
     """
     This class is responsible for Options.
-
 
 
     Parameters
@@ -13,26 +15,43 @@ class Options(MutableMapping, dict):
         if there are none is empty.
     """
 
-    def __init__(self, default_options : dict, user_options : dict = None):
+    def __init__(
+        self,
+        default_options_path: str,
+        evalutation_parameters: dict = None,
+        user_options: dict = None,
+    ):
         """
-        Initialize the options using default options and specified options from 
+        Initialize the options using default options and specified options from
         the user.
 
         Parameters
         ----------
-        default_options : dict
-            The default options that can be overwritten by the user.
+        default_options_path : str
+            The path to default options that can be overwritten by the user.
+        evalutation_parameters : dict
+            Parameters used to evaluate the options.
         user_options: dict
             User defined values to overwrite default options.
         """
-        self.update(default_options)
+
+        # evaluation_parameters
+        for key, val in evalutation_parameters.items():
+            exec(key + "=val")
+
+        # default_options
+        conf = configparser.ConfigParser()
+        conf.read(default_options_path)
+        for section in conf.sections():
+            for (k, v) in conf.items(section):
+                self.__setitem__(k, eval(v))
 
         # User options
         if user_options is not None:
             self.update(user_options)
-            self.__setitem__("UserOptions", set(user_options.keys()))
+            self.__setitem__("useroptions", set(user_options.keys()))
         else:
-            self.__setitem__("UserOptions", set())
+            self.__setitem__("useroptions", set())
 
     def __setitem__(self, key, val):
         dict.__setitem__(self, key, val)
