@@ -7,7 +7,7 @@ class OptionsVBMC(MutableMapping, dict):
     """
     This class is responsible for the options of the VBMC algorithm.
 
-    The options can be devided into three types of options:
+    The options can be divided into three types of options:
         - **Basic default options:** We expect that these options are changed
           by many users. You can find a description of those options in the
           Parameters section below. 
@@ -48,7 +48,29 @@ class OptionsVBMC(MutableMapping, dict):
        by default this is 60.
     """
 
-    def __init__(self, D, K, *args, **kwargs):
+    def __init__(self, D, **kwargs):
+        r"""
+        Initialize the options of VBMC using default options and specified 
+        options from the user.
+
+        Parameters
+        ----------
+        D : int
+            The number of dimensions of the data.
+        **kwargs
+            User defined values to overwrite default VBMC options.
+
+        Examples
+        --------
+        The options can be modified with `\*\*kwargs` as shown below.
+
+        >>> D = 2
+        >>> user_options = {"Display": "off"}
+        >>> options = OptionsVBMC(D, user_options)
+        >>> print(options.get("Display"))
+        "off"
+
+        """       
         # Advanced options (do not modify unless you *know* what you are doing)
         self.update(get_default_options_advanced(D))
         # Advanced options for unsupported/untested features (do *not* modify)
@@ -63,7 +85,7 @@ class OptionsVBMC(MutableMapping, dict):
         self.__setitem__("RetryMaxFunEvals", 0)
         self.__setitem__("SpecifyTargetNoise", False)
         self.__setitem__("TolStableCount", 60)
-        self.update(*args, **kwargs)
+        self.update(**kwargs)
 
     def __setitem__(self, key, val):
         dict.__setitem__(self, key, val)
