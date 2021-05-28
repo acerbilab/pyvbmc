@@ -68,3 +68,10 @@ def test_init_from_existing_options_without_other_options():
     options_2 = Options(default_options_path, {"D": 2})
     assert options_1 == options_2
     assert len(options_1) == len(options_2)
+
+def test_str():
+    # probably too naive, but whatever :)
+    default_options_path = "./vbmc/option_configs/test_options.ini"
+    options = Options(default_options_path, {"D": 2})
+    print(options)
+    assert len(options.__str__()) > 1600

@@ -44,11 +44,24 @@ class Options(MutableMapping, dict):
             exec(key + "=val")
 
         # default_options
-        conf = configparser.ConfigParser()
+        conf = configparser.ConfigParser(
+            comment_prefixes="", allow_no_value=True
+        )
+        # do not lower() both values as well as descriptions
+        conf.optionxform = str
         conf.read(default_options_path)
+
+        # strings starting with # in .ini act as description to following option
+        description = ""
+        self.descriptions = dict()
         for section in conf.sections():
             for (k, v) in conf.items(section):
-                self.__setitem__(k, eval(v))
+                if "#" in k:
+                    description = k.strip("# ")
+                else:
+                    self.__setitem__(k, eval(v))
+                    self.descriptions[k] = description
+                    description = ""
 
         # User options
         if user_options is not None:
@@ -106,3 +119,11 @@ class Options(MutableMapping, dict):
 
     def __len__(self):
         return dict.__len__(self)
+
+    def __str__(self):
+        return "".join(
+            [
+                "{}: {} ({}) \n".format(k, v, str(self.descriptions.get(k)))
+                for (k, v) in self.items()
+            ]
+        )
