@@ -28,6 +28,8 @@ def test_init_from_existing_options():
     )
     assert options_1 == options_2
     assert len(options_1) == len(options_2)
+
+
 def test_init_from_existing_options_modified():
     default_options_path = "./vbmc/option_configs/test_options.ini"
     user_options = {"display": "off"}

@@ -84,7 +84,7 @@ class Options(MutableMapping, dict):
         -------
         new_options : Options
             The new options object with the values merged as described above.
-        """ 
+        """
         if other is None:
             user_options = None
         else:
