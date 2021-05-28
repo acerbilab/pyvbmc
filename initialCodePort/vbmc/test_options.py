@@ -7,6 +7,7 @@ def test_options_no_user_options():
     options = Options(default_options_path, {"D": 2})
     assert options.get("sgdstepsize") == 0.005
     assert len(options.get("useroptions")) == 0
+    assert options.get("display") == "iter"
 
 
 def test_options_user_options():
