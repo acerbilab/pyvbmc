@@ -1,5 +1,9 @@
-from collections.abc import MutableMapping
+# for annotating Options as input of itself
+from __future__ import annotations
+
 import configparser
+from collections.abc import MutableMapping
+
 import numpy as np
 
 
@@ -52,6 +56,44 @@ class Options(MutableMapping, dict):
             self.__setitem__("useroptions", set(user_options.keys()))
         else:
             self.__setitem__("useroptions", set())
+
+    @classmethod
+    def init_from_existing_options(
+        self,
+        default_options_path: str,
+        evalutation_parameters: dict = None,
+        other: Options = None,
+    ):
+        """
+        Initialize an options instance using default options and another options
+        instance.
+
+        Only the user-definied options from the other object will overwrite the
+        default options. Everything else will come from the default options.
+
+        Parameters
+        ----------
+        default_options_path : str
+            The path to default options that can be overwritten by the user.
+        evalutation_parameters : dict
+            Parameters used to evaluate the options.
+        other : Options
+            User defined values to overwrite default options.
+
+        Returns
+        -------
+        new_options : Options
+            The new options object with the values merged as described above.
+        """ 
+        if other is None:
+            user_options = None
+        else:
+            user_option_keys = other.get("useroptions")
+            user_options = {k: other.get(k) for k in user_option_keys}
+        new_options = self(
+            default_options_path, evalutation_parameters, user_options
+        )
+        return new_options
 
     def __setitem__(self, key, val):
         dict.__setitem__(self, key, val)
