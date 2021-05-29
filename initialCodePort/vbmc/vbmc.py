@@ -3,6 +3,7 @@ import sys
 
 import numpy as np
 from entropy import entlb_vbmc, entub_vbmc
+from function_logger import FunctionLogger
 from timer import Timer
 from variational_posterior import VariationalPosterior
 from .options import Options
@@ -38,6 +39,16 @@ class VBMC(object):
 
         self.D = x0.shape[1]
 
+        # Empty LB and UB are Infs
+        if lower_bounds is None:
+            self.lower_bounds = np.ones((1, self.D)) * -np.inf
+        else:
+            self.lower_bounds = lower_bounds
+        if upper_bounds is None:
+            self.upper_bounds = np.ones((1, self.D)) * np.inf
+        else:
+            self.upper_bounds = upper_bounds
+
         # Check/fix boundaries and starting points
         self._boundscheck(
             fun,
@@ -46,6 +57,20 @@ class VBMC(object):
             upper_bounds,
             plausible_lower_bounds,
             plausible_upper_bounds,
+        )
+
+        noise_flag = None
+        uncertainty_handling_level = None
+        cache_size = 500
+        parameter_transformer = None
+
+        function_logger = FunctionLogger(
+            fun,
+            self.D,
+            noise_flag,
+            uncertainty_handling_level,
+            cache_size,
+            parameter_transformer,
         )
 
     def _boundscheck(
@@ -70,7 +95,7 @@ class VBMC(object):
             [description]
         plausible_lower_bounds, plausible_upper_bounds : np.ndarray
             [description]
-        """    
+        """
         pass
 
     def algorithm(self, fun, x0, LB, UB, PLB, PUB, options):
