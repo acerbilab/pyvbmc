@@ -121,6 +121,14 @@ class Options(MutableMapping, dict):
         return dict.__len__(self)
 
     def __str__(self):
+        """
+        Returns the options in a format key: value (description).
+
+        Returns
+        -------
+        str
+            The str to describe an options object.
+        """        
         return "".join(
             [
                 "{}: {} ({}) \n".format(k, v, str(self.descriptions.get(k)))
