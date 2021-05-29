@@ -1,9 +1,11 @@
 import math
 import sys
 
+import numpy as np
 from entropy import entlb_vbmc, entub_vbmc
 from timer import Timer
 from variational_posterior import VariationalPosterior
+from .options import Options
 
 
 class VBMC(object):
@@ -11,7 +13,64 @@ class VBMC(object):
     The VBMC algorithm class
     """
 
-    def __init__(self):
+    def __init__(
+        self,
+        fun: callable,
+        x0: np.ndarray = None,
+        lower_bounds: np.ndarray = None,
+        upper_bounds: np.ndarray = None,
+        plausible_lower_bounds: np.ndarray = None,
+        plausible_upper_bounds: np.ndarray = None,
+        user_options: dict = None,
+    ):
+        # Initialize variables and algorithm structures
+        if x0 is None:
+            if (
+                plausible_lower_bounds is None
+                or plausible_upper_bounds is None
+            ):
+                raise ValueError(
+                    """vbmc:UnknownDims If no starting point is
+                 provided, PLB and PUB need to be specified."""
+                )
+            else:
+                x0 = np.full((plausible_lower_bounds.shape), np.NaN)
+
+        self.D = x0.shape[1]
+
+        # Check/fix boundaries and starting points
+        self._boundscheck(
+            fun,
+            x0,
+            lower_bounds,
+            upper_bounds,
+            plausible_lower_bounds,
+            plausible_upper_bounds,
+        )
+
+    def _boundscheck(
+        self,
+        fun: callable,
+        x0: np.ndarray,
+        lower_bounds: np.ndarray,
+        upper_bounds: np.ndarray,
+        plausible_lower_bounds: np.ndarray,
+        plausible_upper_bounds: np.ndarray,
+    ):
+        """
+        Private function to do the initial check of the VBMC bounds.
+
+        Parameters
+        ----------
+        fun : callable
+            [description]
+        x0 : np.ndarray
+            [description]
+        lower_bounds, upper_bounds  : np.ndarray
+            [description]
+        plausible_lower_bounds, plausible_upper_bounds : np.ndarray
+            [description]
+        """    
         pass
 
     def algorithm(self, fun, x0, LB, UB, PLB, PUB, options):
