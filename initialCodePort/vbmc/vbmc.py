@@ -79,34 +79,162 @@ class VBMC(object):
         x0: np.ndarray,
         lower_bounds: np.ndarray,
         upper_bounds: np.ndarray,
-        plausible_lower_bounds: np.ndarray,
-        plausible_upper_bounds: np.ndarray,
+        plausible_lower_bounds: np.ndarray = None,
+        plausible_upper_bounds: np.ndarray = None,
     ):
         """
         Private function to do the initial check of the VBMC bounds.
-
-        Parameters
-        ----------
-        fun : callable
-            [description]
-        x0 : np.ndarray
-            [description]
-        lower_bounds, upper_bounds  : np.ndarray
-            [description]
-        plausible_lower_bounds, plausible_upper_bounds : np.ndarray
-            [description]
         """
-        pass
+
+        N0, D = x0.shape
+
+        if plausible_lower_bounds is None or plausible_upper_bounds is None:
+            if N0 > 1:
+                width = x0.max(0) - x0.min(0)
+                if plausible_lower_bounds is None:
+                    plausible_lower_bounds = x0.min(0) - width / N0
+                    plausible_lower_bounds = np.maximum(
+                        plausible_lower_bounds, lower_bounds
+                    )
+                if plausible_upper_bounds is None:
+                    plausible_upper_bounds = x0.max(0) + width / N0
+                    plausible_upper_bounds = np.minimum(
+                        plausible_upper_bounds, upper_bounds
+                    )
+
+                idx = plausible_lower_bounds == plausible_upper_bounds
+                if np.any(idx):
+                    plausible_lower_bounds[idx] = lower_bounds[idx]
+                    plausible_upper_bounds[idx] = upper_bounds[idx]
+                    # warning('vbmc:pbInitFailed')
+            else:
+                # warning('vbmc:pbUnspecified')
+                if plausible_lower_bounds is None:
+                    plausible_lower_bounds = np.copy(lower_bounds)
+                if plausible_upper_bounds is None:
+                    plausible_upper_bounds = np.copy(upper_bounds)
+
+        # check that all bounds are row vectors with D elements
+        if (
+            np.ndim(lower_bounds) != 2
+            or np.ndim(upper_bounds) != 2
+            or np.ndim(plausible_lower_bounds) != 2
+            or np.ndim(plausible_upper_bounds) != 2
+            or lower_bounds.shape != (1, D)
+            or upper_bounds.shape != (1, D)
+            or plausible_lower_bounds.shape != (1, D)
+            or plausible_upper_bounds.shape != (1, D)
+        ):
+            raise ValueError(
+                """All input vectors (x0, lower_bounds, upper_bounds,
+                 plausible_lower_bounds, plausible_upper_bounds), if specified,
+                 need to be row vectors with D elements."""
+            )
+
+        # check that plausible bounds are finite
+        if np.any(np.invert(np.isfinite(plausible_lower_bounds))) or np.any(
+            np.invert(np.isfinite(plausible_upper_bounds))
+        ):
+            raise ValueError(
+                "Plausible interval bounds PLB and PUB need to be finite."
+            )
+
+        # Test that all vectors are real-valued
+        if (
+            np.any(np.invert(np.isreal(x0)))
+            or np.any(np.invert(np.isreal(lower_bounds)))
+            or np.any(np.invert(np.isreal(upper_bounds)))
+            or np.any(np.invert(np.isreal(plausible_lower_bounds)))
+            or np.any(np.invert(np.isreal(plausible_upper_bounds)))
+        ):
+            raise ValueError(
+                """All input vectors (x0, lower_bounds, upper_bounds,
+                 plausible_lower_bounds, plausible_upper_bounds), if specified,
+                 need to be real valued."""
+            )
+
+        # Fixed variables (all bounds equal) are not supported
+        fixidx = (
+            (lower_bounds == upper_bounds)
+            & (upper_bounds == plausible_lower_bounds)
+            & (plausible_lower_bounds == plausible_upper_bounds)
+        )
+        if np.any(fixidx):
+            raise ValueError(
+                """vbmc:FixedVariables VBMC does not support fixed 
+            variables. Lower and upper bounds should be different."""
+            )
+
+        # Test that plausible bounds are different
+        if np.any(plausible_lower_bounds == plausible_upper_bounds):
+            raise ValueError(
+                """vbmc:MatchingPB:For all variables,
+            plausible lower and upper bounds need to be distinct."""
+            )
+
+        # Check that all X0 are inside the bounds
+        if np.any(x0 < lower_bounds) or np.any(x0 > upper_bounds):
+            raise ValueError(
+                """vbmc:InitialPointsNotInsideBounds: The starting
+            points X0 are not inside the provided hard bounds LB and UB."""
+            )
+
+        # % Compute "effective" bounds (slightly inside provided hard bounds)
+        # tbd
+
+        # Test order of bounds (permissive)
+        ordidx = (
+            (lower_bounds <= plausible_lower_bounds)
+            & (plausible_lower_bounds < plausible_upper_bounds)
+            & (plausible_upper_bounds <= upper_bounds)
+        )
+        if np.any(np.invert(ordidx)):
+            raise ValueError(
+                """vbmc:StrictBounds: For each variable, hard and
+            plausible bounds should respect the ordering LB < PLB < PUB < UB."""
+            )
+
+        # Fix when provided X0 are almost on the bounds -- move them inside
+
+        # Test that plausible bounds are reasonably separated from hard bounds
+
+        # Check that all X0 are inside the plausible bounds,
+        # move bounds otherwise
+
+        # Test order of bounds
+
+        # Check that variables are either bounded or unbounded
+        # (not half-bounded)
+        if (
+            np.any(np.isfinite(lower_bounds))
+            and np.any(np.invert(np.isfinite(upper_bounds)))
+            or np.any(np.invert(np.isfinite(lower_bounds)))
+            and np.any(np.isfinite(upper_bounds))
+        ):
+            raise ValueError(
+                """vbmc:HalfBounds: Each variable needs to be unbounded or
+            bounded. Variables bounded only below/above are not supported."""
+            )
+
+        return (
+            x0,
+            lower_bounds,
+            upper_bounds,
+            plausible_lower_bounds,
+            plausible_upper_bounds,
+        )
 
     def algorithm(self, fun, x0, LB, UB, PLB, PUB, options):
         """
-        This is a perliminary version of the VBMC loop in order to identify possible objects
+        This is a perliminary version of the VBMC loop in order to identify
+        possible objects
         """
         pass
 
     def __1acqhedge_vbmc(self, action, hedge, stats, options):
         """
-        ACQPORTFOLIO Evaluate and update portfolio of acquisition functions. (unused)
+        ACQPORTFOLIO Evaluate and update portfolio of acquisition functions.
+        (unused)
         """
         pass
 
