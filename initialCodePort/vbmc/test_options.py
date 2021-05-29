@@ -70,8 +70,8 @@ def test_init_from_existing_options_without_other_options():
     assert len(options_1) == len(options_2)
 
 def test_str():
-    # probably too naive, but whatever :)
     default_options_path = "./vbmc/option_configs/test_options.ini"
     options = Options(default_options_path, {"D": 2})
-    print(options)
+    one_option_str = "funevalstart: 10 (Number of initial target fcn evals)" 
+    assert one_option_str in options.__str__()
     assert len(options.__str__()) > 1600
