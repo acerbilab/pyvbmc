@@ -13,6 +13,7 @@ This works as a documentation to port the VBMC algorithm to Python3.
    :caption: Classes:
 
    classes/function_logger
+   classes/options
    classes/parameter_transformer
    classes/timer
    classes/variational_posterior
@@ -22,3 +23,9 @@ This works as a documentation to port the VBMC algorithm to Python3.
    :caption: Functions:
 
    functions/kernel_density
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Options:
+
+   options/vbmc_options

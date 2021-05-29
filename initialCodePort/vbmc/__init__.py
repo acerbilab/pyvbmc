@@ -1,3 +1,3 @@
 # __init__.py
-from .options_vbmc import OptionsVBMC
+from .options import Options
 from .vbmc import VBMC
