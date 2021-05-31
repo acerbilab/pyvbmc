@@ -224,7 +224,7 @@ class VBMC(object):
             plausible_upper_bounds,
         )
 
-    def algorithm(self, fun, x0, LB, UB, PLB, PUB, options):
+    def optimize(self):
         """
         This is a perliminary version of the VBMC loop in order to identify
         possible objects
@@ -309,7 +309,4 @@ class VBMC(object):
         """
         VBMC_BEST Return best variational posterior from stats structure.
         """
-        pass
-
-    def acqhedge_vbmc(self):
         pass
