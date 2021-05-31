@@ -9,8 +9,34 @@ fun = lambda x: np.sum(x + 2)
 
 
 def test_vbmc_init_no_x0_PLB_PUB():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as execinfo:
         VBMC(fun)
+    assert "vbmc:UnknownDims If no starting point is" in execinfo.value.args[0]
+
+
+def test_vbmc_init_no_x0():
+    D = 3
+    lb = np.zeros((1, D))
+    ub = np.ones((1, D)) * 2
+    plb = np.ones((1, D)) * 0.5
+    pub = np.ones((1, D)) * 1.5
+    vbmc = VBMC(fun, None, lb, ub, plb, pub)
+    assert np.all(np.isnan(vbmc.x0))
+    assert vbmc.x0.shape == (1, D)
+
+
+def test_vbmc_init_no_lb_ub():
+    D = 3
+    x0 = np.zeros((3, D))
+    plb = np.ones((1, D)) * 0.5
+    pub = np.ones((1, D)) * 1.5
+    vbmc = VBMC(
+        fun, x0, plausible_lower_bounds=plb, plausible_upper_bounds=pub
+    )
+    assert np.all(vbmc.lower_bounds == np.inf * -1)
+    assert vbmc.lower_bounds.shape == (1, 3)
+    assert np.all(vbmc.upper_bounds == np.inf)
+    assert vbmc.upper_bounds.shape == (1, 3)
 
 
 def test_vbmc_boundscheck_no_PUB_PLB_n0_1():
@@ -278,3 +304,19 @@ def test_vbmc_boundcheck_x0_too_close_to_hardbounds():
     assert x0_2.shape == x0.shape
     assert np.any(x0_2 != x0)
     assert np.all(np.isclose(x0_2, 1e-3 * realmin * 3, rtol=1e-12, atol=1e-14))
+
+
+def test_vbmc_boundcheck_plausible_bounds_finite():
+    D = 3
+    lb = np.ones((1, D)) * -2
+    ub = np.ones((1, D)) * 2
+    x0 = np.ones((2, D)) * 0.5
+    plb = np.zeros((1, D)) + 1e4
+    pub = np.ones((1, D))
+    exception_message = "PLB and PUB need to be finite."
+    with pytest.raises(ValueError) as execinfo1:
+        VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, lb, ub, plb, pub * np.inf)
+    assert exception_message in execinfo1.value.args[0]
+    with pytest.raises(ValueError) as execinfo2:
+        VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, lb, ub, plb * np.inf, pub)
+    assert exception_message in execinfo2.value.args[0]

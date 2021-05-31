@@ -35,9 +35,11 @@ class VBMC(object):
                  provided, PLB and PUB need to be specified."""
                 )
             else:
-                x0 = np.full((plausible_lower_bounds.shape), np.NaN)
+                self.x0 = np.full((plausible_lower_bounds.shape), np.NaN)
+        else:
+            self.x0 = x0
 
-        self.D = x0.shape[1]
+        self.D = self.x0.shape[1]
 
         # Empty LB and UB are Infs
         if lower_bounds is None:
@@ -49,15 +51,21 @@ class VBMC(object):
         else:
             self.upper_bounds = upper_bounds
 
-        # Check/fix boundaries and starting points
-        self._boundscheck(
-            fun,
-            x0,
-            lower_bounds,
-            upper_bounds,
-            plausible_lower_bounds,
-            plausible_upper_bounds,
-        )
+            # Check/fix boundaries and starting points
+            (
+                self.x0,
+                self.lower_bounds,
+                self.upper_bounds,
+                self.plausible_lower_bounds,
+                self.plausible_upper_bounds,
+            ) = self._boundscheck(
+                fun,
+                self.x0,
+                self.lower_bounds,
+                self.upper_bounds,
+                plausible_lower_bounds,
+                plausible_upper_bounds,
+            )
 
         noise_flag = None
         uncertainty_handling_level = None
@@ -219,7 +227,6 @@ class VBMC(object):
             plausible bounds should respect the ordering LB < PLB < PUB < UB."""
             )
 
-        
         # Test that plausible bounds are reasonably separated from hard bounds
         # tbd
 
