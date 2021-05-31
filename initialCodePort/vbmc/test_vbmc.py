@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 import pytest
 
@@ -227,3 +229,52 @@ def test_vbmc_boundcheck_half_bounded():
     with pytest.raises(ValueError) as execinfo2:
         VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, lb, ub * np.inf, plb, pub)
     assert exception_message in execinfo2.value.args[0]
+
+
+def test_vbmc_boundcheck_hardbounds_too_close():
+    D = 3
+    lb = np.ones((1, D)) * -2
+    ub = np.ones((1, D)) * 2
+    x0 = np.ones((2, D)) * 0.5
+    identicial = np.zeros((1, D))
+    realmin = sys.float_info.min
+    exception_message = "vbmc:StrictBoundsTooClose: Hard bounds LB and UB"
+    with pytest.raises(ValueError) as execinfo1:
+        VBMC(fun, x0, lb, ub)._boundscheck(
+            fun,
+            identicial,
+            identicial,
+            identicial + realmin * 1,
+            identicial,
+            identicial + realmin * 1,
+        )
+    assert exception_message in execinfo1.value.args[0]
+    # this should be the minimum values with which no exception is being raised
+    VBMC(fun, x0, lb, ub)._boundscheck(
+        fun,
+        identicial,
+        identicial,
+        identicial + realmin * 3,
+        identicial + realmin * 1,
+        identicial + realmin * 2,
+    )
+
+
+def test_vbmc_boundcheck_x0_too_close_to_hardbounds():
+    D = 3
+    lb = np.ones((1, D)) * -2
+    ub = np.ones((1, D)) * 2
+    x0 = np.zeros((2, D))
+    identicial = np.zeros((1, D))
+    realmin = sys.float_info.min
+    x0_2, _, _, _, _ = VBMC(fun, x0, lb, ub)._boundscheck(
+        fun,
+        x0,
+        identicial,
+        identicial + realmin * 3,
+        identicial + realmin * 1,
+        identicial + realmin * 2,
+    )
+    assert x0_2.shape == x0.shape
+    assert np.any(x0_2 != x0)
+    assert np.all(np.isclose(x0_2, 1e-3 * realmin * 3, rtol=1e-12, atol=1e-14))

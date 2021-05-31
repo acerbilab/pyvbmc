@@ -180,7 +180,32 @@ class VBMC(object):
             )
 
         # % Compute "effective" bounds (slightly inside provided hard bounds)
-        # tbd
+        bounds_range = upper_bounds - lower_bounds
+        bounds_range[np.isinf(bounds_range)] = 1e3
+        scale_factor = 1e-3
+        realmin = sys.float_info.min
+        LB_eff = lower_bounds + scale_factor * bounds_range
+        LB_eff[np.abs(lower_bounds) <= realmin] = (
+            scale_factor * bounds_range[np.abs(lower_bounds) <= realmin]
+        )
+        UB_eff = upper_bounds - scale_factor * bounds_range
+        UB_eff[np.abs(upper_bounds) <= realmin] = (
+            -scale_factor * bounds_range[np.abs(upper_bounds) <= realmin]
+        )
+        # Infinities stay the same
+        LB_eff[np.isinf(lower_bounds)] = lower_bounds[np.isinf(lower_bounds)]
+        UB_eff[np.isinf(upper_bounds)] = upper_bounds[np.isinf(upper_bounds)]
+
+        if np.any(LB_eff >= UB_eff):
+            raise ValueError(
+                """vbmc:StrictBoundsTooClose: Hard bounds LB and UB
+                are numerically too close. Make them more separate."""
+            )
+
+        # Fix when provided X0 are almost on the bounds -- move them inside
+        if np.any(x0 < LB_eff) or np.any(x0 > UB_eff):
+            # warning('vbmc:InitialPointsTooClosePB')
+            x0 = np.maximum((np.minimum(x0, UB_eff)), LB_eff)
 
         # Test order of bounds (permissive)
         ordidx = (
@@ -194,14 +219,16 @@ class VBMC(object):
             plausible bounds should respect the ordering LB < PLB < PUB < UB."""
             )
 
-        # Fix when provided X0 are almost on the bounds -- move them inside
-
+        
         # Test that plausible bounds are reasonably separated from hard bounds
+        # tbd
 
         # Check that all X0 are inside the plausible bounds,
         # move bounds otherwise
+        # tbd
 
         # Test order of bounds
+        # tbd
 
         # Check that variables are either bounded or unbounded
         # (not half-bounded)
