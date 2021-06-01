@@ -9,7 +9,7 @@ from variational_posterior import VariationalPosterior
 from .options import Options
 
 
-class VBMC(object):
+class VBMC():
     """
     The VBMC algorithm class
     """
@@ -46,38 +46,44 @@ class VBMC(object):
             self.lower_bounds = np.ones((1, self.D)) * -np.inf
         else:
             self.lower_bounds = lower_bounds
+
         if upper_bounds is None:
             self.upper_bounds = np.ones((1, self.D)) * np.inf
         else:
             self.upper_bounds = upper_bounds
 
-            # Check/fix boundaries and starting points
-            (
-                self.x0,
-                self.lower_bounds,
-                self.upper_bounds,
-                self.plausible_lower_bounds,
-                self.plausible_upper_bounds,
-            ) = self._boundscheck(
-                fun,
-                self.x0,
-                self.lower_bounds,
-                self.upper_bounds,
-                plausible_lower_bounds,
-                plausible_upper_bounds,
-            )
+        # Check/fix boundaries and starting points
+        (
+            self.x0,
+            self.lower_bounds,
+            self.upper_bounds,
+            self.plausible_lower_bounds,
+            self.plausible_upper_bounds,
+        ) = self._boundscheck(
+            fun,
+            self.x0,
+            self.lower_bounds,
+            self.upper_bounds,
+            plausible_lower_bounds,
+            plausible_upper_bounds,
+        )
+
+        self.options = Options(
+            "./vbmc/option_configs/advanced_vbmc_options.ini",
+            evalutation_parameters={"D": self.D},
+            user_options=user_options,
+        )
 
         noise_flag = None
         uncertainty_handling_level = None
-        cache_size = 500
         parameter_transformer = None
 
-        function_logger = FunctionLogger(
+        self.function_logger = FunctionLogger(
             fun,
             self.D,
             noise_flag,
             uncertainty_handling_level,
-            cache_size,
+            self.options.get("cachesize"),
             parameter_transformer,
         )
 
