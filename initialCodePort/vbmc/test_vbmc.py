@@ -47,8 +47,8 @@ def test_vbmc_boundscheck_no_PUB_PLB_n0_1():
     _, lb2, ub2, plb, pub = VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, lb, ub)
     assert np.all(lb == lb2)
     assert np.all(ub == ub2)
-    assert np.all(plb == lb)
-    assert np.all(pub == ub)
+    assert np.all(plb == lb + 2 * 1e-3)
+    assert np.all(pub == ub - 2 * 1e-3)
 
 
 def test_vbmc_boundscheck_no_PUB_PLB_n0_3():
@@ -74,8 +74,8 @@ def test_vbmc_boundscheck_no_PUB_PLB_identical():
     )
     assert np.all(lb == lb2)
     assert np.all(ub == ub2)
-    assert np.all(plb == lb)
-    assert np.all(pub == ub)
+    assert np.all(plb == lb + 4 * 1e-3)
+    assert np.all(pub == ub - 4 * 1e-3)
 
 
 def test_vbmc_boundscheck_not_D():
@@ -320,3 +320,42 @@ def test_vbmc_boundcheck_plausible_bounds_finite():
     with pytest.raises(ValueError) as execinfo2:
         VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, lb, ub, plb * np.inf, pub)
     assert exception_message in execinfo2.value.args[0]
+
+
+def test_vbmc_boundcheck_plausible_bounds_too_close_to_hardbounds():
+    D = 3
+    lb = np.ones((1, D)) * -2
+    ub = np.ones((1, D)) * 2
+    x0 = np.zeros((2, D))
+    _, _, _, plb2, pub2 = VBMC(fun, x0, lb, ub)._boundscheck(
+        fun,
+        x0,
+        lb,
+        ub,
+        lb + 1e-4,
+        ub - 1e-4,
+    )
+    assert plb2.shape == lb.shape
+    assert pub2.shape == lb.shape
+    assert np.any(plb2 == lb + 1e-3 * 4)
+    assert np.any(pub2 == ub - 1e-3 * 4)
+
+
+def test_vbmc_boundcheck_x0_not_in_plausible_bounds():
+    D = 3
+    lb = np.ones((1, D)) * -2
+    ub = np.ones((1, D)) * 2
+    x0 = np.ones((2, D)) * 2
+    x0_2, _, _, plb2, pub2 = VBMC(fun, x0, lb, ub)._boundscheck(
+        fun,
+        x0 - 1e-10,
+        lb,
+        ub,
+        lb + 1e-10,
+        ub - 1e-10,
+    )
+    assert plb2.shape == lb.shape
+    assert pub2.shape == lb.shape
+    assert np.any(plb2 == lb + 1e-3 * 4)
+    assert np.any(pub2 == ub - 1e-3 * 4)
+    assert np.any(x0_2 == pub2)

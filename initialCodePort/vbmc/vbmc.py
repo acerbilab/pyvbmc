@@ -228,14 +228,35 @@ class VBMC(object):
             )
 
         # Test that plausible bounds are reasonably separated from hard bounds
-        # tbd
+        if np.any(LB_eff > plausible_lower_bounds) or np.any(
+            plausible_upper_bounds > UB_eff
+        ):
+            # warning('vbmc:TooCloseBounds', ...
+            plausible_lower_bounds = np.maximum(plausible_lower_bounds, LB_eff)
+            plausible_upper_bounds = np.minimum(plausible_upper_bounds, UB_eff)
 
         # Check that all X0 are inside the plausible bounds,
         # move bounds otherwise
-        # tbd
+        if np.any(x0 <= LB_eff) or np.any(x0 >= UB_eff):
+            # "warning('vbmc:InitialPointsOutsidePB', ...")
+            plausible_lower_bounds = np.minimum(
+                plausible_lower_bounds, x0.min(0)
+            )
+            plausible_upper_bounds = np.maximum(
+                plausible_upper_bounds, x0.max(0)
+            )
 
         # Test order of bounds
-        # tbd
+        ordidx = (
+            (lower_bounds < plausible_lower_bounds)
+            & (plausible_lower_bounds < plausible_upper_bounds)
+            & (plausible_upper_bounds < upper_bounds)
+        )
+        if np.any(np.invert(ordidx)):
+            raise ValueError(
+                """vbmc:StrictBounds: For each variable, hard and
+            plausible bounds should respect the ordering LB < PLB < PUB < UB."""
+            )
 
         # Check that variables are either bounded or unbounded
         # (not half-bounded)
