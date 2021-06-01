@@ -4,12 +4,14 @@ import sys
 import numpy as np
 from entropy import entlb_vbmc, entub_vbmc
 from function_logger import FunctionLogger
+from parameter_transformer import ParameterTransformer
 from timer import Timer
 from variational_posterior import VariationalPosterior
+
 from .options import Options
 
 
-class VBMC():
+class VBMC:
     """
     The VBMC algorithm class
     """
@@ -73,6 +75,9 @@ class VBMC():
             evalutation_parameters={"D": self.D},
             user_options=user_options,
         )
+
+        self.K = self.options.get("kwarmup")
+        self.vp = self._setupvars_vbmc()
 
         noise_flag = None
         uncertainty_handling_level = None
@@ -284,6 +289,43 @@ class VBMC():
             plausible_lower_bounds,
             plausible_upper_bounds,
         )
+
+    def _setupvars_vbmc(self):
+        parameter_transformer = ParameterTransformer(self.D)
+        # optim state
+        optimState = dict()
+        optimState["LB_orig"] = self.lower_bounds
+        optimState["UB_orig"] = self.upper_bounds
+        optimState["PLB_orig"] = self.plausible_lower_bounds
+        optimState["PUB_orig"] = self.plausible_upper_bounds
+        eps_orig = (self.upper_bounds - self.lower_bounds) * self.options.get(
+            "tolboundx"
+        )
+        # inf - inf raises warning in numpy, but output is correct
+        with np.errstate(invalid="ignore"):
+            optimState["LBeps_orig"] = self.lower_bounds + eps_orig
+            optimState["UBeps_orig"] = self.upper_bounds - eps_orig
+
+        # Transform variables
+        optimState["LB"] = parameter_transformer(self.lower_bounds)
+        optimState["UB"] = parameter_transformer(self.upper_bounds)
+        optimState["PLB"] = parameter_transformer(self.plausible_lower_bounds)
+        optimState["PUB"] = parameter_transformer(self.plausible_upper_bounds)
+
+        # Record starting points (original coordinates)
+
+        # Initialize variational posterior
+        vp = VariationalPosterior(
+            D=self.D,
+            K=self.K,
+            x0=self.x0,
+            parameter_transformer=parameter_transformer,
+        )
+        if not self.options.get("warmup"):
+            vp.optimize_mu = self.options.get("variablemeans")
+            vp.optimize_weights = self.options.get("variableweights")
+
+        return vp
 
     def optimize(self):
         """
