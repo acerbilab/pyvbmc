@@ -5,7 +5,7 @@ from scipy.optimize import brentq
 
 def _linear_binning(samples: np.ndarray, grid_points: np.ndarray):
     """Fast computation of histogram counts using a linearly spaced grid.
-    
+
     Parameters
     ----------
     samples : np.ndarray
@@ -33,12 +33,12 @@ def _linear_binning(samples: np.ndarray, grid_points: np.ndarray):
 
 def _fixed_point(t: float, N: int, irange_squared: np.ndarray, a2: np.ndarray):
     """Compute the fixed point according to Botev et al. (2010).
-    
-    This function implements the function t-zeta*gamma^[l](t). Based on an 
+
+    This function implements the function t-zeta*gamma^[l](t). Based on an
     implementation by Daniel B. Smith:
     https://github.com/Daniel-B-Smith/KDE-for-SciPy/blob/master/kde.py
     Note that the factor of 2.0 in the definition of f is correct. See longer
-    discussion here: https://github.com/tommyod/KDEpy/issues/95    
+    discussion here: https://github.com/tommyod/KDEpy/issues/95
     """
     irange_squared = np.asfarray(irange_squared, dtype=np.float64)
     a2 = np.asfarray(a2, dtype=np.float64)
@@ -127,7 +127,7 @@ def _scottrule1d(samples: np.ndarray):
     return sigma * np.power(len(samples), -1.0 / 5.0)
 
 
-def _validate_kde1d_args(samples, n, lower_bound, upper_bound):
+def _validate_kde1d_args(n, lower_bound, upper_bound):
     """
     _validate_kde1d_args and raise value exception
     """
@@ -146,8 +146,8 @@ def kde1d(
     upper_bound: float = None,
 ):
     r"""Reliable and extremely fast kernel density estimator for 1D data.
-    
-    One-dimensional kernel density estimator based on fast Fourier transform. 
+
+    One-dimensional kernel density estimator based on fast Fourier transform.
     A Gaussian kernel is assumed and the bandwidth is chosen automatically
     using the technique developed by Botev et al. (2010) [1]_.
 
@@ -158,7 +158,7 @@ def kde1d(
     n : int, optional
         The number of mesh points used in the uniform discretization of the
         interval [lower_bound, upper_bound]; n has to be a power of two;
-        if n is not a power of two, it is rounded up to the next power of two, 
+        if n is not a power of two, it is rounded up to the next power of two,
         i.e., n is set to n=2^ceil(log2(n)), by default 2**14.
     lower_bound : float, optional
         The lower bound of the interval in which the density is being computed,
@@ -178,26 +178,26 @@ def kde1d(
         1D vector of grid over which the density estimate is computed.
     bandwidth: np.ndarray
         The optimal bandwidth (Gaussian kernel assumed).
-        
+
     Notes
-    -----    
+    -----
     This implementation is based on the MATLAB implementation by Zdravko Botev,
-    and was further inspired by the Python implementations by Daniel B. Smith 
+    and was further inspired by the Python implementations by Daniel B. Smith
     and the bandwidth selection code in KDEpy [2]_. We thank Zdravko Botev for
     useful clarifications on the implementation of the fixed_point function.
 
-    Unlike other implementations, this one is immune to problems caused by 
+    Unlike other implementations, this one is immune to problems caused by
     multimodal densities with widely separated modes (see example). The
-    bandwidth estimation does not deteriorate for multimodal densities because 
+    bandwidth estimation does not deteriorate for multimodal densities because
     a parametric model is never assumed for the data.
 
     References
     ----------
     .. [1] Z. I. Botev, J. F. Grotowski, and D. P. Kroese. Kernel density
-       estimation via diffusion. The Annals of Statistics, 
+       estimation via diffusion. The Annals of Statistics,
        38(5):2916-2957, 2010.
     .. [2] https://github.com/tommyod/KDEpy/blob/master/KDEpy/bw_selection.py
-    
+
     Examples
     --------
 
@@ -209,13 +209,13 @@ def kde1d(
         samples = np.concatenate(
             (randn(100, 1), randn(100, 1) * 2 + 35, randn(100, 1) + 55)
         )
-        kde1d(samples, 2 ** 14, min(samples) - 5, max(samples) + 5)    
-        
-    """    
+        kde1d(samples, 2 ** 14, min(samples) - 5, max(samples) + 5)
+
+    """
     samples = samples.ravel()  # make samples a 1D array
 
     # validate values passed to the function
-    _validate_kde1d_args(samples, n, lower_bound, upper_bound)
+    _validate_kde1d_args(n, lower_bound, upper_bound)
 
     n = np.int(2 ** np.ceil(np.log2(n)))  # round up to the next power of 2
     if lower_bound is None or upper_bound is None:

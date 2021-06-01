@@ -1,15 +1,13 @@
-import math
 import sys
 
 import numpy as np
-from entropy import entlb_vbmc, entub_vbmc
 from function_logger import FunctionLogger
 from timer import Timer
 from variational_posterior import VariationalPosterior
 from .options import Options
 
 
-class VBMC():
+class VBMC:
     """
     The VBMC algorithm class
     """

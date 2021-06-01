@@ -1,7 +1,7 @@
 import time
 
 
-class Timer(object):
+class Timer:
     """
     A small Timer class used in the context of VBMC.
     """

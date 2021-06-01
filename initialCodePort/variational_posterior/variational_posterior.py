@@ -820,7 +820,7 @@ class VariationalPosterior():
         if gaussflag:
             if N == 0:
                 raise ValueError(
-                    """Analytical moments are available 
+                    """Analytical moments are available
                     only for the transformed space."""
                 )
             else:

@@ -3,7 +3,7 @@ from parameter_transformer import ParameterTransformer
 from timer import Timer
 
 
-class FunctionLogger(object):
+class FunctionLogger:
     """
     Class that evaluates a function and caches its values.
     """
@@ -53,6 +53,7 @@ class FunctionLogger(object):
         self.y_orig = np.full([cache_size, 1], np.nan)
         self.x = np.full([cache_size, self.D], np.nan)
         self.y = np.full([cache_size, 1], np.nan)
+        self.ymax = np.nan
         self.nevals = np.full([cache_size, 1], np.nan)
 
         if self.noise_flag:
@@ -356,7 +357,7 @@ class FunctionLogger(object):
                 self._expand_arrays()
 
             # record function time
-            if fun_evaltime is not np.NaN:
+            if not np.isnan(fun_evaltime):
                 self.fun_evaltime[self.Xn] = fun_evaltime
                 self.total_fun_evaltime += fun_evaltime
 

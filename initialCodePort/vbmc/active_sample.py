@@ -1,17 +1,17 @@
 import sys
 
 import numpy as np
+from function_logger import FunctionLogger
+from timer import Timer
 
-from  function_logger import FunctionLogger
-from  timer import Timer
-from .options_vbmc import OptionsVBMC
+from .options import Options
 
 
 def active_sample(
     x0: np.array,
     function_logger: FunctionLogger,
     sample_count: int,
-    options: OptionsVBMC,
+    options: Options,
 ):
     """
     active_sample Actively sample points iteratively based on acquisition function.
@@ -24,7 +24,7 @@ def active_sample(
         the FunctionLogger of the function to sample from
     sample_count : int
         the number of samples
-    options : OptionsVBMC
+    options : Options
         the vbmc algorithm options
 
     Returns
@@ -97,7 +97,7 @@ def active_sample(
         for sample_idx in range(sample_count):
             # timer
 
-            if ys[sample_idx] is np.NaN:
+            if np.isnan(ys[sample_idx]):
                 # value is not available, evaluate it
                 ys[sample_idx], _, _ = function_logger(Xs[sample_idx])
             else:

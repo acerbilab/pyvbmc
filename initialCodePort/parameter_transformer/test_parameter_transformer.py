@@ -333,3 +333,4 @@ def test_1D_input_log_abs_det_jacobian_():
     assert np.ndim(log_j) == 0
     log_j2 = parameter_transformer.log_abs_det_jacobian(u=U)
     assert np.ndim(log_j2) == 0
+    

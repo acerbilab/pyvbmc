@@ -242,10 +242,11 @@ def test_call_function_error():
     x = np.array([3, 4, 5])
 
     def error_function(x):
-        return 3 / 0
+        x = np.array([x])
+        return x@x
 
     f_logger = FunctionLogger(error_function, 3, False, 0)
-    with pytest.raises(ZeroDivisionError) as err:
+    with pytest.raises(ValueError) as err:
         f_logger(x)
     assert "FunctionLogger:FuncError" in str(err.value)
 
