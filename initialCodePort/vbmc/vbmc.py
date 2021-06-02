@@ -77,20 +77,12 @@ class VBMC:
         )
 
         self.K = self.options.get("kwarmup")
-        self.vp, self.optimState = self._setupvars_vbmc()
-
-        noise_flag = None
-        uncertainty_handling_level = None
-        parameter_transformer = None
-
-        self.function_logger = FunctionLogger(
-            fun,
-            self.D,
-            noise_flag,
-            uncertainty_handling_level,
-            self.options.get("cachesize"),
-            parameter_transformer,
-        )
+        (
+            self.vp,
+            self.optimState,
+            self.parameter_transformer,
+            self.function_logger,
+        ) = self._setupvars_vbmc(fun)
 
     def _boundscheck(
         self,
@@ -290,9 +282,7 @@ class VBMC:
             plausible_upper_bounds,
         )
 
-    def _setupvars_vbmc(self):
-        parameter_transformer = ParameterTransformer(self.D)
-        optimState = dict()
+    def _setupvars_vbmc(self, fun):
 
         # starting point
         if not np.all(np.isfinite(self.x0)):
@@ -302,7 +292,53 @@ class VBMC:
                 self.plausible_lower_bounds + self.plausible_upper_bounds
             )
 
+        parameter_transformer = ParameterTransformer(
+            self.D,
+            self.lower_bounds,
+            self.upper_bounds,
+            self.plausible_lower_bounds,
+            self.plausible_upper_bounds,
+        )
+
+        # Record starting points (original coordinates)
+        noise_flag = None
+        uncertainty_handling_level = None
+        function_logger = FunctionLogger(
+            fun,
+            self.D,
+            noise_flag,
+            uncertainty_handling_level,
+            self.options.get("cachesize"),
+            parameter_transformer,
+        )
+        y_orig = np.array(self.options.get("fvals")).flatten()
+        if len(y_orig) == 0:
+            y_orig = np.full([self.x0.shape[0]], np.nan)
+        if len(self.x0) != len(y_orig):
+            raise ValueError(
+                """vbmc:MismatchedStartingInputs The number of
+            points in X0 and of their function values as specified in
+            self.options.fvals are not the same."""
+            )
+        for idx in range(self.x0.shape[0]):
+            function_logger.add(x=self.x0[idx], fval_orig=y_orig[idx])
+
+        self.x0 = parameter_transformer(self.x0)
+
+        # Initialize variational posterior
+        vp = VariationalPosterior(
+            D=self.D,
+            K=self.K,
+            x0=self.x0,
+            parameter_transformer=parameter_transformer,
+        )
+        if not self.options.get("warmup"):
+            vp.optimize_mu = self.options.get("variablemeans")
+            vp.optimize_weights = self.options.get("variableweights")
+
+        # optimstate
         # Integer variables
+        optimState = dict()
         optimState["integervars"] = np.full(self.D, False)
         if len(self.options.get("integervars")) > 0:
             integeridx = self.options.get("integervars") != 0
@@ -319,7 +355,7 @@ class VBMC:
                  nd 10.5 for a variable that takes values from 0 to 10)"""
                 )
 
-        # optim state
+        # fprintf('Index of variable restricted to integer values: %s.\n'
         optimState["LB_orig"] = self.lower_bounds
         optimState["UB_orig"] = self.upper_bounds
         optimState["PLB_orig"] = self.plausible_lower_bounds
@@ -338,20 +374,171 @@ class VBMC:
         optimState["PLB"] = parameter_transformer(self.plausible_lower_bounds)
         optimState["PUB"] = parameter_transformer(self.plausible_upper_bounds)
 
-        # Record starting points (original coordinates)
+        # Before first iteration
+        optimState["iter"] = 0
 
-        # Initialize variational posterior
-        vp = VariationalPosterior(
-            D=self.D,
-            K=self.K,
-            x0=self.x0,
-            parameter_transformer=parameter_transformer,
+        # Estimate of GP observation noise around the high posterior
+        # density region
+        optimState["sn2hpd"] = np.inf
+
+        # Does the starting cache contain function values?
+        optimState["Cache.active"] = np.any(
+            np.isfinite(function_logger.y_orig)
         )
-        if not self.options.get("warmup"):
-            vp.optimize_mu = self.options.get("variablemeans")
-            vp.optimize_weights = self.options.get("variableweights")
 
-        return vp, optimState
+        # When was the last warping action performed (number of iterations)
+        optimState["LastWarping"] = -np.inf
+
+        # When was the last warping action performed and not undone
+        # (number of iterations)
+        optimState["LastSuccessfulWarping"] = -np.inf
+
+        # Number of warpings performed
+        optimState["WarpingCount"] = 0
+
+        # When GP hyperparameter sampling is switched with optimization
+        if self.options.get("nsgpmax") > 0:
+            optimState["StopSampling"] = 0
+        else:
+            optimState["StopSampling"] = np.Inf
+
+        # Fully recompute variational posterior
+        optimState["RecomputeVarPost"] = True
+
+        # Start with warm-up?
+        optimState["Warmup"] = self.options.get("warmup")
+        if self.options.get("warmup"):
+            optimState["LastWarmup"] = np.inf
+        else:
+            optimState["LastWarmup"] = 0
+
+        # Number of stable function evaluations during warmup
+        # with small increment
+        optimState["WarmupStableCount"] = 0
+
+        # Proposal function for search
+        if self.options.get("proposalfcn") is None:
+            optimState["ProposalFcn"] = "@(x)proposal_vbmc"
+        else:
+            optimState["ProposalFcn"] = self.options.get("proposalfcn")
+
+        # Quality of the variational posterior
+        optimState["R"] = np.inf
+
+        # Start with adaptive sampling
+        optimState["SkipActiveSampling"] = False
+
+        # Running mean and covariance of variational posterior
+        # in transformed space
+        optimState["RunMean"] = []
+        optimState["RunCov"] = []
+        # Last time running average was updated
+        optimState["LastRunAvg"] = np.NaN
+
+        # Current number of components for variational posterior
+        optimState["vpK"] = self.K
+
+        # Number of variational components pruned in last iteration
+        optimState["pruned"] = 0
+
+        # Need to switch from deterministic entropy to stochastic entropy
+        optimState["EntropySwitch"] = self.options.get("entropyswitch")
+        # Only use deterministic entropy if NVARS larger than a fixed number
+        if self.D < self.options.get("detentropymind"):
+            optimState["EntropySwitch"] = False
+
+        # Tolerance threshold on GP variance (used by some acquisition fcns)
+        optimState["TolGPVar"] = self.options.get("tolgpvar")
+
+        # Copy maximum number of fcn. evaluations, used by some acquisition fcns.
+        optimState["MaxFunEvals"] = self.options.get("MaxFunEvals")
+
+        # By default, apply variance-based regularization
+        # to acquisition functions
+        optimState["VarianceRegularizedAcqFcn"] = True
+
+        # Setup search cache
+        optimState["SearchCache"] = []
+
+        # Set uncertainty handling level
+        # (0: none; 1: unknown noise level; 2: user-provided noise)
+        if self.options.get("specifytargetnoise"):
+            optimState["UncertaintyHandlingLevel"] = 2
+        elif self.options.get("uncertaintyhandling"):
+            optimState["UncertaintyHandlingLevel"] = 1
+        else:
+            optimState["UncertaintyHandlingLevel"] = 0
+
+        # Empty hedge struct for acquisition functions
+        if self.options.get("acqhedge"):
+            optimState.hedge = []
+
+        # List of points at the end of each iteration
+        # Is this required?
+        optimState["iterlist"] = dict()
+        optimState["iterlist"]["u"] = []
+        optimState["iterlist"]["fval"] = []
+        optimState["iterlist"]["fsd"] = []
+        optimState["iterlist"]["fhyp"] = []
+
+        optimState["delta"] = self.options.get("bandwidth") * (
+            optimState.get("PUB") - optimState.get("PLB")
+        )
+
+        # Deterministic entropy approximation lower/upper factor
+        optimState["entropy_alpha"] = self.options.get("detentropyalpha")
+
+        # Repository of variational solutions
+        optimState["vp_repo"] = []
+
+        # Repeated measurement streak
+        optimState["RepeatedObservationsStreak"] = 0
+
+        # List of data trimming events
+        optimState["DataTrimList"] = []
+
+        if (
+            self.options.get("noiseshaping")
+            and optimState["gpNoisefun"][2] == 0
+        ):
+            optimState["gpNoisefun"][2] = 1
+
+        optimState["gpMeanfun"] = self.options.get("gpmeanfun")
+        valid_gpmeanfuns = [
+            "zero",
+            "const",
+            "negquad",
+            "se",
+            "negquadse",
+            "negquadfixiso",
+            "negquadfix",
+            "negquadsefix",
+            "negquadonly",
+            "negquadfixonly",
+            "negquadlinonly",
+            "negquadmix",
+        ]
+
+        if not optimState["gpMeanfun"] in valid_gpmeanfuns:
+            raise ValueError(
+                """vbmc:UnknownGPmean:Unknown/unsupported GP mean
+            function. Supported mean functions are zero, const,
+            egquad, and se"""
+            )
+        optimState["gntMeanfun"] = self.options.get("gpintmeanfun")
+        # more logic here in matlab
+        optimState["gpOutwarpfun"] = self.options.get("gpoutwarpfun")
+
+        # Starting threshold on y for output warping
+        if (
+            self.options.get("fitnessshaping")
+            or optimState.get("gpOutwarpfun") is not None
+        ):
+            optimState["OutwarpDelta"] = self.options.get("outwarpthreshbase")
+        else:
+            optimState["OutwarpDelta"] = []
+
+        return vp, optimState, parameter_transformer, function_logger
 
     def optimize(self):
         """

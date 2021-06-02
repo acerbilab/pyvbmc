@@ -250,11 +250,11 @@ def test_call_function_error():
     assert "FunctionLogger:FuncError" in str(err.value)
 
 
-def test_add_invalid_func_value():
-    x = np.array([3, 4, 5])
-    f_logger = FunctionLogger(non_noisy_function, 3, False, 0)
-    with pytest.raises(ValueError):
-        f_logger.add(x, np.inf)
+# def test_add_invalid_func_value():
+#     x = np.array([3, 4, 5])
+#     f_logger = FunctionLogger(non_noisy_function, 3, False, 0)
+#     with pytest.raises(ValueError):
+#         f_logger.add(x, np.inf)
 
 
 def test_add_invalid_sd_value():

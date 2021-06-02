@@ -21,7 +21,7 @@ def test_vbmc_init_no_x0():
     plb = np.ones((1, D)) * 0.5
     pub = np.ones((1, D)) * 1.5
     vbmc = VBMC(fun, None, lb, ub, plb, pub)
-    assert np.all(vbmc.x0 == 1)
+    assert np.all(vbmc.x0 == 0)
     assert vbmc.x0.shape == (1, D)
 
 
@@ -361,7 +361,7 @@ def test_vbmc_boundcheck_x0_not_in_plausible_bounds():
     assert np.any(x0_2 == pub2)
 
 
-def test_setupvars_no_x0_infite_bounds():
+def test_vbmc_setupvars_no_x0_infinite_bounds():
     D = 3
     lb = np.ones((1, D)) * -np.inf
     ub = np.ones((1, D)) * np.inf
@@ -370,10 +370,10 @@ def test_setupvars_no_x0_infite_bounds():
     pub = np.ones((1, D)) * -0.5
     vbmc = VBMC(fun, x0, lb, ub, plb, pub)
     assert vbmc.x0.shape == (1, D)
-    assert np.all(vbmc.x0 == np.ones((1, D)) * -1)
+    assert np.all(vbmc.x0 == np.ones((1, D)) * 0)
 
 
-def test_setupvars_integervars():
+def test_vbmc_setupvars_integervars():
     user_options = {"integervars": np.array([1, 0, 0])}
     D = 3
     lb = np.ones((1, D)) * 1
@@ -401,3 +401,49 @@ def test_setupvars_integervars():
     integervars = np.full((1, D), False)
     integervars[:, 0] = True
     assert np.all(vbmc.optimState.get("integervars") == integervars)
+
+
+def test_vbmc_setupvars_fvals():
+    D = 3
+    lb = np.ones((1, D)) * 1
+    ub = np.ones((1, D)) * 4
+    x0 = np.ones((2, D)) * 2
+    plb = np.ones((1, D)) * 1
+    pub = np.ones((1, D)) * 3
+    exception_message = (
+        "points in X0 and of their function values as specified"
+    )
+    with pytest.raises(ValueError) as execinfo1:
+        user_options = {"fvals": np.zeros((3, 1))}
+        VBMC(fun, x0, lb, ub, plb, pub, user_options)
+    assert exception_message in execinfo1.value.args[0]
+    with pytest.raises(ValueError) as execinfo2:
+        user_options = {"fvals": np.zeros((1, 1))}
+        VBMC(fun, x0, lb, ub, plb, pub, user_options)
+    assert exception_message in execinfo2.value.args[0]
+    user_options = {"fvals": [1, 2]}
+    x0 = np.array(([[1, 2, 3], [3, 4, 3]]))
+    VBMC(fun, x0, lb, ub, plb, pub, user_options)
+
+
+def test_vbmc_setupvars_invalid_gp_mean_function():
+    D = 3
+    lb = np.ones((1, D)) * 1
+    ub = np.ones((1, D)) * 4
+    x0 = np.ones((2, D)) * 2
+    plb = np.ones((1, D)) * 1
+    pub = np.ones((1, D)) * 3
+    exception_message = "vbmc:UnknownGPmean:Unknown/unsupported GP mean"
+    with pytest.raises(ValueError) as execinfo1:
+        user_options = {"gpmeanfun": "notvalid"}
+        VBMC(fun, x0, lb, ub, plb, pub, user_options)
+    assert exception_message in execinfo1.value.args[0]
+    with pytest.raises(ValueError) as execinfo2:
+        user_options = {"gpmeanfun": ""}
+        VBMC(fun, x0, lb, ub, plb, pub, user_options)
+    assert exception_message in execinfo2.value.args[0]
+    user_options = {"gpmeanfun": "const"}
+    x0 = np.array(([[1, 2, 3], [3, 4, 3]]))
+    VBMC(fun, x0, lb, ub, plb, pub, user_options)
+
+    

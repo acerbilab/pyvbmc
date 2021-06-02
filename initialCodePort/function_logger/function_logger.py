@@ -208,15 +208,15 @@ class FunctionLogger(object):
             fsd = None
 
         # Check function value
-        if (
-            not np.isscalar(fval_orig)
-            or not np.isfinite(fval_orig)
-            or not np.isreal(fval_orig)
-        ):
-            error_message = """FunctionLogger:InvalidFuncValue:
-            The returned function value must be a finite real-valued scalar
-            (returned value {})"""
-            raise ValueError(error_message.format(str(fval_orig)))
+        # if (
+        #     not np.isscalar(fval_orig)
+        #     or not np.isfinite(fval_orig)
+        #     or not np.isreal(fval_orig)
+        # ):
+        #     error_message = """FunctionLogger:InvalidFuncValue:
+        #     The returned function value must be a finite real-valued scalar
+        #     (returned value {})"""
+        #     raise ValueError(error_message.format(str(fval_orig)))
 
         # Check returned function SD
         if self.noise_flag and (
@@ -341,9 +341,9 @@ class FunctionLogger(object):
             else:
                 self.y_orig[idx] = (N * self.y_orig[idx] + fval_orig) / (N + 1)
 
-            fval = self.y_orig[
-                idx
-            ] + self.parameter_transformer.log_abs_det_jacobian(x)
+            fval = self.y_orig[idx]
+            if self.transform_parameters:
+                fval += self.parameter_transformer.log_abs_det_jacobian(x)
             self.y[idx] = fval
             self.fun_evaltime[idx] = (
                 N * self.fun_evaltime[idx] + fun_evaltime
