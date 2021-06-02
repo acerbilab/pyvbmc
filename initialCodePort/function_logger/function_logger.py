@@ -208,15 +208,15 @@ class FunctionLogger(object):
             fsd = None
 
         # Check function value
-        # if (
-        #     not np.isscalar(fval_orig)
-        #     or not np.isfinite(fval_orig)
-        #     or not np.isreal(fval_orig)
-        # ):
-        #     error_message = """FunctionLogger:InvalidFuncValue:
-        #     The returned function value must be a finite real-valued scalar
-        #     (returned value {})"""
-        #     raise ValueError(error_message.format(str(fval_orig)))
+        if (
+            not np.isscalar(fval_orig)
+            or not np.isfinite(fval_orig)
+            or not np.isreal(fval_orig)
+        ):
+            error_message = """FunctionLogger:InvalidFuncValue:
+            The returned function value must be a finite real-valued scalar
+            (returned value {})"""
+            raise ValueError(error_message.format(str(fval_orig)))
 
         # Check returned function SD
         if self.noise_flag and (

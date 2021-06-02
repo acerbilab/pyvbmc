@@ -373,7 +373,7 @@ def test_vbmc_setupvars_no_x0_infinite_bounds():
     assert np.all(vbmc.x0 == np.ones((1, D)) * 0)
 
 
-def test_vbmc_setupvars_integervars():
+def test_vbmc_optimstate_integervars():
     user_options = {"integervars": np.array([1, 0, 0])}
     D = 3
     lb = np.ones((1, D)) * 1
@@ -423,6 +423,30 @@ def test_vbmc_setupvars_fvals():
     assert exception_message in execinfo2.value.args[0]
     user_options = {"fvals": [1, 2]}
     x0 = np.array(([[1, 2, 3], [3, 4, 3]]))
+    vbmc = VBMC(fun, x0, lb, ub, plb, pub, user_options)
+    assert np.all(
+        vbmc.optimState.get("Cache").get("y_orig") == user_options.get("fvals")
+    )
+
+
+def test_vbmc_optimstate_invalid_gp_mean_function():
+    D = 3
+    lb = np.ones((1, D)) * 1
+    ub = np.ones((1, D)) * 4
+    x0 = np.ones((2, D)) * 2
+    plb = np.ones((1, D)) * 1
+    pub = np.ones((1, D)) * 3
+    exception_message = "vbmc:UnknownGPmean:Unknown/unsupported GP mean"
+    with pytest.raises(ValueError) as execinfo1:
+        user_options = {"gpmeanfun": "notvalid"}
+        VBMC(fun, x0, lb, ub, plb, pub, user_options)
+    assert exception_message in execinfo1.value.args[0]
+    with pytest.raises(ValueError) as execinfo2:
+        user_options = {"gpmeanfun": ""}
+        VBMC(fun, x0, lb, ub, plb, pub, user_options)
+    assert exception_message in execinfo2.value.args[0]
+    user_options = {"gpmeanfun": "const"}
+    x0 = np.array(([[1, 2, 3], [3, 4, 3]]))
     VBMC(fun, x0, lb, ub, plb, pub, user_options)
 
 
@@ -446,4 +470,3 @@ def test_vbmc_setupvars_invalid_gp_mean_function():
     x0 = np.array(([[1, 2, 3], [3, 4, 3]]))
     VBMC(fun, x0, lb, ub, plb, pub, user_options)
 
-    

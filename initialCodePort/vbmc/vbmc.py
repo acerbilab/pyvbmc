@@ -77,12 +77,47 @@ class VBMC:
         )
 
         self.K = self.options.get("kwarmup")
-        (
-            self.vp,
-            self.optimState,
+        # starting point
+        if not np.all(np.isfinite(self.x0)):
+            # print('Initial starting point is invalid or not provided.
+            # Starting from center of plausible region.\n');
+            self.x0 = 0.5 * (
+                self.plausible_lower_bounds + self.plausible_upper_bounds
+            )
+
+        self.parameter_transformer = ParameterTransformer(
+            self.D,
+            self.lower_bounds,
+            self.upper_bounds,
+            self.plausible_lower_bounds,
+            self.plausible_upper_bounds,
+        )
+
+        noise_flag = None
+        uncertainty_handling_level = None
+        self.function_logger = FunctionLogger(
+            fun,
+            self.D,
+            noise_flag,
+            uncertainty_handling_level,
+            self.options.get("cachesize"),
             self.parameter_transformer,
-            self.function_logger,
-        ) = self._setupvars_vbmc(fun)
+        )
+
+        # Initialize variational posterior
+        self.vp = VariationalPosterior(
+            D=self.D,
+            K=self.K,
+            x0=self.x0,
+            parameter_transformer=self.parameter_transformer,
+        )
+        if not self.options.get("warmup"):
+            self.vp.optimize_mu = self.options.get("variablemeans")
+            self.vp.optimize_weights = self.options.get("variableweights")
+
+        self.optimState = self._init_optimstate(fun)
+
+        self.x0 = self.parameter_transformer(self.x0)
 
     def _boundscheck(
         self,
@@ -282,35 +317,12 @@ class VBMC:
             plausible_upper_bounds,
         )
 
-    def _setupvars_vbmc(self, fun):
-
-        # starting point
-        if not np.all(np.isfinite(self.x0)):
-            # print('Initial starting point is invalid or not provided.
-            # Starting from center of plausible region.\n');
-            self.x0 = 0.5 * (
-                self.plausible_lower_bounds + self.plausible_upper_bounds
-            )
-
-        parameter_transformer = ParameterTransformer(
-            self.D,
-            self.lower_bounds,
-            self.upper_bounds,
-            self.plausible_lower_bounds,
-            self.plausible_upper_bounds,
-        )
-
+    def _init_optimstate(self, fun):
+        """
+        A private function to init the optimstate dict that contains infomration
+        about VBMC variables.
+        """
         # Record starting points (original coordinates)
-        noise_flag = None
-        uncertainty_handling_level = None
-        function_logger = FunctionLogger(
-            fun,
-            self.D,
-            noise_flag,
-            uncertainty_handling_level,
-            self.options.get("cachesize"),
-            parameter_transformer,
-        )
         y_orig = np.array(self.options.get("fvals")).flatten()
         if len(y_orig) == 0:
             y_orig = np.full([self.x0.shape[0]], np.nan)
@@ -320,25 +332,13 @@ class VBMC:
             points in X0 and of their function values as specified in
             self.options.fvals are not the same."""
             )
-        for idx in range(self.x0.shape[0]):
-            function_logger.add(x=self.x0[idx], fval_orig=y_orig[idx])
 
-        self.x0 = parameter_transformer(self.x0)
-
-        # Initialize variational posterior
-        vp = VariationalPosterior(
-            D=self.D,
-            K=self.K,
-            x0=self.x0,
-            parameter_transformer=parameter_transformer,
-        )
-        if not self.options.get("warmup"):
-            vp.optimize_mu = self.options.get("variablemeans")
-            vp.optimize_weights = self.options.get("variableweights")
-
-        # optimstate
-        # Integer variables
         optimState = dict()
+        optimState["Cache"] = dict()
+        optimState["Cache"]["X_orig"] = self.x0
+        optimState["Cache"]["y_orig"] = y_orig
+
+        # Integer variables
         optimState["integervars"] = np.full(self.D, False)
         if len(self.options.get("integervars")) > 0:
             integeridx = self.options.get("integervars") != 0
@@ -369,10 +369,14 @@ class VBMC:
             optimState["UBeps_orig"] = self.upper_bounds - eps_orig
 
         # Transform variables
-        optimState["LB"] = parameter_transformer(self.lower_bounds)
-        optimState["UB"] = parameter_transformer(self.upper_bounds)
-        optimState["PLB"] = parameter_transformer(self.plausible_lower_bounds)
-        optimState["PUB"] = parameter_transformer(self.plausible_upper_bounds)
+        optimState["LB"] = self.parameter_transformer(self.lower_bounds)
+        optimState["UB"] = self.parameter_transformer(self.upper_bounds)
+        optimState["PLB"] = self.parameter_transformer(
+            self.plausible_lower_bounds
+        )
+        optimState["PUB"] = self.parameter_transformer(
+            self.plausible_upper_bounds
+        )
 
         # Before first iteration
         optimState["iter"] = 0
@@ -383,7 +387,7 @@ class VBMC:
 
         # Does the starting cache contain function values?
         optimState["Cache.active"] = np.any(
-            np.isfinite(function_logger.y_orig)
+            np.isfinite(optimState.get("Cache").get("y_orig"))
         )
 
         # When was the last warping action performed (number of iterations)
@@ -443,6 +447,7 @@ class VBMC:
 
         # Need to switch from deterministic entropy to stochastic entropy
         optimState["EntropySwitch"] = self.options.get("entropyswitch")
+
         # Only use deterministic entropy if NVARS larger than a fixed number
         if self.D < self.options.get("detentropymind"):
             optimState["EntropySwitch"] = False
@@ -538,7 +543,7 @@ class VBMC:
         else:
             optimState["OutwarpDelta"] = []
 
-        return vp, optimState, parameter_transformer, function_logger
+        return optimState
 
     def optimize(self):
         """
