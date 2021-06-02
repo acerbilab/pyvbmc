@@ -400,7 +400,7 @@ def test_vbmc_optimstate_integervars():
     vbmc = VBMC(fun, x0, lb, ub, plb, pub, user_options)
     integervars = np.full((1, D), False)
     integervars[:, 0] = True
-    assert np.all(vbmc.optimState.get("integervars") == integervars)
+    assert np.all(vbmc.optim_state.get("integervars") == integervars)
 
 
 def test_vbmc_setupvars_fvals():
@@ -425,7 +425,8 @@ def test_vbmc_setupvars_fvals():
     x0 = np.array(([[1, 2, 3], [3, 4, 3]]))
     vbmc = VBMC(fun, x0, lb, ub, plb, pub, user_options)
     assert np.all(
-        vbmc.optimState.get("Cache").get("y_orig") == user_options.get("fvals")
+        vbmc.optim_state.get("Cache").get("y_orig")
+        == user_options.get("fvals")
     )
 
 
@@ -469,4 +470,3 @@ def test_vbmc_setupvars_invalid_gp_mean_function():
     user_options = {"gpmeanfun": "const"}
     x0 = np.array(([[1, 2, 3], [3, 4, 3]]))
     VBMC(fun, x0, lb, ub, plb, pub, user_options)
-
