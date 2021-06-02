@@ -77,7 +77,7 @@ class VBMC:
         )
 
         self.K = self.options.get("kwarmup")
-        self.vp = self._setupvars_vbmc()
+        self.vp, self.optimState = self._setupvars_vbmc()
 
         noise_flag = None
         uncertainty_handling_level = None
@@ -292,8 +292,34 @@ class VBMC:
 
     def _setupvars_vbmc(self):
         parameter_transformer = ParameterTransformer(self.D)
-        # optim state
         optimState = dict()
+
+        # starting point
+        if not np.all(np.isfinite(self.x0)):
+            # print('Initial starting point is invalid or not provided.
+            # Starting from center of plausible region.\n');
+            self.x0 = 0.5 * (
+                self.plausible_lower_bounds + self.plausible_upper_bounds
+            )
+
+        # Integer variables
+        optimState["integervars"] = np.full(self.D, False)
+        if len(self.options.get("integervars")) > 0:
+            integeridx = self.options.get("integervars") != 0
+            optimState["integervars"][integeridx] = True
+            if (
+                np.any(np.isinf(self.lower_bounds[:, integeridx]))
+                or np.any(np.isinf(self.upper_bounds[:, integeridx]))
+                or np.any(self.lower_bounds[:, integeridx] % 1 != 0.5)
+                or np.any(self.upper_bounds[:, integeridx] % 1 != 0.5)
+            ):
+                raise ValueError(
+                    """Hard bounds of integer variables need to be
+                 set at +/- 0.5 points from their boundary values (e.g., -0.5 
+                 nd 10.5 for a variable that takes values from 0 to 10)"""
+                )
+
+        # optim state
         optimState["LB_orig"] = self.lower_bounds
         optimState["UB_orig"] = self.upper_bounds
         optimState["PLB_orig"] = self.plausible_lower_bounds
@@ -325,7 +351,7 @@ class VBMC:
             vp.optimize_mu = self.options.get("variablemeans")
             vp.optimize_weights = self.options.get("variableweights")
 
-        return vp
+        return vp, optimState
 
     def optimize(self):
         """

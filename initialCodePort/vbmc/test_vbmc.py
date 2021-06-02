@@ -21,7 +21,7 @@ def test_vbmc_init_no_x0():
     plb = np.ones((1, D)) * 0.5
     pub = np.ones((1, D)) * 1.5
     vbmc = VBMC(fun, None, lb, ub, plb, pub)
-    assert np.all(np.isnan(vbmc.x0))
+    assert np.all(vbmc.x0 == 1)
     assert vbmc.x0.shape == (1, D)
 
 
@@ -359,3 +359,45 @@ def test_vbmc_boundcheck_x0_not_in_plausible_bounds():
     assert np.any(plb2 == lb + 1e-3 * 4)
     assert np.any(pub2 == ub - 1e-3 * 4)
     assert np.any(x0_2 == pub2)
+
+
+def test_setupvars_no_x0_infite_bounds():
+    D = 3
+    lb = np.ones((1, D)) * -np.inf
+    ub = np.ones((1, D)) * np.inf
+    x0 = np.ones((2, D)) * np.nan
+    plb = np.ones((1, D)) * -1.5
+    pub = np.ones((1, D)) * -0.5
+    vbmc = VBMC(fun, x0, lb, ub, plb, pub)
+    assert vbmc.x0.shape == (1, D)
+    assert np.all(vbmc.x0 == np.ones((1, D)) * -1)
+
+
+def test_setupvars_integervars():
+    user_options = {"integervars": np.array([1, 0, 0])}
+    D = 3
+    lb = np.ones((1, D)) * 1
+    ub = np.ones((1, D)) * 4
+    x0 = np.ones((2, D)) * 2
+    plb = np.ones((1, D)) * 1
+    pub = np.ones((1, D)) * 3
+    exception_message = "set at +/- 0.5 points from their boundary values"
+    with pytest.raises(ValueError) as execinfo1:
+        VBMC(fun, x0, lb * -np.inf, ub * np.inf, plb, pub, user_options)
+    assert exception_message in execinfo1.value.args[0]
+    lb[0] = -np.inf
+    ub[0] = np.inf
+    with pytest.raises(ValueError) as execinfo2:
+        VBMC(fun, x0, lb, ub, plb, pub, user_options)
+    assert exception_message in execinfo2.value.args[0]
+    lb[0] = -10
+    ub[0] = 10
+    with pytest.raises(ValueError) as execinfo3:
+        VBMC(fun, x0, lb, ub, plb, pub, user_options)
+    assert exception_message in execinfo3.value.args[0]
+    lb[0] = -10.5
+    ub[0] = 10.5
+    vbmc = VBMC(fun, x0, lb, ub, plb, pub, user_options)
+    integervars = np.full((1, D), False)
+    integervars[:, 0] = True
+    assert np.all(vbmc.optimState.get("integervars") == integervars)
