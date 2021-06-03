@@ -104,9 +104,9 @@ class VBMC:
         self.function_logger = FunctionLogger(
             fun=fun,
             D=self.D,
-            noise_flag=self.optim_state.get("UncertaintyHandlingLevel") > 0,
+            noise_flag=self.optim_state.get("uncertainty_handling_level") > 0,
             uncertainty_handling_level=self.optim_state.get(
-                "UncertaintyHandlingLevel"
+                "uncertainty_handling_level"
             ),
             cache_size=self.options.get("cachesize"),
             parameter_transformer=self.parameter_transformer,
@@ -314,8 +314,8 @@ class VBMC:
 
     def _init_optim_state(self, fun):
         """
-        A private function to init the optim_state dict that contains infomration
-        about VBMC variables.
+        A private function to init the optim_state dict that contains
+        infomration about VBMC variables.
         """
         # Record starting points (original coordinates)
         y_orig = np.array(self.options.get("fvals")).flatten()
@@ -329,9 +329,14 @@ class VBMC:
             )
 
         optim_state = dict()
-        optim_state["Cache"] = dict()
-        optim_state["Cache"]["X_orig"] = self.x0
-        optim_state["Cache"]["y_orig"] = y_orig
+        optim_state["cache"] = dict()
+        optim_state["cache"]["x_orig"] = self.x0
+        optim_state["cache"]["y_orig"] = y_orig
+
+        # Does the starting cache contain function values?
+        optim_state["cache_active"] = np.any(
+            np.isfinite(optim_state.get("cache").get("y_orig"))
+        )
 
         # Integer variables
         optim_state["integervars"] = np.full(self.D, False)
@@ -351,25 +356,25 @@ class VBMC:
                 )
 
         # fprintf('Index of variable restricted to integer values: %s.\n'
-        optim_state["LB_orig"] = self.lower_bounds
-        optim_state["UB_orig"] = self.upper_bounds
-        optim_state["PLB_orig"] = self.plausible_lower_bounds
-        optim_state["PUB_orig"] = self.plausible_upper_bounds
+        optim_state["lb_orig"] = self.lower_bounds
+        optim_state["ub_orig"] = self.upper_bounds
+        optim_state["plb_orig"] = self.plausible_lower_bounds
+        optim_state["pub_orig"] = self.plausible_upper_bounds
         eps_orig = (self.upper_bounds - self.lower_bounds) * self.options.get(
             "tolboundx"
         )
         # inf - inf raises warning in numpy, but output is correct
         with np.errstate(invalid="ignore"):
-            optim_state["LBeps_orig"] = self.lower_bounds + eps_orig
-            optim_state["UBeps_orig"] = self.upper_bounds - eps_orig
+            optim_state["lb_eps_orig"] = self.lower_bounds + eps_orig
+            optim_state["ub_eps_orig"] = self.upper_bounds - eps_orig
 
         # Transform variables
-        optim_state["LB"] = self.parameter_transformer(self.lower_bounds)
-        optim_state["UB"] = self.parameter_transformer(self.upper_bounds)
-        optim_state["PLB"] = self.parameter_transformer(
+        optim_state["lb"] = self.parameter_transformer(self.lower_bounds)
+        optim_state["ub"] = self.parameter_transformer(self.upper_bounds)
+        optim_state["plb"] = self.parameter_transformer(
             self.plausible_lower_bounds
         )
-        optim_state["PUB"] = self.parameter_transformer(
+        optim_state["pub"] = self.parameter_transformer(
             self.plausible_upper_bounds
         )
 
@@ -380,98 +385,94 @@ class VBMC:
         # density region
         optim_state["sn2hpd"] = np.inf
 
-        # Does the starting cache contain function values?
-        optim_state["Cache.active"] = np.any(
-            np.isfinite(optim_state.get("Cache").get("y_orig"))
-        )
-
         # When was the last warping action performed (number of iterations)
-        optim_state["LastWarping"] = -np.inf
+        optim_state["last_warping"] = -np.inf
 
         # When was the last warping action performed and not undone
         # (number of iterations)
-        optim_state["LastSuccessfulWarping"] = -np.inf
+        optim_state["last_successful_warping"] = -np.inf
 
         # Number of warpings performed
-        optim_state["WarpingCount"] = 0
+        optim_state["warping_count"] = 0
 
         # When GP hyperparameter sampling is switched with optimization
         if self.options.get("nsgpmax") > 0:
-            optim_state["StopSampling"] = 0
+            optim_state["stop_sampling"] = 0
         else:
-            optim_state["StopSampling"] = np.Inf
+            optim_state["stop_sampling"] = np.Inf
 
         # Fully recompute variational posterior
-        optim_state["RecomputeVarPost"] = True
+        optim_state["recompute_var_post"] = True
 
         # Start with warm-up?
-        optim_state["Warmup"] = self.options.get("warmup")
+        optim_state["warmup"] = self.options.get("warmup")
         if self.options.get("warmup"):
-            optim_state["LastWarmup"] = np.inf
+            optim_state["last_warmup"] = np.inf
         else:
-            optim_state["LastWarmup"] = 0
+            optim_state["last_warmup"] = 0
 
         # Number of stable function evaluations during warmup
         # with small increment
-        optim_state["WarmupStableCount"] = 0
+        optim_state["warmup_stable_count"] = 0
 
         # Proposal function for search
         if self.options.get("proposalfcn") is None:
-            optim_state["ProposalFcn"] = "@(x)proposal_vbmc"
+            optim_state["proposalfcn"] = "@(x)proposal_vbmc"
         else:
-            optim_state["ProposalFcn"] = self.options.get("proposalfcn")
+            optim_state["proposalfcn"] = self.options.get("proposalfcn")
 
         # Quality of the variational posterior
-        optim_state["R"] = np.inf
+        optim_state["r"] = np.inf
 
         # Start with adaptive sampling
-        optim_state["SkipActiveSampling"] = False
+        optim_state["skip_active_sampling"] = False
 
         # Running mean and covariance of variational posterior
         # in transformed space
-        optim_state["RunMean"] = []
-        optim_state["RunCov"] = []
+        optim_state["run_mean"] = []
+        optim_state["run_cov"] = []
         # Last time running average was updated
-        optim_state["LastRunAvg"] = np.NaN
+        optim_state["last_run_avg"] = np.NaN
 
         # Current number of components for variational posterior
-        optim_state["vpK"] = self.K
+        optim_state["vpk"] = self.K
 
         # Number of variational components pruned in last iteration
         optim_state["pruned"] = 0
 
         # Need to switch from deterministic entropy to stochastic entropy
-        optim_state["EntropySwitch"] = self.options.get("entropyswitch")
+        optim_state["entropy_switch"] = self.options.get("entropyswitch")
 
-        # Only use deterministic entropy if NVARS larger than a fixed number
+        # Only use deterministic entropy if D larger than a fixed number
         if self.D < self.options.get("detentropymind"):
-            optim_state["EntropySwitch"] = False
+            optim_state["entropy_switch"] = False
 
         # Tolerance threshold on GP variance (used by some acquisition fcns)
-        optim_state["TolGPVar"] = self.options.get("tolgpvar")
+        optim_state["tol_gp_var"] = self.options.get("tolgpvar")
 
-        # Copy maximum number of fcn. evaluations, used by some acquisition fcns.
-        optim_state["MaxFunEvals"] = self.options.get("MaxFunEvals")
+        # Copy maximum number of fcn. evaluations,
+        # used by some acquisition fcns.
+        optim_state["max_fun_evals"] = self.options.get("maxfunevals")
 
         # By default, apply variance-based regularization
         # to acquisition functions
-        optim_state["VarianceRegularizedAcqFcn"] = True
+        optim_state["variance_regularized_acqfcn"] = True
 
         # Setup search cache
-        optim_state["SearchCache"] = []
+        optim_state["search_cache"] = []
 
         # Set uncertainty handling level
         # (0: none; 1: unknown noise level; 2: user-provided noise)
         if self.options.get("specifytargetnoise"):
-            optim_state["UncertaintyHandlingLevel"] = 2
-        elif self.options.get("uncertaintyhandling"):
-            optim_state["UncertaintyHandlingLevel"] = 1
+            optim_state["uncertainty_handling_level"] = 2
+        elif len(self.options.get("uncertaintyhandling")) == 0:
+            optim_state["uncertainty_handling_level"] = 1
         else:
-            optim_state["UncertaintyHandlingLevel"] = 0
+            optim_state["uncertainty_handling_level"] = 0
 
         # Empty hedge struct for acquisition functions
         if self.options.get("acqhedge"):
-            optim_state.hedge = []
+            optim_state["hedge"] = []
 
         # List of points at the end of each iteration
         # Is this required?
@@ -482,7 +483,7 @@ class VBMC:
         optim_state["iterlist"]["fhyp"] = []
 
         optim_state["delta"] = self.options.get("bandwidth") * (
-            optim_state.get("PUB") - optim_state.get("PLB")
+            optim_state.get("pub") - optim_state.get("plb")
         )
 
         # Deterministic entropy approximation lower/upper factor
@@ -492,18 +493,12 @@ class VBMC:
         optim_state["vp_repo"] = []
 
         # Repeated measurement streak
-        optim_state["RepeatedObservationsStreak"] = 0
+        optim_state["repeated_observations_streak"] = 0
 
         # List of data trimming events
-        optim_state["DataTrimList"] = []
+        optim_state["data_trim_list"] = []
 
-        if (
-            self.options.get("noiseshaping")
-            and optim_state["gpNoisefun"][2] == 0
-        ):
-            optim_state["gpNoisefun"][2] = 1
-
-        optim_state["gpMeanfun"] = self.options.get("gpmeanfun")
+        optim_state["gp_meanfun"] = self.options.get("gpmeanfun")
         valid_gpmeanfuns = [
             "zero",
             "const",
@@ -519,24 +514,26 @@ class VBMC:
             "negquadmix",
         ]
 
-        if not optim_state["gpMeanfun"] in valid_gpmeanfuns:
+        if not optim_state["gp_meanfun"] in valid_gpmeanfuns:
             raise ValueError(
                 """vbmc:UnknownGPmean:Unknown/unsupported GP mean
             function. Supported mean functions are zero, const,
             egquad, and se"""
             )
-        optim_state["gntMeanfun"] = self.options.get("gpintmeanfun")
+        optim_state["int_meanfun"] = self.options.get("gpintmeanfun")
         # more logic here in matlab
-        optim_state["gpOutwarpfun"] = self.options.get("gpoutwarpfun")
+        optim_state["gp_outwarpfun"] = self.options.get("gpoutwarpfun")
 
         # Starting threshold on y for output warping
         if (
             self.options.get("fitnessshaping")
-            or optim_state.get("gpOutwarpfun") is not None
+            or optim_state.get("gp_outwarpfun") is not None
         ):
-            optim_state["OutwarpDelta"] = self.options.get("outwarpthreshbase")
+            optim_state["outwarp_delta"] = self.options.get(
+                "outwarpthreshbase"
+            )
         else:
-            optim_state["OutwarpDelta"] = []
+            optim_state["outwarp_delta"] = []
 
         return optim_state
 

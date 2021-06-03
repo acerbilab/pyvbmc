@@ -95,8 +95,8 @@ class ParameterTransformer:
                         + plausible_upper_bounds[:, i]
                     )
                     self.delta[i] = (
-                        plausible_lower_bounds[:, i]
-                        - plausible_upper_bounds[:, i]
+                        plausible_upper_bounds[:, i]
+                        - plausible_lower_bounds[:, i]
                     )
 
     @handle_1D_input(kwarg="x", argpos=0)
