@@ -26,6 +26,47 @@ class VBMC:
         plausible_upper_bounds: np.ndarray = None,
         user_options: dict = None,
     ):
+        """
+        Initialize an instance of the VBMC algorithm.
+
+        Parameters
+        ----------
+        fun : callable
+            A given target log posterior FUN.
+        x0 : np.ndarray, optional
+            [description], by default None
+        lower_bounds, upper_bounds : np.ndarray, optional
+            Lower_bounds (LB) and upper_bounds (UB) define a set 
+            of strict lower and upper bounds coordinate vector, X, so that the 
+            posterior has support on LB < X < UB. 
+            If scalars, the bound is replicated in each dimension. Use 
+            empty matrices for LB and UB if no bounds exist. Set LB[i] = -Inf
+            and UB[i] = Inf if the i-th coordinate is unbounded (while other
+            coordinates may be bounded). Note that if LB and UB contain
+            unbounded variables, the respective values of PLB and PUB need to be
+            specified (see below), by default None
+        plausible_lower_bounds, plausible_upper_bounds : np.ndarray, optional
+            Specifies a set of plausible_lower_bounds (PLB) and 
+            plausible_upper_bounds (PUB) such that LB < PLB < PUB < UB.
+            Both PLB and PUB need to be finite. PLB and PUB represent a
+            "plausible" range, which should denote a region of high posterior
+            probability mass. Among other things, the plausible box is used to
+            draw initial samples and to set priors over hyperparameters of the
+            algorithm. When in doubt, we found that setting PLB and PUB using 
+            the topmost ~68% percentile range of the prior (e.g, mean +/- 1 SD
+            for a Gaussian prior) works well in many cases (but note that 
+            additional information might afford a better guess), both are 
+            by default None.
+        user_options : dict, optional
+            Modified options can be passed as a dict. Please refer to the
+            respective VBMC options page for the default options. If no 
+            user_options are passed, the default options are used.
+
+        Raises
+        ------
+        ValueError
+            [description]
+        """    
         # Initialize variables and algorithm structures
         if x0 is None:
             if (
@@ -315,7 +356,7 @@ class VBMC:
     def _init_optim_state(self, fun):
         """
         A private function to init the optim_state dict that contains
-        infomration about VBMC variables.
+        information about VBMC variables.
         """
         # Record starting points (original coordinates)
         y_orig = np.array(self.options.get("fvals")).flatten()
@@ -477,7 +518,6 @@ class VBMC:
             optim_state["hedge"] = []
 
         # List of points at the end of each iteration
-        # Is this required?
         optim_state["iterlist"] = dict()
         optim_state["iterlist"]["u"] = []
         optim_state["iterlist"]["fval"] = []
@@ -574,8 +614,7 @@ class VBMC:
 
     def optimize(self):
         """
-        This is a perliminary version of the VBMC loop in order to identify
-        possible objects
+        Execute the VBMC loop. TBD.
         """
         pass
 
