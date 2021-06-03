@@ -17,6 +17,7 @@ This works as a documentation to port the VBMC algorithm to Python3.
    classes/parameter_transformer
    classes/timer
    classes/variational_posterior
+   classes/vbmc
 
 .. toctree::
    :maxdepth: 2
