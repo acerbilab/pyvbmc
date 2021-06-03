@@ -460,7 +460,6 @@ def test_vbmc_optimstate_gp_mean_function():
         create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     assert exception_message in execinfo2.value.args[0]
     user_options = {"gpmeanfun": "const"}
-    x0 = np.array(([[1, 2, 3], [3, 4, 3]]))
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     assert vbmc.optim_state.get("gp_meanfun") == user_options.get("gpmeanfun")
 
@@ -627,7 +626,7 @@ def test_vbmc_optimstate_gp_outwarpfun():
     assert np.all(vbmc.optim_state["gp_outwarpfun"] == fun)
 
 
-def test_vbmc_optimstate_entropy_switch():
+def test_vbmc_optimstate_outwarp_delta():
     user_options = {"fitnessshaping": False, "gpoutwarpfun": None}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     assert vbmc.optim_state["outwarp_delta"] == []
