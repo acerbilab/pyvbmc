@@ -9,6 +9,7 @@ def test_1D_kwarg():
         def bar(self, x):
             if np.ndim(x) > 1:
                 return x
+            return None
 
     x = np.ones(10)
     assert x.shape == Foo().bar(x=x).shape
@@ -20,6 +21,7 @@ def test_1D_posarg():
         def bar(self, x):
             if np.ndim(x) > 1:
                 return x
+            return None
 
     x = np.ones(10)
     assert x.shape == Foo().bar(x).shape
@@ -31,6 +33,7 @@ def test_1D_ignoring_2D():
         def bar(self, x):
             if np.ndim(x) > 1:
                 return x
+            return None
 
     x = np.ones((10, 20))
     assert x.shape == Foo().bar(x).shape
@@ -40,7 +43,7 @@ def test_1D_return_scalar():
     class Foo:
         @handle_1D_input(kwarg="x", argpos=0, return_scalar=True)
         def bar(self, x):
-            return np.array([40])
+            return np.sum(x)
 
     x = np.ones(10)
     assert np.ndim(Foo().bar(x)) == 0
@@ -52,6 +55,7 @@ def test_1D_return_multiple_returns():
         def bar(self, x):
             if np.ndim(x) > 1:
                 return x, x
+            return None
 
     x = np.ones(10)
     res = Foo().bar(x)
@@ -63,7 +67,7 @@ def test_1D_return_multiple_returns_scalar():
     class Foo:
         @handle_1D_input(kwarg="x", argpos=0, return_scalar=True)
         def bar(self, x):
-            y = np.array([40])
+            y = np.sum(x)
             return y, y
 
     x = np.ones(10)

@@ -1,5 +1,4 @@
 from vbmc import Options
-import numpy as np
 
 
 def test_options_no_user_options():
@@ -69,9 +68,10 @@ def test_init_from_existing_options_without_other_options():
     assert options_1 == options_2
     assert len(options_1) == len(options_2)
 
+
 def test_str():
     default_options_path = "./vbmc/option_configs/test_options.ini"
     options = Options(default_options_path, {"D": 2})
-    one_option_str = "funevalstart: 10 (Number of initial target fcn evals)" 
+    one_option_str = "funevalstart: 10 (Number of initial target fcn evals)"
     assert one_option_str in options.__str__()
     assert len(options.__str__()) > 1600

@@ -38,7 +38,7 @@ class Options(MutableMapping, dict):
         user_options : dict
             User defined values to overwrite default options.
         """
-
+        super().__init__()
         # evaluation_parameters
         for key, val in evalutation_parameters.items():
             exec(key + "=val")
@@ -55,12 +55,12 @@ class Options(MutableMapping, dict):
         description = ""
         self.descriptions = dict()
         for section in conf.sections():
-            for (k, v) in conf.items(section):
-                if "#" in k:
-                    description = k.strip("# ")
+            for (key, value) in conf.items(section):
+                if "#" in key:
+                    description = key.strip("# ")
                 else:
-                    self.__setitem__(k, eval(v))
-                    self.descriptions[k] = description
+                    self.__setitem__(key, eval(value))
+                    self.descriptions[key] = description
                     description = ""
 
         # User options
@@ -72,7 +72,7 @@ class Options(MutableMapping, dict):
 
     @classmethod
     def init_from_existing_options(
-        self,
+        cls,
         default_options_path: str,
         evalutation_parameters: dict = None,
         other: Options = None,
@@ -103,7 +103,7 @@ class Options(MutableMapping, dict):
         else:
             user_option_keys = other.get("useroptions")
             user_options = {k: other.get(k) for k in user_option_keys}
-        new_options = self(
+        new_options = cls(
             default_options_path, evalutation_parameters, user_options
         )
         return new_options
@@ -120,6 +120,9 @@ class Options(MutableMapping, dict):
     def __len__(self):
         return dict.__len__(self)
 
+    def __delitem__(self, key):
+        del self.__dict__[key]
+
     def __str__(self):
         """
         Returns the options in a format key: value (description).
@@ -128,7 +131,7 @@ class Options(MutableMapping, dict):
         -------
         str
             The str to describe an options object.
-        """        
+        """
         return "".join(
             [
                 "{}: {} ({}) \n".format(k, v, str(self.descriptions.get(k)))

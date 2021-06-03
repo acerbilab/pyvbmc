@@ -15,10 +15,10 @@ def get_matlab_vp():
     vp.mu = mat["mu"]
     vp.sigma = mat["sigma"]
     vp.lamb = mat["lambda"]
-    vp.optimize_lamb = True if mat["optimize_lambda"][0, 0] == 1 else False
-    vp.optimize_mu = True if mat["optimize_mu"][0, 0] == 1 else False
-    vp.optimize_sigma = True if mat["optimize_sigma"][0, 0] == 1 else False
-    vp.optimize_weights = True if mat["optimize_weights"][0, 0] == 1 else False
+    vp.optimize_lamb = mat["optimize_lambda"][0, 0] == 1
+    vp.optimize_mu = mat["optimize_mu"][0, 0] == 1
+    vp.optimize_sigma = mat["optimize_sigma"][0, 0] == 1
+    vp.optimize_weights = mat["optimize_weights"][0, 0] == 1
     vp.parameter_transformer = ParameterTransformer(vp.D)
     return vp
 
@@ -357,9 +357,9 @@ def test_get_set_parameters_delete_mode():
     vp = VariationalPosterior(D, K, np.array([[5]]))
     theta = vp.get_parameters(rawflag=True)
     vp._mode = np.ones(D)
-    assert hasattr(vp, "_mode") == True
+    assert hasattr(vp, "_mode")
     vp.set_parameters(theta, rawflag=True)
-    assert hasattr(vp, "_mode") == False
+    assert not hasattr(vp, "_mode")
 
 
 def test_get_set_parameters_roundtrip_non_raw():

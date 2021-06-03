@@ -1,5 +1,6 @@
 # for annotating VP as input of itself in mtv
 from __future__ import annotations
+
 import sys
 
 import numpy as np
@@ -12,7 +13,7 @@ from scipy.optimize import fmin_l_bfgs_b
 from scipy.special import gammaln
 
 
-class VariationalPosterior(object):
+class VariationalPosterior():
     """
     The Variational Posterior class used in the context of VBMC.
     """
@@ -819,7 +820,7 @@ class VariationalPosterior(object):
         if gaussflag:
             if N == 0:
                 raise ValueError(
-                    """Analytical moments are available 
+                    """Analytical moments are available
                     only for the transformed space."""
                 )
             else:

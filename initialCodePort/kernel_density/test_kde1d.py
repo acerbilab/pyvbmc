@@ -77,17 +77,11 @@ def test_kde_bounds_switched():
         kde1d(samples, 2 ** 14, max(samples), min(samples))
 
 
-def mtv(
-    xmesh: np.ndarray,
-    yy1: np.ndarray,
-    yy2: np.ndarray,
-    N: int = int(1e5),
-):
+def mtv(xmesh: np.ndarray, yy1: np.ndarray, yy2: np.ndarray):
     """
     mtv Marginal Total Variation distances between two pdfs
     """
     mtv = 0
-
     f = lambda x: np.abs(
         interp1d(
             xmesh,
