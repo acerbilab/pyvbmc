@@ -14,6 +14,23 @@ def test_vbmc_init_no_x0_PLB_PUB():
     assert "vbmc:UnknownDims If no starting point is" in execinfo.value.args[0]
 
 
+def create_vbmc(
+    D: int,
+    x0: float,
+    lower_bounds: float,
+    upper_bounds: float,
+    plausible_lower_bounds: float,
+    plausible_upper_bounds: float,
+    user_options: dict = None,
+):
+    lb = np.ones((1, D)) * lower_bounds
+    ub = np.ones((1, D)) * upper_bounds
+    x0_array = np.ones((2, D)) * x0
+    plb = np.ones((1, D)) * plausible_lower_bounds
+    pub = np.ones((1, D)) * plausible_upper_bounds
+    return VBMC(fun, x0_array, lb, ub, plb, pub, user_options)
+
+
 def test_vbmc_init_no_x0():
     D = 3
     lb = np.zeros((1, D))
@@ -21,7 +38,7 @@ def test_vbmc_init_no_x0():
     plb = np.ones((1, D)) * 0.5
     pub = np.ones((1, D)) * 1.5
     vbmc = VBMC(fun, None, lb, ub, plb, pub)
-    assert np.all(np.isnan(vbmc.x0))
+    assert np.all(vbmc.x0 == 0)
     assert vbmc.x0.shape == (1, D)
 
 
@@ -359,3 +376,295 @@ def test_vbmc_boundcheck_x0_not_in_plausible_bounds():
     assert np.any(plb2 == lb + 1e-3 * 4)
     assert np.any(pub2 == ub - 1e-3 * 4)
     assert np.any(x0_2 == pub2)
+
+
+def test_vbmc_setupvars_no_x0_infinite_bounds():
+    D = 3
+    lb = np.ones((1, D)) * -np.inf
+    ub = np.ones((1, D)) * np.inf
+    x0 = np.ones((2, D)) * np.nan
+    plb = np.ones((1, D)) * -1.5
+    pub = np.ones((1, D)) * -0.5
+    vbmc = VBMC(fun, x0, lb, ub, plb, pub)
+    assert vbmc.x0.shape == (1, D)
+    assert np.all(vbmc.x0 == np.ones((1, D)) * 0)
+
+
+def test_vbmc_optimstate_integervars():
+    user_options = {"integervars": np.array([1, 0, 0])}
+    D = 3
+    lb = np.ones((1, D)) * 1
+    ub = np.ones((1, D)) * 5
+    x0 = np.ones((2, D)) * 3
+    plb = np.ones((1, D)) * 2
+    pub = np.ones((1, D)) * 4
+    exception_message = "set at +/- 0.5 points from their boundary values"
+    with pytest.raises(ValueError) as execinfo1:
+        VBMC(fun, x0, lb * -np.inf, ub * np.inf, plb, pub, user_options)
+    assert exception_message in execinfo1.value.args[0]
+    lb[0] = -np.inf
+    ub[0] = np.inf
+    with pytest.raises(ValueError) as execinfo2:
+        VBMC(fun, x0, lb, ub, plb, pub, user_options)
+    assert exception_message in execinfo2.value.args[0]
+    lb[0] = -10
+    ub[0] = 10
+    with pytest.raises(ValueError) as execinfo3:
+        VBMC(fun, x0, lb, ub, plb, pub, user_options)
+    assert exception_message in execinfo3.value.args[0]
+    lb[0] = -10.5
+    ub[0] = 10.5
+    vbmc = VBMC(fun, x0, lb, ub, plb, pub, user_options)
+    integervars = np.full((1, D), False)
+    integervars[:, 0] = True
+    assert np.all(vbmc.optim_state.get("integervars") == integervars)
+
+
+def test_vbmc_setupvars_fvals():
+    exception_message = (
+        "points in X0 and of their function values as specified"
+    )
+    with pytest.raises(ValueError) as execinfo1:
+        user_options = {"fvals": np.zeros((3, 1))}
+        create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    assert exception_message in execinfo1.value.args[0]
+    with pytest.raises(ValueError) as execinfo2:
+        user_options = {"fvals": np.zeros((1, 1))}
+        create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    assert exception_message in execinfo2.value.args[0]
+
+    user_options = {"fvals": [1, 2]}
+    x0 = np.array(([[1, 2, 3], [3, 4, 3]]))
+    D = 3
+    lb = np.ones((1, D)) * 1
+    ub = np.ones((1, D)) * 5
+    plb = np.ones((1, D)) * 2
+    pub = np.ones((1, D)) * 4
+    vbmc = VBMC(fun, x0, lb, ub, plb, pub, user_options)
+    assert np.all(
+        vbmc.optim_state.get("cache").get("y_orig")
+        == user_options.get("fvals")
+    )
+    assert np.all(vbmc.optim_state.get("cache").get("x_orig") is not None)
+    assert vbmc.optim_state.get("cache_active")
+
+
+def test_vbmc_optimstate_gp_functions():
+    exception_message = "vbmc:UnknownGPmean:Unknown/unsupported GP mean"
+    with pytest.raises(ValueError) as execinfo1:
+        user_options = {"gpmeanfun": "notvalid"}
+        create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    assert exception_message in execinfo1.value.args[0]
+    with pytest.raises(ValueError) as execinfo2:
+        user_options = {"gpmeanfun": ""}
+        create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    assert exception_message in execinfo2.value.args[0]
+    user_options = {"gpmeanfun": "const"}
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    assert vbmc.optim_state.get("gp_meanfun") == user_options.get("gpmeanfun")
+    # uncertainty_handling_level 2 
+    assert vbmc.optim_state["gp_covfun"] == 1
+    user_options = {"specifytargetnoise": True}
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    # uncertainty_handling_level 1
+    assert vbmc.optim_state["gp_noisefun"] == [1, 1]
+    user_options = {"specifytargetnoise": False, "uncertaintyhandling": []}
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    assert vbmc.optim_state["gp_noisefun"] == [1, 2]
+    # uncertainty_handling_level 0
+    user_options = {
+        "specifytargetnoise": False,
+        "uncertaintyhandling": [3],
+        "noiseshaping": True,
+    }
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    assert vbmc.optim_state["uncertainty_handling_level"] == 0
+    assert vbmc.optim_state["gp_noisefun"] == [1, 1]
+    user_options = {
+        "specifytargetnoise": False,
+        "uncertaintyhandling": [3],
+        "noiseshaping": False,
+    }
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    assert vbmc.optim_state["uncertainty_handling_level"] == 0
+    assert vbmc.optim_state["gp_noisefun"] == [1, 0]
+
+
+def test_vbmc_optimstate_bounds():
+    D = 3
+    lb = np.ones((1, D)) * 1
+    ub = np.ones((1, D)) * 5
+    x0 = np.ones((2, D)) * 3
+    plb = np.ones((1, D)) * 2
+    pub = np.ones((1, D)) * 4
+    vbmc = VBMC(fun, x0, lb, ub, plb, pub)
+    assert np.all(vbmc.optim_state["lb_orig"] == lb)
+    assert np.all(vbmc.optim_state["ub_orig"] == ub)
+    assert np.all(vbmc.optim_state["plb_orig"] == plb)
+    assert np.all(vbmc.optim_state["pub_orig"] == pub)
+    eps = vbmc.options.get("tolboundx") * 4
+    assert np.all(vbmc.optim_state["lb_eps_orig"] == lb + eps)
+    assert np.all(vbmc.optim_state["ub_eps_orig"] == ub - eps)
+    assert np.all(vbmc.optim_state["lb"] == -np.inf)
+    assert np.all(vbmc.optim_state["ub"] == np.inf)
+    assert np.all(vbmc.optim_state["plb"] == -0.5)
+    assert np.all(vbmc.optim_state["pub"] == 0.5)
+    assert np.all(vbmc.optim_state["lb_search"] == -2.5)
+    assert np.all(vbmc.optim_state["ub_search"] == 2.5)
+
+
+def test_vbmc_optimstate_constants():
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
+    assert np.all(vbmc.optim_state["iter"] == 0)
+    assert np.all(vbmc.optim_state["sn2hpd"] == np.inf)
+    assert np.all(vbmc.optim_state["last_warping"] == -np.inf)
+    assert np.all(vbmc.optim_state["last_successful_warping"] == -np.inf)
+    assert np.all(vbmc.optim_state["warping_count"] == 0)
+    assert np.all(vbmc.optim_state["recompute_var_post"] == True)
+    assert np.all(vbmc.optim_state["warmup_stable_count"] == 0)
+    assert np.all(vbmc.optim_state["r"] == np.inf)
+    assert np.all(vbmc.optim_state["skip_active_sampling"] == False)
+    assert np.all(vbmc.optim_state["run_mean"] == [])
+    assert np.all(vbmc.optim_state["run_cov"] == [])
+    assert np.all(np.isnan(vbmc.optim_state["last_run_avg"]))
+    assert np.all(vbmc.optim_state["vpk"] == vbmc.K)
+    assert np.all(vbmc.optim_state["pruned"] == 0)
+    assert np.all(vbmc.optim_state["variance_regularized_acqfcn"] == True)
+    assert np.all(vbmc.optim_state["search_cache"] == [])
+    assert np.all(vbmc.optim_state["vp_repo"] == [])
+    assert np.all(vbmc.optim_state["repeated_observations_streak"] == 0)
+    assert np.all(vbmc.optim_state["data_trim_list"] == [])
+    assert np.all(vbmc.optim_state["run_cov"] == [])
+
+
+def test_vbmc_optimstate_iterlist():
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
+    assert np.all(vbmc.optim_state["iterlist"]["u"] == [])
+    assert np.all(vbmc.optim_state["iterlist"]["fval"] == [])
+    assert np.all(vbmc.optim_state["iterlist"]["fsd"] == [])
+    assert np.all(vbmc.optim_state["iterlist"]["fhyp"] == [])
+
+
+def test_vbmc_optimstate_stop_sampling():
+    user_options = {"nsgpmax": 0}
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    assert vbmc.optim_state["stop_sampling"] == np.inf
+    user_options = {"nsgpmax": 1}
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    assert vbmc.optim_state["stop_sampling"] == 0
+
+
+def test_vbmc_optimstate_warmup():
+    user_options = {"warmup": True}
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    assert vbmc.optim_state["warmup"]
+    assert vbmc.optim_state["last_warmup"] == np.inf
+    user_options = {"warmup": False}
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    assert not vbmc.optim_state["warmup"]
+    assert vbmc.optim_state["last_warmup"] == 0
+
+
+def test_vbmc_optimstate_proposalfcn():
+    user_options = {"proposalfcn": fun}
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    assert vbmc.optim_state["proposalfcn"] == fun
+    user_options = {"proposalfcn": None}
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    assert vbmc.optim_state["proposalfcn"] == "@(x)proposal_vbmc"
+
+
+def test_vbmc_optimstate_entropy_switch():
+    D = 3
+    user_options = {"entropyswitch": False, "detentropymind": D - 1}
+    vbmc = create_vbmc(D, 3, 1, 5, 2, 4, user_options)
+    assert vbmc.optim_state["entropy_switch"] == False
+    user_options = {"entropyswitch": True, "detentropymind": 1}
+    vbmc = create_vbmc(D, 3, 1, 5, 2, 4, user_options)
+    assert vbmc.optim_state["entropy_switch"] == True
+    user_options = {"entropyswitch": True, "detentropymind": D + 1}
+    vbmc = create_vbmc(D, 3, 1, 5, 2, 4, user_options)
+    assert vbmc.optim_state["entropy_switch"] == False
+
+
+def test_vbmc_optimstate_tol_gp_var():
+    user_options = {"tolgpvar": 0.0001}
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    assert vbmc.optim_state["tol_gp_var"] == user_options.get("tolgpvar")
+    user_options = {"tolgpvar": 0.002}
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    assert vbmc.optim_state["tol_gp_var"] == user_options.get("tolgpvar")
+
+
+def test_vbmc_optimstate_max_fun_evals():
+    D = 3
+    user_options = {"maxfunevals": 50 * (2 + D)}
+    vbmc = create_vbmc(D, 3, 1, 5, 2, 4, user_options)
+    assert vbmc.optim_state["max_fun_evals"] == user_options.get("maxfunevals")
+    user_options = {"maxfunevals": 10}
+    vbmc = create_vbmc(D, 3, 1, 5, 2, 4, user_options)
+    assert vbmc.optim_state["max_fun_evals"] == user_options.get("maxfunevals")
+
+
+def test_vbmc_optimstate_uncertainty_handling_level():
+    user_options = {"specifytargetnoise": True}
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    assert vbmc.optim_state["uncertainty_handling_level"] == 2
+    user_options = {"specifytargetnoise": False, "uncertaintyhandling": []}
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    assert vbmc.optim_state["uncertainty_handling_level"] == 1
+    user_options = {"specifytargetnoise": False, "uncertaintyhandling": [3]}
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    assert vbmc.optim_state["uncertainty_handling_level"] == 0
+
+
+def test_vbmc_optimstate_acqhedge():
+    user_options = {"acqhedge": True}
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    assert vbmc.optim_state["hedge"] == []
+    user_options = {"acqhedge": False}
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    assert "hedge" not in vbmc.optim_state
+
+
+def test_vbmc_optimstate_delta():
+    user_options = {"bandwidth": 1}
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    assert np.all(vbmc.optim_state["delta"] == 1)
+
+
+def test_vbmc_optimstate_entropy_alpha():
+    user_options = {"detentropyalpha": False}
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    assert np.all(vbmc.optim_state["entropy_alpha"] == False)
+    user_options = {"detentropyalpha": True}
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    assert np.all(vbmc.optim_state["entropy_alpha"] == True)
+
+
+def test_vbmc_optimstate_int_meanfun():
+    user_options = {"gpintmeanfun": fun}
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    assert np.all(vbmc.optim_state["int_meanfun"] == fun)
+
+
+def test_vbmc_optimstate_gp_outwarpfun():
+    user_options = {"gpoutwarpfun": fun}
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    assert np.all(vbmc.optim_state["gp_outwarpfun"] == fun)
+
+
+def test_vbmc_optimstate_outwarp_delta():
+    user_options = {"fitnessshaping": False, "gpoutwarpfun": None}
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    assert vbmc.optim_state["outwarp_delta"] == []
+    outwarpthreshbase = vbmc.options.get("outwarpthreshbase")
+    user_options = {"fitnessshaping": False, "gpoutwarpfun": fun}
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    assert vbmc.optim_state["outwarp_delta"] == outwarpthreshbase
+    user_options = {"fitnessshaping": True, "gpoutwarpfun": None}
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    assert vbmc.optim_state["outwarp_delta"] == outwarpthreshbase
+    user_options = {"fitnessshaping": True, "gpoutwarpfun": fun}
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    assert vbmc.optim_state["outwarp_delta"] == outwarpthreshbase

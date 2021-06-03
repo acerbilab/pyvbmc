@@ -116,7 +116,7 @@ def test_init_type3_delta_all_params():
     )
     plb = parameter_transformer2(np.ones((1, D)) * 2)
     pub = parameter_transformer2(np.ones((1, D)) * 4)
-    delta2 = plb - pub
+    delta2 = pub - plb
     assert np.all(
         np.isclose(parameter_transformer.delta, delta2, rtol=1e-12, atol=1e-14)
     )

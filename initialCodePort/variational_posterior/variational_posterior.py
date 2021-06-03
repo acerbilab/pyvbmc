@@ -47,7 +47,7 @@ class VariationalPosterior():
             x0 = np.zeros(D, K)
         elif x0.size == D:
             x0.reshape(-1, 1)  # reshape to vertical array
-            x0 = np.tile(x0, (1, K))  # copy vector
+            x0 = np.tile(x0, (K, 1)).T  # copy vector
         else:
             x0 = x0.T
             x0 = np.tile(x0, int(np.ceil(self.K / x0.shape[1])))
