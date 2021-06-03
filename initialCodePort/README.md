@@ -32,6 +32,8 @@ Please read those as well! :)
 
 The code is formatted using [Black](https://pypi.org/project/black/) with a line length of 79.
 
+If you want, you can also check with pylint for more excessive errors. (Although pylint seems to raise many false positives.)
+
 ### Decorators
 
 Try to evaluate if pre- and postprocessing in a function can be generalized with a decorator. One example is the handling of arrays of shape (N, ) to (N, 1) with the [handle_1D_decorator](./decorators/handle_1D_input.py) in the decorator module.
