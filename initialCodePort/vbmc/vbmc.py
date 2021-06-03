@@ -368,9 +368,11 @@ class VBMC:
             optim_state["lb_eps_orig"] = self.lower_bounds + eps_orig
             optim_state["ub_eps_orig"] = self.upper_bounds - eps_orig
 
-        # Transform variables
-        optim_state["lb"] = self.parameter_transformer(self.lower_bounds)
-        optim_state["ub"] = self.parameter_transformer(self.upper_bounds)
+        # Transform variables (Transform of lower_bounds and upper bounds can
+        # create warning but we are aware of this and output is correct)
+        with np.errstate(divide="ignore"):
+            optim_state["lb"] = self.parameter_transformer(self.lower_bounds)
+            optim_state["ub"] = self.parameter_transformer(self.upper_bounds)
         optim_state["plb"] = self.parameter_transformer(
             self.plausible_lower_bounds
         )
@@ -497,6 +499,39 @@ class VBMC:
 
         # List of data trimming events
         optim_state["data_trim_list"] = []
+
+        # Expanding search bounds
+        prange = optim_state.get("pub") - optim_state.get("plb")
+        optim_state["lb_search"] = np.maximum(
+            optim_state.get("plb")
+            - prange * self.options.get("activesearchbound"),
+            optim_state.get("lb"),
+        )
+        optim_state["ub_search"] = np.minimum(
+            optim_state.get("pub")
+            + prange * self.options.get("activesearchbound"),
+            optim_state.get("ub"),
+        )
+
+        # Initialize Gaussian process settings
+        # Squared exponential kernel with separate length scales
+        optim_state["gpCovfun"] = 1
+
+        if optim_state.get("uncertainty_handling_level") == 0:
+            # Observation noise for stability
+            optim_state["gpNoisefun"] = [1, 0]
+        elif optim_state.get("uncertainty_handling_level") == 1:
+            # Infer noise
+            optim_state["gpNoisefun"] = [1, 2]
+        elif optim_state.get("uncertainty_handling_level") == 2:
+            # Provided heteroskedastic noise
+            optim_state["gpNoisefun"] = [1, 1]
+
+        if (
+            self.options.get("noiseshaping")
+            and optim_state["gpNoisefun"][2] == 0
+        ):
+            optim_state["gpNoisefun"][2] = 1
 
         optim_state["gp_meanfun"] = self.options.get("gpmeanfun")
         valid_gpmeanfuns = [
