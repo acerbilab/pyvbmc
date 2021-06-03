@@ -449,7 +449,7 @@ def test_vbmc_setupvars_fvals():
     assert vbmc.optim_state.get("cache_active")
 
 
-def test_vbmc_optimstate_gp_mean_function():
+def test_vbmc_optimstate_gp_functions():
     exception_message = "vbmc:UnknownGPmean:Unknown/unsupported GP mean"
     with pytest.raises(ValueError) as execinfo1:
         user_options = {"gpmeanfun": "notvalid"}
@@ -462,6 +462,32 @@ def test_vbmc_optimstate_gp_mean_function():
     user_options = {"gpmeanfun": "const"}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     assert vbmc.optim_state.get("gp_meanfun") == user_options.get("gpmeanfun")
+    # uncertainty_handling_level 2 
+    assert vbmc.optim_state["gp_covfun"] == 1
+    user_options = {"specifytargetnoise": True}
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    # uncertainty_handling_level 1
+    assert vbmc.optim_state["gp_noisefun"] == [1, 1]
+    user_options = {"specifytargetnoise": False, "uncertaintyhandling": []}
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    assert vbmc.optim_state["gp_noisefun"] == [1, 2]
+    # uncertainty_handling_level 0
+    user_options = {
+        "specifytargetnoise": False,
+        "uncertaintyhandling": [3],
+        "noiseshaping": True,
+    }
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    assert vbmc.optim_state["uncertainty_handling_level"] == 0
+    assert vbmc.optim_state["gp_noisefun"] == [1, 1]
+    user_options = {
+        "specifytargetnoise": False,
+        "uncertaintyhandling": [3],
+        "noiseshaping": False,
+    }
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    assert vbmc.optim_state["uncertainty_handling_level"] == 0
+    assert vbmc.optim_state["gp_noisefun"] == [1, 0]
 
 
 def test_vbmc_optimstate_bounds():
@@ -483,6 +509,8 @@ def test_vbmc_optimstate_bounds():
     assert np.all(vbmc.optim_state["ub"] == np.inf)
     assert np.all(vbmc.optim_state["plb"] == -0.5)
     assert np.all(vbmc.optim_state["pub"] == 0.5)
+    assert np.all(vbmc.optim_state["lb_search"] == -2.5)
+    assert np.all(vbmc.optim_state["ub_search"] == 2.5)
 
 
 def test_vbmc_optimstate_constants():

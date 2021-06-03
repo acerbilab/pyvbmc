@@ -515,23 +515,23 @@ class VBMC:
 
         # Initialize Gaussian process settings
         # Squared exponential kernel with separate length scales
-        optim_state["gpCovfun"] = 1
+        optim_state["gp_covfun"] = 1
 
         if optim_state.get("uncertainty_handling_level") == 0:
             # Observation noise for stability
-            optim_state["gpNoisefun"] = [1, 0]
+            optim_state["gp_noisefun"] = [1, 0]
         elif optim_state.get("uncertainty_handling_level") == 1:
             # Infer noise
-            optim_state["gpNoisefun"] = [1, 2]
+            optim_state["gp_noisefun"] = [1, 2]
         elif optim_state.get("uncertainty_handling_level") == 2:
             # Provided heteroskedastic noise
-            optim_state["gpNoisefun"] = [1, 1]
+            optim_state["gp_noisefun"] = [1, 1]
 
         if (
             self.options.get("noiseshaping")
-            and optim_state["gpNoisefun"][2] == 0
+            and optim_state["gp_noisefun"][1] == 0
         ):
-            optim_state["gpNoisefun"][2] = 1
+            optim_state["gp_noisefun"][1] = 1
 
         optim_state["gp_meanfun"] = self.options.get("gpmeanfun")
         valid_gpmeanfuns = [
