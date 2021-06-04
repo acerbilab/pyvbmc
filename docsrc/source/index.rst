@@ -7,6 +7,7 @@ Welcome to pyvmbc's documentation!
 ==================================
 
 This works as a documentation to port the VBMC algorithm to Python3.
+Note that this project is work in progress!
 
 .. toctree::
    :maxdepth: 2
