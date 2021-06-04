@@ -171,12 +171,12 @@ def kde1d(
 
     Returns
     -------
-    density: np.ndarray
+    density : np.ndarray
         1D vector of length n with the values of the kernel density estimate
         at the grid points.
-    xmesh: np.ndarray
+    xmesh : np.ndarray
         1D vector of grid over which the density estimate is computed.
-    bandwidth: np.ndarray
+    bandwidth : np.ndarray
         The optimal bandwidth (Gaussian kernel assumed).
 
     Notes
