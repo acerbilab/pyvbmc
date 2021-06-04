@@ -1,0 +1,199 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Timer &#8212; pyvmbc  documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="VariationalPosterior" href="variational_posterior.html" />
+    <link rel="prev" title="ParameterTransformer" href="parameter_transformer.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="timer">
+<h1>Timer<a class="headerlink" href="#timer" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="porting-status">
+<h2>Porting status<a class="headerlink" href="#porting-status" title="Permalink to this headline">¶</a></h2>
+<div class="admonition-todo admonition" id="id1">
+<p class="admonition-title">Todo</p>
+<p>tbd</p>
+</div>
+<div class="section" id="matlab-references">
+<h3>Matlab references<a class="headerlink" href="#matlab-references" title="Permalink to this headline">¶</a></h3>
+<p>newly created (replaces many tic-toc calss)</p>
+</div>
+</div>
+<div class="section" id="python-documentation">
+<h2>Python documentation<a class="headerlink" href="#python-documentation" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="pyvbmc.timer.Timer">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">pyvbmc.timer.</span></code><code class="sig-name descname"><span class="pre">Timer</span></code><a class="headerlink" href="#pyvbmc.timer.Timer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A small Timer class used in the context of VBMC.</p>
+<dl class="py method">
+<dt id="pyvbmc.timer.Timer.__init__">
+<code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyvbmc.timer.Timer.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a new timer.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pyvbmc.timer.Timer.get_duration">
+<code class="sig-name descname"><span class="pre">get_duration</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyvbmc.timer.Timer.get_duration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the duration of the specified timer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>The name of the timer which time should be returned.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>duration</strong><span class="classifier">float</span></dt><dd><p>The duration of the timer or None when the timer is not existing.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pyvbmc.timer.Timer.start_timer">
+<code class="sig-name descname"><span class="pre">start_timer</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyvbmc.timer.Timer.start_timer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start the specified timer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>The name of the timer that should be started.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pyvbmc.timer.Timer.stop_timer">
+<code class="sig-name descname"><span class="pre">stop_timer</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyvbmc.timer.Timer.stop_timer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stop the specified timer</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>The name of the timer that should be started.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">pyvmbc</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Classes:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="function_logger.html">FunctionLogger</a></li>
+<li class="toctree-l1"><a class="reference internal" href="options.html">Options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameter_transformer.html">ParameterTransformer</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Timer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#porting-status">Porting status</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#python-documentation">Python documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="variational_posterior.html">VariationalPosterior</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vbmc.html">VBMC</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Functions:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../functions/kernel_density.html">kde1d</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Options:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../options/vbmc_options.html">VBMC options</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="parameter_transformer.html" title="previous chapter">ParameterTransformer</a></li>
+      <li>Next: <a href="variational_posterior.html" title="next chapter">VariationalPosterior</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/classes/timer.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
