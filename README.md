@@ -50,10 +50,9 @@ See an example for a correct docstring [here](https://numpydoc.readthedocs.io/en
 We build the pyvbmc documentation using [Sphinx](https://www.sphinx-doc.org/en/master/usage/quickstart.html), the source code for that is in the [docsrc folder](./docsrc) and the build version is in the [docs folder](./docs). From there new documentation can be compiled using the following commands:
 
 ```
-[make changes to documentation source]
+merge featurebranch into main branch
 cd /docsrc
 make github  (this builds the doc and copies the build version to ./docs)
-merge featurebranch into main branch
 github pages listens to main branch, detects changes and rebuilds documentation
 ```
 
