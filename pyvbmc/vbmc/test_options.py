@@ -1,8 +1,8 @@
-from vbmc import Options
+from pyvbmc.vbmc import Options
 
 
 def test_options_no_user_options():
-    default_options_path = "./vbmc/option_configs/test_options.ini"
+    default_options_path = "./pyvbmc/vbmc/option_configs/test_options.ini"
     options = Options(default_options_path, {"D": 2})
     assert options.get("sgdstepsize") == 0.005
     assert len(options.get("useroptions")) == 0
@@ -10,7 +10,7 @@ def test_options_no_user_options():
 
 
 def test_options_user_options():
-    default_options_path = "./vbmc/option_configs/test_options.ini"
+    default_options_path = "./pyvbmc/vbmc/option_configs/test_options.ini"
     user_options = {"display": "off"}
     options = Options(default_options_path, {"D": 2}, user_options)
     assert options.get("display") == "off"
@@ -20,7 +20,7 @@ def test_options_user_options():
 
 
 def test_init_from_existing_options():
-    default_options_path = "./vbmc/option_configs/test_options.ini"
+    default_options_path = "./pyvbmc/vbmc/option_configs/test_options.ini"
     user_options = {"display": "off"}
     options_1 = Options(default_options_path, {"D": 2}, user_options)
     options_2 = Options.init_from_existing_options(
@@ -31,7 +31,7 @@ def test_init_from_existing_options():
 
 
 def test_init_from_existing_options_modified():
-    default_options_path = "./vbmc/option_configs/test_options.ini"
+    default_options_path = "./pyvbmc/vbmc/option_configs/test_options.ini"
     user_options = {"display": "off"}
     options_1 = Options(default_options_path, {"D": 2}, user_options)
     options_1["sgdstepsize"] = 0.3
@@ -46,7 +46,7 @@ def test_init_from_existing_options_modified():
 
 
 def test_init_from_existing_options_without_user_options():
-    default_options_path = "./vbmc/option_configs/test_options.ini"
+    default_options_path = "./pyvbmc/vbmc/option_configs/test_options.ini"
     options_1 = Options(default_options_path, {"D": 2})
     options_1["sgdstepsize"] = 0.3
     options_2 = Options.init_from_existing_options(
@@ -60,7 +60,7 @@ def test_init_from_existing_options_without_user_options():
 
 
 def test_init_from_existing_options_without_other_options():
-    default_options_path = "./vbmc/option_configs/test_options.ini"
+    default_options_path = "./pyvbmc/vbmc/option_configs/test_options.ini"
     options_1 = Options.init_from_existing_options(
         default_options_path, {"D": 2}
     )
@@ -70,7 +70,7 @@ def test_init_from_existing_options_without_other_options():
 
 
 def test_str():
-    default_options_path = "./vbmc/option_configs/test_options.ini"
+    default_options_path = "./pyvbmc/vbmc/option_configs/test_options.ini"
     options = Options(default_options_path, {"D": 2})
     one_option_str = "funevalstart: 10 (Number of initial target fcn evals)"
     assert one_option_str in options.__str__()

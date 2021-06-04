@@ -1,8 +1,8 @@
 import sys
 
 import numpy as np
-from function_logger import FunctionLogger
-from timer import Timer
+from pyvbmc.function_logger import FunctionLogger
+from pyvbmc.timer import Timer
 
 from .options import Options
 

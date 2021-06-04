@@ -4,9 +4,9 @@ from __future__ import annotations
 import sys
 
 import numpy as np
-from decorators import handle_1D_input
-from kernel_density import kde1d
-from parameter_transformer import ParameterTransformer
+from pyvbmc.decorators import handle_1D_input
+from pyvbmc.kernel_density import kde1d
+from pyvbmc.parameter_transformer import ParameterTransformer
 from scipy.integrate import trapezoid
 from scipy.interpolate import interp1d
 from scipy.optimize import fmin_l_bfgs_b

@@ -3,7 +3,7 @@ import sys
 import numpy as np
 import pytest
 
-from vbmc import VBMC
+from pyvbmc.vbmc import VBMC
 
 fun = lambda x: np.sum(x + 2)
 

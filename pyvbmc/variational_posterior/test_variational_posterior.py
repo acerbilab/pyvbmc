@@ -1,13 +1,13 @@
 import numpy as np
 import pytest
-from parameter_transformer import ParameterTransformer
+from pyvbmc.parameter_transformer import ParameterTransformer
 from scipy.io import loadmat
 
-from variational_posterior import VariationalPosterior
+from pyvbmc.variational_posterior import VariationalPosterior
 
 
 def get_matlab_vp():
-    mat = loadmat("variational_posterior/vp-test.mat")
+    mat = loadmat("./pyvbmc/variational_posterior/vp-test.mat")
     vp = VariationalPosterior(2, 2, np.array([[5]]))
     vp.D = mat["D"][0, 0]
     vp.K = mat["K"][0, 0]

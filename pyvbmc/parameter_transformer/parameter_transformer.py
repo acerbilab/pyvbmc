@@ -1,5 +1,5 @@
 import numpy as np
-from decorators import handle_1D_input
+from pyvbmc.decorators import handle_1D_input
 
 
 class ParameterTransformer:

@@ -1,4 +1,4 @@
-from timer import Timer
+from pyvbmc.timer import Timer
 
 
 def test_start_stop_get_normal():

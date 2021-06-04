@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from parameter_transformer import ParameterTransformer
+from pyvbmc.parameter_transformer import ParameterTransformer
 
 D = 3
 

@@ -1,11 +1,11 @@
 import sys
 
 import numpy as np
-from entropy import entlb_vbmc, entub_vbmc
-from function_logger import FunctionLogger
-from parameter_transformer import ParameterTransformer
-from timer import Timer
-from variational_posterior import VariationalPosterior
+from pyvbmc.entropy import entlb_vbmc, entub_vbmc
+from pyvbmc.function_logger import FunctionLogger
+from pyvbmc.parameter_transformer import ParameterTransformer
+from pyvbmc.timer import Timer
+from pyvbmc.variational_posterior import VariationalPosterior
 
 from .options import Options
 
@@ -105,7 +105,7 @@ class VBMC:
         )
 
         self.options = Options(
-            "./vbmc/option_configs/advanced_vbmc_options.ini",
+            "./pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini",
             evalutation_parameters={"D": self.D},
             user_options=user_options,
         )
