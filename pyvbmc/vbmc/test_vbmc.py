@@ -668,3 +668,7 @@ def test_vbmc_optimstate_outwarp_delta():
     user_options = {"fitnessshaping": True, "gpoutwarpfun": fun}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     assert vbmc.optim_state["outwarp_delta"] == outwarpthreshbase
+
+def test_vbmc_optimize():
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
+    vbmc.optimize()
