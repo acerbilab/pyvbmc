@@ -47,7 +47,7 @@ See an example for a correct docstring [here](https://numpydoc.readthedocs.io/en
 
 ### Documentation
 
-We build the pyvbmc documentation using [Sphinx](https://www.sphinx-doc.org/en/master/usage/quickstart.html), the source code for that is in the [docsrc folder](./docsrc) and the build version is in the [docs folder](./docs). From there new documentation can be compiled using the following commands:
+The documentation is currently hosted on [github.io](https://lacerbi.github.io/pyvbmc/). We build the pyvbmc documentation using [Sphinx](https://www.sphinx-doc.org/en/master/usage/quickstart.html), the source code for that is in the [docsrc folder](./docsrc) and the build version is in the [docs folder](./docs). From there new documentation can be compiled using the following commands:
 
 ```
 merge featurebranch into main branch
