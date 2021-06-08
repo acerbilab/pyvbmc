@@ -1,13 +1,13 @@
 import sys
 
 import numpy as np
-from pyvbmc.entropy import entlb_vbmc, entub_vbmc
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.timer import Timer
 from pyvbmc.variational_posterior import VariationalPosterior
 
 from .options import Options
+from .stats import Stats
 
 
 class VBMC:
@@ -96,7 +96,6 @@ class VBMC:
             self.plausible_lower_bounds,
             self.plausible_upper_bounds,
         ) = self._boundscheck(
-            fun,
             x0,
             lower_bounds,
             upper_bounds,
@@ -154,9 +153,10 @@ class VBMC:
 
         self.x0 = self.parameter_transformer(self.x0)
 
+        self.stats = Stats()
+
     def _boundscheck(
         self,
-        fun: callable,
         x0: np.ndarray,
         lower_bounds: np.ndarray,
         upper_bounds: np.ndarray,
@@ -655,7 +655,7 @@ class VBMC:
                     if iteration % 2 == 0:
                         meantemp = self.optim_state.get("gp_meanfun")
                         self.optim_state["gp_meanfun"] = "const"
-                        gp_search = self._gptrain()
+                        gp_search = self._train_gp()
                         self.optim_state["gp_meanfun"] = meantemp
                     else:
                         gp_search = gp
@@ -838,26 +838,24 @@ class VBMC:
             # timer
 
             # Record all useful stats
-            # stats.save_iteration(
-            #     optimState,
-            #     vp,
-            #     elbo,
-            #     elbo_sd,
-            #     varss,
-            #     sKL,
-            #     sKL_true,
-            #     gp,
-            #     hypstruct.full,
-            #     Ns_gp,
-            #     pruned,
-            #     timer,
-            #     options.Diagnostics,
-            # )
+            self.stats.record_iteration(
+                self.optim_state,
+                self.vp,
+                elbo,
+                elbo_sd,
+                varss,
+                sKL,
+                sKL_true,
+                gp,
+                Ns_gp,
+                pruned,
+                timer,
+            )
 
             # stats.warmup[loopiter] = optimState.Warmup
 
             # Check termination conditions and warmup
-            is_finished, exitflag = self._termination()
+            is_finished = self._is_finished()
             #  Save stability
             # vp.stats.stable = stats.stable(optimState.iter)
 
@@ -865,7 +863,7 @@ class VBMC:
             if self.optim_state.get("warmup") and iteration > 1:
                 if self.options.get("recomputelcbmax"):
                     self.optim_state["lcbmax_vec"] = self._recompute_lcbmax().T
-                trim_flag = self._hasWarmupEnded()
+                trim_flag = self._check_warmup_end()
                 if trim_flag:
                     # Re-update GP after trimming
                     gp = self._reupdate_gp(gp)
@@ -911,14 +909,13 @@ class VBMC:
                         "outwarp_delta"
                     ) * self.options.get("outwarpthreshmult")
 
-            # if self.options.get("acqhedge"):
-            #     # Update hedge values
-            #     self.optim_state['hedge'] = self.acqhedge_vbmc(
-            #         "upd", self.optim_state.get("hedge"), stats, options
-            #     )
-
             # Write iteration output
 
+            # Pick "best" variational solution to return (and real vp, if train vp differs)
+            idx_best = self._determine_best_vp()
+
+            # Last variational optimization with large number of components
+            changed_flag = self._finalboost(idx_best)
             # remove later
             is_finished = iteration > 2
 
@@ -928,7 +925,9 @@ class VBMC:
 
     def _reupdate_gp(self, gp):
         """
-        GPREUPDATE Quick posterior reupdate of Gaussian process
+        Quick posterior reupdate of Gaussian process.
+
+        Wait for interface of GPlite before implementing.
         """
         return gp
 
@@ -936,29 +935,36 @@ class VBMC:
 
     def _train_gp(self):
         """
-        hypstruct, optim_state, stats, options
-        GPTRAIN_VBMC Train Gaussian process model.
+        Train Gaussian process model.
+
+        Wait for interface of GPlite before implementing.
         """
-        # return [gp,hypstruct,Ns_gp,optim_state]
-        return []
+        ns_gp = 10
+        gp = {}
+        return ns_gp, gp
 
     # Variational optimization / training of variational posterior:
 
     def _updateK(self):
         """
-        UPDATEK Update number of variational mixture components.
+        Update number of variational mixture components.
         """
-        return 5
+        return self.vp.K
 
-    def _optimize_vp(self, Nfastopts, Nslowopts, K):
+    def _optimize_vp(self, Nfastopts, Nslowopts, K=None):
         """
-        VPOPTIMIZE Optimize variational posterior.
+        Optimize variational posterior.
         """
-        return None, None
+        # use interface for vp optimzation?
+        if K is None:
+            K = self.vp.K
+        varss = []
+        pruned = 0
+        return varss, pruned
 
     # Loop termination:
 
-    def _hasWarmupEnded(self):
+    def _check_warmup_end(self):
         """
         vbmc_warmup.m
         optim_state, stats, action, options
@@ -966,12 +972,11 @@ class VBMC:
         """
         return True
 
-    def _termination(self):
+    def _is_finished(self):
         """
-        vbmc_termination.m
-        Compute stability index and check termination conditions.
+        Check termination conditions.
         """
-        return False, 0
+        return False
 
     def _recompute_lcbmax(self):
         """
@@ -981,16 +986,17 @@ class VBMC:
 
     # Finalizing:
 
-    def _finalboost(self, vp, idx_best, optim_state, stats, options):
+    def _finalboost(self, idx_best):
         """
         FINALBOOST_VBMC Final boost of variational components.
         """
-        pass
+        changed_flag = True
+        return changed_flag
 
-    def _determine_best_vp(
-        self, stats, idx, SafeSD, FracBack, RankCriterion, RealFlag
-    ):
+    def _determine_best_vp(self):
         """
         VBMC_BEST Return best variational posterior from stats structure.
         """
-        pass
+        idx_best = 1
+
+        return idx_best
