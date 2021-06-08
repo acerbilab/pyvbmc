@@ -670,7 +670,7 @@ class VBMC:
                     # funwrapper,vp,vp_old,gp_search,options)
                     sys.exit("Function currently not supported")
                 else:
-                    self._activesample_vbmc(new_funevals)
+                    self._activesample(new_funevals)
 
             # optimState.N = optimState.Xn  # Number of training inputs
             # optimState.Neff = sum(optimState.nevals(optimState.X_flag))
@@ -681,7 +681,7 @@ class VBMC:
 
             timer.start_timer("gpTrain")
 
-            Ns_gp = self._gptrain()
+            Ns_gp = self._train_gp()
 
             timer.stop_timer("gpTrain")
 
@@ -721,7 +721,7 @@ class VBMC:
                 N_slowopts = 1
 
                 # Run optimization of variational parameters
-                varss, pruned = self._vpoptimize(
+                varss, pruned = self._optimize_vp(
                     N_fastopts,
                     N_slowopts,
                     Knew,
@@ -863,18 +863,12 @@ class VBMC:
 
             # Check if we are still warming-up
             if self.optim_state.get("warmup") and iteration > 1:
-                # remove later
-                def recompute_lcbmax(gp, optimState, stats, options):
-                    return np.zeros((3, 3))
-
                 if self.options.get("recomputelcbmax"):
-                    self.optim_state["lcbmax_vec"] = recompute_lcbmax(
-                        gp, self.optim_state, None, self.options
-                    ).T
+                    self.optim_state["lcbmax_vec"] = self._recompute_lcbmax().T
                 trim_flag = self._hasWarmupEnded()
                 if trim_flag:
                     # Re-update GP after trimming
-                    gp = self._gp_reupdate(gp)
+                    gp = self._reupdate_gp(gp)
                 if not self.optim_state.get("warmup"):
                     self.vp.optimize_mu = self.options.get("variablemeans")
                     self.vp.optimize_weights = self.options.get(
@@ -928,23 +922,11 @@ class VBMC:
             # remove later
             is_finished = iteration > 2
 
-    def _activesample_vbmc(self, new_funevals):
+    # active sampling
+    def _activesample(self, new_funevals):
         pass
 
-    def __1acqhedge_vbmc(self, action, hedge, stats, options):
-        """
-        ACQPORTFOLIO Evaluate and update portfolio of acquisition functions.
-        (unused)
-        """
-        pass
-
-    def __1getAcqInfo(self, SearchAcqFcn):
-        """
-        GETACQINFO Get information from acquisition function(s)
-        """
-        pass
-
-    def _gp_reupdate(self, gp):
+    def _reupdate_gp(self, gp):
         """
         GPREUPDATE Quick posterior reupdate of Gaussian process
         """
@@ -952,7 +934,7 @@ class VBMC:
 
     # GP Training
 
-    def _gptrain(self):
+    def _train_gp(self):
         """
         hypstruct, optim_state, stats, options
         GPTRAIN_VBMC Train Gaussian process model.
@@ -968,7 +950,7 @@ class VBMC:
         """
         return 5
 
-    def _vpoptimize(self, Nfastopts, Nslowopts, K):
+    def _optimize_vp(self, Nfastopts, Nslowopts, K):
         """
         VPOPTIMIZE Optimize variational posterior.
         """
@@ -991,21 +973,21 @@ class VBMC:
         """
         return False, 0
 
-    def __4recompute_lcbmax(self, gp, optim_state, stats, options):
+    def _recompute_lcbmax(self):
         """
         RECOMPUTE_LCBMAX Recompute moving LCB maximum based on current GP.
         """
-        pass
+        return np.array([])
 
     # Finalizing:
 
-    def __5finalboost_vbmc(self, vp, idx_best, optim_state, stats, options):
+    def _finalboost(self, vp, idx_best, optim_state, stats, options):
         """
         FINALBOOST_VBMC Final boost of variational components.
         """
         pass
 
-    def __5best_vbmc(
+    def _determine_best_vp(
         self, stats, idx, SafeSD, FracBack, RankCriterion, RealFlag
     ):
         """
