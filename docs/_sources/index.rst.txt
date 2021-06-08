@@ -16,6 +16,7 @@ Note that this project is work in progress!
    classes/function_logger
    classes/options
    classes/parameter_transformer
+   classes/stats
    classes/timer
    classes/variational_posterior
    classes/vbmc

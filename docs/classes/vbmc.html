@@ -36,21 +36,77 @@
 <h1>VBMC<a class="headerlink" href="#vbmc" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="porting-status">
 <h2>Porting status<a class="headerlink" href="#porting-status" title="Permalink to this headline">¶</a></h2>
-<div class="admonition-todo admonition" id="id1">
+<div class="admonition-todo admonition" id="id2">
 <p class="admonition-title">Todo</p>
 <ul class="simple">
 <li><p>in _boundscheck the plausible bounds are set equal to the hard bounds, which is not admissible in VBMC (Fix by Luigi required)</p></li>
 <li><p>check the documentation of vbmc init and the class in general</p></li>
 <li><p>integrate the basic options somehow</p></li>
 <li><p>init a GP (wait for GPLite to be completed)</p></li>
+<li><p>experimental features (listed in <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/vmbc.m">vbmc.m</a> have not been ported yet)</p></li>
+<li><p><a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/private/acqhedge_vbmc.m">acqhedge_vbmc.m</a> has not been ported yet as it is considered to be experimental</p></li>
+<li><p>the warping in <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/vmbc.m">vbmc.m</a> has not been ported yet as it is considered to be experimental</p></li>
 </ul>
 </div>
 <div class="section" id="matlab-references-of-ported-methods">
 <h3>Matlab references of ported methods<a class="headerlink" href="#matlab-references-of-ported-methods" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><p>vbmc: <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/vmbc.m">vbmc.m</a></p></li>
-<li><p>parts of the init: <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/setupvars_vbmc.m">setupvars_vbmc.m</a></p></li>
-<li><p>_boundscheck: <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/boundscheck_vbmc.m">boundscheck_vbmc.m</a></p></li>
+<li><dl class="simple">
+<dt>initialization:</dt><dd><ul>
+<li><p>parts of the __init__(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/vmbc.m">vbmc.m</a></p></li>
+<li><p>parts of the __init__(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/setupvars_vbmc.m">setupvars_vbmc.m</a></p></li>
+<li><p>_boundscheck(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/boundscheck_vbmc.m">boundscheck_vbmc.m</a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>VBMC loop (optimize(): loop in <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/vmbc.m">vbmc.m</a>):</dt><dd><ul>
+<li><dl class="simple">
+<dt>Active Sampling:</dt><dd><ul>
+<li><p>_activesample(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/private/activesample_vbmc.m">activesample_vbmc.m</a></p></li>
+<li><p>_reupdate_gp(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/gpreupdate.m">gpreupdate.m</a> (Wait for gpyreg progress)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Gaussian Process training:</dt><dd><ul>
+<li><p>_train_gp(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/gptrain_vbmc.m">gptrain_vbmc.m</a> (Wait for gpyreg progress)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Variational optimization / training of VP:</dt><dd><ul>
+<li><p>_updateK(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/private/updateK.m">updateK.m</a></p></li>
+<li><p>_optimize_vp(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/vpoptimize_vbmc.m">vpoptimize_vbmc.m</a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Loop termination:</dt><dd><ul>
+<li><p>_check_warmup_end(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/private/vbmc_warmup.m">vbmc_warmup.m</a></p></li>
+<li><p>_recompute_lcbmax(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/private/recompute_lcbmax.m">recompute_lcbmax.m</a></p></li>
+<li><p>_is_finished(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/private/vbmc_termination.m">vbmc_termination.m</a></p></li>
+<li><p>_compute_reliability_index(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/private/vbmc_termination.m">vbmc_termination.m</a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Finalizing:</dt><dd><ul>
+<li><p>_finalboost(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/finalboost_vbmc.m">finalboost_vbmc.m</a></p></li>
+<li><p>_determine_best_vp(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/best_vbmc.m">best_vbmc.m</a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
 </ul>
 </div>
 </div>
@@ -71,30 +127,30 @@
 </dd>
 <dt><strong>x0</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>[description], by default None</p>
 </dd>
-<dt><strong>lower_bounds, upper_bounds</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>Lower_bounds (LB) and upper_bounds (UB) define a set 
-of strict lower and upper bounds coordinate vector, X, so that the 
-posterior has support on LB &lt; X &lt; UB. 
-If scalars, the bound is replicated in each dimension. Use 
+<dt><strong>lower_bounds, upper_bounds</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>Lower_bounds (LB) and upper_bounds (UB) define a set
+of strict lower and upper bounds coordinate vector, X, so that the
+posterior has support on LB &lt; X &lt; UB.
+If scalars, the bound is replicated in each dimension. Use
 empty matrices for LB and UB if no bounds exist. Set LB[i] = -Inf
 and UB[i] = Inf if the i-th coordinate is unbounded (while other
 coordinates may be bounded). Note that if LB and UB contain
 unbounded variables, the respective values of PLB and PUB need to be
 specified (see below), by default None</p>
 </dd>
-<dt><strong>plausible_lower_bounds, plausible_upper_bounds</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>Specifies a set of plausible_lower_bounds (PLB) and 
+<dt><strong>plausible_lower_bounds, plausible_upper_bounds</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>Specifies a set of plausible_lower_bounds (PLB) and
 plausible_upper_bounds (PUB) such that LB &lt; PLB &lt; PUB &lt; UB.
 Both PLB and PUB need to be finite. PLB and PUB represent a
 “plausible” range, which should denote a region of high posterior
 probability mass. Among other things, the plausible box is used to
 draw initial samples and to set priors over hyperparameters of the
-algorithm. When in doubt, we found that setting PLB and PUB using 
+algorithm. When in doubt, we found that setting PLB and PUB using
 the topmost ~68% percentile range of the prior (e.g, mean +/- 1 SD
-for a Gaussian prior) works well in many cases (but note that 
-additional information might afford a better guess), both are 
+for a Gaussian prior) works well in many cases (but note that
+additional information might afford a better guess), both are
 by default None.</p>
 </dd>
 <dt><strong>user_options</strong><span class="classifier">dict, optional</span></dt><dd><p>Modified options can be passed as a dict. Please refer to the
-respective VBMC options page for the default options. If no 
+respective VBMC options page for the default options. If no
 user_options are passed, the default options are used.</p>
 </dd>
 </dl>
