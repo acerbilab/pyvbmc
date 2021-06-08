@@ -36,13 +36,16 @@
 <h1>VBMC<a class="headerlink" href="#vbmc" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="porting-status">
 <h2>Porting status<a class="headerlink" href="#porting-status" title="Permalink to this headline">¶</a></h2>
-<div class="admonition-todo admonition" id="id1">
+<div class="admonition-todo admonition" id="id2">
 <p class="admonition-title">Todo</p>
 <ul class="simple">
 <li><p>in _boundscheck the plausible bounds are set equal to the hard bounds, which is not admissible in VBMC (Fix by Luigi required)</p></li>
 <li><p>check the documentation of vbmc init and the class in general</p></li>
 <li><p>integrate the basic options somehow</p></li>
 <li><p>init a GP (wait for GPLite to be completed)</p></li>
+<li><p>experimental features (listed in <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/vmbc.m">vbmc.m</a> have not been ported yet)</p></li>
+<li><p><a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/private/acqhedge_vbmc.m">acqhedge_vbmc.m</a> has not been ported yet as it is considered to be experimental</p></li>
+<li><p>the warping in <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/vmbc.m">vbmc.m</a> has not been ported yet as it is considered to be experimental</p></li>
 </ul>
 </div>
 <div class="section" id="matlab-references-of-ported-methods">
@@ -58,18 +61,18 @@
 </dl>
 </li>
 <li><dl class="simple">
-<dt>VBMC loop (optimize() loop in <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/vmbc.m">vbmc.m</a>):</dt><dd><ul>
+<dt>VBMC loop (optimize(): loop in <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/vmbc.m">vbmc.m</a>):</dt><dd><ul>
 <li><dl class="simple">
 <dt>Active Sampling:</dt><dd><ul>
 <li><p>_activesample(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/private/activesample_vbmc.m">activesample_vbmc.m</a></p></li>
-<li><p>_reupdate_gp(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/gpreupdate.m">gpreupdate.m</a></p></li>
+<li><p>_reupdate_gp(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/gpreupdate.m">gpreupdate.m</a> (Wait for gpyreg progress)</p></li>
 </ul>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
 <dt>Gaussian Process training:</dt><dd><ul>
-<li><p>_train_gp(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/gptrain_vbmc.m">gptrain_vbmc.m</a></p></li>
+<li><p>_train_gp(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/gptrain_vbmc.m">gptrain_vbmc.m</a> (Wait for gpyreg progress)</p></li>
 </ul>
 </dd>
 </dl>
@@ -87,6 +90,7 @@
 <li><p>_check_warmup_end(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/private/vbmc_warmup.m">vbmc_warmup.m</a></p></li>
 <li><p>_recompute_lcbmax(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/private/recompute_lcbmax.m">recompute_lcbmax.m</a></p></li>
 <li><p>_is_finished(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/private/vbmc_termination.m">vbmc_termination.m</a></p></li>
+<li><p>_compute_reliability_index(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/private/vbmc_termination.m">vbmc_termination.m</a></p></li>
 </ul>
 </dd>
 </dl>
