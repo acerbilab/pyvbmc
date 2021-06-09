@@ -1,5 +1,5 @@
 import numpy as np
-from pyvbmc.decorators import handle_1D_input
+from pyvbmc.decorators import handle_0D_1D_input
 
 
 class ParameterTransformer:
@@ -99,7 +99,7 @@ class ParameterTransformer:
                         - plausible_lower_bounds[:, i]
                     )
 
-    @handle_1D_input(kwarg="x", argpos=0)
+    @handle_0D_1D_input(patched_kwargs=["x"], patched_argpos=[0])
     def __call__(self, x: np.ndarray):
         """
         Performs direct transform of original variables X into
@@ -140,7 +140,7 @@ class ParameterTransformer:
 
         return u
 
-    @handle_1D_input(kwarg="u", argpos=0)
+    @handle_0D_1D_input(patched_kwargs=["u"], patched_argpos=[0])
     def inverse(self, u: np.ndarray):
         """
         Performs inverse transform of unconstrained variables u
@@ -187,7 +187,9 @@ class ParameterTransformer:
         x[:, mask] = np.minimum(x[:, mask], self.ub_orig[:, mask])
         return x
 
-    @handle_1D_input(kwarg="u", argpos=0, return_scalar=True)
+    @handle_0D_1D_input(
+        patched_kwargs=["u"], patched_argpos=[0], return_scalar=True
+    )
     def log_abs_det_jacobian(self, u: np.ndarray):
         r"""
         log_abs_det_jacobian returns the log absolute value of the determinant

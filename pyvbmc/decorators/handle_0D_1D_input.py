@@ -2,16 +2,18 @@ import numpy as np
 from functools import wraps
 
 
-def handle_1D_input(kwarg: str, argpos: int, return_scalar=False):
+def handle_0D_1D_input(
+    patched_kwargs: list(), patched_argpos: list(), return_scalar=False
+):
     """
-    A decorator that handles 1D inputs.
+    A decorator that handles 0D, 1D inputs and transforms them to 2D.
 
     Parameters
     ----------
     kwarg : str
-        The name of the keyword argument that should be handeled.
+        The name of the keyword arguments that should be handeled.
     argpos : int
-        The position of the argument that should be handeled.
+        The position of the arguments that should be handeled.
     return_scalar : bool, optional
         If the input is 1D the function should return a scalar,
         by default False.
@@ -20,24 +22,20 @@ def handle_1D_input(kwarg: str, argpos: int, return_scalar=False):
     def decorator(function):
         @wraps(function)
         def wrapper(self, *args, **kwargs):
-
-            if kwarg in kwargs:
-                # for keyword arguments
-                input_array = kwargs.get(kwarg)
-                input_dims = np.ndim(input_array)
-                if input_dims == 1:
-                    kwargs[kwarg] = np.reshape(
-                        input_array, (1, input_array.shape[0])
+            for idx, patched_kwarg in enumerate(patched_kwargs):
+                if patched_kwarg in kwargs:
+                    # for keyword arguments
+                    input_dims = np.ndim(kwargs.get(patched_kwarg))
+                    kwargs[patched_kwarg] = np.atleast_2d(
+                        kwargs.get(patched_kwarg)
                     )
 
-            elif len(args) > 0:
-                # for positional arguments
-                input_array = args[argpos]
-                input_dims = np.ndim(input_array)
-                if input_dims == 1:
+                elif len(args) > patched_argpos[idx]:
+                    # for positional arguments
                     arg_list = list(args)
-                    arg_list[argpos] = np.reshape(
-                        input_array, (1, input_array.shape[0])
+                    input_dims = np.ndim(args[patched_argpos[idx]])
+                    arg_list[patched_argpos[idx]] = np.atleast_2d(
+                        args[patched_argpos[idx]]
                     )
                     args = tuple(arg_list)
 
