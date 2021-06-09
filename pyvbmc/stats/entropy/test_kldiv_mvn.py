@@ -12,7 +12,6 @@ def test_kldiv_1d_seperated():
     assert np.all(kldiv_mvn(mu, sigma, mu * 100, sigma) == 4900.5)
 
 def test_kldiv_3d_identical():
-    # add tests to vp.kldiv as well!!
     mu = np.ones((3,1))
     sigma = np.eye(3)
     assert np.all(kldiv_mvn(mu, sigma, mu, sigma) == 0)

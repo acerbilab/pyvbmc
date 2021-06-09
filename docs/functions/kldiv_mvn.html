@@ -1,0 +1,162 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>kldiv_mvn &#8212; pyvmbc  documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="VBMC options" href="../options/vbmc_options.html" />
+    <link rel="prev" title="kde1d" href="kernel_density.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="kldiv-mvn">
+<h1>kldiv_mvn<a class="headerlink" href="#kldiv-mvn" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="matlab-references">
+<h2>Matlab references<a class="headerlink" href="#matlab-references" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>Everything in: <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/shared/mvnkl.m">mvnkl.m</a></p></li>
+</ul>
+<div class="section" id="python-documentation">
+<h3>Python documentation<a class="headerlink" href="#python-documentation" title="Permalink to this headline">¶</a></h3>
+<dl class="py function">
+<dt id="pyvbmc.stats.entropy.kldiv_mvn">
+<code class="sig-prename descclassname"><span class="pre">pyvbmc.stats.entropy.</span></code><code class="sig-name descname"><span class="pre">kldiv_mvn</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyvbmc.stats.entropy.kldiv_mvn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the analytical Kullback-Leibler divergence between two multivariate
+normal pdfs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>mu1</strong><span class="classifier">np.ndarray</span></dt><dd><p>The k-dimensional mean vector of the first multivariate normal pdf.</p>
+</dd>
+<dt><strong>sigma1</strong><span class="classifier">np.ndarray</span></dt><dd><p>The covariance matrix of the first multivariate normal pdf.</p>
+</dd>
+<dt><strong>mu2</strong><span class="classifier">np.ndarray</span></dt><dd><p>The k-dimensional mean vector of the second multivariate normal pdf.</p>
+</dd>
+<dt><strong>sigma2</strong><span class="classifier">np.ndarray</span></dt><dd><p>The covariance matrix of the second multivariate normal pdf.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>kldiv</strong><span class="classifier">np.array</span></dt><dd><p>The computed Kullback-Leibler divergence.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">pyvmbc</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Classes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../classes/function_logger.html">FunctionLogger</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../classes/options.html">Options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../classes/parameter_transformer.html">ParameterTransformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../classes/stats.html">Stats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../classes/timer.html">Timer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../classes/variational_posterior.html">VariationalPosterior</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../classes/vbmc.html">VBMC</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Functions:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="kernel_density.html">kde1d</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">kldiv_mvn</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#matlab-references">Matlab references</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Options:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../options/vbmc_options.html">VBMC options</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="kernel_density.html" title="previous chapter">kde1d</a></li>
+      <li>Next: <a href="../options/vbmc_options.html" title="next chapter">VBMC options</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/functions/kldiv_mvn.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
