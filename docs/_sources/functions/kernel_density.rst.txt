@@ -1,18 +1,8 @@
-======
-kde1d
-======
-
-Porting status
 ==============
-..
-     .. todo::
-     
+kernel_density
+==============
 
-Matlab references
------------------
-- See references below in the code
+kde1d
+=====
 
-Python documentation
-====================
-
-.. autofunction:: pyvbmc.kernel_density.kde1d
+.. autofunction:: pyvbmc.stats.kernel_density.kde1d

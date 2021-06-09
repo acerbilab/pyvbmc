@@ -25,7 +25,9 @@ Note that this project is work in progress!
    :maxdepth: 2
    :caption: Functions:
 
+   functions/decorators
    functions/kernel_density
+   functions/kldiv_mvn
 
 .. toctree::
    :maxdepth: 2

@@ -326,11 +326,10 @@ def test_1D_input_inverse():
     assert X2.shape == Y.shape
 
 
-def test_1D_input_log_abs_det_jacobian_():
+def test_1D_input_log_abs_det_jacobian():
     parameter_transformer = ParameterTransformer(D=D)
     U = np.ones((D))
     log_j = parameter_transformer.log_abs_det_jacobian(U)
     assert np.ndim(log_j) == 0
     log_j2 = parameter_transformer.log_abs_det_jacobian(u=U)
     assert np.ndim(log_j2) == 0
-    
