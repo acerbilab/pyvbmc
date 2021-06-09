@@ -3,17 +3,17 @@ from functools import wraps
 
 
 def handle_0D_1D_input(
-    patched_kwargs: list(), patched_argpos: list(), return_scalar=False
+    patched_kwargs: [], patched_argpos: [], return_scalar=False
 ):
     """
     A decorator that handles 0D, 1D inputs and transforms them to 2D.
 
     Parameters
     ----------
-    kwarg : str
-        The name of the keyword arguments that should be handeled.
-    argpos : int
-        The position of the arguments that should be handeled.
+    kwarg : list of str
+        The names of the keyword arguments that should be handeled.
+    argpos : list of int
+        The positions of the arguments that should be handeled.
     return_scalar : bool, optional
         If the input is 1D the function should return a scalar,
         by default False.

@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>kde1d &#8212; pyvmbc  documentation</title>
+    <title>kernel_density &#8212; pyvmbc  documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -14,8 +14,8 @@
     <script src="../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="kldiv_mvn" href="kldiv_mvn.html" />
-    <link rel="prev" title="VBMC" href="../classes/vbmc.html" />
+    <link rel="next" title="entropy" href="kldiv_mvn.html" />
+    <link rel="prev" title="decorators" href="decorators.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -32,15 +32,10 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="kde1d">
-<h1>kde1d<a class="headerlink" href="#kde1d" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="matlab-references">
-<h2>Matlab references<a class="headerlink" href="#matlab-references" title="Permalink to this headline">¶</a></h2>
-<ul class="simple">
-<li><p>See references below in the code</p></li>
-</ul>
-<div class="section" id="python-documentation">
-<h3>Python documentation<a class="headerlink" href="#python-documentation" title="Permalink to this headline">¶</a></h3>
+  <div class="section" id="kernel-density">
+<h1>kernel_density<a class="headerlink" href="#kernel-density" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="kde1d">
+<h2>kde1d<a class="headerlink" href="#kde1d" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt id="pyvbmc.stats.kernel_density.kde1d">
 <code class="sig-prename descclassname"><span class="pre">pyvbmc.stats.kernel_density.</span></code><code class="sig-name descname"><span class="pre">kde1d</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">16384</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_bound</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_bound</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyvbmc.stats.kernel_density.kde1d" title="Permalink to this definition">¶</a></dt>
@@ -114,7 +109,6 @@ estimation via diffusion. The Annals of Statistics,
 
 </div>
 </div>
-</div>
 
 
           </div>
@@ -145,11 +139,12 @@ estimation via diffusion. The Annals of Statistics,
 </ul>
 <p class="caption"><span class="caption-text">Functions:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">kde1d</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#matlab-references">Matlab references</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decorators.html">decorators</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">kernel_density</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#kde1d">kde1d</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="kldiv_mvn.html">kldiv_mvn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="kldiv_mvn.html">entropy</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Options:</span></p>
 <ul>
@@ -160,8 +155,8 @@ estimation via diffusion. The Annals of Statistics,
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="../classes/vbmc.html" title="previous chapter">VBMC</a></li>
-      <li>Next: <a href="kldiv_mvn.html" title="next chapter">kldiv_mvn</a></li>
+      <li>Previous: <a href="decorators.html" title="previous chapter">decorators</a></li>
+      <li>Next: <a href="kldiv_mvn.html" title="next chapter">entropy</a></li>
   </ul></li>
 </ul>
 </div>
