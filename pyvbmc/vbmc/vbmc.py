@@ -832,7 +832,7 @@ class VBMC:
             # stats.warmup[loopiter] = optimState.Warmup
 
             # Check termination conditions and warmup
-            is_finished = self._is_finished()
+            # is_finished = self._is_finished(iteration)
             #  Save stability
             # vp.stats.stable = stats.stable(optimState.iter)
 
@@ -953,7 +953,27 @@ class VBMC:
         """
         Check termination conditions.
         """
-        return False
+        isFinished_flag = False
+
+        # Maximum number of new function evaluations
+        if self.optim_state.get("func_count") >= self.options.get(
+            "maxfunevals"
+        ):
+            isFinished_flag = True
+            # msg "Inference terminated
+
+        # Maximum number of iterations
+        if self.optim_state.get("iter") >= self.options.get("maxiter"):
+            isFinished_flag = True
+            # msg = "Inference terminated
+
+        # Prevent early termination
+        if self.optim_state.get("func_count") < self.options.get(
+            "minfunevals"
+        ) or self.optim_state.get("iter") < self.options.get("miniter"):
+            isFinished_flag = False
+
+        return isFinished_flag
 
     def _recompute_lcbmax(self):
         """
