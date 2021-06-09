@@ -3,6 +3,7 @@ import sys
 import numpy as np
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
+from pyvbmc.stats.entropy import kldiv_mvn
 from pyvbmc.timer import Timer
 from pyvbmc.variational_posterior import VariationalPosterior
 
@@ -778,31 +779,7 @@ class VBMC:
             ):
                 mubar_orig, sigma_orig = vp_real.moments(1e6, True, True)
 
-                def mvnkl(mu1, sigma1, mu2, sigma2):
-                    # Kullback-Leibler divergence between two multivariate normal pdfs
-                    if np.ndim(sigma1) == 0:
-                        sigma1 = np.array([np.array([sigma1])])
-                    if np.ndim(sigma2) == 0:
-                        sigma2 = np.array([np.array([sigma2])])
-                    if np.ndim(mu1) == 1:
-                        mu1 = np.array([mu1])
-                    if np.ndim(mu2) == 1:
-                        mu2 = np.array([mu2])
-
-                    D = mu1.shape[1]
-                    dmu = (mu1 - mu2).T
-                    detq1 = np.linalg.det(sigma1)
-                    detq2 = np.linalg.det(sigma2)
-                    lndet = np.log(detq2 / detq1)
-                    a, _, _, _ = np.linalg.lstsq(sigma2, sigma1, rcond=None)
-                    b, _, _, _ = np.linalg.lstsq(sigma2, dmu, rcond=None)
-                    kl1 = 0.5 * (np.trace(a) + dmu.T @ b - D + lndet)
-                    a, _, _, _ = np.linalg.lstsq(sigma1, sigma2, rcond=None)
-                    b, _, _, _ = np.linalg.lstsq(sigma1, dmu, rcond=None)
-                    kl2 = 0.5 * (np.trace(a) + dmu.T @ b - D - lndet)
-                    return np.concatenate((kl1, kl2), axis=None)
-
-                kl = mvnkl(
+                kl = kldiv_mvn(
                     mubar_orig,
                     sigma_orig,
                     self.options.get("truemean"),
