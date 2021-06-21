@@ -22,13 +22,19 @@ def create_vbmc(
     return VBMC(fun, x0_array, lb, ub, plb, pub, user_options)
 
 
-def test_vbmc_is_finished_maxfunevals():
+def test_vbmc_is_finished_maxfunevals(mocker):
     user_options = {
         "maxfunevals": 10,
         "minfunevals": 5,
         "miniter": 5,
         "maxiter": 100,
+        "tolstablecount": 60,
+        "funevalsperiter": 5,
     }
+    mocker.patch(
+        "pyvbmc.vbmc.VBMC._compute_reliability_index",
+        return_value=(np.Inf, np.NaN),
+    )
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.optim_state["func_count"] = 10
     vbmc.optim_state["iter"] = 10
@@ -37,7 +43,11 @@ def test_vbmc_is_finished_maxfunevals():
     assert vbmc._is_finished() == False
 
 
-def test_vbmc_is_finished_maxiter():
+def test_vbmc_is_finished_maxiter(mocker):
+    mocker.patch(
+        "pyvbmc.vbmc.VBMC._compute_reliability_index",
+        return_value=(np.Inf, np.NaN),
+    )
     user_options = {
         "maxfunevals": 10,
         "minfunevals": 5,
@@ -46,22 +56,28 @@ def test_vbmc_is_finished_maxiter():
     }
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.optim_state["func_count"] = 9
+    vbmc.optim_state["entropy_switch"] = True
     vbmc.optim_state["iter"] = 100
     assert vbmc._is_finished() == True
     vbmc.optim_state["iter"] = 99
     assert vbmc._is_finished() == False
 
 
-def test_vbmc_is_finished_prevent_early_termination():
+def test_vbmc_is_finished_prevent_early_termination(mocker):
     user_options = {
         "maxfunevals": 10,
         "minfunevals": 5,
         "miniter": 101,
         "maxiter": 100,
     }
+    mocker.patch(
+        "pyvbmc.vbmc.VBMC._compute_reliability_index",
+        return_value=(np.Inf, np.NaN),
+    )
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.optim_state["func_count"] = 9
     vbmc.optim_state["iter"] = 100
+    vbmc.optim_state["entropy_switch"] = True
     assert vbmc._is_finished() == False
     user_options = {
         "maxfunevals": 10,
@@ -72,6 +88,69 @@ def test_vbmc_is_finished_prevent_early_termination():
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.optim_state["func_count"] = 9
     vbmc.optim_state["iter"] = 100
+    vbmc.optim_state["entropy_switch"] = True
+    assert vbmc._is_finished() == False
+
+
+def test_vbmc_is_finished_stability(mocker):
+    user_options = {
+        "maxfunevals": 10,
+        "minfunevals": 5,
+        "miniter": 5,
+        "maxiter": 100,
+        "tolimprovement": 0.01,
+        "tolstablecount": 60,
+        "funevalsperiter": 5,
+        "tolstableexcptfrac": 0.2,
+    }
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    vbmc.optim_state["func_count"] = 9
+    vbmc.optim_state["entropy_switch"] = False
+    vbmc.optim_state["iter"] = 99
+    vbmc.stats = {"rindex": np.ones(99) * 0.5}
+
+    mocker.patch(
+        "pyvbmc.vbmc.VBMC._compute_reliability_index",
+        return_value=(0.5, 0.005),
+    )
+    assert vbmc._is_finished() == True
+    mocker.patch(
+        "pyvbmc.vbmc.VBMC._compute_reliability_index",
+        return_value=(1, 0.005),
+    )
+    assert vbmc._is_finished() == False
+    mocker.patch(
+        "pyvbmc.vbmc.VBMC._compute_reliability_index",
+        return_value=(0.5, 0.1),
+    )
+    assert vbmc._is_finished() == False
+    vbmc.optim_state["iter"] = 9
+    mocker.patch(
+        "pyvbmc.vbmc.VBMC._compute_reliability_index",
+        return_value=(1, 0.005),
+    )
+    assert vbmc._is_finished() == False
+
+
+def test_vbmc_is_finished_stability_entropyswitch(mocker):
+    user_options = {
+        "maxfunevals": 10,
+        "minfunevals": 5,
+        "miniter": 5,
+        "maxiter": 100,
+        "tolimprovement": 0.01,
+        "tolstableentropyiters": 6,
+        "tolstableexcptfrac": 0.2,
+    }
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    vbmc.optim_state["func_count"] = 9
+    vbmc.optim_state["entropy_switch"] = True
+    vbmc.optim_state["iter"] = 99
+    vbmc.stats = {"rindex": np.ones(99) * 0.5}
+    mocker.patch(
+        "pyvbmc.vbmc.VBMC._compute_reliability_index",
+        return_value=(0.5, 0.005),
+    )
     assert vbmc._is_finished() == False
 
 

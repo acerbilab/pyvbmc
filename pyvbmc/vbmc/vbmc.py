@@ -967,11 +967,59 @@ class VBMC:
             isFinished_flag = True
             # msg = "Inference terminated
 
+        # Quicker stability check for entropy switching
+        if self.optim_state.get("entropy_switch"):
+            tol_stable_iters = self.options.get("tolstableentropyiters")
+        else:
+            tol_stable_iters = int(
+                np.ceil(
+                    self.options.get("tolstablecount")
+                    / self.options.get("funevalsperiter")
+                )
+            )
+
+        rindex, ELCBO_improvement = self._compute_reliability_index(
+            tol_stable_iters
+        )
+
+        # Check stability termination condition
+        stableflag = False
+        if (
+            self.optim_state.get("iter") >= tol_stable_iters
+            and rindex < 1
+            and ELCBO_improvement < self.options.get("tolimprovement")
+        ):
+            # Count how many good iters in the recent past (excluding current)
+            stable_count = np.sum(
+                self.stats.get("rindex")[
+                    self.optim_state.get("iter")
+                    - tol_stable_iters : self.optim_state.get("iter")
+                    - 2
+                ]
+                < 1
+            )
+            if (
+                stable_count
+                >= tol_stable_iters
+                - np.floor(
+                    tol_stable_iters * self.options.get("tolstableexcptfrac")
+                )
+                - 1
+            ):
+                if self.optim_state.get("entropy_switch"):
+                    # If stable but entropy switch is On,
+                    # turn it off and continue
+                    self.optim_state["entropy_switch"] = False
+                else:
+                    isFinished_flag = True
+                    # "msg = 'Inference terminated:"
+
         # Prevent early termination
         if self.optim_state.get("func_count") < self.options.get(
             "minfunevals"
         ) or self.optim_state.get("iter") < self.options.get("miniter"):
             isFinished_flag = False
+            stableflag = True
 
         return isFinished_flag
 
