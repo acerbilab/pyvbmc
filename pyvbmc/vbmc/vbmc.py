@@ -975,6 +975,57 @@ class VBMC:
 
         return isFinished_flag
 
+    def _compute_reliability_index(self, tol_stable_iters):
+        """
+        Private function to compute the reliability index.
+        """
+        iteration_idx = self.optim_state.get("iter") - 1
+        if self.optim_state.get("iter") < 3:
+            rindex = np.Inf
+            ELCBO_improvement = np.NaN
+            return rindex, ELCBO_improvement
+
+        sn = np.sqrt(self.optim_state.get("sn2hpd"))
+        tol_sn = np.sqrt(sn / self.options.get("tolsd")) * self.options.get(
+            "tolsd"
+        )
+        tol_sd = min(
+            max(self.options.get("tolsd"), tol_sn),
+            self.options.get("tolsd") * 10,
+        )
+
+        rindex_vec = np.full((3), np.NaN)
+        rindex_vec[0] = (
+            np.abs(
+                self.stats.get("elbo")[iteration_idx]
+                - self.stats.get("elbo")[iteration_idx - 1]
+            )
+            / tol_sd
+        )
+        rindex_vec[1] = self.stats.get("elbo_sd")[iteration_idx] / tol_sd
+        rindex_vec[2] = self.stats.get("sKL")[
+            iteration_idx
+        ] / self.options.get("tolskl")
+
+        # Compute average ELCBO improvement per fcn eval in the past few iters
+        idx0 = int(
+            max(
+                1,
+                self.optim_state.get("iter")
+                - np.ceil(0.5 * tol_stable_iters)
+                + 1,
+            )
+            - 1
+        )
+        xx = self.stats.get("funccount")[idx0:iteration_idx]
+        yy = (
+            self.stats.get("elbo")[idx0:iteration_idx]
+            - self.options.get("elcboimproweight")
+            * self.stats.get("elbo_sd")[idx0:iteration_idx]
+        )
+        ELCBO_improvement = np.polyfit(xx, yy, 1)[0]
+        return np.mean(rindex_vec), ELCBO_improvement
+
     def _recompute_lcbmax(self):
         """
         RECOMPUTE_LCBMAX Recompute moving LCB maximum based on current GP.
