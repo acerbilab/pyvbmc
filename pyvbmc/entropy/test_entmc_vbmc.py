@@ -27,7 +27,7 @@ def entmc_vbmc_wrapper(theta, D, K, Ns=1e5, ret="H"):
     vp = VariationalPosterior(D, K)
     vp.mu = np.reshape(theta[: D * K], (D, K))
     vp.sigma = theta[D * K : D * K + K]
-    vp.lamb = theta[D * K + K : D * K + K + D]
+    vp.lambd = theta[D * K + K : D * K + K + D]
     vp.w = theta[D * K + K + D :]
 
     np.random.seed(42)  # important for numerical gradients testing
@@ -50,7 +50,7 @@ def test_entmc_vbmc_single():
     vp.mu = np.ones((D, K))
     vp.sigma = np.ones((1, K))
 
-    H_exact, dH_exact = single_gaussian_entropy(D, vp.sigma, vp.lamb)
+    H_exact, dH_exact = single_gaussian_entropy(D, vp.sigma, vp.lambd)
     H, dH = entmc_vbmc(vp, Ns, jacobian_flag=False)
 
     assert np.isclose(H, H_exact, rtol=0.01, atol=0.01)
@@ -58,7 +58,7 @@ def test_entmc_vbmc_single():
 
     # Check gradients
     theta0 = np.concatenate(
-        [x.flatten() for x in [vp.mu, vp.sigma, vp.lamb, vp.w]]
+        [x.flatten() for x in [vp.mu, vp.sigma, vp.lambd, vp.w]]
     )
     f = lambda theta: entmc_vbmc_wrapper(theta, D, K, Ns, "H")
     f_grad = lambda theta: entmc_vbmc_wrapper(theta, D, K, Ns, "dH")
@@ -73,18 +73,20 @@ def test_entmc_vbmc_multi():
             vp = VariationalPosterior(D, K)
             vp.mu = np.stack([np.ones(D) * 10 * i for i in range(K)], 1)
             vp.sigma = np.ones(K)
-            vp.lamb = np.ones(D)
+            vp.lambd = np.ones(D)
             vp.w = np.ones(K) / K
 
             H_appro = 0
             dH_appro = np.zeros(D * K + K + D + K)
             for k in range(K):
-                H_appro_k, _ = single_gaussian_entropy(D, vp.sigma[k], vp.lamb)
+                H_appro_k, _ = single_gaussian_entropy(
+                    D, vp.sigma[k], vp.lambd
+                )
                 H_appro += vp.w[k] * H_appro_k - vp.w[k] * np.log(vp.w[k])
                 dH_appro[D * k : D * (k + 1)] = 0  # mu
                 dH_appro[D * K + k] = D / vp.sigma[k] * vp.w[k]  # sigma
                 dH_appro[D * K + K : D * K + K + D] += (
-                    1 / vp.lamb.flatten() * vp.w[k]
+                    1 / vp.lambd.flatten() * vp.w[k]
                 )  # lambda
                 dH_appro[D * K + K + D + k] = (
                     H_appro_k - K - np.log(vp.w[k])
@@ -97,7 +99,7 @@ def test_entmc_vbmc_multi():
 
             # Check gradients
             theta0 = np.concatenate(
-                [x.flatten() for x in [vp.mu, vp.sigma, vp.lamb, vp.w]]
+                [x.flatten() for x in [vp.mu, vp.sigma, vp.lambd, vp.w]]
             )
             f = lambda theta: entmc_vbmc_wrapper(theta, D, K, Ns, "H")
             f_grad = lambda theta: entmc_vbmc_wrapper(theta, D, K, Ns, "dH")
@@ -114,7 +116,7 @@ def test_entmc_vbmc_matlab():
     vp.w = mat["vp"]["w"].item().astype(float)
     vp.mu = mat["vp"]["mu"].item().astype(float)
     vp.sigma = mat["vp"]["sigma"].item().astype(float)
-    vp.lamb = mat["vp"]["lambda"].item().astype(float)
+    vp.lambd = mat["vp"]["lambda"].item().astype(float)
     vp.eta = mat["vp"]["eta"].item().astype(float)
     Hm = mat["H"].item()
     dHm = mat["dH"].squeeze()

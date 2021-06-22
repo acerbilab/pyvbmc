@@ -42,7 +42,7 @@ def entlb_vbmc(
     mu = vp.mu.copy()  # [D, K]
     mu_t = mu.transpose()  # [K, D]
     sigma = vp.sigma.flatten()  # [1,K] -> [K, ]
-    lambd = vp.lamb.flatten()  # [D,1] -> [D, ]
+    lambd = vp.lambd.flatten()  # [D,1] -> [D, ]
     w = vp.w.flatten()  # [1,K] -> [K, ]
     eta = vp.eta.flatten()  # [1,K] -> [K, ]
 

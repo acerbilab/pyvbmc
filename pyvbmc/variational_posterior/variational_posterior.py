@@ -13,7 +13,7 @@ from scipy.optimize import fmin_l_bfgs_b
 from scipy.special import gammaln
 
 
-class VariationalPosterior():
+class VariationalPosterior:
     """
     The Variational Posterior class used in the context of VBMC.
     """
@@ -44,7 +44,7 @@ class VariationalPosterior():
         self.K = K  # number of components
 
         if x0 is None:
-            x0 = np.zeros(D, K)
+            x0 = np.zeros((D, K))
         elif x0.size == D:
             x0.reshape(-1, 1)  # reshape to vertical array
             x0 = np.tile(x0, (K, 1)).T  # copy vector
@@ -54,15 +54,16 @@ class VariationalPosterior():
             x0 = x0[:, 0 : self.K]
 
         self.w = np.ones((1, K)) / K
+        self.eta = np.ones((1, K)) / K
         self.mu = x0 + 1e-6 * np.random.randn(self.D, self.K)
         self.sigma = 1e-3 * np.ones((1, K))
-        self.lamb = np.ones((self.D, 1))
+        self.lambd = np.ones((self.D, 1))
 
         # By default, optimize all variational parameters
         self.optimize_weights = True
         self.optimize_mu = True
         self.optimize_sigma = True
-        self.optimize_lamb = True
+        self.optimize_lambd = True
 
         if parameter_transformer is None:
             self.parameter_transformer = ParameterTransformer(self.D)
@@ -127,7 +128,7 @@ class VariationalPosterior():
         elif gp_sample:
             pass
         else:
-            lamd_row = self.lamb.reshape(1, -1)
+            lamd_row = self.lambd.reshape(1, -1)
 
             rng = np.random.default_rng()
             if self.K > 1:
@@ -255,7 +256,7 @@ class VariationalPosterior():
         # Convert points to transformed space
         if origflag and not transflag:
             x = self.parameter_transformer(x)
-        lamd_row = self.lamb.reshape(1, -1)
+        lamd_row = self.lambd.reshape(1, -1)
         N, D = x.shape
         y = np.zeros((N, 1))
         if gradflag:
@@ -297,7 +298,7 @@ class VariationalPosterior():
                 nf = (
                     np.exp(gammaln((df + D) / 2) - gammaln(df / 2))
                     / (df * np.pi) ** (D / 2)
-                    / np.prod(self.lamb)
+                    / np.prod(self.lambd)
                 )
 
                 for k in range(self.K):
@@ -326,7 +327,7 @@ class VariationalPosterior():
                 nf = (
                     np.exp(gammaln((df_abs + 1) / 2) - gammaln(df_abs / 2))
                     / np.sqrt(df_abs * np.pi)
-                ) ** D / np.prod(self.lamb)
+                ) ** D / np.prod(self.lambd)
 
                 for k in range(self.K):
                     d2 = (
@@ -391,9 +392,9 @@ class VariationalPosterior():
             The VP parameters flattenend as an 1D array.
         """
 
-        nl = np.sqrt(np.sum(self.lamb ** 2) / self.D)
+        nl = np.sqrt(np.sum(self.lambd ** 2) / self.D)
 
-        self.lamb = self.lamb.reshape(-1, 1) / nl
+        self.lambd = self.lambd.reshape(-1, 1) / nl
         self.sigma = self.sigma.reshape(1, -1) * nl
 
         # Ensure that weights are normalized
@@ -414,9 +415,9 @@ class VariationalPosterior():
                 (constrained_parameters, self.sigma.flatten())
             )
 
-        if self.optimize_lamb:
+        if self.optimize_lambd:
             constrained_parameters = np.concatenate(
-                (constrained_parameters, self.lamb.flatten())
+                (constrained_parameters, self.lambd.flatten())
             )
 
         if self.optimize_weights:
@@ -454,7 +455,7 @@ class VariationalPosterior():
             check_idx = 0
             if self.optimize_weights:
                 check_idx -= self.K
-            if self.optimize_lamb:
+            if self.optimize_lambd:
                 check_idx -= self.D
             if self.optimize_sigma:
                 check_idx -= self.K
@@ -477,11 +478,11 @@ class VariationalPosterior():
                 self.sigma = theta[start_idx : start_idx + self.K]
             start_idx += self.K
 
-        if self.optimize_lamb:
+        if self.optimize_lambd:
             if rawflag:
-                self.lamb = np.exp(theta[start_idx : start_idx + self.D]).T
+                self.lambd = np.exp(theta[start_idx : start_idx + self.D]).T
             else:
-                self.lamb = theta[start_idx : start_idx + self.D].T
+                self.lambd = theta[start_idx : start_idx + self.D].T
 
         if self.optimize_weights:
             eta = theta[-self.K :]
@@ -491,9 +492,9 @@ class VariationalPosterior():
             else:
                 self.w = eta.T[:, np.newaxis]
 
-        nl = np.sqrt(np.sum(self.lamb ** 2) / self.D)
+        nl = np.sqrt(np.sum(self.lambd ** 2) / self.D)
 
-        self.lamb = self.lamb.reshape(-1, 1) / nl
+        self.lambd = self.lambd.reshape(-1, 1) / nl
         self.sigma = self.sigma.reshape(1, -1) * nl
 
         # Ensure that weights are normalized
@@ -539,8 +540,8 @@ class VariationalPosterior():
             if covflag:
                 sigma = (
                     np.sum(self.w * self.sigma ** 2)
-                    * np.eye(len(self.lamb))
-                    * self.lamb
+                    * np.eye(len(self.lambd))
+                    * self.lambd
                 )
                 for k in range(self.K):
                     sigma += self.w[:, k] * (
