@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>kde1d &#8212; pyvmbc  documentation</title>
+    <title>kernel_density &#8212; pyvmbc  documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -14,8 +14,8 @@
     <script src="../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="VBMC options" href="../options/vbmc_options.html" />
-    <link rel="prev" title="VBMC" href="../classes/vbmc.html" />
+    <link rel="next" title="entropy" href="kldiv_mvn.html" />
+    <link rel="prev" title="decorators" href="decorators.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -32,26 +32,17 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="kde1d">
-<h1>kde1d<a class="headerlink" href="#kde1d" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="porting-status">
-<h2>Porting status<a class="headerlink" href="#porting-status" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="matlab-references">
-<h3>Matlab references<a class="headerlink" href="#matlab-references" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li><p>See references below in the code</p></li>
-</ul>
-</div>
-</div>
-<div class="section" id="python-documentation">
-<h2>Python documentation<a class="headerlink" href="#python-documentation" title="Permalink to this headline">¶</a></h2>
+  <div class="section" id="kernel-density">
+<h1>kernel_density<a class="headerlink" href="#kernel-density" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="kde1d">
+<h2>kde1d<a class="headerlink" href="#kde1d" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
-<dt id="pyvbmc.kernel_density.kde1d">
-<code class="sig-prename descclassname"><span class="pre">pyvbmc.kernel_density.</span></code><code class="sig-name descname"><span class="pre">kde1d</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">16384</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_bound</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_bound</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyvbmc.kernel_density.kde1d" title="Permalink to this definition">¶</a></dt>
+<dt id="pyvbmc.stats.kernel_density.kde1d">
+<code class="sig-prename descclassname"><span class="pre">pyvbmc.stats.kernel_density.</span></code><code class="sig-name descname"><span class="pre">kde1d</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">16384</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_bound</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_bound</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyvbmc.stats.kernel_density.kde1d" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reliable and extremely fast kernel density estimator for 1D data.</p>
 <p>One-dimensional kernel density estimator based on fast Fourier transform.
 A Gaussian kernel is assumed and the bandwidth is chosen automatically
-using the technique developed by Botev et al. (2010) <a class="reference internal" href="#rcc60210ebd2c-1" id="id1">[1]</a>.</p>
+using the technique developed by Botev et al. (2010) <a class="reference internal" href="#r2d608330c74e-1" id="id1">[1]</a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
@@ -74,12 +65,12 @@ where range=max(samples)-min(samples), by default None.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
-<dt>density: np.ndarray</dt><dd><p>1D vector of length n with the values of the kernel density estimate
+<dt><strong>density</strong><span class="classifier">np.ndarray</span></dt><dd><p>1D vector of length n with the values of the kernel density estimate
 at the grid points.</p>
 </dd>
-<dt>xmesh: np.ndarray</dt><dd><p>1D vector of grid over which the density estimate is computed.</p>
+<dt><strong>xmesh</strong><span class="classifier">np.ndarray</span></dt><dd><p>1D vector of grid over which the density estimate is computed.</p>
 </dd>
-<dt>bandwidth: np.ndarray</dt><dd><p>The optimal bandwidth (Gaussian kernel assumed).</p>
+<dt><strong>bandwidth</strong><span class="classifier">np.ndarray</span></dt><dd><p>The optimal bandwidth (Gaussian kernel assumed).</p>
 </dd>
 </dl>
 </dd>
@@ -87,7 +78,7 @@ at the grid points.</p>
 <p class="rubric">Notes</p>
 <p>This implementation is based on the MATLAB implementation by Zdravko Botev,
 and was further inspired by the Python implementations by Daniel B. Smith
-and the bandwidth selection code in KDEpy <a class="reference internal" href="#rcc60210ebd2c-2" id="id2">[2]</a>. We thank Zdravko Botev for
+and the bandwidth selection code in KDEpy <a class="reference internal" href="#r2d608330c74e-2" id="id2">[2]</a>. We thank Zdravko Botev for
 useful clarifications on the implementation of the fixed_point function.</p>
 <p>Unlike other implementations, this one is immune to problems caused by
 multimodal densities with widely separated modes (see example). The
@@ -95,12 +86,12 @@ bandwidth estimation does not deteriorate for multimodal densities because
 a parametric model is never assumed for the data.</p>
 <p class="rubric">References</p>
 <dl class="citation">
-<dt class="label" id="rcc60210ebd2c-1"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
+<dt class="label" id="r2d608330c74e-1"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
 <dd><p>Z. I. Botev, J. F. Grotowski, and D. P. Kroese. Kernel density
 estimation via diffusion. The Annals of Statistics,
 38(5):2916-2957, 2010.</p>
 </dd>
-<dt class="label" id="rcc60210ebd2c-2"><span class="brackets"><a class="fn-backref" href="#id2">2</a></span></dt>
+<dt class="label" id="r2d608330c74e-2"><span class="brackets"><a class="fn-backref" href="#id2">2</a></span></dt>
 <dd><p><a class="reference external" href="https://github.com/tommyod/KDEpy/blob/master/KDEpy/bw_selection.py">https://github.com/tommyod/KDEpy/blob/master/KDEpy/bw_selection.py</a></p>
 </dd>
 </dl>
@@ -141,17 +132,19 @@ estimation via diffusion. The Annals of Statistics,
 <li class="toctree-l1"><a class="reference internal" href="../classes/function_logger.html">FunctionLogger</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../classes/options.html">Options</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../classes/parameter_transformer.html">ParameterTransformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../classes/stats.html">Stats</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../classes/timer.html">Timer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../classes/variational_posterior.html">VariationalPosterior</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../classes/vbmc.html">VBMC</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Functions:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">kde1d</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#porting-status">Porting status</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#python-documentation">Python documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decorators.html">decorators</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">kernel_density</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#kde1d">kde1d</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="kldiv_mvn.html">entropy</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Options:</span></p>
 <ul>
@@ -162,8 +155,8 @@ estimation via diffusion. The Annals of Statistics,
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="../classes/vbmc.html" title="previous chapter">VBMC</a></li>
-      <li>Next: <a href="../options/vbmc_options.html" title="next chapter">VBMC options</a></li>
+      <li>Previous: <a href="decorators.html" title="previous chapter">decorators</a></li>
+      <li>Next: <a href="kldiv_mvn.html" title="next chapter">entropy</a></li>
   </ul></li>
 </ul>
 </div>

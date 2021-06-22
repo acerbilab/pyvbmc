@@ -61,7 +61,7 @@ def test_vbmc_boundscheck_no_PUB_PLB_n0_1():
     lb = np.zeros((1, D))
     ub = np.ones((1, D)) * 2
     x0 = np.ones((1, D))
-    _, lb2, ub2, plb, pub = VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, lb, ub)
+    _, lb2, ub2, plb, pub = VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, ub)
     assert np.all(lb == lb2)
     assert np.all(ub == ub2)
     assert np.all(plb == lb + 2 * 1e-3)
@@ -73,7 +73,7 @@ def test_vbmc_boundscheck_no_PUB_PLB_n0_3():
     lb = np.ones((1, D)) * -2
     ub = np.ones((1, D)) * 2
     x0 = np.concatenate((np.ones((1, D)) * -0.75, np.ones((1, D)) * 0.75))
-    _, lb2, ub2, plb, pub = VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, lb, ub)
+    _, lb2, ub2, plb, pub = VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, ub)
     assert np.all(lb == lb2)
     assert np.all(ub == ub2)
     assert np.all(plb == np.ones((1, D)) * -1.5)
@@ -86,8 +86,7 @@ def test_vbmc_boundscheck_no_PUB_PLB_identical():
     ub = np.ones((1, D)) * 2
     x0 = np.ones((2, D))
     plb = np.ones((1, D))
-    _, lb2, ub2, plb, pub = VBMC(fun, x0, lb, ub)._boundscheck(
-        fun, x0, lb, ub, plb
+    _, lb2, ub2, plb, pub = VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, ub, plb
     )
     assert np.all(lb == lb2)
     assert np.all(ub == ub2)
@@ -105,18 +104,18 @@ def test_vbmc_boundscheck_not_D():
     incorrect = np.ones((1, D - 1))
     exception_message = "need to be row vectors with D elements"
     with pytest.raises(ValueError) as execinfo1:
-        VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, incorrect, ub, plb, pub)
+        VBMC(fun, x0, lb, ub)._boundscheck(x0, incorrect, ub, plb, pub)
     assert exception_message in execinfo1.value.args[0]
     with pytest.raises(ValueError) as execinfo2:
-        VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, lb, incorrect, plb, pub)
+        VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, incorrect, plb, pub)
     assert exception_message in execinfo2.value.args[0]
     with pytest.raises(ValueError) as execinfo3:
-        VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, lb, ub, incorrect, pub)
+        VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, ub, incorrect, pub)
     assert exception_message in execinfo3.value.args[0]
     with pytest.raises(ValueError) as execinfo4:
-        VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, lb, ub, plb, incorrect)
+        VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, ub, plb, incorrect)
     assert exception_message in execinfo4.value.args[0]
-    VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, lb, ub, plb, pub)
+    VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, ub, plb, pub)
 
 
 def test_vbmc_boundscheck_not_vectors():
@@ -129,18 +128,18 @@ def test_vbmc_boundscheck_not_vectors():
     incorrect = 1
     exception_message = "need to be row vectors with D elements"
     with pytest.raises(ValueError) as execinfo1:
-        VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, incorrect, ub, plb, pub)
+        VBMC(fun, x0, lb, ub)._boundscheck(x0, incorrect, ub, plb, pub)
     assert exception_message in execinfo1.value.args[0]
     with pytest.raises(ValueError) as execinfo2:
-        VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, lb, incorrect, plb, pub)
+        VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, incorrect, plb, pub)
     assert exception_message in execinfo2.value.args[0]
     with pytest.raises(ValueError) as execinfo3:
-        VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, lb, ub, incorrect, pub)
+        VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, ub, incorrect, pub)
     assert exception_message in execinfo3.value.args[0]
     with pytest.raises(ValueError) as execinfo4:
-        VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, lb, ub, plb, incorrect)
+        VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, ub, plb, incorrect)
     assert exception_message in execinfo4.value.args[0]
-    VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, lb, ub, plb, pub)
+    VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, ub, plb, pub)
 
 
 def test_vbmc_boundscheck_not_row_vectors():
@@ -153,18 +152,18 @@ def test_vbmc_boundscheck_not_row_vectors():
     incorrect = np.ones((D, 1))
     exception_message = "need to be row vectors with D elements"
     with pytest.raises(ValueError) as execinfo1:
-        VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, incorrect, ub, plb, pub)
+        VBMC(fun, x0, lb, ub)._boundscheck(x0, incorrect, ub, plb, pub)
     assert exception_message in execinfo1.value.args[0]
     with pytest.raises(ValueError) as execinfo2:
-        VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, lb, incorrect, plb, pub)
+        VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, incorrect, plb, pub)
     assert exception_message in execinfo2.value.args[0]
     with pytest.raises(ValueError) as execinfo3:
-        VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, lb, ub, incorrect, pub)
+        VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, ub, incorrect, pub)
     assert exception_message in execinfo3.value.args[0]
     with pytest.raises(ValueError) as execinfo4:
-        VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, lb, ub, plb, incorrect)
+        VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, ub, plb, incorrect)
     assert exception_message in execinfo4.value.args[0]
-    VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, lb, ub, plb, pub)
+    VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, ub, plb, pub)
 
 
 def test_vbmc_boundscheck_plb_pub_not_finite():
@@ -177,18 +176,18 @@ def test_vbmc_boundscheck_plb_pub_not_finite():
     incorrect = np.array([[1 + 2j, 3 + 4j, 5 + 6j]])
     exception_message = "need to be real valued"
     with pytest.raises(ValueError) as execinfo1:
-        VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, incorrect, ub, plb, pub)
+        VBMC(fun, x0, lb, ub)._boundscheck(x0, incorrect, ub, plb, pub)
     assert exception_message in execinfo1.value.args[0]
     with pytest.raises(ValueError) as execinfo2:
-        VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, lb, incorrect, plb, pub)
+        VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, incorrect, plb, pub)
     assert exception_message in execinfo2.value.args[0]
     with pytest.raises(ValueError) as execinfo3:
-        VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, lb, ub, incorrect, pub)
+        VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, ub, incorrect, pub)
     assert exception_message in execinfo3.value.args[0]
     with pytest.raises(ValueError) as execinfo4:
-        VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, lb, ub, plb, incorrect)
+        VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, ub, plb, incorrect)
     assert exception_message in execinfo4.value.args[0]
-    VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, lb, ub, plb, pub)
+    VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, ub, plb, pub)
 
 
 def test_vbmc_boundscheck_fixed():
@@ -198,8 +197,7 @@ def test_vbmc_boundscheck_fixed():
     x0 = np.ones((2, D))
     fixed_bound = np.ones((1, D))
     with pytest.raises(ValueError) as execinfo:
-        VBMC(fun, x0, lb, ub)._boundscheck(
-            fun, x0, fixed_bound, fixed_bound, fixed_bound, fixed_bound
+        VBMC(fun, x0, lb, ub)._boundscheck(x0, fixed_bound, fixed_bound, fixed_bound, fixed_bound
         )
     assert "VBMC does not support fixed" in execinfo.value.args[0]
 
@@ -211,7 +209,7 @@ def test_vbmc_boundscheck_PLB_PUB_different():
     x0 = np.ones((2, D))
     pb = np.ones((1, D))
     with pytest.raises(ValueError) as execinfo:
-        VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, lb, ub, pb, pb)
+        VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, ub, pb, pb)
     assert (
         "plausible lower and upper bounds need to be distinct"
         in execinfo.value.args[0]
@@ -229,10 +227,10 @@ def test_vbmc_boundscheck_x0_outside_lb_ub():
     x0_small = np.ones((3, D)) * -1000
     exception_message = "X0 are not inside the provided hard bounds LB and UB"
     with pytest.raises(ValueError) as execinfo1:
-        VBMC(fun, x0, lb, ub)._boundscheck(fun, x0_large, lb, ub, plb, pub)
+        VBMC(fun, x0, lb, ub)._boundscheck(x0_large, lb, ub, plb, pub)
     assert exception_message in execinfo1.value.args[0]
     with pytest.raises(ValueError) as execinfo2:
-        VBMC(fun, x0, lb, ub)._boundscheck(fun, x0_small, lb, ub, plb, pub)
+        VBMC(fun, x0, lb, ub)._boundscheck(x0_small, lb, ub, plb, pub)
     assert exception_message in execinfo2.value.args[0]
 
 
@@ -247,15 +245,15 @@ def test_vbmc_boundscheck_ordering():
         "bounds should respect the ordering LB < PLB < PUB < UB"
     )
     with pytest.raises(ValueError) as execinfo1:
-        VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, lb, ub, pub, plb)
+        VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, ub, pub, plb)
     assert exception_message in execinfo1.value.args[0]
     with pytest.raises(ValueError) as execinfo2:
-        VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, plb, ub, lb, pub)
+        VBMC(fun, x0, lb, ub)._boundscheck(x0, plb, ub, lb, pub)
     assert exception_message in execinfo2.value.args[0]
     with pytest.raises(ValueError) as execinfo2:
-        VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, lb, pub, plb, ub)
+        VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, pub, plb, ub)
     assert exception_message in execinfo2.value.args[0]
-    VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, lb, ub, lb, ub)
+    VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, ub, lb, ub)
 
 
 def test_vbmc_boundcheck_half_bounded():
@@ -267,10 +265,10 @@ def test_vbmc_boundcheck_half_bounded():
     pub = np.ones((1, D))
     exception_message = "Variables bounded only below/above are not supported"
     with pytest.raises(ValueError) as execinfo1:
-        VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, lb * np.inf, ub, plb, pub)
+        VBMC(fun, x0, lb, ub)._boundscheck(x0, lb * np.inf, ub, plb, pub)
     assert exception_message in execinfo1.value.args[0]
     with pytest.raises(ValueError) as execinfo2:
-        VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, lb, ub * np.inf, plb, pub)
+        VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, ub * np.inf, plb, pub)
     assert exception_message in execinfo2.value.args[0]
 
 
@@ -284,7 +282,6 @@ def test_vbmc_boundcheck_hardbounds_too_close():
     exception_message = "vbmc:StrictBoundsTooClose: Hard bounds LB and UB"
     with pytest.raises(ValueError) as execinfo1:
         VBMC(fun, x0, lb, ub)._boundscheck(
-            fun,
             identicial,
             identicial,
             identicial + realmin * 1,
@@ -294,7 +291,6 @@ def test_vbmc_boundcheck_hardbounds_too_close():
     assert exception_message in execinfo1.value.args[0]
     # this should be the minimum values with which no exception is being raised
     VBMC(fun, x0, lb, ub)._boundscheck(
-        fun,
         identicial,
         identicial,
         identicial + realmin * 3,
@@ -311,7 +307,6 @@ def test_vbmc_boundcheck_x0_too_close_to_hardbounds():
     identicial = np.zeros((1, D))
     realmin = sys.float_info.min
     x0_2, _, _, _, _ = VBMC(fun, x0, lb, ub)._boundscheck(
-        fun,
         x0,
         identicial,
         identicial + realmin * 3,
@@ -332,10 +327,10 @@ def test_vbmc_boundcheck_plausible_bounds_finite():
     pub = np.ones((1, D))
     exception_message = "PLB and PUB need to be finite."
     with pytest.raises(ValueError) as execinfo1:
-        VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, lb, ub, plb, pub * np.inf)
+        VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, ub, plb, pub * np.inf)
     assert exception_message in execinfo1.value.args[0]
     with pytest.raises(ValueError) as execinfo2:
-        VBMC(fun, x0, lb, ub)._boundscheck(fun, x0, lb, ub, plb * np.inf, pub)
+        VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, ub, plb * np.inf, pub)
     assert exception_message in execinfo2.value.args[0]
 
 
@@ -345,7 +340,6 @@ def test_vbmc_boundcheck_plausible_bounds_too_close_to_hardbounds():
     ub = np.ones((1, D)) * 2
     x0 = np.zeros((2, D))
     _, _, _, plb2, pub2 = VBMC(fun, x0, lb, ub)._boundscheck(
-        fun,
         x0,
         lb,
         ub,
@@ -364,7 +358,6 @@ def test_vbmc_boundcheck_x0_not_in_plausible_bounds():
     ub = np.ones((1, D)) * 2
     x0 = np.ones((2, D)) * 2
     x0_2, _, _, plb2, pub2 = VBMC(fun, x0, lb, ub)._boundscheck(
-        fun,
         x0 - 1e-10,
         lb,
         ub,
@@ -462,7 +455,7 @@ def test_vbmc_optimstate_gp_functions():
     user_options = {"gpmeanfun": "const"}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     assert vbmc.optim_state.get("gp_meanfun") == user_options.get("gpmeanfun")
-    # uncertainty_handling_level 2 
+    # uncertainty_handling_level 2
     assert vbmc.optim_state["gp_covfun"] == 1
     user_options = {"specifytargetnoise": True}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
@@ -668,3 +661,8 @@ def test_vbmc_optimstate_outwarp_delta():
     user_options = {"fitnessshaping": True, "gpoutwarpfun": fun}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     assert vbmc.optim_state["outwarp_delta"] == outwarpthreshbase
+
+
+def test_vbmc_optimize():
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
+    vbmc.optimize()

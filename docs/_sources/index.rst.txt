@@ -16,6 +16,7 @@ Note that this project is work in progress!
    classes/function_logger
    classes/options
    classes/parameter_transformer
+   classes/stats
    classes/timer
    classes/variational_posterior
    classes/vbmc
@@ -24,7 +25,9 @@ Note that this project is work in progress!
    :maxdepth: 2
    :caption: Functions:
 
+   functions/decorators
    functions/kernel_density
+   functions/kldiv_mvn
 
 .. toctree::
    :maxdepth: 2

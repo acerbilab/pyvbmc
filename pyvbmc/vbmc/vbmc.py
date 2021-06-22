@@ -1,13 +1,14 @@
 import sys
 
 import numpy as np
-from pyvbmc.entropy import entlb_vbmc, entub_vbmc
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
+from pyvbmc.stats.entropy import kldiv_mvn
 from pyvbmc.timer import Timer
 from pyvbmc.variational_posterior import VariationalPosterior
 
 from .options import Options
+from .stats import Stats
 
 
 class VBMC:
@@ -35,37 +36,37 @@ class VBMC:
         x0 : np.ndarray, optional
             [description], by default None
         lower_bounds, upper_bounds : np.ndarray, optional
-            Lower_bounds (LB) and upper_bounds (UB) define a set 
-            of strict lower and upper bounds coordinate vector, X, so that the 
-            posterior has support on LB < X < UB. 
-            If scalars, the bound is replicated in each dimension. Use 
+            Lower_bounds (LB) and upper_bounds (UB) define a set
+            of strict lower and upper bounds coordinate vector, X, so that the
+            posterior has support on LB < X < UB.
+            If scalars, the bound is replicated in each dimension. Use
             empty matrices for LB and UB if no bounds exist. Set LB[i] = -Inf
             and UB[i] = Inf if the i-th coordinate is unbounded (while other
             coordinates may be bounded). Note that if LB and UB contain
             unbounded variables, the respective values of PLB and PUB need to be
             specified (see below), by default None
         plausible_lower_bounds, plausible_upper_bounds : np.ndarray, optional
-            Specifies a set of plausible_lower_bounds (PLB) and 
+            Specifies a set of plausible_lower_bounds (PLB) and
             plausible_upper_bounds (PUB) such that LB < PLB < PUB < UB.
             Both PLB and PUB need to be finite. PLB and PUB represent a
             "plausible" range, which should denote a region of high posterior
             probability mass. Among other things, the plausible box is used to
             draw initial samples and to set priors over hyperparameters of the
-            algorithm. When in doubt, we found that setting PLB and PUB using 
+            algorithm. When in doubt, we found that setting PLB and PUB using
             the topmost ~68% percentile range of the prior (e.g, mean +/- 1 SD
-            for a Gaussian prior) works well in many cases (but note that 
-            additional information might afford a better guess), both are 
+            for a Gaussian prior) works well in many cases (but note that
+            additional information might afford a better guess), both are
             by default None.
         user_options : dict, optional
             Modified options can be passed as a dict. Please refer to the
-            respective VBMC options page for the default options. If no 
+            respective VBMC options page for the default options. If no
             user_options are passed, the default options are used.
 
         Raises
         ------
         ValueError
             [description]
-        """    
+        """
         # Initialize variables and algorithm structures
         if x0 is None:
             if (
@@ -96,7 +97,6 @@ class VBMC:
             self.plausible_lower_bounds,
             self.plausible_upper_bounds,
         ) = self._boundscheck(
-            fun,
             x0,
             lower_bounds,
             upper_bounds,
@@ -139,7 +139,7 @@ class VBMC:
             self.vp.optimize_mu = self.options.get("variablemeans")
             self.vp.optimize_weights = self.options.get("variableweights")
 
-        self.optim_state = self._init_optim_state(fun)
+        self.optim_state = self._init_optim_state()
 
         self.function_logger = FunctionLogger(
             fun=fun,
@@ -154,9 +154,10 @@ class VBMC:
 
         self.x0 = self.parameter_transformer(self.x0)
 
+        self.stats = Stats()
+
     def _boundscheck(
         self,
-        fun: callable,
         x0: np.ndarray,
         lower_bounds: np.ndarray,
         upper_bounds: np.ndarray,
@@ -352,7 +353,7 @@ class VBMC:
             plausible_upper_bounds,
         )
 
-    def _init_optim_state(self, fun):
+    def _init_optim_state(self):
         """
         A private function to init the optim_state dict that contains
         information about VBMC variables.
@@ -615,84 +616,364 @@ class VBMC:
         """
         Execute the VBMC loop. TBD.
         """
+        is_finished = False
+        iteration = 0
+        timer = Timer()
+        gp = None
+
+        while not is_finished:
+            iteration += 1
+            self.optim_state["iter"] = iteration
+            self.optim_state["redo_roto_scaling"] = False
+
+            if self.optim_state.get("entropy_switch") and (
+                self.optim_state.get("func_count")
+                >= self.optim_state.get("entropy_force_switch")
+                * self.optim_state.get("max_fun_evals")
+            ):
+                self.optim_state["entropy_switch"] = False
+
+            # Actively sample new points into the training set
+            timer.start_timer("activeSampling")
+
+            if iteration == 1:
+                new_funevals = self.options.get("funevalstart")
+            else:
+                new_funevals = self.options.get("funevalsperiter")
+
+            # if optimState.Xn > 0:
+            #     optimState.ymax = max(optimState.y(optimState.X_flag))
+
+            if self.optim_state.get("skipactivesampling"):
+                self.optim_state["skipactivesampling"] = False
+            else:
+                if (
+                    gp is not None
+                    and self.options.get("separatesearchgp")
+                    and not self.options.get("varactivesample")
+                ):
+                    # Train a distinct GP for active sampling
+                    if iteration % 2 == 0:
+                        meantemp = self.optim_state.get("gp_meanfun")
+                        self.optim_state["gp_meanfun"] = "const"
+                        gp_search = self._train_gp()
+                        self.optim_state["gp_meanfun"] = meantemp
+                    else:
+                        gp_search = gp
+                else:
+                    gp_search = gp
+
+                # Perform active sampling
+                if self.options.get("varactivesample"):
+                    # FIX TIMER HERE IF USING THIS
+                    # [optimState,vp,t_active,t_func] =
+                    # variationalactivesample_vbmc(optimState,new_funevals,
+                    # funwrapper,vp,vp_old,gp_search,options)
+                    sys.exit("Function currently not supported")
+                else:
+                    self._activesample(new_funevals)
+
+            # optimState.N = optimState.Xn  # Number of training inputs
+            # optimState.Neff = sum(optimState.nevals(optimState.X_flag))
+
+            timer.stop_timer("activeSampling")
+
+            # train gp
+
+            timer.start_timer("gpTrain")
+
+            Ns_gp = self._train_gp()
+
+            timer.stop_timer("gpTrain")
+
+            # Check if reached stable sampling regime
+            if (
+                Ns_gp == self.options.get("stablegpsamples")
+                and self.optim_state.get("stop_sampling") == 0
+            ):
+                self.optim_state["stop_sampling"] = self.optim_state.get("N")
+
+            # Optimize variational parameters
+            timer.start_timer("variationalFit")
+
+            if not self.vp.optimize_mu:
+                # Variational components fixed to training inputs
+                self.vp.mu = gp.X.T
+                Knew = self.vp.mu.shape[1]
+            else:
+                # Update number of variational mixture components
+                Knew = self._updateK()
+
+            # Decide number of fast/slow optimizations
+            N_fastopts = 3
+            # np.ceil(evaloption_vbmc(options.NSelbo, K))
+
+            if self.optim_state.get("recompute_varpost") or (
+                self.options.get("alwaysrefitvarpost")
+            ):
+                # Full optimizations
+                N_slowopts = self.options.get("elbostarts")
+                self.optim_state["recompute_varpost"] = False
+            else:
+                # Only incremental change from previous iteration
+                N_fastopts = np.ceil(
+                    N_fastopts * self.options.get("nselboincr")
+                )
+                N_slowopts = 1
+
+                # Run optimization of variational parameters
+                varss, pruned = self._optimize_vp(
+                    N_fastopts,
+                    N_slowopts,
+                    Knew,
+                )
+                # optimState.vp_repo{end+1} = get_vptheta(vp)
+
+            self.optim_state["vpK"] = self.vp.K
+            # Save current entropy
+            self.optim_state["H"] = self.vp  # .stats.entropy
+
+            # Get real variational posterior (might differ from training posterior)
+            # vp_real = vp.vptrain2real(0, self.options)
+            vp_real = self.vp
+            elbo = vp_real  # .stats.elbo
+            elbo_sd = vp_real  # .stats.elbo_sd
+
+            timer.stop_timer("variationalFit")
+
+            # Finalize iteration
+
+            timer.start_timer("finalize")
+
+            # Compute symmetrized KL-divergence between old and new posteriors
+            Nkl = 1e5
+
+            # remove later
+            vp_old = self.vp
+            sKL = max(
+                0,
+                0.5
+                * np.sum(
+                    self.vp.kldiv(
+                        vp2=vp_old,
+                        N=Nkl,
+                        gaussflag=self.options.get("klgauss"),
+                    )
+                ),
+            )
+
+            # Evaluate max LCB of GP prediction on all training inputs
+            # _, _, fmu, fs2 = GP_Lite.gplite_pred(gp, gp.X, gp.y, gp.s2)
+            fmu = [3, 3, 3]
+            fs2 = [4]
+            self.optim_state["lcbmax"] = np.max(
+                fmu - self.options.get("elcboimproweight") * np.sqrt(fs2)
+            )
+
+            # Compare variational posterior's moments with ground truth
+            if (
+                self.options.get("truemean")
+                and self.options.get("truecov")
+                and np.all(np.isfinite(self.options.get("truemean")))
+                and np.all(np.isfinite(self.options.get("truecov")))
+            ):
+                mubar_orig, sigma_orig = vp_real.moments(1e6, True, True)
+
+                kl = kldiv_mvn(
+                    mubar_orig,
+                    sigma_orig,
+                    self.options.get("truemean"),
+                    self.options.get("truecov"),
+                )
+                sKL_true = 0.5 * np.sum(kl)
+            else:
+                sKL_true = None
+
+            # Record moments in transformed space
+            mubar, sigma = self.vp.moments(origflag=False, covflag=True)
+            if len(self.optim_state.get("run_mean")) == 0 or len(
+                self.optim_state.get("run_cov") == 0
+            ):
+                self.optim_state["run_mean"] = mubar.reshape(1, -1)
+                self.optim_state["run_cov"] = sigma
+                self.optim_state["last_run_avg"] = self.optim_state.get("N")
+            else:
+                Nnew = self.optim_state.get("N") - self.optim_state.get(
+                    "last_run_avg"
+                )
+                wRun = self.options.get("momentsrunweight ") ** Nnew
+                self.optim_state["run_mean"] = wRun * self.optim_state.get(
+                    "run_mean"
+                ) + (1 - wRun) * mubar.reshape(1, -1)
+                self.optim_state["run_cov"] = (
+                    wRun * self.optim_state.get("run_cov") + (1 - wRun) * sigma
+                )
+                self.optim_state["last_run_avg"] = self.optim_state.get("N")
+
+            timer.stop_timer("finalize")
+            # timer.totalruntime = NaN;   # Update at the end of iteration
+            # timer
+
+            # Record all useful stats
+            self.stats.record_iteration(
+                self.optim_state,
+                self.vp,
+                elbo,
+                elbo_sd,
+                varss,
+                sKL,
+                sKL_true,
+                gp,
+                Ns_gp,
+                pruned,
+                timer,
+            )
+
+            # stats.warmup[loopiter] = optimState.Warmup
+
+            # Check termination conditions and warmup
+            is_finished = self._is_finished()
+            #  Save stability
+            # vp.stats.stable = stats.stable(optimState.iter)
+
+            # Check if we are still warming-up
+            if self.optim_state.get("warmup") and iteration > 1:
+                if self.options.get("recomputelcbmax"):
+                    self.optim_state["lcbmax_vec"] = self._recompute_lcbmax().T
+                trim_flag = self._check_warmup_end()
+                if trim_flag:
+                    # Re-update GP after trimming
+                    gp = self._reupdate_gp(gp)
+                if not self.optim_state.get("warmup"):
+                    self.vp.optimize_mu = self.options.get("variablemeans")
+                    self.vp.optimize_weights = self.options.get(
+                        "variableweights"
+                    )
+
+                    # Switch to main algorithm options
+                    # options = options_main
+                    # Reset GP hyperparameter covariance
+                    # hypstruct.runcov = []
+                    # Reset VP repository
+                    self.optim_state["vp_repo"] = []
+                    # Re-get acq info
+                    # self.optim_state['acqInfo'] = getAcqInfo(
+                    #    options.SearchAcqFcn
+                    # )
+
+            # Check and update fitness shaping / output warping threshold
+            if (
+                self.optim_state.get("outwarp_delta") is not None
+                and self.optim_state.get("R") is not None
+                and (
+                    self.optim_state.get("R")
+                    < self.options.get("warptolreliability")
+                )
+            ):
+                Xrnd = self.vp.sample(N=int(2e4), origflag=False)
+                ymu = gp.gplite_pred(gp, Xrnd, [], [], 0, 1)
+                ydelta = max(
+                    [0, self.optim_state["ymax"] - np.quantile(ymu, 1e-3)]
+                )
+                if (
+                    ydelta
+                    > self.optim_state.get("outwarp_delta")
+                    * self.options.get("outwarpthreshtol")
+                    and self.optim_state.get("R") is not None
+                    and self.optim_state.get("R") < 1
+                ):
+                    self.optim_state["outwarp_delta"] = self.optim_state.get(
+                        "outwarp_delta"
+                    ) * self.options.get("outwarpthreshmult")
+
+            # Write iteration output
+
+            # Pick "best" variational solution to return (and real vp, if train vp differs)
+            idx_best = self._determine_best_vp()
+
+            # Last variational optimization with large number of components
+            changed_flag = self._finalboost(idx_best)
+            # remove later
+            is_finished = iteration > 2
+
+    # active sampling
+    def _activesample(self, new_funevals):
         pass
 
-    def __1acqhedge_vbmc(self, action, hedge, stats, options):
+    def _reupdate_gp(self, gp):
         """
-        ACQPORTFOLIO Evaluate and update portfolio of acquisition functions.
-        (unused)
-        """
-        pass
+        Quick posterior reupdate of Gaussian process.
 
-    def __1getAcqInfo(self, SearchAcqFcn):
+        Wait for interface of GPlite before implementing.
         """
-        GETACQINFO Get information from acquisition function(s)
-        """
-        pass
-
-    def __1gpreupdate(self, gp, optim_state, options):
-        """
-        GPREUPDATE Quick posterior reupdate of Gaussian process
-        """
-        pass
+        return gp
 
     # GP Training
 
-    def __2gptrain_vbmc(self, hypstruct, optim_state, stats, options):
+    def _train_gp(self):
         """
-        GPTRAIN_VBMC Train Gaussian process model.
+        Train Gaussian process model.
+
+        Wait for interface of GPlite before implementing.
         """
-        # return [gp,hypstruct,Ns_gp,optim_state]
-        pass
+        ns_gp = 10
+        gp = {}
+        return ns_gp, gp
 
     # Variational optimization / training of variational posterior:
 
-    def __3updateK(self, optim_state, stats, options):
+    def _updateK(self):
         """
-        UPDATEK Update number of variational mixture components.
+        Update number of variational mixture components.
         """
-        pass
+        return self.vp.K
 
-    def __3vpoptimize_vbmc(
-        self, Nfastopts, Nslowopts, vp, gp, K, optim_state, options, prnt
-    ):
+    def _optimize_vp(self, Nfastopts, Nslowopts, K=None):
         """
-        VPOPTIMIZE Optimize variational posterior.
+        Optimize variational posterior.
         """
-        pass
+        # use interface for vp optimzation?
+        if K is None:
+            K = self.vp.K
+        varss = []
+        pruned = 0
+        return varss, pruned
 
     # Loop termination:
 
-    def __4vbmc_warmup(self, optim_state, stats, action, options):
+    def _check_warmup_end(self):
         """
+        vbmc_warmup.m
+        optim_state, stats, action, options
         check if warmup ends
         """
-        pass
+        return True
 
-    def __4vbmc_termination(self, optim_state, action, stats, options):
+    def _is_finished(self):
         """
-        Compute stability index and check termination conditions.
+        Check termination conditions.
         """
-        pass
+        return False
 
-    def __4recompute_lcbmax(self, gp, optim_state, stats, options):
+    def _recompute_lcbmax(self):
         """
         RECOMPUTE_LCBMAX Recompute moving LCB maximum based on current GP.
         """
-        pass
+        return np.array([])
 
     # Finalizing:
 
-    def __5finalboost_vbmc(self, vp, idx_best, optim_state, stats, options):
+    def _finalboost(self, idx_best):
         """
         FINALBOOST_VBMC Final boost of variational components.
         """
-        pass
+        changed_flag = True
+        return changed_flag
 
-    def __5best_vbmc(
-        self, stats, idx, SafeSD, FracBack, RankCriterion, RealFlag
-    ):
+    def _determine_best_vp(self):
         """
         VBMC_BEST Return best variational posterior from stats structure.
         """
-        pass
+        idx_best = 1
+
+        return idx_best

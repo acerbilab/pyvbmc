@@ -4,7 +4,7 @@ from scipy.integrate import trapezoid
 from scipy.interpolate import interp1d
 from scipy.stats import norm, uniform
 
-from pyvbmc.kernel_density import kde1d
+from pyvbmc.stats.kernel_density import kde1d
 
 
 def test_kde_shapes():

@@ -4,13 +4,15 @@ from __future__ import annotations
 import sys
 
 import numpy as np
-from pyvbmc.decorators import handle_1D_input
-from pyvbmc.kernel_density import kde1d
+from pyvbmc.decorators import handle_0D_1D_input
+from pyvbmc.stats.kernel_density import kde1d
 from pyvbmc.parameter_transformer import ParameterTransformer
 from scipy.integrate import trapezoid
 from scipy.interpolate import interp1d
 from scipy.optimize import fmin_l_bfgs_b
 from scipy.special import gammaln
+
+from pyvbmc.stats.entropy import kldiv_mvn
 
 
 class VariationalPosterior:
@@ -191,7 +193,7 @@ class VariationalPosterior:
                 x = self.parameter_transformer.inverse(x)
         return x, i
 
-    @handle_1D_input(kwarg="x", argpos=0)
+    @handle_0D_1D_input(patched_kwargs=["x"], patched_argpos=[0])
     def pdf(
         self,
         x: np.ndarray,
@@ -794,30 +796,6 @@ class VariationalPosterior:
                 "Unless the KL divergence is gaussianized, VP2 is required."
             )
 
-        def mvnkl(mu1, sigma1, mu2, sigma2):
-            # Kullback-Leibler divergence between two multivariate normal pdfs
-            if np.ndim(sigma1) == 0:
-                sigma1 = np.array([np.array([sigma1])])
-            if np.ndim(sigma2) == 0:
-                sigma2 = np.array([np.array([sigma2])])
-            if np.ndim(mu1) == 1:
-                mu1 = np.array([mu1])
-            if np.ndim(mu2) == 1:
-                mu2 = np.array([mu2])
-
-            D = mu1.shape[1]
-            dmu = (mu1 - mu2).T
-            detq1 = np.linalg.det(sigma1)
-            detq2 = np.linalg.det(sigma2)
-            lndet = np.log(detq2 / detq1)
-            a, _, _, _ = np.linalg.lstsq(sigma2, sigma1, rcond=None)
-            b, _, _, _ = np.linalg.lstsq(sigma2, dmu, rcond=None)
-            kl1 = 0.5 * (np.trace(a) + dmu.T @ b - D + lndet)
-            a, _, _, _ = np.linalg.lstsq(sigma1, sigma2, rcond=None)
-            b, _, _, _ = np.linalg.lstsq(sigma1, dmu, rcond=None)
-            kl2 = 0.5 * (np.trace(a) + dmu.T @ b - D - lndet)
-            return np.concatenate((kl1, kl2), axis=None)
-
         if gaussflag:
             if N == 0:
                 raise ValueError(
@@ -832,7 +810,7 @@ class VariationalPosterior:
                     q2mu = np.mean(samples)
                     q2sigma = np.cov(samples.T)
 
-            kls = mvnkl(q1mu, q1sigma, q2mu, q2sigma)
+            kls = kldiv_mvn(q1mu, q1sigma, q2mu, q2sigma)
         else:
             minp = sys.float_info.min
 
