@@ -107,7 +107,10 @@ def test_entmc_vbmc_multi():
 
 
 def test_entmc_vbmc_matlab():
-    exact = False  # If exact is True, random seeds and samples should be the same with MATLAB version, i.e. entmc_vbmc.py need to be modified a bit (see comments in entmc_vbmc.py)
+    # If exact is True, random seeds and samples should be the same 
+    # with MATLAB version, i.e. entmc_vbmc.py need to be modified a bit
+    # (see comments in entmc_vbmc.py)
+    exact = False
     mat = loadmat("./pyvbmc/entropy/entropy-test.mat")
     D = mat["D"].item()
     K = mat["K"].item()

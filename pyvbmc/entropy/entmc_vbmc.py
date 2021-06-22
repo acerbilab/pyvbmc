@@ -20,7 +20,8 @@ def entmc_vbmc(
     grad_flags : tuple of bool, len(grad_flags)=4, default=tuple([True] * 4)
         Whether to compute the gradients for [mu, sigma, lambda, w].
     jacobian_flag : bool
-        Whether variational parameters are transformed. The variational parameters and corresponding transformations are:
+        Whether variational parameters are transformed. 
+        The variational parameters and corresponding transformations are:
         sigma (log), lambda (log), w (softmax).
 
     Returns
@@ -28,7 +29,10 @@ def entmc_vbmc(
     H: float
         Estimated entropy of vp by Monte Carlo method.
     dH: np.ndarray
-        Estimated entropy gradient by Monte Carlo method. :math: `dH = \left[\nabla_{\mu_1}^{T} H, ..., \nabla_{\mu_K}^{T} H, \nabla_{\sigma}^{T} H, \nabla_{\lambda}^{T} H, \nabla_{\omega}^{T} H\right]`.
+        Estimated entropy gradient by Monte Carlo method. 
+        :math:`dH = \left[\nabla_{\mu_1}^{T} H, ..., \nabla_{\mu_K}^{T} H,
+        \nabla_{\sigma}^{T} H, \nabla_{\lambda}^{T} H,
+        \nabla_{\omega}^{T} H\right]`
     """
 
     D = vp.D

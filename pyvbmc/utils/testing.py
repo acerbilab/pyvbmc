@@ -5,7 +5,8 @@ from scipy.misc import derivative
 
 def randn2(*args, **kwargs):
     """
-    For reproducing the same random normal samples with MATLAB. Modified from: https://github.com/jonasrauber/randn-matlab-python.
+    For reproducing the same random normal samples with MATLAB.
+    Modified from: https://github.com/jonasrauber/randn-matlab-python.
     """
     uniform = np.random.rand(*args, **kwargs)
     normal = np.sqrt(2.0) * erfinv(2 * uniform - 1)
