@@ -831,8 +831,20 @@ class VBMC:
 
             # stats.warmup[loopiter] = optimState.Warmup
 
-            # Check termination conditions and warmup
-            # is_finished = self._is_finished(iteration)
+            # Check warmup
+            if (
+                self.optim_state.get("iter") > 2
+                and self.optim_state.get("stop_gp_sampling") == 0
+                and not self.optim_state.get("warmup")
+            ):
+                if self._is_gp_sampling_finished():
+                    self.optim_state[
+                        "stop_gp_sampling"
+                    ] = self.optim_state.get("N")
+
+            # Check termination conditions
+            # is_finished = self._is_finished()
+
             #  Save stability
             # vp.stats.stable = stats.stable(optimState.iter)
 
@@ -1087,22 +1099,17 @@ class VBMC:
         # Stop sampling after sample variance has stabilized below ToL
         iteration = self.optim_state.get("iter")
 
-        if (
-            iteration > 2
-            and self.optim_state.get("stop_gp_sampling") == 0
-            and not self.optim_state.get("warmup")
+        w1 = np.zeros((iteration))
+        w1[iteration - 1] = 1
+        w2 = np.exp(-(self.stats.get("N")[-1] - self.stats.get("N") / 10))
+        w2 = w2 / np.sum(w2)
+        w = 0.5 * w1 + 0.5 * w2
+        if np.sum(w * self.stats.get("gp_sample_var")) < self.options.get(
+            "tolgpvarmcmc"
         ):
-            w1 = np.zeros((iteration))
-            w1[iteration - 1] = 1
-            w2 = np.exp(-(self.stats.get("N")[-1] - self.stats.get("N") / 10))
-            w2 = w2 / np.sum(w2)
-            w = 0.5 * w1 + 0.5 * w2
-            if np.sum(w * self.stats.get("gp_sample_var")) < self.options.get(
-                "tolgpvarmcmc"
-            ):
-                finished_flag = True
+            finished_flag = True
 
-        return finished_flag 
+        return finished_flag
 
     def _recompute_lcbmax(self):
         """
