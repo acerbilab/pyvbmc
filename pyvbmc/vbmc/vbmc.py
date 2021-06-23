@@ -888,7 +888,8 @@ class VBMC:
 
             # Write iteration output
 
-            # Pick "best" variational solution to return (and real vp, if train vp differs)
+            # Pick "best" variational solution to return
+            # (and real vp, if train vp differs)
             idx_best = self._determine_best_vp()
 
             # Last variational optimization with large number of components
@@ -951,7 +952,7 @@ class VBMC:
 
     def _is_finished(self):
         """
-        Check termination conditions.
+        Private method to termination conditions.
         """
         isFinished_flag = False
 
@@ -1082,6 +1083,7 @@ class VBMC:
         Private function to check if the MCMC sampling of the Gaussian Process
         is finished.
         """
+        finished_flag = False
         # Stop sampling after sample variance has stabilized below ToL
         iteration = self.optim_state.get("iter")
 
@@ -1098,9 +1100,9 @@ class VBMC:
             if np.sum(w * self.stats.get("gp_sample_var")) < self.options.get(
                 "tolgpvarmcmc"
             ):
-                self.optim_state["stop_gp_sampling"] = self.optim_state.get(
-                    "N"
-                )
+                finished_flag = True
+
+        return finished_flag 
 
     def _recompute_lcbmax(self):
         """

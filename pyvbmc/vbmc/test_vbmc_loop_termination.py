@@ -190,43 +190,31 @@ def test_is_gp_sampling_finished():
     vbmc.stats["gp_sample_var"] = np.ones(10) * 1e-5
     vbmc.optim_state["stop_gp_sampling"] = 0
     vbmc._is_gp_sampling_finished()
-    assert vbmc.optim_state.get("stop_gp_sampling") == vbmc.optim_state.get(
-        "N"
-    )
+    assert vbmc._is_gp_sampling_finished()
 
     # all variances high
     vbmc.stats["gp_sample_var"] = np.ones(10)
     vbmc.optim_state["stop_gp_sampling"] = 0
     vbmc._is_gp_sampling_finished()
-    assert vbmc.optim_state.get("stop_gp_sampling") == 0
+    assert not vbmc._is_gp_sampling_finished()
 
     # last variance high
     vbmc.stats["gp_sample_var"] = np.ones(10) * 1e-10
     vbmc.stats["gp_sample_var"][-1] = 1e-2
     vbmc.optim_state["stop_gp_sampling"] = 0
     vbmc._is_gp_sampling_finished()
-    assert vbmc.optim_state.get("stop_gp_sampling") == 0
+    assert not vbmc._is_gp_sampling_finished()
 
     # iteration too low
     vbmc.stats["gp_sample_var"] = np.ones(10) * 1e-5
     vbmc.optim_state["stop_gp_sampling"] = 0
     vbmc.optim_state["iter"] = 1
     vbmc._is_gp_sampling_finished()
-    assert vbmc.optim_state.get("stop_gp_sampling") == 0
+    assert not vbmc._is_gp_sampling_finished()
 
     # still warming up
     vbmc.stats["gp_sample_var"] = np.ones(10) * 1e-5
     vbmc.optim_state["stop_gp_sampling"] = 0
     vbmc.optim_state["iter"] = 10
     vbmc.optim_state["warmup"] = True
-    vbmc._is_gp_sampling_finished()
-    assert vbmc.optim_state.get("stop_gp_sampling") == 0
-
-    # already finished
-    vbmc.stats["gp_sample_var"] = np.ones(10) * 1e-5
-    vbmc.optim_state["stop_gp_sampling"] = 9
-    vbmc.optim_state["iter"] = 10
-    vbmc.optim_state["warmup"] = False
-    vbmc.optim_state["N"] = 10
-    vbmc._is_gp_sampling_finished()
-    assert vbmc.optim_state.get("stop_gp_sampling") == 9
+    assert not vbmc._is_gp_sampling_finished()
