@@ -1,6 +1,5 @@
 import numpy as np
 from pyvbmc.variational_posterior import VariationalPosterior
-from pyvbmc.utils.testing import randn2
 
 
 def entmc_vbmc(
@@ -20,7 +19,7 @@ def entmc_vbmc(
     grad_flags : tuple of bool, len(grad_flags)=4, default=tuple([True] * 4)
         Whether to compute the gradients for [mu, sigma, lambda, w].
     jacobian_flag : bool
-        Whether variational parameters are transformed. 
+        Whether variational parameters are transformed.
         The variational parameters and corresponding transformations are:
         sigma (log), lambda (log), w (softmax).
 
@@ -29,7 +28,7 @@ def entmc_vbmc(
     H: float
         Estimated entropy of vp by Monte Carlo method.
     dH: np.ndarray
-        Estimated entropy gradient by Monte Carlo method. 
+        Estimated entropy gradient by Monte Carlo method.
         :math:`dH = \left[\nabla_{\mu_1}^{T} H, ..., \nabla_{\mu_K}^{T} H,
         \nabla_{\sigma}^{T} H, \nabla_{\lambda}^{T} H,
         \nabla_{\omega}^{T} H\right]`
@@ -64,9 +63,6 @@ def entmc_vbmc(
         # Draw Monte Carlo samples from the j-th component
         # Antithetic sampling
         epsilon[: Ns // 2, :] = np.random.randn(Ns // 2, D)
-        # epsilon[: Ns // 2, :] = randn2(
-        #     D, Ns // 2
-        # ).transpose()  # For exact testing with MATLAB
         epsilon[Ns // 2 :, :] = -epsilon[: Ns // 2, :]
 
         Xs = epsilon * lambd * sigma[j] + mu[:, j]  # [Ns, D]
@@ -111,7 +107,7 @@ def entmc_vbmc(
 
             if grad_flags[3]:
                 w_grad[j] -= np.log(q_j).sum() / Ns
-                w_grad[:] -= w[j] * (norm_j1[:, j] / q_j).sum() / Ns
+                w_grad[:] -= (w[j] * norm_j1 / q_j[:, None]).sum(0) / Ns
 
     # Correct for standard log reparameterization of SIGMA
     if jacobian_flag and grad_flags[1]:

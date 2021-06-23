@@ -8,7 +8,7 @@ from pyvbmc.utils.testing import check_grad
 def entlb_vbmc_wrapper(theta, D, K, ret="H"):
     assert theta.shape[0] == D * K + K + D + K
     vp = VariationalPosterior(D, K)
-    vp.mu = np.reshape(theta[: D * K], (D, K))
+    vp.mu = np.reshape(theta[: D * K], (D, K), "F")
     vp.sigma = theta[D * K : D * K + K]
     vp.lambd = theta[D * K + K : D * K + K + D]
     vp.w = theta[D * K + K + D :]
@@ -19,13 +19,27 @@ def entlb_vbmc_wrapper(theta, D, K, ret="H"):
         )
         return H
     else:
-        _, dH = entlb_vbmc(
-            vp, grad_flags=tuple([True] * 4), jacobian_flag=False
-        )
+        _, dH = entlb_vbmc(vp, grad_flags=(True,) * 4, jacobian_flag=False)
         return dH
 
 
-def test_entlb_vbmc_multi():
+def test_entlb_vbmc_single_gaussian():
+    # Check gradients with a single Gaussian
+    D, K = 3, 1
+    vp = VariationalPosterior(D, K)
+    vp.mu = np.ones((D, K))
+    vp.sigma = np.ones((1, K))
+
+    Hl, dHl = entlb_vbmc(vp, jacobian_flag=False)
+    theta0 = np.concatenate(
+        [x.flatten() for x in [vp.mu.transpose(), vp.sigma, vp.lambd, vp.w]]
+    )
+    f = lambda theta: entlb_vbmc_wrapper(theta, D, K, "H")
+    f_grad = lambda theta: entlb_vbmc_wrapper(theta, D, K, "dH")
+    assert check_grad(f, f_grad, theta0, rtol=0.01)
+
+
+def test_entlb_vbmc_nonoverlapping_mixture():
     # Check with multiple Gaussians that nearly have non-overlapping supports
     D, K = 3, 2
     vp = VariationalPosterior(D, K)
@@ -53,7 +67,26 @@ def test_entlb_vbmc_multi():
 
     # Check gradients
     theta0 = np.concatenate(
-        [x.flatten() for x in [vp.mu, vp.sigma, vp.lambd, vp.w]]
+        [x.flatten() for x in [vp.mu.transpose(), vp.sigma, vp.lambd, vp.w]]
+    )
+    f = lambda theta: entlb_vbmc_wrapper(theta, D, K, "H")
+    f_grad = lambda theta: entlb_vbmc_wrapper(theta, D, K, "dH")
+    assert check_grad(f, f_grad, theta0, rtol=0.01)
+
+
+def test_entlb_vbmc_overlapping_mixture():
+    # Check gradients with multiple Gaussians that have overlapping supports
+    np.random.seed(42)
+    D, K = 3, 2
+    vp = VariationalPosterior(D, K)
+    vp.mu = np.random.uniform(-1, 1, size=(D, K))
+    vp.sigma = np.ones(K) + 0.2 * np.random.rand(K)
+    vp.lambd = np.ones(D) + 0.2 * np.random.rand(D)
+    vp.eta = np.random.rand(K)
+    vp.w = np.exp(vp.eta) / np.exp(vp.eta).sum()
+
+    theta0 = np.concatenate(
+        [x.flatten() for x in [vp.mu.transpose(), vp.sigma, vp.lambd, vp.w]]
     )
     f = lambda theta: entlb_vbmc_wrapper(theta, D, K, "H")
     f_grad = lambda theta: entlb_vbmc_wrapper(theta, D, K, "dH")

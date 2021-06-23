@@ -25,7 +25,7 @@ def single_gaussian_entropy(D, sigma, lambd):
 def entmc_vbmc_wrapper(theta, D, K, Ns=1e5, ret="H"):
     assert theta.shape[0] == D * K + K + D + K
     vp = VariationalPosterior(D, K)
-    vp.mu = np.reshape(theta[: D * K], (D, K))
+    vp.mu = np.reshape(theta[: D * K], (D, K), "F")
     vp.sigma = theta[D * K : D * K + K]
     vp.lambd = theta[D * K + K : D * K + K + D]
     vp.w = theta[D * K + K + D :]
@@ -43,7 +43,7 @@ def entmc_vbmc_wrapper(theta, D, K, Ns=1e5, ret="H"):
         return dH
 
 
-def test_entmc_vbmc_single():
+def test_entmc_vbmc_single_gaussian():
     # Check with a single Gaussian
     D, K, Ns = 3, 1, 1e5
     vp = VariationalPosterior(D, K)
@@ -58,14 +58,14 @@ def test_entmc_vbmc_single():
 
     # Check gradients
     theta0 = np.concatenate(
-        [x.flatten() for x in [vp.mu, vp.sigma, vp.lambd, vp.w]]
+        [x.flatten() for x in [vp.mu.transpose(), vp.sigma, vp.lambd, vp.w]]
     )
     f = lambda theta: entmc_vbmc_wrapper(theta, D, K, Ns, "H")
     f_grad = lambda theta: entmc_vbmc_wrapper(theta, D, K, Ns, "dH")
     assert check_grad(f, f_grad, theta0, rtol=0.01)
 
 
-def test_entmc_vbmc_multi():
+def test_entmc_vbmc_nonoverlapping_mixture():
     # Check with multiple Gaussians that nearly have non-overlapping supports
     Ns = 1e5
     for D in range(1, 3):
@@ -89,7 +89,7 @@ def test_entmc_vbmc_multi():
                     1 / vp.lambd.flatten() * vp.w[k]
                 )  # lambda
                 dH_appro[D * K + K + D + k] = (
-                    H_appro_k - K - np.log(vp.w[k])
+                    H_appro_k - 1 - np.log(vp.w[k])
                 )  # w
 
             H, dH = entmc_vbmc(vp, Ns, jacobian_flag=False)
@@ -99,17 +99,41 @@ def test_entmc_vbmc_multi():
 
             # Check gradients
             theta0 = np.concatenate(
-                [x.flatten() for x in [vp.mu, vp.sigma, vp.lambd, vp.w]]
+                [
+                    x.flatten()
+                    for x in [vp.mu.transpose(), vp.sigma, vp.lambd, vp.w]
+                ]
             )
             f = lambda theta: entmc_vbmc_wrapper(theta, D, K, Ns, "H")
             f_grad = lambda theta: entmc_vbmc_wrapper(theta, D, K, Ns, "dH")
             check_grad(f, f_grad, theta0, rtol=0.01)
 
 
+def test_entmc_vbmc_overlapping_mixture():
+    # Check gradients with multiple Gaussians that have overlapping supports
+    np.random.seed(42)
+    D, K, Ns = 3, 2, 1e5
+    vp = VariationalPosterior(D, K)
+    vp.mu = np.random.uniform(-1, 1, size=(D, K))
+    vp.sigma = np.ones(K) + 0.2 * np.random.rand(K)
+    vp.lambd = np.ones(D) + 0.2 * np.random.rand(D)
+    vp.eta = np.random.rand(K)
+    vp.w = np.exp(vp.eta) / np.exp(vp.eta).sum()
+
+    theta0 = np.concatenate(
+        [x.flatten() for x in [vp.mu.transpose(), vp.sigma, vp.lambd, vp.w]]
+    )
+
+    f = lambda theta: entmc_vbmc_wrapper(theta, D, K, Ns, "H")
+    f_grad = lambda theta: entmc_vbmc_wrapper(theta, D, K, Ns, "dH")
+
+    assert check_grad(f, f_grad, theta0, rtol=0.01, atol=0.01)
+
+
 def test_entmc_vbmc_matlab():
-    # If exact is True, random seeds and samples should be the same 
-    # with MATLAB version, i.e. entmc_vbmc.py need to be modified a bit
-    # (see comments in entmc_vbmc.py)
+    # If exact is True, random seeds and samples should be the same
+    # with MATLAB version, i.e. entmc_vbmc.py need to be modified a
+    # bit: epsilon[: Ns // 2, :] = randn2(D, Ns // 2).transpose()
     exact = False
     mat = loadmat("./pyvbmc/entropy/entropy-test.mat")
     D = mat["D"].item()
@@ -147,3 +171,7 @@ def test_entmc_vbmc_grad_flags():
     grad_flags = tuple([False] * 3) + (True,)
     _, dH = entmc_vbmc(vp, Ns=1e5, grad_flags=grad_flags)
     assert dH.shape == (K,)
+
+
+if __name__ == "__main__":
+    test_entmc_vbmc_overlapping_mixture()

@@ -16,8 +16,7 @@ def entlb_vbmc(
     grad_flags : tuple of bool, len(grad_flags)=4, optional
         Whether to compute the gradients for [mu, sigma, lambda, w].
     jacobian_flag : bool, optional
-        Whether variational parameters are transformed.
-        The variational parameters and corresponding transformations are:
+        Whether variational parameters are transformed. The variational parameters and corresponding transformations are:
         sigma (log), lambda (log), w (softmax).
 
     Returns
@@ -34,11 +33,7 @@ def entlb_vbmc(
 
     References
     ----------
-    .. [1] Gershman, S. J., Hoffman, M. D., & Blei, D. M. (2012).
-        Nonparametric variational inference. Proceedings of the 29th
-        International Coference on International Conference on Machine Learning,
-        235–242.
-
+    .. [1]: Gershman, S. J., Hoffman, M. D., & Blei, D. M. (2012). Nonparametric variational inference. Proceedings of the 29th International Coference on International Conference on Machine Learning, 235–242.
     """
     BigK = np.inf  # large number of components
 
@@ -65,11 +60,18 @@ def entlb_vbmc(
             + np.log(lambd).sum()
         )
 
+        if grad_flags[0]:
+            mu_grad = np.zeros(D)
+
         if grad_flags[1]:
             sigma_grad = D / sigma
 
         if grad_flags[2]:
             lambd_grad = 1 / lambd
+
+        if grad_flags[3]:
+            w_grad = np.zeros(1)
+
     elif K > BigK:
         raise NotImplementedError("Not implemented yet for K > BigK.")
     else:
