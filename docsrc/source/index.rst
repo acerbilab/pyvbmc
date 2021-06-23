@@ -27,7 +27,7 @@ Note that this project is work in progress!
 
    functions/decorators
    functions/kernel_density
-   functions/kldiv_mvn
+   functions/entropy
 
 .. toctree::
    :maxdepth: 2
