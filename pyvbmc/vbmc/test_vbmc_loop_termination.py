@@ -175,3 +175,58 @@ def test_vbmc_compute_reliability_index():
     rindex, ELCBO_improvement = vbmc._compute_reliability_index(6)
     assert rindex == np.mean([10, 1, 1 / 0.03])
     assert np.isclose(ELCBO_improvement, 1)
+
+
+def test_is_gp_sampling_finished():
+    user_options = {"tolgpvarmcmc": 1e-4}
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    vbmc.optim_state["N"] = 300
+    vbmc.optim_state["iter"] = 10
+    vbmc.optim_state["warmup"] = False
+    vbmc.stats = dict()
+    vbmc.stats["N"] = np.ones(10)
+
+    # all variances low
+    vbmc.stats["gp_sample_var"] = np.ones(10) * 1e-5
+    vbmc.optim_state["stop_gp_sampling"] = 0
+    vbmc._is_gp_sampling_finished()
+    assert vbmc.optim_state.get("stop_gp_sampling") == vbmc.optim_state.get(
+        "N"
+    )
+
+    # all variances high
+    vbmc.stats["gp_sample_var"] = np.ones(10)
+    vbmc.optim_state["stop_gp_sampling"] = 0
+    vbmc._is_gp_sampling_finished()
+    assert vbmc.optim_state.get("stop_gp_sampling") == 0
+
+    # last variance high
+    vbmc.stats["gp_sample_var"] = np.ones(10) * 1e-10
+    vbmc.stats["gp_sample_var"][-1] = 1e-2
+    vbmc.optim_state["stop_gp_sampling"] = 0
+    vbmc._is_gp_sampling_finished()
+    assert vbmc.optim_state.get("stop_gp_sampling") == 0
+
+    # iteration too low
+    vbmc.stats["gp_sample_var"] = np.ones(10) * 1e-5
+    vbmc.optim_state["stop_gp_sampling"] = 0
+    vbmc.optim_state["iter"] = 1
+    vbmc._is_gp_sampling_finished()
+    assert vbmc.optim_state.get("stop_gp_sampling") == 0
+
+    # still warming up
+    vbmc.stats["gp_sample_var"] = np.ones(10) * 1e-5
+    vbmc.optim_state["stop_gp_sampling"] = 0
+    vbmc.optim_state["iter"] = 10
+    vbmc.optim_state["warmup"] = True
+    vbmc._is_gp_sampling_finished()
+    assert vbmc.optim_state.get("stop_gp_sampling") == 0
+
+    # already finished
+    vbmc.stats["gp_sample_var"] = np.ones(10) * 1e-5
+    vbmc.optim_state["stop_gp_sampling"] = 9
+    vbmc.optim_state["iter"] = 10
+    vbmc.optim_state["warmup"] = False
+    vbmc.optim_state["N"] = 10
+    vbmc._is_gp_sampling_finished()
+    assert vbmc.optim_state.get("stop_gp_sampling") == 9

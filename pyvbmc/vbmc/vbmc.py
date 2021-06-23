@@ -998,6 +998,7 @@ class VBMC:
                 ]
                 < 1
             )
+            # Iteration is stable if almost all recent iterations are stable
             if (
                 stable_count
                 >= tol_stable_iters
@@ -1012,14 +1013,16 @@ class VBMC:
                     self.optim_state["entropy_switch"] = False
                 else:
                     isFinished_flag = True
+                    stableflag = True
                     # "msg = 'Inference terminated:"
 
+        # Store stability flag
+        # self.stats["stable"][self.optim_state.get("iter")] = stableflag
         # Prevent early termination
         if self.optim_state.get("func_count") < self.options.get(
             "minfunevals"
         ) or self.optim_state.get("iter") < self.options.get("miniter"):
             isFinished_flag = False
-            stableflag = True
 
         return isFinished_flag
 
@@ -1073,6 +1076,31 @@ class VBMC:
         )
         ELCBO_improvement = np.polyfit(xx, yy, 1)[0]
         return np.mean(rindex_vec), ELCBO_improvement
+
+    def _is_gp_sampling_finished(self):
+        """
+        Private function to check if the MCMC sampling of the Gaussian Process
+        is finished.
+        """
+        # Stop sampling after sample variance has stabilized below ToL
+        iteration = self.optim_state.get("iter")
+
+        if (
+            iteration > 2
+            and self.optim_state.get("stop_gp_sampling") == 0
+            and not self.optim_state.get("warmup")
+        ):
+            w1 = np.zeros((iteration))
+            w1[iteration - 1] = 1
+            w2 = np.exp(-(self.stats.get("N")[-1] - self.stats.get("N") / 10))
+            w2 = w2 / np.sum(w2)
+            w = 0.5 * w1 + 0.5 * w2
+            if np.sum(w * self.stats.get("gp_sample_var")) < self.options.get(
+                "tolgpvarmcmc"
+            ):
+                self.optim_state["stop_gp_sampling"] = self.optim_state.get(
+                    "N"
+                )
 
     def _recompute_lcbmax(self):
         """
