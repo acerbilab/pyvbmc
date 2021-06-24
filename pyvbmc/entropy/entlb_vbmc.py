@@ -7,7 +7,7 @@ def entlb_vbmc(
     grad_flags: tuple = tuple([True] * 4),
     jacobian_flag: bool = True,
 ):
-    r"""Entropy lower bound for variational posterior.
+    r"""Entropy lower bound for variational posterior by Jensen's inequality.
 
     Parameters
     ----------
@@ -16,7 +16,8 @@ def entlb_vbmc(
     grad_flags : tuple of bool, len(grad_flags)=4, optional
         Whether to compute the gradients for [mu, sigma, lambda, w].
     jacobian_flag : bool, optional
-        Whether variational parameters are transformed. The variational parameters and corresponding transformations are:
+        Whether variational parameters are transformed. The variational
+        parameters and corresponding transformations are:
         sigma (log), lambda (log), w (softmax).
 
     Returns
@@ -33,7 +34,9 @@ def entlb_vbmc(
 
     References
     ----------
-    .. [1]: Gershman, S. J., Hoffman, M. D., & Blei, D. M. (2012). Nonparametric variational inference. Proceedings of the 29th International Coference on International Conference on Machine Learning, 235–242.
+    .. [1]: Gershman, S. J., Hoffman, M. D., & Blei, D. M. (2012).
+    Nonparametric variational inference. Proceedings of the 29th
+    International Conference on Machine Learning, 235–242.
     """
     BigK = np.inf  # large number of components
 

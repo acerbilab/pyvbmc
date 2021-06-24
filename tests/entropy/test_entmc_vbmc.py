@@ -2,7 +2,7 @@ import numpy as np
 from scipy.io import loadmat
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.entropy import entmc_vbmc
-from pyvbmc.utils.testing import check_grad
+from pyvbmc.testing import check_grad
 
 
 def single_gaussian_entropy(D, sigma, lambd):
@@ -135,7 +135,7 @@ def test_entmc_vbmc_matlab():
     # with MATLAB version, i.e. entmc_vbmc.py need to be modified a
     # bit: epsilon[: Ns // 2, :] = randn2(D, Ns // 2).transpose()
     exact = False
-    mat = loadmat("./pyvbmc/entropy/entropy-test.mat")
+    mat = loadmat("./tests/entropy/entropy-test.mat")
     D = mat["D"].item()
     K = mat["K"].item()
     Ns = mat["Ns"].item()
