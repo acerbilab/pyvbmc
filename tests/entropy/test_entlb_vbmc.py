@@ -2,7 +2,7 @@ import numpy as np
 from scipy.io import loadmat
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.entropy import entlb_vbmc
-from pyvbmc.utils.testing import check_grad
+from pyvbmc.testing import check_grad
 
 
 def entlb_vbmc_wrapper(theta, D, K, ret="H"):
@@ -94,7 +94,7 @@ def test_entlb_vbmc_overlapping_mixture():
 
 
 def test_entlb_vbmc_matlab():
-    mat = loadmat("./pyvbmc/entropy/entropy-test.mat")
+    mat = loadmat("./tests/entropy/entropy-test.mat")
     D = mat["D"].item()
     K = mat["K"].item()
     vp = VariationalPosterior(D, K)

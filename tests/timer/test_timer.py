@@ -1,11 +1,13 @@
 from pyvbmc.timer import Timer
+from time import sleep
 
 
 def test_start_stop_get_normal():
     timer = Timer()
     timer.start_timer("test")
+    sleep(0.2)
     timer.stop_timer("test")
-    assert timer.get_duration("test") > 0
+    assert timer.get_duration("test") >= 0.2
 
 
 def test_start_stop_get_reset():
@@ -14,10 +16,11 @@ def test_start_stop_get_reset():
     timer.stop_timer("test")
     timer1 = timer.get_duration("test")
     timer.start_timer("test")
+    sleep(0.2)
     timer.stop_timer("test")
     timer2 = timer.get_duration("test")
-    assert timer2 > 0
-    assert timer2 < timer1 + timer2
+    assert timer2 >= 0.2
+    assert timer2 <= timer1 + timer2
 
 
 def test_timer_not_existing():
@@ -29,10 +32,11 @@ def test_timer_not_existing():
 def test_timer_two_timers():
     timer = Timer()
     timer.start_timer("testimer1")
+    sleep(0.2)
     timer.start_timer("testimer2")
     timer.stop_timer("testimer2")
     timer.stop_timer("testimer1")
     timer1 = timer.get_duration("testimer1")
     timer2 = timer.get_duration("testimer2")
-    assert timer1 > 0 and timer2 > 0
-    assert timer1 > timer2
+    assert timer1 >= 0.2 and timer2 >= 0
+    assert timer1 >= timer2 + 0.2

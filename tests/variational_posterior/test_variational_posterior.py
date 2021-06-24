@@ -7,7 +7,7 @@ from pyvbmc.variational_posterior import VariationalPosterior
 
 
 def get_matlab_vp():
-    mat = loadmat("./pyvbmc/variational_posterior/vp-test.mat")
+    mat = loadmat("./tests/variational_posterior/vp-test.mat")
     vp = VariationalPosterior(2, 2, np.array([[5]]))
     vp.D = mat["D"][0, 0]
     vp.K = mat["K"][0, 0]
