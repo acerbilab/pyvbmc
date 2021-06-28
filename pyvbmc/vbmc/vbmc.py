@@ -8,7 +8,7 @@ from pyvbmc.timer import Timer
 from pyvbmc.variational_posterior import VariationalPosterior
 
 from .options import Options
-from .stats import Stats
+from .iteration_history import IterationHistory
 
 
 class VBMC:
@@ -154,7 +154,7 @@ class VBMC:
 
         self.x0 = self.parameter_transformer(self.x0)
 
-        self.stats = Stats()
+        self.iteration_histroy = IterationHistory()
 
     def _boundscheck(
         self,
@@ -815,7 +815,7 @@ class VBMC:
             # timer
 
             # Record all useful stats
-            self.stats.record_iteration(
+            self.iteration_histroy.record_iteration(
                 self.optim_state,
                 self.vp,
                 elbo,

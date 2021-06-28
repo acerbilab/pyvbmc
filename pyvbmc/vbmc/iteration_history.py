@@ -1,7 +1,7 @@
 from collections.abc import MutableMapping
 
 
-class Stats(MutableMapping, dict):
+class IterationHistory(MutableMapping, dict):
     """
     This class is responsible for VBMC stats.
     """
@@ -39,11 +39,11 @@ class Stats(MutableMapping, dict):
 
     def __str__(self):
         """
-        Returns the stats in a format key: value.
+        Returns the iteartion history in a format key: value.
 
         Returns
         -------
         str
-            The str to describe an stats object.
+            The str to describe an IterationHistory object.
         """
         return "".join(["{}: {} \n".format(k, v) for (k, v) in self.items()])
