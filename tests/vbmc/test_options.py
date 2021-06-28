@@ -75,3 +75,10 @@ def test_str():
     one_option_str = "funevalstart: 10 (Number of initial target fcn evals)"
     assert one_option_str in options.__str__()
     assert len(options.__str__()) > 1600
+
+def test_del():
+    default_options_path = "./pyvbmc/vbmc/option_configs/test_options.ini"
+    user_options = {"display": "off"}
+    options = Options(default_options_path, {"D": 2}, user_options)
+    options.pop("display")
+    assert "display" not in options
