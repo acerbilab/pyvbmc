@@ -7,15 +7,15 @@ from pyvbmc.variational_posterior import VariationalPosterior
 
 
 def get_matlab_vp():
-    mat = loadmat("./pyvbmc/variational_posterior/vp-test.mat")
+    mat = loadmat("./tests/variational_posterior/vp-test.mat")
     vp = VariationalPosterior(2, 2, np.array([[5]]))
     vp.D = mat["D"][0, 0]
     vp.K = mat["K"][0, 0]
     vp.w = mat["w"]
     vp.mu = mat["mu"]
     vp.sigma = mat["sigma"]
-    vp.lamb = mat["lambda"]
-    vp.optimize_lamb = mat["optimize_lambda"][0, 0] == 1
+    vp.lambd = mat["lambda"]
+    vp.optimize_lambd = mat["optimize_lambda"][0, 0] == 1
     vp.optimize_mu = mat["optimize_mu"][0, 0] == 1
     vp.optimize_sigma = mat["optimize_sigma"][0, 0] == 1
     vp.optimize_weights = mat["optimize_weights"][0, 0] == 1
@@ -251,8 +251,8 @@ def test_set_parameters_raw():
     assert np.all(
         vp.sigma == np.exp(theta[D * K : D * K + K]).reshape(1, -1) * nl
     )
-    assert vp.lamb.shape == (D, 1)
-    assert np.all(vp.lamb == np.array([lamb]).reshape(-1, 1) / nl)
+    assert vp.lambd.shape == (D, 1)
+    assert np.all(vp.lambd == np.array([lamb]).reshape(-1, 1) / nl)
     assert vp.w.shape == (1, K)
     w = np.exp(theta[-K:] - np.amax(theta[-K:]))
     w = w.reshape(1, -1) / np.sum(w)
@@ -274,8 +274,8 @@ def test_set_parameters_not_raw():
     nl = np.sqrt(np.sum(lamb ** 2) / D)
     assert vp.sigma.shape == (1, K)
     assert np.all(vp.sigma == theta[D * K : D * K + K].reshape(1, -1) * nl)
-    assert vp.lamb.shape == (D, 1)
-    assert np.all(vp.lamb == np.array([lamb]).reshape(-1, 1) / nl)
+    assert vp.lambd.shape == (D, 1)
+    assert np.all(vp.lambd == np.array([lamb]).reshape(-1, 1) / nl)
     assert vp.w.shape == (1, K)
     w = theta[-K:]
     w = w.reshape(1, -1) / np.sum(w)
@@ -310,7 +310,7 @@ def test_get_parameters_raw():
         )
     )
     assert np.all(
-        vp.lamb.flatten() == np.exp(theta[D * K + K : D * K + K + D])
+        vp.lambd.flatten() == np.exp(theta[D * K + K : D * K + K + D])
     )
     assert np.all(vp.w.flatten() == np.exp(theta[-K:]))
 
@@ -323,7 +323,7 @@ def test_get_parameters_not_raw():
     theta = vp.get_parameters(rawflag=False)
     assert np.all(vp.mu[: D * K] == np.reshape(theta[: D * K], (D, K)))
     assert np.all(vp.sigma.flatten() == theta[D * K : D * K + K])
-    assert np.all(vp.lamb.flatten() == theta[D * K + K : D * K + K + D])
+    assert np.all(vp.lambd.flatten() == theta[D * K + K : D * K + K + D])
     assert np.all(vp.w.flatten() == theta[-K:])
 
 
