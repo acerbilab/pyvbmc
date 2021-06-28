@@ -617,7 +617,8 @@ class VBMC:
         Execute the VBMC loop. TBD.
         """
         is_finished = False
-        iteration = 0
+        # the iterations of pyvbmc start at 0
+        iteration = -1
         timer = Timer()
         gp = None
 
@@ -636,7 +637,7 @@ class VBMC:
             # Actively sample new points into the training set
             timer.start_timer("activeSampling")
 
-            if iteration == 1:
+            if iteration == 0:
                 new_funevals = self.options.get("funevalstart")
             else:
                 new_funevals = self.options.get("funevalsperiter")
@@ -849,7 +850,7 @@ class VBMC:
             # vp.stats.stable = stats.stable(optimState.iter)
 
             # Check if we are still warming-up
-            if self.optim_state.get("warmup") and iteration > 1:
+            if self.optim_state.get("warmup") and iteration > 0:
                 if self.options.get("recomputelcbmax"):
                     self.optim_state["lcbmax_vec"] = self._recompute_lcbmax().T
                 trim_flag = self._check_warmup_end()
@@ -1043,7 +1044,7 @@ class VBMC:
         """
         Private function to compute the reliability index.
         """
-        iteration_idx = self.optim_state.get("iter") - 1
+        iteration_idx = self.optim_state.get("iter")
         if self.optim_state.get("iter") < 3:
             rindex = np.Inf
             ELCBO_improvement = np.NaN
@@ -1099,8 +1100,8 @@ class VBMC:
         # Stop sampling after sample variance has stabilized below ToL
         iteration = self.optim_state.get("iter")
 
-        w1 = np.zeros((iteration))
-        w1[iteration - 1] = 1
+        w1 = np.zeros((iteration + 1))
+        w1[iteration] = 1
         w2 = np.exp(-(self.stats.get("N")[-1] - self.stats.get("N") / 10))
         w2 = w2 / np.sum(w2)
         w = 0.5 * w1 + 0.5 * w2

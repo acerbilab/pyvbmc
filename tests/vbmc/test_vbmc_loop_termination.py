@@ -165,7 +165,7 @@ def test_vbmc_compute_reliability_index_less_than_3_iter():
 def test_vbmc_compute_reliability_index():
     user_options = {"elcboimproweight": 0, "tolskl": 0.03}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
-    vbmc.optim_state["iter"] = 50
+    vbmc.optim_state["iter"] = 49
     stats = dict()
     stats["elbo"] = np.arange(50) * 10
     stats["elbo_sd"] = np.ones(50)
@@ -181,7 +181,7 @@ def test_is_gp_sampling_finished():
     user_options = {"tolgpvarmcmc": 1e-4}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.optim_state["N"] = 300
-    vbmc.optim_state["iter"] = 10
+    vbmc.optim_state["iter"] = 9
     vbmc.optim_state["warmup"] = False
     vbmc.stats = dict()
     vbmc.stats["N"] = np.ones(10)
