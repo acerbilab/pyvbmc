@@ -107,7 +107,7 @@ def test_vbmc_is_finished_stability(mocker):
     vbmc.optim_state["func_count"] = 9
     vbmc.optim_state["entropy_switch"] = False
     vbmc.optim_state["iter"] = 99
-    vbmc.stats = {"rindex": np.ones(99) * 0.5}
+    vbmc.iteration_history['rindex'] = np.ones(99) * 0.5
 
     mocker.patch(
         "pyvbmc.vbmc.VBMC._compute_reliability_index",
@@ -146,7 +146,7 @@ def test_vbmc_is_finished_stability_entropyswitch(mocker):
     vbmc.optim_state["func_count"] = 9
     vbmc.optim_state["entropy_switch"] = True
     vbmc.optim_state["iter"] = 99
-    vbmc.stats = {"rindex": np.ones(99) * 0.5}
+    vbmc.iteration_history['rindex'] = np.ones(99) * 0.5
     mocker.patch(
         "pyvbmc.vbmc.VBMC._compute_reliability_index",
         return_value=(0.5, 0.005),
@@ -166,12 +166,10 @@ def test_vbmc_compute_reliability_index():
     user_options = {"elcboimproweight": 0, "tolskl": 0.03}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.optim_state["iter"] = 49
-    stats = dict()
-    stats["elbo"] = np.arange(50) * 10
-    stats["elbo_sd"] = np.ones(50)
-    stats["sKL"] = np.ones(50)
-    stats["funccount"] = np.arange(50) * 10
-    vbmc.stats = stats
+    vbmc.iteration_history["elbo"] = np.arange(50) * 10
+    vbmc.iteration_history["elbo_sd"] = np.ones(50)
+    vbmc.iteration_history["sKL"] = np.ones(50)
+    vbmc.iteration_history["funccount"] = np.arange(50) * 10
     rindex, ELCBO_improvement = vbmc._compute_reliability_index(6)
     assert rindex == np.mean([10, 1, 1 / 0.03])
     assert np.isclose(ELCBO_improvement, 1)
@@ -183,24 +181,24 @@ def test_is_gp_sampling_finished():
     vbmc.optim_state["N"] = 300
     vbmc.optim_state["iter"] = 9
     vbmc.optim_state["warmup"] = False
-    vbmc.stats = dict()
-    vbmc.stats["N"] = np.ones(10)
+    vbmc.iteration_history = dict()
+    vbmc.iteration_history["N"] = np.ones(10)
 
     # all variances low
-    vbmc.stats["gp_sample_var"] = np.ones(10) * 1e-5
+    vbmc.iteration_history["gp_sample_var"] = np.ones(10) * 1e-5
     vbmc.optim_state["stop_gp_sampling"] = 0
     vbmc._is_gp_sampling_finished()
     assert vbmc._is_gp_sampling_finished()
 
     # all variances high
-    vbmc.stats["gp_sample_var"] = np.ones(10)
+    vbmc.iteration_history["gp_sample_var"] = np.ones(10)
     vbmc.optim_state["stop_gp_sampling"] = 0
     vbmc._is_gp_sampling_finished()
     assert not vbmc._is_gp_sampling_finished()
 
     # last variance high
-    vbmc.stats["gp_sample_var"] = np.ones(10) * 1e-10
-    vbmc.stats["gp_sample_var"][-1] = 1e-2
+    vbmc.iteration_history["gp_sample_var"] = np.ones(10) * 1e-10
+    vbmc.iteration_history["gp_sample_var"][-1] = 1e-2
     vbmc.optim_state["stop_gp_sampling"] = 0
     vbmc._is_gp_sampling_finished()
     assert not vbmc._is_gp_sampling_finished()
