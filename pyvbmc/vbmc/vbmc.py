@@ -977,7 +977,8 @@ class VBMC:
             # msg "Inference terminated
 
         # Maximum number of iterations
-        if self.optim_state.get("iter") >= self.options.get("maxiter"):
+        iteration = self.optim_state.get("iter")
+        if iteration >= self.options.get("maxiter"):
             isFinished_flag = True
             # msg = "Inference terminated
 
@@ -996,19 +997,36 @@ class VBMC:
             tol_stable_iters
         )
 
+        # Store reliability index
+        # this will be improved with the new iteration_history object.
+        if "rindex" in self.stats:
+            if len(self.stats["rindex"]) - 1 > iteration:
+                self.stats["rindex"][iteration] = rindex
+            else:
+                self.stats["elcbo_impro"] = np.append(
+                    self.stats.get("elcbo_impro"), [ELCBO_improvement]
+                )
+
+        if "elcbo_impro" in self.stats:
+            if len(self.stats["elcbo_impro"]) - 1 > iteration:
+                self.stats["elcbo_impro"][iteration] = ELCBO_improvement
+            else:
+                self.stats["elcbo_impro"] = np.append(
+                    self.stats.get("elcbo_impro"), [ELCBO_improvement]
+                )
+        self.optim_state["R"] = rindex
+
         # Check stability termination condition
         stableflag = False
         if (
-            self.optim_state.get("iter") >= tol_stable_iters
+            iteration >= tol_stable_iters
             and rindex < 1
             and ELCBO_improvement < self.options.get("tolimprovement")
         ):
             # Count how many good iters in the recent past (excluding current)
             stable_count = np.sum(
                 self.stats.get("rindex")[
-                    self.optim_state.get("iter")
-                    - tol_stable_iters : self.optim_state.get("iter")
-                    - 2
+                    iteration - tol_stable_iters : iteration - 2
                 ]
                 < 1
             )
@@ -1031,11 +1049,18 @@ class VBMC:
                     # "msg = 'Inference terminated:"
 
         # Store stability flag
-        # self.stats["stable"][self.optim_state.get("iter")] = stableflag
+        # this will be improved with the new iteration_history object.
+        if "stable" in self.stats:
+            if len(self.stats["stable"]) - 1 > iteration:
+                self.stats["stable"][iteration] = stableflag
+            else:
+                self.stats["stable"] = np.append(
+                    self.stats.get("stable"), [stableflag]
+                )
         # Prevent early termination
         if self.optim_state.get("func_count") < self.options.get(
             "minfunevals"
-        ) or self.optim_state.get("iter") < self.options.get("miniter"):
+        ) or iteration < self.options.get("miniter"):
             isFinished_flag = False
 
         return isFinished_flag
