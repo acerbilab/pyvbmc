@@ -828,6 +828,7 @@ class VBMC:
                 Ns_gp,
                 pruned,
                 timer,
+                iteration
             )
 
             self.iteration_history.record(
