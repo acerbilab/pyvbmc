@@ -24,9 +24,7 @@ class IterationHistory(MutableMapping, dict):
 
     def record(self, key: str, value: object, iteration: int):
         """
-        Store a value for a key in a given iteration. 
-        
-        This method expands the arrays if necessary.
+        Store a value for a key in a given iteration.
 
         Parameters
         ----------
@@ -35,13 +33,12 @@ class IterationHistory(MutableMapping, dict):
         value : object
             The value which should be stored.
         iteration : int
-            The iteration for which the value should be stored.
-            The value must be >= 0.
+            The iteration for which the value should be stored, must be >= 0.
 
         Raises
         ------
         ValueError
-            Raised if the value of the iteration is <= 0.
+            Raised if the value of the iteration is < 0.
         """        
         if iteration < 0:
             raise ValueError("The iteration must be >= 0.")

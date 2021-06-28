@@ -1,5 +1,5 @@
 =================
-Stats
+IterationHistory
 =================
 
 Porting status
@@ -13,5 +13,5 @@ Matlab references
 Python documentation
 ====================
 
-.. autoclass:: pyvbmc.vbmc.Stats
+.. autoclass:: pyvbmc.vbmc.IterationHistory
    :members:
