@@ -117,7 +117,7 @@ def test_iteration_history_record_iteration():
     vp["name"] =  "vp2"
     gp["name"] =  "gp2"
     timer["name"] =  "timer2"
-    
+    sKL = 3332
     iteration2 = 1
     iteration_history.record_iteration(
         optim_state,
@@ -138,6 +138,7 @@ def test_iteration_history_record_iteration():
     assert iteration_history.get("vp")[iteration] != vp
     assert iteration_history.get("gp")[iteration] != gp
     assert iteration_history.get("timer")[iteration] != timer
+    assert iteration_history.get("timer")[iteration] != sKL
 
     # second iteration
     assert iteration_history.get("optim_state")[iteration2] == optim_state
