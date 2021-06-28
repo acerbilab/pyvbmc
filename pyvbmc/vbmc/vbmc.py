@@ -1000,7 +1000,7 @@ class VBMC:
         # Store reliability index
         # this will be improved with the new iteration_history object.
         if "rindex" in self.stats:
-            if len(self.stats["rindex"]) - 1 > iteration:
+            if len(self.stats["rindex"]) > iteration:
                 self.stats["rindex"][iteration] = rindex
             else:
                 self.stats["elcbo_impro"] = np.append(
@@ -1008,7 +1008,7 @@ class VBMC:
                 )
 
         if "elcbo_impro" in self.stats:
-            if len(self.stats["elcbo_impro"]) - 1 > iteration:
+            if len(self.stats["elcbo_impro"]) > iteration:
                 self.stats["elcbo_impro"][iteration] = ELCBO_improvement
             else:
                 self.stats["elcbo_impro"] = np.append(
@@ -1051,7 +1051,7 @@ class VBMC:
         # Store stability flag
         # this will be improved with the new iteration_history object.
         if "stable" in self.stats:
-            if len(self.stats["stable"]) - 1 > iteration:
+            if len(self.stats["stable"]) > iteration:
                 self.stats["stable"][iteration] = stableflag
             else:
                 self.stats["stable"] = np.append(
