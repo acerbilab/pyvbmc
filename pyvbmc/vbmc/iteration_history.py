@@ -9,7 +9,7 @@ class IterationHistory(MutableMapping, dict):
     """
 
     def __setitem__(self, key, val):
-        dict.__setitem__(self, key, val)
+        dict.__setitem__(self, key, copy.deepcopy(val))
 
     def __getitem__(self, key):
         return dict.__getitem__(self, key)
@@ -48,7 +48,7 @@ class IterationHistory(MutableMapping, dict):
                 self._expand_array(key, iteration + 1 - len(self[key]))
         else:
             self[key] = np.full([iteration + 1], None)
-        self[key][iteration] = value
+        self[key][iteration] = copy.deepcopy(value)
 
     def _expand_array(self, key: str, resize_amount: int):
         """
@@ -102,19 +102,19 @@ class IterationHistory(MutableMapping, dict):
             [description]
         iteration : int
             The iteration for which the value should be stored, must be >= 0.
-        """    
-        self.record("optim_state", copy.deepcopy(optim_state), iteration)
-        self.record("vp", copy.deepcopy(vp), iteration)
+        """
+        self.record("optim_state", optim_state, iteration)
+        self.record("vp", vp, iteration)
         self.record("elbo", elbo, iteration)
         self.record("elbo_sd", elbo_sd, iteration)
         self.record("varss", varss, iteration)
         self.record("sKL", sKL, iteration)
         self.record("sKL_true", sKL_true, iteration)
-        self.record("gp", copy.deepcopy(gp), iteration)
+        self.record("gp", gp, iteration)
         self.record("Ns_gp", Ns_gp, iteration)
         self.record("pruned", pruned, iteration)
         self.record("varss", varss, iteration)
-        self.record("timer", copy.deepcopy(timer), iteration)
+        self.record("timer", timer, iteration)
 
     def __str__(self):
         """

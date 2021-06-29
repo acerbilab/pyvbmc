@@ -73,7 +73,21 @@ def test_del():
     assert "rindex" not in iteration_history
 
 
+def test_iteration_history_set_item_deepcopy():
+    iteration_history = IterationHistory()
+    foo = {"name": "foo"}
+    iteration_history["foo"] = foo
+    assert iteration_history.get("foo") == foo
+    foo['name'] = "foo2"
+    iteration_history["foo2"] = foo
+    assert iteration_history.get("foo") != foo
+    assert iteration_history.get("foo2") == foo
+
+
 def test_iteration_history_record_iteration():
+    """
+    Extensive testing to make sure that the deepcopy works.
+    """
     iteration_history = IterationHistory()
     optim_state = {"name": "optimstate"}
     vp = {"name": "vp"}
@@ -114,9 +128,9 @@ def test_iteration_history_record_iteration():
     assert iteration_history.get("timer")[iteration] == timer
 
     optim_state["name"] = "optimstate2"
-    vp["name"] =  "vp2"
-    gp["name"] =  "gp2"
-    timer["name"] =  "timer2"
+    vp["name"] = "vp2"
+    gp["name"] = "gp2"
+    timer["name"] = "timer2"
     sKL = 3332
     iteration2 = 1
     iteration_history.record_iteration(
