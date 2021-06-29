@@ -103,17 +103,29 @@ class IterationHistory(MutableMapping, dict):
         iteration : int
             The iteration for which the value should be stored, must be >= 0.
         """
-        self.record("optim_state", optim_state, iteration)
+
+        self.record("N", optim_state.get('N'), iteration)
+        self.record("Neff", optim_state.get('Neff'), iteration)
+        self.record("funccount", optim_state.get('funccount'), iteration)
+        self.record("cachecount", optim_state.get('cachecount'), iteration)
+        self.record("warmup", optim_state.get('warmup'), iteration)
         self.record("vp", vp, iteration)
+        # self.record("vpK", vp.K, iteration)
+
         self.record("elbo", elbo, iteration)
         self.record("elbo_sd", elbo_sd, iteration)
         self.record("varss", varss, iteration)
         self.record("sKL", sKL, iteration)
         self.record("sKL_true", sKL_true, iteration)
+        self.record("lcbmax", optim_state.get("lcbmax"), iteration)
+
+        # gplite_clean(gp) in original MATLAB implementation
         self.record("gp", gp, iteration)
-        self.record("Ns_gp", Ns_gp, iteration)
+        self.record("gp_N_samples", Ns_gp, iteration)
+        # self.record("gp_hyp_full",  gp.get("hyp_full"), iteration)
         self.record("pruned", pruned, iteration)
-        self.record("varss", varss, iteration)
+        # self.record("gp_noise_hpd", np.sqrt(optim_state.get("sn2hpd")), iteration)
+        self.record("gp_samplevar", varss, iteration)
         self.record("timer", timer, iteration)
 
     def __str__(self):
