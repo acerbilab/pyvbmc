@@ -4,11 +4,14 @@ IterationHistory
 
 Porting status
 ==============
-     
+
+.. todo::
+   - docstring of record_iteration() (depends on the other objects as well).     
+
 
 Matlab references
 -----------------
--  function save_stats in: `vbmc.m <https://github.com/lacerbi/vbmc/blob/master/vmbc.m>`_ 
+-  function save_stats in: `vbmc.m <https://github.com/lacerbi/vbmc/blob/master/vbmc.m>`_ 
 
 Python documentation
 ====================
