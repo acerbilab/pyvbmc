@@ -970,10 +970,53 @@ class VBMC:
         changed_flag = True
         return changed_flag
 
-    def _determine_best_vp(self):
+    def _determine_best_vp(
+        self,
+        max_idx: int = None,
+        safe_sd: float = 5,
+        frac_back: float = 0.25,
+        rank_citerion_flag: bool = False,
+        real_flag: bool = False,
+    ):
         """
-        VBMC_BEST Return best variational posterior from stats structure.
+        Return best variational posterior from the iteration_history object.
+
+        Parameters
+        ----------
+        max_idx : int, optional
+            Check up to this iteration (default, last), by default None
+        safe_sd : float, optional
+            Penalization for uncertainty, by default 5
+        frac_back : float, optional
+            If no past stable iteration, go back up to this fraction of
+            iterations, by default 0.25
+        rank_citerion_flag : bool, optional
+            If True use new ranking criterion method to pick best solution.
+            It finds a solution that combines ELCBO, stability, and recency,
+            by default False
+        real_flag : bool, optional
+            If True the training variational posterior will be converted to
+            real posterior, by default False
+
+        Returns
+        -------
+        [type]
+            [description]
         """
-        idx_best = 1
+
+        # Check up to this iteration (default, last)
+        if max_idx is None:
+            max_idx = self.stats.get("iter")[-1]
+
+        if self.stats.get("stable")[max_idx]:
+            # If the current iteration is stable, return it
+            idx_best = max_idx
+
+        else:
+            # Otherwise, find best solution according do various criteria
+
+            if rank_citerion_flag:
+                # Find solution that combines ELCBO, stability, and recency
+                idx_best = 1
 
         return idx_best
