@@ -849,6 +849,20 @@ class VBMC:
             # Check termination conditions
             # is_finished = self._is_finished()
 
+            # Check warmup
+            if (
+                self.optim_state.get("iter") > 2
+                and self.optim_state.get("stop_gp_sampling") == 0
+                and not self.optim_state.get("warmup")
+            ):
+                if self._is_gp_sampling_finished():
+                    self.optim_state[
+                        "stop_gp_sampling"
+                    ] = self.optim_state.get("N")
+
+            # Check termination conditions
+            # is_finished = self._check_termination_conditions()
+
             #  Save stability
             # vp.stats.stable = stats.stable(optimState.iter)
 
@@ -966,9 +980,12 @@ class VBMC:
         """
         return True
 
-    def _is_finished(self):
+    def _check_termination_conditions(self):
         """
-        Private method to termination conditions.
+        Private method to determine the status of termination conditions.
+
+        It also saves the reliability index, ELCBO improvement and stableflag
+        to the iteration_history object.
         """
         isFinished_flag = False
 
