@@ -844,7 +844,7 @@ class VBMC:
                     ] = self.optim_state.get("N")
 
             # Check termination conditions
-            # is_finished = self._is_finished()
+            # is_finished = self._check_termination_conditions()
 
             #  Save stability
             # vp.stats.stable = stats.stable(optimState.iter)
@@ -963,9 +963,12 @@ class VBMC:
         """
         return True
 
-    def _is_finished(self):
+    def _check_termination_conditions(self):
         """
-        Private method to termination conditions.
+        Private method to determine the status of termination conditions.
+
+        It also saves the reliability index, ELCBO improvement and stableflag
+        to the iteration_history object.
         """
         isFinished_flag = False
 
@@ -1003,8 +1006,8 @@ class VBMC:
             if len(self.stats["rindex"]) > iteration:
                 self.stats["rindex"][iteration] = rindex
             else:
-                self.stats["elcbo_impro"] = np.append(
-                    self.stats.get("elcbo_impro"), [ELCBO_improvement]
+                self.stats["rindex"] = np.append(
+                    self.stats.get("rindex"), [ELCBO_improvement]
                 )
 
         if "elcbo_impro" in self.stats:
