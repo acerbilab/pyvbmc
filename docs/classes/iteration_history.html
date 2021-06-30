@@ -55,8 +55,22 @@
 <h2>Python documentation<a class="headerlink" href="#python-documentation" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.vbmc.IterationHistory">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyvbmc.vbmc.</span></span><span class="sig-name descname"><span class="pre">IterationHistory</span></span><a class="headerlink" href="#pyvbmc.vbmc.IterationHistory" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyvbmc.vbmc.</span></span><span class="sig-name descname"><span class="pre">IterationHistory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">keys</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyvbmc.vbmc.IterationHistory" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class is responsible for the VBMC iteration history.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.vbmc.IterationHistory.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">keys</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyvbmc.vbmc.IterationHistory.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize an IterationHistory object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>keys :</strong></dt><dd><p>The keys that can be recorded with this object.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.vbmc.IterationHistory.record">
 <span class="sig-name descname"><span class="pre">record</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iteration</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyvbmc.vbmc.IterationHistory.record" title="Permalink to this definition">¶</a></dt>
@@ -76,6 +90,9 @@
 <dd class="field-even"><dl class="simple">
 <dt>ValueError</dt><dd><p>Raised if the value of the iteration is &lt; 0.</p>
 </dd>
+<dt>ValueError</dt><dd><p>Raised if a key has not been specified on initialization of the
+object.</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -83,34 +100,24 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.vbmc.IterationHistory.record_iteration">
-<span class="sig-name descname"><span class="pre">record_iteration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optim_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elbo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elbo_sd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">varss</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sKL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sKL_true</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ns_gp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pruned</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iteration</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyvbmc.vbmc.IterationHistory.record_iteration" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convenience method to record a whole pyvbmc iteration.</p>
+<span class="sig-name descname"><span class="pre">record_iteration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key_value</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iteration</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyvbmc.vbmc.IterationHistory.record_iteration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience method to record multiple key-values for a given iteration.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>optim_state</strong><span class="classifier">[type]</span></dt><dd><p>[description]</p>
-</dd>
-<dt><strong>vp</strong><span class="classifier">[type]</span></dt><dd><p>[description]</p>
-</dd>
-<dt><strong>elbo</strong><span class="classifier">[type]</span></dt><dd><p>[description]</p>
-</dd>
-<dt><strong>elbo_sd</strong><span class="classifier">[type]</span></dt><dd><p>[description]</p>
-</dd>
-<dt><strong>varss</strong><span class="classifier">[type]</span></dt><dd><p>[description]</p>
-</dd>
-<dt><strong>sKL</strong><span class="classifier">[type]</span></dt><dd><p>[description]</p>
-</dd>
-<dt><strong>sKL_true</strong><span class="classifier">[type]</span></dt><dd><p>[description]</p>
-</dd>
-<dt><strong>gp</strong><span class="classifier">[type]</span></dt><dd><p>[description]</p>
-</dd>
-<dt><strong>Ns_gp</strong><span class="classifier">[type]</span></dt><dd><p>[description]</p>
-</dd>
-<dt><strong>pruned</strong><span class="classifier">[type]</span></dt><dd><p>[description]</p>
-</dd>
-<dt><strong>timer</strong><span class="classifier">[type]</span></dt><dd><p>[description]</p>
+<dt><strong>key_value</strong><span class="classifier">dict</span></dt><dd><p>The keys and values that should be recorded. They keys must have
+been specified on initialization of the object.</p>
 </dd>
 <dt><strong>iteration</strong><span class="classifier">int</span></dt><dd><p>The iteration for which the value should be stored, must be &gt;= 0.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><dl class="simple">
+<dt>ValueError</dt><dd><p>Raised if the value of the iteration is &lt; 0.</p>
+</dd>
+<dt>ValueError</dt><dd><p>Raised if a key has not been specified on initialization of the
+object</p>
 </dd>
 </dl>
 </dd>
