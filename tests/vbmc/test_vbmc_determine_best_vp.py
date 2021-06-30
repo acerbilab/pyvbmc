@@ -20,7 +20,7 @@ def create_vbmc(
     return VBMC(fun, x0_array, lb, ub, plb, pub, user_options)
 
 
-def test_determine_best_vbmc_last_stable():
+def test_determine_best_vp_last_stable():
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
     vbmc.iteration_history["iter"] = np.arange(0, 3)
     vbmc.iteration_history["stable"] = np.full((3), True)
@@ -34,7 +34,7 @@ def test_determine_best_vbmc_last_stable():
     assert elbo_sd == 2
 
 
-def test_determine_best_vbmc_rankcriterion_elbo():
+def test_determine_best_vp_rankcriterion_elbo():
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
     n_iterations = 3000
     vbmc.iteration_history["iter"] = np.arange(0, n_iterations)
@@ -52,7 +52,7 @@ def test_determine_best_vbmc_rankcriterion_elbo():
     assert elbo_sd == 0
 
 
-def test_determine_best_vbmc_rankcriterion_max_idx():
+def test_determine_best_vp_rankcriterion_max_idx():
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
     n_iterations = 3000
     vbmc.iteration_history["iter"] = np.arange(0, n_iterations)
@@ -69,7 +69,7 @@ def test_determine_best_vbmc_rankcriterion_max_idx():
     assert elbo == 1000
     assert elbo_sd == 0
 
-def test_determine_best_vbmc_no_rankcriterion_second_last_stable():
+def test_determine_best_vp_no_rankcriterion_second_last_stable():
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
     n_iterations = 3000
     vbmc.iteration_history["iter"] = np.arange(0, n_iterations)
@@ -87,7 +87,7 @@ def test_determine_best_vbmc_no_rankcriterion_second_last_stable():
     assert elbo == 1000
     assert elbo_sd == 0
     
-def test_determine_best_vbmc_no_rankcriterion_no_stable():
+def test_determine_best_vp_no_rankcriterion_no_stable():
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
     n_iterations = 3000
     vbmc.iteration_history["iter"] = np.arange(0, n_iterations)

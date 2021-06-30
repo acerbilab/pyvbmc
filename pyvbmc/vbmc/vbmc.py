@@ -155,17 +155,7 @@ class VBMC:
         self.x0 = self.parameter_transformer(self.x0)
 
         self.iteration_history = IterationHistory(
-            [
-                "rindex",
-                "elcbo_impro",
-                "stable",
-                "elbo",
-                "vp",
-                "warmup",
-                "iter",
-                "elbo_sd",
-            ]
-        )
+            ["rindex", "elcbo_impro", "stable", "elbo", "vp", "warmup", "iter", "elbo_sd"])
 
     def _boundscheck(
         self,
@@ -1209,7 +1199,7 @@ class VBMC:
         elbo_sd : VariationalPosterior
             The ELBO_SD of the iteration with the best VariationalPosterior.
         idx_best : int
-            The index of the iteration with the best VariationalPosterior.
+            The index of the iteration with the best VariationalPosterior. 
         """
 
         # Check up to this iteration (default, last)
@@ -1232,24 +1222,18 @@ class VBMC:
 
                 # Rank by ELCBO
                 lnZ_iter = self.iteration_history.get("elbo")[: max_idx + 1]
-                lnZsd_iter = self.iteration_history.get("elbo_sd")[
-                    : max_idx + 1
-                ]
+                lnZsd_iter = self.iteration_history.get("elbo_sd")[: max_idx + 1]
                 elcbo = lnZ_iter - safe_sd * lnZsd_iter
                 order = elcbo.argsort()[::-1]
                 rank[order, 1] = np.arange(1, max_idx + 2)
 
                 # Rank by reliability index
-                order = self.iteration_history.get("rindex")[
-                    : max_idx + 1
-                ].argsort()
+                order = self.iteration_history.get("rindex")[: max_idx + 1].argsort()
                 rank[order, 2] = np.arange(1, max_idx + 2)
 
                 # Rank penalty to all non-stable iterations
                 rank[:, 3] = max_idx
-                rank[
-                    self.iteration_history.get("stable")[: max_idx + 1], 3
-                ] = 1
+                rank[self.iteration_history.get("stable")[: max_idx + 1], 3] = 1
 
                 idx_best = np.argmin(np.sum(rank, 1))
 
@@ -1265,12 +1249,8 @@ class VBMC:
                 else:
                     idx_start = np.ravel(laststable)[-1]
 
-                lnZ_iter = self.iteration_history.get("elbo")[
-                    idx_start : max_idx + 1
-                ]
-                lnZsd_iter = self.iteration_history.get("elbo_sd")[
-                    idx_start : max_idx + 1
-                ]
+                lnZ_iter = self.iteration_history.get("elbo")[idx_start : max_idx + 1]
+                lnZsd_iter = self.iteration_history.get("elbo_sd")[idx_start : max_idx + 1]
                 elcbo = lnZ_iter - safe_sd * lnZsd_iter
                 idx_best = idx_start + np.argmax(elcbo)
 
