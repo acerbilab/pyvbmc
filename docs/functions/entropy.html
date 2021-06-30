@@ -4,8 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>entropy &#8212; pyvmbc  documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
@@ -34,17 +33,17 @@
 
           <div class="body" role="main">
             
-  <section id="entropy">
+  <div class="section" id="entropy">
 <h1>entropy<a class="headerlink" href="#entropy" title="Permalink to this headline">¶</a></h1>
-<section id="kldiv-mvn">
+<div class="section" id="kldiv-mvn">
 <h2>kldiv_mvn<a class="headerlink" href="#kldiv-mvn" title="Permalink to this headline">¶</a></h2>
-<section id="matlab-references">
+<div class="section" id="matlab-references">
 <h3>Matlab references<a class="headerlink" href="#matlab-references" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Everything in: <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/shared/mvnkl.m">mvnkl.m</a></p></li>
 </ul>
-</section>
-<section id="python-documentation">
+</div>
+<div class="section" id="python-documentation">
 <h3>Python documentation<a class="headerlink" href="#python-documentation" title="Permalink to this headline">¶</a></h3>
 <dl class="py function">
 <dt id="pyvbmc.stats.entropy.kldiv_mvn">
@@ -73,22 +72,22 @@ normal pdfs.</p>
 </dl>
 </dd></dl>
 
-</section>
-</section>
-<section id="entlb-vbmc">
+</div>
+</div>
+<div class="section" id="entlb-vbmc">
 <h2>entlb_vbmc<a class="headerlink" href="#entlb-vbmc" title="Permalink to this headline">¶</a></h2>
-<section id="id1">
+<div class="section" id="id1">
 <h3>Matlab references<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Everything in: <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/ent/entlb_vbmc.m">entlb_vbmc.m</a></p></li>
 </ul>
-</section>
-<section id="id2">
+</div>
+<div class="section" id="id2">
 <h3>Python documentation<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <dl class="py function">
 <dt id="pyvbmc.entropy.entlb_vbmc">
 <code class="sig-prename descclassname"><span class="pre">pyvbmc.entropy.</span></code><code class="sig-name descname"><span class="pre">entlb_vbmc</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vp</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pyvbmc.variational_posterior.variational_posterior.VariationalPosterior</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad_flags</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">tuple</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">(True,</span> <span class="pre">True,</span> <span class="pre">True,</span> <span class="pre">True)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jacobian_flag</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyvbmc.entropy.entlb_vbmc" title="Permalink to this definition">¶</a></dt>
-<dd><p>Entropy lower bound for variational posterior.</p>
+<dd><p>Entropy lower bound for variational posterior by Jensen’s inequality.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
@@ -96,8 +95,8 @@ normal pdfs.</p>
 </dd>
 <dt><strong>grad_flags</strong><span class="classifier">tuple of bool, len(grad_flags)=4, optional</span></dt><dd><p>Whether to compute the gradients for [mu, sigma, lambda, w].</p>
 </dd>
-<dt><strong>jacobian_flag</strong><span class="classifier">bool, optional</span></dt><dd><p>Whether variational parameters are transformed.
-The variational parameters and corresponding transformations are:
+<dt><strong>jacobian_flag</strong><span class="classifier">bool, optional</span></dt><dd><p>Whether variational parameters are transformed. The variational
+parameters and corresponding transformations are:
 sigma (log), lambda (log), w (softmax).</p>
 </dd>
 </dl>
@@ -122,23 +121,22 @@ sigma (log), lambda (log), w (softmax).</p>
 <dt class="label" id="r71ba3b5955a0-1"><span class="brackets"><a class="fn-backref" href="#id3">1</a></span></dt>
 <dd><p>Gershman, S. J., Hoffman, M. D., &amp; Blei, D. M. (2012).
 Nonparametric variational inference. Proceedings of the 29th
-International Coference on International Conference on Machine Learning,
-235–242.</p>
+International Conference on Machine Learning, 235–242.</p>
 </dd>
 </dl>
 </dd></dl>
 
-</section>
-</section>
-<section id="entmc-vbmc">
+</div>
+</div>
+<div class="section" id="entmc-vbmc">
 <h2>entmc_vbmc<a class="headerlink" href="#entmc-vbmc" title="Permalink to this headline">¶</a></h2>
-<section id="id5">
+<div class="section" id="id5">
 <h3>Matlab references<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Everything in: <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/ent/entmc_vbmc.m">entmc_vbmc.m</a></p></li>
 </ul>
-</section>
-<section id="id6">
+</div>
+<div class="section" id="id6">
 <h3>Python documentation<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
 <dl class="py function">
 <dt id="pyvbmc.entropy.entmc_vbmc">
@@ -153,7 +151,7 @@ International Coference on International Conference on Machine Learning,
 </dd>
 <dt><strong>grad_flags</strong><span class="classifier">tuple of bool, len(grad_flags)=4, default=tuple([True] * 4)</span></dt><dd><p>Whether to compute the gradients for [mu, sigma, lambda, w].</p>
 </dd>
-<dt><strong>jacobian_flag</strong><span class="classifier">bool</span></dt><dd><p>Whether variational parameters are transformed. 
+<dt><strong>jacobian_flag</strong><span class="classifier">bool</span></dt><dd><p>Whether variational parameters are transformed.
 The variational parameters and corresponding transformations are:
 sigma (log), lambda (log), w (softmax).</p>
 </dd>
@@ -163,7 +161,7 @@ sigma (log), lambda (log), w (softmax).</p>
 <dd class="field-even"><dl class="simple">
 <dt>H: float</dt><dd><p>Estimated entropy of vp by Monte Carlo method.</p>
 </dd>
-<dt>dH: np.ndarray</dt><dd><p>Estimated entropy gradient by Monte Carlo method. 
+<dt>dH: np.ndarray</dt><dd><p>Estimated entropy gradient by Monte Carlo method.
 <span class="math notranslate nohighlight">\(dH = \left[\nabla_{\mu_1}^{T} H, ..., \nabla_{\mu_K}^{T} H,
 \nabla_{\sigma}^{T} H, \nabla_{\lambda}^{T} H,
 \nabla_{\omega}^{T} H\right]\)</span></p>
@@ -173,9 +171,9 @@ sigma (log), lambda (log), w (softmax).</p>
 </dl>
 </dd></dl>
 
-</section>
-</section>
-</section>
+</div>
+</div>
+</div>
 
 
           </div>
@@ -194,7 +192,7 @@ sigma (log), lambda (log), w (softmax).</p>
 
 
 <h3>Navigation</h3>
-<p><span class="caption-text">Classes:</span></p>
+<p class="caption"><span class="caption-text">Classes:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../classes/function_logger.html">FunctionLogger</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../classes/options.html">Options</a></li>
@@ -204,7 +202,7 @@ sigma (log), lambda (log), w (softmax).</p>
 <li class="toctree-l1"><a class="reference internal" href="../classes/variational_posterior.html">VariationalPosterior</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../classes/vbmc.html">VBMC</a></li>
 </ul>
-<p><span class="caption-text">Functions:</span></p>
+<p class="caption"><span class="caption-text">Functions:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="decorators.html">decorators</a></li>
 <li class="toctree-l1"><a class="reference internal" href="kernel_density.html">kernel_density</a></li>
@@ -215,7 +213,7 @@ sigma (log), lambda (log), w (softmax).</p>
 </ul>
 </li>
 </ul>
-<p><span class="caption-text">Options:</span></p>
+<p class="caption"><span class="caption-text">Options:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../options/vbmc_options.html">VBMC options</a></li>
 </ul>

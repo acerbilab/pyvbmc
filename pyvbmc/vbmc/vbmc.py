@@ -617,7 +617,8 @@ class VBMC:
         Execute the VBMC loop. TBD.
         """
         is_finished = False
-        iteration = 0
+        # the iterations of pyvbmc start at 0
+        iteration = -1
         timer = Timer()
         gp = None
 
@@ -636,7 +637,7 @@ class VBMC:
             # Actively sample new points into the training set
             timer.start_timer("activeSampling")
 
-            if iteration == 1:
+            if iteration == 0:
                 new_funevals = self.options.get("funevalstart")
             else:
                 new_funevals = self.options.get("funevalsperiter")
@@ -831,13 +832,25 @@ class VBMC:
 
             # stats.warmup[loopiter] = optimState.Warmup
 
-            # Check termination conditions and warmup
-            is_finished = self._is_finished()
+            # Check warmup
+            if (
+                self.optim_state.get("iter") > 2
+                and self.optim_state.get("stop_gp_sampling") == 0
+                and not self.optim_state.get("warmup")
+            ):
+                if self._is_gp_sampling_finished():
+                    self.optim_state[
+                        "stop_gp_sampling"
+                    ] = self.optim_state.get("N")
+
+            # Check termination conditions
+            # is_finished = self._check_termination_conditions()
+
             #  Save stability
             # vp.stats.stable = stats.stable(optimState.iter)
 
             # Check if we are still warming-up
-            if self.optim_state.get("warmup") and iteration > 1:
+            if self.optim_state.get("warmup") and iteration > 0:
                 if self.options.get("recomputelcbmax"):
                     self.optim_state["lcbmax_vec"] = self._recompute_lcbmax().T
                 trim_flag = self._check_warmup_end()
@@ -949,11 +962,182 @@ class VBMC:
         """
         return True
 
-    def _is_finished(self):
+    def _check_termination_conditions(self):
         """
-        Check termination conditions.
+        Private method to determine the status of termination conditions.
+
+        It also saves the reliability index, ELCBO improvement and stableflag
+        to the iteration_history object.
         """
-        return False
+        isFinished_flag = False
+
+        # Maximum number of new function evaluations
+        if self.optim_state.get("func_count") >= self.options.get(
+            "maxfunevals"
+        ):
+            isFinished_flag = True
+            # msg "Inference terminated
+
+        # Maximum number of iterations
+        iteration = self.optim_state.get("iter")
+        if iteration >= self.options.get("maxiter"):
+            isFinished_flag = True
+            # msg = "Inference terminated
+
+        # Quicker stability check for entropy switching
+        if self.optim_state.get("entropy_switch"):
+            tol_stable_iters = self.options.get("tolstableentropyiters")
+        else:
+            tol_stable_iters = int(
+                np.ceil(
+                    self.options.get("tolstablecount")
+                    / self.options.get("funevalsperiter")
+                )
+            )
+
+        rindex, ELCBO_improvement = self._compute_reliability_index(
+            tol_stable_iters
+        )
+
+        # Store reliability index
+        # this will be improved with the new iteration_history object.
+        if "rindex" in self.stats:
+            if len(self.stats["rindex"]) > iteration:
+                self.stats["rindex"][iteration] = rindex
+            else:
+                self.stats["rindex"] = np.append(
+                    self.stats.get("rindex"), [rindex]
+                )
+
+        if "elcbo_impro" in self.stats:
+            if len(self.stats["elcbo_impro"]) > iteration:
+                self.stats["elcbo_impro"][iteration] = ELCBO_improvement
+            else:
+                self.stats["elcbo_impro"] = np.append(
+                    self.stats.get("elcbo_impro"), [ELCBO_improvement]
+                )
+        self.optim_state["R"] = rindex
+
+        # Check stability termination condition
+        stableflag = False
+        if (
+            iteration >= tol_stable_iters
+            and rindex < 1
+            and ELCBO_improvement < self.options.get("tolimprovement")
+        ):
+            # Count how many good iters in the recent past (excluding current)
+            stable_count = np.sum(
+                self.stats.get("rindex")[
+                    iteration - tol_stable_iters : iteration - 2
+                ]
+                < 1
+            )
+            # Iteration is stable if almost all recent iterations are stable
+            if (
+                stable_count
+                >= tol_stable_iters
+                - np.floor(
+                    tol_stable_iters * self.options.get("tolstableexcptfrac")
+                )
+                - 1
+            ):
+                if self.optim_state.get("entropy_switch"):
+                    # If stable but entropy switch is On,
+                    # turn it off and continue
+                    self.optim_state["entropy_switch"] = False
+                else:
+                    isFinished_flag = True
+                    stableflag = True
+                    # "msg = 'Inference terminated:"
+
+        # Store stability flag
+        # this will be improved with the new iteration_history object.
+        if "stable" in self.stats:
+            if len(self.stats["stable"]) > iteration:
+                self.stats["stable"][iteration] = stableflag
+            else:
+                self.stats["stable"] = np.append(
+                    self.stats.get("stable"), [stableflag]
+                )
+        # Prevent early termination
+        if self.optim_state.get("func_count") < self.options.get(
+            "minfunevals"
+        ) or iteration < self.options.get("miniter"):
+            isFinished_flag = False
+
+        return isFinished_flag
+
+    def _compute_reliability_index(self, tol_stable_iters):
+        """
+        Private function to compute the reliability index.
+        """
+        iteration_idx = self.optim_state.get("iter")
+        if self.optim_state.get("iter") < 3:
+            rindex = np.Inf
+            ELCBO_improvement = np.NaN
+            return rindex, ELCBO_improvement
+
+        sn = np.sqrt(self.optim_state.get("sn2hpd"))
+        tol_sn = np.sqrt(sn / self.options.get("tolsd")) * self.options.get(
+            "tolsd"
+        )
+        tol_sd = min(
+            max(self.options.get("tolsd"), tol_sn),
+            self.options.get("tolsd") * 10,
+        )
+
+        rindex_vec = np.full((3), np.NaN)
+        rindex_vec[0] = (
+            np.abs(
+                self.stats.get("elbo")[iteration_idx]
+                - self.stats.get("elbo")[iteration_idx - 1]
+            )
+            / tol_sd
+        )
+        rindex_vec[1] = self.stats.get("elbo_sd")[iteration_idx] / tol_sd
+        rindex_vec[2] = self.stats.get("sKL")[
+            iteration_idx
+        ] / self.options.get("tolskl")
+
+        # Compute average ELCBO improvement per fcn eval in the past few iters
+        idx0 = int(
+            max(
+                1,
+                self.optim_state.get("iter")
+                - np.ceil(0.5 * tol_stable_iters)
+                + 1,
+            )
+            - 1
+        )
+        xx = self.stats.get("funccount")[idx0:iteration_idx]
+        yy = (
+            self.stats.get("elbo")[idx0:iteration_idx]
+            - self.options.get("elcboimproweight")
+            * self.stats.get("elbo_sd")[idx0:iteration_idx]
+        )
+        ELCBO_improvement = np.polyfit(xx, yy, 1)[0]
+        return np.mean(rindex_vec), ELCBO_improvement
+
+    def _is_gp_sampling_finished(self):
+        """
+        Private function to check if the MCMC sampling of the Gaussian Process
+        is finished.
+        """
+        finished_flag = False
+        # Stop sampling after sample variance has stabilized below ToL
+        iteration = self.optim_state.get("iter")
+
+        w1 = np.zeros((iteration + 1))
+        w1[iteration] = 1
+        w2 = np.exp(-(self.stats.get("N")[-1] - self.stats.get("N") / 10))
+        w2 = w2 / np.sum(w2)
+        w = 0.5 * w1 + 0.5 * w2
+        if np.sum(w * self.stats.get("gp_sample_var")) < self.options.get(
+            "tolgpvarmcmc"
+        ):
+            finished_flag = True
+
+        return finished_flag
 
     def _recompute_lcbmax(self):
         """
