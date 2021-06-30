@@ -1154,7 +1154,7 @@ class VBMC:
         changed_flag = True
         return changed_flag
 
-    def _determine_best_vp(
+    def determine_best_vp(
         self,
         max_idx: int = None,
         safe_sd: float = 5,
@@ -1162,26 +1162,33 @@ class VBMC:
         rank_citerion_flag: bool = False,
     ):
         """
-        Return best variational posterior from the iteration_history object.
+        Return the best VaritionalPosterior found during the optimization of
+        VBMC as well as its ELBO, ELBO_SD and the index of the iteration.
 
         Parameters
         ----------
         max_idx : int, optional
-            Check up to this iteration (default, last), by default None
+            Check up to this iteration (default, last), by default None.
         safe_sd : float, optional
-            Penalization for uncertainty, by default 5
+            Penalization for uncertainty, by default 5.
         frac_back : float, optional
             If no past stable iteration, go back up to this fraction of
-            iterations, by default 0.25
+            iterations, by default 0.25.
         rank_citerion_flag : bool, optional
             If True use new ranking criterion method to pick best solution.
             It finds a solution that combines ELCBO, stability, and recency,
-            by default False
+            by default False.
 
         Returns
         -------
-        [type]
-            [description]
+        vp : VariationalPosterior
+            The VariationalPosterior found during the optimization of VBMC.
+        elbo : VariationalPosterior
+            The ELBO of the iteration with the best VariationalPosterior.
+        elbo_sd : VariationalPosterior
+            The ELBO_SD of the iteration with the best VariationalPosterior.
+        idx_best : int
+            The index of the iteration with the best VariationalPosterior. 
         """
 
         # Check up to this iteration (default, last)

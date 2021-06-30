@@ -1,0 +1,20 @@
+=================
+IterationHistory
+=================
+
+Porting status
+==============
+
+.. todo::
+   - docstring of record_iteration() (depends on the other objects as well).     
+   - implement all elements of record_iteration() (depends on the other objects as well).
+
+Matlab references
+-----------------
+-  function save_stats in: `vbmc.m <https://github.com/lacerbi/vbmc/blob/master/vbmc.m>`_ 
+
+Python documentation
+====================
+
+.. autoclass:: pyvbmc.vbmc.IterationHistory
+   :members:
