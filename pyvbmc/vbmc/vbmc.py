@@ -1179,7 +1179,7 @@ class VBMC:
         Parameters
         ----------
         max_idx : int, optional
-            Check up to this iteration (default, last), by default None.
+            Check up to this iteration, by default None which means last iter.
         safe_sd : float, optional
             Penalization for uncertainty, by default 5.
         frac_back : float, optional
