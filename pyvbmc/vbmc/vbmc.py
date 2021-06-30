@@ -1007,7 +1007,7 @@ class VBMC:
                 self.stats["rindex"][iteration] = rindex
             else:
                 self.stats["rindex"] = np.append(
-                    self.stats.get("rindex"), [ELCBO_improvement]
+                    self.stats.get("rindex"), [rindex]
                 )
 
         if "elcbo_impro" in self.stats:
