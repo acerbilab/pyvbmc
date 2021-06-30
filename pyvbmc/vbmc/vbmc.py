@@ -889,8 +889,8 @@ class VBMC:
             # Write iteration output
 
             # Pick "best" variational solution to return (and real vp, if train vp differs)
-            idx_best = self._determine_best_vp()
-
+            #idx_best = self._determine_best_vp()
+            idx_best = 1
             # Last variational optimization with large number of components
             changed_flag = self._finalboost(idx_best)
             # remove later
@@ -976,7 +976,6 @@ class VBMC:
         safe_sd: float = 5,
         frac_back: float = 0.25,
         rank_citerion_flag: bool = False,
-        real_flag: bool = False,
     ):
         """
         Return best variational posterior from the iteration_history object.
@@ -994,9 +993,6 @@ class VBMC:
             If True use new ranking criterion method to pick best solution.
             It finds a solution that combines ELCBO, stability, and recency,
             by default False
-        real_flag : bool, optional
-            If True the training variational posterior will be converted to
-            real posterior, by default False
 
         Returns
         -------
@@ -1017,6 +1013,31 @@ class VBMC:
 
             if rank_citerion_flag:
                 # Find solution that combines ELCBO, stability, and recency
-                idx_best = 1
+                
+                rank = np.zeros((max_idx + 1, 4))
+                # Rank by position
+                rank[:, 0] = np.arange(1, max_idx + 2)[::-1]
 
-        return idx_best
+                # Rank by ELCBO
+                lnZ_iter = self.stats.get("elbo")[:max_idx + 1]
+                lnZsd_iter = self.stats.get("elbo_sd")[:max_idx + 1]     
+                elcbo = lnZ_iter - safe_sd*lnZsd_iter
+                order = elcbo.argsort()[::-1]
+                rank[order, 1] = np.arange(1, max_idx + 2)
+
+                # Rank by reliability index
+                order = self.stats.get("rindex")[:max_idx + 1].argsort()
+                rank[order, 2] = np.arange(1, max_idx + 2)
+
+                # Rank penalty to all non-stable iterations
+                rank[:, 3] = max_idx
+                rank[self.stats.get("stable")[:max_idx + 1], 3] = 1
+
+                idx_best = np.argmin(np.sum(rank, 1))
+
+        # Return best variational posterior, its ELBO and SD
+        vp = self.stats.get("vp")[idx_best]
+        elbo = self.stats.get("elbo")[idx_best]
+        elbo_sd = self.stats.get("elbo_sd")[idx_best]
+
+        return vp, elbo, elbo_sd, idx_best
