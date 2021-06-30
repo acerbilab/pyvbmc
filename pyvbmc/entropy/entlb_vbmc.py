@@ -34,9 +34,10 @@ def entlb_vbmc(
 
     References
     ----------
-    .. [1]: Gershman, S. J., Hoffman, M. D., & Blei, D. M. (2012).
-    Nonparametric variational inference. Proceedings of the 29th
-    International Conference on Machine Learning, 235–242.
+    .. [1] Gershman, S. J., Hoffman, M. D., & Blei, D. M. (2012).
+        Nonparametric variational inference. Proceedings of the 29th
+        International Conference on Machine Learning, 235–242.
+
     """
     BigK = np.inf  # large number of components
 
