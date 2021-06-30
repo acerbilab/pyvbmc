@@ -154,7 +154,9 @@ class VBMC:
 
         self.x0 = self.parameter_transformer(self.x0)
 
-        self.iteration_history = IterationHistory()
+        self.iteration_history = IterationHistory(
+            ["rindex", "elcbo_impro", "stable", "elbo", "vp", "warmup"]
+        )
 
     def _boundscheck(
         self,
@@ -815,20 +817,24 @@ class VBMC:
             # timer.totalruntime = NaN;   # Update at the end of iteration
             # timer
 
+            # must be replaced with the correct key and values later.
+            iteration_values = {
+                # self.optim_state,
+                "vp": self.vp,
+                "elbo": elbo,
+                # elbo_sd,
+                # varss,
+                # sKL,
+                # sKL_true,
+                # gp,
+                # Ns_gp,
+                # pruned,
+                # timer,
+            }
             # Record all useful stats
             self.iteration_history.record_iteration(
-                self.optim_state,
-                self.vp,
-                elbo,
-                elbo_sd,
-                varss,
-                sKL,
-                sKL_true,
-                gp,
-                Ns_gp,
-                pruned,
-                timer,
-                iteration
+                iteration_values,
+                iteration,
             )
 
             self.iteration_history.record(

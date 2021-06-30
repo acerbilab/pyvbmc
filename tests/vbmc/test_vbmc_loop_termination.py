@@ -107,7 +107,7 @@ def test_vbmc_check_termination_conditions_stability(mocker):
     vbmc.optim_state["func_count"] = 9
     vbmc.optim_state["entropy_switch"] = False
     vbmc.optim_state["iter"] = 99
-    vbmc.iteration_history['rindex'] = np.ones(99) * 0.5
+    vbmc.iteration_history["rindex"] = np.ones(100) * 0.5
 
     mocker.patch(
         "pyvbmc.vbmc.VBMC._compute_reliability_index",
@@ -146,7 +146,7 @@ def test_vbmc_is_finished_stability_entropyswitch(mocker):
     vbmc.optim_state["func_count"] = 9
     vbmc.optim_state["entropy_switch"] = True
     vbmc.optim_state["iter"] = 99
-    vbmc.iteration_history['rindex'] = np.ones(99) * 0.5
+    vbmc.iteration_history["rindex"] = np.ones(100) * 0.5
     mocker.patch(
         "pyvbmc.vbmc.VBMC._compute_reliability_index",
         return_value=(0.5, 0.005),
@@ -166,6 +166,7 @@ def test_vbmc_compute_reliability_index():
     user_options = {"elcboimproweight": 0, "tolskl": 0.03}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.optim_state["iter"] = 49
+    vbmc.iteration_history.check_keys = False
     vbmc.iteration_history["elbo"] = np.arange(50) * 10
     vbmc.iteration_history["elbo_sd"] = np.ones(50)
     vbmc.iteration_history["sKL"] = np.ones(50)
