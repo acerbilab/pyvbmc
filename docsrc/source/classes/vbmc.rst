@@ -9,17 +9,17 @@ Porting status
      - check the documentation of vbmc init and the class in general
      - integrate the basic options somehow
      - init a GP (wait for GPLite to be completed)
-     - experimental features (listed in `vbmc.m <https://github.com/lacerbi/vbmc/blob/master/vmbc.m>`_ have not been ported yet)
+     - experimental features (listed in `vbmc.m <https://github.com/lacerbi/vbmc/blob/master/vbmc.m>`_ have not been ported yet)
      - `acqhedge_vbmc.m <https://github.com/lacerbi/vbmc/blob/master/private/acqhedge_vbmc.m>`_ has not been ported yet as it is considered to be experimental
-     - the warping in `vbmc.m <https://github.com/lacerbi/vbmc/blob/master/vmbc.m>`_ has not been ported yet as it is considered to be experimental
+     - the warping in `vbmc.m <https://github.com/lacerbi/vbmc/blob/master/vbmc.m>`_ has not been ported yet as it is considered to be experimental
 
 Matlab references of ported methods
 -----------------------------------
 - initialization:
-     - parts of the __init__(): `vbmc.m <https://github.com/lacerbi/vbmc/blob/master/vmbc.m>`_
+     - parts of the __init__(): `vbmc.m <https://github.com/lacerbi/vbmc/blob/master/vbmc.m>`_
      - parts of the __init__(): `setupvars_vbmc.m <https://github.com/lacerbi/vbmc/blob/master/misc/setupvars_vbmc.m>`_
      - _boundscheck(): `boundscheck_vbmc.m <https://github.com/lacerbi/vbmc/blob/master/misc/boundscheck_vbmc.m>`_
-- VBMC loop (optimize(): loop in `vbmc.m <https://github.com/lacerbi/vbmc/blob/master/vmbc.m>`_):
+- VBMC loop (optimize(): loop in `vbmc.m <https://github.com/lacerbi/vbmc/blob/master/vbmc.m>`_):
      - Active Sampling:
           - _activesample(): `activesample_vbmc.m <https://github.com/lacerbi/vbmc/blob/master/private/activesample_vbmc.m>`_
           - _reupdate_gp(): `gpreupdate.m <https://github.com/lacerbi/vbmc/blob/master/misc/gpreupdate.m>`_ (Wait for gpyreg progress)

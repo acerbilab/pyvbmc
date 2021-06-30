@@ -1,0 +1,221 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>IterationHistory &#8212; pyvbmc  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Timer" href="timer.html" />
+    <link rel="prev" title="ParameterTransformer" href="parameter_transformer.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="iterationhistory">
+<h1>IterationHistory<a class="headerlink" href="#iterationhistory" title="Permalink to this headline">¶</a></h1>
+<section id="porting-status">
+<h2>Porting status<a class="headerlink" href="#porting-status" title="Permalink to this headline">¶</a></h2>
+<div class="admonition-todo admonition" id="id1">
+<p class="admonition-title">Todo</p>
+<ul class="simple">
+<li><p>docstring of record_iteration() (depends on the other objects as well).</p></li>
+<li><p>implement all elements of record_iteration() (depends on the other objects as well).</p></li>
+</ul>
+</div>
+<section id="matlab-references">
+<h3>Matlab references<a class="headerlink" href="#matlab-references" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>function save_stats in: <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/vbmc.m">vbmc.m</a></p></li>
+</ul>
+</section>
+</section>
+<section id="python-documentation">
+<h2>Python documentation<a class="headerlink" href="#python-documentation" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyvbmc.vbmc.IterationHistory">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyvbmc.vbmc.</span></span><span class="sig-name descname"><span class="pre">IterationHistory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">keys</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyvbmc.vbmc.IterationHistory" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class is responsible for the VBMC iteration history.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.vbmc.IterationHistory.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">keys</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyvbmc.vbmc.IterationHistory.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize an IterationHistory object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>keys :</strong></dt><dd><p>The keys that can be recorded with this object.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.vbmc.IterationHistory.record">
+<span class="sig-name descname"><span class="pre">record</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iteration</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyvbmc.vbmc.IterationHistory.record" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store a value for a key in a given iteration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>key</strong><span class="classifier">str</span></dt><dd><p>The key for which the value should be stored.</p>
+</dd>
+<dt><strong>value</strong><span class="classifier">object</span></dt><dd><p>The value which should be stored.</p>
+</dd>
+<dt><strong>iteration</strong><span class="classifier">int</span></dt><dd><p>The iteration for which the value should be stored, must be &gt;= 0.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><dl class="simple">
+<dt>ValueError</dt><dd><p>Raised if the value of the iteration is &lt; 0.</p>
+</dd>
+<dt>ValueError</dt><dd><p>Raised if a key has not been specified on initialization of the
+object.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.vbmc.IterationHistory.record_iteration">
+<span class="sig-name descname"><span class="pre">record_iteration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key_value</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iteration</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyvbmc.vbmc.IterationHistory.record_iteration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience method to record multiple key-values for a given iteration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>key_value</strong><span class="classifier">dict</span></dt><dd><p>The keys and values that should be recorded. They keys must have
+been specified on initialization of the object.</p>
+</dd>
+<dt><strong>iteration</strong><span class="classifier">int</span></dt><dd><p>The iteration for which the value should be stored, must be &gt;= 0.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><dl class="simple">
+<dt>ValueError</dt><dd><p>Raised if the value of the iteration is &lt; 0.</p>
+</dd>
+<dt>ValueError</dt><dd><p>Raised if a key has not been specified on initialization of the
+object</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">pyvbmc</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Classes:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="function_logger.html">FunctionLogger</a></li>
+<li class="toctree-l1"><a class="reference internal" href="options.html">Options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameter_transformer.html">ParameterTransformer</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">IterationHistory</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#porting-status">Porting status</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#python-documentation">Python documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="timer.html">Timer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variational_posterior.html">VariationalPosterior</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vbmc.html">VBMC</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Functions:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../functions/decorators.html">decorators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../functions/kernel_density.html">kernel_density</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../functions/entropy.html">entropy</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Options:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../options/vbmc_options.html">VBMC options</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="parameter_transformer.html" title="previous chapter">ParameterTransformer</a></li>
+      <li>Next: <a href="timer.html" title="next chapter">Timer</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/classes/iteration_history.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

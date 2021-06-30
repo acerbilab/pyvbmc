@@ -1,4 +1,4 @@
 # __init__.py
-from .stats import Stats
+from .iteration_history import IterationHistory
 from .options import Options
 from .vbmc import VBMC
