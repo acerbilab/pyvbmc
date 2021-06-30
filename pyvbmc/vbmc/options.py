@@ -121,7 +121,7 @@ class Options(MutableMapping, dict):
         return dict.__len__(self)
 
     def __delitem__(self, key):
-        del self.__dict__[key]
+        return dict.__delitem__(self, key)
 
     def __str__(self):
         """

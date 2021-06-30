@@ -22,12 +22,12 @@ def create_vbmc(
 
 def test_determine_best_vbmc_last_stable():
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
-    vbmc.stats["iter"] = np.arange(0, 3)
-    vbmc.stats["stable"] = np.full((3), True)
-    vbmc.stats["vp"] = np.arange(0, 3)
-    vbmc.stats["elbo"] = np.arange(0, 3)
-    vbmc.stats["elbo_sd"] = np.arange(0, 3)
-    vp, elbo, elbo_sd, idx_best = vbmc._determine_best_vp()
+    vbmc.iteration_history["iter"] = np.arange(0, 3)
+    vbmc.iteration_history["stable"] = np.full((3), True)
+    vbmc.iteration_history["vp"] = np.arange(0, 3)
+    vbmc.iteration_history["elbo"] = np.arange(0, 3)
+    vbmc.iteration_history["elbo_sd"] = np.arange(0, 3)
+    vp, elbo, elbo_sd, idx_best = vbmc.determine_best_vp()
     assert idx_best == 2
     assert vp == 2
     assert elbo == 2
@@ -37,13 +37,13 @@ def test_determine_best_vbmc_last_stable():
 def test_determine_best_vbmc_rankcriterion_elbo():
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
     n_iterations = 3000
-    vbmc.stats["iter"] = np.arange(0, n_iterations)
-    vbmc.stats["stable"] = np.full((n_iterations), False)
-    vbmc.stats["vp"] = np.arange(0, n_iterations)
-    vbmc.stats["elbo"] = np.arange(0, n_iterations)
-    vbmc.stats["elbo_sd"] = np.zeros(n_iterations)
-    vbmc.stats["rindex"] = np.arange(0, n_iterations)
-    vp, elbo, elbo_sd, idx_best = vbmc._determine_best_vp(
+    vbmc.iteration_history["iter"] = np.arange(0, n_iterations)
+    vbmc.iteration_history["stable"] = np.full((n_iterations), False)
+    vbmc.iteration_history["vp"] = np.arange(0, n_iterations)
+    vbmc.iteration_history["elbo"] = np.arange(0, n_iterations)
+    vbmc.iteration_history["elbo_sd"] = np.zeros(n_iterations)
+    vbmc.iteration_history["rindex"] = np.arange(0, n_iterations)
+    vp, elbo, elbo_sd, idx_best = vbmc.determine_best_vp(
         rank_citerion_flag=True
     )
     assert idx_best == n_iterations - 1
@@ -55,13 +55,13 @@ def test_determine_best_vbmc_rankcriterion_elbo():
 def test_determine_best_vbmc_rankcriterion_max_idx():
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
     n_iterations = 3000
-    vbmc.stats["iter"] = np.arange(0, n_iterations)
-    vbmc.stats["stable"] = np.full((n_iterations), False)
-    vbmc.stats["vp"] = np.arange(0, n_iterations)
-    vbmc.stats["elbo"] = np.arange(0, n_iterations)
-    vbmc.stats["elbo_sd"] = np.zeros(n_iterations)
-    vbmc.stats["rindex"] = np.arange(0, n_iterations)
-    vp, elbo, elbo_sd, idx_best = vbmc._determine_best_vp(
+    vbmc.iteration_history["iter"] = np.arange(0, n_iterations)
+    vbmc.iteration_history["stable"] = np.full((n_iterations), False)
+    vbmc.iteration_history["vp"] = np.arange(0, n_iterations)
+    vbmc.iteration_history["elbo"] = np.arange(0, n_iterations)
+    vbmc.iteration_history["elbo_sd"] = np.zeros(n_iterations)
+    vbmc.iteration_history["rindex"] = np.arange(0, n_iterations)
+    vp, elbo, elbo_sd, idx_best = vbmc.determine_best_vp(
         rank_citerion_flag=True, max_idx=1000
     )
     assert idx_best == 1000
@@ -72,14 +72,14 @@ def test_determine_best_vbmc_rankcriterion_max_idx():
 def test_determine_best_vbmc_no_rankcriterion_second_last_stable():
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
     n_iterations = 3000
-    vbmc.stats["iter"] = np.arange(0, n_iterations)
-    vbmc.stats["stable"] = np.full((n_iterations), True)
-    vbmc.stats["stable"][1000] = False
-    vbmc.stats["vp"] = np.arange(0, n_iterations)
-    vbmc.stats["elbo"] = np.arange(0, n_iterations)
-    vbmc.stats["elbo_sd"] = np.zeros(n_iterations)
-    vbmc.stats["rindex"] = np.arange(0, n_iterations)
-    vp, elbo, elbo_sd, idx_best = vbmc._determine_best_vp(
+    vbmc.iteration_history["iter"] = np.arange(0, n_iterations)
+    vbmc.iteration_history["stable"] = np.full((n_iterations), True)
+    vbmc.iteration_history["stable"][1000] = False
+    vbmc.iteration_history["vp"] = np.arange(0, n_iterations)
+    vbmc.iteration_history["elbo"] = np.arange(0, n_iterations)
+    vbmc.iteration_history["elbo_sd"] = np.zeros(n_iterations)
+    vbmc.iteration_history["rindex"] = np.arange(0, n_iterations)
+    vp, elbo, elbo_sd, idx_best = vbmc.determine_best_vp(
         rank_citerion_flag=False, max_idx=1000
     )
     assert idx_best == 1000
@@ -90,12 +90,12 @@ def test_determine_best_vbmc_no_rankcriterion_second_last_stable():
 def test_determine_best_vbmc_no_rankcriterion_no_stable():
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
     n_iterations = 3000
-    vbmc.stats["iter"] = np.arange(0, n_iterations)
-    vbmc.stats["stable"] = np.full((n_iterations), False)
-    vbmc.stats["vp"] = np.arange(0, n_iterations)
-    vbmc.stats["elbo"] = np.arange(0, n_iterations)
-    vbmc.stats["elbo_sd"] = np.zeros(n_iterations)
-    vp, elbo, elbo_sd, idx_best = vbmc._determine_best_vp(
+    vbmc.iteration_history["iter"] = np.arange(0, n_iterations)
+    vbmc.iteration_history["stable"] = np.full((n_iterations), False)
+    vbmc.iteration_history["vp"] = np.arange(0, n_iterations)
+    vbmc.iteration_history["elbo"] = np.arange(0, n_iterations)
+    vbmc.iteration_history["elbo_sd"] = np.zeros(n_iterations)
+    vp, elbo, elbo_sd, idx_best = vbmc.determine_best_vp(
         rank_citerion_flag=False, max_idx=1000
     )
     assert idx_best == 1000

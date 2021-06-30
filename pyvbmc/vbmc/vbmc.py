@@ -8,7 +8,7 @@ from pyvbmc.timer import Timer
 from pyvbmc.variational_posterior import VariationalPosterior
 
 from .options import Options
-from .stats import Stats
+from .iteration_history import IterationHistory
 
 
 class VBMC:
@@ -154,7 +154,18 @@ class VBMC:
 
         self.x0 = self.parameter_transformer(self.x0)
 
-        self.stats = Stats()
+        self.iteration_history = IterationHistory(
+            [
+                "rindex",
+                "elcbo_impro",
+                "stable",
+                "elbo",
+                "vp",
+                "warmup",
+                "iter",
+                "elbo_sd",
+            ]
+        )
 
     def _boundscheck(
         self,
@@ -815,22 +826,43 @@ class VBMC:
             # timer.totalruntime = NaN;   # Update at the end of iteration
             # timer
 
+            # must be replaced with the correct key and values later.
+            iteration_values = {
+                # self.optim_state,
+                "vp": self.vp,
+                "elbo": elbo,
+                # elbo_sd,
+                # varss,
+                # sKL,
+                # sKL_true,
+                # gp,
+                # Ns_gp,
+                # pruned,
+                # timer,
+            }
             # Record all useful stats
-            self.stats.record_iteration(
-                self.optim_state,
-                self.vp,
-                elbo,
-                elbo_sd,
-                varss,
-                sKL,
-                sKL_true,
-                gp,
-                Ns_gp,
-                pruned,
-                timer,
+            self.iteration_history.record_iteration(
+                iteration_values,
+                iteration,
             )
 
-            # stats.warmup[loopiter] = optimState.Warmup
+            self.iteration_history.record(
+                "warmup", self.optim_state.get("warmup"), iteration
+            )
+
+            # Check warmup
+            if (
+                self.optim_state.get("iter") > 2
+                and self.optim_state.get("stop_gp_sampling") == 0
+                and not self.optim_state.get("warmup")
+            ):
+                if self._is_gp_sampling_finished():
+                    self.optim_state[
+                        "stop_gp_sampling"
+                    ] = self.optim_state.get("N")
+
+            # Check termination conditions
+            # is_finished = self._is_finished()
 
             # Check warmup
             if (
@@ -1000,22 +1032,10 @@ class VBMC:
         )
 
         # Store reliability index
-        # this will be improved with the new iteration_history object.
-        if "rindex" in self.stats:
-            if len(self.stats["rindex"]) > iteration:
-                self.stats["rindex"][iteration] = rindex
-            else:
-                self.stats["rindex"] = np.append(
-                    self.stats.get("rindex"), [rindex]
-                )
-
-        if "elcbo_impro" in self.stats:
-            if len(self.stats["elcbo_impro"]) > iteration:
-                self.stats["elcbo_impro"][iteration] = ELCBO_improvement
-            else:
-                self.stats["elcbo_impro"] = np.append(
-                    self.stats.get("elcbo_impro"), [ELCBO_improvement]
-                )
+        self.iteration_history.record("rindex", rindex, iteration)
+        self.iteration_history.record(
+            "elcbo_impro", ELCBO_improvement, iteration
+        )
         self.optim_state["R"] = rindex
 
         # Check stability termination condition
@@ -1027,7 +1047,7 @@ class VBMC:
         ):
             # Count how many good iters in the recent past (excluding current)
             stable_count = np.sum(
-                self.stats.get("rindex")[
+                self.iteration_history.get("rindex")[
                     iteration - tol_stable_iters : iteration - 2
                 ]
                 < 1
@@ -1051,14 +1071,8 @@ class VBMC:
                     # "msg = 'Inference terminated:"
 
         # Store stability flag
-        # this will be improved with the new iteration_history object.
-        if "stable" in self.stats:
-            if len(self.stats["stable"]) > iteration:
-                self.stats["stable"][iteration] = stableflag
-            else:
-                self.stats["stable"] = np.append(
-                    self.stats.get("stable"), [stableflag]
-                )
+        self.iteration_history.record("stable", stableflag, iteration)
+
         # Prevent early termination
         if self.optim_state.get("func_count") < self.options.get(
             "minfunevals"
@@ -1089,13 +1103,15 @@ class VBMC:
         rindex_vec = np.full((3), np.NaN)
         rindex_vec[0] = (
             np.abs(
-                self.stats.get("elbo")[iteration_idx]
-                - self.stats.get("elbo")[iteration_idx - 1]
+                self.iteration_history.get("elbo")[iteration_idx]
+                - self.iteration_history.get("elbo")[iteration_idx - 1]
             )
             / tol_sd
         )
-        rindex_vec[1] = self.stats.get("elbo_sd")[iteration_idx] / tol_sd
-        rindex_vec[2] = self.stats.get("sKL")[
+        rindex_vec[1] = (
+            self.iteration_history.get("elbo_sd")[iteration_idx] / tol_sd
+        )
+        rindex_vec[2] = self.iteration_history.get("sKL")[
             iteration_idx
         ] / self.options.get("tolskl")
 
@@ -1109,11 +1125,11 @@ class VBMC:
             )
             - 1
         )
-        xx = self.stats.get("funccount")[idx0:iteration_idx]
+        xx = self.iteration_history.get("funccount")[idx0:iteration_idx]
         yy = (
-            self.stats.get("elbo")[idx0:iteration_idx]
+            self.iteration_history.get("elbo")[idx0:iteration_idx]
             - self.options.get("elcboimproweight")
-            * self.stats.get("elbo_sd")[idx0:iteration_idx]
+            * self.iteration_history.get("elbo_sd")[idx0:iteration_idx]
         )
         ELCBO_improvement = np.polyfit(xx, yy, 1)[0]
         return np.mean(rindex_vec), ELCBO_improvement
@@ -1129,12 +1145,17 @@ class VBMC:
 
         w1 = np.zeros((iteration + 1))
         w1[iteration] = 1
-        w2 = np.exp(-(self.stats.get("N")[-1] - self.stats.get("N") / 10))
+        w2 = np.exp(
+            -(
+                self.iteration_history.get("N")[-1]
+                - self.iteration_history.get("N") / 10
+            )
+        )
         w2 = w2 / np.sum(w2)
         w = 0.5 * w1 + 0.5 * w2
-        if np.sum(w * self.stats.get("gp_sample_var")) < self.options.get(
-            "tolgpvarmcmc"
-        ):
+        if np.sum(
+            w * self.iteration_history.get("gp_sample_var")
+        ) < self.options.get("tolgpvarmcmc"):
             finished_flag = True
 
         return finished_flag
@@ -1188,14 +1209,14 @@ class VBMC:
         elbo_sd : VariationalPosterior
             The ELBO_SD of the iteration with the best VariationalPosterior.
         idx_best : int
-            The index of the iteration with the best VariationalPosterior. 
+            The index of the iteration with the best VariationalPosterior.
         """
 
         # Check up to this iteration (default, last)
         if max_idx is None:
-            max_idx = self.stats.get("iter")[-1]
+            max_idx = self.iteration_history.get("iter")[-1]
 
-        if self.stats.get("stable")[max_idx]:
+        if self.iteration_history.get("stable")[max_idx]:
             # If the current iteration is stable, return it
             idx_best = max_idx
 
@@ -1210,26 +1231,32 @@ class VBMC:
                 rank[:, 0] = np.arange(1, max_idx + 2)[::-1]
 
                 # Rank by ELCBO
-                lnZ_iter = self.stats.get("elbo")[: max_idx + 1]
-                lnZsd_iter = self.stats.get("elbo_sd")[: max_idx + 1]
+                lnZ_iter = self.iteration_history.get("elbo")[: max_idx + 1]
+                lnZsd_iter = self.iteration_history.get("elbo_sd")[
+                    : max_idx + 1
+                ]
                 elcbo = lnZ_iter - safe_sd * lnZsd_iter
                 order = elcbo.argsort()[::-1]
                 rank[order, 1] = np.arange(1, max_idx + 2)
 
                 # Rank by reliability index
-                order = self.stats.get("rindex")[: max_idx + 1].argsort()
+                order = self.iteration_history.get("rindex")[
+                    : max_idx + 1
+                ].argsort()
                 rank[order, 2] = np.arange(1, max_idx + 2)
 
                 # Rank penalty to all non-stable iterations
                 rank[:, 3] = max_idx
-                rank[self.stats.get("stable")[: max_idx + 1], 3] = 1
+                rank[
+                    self.iteration_history.get("stable")[: max_idx + 1], 3
+                ] = 1
 
                 idx_best = np.argmin(np.sum(rank, 1))
 
             else:
                 # Find recent solution with best ELCBO
                 laststable = np.argwhere(
-                    self.stats.get("stable")[: max_idx + 1] == True
+                    self.iteration_history.get("stable")[: max_idx + 1] == True
                 )
                 if len(laststable) == 0:
                     idx_start = max(
@@ -1238,14 +1265,18 @@ class VBMC:
                 else:
                     idx_start = np.ravel(laststable)[-1]
 
-                lnZ_iter = self.stats.get("elbo")[idx_start : max_idx + 1]
-                lnZsd_iter = self.stats.get("elbo_sd")[idx_start : max_idx + 1]
+                lnZ_iter = self.iteration_history.get("elbo")[
+                    idx_start : max_idx + 1
+                ]
+                lnZsd_iter = self.iteration_history.get("elbo_sd")[
+                    idx_start : max_idx + 1
+                ]
                 elcbo = lnZ_iter - safe_sd * lnZsd_iter
                 idx_best = idx_start + np.argmax(elcbo)
 
         # Return best variational posterior, its ELBO and SD
-        vp = self.stats.get("vp")[idx_best]
-        elbo = self.stats.get("elbo")[idx_best]
-        elbo_sd = self.stats.get("elbo_sd")[idx_best]
+        vp = self.iteration_history.get("vp")[idx_best]
+        elbo = self.iteration_history.get("elbo")[idx_best]
+        elbo_sd = self.iteration_history.get("elbo_sd")[idx_best]
 
         return vp, elbo, elbo_sd, idx_best
