@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 
 from pyvbmc.vbmc import VBMC
+from pyvbmc.variational_posterior import VariationalPosterior
 
 fun = lambda x: np.sum(x + 2)
 
@@ -86,8 +87,7 @@ def test_vbmc_boundscheck_no_PUB_PLB_identical():
     ub = np.ones((1, D)) * 2
     x0 = np.ones((2, D))
     plb = np.ones((1, D))
-    _, lb2, ub2, plb, pub = VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, ub, plb
-    )
+    _, lb2, ub2, plb, pub = VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, ub, plb)
     assert np.all(lb == lb2)
     assert np.all(ub == ub2)
     assert np.all(plb == lb + 4 * 1e-3)
@@ -197,7 +197,8 @@ def test_vbmc_boundscheck_fixed():
     x0 = np.ones((2, D))
     fixed_bound = np.ones((1, D))
     with pytest.raises(ValueError) as execinfo:
-        VBMC(fun, x0, lb, ub)._boundscheck(x0, fixed_bound, fixed_bound, fixed_bound, fixed_bound
+        VBMC(fun, x0, lb, ub)._boundscheck(
+            x0, fixed_bound, fixed_bound, fixed_bound, fixed_bound
         )
     assert "VBMC does not support fixed" in execinfo.value.args[0]
 
@@ -663,6 +664,10 @@ def test_vbmc_optimstate_outwarp_delta():
     assert vbmc.optim_state["outwarp_delta"] == outwarpthreshbase
 
 
-def test_vbmc_optimize():
+def test_vbmc_optimize(mocker):
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
+    mocker.patch(
+        "pyvbmc.vbmc.VBMC.finalboost",
+        return_value=(VariationalPosterior(3), 10, 10, False),
+    )
     vbmc.optimize()
