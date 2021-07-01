@@ -167,6 +167,33 @@ user_options are passed, the default options are used.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.vbmc.VBMC.finalboost">
+<span class="sig-name descname"><span class="pre">finalboost</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx_best</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyvbmc.vbmc.VBMC.finalboost" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform a final boost of variational components.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>idx_best</strong><span class="classifier">int</span></dt><dd><p>The index of the iteration with the best VariationalPosterior.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>vp</strong><span class="classifier">VariationalPosterior</span></dt><dd><p>The VariationalPosterior resulting from the final boost.</p>
+</dd>
+<dt><strong>elbo</strong><span class="classifier">VariationalPosterior</span></dt><dd><p>The ELBO of the VariationalPosterior resulting from the final boost.</p>
+</dd>
+<dt><strong>elbo_sd</strong><span class="classifier">VariationalPosterior</span></dt><dd><p>The ELBO_SD of the VariationalPosterior resulting from the
+final boost.</p>
+</dd>
+<dt><strong>changed_flag</strong><span class="classifier">bool</span></dt><dd><p>Indicates if the final boost has taken place or not.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.vbmc.VBMC.optimize">
 <span class="sig-name descname"><span class="pre">optimize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyvbmc.vbmc.VBMC.optimize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Execute the VBMC loop. TBD.</p>
