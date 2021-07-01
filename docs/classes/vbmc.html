@@ -168,12 +168,14 @@ user_options are passed, the default options are used.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.vbmc.VBMC.finalboost">
-<span class="sig-name descname"><span class="pre">finalboost</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx_best</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyvbmc.vbmc.VBMC.finalboost" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">finalboost</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vp</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior" title="pyvbmc.variational_posterior.variational_posterior.VariationalPosterior"><span class="pre">pyvbmc.variational_posterior.variational_posterior.VariationalPosterior</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">gp</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">object</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyvbmc.vbmc.VBMC.finalboost" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform a final boost of variational components.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>idx_best</strong><span class="classifier">int</span></dt><dd><p>The index of the iteration with the best VariationalPosterior.</p>
+<dt><strong>vp</strong><span class="classifier">VariationalPosterior</span></dt><dd><p>The VariationalPosterior that should be boosted.</p>
+</dd>
+<dt><strong>gp</strong><span class="classifier">GaussianProcess</span></dt><dd><p>The corresponding GaussianProcess of the VariationalPosterior.</p>
 </dd>
 </dl>
 </dd>

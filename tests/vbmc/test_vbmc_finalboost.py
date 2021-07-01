@@ -38,7 +38,7 @@ def test_final_boost_lambda_options(mocker):
         "pyvbmc.vbmc.VBMC._optimize_vp",
         return_value=VariationalPosterior(50),
     )
-    vp, elbo, elbo_sd, changedflag = vbmc.finalboost(1)
+    vp, elbo, elbo_sd, changedflag = vbmc.finalboost(vbmc.vp, dict())
     assert changedflag
 
 
@@ -59,7 +59,7 @@ def test_final_boost_fixed_value_options(mocker):
         "pyvbmc.vbmc.VBMC._optimize_vp",
         return_value=VariationalPosterior(50),
     )
-    vp, elbo, elbo_sd, changedflag = vbmc.finalboost(1)
+    vp, elbo, elbo_sd, changedflag = vbmc.finalboost(vbmc.vp, dict())
     assert changedflag
 
 
@@ -80,7 +80,7 @@ def test_final_boost_fixed_value_options_boost_none(mocker):
         "pyvbmc.vbmc.VBMC._optimize_vp",
         return_value=VariationalPosterior(50),
     )
-    vp, elbo, elbo_sd, changedflag = vbmc.finalboost(1)
+    vp, elbo, elbo_sd, changedflag = vbmc.finalboost(vbmc.vp, dict())
     assert changedflag
 
 
@@ -100,5 +100,5 @@ def test_final_boost_no_boost(mocker):
         "pyvbmc.vbmc.VBMC._optimize_vp",
         return_value=VariationalPosterior(50),
     )
-    vp, elbo, elbo_sd, changedflag = vbmc.finalboost(1)
+    vp, elbo, elbo_sd, changedflag = vbmc.finalboost(vbmc.vp, dict())
     assert changedflag == False

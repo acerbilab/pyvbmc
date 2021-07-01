@@ -929,7 +929,9 @@ class VBMC:
             idx_best = self._determine_best_vp()
 
             # Last variational optimization with large number of components
-            self.vp, elbo, elbo_sd, changedflag = self.finalboost(idx_best)
+            self.vp, elbo, elbo_sd, changedflag = self.finalboost(
+                self.vp, dict()
+            )
             # remove later
             is_finished = iteration > 2
 
@@ -1160,14 +1162,16 @@ class VBMC:
 
     # Finalizing:
 
-    def finalboost(self, idx_best: int):
+    def finalboost(self, vp: VariationalPosterior, gp: object):
         """
         Perform a final boost of variational components.
 
         Parameters
         ----------
-        idx_best : int
-            The index of the iteration with the best VariationalPosterior.
+        vp : VariationalPosterior
+            The VariationalPosterior that should be boosted.
+        gp : GaussianProcess
+            The corresponding GaussianProcess of the VariationalPosterior.
 
         Returns
         -------
@@ -1247,7 +1251,6 @@ class VBMC:
             n_slow_opts = 1
 
             # gp_idx = gplite_post(stats.gp(idx_best));
-            gp_idx = self.iteration_history.get("gp")[idx_best]
             self.options["tolweight"] = 0  # No pruning of components
 
             # End warmup
@@ -1262,7 +1265,7 @@ class VBMC:
             self.optim_state["entropy_alpha"] = 0
 
             # stable_flag = vp.stats.stable;
-            vp = self._optimize_vp(n_fast_opts, n_slow_opts, K_new)
+            vp = self._optimize_vp(vp, gp, n_fast_opts, n_slow_opts, K_new)
             # vp.stats.stable = stable_flag
             changed_flag = True
         else:
