@@ -933,9 +933,9 @@ class VBMC:
 
             # Write iteration output
 
-            # Pick "best" variational solution to return (and real vp, if train vp differs)
-            # idx_best = self._determine_best_vp()
-            idx_best = 1
+            # Pick "best" variational solution to return
+            self.vp, elbo, elbo_sd, idx_best = self.determine_best_vp()
+
             # Last variational optimization with large number of components
             changed_flag = self._finalboost(idx_best)
             # remove later
@@ -1180,7 +1180,7 @@ class VBMC:
         max_idx: int = None,
         safe_sd: float = 5,
         frac_back: float = 0.25,
-        rank_citerion_flag: bool = False,
+        rank_criterion_flag: bool = False,
     ):
         """
         Return the best VaritionalPosterior found during the optimization of
@@ -1195,7 +1195,7 @@ class VBMC:
         frac_back : float, optional
             If no past stable iteration, go back up to this fraction of
             iterations, by default 0.25.
-        rank_citerion_flag : bool, optional
+        rank_criterion_flag : bool, optional
             If True use new ranking criterion method to pick best solution.
             It finds a solution that combines ELCBO, stability, and recency,
             by default False.
@@ -1221,9 +1221,9 @@ class VBMC:
             idx_best = max_idx
 
         else:
-            # Otherwise, find best solution according do various criteria
+            # Otherwise, find best solution according to various criteria
 
-            if rank_citerion_flag:
+            if rank_criterion_flag:
                 # Find solution that combines ELCBO, stability, and recency
 
                 rank = np.zeros((max_idx + 1, 4))
