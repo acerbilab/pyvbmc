@@ -2,7 +2,7 @@ import sys
 
 import numpy as np
 import pytest
-
+from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc import VBMC
 from pyvbmc.variational_posterior import VariationalPosterior
 
@@ -669,5 +669,9 @@ def test_vbmc_optimize(mocker):
     mocker.patch(
         "pyvbmc.vbmc.VBMC.finalboost",
         return_value=(VariationalPosterior(3), 10, 10, False),
+    )
+    mocker.patch(
+        "pyvbmc.vbmc.VBMC.determine_best_vp",
+        return_value=(VariationalPosterior(3), 10, 10, 1),
     )
     vbmc.optimize()

@@ -155,7 +155,17 @@ class VBMC:
         self.x0 = self.parameter_transformer(self.x0)
 
         self.iteration_history = IterationHistory(
-            ["rindex", "elcbo_impro", "stable", "elbo", "vp", "warmup", "gp"]
+            [
+                "rindex",
+                "elcbo_impro",
+                "stable",
+                "elbo",
+                "vp",
+                "warmup",
+                "iter",
+                "elbo_sd",
+                "gp",
+            ]
         )
 
     def _boundscheck(
@@ -925,8 +935,7 @@ class VBMC:
             # Write iteration output
 
             # Pick "best" variational solution to return
-            # (and real vp, if train vp differs)
-            idx_best = self._determine_best_vp()
+            self.vp, elbo, elbo_sd, idx_best = self.determine_best_vp()
 
             # Last variational optimization with large number of components
             self.vp, elbo, elbo_sd, changedflag = self.finalboost(
@@ -1262,10 +1271,109 @@ class VBMC:
         elbo_sd = 3
         return vp, elbo, elbo_sd, changed_flag
 
-    def _determine_best_vp(self):
+    def determine_best_vp(
+        self,
+        max_idx: int = None,
+        safe_sd: float = 5,
+        frac_back: float = 0.25,
+        rank_criterion_flag: bool = False,
+    ):
         """
-        VBMC_BEST Return best variational posterior from iteration_history structure.
-        """
-        idx_best = 1
+        Return the best VariationalPosterior found during the optimization of
+        VBMC as well as its ELBO, ELBO_SD and the index of the iteration.
 
-        return idx_best
+        Parameters
+        ----------
+        max_idx : int, optional
+            Check up to this iteration, by default None which means last iter.
+        safe_sd : float, optional
+            Penalization for uncertainty, by default 5.
+        frac_back : float, optional
+            If no past stable iteration, go back up to this fraction of
+            iterations, by default 0.25.
+        rank_criterion_flag : bool, optional
+            If True use new ranking criterion method to pick best solution.
+            It finds a solution that combines ELCBO, stability, and recency,
+            by default False.
+
+        Returns
+        -------
+        vp : VariationalPosterior
+            The VariationalPosterior found during the optimization of VBMC.
+        elbo : VariationalPosterior
+            The ELBO of the iteration with the best VariationalPosterior.
+        elbo_sd : VariationalPosterior
+            The ELBO_SD of the iteration with the best VariationalPosterior.
+        idx_best : int
+            The index of the iteration with the best VariationalPosterior.
+        """
+
+        # Check up to this iteration (default, last)
+        if max_idx is None:
+            max_idx = self.iteration_history.get("iter")[-1]
+
+        if self.iteration_history.get("stable")[max_idx]:
+            # If the current iteration is stable, return it
+            idx_best = max_idx
+
+        else:
+            # Otherwise, find best solution according to various criteria
+
+            if rank_criterion_flag:
+                # Find solution that combines ELCBO, stability, and recency
+
+                rank = np.zeros((max_idx + 1, 4))
+                # Rank by position
+                rank[:, 0] = np.arange(1, max_idx + 2)[::-1]
+
+                # Rank by ELCBO
+                lnZ_iter = self.iteration_history.get("elbo")[: max_idx + 1]
+                lnZsd_iter = self.iteration_history.get("elbo_sd")[
+                    : max_idx + 1
+                ]
+                elcbo = lnZ_iter - safe_sd * lnZsd_iter
+                order = elcbo.argsort()[::-1]
+                rank[order, 1] = np.arange(1, max_idx + 2)
+
+                # Rank by reliability index
+                order = self.iteration_history.get("rindex")[
+                    : max_idx + 1
+                ].argsort()
+                rank[order, 2] = np.arange(1, max_idx + 2)
+
+                # Rank penalty to all non-stable iterations
+                rank[:, 3] = max_idx
+                rank[
+                    self.iteration_history.get("stable")[: max_idx + 1], 3
+                ] = 1
+
+                idx_best = np.argmin(np.sum(rank, 1))
+
+            else:
+                # Find recent solution with best ELCBO
+                laststable = np.argwhere(
+                    self.iteration_history.get("stable")[: max_idx + 1] == True
+                )
+                if len(laststable) == 0:
+                    # Go some iterations back if no previous stable iteration
+                    idx_start = max(
+                        1, int(np.ceil(max_idx - max_idx * frac_back))
+                    )
+                else:
+                    idx_start = np.ravel(laststable)[-1]
+
+                lnZ_iter = self.iteration_history.get("elbo")[
+                    idx_start : max_idx + 1
+                ]
+                lnZsd_iter = self.iteration_history.get("elbo_sd")[
+                    idx_start : max_idx + 1
+                ]
+                elcbo = lnZ_iter - safe_sd * lnZsd_iter
+                idx_best = idx_start + np.argmax(elcbo)
+
+        # Return best variational posterior, its ELBO and SD
+        vp = self.iteration_history.get("vp")[idx_best]
+        elbo = self.iteration_history.get("elbo")[idx_best]
+        elbo_sd = self.iteration_history.get("elbo_sd")[idx_best]
+        # vp.stats.stable = stats.stable(idx_best);
+        return vp, elbo, elbo_sd, idx_best

@@ -35,8 +35,8 @@ Matlab references of ported methods
           - _compute_reliability_index(): `vbmc_termination.m <https://github.com/lacerbi/vbmc/blob/master/private/vbmc_termination.m>`_
           - _is_gp_sampling_finished(): `vbmc_termination.m <https://github.com/lacerbi/vbmc/blob/master/private/vbmc_termination.m>`_
 - Finalizing:
-     - _finalboost(): `finalboost_vbmc.m <https://github.com/lacerbi/vbmc/blob/master/misc/finalboost_vbmc.m>`_
-     - _determine_best_vp(): `best_vbmc.m <https://github.com/lacerbi/vbmc/blob/master/misc/best_vbmc.m>`_
+     - finalboost(): `finalboost_vbmc.m <https://github.com/lacerbi/vbmc/blob/master/misc/finalboost_vbmc.m>`_
+     - determine_best_vp(): `best_vbmc.m <https://github.com/lacerbi/vbmc/blob/master/misc/best_vbmc.m>`_
 
 
 Python documentation
