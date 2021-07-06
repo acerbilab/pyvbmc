@@ -217,6 +217,7 @@ def test_check_warmup_end_conditions_false():
     vbmc.iteration_history["funccount"] = np.ones(101)
     assert not vbmc._check_warmup_end_conditions()
 
+
 def test_check_warmup_end_conditions_bo_warmup():
     user_options = {"bowarmup": True, "funevalsperiter": 5}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)

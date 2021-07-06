@@ -666,6 +666,10 @@ def test_vbmc_optimstate_outwarp_delta():
 def test_vbmc_optimize(mocker):
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
     mocker.patch(
+        "pyvbmc.vbmc.VBMC.finalboost",
+        return_value=(VariationalPosterior(3), 10, 10, False),
+    )
+    mocker.patch(
         "pyvbmc.vbmc.VBMC.determine_best_vp",
         return_value=(VariationalPosterior(3), 10, 10, 1),
     )

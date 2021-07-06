@@ -167,6 +167,7 @@ class VBMC:
                 "lcbmax",
                 "funccount",
                 "data_trim_list",
+                "gp",
             ]
         )
 
@@ -940,7 +941,9 @@ class VBMC:
             self.vp, elbo, elbo_sd, idx_best = self.determine_best_vp()
 
             # Last variational optimization with large number of components
-            changed_flag = self._finalboost(idx_best)
+            self.vp, elbo, elbo_sd, changedflag = self.finalboost(
+                self.vp, dict()
+            )
             # remove later
             is_finished = iteration > 2
 
@@ -1248,12 +1251,99 @@ class VBMC:
 
     # Finalizing:
 
-    def _finalboost(self, idx_best):
+    def finalboost(self, vp: VariationalPosterior, gp: object):
         """
-        FINALBOOST_VBMC Final boost of variational components.
+        Perform a final boost of variational components.
+
+        Parameters
+        ----------
+        vp : VariationalPosterior
+            The VariationalPosterior that should be boosted.
+        gp : GaussianProcess
+            The corresponding GaussianProcess of the VariationalPosterior.
+
+        Returns
+        -------
+        vp : VariationalPosterior
+            The VariationalPosterior resulting from the final boost.
+        elbo : VariationalPosterior
+            The ELBO of the VariationalPosterior resulting from the final boost.
+        elbo_sd : VariationalPosterior
+            The ELBO_SD of the VariationalPosterior resulting from the
+            final boost.
+        changed_flag : bool
+           Indicates if the final boost has taken place or not.
         """
-        changed_flag = True
-        return changed_flag
+
+        changed_flag = False
+
+        K_new = max(self.vp.K, self.options.get("minfinalcomponents"))
+
+        # Current entropy samples during variational optimization
+        n_sent = self.options.eval("nsent", {"K": K_new})
+        n_sent_fast = self.options.eval("nsentfast", {"K": K_new})
+        n_sent_fine = self.options.eval("nsentfine", {"K": K_new})
+
+        # Entropy samples for final boost
+        if self.options.get("nsentboost") is None:
+            n_sent_boost = n_sent
+        else:
+            n_sent_boost = self.options.eval("nsentboost", {"K": K_new})
+
+        if self.options.get("nsentfastboost") is None:
+            n_sent_fast_boost = n_sent_fast
+        else:
+            n_sent_fast_boost = self.options.eval(
+                "nsentfastboost", {"K": K_new}
+            )
+
+        if self.options.get("nsentfineboost") is None:
+            n_sent_fine_boost = n_sent_fine
+        else:
+            n_sent_fine_boost = self.options.eval(
+                "nsentfineboost", {"K": K_new}
+            )
+
+        # Perform final boost?
+
+        do_boost = (
+            self.vp.K < self.options.get("minfinalcomponents")
+            or n_sent != n_sent_boost
+            or n_sent_fine != n_sent_fine_boost
+        )
+
+        if do_boost:
+            # Last variational optimization with large number of components
+            n_fast_opts = np.ceil(self.options.eval("nselbo", {"K": K_new}))
+
+            n_fast_opts = int(
+                np.ceil(n_fast_opts * self.options.get("nselboincr"))
+            )
+            n_slow_opts = 1
+
+            self.options["tolweight"] = 0  # No pruning of components
+
+            # End warmup
+            self.optim_state["warmup"] = False
+            self.vp.optimize_mu = self.options.get("variablemeans")
+            self.vp.optimize_weights = self.options.get("variableweights")
+
+            self.options["nsent"] = n_sent_boost
+            self.options["nsentfast"] = n_sent_fast_boost
+            self.options["nsentfine"] = n_sent_fine_boost
+            self.options["maxiterstochastic"] = np.Inf
+            self.optim_state["entropy_alpha"] = 0
+
+            # stable_flag = vp.stats.stable;
+            vp = self._optimize_vp(vp, gp, n_fast_opts, n_slow_opts, K_new)
+            # vp.stats.stable = stable_flag
+            changed_flag = True
+        else:
+            vp = self.vp
+
+        elbo = 3
+        elbo_sd = 3
+        return vp, elbo, elbo_sd, changed_flag
 
     def determine_best_vp(
         self,
