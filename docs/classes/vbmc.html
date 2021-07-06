@@ -103,8 +103,8 @@
 </li>
 <li><dl class="simple">
 <dt>Finalizing:</dt><dd><ul>
-<li><p>_finalboost(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/finalboost_vbmc.m">finalboost_vbmc.m</a></p></li>
-<li><p>_determine_best_vp(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/best_vbmc.m">best_vbmc.m</a></p></li>
+<li><p>finalboost(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/finalboost_vbmc.m">finalboost_vbmc.m</a></p></li>
+<li><p>determine_best_vp(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/best_vbmc.m">best_vbmc.m</a></p></li>
 </ul>
 </dd>
 </dl>
@@ -160,6 +160,42 @@ user_options are passed, the default options are used.</p>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><dl class="simple">
 <dt>ValueError</dt><dd><p>[description]</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.vbmc.VBMC.determine_best_vp">
+<span class="sig-name descname"><span class="pre">determine_best_vp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_idx</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">safe_sd</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frac_back</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rank_criterion_flag</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyvbmc.vbmc.VBMC.determine_best_vp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the best VariationalPosterior found during the optimization of
+VBMC as well as its ELBO, ELBO_SD and the index of the iteration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>max_idx</strong><span class="classifier">int, optional</span></dt><dd><p>Check up to this iteration, by default None which means last iter.</p>
+</dd>
+<dt><strong>safe_sd</strong><span class="classifier">float, optional</span></dt><dd><p>Penalization for uncertainty, by default 5.</p>
+</dd>
+<dt><strong>frac_back</strong><span class="classifier">float, optional</span></dt><dd><p>If no past stable iteration, go back up to this fraction of
+iterations, by default 0.25.</p>
+</dd>
+<dt><strong>rank_criterion_flag</strong><span class="classifier">bool, optional</span></dt><dd><p>If True use new ranking criterion method to pick best solution.
+It finds a solution that combines ELCBO, stability, and recency,
+by default False.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>vp</strong><span class="classifier">VariationalPosterior</span></dt><dd><p>The VariationalPosterior found during the optimization of VBMC.</p>
+</dd>
+<dt><strong>elbo</strong><span class="classifier">VariationalPosterior</span></dt><dd><p>The ELBO of the iteration with the best VariationalPosterior.</p>
+</dd>
+<dt><strong>elbo_sd</strong><span class="classifier">VariationalPosterior</span></dt><dd><p>The ELBO_SD of the iteration with the best VariationalPosterior.</p>
+</dd>
+<dt><strong>idx_best</strong><span class="classifier">int</span></dt><dd><p>The index of the iteration with the best VariationalPosterior.</p>
 </dd>
 </dl>
 </dd>
