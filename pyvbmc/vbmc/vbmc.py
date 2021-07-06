@@ -1183,7 +1183,7 @@ class VBMC:
         rank_criterion_flag: bool = False,
     ):
         """
-        Return the best VaritionalPosterior found during the optimization of
+        Return the best VariationalPosterior found during the optimization of
         VBMC as well as its ELBO, ELBO_SD and the index of the iteration.
 
         Parameters
