@@ -1234,19 +1234,13 @@ class VBMC:
 
         if do_boost:
             # Last variational optimization with large number of components
-            if callable(self.options.get("nselbo")):
-                n_fast_opts = np.ceil(self.options.get("nselbo")(K_new))
-            else:
-                n_fast_opts = np.ceil(self.options.get("nselbo"))
-
-            print(n_fast_opts)
+            n_fast_opts = np.ceil(self.options.eval("nselbo", {"K": K_new}))
 
             n_fast_opts = int(
                 np.ceil(n_fast_opts * self.options.get("nselboincr"))
             )
             n_slow_opts = 1
 
-            # gp_idx = gplite_post(stats.gp(idx_best));
             self.options["tolweight"] = 0  # No pruning of components
 
             # End warmup
