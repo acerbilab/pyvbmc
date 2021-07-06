@@ -4,7 +4,6 @@ import numpy as np
 import pytest
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc import VBMC
-from pyvbmc.variational_posterior import VariationalPosterior
 
 fun = lambda x: np.sum(x + 2)
 
