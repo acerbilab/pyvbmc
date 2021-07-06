@@ -1191,42 +1191,29 @@ class VBMC:
         K_new = max(self.vp.K, self.options.get("minfinalcomponents"))
 
         # Current entropy samples during variational optimization
-        if callable(self.options.get("nsent")):
-            n_sent = self.options.get("nsent")(K_new)
-        else:
-            n_sent = self.options.get("nsent")
-
-        if callable(self.options.get("nsentfast")):
-            n_sent_fast = self.options.get("nsentfast")(K_new)
-        else:
-            n_sent_fast = self.options.get("nsentfast")
-
-        if callable(self.options.get("nsentfine")):
-            n_sent_fine = self.options.get("nsentfine")(K_new)
-        else:
-            n_sent_fine = self.options.get("nsentfine")
+        n_sent = self.options.eval("nsent", {"K": K_new})
+        n_sent_fast = self.options.eval("nsentfast", {"K": K_new})
+        n_sent_fine = self.options.eval("nsentfine", {"K": K_new})
 
         # Entropy samples for final boost
         if self.options.get("nsentboost") is None:
             n_sent_boost = n_sent
-        elif callable(self.options.get("nsentboost")):
-            n_sent_boost = self.options.get("nsentboost")(K_new)
         else:
-            n_sent_boost = self.options.get("nsentboost")
+            n_sent_boost = self.options.eval("nsentboost", {"K": K_new})
 
         if self.options.get("nsentfastboost") is None:
             n_sent_fast_boost = n_sent_fast
-        elif callable(self.options.get("nsentfastboost")):
-            n_sent_fast_boost = self.options.get("nsentfastboost")(K_new)
         else:
-            n_sent_fast_boost = self.options.get("nsentfastboost")
+            n_sent_fast_boost = self.options.eval(
+                "nsentfastboost", {"K": K_new}
+            )
 
         if self.options.get("nsentfineboost") is None:
             n_sent_fine_boost = n_sent_fine
-        elif callable(self.options.get("nsentfineboost")):
-            n_sent_fine_boost = self.options.get("nsentfineboost")(K_new)
         else:
-            n_sent_fine_boost = self.options.get("nsentfineboost")
+            n_sent_fine_boost = self.options.eval(
+                "nsentfineboost", {"K": K_new}
+            )
 
         # Perform final boost?
 

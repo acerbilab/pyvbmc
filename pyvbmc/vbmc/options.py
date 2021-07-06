@@ -123,6 +123,30 @@ class Options(MutableMapping, dict):
     def __delitem__(self, key):
         return dict.__delitem__(self, key)
 
+    def eval(self, key: str, evaluation_parameters: dict):
+        """
+        Evaluate an option using `evaluation_parameters` if it is a callable,
+        otherwise return the value of the option.
+
+        Parameters
+        ----------
+        key : str
+            The name of the option.
+        evaluation_parameters : dict
+            Parameters for the options in case it is a callable. These have to
+            match the key arguments of the callable and are ignored if it is not
+            a callable.
+
+        Returns
+        -------
+        val : object
+            Value of the object which has been evaluated if it is a callable.
+        """
+        if callable(self.get(key)):
+            return self.get(key)(**evaluation_parameters)
+        else:
+            return self.get(key)
+
     def __str__(self):
         """
         Returns the options in a format key: value (description).
