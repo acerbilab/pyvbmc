@@ -669,4 +669,8 @@ def test_vbmc_optimize(mocker):
         "pyvbmc.vbmc.VBMC.determine_best_vp",
         return_value=(VariationalPosterior(3), 10, 10, 1),
     )
+    mocker.patch(
+        "pyvbmc.vbmc.VBMC._check_warmup_end_conditions",
+        return_value=True,
+    )
     vbmc.optimize()

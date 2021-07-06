@@ -164,6 +164,9 @@ class VBMC:
                 "warmup",
                 "iter",
                 "elbo_sd",
+                "lcbmax",
+                "funccount",
+                "data_trim_list",
             ]
         )
 
@@ -885,7 +888,7 @@ class VBMC:
             if self.optim_state.get("warmup") and iteration > 0:
                 if self.options.get("recomputelcbmax"):
                     self.optim_state["lcbmax_vec"] = self._recompute_lcbmax().T
-                trim_flag = self._check_warmup_end()
+                trim_flag = self._check_warmup_end_conditions()
                 if trim_flag:
                     # Re-update GP after trimming
                     gp = self._reupdate_gp(gp)
@@ -986,13 +989,90 @@ class VBMC:
 
     # Loop termination:
 
-    def _check_warmup_end(self):
-        """
-        vbmc_warmup.m
-        optim_state, stats, action, options
-        check if warmup ends
-        """
-        return True
+    def _check_warmup_end_conditions(self):
+        iteration = self.optim_state.get("iter")
+        trim_flag = False  # Report if training data are trimmed
+
+        # First requirement for stopping, no constant improvement of metric
+        stable_count_flag = False
+        stop_warmup_thresh = self.options.get(
+            "stopwarmupthresh"
+        ) * self.options.get("funevalsperiter")
+        tol_stable_warmup_iters = np.ceil(
+            self.options.get("tolstablewarmup")
+            / self.options.get("funevalsperiter")
+        )
+
+        if iteration > tol_stable_warmup_iters + 1:
+            # Vector of ELCBO (ignore first two iterations, ELCBO is unreliable)
+            elcbo_vec = self.iteration_history.get("elbo") - self.options.get(
+                "elcboimproweight"
+            ) * self.iteration_history.get("elbo_sd")
+            max_now = np.amax(
+                elcbo_vec[max(4, -tol_stable_warmup_iters + 1) :]
+            )
+            max_before = np.amax(
+                elcbo_vec[3 : max(3, -tol_stable_warmup_iters)], initial=0
+            )
+            stable_count_flag = (max_now - max_before) < stop_warmup_thresh
+
+        # Vector of maximum lower confidence bounds (LCB) of fcn values
+        lcbmax_vec = self.iteration_history.get("lcbmax")[:iteration]
+
+        # Second requirement, also no substantial improvement of max fcn value
+        # in recent iters (unless already performing BO-like warmup)
+        if not self.options.get("bowarmup") and self.options.get(
+            "warmupcheckmax"
+        ):
+            idx_last = np.full(lcbmax_vec.shape, False)
+            recent_past = iteration - int(
+                np.ceil(
+                    self.options.get("tolstablewarmup")
+                    / self.options.get("funevalsperiter")
+                )
+                + 1
+            )
+            idx_last[max(2, recent_past) :] = True
+            impro_fcn = max(
+                0,
+                np.amax(lcbmax_vec[idx_last]) - np.amax(lcbmax_vec[~idx_last]),
+            )
+        else:
+            impro_fcn = 0
+
+        improvement_max_fcn_value_recent_iters_flag = (
+            impro_fcn < stop_warmup_thresh
+        )
+
+        # Alternative criterion for stopping - no improvement over max fcn value
+        max_thresh = np.amax(lcbmax_vec) - self.options.get("tolimprovement")
+        idx_1st = np.ravel(np.argwhere(lcbmax_vec > max_thresh))[0]
+        yy = self.iteration_history.get("funccount")[:iteration]
+        pos = yy[idx_1st]
+        currentpos = self.optim_state.get("funccount")
+        improvement_max_fcn_value_flag = (currentpos - pos) > self.options.get(
+            "warmupnoimprothreshold"
+        )
+
+        stop_warmup = (
+            stable_count_flag
+            and improvement_max_fcn_value_recent_iters_flag
+            or improvement_max_fcn_value_flag
+        )
+
+        if len(self.optim_state.get("data_trim_list")) > 0:
+            last_data_trim = self.optim_state.get("data_trim_list")[-1]
+        else:
+            last_data_trim = np.Inf
+
+        stop_warmup = (
+            stop_warmup and (self.optim_state.get("N") - last_data_trim) >= 10
+        )
+
+        if stop_warmup:
+            trim_flag = True
+
+        return trim_flag
 
     def _check_termination_conditions(self):
         """
