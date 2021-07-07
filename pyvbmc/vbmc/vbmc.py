@@ -993,6 +993,9 @@ class VBMC:
     # Loop termination:
 
     def _check_warmup_end_conditions(self):
+        """
+        Private method to check the warmup end conditions.
+        """        
         iteration = self.optim_state.get("iter")
 
         # First requirement for stopping, no constant improvement of metric
