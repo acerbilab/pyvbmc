@@ -29,7 +29,8 @@ Matlab references of ported methods
           - _updateK(): `updateK.m <https://github.com/lacerbi/vbmc/blob/master/private/updateK.m>`_
           - _optimize_vp(): `vpoptimize_vbmc.m <https://github.com/lacerbi/vbmc/blob/master/misc/vpoptimize_vbmc.m>`_
      - Loop termination:
-          - _check_warmup_end(): `vbmc_warmup.m <https://github.com/lacerbi/vbmc/blob/master/private/vbmc_warmup.m>`_
+          - _check_warmup_end_conditions(): `vbmc_warmup.m <https://github.com/lacerbi/vbmc/blob/master/private/vbmc_warmup.m>`_
+          - _setup_vbmc_after_warmup(): `vbmc_warmup.m <https://github.com/lacerbi/vbmc/blob/master/private/vbmc_warmup.m>`_
           - _recompute_lcbmax(): `recompute_lcbmax.m <https://github.com/lacerbi/vbmc/blob/master/private/recompute_lcbmax.m>`_
           - _is_finished(): `vbmc_termination.m <https://github.com/lacerbi/vbmc/blob/master/private/vbmc_termination.m>`_
           - _compute_reliability_index(): `vbmc_termination.m <https://github.com/lacerbi/vbmc/blob/master/private/vbmc_termination.m>`_
