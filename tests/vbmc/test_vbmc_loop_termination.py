@@ -206,11 +206,15 @@ def test_is_gp_sampling_finished():
 
 
 def test_check_warmup_end_conditions_false():
+    """
+    no_recent_trim_flag is False
+    """
     user_options = {"funevalsperiter": 5}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.optim_state["iter"] = 100
     vbmc.optim_state["funccount"] = 5
     vbmc.optim_state["N"] = 100
+    vbmc.optim_state["data_trim_list"] = np.ones(101) * 91
     vbmc.iteration_history["lcbmax"] = np.ones(101)
     vbmc.iteration_history["elbo"] = np.ones(101)
     vbmc.iteration_history["elbo_sd"] = np.ones(101) * 1e-4
@@ -219,24 +223,15 @@ def test_check_warmup_end_conditions_false():
 
 
 def test_check_warmup_end_conditions_bo_warmup():
+    """
+    stable_count_flag and no_recent_improvement_flag and no_recent_trim_flag
+    are True
+    """
     user_options = {"bowarmup": True, "funevalsperiter": 5}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.optim_state["iter"] = 100
     vbmc.optim_state["funccount"] = 5
     vbmc.optim_state["N"] = 100
-    vbmc.iteration_history["lcbmax"] = np.ones(101)
-    vbmc.iteration_history["elbo"] = np.ones(101)
-    vbmc.iteration_history["elbo_sd"] = np.ones(101) * 1e-4
-    vbmc.iteration_history["funccount"] = np.ones(101)
-    assert not vbmc._check_warmup_end_conditions()
-
-
-def test_check_warmup_end_conditions_first_conditions_true():
-    user_options = {"funevalsperiter": 5}
-    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
-    vbmc.optim_state["iter"] = 100
-    vbmc.optim_state["funccount"] = 5
-    vbmc.optim_state["N"] = 11
     vbmc.optim_state["data_trim_list"] = np.ones(101)
     vbmc.iteration_history["lcbmax"] = np.ones(101)
     vbmc.iteration_history["elbo"] = np.ones(101)
@@ -245,7 +240,28 @@ def test_check_warmup_end_conditions_first_conditions_true():
     assert vbmc._check_warmup_end_conditions()
 
 
+def test_check_warmup_end_conditions_first_conditions_true():
+    """
+    stable_count_flag and no_recent_improvement_flag and no_recent_trim_flag
+    are True
+    """
+    user_options = {"funevalsperiter": 5}
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    vbmc.optim_state["iter"] = 100
+    vbmc.optim_state["funccount"] = 5
+    vbmc.optim_state["N"] = 11
+    vbmc.optim_state["data_trim_list"] = []
+    vbmc.iteration_history["lcbmax"] = np.ones(101)
+    vbmc.iteration_history["elbo"] = np.ones(101)
+    vbmc.iteration_history["elbo_sd"] = np.ones(101) * 1e-4
+    vbmc.iteration_history["funccount"] = np.ones(101)
+    assert vbmc._check_warmup_end_conditions()
+
+
 def test_check_warmup_end_conditions_alternative_conditions_true():
+    """
+    no_longterm_improvement_flag and no_recent_trim_flag are True
+    """
     user_options = {
         "funevalsperiter": 5,
         "stopwarmupthresh": 0,

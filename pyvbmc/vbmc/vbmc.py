@@ -994,7 +994,6 @@ class VBMC:
 
     def _check_warmup_end_conditions(self):
         iteration = self.optim_state.get("iter")
-        trim_flag = False  # Report if training data are trimmed
 
         # First requirement for stopping, no constant improvement of metric
         stable_count_flag = False
@@ -1043,9 +1042,7 @@ class VBMC:
         else:
             impro_fcn = 0
 
-        improvement_max_fcn_value_recent_iters_flag = (
-            impro_fcn < stop_warmup_thresh
-        )
+        no_recent_improvement_flag = impro_fcn < stop_warmup_thresh
 
         # Alternative criterion for stopping - no improvement over max fcn value
         max_thresh = np.amax(lcbmax_vec) - self.options.get("tolimprovement")
@@ -1053,29 +1050,26 @@ class VBMC:
         yy = self.iteration_history.get("funccount")[:iteration]
         pos = yy[idx_1st]
         currentpos = self.optim_state.get("funccount")
-        improvement_max_fcn_value_flag = (currentpos - pos) > self.options.get(
+        no_longterm_improvement_flag = (currentpos - pos) > self.options.get(
             "warmupnoimprothreshold"
-        )
-
-        stop_warmup = (
-            stable_count_flag
-            and improvement_max_fcn_value_recent_iters_flag
-            or improvement_max_fcn_value_flag
         )
 
         if len(self.optim_state.get("data_trim_list")) > 0:
             last_data_trim = self.optim_state.get("data_trim_list")[-1]
         else:
-            last_data_trim = np.Inf
+            last_data_trim = -1 * np.Inf
+
+        no_recent_trim_flag = (
+            self.optim_state.get("N") - last_data_trim
+        ) >= 10
 
         stop_warmup = (
-            stop_warmup and (self.optim_state.get("N") - last_data_trim) >= 10
-        )
+            stable_count_flag
+            and no_recent_improvement_flag
+            or no_longterm_improvement_flag
+        ) and no_recent_trim_flag
 
-        if stop_warmup:
-            trim_flag = True
-
-        return trim_flag
+        return stop_warmup
 
     def _check_termination_conditions(self):
         """
