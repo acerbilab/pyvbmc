@@ -891,6 +891,7 @@ class VBMC:
                     self.optim_state["lcbmax_vec"] = self._recompute_lcbmax().T
                 trim_flag = self._check_warmup_end_conditions()
                 if trim_flag:
+                    self._setup_vbmc_after_warmup()
                     # Re-update GP after trimming
                     gp = self._reupdate_gp(gp)
                 if not self.optim_state.get("warmup"):
