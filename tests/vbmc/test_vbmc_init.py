@@ -664,6 +664,10 @@ def test_vbmc_optimstate_outwarp_delta():
 
 
 def test_vbmc_optimize(mocker):
+    """
+    This is WIP as it should simulate a full run of VBMC later but this requires
+    more setup.
+    """    
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
     mocker.patch(
         "pyvbmc.vbmc.VBMC.finalboost",
@@ -673,4 +677,9 @@ def test_vbmc_optimize(mocker):
         "pyvbmc.vbmc.VBMC.determine_best_vp",
         return_value=(VariationalPosterior(3), 10, 10, 1),
     )
+    mocker.patch(
+        "pyvbmc.vbmc.VBMC._check_warmup_end_conditions",
+        return_value=True,
+    )
+    mocker.patch("pyvbmc.vbmc.VBMC._setup_vbmc_after_warmup")
     vbmc.optimize()

@@ -164,6 +164,9 @@ class VBMC:
                 "warmup",
                 "iter",
                 "elbo_sd",
+                "lcbmax",
+                "funccount",
+                "data_trim_list",
                 "gp",
             ]
         )
@@ -886,8 +889,9 @@ class VBMC:
             if self.optim_state.get("warmup") and iteration > 0:
                 if self.options.get("recomputelcbmax"):
                     self.optim_state["lcbmax_vec"] = self._recompute_lcbmax().T
-                trim_flag = self._check_warmup_end()
+                trim_flag = self._check_warmup_end_conditions()
                 if trim_flag:
+                    self._setup_vbmc_after_warmup()
                     # Re-update GP after trimming
                     gp = self._reupdate_gp(gp)
                 if not self.optim_state.get("warmup"):
@@ -989,13 +993,148 @@ class VBMC:
 
     # Loop termination:
 
-    def _check_warmup_end(self):
+    def _check_warmup_end_conditions(self):
         """
-        vbmc_warmup.m
-        optim_state, stats, action, options
-        check if warmup ends
+        Private method to check the warmup end conditions.
         """
-        return True
+        iteration = self.optim_state.get("iter")
+
+        # First requirement for stopping, no constant improvement of metric
+        stable_count_flag = False
+        stop_warmup_thresh = self.options.get(
+            "stopwarmupthresh"
+        ) * self.options.get("funevalsperiter")
+        tol_stable_warmup_iters = np.ceil(
+            self.options.get("tolstablewarmup")
+            / self.options.get("funevalsperiter")
+        )
+
+        if iteration > tol_stable_warmup_iters + 1:
+            # Vector of ELCBO (ignore first two iterations, ELCBO is unreliable)
+            elcbo_vec = self.iteration_history.get("elbo") - self.options.get(
+                "elcboimproweight"
+            ) * self.iteration_history.get("elbo_sd")
+            max_now = np.amax(
+                elcbo_vec[max(4, -tol_stable_warmup_iters + 1) :]
+            )
+            max_before = np.amax(
+                elcbo_vec[3 : max(3, -tol_stable_warmup_iters)], initial=0
+            )
+            stable_count_flag = (max_now - max_before) < stop_warmup_thresh
+
+        # Vector of maximum lower confidence bounds (LCB) of fcn values
+        lcbmax_vec = self.iteration_history.get("lcbmax")[:iteration]
+
+        # Second requirement, also no substantial improvement of max fcn value
+        # in recent iters (unless already performing BO-like warmup)
+        if not self.options.get("bowarmup") and self.options.get(
+            "warmupcheckmax"
+        ):
+            idx_last = np.full(lcbmax_vec.shape, False)
+            recent_past = iteration - int(
+                np.ceil(
+                    self.options.get("tolstablewarmup")
+                    / self.options.get("funevalsperiter")
+                )
+                + 1
+            )
+            idx_last[max(2, recent_past) :] = True
+            impro_fcn = max(
+                0,
+                np.amax(lcbmax_vec[idx_last]) - np.amax(lcbmax_vec[~idx_last]),
+            )
+        else:
+            impro_fcn = 0
+
+        no_recent_improvement_flag = impro_fcn < stop_warmup_thresh
+
+        # Alternative criterion for stopping - no improvement over max fcn value
+        max_thresh = np.amax(lcbmax_vec) - self.options.get("tolimprovement")
+        idx_1st = np.ravel(np.argwhere(lcbmax_vec > max_thresh))[0]
+        yy = self.iteration_history.get("funccount")[:iteration]
+        pos = yy[idx_1st]
+        currentpos = self.optim_state.get("funccount")
+        no_longterm_improvement_flag = (currentpos - pos) > self.options.get(
+            "warmupnoimprothreshold"
+        )
+
+        if len(self.optim_state.get("data_trim_list")) > 0:
+            last_data_trim = self.optim_state.get("data_trim_list")[-1]
+        else:
+            last_data_trim = -1 * np.Inf
+
+        no_recent_trim_flag = (
+            self.optim_state.get("N") - last_data_trim
+        ) >= 10
+
+        stop_warmup = (
+            stable_count_flag
+            and no_recent_improvement_flag
+            or no_longterm_improvement_flag
+        ) and no_recent_trim_flag
+
+        return stop_warmup
+
+    def _setup_vbmc_after_warmup(self):
+        """
+        Private method to setup multiple vbmc settings after a the warmup has
+        been determined to be ended. The method whether the warmup ending was
+        a false alarm and then only prunes. 
+        """
+        iteration = self.optim_state.get("iter")
+        if (
+            self.iteration_history.get("rindex")[iteration]
+            < self.options.get("stopwarmupreliability")
+            or len(self.optim_state.get("data_trim_list")) >= 1
+        ):
+            self.optim_state["warmup"] = False
+            threshold = self.options.get("warmupkeepthreshold") * (
+                len(self.optim_state.get("data_trim_list")) + 1
+            )
+            self.optim_state["lastwarmup"] = iteration
+
+        else:
+            # This may be a false alarm; prune and continue
+            if self.options.get("warmupkeepthresholdfalsealarm") is None:
+                warmup_keep_threshold_false_alarm = self.options.get(
+                    "warmupkeepthreshold"
+                )
+            else:
+                warmup_keep_threshold_false_alarm = self.options.get(
+                    "warmupkeepthresholdfalsealarm"
+                )
+
+            threshold = warmup_keep_threshold_false_alarm * (
+                len(self.optim_state.get("data_trim_list")) + 1
+            )
+
+        self.optim_state["data_trim_list"] = np.append(
+            self.optim_state.get("data_trim_list"), [self.optim_state.get("N")]
+        )
+
+        # Remove warm-up points from training set unless close to max
+        ymax = max(self.function_logger.y_orig[: self.function_logger.Xn + 1])
+        n_keep_min = self.D + 1
+        idx_keep = (ymax - self.function_logger.y_orig) < threshold
+        if np.sum(idx_keep) < n_keep_min:
+            y_temp = np.copy(self.function_logger.y_orig)
+            y_temp[~np.isfinite(y_temp)] = -np.Inf
+            order = np.argsort(y_temp * -1, axis=0)
+            idx_keep[
+                order[: min(n_keep_min, self.function_logger.Xn) + 1]
+            ] = True
+
+        self.function_logger.X_flag = np.logical_and(
+            idx_keep, self.function_logger.X_flag
+        )
+
+        # Skip adaptive sampling for next iteration
+        self.optim_state["skipactivesampling"] = self.options.get(
+            "skipactivesamplingafterwarmup"
+        )
+
+        # Fully recompute variational posterior
+        self.optim_state["recompute_var_post"] = True
 
     def _check_termination_conditions(self):
         """
