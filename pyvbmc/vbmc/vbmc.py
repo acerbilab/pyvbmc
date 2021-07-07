@@ -1078,7 +1078,8 @@ class VBMC:
     def _setup_vbmc_after_warmup(self):
         """
         Private method to setup multiple vbmc settings after a the warmup has
-        been determined to be ended.
+        been determined to be ended. The method whether the warmup ending was
+        a false alarm and then only prunes. 
         """
         iteration = self.optim_state.get("iter")
         if (
