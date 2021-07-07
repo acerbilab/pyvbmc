@@ -995,7 +995,7 @@ class VBMC:
     def _check_warmup_end_conditions(self):
         """
         Private method to check the warmup end conditions.
-        """        
+        """
         iteration = self.optim_state.get("iter")
 
         # First requirement for stopping, no constant improvement of metric
@@ -1073,6 +1073,66 @@ class VBMC:
         ) and no_recent_trim_flag
 
         return stop_warmup
+
+    def _setup_vbmc_after_warmup(self):
+        """
+        Private method to setup multiple vbmc settings after a the warmup has
+        been determined to be ended.
+        """
+        iteration = self.optim_state.get("iter")
+        if (
+            self.iteration_history.get("rindex")[iteration]
+            < self.options.get("stopwarmupreliability")
+            or len(self.optim_state.get("data_trim_list")) >= 1
+        ):
+            self.optim_state["warmup"] = False
+            threshold = self.options.get("warmupkeepthreshold") * (
+                len(self.optim_state.get("data_trim_list")) + 1
+            )
+            self.optim_state["lastwarmup"] = iteration
+
+        else:
+            # This may be a false alarm; prune and continue
+            if self.options.get("warmupkeepthresholdfalsealarm") is None:
+                warmup_keep_threshold_false_alarm = self.options.get(
+                    "warmupkeepthreshold"
+                )
+            else:
+                warmup_keep_threshold_false_alarm = self.options.get(
+                    "warmupkeepthresholdfalsealarm"
+                )
+
+            threshold = warmup_keep_threshold_false_alarm * (
+                len(self.optim_state.get("data_trim_list")) + 1
+            )
+
+        self.optim_state["data_trim_list"] = np.append(
+            self.optim_state.get("data_trim_list"), [self.optim_state.get("N")]
+        )
+
+        # Remove warm-up points from training set unless close to max
+        ymax = max(self.function_logger.y_orig[: self.function_logger.Xn + 1])
+        n_keep_min = self.D + 1
+        idx_keep = (ymax - self.function_logger.y_orig) < threshold
+        if np.sum(idx_keep) < n_keep_min:
+            y_temp = np.copy(self.function_logger.y_orig)
+            y_temp[~np.isfinite(y_temp)] = -np.Inf
+            order = np.argsort(y_temp * -1, axis=0)
+            idx_keep[
+                order[: min(n_keep_min, self.function_logger.Xn) + 1]
+            ] = True
+
+        self.function_logger.X_flag = np.logical_and(
+            idx_keep, self.function_logger.X_flag
+        )
+
+        # Skip adaptive sampling for next iteration
+        self.optim_state["skipactivesampling"] = self.options.get(
+            "skipactivesamplingafterwarmup"
+        )
+
+        # Fully recompute variational posterior
+        self.optim_state["recompute_var_post"] = True
 
     def _check_termination_conditions(self):
         """
