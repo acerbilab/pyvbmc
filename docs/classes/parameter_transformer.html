@@ -80,32 +80,6 @@ and D is the number of dimensions</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyvbmc.parameter_transformer.ParameterTransformer.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_bounds</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_bounds</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plausible_lower_bounds</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plausible_upper_bounds</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyvbmc.parameter_transformer.ParameterTransformer.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize an instance of ParameterTransformer.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>D</strong><span class="classifier">int</span></dt><dd><p>The number of dimensions of the spaces.</p>
-</dd>
-<dt><strong>lower_bounds</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>The lower_bound (LB) of the space. LB and UB define a set of strict
-lower and upper bounds coordinate vector, by default None.</p>
-</dd>
-<dt><strong>upper_bounds</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>The upper_bounds (UB) of the space. LB and UB define a set of strict
-lower and upper bounds coordinate vector, by default None.</p>
-</dd>
-<dt><strong>plausible_lower_bounds</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>The plausible_lower_bound (PLB) such that LB &lt; PLB &lt; PUB &lt; UB.
-PLB and PUB represent a “plausible” range, by default None.</p>
-</dd>
-<dt><strong>plausible_upper_bounds</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>The plausible_upper_bound (PUB) such that LB &lt; PLB &lt; PUB &lt; UB.
-PLB and PUB represent a “plausible” range, by default None.</p>
-</dd>
-</dl>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.parameter_transformer.ParameterTransformer.inverse">
 <span class="sig-name descname"><span class="pre">inverse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyvbmc.parameter_transformer.ParameterTransformer.inverse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Performs inverse transform of unconstrained variables u
