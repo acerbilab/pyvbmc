@@ -6,17 +6,14 @@ import copy
 class IterationHistory(MutableMapping, dict):
     """
     This class is responsible for the VBMC iteration history.
+
+    Parameters
+    ----------
+    keys : list
+        The keys that can be recorded with this object.
     """
 
-    def __init__(self, keys):
-        """
-        Initialize an IterationHistory object.
-
-        Parameters
-        ----------
-        keys :
-            The keys that can be recorded with this object.
-        """
+    def __init__(self, keys : list):
         self.check_keys = False
         for key in keys:
             self[key] = None
