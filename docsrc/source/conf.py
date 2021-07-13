@@ -38,7 +38,7 @@ numpydoc_show_class_members = False
 
 autodoc_default_options = {
     "members": "var1, var2",
-    "special-members": "__init__, __call__",
+    "special-members": "__call__",
     "undoc-members": True,
     "exclude-members": "__weakref__",
 }

@@ -6,6 +6,26 @@ from pyvbmc.timer import Timer
 class FunctionLogger:
     """
     Class that evaluates a function and caches its values.
+    
+    Parameters
+    ----------
+    fun : callable
+        The function to be logged.
+        `fun` must take a vector input and return a scalar value and,
+        optionally, the (estimated) SD of the returned value (if the
+        function fun is stochastic).
+    D : int
+        The number of dimensions that the function takes as input.
+    noise_flag : bool
+        Whether the function fun is stochastic or not.
+    uncertainty_handling_level : {0, 1, 2}
+        The uncertainty handling level which can be one of
+        (0: none; 1: unknown noise level; 2: user-provided noise).
+    cache_size : int, optional
+        The initial size of caching table (default 500).
+    parameter_transformer : ParameterTransformer, optional
+        A ParameterTransformer is required to transform the parameters
+        between constrained and unconstrained space, by default None.    
     """
 
     def __init__(
@@ -17,29 +37,6 @@ class FunctionLogger:
         cache_size: int = 500,
         parameter_transformer: ParameterTransformer = None,
     ):
-        """
-        Initialize an instance of FunctionLogger.
-
-        Parameters
-        ----------
-        fun : callable
-            The function to be logged.
-            Fun must take a vector input and return a scalar value and,
-            optionally, the (estimated) SD of the returned value (if the
-            function fun is stochastic).
-        D : int
-            The number of dimensions that the function takes as input.
-        noise_flag : bool
-            Whether the function fun is stochastic or not.
-        uncertainty_handling_level : int
-            The uncertainty handling level which can be one of
-            (0: none; 1: unknown noise level; 2: user-provided noise).
-        cache_size : int, optional
-            The initial size of caching table (default 500).
-        parameter_transformer : ParameterTransformer, optional
-            A ParameterTransformer is required to transform the parameters
-            between constrained and unconstrained space, by default None.
-        """
         self.fun = fun
         self.D: int = D
         self.noise_flag: bool = noise_flag
