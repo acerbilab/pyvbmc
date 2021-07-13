@@ -71,6 +71,24 @@
 <dt class="sig sig-object py" id="pyvbmc.variational_posterior.VariationalPosterior">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyvbmc.variational_posterior.</span></span><span class="sig-name descname"><span class="pre">VariationalPosterior</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter_transformer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyvbmc.variational_posterior.VariationalPosterior" title="Permalink to this definition">¶</a></dt>
 <dd><p>The Variational Posterior class used in the context of VBMC.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>D</strong><span class="classifier">int</span></dt><dd><p>The number of dimensions of the Variational Posterior.</p>
+</dd>
+<dt><strong>K</strong><span class="classifier">int, optional</span></dt><dd><p>The number of mixture components, default 2.</p>
+</dd>
+<dt><strong>x0</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>The starting vector for the mixture components means, it can be a
+single array or multiple rows (up to K); missing rows are
+duplicated by making copies of x0, default np.zeros.</p>
+</dd>
+<dt><strong>parameter_transformer</strong><span class="classifier">ParameterTransformer, optional</span></dt><dd><p>The ParameterTransformer object specifying the transformation of the
+input space that leads to the current representation used by the
+variational posterior, by default uses an identity transform.</p>
+</dd>
+</dl>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.variational_posterior.VariationalPosterior.get_parameters">
 <span class="sig-name descname"><span class="pre">get_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rawflag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyvbmc.variational_posterior.VariationalPosterior.get_parameters" title="Permalink to this definition">¶</a></dt>
@@ -233,7 +251,7 @@ for each coordinate dimension.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.variational_posterior.VariationalPosterior.pdf">
 <span class="sig-name descname"><span class="pre">pdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origflag</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logflag</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transflag</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gradflag</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">inf</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyvbmc.variational_posterior.VariationalPosterior.pdf" title="Permalink to this definition">¶</a></dt>
-<dd><p>pdf Implements the probability density function of VP approximation.</p>
+<dd><p>Implements the probability density function of VP approximation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">

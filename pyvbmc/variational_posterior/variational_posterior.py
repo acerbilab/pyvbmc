@@ -18,30 +18,26 @@ from pyvbmc.stats.entropy import kldiv_mvn
 class VariationalPosterior:
     """
     The Variational Posterior class used in the context of VBMC.
+
+    Parameters
+    ----------
+    D : int
+        The number of dimensions of the Variational Posterior.
+    K : int, optional
+        The number of mixture components, default 2.
+    x0 : np.ndarray, optional
+        The starting vector for the mixture components means, it can be a
+        single array or multiple rows (up to K); missing rows are
+        duplicated by making copies of x0, default np.zeros.
+    parameter_transformer : ParameterTransformer, optional
+        The ParameterTransformer object specifying the transformation of the
+        input space that leads to the current representation used by the
+        variational posterior, by default uses an identity transform.
     """
 
     def __init__(
         self, D: int, K: int = 2, x0=None, parameter_transformer=None
     ):
-        """
-        Initialize an instace of VariationalPosterior.
-
-        Parameters
-        ----------
-        D : int
-            The number of dimensions of the Variational Posterior.
-        K : int, optional
-            The number of mixture components, default 2.
-        x0 : np.ndarray, optional
-            The starting vector for the mixture components means, it can be a
-            single array or multiple rows (up to K); missing rows are
-            duplicated by making copies of x0, default np.zeros.
-        parameter_transformer : ParameterTransformer, optional
-            The ParameterTransformer object specifying the transformation of the
-            input space that leads to the current representation used by the
-            variational posterior, by default uses an identity transform.
-        """
-
         self.D = D  # number of dimensions
         self.K = K  # number of components
 
@@ -204,7 +200,7 @@ class VariationalPosterior:
         df: float = np.inf,
     ):
         """
-        pdf Implements the probability density function of VP approximation.
+        Implements the probability density function of VP approximation.
 
         Parameters
         ----------
