@@ -6,6 +6,23 @@ class ParameterTransformer:
     """
     A class used to enable transforming of variables from unconstrained to
     constrained space and vice versa.
+
+    Parameters
+    ----------
+    D : int
+        The number of dimensions of the spaces.
+    lower_bounds : np.ndarray, optional
+        The lower_bound (LB) of the space. LB and UB define a set of strict
+        lower and upper bounds coordinate vector, by default None.
+    upper_bounds : np.ndarray, optional
+        The upper_bounds (UB) of the space. LB and UB define a set of strict
+        lower and upper bounds coordinate vector, by default None.
+    plausible_lower_bounds : np.ndarray, optional
+        The plausible_lower_bound (PLB) such that LB < PLB < PUB < UB.
+        PLB and PUB represent a "plausible" range, by default None.
+    plausible_upper_bounds : np.ndarray, optional
+        The plausible_upper_bound (PUB) such that LB < PLB < PUB < UB.
+        PLB and PUB represent a "plausible" range, by default None.
     """
 
     def __init__(
@@ -16,26 +33,6 @@ class ParameterTransformer:
         plausible_lower_bounds: np.ndarray = None,
         plausible_upper_bounds: np.ndarray = None,
     ):
-        """
-        Initialize an instance of ParameterTransformer.
-
-        Parameters
-        ----------
-        D : int
-            The number of dimensions of the spaces.
-        lower_bounds : np.ndarray, optional
-            The lower_bound (LB) of the space. LB and UB define a set of strict
-            lower and upper bounds coordinate vector, by default None.
-        upper_bounds : np.ndarray, optional
-            The upper_bounds (UB) of the space. LB and UB define a set of strict
-            lower and upper bounds coordinate vector, by default None.
-        plausible_lower_bounds : np.ndarray, optional
-            The plausible_lower_bound (PLB) such that LB < PLB < PUB < UB.
-            PLB and PUB represent a "plausible" range, by default None.
-        plausible_upper_bounds : np.ndarray, optional
-            The plausible_upper_bound (PUB) such that LB < PLB < PUB < UB.
-            PLB and PUB represent a "plausible" range, by default None.
-        """
         # Empty LB and UB are Infs
         if lower_bounds is None:
             lower_bounds = np.ones((1, D)) * -np.inf

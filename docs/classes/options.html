@@ -50,20 +50,6 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>UserOptions</strong><span class="classifier">set</span></dt><dd><p>This set contains all options that have set by the user,
-if there are none it is empty.</p>
-</dd>
-</dl>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="pyvbmc.vbmc.Options.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">default_options_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evalutation_parameters</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_options</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyvbmc.vbmc.Options.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize the options using default options and specified options from
-the user.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
 <dt><strong>default_options_path</strong><span class="classifier">str</span></dt><dd><p>The path to default options that can be overwritten by the user.</p>
 </dd>
 <dt><strong>evalutation_parameters</strong><span class="classifier">dict</span></dt><dd><p>Parameters used to evaluate the options.</p>
@@ -72,9 +58,14 @@ the user.</p>
 </dd>
 </dl>
 </dd>
+<dt class="field-even">Attributes</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>useroptions</strong><span class="classifier">set</span></dt><dd><p>This set contains all options that have set by the user,
+if there are none it is empty.</p>
+</dd>
 </dl>
-</dd></dl>
-
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.vbmc.Options.eval">
 <span class="sig-name descname"><span class="pre">eval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evaluation_parameters</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyvbmc.vbmc.Options.eval" title="Permalink to this definition">¶</a></dt>

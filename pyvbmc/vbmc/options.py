@@ -11,10 +11,18 @@ class Options(MutableMapping, dict):
     """
     This class is responsible for Options.
 
-
     Parameters
     ----------
-    UserOptions : set
+    default_options_path : str
+        The path to default options that can be overwritten by the user.
+    evalutation_parameters : dict
+        Parameters used to evaluate the options.
+    user_options : dict
+        User defined values to overwrite default options.
+
+    Attributes
+    ----------
+    useroptions : set
         This set contains all options that have set by the user,
         if there are none it is empty.
     """
@@ -28,15 +36,6 @@ class Options(MutableMapping, dict):
         """
         Initialize the options using default options and specified options from
         the user.
-
-        Parameters
-        ----------
-        default_options_path : str
-            The path to default options that can be overwritten by the user.
-        evalutation_parameters : dict
-            Parameters used to evaluate the options.
-        user_options : dict
-            User defined values to overwrite default options.
         """
         super().__init__()
         # evaluation_parameters
