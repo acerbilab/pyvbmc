@@ -641,24 +641,13 @@ def test_vbmc_optimstate_int_meanfun():
     assert np.all(vbmc.optim_state["int_meanfun"] == fun)
 
 
-def test_vbmc_optimstate_gp_outwarpfun():
-    user_options = {"gpoutwarpfun": fun}
-    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
-    assert np.all(vbmc.optim_state["gp_outwarpfun"] == fun)
-
 
 def test_vbmc_optimstate_outwarp_delta():
-    user_options = {"fitnessshaping": False, "gpoutwarpfun": None}
+    user_options = {"fitnessshaping": False}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     assert vbmc.optim_state["outwarp_delta"] == []
     outwarpthreshbase = vbmc.options.get("outwarpthreshbase")
-    user_options = {"fitnessshaping": False, "gpoutwarpfun": fun}
-    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
-    assert vbmc.optim_state["outwarp_delta"] == outwarpthreshbase
-    user_options = {"fitnessshaping": True, "gpoutwarpfun": None}
-    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
-    assert vbmc.optim_state["outwarp_delta"] == outwarpthreshbase
-    user_options = {"fitnessshaping": True, "gpoutwarpfun": fun}
+    user_options = {"fitnessshaping": True}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     assert vbmc.optim_state["outwarp_delta"] == outwarpthreshbase
 

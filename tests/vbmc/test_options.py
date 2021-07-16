@@ -160,7 +160,6 @@ def test_validate_option_names_unknown_user_options():
     options = Options(basic_test_options, evaluation_parameters, user_options)
     advanced_test_options = "./pyvbmc/vbmc/option_configs/test_options2.ini"
     options.load_options_file(advanced_test_options, evaluation_parameters)
-    exception_message = "need to be row vectors with D elements"
     with pytest.raises(ValueError) as execinfo1:
         options.validate_option_names([basic_test_options, advanced_test_options])
     assert "The option failoption does not exist." in execinfo1.value.args[0]

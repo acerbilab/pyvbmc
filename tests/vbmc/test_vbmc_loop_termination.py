@@ -227,7 +227,7 @@ def test_check_warmup_end_conditions_bo_warmup():
     stable_count_flag and no_recent_improvement_flag and no_recent_trim_flag
     are True
     """
-    user_options = {"bowarmup": True, "funevalsperiter": 5}
+    user_options = {"warmupcheckmax": False}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.optim_state["iter"] = 100
     vbmc.optim_state["funccount"] = 5
