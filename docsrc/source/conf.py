@@ -12,6 +12,7 @@
 #
 import os
 import sys
+import inspect
 
 sys.path.insert(0, os.path.abspath("../.."))
 
@@ -33,6 +34,7 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.todo",
     "sphinx.ext.coverage",
+    "sphinx.ext.linkcode",
 ]
 numpydoc_show_class_members = False
 
@@ -42,6 +44,26 @@ autodoc_default_options = {
     "undoc-members": True,
     "exclude-members": "__weakref__",
 }
+
+def linkcode_resolve(domain, info):
+    """
+    Used for sphinx.ext.linkcode.
+    Modified from the basic example from the extension.
+    """
+    if domain != "py" or not info["module"]:
+        return None
+
+    obj = sys.modules[info["module"]]
+    for part in info["fullname"].split("."):
+        obj = getattr(obj, part)
+
+    # unwrap to get rid of decorators.
+    filename = inspect.getsourcefile(inspect.unwrap(obj))
+    
+    # to get rid of the local path, quiet hacky, but works
+    filename = filename[filename.index("pyvbmc/") + 7 :]
+    return "https://github.com/lacerbi/pyvbmc/tree/main/%s" % filename
+
 
 coverage_show_missing_items = True
 
