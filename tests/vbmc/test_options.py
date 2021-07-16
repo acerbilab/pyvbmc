@@ -139,3 +139,28 @@ def test_load_options_file():
     assert options.get("bar2") == 80
     assert options.get("foo2") == "testuseroptions2"
     assert options.get("fooD2") == 200
+
+def test_validate_option_names():
+    evaluation_parameters = {"D": 2}
+    user_options = {"foo": "testuseroptions", "foo2": "testuseroptions2"}
+    basic_test_options = "./pyvbmc/vbmc/option_configs/test_options.ini"
+    options = Options(basic_test_options, evaluation_parameters, user_options)
+    advanced_test_options = "./pyvbmc/vbmc/option_configs/test_options2.ini"
+    options.load_options_file(advanced_test_options, evaluation_parameters)
+    # should go fine
+    options.validate_option_names([basic_test_options, advanced_test_options])
+    # raise error
+    with pytest.raises(ValueError) as execinfo1:
+        options.validate_option_names([basic_test_options])
+
+def test_validate_option_names_unknown_user_options():
+    evaluation_parameters = {"D": 2}
+    user_options = {"failoption": "testuseroptions"}
+    basic_test_options = "./pyvbmc/vbmc/option_configs/test_options.ini"
+    options = Options(basic_test_options, evaluation_parameters, user_options)
+    advanced_test_options = "./pyvbmc/vbmc/option_configs/test_options2.ini"
+    options.load_options_file(advanced_test_options, evaluation_parameters)
+    exception_message = "need to be row vectors with D elements"
+    with pytest.raises(ValueError) as execinfo1:
+        options.validate_option_names([basic_test_options, advanced_test_options])
+    assert "The option failoption does not exist." in execinfo1.value.args[0]

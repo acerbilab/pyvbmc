@@ -112,14 +112,43 @@ class Options(MutableMapping, dict):
                 self[key] = eval(value)
                 self.descriptions[key] = description
 
+    def validate_option_names(self, options_paths: list):
+        """
+        Check that ini files specified by the list of ``options_paths`` contain
+        the option names from this options object at least once.
+
+        Note there can be option names in files that are not in the object.
+
+        Parameters
+        ----------
+        options_paths : list
+            A list of paths to ini files can contain the allowed option names.
+
+        Raises
+        ------
+        ValueError
+            Raised when an option exists in this object but not in one of the
+            specified ini files.
+        """
+        # create set of option names from all ini files
+        file_option_names = set()
+        for options_path in options_paths:
+            file_option_names.update(
+                self._read_config_file(options_path)[:, 0].flatten()
+            )
+
+        for key in self.keys():
+            if key != "useroptions" and key not in file_option_names:
+                raise ValueError("The option {} does not exist.".format(key))
+
     def _read_config_file(self, options_path):
         """
         Private helper method to read a config file and return the options as a
         list of tuples (key, value, description).
-        
+
         Note that strings starting with # in .ini act as description to
         the option in the following line.
-        """        
+        """
         conf = configparser.ConfigParser(
             comment_prefixes="", allow_no_value=True
         )
@@ -134,10 +163,10 @@ class Options(MutableMapping, dict):
                 if "#" in key:
                     description = key.strip("# ")
                 else:
-                    option_list.append((key, value, description))
+                    option_list.append([key, value, description])
                     description = ""
-        
-        return option_list
+
+        return np.array(option_list)
 
     def __setitem__(self, key, val):
         dict.__setitem__(self, key, val)
