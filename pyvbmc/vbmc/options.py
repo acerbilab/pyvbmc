@@ -24,7 +24,8 @@ class Options(MutableMapping, dict):
     ----------
     useroptions : set
         This set contains all options that have set by the user,
-        if there are none it is empty.
+        if there are none it is empty. These ``useroptions`` are immutable to
+        changes using :py:meth:`load_options_file`.
     """
 
     def __init__(
@@ -94,6 +95,9 @@ class Options(MutableMapping, dict):
         Load options from an ini file and evaluate them using the specified
         ``evaluation_parameters``.
 
+        Note that strings starting with # in the .ini file act as description to
+        the option in the following line.
+
         Parameters
         ----------
         options_path : str
@@ -117,11 +121,12 @@ class Options(MutableMapping, dict):
         Check that ini files specified by the list of ``options_paths`` contain
         the option names from this options object at least once.
 
-        Note there can be option names in files that are not in the object.
+        Note that this method checks not if there are option names in files that
+        are not in the object.
 
         Parameters
         ----------
-        options_paths : list
+        options_paths : list of str
             A list of paths to ini files can contain the allowed option names.
 
         Raises
@@ -141,12 +146,12 @@ class Options(MutableMapping, dict):
             if key != "useroptions" and key not in file_option_names:
                 raise ValueError("The option {} does not exist.".format(key))
 
-    def _read_config_file(self, options_path):
+    def _read_config_file(self, options_path: str):
         """
         Private helper method to read a config file and return the options as a
         list of tuples (key, value, description).
 
-        Note that strings starting with # in .ini act as description to
+        Note that strings starting with # in the .ini file act as description to
         the option in the following line.
         """
         conf = configparser.ConfigParser(
