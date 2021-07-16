@@ -106,7 +106,20 @@ class Options(MutableMapping, dict):
         for key, val in evaluation_parameters.items():
             exec(key + "=val")
 
-        # default_options
+        options_list = self._read_config_file(options_path)
+        for (key, value, description) in options_list:
+            if key not in self.get("useroptions") and key != "useroptions":
+                self[key] = eval(value)
+                self.descriptions[key] = description
+
+    def _read_config_file(self, options_path):
+        """
+        Private helper method to read a config file and return the options as a
+        list of tuples (key, value, description).
+        
+        Note that strings starting with # in .ini act as description to
+        the option in the following line.
+        """        
         conf = configparser.ConfigParser(
             comment_prefixes="", allow_no_value=True
         )
@@ -114,20 +127,17 @@ class Options(MutableMapping, dict):
         conf.optionxform = str
         conf.read(options_path)
 
-        # strings starting with # in .ini act as description to following option
+        option_list = list()
         description = ""
         for section in conf.sections():
             for (key, value) in conf.items(section):
                 if "#" in key:
                     description = key.strip("# ")
                 else:
-                    if (
-                        key not in self.get("useroptions")
-                        and key != "useroptions"
-                    ):
-                        self[key] = eval(value)
-                        self.descriptions[key] = description
-                        description = ""
+                    option_list.append((key, value, description))
+                    description = ""
+        
+        return option_list
 
     def __setitem__(self, key, val):
         dict.__setitem__(self, key, val)
