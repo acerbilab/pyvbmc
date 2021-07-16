@@ -106,9 +106,14 @@ class VBMC:
         )
 
         self.options = Options(
-            "./pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini",
-            evalutation_parameters={"D": self.D},
+            "./pyvbmc/vbmc/option_configs/basic_vbmc_options.ini",
+            evaluation_parameters={"D": self.D},
             user_options=user_options,
+        )
+
+        self.options.load_options_file(
+            "./pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini",
+            evaluation_parameters={"D": self.D},
         )
 
         self.K = self.options.get("kwarmup")

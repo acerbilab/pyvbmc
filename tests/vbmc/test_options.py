@@ -124,3 +124,18 @@ def test_eval_callable_too_many_args():
     options = Options(default_options_path, {"D": 2}, user_options)
     with pytest.raises(TypeError):
         options.eval("bar", {"U": 2, "S": 2, "T": 4})
+
+def test_load_options_file():
+    evaluation_parameters = {"D": 2}
+    user_options = {"foo": "testuseroptions", "foo2": "testuseroptions2"}
+    basic_test_options = "./pyvbmc/vbmc/option_configs/test_options.ini"
+    options = Options(basic_test_options, evaluation_parameters, user_options)
+    advanced_test_options = "./pyvbmc/vbmc/option_configs/test_options2.ini"
+    options.load_options_file(advanced_test_options, evaluation_parameters)
+    assert options.get("bar") == 40
+    assert len(options.get("useroptions")) == 2
+    assert options.get("foo") == "testuseroptions"
+    assert options.get("fooD") == 4
+    assert options.get("bar2") == 80
+    assert options.get("foo2") == "testuseroptions2"
+    assert options.get("fooD2") == 200

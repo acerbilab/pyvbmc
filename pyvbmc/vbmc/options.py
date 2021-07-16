@@ -15,7 +15,7 @@ class Options(MutableMapping, dict):
     ----------
     default_options_path : str
         The path to default options that can be overwritten by the user.
-    evalutation_parameters : dict
+    evaluation_parameters : dict
         Parameters used to evaluate the options.
     user_options : dict
         User defined values to overwrite default options.
@@ -30,7 +30,7 @@ class Options(MutableMapping, dict):
     def __init__(
         self,
         default_options_path: str,
-        evalutation_parameters: dict = None,
+        evaluation_parameters: dict = None,
         user_options: dict = None,
     ):
         """
@@ -38,42 +38,22 @@ class Options(MutableMapping, dict):
         the user.
         """
         super().__init__()
-        # evaluation_parameters
-        for key, val in evalutation_parameters.items():
-            exec(key + "=val")
-
-        # default_options
-        conf = configparser.ConfigParser(
-            comment_prefixes="", allow_no_value=True
-        )
-        # do not lower() both values as well as descriptions
-        conf.optionxform = str
-        conf.read(default_options_path)
-
-        # strings starting with # in .ini act as description to following option
-        description = ""
         self.descriptions = dict()
-        for section in conf.sections():
-            for (key, value) in conf.items(section):
-                if "#" in key:
-                    description = key.strip("# ")
-                else:
-                    self.__setitem__(key, eval(value))
-                    self.descriptions[key] = description
-                    description = ""
+        self["useroptions"] = set()
+
+        # load options from file
+        self.load_options_file(default_options_path, evaluation_parameters)
 
         # User options
         if user_options is not None:
             self.update(user_options)
-            self.__setitem__("useroptions", set(user_options.keys()))
-        else:
-            self.__setitem__("useroptions", set())
+            self["useroptions"].update(user_options.keys())
 
     @classmethod
     def init_from_existing_options(
         cls,
         default_options_path: str,
-        evalutation_parameters: dict = None,
+        evaluation_parameters: dict = None,
         other: Options = None,
     ):
         """
@@ -87,7 +67,7 @@ class Options(MutableMapping, dict):
         ----------
         default_options_path : str
             The path to default options that can be overwritten by the user.
-        evalutation_parameters : dict
+        evaluation_parameters : dict
             Parameters used to evaluate the options.
         other : Options
             User defined values to overwrite default options.
@@ -103,9 +83,51 @@ class Options(MutableMapping, dict):
             user_option_keys = other.get("useroptions")
             user_options = {k: other.get(k) for k in user_option_keys}
         new_options = cls(
-            default_options_path, evalutation_parameters, user_options
+            default_options_path, evaluation_parameters, user_options
         )
         return new_options
+
+    def load_options_file(
+        self, options_path: str, evaluation_parameters: dict = None
+    ):
+        """
+        Load options from an ini file and evaluate them using the specified
+        ``evaluation_parameters``.
+
+        Parameters
+        ----------
+        options_path : str
+            The path to an options ini file that should be loaded.
+        evaluation_parameters : dict, optional
+            Parameters used to evaluate the options.
+        """
+
+        # evaluation_parameters
+        for key, val in evaluation_parameters.items():
+            exec(key + "=val")
+
+        # default_options
+        conf = configparser.ConfigParser(
+            comment_prefixes="", allow_no_value=True
+        )
+        # do not lower() both values as well as descriptions
+        conf.optionxform = str
+        conf.read(options_path)
+
+        # strings starting with # in .ini act as description to following option
+        description = ""
+        for section in conf.sections():
+            for (key, value) in conf.items(section):
+                if "#" in key:
+                    description = key.strip("# ")
+                else:
+                    if (
+                        key not in self.get("useroptions")
+                        and key != "useroptions"
+                    ):
+                        self[key] = eval(value)
+                        self.descriptions[key] = description
+                        description = ""
 
     def __setitem__(self, key, val):
         dict.__setitem__(self, key, val)
