@@ -45,14 +45,14 @@
 <h2>Python documentation<a class="headerlink" href="#python-documentation" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.vbmc.Options">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyvbmc.vbmc.</span></span><span class="sig-name descname"><span class="pre">Options</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">default_options_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evalutation_parameters</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_options</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/vbmc/options.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.Options" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyvbmc.vbmc.</span></span><span class="sig-name descname"><span class="pre">Options</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">default_options_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evaluation_parameters</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_options</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/vbmc/options.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.Options" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class is responsible for Options.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>default_options_path</strong><span class="classifier">str</span></dt><dd><p>The path to default options that can be overwritten by the user.</p>
 </dd>
-<dt><strong>evalutation_parameters</strong><span class="classifier">dict</span></dt><dd><p>Parameters used to evaluate the options.</p>
+<dt><strong>evaluation_parameters</strong><span class="classifier">dict</span></dt><dd><p>Parameters used to evaluate the options.</p>
 </dd>
 <dt><strong>user_options</strong><span class="classifier">dict</span></dt><dd><p>User defined values to overwrite default options.</p>
 </dd>
@@ -61,7 +61,8 @@
 <dt class="field-even">Attributes</dt>
 <dd class="field-even"><dl class="simple">
 <dt><strong>useroptions</strong><span class="classifier">set</span></dt><dd><p>This set contains all options that have set by the user,
-if there are none it is empty.</p>
+if there are none it is empty. These <code class="docutils literal notranslate"><span class="pre">useroptions</span></code> are immutable to
+changes using <a class="reference internal" href="#pyvbmc.vbmc.Options.load_options_file" title="pyvbmc.vbmc.Options.load_options_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">load_options_file()</span></code></a>.</p>
 </dd>
 </dl>
 </dd>
@@ -93,7 +94,7 @@ a callable.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.vbmc.Options.init_from_existing_options">
-<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">init_from_existing_options</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">default_options_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evalutation_parameters</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyvbmc.vbmc.Options" title="pyvbmc.vbmc.options.Options"><span class="pre">pyvbmc.vbmc.options.Options</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/vbmc/options.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.Options.init_from_existing_options" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">init_from_existing_options</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">default_options_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evaluation_parameters</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyvbmc.vbmc.Options" title="pyvbmc.vbmc.options.Options"><span class="pre">pyvbmc.vbmc.options.Options</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/vbmc/options.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.Options.init_from_existing_options" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize an options instance using default options and another options
 instance.</p>
 <p>Only the user-definied options from the other object will overwrite the
@@ -103,7 +104,7 @@ default options. Everything else will come from the default options.</p>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>default_options_path</strong><span class="classifier">str</span></dt><dd><p>The path to default options that can be overwritten by the user.</p>
 </dd>
-<dt><strong>evalutation_parameters</strong><span class="classifier">dict</span></dt><dd><p>Parameters used to evaluate the options.</p>
+<dt><strong>evaluation_parameters</strong><span class="classifier">dict</span></dt><dd><p>Parameters used to evaluate the options.</p>
 </dd>
 <dt><strong>other</strong><span class="classifier">Options</span></dt><dd><p>User defined values to overwrite default options.</p>
 </dd>
@@ -112,6 +113,49 @@ default options. Everything else will come from the default options.</p>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
 <dt><strong>new_options</strong><span class="classifier">Options</span></dt><dd><p>The new options object with the values merged as described above.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.vbmc.Options.load_options_file">
+<span class="sig-name descname"><span class="pre">load_options_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evaluation_parameters</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/vbmc/options.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.Options.load_options_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load options from an ini file and evaluate them using the specified
+<code class="docutils literal notranslate"><span class="pre">evaluation_parameters</span></code>.</p>
+<p>Note that strings starting with # in the .ini file act as description to
+the option in the following line.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>options_path</strong><span class="classifier">str</span></dt><dd><p>The path to an options ini file that should be loaded.</p>
+</dd>
+<dt><strong>evaluation_parameters</strong><span class="classifier">dict, optional</span></dt><dd><p>Parameters used to evaluate the options.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.vbmc.Options.validate_option_names">
+<span class="sig-name descname"><span class="pre">validate_option_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options_paths</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/vbmc/options.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.Options.validate_option_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that ini files specified by the list of <code class="docutils literal notranslate"><span class="pre">options_paths</span></code> contain
+the option names from this options object at least once.</p>
+<p>Note that this method checks not if there are option names in files that
+are not in the object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>options_paths</strong><span class="classifier">list of str</span></dt><dd><p>A list of paths to ini files can contain the allowed option names.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><dl class="simple">
+<dt>ValueError</dt><dd><p>Raised when an option exists in this object but not in one of the
+specified ini files.</p>
 </dd>
 </dl>
 </dd>

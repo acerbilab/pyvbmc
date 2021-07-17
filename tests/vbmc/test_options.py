@@ -5,24 +5,25 @@ from pyvbmc.vbmc import Options
 def test_options_no_user_options():
     default_options_path = "./pyvbmc/vbmc/option_configs/test_options.ini"
     options = Options(default_options_path, {"D": 2})
-    assert options.get("sgdstepsize") == 0.005
+    assert options.get("bar") == 40
     assert len(options.get("useroptions")) == 0
-    assert options.get("display") == "iter"
-
+    assert options.get("foo") == "iter"
+    assert options.get("fooD") == 4
 
 def test_options_user_options():
     default_options_path = "./pyvbmc/vbmc/option_configs/test_options.ini"
-    user_options = {"display": "off"}
+    user_options = {"foo": "iter2"}
     options = Options(default_options_path, {"D": 2}, user_options)
-    assert options.get("display") == "off"
-    assert options.get("sgdstepsize") == 0.005
+    assert options.get("bar") == 40
     assert len(options.get("useroptions")) == 1
-    assert "display" in options.get("useroptions")
+    assert options.get("foo") == "iter2"
+    assert options.get("fooD") == 4
+    assert "foo" in options.get("useroptions")
 
 
 def test_init_from_existing_options():
     default_options_path = "./pyvbmc/vbmc/option_configs/test_options.ini"
-    user_options = {"display": "off"}
+    user_options = {"foo": "iter2"}
     options_1 = Options(default_options_path, {"D": 2}, user_options)
     options_2 = Options.init_from_existing_options(
         default_options_path, {"D": 2}, options_1
@@ -33,31 +34,35 @@ def test_init_from_existing_options():
 
 def test_init_from_existing_options_modified():
     default_options_path = "./pyvbmc/vbmc/option_configs/test_options.ini"
-    user_options = {"display": "off"}
+    user_options = {"foo": "iter2"}
     options_1 = Options(default_options_path, {"D": 2}, user_options)
-    options_1["sgdstepsize"] = 0.3
+    options_1["bar"] = 80
     options_2 = Options.init_from_existing_options(
         default_options_path, {"D": 2}, options_1
     )
     assert options_1 != options_2
-    assert options_1.get("sgdstepsize") == 0.3
-    assert options_2.get("sgdstepsize") == 0.005
-    assert options_1.get("display") == "off"
-    assert options_2.get("display") == "off"
+    assert options_1.get("bar") == 80
+    assert options_2.get("bar") == 40
+    assert options_1.get("foo") == "iter2"
+    assert options_2.get("foo") == "iter2"
+    assert options_1.get("fooD") == 4
+    assert options_2.get("fooD") == 4
 
 
 def test_init_from_existing_options_without_user_options():
     default_options_path = "./pyvbmc/vbmc/option_configs/test_options.ini"
     options_1 = Options(default_options_path, {"D": 2})
-    options_1["sgdstepsize"] = 0.3
+    options_1["bar"] = 80
     options_2 = Options.init_from_existing_options(
         default_options_path, {"D": 2}, options_1
     )
     assert options_1 != options_2
-    assert options_1.get("sgdstepsize") == 0.3
-    assert options_2.get("sgdstepsize") == 0.005
-    assert options_1.get("display") == "iter"
-    assert options_2.get("display") == "iter"
+    assert options_1.get("bar") == 80
+    assert options_2.get("bar") == 40
+    assert options_1.get("foo") == "iter"
+    assert options_2.get("foo") == "iter"
+    assert options_1.get("fooD") == 4
+    assert options_2.get("fooD") == 4
 
 
 def test_init_from_existing_options_without_other_options():
@@ -73,17 +78,15 @@ def test_init_from_existing_options_without_other_options():
 def test_str():
     default_options_path = "./pyvbmc/vbmc/option_configs/test_options.ini"
     options = Options(default_options_path, {"D": 2})
-    one_option_str = "funevalstart: 10 (Number of initial target fcn evals)"
+    one_option_str = "bar: 40 (Bar description)"
     assert one_option_str in options.__str__()
-    assert len(options.__str__()) > 1600
 
 
 def test_del():
     default_options_path = "./pyvbmc/vbmc/option_configs/test_options.ini"
-    user_options = {"display": "off"}
-    options = Options(default_options_path, {"D": 2}, user_options)
-    options.pop("display")
-    assert "display" not in options
+    options = Options(default_options_path, {"D": 2})
+    options.pop("foo")
+    assert "foo" not in options
 
 
 def test_eval_callable():
@@ -121,3 +124,42 @@ def test_eval_callable_too_many_args():
     options = Options(default_options_path, {"D": 2}, user_options)
     with pytest.raises(TypeError):
         options.eval("bar", {"U": 2, "S": 2, "T": 4})
+
+def test_load_options_file():
+    evaluation_parameters = {"D": 2}
+    user_options = {"foo": "testuseroptions", "foo2": "testuseroptions2"}
+    basic_test_options = "./pyvbmc/vbmc/option_configs/test_options.ini"
+    options = Options(basic_test_options, evaluation_parameters, user_options)
+    advanced_test_options = "./pyvbmc/vbmc/option_configs/test_options2.ini"
+    options.load_options_file(advanced_test_options, evaluation_parameters)
+    assert options.get("bar") == 40
+    assert len(options.get("useroptions")) == 2
+    assert options.get("foo") == "testuseroptions"
+    assert options.get("fooD") == 4
+    assert options.get("bar2") == 80
+    assert options.get("foo2") == "testuseroptions2"
+    assert options.get("fooD2") == 200
+
+def test_validate_option_names():
+    evaluation_parameters = {"D": 2}
+    user_options = {"foo": "testuseroptions", "foo2": "testuseroptions2"}
+    basic_test_options = "./pyvbmc/vbmc/option_configs/test_options.ini"
+    options = Options(basic_test_options, evaluation_parameters, user_options)
+    advanced_test_options = "./pyvbmc/vbmc/option_configs/test_options2.ini"
+    options.load_options_file(advanced_test_options, evaluation_parameters)
+    # should go fine
+    options.validate_option_names([basic_test_options, advanced_test_options])
+    # raise error
+    with pytest.raises(ValueError) as execinfo1:
+        options.validate_option_names([basic_test_options])
+
+def test_validate_option_names_unknown_user_options():
+    evaluation_parameters = {"D": 2}
+    user_options = {"failoption": "testuseroptions"}
+    basic_test_options = "./pyvbmc/vbmc/option_configs/test_options.ini"
+    options = Options(basic_test_options, evaluation_parameters, user_options)
+    advanced_test_options = "./pyvbmc/vbmc/option_configs/test_options2.ini"
+    options.load_options_file(advanced_test_options, evaluation_parameters)
+    with pytest.raises(ValueError) as execinfo1:
+        options.validate_option_names([basic_test_options, advanced_test_options])
+    assert "The option failoption does not exist." in execinfo1.value.args[0]

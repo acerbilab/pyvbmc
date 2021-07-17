@@ -105,11 +105,23 @@ class VBMC:
             plausible_upper_bounds,
         )
 
+        # load basic and advanced options and validate the names
+        basic_path = "./pyvbmc/vbmc/option_configs/basic_vbmc_options.ini"
         self.options = Options(
-            "./pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini",
-            evalutation_parameters={"D": self.D},
+            basic_path,
+            evaluation_parameters={"D": self.D},
             user_options=user_options,
         )
+
+        advanced_path = (
+            "./pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini"
+        )
+        self.options.load_options_file(
+            advanced_path,
+            evaluation_parameters={"D": self.D},
+        )
+
+        self.options.validate_option_names([basic_path, advanced_path])
 
         self.K = self.options.get("kwarmup")
 
@@ -613,13 +625,9 @@ class VBMC:
             )
         optim_state["int_meanfun"] = self.options.get("gpintmeanfun")
         # more logic here in matlab
-        optim_state["gp_outwarpfun"] = self.options.get("gpoutwarpfun")
 
         # Starting threshold on y for output warping
-        if (
-            self.options.get("fitnessshaping")
-            or optim_state.get("gp_outwarpfun") is not None
-        ):
+        if self.options.get("fitnessshaping"):
             optim_state["outwarp_delta"] = self.options.get(
                 "outwarpthreshbase"
             )
@@ -1028,9 +1036,7 @@ class VBMC:
 
         # Second requirement, also no substantial improvement of max fcn value
         # in recent iters (unless already performing BO-like warmup)
-        if not self.options.get("bowarmup") and self.options.get(
-            "warmupcheckmax"
-        ):
+        if self.options.get("warmupcheckmax"):
             idx_last = np.full(lcbmax_vec.shape, False)
             recent_past = iteration - int(
                 np.ceil(
