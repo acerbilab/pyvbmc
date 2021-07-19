@@ -1,6 +1,8 @@
 import sys
+import math
 
 import numpy as np
+import gpyreg as gpr
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.stats.entropy import kldiv_mvn
@@ -9,6 +11,7 @@ from pyvbmc.variational_posterior import VariationalPosterior
 
 from .options import Options
 from .iteration_history import IterationHistory
+from .active_sample import active_sample
 
 
 class VBMC:
@@ -178,9 +181,17 @@ class VBMC:
                 "iter",
                 "elbo_sd",
                 "lcbmax",
-                "funccount",
                 "data_trim_list",
                 "gp",
+                "gp_hyp_full",
+                "Ns_gp",
+                "timer",
+                "optim_state",
+                "sKL",
+                "sKL_true",
+                "pruned",
+                "varss",
+                "func_count",
             ]
         )
 
@@ -450,7 +461,9 @@ class VBMC:
         )
 
         # Before first iteration
-        optim_state["iter"] = 0
+        # Iterations are from 0 onwards in optimize so we should have -1
+        # here. In MATLAB this was 0.
+        optim_state["iter"] = -1
 
         # Estimate of GP observation noise around the high posterior
         # density region
@@ -506,7 +519,7 @@ class VBMC:
         optim_state["last_run_avg"] = np.NaN
 
         # Current number of components for variational posterior
-        optim_state["vpk"] = self.K
+        optim_state["vpK"] = self.K
 
         # Number of variational components pruned in last iteration
         optim_state["pruned"] = 0
@@ -587,13 +600,13 @@ class VBMC:
 
         if optim_state.get("uncertainty_handling_level") == 0:
             # Observation noise for stability
-            optim_state["gp_noisefun"] = [1, 0]
+            optim_state["gp_noisefun"] = [1, 0, 0]
         elif optim_state.get("uncertainty_handling_level") == 1:
             # Infer noise
-            optim_state["gp_noisefun"] = [1, 2]
+            optim_state["gp_noisefun"] = [1, 2, 0]
         elif optim_state.get("uncertainty_handling_level") == 2:
             # Provided heteroskedastic noise
-            optim_state["gp_noisefun"] = [1, 1]
+            optim_state["gp_noisefun"] = [1, 1, 0]
 
         if (
             self.options.get("noiseshaping")
@@ -652,7 +665,7 @@ class VBMC:
             self.optim_state["redo_roto_scaling"] = False
 
             if self.optim_state.get("entropy_switch") and (
-                self.optim_state.get("func_count")
+                self.function_logger.func_count
                 >= self.optim_state.get("entropy_force_switch")
                 * self.optim_state.get("max_fun_evals")
             ):
@@ -678,7 +691,10 @@ class VBMC:
                     and not self.options.get("varactivesample")
                 ):
                     # Train a distinct GP for active sampling
-                    if iteration % 2 == 0:
+                    # Since we are doing iterations from 0 onwards
+                    # instead of from 1 onwards, this should be checking 
+                    # oddness, not evenness.
+                    if iteration % 2 == 1:
                         meantemp = self.optim_state.get("gp_meanfun")
                         self.optim_state["gp_meanfun"] = "const"
                         gp_search = self._train_gp()
@@ -696,10 +712,19 @@ class VBMC:
                     # funwrapper,vp,vp_old,gp_search,options)
                     sys.exit("Function currently not supported")
                 else:
-                    self._activesample(new_funevals)
+                    active_sample(
+                        gp_search,
+                        new_funevals,
+                        self.optim_state,
+                        self.function_logger,
+                        self.options,
+                    )
 
-            # optimState.N = optimState.Xn  # Number of training inputs
-            # optimState.Neff = sum(optimState.nevals(optimState.X_flag))
+            # Number of training inputs
+            self.optim_state["N"] = self.function_logger.Xn
+            self.optim_state["n_eff"] = np.sum(
+                self.function_logger.nevals[self.function_logger.X_flag]
+            )
 
             timer.stop_timer("activeSampling")
 
@@ -707,7 +732,7 @@ class VBMC:
 
             timer.start_timer("gpTrain")
 
-            Ns_gp = self._train_gp()
+            gp, Ns_gp = self._train_gp()
 
             timer.stop_timer("gpTrain")
 
@@ -733,12 +758,12 @@ class VBMC:
             N_fastopts = 3
             # np.ceil(evaloption_vbmc(options.NSelbo, K))
 
-            if self.optim_state.get("recompute_varpost") or (
+            if self.optim_state.get("recompute_var_post") or (
                 self.options.get("alwaysrefitvarpost")
             ):
                 # Full optimizations
                 N_slowopts = self.options.get("elbostarts")
-                self.optim_state["recompute_varpost"] = False
+                self.optim_state["recompute_var_post"] = False
             else:
                 # Only incremental change from previous iteration
                 N_fastopts = np.ceil(
@@ -746,13 +771,13 @@ class VBMC:
                 )
                 N_slowopts = 1
 
-                # Run optimization of variational parameters
-                varss, pruned = self._optimize_vp(
-                    N_fastopts,
-                    N_slowopts,
-                    Knew,
-                )
-                # optimState.vp_repo{end+1} = get_vptheta(vp)
+            # Run optimization of variational parameters
+            varss, pruned = self._optimize_vp(
+                N_fastopts,
+                N_slowopts,
+                Knew,
+            )
+            # optimState.vp_repo{end+1} = get_vptheta(vp)
 
             self.optim_state["vpK"] = self.vp.K
             # Save current entropy
@@ -788,9 +813,7 @@ class VBMC:
             )
 
             # Evaluate max LCB of GP prediction on all training inputs
-            # _, _, fmu, fs2 = GP_Lite.gplite_pred(gp, gp.X, gp.y, gp.s2)
-            fmu = [3, 3, 3]
-            fs2 = [4]
+            fmu, fs2 = gp.predict(gp.X, gp.y, gp.s2, add_noise=False)
             self.optim_state["lcbmax"] = np.max(
                 fmu - self.options.get("elcboimproweight") * np.sqrt(fs2)
             )
@@ -839,20 +862,23 @@ class VBMC:
             # timer.totalruntime = NaN;   # Update at the end of iteration
             # timer
 
-            # must be replaced with the correct key and values later.
             iteration_values = {
-                # self.optim_state,
+                "iter": iteration,
+                "optim_state": self.optim_state,
                 "vp": self.vp,
                 "elbo": elbo,
-                # elbo_sd,
-                # varss,
-                # sKL,
-                # sKL_true,
-                # gp,
-                # Ns_gp,
-                # pruned,
-                # timer,
+                "elbo_sd": elbo_sd,
+                "varss": varss,
+                "sKL": sKL,
+                "sKL_true": sKL_true,
+                "gp": gp,
+                "gp_hyp_full": gp.get_hyperparameters(as_array=True),
+                "Ns_gp": Ns_gp,
+                "pruned": pruned,
+                "timer": timer,
+                "func_count": self.function_logger.func_count,
             }
+            
             # Record all useful stats
             self.iteration_history.record_iteration(
                 iteration_values,
@@ -889,7 +915,11 @@ class VBMC:
                     ] = self.optim_state.get("N")
 
             # Check termination conditions
-            # is_finished = self._check_termination_conditions()
+            if iteration > 2:
+                # TODO: remove later, only here to make tests work
+                is_finished = True
+            else:
+                is_finished = self._check_termination_conditions()
 
             #  Save stability
             # vp.stats.stable = stats.stable(optimState.iter)
@@ -954,12 +984,6 @@ class VBMC:
             self.vp, elbo, elbo_sd, changedflag = self.finalboost(
                 self.vp, dict()
             )
-            # remove later
-            is_finished = iteration > 2
-
-    # active sampling
-    def _activesample(self, new_funevals):
-        pass
 
     def _reupdate_gp(self, gp):
         """
@@ -971,15 +995,588 @@ class VBMC:
 
     # GP Training
 
+# GP Training
+
     def _train_gp(self):
         """
         Train Gaussian process model.
 
-        Wait for interface of GPlite before implementing.
         """
-        ns_gp = 10
-        gp = {}
-        return ns_gp, gp
+
+        # Initialize hyp_dict.
+        hyp_dict = {
+            "hyp": None,
+            "warp": None,
+            "logp": None,
+            "full": None,
+            "runcov": None,
+        }
+
+        # Get training dataset.
+        x_train, y_train, s2_train, t_train = self._get_training_data()
+
+        # Heuristic fitness shaping (unused even in MATLAB)
+        # if options.FitnessShaping
+        #     [y_train,s2_train] = outputwarp_vbmc(X_train,y_train,s2_train,optimState,options);
+        #  end
+
+        # Pick the mean function
+        if self.optim_state["gp_meanfun"] == "zero":
+            mean_f = gpr.mean_functions.ZeroMean()
+        elif self.optim_state["gp_meanfun"] == "const":
+            mean_f = gpr.mean_functions.ConstantMean()
+        elif self.optim_state["gp_meanfun"] == "negquad":
+            mean_f = gpr.mean_functions.NegativeQuadratic()
+        else:
+            raise Exception("Unimplemented mean function!")
+
+        # Pick the covariance function.
+        if self.optim_state["gp_covfun"] == 1:
+            covariance_f = gpr.covariance_functions.SquaredExponential()
+        elif self.optim_state["gp_covfun"][0] == 3:
+            covariance_f = gpr.covariance_functions.Matern(
+                self.optim_state["gp_covfun"][1]
+            )
+        else:
+            raise Exception("Unimplemented covariance function")
+
+        # Pick the noise function.
+        const_add = self.optim_state["gp_noisefun"][0] == 1
+        user_add = self.optim_state["gp_noisefun"][1] == 1
+        user_scale = self.optim_state["gp_noisefun"][1] == 2
+        rlod_add = self.optim_state["gp_noisefun"][2] == 1
+        # print(self.optim_state["gp_noisefun"])
+        noise_f = gpr.noise_functions.GaussianNoise(
+            constant_add=const_add,
+            user_provided_add=user_add,
+            scale_user_provided=user_scale,
+            rectified_linear_output_dependent_add=rlod_add,
+        )
+
+        # Setup a GP.
+        gp = gpr.GP(
+            D=self.D,
+            covariance=covariance_f,
+            mean=mean_f,
+            noise=noise_f,
+        )
+        # print(gp.lower_bounds.shape)
+
+        # Get number of samples and set priors and bounds.
+        hyp0, gp_s_N = self._gp_hyp(gp, x_train, y_train)
+        if hyp_dict["hyp"] is None:
+            hyp_dict["hyp"] = hyp0
+
+        # Get GP training options.
+        gp_train = self._get_gp_training_options(hyp_dict, gp_s_N)
+
+        # Build starting points
+        hyp0 = np.array([hyp_dict["hyp"]])
+        if (
+            gp_train["init_N"] > 0
+            and np.size(self.iteration_history["gp"]) > 0
+        ):
+            for i in range(
+                math.ceil(np.size(self.iteration_history["gp"]) / 2),
+                np.size(self.iteration_history["gp"]),
+            ):
+                hyp0 = np.concatenate(
+                    (
+                        hyp0,
+                        self.iteration_history["gp"][i].get_hyperparameters(
+                            as_array=True
+                        ),
+                    )
+                )
+            N0 = hyp0.shape[0]
+            if N0 > gp_train["init_N"] / 2:
+                hyp0 = hyp0[
+                    np.random.choice(
+                        N0, gp_train["init_N"] / 2, replace=False
+                    ),
+                    :,
+                ]
+
+        hyp0 = np.unique(hyp0, axis=0)
+
+        if (
+            "hyp_vp" in hyp_dict
+            and hyp_dict["hyp_vp"] is not None
+            and gp_train["sampler"] == "npv"
+        ):
+            hyp0 = hyp_dict["hyp_vp"]
+
+        gp.fit(x_train, y_train, s2_train, hyp0=hyp0, options=gp_train)
+
+        # hypstruct.full = gpoutput.hyp_prethin; % Pre-thinning GP hyperparameters
+        # hypstruct.logp = gpoutput.logp;
+        # if isfield(gpoutput,'hyp_vp')
+        #     hypstruct.hyp_vp = gpoutput.hyp_vp;
+        # end
+
+        # if isfield(gpoutput,'stepsize')
+        #     optimState.gpmala_stepsize = gpoutput.stepsize;
+        #     gpoutput.stepsize
+        # end
+
+        # gp.t = t_train
+
+        # Update running average of GP hyperparameter covariance (coarse)
+        if hyp_dict["full"] is not None and hyp_dict["full"].shape[1] > 1:
+            hyp_cov = np.cov(hyp_dict["full"].T)
+            if hyp_dict["runcov"] is None or self.options["hyprunweight"] == 0:
+                hyp_dict["runcov"] = hyp_cov
+            else:
+                w = (
+                    self.options["hyprunweight"]
+                    ** self.options["funevalsperiter"]
+                )
+                hyp_dict["runcov"] = (1 - w) * hyp_cov + w * hyp_dict["runcov"]
+        else:
+            hyp_dict["run_cov"] = None
+
+        # Estimate of GP noise around the top high posterior density region
+        self.optim_state["sn2hpd"] = self._estimate_noise(gp)
+
+        return gp, gp_s_N
+
+    def _gp_hyp(self, gp, X, y):
+        """Define bounds, priors and samples for GP hyperparameters."""
+
+        # Get high posterior density dataset.
+        # X = self.function_logger.x[self.function_logger.X_flag, :]
+        # y = self.function_logger.y[self.function_logger.X_flag]
+        hpd_X, hpd_y, _ = self._get_hpd(X, y, self.options["hpdfrac"])
+        D = hpd_X.shape[1]
+        # s2 = None
+        # n_eff = self.optim_state["n_eff"]
+
+        ## Set GP hyperparameter defaults for VBMC.
+
+        cov_bounds_info = gp.covariance.get_bounds_info(hpd_X, hpd_y)
+        mean_bounds_info = gp.mean.get_bounds_info(hpd_X, hpd_y)
+        noise_bounds_info = gp.noise.get_bounds_info(hpd_X, hpd_y)
+        cov_x0 = cov_bounds_info["x0"]
+        mean_x0 = mean_bounds_info["x0"]
+
+        noise_x0 = noise_bounds_info["x0"]
+        min_noise = self.options["tolgpnoise"]
+        noise_mult = None
+        if self.optim_state["uncertainty_handling_level"] == 0:
+            if self.options["noisesize"] != []:
+                noise_size = max(self.options["noisesize"], min_noise)
+            else:
+                noise_size = min_noise
+            noise_std = 0.5
+        elif self.optim_state["uncertainty_handling_level"] == 1:
+            if self.options["noisesize"] != []:
+                noise_mult = max(self.options["noisesize"], min_noise)
+                noise_mult_std = np.log(10) / 2
+            else:
+                noise_mult = 1
+                noise_mult_std = np.log(10)
+            noise_size = min_noise
+            noise_std = np.log(10)
+        elif self.optim_state["uncertainty_handling_level"] == 2:
+            noise_size = min_noise
+            noise_std = 0.5
+        noise_x0[0] = np.log(noise_size)
+        hyp0 = np.concatenate([cov_x0, noise_x0, mean_x0])
+
+        ## Change default bounds and set priors over hyperparameters.
+
+        bounds = gp.get_bounds()
+        if self.options["uppergplengthfactor"] > 0:
+            bounds["covariance_log_lengthscale"] = (
+                -np.inf,
+                np.log(
+                    self.options["uppergplengthfactor"]
+                    * (
+                        self.plausible_upper_bounds
+                        - self.plausible_lower_bounds
+                    )
+                ),
+            )
+        # Increase minimum noise.
+        bounds["noise_log_scale"] = (np.log(min_noise), np.inf)
+
+        if isinstance(gp.mean, gpr.mean_functions.ZeroMean):
+            pass
+        elif isinstance(gp.mean, gpr.mean_functions.ConstantMean):
+            # Lower maximum constant mean
+            bounds["mean_const"] = (-np.inf, np.min(hpd_y))
+        elif isinstance(gp.mean, gpr.mean_functions.NegativeQuadratic):
+            if self.options["gpquadraticmeanbound"]:
+                delta_y = max(
+                    self.options["tolsd"],
+                    min(self.D, np.max(hpd_y) - np.min(hpd_y)),
+                )
+                bounds["mean_const"] = (-np.inf, np.max(hpd_y) + delta_y)
+        else:
+            raise Exception("New mean function which is not handled!")
+
+        # Set priors over hyperparameters (might want to double-check this)
+        priors = gp.get_priors()
+
+        # Hyperprior over observation noise
+        priors["noise_log_scale"] = (
+            "student_t",
+            (np.log(noise_size), noise_std, 3),
+        )
+        if noise_mult is not None:
+            priors["noise_provided_log_multiplier"] = (
+                "student_t",
+                (np.log(noise_mult), noise_mult_std, 3),
+            )
+
+        # Change bounds and hyperprior over output-dependent noise modulation
+        if self.optim_state["gp_noisefun"][2] == 1:
+            y_all = self.function_logger.y(self.function_logger.X_flag)
+
+            bounds["noise_rectified_log_multiplier"] = (
+                [np.min(np.min(y_all), np.max(y_all) - 20 * D), -np.inf],
+                [np.max(y_all) - 10 * D, np.inf],
+            )
+
+            # These two lines were commented out in MATLAB as well.
+            # If uncommented add them to the stuff below these two lines
+            # where we have np.nan
+            # hypprior.mu(Ncov+2) = max(y_hpd) - 10*D;
+            # hypprior.sigma(Ncov+2) = 1;
+
+            # Only set the first of the two parameters here.
+            priors["noise_rectified_log_multiplier"] = (
+                "student_t",
+                ([np.nan, np.log(0.01)], [np.nan, np.log(10)], [np.nan, 3]),
+            )
+
+        # VBMC used to have an empirical Bayes prior on some GP hyperparameters,
+        # such as input length scales, based on statistics of the GP training
+        # inputs. However, this approach could lead to instabilities. From the 2020
+        # paper, we switched to a fixed prior based on the plausible bounds.
+        priors["covariance_log_lengthscale"] = (
+            "student_t",
+            (
+                np.log(
+                    self.options["gplengthpriormean"]
+                    * (
+                        self.plausible_upper_bounds
+                        - self.plausible_lower_bounds
+                    )
+                ),
+                self.options["gplengthpriorstd"],
+                3,
+            ),
+        )
+
+        ## Number of GP hyperparameter samples.
+
+        stop_sampling = self.optim_state["stop_sampling"]
+
+        if stop_sampling == 0:
+            # Number of samples
+            gp_s_N = round(
+                self.options["nsgpmax"] / np.sqrt(self.optim_state["N"])
+            )
+
+            # Maximum sample cutoff
+            if self.optim_state["warmup"]:
+                gp_s_N = np.minimum(gp_s_N, self.options["nsgpmaxwarmup"])
+            else:
+                gp_s_N = np.minimum(gp_s_N, self.options["nsgpmaxmain"])
+
+            # Stop sampling after reaching max number of training points
+            if self.optim_state["N"] >= self.options["stablegpsampling"]:
+                stop_sampling = self.optim_state["N"]
+
+            # Stop sampling after reaching threshold number of variational components
+            if self.optim_state["vpK"] >= self.options["stablegpvpk"]:
+                stop_sampling = self.optim_state["N"]
+
+        if stop_sampling > 0:
+            gp_s_N = self.options["stablegpsamples"]
+
+        gp.set_bounds(bounds)
+        gp.set_priors(priors)
+
+        return hyp0, gp_s_N
+
+    def _get_hpd(self, X, y, hpd_frac=0.8):
+        """Get high-posterior density dataset."""
+
+        N = X.shape[0]
+
+        # Subsample high posterior density dataset.
+        order = np.argsort(y, axis=None)
+        hpd_N = round(hpd_frac * N)
+        hpd_X = X[order[0:hpd_N]]
+        hpd_y = y[order[0:hpd_N]]
+        hpd_range = np.max(hpd_X, axis=0) - np.min(hpd_X, axis=0)
+
+        return hpd_X, hpd_y, hpd_range
+
+    def _get_training_data(self):
+        """Get training data for building GP surrogate."""
+        
+        x_train = self.function_logger.x[self.function_logger.X_flag, :]
+        y_train = self.function_logger.y[self.function_logger.X_flag]
+        if self.function_logger.noise_flag:
+            s2_train = self.function_logger.S[self.function_logger.X_flag] ** 2
+        else:
+            s2_train = None
+
+        t_train = self.function_logger.fun_evaltime[
+            self.function_logger.X_flag
+        ]
+
+        return x_train, y_train, s2_train, t_train
+
+    def _get_gp_training_options(self, hyp_dict, gp_s_N):
+        """Get options for training GP hyperparameters."""
+
+        it = self.optim_state["iter"]
+        if it > 0:
+            r_index = self.iteration_history["rindex"][it - 1]
+        else:
+            r_index = np.inf
+
+        gp_train = {}
+        gp_train["thin"] = self.options["gpsamplethin"]  # MCMC thinning
+        gp_train["init_method"] = self.options["gptraininitmethod"]
+        gp_train["tol_opt"] = self.options["gptolopt"]
+        gp_train["tol_opt_mcmc"] = self.options["gptoloptmcmc"]
+
+        # Get hyperparameter posterior covariance from previous iterations
+        hyp_cov = self._get_hyp_cov(hyp_dict)
+
+        # Setup MCMC sampler
+        if self.options["gphypsampler"] == "slicesample":
+            gp_train["sampler"] = "slicesample"
+            if self.options["gpsamplewidths"] > 0 and hyp_cov is not None:
+                width_mult = np.maximum(
+                    self.options["gpsamplewidths"], r_index
+                )
+                hyp_widths = np.sqrt(np.diag(hyp_cov).T)
+                gp_train["widths"] = np.maximum(hyp_widths, 1e-3) * width_mult
+        elif self.options["gphypsampler"] == "npv":
+            gp_train["sampler"] = "npv"
+        elif self.options["gphypsampler"] == "mala":
+            gp_train["sampler"] = "mala"
+            if hyp_cov is not None:
+                gp_train["widths"] = np.sqrt(np.diag(hyp_cov).T)
+            if "gpmala_stepsize" in self.optim_state:
+                gp_train["step_size"] = self.optim_state["gpmala_stepsize"]
+        elif self.options["gphypsampler"] == "slicelite":
+            gp_train["sampler"] = "slicelite"
+            if self.options["gpsamplewidths"] > 0 and hyp_cov is not None:
+                width_mult = np.maximum(
+                    self.options["gpsamplewidths"], r_index
+                )
+                hyp_widths = np.sqrt(np.diag(hyp_cov).T)
+                gp_train["widths"] = np.maximum(hyp_widths, 1e-3) * width_mult
+        elif self.options["gphypsampler"] == "splitsample":
+            gp_train["sampler"] = "splitsample"
+            if self.options["gpsamplewidths"] > 0 and hyp_cov is not None:
+                width_mult = np.maximum(
+                    self.options["gpsamplewidths"], r_index
+                )
+                hyp_widths = np.sqrt(np.diag(hyp_cov).T)
+                gp_train["widths"] = np.maximum(hyp_widths, 1e-3) * width_mult
+        elif self.options["gphypsampler"] == "covsample":
+            if self.options["gpsamplewidths"] > 0 and hyp_cov is not None:
+                width_mult = np.maximum(
+                    self.options["gpsamplewidths"], r_index
+                )
+                if np.all(np.isfinite(width_mult)) and np.all(
+                    r_index, self.options["covsamplethresh"]
+                ):
+                    hyp_n = hyp_cov.shape[0]
+                    gp_train["widths"] = (
+                        hyp_cov + 1e-6 * np.eye(hyp_n)
+                    ) * width_mult ** 2
+                    gp_train["sampler"] = "covsample"
+                    gp_train["thin"] *= math.ceil(np.sqrt(hyp_n))
+                else:
+                    hyp_widths = np.sqrt(np.diag(hyp_cov).T)
+                    gp_train["widths"] = (
+                        np.maximum(hyp_widths, 1e-3) * width_mult
+                    )
+                    gp_train["sampler"] = "slicesample"
+            else:
+                gp_train["sampler"] = "covsample"
+        elif self.options["gphypsampler"] == "laplace":
+            if self.optim_state["n_eff"] < 30:
+                gp_train["sampler"] = "slicesample"
+                if self.options["gpsamplewidths"] > 0 and hyp_cov is not None:
+                    width_mult = np.max(
+                        self.options["gpsamplewidths"], r_index
+                    )
+                    hyp_widths = np.sqrt(np.diag(hyp_cov).T)
+                    gp_train["widths"] = (
+                        np.maximum(hyp_widths, 1e-3) * width_mult
+                    )
+            else:
+                gp_train["sampler"] = "laplace"
+        else:
+            raise Exception("Unknown MCMC sampler for GP hyperparameters")
+
+        # N-dependent initial training points.
+        a = -(self.options["gptrainninit"] - self.options["gptrainninitfinal"])
+        b = -3 * a
+        c = 3 * a
+        d = self.options["gptrainninit"]
+        x = (self.optim_state["n_eff"] - self.options["funevalstart"]) / (
+            min(self.options["maxfunevals"], 1e3)
+            - self.options["funevalstart"]
+        )
+        f = lambda x_: a * x_ ** 3 + b * x ** 2 + c * x + d
+        init_N = max(round(f(x)), 9)
+
+        # Set other hyperparameter fitting parameters
+        if self.optim_state["recompute_var_post"]:
+            gp_train["burn"] = gp_train["thin"] * gp_s_N
+            gp_train["init_N"] = init_N
+            if gp_s_N > 0:
+                gp_train["opts_N"] = 1
+            else:
+                gp_train["opts_N"] = 2
+        else:
+            gp_train["burn"] = gp_train["thin"] * 3
+            if (
+                it > 1
+                and self.iteration_history["rindex"][it - 1]
+                < self.options["gpretrainthreshold"]
+            ):
+                gp_train["init_N"] = 0
+                if self.options["gphypsampler"] == "slicelite":
+                    gp_train["burn"] = (
+                        max(
+                            1,
+                            math.ceil(
+                                gp_train["thin"]
+                                * np.log(
+                                    self.iteration_history["rindex"][it - 1]
+                                    / np.log(
+                                        self.options["gpretrainthreshold"]
+                                    )
+                                )
+                            ),
+                        )
+                        * gp_s_N
+                    )
+                    gp_train["thin"] = 1
+                if gp_s_N > 0:
+                    gp_train["opts_N"] = 0
+                else:
+                    gp_train["opts_N"] = 1
+            else:
+                gp_train["init_N"] = init_N
+                if gp_s_N > 0:
+                    gp_train["opts_N"] = 1
+                else:
+                    gp_train["opts_N"] = 2
+
+        return gp_train
+
+    def _get_hyp_cov(self, hyp_dict):
+        """Get hyperparameter posterior covariance."""
+        if self.optim_state["iter"] > 0:
+            if self.options["weightedhypcov"]:
+                w_list = []
+                hyp_list = []
+                w = 1
+                for i in range(0, self.optim_state["iter"]):
+                    if i > 0:
+                        diff_mult = np.log(
+                            self.iteration_history["sKL"][
+                                self.optim_state["iter"] - 1 - i
+                            ]
+                            / self.options["tolskl"]
+                            * self.options["funevalsperiter"]
+                        )
+                        w *= self.options["hyprunweight"] ** (
+                            self.options["funevalsperiter"] * diff_mult
+                        )
+                    # Check if weight is getting too small.
+                    if w < self.options["tolcovweight"]:
+                        break
+
+                    hyp = self.iteration_history["gp_hyp_full"][
+                        self.optim_state["iter"] - 1 - i
+                    ]
+                    hyp_n = hyp.shape[0]
+                    if (
+                        len(hyp_list) == 0
+                        or np.shape(hyp_list)[1] == hyp.shape[0]
+                    ):
+                        hyp_list.append(hyp)
+                        w_list.append(w * np.ones((hyp_n, 1)) / hyp_n)
+
+                w_list = np.concatenate(w_list)
+                hyp_list = np.concatenate(hyp_list)
+
+                # Normalize weights
+                w_list /= np.sum(w_list, axis=0)
+                # Weighted mean
+                mu_star = np.sum(hyp_list * w_list, axis=0)
+
+                # Weighted covariance matrix
+                hyp_n = np.shape(hyp_list)[1]
+                hyp_cov = np.zeros((hyp_n, hyp_n))
+                for j in range(0, np.shape(hyp_list)[0]):
+                    hyp_cov += np.dot(
+                        w_list[j],
+                        np.dot(
+                            (hyp_list[j] - mu_star).T, hyp_list[j] - mu_star
+                        ),
+                    )
+                hyp_cov /= 1 - np.sum(w_list ** 2, axis=0)
+
+                return hyp_cov
+
+            return hyp_dict["run_cov"]
+
+        return None
+
+    def _estimate_noise(self, gp):
+        """Estimate GP observation noise at high posterior density.
+
+        Parameters
+        ==========
+        gp : GP
+            The Gaussian process we are interested in.
+
+        Returns
+        =======
+        est : float
+            The estimate.
+        """
+
+        hpd_top = 0.2
+        N, _ = gp.X.shape
+
+        # Subsample high posterior density dataset
+        order = np.argsort(gp.y, axis=None)
+        hpd_N = math.ceil(hpd_top * N)
+        hpd_X = gp.X[order[0:hpd_N]]
+        hpd_y = gp.y[order[0:hpd_N]]
+
+        if gp.s2 is not None:
+            hpd_s2 = gp.s2[order[0:hpd_N]]
+        else:
+            hpd_s2 = None
+
+        cov_N = gp.covariance.hyperparameter_count(gp.D)
+        noise_N = gp.noise.hyperparameter_count()
+        s_N = np.size(gp.posteriors)
+
+        sn2 = np.zeros((hpd_X.shape[0], s_N))
+
+        for s in range(0, s_N):
+            hyp = gp.posteriors[s].hyp[cov_N : cov_N + noise_N]
+            sn2[:, s : s + 1] = gp.noise.compute(hyp, hpd_X, hpd_y, hpd_s2)
+
+        return np.median(np.mean(sn2, axis=1))
 
     # Variational optimization / training of variational posterior:
 
@@ -1058,9 +1655,9 @@ class VBMC:
         # Alternative criterion for stopping - no improvement over max fcn value
         max_thresh = np.amax(lcbmax_vec) - self.options.get("tolimprovement")
         idx_1st = np.ravel(np.argwhere(lcbmax_vec > max_thresh))[0]
-        yy = self.iteration_history.get("funccount")[:iteration]
+        yy = self.iteration_history.get("func_count")[:iteration]
         pos = yy[idx_1st]
-        currentpos = self.optim_state.get("funccount")
+        currentpos = self.function_logger.func_count
         no_longterm_improvement_flag = (currentpos - pos) > self.options.get(
             "warmupnoimprothreshold"
         )
@@ -1130,9 +1727,10 @@ class VBMC:
             idx_keep[
                 order[: min(n_keep_min, self.function_logger.Xn) + 1]
             ] = True
-
+        # Note that using idx_keep[:, 0] is necessary since X_flag
+        # is a 1D array and idx_keep a 2D array. 
         self.function_logger.X_flag = np.logical_and(
-            idx_keep, self.function_logger.X_flag
+            idx_keep[:, 0], self.function_logger.X_flag
         )
 
         # Skip adaptive sampling for next iteration
@@ -1153,7 +1751,7 @@ class VBMC:
         isFinished_flag = False
 
         # Maximum number of new function evaluations
-        if self.optim_state.get("func_count") >= self.options.get(
+        if self.function_logger.func_count >= self.options.get(
             "maxfunevals"
         ):
             isFinished_flag = True
@@ -1223,7 +1821,7 @@ class VBMC:
         self.iteration_history.record("stable", stableflag, iteration)
 
         # Prevent early termination
-        if self.optim_state.get("func_count") < self.options.get(
+        if self.function_logger.func_count < self.options.get(
             "minfunevals"
         ) or iteration < self.options.get("miniter"):
             isFinished_flag = False
@@ -1274,7 +1872,7 @@ class VBMC:
             )
             - 1
         )
-        xx = self.iteration_history.get("funccount")[idx0:iteration_idx]
+        xx = self.iteration_history.get("func_count")[idx0:iteration_idx]
         yy = (
             self.iteration_history.get("elbo")[idx0:iteration_idx]
             - self.options.get("elcboimproweight")
