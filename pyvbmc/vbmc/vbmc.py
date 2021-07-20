@@ -1538,7 +1538,8 @@ class VBMC:
 
         return None
 
-    def _estimate_noise(self, gp):
+    @staticmethod
+    def _estimate_noise(gp):
         """Estimate GP observation noise at high posterior density.
 
         Parameters
@@ -1556,7 +1557,8 @@ class VBMC:
         N, _ = gp.X.shape
 
         # Subsample high posterior density dataset
-        order = np.argsort(gp.y, axis=None)
+        # Sort by descending order, not ascending.
+        order = np.argsort(gp.y, axis=None)[::-1]
         hpd_N = math.ceil(hpd_top * N)
         hpd_X = gp.X[order[0:hpd_N]]
         hpd_y = gp.y[order[0:hpd_N]]
