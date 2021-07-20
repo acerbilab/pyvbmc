@@ -549,7 +549,7 @@ class VBMC:
         # (0: none; 1: unknown noise level; 2: user-provided noise)
         if self.options.get("specifytargetnoise"):
             optim_state["uncertainty_handling_level"] = 2
-        elif len(self.options.get("uncertaintyhandling")) == 0:
+        elif len(self.options.get("uncertaintyhandling")) > 0:
             optim_state["uncertainty_handling_level"] = 1
         else:
             optim_state["uncertainty_handling_level"] = 0

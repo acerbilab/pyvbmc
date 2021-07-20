@@ -56,3 +56,85 @@ def test_get_hpd():
     assert np.all(hpd_X == hpd_y)
     assert np.all(hpd_X.flatten() == np.array(list(reversed(range(50, 100)))))
     assert hpd_range == np.array([49])
+    
+def test_get_training_data_no_noise():
+    D = 3
+    f = lambda x: np.sum(x + 2, axis=1)
+    x0 = np.ones((2, D)) * 3
+    plb = np.ones((1, D)) * -1
+    pub = np.ones((1, D)) * 1
+    
+    vbmc = VBMC(f, x0, None, None, plb, pub)
+    
+    # Make sure we get nothing out before data has not been added.
+    X_train, y_train, s2_train, t_train = vbmc._get_training_data()
+    
+    assert X_train.shape == (0, 3)
+    assert y_train.shape == (0, 1)
+    assert s2_train is None
+    assert t_train.shape == (0, 1)
+    
+    # Create dummy data.
+    sample_count = 10
+    window = vbmc.optim_state["pub"] - vbmc.optim_state["plb"]
+    rnd_tmp = np.random.rand(sample_count, window.shape[1])
+    Xs = window * rnd_tmp + vbmc.optim_state["plb"]
+    ys = f(Xs)
+    
+    # Add dummy training data explicitly since function_logger
+    # has a parameter transformer which makes everything hard.
+    for sample_idx in range(sample_count):
+        vbmc.function_logger.X_flag[sample_idx] = True
+        vbmc.function_logger.x[sample_idx] = Xs[sample_idx]
+        vbmc.function_logger.y[sample_idx] = ys[sample_idx]
+        vbmc.function_logger.fun_evaltime[sample_idx] = 1e-5
+    
+    # Then make sure we get that data back.    
+    X_train, y_train, s2_train, t_train = vbmc._get_training_data()
+    
+    assert np.all(X_train == Xs)
+    assert np.all(y_train.flatten() == ys)
+    assert s2_train is None
+    assert np.all(t_train == 1e-5)
+    
+def test_get_training_data_noise():
+    D = 3
+    f = lambda x: np.sum(x + 2, axis=1)
+    x0 = np.ones((2, D)) * 3
+    plb = np.ones((1, D)) * -1
+    pub = np.ones((1, D)) * 1
+    user_options = {"specifytargetnoise": True}
+    
+    vbmc = VBMC(f, x0, None, None, plb, pub, user_options)
+    
+    # Make sure we get nothing out before data has not been added.
+    X_train, y_train, s2_train, t_train = vbmc._get_training_data()
+    
+    assert X_train.shape == (0, 3)
+    assert y_train.shape == (0, 1)
+    assert s2_train.shape == (0, 1)
+    assert t_train.shape == (0, 1)
+    
+    # Create dummy data.
+    sample_count = 10
+    window = vbmc.optim_state["pub"] - vbmc.optim_state["plb"]
+    rnd_tmp = np.random.rand(sample_count, window.shape[1])
+    Xs = window * rnd_tmp + vbmc.optim_state["plb"]
+    ys = f(Xs)
+    
+    # Add dummy training data explicitly since function_logger
+    # has a parameter transformer which makes everything hard.
+    for sample_idx in range(sample_count):
+        vbmc.function_logger.X_flag[sample_idx] = True
+        vbmc.function_logger.x[sample_idx] = Xs[sample_idx]
+        vbmc.function_logger.y[sample_idx] = ys[sample_idx]
+        vbmc.function_logger.S[sample_idx] = 1
+        vbmc.function_logger.fun_evaltime[sample_idx] = 1e-5
+    
+    # Then make sure we get that data back.    
+    X_train, y_train, s2_train, t_train = vbmc._get_training_data()
+    
+    assert np.all(X_train == Xs)
+    assert np.all(y_train.flatten() == ys)
+    assert np.all(s2_train == 1)
+    assert np.all(t_train == 1e-5)
