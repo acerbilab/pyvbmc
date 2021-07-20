@@ -4,6 +4,8 @@ from scipy.stats import norm
 
 import gpyreg as gpr
 
+from pyvbmc.vbmc.gaussian_process_train import _get_hpd, _get_training_data, _estimate_noise
+
 from pyvbmc.vbmc import VBMC
 from pyvbmc.variational_posterior import VariationalPosterior
 
@@ -32,7 +34,7 @@ def test_estimate_noise():
     hyp = np.array([[-2.5, 1.7, -7.5, 0.3, 2.6, 1.2]])
     gp.update(X_new=X, y_new=y, s2_new=s2, hyp=hyp)
 
-    noise_estimate = VBMC._estimate_noise(gp)
+    noise_estimate = _estimate_noise(gp)
     
     np.random.set_state(state)
 
@@ -45,13 +47,13 @@ def test_get_hpd():
     X = np.reshape(order.copy(), (-1, 1))
     y = X.copy()
     
-    hpd_X, hpd_y, hpd_range = VBMC._get_hpd(X, y)
+    hpd_X, hpd_y, hpd_range = _get_hpd(X, y)
     
     assert np.all(hpd_X == hpd_y)
     assert np.all(hpd_X.flatten() == np.array(list(reversed(range(20, 100)))))
     assert hpd_range == np.array([79])
     
-    hpd_X, hpd_y, hpd_range = VBMC._get_hpd(X, y, hpd_frac=0.5)
+    hpd_X, hpd_y, hpd_range = _get_hpd(X, y, hpd_frac=0.5)
     
     assert np.all(hpd_X == hpd_y)
     assert np.all(hpd_X.flatten() == np.array(list(reversed(range(50, 100)))))
@@ -67,7 +69,7 @@ def test_get_training_data_no_noise():
     vbmc = VBMC(f, x0, None, None, plb, pub)
     
     # Make sure we get nothing out before data has not been added.
-    X_train, y_train, s2_train, t_train = vbmc._get_training_data()
+    X_train, y_train, s2_train, t_train = _get_training_data(vbmc.function_logger)
     
     assert X_train.shape == (0, 3)
     assert y_train.shape == (0, 1)
@@ -90,7 +92,7 @@ def test_get_training_data_no_noise():
         vbmc.function_logger.fun_evaltime[sample_idx] = 1e-5
     
     # Then make sure we get that data back.    
-    X_train, y_train, s2_train, t_train = vbmc._get_training_data()
+    X_train, y_train, s2_train, t_train = _get_training_data(vbmc.function_logger)
     
     assert np.all(X_train == Xs)
     assert np.all(y_train.flatten() == ys)
@@ -108,7 +110,7 @@ def test_get_training_data_noise():
     vbmc = VBMC(f, x0, None, None, plb, pub, user_options)
     
     # Make sure we get nothing out before data has not been added.
-    X_train, y_train, s2_train, t_train = vbmc._get_training_data()
+    X_train, y_train, s2_train, t_train = _get_training_data(vbmc.function_logger)
     
     assert X_train.shape == (0, 3)
     assert y_train.shape == (0, 1)
@@ -132,7 +134,7 @@ def test_get_training_data_noise():
         vbmc.function_logger.fun_evaltime[sample_idx] = 1e-5
     
     # Then make sure we get that data back.    
-    X_train, y_train, s2_train, t_train = vbmc._get_training_data()
+    X_train, y_train, s2_train, t_train = _get_training_data(vbmc.function_logger)
     
     assert np.all(X_train == Xs)
     assert np.all(y_train.flatten() == ys)
