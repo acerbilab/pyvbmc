@@ -1301,13 +1301,15 @@ class VBMC:
 
         return hyp0, gp_s_N
 
-    def _get_hpd(self, X, y, hpd_frac=0.8):
+    @staticmethod
+    def _get_hpd(X, y, hpd_frac=0.8):
         """Get high-posterior density dataset."""
 
         N = X.shape[0]
 
         # Subsample high posterior density dataset.
-        order = np.argsort(y, axis=None)
+        # Sort by descending order, not ascending.
+        order = np.argsort(y, axis=None)[::-1]
         hpd_N = round(hpd_frac * N)
         hpd_X = X[order[0:hpd_N]]
         hpd_y = y[order[0:hpd_N]]

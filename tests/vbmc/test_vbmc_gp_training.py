@@ -39,3 +39,20 @@ def test_estimate_noise():
     # Value taken from MATLAB which only applies for this exact setup.
     # Change any part of the test and it will not apply.
     assert np.isclose(noise_estimate, 0.106582207806606)
+    
+def test_get_hpd():
+    order = np.random.permutation(range(0, 100))
+    X = np.reshape(order.copy(), (-1, 1))
+    y = X.copy()
+    
+    hpd_X, hpd_y, hpd_range = VBMC._get_hpd(X, y)
+    
+    assert np.all(hpd_X == hpd_y)
+    assert np.all(hpd_X.flatten() == np.array(list(reversed(range(20, 100)))))
+    assert hpd_range == np.array([79])
+    
+    hpd_X, hpd_y, hpd_range = VBMC._get_hpd(X, y, hpd_frac=0.5)
+    
+    assert np.all(hpd_X == hpd_y)
+    assert np.all(hpd_X.flatten() == np.array(list(reversed(range(50, 100)))))
+    assert hpd_range == np.array([49])
