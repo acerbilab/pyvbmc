@@ -15,7 +15,7 @@ def train_gp(optim_state, function_logger, iteration_history, options, plb, pub)
         "warp": None,
         "logp": None,
         "full": None,
-        "runcov": None,
+        "run_cov": None,
     }
 
     # Get training dataset.
@@ -380,7 +380,7 @@ def _get_gp_training_options(optim_state, iteration_history, options, hyp_dict, 
                 options["gpsamplewidths"], r_index
             )
             if np.all(np.isfinite(width_mult)) and np.all(
-                r_index, options["covsamplethresh"]
+                r_index < options["covsamplethresh"]
             ):
                 hyp_n = hyp_cov.shape[0]
                 gp_train["widths"] = (
@@ -400,7 +400,7 @@ def _get_gp_training_options(optim_state, iteration_history, options, hyp_dict, 
         if optim_state["n_eff"] < 30:
             gp_train["sampler"] = "slicesample"
             if options["gpsamplewidths"] > 0 and hyp_cov is not None:
-                width_mult = np.max(
+                width_mult = np.maximum(
                     options["gpsamplewidths"], r_index
                 )
                 hyp_widths = np.sqrt(np.diag(hyp_cov).T)
@@ -410,7 +410,7 @@ def _get_gp_training_options(optim_state, iteration_history, options, hyp_dict, 
         else:
             gp_train["sampler"] = "laplace"
     else:
-        raise Exception("Unknown MCMC sampler for GP hyperparameters")
+        raise ValueError("Unknown MCMC sampler for GP hyperparameters")
 
     # N-dependent initial training points.
     a = -(options["gptrainninit"] - options["gptrainninitfinal"])

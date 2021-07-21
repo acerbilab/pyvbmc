@@ -4,7 +4,7 @@ from scipy.stats import norm
 
 import gpyreg as gpr
 
-from pyvbmc.vbmc.gaussian_process_train import _get_hpd, _meanfun_name_to_mean_function, _cov_identifier_to_covariance_function, _get_training_data, _estimate_noise
+from pyvbmc.vbmc.gaussian_process_train import _get_hpd, _meanfun_name_to_mean_function, _cov_identifier_to_covariance_function, _get_training_data, _estimate_noise, _get_hyp_cov, _get_gp_training_options
 
 from pyvbmc.vbmc import VBMC
 from pyvbmc.variational_posterior import VariationalPosterior
@@ -185,3 +185,137 @@ def test_cov_identifier_to_covariance_function():
         c6 = _cov_identifier_to_covariance_function(0) 
     with pytest.raises(ValueError):
         c7 = _cov_identifier_to_covariance_function(2)
+        
+def test_get_hyp_cov():
+    D = 3
+    lb = np.ones((1, D)) * 1
+    ub = np.ones((1, D)) * 5
+    x0 = np.ones((2, D)) * 3
+    plb = np.ones((1, D)) * 2
+    pub = np.ones((1, D)) * 4
+    f = lambda x: np.sum(x + 2)
+    vbmc = VBMC(f, x0, lb, ub, plb, pub) 
+    hyp_dict = {"run_cov": 42}
+    
+    res1 = _get_hyp_cov(vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict)
+    
+    assert res1 is None
+    
+    vbmc.optim_state["iter"] = 1
+    vbmc.options["weightedhypcov"] = False
+    res2 = _get_hyp_cov(vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict)
+    
+    assert res2 == 42
+    
+    # TODO: figure out some sort of a set-up for testing this.
+    #       currently I don't have reference values
+    #       maybe something like checking whether the returned thing is
+    #       a covariance matrix?
+    # vbmc.options["weightedhypcov"] = True
+    # res3 = _get_hyp_cov(vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict)
+    
+def test_get_gp_training_options_samplers():
+    D = 3
+    lb = np.ones((1, D)) * 1
+    ub = np.ones((1, D)) * 5
+    x0 = np.ones((2, D)) * 3
+    plb = np.ones((1, D)) * 2
+    pub = np.ones((1, D)) * 4
+    f = lambda x: np.sum(x + 2)
+    vbmc = VBMC(f, x0, lb, ub, plb, pub) 
+    
+    hyp_dict = {"run_cov" : np.eye(3)}
+    hyp_dict_none = {"run_cov" : None}
+    vbmc.optim_state["n_eff"] = 10
+    vbmc.optim_state["iter"] = 1
+    vbmc.options["weightedhypcov"] = False
+    vbmc.iteration_history.record(
+        "rindex", 5, 0
+    )
+    
+    res1 = _get_gp_training_options(vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 8)
+    assert res1["sampler"] == "slicesample"
+    
+    vbmc.options["gphypsampler"] = "npv"
+    res2 = _get_gp_training_options(vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 8)
+    assert res2["sampler"] == "npv"
+    
+    vbmc.options["gphypsampler"] = "mala"
+    vbmc.optim_state["gpmala_stepsize"] = 10
+    res3 = _get_gp_training_options(vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 8)
+    assert res3["sampler"] == "mala"
+    assert res3["step_size"] == 10
+    
+    vbmc.options["gphypsampler"] = "slicelite"
+    res4 = _get_gp_training_options(vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 8)
+    assert res4["sampler"] == "slicelite"
+    
+    vbmc.options["gphypsampler"] = "splitsample"
+    res5 = _get_gp_training_options(vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 8)
+    assert res5["sampler"] == "splitsample"
+    
+    vbmc.options["gphypsampler"] = "covsample"
+    res6 = _get_gp_training_options(vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 8)
+    assert res6["sampler"] == "covsample"
+    
+    # Test too large rindex for covsample
+    vbmc.iteration_history.record(
+        "rindex", 50, 0
+    )
+    res7 = _get_gp_training_options(vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 8)
+    assert res7["sampler"] == "slicesample"
+    
+    res8 = _get_gp_training_options(vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict_none, 8)
+    assert res8["sampler"] == "covsample"
+    
+    # Test too small n_eff laplace sampler
+    vbmc.options["gphypsampler"] = "laplace"
+    res9 = _get_gp_training_options(vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 8)
+    assert res9["sampler"] == "slicesample"
+    
+    # Test enough n_eff laplace sampler
+    vbmc.optim_state["n_eff"] = 50
+    vbmc.options["gphypsampler"] = "laplace"
+    res10 = _get_gp_training_options(vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 8)
+    assert res10["sampler"] == "laplace"
+    
+    # Test sampler that does not exist.
+    vbmc.options["gphypsampler"] = "does_not_exist"
+    with pytest.raises(ValueError):
+        res11 = _get_gp_training_options(vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 8)
+        
+            
+def test_get_gp_training_options_opts_N():
+    D = 3
+    lb = np.ones((1, D)) * 1
+    ub = np.ones((1, D)) * 5
+    x0 = np.ones((2, D)) * 3
+    plb = np.ones((1, D)) * 2
+    pub = np.ones((1, D)) * 4
+    f = lambda x: np.sum(x + 2)
+    vbmc = VBMC(f, x0, lb, ub, plb, pub) 
+    
+    vbmc.optim_state["n_eff"] = 10
+    vbmc.optim_state["iter"] = 2
+    vbmc.iteration_history.record(
+        "rindex", 5, 1
+    )
+    vbmc.options["weightedhypcov"] = False
+    hyp_dict = {"run_cov" : np.eye(3)}
+    hyp_dict_none = {"run_cov" : None}
+    vbmc.options["gpretrainthreshold"] = 10
+    
+    res1 = _get_gp_training_options(vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 0)
+    assert res1["opts_N"] == 2
+    
+    vbmc.optim_state["recompute_var_post"] = False
+    vbmc.options["gphypsampler"] = "slicelite"
+    res2 = _get_gp_training_options(vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 0)
+    assert res2["opts_N"] == 1
+    
+    res3 = _get_gp_training_options(vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 8)
+    assert res3["opts_N"] == 0
+    
+    vbmc.options["gpretrainthreshold"] = 1
+    res4 = _get_gp_training_options(vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 0)
+    assert res4["opts_N"] == 2
