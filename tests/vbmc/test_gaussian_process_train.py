@@ -4,7 +4,7 @@ from scipy.stats import norm
 
 import gpyreg as gpr
 
-from pyvbmc.vbmc.gaussian_process_train import _get_hpd, _get_training_data, _estimate_noise
+from pyvbmc.vbmc.gaussian_process_train import _get_hpd, _meanfun_name_to_mean_function, _cov_identifier_to_covariance_function, _get_training_data, _estimate_noise
 
 from pyvbmc.vbmc import VBMC
 from pyvbmc.variational_posterior import VariationalPosterior
@@ -140,3 +140,48 @@ def test_get_training_data_noise():
     assert np.all(y_train.flatten() == ys)
     assert np.all(s2_train == 1)
     assert np.all(t_train == 1e-5)
+    
+def test_meanfun_name_to_mean_function():
+    m1 = _meanfun_name_to_mean_function("zero")
+    m2 = _meanfun_name_to_mean_function("const")
+    m3 = _meanfun_name_to_mean_function("negquad")
+    
+    assert isinstance(m1, gpr.mean_functions.ZeroMean)
+    assert isinstance(m2, gpr.mean_functions.ConstantMean)
+    assert isinstance(m3, gpr.mean_functions.NegativeQuadratic)
+    
+    with pytest.raises(ValueError):
+        m4 = _meanfun_name_to_mean_function("linear")
+    with pytest.raises(ValueError):
+        m5 = _meanfun_name_to_mean_function("quad")
+    with pytest.raises(ValueError):
+        m6 = _meanfun_name_to_mean_function("posquad")
+    with pytest.raises(ValueError):
+        m7 = _meanfun_name_to_mean_function("se")
+    with pytest.raises(ValueError):
+        m8 = _meanfun_name_to_mean_function("negse")
+    with pytest.raises(ValueError):
+        m9 = _meanfun_name_to_mean_function("linear")
+    
+def test_cov_identifier_to_covariance_function():
+    c1 = _cov_identifier_to_covariance_function(1)
+    c2 = _cov_identifier_to_covariance_function(3)
+    c3 = _cov_identifier_to_covariance_function([3, 1])
+    c4 = _cov_identifier_to_covariance_function([3, 3])
+    c5 = _cov_identifier_to_covariance_function([3, 5])
+    
+    assert isinstance(c1, gpr.covariance_functions.SquaredExponential)
+    assert isinstance(c2, gpr.covariance_functions.Matern)
+    assert isinstance(c3, gpr.covariance_functions.Matern)
+    assert isinstance(c4, gpr.covariance_functions.Matern)
+    assert isinstance(c5, gpr.covariance_functions.Matern)
+    
+    assert c2.degree == 5
+    assert c3.degree == 1
+    assert c4.degree == 3
+    assert c5.degree == 5
+   
+    with pytest.raises(ValueError):
+        c6 = _cov_identifier_to_covariance_function(0) 
+    with pytest.raises(ValueError):
+        c7 = _cov_identifier_to_covariance_function(2)

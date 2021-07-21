@@ -28,24 +28,10 @@ def train_gp(optim_state, function_logger, iteration_history, options, plb, pub)
     #  end
 
     # Pick the mean function
-    if optim_state["gp_meanfun"] == "zero":
-        mean_f = gpr.mean_functions.ZeroMean()
-    elif optim_state["gp_meanfun"] == "const":
-        mean_f = gpr.mean_functions.ConstantMean()
-    elif optim_state["gp_meanfun"] == "negquad":
-        mean_f = gpr.mean_functions.NegativeQuadratic()
-    else:
-        raise Exception("Unimplemented mean function!")
+    mean_f = _meanfun_name_to_mean_function(optim_state["gp_meanfun"])
 
     # Pick the covariance function.
-    if optim_state["gp_covfun"] == 1:
-        covariance_f = gpr.covariance_functions.SquaredExponential()
-    elif optim_state["gp_covfun"][0] == 3:
-        covariance_f = gpr.covariance_functions.Matern(
-            optim_state["gp_covfun"][1]
-        )
-    else:
-        raise Exception("Unimplemented covariance function")
+    covariance_f = _cov_identifier_to_covariance_function(optim_state["gp_covfun"])
 
     # Pick the noise function.
     const_add = optim_state["gp_noisefun"][0] == 1
@@ -150,8 +136,32 @@ def train_gp(optim_state, function_logger, iteration_history, options, plb, pub)
     # Estimate of GP noise around the top high posterior density region
     optim_state["sn2hpd"] = _estimate_noise(gp)
 
-    return gp, gp_s_N        
-
+    return gp, gp_s_N      
+    
+    
+def _meanfun_name_to_mean_function(name):
+    if name == "zero":
+        mean_f = gpr.mean_functions.ZeroMean()
+    elif name == "const":
+        mean_f = gpr.mean_functions.ConstantMean()
+    elif name == "negquad":
+        mean_f = gpr.mean_functions.NegativeQuadratic()
+    else:
+        raise ValueError("Unknown mean function!")
+        
+    return mean_f
+    
+def _cov_identifier_to_covariance_function(identifier):
+    if identifier == 1:
+        cov_f = gpr.covariance_functions.SquaredExponential()
+    elif identifier == 3:
+        cov_f = gpr.covariance_functions.Matern(5)
+    elif isinstance(identifier, list) and identifier[0] == 3:
+        cov_f = gpr.covariance_functions.Matern(identifier[1])
+    else:
+        raise ValueError("Unknown covariance function")
+        
+    return cov_f
 
 def _gp_hyp(optim_state, function_logger, options, plb, pub, gp, X, y):
     """Define bounds, priors and samples for GP hyperparameters."""
@@ -295,7 +305,7 @@ def _gp_hyp(optim_state, function_logger, options, plb, pub, gp, X, y):
         if optim_state["warmup"]:
             gp_s_N = np.minimum(gp_s_N, options["nsgpmaxwarmup"])
         else:
-            gp_s_N = np.minimum(gp_s_N, ptions["nsgpmaxmain"])
+            gp_s_N = np.minimum(gp_s_N, options["nsgpmaxmain"])
 
         # Stop sampling after reaching max number of training points
         if optim_state["N"] >= options["stablegpsampling"]:
