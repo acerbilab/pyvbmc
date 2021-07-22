@@ -3,14 +3,23 @@ import numpy as np
 
 import gpyreg as gpr
 
-def train_gp(hyp_dict, optim_state, function_logger, iteration_history, options, plb, pub):
+
+def train_gp(
+    hyp_dict,
+    optim_state,
+    function_logger,
+    iteration_history,
+    options,
+    plb,
+    pub,
+):
     """
     Train Gaussian process model.
-    
+
     Parameters
     ==========
     hyp_dict : dict
-        Hyperparameter summary statistics dictionary. 
+        Hyperparameter summary statistics dictionary.
         If it does not contain the appropriate keys they will be added
         automatically.
     optim_state : dict
@@ -25,7 +34,7 @@ def train_gp(hyp_dict, optim_state, function_logger, iteration_history, options,
         Plausible lower bounds for hyperparameters.
     pub : ndarray, shape (hyp_N,)
         Plausible upper bounds for hyperparameters.
-        
+
     Returns
     =======
     gp : GP
@@ -49,7 +58,7 @@ def train_gp(hyp_dict, optim_state, function_logger, iteration_history, options,
         hyp_dict["full"] = None
     if "run_cov" not in hyp_dict:
         hyp_dict["run_cov"] = None
-        
+
     # Get training dataset.
     x_train, y_train, s2_train, t_train = _get_training_data(function_logger)
     D = x_train.shape[1]
@@ -63,7 +72,9 @@ def train_gp(hyp_dict, optim_state, function_logger, iteration_history, options,
     mean_f = _meanfun_name_to_mean_function(optim_state["gp_meanfun"])
 
     # Pick the covariance function.
-    covariance_f = _cov_identifier_to_covariance_function(optim_state["gp_covfun"])
+    covariance_f = _cov_identifier_to_covariance_function(
+        optim_state["gp_covfun"]
+    )
 
     # Pick the noise function.
     const_add = optim_state["gp_noisefun"][0] == 1
@@ -86,34 +97,31 @@ def train_gp(hyp_dict, optim_state, function_logger, iteration_history, options,
     )
 
     # Get number of samples and set priors and bounds.
-    gp, hyp0, gp_s_N = _gp_hyp(optim_state, 
-                               options, 
-                               plb, 
-                               pub, 
-                               gp, 
-                               x_train, 
-                               y_train)
+    gp, hyp0, gp_s_N = _gp_hyp(
+        optim_state, options, plb, pub, gp, x_train, y_train
+    )
     # Initial GP hyperparameters.
     if hyp_dict["hyp"] is None:
         hyp_dict["hyp"] = hyp0.copy()
 
     # Get GP training options.
-    gp_train = _get_gp_training_options(optim_state, iteration_history, options, hyp_dict, gp_s_N)
-  
+    gp_train = _get_gp_training_options(
+        optim_state, iteration_history, options, hyp_dict, gp_s_N
+    )
+
     # A bit unclear how this branch can be triggered.
-    if gp_train["widths"] is not None and np.size(gp_train["widths"]) != np.size(hyp0):
+    if gp_train["widths"] is not None and np.size(
+        gp_train["widths"]
+    ) != np.size(hyp0):
         gp_train["widths"] = None
 
     # Build starting points
     hyp0 = np.empty((0, np.size(hyp_dict["hyp"])))
-    if (
-        gp_train["init_N"] > 0
-        and optim_state["iter"] > 0
-    ):
+    if gp_train["init_N"] > 0 and optim_state["iter"] > 0:
         # Be very careful with off-by-one errors compared to MATLAB in the
         # range here.
         for i in range(
-            math.ceil((np.size(iteration_history["gp"])+1) / 2)-1,
+            math.ceil((np.size(iteration_history["gp"]) + 1) / 2) - 1,
             np.size(iteration_history["gp"]),
         ):
             hyp0 = np.concatenate(
@@ -127,14 +135,12 @@ def train_gp(hyp_dict, optim_state, function_logger, iteration_history, options,
         N0 = hyp0.shape[0]
         if N0 > gp_train["init_N"] / 2:
             hyp0 = hyp0[
-                np.random.choice(
-                    N0, gp_train["init_N"] / 2, replace=False
-                ),
+                np.random.choice(N0, gp_train["init_N"] / 2, replace=False),
                 :,
             ]
     hyp0 = np.concatenate((hyp0, np.array([hyp_dict["hyp"]])))
     hyp0 = np.unique(hyp0, axis=0)
-    
+
     # A bit unclear how this branch can be triggered.
     if hyp0.shape[1] != np.size(gp.hyper_priors["mu"]):
         hyp0 = None
@@ -152,7 +158,7 @@ def train_gp(hyp_dict, optim_state, function_logger, iteration_history, options,
         # Pre-thinning GP hyperparameters
         hyp_dict["full"] = res["samples"]
         hyp_dict["logp"] = res["log_priors"]
-        
+
         # Currently not used since we do not support samplers other
         # than slice sampling.
         # if isfield(gpoutput,'hyp_vp')
@@ -173,10 +179,7 @@ def train_gp(hyp_dict, optim_state, function_logger, iteration_history, options,
         if hyp_dict["run_cov"] is None or options["hyprunweight"] == 0:
             hyp_dict["run_cov"] = hyp_cov
         else:
-            w = (
-                options["hyprunweight"]
-                ** options["funevalsperiter"]
-            )
+            w = options["hyprunweight"] ** options["funevalsperiter"]
             hyp_dict["run_cov"] = (1 - w) * hyp_cov + w * hyp_dict["run_cov"]
     else:
         hyp_dict["run_cov"] = None
@@ -186,22 +189,22 @@ def train_gp(hyp_dict, optim_state, function_logger, iteration_history, options,
     sn2hpd = _estimate_noise(gp)
 
     return gp, gp_s_N, sn2hpd, hyp_dict
-    
-    
-def _meanfun_name_to_mean_function(name): 
+
+
+def _meanfun_name_to_mean_function(name):
     """
     Transforms a mean function name to an instance of that mean function.
-    
+
     Parameters
     ==========
     name : str
         Name of the mean function.
-        
+
     Returns
     =======
     mean_f : object
         An instance of the specified mean function.
-        
+
     Raises
     ------
     ValueError
@@ -215,26 +218,27 @@ def _meanfun_name_to_mean_function(name):
         mean_f = gpr.mean_functions.NegativeQuadratic()
     else:
         raise ValueError("Unknown mean function!")
-        
+
     return mean_f
-    
+
+
 def _cov_identifier_to_covariance_function(identifier):
     """
     Transforms a covariance function identifer to an instance of the
     corresponding covariance function.
-    
+
     Parameters
     ==========
     identifier : object
         Either an integer, or a list such as [3, 3] where the first
         number is the identifier and the further numbers are parameters
         of the covariance function.
-        
+
     Returns
     =======
     cov_f : object
         An instance of the specified covariance function.
-        
+
     Raises
     ------
     ValueError
@@ -248,13 +252,14 @@ def _cov_identifier_to_covariance_function(identifier):
         cov_f = gpr.covariance_functions.Matern(identifier[1])
     else:
         raise ValueError("Unknown covariance function")
-        
+
     return cov_f
+
 
 def _gp_hyp(optim_state, options, plb, pub, gp, X, y):
     """
     Define bounds, priors and samples for GP hyperparameters.
-    
+
     Parameters
     ==========
     optim_state : dict
@@ -272,7 +277,7 @@ def _gp_hyp(optim_state, options, plb, pub, gp, X, y):
         Training inputs.
     y : ndarray, shape (N, 1)
         Training targets.
-    
+
     Returns
     =======
     gp : GP
@@ -320,7 +325,7 @@ def _gp_hyp(optim_state, options, plb, pub, gp, X, y):
         noise_std = 0.5
     noise_x0[0] = np.log(noise_size)
     hyp0 = np.concatenate([cov_x0, noise_x0, mean_x0])
-    
+
     # Missing port: output warping hyperparameters not implemented
 
     ## Change default bounds and set priors over hyperparameters.
@@ -329,12 +334,7 @@ def _gp_hyp(optim_state, options, plb, pub, gp, X, y):
     if options["uppergplengthfactor"] > 0:
         bounds["covariance_log_lengthscale"] = (
             -np.inf,
-            np.log(
-                options["uppergplengthfactor"]
-                * (
-                    pub - plb
-                )
-            ),
+            np.log(options["uppergplengthfactor"] * (pub - plb)),
         )
     # Increase minimum noise.
     bounds["noise_log_scale"] = (np.log(min_noise), np.inf)
@@ -368,7 +368,7 @@ def _gp_hyp(optim_state, options, plb, pub, gp, X, y):
             "student_t",
             (np.log(noise_mult), noise_mult_std, 3),
         )
-        
+
     # Missing port: hyperprior over mixture of quadratics mean function
 
     # Change bounds and hyperprior over output-dependent noise modulation
@@ -400,20 +400,14 @@ def _gp_hyp(optim_state, options, plb, pub, gp, X, y):
     priors["covariance_log_lengthscale"] = (
         "student_t",
         (
-            np.log(
-                options["gplengthpriormean"]
-                * (
-                    pub
-                    - plb
-                )
-            ),
+            np.log(options["gplengthpriormean"] * (pub - plb)),
             options["gplengthpriorstd"],
             3,
         ),
     )
-    
+
     # Missing port: meanfun == 14 hyperprior case
-    
+
     # Missing port: output warping priors
 
     ## Number of GP hyperparameter samples.
@@ -422,9 +416,7 @@ def _gp_hyp(optim_state, options, plb, pub, gp, X, y):
 
     if stop_sampling == 0:
         # Number of samples
-        gp_s_N = round(
-            options["nsgpmax"] / np.sqrt(optim_state["N"])
-        )
+        gp_s_N = round(options["nsgpmax"] / np.sqrt(optim_state["N"]))
 
         # Maximum sample cutoff
         if optim_state["warmup"]:
@@ -448,10 +440,13 @@ def _gp_hyp(optim_state, options, plb, pub, gp, X, y):
 
     return gp, hyp0, gp_s_N
 
-def _get_gp_training_options(optim_state, iteration_history, options, hyp_dict, gp_s_N):
+
+def _get_gp_training_options(
+    optim_state, iteration_history, options, hyp_dict, gp_s_N
+):
     """
     Get options for training GP hyperparameters.
-    
+
     Parameters
     ==========
     optim_state : dict
@@ -464,7 +459,7 @@ def _get_gp_training_options(optim_state, iteration_history, options, hyp_dict, 
         Hyperparameter summary statistic dictionary.
     gp_s_N : int
         Number of samples for the GP fitting.
-    
+
     Returns
     =======
     gp_train : dic
@@ -491,9 +486,7 @@ def _get_gp_training_options(optim_state, iteration_history, options, hyp_dict, 
     if options["gphypsampler"] == "slicesample":
         gp_train["sampler"] = "slicesample"
         if options["gpsamplewidths"] > 0 and hyp_cov is not None:
-            width_mult = np.maximum(
-                options["gpsamplewidths"], r_index
-            )
+            width_mult = np.maximum(options["gpsamplewidths"], r_index)
             hyp_widths = np.sqrt(np.diag(hyp_cov).T)
             gp_train["widths"] = np.maximum(hyp_widths, 1e-3) * width_mult
     elif options["gphypsampler"] == "npv":
@@ -507,24 +500,18 @@ def _get_gp_training_options(optim_state, iteration_history, options, hyp_dict, 
     elif options["gphypsampler"] == "slicelite":
         gp_train["sampler"] = "slicelite"
         if options["gpsamplewidths"] > 0 and hyp_cov is not None:
-            width_mult = np.maximum(
-                options["gpsamplewidths"], r_index
-            )
+            width_mult = np.maximum(options["gpsamplewidths"], r_index)
             hyp_widths = np.sqrt(np.diag(hyp_cov).T)
             gp_train["widths"] = np.maximum(hyp_widths, 1e-3) * width_mult
     elif options["gphypsampler"] == "splitsample":
         gp_train["sampler"] = "splitsample"
         if options["gpsamplewidths"] > 0 and hyp_cov is not None:
-            width_mult = np.maximum(
-                options["gpsamplewidths"], r_index
-            )
+            width_mult = np.maximum(options["gpsamplewidths"], r_index)
             hyp_widths = np.sqrt(np.diag(hyp_cov).T)
             gp_train["widths"] = np.maximum(hyp_widths, 1e-3) * width_mult
     elif options["gphypsampler"] == "covsample":
         if options["gpsamplewidths"] > 0 and hyp_cov is not None:
-            width_mult = np.maximum(
-                options["gpsamplewidths"], r_index
-            )
+            width_mult = np.maximum(options["gpsamplewidths"], r_index)
             if np.all(np.isfinite(width_mult)) and np.all(
                 r_index < options["covsamplethresh"]
             ):
@@ -536,9 +523,7 @@ def _get_gp_training_options(optim_state, iteration_history, options, hyp_dict, 
                 gp_train["thin"] *= math.ceil(np.sqrt(hyp_n))
             else:
                 hyp_widths = np.sqrt(np.diag(hyp_cov).T)
-                gp_train["widths"] = (
-                    np.maximum(hyp_widths, 1e-3) * width_mult
-                )
+                gp_train["widths"] = np.maximum(hyp_widths, 1e-3) * width_mult
                 gp_train["sampler"] = "slicesample"
         else:
             gp_train["sampler"] = "covsample"
@@ -546,13 +531,9 @@ def _get_gp_training_options(optim_state, iteration_history, options, hyp_dict, 
         if optim_state["n_eff"] < 30:
             gp_train["sampler"] = "slicesample"
             if options["gpsamplewidths"] > 0 and hyp_cov is not None:
-                width_mult = np.maximum(
-                    options["gpsamplewidths"], r_index
-                )
+                width_mult = np.maximum(options["gpsamplewidths"], r_index)
                 hyp_widths = np.sqrt(np.diag(hyp_cov).T)
-                gp_train["widths"] = (
-                    np.maximum(hyp_widths, 1e-3) * width_mult
-                )
+                gp_train["widths"] = np.maximum(hyp_widths, 1e-3) * width_mult
         else:
             gp_train["sampler"] = "laplace"
     else:
@@ -564,8 +545,7 @@ def _get_gp_training_options(optim_state, iteration_history, options, hyp_dict, 
     c = 3 * a
     d = options["gptrainninit"]
     x = (optim_state["n_eff"] - options["funevalstart"]) / (
-        min(options["maxfunevals"], 1e3)
-        - options["funevalstart"]
+        min(options["maxfunevals"], 1e3) - options["funevalstart"]
     )
     f = lambda x_: a * x_ ** 3 + b * x ** 2 + c * x + d
     init_N = max(round(f(x)), 9)
@@ -596,9 +576,7 @@ def _get_gp_training_options(optim_state, iteration_history, options, hyp_dict, 
                             gp_train["thin"]
                             * np.log(
                                 iteration_history["rindex"][it - 1]
-                                / np.log(
-                                    options["gpretrainthreshold"]
-                                )
+                                / np.log(options["gpretrainthreshold"])
                             )
                         ),
                     )
@@ -618,10 +596,11 @@ def _get_gp_training_options(optim_state, iteration_history, options, hyp_dict, 
 
     return gp_train
 
+
 def _get_hyp_cov(optim_state, iteration_history, options, hyp_dict):
     """
     Get hyperparameter posterior covariance.
-    
+
     Parameters
     ==========
     optim_state : dict
@@ -632,13 +611,13 @@ def _get_hyp_cov(optim_state, iteration_history, options, hyp_dict):
         Options from the VBMC instance we calling this from.
     hyp_dict : dict
         Hyperparameter summary statistic dictionary.
-    
+
     Returns
     =======
     hyp_cov : ndarray, optional
         The hyperparameter posterior covariance if it can be computed.
     """
-    
+
     if optim_state["iter"] > 0:
         if options["weightedhypcov"]:
             w_list = []
@@ -647,9 +626,7 @@ def _get_hyp_cov(optim_state, iteration_history, options, hyp_dict):
             for i in range(0, optim_state["iter"]):
                 if i > 0:
                     diff_mult = np.log(
-                        iteration_history["sKL"][
-                            optim_state["iter"] - 1 - i
-                        ]
+                        iteration_history["sKL"][optim_state["iter"] - 1 - i]
                         / options["tolskl"]
                         * options["funevalsperiter"]
                     )
@@ -664,10 +641,7 @@ def _get_hyp_cov(optim_state, iteration_history, options, hyp_dict):
                     optim_state["iter"] - 1 - i
                 ]
                 hyp_n = hyp.shape[0]
-                if (
-                    len(hyp_list) == 0
-                    or np.shape(hyp_list)[1] == hyp.shape[0]
-                ):
+                if len(hyp_list) == 0 or np.shape(hyp_list)[1] == hyp.shape[0]:
                     hyp_list.append(hyp)
                     w_list.append(w * np.ones((hyp_n, 1)) / hyp_n)
 
@@ -685,9 +659,7 @@ def _get_hyp_cov(optim_state, iteration_history, options, hyp_dict):
             for j in range(0, np.shape(hyp_list)[0]):
                 hyp_cov += np.dot(
                     w_list[j],
-                    np.dot(
-                        (hyp_list[j] - mu_star).T, hyp_list[j] - mu_star
-                    ),
+                    np.dot((hyp_list[j] - mu_star).T, hyp_list[j] - mu_star),
                 )
             hyp_cov /= 1 - np.sum(w_list ** 2, axis=0)
 
@@ -697,17 +669,18 @@ def _get_hyp_cov(optim_state, iteration_history, options, hyp_dict):
 
     return None
 
+
 def _get_hpd(X, y, hpd_frac=0.8):
     """
     Get high-posterior density dataset.
-    
+
     Parameters
     ==========
     X : ndarray, shape (N, D)
         The training points.
     y : ndarray, shape (N, 1)
         The training targets.
-    
+
     Returns
     =======
     hpd_X : ndarray
@@ -729,17 +702,17 @@ def _get_hpd(X, y, hpd_frac=0.8):
     hpd_range = np.max(hpd_X, axis=0) - np.min(hpd_X, axis=0)
 
     return hpd_X, hpd_y, hpd_range
-    
-    
+
+
 def _get_training_data(function_logger):
     """
     Get training data for building GP surrogate.
-    
+
     Parameters
     ==========
     function_logger : FunctionLogger
         Function logger from the VBMC instance which we are calling this from.
-    
+
     Returns
     =======
     x_train, ndarray
@@ -752,7 +725,7 @@ def _get_training_data(function_logger):
         Array of the times it took to evaluate the function on the training
         data.
     """
-        
+
     x_train = function_logger.x[function_logger.X_flag, :]
     y_train = function_logger.y[function_logger.X_flag]
     if function_logger.noise_flag:
@@ -760,11 +733,10 @@ def _get_training_data(function_logger):
     else:
         s2_train = None
 
-    t_train = function_logger.fun_evaltime[
-        function_logger.X_flag
-    ]
+    t_train = function_logger.fun_evaltime[function_logger.X_flag]
 
     return x_train, y_train, s2_train, t_train
+
 
 def _estimate_noise(gp):
     """Estimate GP observation noise at high posterior density.
