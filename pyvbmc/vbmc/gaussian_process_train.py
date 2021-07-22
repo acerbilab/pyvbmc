@@ -3,21 +3,53 @@ import numpy as np
 
 import gpyreg as gpr
 
-def train_gp(optim_state, function_logger, iteration_history, options, plb, pub):
+def train_gp(hyp_dict, optim_state, function_logger, iteration_history, options, plb, pub):
     """
     Train Gaussian process model.
-
+    
+    Parameters
+    ==========
+    hyp_dict : dict
+        Hyperparameter summary statistics dictionary. 
+        If it does not contain the appropriate keys they will be added
+        automatically.
+    optim_state : dict
+        Optimization state from the VBMC instance we are calling this from.
+    function_logger : FunctionLogger
+        Function logger from the VBMC instance which we are calling this from.
+    iteration_history : IterationHistory
+        Iteration history from the VBMC instance we are calling this from.
+    options : Options
+        Options from the VBMC instance we calling this from.
+    plb : ndarray, shape (hyp_N,)
+        Plausible lower bounds for hyperparameters.
+    pub : ndarray, shape (hyp_N,)
+        Plausible upper bounds for hyperparameters.
+        
+    Returns
+    =======
+    gp : GP
+        The trained GP.
+    gp_s_N : int
+        The amount of samples for fitting.
+    sn2hpd : float
+        An estimate of the GP noise variance at high posterior density.
+    hyp_dict : dict
+        The updated summary statistics.
     """
 
-    # Initialize hyp_dict.
-    hyp_dict = {
-        "hyp": None,
-        "warp": None,
-        "logp": None,
-        "full": None,
-        "run_cov": None,
-    }
-
+    # Initialize hyp_dict if empty.
+    if "hyp" not in hyp_dict:
+        hyp_dict["hyp"] = None
+    if "warp" not in hyp_dict:
+        hyp_dict["warp"] = None
+    if "logp" not in hyp_dict:
+        hyp_dict["logp"] = None
+    if "full" not in hyp_dict:
+        hyp_dict["full"] = None
+    if "run_cov" not in hyp_dict:
+        hyp_dict["run_cov"] = None
+        
     # Get training dataset.
     x_train, y_train, s2_train, t_train = _get_training_data(function_logger)
     D = x_train.shape[1]
@@ -54,28 +86,34 @@ def train_gp(optim_state, function_logger, iteration_history, options, plb, pub)
     )
 
     # Get number of samples and set priors and bounds.
-    hyp0, gp_s_N = _gp_hyp(optim_state, 
-                           function_logger,
-                           options, 
-                           plb, 
-                           pub, 
-                           gp, 
-                           x_train, 
-                           y_train)
+    gp, hyp0, gp_s_N = _gp_hyp(optim_state, 
+                               options, 
+                               plb, 
+                               pub, 
+                               gp, 
+                               x_train, 
+                               y_train)
+    # Initial GP hyperparameters.
     if hyp_dict["hyp"] is None:
-        hyp_dict["hyp"] = hyp0
+        hyp_dict["hyp"] = hyp0.copy()
 
     # Get GP training options.
     gp_train = _get_gp_training_options(optim_state, iteration_history, options, hyp_dict, gp_s_N)
+  
+    # A bit unclear how this branch can be triggered.
+    if gp_train["widths"] is not None and np.size(gp_train["widths"]) != np.size(hyp0):
+        gp_train["widths"] = None
 
     # Build starting points
-    hyp0 = np.array([hyp_dict["hyp"]])
+    hyp0 = np.empty((0, np.size(hyp_dict["hyp"])))
     if (
         gp_train["init_N"] > 0
-        and np.size(iteration_history["gp"]) > 0
+        and optim_state["iter"] > 0
     ):
+        # Be very careful with off-by-one errors compared to MATLAB in the
+        # range here.
         for i in range(
-            math.ceil(np.size(iteration_history["gp"]) / 2),
+            math.ceil((np.size(iteration_history["gp"])+1) / 2)-1,
             np.size(iteration_history["gp"]),
         ):
             hyp0 = np.concatenate(
@@ -94,8 +132,12 @@ def train_gp(optim_state, function_logger, iteration_history, options, plb, pub)
                 ),
                 :,
             ]
-
+    hyp0 = np.concatenate((hyp0, np.array([hyp_dict["hyp"]])))
     hyp0 = np.unique(hyp0, axis=0)
+    
+    # A bit unclear how this branch can be triggered.
+    if hyp0.shape[1] != np.size(gp.hyper_priors["mu"]):
+        hyp0 = None
 
     if (
         "hyp_vp" in hyp_dict
@@ -104,42 +146,67 @@ def train_gp(optim_state, function_logger, iteration_history, options, plb, pub)
     ):
         hyp0 = hyp_dict["hyp_vp"]
 
-    gp.fit(x_train, y_train, s2_train, hyp0=hyp0, options=gp_train)
+    _, _, res = gp.fit(x_train, y_train, s2_train, hyp0=hyp0, options=gp_train)
 
-    # hypstruct.full = gpoutput.hyp_prethin; % Pre-thinning GP hyperparameters
-    # hypstruct.logp = gpoutput.logp;
-    # if isfield(gpoutput,'hyp_vp')
-    #     hypstruct.hyp_vp = gpoutput.hyp_vp;
-    # end
+    if res is not None:
+        # Pre-thinning GP hyperparameters
+        hyp_dict["full"] = res["samples"]
+        hyp_dict["logp"] = res["log_priors"]
+        
+        # Currently not used since we do not support samplers other
+        # than slice sampling.
+        # if isfield(gpoutput,'hyp_vp')
+        #     hypstruct.hyp_vp = gpoutput.hyp_vp;
+        # end
 
-    # if isfield(gpoutput,'stepsize')
-    #     optimState.gpmala_stepsize = gpoutput.stepsize;
-    #     gpoutput.stepsize
-    # end
+        # if isfield(gpoutput,'stepsize')
+        #     optimState.gpmala_stepsize = gpoutput.stepsize;
+        #     gpoutput.stepsize
+        # end
 
+    # TODO: think about the purpose of this line elsewhere in the program.
     # gp.t = t_train
 
     # Update running average of GP hyperparameter covariance (coarse)
     if hyp_dict["full"] is not None and hyp_dict["full"].shape[1] > 1:
         hyp_cov = np.cov(hyp_dict["full"].T)
-        if hyp_dict["runcov"] is None or options["hyprunweight"] == 0:
-            hyp_dict["runcov"] = hyp_cov
+        if hyp_dict["run_cov"] is None or options["hyprunweight"] == 0:
+            hyp_dict["run_cov"] = hyp_cov
         else:
             w = (
                 options["hyprunweight"]
                 ** options["funevalsperiter"]
             )
-            hyp_dict["runcov"] = (1 - w) * hyp_cov + w * hyp_dict["runcov"]
+            hyp_dict["run_cov"] = (1 - w) * hyp_cov + w * hyp_dict["run_cov"]
     else:
         hyp_dict["run_cov"] = None
 
     # Estimate of GP noise around the top high posterior density region
-    optim_state["sn2hpd"] = _estimate_noise(gp)
+    # We don't modify optim_state to contain sn2hpd here.
+    sn2hpd = _estimate_noise(gp)
 
-    return gp, gp_s_N      
+    return gp, gp_s_N, sn2hpd, hyp_dict
     
     
-def _meanfun_name_to_mean_function(name):
+def _meanfun_name_to_mean_function(name): 
+    """
+    Transforms a mean function name to an instance of that mean function.
+    
+    Parameters
+    ==========
+    name : str
+        Name of the mean function.
+        
+    Returns
+    =======
+    mean_f : object
+        An instance of the specified mean function.
+        
+    Raises
+    ------
+    ValueError
+        Raised when the mean function name is unknown.
+    """
     if name == "zero":
         mean_f = gpr.mean_functions.ZeroMean()
     elif name == "const":
@@ -152,6 +219,27 @@ def _meanfun_name_to_mean_function(name):
     return mean_f
     
 def _cov_identifier_to_covariance_function(identifier):
+    """
+    Transforms a covariance function identifer to an instance of the
+    corresponding covariance function.
+    
+    Parameters
+    ==========
+    identifier : object
+        Either an integer, or a list such as [3, 3] where the first
+        number is the identifier and the further numbers are parameters
+        of the covariance function.
+        
+    Returns
+    =======
+    cov_f : object
+        An instance of the specified covariance function.
+        
+    Raises
+    ------
+    ValueError
+        Raised when the covariance function identifier is unknown.
+    """
     if identifier == 1:
         cov_f = gpr.covariance_functions.SquaredExponential()
     elif identifier == 3:
@@ -163,22 +251,49 @@ def _cov_identifier_to_covariance_function(identifier):
         
     return cov_f
 
-def _gp_hyp(optim_state, function_logger, options, plb, pub, gp, X, y):
-    """Define bounds, priors and samples for GP hyperparameters."""
+def _gp_hyp(optim_state, options, plb, pub, gp, X, y):
+    """
+    Define bounds, priors and samples for GP hyperparameters.
+    
+    Parameters
+    ==========
+    optim_state : dict
+        Optimization state from the VBMC instance we are calling this from.
+    options : Options
+        Options from the VBMC instance we calling this from.
+    plb : ndarray, shape (hyp_N,)
+        Plausible lower bounds for the hyperparameters.
+    pub : ndarray, shape (hyp_N,)
+        Plausible upper bounds for the hyperparameters.
+    gp : GP
+        Gaussian process for which we are making the bounds,
+        priors and so on.
+    X : ndarray, shape (N, D)
+        Training inputs.
+    y : ndarray, shape (N, 1)
+        Training targets.
+    
+    Returns
+    =======
+    gp : GP
+        The GP with updates priors, bounds and so on.
+    hyp0 : ndarray, shape (hyp_N,)
+        Initial guess for the hyperparameters.
+    gp_s_N : int
+        Amount of samples for GP fitting.
+    """
 
     # Get high posterior density dataset.
-    # X = function_logger.x[function_logger.X_flag, :]
-    # y = function_logger.y[function_logger.X_flag]
     hpd_X, hpd_y, _ = _get_hpd(X, y, options["hpdfrac"])
     D = hpd_X.shape[1]
     # s2 = None
-    # n_eff = optim_state["n_eff"]
 
     ## Set GP hyperparameter defaults for VBMC.
 
     cov_bounds_info = gp.covariance.get_bounds_info(hpd_X, hpd_y)
     mean_bounds_info = gp.mean.get_bounds_info(hpd_X, hpd_y)
     noise_bounds_info = gp.noise.get_bounds_info(hpd_X, hpd_y)
+    # Missing port: output warping hyperparameters not implemented
     cov_x0 = cov_bounds_info["x0"]
     mean_x0 = mean_bounds_info["x0"]
 
@@ -205,6 +320,8 @@ def _gp_hyp(optim_state, function_logger, options, plb, pub, gp, X, y):
         noise_std = 0.5
     noise_x0[0] = np.log(noise_size)
     hyp0 = np.concatenate([cov_x0, noise_x0, mean_x0])
+    
+    # Missing port: output warping hyperparameters not implemented
 
     ## Change default bounds and set priors over hyperparameters.
 
@@ -222,6 +339,7 @@ def _gp_hyp(optim_state, function_logger, options, plb, pub, gp, X, y):
     # Increase minimum noise.
     bounds["noise_log_scale"] = (np.log(min_noise), np.inf)
 
+    # Missing port: we only implement the mean functions that gpyreg supports.
     if isinstance(gp.mean, gpr.mean_functions.ZeroMean):
         pass
     elif isinstance(gp.mean, gpr.mean_functions.ConstantMean):
@@ -250,14 +368,15 @@ def _gp_hyp(optim_state, function_logger, options, plb, pub, gp, X, y):
             "student_t",
             (np.log(noise_mult), noise_mult_std, 3),
         )
+        
+    # Missing port: hyperprior over mixture of quadratics mean function
 
     # Change bounds and hyperprior over output-dependent noise modulation
+    # Note: currently this branch is not used.
     if optim_state["gp_noisefun"][2] == 1:
-        y_all = function_logger.y(function_logger.X_flag)
-
         bounds["noise_rectified_log_multiplier"] = (
-            [np.min(np.min(y_all), np.max(y_all) - 20 * D), -np.inf],
-            [np.max(y_all) - 10 * D, np.inf],
+            [np.min(np.min(y), np.max(y) - 20 * D), -np.inf],
+            [np.max(y) - 10 * D, np.inf],
         )
 
         # These two lines were commented out in MATLAB as well.
@@ -271,6 +390,8 @@ def _gp_hyp(optim_state, function_logger, options, plb, pub, gp, X, y):
             "student_t",
             ([np.nan, np.log(0.01)], [np.nan, np.log(10)], [np.nan, 3]),
         )
+
+    # Missing port: priors and bounds for output warping hyperparameters (not used)
 
     # VBMC used to have an empirical Bayes prior on some GP hyperparameters,
     # such as input length scales, based on statistics of the GP training
@@ -290,6 +411,10 @@ def _gp_hyp(optim_state, function_logger, options, plb, pub, gp, X, y):
             3,
         ),
     )
+    
+    # Missing port: meanfun == 14 hyperprior case
+    
+    # Missing port: output warping priors
 
     ## Number of GP hyperparameter samples.
 
@@ -321,10 +446,30 @@ def _gp_hyp(optim_state, function_logger, options, plb, pub, gp, X, y):
     gp.set_bounds(bounds)
     gp.set_priors(priors)
 
-    return hyp0, gp_s_N
+    return gp, hyp0, gp_s_N
 
 def _get_gp_training_options(optim_state, iteration_history, options, hyp_dict, gp_s_N):
-    """Get options for training GP hyperparameters."""
+    """
+    Get options for training GP hyperparameters.
+    
+    Parameters
+    ==========
+    optim_state : dict
+        Optimization state from the VBMC instance we are calling this from.
+    iteration_history : IterationHistory
+        Iteration history from the VBMC instance we are calling this from.
+    options : Options
+        Options from the VBMC instance we calling this from.
+    hyp_dict : dict
+        Hyperparameter summary statistic dictionary.
+    gp_s_N : int
+        Number of samples for the GP fitting.
+    
+    Returns
+    =======
+    gp_train : dic
+        A dictionary of GP training options.
+    """
 
     it = optim_state["iter"]
     if it > 0:
@@ -337,6 +482,7 @@ def _get_gp_training_options(optim_state, iteration_history, options, hyp_dict, 
     gp_train["init_method"] = options["gptraininitmethod"]
     gp_train["tol_opt"] = options["gptolopt"]
     gp_train["tol_opt_mcmc"] = options["gptoloptmcmc"]
+    gp_train["widths"] = None
 
     # Get hyperparameter posterior covariance from previous iterations
     hyp_cov = _get_hyp_cov(optim_state, iteration_history, options, hyp_dict)
@@ -441,6 +587,8 @@ def _get_gp_training_options(optim_state, iteration_history, options, hyp_dict, 
         ):
             gp_train["init_N"] = 0
             if options["gphypsampler"] == "slicelite":
+                # TODO: gpretrainthreshold is by default 1, so we get
+                #       division by zero. what should the default be?
                 gp_train["burn"] = (
                     max(
                         1,
@@ -471,7 +619,25 @@ def _get_gp_training_options(optim_state, iteration_history, options, hyp_dict, 
     return gp_train
 
 def _get_hyp_cov(optim_state, iteration_history, options, hyp_dict):
-    """Get hyperparameter posterior covariance."""
+    """
+    Get hyperparameter posterior covariance.
+    
+    Parameters
+    ==========
+    optim_state : dict
+        Optimization state from the VBMC instance we are calling this from.
+    iteration_history : IterationHistory
+        Iteration history from the VBMC instance we are calling this from.
+    options : Options
+        Options from the VBMC instance we calling this from.
+    hyp_dict : dict
+        Hyperparameter summary statistic dictionary.
+    
+    Returns
+    =======
+    hyp_cov : ndarray, optional
+        The hyperparameter posterior covariance if it can be computed.
+    """
     
     if optim_state["iter"] > 0:
         if options["weightedhypcov"]:
@@ -532,7 +698,25 @@ def _get_hyp_cov(optim_state, iteration_history, options, hyp_dict):
     return None
 
 def _get_hpd(X, y, hpd_frac=0.8):
-    """Get high-posterior density dataset."""
+    """
+    Get high-posterior density dataset.
+    
+    Parameters
+    ==========
+    X : ndarray, shape (N, D)
+        The training points.
+    y : ndarray, shape (N, 1)
+        The training targets.
+    
+    Returns
+    =======
+    hpd_X : ndarray
+        High-posterior density training points.
+    hpd_y : ndarray
+        High-posterior density training targets.
+    hpd_range : ndarray, shape (D,)
+        The range of values of hpd_X in each dimension.
+    """
 
     N = X.shape[0]
 
@@ -548,7 +732,26 @@ def _get_hpd(X, y, hpd_frac=0.8):
     
     
 def _get_training_data(function_logger):
-    """Get training data for building GP surrogate."""
+    """
+    Get training data for building GP surrogate.
+    
+    Parameters
+    ==========
+    function_logger : FunctionLogger
+        Function logger from the VBMC instance which we are calling this from.
+    
+    Returns
+    =======
+    x_train, ndarray
+        Training inputs.
+    y_train, ndarray
+        Training targets.
+    s2_train, ndarray, optional
+        Training data noise variance, if noise is used.
+    t_train, ndarray
+        Array of the times it took to evaluate the function on the training
+        data.
+    """
         
     x_train = function_logger.x[function_logger.X_flag, :]
     y_train = function_logger.y[function_logger.X_flag]
@@ -569,12 +772,12 @@ def _estimate_noise(gp):
     Parameters
     ==========
     gp : GP
-        The Gaussian process we are interested in.
+        The GP for which to perform the estimate.
 
     Returns
     =======
     est : float
-        The estimate.
+        The estimate of observation noise.
     """
 
     hpd_top = 0.2

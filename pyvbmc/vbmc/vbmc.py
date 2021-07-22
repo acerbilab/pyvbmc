@@ -659,6 +659,7 @@ class VBMC:
         iteration = -1
         timer = Timer()
         gp = None
+        hyp_dict = {}
 
         while not is_finished:
             iteration += 1
@@ -698,12 +699,14 @@ class VBMC:
                     if iteration % 2 == 1:
                         meantemp = self.optim_state.get("gp_meanfun")
                         self.optim_state["gp_meanfun"] = "const"
-                        gp_search, Ns_gp = train_gp(self.optim_state, 
-                                                    self.function_logger, 
-                                                    self.iteration_history, 
-                                                    self.options,
-                                                    self.plausible_lower_bounds,
-                                                    self.plausible_upper_bounds)
+                        gp_search, Ns_gp, sn2hpd, hyp_dict = train_gp(hyp_dict,
+                                                                      self.optim_state, 
+                                                                      self.function_logger, 
+                                                                      self.iteration_history, 
+                                                                      self.options,
+                                                                      self.plausible_lower_bounds,
+                                                                      self.plausible_upper_bounds)
+                        self.optim_state["sn2hpd"] = sn2hpd
                         self.optim_state["gp_meanfun"] = meantemp
                     else:
                         gp_search = gp
@@ -738,12 +741,14 @@ class VBMC:
 
             timer.start_timer("gpTrain")
 
-            gp, Ns_gp = train_gp(self.optim_state, 
-                                 self.function_logger, 
-                                 self.iteration_history, 
-                                 self.options,
-                                 self.plausible_lower_bounds,
-                                 self.plausible_upper_bounds)
+            gp, Ns_gp, sn2hpd, hyp_dict = train_gp(hyp_dict,
+                                                   self.optim_state, 
+                                                   self.function_logger, 
+                                                   self.iteration_history, 
+                                                   self.options,
+                                                   self.plausible_lower_bounds,
+                                                   self.plausible_upper_bounds)
+            self.optim_state["sn2hpd"] = sn2hpd
 
             timer.stop_timer("gpTrain")
 
