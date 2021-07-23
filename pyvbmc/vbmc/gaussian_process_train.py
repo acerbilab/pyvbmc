@@ -159,8 +159,8 @@ def train_gp(
         hyp_dict["full"] = res["samples"]
         hyp_dict["logp"] = res["log_priors"]
 
-        # Currently not used since we do not support samplers other
-        # than slice sampling.
+        # Missing port: currently not used since we do
+        # not support samplers other than slice sampling.
         # if isfield(gpoutput,'hyp_vp')
         #     hypstruct.hyp_vp = gpoutput.hyp_vp;
         # end
@@ -183,6 +183,8 @@ def train_gp(
             hyp_dict["run_cov"] = (1 - w) * hyp_cov + w * hyp_dict["run_cov"]
     else:
         hyp_dict["run_cov"] = None
+
+    # Missing port: sample for GP for debug (not used)
 
     # Estimate of GP noise around the top high posterior density region
     # We don't modify optim_state to contain sn2hpd here.
@@ -332,6 +334,7 @@ def _gp_hyp(optim_state, options, plb, pub, gp, X, y):
 
     bounds = gp.get_bounds()
     if options["uppergplengthfactor"] > 0:
+        # Max GP input length scale
         bounds["covariance_log_lengthscale"] = (
             -np.inf,
             np.log(options["uppergplengthfactor"] * (pub - plb)),
@@ -594,6 +597,7 @@ def _get_gp_training_options(
             else:
                 gp_train["opts_N"] = 2
 
+    gp_train["n_samples"] = gp_s_N
     return gp_train
 
 
@@ -625,10 +629,14 @@ def _get_hyp_cov(optim_state, iteration_history, options, hyp_dict):
             w = 1
             for i in range(0, optim_state["iter"]):
                 if i > 0:
-                    diff_mult = np.log(
-                        iteration_history["sKL"][optim_state["iter"] - 1 - i]
-                        / options["tolskl"]
-                        * options["funevalsperiter"]
+                    # Be careful with off-by-ones compared to MATLAB here
+                    diff_mult = max(
+                        1,
+                        np.log(
+                            iteration_history["sKL"][optim_state["iter"] - i]
+                            / options["tolskl"]
+                            * options["funevalsperiter"]
+                        ),
                     )
                     w *= options["hyprunweight"] ** (
                         options["funevalsperiter"] * diff_mult
@@ -732,6 +740,8 @@ def _get_training_data(function_logger):
         s2_train = function_logger.S[function_logger.X_flag] ** 2
     else:
         s2_train = None
+
+    # Missing port: noiseshaping
 
     t_train = function_logger.fun_evaltime[function_logger.X_flag]
 
