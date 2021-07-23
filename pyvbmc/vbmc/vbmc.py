@@ -9,7 +9,7 @@ from pyvbmc.stats.entropy import kldiv_mvn
 from pyvbmc.timer import Timer
 from pyvbmc.variational_posterior import VariationalPosterior
 
-from .gaussian_process_train import train_gp
+from .gaussian_process_train import train_gp, reupdate_gp
 from .options import Options
 from .iteration_history import IterationHistory
 from .active_sample import active_sample
@@ -681,8 +681,8 @@ class VBMC:
             else:
                 new_funevals = self.options.get("funevalsperiter")
 
-            # if optimState.Xn > 0:
-            #     optimState.ymax = max(optimState.y(optimState.X_flag))
+            if self.function_logger.Xn > 0:
+                self.function_logger.ymax = np.max(self.function_logger.y[self.function_logger.X_flag])
 
             if self.optim_state.get("skipactivesampling"):
                 self.optim_state["skipactivesampling"] = False
@@ -771,8 +771,9 @@ class VBMC:
                 Knew = self._updateK()
 
             # Decide number of fast/slow optimizations
-            N_fastopts = 3
-            # np.ceil(evaloption_vbmc(options.NSelbo, K))
+            N_fastopts = math.ceil(
+                self.options.eval("nselbo", {"K": self.K})
+            )
 
             if self.optim_state.get("recompute_var_post") or (
                 self.options.get("alwaysrefitvarpost")
@@ -782,7 +783,7 @@ class VBMC:
                 self.optim_state["recompute_var_post"] = False
             else:
                 # Only incremental change from previous iteration
-                N_fastopts = np.ceil(
+                N_fastopts = math.ceil(
                     N_fastopts * self.options.get("nselboincr")
                 )
                 N_slowopts = 1
@@ -948,7 +949,7 @@ class VBMC:
                 if trim_flag:
                     self._setup_vbmc_after_warmup()
                     # Re-update GP after trimming
-                    gp = self._reupdate_gp(gp)
+                    gp = reupdate_gp(self.function_logger, gp)
                 if not self.optim_state.get("warmup"):
                     self.vp.optimize_mu = self.options.get("variablemeans")
                     self.vp.optimize_weights = self.options.get(
@@ -1001,21 +1002,67 @@ class VBMC:
                 self.vp, dict()
             )
 
-    def _reupdate_gp(self, gp):
-        """
-        Quick posterior reupdate of Gaussian process.
-
-        Wait for interface of GPlite before implementing.
-        """
-        return gp
-
     # Variational optimization / training of variational posterior:
 
     def _updateK(self):
         """
         Update number of variational mixture components.
         """
-        return self.vp.K
+        K_new = self.optim_state["vpK"]
+
+        # Compute maximum number of components
+        K_max = math.ceil(
+            self.options.eval(
+                "kfunmax", {"N": self.optim_state["n_eff"]}
+            )
+        )
+
+        # Evaluate bonus for stable solution.
+        K_bonus = round(self.options.eval("adaptivek", {"unkn" : K_new}))
+
+        if not self.optim_state["warmup"] and self.optim_state["iter"] > 0:
+            recent_iters = math.ceil(
+                0.5
+                * self.options["tolstablecount"]
+                / self.options["funevalsperiter"]
+            )
+
+            # Check if ELCBO has improved wrt recent iterations
+            lower_end = max(0, self.optim_state["iter"] - recent_iters)
+            elbos = self.iteration_history["elbo"][lower_end:]
+            elboSDs = self.iteration_history["elbo_sd"][lower_end:]
+            elcbos = elbos - self.options["elcboimproweight"] * elboSDs
+            warmups = self.iteration_history["warmup"][lower_end:]
+            elcbos_after = elcbos[~warmups]
+            # Ignore two iterations right after warmup.
+            elcbos_after[0 : min(2, self.optim_state["iter"])] = -np.inf
+            elcbo_max = np.max(elcbos_after)
+            improving_flag = elcbos_after[-1] >= elcbo_max and np.isfinite(
+                elcbos_after[-1]
+            )
+
+            # Add one component if ELCBO is improving and no pruning in last iteration
+            if self.iteration_history["pruned"][-1] == 0 and improving_flag:
+                K_new += 1
+
+            # Bonus components for stable solution (speed up exploration)
+            if (
+                self.iteration_history["rindex"][-1] < 1
+                and not self.optim_state["recompute_var_post"]
+                and improving_flag
+            ):
+                # No bonus if any component was very recently pruned.
+                new_lower_end = max(
+                    0, self.optim_state["iter"] - math.ceil(0.5 * recent_iters)
+                )
+                if np.all(
+                    self.iteration_history["pruned"][new_lower_end:] == 0
+                ):
+                    K_new += K_bonus
+
+            K_new = max(self.optim_state["vpK"], min(K_new, K_max))
+
+        return K_new
 
     def _optimize_vp(self, Nfastopts, Nslowopts, K=None):
         """
@@ -1041,7 +1088,7 @@ class VBMC:
         stop_warmup_thresh = self.options.get(
             "stopwarmupthresh"
         ) * self.options.get("funevalsperiter")
-        tol_stable_warmup_iters = np.ceil(
+        tol_stable_warmup_iters = math.ceil(
             self.options.get("tolstablewarmup")
             / self.options.get("funevalsperiter")
         )
@@ -1067,7 +1114,7 @@ class VBMC:
         if self.options.get("warmupcheckmax"):
             idx_last = np.full(lcbmax_vec.shape, False)
             recent_past = iteration - int(
-                np.ceil(
+                math.ceil(
                     self.options.get("tolstablewarmup")
                     / self.options.get("funevalsperiter")
                 )
@@ -1199,7 +1246,7 @@ class VBMC:
             tol_stable_iters = self.options.get("tolstableentropyiters")
         else:
             tol_stable_iters = int(
-                np.ceil(
+                math.ceil(
                     self.options.get("tolstablecount")
                     / self.options.get("funevalsperiter")
                 )
@@ -1298,7 +1345,7 @@ class VBMC:
             max(
                 1,
                 self.optim_state.get("iter")
-                - np.ceil(0.5 * tol_stable_iters)
+                - math.ceil(0.5 * tol_stable_iters)
                 + 1,
             )
             - 1
@@ -1409,10 +1456,10 @@ class VBMC:
 
         if do_boost:
             # Last variational optimization with large number of components
-            n_fast_opts = np.ceil(self.options.eval("nselbo", {"K": K_new}))
+            n_fast_opts = math.ceil(self.options.eval("nselbo", {"K": K_new}))
 
             n_fast_opts = int(
-                np.ceil(n_fast_opts * self.options.get("nselboincr"))
+                math.ceil(n_fast_opts * self.options.get("nselboincr"))
             )
             n_slow_opts = 1
 
@@ -1526,7 +1573,7 @@ class VBMC:
                 if len(laststable) == 0:
                     # Go some iterations back if no previous stable iteration
                     idx_start = max(
-                        1, int(np.ceil(max_idx - max_idx * frac_back))
+                        1, int(math.ceil(max_idx - max_idx * frac_back))
                     )
                 else:
                     idx_start = np.ravel(laststable)[-1]
