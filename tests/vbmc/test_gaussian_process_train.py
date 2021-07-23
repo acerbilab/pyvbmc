@@ -1,21 +1,13 @@
-import pytest
-import numpy as np
-from scipy.stats import norm
-
 import gpyreg as gpr
-
-from pyvbmc.vbmc.gaussian_process_train import (
-    _get_hpd,
-    _meanfun_name_to_mean_function,
-    _cov_identifier_to_covariance_function,
-    _get_training_data,
-    _estimate_noise,
-    _get_hyp_cov,
-    _get_gp_training_options,
-)
-
-from pyvbmc.vbmc import VBMC
+import numpy as np
+import pytest
 from pyvbmc.variational_posterior import VariationalPosterior
+from pyvbmc.vbmc import VBMC
+from pyvbmc.vbmc.gaussian_process_train import (
+    _cov_identifier_to_covariance_function, _estimate_noise,
+    _get_gp_training_options, _get_hpd, _get_hyp_cov, _get_training_data,
+    _meanfun_name_to_mean_function)
+from scipy.stats import norm
 
 
 def test_estimate_noise():
@@ -239,7 +231,8 @@ def test_get_hyp_cov():
     #       maybe something like checking whether the returned thing is
     #       a covariance matrix?
     # vbmc.options["weightedhypcov"] = True
-    # res3 = _get_hyp_cov(vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict)
+    # res3 = _get_hyp_cov(vbmc.optim_state, vbmc.iteration_history, 
+    #                       vbmc.options, hyp_dict)
 
 
 def test_get_gp_training_options_samplers():

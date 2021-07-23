@@ -1,7 +1,7 @@
 import math
-import numpy as np
 
 import gpyreg as gpr
+import numpy as np
 
 
 def train_gp(
@@ -65,7 +65,8 @@ def train_gp(
 
     # Heuristic fitness shaping (unused even in MATLAB)
     # if options.FitnessShaping
-    #     [y_train,s2_train] = outputwarp_vbmc(X_train,y_train,s2_train,optimState,options);
+    #     [y_train,s2_train] = outputwarp_vbmc(X_train,y_train,s2_train,
+    #                                           optimState,options);
     #  end
 
     # Pick the mean function
@@ -399,7 +400,8 @@ def _gp_hyp(optim_state, options, plb, pub, gp, X, y):
             ([np.nan, np.log(0.01)], [np.nan, np.log(10)], [np.nan, 3]),
         )
 
-    # Missing port: priors and bounds for output warping hyperparameters (not used)
+    # Missing port: priors and bounds for output warping hyperparameters
+    # (not used)
 
     # VBMC used to have an empirical Bayes prior on some GP hyperparameters,
     # such as input length scales, based on statistics of the GP training
@@ -436,7 +438,7 @@ def _gp_hyp(optim_state, options, plb, pub, gp, X, y):
         if optim_state["N"] >= options["stablegpsampling"]:
             stop_sampling = optim_state["N"]
 
-        # Stop sampling after reaching threshold number of variational components
+        # Stop sampling after reaching threshold of variational components
         if optim_state["vpK"] >= options["stablegpvpk"]:
             stop_sampling = optim_state["N"]
 
@@ -556,7 +558,7 @@ def _get_gp_training_options(
                 gp_train["widths"] = np.maximum(hyp_widths, 1e-3) * width_mult
         else:
             gp_train["sampler"] = "laplace"
-            
+
     else:
         raise ValueError("Unknown MCMC sampler for GP hyperparameters")
 

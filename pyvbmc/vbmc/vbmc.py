@@ -1,18 +1,18 @@
-import sys
 import math
+import sys
 
-import numpy as np
 import gpyreg as gpr
+import numpy as np
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.stats.entropy import kldiv_mvn
 from pyvbmc.timer import Timer
 from pyvbmc.variational_posterior import VariationalPosterior
 
-from .gaussian_process_train import train_gp
-from .options import Options
-from .iteration_history import IterationHistory
 from .active_sample import active_sample
+from .gaussian_process_train import train_gp
+from .iteration_history import IterationHistory
+from .options import Options
 
 
 class VBMC:
@@ -694,18 +694,20 @@ class VBMC:
                 ):
                     # Train a distinct GP for active sampling
                     # Since we are doing iterations from 0 onwards
-                    # instead of from 1 onwards, this should be checking 
+                    # instead of from 1 onwards, this should be checking
                     # oddness, not evenness.
                     if iteration % 2 == 1:
                         meantemp = self.optim_state.get("gp_meanfun")
                         self.optim_state["gp_meanfun"] = "const"
-                        gp_search, Ns_gp, sn2hpd, hyp_dict = train_gp(hyp_dict,
-                                                                      self.optim_state, 
-                                                                      self.function_logger, 
-                                                                      self.iteration_history, 
-                                                                      self.options,
-                                                                      self.plausible_lower_bounds,
-                                                                      self.plausible_upper_bounds)
+                        gp_search, Ns_gp, sn2hpd, hyp_dict = train_gp(
+                            hyp_dict,
+                            self.optim_state,
+                            self.function_logger,
+                            self.iteration_history,
+                            self.options,
+                            self.plausible_lower_bounds,
+                            self.plausible_upper_bounds,
+                        )
                         self.optim_state["sn2hpd"] = sn2hpd
                         self.optim_state["gp_meanfun"] = meantemp
                     else:
@@ -741,13 +743,15 @@ class VBMC:
 
             timer.start_timer("gpTrain")
 
-            gp, Ns_gp, sn2hpd, hyp_dict = train_gp(hyp_dict,
-                                                   self.optim_state, 
-                                                   self.function_logger, 
-                                                   self.iteration_history, 
-                                                   self.options,
-                                                   self.plausible_lower_bounds,
-                                                   self.plausible_upper_bounds)
+            gp, Ns_gp, sn2hpd, hyp_dict = train_gp(
+                hyp_dict,
+                self.optim_state,
+                self.function_logger,
+                self.iteration_history,
+                self.options,
+                self.plausible_lower_bounds,
+                self.plausible_upper_bounds,
+            )
             self.optim_state["sn2hpd"] = sn2hpd
 
             timer.stop_timer("gpTrain")
@@ -894,7 +898,7 @@ class VBMC:
                 "timer": timer,
                 "func_count": self.function_logger.func_count,
             }
-            
+
             # Record all useful stats
             self.iteration_history.record_iteration(
                 iteration_values,
@@ -1159,7 +1163,7 @@ class VBMC:
                 order[: min(n_keep_min, self.function_logger.Xn) + 1]
             ] = True
         # Note that using idx_keep[:, 0] is necessary since X_flag
-        # is a 1D array and idx_keep a 2D array. 
+        # is a 1D array and idx_keep a 2D array.
         self.function_logger.X_flag = np.logical_and(
             idx_keep[:, 0], self.function_logger.X_flag
         )
@@ -1182,9 +1186,7 @@ class VBMC:
         isFinished_flag = False
 
         # Maximum number of new function evaluations
-        if self.function_logger.func_count >= self.options.get(
-            "maxfunevals"
-        ):
+        if self.function_logger.func_count >= self.options.get("maxfunevals"):
             isFinished_flag = True
             # msg "Inference terminated
 
