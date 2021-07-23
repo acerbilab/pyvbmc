@@ -480,9 +480,9 @@ def _get_gp_training_options(
 
     """
 
-    it = optim_state["iter"]
-    if it > 0:
-        r_index = iteration_history["rindex"][it - 1]
+    iteration = optim_state["iter"]
+    if iteration > 0:
+        r_index = iteration_history["rindex"][iteration - 1]
     else:
         r_index = np.inf
 
@@ -503,26 +503,31 @@ def _get_gp_training_options(
             width_mult = np.maximum(options["gpsamplewidths"], r_index)
             hyp_widths = np.sqrt(np.diag(hyp_cov).T)
             gp_train["widths"] = np.maximum(hyp_widths, 1e-3) * width_mult
+
     elif options["gphypsampler"] == "npv":
         gp_train["sampler"] = "npv"
+
     elif options["gphypsampler"] == "mala":
         gp_train["sampler"] = "mala"
         if hyp_cov is not None:
             gp_train["widths"] = np.sqrt(np.diag(hyp_cov).T)
         if "gpmala_stepsize" in optim_state:
             gp_train["step_size"] = optim_state["gpmala_stepsize"]
+
     elif options["gphypsampler"] == "slicelite":
         gp_train["sampler"] = "slicelite"
         if options["gpsamplewidths"] > 0 and hyp_cov is not None:
             width_mult = np.maximum(options["gpsamplewidths"], r_index)
             hyp_widths = np.sqrt(np.diag(hyp_cov).T)
             gp_train["widths"] = np.maximum(hyp_widths, 1e-3) * width_mult
+
     elif options["gphypsampler"] == "splitsample":
         gp_train["sampler"] = "splitsample"
         if options["gpsamplewidths"] > 0 and hyp_cov is not None:
             width_mult = np.maximum(options["gpsamplewidths"], r_index)
             hyp_widths = np.sqrt(np.diag(hyp_cov).T)
             gp_train["widths"] = np.maximum(hyp_widths, 1e-3) * width_mult
+
     elif options["gphypsampler"] == "covsample":
         if options["gpsamplewidths"] > 0 and hyp_cov is not None:
             width_mult = np.maximum(options["gpsamplewidths"], r_index)
@@ -541,6 +546,7 @@ def _get_gp_training_options(
                 gp_train["sampler"] = "slicesample"
         else:
             gp_train["sampler"] = "covsample"
+
     elif options["gphypsampler"] == "laplace":
         if optim_state["n_eff"] < 30:
             gp_train["sampler"] = "slicesample"
@@ -550,6 +556,7 @@ def _get_gp_training_options(
                 gp_train["widths"] = np.maximum(hyp_widths, 1e-3) * width_mult
         else:
             gp_train["sampler"] = "laplace"
+            
     else:
         raise ValueError("Unknown MCMC sampler for GP hyperparameters")
 
@@ -575,8 +582,8 @@ def _get_gp_training_options(
     else:
         gp_train["burn"] = gp_train["thin"] * 3
         if (
-            it > 1
-            and iteration_history["rindex"][it - 1]
+            iteration > 1
+            and iteration_history["rindex"][iteration - 1]
             < options["gpretrainthreshold"]
         ):
             gp_train["init_N"] = 0
@@ -589,7 +596,7 @@ def _get_gp_training_options(
                         math.ceil(
                             gp_train["thin"]
                             * np.log(
-                                iteration_history["rindex"][it - 1]
+                                iteration_history["rindex"][iteration - 1]
                                 / np.log(options["gpretrainthreshold"])
                             )
                         ),
