@@ -10,6 +10,7 @@ from pyvbmc.timer import Timer
 from pyvbmc.variational_posterior import VariationalPosterior
 
 from .gaussian_process_train import train_gp, reupdate_gp
+from .variational_optimization import update_K, optimize_vp
 from .options import Options
 from .iteration_history import IterationHistory
 from .active_sample import active_sample
@@ -768,7 +769,9 @@ class VBMC:
                 Knew = self.vp.mu.shape[1]
             else:
                 # Update number of variational mixture components
-                Knew = self._updateK()
+                Knew = update_K(self.optim_state,
+                                self.iteration_history,
+                                self.options)
 
             # Decide number of fast/slow optimizations
             N_fastopts = math.ceil(
@@ -789,7 +792,9 @@ class VBMC:
                 N_slowopts = 1
 
             # Run optimization of variational parameters
-            varss, pruned = self._optimize_vp(
+            varss, pruned = optimize_vp(
+                self.vp,
+                gp,
                 N_fastopts,
                 N_slowopts,
                 Knew,
@@ -1001,79 +1006,6 @@ class VBMC:
             self.vp, elbo, elbo_sd, changedflag = self.finalboost(
                 self.vp, dict()
             )
-
-    # Variational optimization / training of variational posterior:
-
-    def _updateK(self):
-        """
-        Update number of variational mixture components.
-        """
-        K_new = self.optim_state["vpK"]
-
-        # Compute maximum number of components
-        K_max = math.ceil(
-            self.options.eval(
-                "kfunmax", {"N": self.optim_state["n_eff"]}
-            )
-        )
-
-        # Evaluate bonus for stable solution.
-        K_bonus = round(self.options.eval("adaptivek", {"unkn" : K_new}))
-
-        if not self.optim_state["warmup"] and self.optim_state["iter"] > 0:
-            recent_iters = math.ceil(
-                0.5
-                * self.options["tolstablecount"]
-                / self.options["funevalsperiter"]
-            )
-
-            # Check if ELCBO has improved wrt recent iterations
-            lower_end = max(0, self.optim_state["iter"] - recent_iters)
-            elbos = self.iteration_history["elbo"][lower_end:]
-            elboSDs = self.iteration_history["elbo_sd"][lower_end:]
-            elcbos = elbos - self.options["elcboimproweight"] * elboSDs
-            warmups = self.iteration_history["warmup"][lower_end:]
-            elcbos_after = elcbos[~warmups]
-            # Ignore two iterations right after warmup.
-            elcbos_after[0 : min(2, self.optim_state["iter"])] = -np.inf
-            elcbo_max = np.max(elcbos_after)
-            improving_flag = elcbos_after[-1] >= elcbo_max and np.isfinite(
-                elcbos_after[-1]
-            )
-
-            # Add one component if ELCBO is improving and no pruning in last iteration
-            if self.iteration_history["pruned"][-1] == 0 and improving_flag:
-                K_new += 1
-
-            # Bonus components for stable solution (speed up exploration)
-            if (
-                self.iteration_history["rindex"][-1] < 1
-                and not self.optim_state["recompute_var_post"]
-                and improving_flag
-            ):
-                # No bonus if any component was very recently pruned.
-                new_lower_end = max(
-                    0, self.optim_state["iter"] - math.ceil(0.5 * recent_iters)
-                )
-                if np.all(
-                    self.iteration_history["pruned"][new_lower_end:] == 0
-                ):
-                    K_new += K_bonus
-
-            K_new = max(self.optim_state["vpK"], min(K_new, K_max))
-
-        return K_new
-
-    def _optimize_vp(self, Nfastopts, Nslowopts, K=None):
-        """
-        Optimize variational posterior.
-        """
-        # use interface for vp optimzation?
-        if K is None:
-            K = self.vp.K
-        varss = []
-        pruned = 0
-        return varss, pruned
 
     # Loop termination:
 
@@ -1477,7 +1409,7 @@ class VBMC:
             self.optim_state["entropy_alpha"] = 0
 
             # stable_flag = vp.stats.stable;
-            vp = self._optimize_vp(vp, gp, n_fast_opts, n_slow_opts, K_new)
+            vp = optimize_vp(vp, gp, n_fast_opts, n_slow_opts, K_new)
             # vp.stats.stable = stable_flag
             changed_flag = True
         else:

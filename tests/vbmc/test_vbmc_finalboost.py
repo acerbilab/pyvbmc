@@ -35,7 +35,7 @@ def test_final_boost_lambda_options(mocker):
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.iteration_history["gp"] = np.arange(30)
     mocker.patch(
-        "pyvbmc.vbmc.VBMC._optimize_vp",
+        "pyvbmc.vbmc.variational_optimization.optimize_vp",
         return_value=VariationalPosterior(50),
     )
     vp, elbo, elbo_sd, changedflag = vbmc.finalboost(vbmc.vp, dict())
@@ -56,7 +56,7 @@ def test_final_boost_fixed_value_options(mocker):
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.iteration_history["gp"] = np.arange(30)
     mocker.patch(
-        "pyvbmc.vbmc.VBMC._optimize_vp",
+        "pyvbmc.vbmc.variational_optimization.optimize_vp",
         return_value=VariationalPosterior(50),
     )
     vp, elbo, elbo_sd, changedflag = vbmc.finalboost(vbmc.vp, dict())
@@ -77,7 +77,7 @@ def test_final_boost_fixed_value_options_boost_none(mocker):
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.iteration_history["gp"] = np.arange(30)
     mocker.patch(
-        "pyvbmc.vbmc.VBMC._optimize_vp",
+        "pyvbmc.vbmc.variational_optimization.optimize_vp",
         return_value=VariationalPosterior(50),
     )
     vp, elbo, elbo_sd, changedflag = vbmc.finalboost(vbmc.vp, dict())
@@ -97,7 +97,7 @@ def test_final_boost_no_boost(mocker):
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.iteration_history["gp"] = np.arange(30)
     mocker.patch(
-        "pyvbmc.vbmc.VBMC._optimize_vp",
+        "pyvbmc.vbmc.variational_optimization.optimize_vp",
         return_value=VariationalPosterior(50),
     )
     vp, elbo, elbo_sd, changedflag = vbmc.finalboost(vbmc.vp, dict())
