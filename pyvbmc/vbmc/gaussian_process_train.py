@@ -40,7 +40,7 @@ def train_gp(
     gp : GP
         The trained GP.
     gp_s_N : int
-        The amount of samples for fitting.
+        The number of samples for fitting.
     sn2hpd : float
         An estimate of the GP noise variance at high posterior density.
     hyp_dict : dict
@@ -287,7 +287,7 @@ def _gp_hyp(optim_state, options, plb, pub, gp, X, y):
     hyp0 : ndarray, shape (hyp_N,)
         Initial guess for the hyperparameters.
     gp_s_N : int
-        Amount of samples for GP fitting.
+        The number of samples for GP fitting.
 
     Raises
     ------
