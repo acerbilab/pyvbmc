@@ -560,3 +560,34 @@ def test_kldiv_no_samples_gaussflag():
     vp = VariationalPosterior(1, 1, np.array([[5]]))
     with pytest.raises(ValueError):
         vp.kldiv(vp, gaussflag=True, N=0)
+
+def test_soft_bounds():
+    D = 2
+    K = 1
+    vp = VariationalPosterior(D, K)
+    assert vp.bounds is None
+    
+    # use a fake options struct
+    options = {
+        "tolconloss" : 0.01,
+        "tolweight" : 1e-2,
+        "weightpenalty": 0.1,
+        "tollength" : 1e-6
+    }
+    
+    # Make up some fake data.
+    X = np.array([np.linspace(0, 1, 10), np.linspace(0, 1, 10)]).T
+    
+    theta_bnd = vp.get_bounds(X, options)
+    
+    assert vp.bounds is not None
+    assert np.all(vp.bounds["mu_lb"] == 0)
+    assert np.all(vp.bounds["mu_ub"] == 1)
+    assert np.all(vp.bounds["lnscale_lb"] == np.log(options["tollength"]))
+    assert np.all(vp.bounds["lnscale_ub"] == 0)
+    assert vp.bounds["eta_lb"] == np.log(0.5 * options["tolweight"])
+    assert vp.bounds["eta_ub"] == 0
+    
+    assert theta_bnd["tol_con"] == options["tolconloss"]
+    assert theta_bnd["weight_threshold"] == max(1/(4*K), options["tolweight"])
+    assert theta_bnd["weight_penalty"] == options["weightpenalty"]
