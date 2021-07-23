@@ -467,6 +467,12 @@ def _get_gp_training_options(
     =======
     gp_train : dic
         A dictionary of GP training options.
+
+    Raises
+    ------
+    ValueError
+        Raised if the MCMC sampler for GP hyperparameters is unknown.
+
     """
 
     it = optim_state["iter"]
