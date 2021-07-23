@@ -288,6 +288,11 @@ def _gp_hyp(optim_state, options, plb, pub, gp, X, y):
         Initial guess for the hyperparameters.
     gp_s_N : int
         Amount of samples for GP fitting.
+
+    Raises
+    ------
+    TypeError
+        Raised if the mean function is not supported by gpyreg.
     """
 
     # Get high posterior density dataset.
@@ -356,7 +361,7 @@ def _gp_hyp(optim_state, options, plb, pub, gp, X, y):
             )
             bounds["mean_const"] = (-np.inf, np.max(hpd_y) + delta_y)
     else:
-        raise Exception("New mean function which is not handled!")
+        raise TypeError("The mean function is not supported by gpyreg.")
 
     # Set priors over hyperparameters (might want to double-check this)
     priors = gp.get_priors()
