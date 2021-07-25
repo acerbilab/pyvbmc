@@ -921,20 +921,6 @@ class VBMC:
                     ] = self.optim_state.get("N")
 
             # Check termination conditions
-            # is_finished = self._is_finished()
-
-            # Check warmup
-            if (
-                self.optim_state.get("iter") > 2
-                and self.optim_state.get("stop_gp_sampling") == 0
-                and not self.optim_state.get("warmup")
-            ):
-                if self._is_gp_sampling_finished():
-                    self.optim_state[
-                        "stop_gp_sampling"
-                    ] = self.optim_state.get("N")
-
-            # Check termination conditions
             if iteration > 2:
                 # TODO: remove later, only here to make tests work
                 is_finished = True
