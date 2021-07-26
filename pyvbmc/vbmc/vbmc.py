@@ -1,5 +1,7 @@
+import math
 import sys
 
+import gpyreg as gpr
 import numpy as np
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
@@ -7,8 +9,10 @@ from pyvbmc.stats.entropy import kldiv_mvn
 from pyvbmc.timer import Timer
 from pyvbmc.variational_posterior import VariationalPosterior
 
-from .options import Options
+from .active_sample import active_sample
+from .gaussian_process_train import train_gp
 from .iteration_history import IterationHistory
+from .options import Options
 
 
 class VBMC:
@@ -178,9 +182,17 @@ class VBMC:
                 "iter",
                 "elbo_sd",
                 "lcbmax",
-                "funccount",
                 "data_trim_list",
                 "gp",
+                "gp_hyp_full",
+                "Ns_gp",
+                "timer",
+                "optim_state",
+                "sKL",
+                "sKL_true",
+                "pruned",
+                "varss",
+                "func_count",
             ]
         )
 
@@ -450,7 +462,9 @@ class VBMC:
         )
 
         # Before first iteration
-        optim_state["iter"] = 0
+        # Iterations are from 0 onwards in optimize so we should have -1
+        # here. In MATLAB this was 0.
+        optim_state["iter"] = -1
 
         # Estimate of GP observation noise around the high posterior
         # density region
@@ -506,7 +520,7 @@ class VBMC:
         optim_state["last_run_avg"] = np.NaN
 
         # Current number of components for variational posterior
-        optim_state["vpk"] = self.K
+        optim_state["vpK"] = self.K
 
         # Number of variational components pruned in last iteration
         optim_state["pruned"] = 0
@@ -536,7 +550,7 @@ class VBMC:
         # (0: none; 1: unknown noise level; 2: user-provided noise)
         if self.options.get("specifytargetnoise"):
             optim_state["uncertainty_handling_level"] = 2
-        elif len(self.options.get("uncertaintyhandling")) == 0:
+        elif len(self.options.get("uncertaintyhandling")) > 0:
             optim_state["uncertainty_handling_level"] = 1
         else:
             optim_state["uncertainty_handling_level"] = 0
@@ -587,13 +601,13 @@ class VBMC:
 
         if optim_state.get("uncertainty_handling_level") == 0:
             # Observation noise for stability
-            optim_state["gp_noisefun"] = [1, 0]
+            optim_state["gp_noisefun"] = [1, 0, 0]
         elif optim_state.get("uncertainty_handling_level") == 1:
             # Infer noise
-            optim_state["gp_noisefun"] = [1, 2]
+            optim_state["gp_noisefun"] = [1, 2, 0]
         elif optim_state.get("uncertainty_handling_level") == 2:
             # Provided heteroskedastic noise
-            optim_state["gp_noisefun"] = [1, 1]
+            optim_state["gp_noisefun"] = [1, 1, 0]
 
         if (
             self.options.get("noiseshaping")
@@ -645,6 +659,7 @@ class VBMC:
         iteration = -1
         timer = Timer()
         gp = None
+        hyp_dict = {}
 
         while not is_finished:
             iteration += 1
@@ -652,7 +667,7 @@ class VBMC:
             self.optim_state["redo_roto_scaling"] = False
 
             if self.optim_state.get("entropy_switch") and (
-                self.optim_state.get("func_count")
+                self.function_logger.func_count
                 >= self.optim_state.get("entropy_force_switch")
                 * self.optim_state.get("max_fun_evals")
             ):
@@ -678,10 +693,22 @@ class VBMC:
                     and not self.options.get("varactivesample")
                 ):
                     # Train a distinct GP for active sampling
-                    if iteration % 2 == 0:
+                    # Since we are doing iterations from 0 onwards
+                    # instead of from 1 onwards, this should be checking
+                    # oddness, not evenness.
+                    if iteration % 2 == 1:
                         meantemp = self.optim_state.get("gp_meanfun")
                         self.optim_state["gp_meanfun"] = "const"
-                        gp_search = self._train_gp()
+                        gp_search, Ns_gp, sn2hpd, hyp_dict = train_gp(
+                            hyp_dict,
+                            self.optim_state,
+                            self.function_logger,
+                            self.iteration_history,
+                            self.options,
+                            self.plausible_lower_bounds,
+                            self.plausible_upper_bounds,
+                        )
+                        self.optim_state["sn2hpd"] = sn2hpd
                         self.optim_state["gp_meanfun"] = meantemp
                     else:
                         gp_search = gp
@@ -696,10 +723,19 @@ class VBMC:
                     # funwrapper,vp,vp_old,gp_search,options)
                     sys.exit("Function currently not supported")
                 else:
-                    self._activesample(new_funevals)
+                    active_sample(
+                        gp_search,
+                        new_funevals,
+                        self.optim_state,
+                        self.function_logger,
+                        self.options,
+                    )
 
-            # optimState.N = optimState.Xn  # Number of training inputs
-            # optimState.Neff = sum(optimState.nevals(optimState.X_flag))
+            # Number of training inputs
+            self.optim_state["N"] = self.function_logger.Xn
+            self.optim_state["n_eff"] = np.sum(
+                self.function_logger.nevals[self.function_logger.X_flag]
+            )
 
             timer.stop_timer("activeSampling")
 
@@ -707,7 +743,16 @@ class VBMC:
 
             timer.start_timer("gpTrain")
 
-            Ns_gp = self._train_gp()
+            gp, Ns_gp, sn2hpd, hyp_dict = train_gp(
+                hyp_dict,
+                self.optim_state,
+                self.function_logger,
+                self.iteration_history,
+                self.options,
+                self.plausible_lower_bounds,
+                self.plausible_upper_bounds,
+            )
+            self.optim_state["sn2hpd"] = sn2hpd
 
             timer.stop_timer("gpTrain")
 
@@ -733,12 +778,12 @@ class VBMC:
             N_fastopts = 3
             # np.ceil(evaloption_vbmc(options.NSelbo, K))
 
-            if self.optim_state.get("recompute_varpost") or (
+            if self.optim_state.get("recompute_var_post") or (
                 self.options.get("alwaysrefitvarpost")
             ):
                 # Full optimizations
                 N_slowopts = self.options.get("elbostarts")
-                self.optim_state["recompute_varpost"] = False
+                self.optim_state["recompute_var_post"] = False
             else:
                 # Only incremental change from previous iteration
                 N_fastopts = np.ceil(
@@ -746,13 +791,13 @@ class VBMC:
                 )
                 N_slowopts = 1
 
-                # Run optimization of variational parameters
-                varss, pruned = self._optimize_vp(
-                    N_fastopts,
-                    N_slowopts,
-                    Knew,
-                )
-                # optimState.vp_repo{end+1} = get_vptheta(vp)
+            # Run optimization of variational parameters
+            varss, pruned = self._optimize_vp(
+                N_fastopts,
+                N_slowopts,
+                Knew,
+            )
+            # optimState.vp_repo{end+1} = get_vptheta(vp)
 
             self.optim_state["vpK"] = self.vp.K
             # Save current entropy
@@ -788,9 +833,7 @@ class VBMC:
             )
 
             # Evaluate max LCB of GP prediction on all training inputs
-            # _, _, fmu, fs2 = GP_Lite.gplite_pred(gp, gp.X, gp.y, gp.s2)
-            fmu = [3, 3, 3]
-            fs2 = [4]
+            fmu, fs2 = gp.predict(gp.X, gp.y, gp.s2, add_noise=False)
             self.optim_state["lcbmax"] = np.max(
                 fmu - self.options.get("elcboimproweight") * np.sqrt(fs2)
             )
@@ -839,20 +882,23 @@ class VBMC:
             # timer.totalruntime = NaN;   # Update at the end of iteration
             # timer
 
-            # must be replaced with the correct key and values later.
             iteration_values = {
-                # self.optim_state,
+                "iter": iteration,
+                "optim_state": self.optim_state,
                 "vp": self.vp,
                 "elbo": elbo,
-                # elbo_sd,
-                # varss,
-                # sKL,
-                # sKL_true,
-                # gp,
-                # Ns_gp,
-                # pruned,
-                # timer,
+                "elbo_sd": elbo_sd,
+                "varss": varss,
+                "sKL": sKL,
+                "sKL_true": sKL_true,
+                "gp": gp,
+                "gp_hyp_full": gp.get_hyperparameters(as_array=True),
+                "Ns_gp": Ns_gp,
+                "pruned": pruned,
+                "timer": timer,
+                "func_count": self.function_logger.func_count,
             }
+
             # Record all useful stats
             self.iteration_history.record_iteration(
                 iteration_values,
@@ -875,21 +921,11 @@ class VBMC:
                     ] = self.optim_state.get("N")
 
             # Check termination conditions
-            # is_finished = self._is_finished()
-
-            # Check warmup
-            if (
-                self.optim_state.get("iter") > 2
-                and self.optim_state.get("stop_gp_sampling") == 0
-                and not self.optim_state.get("warmup")
-            ):
-                if self._is_gp_sampling_finished():
-                    self.optim_state[
-                        "stop_gp_sampling"
-                    ] = self.optim_state.get("N")
-
-            # Check termination conditions
-            # is_finished = self._check_termination_conditions()
+            if iteration > 2:
+                # TODO: remove later, only here to make tests work
+                is_finished = True
+            else:
+                is_finished = self._check_termination_conditions()
 
             #  Save stability
             # vp.stats.stable = stats.stable(optimState.iter)
@@ -954,12 +990,6 @@ class VBMC:
             self.vp, elbo, elbo_sd, changedflag = self.finalboost(
                 self.vp, dict()
             )
-            # remove later
-            is_finished = iteration > 2
-
-    # active sampling
-    def _activesample(self, new_funevals):
-        pass
 
     def _reupdate_gp(self, gp):
         """
@@ -968,18 +998,6 @@ class VBMC:
         Wait for interface of GPlite before implementing.
         """
         return gp
-
-    # GP Training
-
-    def _train_gp(self):
-        """
-        Train Gaussian process model.
-
-        Wait for interface of GPlite before implementing.
-        """
-        ns_gp = 10
-        gp = {}
-        return ns_gp, gp
 
     # Variational optimization / training of variational posterior:
 
@@ -1058,9 +1076,9 @@ class VBMC:
         # Alternative criterion for stopping - no improvement over max fcn value
         max_thresh = np.amax(lcbmax_vec) - self.options.get("tolimprovement")
         idx_1st = np.ravel(np.argwhere(lcbmax_vec > max_thresh))[0]
-        yy = self.iteration_history.get("funccount")[:iteration]
+        yy = self.iteration_history.get("func_count")[:iteration]
         pos = yy[idx_1st]
-        currentpos = self.optim_state.get("funccount")
+        currentpos = self.function_logger.func_count
         no_longterm_improvement_flag = (currentpos - pos) > self.options.get(
             "warmupnoimprothreshold"
         )
@@ -1130,9 +1148,10 @@ class VBMC:
             idx_keep[
                 order[: min(n_keep_min, self.function_logger.Xn) + 1]
             ] = True
-
+        # Note that using idx_keep[:, 0] is necessary since X_flag
+        # is a 1D array and idx_keep a 2D array.
         self.function_logger.X_flag = np.logical_and(
-            idx_keep, self.function_logger.X_flag
+            idx_keep[:, 0], self.function_logger.X_flag
         )
 
         # Skip adaptive sampling for next iteration
@@ -1153,9 +1172,7 @@ class VBMC:
         isFinished_flag = False
 
         # Maximum number of new function evaluations
-        if self.optim_state.get("func_count") >= self.options.get(
-            "maxfunevals"
-        ):
+        if self.function_logger.func_count >= self.options.get("maxfunevals"):
             isFinished_flag = True
             # msg "Inference terminated
 
@@ -1223,7 +1240,7 @@ class VBMC:
         self.iteration_history.record("stable", stableflag, iteration)
 
         # Prevent early termination
-        if self.optim_state.get("func_count") < self.options.get(
+        if self.function_logger.func_count < self.options.get(
             "minfunevals"
         ) or iteration < self.options.get("miniter"):
             isFinished_flag = False
@@ -1274,7 +1291,7 @@ class VBMC:
             )
             - 1
         )
-        xx = self.iteration_history.get("funccount")[idx0:iteration_idx]
+        xx = self.iteration_history.get("func_count")[idx0:iteration_idx]
         yy = (
             self.iteration_history.get("elbo")[idx0:iteration_idx]
             - self.options.get("elcboimproweight")

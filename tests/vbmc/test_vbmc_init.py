@@ -460,27 +460,27 @@ def test_vbmc_optimstate_gp_functions():
     user_options = {"specifytargetnoise": True}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     # uncertainty_handling_level 1
-    assert vbmc.optim_state["gp_noisefun"] == [1, 1]
-    user_options = {"specifytargetnoise": False, "uncertaintyhandling": []}
+    assert vbmc.optim_state["gp_noisefun"] == [1, 1, 0]
+    user_options = {"specifytargetnoise": False, "uncertaintyhandling": [3]}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
-    assert vbmc.optim_state["gp_noisefun"] == [1, 2]
+    assert vbmc.optim_state["gp_noisefun"] == [1, 2, 0]
     # uncertainty_handling_level 0
     user_options = {
         "specifytargetnoise": False,
-        "uncertaintyhandling": [3],
+        "uncertaintyhandling": [],
         "noiseshaping": True,
     }
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     assert vbmc.optim_state["uncertainty_handling_level"] == 0
-    assert vbmc.optim_state["gp_noisefun"] == [1, 1]
+    assert vbmc.optim_state["gp_noisefun"] == [1, 1, 0]
     user_options = {
         "specifytargetnoise": False,
-        "uncertaintyhandling": [3],
+        "uncertaintyhandling": [],
         "noiseshaping": False,
     }
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     assert vbmc.optim_state["uncertainty_handling_level"] == 0
-    assert vbmc.optim_state["gp_noisefun"] == [1, 0]
+    assert vbmc.optim_state["gp_noisefun"] == [1, 0, 0]
 
 
 def test_vbmc_optimstate_bounds():
@@ -508,7 +508,7 @@ def test_vbmc_optimstate_bounds():
 
 def test_vbmc_optimstate_constants():
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
-    assert np.all(vbmc.optim_state["iter"] == 0)
+    assert np.all(vbmc.optim_state["iter"] == -1)
     assert np.all(vbmc.optim_state["sn2hpd"] == np.inf)
     assert np.all(vbmc.optim_state["last_warping"] == -np.inf)
     assert np.all(vbmc.optim_state["last_successful_warping"] == -np.inf)
@@ -520,7 +520,7 @@ def test_vbmc_optimstate_constants():
     assert np.all(vbmc.optim_state["run_mean"] == [])
     assert np.all(vbmc.optim_state["run_cov"] == [])
     assert np.all(np.isnan(vbmc.optim_state["last_run_avg"]))
-    assert np.all(vbmc.optim_state["vpk"] == vbmc.K)
+    assert np.all(vbmc.optim_state["vpK"] == vbmc.K)
     assert np.all(vbmc.optim_state["pruned"] == 0)
     assert np.all(vbmc.optim_state["variance_regularized_acqfcn"] == True)
     assert np.all(vbmc.optim_state["search_cache"] == [])
@@ -603,10 +603,10 @@ def test_vbmc_optimstate_uncertainty_handling_level():
     user_options = {"specifytargetnoise": True}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     assert vbmc.optim_state["uncertainty_handling_level"] == 2
-    user_options = {"specifytargetnoise": False, "uncertaintyhandling": []}
+    user_options = {"specifytargetnoise": False, "uncertaintyhandling": [3]}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     assert vbmc.optim_state["uncertainty_handling_level"] == 1
-    user_options = {"specifytargetnoise": False, "uncertaintyhandling": [3]}
+    user_options = {"specifytargetnoise": False, "uncertaintyhandling": []}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     assert vbmc.optim_state["uncertainty_handling_level"] == 0
 

@@ -8,25 +8,22 @@ from .options import Options
 
 
 def active_sample(
-    x0: np.array,
-    function_logger: FunctionLogger,
+    gp,
     sample_count: int,
+    optim_state,
+    function_logger: FunctionLogger,
     options: Options,
 ):
     """
     active_sample Actively sample points iteratively based on acquisition function.
-
     Parameters
     ----------
-    x0 : np.array
-        given points?
     function_logger : FunctionLogger
         the FunctionLogger of the function to sample from
     sample_count : int
         the number of samples
     options : Options
         the vbmc algorithm options
-
     Returns
     -------
     nd.array
@@ -36,33 +33,27 @@ def active_sample(
     function_time = 0
     timer.start_timer("active_sampling")
 
-    # if GP is None
-    if True:
-        """
-        Initial sample design (provided or random box).
-        """
+    if gp is None:
+        # Initial sample design (provided or random box).
+        x0 = optim_state["cache"]["x_orig"]
         provided_sample_count, dimension_count = x0.shape
 
         if provided_sample_count <= sample_count:
             Xs = np.copy(x0)
-            ys = np.copy(function_logger.y_orig)
+            ys = np.copy(optim_state["cache"]["y_orig"])
 
             if provided_sample_count < sample_count:
-                if options.InitDesign == "pausible":
+                if options["initdesign"] == "plausible":
                     # Uniform random samples in the plausible box (in transformed space)
-
-                    # dummy fill with 1
-                    Xrnd = np.fill(
-                        (
-                            (sample_count - provided_sample_count),
-                            dimension_count,
-                        ),
-                        1,
+                    window = optim_state["pub"] - optim_state["plb"]
+                    rnd_tmp = np.random.rand(
+                        sample_count - provided_sample_count, dimension_count
                     )
-                elif options.InitDesign == "narrow":
+                    Xrnd = window * rnd_tmp + optim_state["plb"]
+                elif options["initdesign"] == "narrow":
 
                     # dummy fill with 1
-                    Xrnd = np.fill(
+                    Xrnd = np.full(
                         (
                             (sample_count - provided_sample_count),
                             dimension_count,
@@ -76,7 +67,7 @@ def active_sample(
             Xs = np.append(Xs, Xrnd, axis=0)
             ys = np.append(
                 ys,
-                np.empty(sample_count - provided_sample_count) * np.nan,
+                np.full((sample_count - provided_sample_count,), np.nan),
                 axis=0,
             )
         else:
@@ -89,7 +80,9 @@ def active_sample(
             Xs = Xs[:sample_count]
             ys = ys[:sample_count]
 
-        # Remove points from starting cache
+        # TODO: Remove points from starting cache
+        # optim_state["cache"]["x_orig"][idx_remove, :] = []
+        # optim_state["cache"]["y_orig"][idx_remove] = []
 
         # warp Xs points
 
@@ -107,12 +100,14 @@ def active_sample(
         function_time += timer.get_duration("timer_func")
 
     else:
+        # Active uncertainty sampling
 
-        """
-        Active uncertainty sampling
-        """
-
-        return None
+        # dummy implementation
+        window = optim_state["pub"] - optim_state["plb"]
+        rnd_tmp = np.random.rand(sample_count, window.shape[1])
+        Xs = window * rnd_tmp + optim_state["plb"]
+        for sample_idx in range(sample_count):
+            _, _, _ = function_logger(Xs[sample_idx])
 
     timer.stop_timer("active_sampling")
     active_sampling_time = timer.get_duration("active_sampling")
