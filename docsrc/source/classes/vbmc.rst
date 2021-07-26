@@ -21,7 +21,8 @@ Matlab references of ported methods
      - _boundscheck(): `boundscheck_vbmc.m <https://github.com/lacerbi/vbmc/blob/master/misc/boundscheck_vbmc.m>`_
 - VBMC loop (optimize(): loop in `vbmc.m <https://github.com/lacerbi/vbmc/blob/master/vbmc.m>`_):
      - Active Sampling:
-          - _activesample(): `activesample_vbmc.m <https://github.com/lacerbi/vbmc/blob/master/private/activesample_vbmc.m>`_
+          - active_sample(): `activesample_vbmc.m <https://github.com/lacerbi/vbmc/blob/master/private/activesample_vbmc.m>`_
+          - active_sample(): `initdesign_vbmc.m <https://github.com/lacerbi/vbmc/blob/master/misc/initdesign_vbmc.m>`_
           - _reupdate_gp(): `gpreupdate.m <https://github.com/lacerbi/vbmc/blob/master/misc/gpreupdate.m>`_ (Wait for gpyreg progress)
      - Gaussian Process training:
           - _train_gp(): `gptrain_vbmc.m <https://github.com/lacerbi/vbmc/blob/master/misc/gptrain_vbmc.m>`_ (Wait for gpyreg progress)
