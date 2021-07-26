@@ -833,3 +833,18 @@ def _estimate_noise(gp: gpr.GP):
         sn2[:, s : s + 1] = gp.noise.compute(hyp, hpd_X, hpd_y, hpd_s2)
 
     return np.median(np.mean(sn2, axis=1))
+    
+def reupdate_gp(function_logger, gp):
+    """
+    Quick posterior reupdate of Gaussian process.
+    """
+
+    x_train, y_train, s2_train, t_train = _get_training_data(function_logger)
+    gp.X = x_train
+    gp.y = y_train
+    gp.s2 = s2_train
+    gp.update(compute_posterior=True)
+
+    # Missing port: intmean part
+
+    return gp
