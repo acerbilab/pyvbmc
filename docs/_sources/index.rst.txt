@@ -28,6 +28,7 @@ Note that this project is work in progress!
    functions/decorators
    functions/kernel_density
    functions/entropy
+   functions/gaussian_process_train
 
 .. toctree::
    :maxdepth: 2
