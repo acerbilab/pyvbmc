@@ -793,6 +793,9 @@ class VBMC:
 
             # Run optimization of variational parameters
             varss, pruned = optimize_vp(
+                self.options,
+                self.optim_state,
+                self.K,
                 self.vp,
                 gp,
                 N_fastopts,
@@ -1325,7 +1328,7 @@ class VBMC:
 
     # Finalizing:
 
-    def finalboost(self, vp: VariationalPosterior, gp: object):
+    def finalboost(self, vp: VariationalPosterior, gp: gpr.GP):
         """
         Perform a final boost of variational components.
 
@@ -1409,7 +1412,7 @@ class VBMC:
             self.optim_state["entropy_alpha"] = 0
 
             # stable_flag = vp.stats.stable;
-            vp = optimize_vp(vp, gp, n_fast_opts, n_slow_opts, K_new)
+            vp = optimize_vp(self.options, self.optim_state, self.K, vp, gp, n_fast_opts, n_slow_opts, K_new)
             # vp.stats.stable = stable_flag
             changed_flag = True
         else:
