@@ -29,7 +29,7 @@ def train_gp(
     iteration_history : IterationHistory
         Iteration history from the VBMC instance we are calling this from.
     options : Options
-        Options from the VBMC instance we calling this from.
+        Options from the VBMC instance we are calling this from.
     plb : ndarray, shape (hyp_N,)
         Plausible lower bounds for hyperparameters.
     pub : ndarray, shape (hyp_N,)
@@ -110,7 +110,7 @@ def train_gp(
         optim_state, iteration_history, options, hyp_dict, gp_s_N
     )
 
-    # A bit unclear how this branch can be triggered.
+    # In some cases the model can change so be careful.
     if gp_train["widths"] is not None and np.size(
         gp_train["widths"]
     ) != np.size(hyp0):
@@ -142,7 +142,7 @@ def train_gp(
     hyp0 = np.concatenate((hyp0, np.array([hyp_dict["hyp"]])))
     hyp0 = np.unique(hyp0, axis=0)
 
-    # A bit unclear how this branch can be triggered.
+    # In some cases the model can change so be careful.
     if hyp0.shape[1] != np.size(gp.hyper_priors["mu"]):
         hyp0 = None
 
@@ -268,7 +268,7 @@ def _gp_hyp(optim_state, options, plb, pub, gp, X, y):
     optim_state : dict
         Optimization state from the VBMC instance we are calling this from.
     options : Options
-        Options from the VBMC instance we calling this from.
+        Options from the VBMC instance we are calling this from.
     plb : ndarray, shape (hyp_N,)
         Plausible lower bounds for the hyperparameters.
     pub : ndarray, shape (hyp_N,)
@@ -320,6 +320,7 @@ def _gp_hyp(optim_state, options, plb, pub, gp, X, y):
             noise_size = min_noise
         noise_std = 0.5
     elif optim_state["uncertainty_handling_level"] == 1:
+        # This branch is not used and tested at the moment.
         if options["noisesize"] != []:
             noise_mult = max(options["noisesize"], min_noise)
             noise_mult_std = np.log(10) / 2
@@ -464,7 +465,7 @@ def _get_gp_training_options(
     iteration_history : IterationHistory
         Iteration history from the VBMC instance we are calling this from.
     options : Options
-        Options from the VBMC instance we calling this from.
+        Options from the VBMC instance we are calling this from.
     hyp_dict : dict
         Hyperparameter summary statistic dictionary.
     gp_s_N : int
@@ -632,7 +633,7 @@ def _get_hyp_cov(optim_state, iteration_history, options, hyp_dict):
     iteration_history : IterationHistory
         Iteration history from the VBMC instance we are calling this from.
     options : Options
-        Options from the VBMC instance we calling this from.
+        Options from the VBMC instance we are calling this from.
     hyp_dict : dict
         Hyperparameter summary statistic dictionary.
 
@@ -708,6 +709,8 @@ def _get_hpd(X, y, hpd_frac=0.8):
         The training points.
     y : ndarray, shape (N, 1)
         The training targets.
+    hpd_frac : float
+        The portion of the training set to consider.
 
     Returns
     =======
