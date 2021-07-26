@@ -89,6 +89,10 @@ def active_sample(
 
             idx_remove = np.full(provided_sample_count, True)
 
+        else:
+
+            raise NotImplementedError("Wait for Luigis comment on what to use.")
+
         # Remove points from starting cache
         optim_state["cache"]["x_orig"][idx_remove] = None
         optim_state["cache"]["y_orig"][idx_remove] = None
