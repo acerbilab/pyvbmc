@@ -37,7 +37,7 @@ def active_sample(
     nd.array
         ? samples
     """
-    
+
     # Logging
     logger = logging.getLogger("ActiveSample")
     logger.setLevel(logging.INFO)
@@ -102,8 +102,19 @@ def active_sample(
             idx_remove = np.full(provided_sample_count, True)
 
         else:
+            # In the MATLAB implementation there is a cluster algorithm being
+            # used to pick the best points, but we decided not to implement that
+            # yet and just pick the first sample_count points
 
-            raise NotImplementedError("Wait for Luigis comment on what to use.")
+            Xs = np.copy(x0[:sample_count])
+            ys = np.copy(optim_state["cache"]["y_orig"][:sample_count])
+            idx_remove = np.full(provided_sample_count, True)
+            logger.info(
+                "More than sample_count = %s initial points have been "
+                "provided, using only the first %s points.",
+                sample_count,
+                sample_count,
+            )
 
         # Remove points from starting cache
         optim_state["cache"]["x_orig"][idx_remove] = None

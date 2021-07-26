@@ -296,4 +296,51 @@ def test_active_sample_logger():
         parameter_transformer=vbmc.parameter_transformer,
         options=vbmc.options,
     )
-    assert logging.getLogger("ActiveSample").getEffectiveLevel() == 10
+    assert logging.getLogger("ActiveSample").getEffectiveLevel() == 20
+
+
+def test_active_sample_initial_sample_more_provided(caplog):
+    """
+    Test initial sample with provided_sample_count > sample_count
+    """
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500)
+    provided_sample_count = 100
+    sample_count = provided_sample_count - 10
+    x_orig = np.linspace((0, 0, 0), (10, 10, 10), provided_sample_count)
+    vbmc.optim_state["cache"]["x_orig"] = np.copy(x_orig)
+    y_orig = [fun(x) for x in x_orig]
+    vbmc.optim_state["cache"]["y_orig"] = np.copy(y_orig)
+
+    assert not np.all(np.isnan(vbmc.optim_state["cache"]["x_orig"]))
+    assert not np.all(np.isnan(vbmc.optim_state["cache"]["y_orig"]))
+    caplog.set_level(logging.INFO)
+    function_logger, optim_state = active_sample(
+        gp=None,
+        sample_count=sample_count,
+        optim_state=vbmc.optim_state,
+        function_logger=vbmc.function_logger,
+        parameter_transformer=vbmc.parameter_transformer,
+        options=vbmc.options,
+    )
+
+    logger_message = "More than sample_count = 90 initial points have been "
+    logger_message += "provided, using only the first 90 points."
+    assert caplog.record_tuples == [
+        ("ActiveSample", logging.INFO, logger_message)
+    ]
+
+    assert np.allclose(
+        function_logger.x_orig[:sample_count],
+        x_orig[:sample_count],
+        rtol=1e-12,
+        atol=1e-14,
+    )
+    assert np.allclose(
+        np.ravel(function_logger.y_orig[:sample_count]),
+        y_orig[:sample_count],
+        rtol=1e-12,
+        atol=1e-14,
+    )
+    assert np.all(np.isnan(optim_state["cache"]["x_orig"][:sample_count]))
+    assert np.all(np.isnan(optim_state["cache"]["y_orig"][:sample_count]))
+    assert function_logger.Xn == sample_count - 1
