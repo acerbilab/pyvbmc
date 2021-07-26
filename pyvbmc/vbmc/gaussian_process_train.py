@@ -3,15 +3,19 @@ import math
 import gpyreg as gpr
 import numpy as np
 
+from pyvbmc.function_logger import FunctionLogger
+
+from .options import Options
+from .iteration_history import IterationHistory
 
 def train_gp(
-    hyp_dict,
-    optim_state,
-    function_logger,
-    iteration_history,
-    options,
-    plb,
-    pub,
+    hyp_dict: dict,
+    optim_state: dict,
+    function_logger: FunctionLogger,
+    iteration_history: IterationHistory,
+    options: Options,
+    plb: np.ndarray,
+    pub: np.ndarray,
 ):
     """
     Train Gaussian process model.
@@ -194,7 +198,7 @@ def train_gp(
     return gp, gp_s_N, sn2hpd, hyp_dict
 
 
-def _meanfun_name_to_mean_function(name):
+def _meanfun_name_to_mean_function(name: str):
     """
     Transforms a mean function name to an instance of that mean function.
 
@@ -259,7 +263,7 @@ def _cov_identifier_to_covariance_function(identifier):
     return cov_f
 
 
-def _gp_hyp(optim_state, options, plb, pub, gp, X, y):
+def _gp_hyp(optim_state: dict, options: Options, plb: np.ndarray, pub: np.ndarray, gp: gpr.GP, X: np.ndarray, y: np.ndarray):
     """
     Define bounds, priors and samples for GP hyperparameters.
 
@@ -453,7 +457,7 @@ def _gp_hyp(optim_state, options, plb, pub, gp, X, y):
 
 
 def _get_gp_training_options(
-    optim_state, iteration_history, options, hyp_dict, gp_s_N
+    optim_state: dict, iteration_history: IterationHistory, options: Options, hyp_dict: dict, gp_s_N: int
 ):
     """
     Get options for training GP hyperparameters.
@@ -622,7 +626,7 @@ def _get_gp_training_options(
     return gp_train
 
 
-def _get_hyp_cov(optim_state, iteration_history, options, hyp_dict):
+def _get_hyp_cov(optim_state: dict, iteration_history: IterationHistory, options: Options, hyp_dict: dict):
     """
     Get hyperparameter posterior covariance.
 
@@ -699,7 +703,7 @@ def _get_hyp_cov(optim_state, iteration_history, options, hyp_dict):
     return None
 
 
-def _get_hpd(X, y, hpd_frac=0.8):
+def _get_hpd(X: np.ndarray, y: np.ndarray, hpd_frac: float = 0.8):
     """
     Get high-posterior density dataset.
 
@@ -735,7 +739,7 @@ def _get_hpd(X, y, hpd_frac=0.8):
     return hpd_X, hpd_y, hpd_range
 
 
-def _get_training_data(function_logger):
+def _get_training_data(function_logger: FunctionLogger):
     """
     Get training data for building GP surrogate.
 
@@ -771,7 +775,7 @@ def _get_training_data(function_logger):
     return x_train, y_train, s2_train, t_train
 
 
-def _estimate_noise(gp):
+def _estimate_noise(gp: gpr.GP):
     """Estimate GP observation noise at high posterior density.
 
     Parameters
