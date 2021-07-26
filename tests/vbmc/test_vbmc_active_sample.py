@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 from pyvbmc.vbmc import VBMC
 from pyvbmc.vbmc.active_sample import active_sample
+import logging
 
 fun = lambda x: np.sum(x + 2)
 
@@ -239,3 +240,60 @@ def test_active_sample_initial_sample_unknown_initial_design():
             options=vbmc.options,
         )
     assert "Unknown initial design for VBMC" in execinfo.value.args[0]
+
+
+def test_active_sample_logger():
+    """
+    Test logging levels for various options.
+    """
+    # iter which is INFO
+    user_options = {"display": "iter"}
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
+    active_sample(
+        gp=None,
+        sample_count=1,
+        optim_state=vbmc.optim_state,
+        function_logger=vbmc.function_logger,
+        parameter_transformer=vbmc.parameter_transformer,
+        options=vbmc.options,
+    )
+    assert logging.getLogger("ActiveSample").getEffectiveLevel() == 20
+
+    # off which is WARN
+    user_options = {"display": "off"}
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
+    active_sample(
+        gp=None,
+        sample_count=1,
+        optim_state=vbmc.optim_state,
+        function_logger=vbmc.function_logger,
+        parameter_transformer=vbmc.parameter_transformer,
+        options=vbmc.options,
+    )
+    assert logging.getLogger("ActiveSample").getEffectiveLevel() == 30
+
+    # full which is DEBUG
+    user_options = {"display": "full"}
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
+    active_sample(
+        gp=None,
+        sample_count=1,
+        optim_state=vbmc.optim_state,
+        function_logger=vbmc.function_logger,
+        parameter_transformer=vbmc.parameter_transformer,
+        options=vbmc.options,
+    )
+    assert logging.getLogger("ActiveSample").getEffectiveLevel() == 10
+
+    # anything else is also INFO
+    user_options = {"display": "strange_option"}
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
+    active_sample(
+        gp=None,
+        sample_count=1,
+        optim_state=vbmc.optim_state,
+        function_logger=vbmc.function_logger,
+        parameter_transformer=vbmc.parameter_transformer,
+        options=vbmc.options,
+    )
+    assert logging.getLogger("ActiveSample").getEffectiveLevel() == 10

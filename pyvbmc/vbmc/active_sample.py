@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
@@ -35,6 +37,16 @@ def active_sample(
     nd.array
         ? samples
     """
+    
+    # Logging
+    logger = logging.getLogger("ActiveSample")
+    logger.setLevel(logging.INFO)
+    if options.get("display") == "off":
+        logger.setLevel(logging.WARN)
+    elif options.get("display") == "iter":
+        logger.setLevel(logging.INFO)
+    elif options.get("display") == "full":
+        logger.setLevel(logging.DEBUG)
 
     if gp is None:
         # Initial sample design (provided or random box).
