@@ -45,6 +45,48 @@ def active_sample(
             Xs = np.copy(x0)
             ys = np.copy(optim_state["cache"]["y_orig"])
 
+            if provided_sample_count < sample_count:
+                pub = optim_state.get("pub")
+                plb = optim_state.get("plb")
+
+                if options.get("initdesign") == "plausible":
+                    # Uniform random samples in the plausible box
+                    # (in transformed space)
+                    random_Xs = (
+                        np.random.standard_normal(
+                            (sample_count - provided_sample_count, D)
+                        )
+                        * (pub - plb)
+                        + plb
+                    )
+
+                elif options.get("initdesign") == "narrow":
+                    start_Xs = parameter_transformer(Xs[0])
+                    random_Xs = (
+                        np.random.standard_normal(
+                            (sample_count - provided_sample_count, D)
+                        )
+                        - 0.5 * 0.1 * (pub - plb)
+                        + start_Xs
+                    )
+                    random_Xs = np.minimum((np.maximum(random_Xs, plb)), pub)
+
+                else:
+                    raise ValueError(
+                        """Unknown initial design for VBMC.
+                        The option "initdesign" must be "plausible" or "narrow"
+                        but was {}""".format(
+                            options.get("initdesign")
+                        )
+                    )
+
+                Xs = np.append(Xs, random_Xs, axis=0)
+                ys = np.append(
+                    ys,
+                    np.full(sample_count - provided_sample_count, np.NaN),
+                    axis=0,
+                )
+
             idx_remove = np.full(provided_sample_count, True)
 
         # Remove points from starting cache
