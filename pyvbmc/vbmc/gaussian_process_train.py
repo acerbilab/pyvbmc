@@ -8,6 +8,7 @@ from pyvbmc.function_logger import FunctionLogger
 from .options import Options
 from .iteration_history import IterationHistory
 
+
 def train_gp(
     hyp_dict: dict,
     optim_state: dict,
@@ -263,7 +264,15 @@ def _cov_identifier_to_covariance_function(identifier):
     return cov_f
 
 
-def _gp_hyp(optim_state: dict, options: Options, plb: np.ndarray, pub: np.ndarray, gp: gpr.GP, X: np.ndarray, y: np.ndarray):
+def _gp_hyp(
+    optim_state: dict,
+    options: Options,
+    plb: np.ndarray,
+    pub: np.ndarray,
+    gp: gpr.GP,
+    X: np.ndarray,
+    y: np.ndarray,
+):
     """
     Define bounds, priors and samples for GP hyperparameters.
 
@@ -410,8 +419,8 @@ def _gp_hyp(optim_state: dict, options: Options, plb: np.ndarray, pub: np.ndarra
 
     # VBMC used to have an empirical Bayes prior on some GP hyperparameters,
     # such as input length scales, based on statistics of the GP training
-    # inputs. However, this approach could lead to instabilities. From the 2020
-    # paper, we switched to a fixed prior based on the plausible bounds.
+    # inputs. However, this approach could lead to instabilities. From the
+    # 2020 paper, we switched to a fixed prior based on the plausible bounds.
     priors["covariance_log_lengthscale"] = (
         "student_t",
         (
@@ -457,7 +466,11 @@ def _gp_hyp(optim_state: dict, options: Options, plb: np.ndarray, pub: np.ndarra
 
 
 def _get_gp_training_options(
-    optim_state: dict, iteration_history: IterationHistory, options: Options, hyp_dict: dict, gp_s_N: int
+    optim_state: dict,
+    iteration_history: IterationHistory,
+    options: Options,
+    hyp_dict: dict,
+    gp_s_N: int,
 ):
     """
     Get options for training GP hyperparameters.
@@ -626,7 +639,12 @@ def _get_gp_training_options(
     return gp_train
 
 
-def _get_hyp_cov(optim_state: dict, iteration_history: IterationHistory, options: Options, hyp_dict: dict):
+def _get_hyp_cov(
+    optim_state: dict,
+    iteration_history: IterationHistory,
+    options: Options,
+    hyp_dict: dict,
+):
     """
     Get hyperparameter posterior covariance.
 
