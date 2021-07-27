@@ -10,7 +10,7 @@ from .options import Options
 def active_sample(
     gp,
     sample_count: int,
-    optim_state,
+    optim_state: dict,
     function_logger: FunctionLogger,
     parameter_transformer: ParameterTransformer,
     options: Options,
@@ -22,21 +22,24 @@ def active_sample(
     ----------
     gp : GaussianProcess
         The GaussianProcess from the VBMC instance this function is called from.
+    sample_count : int
+        The number of samples.
+    optim_state : dict
+        The optim_state from the VBMC instance this function is called from.
     function_logger : FunctionLogger
         The FunctionLogger from the VBMC instance this function is called from.
     parameter_transformer : ParameterTransformer
         The ParameterTransformer from the VBMC instance this function is called
         from.
-    sample_count : int
-        The number of samples to return.
     options : Options
        Options from the VBMC instance this function is called from.
 
     Returns
     -------
-    nd.array
-        ? samples
+    function_logger : FunctionLogger
+        The FunctionLogger from the VBMC instance this function is called from.
     """
+    # TODO: The timer is missing for now, we have to setup it throught pyvbmc.
 
     # Logging
     logger = logging.getLogger("ActiveSample")
@@ -49,7 +52,7 @@ def active_sample(
         logger.setLevel(logging.DEBUG)
 
     if gp is None:
-        # Initial sample design (provided or random box).
+        # No GP yet, just use provided points or sample from plausible box.
         x0 = optim_state["cache"]["x_orig"]
         provided_sample_count, D = x0.shape
 
@@ -85,9 +88,9 @@ def active_sample(
 
                 else:
                     raise ValueError(
-                        """Unknown initial design for VBMC.
-                        The option "initdesign" must be "plausible" or "narrow"
-                        but was {}""".format(
+                        "Unknown initial design for VBMC. "
+                        "The option 'initdesign' must be 'plausible' or "
+                        "'narrow' but was {}.".format(
                             options.get("initdesign")
                         )
                     )
@@ -122,10 +125,14 @@ def active_sample(
 
         Xs = parameter_transformer(Xs)
 
-    for idx in range(sample_count):
-        if np.isnan(ys[idx]):  # Function value is not available
-            function_logger(Xs[idx])
-        else:
-            function_logger.add(Xs[idx], ys[idx])
+        for idx in range(sample_count):
+            if np.isnan(ys[idx]):  # Function value is not available
+                function_logger(Xs[idx])
+            else:
+                function_logger.add(Xs[idx], ys[idx])
+
+    else:
+        # active uncertainty sampling
+        pass
 
     return function_logger, optim_state
