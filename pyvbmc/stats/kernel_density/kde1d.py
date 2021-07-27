@@ -26,7 +26,7 @@ def _linear_binning(samples: np.ndarray, grid_points: np.ndarray):
     idx = np.floor((samples - (grid_points[0] - 0.5 * dx)) / dx)
     u, u_counts = np.unique(idx, return_counts=True)
     counts = np.zeros(len(grid_points))
-    counts[u.astype(np.int)] = u_counts
+    counts[u.astype(int)] = u_counts
 
     return counts
 
@@ -91,7 +91,7 @@ def _root(function: callable, N: int, args: tuple):
             x, res = brentq(
                 function, 0, tol, args=args, full_output=True, disp=False
             )
-            converged = np.bool(res.converged)
+            converged = bool(res.converged)
         except ValueError:
             x = 0.0
             tol *= 2.0
@@ -217,7 +217,7 @@ def kde1d(
     # validate values passed to the function
     _validate_kde1d_args(n, lower_bound, upper_bound)
 
-    n = np.int(2 ** np.ceil(np.log2(n)))  # round up to the next power of 2
+    n = int(2 ** np.ceil(np.log2(n)))  # round up to the next power of 2
     if lower_bound is None or upper_bound is None:
         minimum = np.min(samples)
         maximum = np.max(samples)
