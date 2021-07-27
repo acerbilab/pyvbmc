@@ -71,8 +71,8 @@ def optimize_vp(
     Optimize variational posterior.
     """
 
-    # _sieve(options, optim_state, K_orig, vp, gp, K=K, init_N=Nfastopts, best_N=Nslowopts)
-    # theta_bnd = vp.get_bounds(gp.X, options, K)
+    _sieve(options, optim_state, K_orig, vp, gp, K=K, init_N=Nfastopts, best_N=Nslowopts)
+    theta_bnd = vp.get_bounds(gp.X, options, K)
 
     varss = []
     pruned = 0
