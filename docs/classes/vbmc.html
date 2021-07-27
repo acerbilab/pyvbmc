@@ -65,7 +65,8 @@
 <dt>VBMC loop (optimize(): loop in <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/vbmc.m">vbmc.m</a>):</dt><dd><ul>
 <li><dl class="simple">
 <dt>Active Sampling:</dt><dd><ul>
-<li><p>_activesample(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/private/activesample_vbmc.m">activesample_vbmc.m</a></p></li>
+<li><p>active_sample(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/private/activesample_vbmc.m">activesample_vbmc.m</a></p></li>
+<li><p>active_sample(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/initdesign_vbmc.m">initdesign_vbmc.m</a></p></li>
 <li><p>_reupdate_gp(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/gpreupdate.m">gpreupdate.m</a> (Wait for gpyreg progress)</p></li>
 </ul>
 </dd>
@@ -257,7 +258,7 @@ final boost.</p>
 
 
 <h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Classes:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Classes:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="function_logger.html">FunctionLogger</a></li>
 <li class="toctree-l1"><a class="reference internal" href="options.html">Options</a></li>
@@ -271,13 +272,14 @@ final boost.</p>
 </ul>
 </li>
 </ul>
-<p class="caption"><span class="caption-text">Functions:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Functions:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../functions/decorators.html">decorators</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../functions/kernel_density.html">kernel_density</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../functions/entropy.html">entropy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../functions/gaussian_process_train.html">gaussian_process_train</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Options:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Options:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../options/vbmc_options.html">VBMC options</a></li>
 </ul>
@@ -295,7 +297,7 @@ final boost.</p>
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -317,7 +319,7 @@ final boost.</p>
       &copy;2021, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

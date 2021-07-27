@@ -1,0 +1,25 @@
+p.mis.show_mis .t {
+    background-color: yellow !important;
+}
+
+p.mis.show_mis .t:hover {
+    background-color: yellow !important;
+}
+
+p.run .t {
+    border-left-color: blue !important
+}
+
+p.mis .t {
+    border-left-color: yellow !important
+}
+
+button.mis.show_mis{
+    background: yellow !important;
+    border-color: yellow !important;
+}
+
+button.run{
+    background: blue !important;
+    color: white !important;
+}
