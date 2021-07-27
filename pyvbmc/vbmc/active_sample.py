@@ -95,6 +95,8 @@ def active_sample(
                         )
                     )
 
+                # Convert back to original space
+                random_Xs = parameter_transformer.inverse(random_Xs)
                 Xs = np.append(Xs, random_Xs, axis=0)
                 ys = np.append(
                     ys,

@@ -154,7 +154,7 @@ def test_active_sample_initial_sample_plausible(mocker):
         rtol=1e-12,
         atol=1e-14,
     )
-    assert np.mean(function_logger.x_orig[10:sample_count]) == -0.5
+    assert np.mean(function_logger.x_orig[10:sample_count]) == -500
 
 
 def test_active_sample_initial_sample_narrow(mocker):
@@ -215,7 +215,7 @@ def test_active_sample_initial_sample_narrow(mocker):
     )
     assert np.allclose(
         np.mean(function_logger.x_orig[10:sample_count]),
-        -0.05,
+        -50,
         rtol=1e-12,
         atol=1e-14,
     )
