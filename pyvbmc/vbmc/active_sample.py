@@ -1,4 +1,5 @@
 import logging
+import math
 
 import numpy as np
 from pyvbmc.function_logger import FunctionLogger
@@ -140,3 +141,54 @@ def active_sample(
         pass
 
     return function_logger, optim_state
+
+
+def _get_search_points(
+    number_of_points: int,
+    optim_state: dict,
+    options: Options,
+    parameter_transformer: ParameterTransformer,
+):
+    """
+    Get search points from starting cache or randomly generated.
+
+    Parameters
+    ----------
+    number_of_points : int
+        The number of points to return.
+    optim_state : dict
+        The optim_state from the VBMC instance this function is called from.
+    options : Options
+        Options from the VBMC instance this function is called from.
+    parameter_transformer : ParameterTransformer
+        The ParameterTransformer from the VBMC instance this function is called
+        from.
+
+    Returns
+    -------
+    search_X : ndarray, shape (number_of_points, D)
+        The obtained search points.
+    idx_cache : ndarray, shape (number_of_points,)
+        The indicies of the search points if coming from the cache.
+    """
+
+    # Take some points from starting cache, if not empty
+    x0 = np.copy(optim_state["cache"]["x_orig"])
+
+    lb_search = optim_state.get("LB_search")
+    ub_search = optim_state.get("UB_search")
+
+    if x0.size > 0:
+        # Fraction of points from cache (if nonempty)
+        n_cache = math.ceil(number_of_points * options.get("cachefrac"))
+
+        # idx_cache contains min(n_cache, x0.shape[0]) random indicies
+        idx_cache = np.random.permutation(x0.shape[0])[
+            : min(n_cache, x0.shape[0])
+        ]
+        
+        search_X = parameter_transformer(x0[idx_cache])
+
+    # Apply search bounds
+    search_X = np.minimum((np.maximum(search_X, lb_search)), ub_search)
+    return search_X, idx_cache

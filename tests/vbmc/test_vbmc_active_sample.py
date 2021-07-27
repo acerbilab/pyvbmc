@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 from pyvbmc.vbmc import VBMC
-from pyvbmc.vbmc.active_sample import active_sample
+from pyvbmc.vbmc.active_sample import active_sample, _get_search_points
 import logging
 
 fun = lambda x: np.sum(x + 2)
@@ -344,3 +344,26 @@ def test_active_sample_initial_sample_more_provided(caplog):
     assert np.all(np.isnan(optim_state["cache"]["x_orig"][:sample_count]))
     assert np.all(np.isnan(optim_state["cache"]["y_orig"][:sample_count]))
     assert function_logger.Xn == sample_count - 1
+
+
+def test_get_search_points_all_cache():
+    """
+    Take all points from cache.
+    """
+    user_options = {"cachefrac": 1}
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
+    number_of_points = 2
+    x_orig = np.linspace((0, 0, 0), (10, 10, 10), number_of_points)
+    vbmc.optim_state["cache"]["x_orig"] = np.copy(x_orig)
+
+    # no search bounds for test
+    vbmc.optim_state["LB_search"] = np.full((1, 3), -np.inf)
+    vbmc.optim_state["UB_search"] = np.full((1, 3), np.inf)
+    search_X, idx_cache = _get_search_points(
+        number_of_points,
+        vbmc.optim_state,
+        vbmc.options,
+        vbmc.parameter_transformer,
+    )
+
+    assert np.all(search_X == vbmc.parameter_transformer(x_orig[idx_cache]))
