@@ -31,8 +31,8 @@ def test_active_sample_initial_sample_no_y_values():
     """
     vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500)
     sample_count = 10
-    x_orig = np.linspace((1, 11, 21), (10, 20, 30), sample_count)
-    vbmc.optim_state["cache"]["x_orig"] = np.copy(x_orig)
+    X_orig = np.linspace((1, 11, 21), (10, 20, 30), sample_count)
+    vbmc.optim_state["cache"]["x_orig"] = np.copy(X_orig)
     y_orig = np.full(sample_count, np.nan)
     vbmc.optim_state["cache"]["y_orig"] = y_orig
 
@@ -49,11 +49,11 @@ def test_active_sample_initial_sample_no_y_values():
     )
 
     assert np.allclose(
-        function_logger.x_orig[:10], x_orig, rtol=1e-12, atol=1e-14
+        function_logger.X_orig[:10], X_orig, rtol=1e-12, atol=1e-14
     )
     assert np.allclose(
         np.ravel(function_logger.y_orig[:10]),
-        [fun(x) for x in x_orig],
+        [fun(x) for x in X_orig],
         rtol=1e-12,
         atol=1e-14,
     )
@@ -68,9 +68,9 @@ def test_active_sample_initial_sample_y_values():
     """
     vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500)
     sample_count = 10
-    x_orig = np.linspace((1, 11, 21), (10, 20, 30), sample_count)
-    vbmc.optim_state["cache"]["x_orig"] = np.copy(x_orig)
-    y_orig = [fun(x) for x in x_orig]
+    X_orig = np.linspace((1, 11, 21), (10, 20, 30), sample_count)
+    vbmc.optim_state["cache"]["x_orig"] = np.copy(X_orig)
+    y_orig = [fun(x) for x in X_orig]
     vbmc.optim_state["cache"]["y_orig"] = np.copy(y_orig)
 
     assert not np.all(np.isnan(vbmc.optim_state["cache"]["x_orig"][:10]))
@@ -86,7 +86,7 @@ def test_active_sample_initial_sample_y_values():
     )
 
     assert np.allclose(
-        function_logger.x_orig[:10], x_orig, rtol=1e-12, atol=1e-14
+        function_logger.X_orig[:10], X_orig, rtol=1e-12, atol=1e-14
     )
     assert np.allclose(
         np.ravel(function_logger.y_orig[:10]),
@@ -107,9 +107,9 @@ def test_active_sample_initial_sample_plausible(mocker):
     vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
     provided_sample_count = 10
     sample_count = provided_sample_count + 102
-    x_orig = np.linspace((1, 11, 21), (10, 20, 30), provided_sample_count)
-    vbmc.optim_state["cache"]["x_orig"] = np.copy(x_orig)
-    y_orig = [fun(x) for x in x_orig]
+    X_orig = np.linspace((1, 11, 21), (10, 20, 30), provided_sample_count)
+    vbmc.optim_state["cache"]["x_orig"] = np.copy(X_orig)
+    y_orig = [fun(x) for x in X_orig]
     vbmc.optim_state["cache"]["y_orig"] = np.copy(y_orig)
 
     assert not np.all(np.isnan(vbmc.optim_state["cache"]["x_orig"][:10]))
@@ -135,7 +135,7 @@ def test_active_sample_initial_sample_plausible(mocker):
 
     # provided samples
     assert np.allclose(
-        function_logger.x_orig[:10], x_orig, rtol=1e-12, atol=1e-14
+        function_logger.X_orig[:10], X_orig, rtol=1e-12, atol=1e-14
     )
     assert np.allclose(
         np.ravel(function_logger.y_orig[:10]),
@@ -150,11 +150,11 @@ def test_active_sample_initial_sample_plausible(mocker):
     assert function_logger.Xn == sample_count - 1
     assert np.allclose(
         np.ravel(function_logger.y_orig[10:sample_count]),
-        [fun(x) for x in function_logger.x_orig[10:sample_count]],
+        [fun(x) for x in function_logger.X_orig[10:sample_count]],
         rtol=1e-12,
         atol=1e-14,
     )
-    assert np.mean(function_logger.x_orig[10:sample_count]) == -500
+    assert np.mean(function_logger.X_orig[10:sample_count]) == -500
 
 
 def test_active_sample_initial_sample_narrow(mocker):
@@ -166,9 +166,9 @@ def test_active_sample_initial_sample_narrow(mocker):
     vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
     provided_sample_count = 10
     sample_count = provided_sample_count + 102
-    x_orig = np.linspace((0, 0, 0), (10, 10, 10), provided_sample_count)
-    vbmc.optim_state["cache"]["x_orig"] = np.copy(x_orig)
-    y_orig = [fun(x) for x in x_orig]
+    X_orig = np.linspace((0, 0, 0), (10, 10, 10), provided_sample_count)
+    vbmc.optim_state["cache"]["x_orig"] = np.copy(X_orig)
+    y_orig = [fun(x) for x in X_orig]
     vbmc.optim_state["cache"]["y_orig"] = np.copy(y_orig)
 
     assert not np.all(np.isnan(vbmc.optim_state["cache"]["x_orig"][:10]))
@@ -194,7 +194,7 @@ def test_active_sample_initial_sample_narrow(mocker):
 
     # provided samples
     assert np.allclose(
-        function_logger.x_orig[:10], x_orig, rtol=1e-12, atol=1e-14
+        function_logger.X_orig[:10], X_orig, rtol=1e-12, atol=1e-14
     )
     assert np.allclose(
         np.ravel(function_logger.y_orig[:10]),
@@ -209,12 +209,12 @@ def test_active_sample_initial_sample_narrow(mocker):
     assert function_logger.Xn == sample_count - 1
     assert np.allclose(
         np.ravel(function_logger.y_orig[10:sample_count]),
-        [fun(x) for x in function_logger.x_orig[10:sample_count]],
+        [fun(x) for x in function_logger.X_orig[10:sample_count]],
         rtol=1e-12,
         atol=1e-14,
     )
     assert np.allclose(
-        np.mean(function_logger.x_orig[10:sample_count]),
+        np.mean(function_logger.X_orig[10:sample_count]),
         -50,
         rtol=1e-12,
         atol=1e-14,
@@ -306,9 +306,9 @@ def test_active_sample_initial_sample_more_provided(caplog):
     vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500)
     provided_sample_count = 100
     sample_count = provided_sample_count - 10
-    x_orig = np.linspace((0, 0, 0), (10, 10, 10), provided_sample_count)
-    vbmc.optim_state["cache"]["x_orig"] = np.copy(x_orig)
-    y_orig = [fun(x) for x in x_orig]
+    X_orig = np.linspace((0, 0, 0), (10, 10, 10), provided_sample_count)
+    vbmc.optim_state["cache"]["x_orig"] = np.copy(X_orig)
+    y_orig = [fun(x) for x in X_orig]
     vbmc.optim_state["cache"]["y_orig"] = np.copy(y_orig)
 
     assert not np.all(np.isnan(vbmc.optim_state["cache"]["x_orig"]))
@@ -330,8 +330,8 @@ def test_active_sample_initial_sample_more_provided(caplog):
     ]
 
     assert np.allclose(
-        function_logger.x_orig[:sample_count],
-        x_orig[:sample_count],
+        function_logger.X_orig[:sample_count],
+        X_orig[:sample_count],
         rtol=1e-12,
         atol=1e-14,
     )
