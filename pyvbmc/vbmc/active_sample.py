@@ -1,8 +1,8 @@
-import sys
+import logging
 
 import numpy as np
 from pyvbmc.function_logger import FunctionLogger
-from pyvbmc.timer import Timer
+from pyvbmc.parameter_transformer import ParameterTransformer
 
 from .options import Options
 
@@ -10,105 +10,138 @@ from .options import Options
 def active_sample(
     gp,
     sample_count: int,
-    optim_state,
+    optim_state: dict,
     function_logger: FunctionLogger,
+    parameter_transformer: ParameterTransformer,
     options: Options,
 ):
     """
-    active_sample Actively sample points iteratively based on acquisition function.
+    Actively sample points iteratively based on acquisition function.
+
     Parameters
     ----------
-    function_logger : FunctionLogger
-        the FunctionLogger of the function to sample from
+    gp : GaussianProcess
+        The GaussianProcess from the VBMC instance this function is called from.
     sample_count : int
-        the number of samples
+        The number of samples.
+    optim_state : dict
+        The optim_state from the VBMC instance this function is called from.
+    function_logger : FunctionLogger
+        The FunctionLogger from the VBMC instance this function is called from.
+    parameter_transformer : ParameterTransformer
+        The ParameterTransformer from the VBMC instance this function is called
+        from.
     options : Options
-        the vbmc algorithm options
+       Options from the VBMC instance this function is called from.
+
     Returns
     -------
-    nd.array
-        ? samples
+    function_logger : FunctionLogger
+        The FunctionLogger from the VBMC instance this function is called from.
+    optim_state : dict
+        The optim_state from the VBMC instance this function is called from.
     """
-    timer = Timer()
-    function_time = 0
-    timer.start_timer("active_sampling")
+    # TODO: The timer is missing for now, we have to setup it throught pyvbmc.
+
+    # Logging
+    logger = logging.getLogger("ActiveSample")
+    logger.setLevel(logging.INFO)
+    if options.get("display") == "off":
+        logger.setLevel(logging.WARN)
+    elif options.get("display") == "iter":
+        logger.setLevel(logging.INFO)
+    elif options.get("display") == "full":
+        logger.setLevel(logging.DEBUG)
 
     if gp is None:
-        # Initial sample design (provided or random box).
+        # No GP yet, just use provided points or sample from plausible box.
+
+        # TODO: if the uncertainty_level is 2 the user needs to fill in
+        # the cache for the noise S (not just for y) at each x0
+        # this is also not implemented in MATLAB yet.
+        
         x0 = optim_state["cache"]["x_orig"]
-        provided_sample_count, dimension_count = x0.shape
+        provided_sample_count, D = x0.shape
 
         if provided_sample_count <= sample_count:
             Xs = np.copy(x0)
             ys = np.copy(optim_state["cache"]["y_orig"])
 
             if provided_sample_count < sample_count:
-                if options["initdesign"] == "plausible":
-                    # Uniform random samples in the plausible box (in transformed space)
-                    window = optim_state["pub"] - optim_state["plb"]
-                    rnd_tmp = np.random.rand(
-                        sample_count - provided_sample_count, dimension_count
-                    )
-                    Xrnd = window * rnd_tmp + optim_state["plb"]
-                elif options["initdesign"] == "narrow":
+                pub = optim_state.get("pub")
+                plb = optim_state.get("plb")
 
-                    # dummy fill with 1
-                    Xrnd = np.full(
-                        (
-                            (sample_count - provided_sample_count),
-                            dimension_count,
-                        ),
-                        1,
+                if options.get("initdesign") == "plausible":
+                    # Uniform random samples in the plausible box
+                    # (in transformed space)
+                    random_Xs = (
+                        np.random.standard_normal(
+                            (sample_count - provided_sample_count, D)
+                        )
+                        * (pub - plb)
+                        + plb
                     )
+
+                elif options.get("initdesign") == "narrow":
+                    start_Xs = parameter_transformer(Xs[0])
+                    random_Xs = (
+                        np.random.standard_normal(
+                            (sample_count - provided_sample_count, D)
+                        )
+                        - 0.5 * 0.1 * (pub - plb)
+                        + start_Xs
+                    )
+                    random_Xs = np.minimum((np.maximum(random_Xs, plb)), pub)
+
                 else:
-                    sys.exit("Unknown initial design for VBMC")
+                    raise ValueError(
+                        "Unknown initial design for VBMC. "
+                        "The option 'initdesign' must be 'plausible' or "
+                        "'narrow' but was {}.".format(
+                            options.get("initdesign")
+                        )
+                    )
 
-            # convert Xrnd back to original space
-            Xs = np.append(Xs, Xrnd, axis=0)
-            ys = np.append(
-                ys,
-                np.full((sample_count - provided_sample_count,), np.nan),
-                axis=0,
-            )
+                # Convert back to original space
+                random_Xs = parameter_transformer.inverse(random_Xs)
+                Xs = np.append(Xs, random_Xs, axis=0)
+                ys = np.append(
+                    ys,
+                    np.full(sample_count - provided_sample_count, np.NaN),
+                    axis=0,
+                )
+
+            idx_remove = np.full(provided_sample_count, True)
+
         else:
-            # select best points by clustering
-            # original R-Code:
-            # cluster starting points
-            # From each cluster, take points with higher density in original space
+            # In the MATLAB implementation there is a cluster algorithm being
+            # used to pick the best points, but we decided not to implement that
+            # yet and just pick the first sample_count points
 
-            # dummy implementation
-            Xs = Xs[:sample_count]
-            ys = ys[:sample_count]
+            Xs = np.copy(x0[:sample_count])
+            ys = np.copy(optim_state["cache"]["y_orig"][:sample_count])
+            idx_remove = np.full(provided_sample_count, True)
+            logger.info(
+                "More than sample_count = %s initial points have been "
+                "provided, using only the first %s points.",
+                sample_count,
+                sample_count,
+            )
 
-        # TODO: Remove points from starting cache
-        # optim_state["cache"]["x_orig"][idx_remove, :] = []
-        # optim_state["cache"]["y_orig"][idx_remove] = []
+        # Remove points from starting cache
+        optim_state["cache"]["x_orig"][idx_remove] = None
+        optim_state["cache"]["y_orig"][idx_remove] = None
 
-        # warp Xs points
+        Xs = parameter_transformer(Xs)
 
-        timer.start_timer("timer_func")
-        for sample_idx in range(sample_count):
-            # timer
-
-            if np.isnan(ys[sample_idx]):
-                # value is not available, evaluate it
-                ys[sample_idx], _, _ = function_logger(Xs[sample_idx])
+        for idx in range(sample_count):
+            if np.isnan(ys[idx]):  # Function value is not available
+                function_logger(Xs[idx])
             else:
-                function_logger.add(Xs[sample_idx], ys[sample_idx])
-
-        timer.stop_timer("timer_func")
-        function_time += timer.get_duration("timer_func")
+                function_logger.add(Xs[idx], ys[idx])
 
     else:
-        # Active uncertainty sampling
+        # active uncertainty sampling
+        pass
 
-        # dummy implementation
-        window = optim_state["pub"] - optim_state["plb"]
-        rnd_tmp = np.random.rand(sample_count, window.shape[1])
-        Xs = window * rnd_tmp + optim_state["plb"]
-        for sample_idx in range(sample_count):
-            _, _, _ = function_logger(Xs[sample_idx])
-
-    timer.stop_timer("active_sampling")
-    active_sampling_time = timer.get_duration("active_sampling")
-    # handle funEvals timer
+    return function_logger, optim_state

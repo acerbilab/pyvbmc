@@ -93,7 +93,7 @@ def test_get_training_data_no_noise():
     # has a parameter transformer which makes everything hard.
     for sample_idx in range(sample_count):
         vbmc.function_logger.X_flag[sample_idx] = True
-        vbmc.function_logger.x[sample_idx] = Xs[sample_idx]
+        vbmc.function_logger.X[sample_idx] = Xs[sample_idx]
         vbmc.function_logger.y[sample_idx] = ys[sample_idx]
         vbmc.function_logger.fun_evaltime[sample_idx] = 1e-5
 
@@ -139,7 +139,7 @@ def test_get_training_data_noise():
     # has a parameter transformer which makes everything hard.
     for sample_idx in range(sample_count):
         vbmc.function_logger.X_flag[sample_idx] = True
-        vbmc.function_logger.x[sample_idx] = Xs[sample_idx]
+        vbmc.function_logger.X[sample_idx] = Xs[sample_idx]
         vbmc.function_logger.y[sample_idx] = ys[sample_idx]
         vbmc.function_logger.S[sample_idx] = 1
         vbmc.function_logger.fun_evaltime[sample_idx] = 1e-5
@@ -391,7 +391,7 @@ def test_gp_hyp():
     # has a parameter transformer which makes everything hard.
     for sample_idx in range(sample_count):
         vbmc.function_logger.X_flag[sample_idx] = True
-        vbmc.function_logger.x[sample_idx] = Xs[sample_idx]
+        vbmc.function_logger.X[sample_idx] = Xs[sample_idx]
         vbmc.function_logger.y[sample_idx] = ys[sample_idx]
         vbmc.function_logger.S[sample_idx] = 1
         vbmc.function_logger.fun_evaltime[sample_idx] = 1e-5

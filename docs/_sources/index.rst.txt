@@ -25,6 +25,7 @@ Note that this project is work in progress!
    :maxdepth: 2
    :caption: Functions:
 
+   functions/active_sample
    functions/decorators
    functions/kernel_density
    functions/entropy
