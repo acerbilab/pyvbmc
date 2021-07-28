@@ -792,7 +792,7 @@ class VBMC:
                 N_slowopts = 1
 
             # Run optimization of variational parameters
-            varss, pruned = optimize_vp(
+            vp, varss, pruned = optimize_vp(
                 self.options,
                 self.optim_state,
                 self.K,
