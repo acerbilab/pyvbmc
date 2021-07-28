@@ -242,8 +242,36 @@ def _get_search_points(
             )
             random_Xs = np.append(random_Xs, mvn_Xs, axis=0)
 
+        N_box = round(options.get("boxsearchfrac") * N_random_points)
+        if N_box > 0:
+            X = function_logger.X[function_logger.X_flag]
+            X_diam = np.amax(X, axis=0) - np.amin(X, axis=0)
+            plb = optim_state.get("plb")
+            pub = optim_state.get("pub")
+
+            if np.all(np.isfinite(lb_search)) and np.all(
+                np.isfinite(ub_search)
+            ):
+                box_lb = lb_search
+                box_ub = ub_search
+            else:
+                box_lb = plb - 3 * (pub - plb)
+                box_ub = pub + 3 * (pub - plb)
+
+            box_lb = np.maximum(np.amin(X, axis=0) - 0.5 * X_diam, box_lb)
+            box_ub = np.minimum(np.amax(X, axis=0) + 0.5 * X_diam, box_ub)
+
+            box_Xs = (
+                np.random.standard_normal((N_box, D)) * (box_ub - box_lb)
+                + box_lb
+            )
+
+            random_Xs = np.append(random_Xs, box_Xs, axis=0)
+
         # remaining samples
-        N_vp = max(0, N_random_points - N_search_cache - N_heavy - N_mvn)
+        N_vp = max(
+            0, N_random_points - N_search_cache - N_heavy - N_mvn - N_box
+        )
         if N_vp > 0:
             vp_Xs, _ = vp.sample(N=N_vp, origflag=False, balanceflag=True)
             random_Xs = np.append(random_Xs, vp_Xs, axis=0)

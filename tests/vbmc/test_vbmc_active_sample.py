@@ -389,6 +389,7 @@ def test_get_search_points_all_search_cache():
         "searchcachefrac": 1,
         "heavytailsearchfrac": 0,
         "mvnsearchfrac": 0,
+        "boxsearchfrac": 0,
     }
     vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
     number_of_points = 2
@@ -422,6 +423,7 @@ def test_get_search_points_search_bounds():
         "searchcachefrac": 0,
         "heavytailsearchfrac": 0,
         "mvnsearchfrac": 0,
+        "boxsearchfrac": 0,
     }
     vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
     number_of_points = 2
@@ -455,6 +457,7 @@ def test_get_search_points_all_heavytailsearch():
         "searchcachefrac": 0,
         "heavytailsearchfrac": 1,
         "mvnsearchfrac": 0,
+        "boxsearchfrac": 0,
     }
     vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
     number_of_points = 2
@@ -486,6 +489,7 @@ def test_get_search_points_all_mvn():
         "searchcachefrac": 0,
         "heavytailsearchfrac": 0,
         "mvnsearchfrac": 1,
+        "boxsearchfrac": 0,
     }
     vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
     number_of_points = 2
@@ -517,6 +521,7 @@ def test_get_search_points_all_mvn_vp_sample():
         "searchcachefrac": 0,
         "heavytailsearchfrac": 0,
         "mvnsearchfrac": 0,
+        "boxsearchfrac": 0,
     }
     vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
     number_of_points = 2
@@ -537,3 +542,71 @@ def test_get_search_points_all_mvn_vp_sample():
     assert search_X.shape == (number_of_points, 3)
     assert idx_cache.shape == (number_of_points,)
     assert np.all(np.isnan(idx_cache))
+
+
+def test_get_search_points_all_box_search(mocker):
+    """
+    Take all points from box search.
+    """
+    user_options = {
+        "cachefrac": 1,
+        "searchcachefrac": 0,
+        "heavytailsearchfrac": 0,
+        "mvnsearchfrac": 0,
+        "boxsearchfrac": 1,
+    }
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
+    number_of_points = 2
+    X = np.linspace((0, 0, 0), (10, 10, 10), number_of_points)
+    vbmc.optim_state["cache"]["x_orig"] = np.zeros(0)
+
+    # record some samples in FunctionLogger
+    for i in range(10):
+        vbmc.function_logger(np.ones(3) * i)
+    assert vbmc.function_logger.Xn == 9
+
+    # return a linespace so that random samples are predicatable.
+    random_values = np.linspace(
+        (-100, -100, -100),
+        (100, 100, 100),
+        number_of_points,
+    )
+    mocker.patch(
+        "numpy.random.standard_normal",
+        return_value=random_values,
+    )
+    # infinite bounds
+    vbmc.optim_state["LB_search"] = np.full((1, 3), -np.inf)
+    vbmc.optim_state["UB_search"] = np.full((1, 3), np.inf)
+    search_X, idx_cache = _get_search_points(
+        number_of_points,
+        vbmc.optim_state,
+        vbmc.options,
+        vbmc.parameter_transformer,
+        vbmc.function_logger,
+        vbmc.vp,
+    )
+    assert search_X.shape == (number_of_points, 3)
+    assert idx_cache.shape == (number_of_points,)
+    assert np.all(np.isnan(idx_cache))
+    box_lb = -0.5 - 3
+    box_ub = 0.5 + 3
+    assert np.all(search_X == random_values * (box_ub - box_lb) + box_lb)
+
+    # finite bounds
+    vbmc.optim_state["LB_search"] = np.full((1, 3), -3000)
+    vbmc.optim_state["UB_search"] = np.full((1, 3), 3000)
+    search_X, idx_cache = _get_search_points(
+        number_of_points,
+        vbmc.optim_state,
+        vbmc.options,
+        vbmc.parameter_transformer,
+        vbmc.function_logger,
+        vbmc.vp,
+    )
+    assert search_X.shape == (number_of_points, 3)
+    assert idx_cache.shape == (number_of_points,)
+    assert np.all(np.isnan(idx_cache))
+    box_lb = -4.5
+    box_ub = 13.5
+    assert np.all(search_X == random_values * (box_ub - box_lb) + box_lb)
