@@ -61,6 +61,11 @@ def active_sample(
 
     if gp is None:
         # No GP yet, just use provided points or sample from plausible box.
+
+        # TODO: if the uncertainty_level is 2 the user needs to fill in
+        # the cache for the noise S (not just for y) at each x0
+        # this is also not implemented in MATLAB yet.
+
         x0 = optim_state["cache"]["x_orig"]
         provided_sample_count, D = x0.shape
 

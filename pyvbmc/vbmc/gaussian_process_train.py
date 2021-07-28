@@ -779,7 +779,7 @@ def _get_training_data(function_logger: FunctionLogger):
         data.
     """
 
-    x_train = function_logger.x[function_logger.X_flag, :]
+    x_train = function_logger.X[function_logger.X_flag, :]
     y_train = function_logger.y[function_logger.X_flag]
     if function_logger.noise_flag:
         s2_train = function_logger.S[function_logger.X_flag] ** 2

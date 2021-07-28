@@ -46,9 +46,9 @@ class FunctionLogger:
 
         self.func_count: int = 0
         self.cache_count: int = 0
-        self.x_orig = np.full([cache_size, self.D], np.nan)
+        self.X_orig = np.full([cache_size, self.D], np.nan)
         self.y_orig = np.full([cache_size, 1], np.nan)
-        self.x = np.full([cache_size, self.D], np.nan)
+        self.X = np.full([cache_size, self.D], np.nan)
         self.y = np.full([cache_size, 1], np.nan)
         self.ymax = np.nan
         self.nevals = np.full([cache_size, 1], np.nan)
@@ -234,11 +234,11 @@ class FunctionLogger:
         """
         Remove unused caching entries.
         """
-        self.x_orig = self.x_orig[: self.Xn + 1]
+        self.X_orig = self.X_orig[: self.Xn + 1]
         self.y_orig = self.y_orig[: self.Xn + 1]
 
         # in the original matlab version X and Y get deleted
-        self.x = self.x[: self.Xn + 1]
+        self.X = self.X[: self.Xn + 1]
         self.y = self.y[: self.Xn + 1]
 
         if self.noise_flag:
@@ -260,14 +260,14 @@ class FunctionLogger:
         if resize_amount is None:
             resize_amount = int(np.max((np.ceil(self.Xn / 2), 1)))
 
-        self.x_orig = np.append(
-            self.x_orig, np.full([resize_amount, self.D], np.nan), axis=0
+        self.X_orig = np.append(
+            self.X_orig, np.full([resize_amount, self.D], np.nan), axis=0
         )
         self.y_orig = np.append(
             self.y_orig, np.full([resize_amount, 1], np.nan), axis=0
         )
-        self.x = np.append(
-            self.x, np.full([resize_amount, self.D], np.nan), axis=0
+        self.X = np.append(
+            self.X, np.full([resize_amount, self.D], np.nan), axis=0
         )
         self.y = np.append(self.y, np.full([resize_amount, 1], np.nan), axis=0)
 
@@ -324,7 +324,7 @@ class FunctionLogger:
         ValueError
             Raise if there is more than one match for a duplicate entry.
         """
-        duplicate_flag = self.x == x
+        duplicate_flag = self.X == x
         if np.any(duplicate_flag):
             if np.sum((duplicate_flag).all(axis=1)) > 1:
                 raise ValueError("More than one match for duplicate entry.")
@@ -351,7 +351,7 @@ class FunctionLogger:
             return fval, idx
         else:
             self.Xn += 1
-            if self.Xn > self.x_orig.shape[0] - 1:
+            if self.Xn > self.X_orig.shape[0] - 1:
                 self._expand_arrays()
 
             # record function time
@@ -359,8 +359,8 @@ class FunctionLogger:
                 self.fun_evaltime[self.Xn] = fun_evaltime
                 self.total_fun_evaltime += fun_evaltime
 
-            self.x_orig[self.Xn] = x_orig
-            self.x[self.Xn] = x
+            self.X_orig[self.Xn] = x_orig
+            self.X[self.Xn] = x
             self.y_orig[self.Xn] = fval_orig
             fval = fval_orig
             if self.transform_parameters:
