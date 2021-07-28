@@ -6,7 +6,7 @@ from pyvbmc.vbmc import VBMC
 from pyvbmc.vbmc.gaussian_process_train import (
     train_gp,
     _cov_identifier_to_covariance_function, _estimate_noise,
-    _get_gp_training_options, _get_hpd, _get_hyp_cov, _get_training_data,
+    _get_gp_training_options, _get_hyp_cov, _get_training_data,
     _meanfun_name_to_mean_function)
 from scipy.stats import norm
 
@@ -43,24 +43,6 @@ def test_estimate_noise():
     # Value taken from MATLAB which only applies for this exact setup.
     # Change any part of the test and it will not apply.
     assert np.isclose(noise_estimate, 0.106582207806606)
-
-
-def test_get_hpd():
-    order = np.random.permutation(range(0, 100))
-    X = np.reshape(order.copy(), (-1, 1))
-    y = X.copy()
-
-    hpd_X, hpd_y, hpd_range = _get_hpd(X, y)
-
-    assert np.all(hpd_X == hpd_y)
-    assert np.all(hpd_X.flatten() == np.array(list(reversed(range(20, 100)))))
-    assert hpd_range == np.array([79])
-
-    hpd_X, hpd_y, hpd_range = _get_hpd(X, y, hpd_frac=0.5)
-
-    assert np.all(hpd_X == hpd_y)
-    assert np.all(hpd_X.flatten() == np.array(list(reversed(range(50, 100)))))
-    assert hpd_range == np.array([49])
 
 
 def test_get_training_data_no_noise():
