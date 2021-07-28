@@ -12,7 +12,7 @@ def get_hpd(X: np.ndarray, y: np.ndarray, hpd_frac: float = 0.8):
     y : ndarray, shape (N, 1)
         The training targets.
     hpd_frac : float
-        The portion of the training set to consider.
+        The portion of the training set to consider, by default 0.8.
 
     Returns
     =======
