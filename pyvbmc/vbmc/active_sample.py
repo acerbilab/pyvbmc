@@ -4,6 +4,7 @@ import math
 import numpy as np
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
+from pyvbmc.variational_posterior import VariationalPosterior
 
 from .options import Options
 
@@ -14,6 +15,7 @@ def active_sample(
     optim_state: dict,
     function_logger: FunctionLogger,
     parameter_transformer: ParameterTransformer,
+    vp: VariationalPosterior,
     options: Options,
 ):
     """
@@ -31,6 +33,9 @@ def active_sample(
         The FunctionLogger from the VBMC instance this function is called from.
     parameter_transformer : ParameterTransformer
         The ParameterTransformer from the VBMC instance this function is called
+        from.
+    vp : VariationalPosterior
+        The VariationalPosterior from the VBMC instance this function is called
         from.
     options : Options
        Options from the VBMC instance this function is called from.
@@ -148,6 +153,8 @@ def _get_search_points(
     optim_state: dict,
     options: Options,
     parameter_transformer: ParameterTransformer,
+    function_logger: FunctionLogger,
+    vp: VariationalPosterior,
 ):
     """
     Get search points from starting cache or randomly generated.
@@ -162,6 +169,11 @@ def _get_search_points(
         Options from the VBMC instance this function is called from.
     parameter_transformer : ParameterTransformer
         The ParameterTransformer from the VBMC instance this function is called
+        from.
+    function_logger : FunctionLogger
+        The FunctionLogger from the VBMC instance this function is called from.
+    vp : VariationalPosterior
+        The VariationalPosterior from the VBMC instance this function is called
         from.
 
     Returns
@@ -178,16 +190,61 @@ def _get_search_points(
     lb_search = optim_state.get("LB_search")
     ub_search = optim_state.get("UB_search")
 
+    D = ub_search.shape[1]
+
+    search_X = np.full((0, D), np.NaN)
+    idx_cache = np.array([])
+
     if x0.size > 0:
         # Fraction of points from cache (if nonempty)
-        n_cache = math.ceil(number_of_points * options.get("cachefrac"))
+        N_cache = math.ceil(number_of_points * options.get("cachefrac"))
 
         # idx_cache contains min(n_cache, x0.shape[0]) random indicies
         idx_cache = np.random.permutation(x0.shape[0])[
-            : min(n_cache, x0.shape[0])
+            : min(N_cache, x0.shape[0])
         ]
-        
+
         search_X = parameter_transformer(x0[idx_cache])
+
+    # Randomly sample remaining points
+    if x0.shape[0] < number_of_points:
+        N_random_points = number_of_points - x0.shape[0]
+        random_Xs = np.full((0, D), np.NaN)
+
+        N_search_cache = round(
+            options.get("searchcachefrac") * N_random_points
+        )
+        if N_search_cache > 0:  # Take points from search cache
+            search_cache = optim_state.get("searchcache")
+            random_Xs = np.append(
+                random_Xs,
+                search_cache[: min(len(search_cache), N_search_cache)],
+                axis=0,
+            )
+
+        N_heavy = round(options.get("heavytailsearchfrac") * N_random_points)
+        if N_heavy > 0:
+            heavy_Xs, _ = vp.sample(
+                N=N_heavy, origflag=False, balanceflag=True, df=3
+            )
+            random_Xs = np.append(random_Xs, heavy_Xs, axis=0)
+
+        N_mvn = round(options.get("mvnsearchfrac") * N_random_points)
+        if N_mvn > 0:
+            mubar, sigmabar = vp.moments(origflag=False, covflag=True)
+            mvn_Xs = np.random.multivariate_normal(
+                np.ravel(mubar), sigmabar, size=N_mvn
+            )
+            random_Xs = np.append(random_Xs, mvn_Xs, axis=0)
+
+        # remaining samples
+        N_vp = max(0, N_random_points - N_search_cache - N_heavy - N_mvn)
+        if N_vp > 0:
+            vp_Xs, _ = vp.sample(N=N_vp, origflag=False, balanceflag=True)
+            random_Xs = np.append(random_Xs, vp_Xs, axis=0)
+
+        search_X = np.append(search_X, random_Xs, axis=0)
+        idx_cache = np.append(idx_cache, np.full(N_random_points, np.NaN))
 
     # Apply search bounds
     search_X = np.minimum((np.maximum(search_X, lb_search)), ub_search)

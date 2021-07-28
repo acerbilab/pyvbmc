@@ -45,6 +45,7 @@ def test_active_sample_initial_sample_no_y_values():
         optim_state=vbmc.optim_state,
         function_logger=vbmc.function_logger,
         parameter_transformer=vbmc.parameter_transformer,
+        vp=vbmc.vp,
         options=vbmc.options,
     )
 
@@ -82,6 +83,7 @@ def test_active_sample_initial_sample_y_values():
         optim_state=vbmc.optim_state,
         function_logger=vbmc.function_logger,
         parameter_transformer=vbmc.parameter_transformer,
+        vp=vbmc.vp,
         options=vbmc.options,
     )
 
@@ -130,6 +132,7 @@ def test_active_sample_initial_sample_plausible(mocker):
         optim_state=vbmc.optim_state,
         function_logger=vbmc.function_logger,
         parameter_transformer=vbmc.parameter_transformer,
+        vp=vbmc.vp,
         options=vbmc.options,
     )
 
@@ -189,6 +192,7 @@ def test_active_sample_initial_sample_narrow(mocker):
         optim_state=vbmc.optim_state,
         function_logger=vbmc.function_logger,
         parameter_transformer=vbmc.parameter_transformer,
+        vp=vbmc.vp,
         options=vbmc.options,
     )
 
@@ -237,6 +241,7 @@ def test_active_sample_initial_sample_unknown_initial_design():
             optim_state=vbmc.optim_state,
             function_logger=vbmc.function_logger,
             parameter_transformer=vbmc.parameter_transformer,
+            vp=vbmc.vp,
             options=vbmc.options,
         )
     assert "Unknown initial design for VBMC" in execinfo.value.args[0]
@@ -255,6 +260,7 @@ def test_active_sample_logger():
         optim_state=vbmc.optim_state,
         function_logger=vbmc.function_logger,
         parameter_transformer=vbmc.parameter_transformer,
+        vp=vbmc.vp,
         options=vbmc.options,
     )
     assert logging.getLogger("ActiveSample").getEffectiveLevel() == 20
@@ -268,6 +274,7 @@ def test_active_sample_logger():
         optim_state=vbmc.optim_state,
         function_logger=vbmc.function_logger,
         parameter_transformer=vbmc.parameter_transformer,
+        vp=vbmc.vp,
         options=vbmc.options,
     )
     assert logging.getLogger("ActiveSample").getEffectiveLevel() == 30
@@ -281,6 +288,7 @@ def test_active_sample_logger():
         optim_state=vbmc.optim_state,
         function_logger=vbmc.function_logger,
         parameter_transformer=vbmc.parameter_transformer,
+        vp=vbmc.vp,
         options=vbmc.options,
     )
     assert logging.getLogger("ActiveSample").getEffectiveLevel() == 10
@@ -294,6 +302,7 @@ def test_active_sample_logger():
         optim_state=vbmc.optim_state,
         function_logger=vbmc.function_logger,
         parameter_transformer=vbmc.parameter_transformer,
+        vp=vbmc.vp,
         options=vbmc.options,
     )
     assert logging.getLogger("ActiveSample").getEffectiveLevel() == 20
@@ -320,6 +329,7 @@ def test_active_sample_initial_sample_more_provided(caplog):
         optim_state=vbmc.optim_state,
         function_logger=vbmc.function_logger,
         parameter_transformer=vbmc.parameter_transformer,
+        vp=vbmc.vp,
         options=vbmc.options,
     )
 
@@ -364,6 +374,170 @@ def test_get_search_points_all_cache():
         vbmc.optim_state,
         vbmc.options,
         vbmc.parameter_transformer,
+        vbmc.function_logger,
+        vbmc.vp,
     )
 
     assert np.all(search_X == vbmc.parameter_transformer(x_orig[idx_cache]))
+    assert search_X.shape == (number_of_points, 3)
+    assert idx_cache.shape == (number_of_points,)
+    assert np.all(np.isin(idx_cache, np.arange(number_of_points)))
+
+
+def test_get_search_points_all_search_cache():
+    """
+    Take all points from search cache.
+    """
+    user_options = {
+        "cachefrac": 1,
+        "searchcachefrac": 1,
+        "heavytailsearchfrac": 0,
+        "mvnsearchfrac": 0,
+    }
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
+    number_of_points = 2
+    X = np.linspace((0, 0, 0), (10, 10, 10), number_of_points)
+    vbmc.optim_state["cache"]["x_orig"] = np.zeros(0)
+    vbmc.optim_state["searchcache"] = np.copy(X)
+
+    # no search bounds for test
+    vbmc.optim_state["LB_search"] = np.full((1, 3), -np.inf)
+    vbmc.optim_state["UB_search"] = np.full((1, 3), np.inf)
+    search_X, idx_cache = _get_search_points(
+        number_of_points,
+        vbmc.optim_state,
+        vbmc.options,
+        vbmc.parameter_transformer,
+        vbmc.function_logger,
+        vbmc.vp,
+    )
+    assert np.all(search_X == X)
+    assert search_X.shape == (number_of_points, 3)
+    assert idx_cache.shape == (number_of_points,)
+    assert np.all(np.isnan(idx_cache))
+
+
+def test_get_search_points_search_bounds():
+    """
+    Ensure that search bounds constrain the search points.
+    """
+    user_options = {
+        "cachefrac": 1,
+        "searchcachefrac": 0,
+        "heavytailsearchfrac": 0,
+        "mvnsearchfrac": 0,
+    }
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
+    number_of_points = 2
+    X = np.linspace((0, 0, 0), (10, 10, 10), number_of_points)
+    vbmc.optim_state["cache"]["x_orig"] = np.copy(X)
+
+    # no search bounds for test
+    vbmc.optim_state["LB_search"] = np.full((1, 3), 2)
+    vbmc.optim_state["UB_search"] = np.full((1, 3), 4)
+    search_X, idx_cache = _get_search_points(
+        number_of_points,
+        vbmc.optim_state,
+        vbmc.options,
+        vbmc.parameter_transformer,
+        vbmc.function_logger,
+        vbmc.vp,
+    )
+    assert np.all(search_X >= 2)
+    assert np.all(search_X <= 4)
+    assert search_X.shape == (number_of_points, 3)
+    assert idx_cache.shape == (number_of_points,)
+    assert np.all(np.isin(idx_cache, np.arange(number_of_points)))
+
+
+def test_get_search_points_all_heavytailsearch():
+    """
+    Take all points from heavytail search.
+    """
+    user_options = {
+        "cachefrac": 1,
+        "searchcachefrac": 0,
+        "heavytailsearchfrac": 1,
+        "mvnsearchfrac": 0,
+    }
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
+    number_of_points = 2
+    X = np.linspace((0, 0, 0), (10, 10, 10), number_of_points)
+    vbmc.optim_state["cache"]["x_orig"] = np.zeros(0)
+
+    # no search bounds for test
+    vbmc.optim_state["LB_search"] = np.full((1, 3), -np.inf)
+    vbmc.optim_state["UB_search"] = np.full((1, 3), np.inf)
+    search_X, idx_cache = _get_search_points(
+        number_of_points,
+        vbmc.optim_state,
+        vbmc.options,
+        vbmc.parameter_transformer,
+        vbmc.function_logger,
+        vbmc.vp,
+    )
+    assert search_X.shape == (number_of_points, 3)
+    assert idx_cache.shape == (number_of_points,)
+    assert np.all(np.isnan(idx_cache))
+
+
+def test_get_search_points_all_mvn():
+    """
+    Take all points from mvn.
+    """
+    user_options = {
+        "cachefrac": 1,
+        "searchcachefrac": 0,
+        "heavytailsearchfrac": 0,
+        "mvnsearchfrac": 1,
+    }
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
+    number_of_points = 2
+    X = np.linspace((0, 0, 0), (10, 10, 10), number_of_points)
+    vbmc.optim_state["cache"]["x_orig"] = np.zeros(0)
+
+    # no search bounds for test
+    vbmc.optim_state["LB_search"] = np.full((1, 3), -np.inf)
+    vbmc.optim_state["UB_search"] = np.full((1, 3), np.inf)
+    search_X, idx_cache = _get_search_points(
+        number_of_points,
+        vbmc.optim_state,
+        vbmc.options,
+        vbmc.parameter_transformer,
+        vbmc.function_logger,
+        vbmc.vp,
+    )
+    assert search_X.shape == (number_of_points, 3)
+    assert idx_cache.shape == (number_of_points,)
+    assert np.all(np.isnan(idx_cache))
+
+
+def test_get_search_points_all_mvn_vp_sample():
+    """
+    Take all points from mvn vp sample.
+    """
+    user_options = {
+        "cachefrac": 1,
+        "searchcachefrac": 0,
+        "heavytailsearchfrac": 0,
+        "mvnsearchfrac": 0,
+    }
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
+    number_of_points = 2
+    X = np.linspace((0, 0, 0), (10, 10, 10), number_of_points)
+    vbmc.optim_state["cache"]["x_orig"] = np.zeros(0)
+
+    # no search bounds for test
+    vbmc.optim_state["LB_search"] = np.full((1, 3), -np.inf)
+    vbmc.optim_state["UB_search"] = np.full((1, 3), np.inf)
+    search_X, idx_cache = _get_search_points(
+        number_of_points,
+        vbmc.optim_state,
+        vbmc.options,
+        vbmc.parameter_transformer,
+        vbmc.function_logger,
+        vbmc.vp,
+    )
+    assert search_X.shape == (number_of_points, 3)
+    assert idx_cache.shape == (number_of_points,)
+    assert np.all(np.isnan(idx_cache))
