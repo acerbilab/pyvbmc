@@ -12,7 +12,7 @@ Matlab references
 Python documentation
 --------------------
 
-.. autofunction:: pyvbmc.stats.entropy.kldiv_mvn
+.. autofunction:: pyvbmc.stats.kldiv_mvn
 
 entlb_vbmc
 ==========

@@ -38,12 +38,12 @@
 <section id="kde1d">
 <h2>kde1d<a class="headerlink" href="#kde1d" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
-<dt class="sig sig-object py" id="pyvbmc.stats.kernel_density.kde1d">
-<span class="sig-prename descclassname"><span class="pre">pyvbmc.stats.kernel_density.</span></span><span class="sig-name descname"><span class="pre">kde1d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">16384</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_bound</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_bound</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/stats/kernel_density/kde1d.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.stats.kernel_density.kde1d" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pyvbmc.stats.kde1d">
+<span class="sig-prename descclassname"><span class="pre">pyvbmc.stats.</span></span><span class="sig-name descname"><span class="pre">kde1d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">16384</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_bound</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_bound</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/stats/kde1d.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.stats.kde1d" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reliable and extremely fast kernel density estimator for 1D data.</p>
 <p>One-dimensional kernel density estimator based on fast Fourier transform.
 A Gaussian kernel is assumed and the bandwidth is chosen automatically
-using the technique developed by Botev et al. (2010) <a class="reference internal" href="#r2d608330c74e-1" id="id1">[1]</a>.</p>
+using the technique developed by Botev et al. (2010) <a class="reference internal" href="#r126ad9f8a203-1" id="id1">[1]</a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
@@ -79,7 +79,7 @@ at the grid points.</p>
 <p class="rubric">Notes</p>
 <p>This implementation is based on the MATLAB implementation by Zdravko Botev,
 and was further inspired by the Python implementations by Daniel B. Smith
-and the bandwidth selection code in KDEpy <a class="reference internal" href="#r2d608330c74e-2" id="id2">[2]</a>. We thank Zdravko Botev for
+and the bandwidth selection code in KDEpy <a class="reference internal" href="#r126ad9f8a203-2" id="id2">[2]</a>. We thank Zdravko Botev for
 useful clarifications on the implementation of the fixed_point function.</p>
 <p>Unlike other implementations, this one is immune to problems caused by
 multimodal densities with widely separated modes (see example). The
@@ -87,12 +87,12 @@ bandwidth estimation does not deteriorate for multimodal densities because
 a parametric model is never assumed for the data.</p>
 <p class="rubric">References</p>
 <dl class="citation">
-<dt class="label" id="r2d608330c74e-1"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
+<dt class="label" id="r126ad9f8a203-1"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
 <dd><p>Z. I. Botev, J. F. Grotowski, and D. P. Kroese. Kernel density
 estimation via diffusion. The Annals of Statistics,
 38(5):2916-2957, 2010.</p>
 </dd>
-<dt class="label" id="r2d608330c74e-2"><span class="brackets"><a class="fn-backref" href="#id2">2</a></span></dt>
+<dt class="label" id="r126ad9f8a203-2"><span class="brackets"><a class="fn-backref" href="#id2">2</a></span></dt>
 <dd><p><a class="reference external" href="https://github.com/tommyod/KDEpy/blob/master/KDEpy/bw_selection.py">https://github.com/tommyod/KDEpy/blob/master/KDEpy/bw_selection.py</a></p>
 </dd>
 </dl>
@@ -140,6 +140,7 @@ estimation via diffusion. The Annals of Statistics,
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Functions:</span></p>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="active_sample.html">active_sample</a></li>
 <li class="toctree-l1"><a class="reference internal" href="decorators.html">decorators</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">kernel_density</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#kde1d">kde1d</a></li>
