@@ -792,7 +792,7 @@ class VBMC:
                 N_slowopts = 1
 
             # Run optimization of variational parameters
-            vp, varss, pruned = optimize_vp(
+            self.vp, varss, pruned = optimize_vp(
                 self.options,
                 self.optim_state,
                 self.K,
@@ -802,17 +802,17 @@ class VBMC:
                 N_slowopts,
                 Knew,
             )
-            # optimState.vp_repo{end+1} = get_vptheta(vp)
+            self.optim_state["vp_repo"].append(self.vp.get_parameters())
 
             self.optim_state["vpK"] = self.vp.K
             # Save current entropy
-            self.optim_state["H"] = self.vp  # .stats.entropy
+            self.optim_state["H"] = self.vp.stats["entropy"]
 
             # Get real variational posterior (might differ from training posterior)
             # vp_real = vp.vptrain2real(0, self.options)
             vp_real = self.vp
-            elbo = vp_real  # .stats.elbo
-            elbo_sd = vp_real  # .stats.elbo_sd
+            elbo = vp_real.stats["elbo"]
+            elbo_sd = vp_real.stats["elbo_sd"]
 
             timer.stop_timer("variationalFit")
 
@@ -926,27 +926,10 @@ class VBMC:
                     ] = self.optim_state.get("N")
 
             # Check termination conditions
-            # is_finished = self._is_finished()
+            is_finished = self._check_termination_conditions()
 
-            # Check warmup
-            if (
-                self.optim_state.get("iter") > 2
-                and self.optim_state.get("stop_gp_sampling") == 0
-                and not self.optim_state.get("warmup")
-            ):
-                if self._is_gp_sampling_finished():
-                    self.optim_state[
-                        "stop_gp_sampling"
-                    ] = self.optim_state.get("N")
-
-            # Check termination conditions
-            if iteration > 2:
-                # TODO: remove later, only here to make tests work
-                is_finished = True
-            else:
-                is_finished = self._check_termination_conditions()
-
-            #  Save stability
+            # Save stability
+            # self.vp.stats["stable"] = self.iteration_history["stable"][iteration]
             # vp.stats.stable = stats.stable(optimState.iter)
 
             # Check if we are still warming-up
@@ -977,17 +960,17 @@ class VBMC:
 
             # Check and update fitness shaping / output warping threshold
             if (
-                self.optim_state.get("outwarp_delta") is not None
+                self.optim_state.get("outwarp_delta") != []
                 and self.optim_state.get("R") is not None
                 and (
                     self.optim_state.get("R")
                     < self.options.get("warptolreliability")
                 )
             ):
-                Xrnd = self.vp.sample(N=int(2e4), origflag=False)
-                ymu = gp.gplite_pred(gp, Xrnd, [], [], 0, 1)
+                Xrnd, _ = self.vp.sample(N=int(2e4), origflag=False)
+                ymu, _ = gp.predict(Xrnd, add_noise=True)
                 ydelta = max(
-                    [0, self.optim_state["ymax"] - np.quantile(ymu, 1e-3)]
+                    [0, self.function_logger.ymax - np.quantile(ymu, 1e-3)]
                 )
                 if (
                     ydelta
@@ -1291,7 +1274,8 @@ class VBMC:
             - self.options.get("elcboimproweight")
             * self.iteration_history.get("elbo_sd")[idx0:iteration_idx]
         )
-        ELCBO_improvement = np.polyfit(xx, yy, 1)[0]
+        # need to casts here to get things to run
+        ELCBO_improvement = np.polyfit(list(map(float, xx)), list(map(float, yy)), 1)[0]
         return np.mean(rindex_vec), ELCBO_improvement
 
     def _is_gp_sampling_finished(self):
@@ -1411,9 +1395,9 @@ class VBMC:
             self.options["maxiterstochastic"] = np.Inf
             self.optim_state["entropy_alpha"] = 0
 
-            # stable_flag = vp.stats.stable;
+            # stable_flag = vp.stats["stable"]
             vp = optimize_vp(self.options, self.optim_state, self.K, vp, gp, n_fast_opts, n_slow_opts, K_new)
-            # vp.stats.stable = stable_flag
+            # vp.stats["stable"] = stable_flag
             changed_flag = True
         else:
             vp = self.vp

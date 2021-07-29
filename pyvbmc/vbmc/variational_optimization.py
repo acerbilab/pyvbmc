@@ -92,6 +92,7 @@ def optimize_vp(
     theta_bnd = vp.get_bounds(gp.X, options, K)
 
     ## Perform optimization starting from one or few selected points.
+    
     theta_N = np.size(vp0_vec[0].get_parameters())
     Ns = np.size(gp.posteriors)
     elbo_stats = _initialize_full_elcbo(slow_opts_N * 2, theta_N, K, Ns)
@@ -99,12 +100,14 @@ def optimize_vp(
     # For the moment no gradient available for variance
     gradient_available = compute_var == 0
 
+    vbtrain_options = {}
     if gradient_available:
         # Set basic options for deterministic (?) optimizer
         # TODO: options for optimizer here
         compute_grad = True
     else:
         # TODO: options for optimizer here
+        options["stochasticoptimizer"] = "cmaes"
         compute_grad = False
 
     vp0_fine = {}
@@ -126,6 +129,7 @@ def optimize_vp(
 
         vp0 = vp0_vec[idx]
         vp0_vec = np.delete(vp0_vec, idx)
+        vp0_type = np.delete(vp0_type, idx)
         theta0 = vp0.get_parameters()
 
         # Objective function, should only return value and gradient.
@@ -144,8 +148,31 @@ def optimize_vp(
             return res[0], res[1]
 
         if nsent_K == 0:
-            # TODO: Fast optimization via deterministic entropy approximation
-            assert False
+            # Fast optimization via deterministic entropy approximation
+            
+            # Objective function
+            def vbtrain_fun(theta_):
+                res = _negelcbo(
+                    theta_,
+                    gp,
+                    vp0,
+                    K_orig,
+                    elcbo_beta,
+                    0,
+                    compute_grad=compute_grad,
+                    compute_var=compute_var,
+                    theta_bnd=theta_bnd,
+                )
+                if compute_grad:
+                    return res[0], res[1]
+                return res[0]
+            
+            res = sp.optimize.minimize(vbtrain_fun, theta0, jac=compute_grad, tol=options["detenttolopt"])
+            if not res.success:
+                # SciPy minimize failed, try with CMA-ES
+                assert False
+                
+            theta_opt = res.x
         else:
             theta_opt = theta0
 
@@ -198,11 +225,12 @@ def optimize_vp(
         elbo_stats = _eval_full_elcbo(
             i_end, theta_opt, vp0, gp, elbo_stats, elcbo_beta, options, K_orig
         )
-
+        
         vp0_fine[i_mid] = copy.deepcopy(vp0)
         vp0_fine[i_end] = copy.deepcopy(vp0)  # Parameters get assigned later
 
     ## Finalize optimization by taking variational parameters with best ELCBO
+    
     idx = np.argmin(elbo_stats["nelcbo"])
     elbo = -elbo_stats["nelbo"][idx]
     elbo_sd = np.sqrt(elbo_stats["varF"][idx])
@@ -226,7 +254,7 @@ def optimize_vp(
         while np.any((vp.w < options["tolweight"]) & ~already_checked):
             vp_pruned = copy.deepcopy(vp)
 
-            # Choose random component below threshold
+            # Choose a random component below threshold
             idx = np.argwhere(
                 (vp.w < options["tolweight"]) & ~already_checked
             ).flatten()
@@ -264,7 +292,7 @@ def optimize_vp(
             )
 
             if delta_elcbo < pruning_threshold:
-                vp = vp_pruned  # TODO: copy?
+                vp = vp_pruned
                 elbo = elbo_pruned
                 elbo_sd = elbo_pruned_sd
                 G = elbo_stats["G"][0]
@@ -465,11 +493,15 @@ def _sieve(
     if K is None:
         K = vp.K
 
+    # Missing port: assign default values to optim_state (since
+    #               this doesn't seem to be necessary)
+
     ## Set up optimization variables and options.
 
     # TODO: delta is wrong size, since plb and pub are wrong size
     #       which are the wrong size since plausible upper and lower
     #       bounds are wrong size which are the wrong size since?
+    #       everything runs but could maybe be simpler?
     vp.delta = optim_state["delta"]
 
     # Number of initial starting points
@@ -489,6 +521,7 @@ def _sieve(
         nsent_K_fast = 0
 
     # Confidence weight
+    # Missing port: elcboweight does not exist
     # elcbo_beta = self._eval_option(self.options["elcboweight"], self.optim_state["n_eff"])
     elcbo_beta = 0
     compute_var = elcbo_beta != 0
@@ -538,6 +571,7 @@ def _sieve(
                     [vp0_type, np.ones((len(vp0_list4),))]
                 )
 
+        # Quickly estimate ELCBO at each candidate variational posterior.
         for i, vp in enumerate(vp0_vec):
             theta = vp.get_parameters()
             nelbo_tmp, _, _, _, varF_tmp = _negelcbo(
@@ -763,7 +797,7 @@ def _negelcbo(
     if vp.optimize_weights:
         eta = theta[-K_orig:]
         eta = eta - np.amax(eta)
-        vp.w = np.exp(eta.T)[:, np.newaxis]
+        vp.w = np.exp(eta.T)[np.newaxis, :]
 
     # Which gradients should be computed, if any?
     if compute_grad:
@@ -951,7 +985,7 @@ def _gplogjoint(
     mu = vp.mu.copy()
     sigma = vp.sigma.copy()
     lambd = vp.lambd.copy().reshape(-1, 1)
-    w = vp.lambd.copy()
+    w = vp.w.copy()[0, :]
     Ns = len(gp.posteriors)
 
     # TODO: once we get more mean function add a check here
@@ -965,7 +999,7 @@ def _gplogjoint(
         gp.mean, gpr.mean_functions.NegativeQuadratic
     )
 
-    F = np.zeros((1, Ns))
+    F = np.zeros((Ns,))
     # Check which gradients are computed
     if grad_flags[0]:
         mu_grad = np.zeros((D, K, Ns))
@@ -1008,6 +1042,7 @@ def _gplogjoint(
     noise_N = gp.noise.hyperparameter_count()
 
     # Loop over hyperparameter samples.
+    
     for s in range(0, Ns):
         hyp = gp.posteriors[s].hyp
 
@@ -1043,7 +1078,6 @@ def _gplogjoint(
             z_k = np.exp(lnnf_k - 0.5 * np.sum(delta_k ** 2, axis=0))
             I_k = np.dot(z_k, alpha) + m0
 
-            F[0, s] += w[k] * I_k
             if quadratic_meanfun:
                 nu_k = -0.5 * np.sum(
                     1
@@ -1056,6 +1090,7 @@ def _gplogjoint(
                     ),
                 )
                 I_k += nu_k
+            F[s] += w[k] * I_k
 
             if separate_K:
                 I_sk[s, k] = I_k
@@ -1156,16 +1191,20 @@ def _gplogjoint(
         varF = None
 
     if np.any(grad_flags):
+        grad_list = []
         if grad_flags[0]:
             mu_grad = np.reshape(mu_grad, (D * K, Ns))
+            grad_list.append(mu_grad)
 
         # Correct for standard log reparametrization of sigma
         if jacobian_flag and grad_flags[1]:
             sigma_grad *= np.reshape(sigma, (-1, 1))
+            grad_list.append(sigma_grad)
 
         # Correct for standard log reparametrization of lambd
         if jacobian_flag and grad_flags[2]:
             lambd_grad *= lambd
+            grad_list.append(lambd_grad)
 
         # Correct for standard softmax reparametrization of w
         if jacobian_flag and grad_flags[3]:
@@ -1175,8 +1214,9 @@ def _gplogjoint(
                 + np.diag(np.exp(vp.eta.flatten())) / eta_sum
             )
             w_grad = np.dot(J_w, w_grad)
+            grad_list.append(w_grad)
 
-        dF = np.concatenate((mu_grad, sigma_grad, lambd_grad, w_grad), axis=0)
+        dF = np.concatenate(grad_list, axis=0)
     else:
         dF = None
 
@@ -1201,10 +1241,10 @@ def _gplogjoint(
     # Average multiple hyperparameter samples
     varss = 0
     if Ns > 1 and avg_flag:
-        F_bar = np.sum(F, axis=1) / Ns
+        F_bar = np.sum(F) / Ns
         if compute_var:
             # Estimated variance of the samples
-            varFss = np.sum((F - F_bar) ** 2, axis=1)
+            varFss = np.sum((F - F_bar) ** 2)
             # Variability due to sampling
             varss = varFss + np.std(varF, ddof=1)
             varF = np.sum(varF, axis=0) / Ns + varFss
@@ -1216,7 +1256,10 @@ def _gplogjoint(
         F = F_bar
         if np.any(grad_flags):
             dF = np.sum(dF, axis=1) / Ns
-
+            
+    if Ns == 1 and np.any(grad_flags):
+        dF = dF[:, 0]
+        
     if separate_K:
         return F, dF, varF, dvarF, varss, I_sk, J_sjk
     return F, dF, varF, dvarF, varss

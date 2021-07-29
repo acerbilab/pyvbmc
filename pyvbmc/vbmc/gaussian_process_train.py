@@ -141,7 +141,7 @@ def train_gp(
         N0 = hyp0.shape[0]
         if N0 > gp_train["init_N"] / 2:
             hyp0 = hyp0[
-                np.random.choice(N0, gp_train["init_N"] / 2, replace=False),
+                np.random.choice(N0, math.ceil(gp_train["init_N"] / 2), replace=False),
                 :,
             ]
     hyp0 = np.concatenate((hyp0, np.array([hyp_dict["hyp"]])))
@@ -691,9 +691,9 @@ def _get_hyp_cov(
                 hyp = iteration_history["gp_hyp_full"][
                     optim_state["iter"] - 1 - i
                 ]
-                hyp_n = hyp.shape[0]
-                if len(hyp_list) == 0 or np.shape(hyp_list)[1] == hyp.shape[0]:
-                    hyp_list.append(hyp)
+                hyp_n = hyp.shape[1]
+                if len(hyp_list) == 0 or np.shape(hyp_list)[2] == hyp.shape[0]:
+                    hyp_list.append(hyp.T)
                     w_list.append(w * np.ones((hyp_n, 1)) / hyp_n)
 
             w_list = np.concatenate(w_list)
@@ -712,7 +712,8 @@ def _get_hyp_cov(
                     w_list[j],
                     np.dot((hyp_list[j] - mu_star).T, hyp_list[j] - mu_star),
                 )
-            hyp_cov /= 1 - np.sum(w_list ** 2, axis=0)
+
+            hyp_cov /= 1 - np.sum(w_list ** 2)
 
             return hyp_cov
 
