@@ -5,7 +5,7 @@ import numpy as np
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.variational_posterior import VariationalPosterior
-
+from pyvbmc.stats import get_hpd
 from .options import Options
 
 
@@ -242,6 +242,51 @@ def _get_search_points(
             )
             random_Xs = np.append(random_Xs, mvn_Xs, axis=0)
 
+        N_hpd = round(options.get("hpdsearchfrac") * N_random_points)
+        if N_hpd > 0:
+            hpd_min = options.get("hpdfrac") / 8
+            hpd_max = options.get("hpdfrac")
+            hpd_fracs = np.sort(
+                np.concatenate(
+                    (
+                        np.random.uniform(size=4) * (hpd_max - hpd_min)
+                        + hpd_min,
+                        np.array([hpd_min, hpd_max]),
+                    )
+                )
+            )
+            N_hpd_vec = np.diff(
+                np.round(np.linspace(0, N_hpd, len(hpd_fracs) + 1))
+            )
+
+            X = function_logger.X[function_logger.X_flag]
+            y = function_logger.y[function_logger.X_flag]
+
+            for idx in range(len(hpd_fracs)):
+                if N_hpd_vec[idx] == 0:
+                    continue
+
+                X_hpd, _, _ = get_hpd(X, y, hpd_fracs[idx])
+
+                if X_hpd.size == 0:
+                    idx_max = np.argmax(y)
+                    mubar = X[idx_max]
+                    sigmabar = np.cov(X, rowvar=False)
+                else:
+                    mubar = np.mean(X_hpd, axis=0)
+                    # normalize sigmabar by the number of observations
+                    # rowvar is so that each column represents a variable
+                    sigmabar = np.cov(X_hpd, bias=True, rowvar=False)
+
+                # ensure sigmabar is of shape (D, D)
+                if sigmabar.shape != (D, D):
+                    sigmabar = np.ones((D, D)) * sigmabar
+
+                hpd_Xs = np.random.multivariate_normal(
+                    mubar, sigmabar, size=int(N_hpd_vec[idx])
+                )
+                random_Xs = np.append(random_Xs, hpd_Xs, axis=0)
+
         N_box = round(options.get("boxsearchfrac") * N_random_points)
         if N_box > 0:
             X = function_logger.X[function_logger.X_flag]
@@ -270,7 +315,8 @@ def _get_search_points(
 
         # remaining samples
         N_vp = max(
-            0, N_random_points - N_search_cache - N_heavy - N_mvn - N_box
+            0,
+            N_random_points - N_search_cache - N_heavy - N_mvn - N_box - N_hpd,
         )
         if N_vp > 0:
             vp_Xs, _ = vp.sample(N=N_vp, origflag=False, balanceflag=True)

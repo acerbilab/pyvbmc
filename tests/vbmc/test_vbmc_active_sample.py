@@ -1,8 +1,11 @@
+import logging
+
 import numpy as np
 import pytest
-from pyvbmc.vbmc import VBMC
-from pyvbmc.vbmc.active_sample import active_sample, _get_search_points
-import logging
+
+from pyvbmc.vbmc import VBMC, active_sample
+from pyvbmc.stats import get_hpd
+from pyvbmc.vbmc.active_sample import _get_search_points
 
 fun = lambda x: np.sum(x + 2)
 
@@ -390,6 +393,7 @@ def test_get_search_points_all_search_cache():
         "heavytailsearchfrac": 0,
         "mvnsearchfrac": 0,
         "boxsearchfrac": 0,
+        "hpdsearchfrac": 0,
     }
     vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
     number_of_points = 2
@@ -424,6 +428,7 @@ def test_get_search_points_search_bounds():
         "heavytailsearchfrac": 0,
         "mvnsearchfrac": 0,
         "boxsearchfrac": 0,
+        "hpdsearchfrac": 0,
     }
     vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
     number_of_points = 2
@@ -458,6 +463,7 @@ def test_get_search_points_all_heavytailsearch():
         "heavytailsearchfrac": 1,
         "mvnsearchfrac": 0,
         "boxsearchfrac": 0,
+        "hpdsearchfrac": 0,
     }
     vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
     number_of_points = 2
@@ -490,6 +496,7 @@ def test_get_search_points_all_mvn():
         "heavytailsearchfrac": 0,
         "mvnsearchfrac": 1,
         "boxsearchfrac": 0,
+        "hpdsearchfrac": 0,
     }
     vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
     number_of_points = 2
@@ -522,6 +529,7 @@ def test_get_search_points_all_mvn_vp_sample():
         "heavytailsearchfrac": 0,
         "mvnsearchfrac": 0,
         "boxsearchfrac": 0,
+        "hpdsearchfrac": 0,
     }
     vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
     number_of_points = 2
@@ -554,6 +562,7 @@ def test_get_search_points_all_box_search(mocker):
         "heavytailsearchfrac": 0,
         "mvnsearchfrac": 0,
         "boxsearchfrac": 1,
+        "hpdsearchfrac": 0,
     }
     vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
     number_of_points = 2
@@ -610,3 +619,95 @@ def test_get_search_points_all_box_search(mocker):
     box_lb = -4.5
     box_ub = 13.5
     assert np.all(search_X == random_values * (box_ub - box_lb) + box_lb)
+
+
+def test_get_search_points_all_hpd_search(mocker):
+    """
+    Take all points from hpd search.
+    """
+    user_options = {
+        "cachefrac": 1,
+        "searchcachefrac": 0,
+        "heavytailsearchfrac": 0,
+        "mvnsearchfrac": 0,
+        "boxsearchfrac": 0,
+        "hpdsearchfrac": 1,
+        "hpdfrac": 0.8,
+    }
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
+    number_of_points = 2
+    X = np.linspace((0, 0, 0), (10, 10, 10), number_of_points)
+    vbmc.optim_state["cache"]["x_orig"] = np.zeros(0)
+
+    # record some samples in FunctionLogger
+    for i in range(10):
+        vbmc.function_logger(np.ones(3) * i)
+    assert vbmc.function_logger.Xn == 9
+
+    # make sure that all samples are from hpd search (disable final vp.sample)
+    mocker.patch(
+        "pyvbmc.variational_posterior.VariationalPosterior.sample",
+        return_value=np.zeros(0),
+    )
+
+    # no search bounds for test
+    vbmc.optim_state["LB_search"] = np.full((1, 3), -np.inf)
+    vbmc.optim_state["UB_search"] = np.full((1, 3), np.inf)
+    search_X, idx_cache = _get_search_points(
+        number_of_points,
+        vbmc.optim_state,
+        vbmc.options,
+        vbmc.parameter_transformer,
+        vbmc.function_logger,
+        vbmc.vp,
+    )
+    assert search_X.shape == (number_of_points, 3)
+    assert idx_cache.shape == (number_of_points,)
+    assert np.all(np.isnan(idx_cache))
+
+
+def test_get_search_points_all_hpd_search_empty_get_hpd(mocker):
+    """
+    Take all points from hpd search when when get_hpd returns an empty array.
+    """
+
+    user_options = {
+        "cachefrac": 1,
+        "searchcachefrac": 0,
+        "heavytailsearchfrac": 0,
+        "mvnsearchfrac": 0,
+        "boxsearchfrac": 0,
+        "hpdsearchfrac": 1,
+        "hpdfrac": 0
+        }
+    
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
+    number_of_points = 2
+    X = np.linspace((0, 0, 0), (10, 10, 10), number_of_points)
+    vbmc.optim_state["cache"]["x_orig"] = np.zeros(0)
+
+    # record some samples in FunctionLogger
+    for i in range(10):
+        vbmc.function_logger(np.ones(3) * i)
+    assert vbmc.function_logger.Xn == 9
+
+    # make sure that all samples are from hpd search (disable final vp.sample)
+    mocker.patch(
+        "pyvbmc.variational_posterior.VariationalPosterior.sample",
+        return_value=np.zeros(0),
+    )
+
+    # no search bounds for test
+    vbmc.optim_state["LB_search"] = np.full((1, 3), -np.inf)
+    vbmc.optim_state["UB_search"] = np.full((1, 3), np.inf)
+    search_X, idx_cache = _get_search_points(
+        number_of_points,
+        vbmc.optim_state,
+        vbmc.options,
+        vbmc.parameter_transformer,
+        vbmc.function_logger,
+        vbmc.vp,
+    )
+    assert search_X.shape == (number_of_points, 3)
+    assert idx_cache.shape == (number_of_points,)
+    assert np.all(np.isnan(idx_cache))
