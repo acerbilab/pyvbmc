@@ -24,7 +24,7 @@ def get_hpd(X: np.ndarray, y: np.ndarray, hpd_frac: float = 0.8):
         The range of values of hpd_X in each dimension.
     """
 
-    N = X.shape[0]
+    N, D = X.shape
 
     # Subsample high posterior density dataset.
     # Sort by descending order, not ascending.
@@ -32,6 +32,10 @@ def get_hpd(X: np.ndarray, y: np.ndarray, hpd_frac: float = 0.8):
     hpd_N = round(hpd_frac * N)
     hpd_X = X[order[0:hpd_N]]
     hpd_y = y[order[0:hpd_N]]
-    hpd_range = np.max(hpd_X, axis=0) - np.min(hpd_X, axis=0)
+
+    if hpd_N > 0:
+        hpd_range = np.max(hpd_X, axis=0) - np.min(hpd_X, axis=0)
+    else:
+        hpd_range = np.full((D), np.NaN)
 
     return hpd_X, hpd_y, hpd_range
