@@ -181,6 +181,12 @@ def _get_search_points(
         The obtained search points.
     idx_cache : ndarray, shape (number_of_points,)
         The indicies of the search points if coming from the cache.
+
+    Raises
+    ------
+    ValueError
+        When the options lead to more points sampled than requested, that means
+        `search_X`.shape[0]` would be greater than `number_of_points``.
     """
 
     # Take some points from starting cache, if not empty
@@ -308,6 +314,12 @@ def _get_search_points(
             )
 
             random_Xs = np.append(random_Xs, box_Xs, axis=0)
+
+        # ensure that maximum N_random_points are sampled.
+        if(N_random_points < random_Xs.shape[0]):
+            raise ValueError("A maximum of {} points ".format(N_random_points),
+            "be randomly sampled but {} ".format(random_Xs.shape[0]),
+            "were sampled. Please validate the provided options.")
 
         # remaining samples
         N_vp = max(

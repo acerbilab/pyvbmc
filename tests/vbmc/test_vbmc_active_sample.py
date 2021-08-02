@@ -691,3 +691,34 @@ def test_get_search_points_all_hpd_search_empty_get_hpd(mocker):
     assert search_X.shape == (number_of_points, 3)
     assert idx_cache.shape == (number_of_points,)
     assert np.all(np.isnan(idx_cache))
+
+
+def test_get_search_points_more_points_randomly_than_requested():
+    """
+    Test that ValueError is raised when options lead to more points sampled than
+    requested.
+    """
+    user_options = {
+        "cachefrac": 0,
+        "searchcachefrac": 0,
+        "heavytailsearchfrac": 1,
+        "mvnsearchfrac":1,
+        "boxsearchfrac": 1,
+        "hpdsearchfrac": 1,
+    }
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
+    number_of_points = 100
+    vbmc.optim_state["cache"]["x_orig"] = np.zeros(0)
+
+    # no search bounds for test
+    vbmc.optim_state["LB_search"] = np.full((1, 3), -np.inf)
+    vbmc.optim_state["UB_search"] = np.full((1, 3), np.inf)
+
+    with pytest.raises(ValueError):
+        _get_search_points(
+            number_of_points=number_of_points,
+            optim_state=vbmc.optim_state,
+            function_logger=vbmc.function_logger,
+            vp=vbmc.vp,
+            options=vbmc.options,
+        )
