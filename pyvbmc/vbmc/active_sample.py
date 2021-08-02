@@ -316,10 +316,14 @@ def _get_search_points(
             random_Xs = np.append(random_Xs, box_Xs, axis=0)
 
         # ensure that maximum N_random_points are sampled.
-        if(N_random_points < random_Xs.shape[0]):
-            raise ValueError("A maximum of {} points ".format(N_random_points),
-            "should be randomly sampled but {} ".format(random_Xs.shape[0]),
-            "were sampled. Please validate the provided options.")
+        if N_random_points < random_Xs.shape[0]:
+            raise ValueError(
+                "A maximum of {} points ".format(N_random_points),
+                "should be randomly sampled but {} ".format(
+                    random_Xs.shape[0]
+                ),
+                "were sampled. Please validate the provided options.",
+            )
 
         # remaining samples
         N_vp = max(

@@ -719,14 +719,13 @@ def test_get_search_points_more_points_randomly_than_requested():
     vbmc.optim_state["LB_search"] = np.full((1, 3), -np.inf)
     vbmc.optim_state["UB_search"] = np.full((1, 3), np.inf)
 
-
     with pytest.raises(ValueError) as execinfo:
         _get_search_points(
-        number_of_points=number_of_points,
-        optim_state=vbmc.optim_state,
-        function_logger=vbmc.function_logger,
-        vp=vbmc.vp,
-        options=vbmc.options,
-    )
+            number_of_points=number_of_points,
+            optim_state=vbmc.optim_state,
+            function_logger=vbmc.function_logger,
+            vp=vbmc.vp,
+            options=vbmc.options,
+        )
 
     assert "A maximum of 100 points" in execinfo.value.args[0]
