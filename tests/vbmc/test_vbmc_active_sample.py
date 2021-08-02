@@ -659,9 +659,9 @@ def test_get_search_points_all_hpd_search_empty_get_hpd(mocker):
         "mvnsearchfrac": 0,
         "boxsearchfrac": 0,
         "hpdsearchfrac": 1,
-        "hpdfrac": 0
-        }
-    
+        "hpdfrac": 0,
+    }
+
     vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
     number_of_points = 2
     X = np.linspace((0, 0, 0), (10, 10, 10), number_of_points)
@@ -702,7 +702,7 @@ def test_get_search_points_more_points_randomly_than_requested():
         "cachefrac": 0,
         "searchcachefrac": 0,
         "heavytailsearchfrac": 1,
-        "mvnsearchfrac":1,
+        "mvnsearchfrac": 1,
         "boxsearchfrac": 1,
         "hpdsearchfrac": 1,
     }
@@ -710,15 +710,23 @@ def test_get_search_points_more_points_randomly_than_requested():
     number_of_points = 100
     vbmc.optim_state["cache"]["x_orig"] = np.zeros(0)
 
+    # record some samples in FunctionLogger
+    for i in range(10):
+        vbmc.function_logger(np.ones(3) * i)
+    assert vbmc.function_logger.Xn == 9
+
     # no search bounds for test
     vbmc.optim_state["LB_search"] = np.full((1, 3), -np.inf)
     vbmc.optim_state["UB_search"] = np.full((1, 3), np.inf)
 
-    with pytest.raises(ValueError):
+
+    with pytest.raises(ValueError) as execinfo:
         _get_search_points(
-            number_of_points=number_of_points,
-            optim_state=vbmc.optim_state,
-            function_logger=vbmc.function_logger,
-            vp=vbmc.vp,
-            options=vbmc.options,
-        )
+        number_of_points=number_of_points,
+        optim_state=vbmc.optim_state,
+        function_logger=vbmc.function_logger,
+        vp=vbmc.vp,
+        options=vbmc.options,
+    )
+
+    assert "A maximum of 100 points" in execinfo.value.args[0]
