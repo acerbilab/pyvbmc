@@ -14,7 +14,6 @@ def active_sample(
     sample_count: int,
     optim_state: dict,
     function_logger: FunctionLogger,
-    parameter_transformer: ParameterTransformer,
     vp: VariationalPosterior,
     options: Options,
 ):
@@ -31,9 +30,6 @@ def active_sample(
         The optim_state from the VBMC instance this function is called from.
     function_logger : FunctionLogger
         The FunctionLogger from the VBMC instance this function is called from.
-    parameter_transformer : ParameterTransformer
-        The ParameterTransformer from the VBMC instance this function is called
-        from.
     vp : VariationalPosterior
         The VariationalPosterior from the VBMC instance this function is called
         from.
@@ -58,6 +54,8 @@ def active_sample(
         logger.setLevel(logging.INFO)
     elif options.get("display") == "full":
         logger.setLevel(logging.DEBUG)
+
+    parameter_transformer = function_logger.parameter_transformer
 
     if gp is None:
         # No GP yet, just use provided points or sample from plausible box.
@@ -156,10 +154,9 @@ def active_sample(
 def _get_search_points(
     number_of_points: int,
     optim_state: dict,
-    options: Options,
-    parameter_transformer: ParameterTransformer,
     function_logger: FunctionLogger,
     vp: VariationalPosterior,
+    options: Options,
 ):
     """
     Get search points from starting cache or randomly generated.
@@ -170,16 +167,13 @@ def _get_search_points(
         The number of points to return.
     optim_state : dict
         The optim_state from the VBMC instance this function is called from.
-    options : Options
-        Options from the VBMC instance this function is called from.
-    parameter_transformer : ParameterTransformer
-        The ParameterTransformer from the VBMC instance this function is called
-        from.
     function_logger : FunctionLogger
         The FunctionLogger from the VBMC instance this function is called from.
     vp : VariationalPosterior
         The VariationalPosterior from the VBMC instance this function is called
         from.
+    options : Options
+        Options from the VBMC instance this function is called from.
 
     Returns
     -------
@@ -199,6 +193,7 @@ def _get_search_points(
 
     search_X = np.full((0, D), np.NaN)
     idx_cache = np.array([])
+    parameter_transformer = function_logger.parameter_transformer
 
     if x0.size > 0:
         # Fraction of points from cache (if nonempty)
@@ -271,6 +266,7 @@ def _get_search_points(
                 if X_hpd.size == 0:
                     idx_max = np.argmax(y)
                     mubar = X[idx_max]
+                    # rowvar is so that each column represents a variable
                     sigmabar = np.cov(X, rowvar=False)
                 else:
                     mubar = np.mean(X_hpd, axis=0)
