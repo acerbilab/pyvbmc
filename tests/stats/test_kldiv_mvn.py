@@ -1,5 +1,5 @@
 import numpy as np
-from pyvbmc.stats.entropy import kldiv_mvn
+from pyvbmc.stats import kldiv_mvn
 
 def test_kldiv_1d_identical():
     mu = np.ones((1,1))

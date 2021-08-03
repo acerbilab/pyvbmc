@@ -27,7 +27,8 @@ Note that this project is work in progress!
 
    functions/active_sample
    functions/decorators
-   functions/kernel_density
+   functions/get_hpd
+   functions/kde1d
    functions/entropy
    functions/gaussian_process_train
 

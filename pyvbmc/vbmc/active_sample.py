@@ -1,9 +1,11 @@
 import logging
+import math
 
 import numpy as np
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
-
+from pyvbmc.variational_posterior import VariationalPosterior
+from pyvbmc.stats import get_hpd
 from .options import Options
 
 
@@ -12,7 +14,7 @@ def active_sample(
     sample_count: int,
     optim_state: dict,
     function_logger: FunctionLogger,
-    parameter_transformer: ParameterTransformer,
+    vp: VariationalPosterior,
     options: Options,
 ):
     """
@@ -28,8 +30,8 @@ def active_sample(
         The optim_state from the VBMC instance this function is called from.
     function_logger : FunctionLogger
         The FunctionLogger from the VBMC instance this function is called from.
-    parameter_transformer : ParameterTransformer
-        The ParameterTransformer from the VBMC instance this function is called
+    vp : VariationalPosterior
+        The VariationalPosterior from the VBMC instance this function is called
         from.
     options : Options
        Options from the VBMC instance this function is called from.
@@ -53,13 +55,15 @@ def active_sample(
     elif options.get("display") == "full":
         logger.setLevel(logging.DEBUG)
 
+    parameter_transformer = function_logger.parameter_transformer
+
     if gp is None:
         # No GP yet, just use provided points or sample from plausible box.
 
         # TODO: if the uncertainty_level is 2 the user needs to fill in
         # the cache for the noise S (not just for y) at each x0
         # this is also not implemented in MATLAB yet.
-        
+
         x0 = optim_state["cache"]["x_orig"]
         provided_sample_count, D = x0.shape
 
@@ -145,3 +149,194 @@ def active_sample(
         pass
 
     return function_logger, optim_state
+
+
+def _get_search_points(
+    number_of_points: int,
+    optim_state: dict,
+    function_logger: FunctionLogger,
+    vp: VariationalPosterior,
+    options: Options,
+):
+    """
+    Get search points from starting cache or randomly generated.
+
+    Parameters
+    ----------
+    number_of_points : int
+        The number of points to return.
+    optim_state : dict
+        The optim_state from the VBMC instance this function is called from.
+    function_logger : FunctionLogger
+        The FunctionLogger from the VBMC instance this function is called from.
+    vp : VariationalPosterior
+        The VariationalPosterior from the VBMC instance this function is called
+        from.
+    options : Options
+        Options from the VBMC instance this function is called from.
+
+    Returns
+    -------
+    search_X : ndarray, shape (number_of_points, D)
+        The obtained search points.
+    idx_cache : ndarray, shape (number_of_points,)
+        The indicies of the search points if coming from the cache.
+
+    Raises
+    ------
+    ValueError
+        When the options lead to more points sampled than requested, that means
+        `search_X`.shape[0]` would be greater than `number_of_points``.
+    """
+
+    # Take some points from starting cache, if not empty
+    x0 = np.copy(optim_state["cache"]["x_orig"])
+
+    lb_search = optim_state.get("LB_search")
+    ub_search = optim_state.get("UB_search")
+
+    D = ub_search.shape[1]
+
+    search_X = np.full((0, D), np.NaN)
+    idx_cache = np.array([])
+    parameter_transformer = function_logger.parameter_transformer
+
+    if x0.size > 0:
+        # Fraction of points from cache (if nonempty)
+        N_cache = math.ceil(number_of_points * options.get("cachefrac"))
+
+        # idx_cache contains min(n_cache, x0.shape[0]) random indicies
+        idx_cache = np.random.permutation(x0.shape[0])[
+            : min(N_cache, x0.shape[0])
+        ]
+
+        search_X = parameter_transformer(x0[idx_cache])
+
+    # Randomly sample remaining points
+    if x0.shape[0] < number_of_points:
+        N_random_points = number_of_points - x0.shape[0]
+        random_Xs = np.full((0, D), np.NaN)
+
+        N_search_cache = round(
+            options.get("searchcachefrac") * N_random_points
+        )
+        if N_search_cache > 0:  # Take points from search cache
+            search_cache = optim_state.get("searchcache")
+            random_Xs = np.append(
+                random_Xs,
+                search_cache[: min(len(search_cache), N_search_cache)],
+                axis=0,
+            )
+
+        N_heavy = round(options.get("heavytailsearchfrac") * N_random_points)
+        if N_heavy > 0:
+            heavy_Xs, _ = vp.sample(
+                N=N_heavy, origflag=False, balanceflag=True, df=3
+            )
+            random_Xs = np.append(random_Xs, heavy_Xs, axis=0)
+
+        N_mvn = round(options.get("mvnsearchfrac") * N_random_points)
+        if N_mvn > 0:
+            mubar, sigmabar = vp.moments(origflag=False, covflag=True)
+            mvn_Xs = np.random.multivariate_normal(
+                np.ravel(mubar), sigmabar, size=N_mvn
+            )
+            random_Xs = np.append(random_Xs, mvn_Xs, axis=0)
+
+        N_hpd = round(options.get("hpdsearchfrac") * N_random_points)
+        if N_hpd > 0:
+            hpd_min = options.get("hpdfrac") / 8
+            hpd_max = options.get("hpdfrac")
+            hpd_fracs = np.sort(
+                np.concatenate(
+                    (
+                        np.random.uniform(size=4) * (hpd_max - hpd_min)
+                        + hpd_min,
+                        np.array([hpd_min, hpd_max]),
+                    )
+                )
+            )
+            N_hpd_vec = np.diff(
+                np.round(np.linspace(0, N_hpd, len(hpd_fracs) + 1))
+            )
+
+            X = function_logger.X[function_logger.X_flag]
+            y = function_logger.y[function_logger.X_flag]
+
+            for idx in range(len(hpd_fracs)):
+                if N_hpd_vec[idx] == 0:
+                    continue
+
+                X_hpd, _, _ = get_hpd(X, y, hpd_fracs[idx])
+
+                if X_hpd.size == 0:
+                    idx_max = np.argmax(y)
+                    mubar = X[idx_max]
+                    # rowvar is so that each column represents a variable
+                    sigmabar = np.cov(X, rowvar=False)
+                else:
+                    mubar = np.mean(X_hpd, axis=0)
+                    # normalize sigmabar by the number of observations
+                    # rowvar is so that each column represents a variable
+                    sigmabar = np.cov(X_hpd, bias=True, rowvar=False)
+
+                # ensure sigmabar is of shape (D, D)
+                if sigmabar.shape != (D, D):
+                    sigmabar = np.ones((D, D)) * sigmabar
+
+                hpd_Xs = np.random.multivariate_normal(
+                    mubar, sigmabar, size=int(N_hpd_vec[idx])
+                )
+                random_Xs = np.append(random_Xs, hpd_Xs, axis=0)
+
+        N_box = round(options.get("boxsearchfrac") * N_random_points)
+        if N_box > 0:
+            X = function_logger.X[function_logger.X_flag]
+            X_diam = np.amax(X, axis=0) - np.amin(X, axis=0)
+            plb = optim_state.get("plb")
+            pub = optim_state.get("pub")
+
+            if np.all(np.isfinite(lb_search)) and np.all(
+                np.isfinite(ub_search)
+            ):
+                box_lb = lb_search
+                box_ub = ub_search
+            else:
+                box_lb = plb - 3 * (pub - plb)
+                box_ub = pub + 3 * (pub - plb)
+
+            box_lb = np.maximum(np.amin(X, axis=0) - 0.5 * X_diam, box_lb)
+            box_ub = np.minimum(np.amax(X, axis=0) + 0.5 * X_diam, box_ub)
+
+            box_Xs = (
+                np.random.standard_normal((N_box, D)) * (box_ub - box_lb)
+                + box_lb
+            )
+
+            random_Xs = np.append(random_Xs, box_Xs, axis=0)
+
+        # ensure that maximum N_random_points are sampled.
+        if N_random_points < random_Xs.shape[0]:
+            raise ValueError(
+                "A maximum of {} points ".format(N_random_points),
+                "should be randomly sampled but {} ".format(
+                    random_Xs.shape[0]
+                ),
+                "were sampled. Please validate the provided options.",
+            )
+
+        # remaining samples
+        N_vp = max(
+            0,
+            N_random_points - N_search_cache - N_heavy - N_mvn - N_box - N_hpd,
+        )
+        if N_vp > 0:
+            vp_Xs, _ = vp.sample(N=N_vp, origflag=False, balanceflag=True)
+            random_Xs = np.append(random_Xs, vp_Xs, axis=0)
+
+        search_X = np.append(search_X, random_Xs, axis=0)
+        idx_cache = np.append(idx_cache, np.full(N_random_points, np.NaN))
+
+    # Apply search bounds
+    search_X = np.minimum((np.maximum(search_X, lb_search)), ub_search)
+    return search_X, idx_cache

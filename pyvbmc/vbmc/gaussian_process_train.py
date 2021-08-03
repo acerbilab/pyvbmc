@@ -4,6 +4,7 @@ import gpyreg as gpr
 import numpy as np
 
 from pyvbmc.function_logger import FunctionLogger
+from pyvbmc.stats import get_hpd
 
 from .options import Options
 from .iteration_history import IterationHistory
@@ -310,7 +311,7 @@ def _gp_hyp(
     """
 
     # Get high posterior density dataset.
-    hpd_X, hpd_y, _ = _get_hpd(X, y, options["hpdfrac"])
+    hpd_X, hpd_y, _ = get_hpd(X, y, options["hpdfrac"])
     D = hpd_X.shape[1]
     # s2 = None
 
@@ -719,42 +720,6 @@ def _get_hyp_cov(
         return hyp_dict["run_cov"]
 
     return None
-
-
-def _get_hpd(X: np.ndarray, y: np.ndarray, hpd_frac: float = 0.8):
-    """
-    Get high-posterior density dataset.
-
-    Parameters
-    ==========
-    X : ndarray, shape (N, D)
-        The training points.
-    y : ndarray, shape (N, 1)
-        The training targets.
-    hpd_frac : float
-        The portion of the training set to consider.
-
-    Returns
-    =======
-    hpd_X : ndarray
-        High-posterior density training points.
-    hpd_y : ndarray
-        High-posterior density training targets.
-    hpd_range : ndarray, shape (D,)
-        The range of values of hpd_X in each dimension.
-    """
-
-    N = X.shape[0]
-
-    # Subsample high posterior density dataset.
-    # Sort by descending order, not ascending.
-    order = np.argsort(y, axis=None)[::-1]
-    hpd_N = round(hpd_frac * N)
-    hpd_X = X[order[0:hpd_N]]
-    hpd_y = y[order[0:hpd_N]]
-    hpd_range = np.max(hpd_X, axis=0) - np.min(hpd_X, axis=0)
-
-    return hpd_X, hpd_y, hpd_range
 
 
 def _get_training_data(function_logger: FunctionLogger):
