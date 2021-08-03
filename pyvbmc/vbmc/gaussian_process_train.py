@@ -311,7 +311,7 @@ def _gp_hyp(
     """
 
     # Get high posterior density dataset.
-    hpd_X, hpd_y, _ = get_hpd(X, y, options["hpdfrac"])
+    hpd_X, hpd_y, _, _ = get_hpd(X, y, options["hpdfrac"])
     D = hpd_X.shape[1]
     # s2 = None
 
