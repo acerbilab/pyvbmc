@@ -1,4 +1,5 @@
 # __init__.py
+import pyvbmc.acquisition_functions
 import pyvbmc.decorators
 import pyvbmc.entropy
 import pyvbmc.function_logger
