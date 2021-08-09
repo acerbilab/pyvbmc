@@ -4,6 +4,7 @@ import math
 import copy
 import numpy as np
 import scipy as sp
+import cma
 
 import gpyreg as gpr
 
@@ -67,7 +68,7 @@ def update_K(optim_state, iteration_history, options):
 
 
 def optimize_vp(
-    options, optim_state, K_orig, vp, gp, fast_opts_N, slow_opts_N, K=None
+    options, optim_state, K_orig, vp, gp, fast_opts_N, slow_opts_N, K=None, prnt=0
 ):
     """
     Optimize variational posterior.
@@ -149,7 +150,7 @@ def optimize_vp(
 
         if nsent_K == 0:
             # Fast optimization via deterministic entropy approximation
-            
+
             # Objective function
             def vbtrain_fun(theta_):
                 res = _negelcbo(
@@ -170,9 +171,47 @@ def optimize_vp(
             res = sp.optimize.minimize(vbtrain_fun, theta0, jac=compute_grad, tol=options["detenttolopt"])
             if not res.success:
                 # SciPy minimize failed, try with CMA-ES
-                assert False
+                if prnt >= 0:
+                    print("Cannot optimize variational parameters with scipy.optimize.minimize. Trying with CMA-ES (slower).")
+
+                # Objective function with no gradient computation.
+                def vbtrain_fun(theta_):
+                    res = _negelcbo(
+                        theta_,
+                        gp,
+                        vp0,
+                        K_orig,
+                        elcbo_beta,
+                        0,
+                        compute_grad=False,
+                        compute_var=compute_var,
+                        theta_bnd=theta_bnd,
+                    )
+                    return res[0]
+                    
+                insigma_list = []
+                if vp.optimize_mu:
+                    insigma_list.append(np.tile(vp.bounds["mu_ub"] - vp.bounds["mu_lb"], (K,)))
+                if vp.optimize_sigma:
+                    insigma_list.append(np.ones((K,)))
+                if vp.optimize_lambd:
+                    insigma_list.append(np.ones((vp.D,)))
+                if vp.optimize_weights:
+                    insigma_list.append(np.ones((K,)))
+                insigma = np.concatenate(insigma_list)
                 
-            theta_opt = res.x
+                cma_options = {
+                    "verbose": -9,
+                    "tolx": 1e-8 * np.max(insigma),
+                    "tolfun": 1e-6,
+                    "tolfunhist": 1e-7,
+                    "maxfevals": 200*(vp.D+2),
+                    "CMA_active": True,
+                }
+                res = cma.fmin(vbtrain_fun, theta0, np.max(insigma), options=cma_options)
+                theta_opt = res[0]
+            else:
+                theta_opt = res.x
         else:
             theta_opt = theta0
 
@@ -215,9 +254,44 @@ def optimize_vp(
                         options,
                         K_orig,
                     )
-
             elif options["stochasticoptimizer"] == "cmaes":
-                assert False
+                # Objective function with no gradient computation.
+                def vbtrain_fun(theta_):
+                    res = _negelcbo(
+                        theta_,
+                        gp,
+                        vp0,
+                        K_orig,
+                        elcbo_beta,
+                        Ns=nsent_K,
+                        compute_grad=False,
+                        compute_var=compute_var,
+                        theta_bnd=theta_bnd,
+                    )
+                    if not np.isfinite(res[0]):
+                        return np.inf
+                    return res[0]
+                    
+                insigma_list = []
+                if vp.optimize_mu:
+                    insigma_list.append(np.tile(vp.bounds["mu_ub"] - vp.bounds["mu_lb"], (K,)))
+                if vp.optimize_sigma:
+                    insigma_list.append(np.ones((K,)))
+                if vp.optimize_lambd:
+                    insigma_list.append(np.ones((vp.D,)))
+                if vp.optimize_weights:
+                    insigma_list.append(np.ones((K,)))
+                insigma = np.concatenate(insigma_list)
+                
+                cma_options = {
+                    "verbose": -9,
+                    "tolx": 1e-6 * np.max(insigma),
+                    "tolfun": 1e-4,
+                    "tolfunhist": 1e-5,
+                    "CMA_active": True,
+                }
+                res = cma.fmin(vbtrain_fun, theta0, np.max(insigma), options=cma_options, noise_handler=cma.NoiseHandler(np.size(theta0)))
+                theta_opt = res[0]
             else:
                 raise Exception("Unknown stochastic optimizer!")
 

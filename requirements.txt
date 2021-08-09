@@ -7,3 +7,4 @@ pytest-profiling==1.7.0
 pytest-mock==3.6.1
 sphinx==3.5.2
 pylint==2.8.3
+cma
