@@ -267,7 +267,7 @@ def _get_search_points(
                 if N_hpd_vec[idx] == 0:
                     continue
 
-                X_hpd, _, _ = get_hpd(X, y, hpd_fracs[idx])
+                X_hpd, _, _, _ = get_hpd(X, y, hpd_fracs[idx])
 
                 if X_hpd.size == 0:
                     idx_max = np.argmax(y)

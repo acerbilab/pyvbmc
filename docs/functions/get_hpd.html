@@ -35,6 +35,15 @@
             
   <section id="get-hpd">
 <h1>get_hpd<a class="headerlink" href="#get-hpd" title="Permalink to this headline">¶</a></h1>
+<section id="porting-status">
+<h2>Porting status<a class="headerlink" href="#porting-status" title="Permalink to this headline">¶</a></h2>
+<div class="admonition-todo admonition" id="id1">
+<p class="admonition-title">Todo</p>
+<ul class="simple">
+<li><p>this point this function per se has nothing to do with high-density posterior points, it is more generic (fix by Luigi required)</p></li>
+</ul>
+</div>
+</section>
 <section id="matlab-references-of-ported-methods">
 <h2>Matlab references of ported methods<a class="headerlink" href="#matlab-references-of-ported-methods" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
@@ -62,6 +71,9 @@
 <dt><strong>hpd_y</strong><span class="classifier">ndarray</span></dt><dd><p>High-posterior density training targets.</p>
 </dd>
 <dt><strong>hpd_range</strong><span class="classifier">ndarray, shape (D,)</span></dt><dd><p>The range of values of hpd_X in each dimension.</p>
+</dd>
+<dt><strong>indices</strong><span class="classifier">ndarray</span></dt><dd><p>The indices of the points returned with respect to the original data
+being passed to the function.</p>
 </dd>
 </dl>
 </dd>
@@ -103,6 +115,7 @@
 <li class="toctree-l1"><a class="reference internal" href="active_sample.html">active_sample</a></li>
 <li class="toctree-l1"><a class="reference internal" href="decorators.html">decorators</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">get_hpd</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#porting-status">Porting status</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#matlab-references-of-ported-methods">Matlab references of ported methods</a></li>
 </ul>
 </li>
