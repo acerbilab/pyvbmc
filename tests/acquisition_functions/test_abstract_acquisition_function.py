@@ -1,3 +1,5 @@
+import sys
+
 import gpyreg as gpr
 import numpy as np
 from pyvbmc.acquisition_functions import AbstractAcquisitionFunction
@@ -55,6 +57,7 @@ def test__call__simple(mocker):
     vp = VariationalPosterior(3)
     acq = acq_fcn(Xs, create_gp(3), vp, optim_state)
 
+    assert np.all(acq == 1)
     assert acq.shape == (M,)
 
 
@@ -126,6 +129,7 @@ def test__call_quad(mocker):
     acq = acq_fcn(Xs, create_gp(3), vp, optim_state)
 
     assert acq.shape == (M,)
+    assert np.all(acq == 1)
 
 
 def test__call__regularization(mocker):
@@ -145,7 +149,7 @@ def test__call__regularization(mocker):
 
     mocker.patch(
         "gpyreg.GP.predict",
-        return_value=(np.ones((M, 2)) * 5, np.zeros((M, 2))),
+        return_value=(np.ones((M, 2)) * 5, np.ones((M, 2))),
     )
 
     acq_fcn = BasicAcqClass()
@@ -163,8 +167,45 @@ def test__call__regularization(mocker):
     acq_fcn.acq_info["log_flag"] = False
     acq = acq_fcn(Xs, create_gp(3), vp, optim_state)
     assert acq.shape == (M,)
+    assert np.allclose(acq, 0)
 
     # logflag
     acq_fcn.acq_info["log_flag"] = True
     acq = acq_fcn(Xs, create_gp(3), vp, optim_state)
+    assert acq.shape == (M,)
+    assert np.all(acq == 2000)
+
+
+def test__call__real_min(mocker):
+    """
+    Test with compute_acquisition_function returning less than realmin.
+    """
+
+    realmin = sys.float_info.min
+
+    class BasicAcqClass(AbstractAcquisitionFunction):
+        def _compute_acquisition_function(
+            self, Xs, vp, gp, optimState, f_mu, f_s2, f_bar, var_tot
+        ):
+            return -2 * np.ones(Xs.shape[0]) * realmin
+
+    M = 20
+    Xs = np.ones((M, 3))
+
+    mocker.patch(
+        "gpyreg.GP.predict",
+        return_value=(np.ones((M, 2)), np.zeros((M, 2))),
+    )
+
+    acq_fcn = BasicAcqClass()
+    optim_state = dict()
+    optim_state["integervars"] = None
+    optim_state["variance_regularized_acq_fcn"] = False
+    # no constraints for test
+    optim_state["lb_eps_orig"] = -np.inf
+    optim_state["ub_eps_orig"] = np.inf
+    vp = VariationalPosterior(3)
+    acq = acq_fcn(Xs, create_gp(3), vp, optim_state)
+
+    assert np.all(acq == realmin)
     assert acq.shape == (M,)
