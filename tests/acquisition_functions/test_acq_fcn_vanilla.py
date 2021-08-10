@@ -9,7 +9,8 @@ def test_acq_info():
     acqf = AcqFcnVanilla()
     assert isinstance(acqf.acq_info, dict)
     assert isinstance(acqf.get_info(), dict)
-
+    assert not acqf.acq_info.get("log_flag")
+    assert not acqf.acq_info.get("compute_varlogjoint")
 
 def test__call__(mocker):
     acqf = AcqFcnVanilla()

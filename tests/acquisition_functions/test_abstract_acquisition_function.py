@@ -27,6 +27,8 @@ def test_acq_info():
     acq_fcn = BasicAcqClass()
     assert isinstance(acq_fcn.acq_info, dict)
     assert isinstance(acq_fcn.get_info(), dict)
+    assert not acq_fcn.acq_info.get("log_flag")
+    assert not acq_fcn.acq_info.get("compute_varlogjoint")
 
 
 def create_gp(D=3):

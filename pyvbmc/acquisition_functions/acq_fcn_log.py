@@ -15,7 +15,6 @@ class AcqFcnLog(AbstractAcqFcn):
     def __init__(self):
         super().__init__()
         self.acq_info["log_flag"] = True
-        self.acq_info["compute_varlogjoint"] = False
 
     def _compute_acquisition_function(
         self,

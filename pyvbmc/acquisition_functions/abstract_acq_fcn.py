@@ -11,6 +11,8 @@ from pyvbmc.variational_posterior import VariationalPosterior
 class AbstractAcqFcn(ABC):
     def __init__(self):
         self.acq_info = dict()
+        self.acq_info["compute_varlogjoint"] = False
+        self.acq_info["log_flag"] = False
 
     def get_info(self):
         """
@@ -91,7 +93,7 @@ class AbstractAcqFcn(ABC):
             )
         else:
             var_f = 0
-            
+
         f_bar = np.ravel(f_bar)
         var_tot = np.ravel(var_f + var_bar)  # Total variance
 
