@@ -3,6 +3,7 @@ import sys
 import gpyreg as gpr
 import numpy as np
 from pyvbmc.acquisition_functions import AbstractAcquisitionFunction
+from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.variational_posterior import VariationalPosterior
 
@@ -10,7 +11,16 @@ from pyvbmc.variational_posterior import VariationalPosterior
 def test_acq_info():
     class BasicAcqClass(AbstractAcquisitionFunction):
         def _compute_acquisition_function(
-            self, Xs, vp, gp, optimState, f_mu, f_s2, f_bar, var_tot
+            self,
+            Xs,
+            vp,
+            gp,
+            function_logger,
+            optim_state,
+            f_mu,
+            f_s2,
+            f_bar,
+            var_tot,
         ):
             pass
 
@@ -36,7 +46,16 @@ def test__call__simple(mocker):
 
     class BasicAcqClass(AbstractAcquisitionFunction):
         def _compute_acquisition_function(
-            self, Xs, vp, gp, optimState, f_mu, f_s2, f_bar, var_tot
+            self,
+            Xs,
+            vp,
+            gp,
+            function_logger,
+            optim_state,
+            f_mu,
+            f_s2,
+            f_bar,
+            var_tot,
         ):
             return np.ones(Xs.shape[0])
 
@@ -56,7 +75,8 @@ def test__call__simple(mocker):
     optim_state["lb_eps_orig"] = -np.inf
     optim_state["ub_eps_orig"] = np.inf
     vp = VariationalPosterior(3)
-    acq = acq_fcn(Xs, create_gp(3), vp, optim_state)
+    function_logger = FunctionLogger(lambda x: x, 3, False, 0)
+    acq = acq_fcn(Xs, create_gp(3), vp, function_logger, optim_state)
 
     assert np.all(acq == 1)
     assert acq.shape == (M,)
@@ -69,7 +89,16 @@ def test__call_constraints(mocker):
 
     class BasicAcqClass(AbstractAcquisitionFunction):
         def _compute_acquisition_function(
-            self, Xs, vp, gp, optimState, f_mu, f_s2, f_bar, var_tot
+            self,
+            Xs,
+            vp,
+            gp,
+            function_logger,
+            optim_state,
+            f_mu,
+            f_s2,
+            f_bar,
+            var_tot,
         ):
             return np.ones(Xs.shape[0])
 
@@ -90,7 +119,8 @@ def test__call_constraints(mocker):
     optim_state["lb_eps_orig"] = 1000
     optim_state["ub_eps_orig"] = 1001
     vp = VariationalPosterior(3)
-    acq = acq_fcn(Xs, create_gp(3), vp, optim_state)
+    function_logger = FunctionLogger(lambda x: x, 3, False, 0)
+    acq = acq_fcn(Xs, create_gp(3), vp, function_logger, optim_state)
 
     assert acq.shape == (M,)
     assert np.all(acq == np.inf)
@@ -104,7 +134,16 @@ def test__call_quad(mocker):
 
     class BasicAcqClass(AbstractAcquisitionFunction):
         def _compute_acquisition_function(
-            self, Xs, vp, gp, optimState, f_mu, f_s2, f_bar, var_tot
+            self,
+            Xs,
+            vp,
+            gp,
+            function_logger,
+            optim_state,
+            f_mu,
+            f_s2,
+            f_bar,
+            var_tot,
         ):
             return np.ones(Xs.shape[0])
 
@@ -127,7 +166,8 @@ def test__call_quad(mocker):
     vp = VariationalPosterior(3)
     # assign delta for test
     vp.delta = np.ones((1, 2))
-    acq = acq_fcn(Xs, create_gp(3), vp, optim_state)
+    function_logger = FunctionLogger(lambda x: x, 3, False, 0)
+    acq = acq_fcn(Xs, create_gp(3), vp, function_logger, optim_state)
 
     assert acq.shape == (M,)
     assert np.all(acq == 1)
@@ -141,7 +181,16 @@ def test__call__regularization(mocker):
 
     class BasicAcqClass(AbstractAcquisitionFunction):
         def _compute_acquisition_function(
-            self, Xs, vp, gp, optimState, f_mu, f_s2, f_bar, var_tot
+            self,
+            Xs,
+            vp,
+            gp,
+            function_logger,
+            optim_state,
+            f_mu,
+            f_s2,
+            f_bar,
+            var_tot,
         ):
             return np.ones(Xs.shape[0])
 
@@ -162,17 +211,19 @@ def test__call__regularization(mocker):
     # no constraints for test
     optim_state["lb_eps_orig"] = -np.inf
     optim_state["ub_eps_orig"] = np.inf
-    vp = VariationalPosterior(3)
 
+    vp = VariationalPosterior(3)
+    function_logger = FunctionLogger(lambda x: x, 3, False, 0)
+    
     # no logflag
     acq_fcn.acq_info["log_flag"] = False
-    acq = acq_fcn(Xs, create_gp(3), vp, optim_state)
+    acq = acq_fcn(Xs, create_gp(3), vp, function_logger, optim_state)
     assert acq.shape == (M,)
     assert np.allclose(acq, 0)
 
     # logflag
     acq_fcn.acq_info["log_flag"] = True
-    acq = acq_fcn(Xs, create_gp(3), vp, optim_state)
+    acq = acq_fcn(Xs, create_gp(3), vp, function_logger, optim_state)
     assert acq.shape == (M,)
     assert np.all(acq == 2000)
 
@@ -186,7 +237,16 @@ def test__call__real_min(mocker):
 
     class BasicAcqClass(AbstractAcquisitionFunction):
         def _compute_acquisition_function(
-            self, Xs, vp, gp, optimState, f_mu, f_s2, f_bar, var_tot
+            self,
+            Xs,
+            vp,
+            gp,
+            function_logger,
+            optim_state,
+            f_mu,
+            f_s2,
+            f_bar,
+            var_tot,
         ):
             return -2 * np.ones(Xs.shape[0]) * realmin
 
@@ -206,7 +266,8 @@ def test__call__real_min(mocker):
     optim_state["lb_eps_orig"] = -np.inf
     optim_state["ub_eps_orig"] = np.inf
     vp = VariationalPosterior(3)
-    acq = acq_fcn(Xs, create_gp(3), vp, optim_state)
+    function_logger = FunctionLogger(lambda x: x, 3, False, 0)
+    acq = acq_fcn(Xs, create_gp(3), vp, function_logger, optim_state)
 
     assert np.all(acq == realmin)
     assert acq.shape == (M,)
@@ -216,11 +277,22 @@ def test_real2int():
     """
     Test that real2int works correctly.
     """
+
     class BasicAcqClass(AbstractAcquisitionFunction):
         def _compute_acquisition_function(
-            self, Xs, vp, gp, optimState, f_mu, f_s2, f_bar, var_tot
+            self,
+            Xs,
+            vp,
+            gp,
+            function_logger,
+            optim_state,
+            f_mu,
+            f_s2,
+            f_bar,
+            var_tot,
         ):
             pass
+
     acq_fcn = BasicAcqClass()
     D = 3
     parameter_transformer = ParameterTransformer(D)
@@ -233,4 +305,4 @@ def test_real2int():
 
     integervars = np.array([False, False, False])
     X_after = acq_fcn._real2int(X, parameter_transformer, integervars)
-    np.all(X_after== X) 
+    np.all(X_after == X)

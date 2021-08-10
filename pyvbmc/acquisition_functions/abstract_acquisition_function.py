@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 
 import gpyreg as gpr
 import numpy as np
+from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.variational_posterior import VariationalPosterior
 
@@ -27,6 +28,7 @@ class AbstractAcquisitionFunction(ABC):
         Xs: np.ndarray,
         gp: gpr.GP,
         vp: VariationalPosterior,
+        function_logger: FunctionLogger,
         optim_state: dict,
     ):
         """
@@ -90,7 +92,7 @@ class AbstractAcquisitionFunction(ABC):
 
         # Compute acquisition function
         acq = self._compute_acquisition_function(
-            Xs, vp, gp, optim_state, f_mu, f_s2, f_bar, var_tot
+            Xs, vp, gp, function_logger, optim_state, f_mu, f_s2, f_bar, var_tot
         )
 
         # Regularization: penalize points where GP uncertainty
@@ -131,11 +133,12 @@ class AbstractAcquisitionFunction(ABC):
         Xs: np.ndarray,
         vp: VariationalPosterior,
         gp: gpr.GP,
-        optimState: dict,
+        function_logger: FunctionLogger,
+        optim_state: dict,
         f_mu: np.ndarray,
         f_s2: np.ndarray,
         f_bar: np.ndarray,
-        var_tot: float,
+        var_tot: np.ndarray,
     ):
         """
         Abstract method that must be implemented in each subclass. It computes
