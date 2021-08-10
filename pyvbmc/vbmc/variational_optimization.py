@@ -268,8 +268,6 @@ def optimize_vp(
                         compute_var=compute_var,
                         theta_bnd=theta_bnd,
                     )
-                    if not np.isfinite(res[0]):
-                        return np.inf
                     return res[0]
                     
                 insigma_list = []
@@ -1330,10 +1328,15 @@ def _gplogjoint(
         F = F_bar
         if np.any(grad_flags):
             dF = np.sum(dF, axis=1) / Ns
-            
-    if Ns == 1 and np.any(grad_flags):
-        dF = dF[:, 0]
-        
+
+    # In case of separate samples but only one sample simplify
+    # expressions slightly.
+    # TODO: what other parts need to be fixed like this?
+    if Ns == 1:
+        F = F[0]
+        if np.any(grad_flags):
+            dF = dF[:, 0]
+
     if separate_K:
         return F, dF, varF, dvarF, varss, I_sk, J_sjk
     return F, dF, varF, dvarF, varss
