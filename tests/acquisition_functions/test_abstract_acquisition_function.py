@@ -3,6 +3,7 @@ import sys
 import gpyreg as gpr
 import numpy as np
 from pyvbmc.acquisition_functions import AbstractAcquisitionFunction
+from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.variational_posterior import VariationalPosterior
 
 
@@ -209,3 +210,27 @@ def test__call__real_min(mocker):
 
     assert np.all(acq == realmin)
     assert acq.shape == (M,)
+
+
+def test_real2int():
+    """
+    Test that real2int works correctly.
+    """
+    class BasicAcqClass(AbstractAcquisitionFunction):
+        def _compute_acquisition_function(
+            self, Xs, vp, gp, optimState, f_mu, f_s2, f_bar, var_tot
+        ):
+            pass
+    acq_fcn = BasicAcqClass()
+    D = 3
+    parameter_transformer = ParameterTransformer(D)
+    X = np.ones((10, D)) * 0.5
+    integervars = np.array([True, False, False])
+    X_after = acq_fcn._real2int(X, parameter_transformer, integervars)
+    np.all(X_after[:, 0] == 0)
+    np.all(X_after[:, 1] == 0.5)
+    np.all(X_after[:, 2] == 0.5)
+
+    integervars = np.array([False, False, False])
+    X_after = acq_fcn._real2int(X, parameter_transformer, integervars)
+    np.all(X_after== X) 

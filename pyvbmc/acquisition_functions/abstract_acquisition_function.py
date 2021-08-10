@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 
 import gpyreg as gpr
 import numpy as np
+from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.variational_posterior import VariationalPosterior
 
 
@@ -52,7 +53,7 @@ class AbstractAcquisitionFunction(ABC):
         """
 
         # Map integer inputs
-        Xs = _real2int(
+        Xs = self._real2int(
             Xs, vp.parameter_transformer, optim_state.get("integervars")
         )
 
@@ -141,6 +142,29 @@ class AbstractAcquisitionFunction(ABC):
         the value of the acquisition function.
         """
 
+    @staticmethod
+    def _real2int(
+        X: np.ndarray,
+        parameter_transformer: ParameterTransformer,
+        integervars: np.ndarray,
+    ):
+        """
+        Convert to integer-valued representation.
 
-def _real2int(X, parameter_transformer, integervars):
-    return X
+        Parameters
+        ----------
+        X : np.ndarray
+            The points to be converted.
+        parameter_transformer : ParameterTransformer
+            The appropriate ParameterTransformer to convert between the spaces.
+        integervars : np.ndarray
+            A mask to determine which dimensions are integer vars.
+        """
+
+        if np.any(integervars):
+            X_temp = parameter_transformer.inverse(X)
+            X_temp[:, integervars] = np.around(X_temp[:, integervars])
+            X_temp = parameter_transformer(X_temp)
+            X[:, integervars] = X_temp[:, integervars]
+
+        return X
