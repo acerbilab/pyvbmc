@@ -5,10 +5,10 @@ import numpy as np
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.variational_posterior import VariationalPosterior
 
-from .abstract_acquisition_function import AbstractAcquisitionFunction
+from .abstract_acq_fcn import AbstractAcqFcn
 
 
-class ACQF(AbstractAcquisitionFunction):
+class AcqFcn(AbstractAcqFcn):
     """
     Acquisition function for prospective uncertainty search.
     """

@@ -1,18 +1,18 @@
 import gpyreg as gpr
 import numpy as np
-from pyvbmc.acquisition_functions import ACQF
+from pyvbmc.acquisition_functions import AcqFcn
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.variational_posterior import VariationalPosterior
 
 
 def test_acq_info():
-    acqf = ACQF()
+    acqf = AcqFcn()
     assert isinstance(acqf.acq_info, dict)
     assert isinstance(acqf.get_info(), dict)
 
 
 def test__call__(mocker):
-    acqf = ACQF()
+    acqf = AcqFcn()
     M = 1
     Xs = np.ones((M, 3))
 

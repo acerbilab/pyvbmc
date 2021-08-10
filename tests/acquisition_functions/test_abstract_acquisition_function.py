@@ -2,14 +2,14 @@ import sys
 
 import gpyreg as gpr
 import numpy as np
-from pyvbmc.acquisition_functions import AbstractAcquisitionFunction
+from pyvbmc.acquisition_functions import AbstractAcqFcn
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.variational_posterior import VariationalPosterior
 
 
 def test_acq_info():
-    class BasicAcqClass(AbstractAcquisitionFunction):
+    class BasicAcqClass(AbstractAcqFcn):
         def _compute_acquisition_function(
             self,
             Xs,
@@ -44,7 +44,7 @@ def test__call__simple(mocker):
     Test only the main branches of the function.
     """
 
-    class BasicAcqClass(AbstractAcquisitionFunction):
+    class BasicAcqClass(AbstractAcqFcn):
         def _compute_acquisition_function(
             self,
             Xs,
@@ -87,7 +87,7 @@ def test__call_constraints(mocker):
     Test hard bound checking: discard points too close to bounds
     """
 
-    class BasicAcqClass(AbstractAcquisitionFunction):
+    class BasicAcqClass(AbstractAcqFcn):
         def _compute_acquisition_function(
             self,
             Xs,
@@ -132,7 +132,7 @@ def test__call_quad(mocker):
     assigning vp.delta = np.ones(1, 2)
     """
 
-    class BasicAcqClass(AbstractAcquisitionFunction):
+    class BasicAcqClass(AbstractAcqFcn):
         def _compute_acquisition_function(
             self,
             Xs,
@@ -179,7 +179,7 @@ def test__call__regularization(mocker):
     threshold).
     """
 
-    class BasicAcqClass(AbstractAcquisitionFunction):
+    class BasicAcqClass(AbstractAcqFcn):
         def _compute_acquisition_function(
             self,
             Xs,
@@ -235,7 +235,7 @@ def test__call__real_max(mocker):
 
     realmax = sys.float_info.max
 
-    class BasicAcqClass(AbstractAcquisitionFunction):
+    class BasicAcqClass(AbstractAcqFcn):
         def _compute_acquisition_function(
             self,
             Xs,
@@ -248,7 +248,7 @@ def test__call__real_max(mocker):
             f_bar,
             var_tot,
         ):
-            return np.ones((Xs.shape[0], 1)) * -realmax -1
+            return np.ones((Xs.shape[0], 1)) * -realmax - 1
 
     M = 20
     Xs = np.ones((M, 3))
@@ -278,7 +278,7 @@ def test_real2int():
     Test that real2int works correctly.
     """
 
-    class BasicAcqClass(AbstractAcquisitionFunction):
+    class BasicAcqClass(AbstractAcqFcn):
         def _compute_acquisition_function(
             self,
             Xs,

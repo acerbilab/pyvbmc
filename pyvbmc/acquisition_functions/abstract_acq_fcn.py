@@ -8,7 +8,7 @@ from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.variational_posterior import VariationalPosterior
 
 
-class AbstractAcquisitionFunction(ABC):
+class AbstractAcqFcn(ABC):
     def __init__(self):
         self.acq_info = dict()
 

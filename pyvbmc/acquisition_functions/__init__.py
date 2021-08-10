@@ -1,3 +1,3 @@
 # __init__.py
-from .abstract_acquisition_function import AbstractAcquisitionFunction
-from .acqf import ACQF
+from .abstract_acq_fcn import AbstractAcqFcn
+from .acq_fcn import AcqFcn
