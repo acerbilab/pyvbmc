@@ -57,7 +57,7 @@ def test__call__simple(mocker):
             f_bar,
             var_tot,
         ):
-            return np.ones((Xs.shape[0], 1))
+            return np.ones(Xs.shape[0])
 
     M = 20
     Xs = np.ones((M, 3))
@@ -79,7 +79,7 @@ def test__call__simple(mocker):
     acq = acq_fcn(Xs, create_gp(3), vp, function_logger, optim_state)
 
     assert np.all(acq == 1)
-    assert acq.shape == (M, 1)
+    assert acq.shape == (M, )
 
 
 def test__call_constraints(mocker):
@@ -100,7 +100,7 @@ def test__call_constraints(mocker):
             f_bar,
             var_tot,
         ):
-            return np.ones((Xs.shape[0], 1))
+            return np.ones(Xs.shape[0])
 
     M = 20
     Xs = np.ones((M, 3))
@@ -122,7 +122,7 @@ def test__call_constraints(mocker):
     function_logger = FunctionLogger(lambda x: x, 3, False, 0)
     acq = acq_fcn(Xs, create_gp(3), vp, function_logger, optim_state)
 
-    assert acq.shape == (M, 1)
+    assert acq.shape == (M, )
     assert np.all(acq == np.inf)
 
 
@@ -145,7 +145,7 @@ def test__call_quad(mocker):
             f_bar,
             var_tot,
         ):
-            return np.ones((Xs.shape[0], 1))
+            return np.ones(Xs.shape[0])
 
     M = 1
 
@@ -169,7 +169,7 @@ def test__call_quad(mocker):
     function_logger = FunctionLogger(lambda x: x, 3, False, 0)
     acq = acq_fcn(Xs, create_gp(3), vp, function_logger, optim_state)
 
-    assert acq.shape == (M, 1)
+    assert acq.shape == (M, )
     assert np.all(acq == 1)
 
 
@@ -192,7 +192,7 @@ def test__call__regularization(mocker):
             f_bar,
             var_tot,
         ):
-            return np.ones((Xs.shape[0], 1))
+            return np.ones(Xs.shape[0])
 
     M = 20
     Xs = np.ones((M, 3))
@@ -218,13 +218,13 @@ def test__call__regularization(mocker):
     # no logflag
     acq_fcn.acq_info["log_flag"] = False
     acq = acq_fcn(Xs, create_gp(3), vp, function_logger, optim_state)
-    assert acq.shape == (M, 1)
+    assert acq.shape == (M, )
     assert np.allclose(acq, 0)
 
     # logflag
     acq_fcn.acq_info["log_flag"] = True
     acq = acq_fcn(Xs, create_gp(3), vp, function_logger, optim_state)
-    assert acq.shape == (M, 1)
+    assert acq.shape == (M, )
     assert np.all(acq == 2000)
 
 
@@ -248,7 +248,7 @@ def test__call__real_max(mocker):
             f_bar,
             var_tot,
         ):
-            return np.ones((Xs.shape[0], 1)) * -realmax - 1
+            return np.ones(Xs.shape[0]) * -realmax - 1
 
     M = 20
     Xs = np.ones((M, 3))
@@ -270,7 +270,7 @@ def test__call__real_max(mocker):
     acq = acq_fcn(Xs, create_gp(3), vp, function_logger, optim_state)
 
     assert np.all(acq == -realmax)
-    assert acq.shape == (M, 1)
+    assert acq.shape == (M, )
 
 
 def test_real2int():

@@ -91,8 +91,9 @@ class AbstractAcqFcn(ABC):
             )
         else:
             var_f = 0
-
-        var_tot = var_f + var_bar  # Total variance
+            
+        f_bar = np.ravel(f_bar)
+        var_tot = np.ravel(var_f + var_bar)  # Total variance
 
         # Compute acquisition function
         acq = self._compute_acquisition_function(
@@ -112,7 +113,7 @@ class AbstractAcqFcn(ABC):
         if optim_state.get("variance_regularized_acq_fcn"):
             # Try not to go below this variance
             tol_var = optim_state.get("tol_gp_var")
-            idx_gp_uncertainty = np.any(var_tot < tol_var, axis=1)
+            idx_gp_uncertainty = var_tot < tol_var
 
             if np.any(idx_gp_uncertainty):
                 if "log_flag" in self.acq_info and self.acq_info.get(

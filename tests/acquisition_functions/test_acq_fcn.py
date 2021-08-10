@@ -13,7 +13,7 @@ def test_acq_info():
 
 def test__call__(mocker):
     acqf = AcqFcn()
-    M = 1
+    M = 3
     Xs = np.ones((M, 3))
 
     mocker.patch(
@@ -47,5 +47,5 @@ def test__call__(mocker):
 
     acq = acqf(Xs, gp, vp, function_logger, optim_state)
 
-    assert acq.shape == (M, 1)
+    assert acq.shape == (M, )
     assert np.all(acq == -1)

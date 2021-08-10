@@ -32,7 +32,7 @@ class AcqFcnVanilla(AbstractAcqFcn):
 
         # Probability density of variational posterior at test points
         realmin = sys.float_info.min
-        p = np.maximum(vp.pdf(Xs, origflag=False), realmin)
+        p = np.ravel(np.maximum(vp.pdf(Xs, origflag=False), realmin))
 
         # Uncertainty search
         acq = -var_tot * p ** 2
