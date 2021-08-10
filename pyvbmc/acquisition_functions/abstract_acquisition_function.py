@@ -126,8 +126,8 @@ class AbstractAcquisitionFunction(ABC):
                         -(tol_var / var_tot[idx_gp_uncertainty] - 1)
                     )
 
-        realmin = sys.float_info.min
-        acq = np.maximum(acq, realmin)
+        realmax = sys.float_info.max
+        acq = np.maximum(acq, -realmax)
 
         # Hard bound checking: discard points too close to bounds
         X_orig = vp.parameter_transformer.inverse(Xs)

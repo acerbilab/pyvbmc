@@ -228,12 +228,12 @@ def test__call__regularization(mocker):
     assert np.all(acq == 2000)
 
 
-def test__call__real_min(mocker):
+def test__call__real_max(mocker):
     """
     Test with compute_acquisition_function returning less than realmin.
     """
 
-    realmin = sys.float_info.min
+    realmax = sys.float_info.max
 
     class BasicAcqClass(AbstractAcquisitionFunction):
         def _compute_acquisition_function(
@@ -248,7 +248,7 @@ def test__call__real_min(mocker):
             f_bar,
             var_tot,
         ):
-            return -2 * np.ones((Xs.shape[0], 1)) * realmin
+            return np.ones((Xs.shape[0], 1)) * -realmax -1
 
     M = 20
     Xs = np.ones((M, 3))
@@ -269,7 +269,7 @@ def test__call__real_min(mocker):
     function_logger = FunctionLogger(lambda x: x, 3, False, 0)
     acq = acq_fcn(Xs, create_gp(3), vp, function_logger, optim_state)
 
-    assert np.all(acq == realmin)
+    assert np.all(acq == -realmax)
     assert acq.shape == (M, 1)
 
 
