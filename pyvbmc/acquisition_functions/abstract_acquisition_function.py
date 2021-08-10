@@ -80,11 +80,15 @@ class AbstractAcquisitionFunction(ABC):
         # Compute total variance
         Ns = f_mu.shape[1]
         f_bar = np.sum(f_mu, axis=1, keepdims=True) / Ns  # Mean across samples
-        var_bar = np.sum(f_s2, axis=1) / Ns  # Average variance across samples
+        var_bar = (
+            np.sum(f_s2, axis=1, keepdims=True) / Ns
+        )  # Average variance across samples
 
         # Sample variance
         if Ns > 1:
-            var_f = np.sum((f_mu - f_bar) ** 2, axis=1) / (Ns - 1)
+            var_f = np.sum((f_mu - f_bar) ** 2, axis=1, keepdims=True) / (
+                Ns - 1
+            )
         else:
             var_f = 0
 
@@ -92,7 +96,15 @@ class AbstractAcquisitionFunction(ABC):
 
         # Compute acquisition function
         acq = self._compute_acquisition_function(
-            Xs, vp, gp, function_logger, optim_state, f_mu, f_s2, f_bar, var_tot
+            Xs,
+            vp,
+            gp,
+            function_logger,
+            optim_state,
+            f_mu,
+            f_s2,
+            f_bar,
+            var_tot,
         )
 
         # Regularization: penalize points where GP uncertainty
@@ -100,7 +112,7 @@ class AbstractAcquisitionFunction(ABC):
         if optim_state.get("variance_regularized_acq_fcn"):
             # Try not to go below this variance
             tol_var = optim_state.get("tol_gp_var")
-            idx_gp_uncertainty = var_tot < tol_var
+            idx_gp_uncertainty = np.any(var_tot < tol_var, axis=1)
 
             if np.any(idx_gp_uncertainty):
                 if "log_flag" in self.acq_info and self.acq_info.get(
