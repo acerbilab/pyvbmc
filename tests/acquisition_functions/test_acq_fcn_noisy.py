@@ -55,18 +55,3 @@ def test__call__(mocker):
 
     assert acq.shape == (M,)
     assert np.all(acq == -0.5)
-
-
-def test_sq_dist():
-    """
-    Test data has been crossvalidated with (original) VBMC in MATLAB.
-    """
-    a = np.linspace((1, 11), (10, 20), 10)
-    b = np.linspace((30, 40), (50, 60), 21)
-    acqf = AcqFcnNoisy()
-    c = acqf._sq_dist(a, b)
-    assert c.shape == (10, 21)
-    assert c[0, 0] == 1682
-    assert c[0, 20] == 4802
-    assert c[9, 0] == 800
-    assert c[9, 20] == 3200

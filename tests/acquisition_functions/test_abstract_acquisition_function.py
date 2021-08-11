@@ -308,3 +308,32 @@ def test_real2int():
     integervars = np.array([False, False, False])
     X_after = acq_fcn._real2int(X, parameter_transformer, integervars)
     np.all(X_after == X)
+
+def test_sq_dist():
+    """
+    Test data has been crossvalidated with (original) VBMC in MATLAB.
+    """
+    class BasicAcqClass(AbstractAcqFcn):
+        def _compute_acquisition_function(
+            self,
+            Xs,
+            vp,
+            gp,
+            function_logger,
+            optim_state,
+            f_mu,
+            f_s2,
+            f_bar,
+            var_tot,
+        ):
+            pass
+        
+    a = np.linspace((1, 11), (10, 20), 10)
+    b = np.linspace((30, 40), (50, 60), 21)
+    acqf = BasicAcqClass()
+    c = acqf._sq_dist(a, b)
+    assert c.shape == (10, 21)
+    assert c[0, 0] == 1682
+    assert c[0, 20] == 4802
+    assert c[9, 0] == 800
+    assert c[9, 20] == 3200
