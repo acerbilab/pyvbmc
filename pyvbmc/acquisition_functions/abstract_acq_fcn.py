@@ -9,6 +9,9 @@ from pyvbmc.variational_posterior import VariationalPosterior
 
 
 class AbstractAcqFcn(ABC):
+    """
+    Abstract acquisition function for VBMC.
+    """
     def __init__(self):
         self.acq_info = dict()
         self.acq_info["compute_varlogjoint"] = False
@@ -45,9 +48,12 @@ class AbstractAcqFcn(ABC):
             called from.
         vp : VariationalPosterior
             The VariationalPosterior of the VBMC instance this function is
+            called from.        
+        function_logger : FunctionLogger
+            The FunctionLogger of the VBMC instance this function is
             called from.
         optim_state : dict
-            The optim_steate of the VBMC instance this function is
+            The optim_state of the VBMC instance this function is
             called from.
 
         Returns
