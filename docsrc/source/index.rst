@@ -13,6 +13,7 @@ Note that this project is work in progress!
    :maxdepth: 2
    :caption: Classes:
 
+   classes/acquisition_functions
    classes/function_logger
    classes/options
    classes/parameter_transformer
