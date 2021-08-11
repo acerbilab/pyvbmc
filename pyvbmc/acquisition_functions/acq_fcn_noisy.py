@@ -34,20 +34,9 @@ class AcqFcnNoisy(AbstractAcqFcn):
         realmin = sys.float_info.min
         p = np.ravel(np.maximum(vp.pdf(Xs, origflag=False), realmin))
 
-        # Estimate observation noise at test points from nearest neighbor
-        # unravel_index as the indicies are 1D otherwise
-        pos = np.unravel_index(
-            np.argmin(
-                super()._sq_dist(
-                    Xs / optim_state.get("gp_length_scale"),
-                    gp.temporary_data.get("X_rescaled"),
-                ),
-                axis=1,
-            ),
-            gp.temporary_data.get("sn2_new").shape,
-        )
-        sn2 = gp.temporary_data.get("sn2_new")[pos]
-
+        # Estimate observation noise at test points from nearest neighbor.
+        sn2 = super()._estimate_observation_noise(Xs, gp, optim_state)
+        
         z = function_logger.ymax
 
         # Prospective uncertainty search corrected for noisy observations

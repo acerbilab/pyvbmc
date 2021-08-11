@@ -12,6 +12,7 @@ class AbstractAcqFcn(ABC):
     """
     Abstract acquisition function for VBMC.
     """
+
     def __init__(self):
         self.acq_info = dict()
         self.acq_info["compute_varlogjoint"] = False
@@ -48,7 +49,7 @@ class AbstractAcqFcn(ABC):
             called from.
         vp : VariationalPosterior
             The VariationalPosterior of the VBMC instance this function is
-            called from.        
+            called from.
         function_logger : FunctionLogger
             The FunctionLogger of the VBMC instance this function is
             called from.
@@ -222,3 +223,41 @@ class AbstractAcqFcn(ABC):
             np.sum(b * b, axis=1, keepdims=True).T - (2 * a @ b.T)
         )
         return np.maximum(c, 0)
+
+    def _estimate_observation_noise(
+        self, Xs: np.ndarray, gp: gpr.GP, optim_state: dict
+    ):
+        """
+        Estimate observation noise at test points from nearest neighbor.
+
+        Parameters
+        ----------
+        Xs : np.ndarray
+            The test points.
+        gp : gpr.GP
+            The GaussianProcess of the VBMC instance this function is
+            called from.
+        optim_state : dict
+            The optim_state of the VBMC instance this function is
+            called from.
+
+        Returns
+        -------
+        sn2 : np.ndarray
+            The estimated observation noise.
+        """
+
+        # unravel_index as the indicies are 1D otherwise
+        pos = np.unravel_index(
+            np.argmin(
+                self._sq_dist(
+                    Xs / optim_state.get("gp_length_scale"),
+                    gp.temporary_data.get("X_rescaled"),
+                ),
+                axis=1,
+            ),
+            gp.temporary_data.get("sn2_new").shape,
+        )
+        sn2 = gp.temporary_data.get("sn2_new")[pos]
+
+        return sn2
