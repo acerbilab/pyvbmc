@@ -189,16 +189,33 @@ def optimize_vp(
                     )
                     return res[0]
                     
+                # Construct sigma list and lower/upper bounds.
+                # Restricting the range of lambda and sigma is important
+                # since the optimization is done in log-space, so too large values
+                # can cause numerical overflows. 
                 insigma_list = []
+                lower_list = []
+                upper_list = []
                 if vp.optimize_mu:
-                    insigma_list.append(np.tile(vp.bounds["mu_ub"] - vp.bounds["mu_lb"], (K,)))
+                    tmp = np.tile(vp.bounds["mu_ub"] - vp.bounds["mu_lb"], (K,))
+                    insigma_list.append(tmp)
+                    lower_list.append(np.full(tmp.shape, -np.inf))
+                    upper_list.append(np.full(tmp.shape, np.inf))
                 if vp.optimize_sigma:
                     insigma_list.append(np.ones((K,)))
+                    lower_list.append(np.full((K, ), -50))
+                    upper_list.append(np.full((K,), 50))
                 if vp.optimize_lambd:
                     insigma_list.append(np.ones((vp.D,)))
+                    lower_list.append(np.full((vp.D,), -50))
+                    upper_list.append(np.full((vp.D,), 50))
                 if vp.optimize_weights:
                     insigma_list.append(np.ones((K,)))
+                    lower_list.append(np.full((K, ), -np.inf))
+                    upper_list.append(np.full((K,), np.inf))
                 insigma = np.concatenate(insigma_list)
+                lower = np.concatenate(lower_list)
+                upper = np.concatenate(upper_list)
                 
                 cma_options = {
                     "verbose": -9,
@@ -207,6 +224,7 @@ def optimize_vp(
                     "tolfunhist": 1e-7,
                     "maxfevals": 200*(vp.D+2),
                     "CMA_active": True,
+                    "bounds": (lower, upper)
                 }
                 res = cma.fmin(vbtrain_fun, theta0, np.max(insigma), options=cma_options)
                 theta_opt = res[0]
@@ -257,7 +275,7 @@ def optimize_vp(
             elif options["stochasticoptimizer"] == "cmaes":
                 # Objective function with no gradient computation.
                 def vbtrain_fun(theta_):
-                    res = _negelcbo(
+                    return _negelcbo(
                         theta_,
                         gp,
                         vp0,
@@ -267,19 +285,35 @@ def optimize_vp(
                         compute_grad=False,
                         compute_var=compute_var,
                         theta_bnd=theta_bnd,
-                    )
-                    return res[0]
-                    
+                    )[0]
+
+                # Construct sigma list and lower/upper bounds.
+                # Restricting the range of lambda and sigma is important
+                # since the optimization is done in log-space, so too large values
+                # can cause numerical overflows. 
                 insigma_list = []
+                lower_list = []
+                upper_list = []
                 if vp.optimize_mu:
-                    insigma_list.append(np.tile(vp.bounds["mu_ub"] - vp.bounds["mu_lb"], (K,)))
+                    tmp = np.tile(vp.bounds["mu_ub"] - vp.bounds["mu_lb"], (K,))
+                    insigma_list.append(tmp)
+                    lower_list.append(np.full(tmp.shape, -np.inf))
+                    upper_list.append(np.full(tmp.shape, np.inf))
                 if vp.optimize_sigma:
                     insigma_list.append(np.ones((K,)))
+                    lower_list.append(np.full((K, ), -50))
+                    upper_list.append(np.full((K,), 50))
                 if vp.optimize_lambd:
                     insigma_list.append(np.ones((vp.D,)))
+                    lower_list.append(np.full((vp.D,), -50))
+                    upper_list.append(np.full((vp.D,), 50))
                 if vp.optimize_weights:
                     insigma_list.append(np.ones((K,)))
+                    lower_list.append(np.full((K, ), -np.inf))
+                    upper_list.append(np.full((K,), np.inf))
                 insigma = np.concatenate(insigma_list)
+                lower = np.concatenate(lower_list)
+                upper = np.concatenate(upper_list)
                 
                 cma_options = {
                     "verbose": -9,
@@ -287,6 +321,7 @@ def optimize_vp(
                     "tolfun": 1e-4,
                     "tolfunhist": 1e-5,
                     "CMA_active": True,
+                    "bounds": (lower, upper),
                 }
                 res = cma.fmin(vbtrain_fun, theta0, np.max(insigma), options=cma_options, noise_handler=cma.NoiseHandler(np.size(theta0)))
                 theta_opt = res[0]
@@ -316,7 +351,7 @@ def optimize_vp(
     I_sk[:, :] = elbo_stats["I_sk"][idx, :, :]
     J_sjk[:, :, :] = elbo_stats["J_sjk"][idx, :, :, :]
     vp = vp0_fine[idx]
-    # vp = rescale_params(vp,elbostats.theta(idx,:))
+    vp.set_parameters(elbo_stats["theta"][idx, :])
 
     ## Potentionally prune mixture components
     pruned = 0
@@ -527,7 +562,7 @@ def _vp_bound_loss(vp, theta, theta_bnd, tol_con=1e-3, compute_grad=True):
         theta_bnd["ub"].flatten(),
         tol_con,
     )
-
+    
     return L
 
 
@@ -540,14 +575,15 @@ def _soft_bound_loss(x, slb, sub, tol_con=1e-3, compute_grad=False):
     dy = np.zeros(x.shape)
 
     idx = x < slb
+    
     if np.any(idx):
-        y += 0.5 * np.sum((slb[idx] - x[idx]) / ell[idx] ** 2)
+        y += 0.5 * np.sum(((slb[idx] - x[idx]) / ell[idx]) ** 2)
         if compute_grad:
             dy[idx] = (x[idx] - slb[idx]) / ell[idx] ** 2
 
     idx = x > sub
     if np.any(idx):
-        y += 0.5 * np.sum((x[idx] - sub[idx]) / ell[idx] ** 2)
+        y += 0.5 * np.sum(((x[idx] - sub[idx]) / ell[idx]) ** 2)
         if compute_grad:
             dy[idx] = (x[idx] - sub[idx]) / ell[idx] ** 2
 
@@ -724,7 +760,7 @@ def _vbinit(vp, vbtype, opts_N, K_new, X_star, y_star):
             w = w0.copy()
 
         if vbtype == 1:
-            # Start from old variation parameters
+            # Start from old variational parameters
 
             # Copy previous parameters verbatim.
             if i == 0:
@@ -812,7 +848,6 @@ def _vbinit(vp, vbtype, opts_N, K_new, X_star, y_star):
         new_vp.eta = np.ones((1, K_new)) / K_new
         new_vp.bounds = None
         new_vp.stats = None
-
         vp0_list.append(new_vp)
 
     return np.array(vp0_list), type_vec
@@ -883,6 +918,7 @@ def _negelcbo(
         grad_flags = (False, False, False, False)
 
     # Only weight optimization?
+    # Not currently used, since it is only a speed optimization.
     onlyweights_flag = (
         vp.optimize_weights
         and not vp.optimize_mu
@@ -896,64 +932,47 @@ def _negelcbo(
                 "Computing the gradient of variational parameters and requesting per-component results at the same time."
             )
 
-        if onlyweights_flag:
-            if compute_var:
-                assert False
-            else:
-                assert False
-            varGss = np.nan
+        if compute_var:
+            G, _, varG, _, varGss, I_sk, J_sjk = _gplogjoint(
+                vp,
+                gp,
+                grad_flags,
+                avg_flag,
+                jacobian_flag,
+                compute_var,
+                True,
+            )
         else:
-            if compute_var:
-                G, _, varG, _, varGss, I_sk, J_sjk = _gplogjoint(
+            G, dG, _, _, _, I_sk, _ = _gplogjoint(
+                vp, gp, grad_flags, avg_flag, jacobian_flag, 0, True
+            )
+            varG = varGss = 0
+            J_jsk = None
+    else:
+        if compute_var:
+            if compute_grad:
+                G, dG, varG, dvarG, varGss = _gplogjoint(
                     vp,
                     gp,
                     grad_flags,
                     avg_flag,
                     jacobian_flag,
                     compute_var,
-                    True,
                 )
             else:
-                G, dG, _, _, _, I_sk, _ = _gplogjoint(
-                    vp, gp, grad_flags, avg_flag, jacobian_flag, 0, True
+                G, _, varG, _, varGss = _gplogjoint(
+                    vp,
+                    gp,
+                    grad_flags,
+                    avg_flag,
+                    jacobian_flag,
+                    compute_var,
                 )
-                varG = varGss = 0
-                J_jsk = None
-    else:
-        if onlyweights_flag:
-            if compute_var:
-                if compute_grad:
-                    assert False
-                else:
-                    assert False
-            else:
-                assert False
-            varGss = np.nan
         else:
-            if compute_var:
-                if compute_grad:
-                    G, dG, varG, dvarG, varGss = _gplogjoint(
-                        vp,
-                        gp,
-                        grad_flags,
-                        avg_flag,
-                        jacobian_flag,
-                        compute_var,
-                    )
-                else:
-                    G, _, varG, _, varGss = _gplogjoint(
-                        vp,
-                        gp,
-                        grad_flags,
-                        avg_flag,
-                        jacobian_flag,
-                        compute_var,
-                    )
-            else:
-                G, dG, _, _, _ = _gplogjoint(
-                    vp, gp, grad_flags, avg_flag, jacobian_flag, 0
-                )
-                varG = varGss = 0
+            G, dG, _, _, _ = _gplogjoint(
+                vp, gp, grad_flags, avg_flag, jacobian_flag, 0
+            )
+            varG = varGss = 0
 
     # Entropy term
     if Ns > 0:
