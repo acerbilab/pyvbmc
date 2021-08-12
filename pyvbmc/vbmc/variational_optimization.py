@@ -36,7 +36,7 @@ def update_K(optim_state, iteration_history, options):
         elbos = iteration_history["elbo"][lower_end:]
         elboSDs = iteration_history["elbo_sd"][lower_end:]
         elcbos = elbos - options["elcboimproweight"] * elboSDs
-        warmups = iteration_history["warmup"][lower_end:]
+        warmups = iteration_history["warmup"][lower_end:].astype(bool)
         elcbos_after = elcbos[~warmups]
         # Ignore two iterations right after warmup.
         elcbos_after[0 : min(2, optim_state["iter"])] = -np.inf
@@ -68,7 +68,7 @@ def update_K(optim_state, iteration_history, options):
 
 
 def optimize_vp(
-    options, optim_state, K_orig, vp, gp, fast_opts_N, slow_opts_N, K=None, prnt=0
+    options, optim_state, vp, gp, fast_opts_N, slow_opts_N, K=None, prnt=0
 ):
     """
     Optimize variational posterior.
@@ -81,7 +81,6 @@ def optimize_vp(
     vp0_vec, vp0_type, elcbo_beta, compute_var, nsent_K, _ = _sieve(
         options,
         optim_state,
-        K_orig,
         vp,
         gp,
         K=K,
@@ -139,7 +138,6 @@ def optimize_vp(
                 theta_,
                 gp,
                 vp0,
-                K_orig,
                 elcbo_beta,
                 nsent_K,
                 compute_grad=True,
@@ -157,7 +155,6 @@ def optimize_vp(
                     theta_,
                     gp,
                     vp0,
-                    K_orig,
                     elcbo_beta,
                     0,
                     compute_grad=compute_grad,
@@ -180,7 +177,6 @@ def optimize_vp(
                         theta_,
                         gp,
                         vp0,
-                        K_orig,
                         elcbo_beta,
                         0,
                         compute_grad=False,
@@ -270,7 +266,6 @@ def optimize_vp(
                         elbo_stats,
                         elcbo_beta,
                         options,
-                        K_orig,
                     )
             elif options["stochasticoptimizer"] == "cmaes":
                 # Objective function with no gradient computation.
@@ -279,7 +274,6 @@ def optimize_vp(
                         theta_,
                         gp,
                         vp0,
-                        K_orig,
                         elcbo_beta,
                         Ns=nsent_K,
                         compute_grad=False,
@@ -330,7 +324,7 @@ def optimize_vp(
 
         # Recompute ELCBO at endpoint with full variance and more precision
         elbo_stats = _eval_full_elcbo(
-            i_end, theta_opt, vp0, gp, elbo_stats, elcbo_beta, options, K_orig
+            i_end, theta_opt, vp0, gp, elbo_stats, elcbo_beta, options
         )
         
         vp0_fine[i_mid] = copy.deepcopy(vp0)
@@ -382,7 +376,6 @@ def optimize_vp(
                 elbo_stats,
                 elcbo_beta,
                 options,
-                K_orig,
             )
             elbo_pruned = -elbo_stats["nelbo"][0]
             elbo_pruned_sd = np.sqrt(elbo_stats["varF"][0])
@@ -445,7 +438,7 @@ def _initialize_full_elcbo(idx, D, K, Ns):
 
 
 def _eval_full_elcbo(
-    idx, theta, vp, gp, elbo_stats, beta, options, K_orig, entropy_alpha=0
+    idx, theta, vp, gp, elbo_stats, beta, options, entropy_alpha=0
 ):
     # Number of samples per component for MC approximation of the entropy.
     K = vp.K
@@ -460,7 +453,6 @@ def _eval_full_elcbo(
         theta,
         gp,
         vp,
-        K_orig,
         0,
         nsent_fine_K,
         False,
@@ -488,7 +480,7 @@ def _eval_full_elcbo(
 
 def _vp_bound_loss(vp, theta, theta_bnd, tol_con=1e-3, compute_grad=True):
     """
-    Variational paramtere loss function for soft optimization bounds.
+    Variational parameter loss function for soft optimization bounds.
     """
 
     if vp.optimize_mu:
@@ -511,8 +503,6 @@ def _vp_bound_loss(vp, theta, theta_bnd, tol_con=1e-3, compute_grad=True):
 
     if vp.optimize_weights:
         eta = theta[-vp.K :]
-    else:
-        eta = None
 
     ln_scale = np.reshape(ln_lambd, (-1, 1)) + np.reshape(ln_sigma, (1, -1))
     theta_ext = []
@@ -571,11 +561,10 @@ def _soft_bound_loss(x, slb, sub, tol_con=1e-3, compute_grad=False):
     Loss function for soft bounds for function minimization.
     """
     ell = (sub - slb) * tol_con
-    y = 0
+    y = 0.0
     dy = np.zeros(x.shape)
 
     idx = x < slb
-    
     if np.any(idx):
         y += 0.5 * np.sum(((slb[idx] - x[idx]) / ell[idx]) ** 2)
         if compute_grad:
@@ -593,7 +582,7 @@ def _soft_bound_loss(x, slb, sub, tol_con=1e-3, compute_grad=False):
 
 
 def _sieve(
-    options, optim_state, K_orig, vp, gp, init_N=None, best_N=1, K=None
+    options, optim_state, vp, gp, init_N=None, best_N=1, K=None
 ):
     """
     Preliminary 'sieve' method for fitting variational posterior.
@@ -686,7 +675,6 @@ def _sieve(
                 theta,
                 gp,
                 vp,
-                K_orig,
                 0,
                 nsent_K_fast,
                 0,
@@ -770,19 +758,19 @@ def _vbinit(vp, vbtype, opts_N, K_new, X_star, y_star):
                 # Spawn a new component near an existing one
                 for i_new in range(K, K_new):
                     idx = np.random.randint(0, K)
-                    mu[:, i_new] = mu[:, idx]
-                    sigma[i_new] = sigma[idx]
-                    mu[:, i_new] += (
-                        0.5 * sigma[i_new] * lambd * np.random.randn(D, 1)
+                    mu = np.hstack((mu, mu[:, idx:idx+1]))
+                    sigma = np.hstack((sigma, sigma[0:1, idx:idx+1]))
+                    mu[:, i_new:i_new+1] += (
+                        0.5 * sigma[0, i_new] * lambd * np.random.randn(D, 1)
                     )
 
                     if vp.optimize_sigma:
-                        sigma[i_new] *= np.exp(0.2 * np.random.randn())
+                        sigma[0, i_new] *= np.exp(0.2 * np.random.randn())
 
                         if vp.optimize_weights:
                             xi = 0.25 + 0.25 * np.random.rand()
-                            w[i_new] = xi * w[idx]
-                            w[idx] *= 1 - xi
+                            w = np.hstack((w, xi * w[0:1, idx:idx+1]))
+                            w[0, idx] *= 1 - xi
         elif vbtype == 2:
             if i == 0:
                 add_jitter = False
@@ -857,7 +845,6 @@ def _negelcbo(
     theta,
     gp,
     vp,
-    K_orig,
     beta=0,
     Ns=0,
     compute_grad=True,
@@ -896,13 +883,13 @@ def _negelcbo(
 
     if vp.optimize_sigma:
         vp.sigma = np.exp(theta[start_idx : start_idx + K])
-        start_idx += K_orig
+        start_idx += K
 
     if vp.optimize_lambd:
         vp.lambd = np.exp(theta[start_idx : start_idx + D]).T
 
     if vp.optimize_weights:
-        eta = theta[-K_orig:]
+        eta = theta[-K:]
         eta = eta - np.amax(eta)
         vp.w = np.exp(eta.T)[np.newaxis, :]
 
@@ -1076,6 +1063,7 @@ def _gplogjoint(
     mu = vp.mu.copy()
     sigma = vp.sigma.copy()
     lambd = vp.lambd.copy().reshape(-1, 1)
+
     w = vp.w.copy()[0, :]
     Ns = len(gp.posteriors)
 
@@ -1223,7 +1211,7 @@ def _gplogjoint(
                 w_grad[k, s] = I_k
 
             if compute_var == 2:
-                # Compute only self-variance
+                # Missing port: compute_var == 2 skipped since it is not used
                 assert False
             elif compute_var:
                 for j in range(0, k + 1):
@@ -1312,20 +1300,27 @@ def _gplogjoint(
         dF = None
 
     if compute_vargrad:
+        vargrad_list = []
         if grad_flags[0]:
-            assert False
+            mu_vargrad = np.reshape(mu_vargrad, (D * K, Ns))
+            vargrad_list.append(mu_vargrad)
 
         # Correct for standard log reparametrization of sigma
         if jacobian_flag and grad_flags[1]:
-            assert False
+            sigma_vargrad *= np.reshape(sigma_vargrad, (-1, 1))
+            vargrad_list.append(sigma_vargrad)
 
         # Correct for standard log reparametrization of lambd
         if jacobian_flag and grad_flags[2]:
-            assert False
+            lambd_vargrad *= lambd
+            vargrad_list.append(lambd_vargrad)
 
         # Correct for standard softmax reparametrization of w
         if jacobian_flag and grad_flags[3]:
-            assert False
+            w_vargrad = np.dot(J_w, w_vargrad)
+            vargrad_list.append(w_vargrad)
+            
+        dvarF = np.concatenate(grad_list, axis=0)
     else:
         dvarF = None
 

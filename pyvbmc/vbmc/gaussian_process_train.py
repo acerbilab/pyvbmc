@@ -440,7 +440,7 @@ def _gp_hyp(
 
     if stop_sampling == 0:
         # Number of samples
-        gp_s_N = round(options["nsgpmax"] / np.sqrt(optim_state["N"]))
+        gp_s_N = options["nsgpmax"] / np.sqrt(optim_state["N"])
 
         # Maximum sample cutoff
         if optim_state["warmup"]:
@@ -462,7 +462,7 @@ def _gp_hyp(
     gp.set_bounds(bounds)
     gp.set_priors(priors)
 
-    return gp, hyp0, gp_s_N
+    return gp, hyp0, round(gp_s_N)
 
 
 def _get_gp_training_options(
@@ -635,7 +635,9 @@ def _get_gp_training_options(
             else:
                 gp_train["opts_N"] = 2
 
-    gp_train["n_samples"] = gp_s_N
+    gp_train["n_samples"] = round(gp_s_N)
+    gp_train["burn"] = round(gp_train["burn"])
+    
     return gp_train
 
 

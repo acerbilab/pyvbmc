@@ -795,7 +795,6 @@ class VBMC:
             self.vp, varss, pruned = optimize_vp(
                 self.options,
                 self.optim_state,
-                self.K,
                 self.vp,
                 gp,
                 N_fastopts,
@@ -902,16 +901,13 @@ class VBMC:
                 "pruned": pruned,
                 "timer": timer,
                 "func_count": self.function_logger.func_count,
+                "lcbmax": self.optim_state["lcbmax"]
             }
             
             # Record all useful stats
             self.iteration_history.record_iteration(
                 iteration_values,
                 iteration,
-            )
-
-            self.iteration_history.record(
-                "warmup", self.optim_state.get("warmup"), iteration
             )
 
             # Check warmup
@@ -957,6 +953,11 @@ class VBMC:
                     # self.optim_state['acqInfo'] = getAcqInfo(
                     #    options.SearchAcqFcn
                     # )
+            # Needs to be below the above block since warmup value can change
+            # in _check_warmup_end_conditions
+            self.iteration_history.record(
+                "warmup", self.optim_state.get("warmup"), iteration
+            )
 
             # Check and update fitness shaping / output warping threshold
             if (
@@ -1025,7 +1026,7 @@ class VBMC:
             stable_count_flag = (max_now - max_before) < stop_warmup_thresh
 
         # Vector of maximum lower confidence bounds (LCB) of fcn values
-        lcbmax_vec = self.iteration_history.get("lcbmax")[:iteration]
+        lcbmax_vec = self.iteration_history.get("lcbmax")[:iteration+1]
 
         # Second requirement, also no substantial improvement of max fcn value
         # in recent iters (unless already performing BO-like warmup)
@@ -1038,10 +1039,10 @@ class VBMC:
                 )
                 + 1
             )
-            idx_last[max(2, recent_past) :] = True
+            idx_last[max(1, recent_past) :] = True
             impro_fcn = max(
                 0,
-                np.amax(lcbmax_vec[idx_last]) - np.amax(lcbmax_vec[~idx_last]),
+                np.amax(lcbmax_vec[idx_last]) - np.amax(lcbmax_vec[~idx_last])
             )
         else:
             impro_fcn = 0
@@ -1051,7 +1052,7 @@ class VBMC:
         # Alternative criterion for stopping - no improvement over max fcn value
         max_thresh = np.amax(lcbmax_vec) - self.options.get("tolimprovement")
         idx_1st = np.ravel(np.argwhere(lcbmax_vec > max_thresh))[0]
-        yy = self.iteration_history.get("func_count")[:iteration]
+        yy = self.iteration_history.get("func_count")[:iteration+1]
         pos = yy[idx_1st]
         currentpos = self.function_logger.func_count
         no_longterm_improvement_flag = (currentpos - pos) > self.options.get(
@@ -1489,10 +1490,11 @@ class VBMC:
                 laststable = np.argwhere(
                     self.iteration_history.get("stable")[: max_idx + 1] == True
                 )
+                
                 if len(laststable) == 0:
                     # Go some iterations back if no previous stable iteration
                     idx_start = max(
-                        1, int(math.ceil(max_idx - max_idx * frac_back))
+                        0, int(math.ceil(max_idx - max_idx * frac_back))
                     )
                 else:
                     idx_start = np.ravel(laststable)[-1]
@@ -1510,5 +1512,5 @@ class VBMC:
         vp = self.iteration_history.get("vp")[idx_best]
         elbo = self.iteration_history.get("elbo")[idx_best]
         elbo_sd = self.iteration_history.get("elbo_sd")[idx_best]
-        # vp.stats.stable = stats.stable(idx_best);
+        # vp.stats["stable"] = self.iteration_history.get("stable")[idx_best]
         return vp, elbo, elbo_sd, idx_best
