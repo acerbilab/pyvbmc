@@ -652,14 +652,10 @@ def test_vbmc_optimstate_outwarp_delta():
     assert vbmc.optim_state["outwarp_delta"] == outwarpthreshbase
 
 
-def test_vbmc_optimize(mocker):
+def test_vbmc_optimize():
     """
     This is WIP as it should simulate a full run of VBMC later but this requires
     more setup.
     """    
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
-    mocker.patch(
-        "pyvbmc.vbmc.VBMC.finalboost",
-        return_value=(VariationalPosterior(3), 10, 10, False),
-    )
     vbmc.optimize()

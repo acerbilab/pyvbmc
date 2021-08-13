@@ -986,13 +986,13 @@ class VBMC:
 
             # Write iteration output
 
-            # Pick "best" variational solution to return
-            self.vp, elbo, elbo_sd, idx_best = self.determine_best_vp()
+        # Pick "best" variational solution to return
+        self.vp, elbo, elbo_sd, idx_best = self.determine_best_vp()
 
-            # Last variational optimization with large number of components
-            self.vp, elbo, elbo_sd, changedflag = self.finalboost(
-                self.vp, dict()
-            )
+        # Last variational optimization with large number of components
+        self.vp, elbo, elbo_sd, changedflag = self.finalboost(
+            self.vp, self.iteration_history["gp"][idx_best]
+        )
 
     # Loop termination:
 
@@ -1347,19 +1347,19 @@ class VBMC:
         n_sent_fine = self.options.eval("nsentfine", {"K": K_new})
 
         # Entropy samples for final boost
-        if self.options.get("nsentboost") is None:
+        if self.options.get("nsentboost") == []:
             n_sent_boost = n_sent
         else:
             n_sent_boost = self.options.eval("nsentboost", {"K": K_new})
 
-        if self.options.get("nsentfastboost") is None:
+        if self.options.get("nsentfastboost") == []:
             n_sent_fast_boost = n_sent_fast
         else:
             n_sent_fast_boost = self.options.eval(
                 "nsentfastboost", {"K": K_new}
             )
 
-        if self.options.get("nsentfineboost") is None:
+        if self.options.get("nsentfineboost") == []:
             n_sent_fine_boost = n_sent_fine
         else:
             n_sent_fine_boost = self.options.eval(
@@ -1397,7 +1397,7 @@ class VBMC:
             self.optim_state["entropy_alpha"] = 0
 
             # stable_flag = vp.stats["stable"]
-            vp = optimize_vp(self.options, self.optim_state, self.K, vp, gp, n_fast_opts, n_slow_opts, K_new)
+            vp, varss, pruned = optimize_vp(self.options, self.optim_state, vp, gp, n_fast_opts, n_slow_opts, K_new)
             # vp.stats["stable"] = stable_flag
             changed_flag = True
         else:
