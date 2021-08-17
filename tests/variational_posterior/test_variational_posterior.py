@@ -244,7 +244,7 @@ def test_set_parameters_raw():
     vp.optimize_weights = True
     vp.set_parameters(theta)
     assert vp.mu.shape == (D, K)
-    assert np.all(vp.mu[: D * K] == np.reshape(theta[: D * K], (D, K)))
+    assert np.all(vp.mu[: D * K] == np.reshape(theta[: D * K], (D, K), order='F'))
     lamb = np.exp(theta[D * K + K : D * K + K + D])
     nl = np.sqrt(np.sum(lamb ** 2) / D)
     assert vp.sigma.shape == (1, K)
@@ -269,7 +269,7 @@ def test_set_parameters_not_raw():
     vp.optimize_weights = True
     vp.set_parameters(theta, rawflag=False)
     assert vp.mu.shape == (D, K)
-    assert np.all(vp.mu[: D * K] == np.reshape(theta[: D * K], (D, K)))
+    assert np.all(vp.mu[: D * K] == np.reshape(theta[: D * K], (D, K), order='F'))
     lamb = theta[D * K + K : D * K + K + D]
     nl = np.sqrt(np.sum(lamb ** 2) / D)
     assert vp.sigma.shape == (1, K)
@@ -300,7 +300,7 @@ def test_get_parameters_raw():
     vp = VariationalPosterior(D, K, np.array([[5]]))
     vp.optimize_weights = True
     theta = vp.get_parameters(rawflag=True)
-    assert np.all(vp.mu[: D * K] == np.reshape(theta[: D * K], (D, K)))
+    assert np.all(vp.mu[: D * K] == np.reshape(theta[: D * K], (D, K), order='F'))
     assert np.all(
         np.isclose(
             vp.sigma.flatten(),
@@ -321,7 +321,7 @@ def test_get_parameters_not_raw():
     vp = VariationalPosterior(D, K, np.array([[5]]))
     vp.optimize_weights = True
     theta = vp.get_parameters(rawflag=False)
-    assert np.all(vp.mu[: D * K] == np.reshape(theta[: D * K], (D, K)))
+    assert np.all(vp.mu[: D * K] == np.reshape(theta[: D * K], (D, K), order='F'))
     assert np.all(vp.sigma.flatten() == theta[D * K : D * K + K])
     assert np.all(vp.lambd.flatten() == theta[D * K + K : D * K + K + D])
     assert np.all(vp.w.flatten() == theta[-K:])

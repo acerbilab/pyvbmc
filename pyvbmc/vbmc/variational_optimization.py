@@ -77,6 +77,10 @@ def optimize_vp(
     if K is None:
         K = vp.K
 
+    # Turn off weight optimization in warm up if not already done.
+    if optim_state["warmup"]:
+        vp.optimize_weights = False
+
     # Quick sieve optimization to determine starting point(s)
     vp0_vec, vp0_type, elcbo_beta, compute_var, nsent_K, _ = _sieve(
         options,
@@ -199,7 +203,7 @@ def optimize_vp(
                     upper_list.append(np.full(tmp.shape, np.inf))
                 if vp.optimize_sigma:
                     insigma_list.append(np.ones((K,)))
-                    lower_list.append(np.full((K, ), -50))
+                    lower_list.append(np.full((K,), -50))
                     upper_list.append(np.full((K,), 50))
                 if vp.optimize_lambd:
                     insigma_list.append(np.ones((vp.D,)))
@@ -207,7 +211,7 @@ def optimize_vp(
                     upper_list.append(np.full((vp.D,), 50))
                 if vp.optimize_weights:
                     insigma_list.append(np.ones((K,)))
-                    lower_list.append(np.full((K, ), -np.inf))
+                    lower_list.append(np.full((K,), -np.inf))
                     upper_list.append(np.full((K,), np.inf))
                 insigma = np.concatenate(insigma_list)
                 lower = np.concatenate(lower_list)
@@ -245,6 +249,7 @@ def optimize_vp(
                 master_max = max(master_min, master_max)
                 master_decay = 200
                 max_iter = min(10000, options["maxiterstochastic"])
+                
                 theta_opt, _, theta_lst, f_val_lst, n_iters = minimize_adam(
                     vbtrain_mc_fun,
                     theta_opt,
@@ -295,7 +300,7 @@ def optimize_vp(
                     upper_list.append(np.full(tmp.shape, np.inf))
                 if vp.optimize_sigma:
                     insigma_list.append(np.ones((K,)))
-                    lower_list.append(np.full((K, ), -50))
+                    lower_list.append(np.full((K,), -50))
                     upper_list.append(np.full((K,), 50))
                 if vp.optimize_lambd:
                     insigma_list.append(np.ones((vp.D,)))
@@ -303,7 +308,7 @@ def optimize_vp(
                     upper_list.append(np.full((vp.D,), 50))
                 if vp.optimize_weights:
                     insigma_list.append(np.ones((K,)))
-                    lower_list.append(np.full((K, ), -np.inf))
+                    lower_list.append(np.full((K,), -np.inf))
                     upper_list.append(np.full((K,), np.inf))
                 insigma = np.concatenate(insigma_list)
                 lower = np.concatenate(lower_list)
@@ -487,7 +492,7 @@ def _vp_bound_loss(vp, theta, theta_bnd, tol_con=1e-3, compute_grad=True):
         mu = theta[: vp.D * vp.K]
         start_idx = vp.D * vp.K
     else:
-        mu = vp.mu.flatten()
+        mu = vp.mu.flatten(order='F')
         start_idx = 0
 
     if vp.optimize_sigma:
@@ -509,7 +514,7 @@ def _vp_bound_loss(vp, theta, theta_bnd, tol_con=1e-3, compute_grad=True):
     if vp.optimize_mu:
         theta_ext.append(mu.flatten())
     if vp.optimize_sigma or vp.optimize_lambda:
-        theta_ext.append(ln_scale.flatten())
+        theta_ext.append(ln_scale.flatten(order='F'))
     if vp.optimize_weights:
         theta_ext.append(eta.flatten())
     theta_ext = np.concatenate(theta_ext)
@@ -579,7 +584,7 @@ def _soft_bound_loss(x, slb, sub, tol_con=1e-3, compute_grad=False):
     if compute_grad:
         return y, dy
     return y
-
+    
 
 def _sieve(
     options, optim_state, vp, gp, init_N=None, best_N=1, K=None
@@ -636,6 +641,7 @@ def _sieve(
         if best_N == 1:
             vp0_vec, vp0_type = _vbinit(vp, 1, init_N, K, X_star, y_star)
         else:
+            # Fix random seed here if trying to reproduce MATLAB numbers
             vp0_vec1, vp0_type1 = _vbinit(
                 vp, 1, math.ceil(init_N / 3), K, X_star, y_star
             )
@@ -669,12 +675,12 @@ def _sieve(
                 )
 
         # Quickly estimate ELCBO at each candidate variational posterior.
-        for i, vp in enumerate(vp0_vec):
-            theta = vp.get_parameters()
+        for i, vp0 in enumerate(vp0_vec):
+            theta = vp0.get_parameters()
             nelbo_tmp, _, _, _, varF_tmp = _negelcbo(
                 theta,
                 gp,
-                vp,
+                vp0,
                 0,
                 nsent_K_fast,
                 0,
@@ -682,7 +688,7 @@ def _sieve(
                 theta_bnd,
             )
             nelcbo_fill[i] = nelbo_tmp + elcbo_beta * np.sqrt(varF_tmp)
-
+ 
         # Sort by negative ELCBO
         order = np.argsort(nelcbo_fill)
         vp0_vec = vp0_vec[order]
@@ -810,7 +816,9 @@ def _vbinit(vp, vbtype, opts_N, K_new, X_star, y_star):
 
         if add_jitter:
             if vp.optimize_mu:
-                mu += sigma * lambd * np.random.standard_normal(mu.shape)
+                # When reproducing MATLAB numbers we need to do Fortran order
+                # here, adding .T works with square shape.
+                mu += sigma * lambd * np.random.randn(mu.shape[0], mu.shape[1])
             if vp.optimize_sigma:
                 sigma *= np.exp(0.2 * np.random.randn(1, K_new))
             if vp.optimize_lambd:
@@ -876,7 +884,7 @@ def _negelcbo(
 
     # Reformat variational parameters from theta.
     if vp.optimize_mu:
-        vp.mu = np.reshape(theta[: D * K], (D, K))
+        vp.mu = np.reshape(theta[: D * K], (D, K), order='F')
         start_idx = D * K
     else:
         start_idx = 0
@@ -889,10 +897,10 @@ def _negelcbo(
         vp.lambd = np.exp(theta[start_idx : start_idx + D]).T
 
     if vp.optimize_weights:
-        eta = theta[-K:]
-        eta = eta - np.amax(eta)
-        vp.w = np.exp(eta.T)[np.newaxis, :]
-
+        vp.eta = np.reshape(theta[-K:], (1, -1))
+        vp.w = np.exp(vp.eta)
+        vp.w /= np.sum(vp.w)
+            
     # Which gradients should be computed, if any?
     if compute_grad:
         grad_flags = (
@@ -912,7 +920,7 @@ def _negelcbo(
         and not vp.optimize_sigma
         and not vp.optimize_lambd
     )
-
+    
     if separate_K:
         if compute_grad:
             raise Exception(
@@ -1121,7 +1129,6 @@ def _gplogjoint(
     noise_N = gp.noise.hyperparameter_count()
 
     # Loop over hyperparameter samples.
-    
     for s in range(0, Ns):
         hyp = gp.posteriors[s].hyp
 
@@ -1146,7 +1153,7 @@ def _gplogjoint(
         alpha = gp.posteriors[s].alpha
         L = gp.posteriors[s].L
         L_chol = gp.posteriors[s].L_chol
-        sn2_eff = gp.posteriors[s].sW[0] ** 2
+        sn2_eff = 1/gp.posteriors[s].sW[0] ** 2
 
         for k in range(0, K):
             tau_k = np.sqrt(sigma[k] ** 2 * lambd ** 2 + ell ** 2 + delta ** 2)
@@ -1156,17 +1163,18 @@ def _gplogjoint(
             delta_k = Xt[:, :, k] / tau_k
             z_k = np.exp(lnnf_k - 0.5 * np.sum(delta_k ** 2, axis=0))
             I_k = np.dot(z_k, alpha) + m0
-
             if quadratic_meanfun:
                 nu_k = -0.5 * np.sum(
                     1
                     / omega ** 2
                     * (
-                        mu[:, k] ** 2
-                        + sigma[k] ** 2
-                        - 2 * mu[:, k] * xm
+                        mu[:, k:k+1] ** 2
+                        + sigma[k] ** 2 * lambd ** 2
+                        - 2 * mu[:, k:k+1] * xm
                         + xm ** 2
+                        + vp.delta.T ** 2
                     ),
+                    axis=0
                 )
                 I_k += nu_k
             F[s] += w[k] * I_k
@@ -1181,17 +1189,16 @@ def _gplogjoint(
                     mu_grad[:, k, s : s + 1] -= (
                         w[k] / omega ** 2 * (mu[:, k : k + 1] - xm)
                     )
-
+                    
             if grad_flags[1]:
                 dz_dsigma = np.sum(
                     (lambd / tau_k) ** 2 * (delta_k ** 2 - 1), axis=0
-                )
+                ) * sigma[k] * z_k
                 sigma_grad[k, s] = w[k] * np.dot(dz_dsigma, alpha)
                 if quadratic_meanfun:
-                    tmp = 1 / omega ** 2 * lambd ** 2
                     sigma_grad[k, s] -= (
                         w[k]
-                        / sigma[k]
+                        * sigma[k]
                         * np.sum(1 / omega ** 2 * lambd ** 2, axis=0)
                     )
 
@@ -1234,9 +1241,6 @@ def _gplogjoint(
                         lnnf_jk - 0.5 * np.sum(delta_jk ** 2, axis=0)
                     )
                     if L_chol:
-                        J_jk = np.exp(
-                            lnnf_jk - 0.5 * np.sum(delta_jk ** 2, axis=0)
-                        )
                         J_jk -= np.dot(
                             z_k,
                             sp.linalg.solve_triangular(
@@ -1272,7 +1276,7 @@ def _gplogjoint(
     if np.any(grad_flags):
         grad_list = []
         if grad_flags[0]:
-            mu_grad = np.reshape(mu_grad, (D * K, Ns))
+            mu_grad = np.reshape(mu_grad, (D * K, Ns), order='F')
             grad_list.append(mu_grad)
 
         # Correct for standard log reparametrization of sigma
@@ -1330,7 +1334,7 @@ def _gplogjoint(
         F_bar = np.sum(F) / Ns
         if compute_var:
             # Estimated variance of the samples
-            varFss = np.sum((F - F_bar) ** 2)
+            varFss = np.sum((F - F_bar) ** 2) / (Ns-1)
             # Variability due to sampling
             varss = varFss + np.std(varF, ddof=1)
             varF = np.sum(varF, axis=0) / Ns + varFss

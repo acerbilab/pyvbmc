@@ -495,7 +495,7 @@ class VariationalPosterior:
         # remove mode (at least this is done in Matlab)
 
         if self.optimize_mu:
-            theta = self.mu.flatten()
+            theta = self.mu.flatten(order='F')
         else:
             theta = np.array(list())
 
@@ -557,7 +557,7 @@ class VariationalPosterior:
                 )
 
         if self.optimize_mu:
-            self.mu = np.reshape(theta[: self.D * self.K], (self.D, self.K))
+            self.mu = np.reshape(theta[: self.D * self.K], (self.D, self.K), order='F')
             start_idx = self.D * self.K
         else:
             start_idx = 0

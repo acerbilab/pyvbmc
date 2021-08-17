@@ -5,6 +5,9 @@ import pytest
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc import VBMC
 
+import scipy as sp
+import scipy.stats
+
 fun = lambda x: np.sum(x + 2)
 
 
@@ -651,11 +654,34 @@ def test_vbmc_optimstate_outwarp_delta():
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     assert vbmc.optim_state["outwarp_delta"] == outwarpthreshbase
 
+    
+def test_vbmc_optimize_gaussian():
+    def f(x):
+        return np.log(np.prod(sp.stats.multivariate_normal.pdf(x)))
+        
+    x0 = np.array([[0.0, 0.0]])
+    plb = np.array([[-10.0, -10.0]])
+    pub = np.array([[10.0, 10.0]])
 
-def test_vbmc_optimize():
-    """
-    This is WIP as it should simulate a full run of VBMC later but this requires
-    more setup.
-    """    
-    vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
+    vbmc = VBMC(f, x0, None, None, plb, pub)
+    vbmc.optimize()
+    
+def no_test_vbmc_optimize_rosenbrock():
+    D = 2
+    def llfun(x):
+        if x.ndim == 2:
+            return -np.sum((x[0, :-1]**2.0 - x[0, 1:])**2.0 + (x[0, :-1] - 1)**2.0 / 100) 
+        else:
+            return -np.sum((x[:-1]**2.0 - x[1:])**2.0 + (x[:-1] - 1)**2.0 / 100) 
+    
+    prior_mu = np.zeros((1, D)) 
+    prior_var = 3**2 * np.ones((1, D))
+    lpriorfun = lambda x: -0.5*(np.sum((x-prior_mu)**2 / prior_var) + np.log(np.prod(2*np.pi*prior_var)))
+    
+    f = lambda x: llfun(x) + lpriorfun(x)
+    plb = prior_mu - 2*np.sqrt(prior_var)
+    pub = prior_mu + 2*np.sqrt(prior_var)
+    x0 = prior_mu.copy()
+
+    vbmc = VBMC(f, x0, None, None, plb, pub)
     vbmc.optimize()
