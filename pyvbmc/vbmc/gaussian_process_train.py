@@ -840,12 +840,24 @@ def _estimate_noise(gp: gpr.GP):
 def reupdate_gp(function_logger, gp):
     """
     Quick posterior reupdate of Gaussian process.
+    
+    Parameters
+    ==========
+    gp : GP
+        The GP to update.
+    function_logger : FunctionLogger
+        Function logger from the VBMC instance which we are calling this from.
+    Returns
+    =======
+    gp : GP
+        The updated Gaussian process.
     """
 
     x_train, y_train, s2_train, t_train = _get_training_data(function_logger)
     gp.X = x_train
     gp.y = y_train
     gp.s2 = s2_train
+    # Missing port: gp.t = t_train
     gp.update(compute_posterior=True)
 
     # Missing port: intmean part

@@ -90,6 +90,45 @@ variational posterior, by default uses an identity transform.</p>
 </dd>
 </dl>
 <dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.variational_posterior.VariationalPosterior.get_bounds">
+<span class="sig-name descname"><span class="pre">get_bounds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/variational_posterior/variational_posterior.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.variational_posterior.VariationalPosterior.get_bounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute soft bounds for variational posterior parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X</strong><span class="classifier">ndarray, shape (N, D)</span></dt><dd><p>Training inputs.</p>
+</dd>
+<dt><strong>options</strong><span class="classifier">Options</span></dt><dd><p>Program options.</p>
+</dd>
+<dt><strong>K</strong><span class="classifier">int, optional</span></dt><dd><p>The number of mixture components. By default we use the 
+number provided at class instantiation.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>theta_bnd</strong><span class="classifier">dict</span></dt><dd><dl class="simple">
+<dt>A dictionary of soft bounds with the following elements:      </dt><dd><dl class="simple">
+<dt><strong>lb</strong><span class="classifier">np.ndarray</span></dt><dd><p>Lower bounds.</p>
+</dd>
+<dt><strong>ub</strong><span class="classifier">np.ndarray</span></dt><dd><p>Upper bounds.</p>
+</dd>
+<dt><strong>tol_con</strong><span class="classifier">float</span></dt><dd><p>Fractional tolerance for constraint violation of variational parameters.</p>
+</dd>
+<dt><strong>weight_threshold</strong><span class="classifier">float, optional</span></dt><dd><p>Threshold below which weights are penalized.</p>
+</dd>
+<dt><strong>weight_penalty</strong><span class="classifier">float, optional</span></dt><dd><p>The penalty for weight below the threshold.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.variational_posterior.VariationalPosterior.get_parameters">
 <span class="sig-name descname"><span class="pre">get_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rawflag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/variational_posterior/variational_posterior.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.variational_posterior.VariationalPosterior.get_parameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return all the active VariationalPosterior parameters
@@ -420,6 +459,7 @@ and rawflag = False</p>
 <li class="toctree-l1"><a class="reference internal" href="../functions/decorators.html">decorators</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../functions/kernel_density.html">kernel_density</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../functions/entropy.html">entropy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../functions/vbmc.html">vbmc</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Options:</span></p>
 <ul>

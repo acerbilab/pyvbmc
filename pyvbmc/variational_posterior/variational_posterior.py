@@ -103,7 +103,7 @@ class VariationalPosterior:
         if K is None:
             K = self.K
 
-        # Soft-bound loss is computed on MU and SCALE (whic his SIGMA times LAMBDA)
+        # Soft-bound loss is computed on MU and SCALE (which is SIGMA times LAMBDA)
 
         # Start with reversed bounds (see below)
         if self.bounds is None:

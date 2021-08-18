@@ -17,6 +17,20 @@ from .minimize_adam import minimize_adam
 def update_K(optim_state, iteration_history, options):
     """
     Update number of variational mixture components.
+    
+    Parameters
+    ==========
+    optim_state : dict
+        Optimization state from the VBMC instance we are calling this from.
+    iteration_history : IterationHistory
+        Iteration history from the VBMC instance we are calling this from.
+    options : Options
+        Options from the VBMC instance we are calling this from.
+    
+    Returns
+    =======
+    K_new : int
+        The new number of variational mixture components.
     """
     K_new = optim_state["vpK"]
 
@@ -26,6 +40,7 @@ def update_K(optim_state, iteration_history, options):
     # Evaluate bonus for stable solution.
     K_bonus = round(options.eval("adaptivek", {"unkn": K_new}))
 
+    # If not warming up, check if number of components gets to be increased.
     if not optim_state["warmup"] and optim_state["iter"] > 0:
         recent_iters = math.ceil(
             0.5 * options["tolstablecount"] / options["funevalsperiter"]
@@ -68,14 +83,45 @@ def update_K(optim_state, iteration_history, options):
 
 
 def optimize_vp(
-    options, optim_state, vp, gp, fast_opts_N, slow_opts_N, K=None, prnt=0
+    options, optim_state, vp, gp, fast_opts_N, slow_opts_N, K=None
 ):
     """
     Optimize variational posterior.
+    
+    Parameters
+    ==========
+    options : Options
+        Options from the VBMC instance we are calling this from.
+    optim_state : dict
+        Optimization state from the VBMC instance we are calling this from.
+    vp : VariationalPosterior
+        The variational posterior we want to optimize.
+    fast_opts_N : int
+        Number of fast optimizations.
+    slow_opts_N : int
+        Number of slow optimizations.
+    K : int, optional
+        Number of mixture components. If not given defaults to the number
+        of mixture components the given VP has.  
+      
+    Returns
+    =======
+    vp : VariationalPosterior
+        The optimized variational posterior.
+    var_ss : int
+        Variability due to sampling (?)
+    pruned : int
+        Number of pruned components.
     """
 
     if K is None:
         K = vp.K
+        
+    # Missing port: assigning default values to options if it is none
+    #               due to the new structure of the program
+    
+    # Missing port: assign default values to optim_state since these are
+    #               not really used
 
     # Turn off weight optimization in warm up if not already done.
     if optim_state["warmup"]:
@@ -96,7 +142,8 @@ def optimize_vp(
     theta_bnd = vp.get_bounds(gp.X, options, K)
 
     ## Perform optimization starting from one or few selected points.
-    
+
+    # Set up an empty stats struct for optimization
     theta_N = np.size(vp0_vec[0].get_parameters())
     Ns = np.size(gp.posteriors)
     elbo_stats = _initialize_full_elcbo(slow_opts_N * 2, theta_N, K, Ns)
@@ -107,10 +154,8 @@ def optimize_vp(
     vbtrain_options = {}
     if gradient_available:
         # Set basic options for deterministic (?) optimizer
-        # TODO: options for optimizer here
         compute_grad = True
     else:
-        # TODO: options for optimizer here
         options["stochasticoptimizer"] = "cmaes"
         compute_grad = False
 
@@ -168,12 +213,19 @@ def optimize_vp(
                 if compute_grad:
                     return res[0], res[1]
                 return res[0]
-            
-            res = sp.optimize.minimize(vbtrain_fun, theta0, jac=compute_grad, tol=options["detenttolopt"])
+
+            res = sp.optimize.minimize(
+                vbtrain_fun,
+                theta0,
+                jac=compute_grad,
+                tol=options["detenttolopt"],
+            )
             if not res.success:
                 # SciPy minimize failed, try with CMA-ES
-                if prnt >= 0:
-                    print("Cannot optimize variational parameters with scipy.optimize.minimize. Trying with CMA-ES (slower).")
+                # TODO: do this with a logging tool
+                print(
+                    "Cannot optimize variational parameters with scipy.optimize.minimize. Trying with CMA-ES (slower)."
+                )
 
                 # Objective function with no gradient computation.
                 def vbtrain_fun(theta_):
@@ -188,16 +240,18 @@ def optimize_vp(
                         theta_bnd=theta_bnd,
                     )
                     return res[0]
-                    
+
                 # Construct sigma list and lower/upper bounds.
                 # Restricting the range of lambda and sigma is important
                 # since the optimization is done in log-space, so too large values
-                # can cause numerical overflows. 
+                # can cause numerical overflows.
                 insigma_list = []
                 lower_list = []
                 upper_list = []
                 if vp.optimize_mu:
-                    tmp = np.tile(vp.bounds["mu_ub"] - vp.bounds["mu_lb"], (K,))
+                    tmp = np.tile(
+                        vp.bounds["mu_ub"] - vp.bounds["mu_lb"], (K,)
+                    )
                     insigma_list.append(tmp)
                     lower_list.append(np.full(tmp.shape, -np.inf))
                     upper_list.append(np.full(tmp.shape, np.inf))
@@ -216,21 +270,24 @@ def optimize_vp(
                 insigma = np.concatenate(insigma_list)
                 lower = np.concatenate(lower_list)
                 upper = np.concatenate(upper_list)
-                
+
                 cma_options = {
                     "verbose": -9,
                     "tolx": 1e-8 * np.max(insigma),
                     "tolfun": 1e-6,
                     "tolfunhist": 1e-7,
-                    "maxfevals": 200*(vp.D+2),
+                    "maxfevals": 200 * (vp.D + 2),
                     "CMA_active": True,
-                    "bounds": (lower, upper)
+                    "bounds": (lower, upper),
                 }
-                res = cma.fmin(vbtrain_fun, theta0, np.max(insigma), options=cma_options)
+                res = cma.fmin(
+                    vbtrain_fun, theta0, np.max(insigma), options=cma_options
+                )
                 theta_opt = res[0]
             else:
                 theta_opt = res.x
         else:
+            # Optimization via unbiased stochastic entroply approximation
             theta_opt = theta0
 
             if options["stochasticoptimizer"] == "adam":
@@ -249,7 +306,7 @@ def optimize_vp(
                 master_max = max(master_min, master_max)
                 master_decay = 200
                 max_iter = min(10000, options["maxiterstochastic"])
-                
+
                 theta_opt, _, theta_lst, f_val_lst, n_iters = minimize_adam(
                     vbtrain_mc_fun,
                     theta_opt,
@@ -289,12 +346,14 @@ def optimize_vp(
                 # Construct sigma list and lower/upper bounds.
                 # Restricting the range of lambda and sigma is important
                 # since the optimization is done in log-space, so too large values
-                # can cause numerical overflows. 
+                # can cause numerical overflows.
                 insigma_list = []
                 lower_list = []
                 upper_list = []
                 if vp.optimize_mu:
-                    tmp = np.tile(vp.bounds["mu_ub"] - vp.bounds["mu_lb"], (K,))
+                    tmp = np.tile(
+                        vp.bounds["mu_ub"] - vp.bounds["mu_lb"], (K,)
+                    )
                     insigma_list.append(tmp)
                     lower_list.append(np.full(tmp.shape, -np.inf))
                     upper_list.append(np.full(tmp.shape, np.inf))
@@ -313,7 +372,7 @@ def optimize_vp(
                 insigma = np.concatenate(insigma_list)
                 lower = np.concatenate(lower_list)
                 upper = np.concatenate(upper_list)
-                
+
                 cma_options = {
                     "verbose": -9,
                     "tolx": 1e-6 * np.max(insigma),
@@ -322,7 +381,13 @@ def optimize_vp(
                     "CMA_active": True,
                     "bounds": (lower, upper),
                 }
-                res = cma.fmin(vbtrain_fun, theta0, np.max(insigma), options=cma_options, noise_handler=cma.NoiseHandler(np.size(theta0)))
+                res = cma.fmin(
+                    vbtrain_fun,
+                    theta0,
+                    np.max(insigma),
+                    options=cma_options,
+                    noise_handler=cma.NoiseHandler(np.size(theta0)),
+                )
                 theta_opt = res[0]
             else:
                 raise Exception("Unknown stochastic optimizer!")
@@ -331,12 +396,12 @@ def optimize_vp(
         elbo_stats = _eval_full_elcbo(
             i_end, theta_opt, vp0, gp, elbo_stats, elcbo_beta, options
         )
-        
+
         vp0_fine[i_mid] = copy.deepcopy(vp0)
         vp0_fine[i_end] = copy.deepcopy(vp0)  # Parameters get assigned later
 
     ## Finalize optimization by taking variational parameters with best ELCBO
-    
+
     idx = np.argmin(elbo_stats["nelcbo"])
     elbo = -elbo_stats["nelbo"][idx]
     elbo_sd = np.sqrt(elbo_stats["varF"][idx])
@@ -486,13 +551,35 @@ def _eval_full_elcbo(
 def _vp_bound_loss(vp, theta, theta_bnd, tol_con=1e-3, compute_grad=True):
     """
     Variational parameter loss function for soft optimization bounds.
+    
+    Parameters
+    ==========
+    vp : VariationalPosterior
+        The variational posterior for which we are interested in computing
+        the loss function on.
+    theta : np.ndarray, shape (N,)
+        The parameters at which we want to compute the loss function.
+    theta_bnd : dict
+        Variational posterior soft bounds.
+    tol_con : float, defaults to 1e-3
+        Penalization relative scale.
+    compute_grad : bool, defaults to True
+        Whether to compute gradients.
+        
+    Returns
+    =======
+    L : float
+        The value of the loss function.
+    dL : np.ndarray, shape (N,), optional
+        The gradient of the loss function.
+
     """
 
     if vp.optimize_mu:
         mu = theta[: vp.D * vp.K]
         start_idx = vp.D * vp.K
     else:
-        mu = vp.mu.flatten(order='F')
+        mu = vp.mu.flatten(order="F")
         start_idx = 0
 
     if vp.optimize_sigma:
@@ -514,7 +601,7 @@ def _vp_bound_loss(vp, theta, theta_bnd, tol_con=1e-3, compute_grad=True):
     if vp.optimize_mu:
         theta_ext.append(mu.flatten())
     if vp.optimize_sigma or vp.optimize_lambda:
-        theta_ext.append(ln_scale.flatten(order='F'))
+        theta_ext.append(ln_scale.flatten(order="F"))
     if vp.optimize_weights:
         theta_ext.append(eta.flatten())
     theta_ext = np.concatenate(theta_ext)
@@ -557,13 +644,33 @@ def _vp_bound_loss(vp, theta, theta_bnd, tol_con=1e-3, compute_grad=True):
         theta_bnd["ub"].flatten(),
         tol_con,
     )
-    
+
     return L
 
 
 def _soft_bound_loss(x, slb, sub, tol_con=1e-3, compute_grad=False):
     """
     Loss function for soft bounds for function minimization.
+    
+    Parameters
+    ==========
+    x : np.ndarray, shape (D,)
+        Point for which we want to know the loss function value.
+    slb : np.ndarray, shape (D,)
+        Soft lower bounds.
+    sub : np.ndarray, shape (D,)
+        Soft upper bounds.
+    tol_con : float, defaults to 1e-3
+        Penalization relative scale.
+    compute_grad : bool, defaults to False
+        Whether to compute gradients.
+
+    Returns
+    =======
+    y : float
+        The value of the loss function.
+    dy : np.ndarray, shape (D,), optional
+        The gradient of the loss function.
     """
     ell = (sub - slb) * tol_con
     y = 0.0
@@ -584,13 +691,44 @@ def _soft_bound_loss(x, slb, sub, tol_con=1e-3, compute_grad=False):
     if compute_grad:
         return y, dy
     return y
-    
 
-def _sieve(
-    options, optim_state, vp, gp, init_N=None, best_N=1, K=None
-):
+
+def _sieve(options, optim_state, vp, gp, init_N=None, best_N=1, K=None):
     """
     Preliminary 'sieve' method for fitting variational posterior.
+    
+    Parameters
+    ==========
+    options : Options
+        Options from the VBMC instance we are calling this from.
+    optim_state : dict
+        Optimization state from the VBMC instance we are calling this from.
+    vp : VariationalPosterior
+        The variational posterior to use as a basis for new candidates.
+    gp : GP
+        Current GP from optimization.
+    init_N : int, optional
+        Number of initial starting points.
+    best_N : int, defaults to 1
+        ???
+    K : int, optional
+        Number of mixture components. If not given defaults to the number
+        of mixture components the given VP has.
+    Returns
+    =======
+    vp0_vec : np.ndarray, shape (init_N,)
+        Vector of candidate variational posteriors. 
+    vp0_type : np.ndarray, shape (init_N,)
+        Vector of types of candidate variational posteriors.
+    elcbo_beta : float
+        Confidence weight.
+    compute_var : bool
+        Whether to compute variance in later optimization.
+    nsent_K : int
+        Number of samples per component for MC approximation of the entropy.
+    nsent_K_fast : int
+        Number of samples per component for preliminary MC approximation of
+        the entropy.
     """
     if K is None:
         K = vp.K
@@ -688,7 +826,7 @@ def _sieve(
                 theta_bnd,
             )
             nelcbo_fill[i] = nelbo_tmp + elcbo_beta * np.sqrt(varF_tmp)
- 
+
         # Sort by negative ELCBO
         order = np.argsort(nelcbo_fill)
         vp0_vec = vp0_vec[order]
@@ -709,7 +847,31 @@ def _sieve(
 def _vbinit(vp, vbtype, opts_N, K_new, X_star, y_star):
     """
     Generate array of random starting parameters for variational posterior.
-    X_star and y_star are usually HPD regions.
+
+    Parameters
+    ==========
+    vp : VariationalPosterior
+        Variational posterior to use as base.
+    vbtype : {1, 2, 3}
+        Type of method to create new starting parameters. Here 1 means 
+        starting from old variational parameters, 2 means starting from
+        highest-posterior density training points, and 3 means starting 
+        from random provided training points.
+    opts_N : int
+        Number of random starting parameters.
+    K_new : int
+        New number of mixture components.
+    X_star : np.ndarray, shape (N, D)
+        Training inputs, usually HPD regions.
+    y_star : np.ndarray, shape (N, 1)
+        Training targets, usually HPD regions.
+        
+    Returns
+    =======
+    vp0_vec : np.ndarray, shape (opts_N, )
+        The array of random starting parameters.
+    type_vec : np.ndarray, shape (opts_N, )
+        The array of type of each random starting parameter.
     """
 
     D = vp.D
@@ -764,9 +926,9 @@ def _vbinit(vp, vbtype, opts_N, K_new, X_star, y_star):
                 # Spawn a new component near an existing one
                 for i_new in range(K, K_new):
                     idx = np.random.randint(0, K)
-                    mu = np.hstack((mu, mu[:, idx:idx+1]))
-                    sigma = np.hstack((sigma, sigma[0:1, idx:idx+1]))
-                    mu[:, i_new:i_new+1] += (
+                    mu = np.hstack((mu, mu[:, idx : idx + 1]))
+                    sigma = np.hstack((sigma, sigma[0:1, idx : idx + 1]))
+                    mu[:, i_new : i_new + 1] += (
                         0.5 * sigma[0, i_new] * lambd * np.random.randn(D, 1)
                     )
 
@@ -775,9 +937,10 @@ def _vbinit(vp, vbtype, opts_N, K_new, X_star, y_star):
 
                         if vp.optimize_weights:
                             xi = 0.25 + 0.25 * np.random.rand()
-                            w = np.hstack((w, xi * w[0:1, idx:idx+1]))
+                            w = np.hstack((w, xi * w[0:1, idx : idx + 1]))
                             w[0, idx] *= 1 - xi
         elif vbtype == 2:
+            # Start from highest-posterior density training points
             if i == 0:
                 add_jitter = False
             if vp.optimize_lambd:
@@ -786,6 +949,7 @@ def _vbinit(vp, vbtype, opts_N, K_new, X_star, y_star):
             if vp.optimize_weights:
                 w = np.ones((1, K_new)) / K_new
         elif vbtype == 3:
+            # Start from random provided training points
             if vp.optimize_mu:
                 order = np.random.permutation(N_star)
                 idx_order = np.tile(
@@ -812,7 +976,7 @@ def _vbinit(vp, vbtype, opts_N, K_new, X_star, y_star):
             if vp.optimize_weights:
                 w = np.ones((1, K_new)) / K_new
         else:
-            raise Exception("Unsupported type!")
+            raise Exception("Unknown type for initialization of variational posteriors.")
 
         if add_jitter:
             if vp.optimize_mu:
@@ -840,7 +1004,6 @@ def _vbinit(vp, vbtype, opts_N, K_new, X_star, y_star):
             new_vp.mu = mu0.copy()
         new_vp.sigma = sigma
         new_vp.lambd = lambd
-        # TODO: are these right?
         new_vp.eta = np.ones((1, K_new)) / K_new
         new_vp.bounds = None
         new_vp.stats = None
@@ -853,7 +1016,7 @@ def _negelcbo(
     theta,
     gp,
     vp,
-    beta=0,
+    beta=0.0,
     Ns=0,
     compute_grad=True,
     compute_var=None,
@@ -862,7 +1025,58 @@ def _negelcbo(
     separate_K=False,
 ):
     """
-    Expected variational log joint probability via GP approximation.
+    Negative evidence lower confidence bound objective.
+    
+    Parameters
+    ==========
+    theta : np.ndarray
+        Vector of variational parameters at which to evaluate NELCBO. 
+        Note that these should be transformed parameters.
+    gp : GP
+        Gaussian process from optimization 
+    vp : VariationalPosterior
+        Variational posterior for which to evaluate NELCBO.
+    beta : float, defaults to 0.0
+        Confidence weight.
+    Ns : int, defaults to 0
+        ???
+    compute_grad : bool, defaults to True
+        Whether to compute gradient.
+    compute_var : bool, optional
+        Whether to compute variance. If not given this is
+        determined automatically.
+    theta_bnd : dict, optional
+        Soft bounds for theta.
+    entropy_alpha : float, defaults to 0.0
+        ???
+    separate_K : bool, defaults to False
+        Whether to return expected log joint per component.
+        
+    Returns
+    =======
+    F : float
+        Negative evidence lower confidence bound objective.
+    dF : np.ndarray
+        Gradient of NELCBO.
+    G : object
+        The expected variational log joint probability.
+    H : float
+        Entropy term.
+    varF : float
+        Variance of NELCBO.
+    dH : np.ndarray
+        Gradient of entropy term.
+    varGss : 
+        Variance of ???
+    varG : 
+        Variance of the expected variational log joint
+        probability.
+    varH : float
+        Variance of entropy term.
+    I_sk : np.ndarray
+        ???
+    J_sjk : np.ndarray
+        ???
     """
     if not np.isfinite(beta):
         beta = 0
@@ -884,7 +1098,7 @@ def _negelcbo(
 
     # Reformat variational parameters from theta.
     if vp.optimize_mu:
-        vp.mu = np.reshape(theta[: D * K], (D, K), order='F')
+        vp.mu = np.reshape(theta[: D * K], (D, K), order="F")
         start_idx = D * K
     else:
         start_idx = 0
@@ -897,10 +1111,16 @@ def _negelcbo(
         vp.lambd = np.exp(theta[start_idx : start_idx + D]).T
 
     if vp.optimize_weights:
-        vp.eta = np.reshape(theta[-K:], (1, -1))
+        vp.eta = theta[-K:]
+        vp.eta -= np.amax(vp.eta)
+        vp.eta = np.reshape(vp.eta, (1, -1))
+        # Doing the above is more numericall robust than
+        # below, but it might cause slightly different results
+        # to MATLAB in some cases.
+        # vp.eta = np.reshape(theta[-K:], (1, -1))
         vp.w = np.exp(vp.eta)
         vp.w /= np.sum(vp.w)
-            
+
     # Which gradients should be computed, if any?
     if compute_grad:
         grad_flags = (
@@ -920,7 +1140,9 @@ def _negelcbo(
         and not vp.optimize_sigma
         and not vp.optimize_lambd
     )
-    
+
+    # Missing port: block below does not have branches for only weight
+    #               optimization
     if separate_K:
         if compute_grad:
             raise Exception(
@@ -997,7 +1219,7 @@ def _negelcbo(
         if compute_grad:
             dF += 0.5 * beta * dvarG / np.sqrt(varF)
 
-    # Additional loss for variational parameter bound violation (soft obunds)
+    # Additional loss for variational parameter bound violation (soft bounds)
     # and for weight size (if optimizing mixture weights)
     # Only done when optimizing the variational parameters, but not when
     # computing the EL(C)BO at each iteration.
@@ -1038,6 +1260,7 @@ def _negelcbo(
                 dL[-vp.K :] = w_grad
                 dF += dL
 
+    # Missing port: way to return stuff here is not that good, though it works currently.
     if separate_K:
         return F, dF, G, H, varF, dH, varGss, varG, varH, I_sk, J_sjk
     else:
@@ -1050,9 +1273,49 @@ def _gplogjoint(
     grad_flags,
     avg_flag=True,
     jacobian_flag=True,
-    compute_var=None,
+    compute_var=False,
     separate_K=False,
 ):
+    """
+    Expected variational log joint probability via GP approximation.
+    
+    Parameters
+    ==========
+    vp : VariationalPosterior
+        Variational posterior.
+    gp : GP
+        Gaussian process from optimization.
+    grad_flags : object
+        Flags on which gradients to compute. If a boolean then this
+        sets all flags to the boolean value, and if a 4-tuple then
+        each entry specifies which gradients to compute, in order
+        mu, sigma, lambd, w.
+    avg_flag : bool, defaults to True
+        Whether to average over multiple GP hyperparameters if provided.
+    jacobian_flag : bool, defaults to True
+        Whether variational parameters are transformed.
+    compute_var : bool, defaults to False
+        Whether to compute variance.
+    separate_K : bool, defaults to False
+        Whether to return expected log joint per component.
+    
+    Returns
+    =======
+    F : object
+        The expected variational log joint probability.
+    dF : np.ndarray
+        The gradient.
+    varF : np.ndarray, optional
+        The variance.
+    dvarF : np.ndarray, optional
+        The gradient of the variance.
+    varss : float
+        Variability due to sampling (?)
+    I_sk : np.ndarray, optional
+        ???
+    J_sjk : np.ndarray, optional
+        ???
+    """
     if np.isscalar(grad_flags):
         if grad_flags:
             grad_flags = (True, True, True, True)
@@ -1124,11 +1387,14 @@ def _gplogjoint(
     for k in range(0, K):
         Xt[:, :, k] = np.reshape(mu[:, k], (-1, 1)) - gp.X.T
 
+    # Number of GP hyperparameters
     cov_N = gp.covariance.hyperparameter_count(D)
     mean_N = gp.mean.hyperparameter_count(D)
     noise_N = gp.noise.hyperparameter_count()
 
     # Loop over hyperparameter samples.
+    # Missing port: below loop does not have code related to mean functions
+    #               we haven't implemented in gpyreg
     for s in range(0, Ns):
         hyp = gp.posteriors[s].hyp
 
@@ -1153,7 +1419,7 @@ def _gplogjoint(
         alpha = gp.posteriors[s].alpha
         L = gp.posteriors[s].L
         L_chol = gp.posteriors[s].L_chol
-        sn2_eff = 1/gp.posteriors[s].sW[0] ** 2
+        sn2_eff = 1 / gp.posteriors[s].sW[0] ** 2
 
         for k in range(0, K):
             tau_k = np.sqrt(sigma[k] ** 2 * lambd ** 2 + ell ** 2 + delta ** 2)
@@ -1168,13 +1434,13 @@ def _gplogjoint(
                     1
                     / omega ** 2
                     * (
-                        mu[:, k:k+1] ** 2
+                        mu[:, k : k + 1] ** 2
                         + sigma[k] ** 2 * lambd ** 2
-                        - 2 * mu[:, k:k+1] * xm
+                        - 2 * mu[:, k : k + 1] * xm
                         + xm ** 2
                         + vp.delta.T ** 2
                     ),
-                    axis=0
+                    axis=0,
                 )
                 I_k += nu_k
             F[s] += w[k] * I_k
@@ -1189,11 +1455,13 @@ def _gplogjoint(
                     mu_grad[:, k, s : s + 1] -= (
                         w[k] / omega ** 2 * (mu[:, k : k + 1] - xm)
                     )
-                    
+
             if grad_flags[1]:
-                dz_dsigma = np.sum(
-                    (lambd / tau_k) ** 2 * (delta_k ** 2 - 1), axis=0
-                ) * sigma[k] * z_k
+                dz_dsigma = (
+                    np.sum((lambd / tau_k) ** 2 * (delta_k ** 2 - 1), axis=0)
+                    * sigma[k]
+                    * z_k
+                )
                 sigma_grad[k, s] = w[k] * np.dot(dz_dsigma, alpha)
                 if quadratic_meanfun:
                     sigma_grad[k, s] -= (
@@ -1276,7 +1544,7 @@ def _gplogjoint(
     if np.any(grad_flags):
         grad_list = []
         if grad_flags[0]:
-            mu_grad = np.reshape(mu_grad, (D * K, Ns), order='F')
+            mu_grad = np.reshape(mu_grad, (D * K, Ns), order="F")
             grad_list.append(mu_grad)
 
         # Correct for standard log reparametrization of sigma
@@ -1323,7 +1591,7 @@ def _gplogjoint(
         if jacobian_flag and grad_flags[3]:
             w_vargrad = np.dot(J_w, w_vargrad)
             vargrad_list.append(w_vargrad)
-            
+
         dvarF = np.concatenate(grad_list, axis=0)
     else:
         dvarF = None
@@ -1334,7 +1602,7 @@ def _gplogjoint(
         F_bar = np.sum(F) / Ns
         if compute_var:
             # Estimated variance of the samples
-            varFss = np.sum((F - F_bar) ** 2) / (Ns-1)
+            varFss = np.sum((F - F_bar) ** 2) / (Ns - 1)
             # Variability due to sampling
             varss = varFss + np.std(varF, ddof=1)
             varF = np.sum(varF, axis=0) / Ns + varFss

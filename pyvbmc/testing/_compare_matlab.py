@@ -34,3 +34,16 @@ def rand_perm(n):
     MATLAB needs to use the same algorithm as this.
     """
     return fisher_yates_shuffle(np.array(range(0, n)))
+    
+    
+def rand_int(hi):
+    """
+    For reproducing same random integer with MATLAB.
+    MATLAB already uses this algorithm.
+    """
+    proportion = 1.0 / hi
+    tmp = np.random.rand()
+    res = lo
+    while res * proportion < tmp:
+        res += 1 
+    return res

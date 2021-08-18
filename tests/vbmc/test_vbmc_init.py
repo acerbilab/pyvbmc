@@ -644,7 +644,6 @@ def test_vbmc_optimstate_int_meanfun():
     assert np.all(vbmc.optim_state["int_meanfun"] == fun)
 
 
-
 def test_vbmc_optimstate_outwarp_delta():
     user_options = {"fitnessshaping": False}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
@@ -665,7 +664,8 @@ def test_vbmc_optimize_gaussian():
 
     vbmc = VBMC(f, x0, None, None, plb, pub)
     vbmc.optimize()
-    
+
+
 def no_test_vbmc_optimize_rosenbrock():
     D = 2
     def llfun(x):
@@ -679,8 +679,8 @@ def no_test_vbmc_optimize_rosenbrock():
     lpriorfun = lambda x: -0.5*(np.sum((x-prior_mu)**2 / prior_var) + np.log(np.prod(2*np.pi*prior_var)))
     
     f = lambda x: llfun(x) + lpriorfun(x)
-    plb = prior_mu - 2*np.sqrt(prior_var)
-    pub = prior_mu + 2*np.sqrt(prior_var)
+    plb = prior_mu - np.sqrt(prior_var)
+    pub = prior_mu + np.sqrt(prior_var)
     x0 = prior_mu.copy()
 
     vbmc = VBMC(f, x0, None, None, plb, pub)
