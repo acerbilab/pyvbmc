@@ -666,7 +666,7 @@ def test_vbmc_optimize_gaussian():
     vbmc.optimize()
 
 
-def no_test_vbmc_optimize_rosenbrock():
+def test_vbmc_optimize_rosenbrock():
     D = 2
     def llfun(x):
         if x.ndim == 2:

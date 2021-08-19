@@ -13,7 +13,6 @@ from pyvbmc.entropy import entlb_vbmc, entmc_vbmc
 from .gaussian_process_train import _get_hpd
 from .minimize_adam import minimize_adam
 
-
 def update_K(optim_state, iteration_history, options):
     """
     Update number of variational mixture components.
@@ -35,6 +34,7 @@ def update_K(optim_state, iteration_history, options):
     K_new = optim_state["vpK"]
 
     # Compute maximum number of components
+    # TODO: Remember to add +1
     K_max = math.ceil(options.eval("kfunmax", {"N": optim_state["n_eff"]}))
 
     # Evaluate bonus for stable solution.
@@ -436,7 +436,6 @@ def optimize_vp(
             vp_pruned.mu = np.delete(vp_pruned.mu, idx, axis=1)
             vp_pruned.K -= 1
             theta_pruned = vp_pruned.get_parameters()
-
             # Recompute ELCBO
             elbo_stats = _eval_full_elcbo(
                 0,
@@ -455,7 +454,6 @@ def optimize_vp(
                 (elbo_pruned - options["elcboimproweight"] * elbo_pruned_sd)
                 - (elbo - options["elcboimproweight"] * elbo_sd)
             )
-
             # Prune component if it has neglible influence on ELCBO
             pruning_threshold = options["tolimprovement"] * options.eval(
                 "pruningthresholdmultiplier", {"K": K}
@@ -885,7 +883,7 @@ def _vbinit(vp, vbtype, opts_N, K_new, X_star, y_star):
 
     if vbtype == 1:
         # Start from old variational parameters
-        sigma0 = vp.sigma
+        sigma0 = vp.sigma.copy()
     elif vbtype == 2:
         # Start from highest-posterior density training points
         if vp.optimize_mu:
@@ -935,10 +933,10 @@ def _vbinit(vp, vbtype, opts_N, K_new, X_star, y_star):
                     if vp.optimize_sigma:
                         sigma[0, i_new] *= np.exp(0.2 * np.random.randn())
 
-                        if vp.optimize_weights:
-                            xi = 0.25 + 0.25 * np.random.rand()
-                            w = np.hstack((w, xi * w[0:1, idx : idx + 1]))
-                            w[0, idx] *= 1 - xi
+                    if vp.optimize_weights:
+                        xi = 0.25 + 0.25 * np.random.rand()
+                        w = np.hstack((w, xi * w[0:1, idx : idx + 1]))
+                        w[0, idx] *= 1 - xi
         elif vbtype == 2:
             # Start from highest-posterior density training points
             if i == 0:
@@ -1004,6 +1002,7 @@ def _vbinit(vp, vbtype, opts_N, K_new, X_star, y_star):
             new_vp.mu = mu0.copy()
         new_vp.sigma = sigma
         new_vp.lambd = lambd
+        # TODO: just set to None?
         new_vp.eta = np.ones((1, K_new)) / K_new
         new_vp.bounds = None
         new_vp.stats = None
@@ -1104,10 +1103,12 @@ def _negelcbo(
         start_idx = 0
 
     if vp.optimize_sigma:
+        # TODO: wrong size, reshape to (1, -1) and fix everything else
         vp.sigma = np.exp(theta[start_idx : start_idx + K])
         start_idx += K
 
     if vp.optimize_lambd:
+        # TODO: wrong size, reshape to (-1, 1) and fix everything else.
         vp.lambd = np.exp(theta[start_idx : start_idx + D]).T
 
     if vp.optimize_weights:
@@ -1246,6 +1247,7 @@ def _negelcbo(
                 np.sum(vp.w * (vp.w < thresh) + thresh * (vp.w >= thresh))
                 * theta_bnd["weight_penalty"]
             )
+
             F += L
             if compute_grad:
                 w_grad = theta_bnd["weight_penalty"] * (

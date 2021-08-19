@@ -540,6 +540,9 @@ class VariationalPosterior:
             Raised if sigma, lambda and weights are not positive
             and rawflag = False
         """
+        
+        # Make sure we don't get issues with references.
+        theta = theta.copy()
 
         # check if sigma, lambda and weights are positive when rawflag = False
         if not rawflag:
