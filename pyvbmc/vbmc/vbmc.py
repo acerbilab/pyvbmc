@@ -913,7 +913,7 @@ class VBMC:
 
             # Check warmup
             if (
-                self.optim_state.get("iter") > 2
+                self.optim_state.get("iter") > 1
                 and self.optim_state.get("stop_gp_sampling") == 0
                 and not self.optim_state.get("warmup")
             ):
@@ -1159,6 +1159,7 @@ class VBMC:
 
         # Maximum number of iterations
         iteration = self.optim_state.get("iter")
+        # TODO: off by one error
         if iteration >= self.options.get("maxiter"):
             isFinished_flag = True
             # msg = "Inference terminated
@@ -1188,14 +1189,14 @@ class VBMC:
         # Check stability termination condition
         stableflag = False
         if (
-            iteration >= tol_stable_iters
+            iteration + 1 >= tol_stable_iters
             and rindex < 1
             and ELCBO_improvement < self.options.get("tolimprovement")
         ):
             # Count how many good iters in the recent past (excluding current)
             stable_count = np.sum(
                 self.iteration_history.get("rindex")[
-                    iteration - tol_stable_iters : iteration - 2
+                    iteration - tol_stable_iters + 1: iteration
                 ]
                 < 1
             )
@@ -1233,7 +1234,7 @@ class VBMC:
         Private function to compute the reliability index.
         """
         iteration_idx = self.optim_state.get("iter")
-        if self.optim_state.get("iter") < 3:
+        if self.optim_state.get("iter") < 2:
             rindex = np.Inf
             ELCBO_improvement = np.NaN
             return rindex, ELCBO_improvement
@@ -1263,6 +1264,7 @@ class VBMC:
         ] / self.options.get("tolskl")
 
         # Compute average ELCBO improvement per fcn eval in the past few iters
+        # TODO: off by one error
         idx0 = int(
             max(
                 1,
@@ -1272,6 +1274,7 @@ class VBMC:
             )
             - 1
         )
+        # TODO: off by one error
         xx = self.iteration_history.get("func_count")[idx0:iteration_idx]
         yy = (
             self.iteration_history.get("elbo")[idx0:iteration_idx]

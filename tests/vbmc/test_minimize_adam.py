@@ -44,8 +44,8 @@ def test_minimize_adam_matyas():
 
     x, y, _, _, _ = minimize_adam(f, x0, lb, ub)
 
-    assert np.all(np.abs(x) < 0.1)
-    assert np.abs(y) < 0.001
+    assert np.all(np.abs(x) < 1.0)
+    assert np.abs(y) < 0.01
     
 def test_minimize_adam_matyas_with_noise():
     def f(x_):
@@ -61,7 +61,7 @@ def test_minimize_adam_matyas_with_noise():
 
     x, y, _, _, _ = minimize_adam(f, x0, lb, ub)
 
-    assert np.all(np.abs(x) < 0.5)
+    assert np.all(np.abs(x) < 1.0)
     assert np.abs(y) < 0.1
 
 def test_minimize_adam_rosen():

@@ -30,7 +30,7 @@ def run_optim_block(f, x0, lb, ub, plb, pub, ln_Z, mu_bar, options=None, noise_f
     if options is None:
         options = {}
         
-    options["maxfunevals"] = 100
+    # options["maxfunevals"] = 100
     options["plot"] = False
     if noise_flag:
         options["specifytargetnoise"] = True

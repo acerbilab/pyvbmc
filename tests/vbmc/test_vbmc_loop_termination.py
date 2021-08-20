@@ -154,9 +154,9 @@ def test_vbmc_is_finished_stability_entropyswitch(mocker):
     assert vbmc._check_termination_conditions() == False
 
 
-def test_vbmc_compute_reliability_index_less_than_3_iter():
+def test_vbmc_compute_reliability_index_less_than_2_iter():
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
-    vbmc.optim_state["iter"] = 2
+    vbmc.optim_state["iter"] = 1
     rindex, ELCBO_improvement = vbmc._compute_reliability_index(6)
     assert rindex == np.Inf
     assert np.isnan(ELCBO_improvement)

@@ -34,7 +34,6 @@ def update_K(optim_state, iteration_history, options):
     K_new = optim_state["vpK"]
 
     # Compute maximum number of components
-    # TODO: Remember to add +1
     K_max = math.ceil(options.eval("kfunmax", {"N": optim_state["n_eff"]}))
 
     # Evaluate bonus for stable solution.
@@ -54,7 +53,7 @@ def update_K(optim_state, iteration_history, options):
         warmups = iteration_history["warmup"][lower_end:].astype(bool)
         elcbos_after = elcbos[~warmups]
         # Ignore two iterations right after warmup.
-        elcbos_after[0 : min(2, optim_state["iter"])] = -np.inf
+        elcbos_after[0 : min(2, optim_state["iter"]+1)] = -np.inf
         elcbo_max = np.max(elcbos_after)
         improving_flag = elcbos_after[-1] >= elcbo_max and np.isfinite(
             elcbos_after[-1]
@@ -109,7 +108,7 @@ def optimize_vp(
     vp : VariationalPosterior
         The optimized variational posterior.
     var_ss : int
-        Variability due to sampling (?)
+        To be written by Luigi.
     pruned : int
         Number of pruned components.
     """
@@ -708,7 +707,7 @@ def _sieve(options, optim_state, vp, gp, init_N=None, best_N=1, K=None):
     init_N : int, optional
         Number of initial starting points.
     best_N : int, defaults to 1
-        ???
+        To be written by Luigi.
     K : int, optional
         Number of mixture components. If not given defaults to the number
         of mixture components the given VP has.
@@ -1038,7 +1037,7 @@ def _negelcbo(
     beta : float, defaults to 0.0
         Confidence weight.
     Ns : int, defaults to 0
-        ???
+        Number of samples for entropy.
     compute_grad : bool, defaults to True
         Whether to compute gradient.
     compute_var : bool, optional
@@ -1047,7 +1046,7 @@ def _negelcbo(
     theta_bnd : dict, optional
         Soft bounds for theta.
     entropy_alpha : float, defaults to 0.0
-        ???
+        To be written by Luigi.
     separate_K : bool, defaults to False
         Whether to return expected log joint per component.
         
@@ -1066,16 +1065,16 @@ def _negelcbo(
     dH : np.ndarray
         Gradient of entropy term.
     varGss : 
-        Variance of ???
+        To be written by Luigi.
     varG : 
         Variance of the expected variational log joint
         probability.
     varH : float
         Variance of entropy term.
     I_sk : np.ndarray
-        ???
+        To be written by Luigi.
     J_sjk : np.ndarray
-        ???
+        To be written by Luigi.
     """
     if not np.isfinite(beta):
         beta = 0
@@ -1312,11 +1311,11 @@ def _gplogjoint(
     dvarF : np.ndarray, optional
         The gradient of the variance.
     varss : float
-        Variability due to sampling (?)
+        To be written by Luigi.
     I_sk : np.ndarray, optional
-        ???
+        To be written by Luigi.
     J_sjk : np.ndarray, optional
-        ???
+        To be written by Luigi.
     """
     if np.isscalar(grad_flags):
         if grad_flags:

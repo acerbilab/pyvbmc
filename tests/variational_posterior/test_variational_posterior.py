@@ -372,6 +372,20 @@ def test_get_set_parameters_roundtrip_non_raw():
     theta2 = vp.get_parameters(rawflag=False)
     assert theta.shape == theta2.shape
     assert np.all(theta == theta2)
+    
+def test_set_parameters_reference_regression():
+    K = 2 
+    D = 2
+    vp = VariationalPosterior(D, K)
+    theta = vp.get_parameters().copy()
+    theta[0] = -1e-7
+    vp.set_parameters(theta)
+    
+    assert vp.mu[0, 0] == -1e-7
+    
+    # Make sure we don't get accidental reference to theta in the VP.
+    theta[0] = -2e-7
+    assert vp.mu[0, 0] == -1e-7
 
 
 def test_moments_origflag():
@@ -561,7 +575,7 @@ def test_kldiv_no_samples_gaussflag():
     with pytest.raises(ValueError):
         vp.kldiv(vp, gaussflag=True, N=0)
 
-def test_soft_bounds():
+def test_soft_bounds_1():
     D = 2
     K = 1
     vp = VariationalPosterior(D, K)
@@ -591,3 +605,29 @@ def test_soft_bounds():
     assert theta_bnd["tol_con"] == options["tolconloss"]
     assert theta_bnd["weight_threshold"] == max(1/(4*K), options["tolweight"])
     assert theta_bnd["weight_penalty"] == options["weightpenalty"]
+    
+def test_soft_bounds_2():
+    D = 2
+    K = 2
+    vp = VariationalPosterior(D, K)
+
+    options = {
+        "tolconloss" : 0.01,
+        "tolweight" : 1e-2,
+        "weightpenalty": 0.1,
+        "tollength" : 1e-6
+    }
+    X = np.loadtxt(open("./tests/variational_posterior/X.dat", "rb"), delimiter=",")
+    vp.mu = np.loadtxt(open("./tests/variational_posterior/mu.dat", "rb"), delimiter=",")
+
+    theta_bnd = vp.get_bounds(X, options)
+
+    bnd_lb = np.loadtxt(open("./tests/variational_posterior/bnd_lb.dat", "rb"), delimiter=",")
+    assert np.allclose(theta_bnd["lb"], bnd_lb)
+    
+    bnd_ub = np.loadtxt(open("./tests/variational_posterior/bnd_ub.dat", "rb"), delimiter=",")
+    assert np.allclose(theta_bnd["ub"], bnd_ub)
+    
+    assert theta_bnd["tol_con"] == 0.0100
+    assert theta_bnd["weight_threshold"] == 0.1250
+    assert theta_bnd["weight_penalty"] == 0.1000
