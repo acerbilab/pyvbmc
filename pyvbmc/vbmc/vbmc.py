@@ -1,5 +1,6 @@
 import sys
 import math
+import copy
 
 import numpy as np
 import gpyreg as gpr
@@ -993,6 +994,8 @@ class VBMC:
         self.vp, elbo, elbo_sd, changedflag = self.finalboost(
             self.vp, self.iteration_history["gp"][idx_best]
         )
+        
+        return copy.deepcopy(self.vp), self.vp.stats["elbo"], self.vp.stats["elbo_sd"]
 
     # Loop termination:
 
