@@ -8,15 +8,21 @@ import cma
 
 import gpyreg as gpr
 
+from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.entropy import entlb_vbmc, entmc_vbmc
 
+from .options import Options
+from .iteration_history import IterationHistory
 from .gaussian_process_train import _get_hpd
 from .minimize_adam import minimize_adam
 
-def update_K(optim_state, iteration_history, options):
+
+def update_K(
+    optim_state: dict, iteration_history: IterationHistory, options: Options
+):
     """
     Update number of variational mixture components.
-    
+
     Parameters
     ==========
     optim_state : dict
@@ -25,7 +31,7 @@ def update_K(optim_state, iteration_history, options):
         Iteration history from the VBMC instance we are calling this from.
     options : Options
         Options from the VBMC instance we are calling this from.
-    
+
     Returns
     =======
     K_new : int
@@ -53,7 +59,7 @@ def update_K(optim_state, iteration_history, options):
         warmups = iteration_history["warmup"][lower_end:].astype(bool)
         elcbos_after = elcbos[~warmups]
         # Ignore two iterations right after warmup.
-        elcbos_after[0 : min(2, optim_state["iter"]+1)] = -np.inf
+        elcbos_after[0 : min(2, optim_state["iter"] + 1)] = -np.inf
         elcbo_max = np.max(elcbos_after)
         improving_flag = elcbos_after[-1] >= elcbo_max and np.isfinite(
             elcbos_after[-1]
@@ -82,11 +88,17 @@ def update_K(optim_state, iteration_history, options):
 
 
 def optimize_vp(
-    options, optim_state, vp, gp, fast_opts_N, slow_opts_N, K=None
+    options: Options,
+    optim_state: dict,
+    vp: VariationalPosterior,
+    gp: gpr.GP,
+    fast_opts_N: int,
+    slow_opts_N: int,
+    K: int = None,
 ):
     """
     Optimize variational posterior.
-    
+
     Parameters
     ==========
     options : Options
@@ -101,8 +113,8 @@ def optimize_vp(
         Number of slow optimizations.
     K : int, optional
         Number of mixture components. If not given defaults to the number
-        of mixture components the given VP has.  
-      
+        of mixture components the given VP has.
+
     Returns
     =======
     vp : VariationalPosterior
@@ -115,10 +127,10 @@ def optimize_vp(
 
     if K is None:
         K = vp.K
-        
+
     # Missing port: assigning default values to options if it is none
     #               due to the new structure of the program
-    
+
     # Missing port: assign default values to optim_state since these are
     #               not really used
 
@@ -545,10 +557,16 @@ def _eval_full_elcbo(
     return elbo_stats
 
 
-def _vp_bound_loss(vp, theta, theta_bnd, tol_con=1e-3, compute_grad=True):
+def _vp_bound_loss(
+    vp: VariationalPosterior,
+    theta: np.ndarray,
+    theta_bnd: dict,
+    tol_con: float = 1e-3,
+    compute_grad: bool = True,
+):
     """
     Variational parameter loss function for soft optimization bounds.
-    
+
     Parameters
     ==========
     vp : VariationalPosterior
@@ -562,7 +580,7 @@ def _vp_bound_loss(vp, theta, theta_bnd, tol_con=1e-3, compute_grad=True):
         Penalization relative scale.
     compute_grad : bool, defaults to True
         Whether to compute gradients.
-        
+
     Returns
     =======
     L : float
@@ -645,10 +663,16 @@ def _vp_bound_loss(vp, theta, theta_bnd, tol_con=1e-3, compute_grad=True):
     return L
 
 
-def _soft_bound_loss(x, slb, sub, tol_con=1e-3, compute_grad=False):
+def _soft_bound_loss(
+    x: np.ndarray,
+    slb: np.ndarray,
+    sub: np.ndarray,
+    tol_con: float = 1e-3,
+    compute_grad: bool = False,
+):
     """
     Loss function for soft bounds for function minimization.
-    
+
     Parameters
     ==========
     x : np.ndarray, shape (D,)
@@ -690,10 +714,18 @@ def _soft_bound_loss(x, slb, sub, tol_con=1e-3, compute_grad=False):
     return y
 
 
-def _sieve(options, optim_state, vp, gp, init_N=None, best_N=1, K=None):
+def _sieve(
+    options: Options,
+    optim_state: dict,
+    vp: VariationalPosterior,
+    gp: gpr.GP,
+    init_N: int = None,
+    best_N: int = 1,
+    K: int = None,
+):
     """
     Preliminary 'sieve' method for fitting variational posterior.
-    
+
     Parameters
     ==========
     options : Options
@@ -714,7 +746,7 @@ def _sieve(options, optim_state, vp, gp, init_N=None, best_N=1, K=None):
     Returns
     =======
     vp0_vec : np.ndarray, shape (init_N,)
-        Vector of candidate variational posteriors. 
+        Vector of candidate variational posteriors.
     vp0_type : np.ndarray, shape (init_N,)
         Vector of types of candidate variational posteriors.
     elcbo_beta : float
@@ -841,7 +873,14 @@ def _sieve(options, optim_state, vp, gp, init_N=None, best_N=1, K=None):
     return copy.deepcopy(vp), 1, elcbo_beta, compute_var, nsent_K, nsent_K_fast
 
 
-def _vbinit(vp, vbtype, opts_N, K_new, X_star, y_star):
+def _vbinit(
+    vp: VariationalPosterior,
+    vbtype: int,
+    opts_N: int,
+    K_new: int,
+    X_star: np.ndarray,
+    y_star: np.ndarray,
+):
     """
     Generate array of random starting parameters for variational posterior.
 
@@ -850,9 +889,9 @@ def _vbinit(vp, vbtype, opts_N, K_new, X_star, y_star):
     vp : VariationalPosterior
         Variational posterior to use as base.
     vbtype : {1, 2, 3}
-        Type of method to create new starting parameters. Here 1 means 
+        Type of method to create new starting parameters. Here 1 means
         starting from old variational parameters, 2 means starting from
-        highest-posterior density training points, and 3 means starting 
+        highest-posterior density training points, and 3 means starting
         from random provided training points.
     opts_N : int
         Number of random starting parameters.
@@ -862,7 +901,7 @@ def _vbinit(vp, vbtype, opts_N, K_new, X_star, y_star):
         Training inputs, usually HPD regions.
     y_star : np.ndarray, shape (N, 1)
         Training targets, usually HPD regions.
-        
+
     Returns
     =======
     vp0_vec : np.ndarray, shape (opts_N, )
@@ -973,7 +1012,9 @@ def _vbinit(vp, vbtype, opts_N, K_new, X_star, y_star):
             if vp.optimize_weights:
                 w = np.ones((1, K_new)) / K_new
         else:
-            raise Exception("Unknown type for initialization of variational posteriors.")
+            raise Exception(
+                "Unknown type for initialization of variational posteriors."
+            )
 
         if add_jitter:
             if vp.optimize_mu:
@@ -1011,27 +1052,27 @@ def _vbinit(vp, vbtype, opts_N, K_new, X_star, y_star):
 
 
 def _negelcbo(
-    theta,
-    gp,
-    vp,
-    beta=0.0,
-    Ns=0,
-    compute_grad=True,
-    compute_var=None,
-    theta_bnd=None,
-    entropy_alpha=0,
-    separate_K=False,
+    theta: np.ndarray,
+    gp: gpr.GP,
+    vp: VariationalPosterior,
+    beta: float = 0.0,
+    Ns: int = 0,
+    compute_grad: bool = True,
+    compute_var: int = None,
+    theta_bnd: dict = None,
+    entropy_alpha: float = 0.0,
+    separate_K: bool = False,
 ):
     """
     Negative evidence lower confidence bound objective.
-    
+
     Parameters
     ==========
     theta : np.ndarray
-        Vector of variational parameters at which to evaluate NELCBO. 
+        Vector of variational parameters at which to evaluate NELCBO.
         Note that these should be transformed parameters.
     gp : GP
-        Gaussian process from optimization 
+        Gaussian process from optimization
     vp : VariationalPosterior
         Variational posterior for which to evaluate NELCBO.
     beta : float, defaults to 0.0
@@ -1049,7 +1090,7 @@ def _negelcbo(
         To be written by Luigi.
     separate_K : bool, defaults to False
         Whether to return expected log joint per component.
-        
+
     Returns
     =======
     F : float
@@ -1064,9 +1105,9 @@ def _negelcbo(
         Variance of NELCBO.
     dH : np.ndarray
         Gradient of entropy term.
-    varGss : 
+    varGss :
         To be written by Luigi.
-    varG : 
+    varG :
         Variance of the expected variational log joint
         probability.
     varH : float
@@ -1270,17 +1311,17 @@ def _negelcbo(
 
 
 def _gplogjoint(
-    vp,
-    gp,
+    vp: VariationalPosterior,
+    gp: gpr.GP,
     grad_flags,
-    avg_flag=True,
-    jacobian_flag=True,
-    compute_var=False,
-    separate_K=False,
+    avg_flag: bool = True,
+    jacobian_flag: bool = True,
+    compute_var: bool = False,
+    separate_K: bool = False,
 ):
     """
     Expected variational log joint probability via GP approximation.
-    
+
     Parameters
     ==========
     vp : VariationalPosterior
@@ -1300,7 +1341,7 @@ def _gplogjoint(
         Whether to compute variance.
     separate_K : bool, defaults to False
         Whether to return expected log joint per component.
-    
+
     Returns
     =======
     F : object

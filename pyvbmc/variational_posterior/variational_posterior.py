@@ -71,11 +71,11 @@ class VariationalPosterior:
         self.delta = None
         self.bounds = None
         self.stats = None
-        
-    def get_bounds(self, X, options, K=None):
+
+    def get_bounds(self, X: np.ndarray, options: Options, K: int = None):
         """
         Compute soft bounds for variational posterior parameters.
-        
+
         Parameters
         ==========
         X : ndarray, shape (N, D)
@@ -83,13 +83,13 @@ class VariationalPosterior:
         options : Options
             Program options.
         K : int, optional
-            The number of mixture components. By default we use the 
+            The number of mixture components. By default we use the
             number provided at class instantiation.
-            
+
         Returns
         =======
         theta_bnd : dict
-            A dictionary of soft bounds with the following elements:      
+            A dictionary of soft bounds with the following elements:
                 **lb** : np.ndarray
                     Lower bounds.
                 **ub** : np.ndarray
@@ -496,7 +496,7 @@ class VariationalPosterior:
         # remove mode (at least this is done in Matlab)
 
         if self.optimize_mu:
-            theta = self.mu.flatten(order='F')
+            theta = self.mu.flatten(order="F")
         else:
             theta = np.array(list())
 
@@ -541,7 +541,7 @@ class VariationalPosterior:
             Raised if sigma, lambda and weights are not positive
             and rawflag = False
         """
-        
+
         # Make sure we don't get issues with references.
         theta = theta.copy()
 
@@ -561,7 +561,9 @@ class VariationalPosterior:
                 )
 
         if self.optimize_mu:
-            self.mu = np.reshape(theta[: self.D * self.K], (self.D, self.K), order='F')
+            self.mu = np.reshape(
+                theta[: self.D * self.K], (self.D, self.K), order="F"
+            )
             start_idx = self.D * self.K
         else:
             start_idx = 0

@@ -3,16 +3,16 @@ import numpy as np
 
 
 def minimize_adam(
-    f,
-    x0,
-    lb=None,
-    ub=None,
-    tol_fun=0.001,
-    max_iter=10000,
-    master_min=0.001,
-    master_max=0.1,
-    master_decay=200,
-    use_early_stopping=True,
+    f: callable,
+    x0: np.ndarray,
+    lb: np.ndarray = None,
+    ub: np.ndarray = None,
+    tol_fun: float = 0.001,
+    max_iter: int = 10000,
+    master_min: float = 0.001,
+    master_max: float = 0.1,
+    master_decay: float = 200,
+    use_early_stopping: bool = True,
 ):
     """
     Minimize a function with ADAM.
