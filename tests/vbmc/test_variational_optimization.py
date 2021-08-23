@@ -4,7 +4,7 @@ import gpyreg as gpr
 
 from pyvbmc.vbmc import Options
 from pyvbmc.variational_posterior import VariationalPosterior
-from pyvbmc.vbmc.variational_optimization import _soft_bound_loss, _negelcbo, _gplogjoint, update_K
+from pyvbmc.vbmc.variational_optimization import _vp_bound_loss, _soft_bound_loss, _negelcbo, _gplogjoint, update_K
 
 def test_soft_bound_loss():
     D = 3
@@ -165,3 +165,31 @@ def test_negelcbo():
     matlab_dF = np.loadtxt(open("./tests/vbmc/dF.dat", "rb"), delimiter=",")
 
     assert np.allclose(dF, matlab_dF)
+    
+def test_vp_bound_loss():
+    D = 2
+    K = 2
+    vp = VariationalPosterior(D, K)
+    vp.mu = np.loadtxt(open("./tests/variational_posterior/mu.dat", "rb"), delimiter=",")
+    
+    options = {
+        "tolconloss" : 0.01,
+        "tolweight" : 1e-2,
+        "weightpenalty": 0.1,
+        "tollength" : 1e-6
+    } 
+    X = np.loadtxt(open("./tests/vbmc/X.dat", "rb"), delimiter=",")
+    theta = vp.get_parameters()
+    theta_bnd = vp.get_bounds(X, options, K)
+    
+    L, dL = _vp_bound_loss(vp, theta, theta_bnd)
+    
+    assert L == 0.0
+    assert np.all(dL == 0.0)
+    
+    theta[-1] = 1.0
+    L, dL = _vp_bound_loss(vp, theta, theta_bnd, tol_con=0.01)
+    
+    assert np.isclose(L, 178.1123635679098)
+    assert np.isclose(dL[-1], 356.2247271358195)
+    assert np.all(dL[:-1] == 0.0)
