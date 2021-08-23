@@ -1,3 +1,5 @@
+"""Module that contains a version of ADAM for function minimization."""
+
 import math
 import numpy as np
 

@@ -4,14 +4,15 @@ from __future__ import annotations
 import sys
 
 import numpy as np
-from pyvbmc.decorators import handle_0D_1D_input
-from pyvbmc.stats.kernel_density import kde1d
-from pyvbmc.parameter_transformer import ParameterTransformer
+
 from scipy.integrate import trapezoid
 from scipy.interpolate import interp1d
 from scipy.optimize import fmin_l_bfgs_b
 from scipy.special import gammaln
 
+from pyvbmc.decorators import handle_0D_1D_input
+from pyvbmc.stats.kernel_density import kde1d
+from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.stats.entropy import kldiv_mvn
 
 
@@ -72,7 +73,7 @@ class VariationalPosterior:
         self.bounds = None
         self.stats = None
 
-    def get_bounds(self, X: np.ndarray, options: Options, K: int = None):
+    def get_bounds(self, X: np.ndarray, options, K: int = None):
         """
         Compute soft bounds for variational posterior parameters.
 
@@ -95,7 +96,8 @@ class VariationalPosterior:
                 **ub** : np.ndarray
                     Upper bounds.
                 **tol_con** : float
-                    Fractional tolerance for constraint violation of variational parameters.
+                    Fractional tolerance for constraint violation of
+                    variational parameters.
                 **weight_threshold** : float, optional
                      Threshold below which weights are penalized.
                 **weight_penalty** : float, optional
@@ -104,7 +106,8 @@ class VariationalPosterior:
         if K is None:
             K = self.K
 
-        # Soft-bound loss is computed on MU and SCALE (which is SIGMA times LAMBDA)
+        # Soft-bound loss is computed on MU and SCALE (which is SIGMA times
+        # LAMBDA)
 
         # Start with reversed bounds (see below)
         if self.bounds is None:

@@ -65,7 +65,8 @@ def update_K(
             elcbos_after[-1]
         )
 
-        # Add one component if ELCBO is improving and no pruning in last iteration
+        # Add one component if ELCBO is improving and no pruning in
+        # the last iteration
         if iteration_history["pruned"][-1] == 0 and improving_flag:
             K_new += 1
 
@@ -162,7 +163,6 @@ def optimize_vp(
     # For the moment no gradient available for variance
     gradient_available = compute_var == 0
 
-    vbtrain_options = {}
     if gradient_available:
         # Set basic options for deterministic (?) optimizer
         compute_grad = True
@@ -235,11 +235,12 @@ def optimize_vp(
                 # SciPy minimize failed, try with CMA-ES
                 # TODO: do this with a logging tool
                 print(
-                    "Cannot optimize variational parameters with scipy.optimize.minimize. Trying with CMA-ES (slower)."
+                    "Cannot optimize variational parameters with "
+                    "scipy.optimize.minimize. Trying with CMA-ES (slower)."
                 )
 
                 # Objective function with no gradient computation.
-                def vbtrain_fun(theta_):
+                def vbtrain_fun2(theta_):
                     res = _negelcbo(
                         theta_,
                         gp,
@@ -254,8 +255,8 @@ def optimize_vp(
 
                 # Construct sigma list and lower/upper bounds.
                 # Restricting the range of lambda and sigma is important
-                # since the optimization is done in log-space, so too large values
-                # can cause numerical overflows.
+                # since the optimization is done in log-space, so too large
+                # values can cause numerical overflows.
                 insigma_list = []
                 lower_list = []
                 upper_list = []
@@ -292,7 +293,7 @@ def optimize_vp(
                     "bounds": (lower, upper),
                 }
                 res = cma.fmin(
-                    vbtrain_fun, theta0, np.max(insigma), options=cma_options
+                    vbtrain_fun2, theta0, np.max(insigma), options=cma_options
                 )
                 theta_opt = res[0]
             else:
@@ -318,7 +319,7 @@ def optimize_vp(
                 master_decay = 200
                 max_iter = min(10000, options["maxiterstochastic"])
 
-                theta_opt, _, theta_lst, f_val_lst, n_iters = minimize_adam(
+                theta_opt, _, theta_lst, f_val_lst, _ = minimize_adam(
                     vbtrain_mc_fun,
                     theta_opt,
                     tol_fun=options["tolfunstochastic"],
@@ -329,7 +330,8 @@ def optimize_vp(
                 )
 
                 if options["elcbomidpoint"]:
-                    # Recompute ELCBO at best midpoint with full variance and more precision.
+                    # Recompute ELCBO at best midpoint with full variance
+                    # and more precision.
                     idx_mid = np.argmin(f_val_lst)
                     elbo_stats = _eval_full_elcbo(
                         i_mid,
@@ -356,8 +358,8 @@ def optimize_vp(
 
                 # Construct sigma list and lower/upper bounds.
                 # Restricting the range of lambda and sigma is important
-                # since the optimization is done in log-space, so too large values
-                # can cause numerical overflows.
+                # since the optimization is done in log-space, so too large
+                # values can cause numerical overflows.
                 insigma_list = []
                 lower_list = []
                 upper_list = []
@@ -781,7 +783,8 @@ def _sieve(
     # Number of samples per component for MC approximation of the entropy.
     nsent_K = math.ceil(options.eval("nsent", {"K": K}) / K)
 
-    # Number of samples per component for preliminary MC approximation of the entropy.
+    # Number of samples per component for preliminary MC approximation
+    # of the entropy.
     nsent_K_fast = math.ceil(options.eval("nsentfast", {"unknown": K}) / K)
 
     # Deterministic entropy if entropy switch is on or only one component
@@ -791,7 +794,8 @@ def _sieve(
 
     # Confidence weight
     # Missing port: elcboweight does not exist
-    # elcbo_beta = self._eval_option(self.options["elcboweight"], self.optim_state["n_eff"])
+    # elcbo_beta = self._eval_option(self.options["elcboweight"],
+    #                                self.optim_state["n_eff"])
     elcbo_beta = 0
     compute_var = elcbo_beta != 0
 
@@ -832,7 +836,7 @@ def _sieve(
                 )
                 vp0_list4 = []
                 for idx_i in idx:
-                    vp_new = copy.deepcopy(vp0_list[0])
+                    vp_new = copy.deepcopy(vp0_vec[0])
                     vp_new.set_parameters(optim_state["vp_repo"][idx_i])
                     vp0_list4.append(vp_new)
                 vp0_vec4 = np.array(vp0_list4)
@@ -1060,7 +1064,7 @@ def _negelcbo(
     compute_grad: bool = True,
     compute_var: int = None,
     theta_bnd: dict = None,
-    entropy_alpha: float = 0.0,
+    _entropy_alpha: float = 0.0,
     separate_K: bool = False,
 ):
     """
@@ -1124,7 +1128,8 @@ def _negelcbo(
 
     if compute_grad and beta != 0 and compute_var != 2:
         raise Exception(
-            "Computation of the gradient of ELBO with full variance not supported"
+            "Computation of the gradient of ELBO with full variance not "
+            "supported"
         )
 
     D = vp.D
@@ -1175,19 +1180,20 @@ def _negelcbo(
 
     # Only weight optimization?
     # Not currently used, since it is only a speed optimization.
-    onlyweights_flag = (
-        vp.optimize_weights
-        and not vp.optimize_mu
-        and not vp.optimize_sigma
-        and not vp.optimize_lambd
-    )
+    # onlyweights_flag = (
+    #     vp.optimize_weights
+    #     and not vp.optimize_mu
+    #     and not vp.optimize_sigma
+    #     and not vp.optimize_lambd
+    # )
 
     # Missing port: block below does not have branches for only weight
     #               optimization
     if separate_K:
         if compute_grad:
             raise Exception(
-                "Computing the gradient of variational parameters and requesting per-component results at the same time."
+                "Computing the gradient of variational parameters and "
+                "requesting per-component results at the same time."
             )
 
         if compute_var:
@@ -1205,7 +1211,7 @@ def _negelcbo(
                 vp, gp, grad_flags, avg_flag, jacobian_flag, 0, True
             )
             varG = varGss = 0
-            J_jsk = None
+            J_sjk = None
     else:
         if compute_var:
             if compute_grad:
@@ -1303,11 +1309,11 @@ def _negelcbo(
                 dL[-vp.K :] = w_grad
                 dF += dL
 
-    # Missing port: way to return stuff here is not that good, though it works currently.
+    # Missing port: way to return stuff here is not that good,
+    #               though it works currently.
     if separate_K:
         return F, dF, G, H, varF, dH, varGss, varG, varH, I_sk, J_sjk
-    else:
-        return F, dF, G, H, varF
+    return F, dF, G, H, varF
 
 
 def _gplogjoint(
@@ -1368,7 +1374,8 @@ def _gplogjoint(
     compute_vargrad = compute_var and np.any(grad_flags)
     if compute_vargrad and compute_var != 2:
         raise Exception(
-            "Computation of gradient of log joint variance is currently available only for diagonal approximation of the variance."
+            "Computation of gradient of log joint variance is currently "
+            "available only for diagonal approximation of the variance."
         )
 
     D = vp.D
@@ -1383,8 +1390,10 @@ def _gplogjoint(
 
     # TODO: once we get more mean function add a check here
     # if all(gp.meanfun ~= [0,1,4,6,8,10,12,14,16,18,20,22])
-    # error('gplogjoint:UnsupportedMeanFun', ...
-    # 'Log joint computation currently only supports zero, constant, negative quadratic, negative quadratic (fixed/isotropic), negative quadratic-only, or squared exponential mean functions.');
+    #     error('gplogjoint:UnsupportedMeanFun', ...
+    #     'Log joint computation currently only supports zero, constant,
+    #     negative quadratic, negative quadratic (fixed/isotropic),
+    #     negative quadratic-only, or squared exponential mean functions.');
     # end
 
     # Which mean function is being used?
@@ -1432,7 +1441,7 @@ def _gplogjoint(
 
     # Number of GP hyperparameters
     cov_N = gp.covariance.hyperparameter_count(D)
-    mean_N = gp.mean.hyperparameter_count(D)
+    # mean_N = gp.mean.hyperparameter_count(D)
     noise_N = gp.noise.hyperparameter_count()
 
     # Loop over hyperparameter samples.
