@@ -1205,6 +1205,7 @@ def _negelcbo(
         dF = -dG - dH
     else:
         dF = None
+        dH = None
 
     # For the moment use zero variance for entropy
     varH = 0
@@ -1430,6 +1431,7 @@ def _gplogjoint(
             delta_k = Xt[:, :, k] / tau_k
             z_k = np.exp(lnnf_k - 0.5 * np.sum(delta_k ** 2, axis=0))
             I_k = np.dot(z_k, alpha) + m0
+
             if quadratic_meanfun:
                 nu_k = -0.5 * np.sum(
                     1
@@ -1439,7 +1441,7 @@ def _gplogjoint(
                         + sigma[k] ** 2 * lambd ** 2
                         - 2 * mu[:, k : k + 1] * xm
                         + xm ** 2
-                        + vp.delta.T ** 2
+                        + delta ** 2
                     ),
                     axis=0,
                 )

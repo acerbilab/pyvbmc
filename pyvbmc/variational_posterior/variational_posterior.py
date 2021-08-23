@@ -68,6 +68,7 @@ class VariationalPosterior:
         else:
             self.parameter_transformer = parameter_transformer
 
+        self.delta = None
         self.bounds = None
         self.stats = None
         

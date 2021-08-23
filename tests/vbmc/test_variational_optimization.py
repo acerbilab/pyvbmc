@@ -1,6 +1,10 @@
 import numpy as np
 
-from pyvbmc.vbmc.variational_optimization import _soft_bound_loss
+import gpyreg as gpr
+
+from pyvbmc.vbmc import Options
+from pyvbmc.variational_posterior import VariationalPosterior
+from pyvbmc.vbmc.variational_optimization import _soft_bound_loss, _negelcbo, _gplogjoint, update_K
 
 def test_soft_bound_loss():
     D = 3
@@ -26,3 +30,138 @@ def test_soft_bound_loss():
     assert np.isclose(dL4[0], 12500.0)
     assert np.isclose(dL4[1], -25000.0)
     assert np.allclose(dL4[2:], 0.0)
+    
+def test_update_K():
+    D = 2
+    
+    # Dummy option state and iteration history.
+    optim_state = { 
+        "vpK" : 2,
+        "n_eff" : 10,
+        "warmup": True
+    }
+    iteration_history = {}
+    
+    # Load options
+    options = Options(
+        "./pyvbmc/vbmc/option_configs/basic_vbmc_options.ini",
+        evaluation_parameters={"D": D},
+    )
+    options.load_options_file(
+        "./pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini",
+        evaluation_parameters={"D": D},
+    )
+
+    # Check right after start up we do nothing.
+    assert update_K(optim_state, iteration_history, options) == 2
+    
+    # Similar, but check new branch runs.
+    optim_state["warmup"] = False
+    optim_state["iter"] = 0
+    assert update_K(optim_state, iteration_history, options) == 2
+    
+    # Check that nothing is done right after warmup.
+    optim_state["iter"] = 5
+    optim_state["recompute_var_post"] = True
+    iteration_history = {
+        "elbo": np.array([-0.0996, 0.0094, -0.021, -0.0280, 0.0368]),
+        "elbo_sd": np.array([0.0081, 0.0043, 0.0009, 0.0011, 0.0012]),
+        "warmup": np.array([True, True, True, True, False]),
+        "pruned" : np.zeros((5, )),
+        "rindex" : np.array([np.inf, np.inf, 0.1773, 0.1407, 0.3420])
+    }
+    assert update_K(optim_state, iteration_history, options) == 2
+    
+    # Check adding a new component.
+    optim_state["iter"] = 7
+    optim_state["recompute_var_post"] = True
+    iteration_history = {
+        "elbo": np.array([-0.0996, 0.0094, -0.021, -0.0280, 0.0368, 0.0239, 0.0021]),
+        "elbo_sd": np.array([0.0081, 0.0043, 0.0009, 0.0011, 0.0012, 0.0008, 0.0000]),
+        "warmup": np.array([True, True, True, True, False, False, False]),
+        "pruned" : np.zeros((7, )),
+        "rindex" : np.array([np.inf, np.inf, 0.1773, 0.1407, 0.3420, 0.1422, 0.1222])
+    }
+    assert update_K(optim_state, iteration_history, options) == 3
+    
+    # Check that allowing bonus works.
+    optim_state["recompute_var_post"] = False
+    assert update_K(optim_state, iteration_history, options) == 5
+    
+    # Check that if we pruned recently we don't do anything.
+    iteration_history["pruned"][-1] = 1
+    assert update_K(optim_state, iteration_history, options) == 2
+    
+def test_gplogjoint():
+    D = 2
+    K = 2
+    vp = VariationalPosterior(D, K)
+    vp.mu = np.loadtxt(open("./tests/variational_posterior/mu.dat", "rb"), delimiter=",")
+    vp.eta = vp.eta.flatten()
+    vp.sigma = vp.sigma.flatten()
+    vp.lambd = vp.lambd.flatten()
+    
+    gp = gpr.GP(
+        D=D,
+        covariance=gpr.covariance_functions.SquaredExponential(),
+        mean=gpr.mean_functions.NegativeQuadratic(),
+        noise=gpr.noise_functions.GaussianNoise(constant_add=True),
+    )
+    X = np.loadtxt(open("./tests/vbmc/X.dat", "rb"), delimiter=",")
+    y = np.loadtxt(open("./tests/vbmc/y.dat", "rb"), delimiter=",").reshape((-1, 1))
+    hyp = np.loadtxt(open("./tests/vbmc/hyp.dat", "rb"), delimiter=",")
+    gp.update(X_new=X, y_new=y, hyp=hyp)
+    
+    F, dF, varF, dvarF, varss, I_sk, J_sjk = _gplogjoint(vp, gp, False, True, True, True, True)
+
+    assert np.isclose(F, -0.461812484952867)
+    assert dF is None
+    assert np.isclose(varF, 6.598768992700180e-05)
+    assert dvarF is None
+    assert np.isclose(varss, 1.031705745662353e-04)
+    
+    F, dF, varF, dvarF, varss = _gplogjoint(vp, gp, True, True, True, False, False)
+    matlab_dF = np.loadtxt(open("./tests/vbmc/dF_gplogjoint.dat", "rb"), delimiter=",")
+    assert np.allclose(dF, matlab_dF)
+    
+def test_negelcbo():
+    D = 2
+    K = 2
+    vp = VariationalPosterior(D, K)
+    vp.mu = np.loadtxt(open("./tests/variational_posterior/mu.dat", "rb"), delimiter=",")
+
+    gp = gpr.GP(
+        D=D,
+        covariance=gpr.covariance_functions.SquaredExponential(),
+        mean=gpr.mean_functions.NegativeQuadratic(),
+        noise=gpr.noise_functions.GaussianNoise(constant_add=True),
+    )
+    X = np.loadtxt(open("./tests/vbmc/X.dat", "rb"), delimiter=",")
+    y = np.loadtxt(open("./tests/vbmc/y.dat", "rb"), delimiter=",").reshape((-1, 1))
+    hyp = np.loadtxt(open("./tests/vbmc/hyp.dat", "rb"), delimiter=",")
+    gp.update(X_new=X, y_new=y, hyp=hyp)
+    
+    options = {
+        "tolconloss" : 0.01,
+        "tolweight" : 1e-2,
+        "weightpenalty": 0.1,
+        "tollength" : 1e-6
+    } 
+    theta_bnd = None # vp.get_bounds(gp.X, options, K)
+    theta = vp.get_parameters()
+    
+    F, dF, G, H, varF, dH, varGss, varG, varH, I_sk, J_sjk = _negelcbo(theta, gp, vp, 0.0, 0, False, True, theta_bnd, 0.0, True)
+    
+    assert np.isclose(F, 11.746298071422430)
+    assert dF is None
+    assert np.isclose(G, -0.461812484952867)
+    assert np.isclose(H, -11.284485586469563)
+    assert np.isclose(varF, 6.598768992700180e-05)
+    assert dH is None
+    assert np.isclose(varG, 6.598768992700180e-05)
+    assert varH == 0.0
+    
+    F, dF, G, H, varF = _negelcbo(theta, gp, vp, 0.0, 0, True, False, theta_bnd, 0.0, False)
+    matlab_dF = np.loadtxt(open("./tests/vbmc/dF.dat", "rb"), delimiter=",")
+
+    assert np.allclose(dF, matlab_dF)
