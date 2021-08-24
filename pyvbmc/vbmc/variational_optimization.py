@@ -502,25 +502,76 @@ def optimize_vp(
     return vp, varss, pruned
 
 
-def _initialize_full_elcbo(idx, D, K, Ns):
+def _initialize_full_elcbo(max_idx: int, D: int, K: int, Ns: int):
+    """Initialize a dictionary for keeping track of full ELCBO output.
+
+    Parameters
+    ==========
+    max_idx : int
+        Maximum number of full ELCBO evaluations.
+    D : int
+        The dimension.
+    K : int
+        Number of mixture components.
+    Ns : int
+        Number of samples for entropy approximation.
+
+    Returns
+    =======
+    elbo_stats : dict
+        A dictionary with entries for all output variables of full ELCBO.
+    """
     elbo_stats = {}
-    elbo_stats["nelbo"] = np.full((idx,), np.inf)
-    elbo_stats["G"] = np.full((idx,), np.nan)
-    elbo_stats["H"] = np.full((idx,), np.nan)
-    elbo_stats["varF"] = np.full((idx,), np.nan)
-    elbo_stats["varG"] = np.full((idx,), np.nan)
-    elbo_stats["varH"] = np.full((idx,), np.nan)
-    elbo_stats["varss"] = np.full((idx,), np.nan)
-    elbo_stats["nelcbo"] = np.full((idx,), np.inf)
-    elbo_stats["theta"] = np.full((idx, D), np.nan)
-    elbo_stats["I_sk"] = np.full((idx, Ns, K), np.nan)
-    elbo_stats["J_sjk"] = np.full((idx, Ns, K, K), np.nan)
+    elbo_stats["nelbo"] = np.full((max_idx,), np.inf)
+    elbo_stats["G"] = np.full((max_idx,), np.nan)
+    elbo_stats["H"] = np.full((max_idx,), np.nan)
+    elbo_stats["varF"] = np.full((max_idx,), np.nan)
+    elbo_stats["varG"] = np.full((max_idx,), np.nan)
+    elbo_stats["varH"] = np.full((max_idx,), np.nan)
+    elbo_stats["varss"] = np.full((max_idx,), np.nan)
+    elbo_stats["nelcbo"] = np.full((max_idx,), np.inf)
+    elbo_stats["theta"] = np.full((max_idx, D), np.nan)
+    elbo_stats["I_sk"] = np.full((max_idx, Ns, K), np.nan)
+    elbo_stats["J_sjk"] = np.full((max_idx, Ns, K, K), np.nan)
     return elbo_stats
 
 
 def _eval_full_elcbo(
-    idx, theta, vp, gp, elbo_stats, beta, options, entropy_alpha=0
+    idx: int,
+    theta: np.ndarray,
+    vp: VariationalPosterior,
+    gp: gpr.GP,
+    elbo_stats: dict,
+    beta: float,
+    options: Options,
+    entropy_alpha: float = 0.0,
 ):
+    """Evaluate full ELCBO and store the results in a dictionary.
+
+    Parameters
+    ==========
+    idx : int
+        Index in the dictionary to which store the evaluated values.
+    theta : np.ndarray
+        VP parameters for which to evaluate full ELCBO.
+    vp : VariationalPosterior
+        The variational posterior in question.
+    gp : GP
+        Gaussian process from VBMC main loop.
+    elbo_stats : dict
+        The dictionary for storing full ELCBO stats.
+    beta : float
+        Confidence weight.
+    options : Options
+        Options from the VBMC instance we are calling from.
+    entropy_alpha : float, defaults to 0.0
+        To be written by Luigi
+
+    Returns
+    =======
+    elbo_stats : dict
+        The updated dictionary.
+    """
     # Number of samples per component for MC approximation of the entropy.
     K = vp.K
     nsent_fine_K = math.ceil(options.eval("nsentfine", {"K": K}) / K)
