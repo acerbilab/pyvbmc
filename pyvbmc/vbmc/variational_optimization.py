@@ -796,6 +796,7 @@ def _sieve(
     K : int, optional
         Number of mixture components. If not given defaults to the number
         of mixture components the given VP has.
+
     Returns
     =======
     vp0_vec : np.ndarray, shape (init_N,)

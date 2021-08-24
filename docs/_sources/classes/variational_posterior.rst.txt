@@ -20,6 +20,7 @@ Matlab references of ported methods
 - sample(): `vbmc_rnd.m <https://github.com/lacerbi/vbmc/blob/master/vbmc_rnd.m>`_
    - gp_sample is missing
 - set_parameters(): `rescale_params.m <https://github.com/lacerbi/vbmc/blob/master/misc/rescale_params.m>`_ ✓
+- get_bounds(): `vpbounds.m <https://github.com/lacerbi/vbmc/blob/master/misc/vpbounds.m>`_ ✓
 
 
 Python documentation

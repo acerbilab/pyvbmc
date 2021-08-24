@@ -62,6 +62,7 @@
 </dl>
 </li>
 <li><p>set_parameters(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/rescale_params.m">rescale_params.m</a> ✓</p></li>
+<li><p>get_bounds(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/vpbounds.m">vpbounds.m</a> ✓</p></li>
 </ul>
 </section>
 </section>
@@ -91,7 +92,7 @@ variational posterior, by default uses an identity transform.</p>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.variational_posterior.VariationalPosterior.get_bounds">
-<span class="sig-name descname"><span class="pre">get_bounds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/variational_posterior/variational_posterior.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.variational_posterior.VariationalPosterior.get_bounds" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_bounds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/variational_posterior/variational_posterior.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.variational_posterior.VariationalPosterior.get_bounds" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute soft bounds for variational posterior parameters.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -100,7 +101,7 @@ variational posterior, by default uses an identity transform.</p>
 </dd>
 <dt><strong>options</strong><span class="classifier">Options</span></dt><dd><p>Program options.</p>
 </dd>
-<dt><strong>K</strong><span class="classifier">int, optional</span></dt><dd><p>The number of mixture components. By default we use the 
+<dt><strong>K</strong><span class="classifier">int, optional</span></dt><dd><p>The number of mixture components. By default we use the
 number provided at class instantiation.</p>
 </dd>
 </dl>
@@ -108,12 +109,13 @@ number provided at class instantiation.</p>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
 <dt><strong>theta_bnd</strong><span class="classifier">dict</span></dt><dd><dl class="simple">
-<dt>A dictionary of soft bounds with the following elements:      </dt><dd><dl class="simple">
+<dt>A dictionary of soft bounds with the following elements:</dt><dd><dl class="simple">
 <dt><strong>lb</strong><span class="classifier">np.ndarray</span></dt><dd><p>Lower bounds.</p>
 </dd>
 <dt><strong>ub</strong><span class="classifier">np.ndarray</span></dt><dd><p>Upper bounds.</p>
 </dd>
-<dt><strong>tol_con</strong><span class="classifier">float</span></dt><dd><p>Fractional tolerance for constraint violation of variational parameters.</p>
+<dt><strong>tol_con</strong><span class="classifier">float</span></dt><dd><p>Fractional tolerance for constraint violation of
+variational parameters.</p>
 </dd>
 <dt><strong>weight_threshold</strong><span class="classifier">float, optional</span></dt><dd><p>Threshold below which weights are penalized.</p>
 </dd>
