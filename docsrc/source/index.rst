@@ -13,6 +13,7 @@ Note that this project is work in progress!
    :maxdepth: 2
    :caption: Classes:
 
+   classes/acquisition_functions
    classes/function_logger
    classes/options
    classes/parameter_transformer
@@ -25,8 +26,10 @@ Note that this project is work in progress!
    :maxdepth: 2
    :caption: Functions:
 
+   functions/active_sample
    functions/decorators
-   functions/kernel_density
+   functions/get_hpd
+   functions/kde1d
    functions/entropy
    functions/vbmc
 

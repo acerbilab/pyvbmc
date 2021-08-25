@@ -1,0 +1,186 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>gaussian_process_train &#8212; pyvbmc  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="VBMC options" href="../options/vbmc_options.html" />
+    <link rel="prev" title="entropy" href="entropy.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="gaussian-process-train">
+<h1>gaussian_process_train<a class="headerlink" href="#gaussian-process-train" title="Permalink to this headline">¶</a></h1>
+<section id="matlab-references-of-ported-methods">
+<h2>Matlab references of ported methods<a class="headerlink" href="#matlab-references-of-ported-methods" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>train_gp(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/gptrain_vbmc.m">gptrain_vbmc.m</a></p></li>
+<li><p>_gp_hyp(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/gptrain_vbmc.m">gptrain_vbmc.m</a></p></li>
+<li><p>_get_gp_training_options(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/get_GPTrainOptions.m">get_GPTrainOptions.m</a></p></li>
+<li><p>_get_hyp_cov(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/get_GPTrainOptions.m">get_GPTrainOptions.m</a></p></li>
+<li><p>_get_training_data(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/get_traindata_vbmc.m">get_traindata_vbmc.m</a></p></li>
+<li><p>_estimate_noise(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/gptrain_vbmc.m">gptrain_vbmc.m</a></p></li>
+</ul>
+</section>
+<section id="train-gp">
+<h2>train_gp<a class="headerlink" href="#train-gp" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="pyvbmc.vbmc.train_gp">
+<span class="sig-prename descclassname"><span class="pre">pyvbmc.vbmc.</span></span><span class="sig-name descname"><span class="pre">train_gp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hyp_dict</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optim_state</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">function_logger</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../classes/function_logger.html#pyvbmc.function_logger.FunctionLogger" title="pyvbmc.function_logger.function_logger.FunctionLogger"><span class="pre">pyvbmc.function_logger.function_logger.FunctionLogger</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">iteration_history</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../classes/iteration_history.html#pyvbmc.vbmc.IterationHistory" title="pyvbmc.vbmc.iteration_history.IterationHistory"><span class="pre">pyvbmc.vbmc.iteration_history.IterationHistory</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../classes/options.html#pyvbmc.vbmc.Options" title="pyvbmc.vbmc.options.Options"><span class="pre">pyvbmc.vbmc.options.Options</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">plb</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pub</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/vbmc/gaussian_process_train.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.train_gp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Train Gaussian process model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>hyp_dict</strong><span class="classifier">dict</span></dt><dd><p>Hyperparameter summary statistics dictionary.
+If it does not contain the appropriate keys they will be added
+automatically.</p>
+</dd>
+<dt><strong>optim_state</strong><span class="classifier">dict</span></dt><dd><p>Optimization state from the VBMC instance we are calling this from.</p>
+</dd>
+<dt><strong>function_logger</strong><span class="classifier">FunctionLogger</span></dt><dd><p>Function logger from the VBMC instance which we are calling this from.</p>
+</dd>
+<dt><strong>iteration_history</strong><span class="classifier">IterationHistory</span></dt><dd><p>Iteration history from the VBMC instance we are calling this from.</p>
+</dd>
+<dt><strong>options</strong><span class="classifier">Options</span></dt><dd><p>Options from the VBMC instance we are calling this from.</p>
+</dd>
+<dt><strong>plb</strong><span class="classifier">ndarray, shape (hyp_N,)</span></dt><dd><p>Plausible lower bounds for hyperparameters.</p>
+</dd>
+<dt><strong>pub</strong><span class="classifier">ndarray, shape (hyp_N,)</span></dt><dd><p>Plausible upper bounds for hyperparameters.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>gp</strong><span class="classifier">GP</span></dt><dd><p>The trained GP.</p>
+</dd>
+<dt><strong>gp_s_N</strong><span class="classifier">int</span></dt><dd><p>The number of samples for fitting.</p>
+</dd>
+<dt><strong>sn2hpd</strong><span class="classifier">float</span></dt><dd><p>An estimate of the GP noise variance at high posterior density.</p>
+</dd>
+<dt><strong>hyp_dict</strong><span class="classifier">dict</span></dt><dd><p>The updated summary statistics.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">pyvbmc</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Classes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../classes/function_logger.html">FunctionLogger</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../classes/options.html">Options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../classes/parameter_transformer.html">ParameterTransformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../classes/iteration_history.html">IterationHistory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../classes/timer.html">Timer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../classes/variational_posterior.html">VariationalPosterior</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../classes/vbmc.html">VBMC</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Functions:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="active_sample.html">active_sample</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decorators.html">decorators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="get_hpd.html">get_hpd</a></li>
+<li class="toctree-l1"><a class="reference internal" href="kde1d.html">kde1d</a></li>
+<li class="toctree-l1"><a class="reference internal" href="entropy.html">entropy</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">gaussian_process_train</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#matlab-references-of-ported-methods">Matlab references of ported methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#train-gp">train_gp</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Options:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../options/vbmc_options.html">VBMC options</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="entropy.html" title="previous chapter">entropy</a></li>
+      <li>Next: <a href="../options/vbmc_options.html" title="next chapter">VBMC options</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/functions/gaussian_process_train.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

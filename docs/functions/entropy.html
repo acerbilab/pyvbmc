@@ -1,0 +1,272 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>entropy &#8212; pyvbmc  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="gaussian_process_train" href="gaussian_process_train.html" />
+    <link rel="prev" title="kde1d" href="kde1d.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="entropy">
+<h1>entropy<a class="headerlink" href="#entropy" title="Permalink to this headline">¶</a></h1>
+<section id="kldiv-mvn">
+<h2>kldiv_mvn<a class="headerlink" href="#kldiv-mvn" title="Permalink to this headline">¶</a></h2>
+<section id="matlab-references">
+<h3>Matlab references<a class="headerlink" href="#matlab-references" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Everything in: <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/shared/mvnkl.m">mvnkl.m</a></p></li>
+</ul>
+</section>
+<section id="python-documentation">
+<h3>Python documentation<a class="headerlink" href="#python-documentation" title="Permalink to this headline">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="pyvbmc.stats.kldiv_mvn">
+<span class="sig-prename descclassname"><span class="pre">pyvbmc.stats.</span></span><span class="sig-name descname"><span class="pre">kldiv_mvn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma2</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/stats/kldiv_mvn.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.stats.kldiv_mvn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the analytical Kullback-Leibler divergence between two multivariate
+normal pdfs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>mu1</strong><span class="classifier">np.ndarray</span></dt><dd><p>The k-dimensional mean vector of the first multivariate normal pdf.</p>
+</dd>
+<dt><strong>sigma1</strong><span class="classifier">np.ndarray</span></dt><dd><p>The covariance matrix of the first multivariate normal pdf.</p>
+</dd>
+<dt><strong>mu2</strong><span class="classifier">np.ndarray</span></dt><dd><p>The k-dimensional mean vector of the second multivariate normal pdf.</p>
+</dd>
+<dt><strong>sigma2</strong><span class="classifier">np.ndarray</span></dt><dd><p>The covariance matrix of the second multivariate normal pdf.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>kldiv</strong><span class="classifier">np.array</span></dt><dd><p>The computed Kullback-Leibler divergence.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+<section id="entlb-vbmc">
+<h2>entlb_vbmc<a class="headerlink" href="#entlb-vbmc" title="Permalink to this headline">¶</a></h2>
+<section id="id1">
+<h3>Matlab references<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Everything in: <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/ent/entlb_vbmc.m">entlb_vbmc.m</a></p></li>
+</ul>
+</section>
+<section id="id2">
+<h3>Python documentation<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="pyvbmc.entropy.entlb_vbmc">
+<span class="sig-prename descclassname"><span class="pre">pyvbmc.entropy.</span></span><span class="sig-name descname"><span class="pre">entlb_vbmc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vp</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior" title="pyvbmc.variational_posterior.variational_posterior.VariationalPosterior"><span class="pre">pyvbmc.variational_posterior.variational_posterior.VariationalPosterior</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad_flags</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">tuple</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">(True,</span> <span class="pre">True,</span> <span class="pre">True,</span> <span class="pre">True)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jacobian_flag</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/entropy/entlb_vbmc.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.entropy.entlb_vbmc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Entropy lower bound for variational posterior by Jensen’s inequality.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>vp</strong><span class="classifier">VariationalPosterior</span></dt><dd><p>An instance of VariationalPosterior class.</p>
+</dd>
+<dt><strong>grad_flags</strong><span class="classifier">tuple of bool, len(grad_flags)=4, optional</span></dt><dd><p>Whether to compute the gradients for [mu, sigma, lambda, w].</p>
+</dd>
+<dt><strong>jacobian_flag</strong><span class="classifier">bool, optional</span></dt><dd><p>Whether variational parameters are transformed. The variational
+parameters and corresponding transformations are:
+sigma (log), lambda (log), w (softmax).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>H: float</dt><dd><p>Entropy lower bound of vp <a class="reference internal" href="#r71ba3b5955a0-1" id="id3">[1]</a>.</p>
+</dd>
+<dt>dH: np.ndarray</dt><dd><p>Gradient of entropy lower bound.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>NotImplementedError</dt><dd><p>Not implemented for K &gt; BigK.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<dl class="citation">
+<dt class="label" id="r71ba3b5955a0-1"><span class="brackets"><a class="fn-backref" href="#id3">1</a></span></dt>
+<dd><p>Gershman, S. J., Hoffman, M. D., &amp; Blei, D. M. (2012).
+Nonparametric variational inference. Proceedings of the 29th
+International Conference on Machine Learning, 235–242.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+<section id="entmc-vbmc">
+<h2>entmc_vbmc<a class="headerlink" href="#entmc-vbmc" title="Permalink to this headline">¶</a></h2>
+<section id="id5">
+<h3>Matlab references<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Everything in: <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/ent/entmc_vbmc.m">entmc_vbmc.m</a></p></li>
+</ul>
+</section>
+<section id="id6">
+<h3>Python documentation<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="pyvbmc.entropy.entmc_vbmc">
+<span class="sig-prename descclassname"><span class="pre">pyvbmc.entropy.</span></span><span class="sig-name descname"><span class="pre">entmc_vbmc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vp</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior" title="pyvbmc.variational_posterior.variational_posterior.VariationalPosterior"><span class="pre">pyvbmc.variational_posterior.variational_posterior.VariationalPosterior</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ns</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad_flags</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">tuple</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">(True,</span> <span class="pre">True,</span> <span class="pre">True,</span> <span class="pre">True)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jacobian_flag</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/entropy/entmc_vbmc.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.entropy.entmc_vbmc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Monte Carlo estimate of entropy of variational posterior.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>vp</strong><span class="classifier">VariationalPosterior</span></dt><dd><p>An instance of VariationalPosterior class.</p>
+</dd>
+<dt><strong>Ns</strong><span class="classifier">int</span></dt><dd><p>Number of samples to draw. Ns &gt; 0.</p>
+</dd>
+<dt><strong>grad_flags</strong><span class="classifier">tuple of bool, len(grad_flags)=4, default=tuple([True] * 4)</span></dt><dd><p>Whether to compute the gradients for [mu, sigma, lambda, w].</p>
+</dd>
+<dt><strong>jacobian_flag</strong><span class="classifier">bool</span></dt><dd><p>Whether variational parameters are transformed.
+The variational parameters and corresponding transformations are:
+sigma (log), lambda (log), w (softmax).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>H: float</dt><dd><p>Estimated entropy of vp by Monte Carlo method.</p>
+</dd>
+<dt>dH: np.ndarray</dt><dd><p>Estimated entropy gradient by Monte Carlo method.
+<span class="math notranslate nohighlight">\(dH = \left[\nabla_{\mu_1}^{T} H, ..., \nabla_{\mu_K}^{T} H,
+\nabla_{\sigma}^{T} H, \nabla_{\lambda}^{T} H,
+\nabla_{\omega}^{T} H\right]\)</span></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">pyvbmc</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Classes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../classes/function_logger.html">FunctionLogger</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../classes/options.html">Options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../classes/parameter_transformer.html">ParameterTransformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../classes/iteration_history.html">IterationHistory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../classes/timer.html">Timer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../classes/variational_posterior.html">VariationalPosterior</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../classes/vbmc.html">VBMC</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Functions:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="active_sample.html">active_sample</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decorators.html">decorators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="get_hpd.html">get_hpd</a></li>
+<li class="toctree-l1"><a class="reference internal" href="kde1d.html">kde1d</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">entropy</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#kldiv-mvn">kldiv_mvn</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#entlb-vbmc">entlb_vbmc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#entmc-vbmc">entmc_vbmc</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="gaussian_process_train.html">gaussian_process_train</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Options:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../options/vbmc_options.html">VBMC options</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="kde1d.html" title="previous chapter">kde1d</a></li>
+      <li>Next: <a href="gaussian_process_train.html" title="next chapter">gaussian_process_train</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/functions/entropy.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

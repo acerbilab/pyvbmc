@@ -6,7 +6,7 @@ from pyvbmc.vbmc import VBMC
 from pyvbmc.vbmc.gaussian_process_train import (
     train_gp,
     _cov_identifier_to_covariance_function, _estimate_noise,
-    _get_gp_training_options, _get_hpd, _get_hyp_cov, _get_training_data,
+    _get_gp_training_options, _get_hyp_cov, _get_training_data,
     _meanfun_name_to_mean_function)
 from scipy.stats import norm
 
@@ -45,24 +45,6 @@ def test_estimate_noise():
     assert np.isclose(noise_estimate, 0.106582207806606)
 
 
-def test_get_hpd():
-    order = np.random.permutation(range(0, 100))
-    X = np.reshape(order.copy(), (-1, 1))
-    y = X.copy()
-
-    hpd_X, hpd_y, hpd_range = _get_hpd(X, y)
-
-    assert np.all(hpd_X == hpd_y)
-    assert np.all(hpd_X.flatten() == np.array(list(reversed(range(20, 100)))))
-    assert hpd_range == np.array([79])
-
-    hpd_X, hpd_y, hpd_range = _get_hpd(X, y, hpd_frac=0.5)
-
-    assert np.all(hpd_X == hpd_y)
-    assert np.all(hpd_X.flatten() == np.array(list(reversed(range(50, 100)))))
-    assert hpd_range == np.array([49])
-
-
 def test_get_training_data_no_noise():
     D = 3
     f = lambda x: np.sum(x + 2, axis=1)
@@ -93,7 +75,7 @@ def test_get_training_data_no_noise():
     # has a parameter transformer which makes everything hard.
     for sample_idx in range(sample_count):
         vbmc.function_logger.X_flag[sample_idx] = True
-        vbmc.function_logger.x[sample_idx] = Xs[sample_idx]
+        vbmc.function_logger.X[sample_idx] = Xs[sample_idx]
         vbmc.function_logger.y[sample_idx] = ys[sample_idx]
         vbmc.function_logger.fun_evaltime[sample_idx] = 1e-5
 
@@ -139,7 +121,7 @@ def test_get_training_data_noise():
     # has a parameter transformer which makes everything hard.
     for sample_idx in range(sample_count):
         vbmc.function_logger.X_flag[sample_idx] = True
-        vbmc.function_logger.x[sample_idx] = Xs[sample_idx]
+        vbmc.function_logger.X[sample_idx] = Xs[sample_idx]
         vbmc.function_logger.y[sample_idx] = ys[sample_idx]
         vbmc.function_logger.S[sample_idx] = 1
         vbmc.function_logger.fun_evaltime[sample_idx] = 1e-5
@@ -391,7 +373,7 @@ def test_gp_hyp():
     # has a parameter transformer which makes everything hard.
     for sample_idx in range(sample_count):
         vbmc.function_logger.X_flag[sample_idx] = True
-        vbmc.function_logger.x[sample_idx] = Xs[sample_idx]
+        vbmc.function_logger.X[sample_idx] = Xs[sample_idx]
         vbmc.function_logger.y[sample_idx] = ys[sample_idx]
         vbmc.function_logger.S[sample_idx] = 1
         vbmc.function_logger.fun_evaltime[sample_idx] = 1e-5

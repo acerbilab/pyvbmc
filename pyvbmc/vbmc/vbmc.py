@@ -6,7 +6,7 @@ import numpy as np
 import gpyreg as gpr
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
-from pyvbmc.stats.entropy import kldiv_mvn
+from pyvbmc.stats import kldiv_mvn
 from pyvbmc.timer import Timer
 from pyvbmc.variational_posterior import VariationalPosterior
 
@@ -728,6 +728,7 @@ class VBMC:
                         new_funevals,
                         self.optim_state,
                         self.function_logger,
+                        self.vp,
                         self.options,
                     )
 
