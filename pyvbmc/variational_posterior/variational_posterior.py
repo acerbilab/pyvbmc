@@ -4,16 +4,15 @@ from __future__ import annotations
 import sys
 
 import numpy as np
-
+from pyvbmc.decorators import handle_0D_1D_input
+from pyvbmc.stats import kde1d
+from pyvbmc.parameter_transformer import ParameterTransformer
 from scipy.integrate import trapezoid
 from scipy.interpolate import interp1d
 from scipy.optimize import fmin_l_bfgs_b
 from scipy.special import gammaln
 
-from pyvbmc.decorators import handle_0D_1D_input
-from pyvbmc.stats.kernel_density import kde1d
-from pyvbmc.parameter_transformer import ParameterTransformer
-from pyvbmc.stats.entropy import kldiv_mvn
+from pyvbmc.stats import kldiv_mvn
 
 
 class VariationalPosterior:
