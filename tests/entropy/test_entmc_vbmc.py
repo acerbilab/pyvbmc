@@ -30,16 +30,19 @@ def entmc_vbmc_wrapper(theta, D, K, Ns=1e5, ret="H"):
     vp.lambd = theta[D * K + K : D * K + K + D]
     vp.w = theta[D * K + K + D :]
 
+    state = np.random.get_state()
     np.random.seed(42)  # important for numerical gradients testing
     if ret == "H":
         H, _ = entmc_vbmc(
             vp, Ns, grad_flags=tuple([False] * 4), jacobian_flag=False
         )
+        np.random.set_state(state)
         return H
     else:
         _, dH = entmc_vbmc(
             vp, Ns, grad_flags=tuple([True] * 4), jacobian_flag=False
         )
+        np.random.set_state(state)
         return dH
 
 
@@ -111,6 +114,7 @@ def test_entmc_vbmc_nonoverlapping_mixture():
 
 def test_entmc_vbmc_overlapping_mixture():
     # Check gradients with multiple Gaussians that have overlapping supports
+    state = np.random.get_state()
     np.random.seed(42)
     D, K, Ns = 3, 2, 1e5
     vp = VariationalPosterior(D, K)
@@ -126,7 +130,7 @@ def test_entmc_vbmc_overlapping_mixture():
 
     f = lambda theta: entmc_vbmc_wrapper(theta, D, K, Ns, "H")
     f_grad = lambda theta: entmc_vbmc_wrapper(theta, D, K, Ns, "dH")
-
+    np.random.set_state(state)
     assert check_grad(f, f_grad, theta0, rtol=0.01, atol=0.01)
 
 
@@ -149,10 +153,12 @@ def test_entmc_vbmc_matlab():
     dHm = mat["dH"].squeeze()
     jacobian_flag = mat["jacobian_flag"].item()
 
+    state = np.random.get_state()
     np.random.seed(42)  # Random seed used in MATLAB
     H, dH = entmc_vbmc(
         vp, Ns, grad_flags=tuple([True] * 4), jacobian_flag=jacobian_flag
     )
+    np.random.set_state(state)
     if exact:
         assert np.isclose(H, Hm)
         assert np.allclose(dH, dHm)

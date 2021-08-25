@@ -35,8 +35,8 @@ def test_final_boost_lambda_options(mocker):
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.iteration_history["gp"] = np.arange(30)
     mocker.patch(
-        "pyvbmc.vbmc.VBMC._optimize_vp",
-        return_value=VariationalPosterior(50),
+        "pyvbmc.vbmc.vbmc.optimize_vp",
+        return_value=(VariationalPosterior(50), None, None)
     )
     vp, elbo, elbo_sd, changedflag = vbmc.finalboost(vbmc.vp, dict())
     assert changedflag
@@ -56,8 +56,8 @@ def test_final_boost_fixed_value_options(mocker):
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.iteration_history["gp"] = np.arange(30)
     mocker.patch(
-        "pyvbmc.vbmc.VBMC._optimize_vp",
-        return_value=VariationalPosterior(50),
+        "pyvbmc.vbmc.vbmc.optimize_vp",
+        return_value=(VariationalPosterior(50), None, None)
     )
     vp, elbo, elbo_sd, changedflag = vbmc.finalboost(vbmc.vp, dict())
     assert changedflag
@@ -69,16 +69,16 @@ def test_final_boost_fixed_value_options_boost_none(mocker):
         "nsent": 1300,
         "nsentfast": 0,
         "nsentfine": 204800,
-        "nsentboost": None,
-        "nsentfastboost": None,
-        "nsentfineboost": None,
+        "nsentboost": [],
+        "nsentfastboost": [],
+        "nsentfineboost": [],
         "nselbo": 2500,
     }
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.iteration_history["gp"] = np.arange(30)
     mocker.patch(
-        "pyvbmc.vbmc.VBMC._optimize_vp",
-        return_value=VariationalPosterior(50),
+        "pyvbmc.vbmc.vbmc.optimize_vp",
+        return_value=(VariationalPosterior(50), None, None)
     )
     vp, elbo, elbo_sd, changedflag = vbmc.finalboost(vbmc.vp, dict())
     assert changedflag
@@ -90,15 +90,15 @@ def test_final_boost_no_boost(mocker):
         "nsent": 1300,
         "nsentfast": 0,
         "nsentfine": 204800,
-        "nsentboost": None,
-        "nsentfastboost": None,
-        "nsentfineboost": None,
+        "nsentboost": [],
+        "nsentfastboost": [],
+        "nsentfineboost": [],
     }
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.iteration_history["gp"] = np.arange(30)
     mocker.patch(
-        "pyvbmc.vbmc.VBMC._optimize_vp",
-        return_value=VariationalPosterior(50),
+        "pyvbmc.vbmc.vbmc.optimize_vp",
+        return_value=(VariationalPosterior(50), None, None)
     )
     vp, elbo, elbo_sd, changedflag = vbmc.finalboost(vbmc.vp, dict())
     assert changedflag == False

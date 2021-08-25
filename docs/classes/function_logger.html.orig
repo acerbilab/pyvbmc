@@ -1,0 +1,252 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>FunctionLogger &#8212; pyvbmc  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Options" href="options.html" />
+    <link rel="prev" title="Welcome to pyvbmc’s documentation!" href="../index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="functionlogger">
+<h1>FunctionLogger<a class="headerlink" href="#functionlogger" title="Permalink to this headline">¶</a></h1>
+<section id="porting-status">
+<h2>Porting status<a class="headerlink" href="#porting-status" title="Permalink to this headline">¶</a></h2>
+<section id="matlab-references">
+<h3>Matlab references<a class="headerlink" href="#matlab-references" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Everything in: <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/funlogger_vbmc.m">funlogger_vbmc.m</a></p></li>
+</ul>
+</section>
+</section>
+<section id="python-documentation">
+<h2>Python documentation<a class="headerlink" href="#python-documentation" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyvbmc.function_logger.FunctionLogger">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyvbmc.function_logger.</span></span><span class="sig-name descname"><span class="pre">FunctionLogger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fun</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise_flag</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uncertainty_handling_level</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_size</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter_transformer</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="parameter_transformer.html#pyvbmc.parameter_transformer.ParameterTransformer" title="pyvbmc.parameter_transformer.parameter_transformer.ParameterTransformer"><span class="pre">pyvbmc.parameter_transformer.parameter_transformer.ParameterTransformer</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/function_logger/function_logger.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.function_logger.FunctionLogger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class that evaluates a function and caches its values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>fun</strong><span class="classifier">callable</span></dt><dd><p>The function to be logged.
+<cite>fun</cite> must take a vector input and return a scalar value and,
+optionally, the (estimated) SD of the returned value (if the
+function fun is stochastic).</p>
+</dd>
+<dt><strong>D</strong><span class="classifier">int</span></dt><dd><p>The number of dimensions that the function takes as input.</p>
+</dd>
+<dt><strong>noise_flag</strong><span class="classifier">bool</span></dt><dd><p>Whether the function fun is stochastic or not.</p>
+</dd>
+<dt><strong>uncertainty_handling_level</strong><span class="classifier">{0, 1, 2}</span></dt><dd><p>The uncertainty handling level which can be one of
+(0: none; 1: unknown noise level; 2: user-provided noise).</p>
+</dd>
+<dt><strong>cache_size</strong><span class="classifier">int, optional</span></dt><dd><p>The initial size of caching table (default 500).</p>
+</dd>
+<dt><strong>parameter_transformer</strong><span class="classifier">ParameterTransformer, optional</span></dt><dd><p>A ParameterTransformer is required to transform the parameters
+between constrained and unconstrained space, by default None.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.function_logger.FunctionLogger.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/function_logger/function_logger.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.function_logger.FunctionLogger.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluates the function FUN at x and caches values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">np.ndarray</span></dt><dd><p>The point at which the function will be evaluated.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>fval</strong><span class="classifier">float</span></dt><dd><p>The result of the evaluation.</p>
+</dd>
+<dt><strong>SD</strong><span class="classifier">float</span></dt><dd><p>The (estimated) SD of the returned value.</p>
+</dd>
+<dt><strong>idx</strong><span class="classifier">int</span></dt><dd><p>The index of the last updated entry.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>ValueError</dt><dd><p>Raise if the function value is not a finite real-valued scalar.</p>
+</dd>
+<dt>ValueError</dt><dd><p>Raise if the (estimated) SD (second function output)
+is not a finite, positive real-valued scalar.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.function_logger.FunctionLogger.add">
+<span class="sig-name descname"><span class="pre">add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fval_orig</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fsd</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fun_evaltime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">nan</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/function_logger/function_logger.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.function_logger.FunctionLogger.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add an previously evaluated function sample to the function cache.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">np.ndarray</span></dt><dd><p>The point at which the function has been evaluated.</p>
+</dd>
+<dt><strong>fval_orig</strong><span class="classifier">float</span></dt><dd><p>The result of the evaluation of the function.</p>
+</dd>
+<dt><strong>fsd</strong><span class="classifier">float, optional</span></dt><dd><p>The (estimated) SD of the returned value (if heteroskedastic noise
+handling is on) of the evaluation of the function, by default None.</p>
+</dd>
+<dt><strong>fun_evaltime</strong><span class="classifier">float</span></dt><dd><p>The duration of the time it took to evaluate the function,
+by default np.nan.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>fval</strong><span class="classifier">float</span></dt><dd><p>The result of the evaluation.</p>
+</dd>
+<dt><strong>SD</strong><span class="classifier">float</span></dt><dd><p>The (estimated) SD of the returned value.</p>
+</dd>
+<dt><strong>idx</strong><span class="classifier">int</span></dt><dd><p>The index of the last updated entry.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>ValueError</dt><dd><p>Raise if the function value is not a finite real-valued scalar.</p>
+</dd>
+<dt>ValueError</dt><dd><p>Raise if the (estimated) SD (second function output)
+is not a finite, positive real-valued scalar.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.function_logger.FunctionLogger.finalize">
+<span class="sig-name descname"><span class="pre">finalize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/function_logger/function_logger.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.function_logger.FunctionLogger.finalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove unused caching entries.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">pyvbmc</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Classes:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">FunctionLogger</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#porting-status">Porting status</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#python-documentation">Python documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="options.html">Options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameter_transformer.html">ParameterTransformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="iteration_history.html">IterationHistory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="timer.html">Timer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variational_posterior.html">VariationalPosterior</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vbmc.html">VBMC</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Functions:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../functions/active_sample.html">active_sample</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../functions/decorators.html">decorators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../functions/kernel_density.html">kernel_density</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../functions/entropy.html">entropy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../functions/gaussian_process_train.html">gaussian_process_train</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Options:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../options/vbmc_options.html">VBMC options</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../index.html" title="previous chapter">Welcome to pyvbmc’s documentation!</a></li>
+      <li>Next: <a href="options.html" title="next chapter">Options</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/classes/function_logger.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

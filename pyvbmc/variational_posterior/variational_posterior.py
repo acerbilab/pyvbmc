@@ -68,8 +68,104 @@ class VariationalPosterior:
         else:
             self.parameter_transformer = parameter_transformer
 
+        self.delta = None
         self.bounds = None
         self.stats = None
+
+    def get_bounds(self, X: np.ndarray, options, K: int = None):
+        """
+        Compute soft bounds for variational posterior parameters.
+
+        Parameters
+        ==========
+        X : ndarray, shape (N, D)
+            Training inputs.
+        options : Options
+            Program options.
+        K : int, optional
+            The number of mixture components. By default we use the
+            number provided at class instantiation.
+
+        Returns
+        =======
+        theta_bnd : dict
+            A dictionary of soft bounds with the following elements:
+                **lb** : np.ndarray
+                    Lower bounds.
+                **ub** : np.ndarray
+                    Upper bounds.
+                **tol_con** : float
+                    Fractional tolerance for constraint violation of
+                    variational parameters.
+                **weight_threshold** : float, optional
+                     Threshold below which weights are penalized.
+                **weight_penalty** : float, optional
+                     The penalty for weight below the threshold.
+        """
+        if K is None:
+            K = self.K
+
+        # Soft-bound loss is computed on MU and SCALE (which is SIGMA times
+        # LAMBDA)
+
+        # Start with reversed bounds (see below)
+        if self.bounds is None:
+            self.bounds = {
+                "mu_lb": np.full((self.D,), np.inf),
+                "mu_ub": np.full((self.D,), -np.inf),
+                "lnscale_lb": np.full((self.D,), np.inf),
+                "lnscale_ub": np.full((self.D,), -np.inf),
+            }
+
+        # Set bounds for mean parameters of variational components
+        self.bounds["mu_lb"] = np.minimum(
+            np.min(X, axis=0), self.bounds["mu_lb"]
+        )
+        self.bounds["mu_ub"] = np.maximum(
+            np.max(X, axis=0), self.bounds["mu_ub"]
+        )
+
+        # Set bounds for log scale parameters of variational components.
+        ln_range = np.log(np.max(X, axis=0) - np.min(X, axis=0))
+        self.bounds["lnscale_lb"] = np.minimum(
+            self.bounds["lnscale_lb"], ln_range + np.log(options["tollength"])
+        )
+        self.bounds["lnscale_ub"] = np.maximum(
+            self.bounds["lnscale_ub"], ln_range
+        )
+
+        # Set bounds for log weight parameters of variation components.
+        if self.optimize_weights:
+            self.bounds["eta_lb"] = np.log(0.5 * options["tolweight"])
+            self.bounds["eta_ub"] = 0
+
+        lb_list = []
+        ub_list = []
+        if self.optimize_mu:
+            lb_list.append(np.tile(self.bounds["mu_lb"], (K,)))
+            ub_list.append(np.tile(self.bounds["mu_ub"], (K,)))
+        if self.optimize_sigma or self.optimize_lambd:
+            lb_list.append(np.tile(self.bounds["lnscale_lb"], (K,)))
+            ub_list.append(np.tile(self.bounds["lnscale_ub"], (K,)))
+        if self.optimize_weights:
+            lb_list.append(np.tile(self.bounds["eta_lb"], (K,)))
+            ub_list.append(np.tile(self.bounds["eta_ub"], (K,)))
+
+        theta_bnd = {
+            "lb": np.concatenate(lb_list),
+            "ub": np.concatenate(ub_list),
+        }
+
+        theta_bnd["tol_con"] = options["tolconloss"]
+
+        # Weight below a certain threshold are penalized.
+        if self.optimize_weights:
+            theta_bnd["weight_threshold"] = max(
+                1 / (4 * K), options["tolweight"]
+            )
+            theta_bnd["weight_penalty"] = options["weightpenalty"]
+
+        return theta_bnd
 
     def sample(
         self,
@@ -402,7 +498,7 @@ class VariationalPosterior:
         # remove mode (at least this is done in Matlab)
 
         if self.optimize_mu:
-            theta = self.mu.flatten()
+            theta = self.mu.flatten(order="F")
         else:
             theta = np.array(list())
 
@@ -448,6 +544,9 @@ class VariationalPosterior:
             and rawflag = False
         """
 
+        # Make sure we don't get issues with references.
+        theta = theta.copy()
+
         # check if sigma, lambda and weights are positive when rawflag = False
         if not rawflag:
             check_idx = 0
@@ -464,7 +563,9 @@ class VariationalPosterior:
                 )
 
         if self.optimize_mu:
-            self.mu = np.reshape(theta[: self.D * self.K], (self.D, self.K))
+            self.mu = np.reshape(
+                theta[: self.D * self.K], (self.D, self.K), order="F"
+            )
             start_idx = self.D * self.K
         else:
             start_idx = 0

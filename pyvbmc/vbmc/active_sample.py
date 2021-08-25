@@ -146,7 +146,16 @@ def active_sample(
 
     else:
         # active uncertainty sampling
-        pass
+        
+        # Dummy implementation that samples points uniformly within
+        # the plausible bound windows. Remove once active uncertainty
+        # sampling is actually implemented.
+        if optim_state["active_uncertainty_sample_random"]:
+            window = optim_state["pub"] - optim_state["plb"]
+            rnd_tmp = np.random.rand(sample_count, window.shape[1])
+            Xs = window * rnd_tmp + optim_state["plb"]
+            for sample_idx in range(sample_count):
+                _, _, _ = function_logger(Xs[sample_idx])
 
     return function_logger, optim_state
 

@@ -244,7 +244,7 @@ def test_set_parameters_raw():
     vp.optimize_weights = True
     vp.set_parameters(theta)
     assert vp.mu.shape == (D, K)
-    assert np.all(vp.mu[: D * K] == np.reshape(theta[: D * K], (D, K)))
+    assert np.all(vp.mu[: D * K] == np.reshape(theta[: D * K], (D, K), order='F'))
     lamb = np.exp(theta[D * K + K : D * K + K + D])
     nl = np.sqrt(np.sum(lamb ** 2) / D)
     assert vp.sigma.shape == (1, K)
@@ -269,7 +269,7 @@ def test_set_parameters_not_raw():
     vp.optimize_weights = True
     vp.set_parameters(theta, rawflag=False)
     assert vp.mu.shape == (D, K)
-    assert np.all(vp.mu[: D * K] == np.reshape(theta[: D * K], (D, K)))
+    assert np.all(vp.mu[: D * K] == np.reshape(theta[: D * K], (D, K), order='F'))
     lamb = theta[D * K + K : D * K + K + D]
     nl = np.sqrt(np.sum(lamb ** 2) / D)
     assert vp.sigma.shape == (1, K)
@@ -300,7 +300,7 @@ def test_get_parameters_raw():
     vp = VariationalPosterior(D, K, np.array([[5]]))
     vp.optimize_weights = True
     theta = vp.get_parameters(rawflag=True)
-    assert np.all(vp.mu[: D * K] == np.reshape(theta[: D * K], (D, K)))
+    assert np.all(vp.mu[: D * K] == np.reshape(theta[: D * K], (D, K), order='F'))
     assert np.all(
         np.isclose(
             vp.sigma.flatten(),
@@ -321,7 +321,7 @@ def test_get_parameters_not_raw():
     vp = VariationalPosterior(D, K, np.array([[5]]))
     vp.optimize_weights = True
     theta = vp.get_parameters(rawflag=False)
-    assert np.all(vp.mu[: D * K] == np.reshape(theta[: D * K], (D, K)))
+    assert np.all(vp.mu[: D * K] == np.reshape(theta[: D * K], (D, K), order='F'))
     assert np.all(vp.sigma.flatten() == theta[D * K : D * K + K])
     assert np.all(vp.lambd.flatten() == theta[D * K + K : D * K + K + D])
     assert np.all(vp.w.flatten() == theta[-K:])
@@ -372,6 +372,20 @@ def test_get_set_parameters_roundtrip_non_raw():
     theta2 = vp.get_parameters(rawflag=False)
     assert theta.shape == theta2.shape
     assert np.all(theta == theta2)
+    
+def test_set_parameters_reference_regression():
+    K = 2 
+    D = 2
+    vp = VariationalPosterior(D, K)
+    theta = vp.get_parameters().copy()
+    theta[0] = -1e-7
+    vp.set_parameters(theta)
+    
+    assert vp.mu[0, 0] == -1e-7
+    
+    # Make sure we don't get accidental reference to theta in the VP.
+    theta[0] = -2e-7
+    assert vp.mu[0, 0] == -1e-7
 
 
 def test_moments_origflag():
@@ -560,3 +574,60 @@ def test_kldiv_no_samples_gaussflag():
     vp = VariationalPosterior(1, 1, np.array([[5]]))
     with pytest.raises(ValueError):
         vp.kldiv(vp, gaussflag=True, N=0)
+
+def test_soft_bounds_1():
+    D = 2
+    K = 1
+    vp = VariationalPosterior(D, K)
+    assert vp.bounds is None
+    
+    # use a fake options struct
+    options = {
+        "tolconloss" : 0.01,
+        "tolweight" : 1e-2,
+        "weightpenalty": 0.1,
+        "tollength" : 1e-6
+    }
+    
+    # Make up some fake data.
+    X = np.array([np.linspace(0, 1, 10), np.linspace(0, 1, 10)]).T
+    
+    theta_bnd = vp.get_bounds(X, options)
+    
+    assert vp.bounds is not None
+    assert np.all(vp.bounds["mu_lb"] == 0)
+    assert np.all(vp.bounds["mu_ub"] == 1)
+    assert np.all(vp.bounds["lnscale_lb"] == np.log(options["tollength"]))
+    assert np.all(vp.bounds["lnscale_ub"] == 0)
+    assert vp.bounds["eta_lb"] == np.log(0.5 * options["tolweight"])
+    assert vp.bounds["eta_ub"] == 0
+    
+    assert theta_bnd["tol_con"] == options["tolconloss"]
+    assert theta_bnd["weight_threshold"] == max(1/(4*K), options["tolweight"])
+    assert theta_bnd["weight_penalty"] == options["weightpenalty"]
+    
+def test_soft_bounds_2():
+    D = 2
+    K = 2
+    vp = VariationalPosterior(D, K)
+
+    options = {
+        "tolconloss" : 0.01,
+        "tolweight" : 1e-2,
+        "weightpenalty": 0.1,
+        "tollength" : 1e-6
+    }
+    X = np.loadtxt(open("./tests/variational_posterior/X.dat", "rb"), delimiter=",")
+    vp.mu = np.loadtxt(open("./tests/variational_posterior/mu.dat", "rb"), delimiter=",")
+
+    theta_bnd = vp.get_bounds(X, options)
+
+    bnd_lb = np.loadtxt(open("./tests/variational_posterior/bnd_lb.dat", "rb"), delimiter=",")
+    assert np.allclose(theta_bnd["lb"], bnd_lb)
+    
+    bnd_ub = np.loadtxt(open("./tests/variational_posterior/bnd_ub.dat", "rb"), delimiter=",")
+    assert np.allclose(theta_bnd["ub"], bnd_ub)
+    
+    assert theta_bnd["tol_con"] == 0.0100
+    assert theta_bnd["weight_threshold"] == 0.1250
+    assert theta_bnd["weight_penalty"] == 0.1000

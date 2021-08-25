@@ -76,6 +76,7 @@ def test_entlb_vbmc_nonoverlapping_mixture():
 
 def test_entlb_vbmc_overlapping_mixture():
     # Check gradients with multiple Gaussians that have overlapping supports
+    state = np.random.get_state()
     np.random.seed(42)
     D, K = 3, 2
     vp = VariationalPosterior(D, K)
@@ -90,6 +91,7 @@ def test_entlb_vbmc_overlapping_mixture():
     )
     f = lambda theta: entlb_vbmc_wrapper(theta, D, K, "H")
     f_grad = lambda theta: entlb_vbmc_wrapper(theta, D, K, "dH")
+    np.random.set_state(state)
     assert check_grad(f, f_grad, theta0, rtol=0.01)
 
 

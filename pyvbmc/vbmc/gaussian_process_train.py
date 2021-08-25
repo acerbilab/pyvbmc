@@ -142,7 +142,7 @@ def train_gp(
         N0 = hyp0.shape[0]
         if N0 > gp_train["init_N"] / 2:
             hyp0 = hyp0[
-                np.random.choice(N0, gp_train["init_N"] / 2, replace=False),
+                np.random.choice(N0, math.ceil(gp_train["init_N"] / 2), replace=False),
                 :,
             ]
     hyp0 = np.concatenate((hyp0, np.array([hyp_dict["hyp"]])))
@@ -441,7 +441,7 @@ def _gp_hyp(
 
     if stop_sampling == 0:
         # Number of samples
-        gp_s_N = round(options["nsgpmax"] / np.sqrt(optim_state["N"]))
+        gp_s_N = options["nsgpmax"] / np.sqrt(optim_state["N"])
 
         # Maximum sample cutoff
         if optim_state["warmup"]:
@@ -463,7 +463,7 @@ def _gp_hyp(
     gp.set_bounds(bounds)
     gp.set_priors(priors)
 
-    return gp, hyp0, gp_s_N
+    return gp, hyp0, round(gp_s_N)
 
 
 def _get_gp_training_options(
@@ -636,7 +636,9 @@ def _get_gp_training_options(
             else:
                 gp_train["opts_N"] = 2
 
-    gp_train["n_samples"] = gp_s_N
+    gp_train["n_samples"] = round(gp_s_N)
+    gp_train["burn"] = round(gp_train["burn"])
+    
     return gp_train
 
 
@@ -692,9 +694,9 @@ def _get_hyp_cov(
                 hyp = iteration_history["gp_hyp_full"][
                     optim_state["iter"] - 1 - i
                 ]
-                hyp_n = hyp.shape[0]
-                if len(hyp_list) == 0 or np.shape(hyp_list)[1] == hyp.shape[0]:
-                    hyp_list.append(hyp)
+                hyp_n = hyp.shape[1]
+                if len(hyp_list) == 0 or np.shape(hyp_list)[2] == hyp.shape[0]:
+                    hyp_list.append(hyp.T)
                     w_list.append(w * np.ones((hyp_n, 1)) / hyp_n)
 
             w_list = np.concatenate(w_list)
@@ -713,7 +715,8 @@ def _get_hyp_cov(
                     w_list[j],
                     np.dot((hyp_list[j] - mu_star).T, hyp_list[j] - mu_star),
                 )
-            hyp_cov /= 1 - np.sum(w_list ** 2, axis=0)
+
+            hyp_cov /= 1 - np.sum(w_list ** 2)
 
             return hyp_cov
 
@@ -798,3 +801,30 @@ def _estimate_noise(gp: gpr.GP):
         sn2[:, s : s + 1] = gp.noise.compute(hyp, hpd_X, hpd_y, hpd_s2)
 
     return np.median(np.mean(sn2, axis=1))
+    
+def reupdate_gp(function_logger, gp):
+    """
+    Quick posterior reupdate of Gaussian process.
+    
+    Parameters
+    ==========
+    gp : GP
+        The GP to update.
+    function_logger : FunctionLogger
+        Function logger from the VBMC instance which we are calling this from.
+    Returns
+    =======
+    gp : GP
+        The updated Gaussian process.
+    """
+
+    x_train, y_train, s2_train, t_train = _get_training_data(function_logger)
+    gp.X = x_train
+    gp.y = y_train
+    gp.s2 = s2_train
+    # Missing port: gp.t = t_train
+    gp.update(compute_posterior=True)
+
+    # Missing port: intmean part
+
+    return gp

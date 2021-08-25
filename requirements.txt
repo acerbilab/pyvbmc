@@ -1,9 +1,10 @@
 # run: pip install -i requirements.txt
-numpy==1.19.2
-numpydoc==1.1.0
-scipy==1.6.1
-pytest-cov==2.11.1
-pytest-profiling==1.7.0
-pytest-mock==3.6.1
-sphinx==3.5.2
-pylint==2.8.3
+numpy
+numpydoc
+scipy
+pytest-cov
+pytest-profiling
+pytest-mock
+sphinx
+pylint
+cma
