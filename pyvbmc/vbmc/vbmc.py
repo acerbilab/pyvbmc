@@ -662,6 +662,11 @@ class VBMC:
         timer = Timer()
         gp = None
         hyp_dict = {}
+        
+        # Flag for turning on a dummy implementation of active
+        # uncertainty sampling. 
+        # TODO: remove when active_sampling is implemented properly
+        self.optim_state["active_uncertainty_sample_random"] = True
 
         while not is_finished:
             iteration += 1

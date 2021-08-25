@@ -10,10 +10,10 @@ import gpyreg as gpr
 
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.entropy import entlb_vbmc, entmc_vbmc
+from pyvbmc.stats import get_hpd
 
 from .options import Options
 from .iteration_history import IterationHistory
-from .gaussian_process_train import _get_hpd
 from .minimize_adam import minimize_adam
 
 
@@ -858,7 +858,7 @@ def _sieve(
 
     if init_N > 0:
         # Get high-posterior density points
-        X_star, y_star, _ = _get_hpd(gp.X, gp.y, options["hpdfrac"])
+        X_star, y_star, _ , _= get_hpd(gp.X, gp.y, options["hpdfrac"])
 
         # Generate a bunch of random candidate variational parameters.
         if best_N == 1:
