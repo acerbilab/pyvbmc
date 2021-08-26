@@ -672,7 +672,10 @@ class VBMC:
             iteration += 1
             self.optim_state["iter"] = iteration
             self.optim_state["redo_roto_scaling"] = False
+            vp_old = copy.deepcopy(self.vp)
 
+            # Switch to stochastic entropy towards the end if still
+            # deterministic.
             if self.optim_state.get("entropy_switch") and (
                 self.function_logger.func_count
                 >= self.optim_state.get("entropy_force_switch")
@@ -688,7 +691,9 @@ class VBMC:
             else:
                 new_funevals = self.options.get("funevalsperiter")
 
-            if self.function_logger.Xn > 0:
+            # Careful with Xn, in MATLAB this condition is > 0
+            # due to 1-based indexing.
+            if self.function_logger.Xn >= 0:
                 self.function_logger.ymax = np.max(self.function_logger.y[self.function_logger.X_flag])
 
             if self.optim_state.get("skipactivesampling"):
@@ -829,8 +834,6 @@ class VBMC:
             # Compute symmetrized KL-divergence between old and new posteriors
             Nkl = 1e5
 
-            # remove later
-            vp_old = self.vp
             sKL = max(
                 0,
                 0.5
@@ -932,8 +935,7 @@ class VBMC:
             is_finished = self._check_termination_conditions()
 
             # Save stability
-            # self.vp.stats["stable"] = self.iteration_history["stable"][iteration]
-            # vp.stats.stable = stats.stable(optimState.iter)
+            self.vp.stats["stable"] = self.iteration_history["stable"][iteration]
 
             # Check if we are still warming-up
             if self.optim_state.get("warmup") and iteration > 0:
@@ -1021,16 +1023,18 @@ class VBMC:
             / self.options.get("funevalsperiter")
         )
 
-        if iteration > tol_stable_warmup_iters + 1:
+        # MATLAB has +1 on the right side due to different indexing.
+        if iteration > tol_stable_warmup_iters:
             # Vector of ELCBO (ignore first two iterations, ELCBO is unreliable)
             elcbo_vec = self.iteration_history.get("elbo") - self.options.get(
                 "elcboimproweight"
             ) * self.iteration_history.get("elbo_sd")
+            # Here and below the max is one higher in MATLAB.
             max_now = np.amax(
-                elcbo_vec[max(4, -tol_stable_warmup_iters + 1) :]
+                elcbo_vec[max(3, -tol_stable_warmup_iters + 1) :]
             )
             max_before = np.amax(
-                elcbo_vec[3 : max(3, -tol_stable_warmup_iters)], initial=0
+                elcbo_vec[3 : max(2, -tol_stable_warmup_iters)], initial=0
             )
             stable_count_flag = (max_now - max_before) < stop_warmup_thresh
 
@@ -1165,8 +1169,7 @@ class VBMC:
 
         # Maximum number of iterations
         iteration = self.optim_state.get("iter")
-        # TODO: off by one error
-        if iteration >= self.options.get("maxiter"):
+        if iteration + 1 >= self.options.get("maxiter"):
             isFinished_flag = True
             # msg = "Inference terminated
 
@@ -1240,6 +1243,7 @@ class VBMC:
         Private function to compute the reliability index.
         """
         iteration_idx = self.optim_state.get("iter")
+        # Was < 3 in MATLAB due to different indexing.
         if self.optim_state.get("iter") < 2:
             rindex = np.Inf
             ELCBO_improvement = np.NaN
@@ -1273,19 +1277,18 @@ class VBMC:
         # TODO: off by one error
         idx0 = int(
             max(
-                1,
+                0,
                 self.optim_state.get("iter")
-                - math.ceil(0.5 * tol_stable_iters)
-                + 1,
+                - math.ceil(0.5 * tol_stable_iters),
             )
-            - 1
         )
-        # TODO: off by one error
-        xx = self.iteration_history.get("func_count")[idx0:iteration_idx]
+        # Remember than upper end of range is exclusive in Python, so +1 is
+        # needed.
+        xx = self.iteration_history.get("func_count")[idx0:iteration_idx+1]
         yy = (
-            self.iteration_history.get("elbo")[idx0:iteration_idx]
+            self.iteration_history.get("elbo")[idx0:iteration_idx+1]
             - self.options.get("elcboimproweight")
-            * self.iteration_history.get("elbo_sd")[idx0:iteration_idx]
+            * self.iteration_history.get("elbo_sd")[idx0:iteration_idx+1]
         )
         # need to casts here to get things to run
         ELCBO_improvement = np.polyfit(list(map(float, xx)), list(map(float, yy)), 1)[0]

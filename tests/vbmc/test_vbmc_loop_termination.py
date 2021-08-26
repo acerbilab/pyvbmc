@@ -57,9 +57,9 @@ def test_vbmc_check_termination_conditions_maxiter(mocker):
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.function_logger.func_count = 9
     vbmc.optim_state["entropy_switch"] = True
-    vbmc.optim_state["iter"] = 100
-    assert vbmc._check_termination_conditions() == True
     vbmc.optim_state["iter"] = 99
+    assert vbmc._check_termination_conditions() == True
+    vbmc.optim_state["iter"] = 98
     assert vbmc._check_termination_conditions() == False
 
 
@@ -106,7 +106,7 @@ def test_vbmc_check_termination_conditions_stability(mocker):
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.function_logger.func_count = 9
     vbmc.optim_state["entropy_switch"] = False
-    vbmc.optim_state["iter"] = 99
+    vbmc.optim_state["iter"] = 98
     vbmc.iteration_history["rindex"] = np.ones(100) * 0.5
 
     mocker.patch(
@@ -145,7 +145,7 @@ def test_vbmc_is_finished_stability_entropyswitch(mocker):
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.function_logger.func_count = 9
     vbmc.optim_state["entropy_switch"] = True
-    vbmc.optim_state["iter"] = 99
+    vbmc.optim_state["iter"] = 98
     vbmc.iteration_history["rindex"] = np.ones(100) * 0.5
     mocker.patch(
         "pyvbmc.vbmc.VBMC._compute_reliability_index",
