@@ -31,7 +31,6 @@ Note that this project is work in progress!
    functions/get_hpd
    functions/kde1d
    functions/entropy
-   functions/vbmc
 
 .. toctree::
    :maxdepth: 2
