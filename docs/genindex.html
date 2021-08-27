@@ -50,6 +50,7 @@
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
+ | <a href="#U"><strong>U</strong></a>
  | <a href="#V"><strong>V</strong></a>
  
 </div>
@@ -128,12 +129,14 @@
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="classes/timer.html#pyvbmc.timer.Timer.get_duration">get_duration() (pyvbmc.timer.Timer method)</a>
+      <li><a href="classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior.get_bounds">get_bounds() (pyvbmc.variational_posterior.VariationalPosterior method)</a>
 </li>
-      <li><a href="functions/get_hpd.html#pyvbmc.stats.get_hpd">get_hpd() (in module pyvbmc.stats)</a>
+      <li><a href="classes/timer.html#pyvbmc.timer.Timer.get_duration">get_duration() (pyvbmc.timer.Timer method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="functions/get_hpd.html#pyvbmc.stats.get_hpd">get_hpd() (in module pyvbmc.stats)</a>
+</li>
       <li><a href="classes/acquisition_functions.html#pyvbmc.acquisition_functions.AbstractAcqFcn.get_info">get_info() (pyvbmc.acquisition_functions.AbstractAcqFcn method)</a>
 </li>
       <li><a href="classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior.get_parameters">get_parameters() (pyvbmc.variational_posterior.VariationalPosterior method)</a>
@@ -217,6 +220,8 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="classes/vbmc.html#pyvbmc.vbmc.optimize_vp">optimize_vp() (in module pyvbmc.vbmc)</a>
+</li>
       <li><a href="classes/options.html#pyvbmc.vbmc.Options">Options (class in pyvbmc.vbmc)</a>
 </li>
   </ul></td>
@@ -276,7 +281,15 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="functions/gaussian_process_train.html#pyvbmc.vbmc.train_gp">train_gp() (in module pyvbmc.vbmc)</a>
+      <li><a href="classes/vbmc.html#pyvbmc.vbmc.train_gp">train_gp() (in module pyvbmc.vbmc)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="U">U</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="classes/vbmc.html#pyvbmc.vbmc.update_K">update_K() (in module pyvbmc.vbmc)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -313,7 +326,7 @@
 
 
 <h3>Navigation</h3>
-<p class="caption" role="heading"><span class="caption-text">Classes:</span></p>
+<p class="caption"><span class="caption-text">Classes:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="classes/acquisition_functions.html">Acquisition Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="classes/function_logger.html">FunctionLogger</a></li>
@@ -324,16 +337,15 @@
 <li class="toctree-l1"><a class="reference internal" href="classes/variational_posterior.html">VariationalPosterior</a></li>
 <li class="toctree-l1"><a class="reference internal" href="classes/vbmc.html">VBMC</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Functions:</span></p>
+<p class="caption"><span class="caption-text">Functions:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="functions/active_sample.html">active_sample</a></li>
 <li class="toctree-l1"><a class="reference internal" href="functions/decorators.html">decorators</a></li>
 <li class="toctree-l1"><a class="reference internal" href="functions/get_hpd.html">get_hpd</a></li>
 <li class="toctree-l1"><a class="reference internal" href="functions/kde1d.html">kde1d</a></li>
 <li class="toctree-l1"><a class="reference internal" href="functions/entropy.html">entropy</a></li>
-<li class="toctree-l1"><a class="reference internal" href="functions/gaussian_process_train.html">gaussian_process_train</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Options:</span></p>
+<p class="caption"><span class="caption-text">Options:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="options/vbmc_options.html">VBMC options</a></li>
 </ul>
@@ -349,7 +361,7 @@
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -371,7 +383,7 @@
       &copy;2021, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
