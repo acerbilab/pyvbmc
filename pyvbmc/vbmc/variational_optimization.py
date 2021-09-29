@@ -167,8 +167,8 @@ def optimize_vp(
         # Set basic options for deterministic (?) optimizer
         compute_grad = True
     else:
-        options["stochasticoptimizer"] = "cmaes"
-        compute_grad = False
+        # TODO: Is there a suitable replacement for CMAES which works? 
+        raise ValueError("""Gradients must be available for the optimizer.""")
 
     vp0_fine = {}
     for i in range(0, slow_opts_N):
@@ -342,66 +342,6 @@ def optimize_vp(
                         elcbo_beta,
                         options,
                     )
-            elif options["stochasticoptimizer"] == "cmaes":
-                # Objective function with no gradient computation.
-                def vbtrain_fun(theta_):
-                    return _negelcbo(
-                        theta_,
-                        gp,
-                        vp0,
-                        elcbo_beta,
-                        Ns=nsent_K,
-                        compute_grad=False,
-                        compute_var=compute_var,
-                        theta_bnd=theta_bnd,
-                    )[0]
-
-                # Construct sigma list and lower/upper bounds.
-                # Restricting the range of lambda and sigma is important
-                # since the optimization is done in log-space, so too large
-                # values can cause numerical overflows.
-                insigma_list = []
-                lower_list = []
-                upper_list = []
-                if vp.optimize_mu:
-                    tmp = np.tile(
-                        vp.bounds["mu_ub"] - vp.bounds["mu_lb"], (K,)
-                    )
-                    insigma_list.append(tmp)
-                    lower_list.append(np.full(tmp.shape, -np.inf))
-                    upper_list.append(np.full(tmp.shape, np.inf))
-                if vp.optimize_sigma:
-                    insigma_list.append(np.ones((K,)))
-                    lower_list.append(np.full((K,), -50))
-                    upper_list.append(np.full((K,), 50))
-                if vp.optimize_lambd:
-                    insigma_list.append(np.ones((vp.D,)))
-                    lower_list.append(np.full((vp.D,), -50))
-                    upper_list.append(np.full((vp.D,), 50))
-                if vp.optimize_weights:
-                    insigma_list.append(np.ones((K,)))
-                    lower_list.append(np.full((K,), -np.inf))
-                    upper_list.append(np.full((K,), np.inf))
-                insigma = np.concatenate(insigma_list)
-                lower = np.concatenate(lower_list)
-                upper = np.concatenate(upper_list)
-
-                cma_options = {
-                    "verbose": -9,
-                    "tolx": 1e-6 * np.max(insigma),
-                    "tolfun": 1e-4,
-                    "tolfunhist": 1e-5,
-                    "CMA_active": True,
-                    "bounds": (lower, upper),
-                }
-                res = cma.fmin(
-                    vbtrain_fun,
-                    theta0,
-                    np.max(insigma),
-                    options=cma_options,
-                    noise_handler=cma.NoiseHandler(np.size(theta0)),
-                )
-                theta_opt = res[0]
             else:
                 raise Exception("Unknown stochastic optimizer!")
 
