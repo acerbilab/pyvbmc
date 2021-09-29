@@ -12,6 +12,7 @@ Porting status
      - experimental features (listed in `vbmc.m <https://github.com/lacerbi/vbmc/blob/master/vbmc.m>`_ have not been ported yet)
      - `acqhedge_vbmc.m <https://github.com/lacerbi/vbmc/blob/master/private/acqhedge_vbmc.m>`_ has not been ported yet as it is considered to be experimental
      - the warping in `vbmc.m <https://github.com/lacerbi/vbmc/blob/master/vbmc.m>`_ has not been ported yet as it is considered to be experimental
+     - in variational_optimization.py the compute vargrad is untested
 
 Matlab references of ported methods
 -----------------------------------

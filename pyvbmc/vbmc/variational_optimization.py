@@ -1467,6 +1467,7 @@ def _gplogjoint(
         varF = np.zeros((Ns,))
     # Compute gradient of variance?
     if compute_vargrad:
+        # TODO: compute vargrad is untested
         if grad_flags[0]:
             mu_vargrad = np.zeros((D, K, Ns))
         if grad_flags[1]:
@@ -1677,6 +1678,7 @@ def _gplogjoint(
         dF = None
 
     if compute_vargrad:
+        # TODO: compute vargrad is untested
         vargrad_list = []
         if grad_flags[0]:
             mu_vargrad = np.reshape(mu_vargrad, (D * K, Ns))
@@ -1712,6 +1714,7 @@ def _gplogjoint(
             varss = varFss + np.std(varF, ddof=1)
             varF = np.sum(varF, axis=0) / Ns + varFss
         if compute_vargrad:
+            # TODO: compute vargrad is untested
             dvv = 2 * np.sum(F * dF, axis=1) / (Ns - 1) - 2 * F_bar * np.sum(
                 dF, axis=1
             ) / (Ns - 1)
