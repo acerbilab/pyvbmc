@@ -343,7 +343,7 @@ def optimize_vp(
                         options,
                     )
             else:
-                raise Exception("Unknown stochastic optimizer!")
+                raise ValueError("Unknown stochastic optimizer!")
 
         # Recompute ELCBO at endpoint with full variance and more precision
         elbo_stats = _eval_full_elcbo(
@@ -1008,7 +1008,7 @@ def _vbinit(
             if vp.optimize_weights:
                 w = np.ones((1, K_new)) / K_new
         else:
-            raise Exception(
+            raise ValueError(
                 "Unknown type for initialization of variational posteriors."
             )
 
@@ -1119,7 +1119,7 @@ def _negelcbo(
         compute_var = beta != 0
 
     if compute_grad and beta != 0 and compute_var != 2:
-        raise Exception(
+        raise NotImplementedError(
             "Computation of the gradient of ELBO with full variance not "
             "supported"
         )
@@ -1183,7 +1183,7 @@ def _negelcbo(
     #               optimization
     if separate_K:
         if compute_grad:
-            raise Exception(
+            raise ValueError(
                 "Computing the gradient of variational parameters and "
                 "requesting per-component results at the same time."
             )
@@ -1365,7 +1365,7 @@ def _gplogjoint(
 
     compute_vargrad = compute_var and np.any(grad_flags)
     if compute_vargrad and compute_var != 2:
-        raise Exception(
+        raise NotImplementedError(
             "Computation of gradient of log joint variance is currently "
             "available only for diagonal approximation of the variance."
         )
