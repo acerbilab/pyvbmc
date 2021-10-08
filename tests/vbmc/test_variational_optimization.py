@@ -1,16 +1,30 @@
-import numpy as np
-
 import gpyreg as gpr
-
-from pyvbmc.vbmc import Options
+import numpy as np
+from pyvbmc.stats import kldiv_mvn
 from pyvbmc.variational_posterior import VariationalPosterior
+from pyvbmc.vbmc import Options
 from pyvbmc.vbmc.variational_optimization import (
-    _vp_bound_loss,
-    _soft_bound_loss,
-    _negelcbo,
     _gplogjoint,
+    _negelcbo,
+    _soft_bound_loss,
+    _vp_bound_loss,
+    optimize_vp,
     update_K,
 )
+from scipy.stats import norm
+
+
+def setup_options(D: int, user_options: dict = None):
+    if user_options is None:
+        user_options = {}
+
+    basic_path = "./pyvbmc/vbmc/option_configs/basic_vbmc_options.ini"
+    options = Options(
+        basic_path, evaluation_parameters={"D": D}, user_options=user_options
+    )
+    advanced_path = "./pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini"
+    options.load_options_file(advanced_path, evaluation_parameters={"D": D})
+    return options
 
 
 def test_soft_bound_loss():
@@ -47,14 +61,7 @@ def test_update_K():
     iteration_history = {}
 
     # Load options
-    options = Options(
-        "./pyvbmc/vbmc/option_configs/basic_vbmc_options.ini",
-        evaluation_parameters={"D": D},
-    )
-    options.load_options_file(
-        "./pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini",
-        evaluation_parameters={"D": D},
-    )
+    options = setup_options(D)
 
     # Check right after start up we do nothing.
     assert update_K(optim_state, iteration_history, options) == 2
@@ -226,3 +233,60 @@ def test_vp_bound_loss():
     assert np.isclose(L, 178.1123635679098)
     assert np.isclose(dL[-1], 356.2247271358195)
     assert np.all(dL[:-1] == 0.0)
+
+
+def test_vp_optimize_1D_g_mixture():
+    """
+    Test that the VP is being optimized to the 1D Gaussian Mixture ground truth.
+    """
+
+    D = 1
+
+    # fit GP to mixture logpdf
+    X = np.linspace(-5, 5, 200)
+    mixture_logpdf = lambda x: np.log(
+        0.5 * norm.pdf(x, loc=-2, scale=1) + 0.5 * norm.pdf(x, loc=2, scale=1)
+    )
+    y = mixture_logpdf(X)
+    X = np.reshape(X, (-1, 1))
+    y = np.reshape(y, (-1, 1))
+    gp = gpr.GP(
+        D=D,
+        covariance=gpr.covariance_functions.SquaredExponential(),
+        mean=gpr.mean_functions.NegativeQuadratic(),
+        noise=gpr.noise_functions.GaussianNoise(),
+    )
+    gp.fit(X, y)
+
+    # optimize new VP
+    vp = VariationalPosterior(D=D, K=2)
+    optim_state = dict()
+    optim_state["warmup"] = True
+    optim_state["delta"] = np.zeros((1, D))
+    optim_state["entropy_switch"] = False
+    optim_state["vp_repo"] = []
+
+    options = setup_options(D, {})
+    vp, _, _ = optimize_vp(options, optim_state, vp, gp, 10, 1)
+
+    # ELBO should be equal to the log normalization constant of the distribution
+    # that is 0 for a normalized density
+    assert np.abs(vp.stats["elbo"]) < 1e-2 * 1.25
+
+    # compute kldiv between gaussian mixture and vp
+    vp_samples, _ = vp.sample(int(10e6))
+    vp_mu = np.mean(vp_samples)
+    vp_sigma = np.std(vp_samples)
+
+    mixture_samples = np.concatenate(
+        (
+            norm.rvs(loc=-2, scale=1, size=int(10e6 // 2)),
+            norm.rvs(loc=2, scale=1, size=int(10e6 // 2)),
+        )
+    )
+    mixture_mu = np.mean(mixture_samples)
+    mixture_sigma = np.std(mixture_samples)
+    assert np.all(
+        np.abs(kldiv_mvn(mixture_mu, mixture_sigma, vp_mu, vp_sigma))
+        < 1e-4 * 1.25
+    )
