@@ -352,3 +352,59 @@ def test_vp_optimize_2D_g_mixture():
     assert np.all(
         np.abs(kldiv_mvn(mixture_mu, mixture_sigma, vp_mu, vp_sigma)) < 1e-3
     )
+
+def test_vp_optimize_deterministic_entropy_approximation():
+    """
+    Test that the VP is being optimized to the 1D Gaussian Mixture ground truth.
+    Do this with the deterministic entropy approximation.
+    """
+    D = 1
+
+    # fit GP to mixture logpdf
+    X = np.linspace(-5, 5, 200)
+    mixture_logpdf = lambda x: np.log(
+        0.5 * norm.pdf(x, loc=-2, scale=1) + 0.5 * norm.pdf(x, loc=2, scale=1)
+    )
+    y = mixture_logpdf(X)
+    X = np.reshape(X, (-1, 1))
+    y = np.reshape(y, (-1, 1))
+    gp = gpr.GP(
+        D=D,
+        covariance=gpr.covariance_functions.SquaredExponential(),
+        mean=gpr.mean_functions.NegativeQuadratic(),
+        noise=gpr.noise_functions.GaussianNoise(),
+    )
+    gp.fit(X, y)
+
+    # optimize new VP
+    vp = VariationalPosterior(D=D, K=2)
+    optim_state = dict()
+    optim_state["warmup"] = True
+    optim_state["delta"] = np.zeros((1, D))
+    optim_state["entropy_switch"] = True
+    optim_state["vp_repo"] = []
+
+    options = setup_options(D, {})
+    vp, _, _ = optimize_vp(options, optim_state, vp, gp, 10, 1)
+
+    # ELBO should be equal to the log normalization constant of the distribution
+    # that is 0 for a normalized density
+    assert np.abs(vp.stats["elbo"]) < 0.25
+
+    # compute kldiv between gaussian mixture and vp
+    vp_samples, _ = vp.sample(int(10e6))
+    vp_mu = np.mean(vp_samples)
+    vp_sigma = np.std(vp_samples)
+
+    mixture_samples = np.concatenate(
+        (
+            norm.rvs(loc=-2, scale=1, size=int(10e6 // 2)),
+            norm.rvs(loc=2, scale=1, size=int(10e6 // 2)),
+        )
+    )
+    mixture_mu = np.mean(mixture_samples)
+    mixture_sigma = np.std(mixture_samples)
+    assert np.all(
+        np.abs(kldiv_mvn(mixture_mu, mixture_sigma, vp_mu, vp_sigma))
+        < 1e-4 * 1.25
+    )
