@@ -11,7 +11,7 @@ from pyvbmc.vbmc.variational_optimization import (
     optimize_vp,
     update_K,
 )
-from scipy.stats import norm
+from scipy.stats import multivariate_normal, norm
 
 
 def setup_options(D: int, user_options: dict = None):
@@ -271,7 +271,7 @@ def test_vp_optimize_1D_g_mixture():
 
     # ELBO should be equal to the log normalization constant of the distribution
     # that is 0 for a normalized density
-    assert np.abs(vp.stats["elbo"]) < 1e-2 * 1.25
+    assert np.abs(vp.stats["elbo"]) < 1e-2 * 2.5
 
     # compute kldiv between gaussian mixture and vp
     vp_samples, _ = vp.sample(int(10e6))
@@ -289,4 +289,66 @@ def test_vp_optimize_1D_g_mixture():
     assert np.all(
         np.abs(kldiv_mvn(mixture_mu, mixture_sigma, vp_mu, vp_sigma))
         < 1e-4 * 1.25
+    )
+
+
+def test_vp_optimize_2D_g_mixture():
+    """
+    Test that the VP is being optimized to the 2D Gaussian Mixture ground truth.
+    """
+    D = 2
+
+    # fit GP to mixture logpdf
+    X, Y = np.meshgrid(np.linspace(-5, 5, 10), np.linspace(-5, 5, 10))
+    Z = np.array(
+        [
+            [[X[i, j], Y[i, j]] for j in range(X.shape[1])]
+            for i in range(X.shape[0])
+        ]
+    )
+    mixture_logpdf = lambda x: np.log(
+        0.5 * multivariate_normal.pdf(x, mean=[-2, 0], cov=1)
+        + 0.5 * multivariate_normal.pdf(x, mean=[2, 0], cov=1)
+    )
+    y = mixture_logpdf(Z)
+
+    gp = gpr.GP(
+        D=D,
+        covariance=gpr.covariance_functions.SquaredExponential(),
+        mean=gpr.mean_functions.NegativeQuadratic(),
+        noise=gpr.noise_functions.GaussianNoise(),
+    )
+    Z = Z.reshape(-1, 2)
+    gp.fit(Z, y.reshape(-1, 1))
+
+    # optimize new VP
+    vp = VariationalPosterior(D=D, K=2)
+    optim_state = dict()
+    optim_state["warmup"] = True
+    optim_state["delta"] = np.zeros((1, D))
+    optim_state["entropy_switch"] = False
+    optim_state["vp_repo"] = []
+
+    options = setup_options(D, {})
+    vp, _, _ = optimize_vp(options, optim_state, vp, gp, 10, 1)
+
+    # ELBO should be equal to the log normalization constant of the distribution
+    # that is 0 for a normalized density
+    assert np.abs(vp.stats["elbo"]) < 1e-2 * 5
+
+    # compute kldiv between gaussian mixture and vp
+    vp_samples, _ = vp.sample(int(10e6))
+    vp_mu = np.mean(vp_samples)
+    vp_sigma = np.std(vp_samples)
+
+    mixture_samples = np.concatenate(
+        (
+            multivariate_normal.rvs(mean=[-2, 0], cov=1, size=int(10e6 // 2)),
+            multivariate_normal.rvs(mean=[2, 0], cov=1, size=int(10e6 // 2)),
+        )
+    )
+    mixture_mu = np.mean(mixture_samples)
+    mixture_sigma = np.std(mixture_samples)
+    assert np.all(
+        np.abs(kldiv_mvn(mixture_mu, mixture_sigma, vp_mu, vp_sigma)) < 1e-3
     )
