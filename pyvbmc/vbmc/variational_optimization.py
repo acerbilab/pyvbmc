@@ -167,7 +167,7 @@ def optimize_vp(
         # Set basic options for deterministic (?) optimizer
         compute_grad = True
     else:
-        # TODO: Is there a suitable replacement for CMAES which works? 
+        # TODO: Is there a suitable replacement for CMAES which works?
         raise ValueError("""Gradients must be available for the optimizer.""")
 
     vp0_fine = {}
@@ -231,71 +231,13 @@ def optimize_vp(
                 jac=compute_grad,
                 tol=options["detenttolopt"],
             )
+
             if not res.success:
-                # SciPy minimize failed, try with CMA-ES
-                # TODO: do this with a logging tool
-                print(
-                    "Cannot optimize variational parameters with "
-                    "scipy.optimize.minimize. Trying with CMA-ES (slower)."
+                # SciPy minimize failed
+                raise RuntimeError(
+                    "Cannot optimize variational parameters with",
+                    "scipy.optimize.minimize.",
                 )
-
-                # Objective function with no gradient computation.
-                def vbtrain_fun2(theta_):
-                    res = _negelcbo(
-                        theta_,
-                        gp,
-                        vp0,
-                        elcbo_beta,
-                        0,
-                        compute_grad=False,
-                        compute_var=compute_var,
-                        theta_bnd=theta_bnd,
-                    )
-                    return res[0]
-
-                # Construct sigma list and lower/upper bounds.
-                # Restricting the range of lambda and sigma is important
-                # since the optimization is done in log-space, so too large
-                # values can cause numerical overflows.
-                insigma_list = []
-                lower_list = []
-                upper_list = []
-                if vp.optimize_mu:
-                    tmp = np.tile(
-                        vp.bounds["mu_ub"] - vp.bounds["mu_lb"], (K,)
-                    )
-                    insigma_list.append(tmp)
-                    lower_list.append(np.full(tmp.shape, -np.inf))
-                    upper_list.append(np.full(tmp.shape, np.inf))
-                if vp.optimize_sigma:
-                    insigma_list.append(np.ones((K,)))
-                    lower_list.append(np.full((K,), -50))
-                    upper_list.append(np.full((K,), 50))
-                if vp.optimize_lambd:
-                    insigma_list.append(np.ones((vp.D,)))
-                    lower_list.append(np.full((vp.D,), -50))
-                    upper_list.append(np.full((vp.D,), 50))
-                if vp.optimize_weights:
-                    insigma_list.append(np.ones((K,)))
-                    lower_list.append(np.full((K,), -np.inf))
-                    upper_list.append(np.full((K,), np.inf))
-                insigma = np.concatenate(insigma_list)
-                lower = np.concatenate(lower_list)
-                upper = np.concatenate(upper_list)
-
-                cma_options = {
-                    "verbose": -9,
-                    "tolx": 1e-8 * np.max(insigma),
-                    "tolfun": 1e-6,
-                    "tolfunhist": 1e-7,
-                    "maxfevals": 200 * (vp.D + 2),
-                    "CMA_active": True,
-                    "bounds": (lower, upper),
-                }
-                res = cma.fmin(
-                    vbtrain_fun2, theta0, np.max(insigma), options=cma_options
-                )
-                theta_opt = res[0]
             else:
                 theta_opt = res.x
         else:
@@ -798,7 +740,7 @@ def _sieve(
 
     if init_N > 0:
         # Get high-posterior density points
-        X_star, y_star, _ , _= get_hpd(gp.X, gp.y, options["hpdfrac"])
+        X_star, y_star, _, _ = get_hpd(gp.X, gp.y, options["hpdfrac"])
 
         # Generate a bunch of random candidate variational parameters.
         if best_N == 1:
