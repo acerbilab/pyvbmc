@@ -11,7 +11,7 @@ Porting status
      - init a GP (wait for GPLite to be completed)
      - experimental features (listed in `vbmc.m <https://github.com/lacerbi/vbmc/blob/master/vbmc.m>`_ have not been ported yet)
      - `acqhedge_vbmc.m <https://github.com/lacerbi/vbmc/blob/master/private/acqhedge_vbmc.m>`_ has not been ported yet as it is considered to be experimental
-     - the warping in `vbmc.m <https://github.com/lacerbi/vbmc/blob/master/vbmc.m>`_ has not been ported yet as it is considered to be experimental
+     - the warping in `vbmc.m <https://github.com/lacerbi/vbmc/blob/master/vbmc.m>`_ is part of the 2020 paper and is well tested. We will implement it later as VBMC can run without it.
      - in variational_optimization.py the compute vargrad is untested
 
 Matlab references of ported methods
