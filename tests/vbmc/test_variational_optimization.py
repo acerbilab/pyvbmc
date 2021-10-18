@@ -118,7 +118,6 @@ def test_gplogjoint():
         open("./tests/variational_posterior/mu.dat", "rb"), delimiter=","
     )
     vp.eta = vp.eta.flatten()
-    vp.sigma = vp.sigma.flatten()
     vp.lambd = vp.lambd.flatten()
 
     gp = gpr.GP(
@@ -264,7 +263,6 @@ def test_vp_optimize_1D_g_mixture():
     optim_state["warmup"] = True
     optim_state["delta"] = np.zeros((1, D))
     optim_state["entropy_switch"] = False
-    optim_state["vp_repo"] = []
 
     options = setup_options(D, {})
     vp, _, _ = optimize_vp(options, optim_state, vp, gp, 10, 1)
@@ -327,7 +325,6 @@ def test_vp_optimize_2D_g_mixture():
     optim_state["warmup"] = True
     optim_state["delta"] = np.zeros((1, D))
     optim_state["entropy_switch"] = False
-    optim_state["vp_repo"] = []
 
     options = setup_options(D, {})
     vp, _, _ = optimize_vp(options, optim_state, vp, gp, 10, 1)
@@ -382,7 +379,6 @@ def test_vp_optimize_deterministic_entropy_approximation():
     optim_state["warmup"] = True
     optim_state["delta"] = np.zeros((1, D))
     optim_state["entropy_switch"] = True
-    optim_state["vp_repo"] = []
 
     options = setup_options(D, {})
     vp, _, _ = optimize_vp(options, optim_state, vp, gp, 10, 1)

@@ -758,25 +758,7 @@ def _sieve(
             vp0_vec = np.concatenate([vp0_vec1, vp0_vec2, vp0_vec3])
             vp0_type = np.concatenate([vp0_type1, vp0_type2, vp0_type3])
 
-        if len(optim_state["vp_repo"]) > 0 and options["variationalinitrepo"]:
-            theta_N = np.size(vp0_vec[0].get_parameters())
-            idx = np.where(
-                [np.size(item) for item in optim_state["vp_repo"]] == theta_N
-            )[0]
-            if np.size(idx) > 0:
-                idx = [np.size(item) for item in optim_state["vp_repo"]].index(
-                    theta_N
-                )
-                vp0_list4 = []
-                for idx_i in idx:
-                    vp_new = copy.deepcopy(vp0_vec[0])
-                    vp_new.set_parameters(optim_state["vp_repo"][idx_i])
-                    vp0_list4.append(vp_new)
-                vp0_vec4 = np.array(vp0_list4)
-                vp0_vec = np.concatenate([vp0_vec, vp0_vec4])
-                vp0_type = np.concatenate(
-                    [vp0_type, np.ones((len(vp0_list4),))]
-                )
+        # in MATLAB the vp_repo is used here
 
         # Quickly estimate ELCBO at each candidate variational posterior.
         for i, vp0 in enumerate(vp0_vec):
@@ -1074,20 +1056,7 @@ def _negelcbo(
     jacobian_flag = 1
 
     # Reformat variational parameters from theta.
-    if vp.optimize_mu:
-        vp.mu = np.reshape(theta[: D * K], (D, K), order="F")
-        start_idx = D * K
-    else:
-        start_idx = 0
-
-    if vp.optimize_sigma:
-        # TODO: wrong size, reshape to (1, -1) and fix everything else
-        vp.sigma = np.exp(theta[start_idx : start_idx + K])
-        start_idx += K
-
-    if vp.optimize_lambd:
-        # TODO: wrong size, reshape to (-1, 1) and fix everything else.
-        vp.lambd = np.exp(theta[start_idx : start_idx + D]).T
+    vp.set_parameters(theta)
 
     if vp.optimize_weights:
         vp.eta = theta[-K:]
@@ -1097,8 +1066,6 @@ def _negelcbo(
         # below, but it might cause slightly different results
         # to MATLAB in some cases.
         # vp.eta = np.reshape(theta[-K:], (1, -1))
-        vp.w = np.exp(vp.eta)
-        vp.w /= np.sum(vp.w)
 
     # Which gradients should be computed, if any?
     if compute_grad:
@@ -1408,7 +1375,7 @@ def _gplogjoint(
         sn2_eff = 1 / gp.posteriors[s].sW[0] ** 2
 
         for k in range(0, K):
-            tau_k = np.sqrt(sigma[k] ** 2 * lambd ** 2 + ell ** 2 + delta ** 2)
+            tau_k = np.sqrt(sigma[:, k] ** 2 * lambd ** 2 + ell ** 2 + delta ** 2)
             lnnf_k = (
                 ln_sf2 + sum_lnell - np.sum(np.log(tau_k), axis=0)
             )  # Covariance normalization factor
@@ -1422,7 +1389,7 @@ def _gplogjoint(
                     / omega ** 2
                     * (
                         mu[:, k : k + 1] ** 2
-                        + sigma[k] ** 2 * lambd ** 2
+                        + sigma[:, k] ** 2 * lambd ** 2
                         - 2 * mu[:, k : k + 1] * xm
                         + xm ** 2
                         + delta ** 2
@@ -1446,27 +1413,27 @@ def _gplogjoint(
             if grad_flags[1]:
                 dz_dsigma = (
                     np.sum((lambd / tau_k) ** 2 * (delta_k ** 2 - 1), axis=0)
-                    * sigma[k]
+                    * sigma[:, k]
                     * z_k
                 )
                 sigma_grad[k, s] = w[k] * np.dot(dz_dsigma, alpha)
                 if quadratic_meanfun:
                     sigma_grad[k, s] -= (
                         w[k]
-                        * sigma[k]
+                        * sigma[:, k]
                         * np.sum(1 / omega ** 2 * lambd ** 2, axis=0)
                     )
 
             if grad_flags[2]:
                 dz_dlambd = (
-                    (sigma[k] / tau_k) ** 2
+                    (sigma[:, k] / tau_k) ** 2
                     * (delta_k ** 2 - 1)
                     * (lambd * z_k)
                 )
                 lambd_grad[:, s : s + 1] += w[k] * np.dot(dz_dlambd, alpha)
                 if quadratic_meanfun:
                     lambd_grad[:, s : s + 1] -= (
-                        w[k] * sigma[k] ** 2 / omega ** 2 * lambd
+                        w[k] * sigma[:, k] ** 2 / omega ** 2 * lambd
                     )
 
             if grad_flags[3]:
@@ -1478,14 +1445,14 @@ def _gplogjoint(
             elif compute_var:
                 for j in range(0, k + 1):
                     tau_j = np.sqrt(
-                        sigma[j] ** 2 * lambd ** 2 + ell ** 2 + delta ** 2
+                        sigma[:, j] ** 2 * lambd ** 2 + ell ** 2 + delta ** 2
                     )
                     lnnf_j = ln_sf2 + sum_lnell - np.sum(np.log(tau_j), axis=0)
                     delta_j = (mu[:, j : j + 1] - gp.X.T) / tau_j
                     z_j = np.exp(lnnf_j - 0.5 * np.sum(delta_j ** 2, axis=0))
 
                     tau_jk = np.sqrt(
-                        (sigma[j] ** 2 + sigma[k] ** 2) * lambd ** 2
+                        (sigma[:, j] ** 2 + sigma[:, k] ** 2) * lambd ** 2
                         + ell ** 2
                         + 2 * delta ** 2
                     )
