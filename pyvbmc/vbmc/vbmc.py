@@ -1,20 +1,21 @@
-import sys
-import math
 import copy
+import math
+import os
+import sys
 
-import numpy as np
 import gpyreg as gpr
+import numpy as np
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.stats import kldiv_mvn
 from pyvbmc.timer import Timer
 from pyvbmc.variational_posterior import VariationalPosterior
 
-from .gaussian_process_train import train_gp, reupdate_gp
-from .variational_optimization import update_K, optimize_vp
-from .options import Options
-from .iteration_history import IterationHistory
 from .active_sample import active_sample
+from .gaussian_process_train import reupdate_gp, train_gp
+from .iteration_history import IterationHistory
+from .options import Options
+from .variational_optimization import optimize_vp, update_K
 
 
 class VBMC:
@@ -112,7 +113,8 @@ class VBMC:
         )
 
         # load basic and advanced options and validate the names
-        basic_path = "./pyvbmc/vbmc/option_configs/basic_vbmc_options.ini"
+        pyvbmc_path =  os.path.dirname(os.path.realpath(__file__))
+        basic_path = pyvbmc_path+"/option_configs/basic_vbmc_options.ini"
         self.options = Options(
             basic_path,
             evaluation_parameters={"D": self.D},
@@ -120,7 +122,7 @@ class VBMC:
         )
 
         advanced_path = (
-            "./pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini"
+            pyvbmc_path+"/option_configs/advanced_vbmc_options.ini"
         )
         self.options.load_options_file(
             advanced_path,
