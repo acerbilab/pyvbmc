@@ -4,7 +4,6 @@ import math
 import copy
 import numpy as np
 import scipy as sp
-import cma
 
 import gpyreg as gpr
 
