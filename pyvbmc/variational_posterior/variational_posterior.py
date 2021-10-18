@@ -136,7 +136,9 @@ class VariationalPosterior:
 
         # Set bounds for log weight parameters of variation components.
         if self.optimize_weights:
-            self.bounds["eta_lb"] = np.log(0.5 * options["tolweight"])
+            # prevent warning to be printed when doing final boost
+            with np.errstate(divide='ignore'):
+                self.bounds["eta_lb"] = np.log(0.5 * options["tolweight"])
             self.bounds["eta_ub"] = 0
 
         lb_list = []
