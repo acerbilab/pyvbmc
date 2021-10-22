@@ -738,6 +738,7 @@ class VBMC:
                         new_funevals,
                         self.optim_state,
                         self.function_logger,
+                        self.iteration_history,
                         self.vp,
                         self.options,
                     )

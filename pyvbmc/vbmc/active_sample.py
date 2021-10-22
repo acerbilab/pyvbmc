@@ -1,19 +1,26 @@
 import logging
 import math
+import copy
+import cma
 
 import numpy as np
+import gpyreg as gpr
+
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.stats import get_hpd
+from pyvbmc.vbmc.gaussian_process_train import train_gp, reupdate_gp
+from pyvbmc.vbmc.iteration_history import IterationHistory
 from .options import Options
 
 
 def active_sample(
-    gp,
+    gp: gpr.GP,
     sample_count: int,
     optim_state: dict,
     function_logger: FunctionLogger,
+    iteration_history: IterationHistory,
     vp: VariationalPosterior,
     options: Options,
 ):
@@ -92,9 +99,8 @@ def active_sample(
                         np.random.standard_normal(
                             (sample_count - provided_sample_count, D)
                         )
-                        - 0.5 * 0.1 * (pub - plb)
-                        + start_Xs
-                    )
+                        - 0.5
+                    ) * 0.1 * (pub - plb) + start_Xs
                     random_Xs = np.minimum((np.maximum(random_Xs, plb)), pub)
 
                 else:
@@ -344,7 +350,7 @@ def _get_search_points(
             random_Xs = np.append(random_Xs, vp_Xs, axis=0)
 
         search_X = np.append(search_X, random_Xs, axis=0)
-        idx_cache = np.append(idx_cache, np.full(N_random_points, np.NaN))
+        idx_cache = np.append(idx_cache, np.full(N_random_points, -1))
 
     # Apply search bounds
     search_X = np.minimum((np.maximum(search_X, lb_search)), ub_search)

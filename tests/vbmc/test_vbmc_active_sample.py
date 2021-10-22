@@ -47,6 +47,7 @@ def test_active_sample_initial_sample_no_y_values():
         sample_count=sample_count,
         optim_state=vbmc.optim_state,
         function_logger=vbmc.function_logger,
+        iteration_history=vbmc.iteration_history,
         vp=vbmc.vp,
         options=vbmc.options,
     )
@@ -84,6 +85,7 @@ def test_active_sample_initial_sample_y_values():
         sample_count=sample_count,
         optim_state=vbmc.optim_state,
         function_logger=vbmc.function_logger,
+        iteration_history=vbmc.iteration_history,
         vp=vbmc.vp,
         options=vbmc.options,
     )
@@ -92,10 +94,7 @@ def test_active_sample_initial_sample_y_values():
         function_logger.X_orig[:10], X_orig, rtol=1e-12, atol=1e-14
     )
     assert np.allclose(
-        np.ravel(function_logger.y_orig[:10]),
-        y_orig,
-        rtol=1e-12,
-        atol=1e-14,
+        np.ravel(function_logger.y_orig[:10]), y_orig, rtol=1e-12, atol=1e-14,
     )
     assert np.all(np.isnan(optim_state["cache"]["x_orig"][:10]))
     assert np.all(np.isnan(optim_state["cache"]["y_orig"][:10]))
@@ -132,6 +131,7 @@ def test_active_sample_initial_sample_plausible(mocker):
         sample_count=sample_count,
         optim_state=vbmc.optim_state,
         function_logger=vbmc.function_logger,
+        iteration_history=vbmc.iteration_history,
         vp=vbmc.vp,
         options=vbmc.options,
     )
@@ -141,10 +141,7 @@ def test_active_sample_initial_sample_plausible(mocker):
         function_logger.X_orig[:10], X_orig, rtol=1e-12, atol=1e-14
     )
     assert np.allclose(
-        np.ravel(function_logger.y_orig[:10]),
-        y_orig,
-        rtol=1e-12,
-        atol=1e-14,
+        np.ravel(function_logger.y_orig[:10]), y_orig, rtol=1e-12, atol=1e-14,
     )
     assert np.all(np.isnan(optim_state["cache"]["x_orig"][:10]))
     assert np.all(np.isnan(optim_state["cache"]["y_orig"][:10]))
@@ -191,6 +188,7 @@ def test_active_sample_initial_sample_narrow(mocker):
         sample_count=sample_count,
         optim_state=vbmc.optim_state,
         function_logger=vbmc.function_logger,
+        iteration_history=vbmc.iteration_history,
         vp=vbmc.vp,
         options=vbmc.options,
     )
@@ -200,10 +198,7 @@ def test_active_sample_initial_sample_narrow(mocker):
         function_logger.X_orig[:10], X_orig, rtol=1e-12, atol=1e-14
     )
     assert np.allclose(
-        np.ravel(function_logger.y_orig[:10]),
-        y_orig,
-        rtol=1e-12,
-        atol=1e-14,
+        np.ravel(function_logger.y_orig[:10]), y_orig, rtol=1e-12, atol=1e-14,
     )
     assert np.all(np.isnan(optim_state["cache"]["x_orig"][:10]))
     assert np.all(np.isnan(optim_state["cache"]["y_orig"][:10]))
@@ -237,6 +232,7 @@ def test_active_sample_initial_sample_unknown_initial_design():
             sample_count=sample_count,
             optim_state=vbmc.optim_state,
             function_logger=vbmc.function_logger,
+            iteration_history=vbmc.iteration_history,
             vp=vbmc.vp,
             options=vbmc.options,
         )
@@ -255,6 +251,7 @@ def test_active_sample_logger():
         sample_count=1,
         optim_state=vbmc.optim_state,
         function_logger=vbmc.function_logger,
+        iteration_history=vbmc.iteration_history,
         vp=vbmc.vp,
         options=vbmc.options,
     )
@@ -268,6 +265,7 @@ def test_active_sample_logger():
         sample_count=1,
         optim_state=vbmc.optim_state,
         function_logger=vbmc.function_logger,
+        iteration_history=vbmc.iteration_history,
         vp=vbmc.vp,
         options=vbmc.options,
     )
@@ -280,6 +278,7 @@ def test_active_sample_logger():
         sample_count=1,
         optim_state=vbmc.optim_state,
         function_logger=vbmc.function_logger,
+        iteration_history=vbmc.iteration_history,
         vp=vbmc.vp,
         options=vbmc.options,
     )
@@ -293,6 +292,7 @@ def test_active_sample_logger():
         sample_count=1,
         optim_state=vbmc.optim_state,
         function_logger=vbmc.function_logger,
+        iteration_history=vbmc.iteration_history,
         vp=vbmc.vp,
         options=vbmc.options,
     )
@@ -318,6 +318,7 @@ def test_active_sample_initial_sample_more_provided(caplog):
         sample_count=sample_count,
         optim_state=vbmc.optim_state,
         function_logger=vbmc.function_logger,
+        iteration_history=vbmc.iteration_history,
         vp=vbmc.vp,
         options=vbmc.options,
     )
@@ -403,7 +404,7 @@ def test_get_search_points_all_search_cache():
     assert np.all(search_X == X)
     assert search_X.shape == (number_of_points, 3)
     assert idx_cache.shape == (number_of_points,)
-    assert np.all(np.isnan(idx_cache))
+    assert np.all(idx_cache == -1)
 
 
 def test_get_search_points_search_bounds():
@@ -469,7 +470,7 @@ def test_get_search_points_all_heavytailsearch():
     )
     assert search_X.shape == (number_of_points, 3)
     assert idx_cache.shape == (number_of_points,)
-    assert np.all(np.isnan(idx_cache))
+    assert np.all(idx_cache == -1)
 
 
 def test_get_search_points_all_mvn():
@@ -501,7 +502,7 @@ def test_get_search_points_all_mvn():
     )
     assert search_X.shape == (number_of_points, 3)
     assert idx_cache.shape == (number_of_points,)
-    assert np.all(np.isnan(idx_cache))
+    assert np.all(idx_cache == -1)
 
 
 def test_get_search_points_all_mvn_vp_sample():
@@ -533,7 +534,7 @@ def test_get_search_points_all_mvn_vp_sample():
     )
     assert search_X.shape == (number_of_points, 3)
     assert idx_cache.shape == (number_of_points,)
-    assert np.all(np.isnan(idx_cache))
+    assert np.all(idx_cache == -1)
 
 
 def test_get_search_points_all_box_search(mocker):
@@ -560,13 +561,10 @@ def test_get_search_points_all_box_search(mocker):
 
     # return a linespace so that random samples are predicatable.
     random_values = np.linspace(
-        (-100, -100, -100),
-        (100, 100, 100),
-        number_of_points,
+        (-100, -100, -100), (100, 100, 100), number_of_points,
     )
     mocker.patch(
-        "numpy.random.standard_normal",
-        return_value=random_values,
+        "numpy.random.standard_normal", return_value=random_values,
     )
     # infinite bounds
     vbmc.optim_state["LB_search"] = np.full((1, 3), -np.inf)
@@ -580,7 +578,7 @@ def test_get_search_points_all_box_search(mocker):
     )
     assert search_X.shape == (number_of_points, 3)
     assert idx_cache.shape == (number_of_points,)
-    assert np.all(np.isnan(idx_cache))
+    assert np.all(idx_cache == -1)
     box_lb = -0.5 - 3
     box_ub = 0.5 + 3
     assert np.all(search_X == random_values * (box_ub - box_lb) + box_lb)
@@ -597,7 +595,7 @@ def test_get_search_points_all_box_search(mocker):
     )
     assert search_X.shape == (number_of_points, 3)
     assert idx_cache.shape == (number_of_points,)
-    assert np.all(np.isnan(idx_cache))
+    assert np.all(idx_cache == -1)
     box_lb = -4.5
     box_ub = 13.5
     assert np.all(search_X == random_values * (box_ub - box_lb) + box_lb)
@@ -644,7 +642,7 @@ def test_get_search_points_all_hpd_search(mocker):
     )
     assert search_X.shape == (number_of_points, 3)
     assert idx_cache.shape == (number_of_points,)
-    assert np.all(np.isnan(idx_cache))
+    assert np.all(idx_cache == -1)
 
 
 def test_get_search_points_all_hpd_search_empty_get_hpd(mocker):
@@ -690,7 +688,7 @@ def test_get_search_points_all_hpd_search_empty_get_hpd(mocker):
     )
     assert search_X.shape == (number_of_points, 3)
     assert idx_cache.shape == (number_of_points,)
-    assert np.all(np.isnan(idx_cache))
+    assert np.all(idx_cache == -1)
 
 
 def test_get_search_points_more_points_randomly_than_requested():
