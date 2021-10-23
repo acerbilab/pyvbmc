@@ -738,7 +738,12 @@ class VBMC:
                     # funwrapper,vp,vp_old,gp_search,options)
                     sys.exit("Function currently not supported")
                 else:
-                    active_sample(
+                    self.optim_state["hyp_dict"] = hyp_dict
+                    (
+                        self.function_logger,
+                        self.optim_state,
+                        self.vp,
+                    ) = active_sample(
                         gp_search,
                         new_funevals,
                         self.optim_state,
@@ -747,6 +752,7 @@ class VBMC:
                         self.vp,
                         self.options,
                     )
+                    hyp_dict = self.optim_state["hyp_dict"]
 
             # Number of training inputs
             self.optim_state["N"] = self.function_logger.Xn
