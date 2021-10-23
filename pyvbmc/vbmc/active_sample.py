@@ -46,9 +46,11 @@ def active_sample(
     Returns
     -------
     function_logger : FunctionLogger
-        The FunctionLogger from the VBMC instance this function is called from.
+        The updated FunctionLogger.
     optim_state : dict
-        The optim_state from the VBMC instance this function is called from.
+        The updated optim_state.
+    vp: VariationalPosterior
+        The updated variation posterior. 
     """
     # TODO: The timer is missing for now, we have to setup it throught pyvbmc.
 
