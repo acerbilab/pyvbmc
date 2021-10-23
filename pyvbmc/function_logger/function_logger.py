@@ -70,7 +70,8 @@ class FunctionLogger:
         Parameters
         ----------
         x : np.ndarray
-            The point at which the function will be evaluated.
+            The point at which the function will be evaluated. The shape of x 
+            should be (1, D) or (D,).
 
         Returns
         -------
@@ -91,7 +92,9 @@ class FunctionLogger:
         """
 
         timer = Timer()
-
+        if x.ndim > 1:
+            x = x.squeeze()
+        assert x.size == x.shape[0]
         # Convert back to original space
         if self.transform_parameters:
             x_orig = self.parameter_transformer.inverse(
@@ -110,6 +113,9 @@ class FunctionLogger:
                     fsd = 1
                 else:
                     fsd = None
+            if isinstance(fval_orig, np.ndarray):
+                # fval_orig can only be an array with size 1
+                fval_orig = fval_orig.item()
             timer.stop_timer("funtime")
 
         except Exception as err:
@@ -165,7 +171,8 @@ class FunctionLogger:
         Parameters
         ----------
         x : np.ndarray
-            The point at which the function has been evaluated.
+            The point at which the function has been evaluated. The shape of x 
+            should be (1, D) or (D,).
         fval_orig : float
             The result of the evaluation of the function.
         fsd : float, optional
@@ -192,6 +199,9 @@ class FunctionLogger:
             Raise if the (estimated) SD (second function output)
             is not a finite, positive real-valued scalar.
         """
+        if x.ndim > 1:
+            x = x.squeeze()
+        assert x.size == x.shape[0]
         # Convert back to original space
         if self.transform_parameters:
             x_orig = self.parameter_transformer.inverse(
