@@ -837,7 +837,7 @@ def _sieve(
 
     # Number of samples per component for preliminary MC approximation
     # of the entropy.
-    nsent_K_fast = math.ceil(options.eval("nsentfast", {"unknown": K}) / K)
+    nsent_K_fast = math.ceil(options.eval("nsentfast", {"K": K}) / K)
 
     # Deterministic entropy if entropy switch is on or only one component
     if optim_state["entropy_switch"] or K == 1:
@@ -858,7 +858,7 @@ def _sieve(
 
     if init_N > 0:
         # Get high-posterior density points
-        X_star, y_star, _ , _= get_hpd(gp.X, gp.y, options["hpdfrac"])
+        X_star, y_star, _, _ = get_hpd(gp.X, gp.y, options["hpdfrac"])
 
         # Generate a bunch of random candidate variational parameters.
         if best_N == 1:
@@ -901,14 +901,7 @@ def _sieve(
         for i, vp0 in enumerate(vp0_vec):
             theta = vp0.get_parameters()
             nelbo_tmp, _, _, _, varF_tmp = _negelcbo(
-                theta,
-                gp,
-                vp0,
-                0,
-                nsent_K_fast,
-                0,
-                compute_var,
-                theta_bnd,
+                theta, gp, vp0, 0, nsent_K_fast, 0, compute_var, theta_bnd,
             )
             nelcbo_fill[i] = nelbo_tmp + elcbo_beta * np.sqrt(varF_tmp)
 
@@ -1045,8 +1038,7 @@ def _vbinit(
             if vp.optimize_mu:
                 order = np.random.permutation(N_star)
                 idx_order = np.tile(
-                    range(0, min(K_new, N_star)),
-                    (math.ceil(K_new / N_star),),
+                    range(0, min(K_new, N_star)), (math.ceil(K_new / N_star),),
                 )
                 mu = X_star[order[idx_order[0:K_new]], :].T
             else:
@@ -1212,7 +1204,7 @@ def _negelcbo(
         vp.eta = theta[-K:]
         vp.eta -= np.amax(vp.eta)
         vp.eta = np.reshape(vp.eta, (1, -1))
-        # Doing the above is more numericall robust than
+        # Doing the above is more numerically robust than
         # below, but it might cause slightly different results
         # to MATLAB in some cases.
         # vp.eta = np.reshape(theta[-K:], (1, -1))
@@ -1250,13 +1242,7 @@ def _negelcbo(
 
         if compute_var:
             G, _, varG, _, varGss, I_sk, J_sjk = _gplogjoint(
-                vp,
-                gp,
-                grad_flags,
-                avg_flag,
-                jacobian_flag,
-                compute_var,
-                True,
+                vp, gp, grad_flags, avg_flag, jacobian_flag, compute_var, True,
             )
         else:
             G, dG, _, _, _, I_sk, _ = _gplogjoint(
@@ -1268,21 +1254,11 @@ def _negelcbo(
         if compute_var:
             if compute_grad:
                 G, dG, varG, dvarG, varGss = _gplogjoint(
-                    vp,
-                    gp,
-                    grad_flags,
-                    avg_flag,
-                    jacobian_flag,
-                    compute_var,
+                    vp, gp, grad_flags, avg_flag, jacobian_flag, compute_var,
                 )
             else:
                 G, _, varG, _, varGss = _gplogjoint(
-                    vp,
-                    gp,
-                    grad_flags,
-                    avg_flag,
-                    jacobian_flag,
-                    compute_var,
+                    vp, gp, grad_flags, avg_flag, jacobian_flag, compute_var,
                 )
         else:
             G, dG, _, _, _ = _gplogjoint(
