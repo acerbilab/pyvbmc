@@ -86,9 +86,7 @@ def active_sample(
                     # Uniform random samples in the plausible box
                     # (in transformed space)
                     random_Xs = (
-                        np.random.standard_normal(
-                            (sample_count - provided_sample_count, D)
-                        )
+                        np.random.rand(sample_count - provided_sample_count, D)
                         * (pub - plb)
                         + plb
                     )
@@ -96,9 +94,7 @@ def active_sample(
                 elif options.get("initdesign") == "narrow":
                     start_Xs = parameter_transformer(Xs[0])
                     random_Xs = (
-                        np.random.standard_normal(
-                            (sample_count - provided_sample_count, D)
-                        )
+                        np.random.rand(sample_count - provided_sample_count, D)
                         - 0.5
                     ) * 0.1 * (pub - plb) + start_Xs
                     random_Xs = np.minimum((np.maximum(random_Xs, plb)), pub)
@@ -139,8 +135,12 @@ def active_sample(
             )
 
         # Remove points from starting cache
-        optim_state["cache"]["x_orig"][idx_remove] = None
-        optim_state["cache"]["y_orig"][idx_remove] = None
+        optim_state["cache"]["x_orig"] = np.delete(
+            optim_state["cache"]["x_orig"], idx_remove, 0
+        )
+        optim_state["cache"]["y_orig"] = np.delete(
+            optim_state["cache"]["y_orig"], idx_remove, 0
+        )
 
         Xs = parameter_transformer(Xs)
 
@@ -207,8 +207,8 @@ def _get_search_points(
     # Take some points from starting cache, if not empty
     x0 = np.copy(optim_state["cache"]["x_orig"])
 
-    lb_search = optim_state.get("LB_search")
-    ub_search = optim_state.get("UB_search")
+    lb_search = optim_state.get("lb_search")
+    ub_search = optim_state.get("ub_search")
 
     D = ub_search.shape[1]
 
@@ -350,7 +350,9 @@ def _get_search_points(
             random_Xs = np.append(random_Xs, vp_Xs, axis=0)
 
         search_X = np.append(search_X, random_Xs, axis=0)
-        idx_cache = np.append(idx_cache, np.full(N_random_points, -1))
+        idx_cache = np.append(idx_cache, np.full(N_random_points, -1)).astype(
+            int
+        )
 
     # Apply search bounds
     search_X = np.minimum((np.maximum(search_X, lb_search)), ub_search)

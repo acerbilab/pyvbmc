@@ -119,7 +119,7 @@ def test_active_sample_initial_sample_plausible(mocker):
 
     # return a linespace so that random_Xs is with mean 0
     mocker.patch(
-        "numpy.random.standard_normal",
+        "numpy.random.rand",
         return_value=np.linspace(
             (-100, -100, -100),
             (100, 100, 100),
@@ -176,7 +176,7 @@ def test_active_sample_initial_sample_narrow(mocker):
 
     # return a linespace so that random_Xs is with mean 0
     mocker.patch(
-        "numpy.random.standard_normal",
+        "numpy.random.rand",
         return_value=np.linspace(
             (-0.1, -0.1, -0.1),
             (0.1, 0.1, 0.1),
@@ -357,8 +357,8 @@ def test_get_search_points_all_cache():
     vbmc.optim_state["cache"]["x_orig"] = np.copy(x_orig)
 
     # no search bounds for test
-    vbmc.optim_state["LB_search"] = np.full((1, 3), -np.inf)
-    vbmc.optim_state["UB_search"] = np.full((1, 3), np.inf)
+    vbmc.optim_state["lb_search"] = np.full((1, 3), -np.inf)
+    vbmc.optim_state["ub_search"] = np.full((1, 3), np.inf)
     search_X, idx_cache = _get_search_points(
         number_of_points=number_of_points,
         optim_state=vbmc.optim_state,
@@ -392,8 +392,8 @@ def test_get_search_points_all_search_cache():
     vbmc.optim_state["searchcache"] = np.copy(X)
 
     # no search bounds for test
-    vbmc.optim_state["LB_search"] = np.full((1, 3), -np.inf)
-    vbmc.optim_state["UB_search"] = np.full((1, 3), np.inf)
+    vbmc.optim_state["lb_search"] = np.full((1, 3), -np.inf)
+    vbmc.optim_state["ub_search"] = np.full((1, 3), np.inf)
     search_X, idx_cache = _get_search_points(
         number_of_points=number_of_points,
         optim_state=vbmc.optim_state,
@@ -425,8 +425,8 @@ def test_get_search_points_search_bounds():
     vbmc.optim_state["cache"]["x_orig"] = np.copy(X)
 
     # no search bounds for test
-    vbmc.optim_state["LB_search"] = np.full((1, 3), 2)
-    vbmc.optim_state["UB_search"] = np.full((1, 3), 4)
+    vbmc.optim_state["lb_search"] = np.full((1, 3), 2)
+    vbmc.optim_state["ub_search"] = np.full((1, 3), 4)
     search_X, idx_cache = _get_search_points(
         number_of_points=number_of_points,
         optim_state=vbmc.optim_state,
@@ -459,8 +459,8 @@ def test_get_search_points_all_heavytailsearch():
     vbmc.optim_state["cache"]["x_orig"] = np.zeros(0)
 
     # no search bounds for test
-    vbmc.optim_state["LB_search"] = np.full((1, 3), -np.inf)
-    vbmc.optim_state["UB_search"] = np.full((1, 3), np.inf)
+    vbmc.optim_state["lb_search"] = np.full((1, 3), -np.inf)
+    vbmc.optim_state["ub_search"] = np.full((1, 3), np.inf)
     search_X, idx_cache = _get_search_points(
         number_of_points=number_of_points,
         optim_state=vbmc.optim_state,
@@ -491,8 +491,8 @@ def test_get_search_points_all_mvn():
     vbmc.optim_state["cache"]["x_orig"] = np.zeros(0)
 
     # no search bounds for test
-    vbmc.optim_state["LB_search"] = np.full((1, 3), -np.inf)
-    vbmc.optim_state["UB_search"] = np.full((1, 3), np.inf)
+    vbmc.optim_state["lb_search"] = np.full((1, 3), -np.inf)
+    vbmc.optim_state["ub_search"] = np.full((1, 3), np.inf)
     search_X, idx_cache = _get_search_points(
         number_of_points=number_of_points,
         optim_state=vbmc.optim_state,
@@ -523,8 +523,8 @@ def test_get_search_points_all_mvn_vp_sample():
     vbmc.optim_state["cache"]["x_orig"] = np.zeros(0)
 
     # no search bounds for test
-    vbmc.optim_state["LB_search"] = np.full((1, 3), -np.inf)
-    vbmc.optim_state["UB_search"] = np.full((1, 3), np.inf)
+    vbmc.optim_state["lb_search"] = np.full((1, 3), -np.inf)
+    vbmc.optim_state["ub_search"] = np.full((1, 3), np.inf)
     search_X, idx_cache = _get_search_points(
         number_of_points=number_of_points,
         optim_state=vbmc.optim_state,
@@ -567,8 +567,8 @@ def test_get_search_points_all_box_search(mocker):
         "numpy.random.standard_normal", return_value=random_values,
     )
     # infinite bounds
-    vbmc.optim_state["LB_search"] = np.full((1, 3), -np.inf)
-    vbmc.optim_state["UB_search"] = np.full((1, 3), np.inf)
+    vbmc.optim_state["lb_search"] = np.full((1, 3), -np.inf)
+    vbmc.optim_state["ub_search"] = np.full((1, 3), np.inf)
     search_X, idx_cache = _get_search_points(
         number_of_points=number_of_points,
         optim_state=vbmc.optim_state,
@@ -584,8 +584,8 @@ def test_get_search_points_all_box_search(mocker):
     assert np.all(search_X == random_values * (box_ub - box_lb) + box_lb)
 
     # finite bounds
-    vbmc.optim_state["LB_search"] = np.full((1, 3), -3000)
-    vbmc.optim_state["UB_search"] = np.full((1, 3), 3000)
+    vbmc.optim_state["lb_search"] = np.full((1, 3), -3000)
+    vbmc.optim_state["ub_search"] = np.full((1, 3), 3000)
     search_X, idx_cache = _get_search_points(
         number_of_points=number_of_points,
         optim_state=vbmc.optim_state,
@@ -631,8 +631,8 @@ def test_get_search_points_all_hpd_search(mocker):
     )
 
     # no search bounds for test
-    vbmc.optim_state["LB_search"] = np.full((1, 3), -np.inf)
-    vbmc.optim_state["UB_search"] = np.full((1, 3), np.inf)
+    vbmc.optim_state["lb_search"] = np.full((1, 3), -np.inf)
+    vbmc.optim_state["ub_search"] = np.full((1, 3), np.inf)
     search_X, idx_cache = _get_search_points(
         number_of_points=number_of_points,
         optim_state=vbmc.optim_state,
@@ -677,8 +677,8 @@ def test_get_search_points_all_hpd_search_empty_get_hpd(mocker):
     )
 
     # no search bounds for test
-    vbmc.optim_state["LB_search"] = np.full((1, 3), -np.inf)
-    vbmc.optim_state["UB_search"] = np.full((1, 3), np.inf)
+    vbmc.optim_state["lb_search"] = np.full((1, 3), -np.inf)
+    vbmc.optim_state["ub_search"] = np.full((1, 3), np.inf)
     search_X, idx_cache = _get_search_points(
         number_of_points=number_of_points,
         optim_state=vbmc.optim_state,
@@ -714,8 +714,8 @@ def test_get_search_points_more_points_randomly_than_requested():
     assert vbmc.function_logger.Xn == 9
 
     # no search bounds for test
-    vbmc.optim_state["LB_search"] = np.full((1, 3), -np.inf)
-    vbmc.optim_state["UB_search"] = np.full((1, 3), np.inf)
+    vbmc.optim_state["lb_search"] = np.full((1, 3), -np.inf)
+    vbmc.optim_state["ub_search"] = np.full((1, 3), np.inf)
 
     with pytest.raises(ValueError) as execinfo:
         _get_search_points(
