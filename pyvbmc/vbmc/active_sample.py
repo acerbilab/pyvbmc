@@ -37,6 +37,8 @@ def active_sample(
         The optim_state from the VBMC instance this function is called from.
     function_logger : FunctionLogger
         The FunctionLogger from the VBMC instance this function is called from.
+    iteration_history : IterationHistory
+        The IterationHistory from the VBMC instance this function is called from.
     vp : VariationalPosterior
         The VariationalPosterior from the VBMC instance this function is called
         from.

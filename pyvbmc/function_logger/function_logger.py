@@ -94,6 +94,8 @@ class FunctionLogger:
         timer = Timer()
         if x.ndim > 1:
             x = x.squeeze()
+        if x.ndim == 0:
+            x = np.atleast_1d(x)
         assert x.size == x.shape[0]
         # Convert back to original space
         if self.transform_parameters:
@@ -201,6 +203,8 @@ class FunctionLogger:
         """
         if x.ndim > 1:
             x = x.squeeze()
+        if x.ndim == 0:
+            x = np.atleast_1d(x)
         assert x.size == x.shape[0]
         # Convert back to original space
         if self.transform_parameters:
