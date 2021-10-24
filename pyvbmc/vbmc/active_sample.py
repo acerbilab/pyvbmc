@@ -400,7 +400,7 @@ def active_sample(
                         parameter_transformer,
                         optim_state["integervars"],
                     )
-                    idx_cache_acq = -1
+                    idx_cache_acq = np.nan
 
             # region
             ## Missing port
@@ -448,30 +448,23 @@ def active_sample(
             #             optim_state["repeatedobservationsstreak"] = 0
             # endregion
 
-            # First position is NaN (not from cache)
-            y_orig = np.hstack([np.nan, optim_state["cache"]["y_orig"]])
-            yacq = y_orig[idx_cache_acq + 1]
-            idx_nn = ~np.isnan(yacq)
-            if np.any(idx_nn):
-                yacq[idx_nn] += parameter_transformer.log_abs_det_jacobian(
-                    X_acq
-                )
+            # Missing port: line 356-361, unused?
 
             xnew = X_acq
-
             # See if chosen point comes from starting cache
             idx = idx_cache_acq
-            if idx >= 0:
-                y_orig = optim_state["cache"]["y_orig"][idx]
-            else:
+            if np.isnan(idx):
                 y_orig = np.nan
+            else:
+                idx = int(idx)
+                y_orig = optim_state["cache"]["y_orig"][idx]
 
             if np.isnan(y_orig):
                 # Function value is not available, evaluate
                 ynew, _, idx_new = function_logger(xnew)
             else:
                 ynew, _, idx_new = function_logger.add(xnew, y_orig)
-                # Remove point from starting cache TODO: why
+                # Remove point from starting cache
                 optim_state["cache"]["x_orig"] = np.delete(
                     optim_state["cache"]["x_orig"], idx, 0
                 )
@@ -801,9 +794,7 @@ def _get_search_points(
             random_Xs = np.append(random_Xs, vp_Xs, axis=0)
 
         search_X = np.append(search_X, random_Xs, axis=0)
-        idx_cache = np.append(idx_cache, np.full(N_random_points, -1)).astype(
-            int
-        )
+        idx_cache = np.append(idx_cache, np.full(N_random_points, np.nan))
 
     # Apply search bounds
     search_X = np.minimum((np.maximum(search_X, lb_search)), ub_search)

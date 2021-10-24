@@ -436,7 +436,7 @@ def test_get_search_points_all_search_cache():
     assert np.all(search_X == X)
     assert search_X.shape == (number_of_points, 3)
     assert idx_cache.shape == (number_of_points,)
-    assert np.all(idx_cache == -1)
+    assert np.all(np.isnan(idx_cache))
 
 
 def test_get_search_points_search_bounds():
@@ -502,7 +502,7 @@ def test_get_search_points_all_heavytailsearch():
     )
     assert search_X.shape == (number_of_points, 3)
     assert idx_cache.shape == (number_of_points,)
-    assert np.all(idx_cache == -1)
+    assert np.all(np.isnan(idx_cache))
 
 
 def test_get_search_points_all_mvn():
@@ -534,7 +534,7 @@ def test_get_search_points_all_mvn():
     )
     assert search_X.shape == (number_of_points, 3)
     assert idx_cache.shape == (number_of_points,)
-    assert np.all(idx_cache == -1)
+    assert np.all(np.isnan(idx_cache))
 
 
 def test_get_search_points_all_mvn_vp_sample():
@@ -566,7 +566,7 @@ def test_get_search_points_all_mvn_vp_sample():
     )
     assert search_X.shape == (number_of_points, 3)
     assert idx_cache.shape == (number_of_points,)
-    assert np.all(idx_cache == -1)
+    assert np.all(np.isnan(idx_cache))
 
 
 def test_get_search_points_all_box_search(mocker):
@@ -610,7 +610,7 @@ def test_get_search_points_all_box_search(mocker):
     )
     assert search_X.shape == (number_of_points, 3)
     assert idx_cache.shape == (number_of_points,)
-    assert np.all(idx_cache == -1)
+    assert np.all(np.isnan(idx_cache))
     box_lb = -0.5 - 3
     box_ub = 0.5 + 3
     assert np.all(search_X == random_values * (box_ub - box_lb) + box_lb)
@@ -627,7 +627,7 @@ def test_get_search_points_all_box_search(mocker):
     )
     assert search_X.shape == (number_of_points, 3)
     assert idx_cache.shape == (number_of_points,)
-    assert np.all(idx_cache == -1)
+    assert np.all(np.isnan(idx_cache))
     box_lb = -4.5
     box_ub = 13.5
     assert np.all(search_X == random_values * (box_ub - box_lb) + box_lb)
@@ -674,7 +674,7 @@ def test_get_search_points_all_hpd_search(mocker):
     )
     assert search_X.shape == (number_of_points, 3)
     assert idx_cache.shape == (number_of_points,)
-    assert np.all(idx_cache == -1)
+    assert np.all(np.isnan(idx_cache))
 
 
 def test_get_search_points_all_hpd_search_empty_get_hpd(mocker):
@@ -720,7 +720,7 @@ def test_get_search_points_all_hpd_search_empty_get_hpd(mocker):
     )
     assert search_X.shape == (number_of_points, 3)
     assert idx_cache.shape == (number_of_points,)
-    assert np.all(idx_cache == -1)
+    assert np.all(np.isnan(idx_cache))
 
 
 def test_get_search_points_more_points_randomly_than_requested():
