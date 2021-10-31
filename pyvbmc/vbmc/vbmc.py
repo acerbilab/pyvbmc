@@ -682,6 +682,7 @@ class VBMC:
         timer = Timer()
         gp = None
         hyp_dict = {}
+        exit_flag = 0
 
         # Flag for turning on a dummy implementation of active
         # uncertainty sampling.
@@ -1005,7 +1006,11 @@ class VBMC:
                     ] = self.optim_state.get("N")
 
             # Check termination conditions
-            is_finished = self._check_termination_conditions()
+            (
+                is_finished,
+                termination_log_message,
+                exit_flag,
+            ) = self._check_termination_conditions()
 
             # Save stability
             self.vp.stats["stable"] = self.iteration_history["stable"][
@@ -1178,12 +1183,24 @@ class VBMC:
                         "finalize",
                     )
                 )
-        # TODO: EXITFLAG based on stability
+        # Set exit_flag based on stability (check other things in the future)
+        if exit_flag == 0:
+            if self.vp.stats["stable"]:
+                exit_flag = 1
+        else:
+            if not self.vp.stats["stable"]:
+                exit_flag = 0
 
         # Print final message
+        self.logger.warn(termination_log_message)
         self.logger.warn(
             "Estimated ELBO: {:.3f} +/-{:.3f}.".format(elbo, elbo_sd)
         )
+        if exit_flag == 0:
+            self.logger.warn(
+                "Caution: Returned variational solution may have"
+                + " not converged."
+            )
 
         return (
             copy.deepcopy(self.vp),
@@ -1198,6 +1215,7 @@ class VBMC:
         Private method to check the warmup end conditions.
         """
         iteration = self.optim_state.get("iter")
+        exit_flag = 0
 
         # First requirement for stopping, no constant improvement of metric
         stable_count_flag = False
@@ -1349,17 +1367,25 @@ class VBMC:
         to the iteration_history object.
         """
         isFinished_flag = False
+        logging_message = ""
+        exit_flag = 0
 
         # Maximum number of new function evaluations
         if self.function_logger.func_count >= self.options.get("maxfunevals"):
             isFinished_flag = True
-            # msg "Inference terminated
+            logging_message = (
+                "Inference terminated: reached maximum number"
+                + "of function evaluations options.maxfunevals."
+            )
 
         # Maximum number of iterations
         iteration = self.optim_state.get("iter")
         if iteration + 1 >= self.options.get("maxiter"):
             isFinished_flag = True
-            # msg = "Inference terminated
+            logging_message = (
+                "Inference terminated: reached maximum number"
+                + "of iterations options.maxiter."
+            )
 
         # Quicker stability check for entropy switching
         if self.optim_state.get("entropy_switch"):
@@ -1410,10 +1436,17 @@ class VBMC:
                     # If stable but entropy switch is On,
                     # turn it off and continue
                     self.optim_state["entropy_switch"] = False
+                    self.logging_action.append("entropy switch")
                 else:
                     isFinished_flag = True
                     stableflag = True
-                    # "msg = 'Inference terminated:"
+                    exit_flag = 1
+                    self.logging_action.append("stable")
+                    logging_message = (
+                        "Inference terminated: variational "
+                        + "solution stable for options.tolstablecount"
+                        + "fcn evaluations."
+                    )
 
         # Store stability flag
         self.iteration_history.record("stable", stableflag, iteration)
@@ -1424,7 +1457,7 @@ class VBMC:
         ) or iteration < self.options.get("miniter"):
             isFinished_flag = False
 
-        return isFinished_flag
+        return isFinished_flag, logging_message, exit_flag
 
     def _compute_reliability_index(self, tol_stable_iters):
         """
