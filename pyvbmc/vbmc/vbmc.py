@@ -210,7 +210,10 @@ class VBMC:
             self.logger.setLevel(logging.INFO)
         elif self.options.get("display") == "full":
             self.logger.setLevel(logging.DEBUG)
-        self.logger.addHandler(logging.StreamHandler(stream=sys.stdout))
+
+        # only add handler to print to console once
+        if not len(self.logger.handlers):
+            self.logger.addHandler(logging.StreamHandler(stream=sys.stdout))
 
         # variable to keep track of logging actions
         self.logging_action = []
