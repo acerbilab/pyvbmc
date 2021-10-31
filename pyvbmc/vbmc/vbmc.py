@@ -685,21 +685,23 @@ class VBMC:
         if self.optim_state["uncertainty_handling_level"] > 0:
             self.logger.info(
                 "Beginning variational optimization assuming NOISY observations"
-                +" of the log-joint"
+                + " of the log-joint"
             )
         else:
             self.logger.info(
                 "Beginning variational optimization assuming EXACT observations"
-                +" of the log-joint."
+                + " of the log-joint."
             )
 
         if self.optim_state["cache_active"]:
             self.logger.info(
-                " Iteration f-count/f-cache    Mean[ELBO]     Std[ELBO]     "+
-                "sKL-iter[q]   K[q]  Convergence    Action"
+                " Iteration f-count/f-cache    Mean[ELBO]     Std[ELBO]     "
+                + "sKL-iter[q]   K[q]  Convergence    Action"
             )
             display_format = " {:5.0f}     {:5.0f}  /{:5.0f}   {:12.2f}  "
-            display_format += "{:12.2f}  {:12.2f}     {:4.0f} {:10.3g}       {}"
+            display_format += (
+                "{:12.2f}  {:12.2f}     {:4.0f} {:10.3g}       {}"
+            )
             display_format_warmup = " {:5.0f}     {:5.0f}  /{:5.0f}   {}"
         else:
             if (
@@ -707,17 +709,19 @@ class VBMC:
                 and self.options.get("maxrepeatedobservations") > 0
             ):
                 self.logger.info(
-                    " Iteration   f-count (x-count)   Mean[ELBO]     Std[ELBO]"+
-                    "     sKL-iter[q]   K[q]  Convergence  Action"
+                    " Iteration   f-count (x-count)   Mean[ELBO]     Std[ELBO]"
+                    + "     sKL-iter[q]   K[q]  Convergence  Action"
                 )
                 display_format = " {:5.0f}       {:5.0f} {:5.0f} {:12.2f}  "
-                display_format += "{:12.2f}  {:12.2f}     {:4.0f} {:10.3g}     "
+                display_format += (
+                    "{:12.2f}  {:12.2f}     {:4.0f} {:10.3g}     "
+                )
                 display_format += "{}"
                 display_format_warmup = " %5.0f       %5.0f    %12.2f  %s"
             else:
                 self.logger.info(
-                    " Iteration  f-count    Mean[ELBO]    Std[ELBO]    "+
-                    "sKL-iter[q]   K[q]  Convergence  Action"
+                    " Iteration  f-count    Mean[ELBO]    Std[ELBO]    "
+                    + "sKL-iter[q]   K[q]  Convergence  Action"
                 )
                 display_format = " {:5.0f}      {:5.0f}   {:12.2f} {:12.2f} "
                 display_format += "{:12.2f}     {:4.0f} {:10.3g}     {}"
@@ -1106,8 +1110,59 @@ class VBMC:
         self.vp, elbo, elbo_sd, idx_best = self.determine_best_vp()
 
         # Last variational optimization with large number of components
-        self.vp, elbo, elbo_sd, changedflag = self.finalboost(
+        self.vp, elbo, elbo_sd, changed_flag = self.finalboost(
             self.vp, self.iteration_history["gp"][idx_best]
+        )
+
+        if changed_flag:
+            # Recompute symmetrized KL-divergence
+            sKL = max(
+                0,
+                0.5
+                * np.sum(
+                    self.vp.kldiv(
+                        vp2=vp_old,
+                        N=Nkl,
+                        gaussflag=self.options.get("klgauss"),
+                    )
+                ),
+            )
+
+            if (
+                self.optim_state["uncertainty_handling_level"] > 0
+                and self.options.get("maxrepeatedobservations") > 0
+            ):
+                self.logger.info(
+                    display_format.format(
+                        np.Inf,
+                        self.function_logger.func_count,
+                        self.optim_state["N"],
+                        elbo,
+                        elbo_sd,
+                        sKL,
+                        self.vp.K,
+                        self.iteration_history.get("rindex")[idx_best],
+                        "finalize",
+                    )
+                )
+            else:
+                self.logger.info(
+                    display_format.format(
+                        np.Inf,
+                        self.function_logger.func_count,
+                        elbo,
+                        elbo_sd,
+                        sKL,
+                        self.vp.K,
+                        self.iteration_history.get("rindex")[idx_best],
+                        "finalize",
+                    )
+                )
+        # TODO: EXITFLAG based on stability
+
+        # Print final message
+        self.logger.warn(
+            "Estimated ELBO: {:.3f} +/-{:.3f}.".format(elbo, elbo_sd)
         )
 
         return (
