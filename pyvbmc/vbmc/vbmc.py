@@ -1035,7 +1035,7 @@ class VBMC:
 
             # Check termination conditions
             (
-                isFinished_flag,
+                is_finished,
                 termination_output_dict,
                 success_flag,
             ) = self._check_termination_conditions()
