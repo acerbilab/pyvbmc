@@ -234,6 +234,10 @@ class VBMC:
 
         if plausible_lower_bounds is None or plausible_upper_bounds is None:
             if N0 > 1:
+                self.logger.warning(
+                    "PLB and/or PUB not specified. Estimating"
+                    + "plausible bounds from starting set X0..."
+                )
                 width = x0.max(0) - x0.min(0)
                 if plausible_lower_bounds is None:
                     plausible_lower_bounds = x0.min(0) - width / N0
@@ -250,9 +254,17 @@ class VBMC:
                 if np.any(idx):
                     plausible_lower_bounds[idx] = lower_bounds[idx]
                     plausible_upper_bounds[idx] = upper_bounds[idx]
-                    # warning('vbmc:pbInitFailed')
+                    self.logger.warning(
+                        "vbmc:pbInitFailed: Some plausible bounds could not be "
+                        + "determined from starting set. Using hard upper/lower"
+                        + " bounds for those instead."
+                    )
             else:
-                # warning('vbmc:pbUnspecified')
+                self.logger.warning(
+                    "vbmc:pbUnspecified: Plausible lower/upper bounds PLB and"
+                    "/or PUB not specified and X0 is not a valid starting set. "
+                    + "Using hard upper/lower bounds instead."
+                )
                 if plausible_lower_bounds is None:
                     plausible_lower_bounds = np.copy(lower_bounds)
                 if plausible_upper_bounds is None:
@@ -348,7 +360,11 @@ class VBMC:
 
         # Fix when provided X0 are almost on the bounds -- move them inside
         if np.any(x0 < LB_eff) or np.any(x0 > UB_eff):
-            # warning('vbmc:InitialPointsTooClosePB')
+            self.logger.warning(
+                "vbmc:InitialPointsTooClosePB: The starting points X0 are on "
+                + "or numerically too close to the hard bounds LB and UB. "
+                + "Moving the initial points more inside..."
+            )
             x0 = np.maximum((np.minimum(x0, UB_eff)), LB_eff)
 
         # Test order of bounds (permissive)
@@ -367,14 +383,22 @@ class VBMC:
         if np.any(LB_eff > plausible_lower_bounds) or np.any(
             plausible_upper_bounds > UB_eff
         ):
-            # warning('vbmc:TooCloseBounds', ...
+            self.logger.warning(
+                "vbmc:TooCloseBounds: For each variable, hard "
+                + "and plausible bounds should not be too close. "
+                + "Moving plausible bounds."
+            )
             plausible_lower_bounds = np.maximum(plausible_lower_bounds, LB_eff)
             plausible_upper_bounds = np.minimum(plausible_upper_bounds, UB_eff)
 
         # Check that all X0 are inside the plausible bounds,
         # move bounds otherwise
         if np.any(x0 <= LB_eff) or np.any(x0 >= UB_eff):
-            # "warning('vbmc:InitialPointsOutsidePB', ...")
+            self.logger.warning(
+                "vbmc:InitialPointsOutsidePB. The starting points X0"
+                + " are not inside the provided plausible bounds PLB and "
+                + "PUB. Expanding the plausible bounds..."
+            )
             plausible_lower_bounds = np.minimum(
                 plausible_lower_bounds, x0.min(0)
             )
