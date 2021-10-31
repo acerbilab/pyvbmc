@@ -48,7 +48,7 @@ def run_optim_block(
         options["specifytargetnoise"] = True
 
     vbmc = VBMC(f, x0, lb, ub, plb, pub, user_options=options)
-    vp, elbo, _ = vbmc.optimize()
+    vp, elbo, _, _, _ = vbmc.optimize()
 
     vmu = vp.moments()
     err_1 = np.sqrt(np.mean((vmu - mu_bar) ** 2))

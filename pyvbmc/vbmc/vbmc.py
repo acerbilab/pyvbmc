@@ -201,22 +201,7 @@ class VBMC:
             ]
         )
 
-        # set up logging
-        self.logger = logging.getLogger("VBMC")
-        self.logger.setLevel(logging.INFO)
-        if self.options.get("display") == "off":
-            self.logger.setLevel(logging.WARN)
-        elif self.options.get("display") == "iter":
-            self.logger.setLevel(logging.INFO)
-        elif self.options.get("display") == "full":
-            self.logger.setLevel(logging.DEBUG)
 
-        # only add handler to print to console once
-        if not len(self.logger.handlers):
-            self.logger.addHandler(logging.StreamHandler(stream=sys.stdout))
-
-        # variable to keep track of logging actions
-        self.logging_action = []
 
     def _boundscheck(
         self,
@@ -706,7 +691,7 @@ class VBMC:
         timer = Timer()
         gp = None
         hyp_dict = {}
-        exit_flag = 0
+        success_flag = True
 
         # Flag for turning on a dummy implementation of active
         # uncertainty sampling.
@@ -1031,9 +1016,9 @@ class VBMC:
 
             # Check termination conditions
             (
-                is_finished,
-                termination_log_message,
-                exit_flag,
+                isFinished_flag,
+                termination_output_dict,
+                success_flag,
             ) = self._check_termination_conditions()
 
             # Save stability
@@ -1208,19 +1193,19 @@ class VBMC:
                     )
                 )
         # Set exit_flag based on stability (check other things in the future)
-        if exit_flag == 0:
+        if not success_flag:
             if self.vp.stats["stable"]:
-                exit_flag = 1
+                success_flag = True
         else:
             if not self.vp.stats["stable"]:
-                exit_flag = 0
+                success_flag = False
 
         # Print final message
-        self.logger.warning(termination_log_message)
+        self.logger.warning(termination_output_dict['message'])
         self.logger.warning(
             "Estimated ELBO: {:.3f} +/-{:.3f}.".format(elbo, elbo_sd)
         )
-        if exit_flag == 0:
+        if not success_flag:
             self.logger.warning(
                 "Caution: Returned variational solution may have"
                 + " not converged."
@@ -1230,6 +1215,8 @@ class VBMC:
             copy.deepcopy(self.vp),
             self.vp.stats["elbo"],
             self.vp.stats["elbo_sd"],
+            success_flag,
+            termination_output_dict
         )
 
     # Loop termination:
@@ -1392,12 +1379,13 @@ class VBMC:
         """
         isFinished_flag = False
         logging_message = ""
-        exit_flag = 0
+        success_flag = True
+        output_dict = dict()
 
         # Maximum number of new function evaluations
         if self.function_logger.func_count >= self.options.get("maxfunevals"):
             isFinished_flag = True
-            logging_message = (
+            output_dict["message"] = (
                 "Inference terminated: reached maximum number"
                 + "of function evaluations options.maxfunevals."
             )
@@ -1406,7 +1394,7 @@ class VBMC:
         iteration = self.optim_state.get("iter")
         if iteration + 1 >= self.options.get("maxiter"):
             isFinished_flag = True
-            logging_message = (
+            output_dict["message"] = (
                 "Inference terminated: reached maximum number"
                 + "of iterations options.maxiter."
             )
@@ -1464,9 +1452,9 @@ class VBMC:
                 else:
                     isFinished_flag = True
                     stableflag = True
-                    exit_flag = 1
+                    success_flag = False
                     self.logging_action.append("stable")
-                    logging_message = (
+                    output_dict["message"] = (
                         "Inference terminated: variational "
                         + "solution stable for options.tolstablecount"
                         + "fcn evaluations."
@@ -1481,7 +1469,14 @@ class VBMC:
         ) or iteration < self.options.get("miniter"):
             isFinished_flag = False
 
-        return isFinished_flag, logging_message, exit_flag
+        output_dict["success_flag"] = success_flag
+        output_dict["exit_flag"] = int(success_flag)
+
+        return (
+            isFinished_flag,
+            output_dict,
+            success_flag,
+        )
 
     def _compute_reliability_index(self, tol_stable_iters):
         """
