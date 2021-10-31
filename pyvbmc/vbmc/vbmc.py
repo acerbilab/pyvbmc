@@ -75,6 +75,38 @@ class VBMC:
         plausible_upper_bounds: np.ndarray = None,
         user_options: dict = None,
     ):
+        # Initialize variables and algorithm structures
+        if x0 is None:
+            if (
+                plausible_lower_bounds is None
+                or plausible_upper_bounds is None
+            ):
+                raise ValueError(
+                    """vbmc:UnknownDims If no starting point is
+                 provided, PLB and PUB need to be specified."""
+                )
+            else:
+                x0 = np.full((plausible_lower_bounds.shape), np.NaN)
+                
+        self.D = x0.shape[1]
+        # load basic and advanced options and validate the names
+        pyvbmc_path = os.path.dirname(os.path.realpath(__file__))
+        basic_path = pyvbmc_path + "/option_configs/basic_vbmc_options.ini"
+        self.options = Options(
+            basic_path,
+            evaluation_parameters={"D": self.D},
+            user_options=user_options,
+        )
+
+        advanced_path = (
+            pyvbmc_path + "/option_configs/advanced_vbmc_options.ini"
+        )
+        self.options.load_options_file(
+            advanced_path,
+            evaluation_parameters={"D": self.D},
+        )
+
+        self.options.validate_option_names([basic_path, advanced_path])
 
         # set up logging
         self.logger = logging.getLogger("VBMC")
@@ -93,20 +125,8 @@ class VBMC:
         # variable to keep track of logging actions
         self.logging_action = []
 
-        # Initialize variables and algorithm structures
-        if x0 is None:
-            if (
-                plausible_lower_bounds is None
-                or plausible_upper_bounds is None
-            ):
-                raise ValueError(
-                    """vbmc:UnknownDims If no starting point is
-                 provided, PLB and PUB need to be specified."""
-                )
-            else:
-                x0 = np.full((plausible_lower_bounds.shape), np.NaN)
 
-        self.D = x0.shape[1]
+
 
         # Empty LB and UB are Infs
         if lower_bounds is None:
@@ -130,24 +150,6 @@ class VBMC:
             plausible_upper_bounds,
         )
 
-        # load basic and advanced options and validate the names
-        pyvbmc_path = os.path.dirname(os.path.realpath(__file__))
-        basic_path = pyvbmc_path + "/option_configs/basic_vbmc_options.ini"
-        self.options = Options(
-            basic_path,
-            evaluation_parameters={"D": self.D},
-            user_options=user_options,
-        )
-
-        advanced_path = (
-            pyvbmc_path + "/option_configs/advanced_vbmc_options.ini"
-        )
-        self.options.load_options_file(
-            advanced_path,
-            evaluation_parameters={"D": self.D},
-        )
-
-        self.options.validate_option_names([basic_path, advanced_path])
 
         self.K = self.options.get("kwarmup")
 
