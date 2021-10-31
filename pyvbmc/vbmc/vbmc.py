@@ -1192,12 +1192,12 @@ class VBMC:
                 exit_flag = 0
 
         # Print final message
-        self.logger.warn(termination_log_message)
-        self.logger.warn(
+        self.logger.warning(termination_log_message)
+        self.logger.warning(
             "Estimated ELBO: {:.3f} +/-{:.3f}.".format(elbo, elbo_sd)
         )
         if exit_flag == 0:
-            self.logger.warn(
+            self.logger.warning(
                 "Caution: Returned variational solution may have"
                 + " not converged."
             )
