@@ -76,6 +76,23 @@ class VBMC:
         user_options: dict = None,
     ):
 
+        # set up logging
+        self.logger = logging.getLogger("VBMC")
+        self.logger.setLevel(logging.INFO)
+        if self.options.get("display") == "off":
+            self.logger.setLevel(logging.WARN)
+        elif self.options.get("display") == "iter":
+            self.logger.setLevel(logging.INFO)
+        elif self.options.get("display") == "full":
+            self.logger.setLevel(logging.DEBUG)
+
+        # only add handler to print to console once
+        if not len(self.logger.handlers):
+            self.logger.addHandler(logging.StreamHandler(stream=sys.stdout))
+
+        # variable to keep track of logging actions
+        self.logging_action = []
+
         # Initialize variables and algorithm structures
         if x0 is None:
             if (
