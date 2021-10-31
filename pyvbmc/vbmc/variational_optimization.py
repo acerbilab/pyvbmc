@@ -4,7 +4,6 @@ import math
 import copy
 import numpy as np
 import scipy as sp
-import cma
 
 import gpyreg as gpr
 
@@ -167,8 +166,12 @@ def optimize_vp(
         # Set basic options for deterministic (?) optimizer
         compute_grad = True
     else:
-        options["stochasticoptimizer"] = "cmaes"
-        compute_grad = False
+        if nsent_K > 0:
+            raise ValueError(
+                """Gradients must be available when nsent_K is > 0."""
+            )
+        else:
+            compute_grad = False
 
     vp0_fine = {}
     for i in range(0, slow_opts_N):
@@ -191,20 +194,6 @@ def optimize_vp(
         vp0_vec = np.delete(vp0_vec, idx)
         vp0_type = np.delete(vp0_type, idx)
         theta0 = vp0.get_parameters()
-
-        # Objective function, should only return value and gradient.
-        def vbtrain_mc_fun(theta_):
-            res = _negelcbo(
-                theta_,
-                gp,
-                vp0,
-                elcbo_beta,
-                nsent_K,
-                compute_grad=True,
-                compute_var=compute_var,
-                theta_bnd=theta_bnd,
-            )
-            return res[0], res[1]
 
         if nsent_K == 0:
             # Fast optimization via deterministic entropy approximation
@@ -231,74 +220,30 @@ def optimize_vp(
                 jac=compute_grad,
                 tol=options["detenttolopt"],
             )
+
             if not res.success:
-                # SciPy minimize failed, try with CMA-ES
-                # TODO: do this with a logging tool
-                print(
-                    "Cannot optimize variational parameters with "
-                    "scipy.optimize.minimize. Trying with CMA-ES (slower)."
+                # SciPy minimize failed
+                raise RuntimeError(
+                    "Cannot optimize variational parameters with",
+                    "scipy.optimize.minimize.",
                 )
-
-                # Objective function with no gradient computation.
-                def vbtrain_fun2(theta_):
-                    res = _negelcbo(
-                        theta_,
-                        gp,
-                        vp0,
-                        elcbo_beta,
-                        0,
-                        compute_grad=False,
-                        compute_var=compute_var,
-                        theta_bnd=theta_bnd,
-                    )
-                    return res[0]
-
-                # Construct sigma list and lower/upper bounds.
-                # Restricting the range of lambda and sigma is important
-                # since the optimization is done in log-space, so too large
-                # values can cause numerical overflows.
-                insigma_list = []
-                lower_list = []
-                upper_list = []
-                if vp.optimize_mu:
-                    tmp = np.tile(
-                        vp.bounds["mu_ub"] - vp.bounds["mu_lb"], (K,)
-                    )
-                    insigma_list.append(tmp)
-                    lower_list.append(np.full(tmp.shape, -np.inf))
-                    upper_list.append(np.full(tmp.shape, np.inf))
-                if vp.optimize_sigma:
-                    insigma_list.append(np.ones((K,)))
-                    lower_list.append(np.full((K,), -50))
-                    upper_list.append(np.full((K,), 50))
-                if vp.optimize_lambd:
-                    insigma_list.append(np.ones((vp.D,)))
-                    lower_list.append(np.full((vp.D,), -50))
-                    upper_list.append(np.full((vp.D,), 50))
-                if vp.optimize_weights:
-                    insigma_list.append(np.ones((K,)))
-                    lower_list.append(np.full((K,), -np.inf))
-                    upper_list.append(np.full((K,), np.inf))
-                insigma = np.concatenate(insigma_list)
-                lower = np.concatenate(lower_list)
-                upper = np.concatenate(upper_list)
-
-                cma_options = {
-                    "verbose": -9,
-                    "tolx": 1e-8 * np.max(insigma),
-                    "tolfun": 1e-6,
-                    "tolfunhist": 1e-7,
-                    "maxfevals": 200 * (vp.D + 2),
-                    "CMA_active": True,
-                    "bounds": (lower, upper),
-                }
-                res = cma.fmin(
-                    vbtrain_fun2, theta0, np.max(insigma), options=cma_options
-                )
-                theta_opt = res[0]
             else:
                 theta_opt = res.x
         else:
+            # Objective function, should only return value and gradient.
+            def vbtrain_mc_fun(theta_):
+                res = _negelcbo(
+                    theta_,
+                    gp,
+                    vp0,
+                    elcbo_beta,
+                    nsent_K,
+                    compute_grad=True,
+                    compute_var=compute_var,
+                    theta_bnd=theta_bnd,
+                )
+                return res[0], res[1]
+
             # Optimization via unbiased stochastic entroply approximation
             theta_opt = theta0
 
@@ -342,68 +287,8 @@ def optimize_vp(
                         elcbo_beta,
                         options,
                     )
-            elif options["stochasticoptimizer"] == "cmaes":
-                # Objective function with no gradient computation.
-                def vbtrain_fun(theta_):
-                    return _negelcbo(
-                        theta_,
-                        gp,
-                        vp0,
-                        elcbo_beta,
-                        Ns=nsent_K,
-                        compute_grad=False,
-                        compute_var=compute_var,
-                        theta_bnd=theta_bnd,
-                    )[0]
-
-                # Construct sigma list and lower/upper bounds.
-                # Restricting the range of lambda and sigma is important
-                # since the optimization is done in log-space, so too large
-                # values can cause numerical overflows.
-                insigma_list = []
-                lower_list = []
-                upper_list = []
-                if vp.optimize_mu:
-                    tmp = np.tile(
-                        vp.bounds["mu_ub"] - vp.bounds["mu_lb"], (K,)
-                    )
-                    insigma_list.append(tmp)
-                    lower_list.append(np.full(tmp.shape, -np.inf))
-                    upper_list.append(np.full(tmp.shape, np.inf))
-                if vp.optimize_sigma:
-                    insigma_list.append(np.ones((K,)))
-                    lower_list.append(np.full((K,), -50))
-                    upper_list.append(np.full((K,), 50))
-                if vp.optimize_lambd:
-                    insigma_list.append(np.ones((vp.D,)))
-                    lower_list.append(np.full((vp.D,), -50))
-                    upper_list.append(np.full((vp.D,), 50))
-                if vp.optimize_weights:
-                    insigma_list.append(np.ones((K,)))
-                    lower_list.append(np.full((K,), -np.inf))
-                    upper_list.append(np.full((K,), np.inf))
-                insigma = np.concatenate(insigma_list)
-                lower = np.concatenate(lower_list)
-                upper = np.concatenate(upper_list)
-
-                cma_options = {
-                    "verbose": -9,
-                    "tolx": 1e-6 * np.max(insigma),
-                    "tolfun": 1e-4,
-                    "tolfunhist": 1e-5,
-                    "CMA_active": True,
-                    "bounds": (lower, upper),
-                }
-                res = cma.fmin(
-                    vbtrain_fun,
-                    theta0,
-                    np.max(insigma),
-                    options=cma_options,
-                    noise_handler=cma.NoiseHandler(np.size(theta0)),
-                )
-                theta_opt = res[0]
             else:
-                raise Exception("Unknown stochastic optimizer!")
+                raise ValueError("Unknown stochastic optimizer!")
 
         # Recompute ELCBO at endpoint with full variance and more precision
         elbo_stats = _eval_full_elcbo(
@@ -858,7 +743,7 @@ def _sieve(
 
     if init_N > 0:
         # Get high-posterior density points
-        X_star, y_star, _ , _= get_hpd(gp.X, gp.y, options["hpdfrac"])
+        X_star, y_star, _, _ = get_hpd(gp.X, gp.y, options["hpdfrac"])
 
         # Generate a bunch of random candidate variational parameters.
         if best_N == 1:
@@ -877,25 +762,7 @@ def _sieve(
             vp0_vec = np.concatenate([vp0_vec1, vp0_vec2, vp0_vec3])
             vp0_type = np.concatenate([vp0_type1, vp0_type2, vp0_type3])
 
-        if len(optim_state["vp_repo"]) > 0 and options["variationalinitrepo"]:
-            theta_N = np.size(vp0_vec[0].get_parameters())
-            idx = np.where(
-                [np.size(item) for item in optim_state["vp_repo"]] == theta_N
-            )[0]
-            if np.size(idx) > 0:
-                idx = [np.size(item) for item in optim_state["vp_repo"]].index(
-                    theta_N
-                )
-                vp0_list4 = []
-                for idx_i in idx:
-                    vp_new = copy.deepcopy(vp0_vec[0])
-                    vp_new.set_parameters(optim_state["vp_repo"][idx_i])
-                    vp0_list4.append(vp_new)
-                vp0_vec4 = np.array(vp0_list4)
-                vp0_vec = np.concatenate([vp0_vec, vp0_vec4])
-                vp0_type = np.concatenate(
-                    [vp0_type, np.ones((len(vp0_list4),))]
-                )
+        # in MATLAB the vp_repo is used here
 
         # Quickly estimate ELCBO at each candidate variational posterior.
         for i, vp0 in enumerate(vp0_vec):
@@ -1068,7 +935,7 @@ def _vbinit(
             if vp.optimize_weights:
                 w = np.ones((1, K_new)) / K_new
         else:
-            raise Exception(
+            raise ValueError(
                 "Unknown type for initialization of variational posteriors."
             )
 
@@ -1179,7 +1046,7 @@ def _negelcbo(
         compute_var = beta != 0
 
     if compute_grad and beta != 0 and compute_var != 2:
-        raise Exception(
+        raise NotImplementedError(
             "Computation of the gradient of ELBO with full variance not "
             "supported"
         )
@@ -1193,20 +1060,7 @@ def _negelcbo(
     jacobian_flag = 1
 
     # Reformat variational parameters from theta.
-    if vp.optimize_mu:
-        vp.mu = np.reshape(theta[: D * K], (D, K), order="F")
-        start_idx = D * K
-    else:
-        start_idx = 0
-
-    if vp.optimize_sigma:
-        # TODO: wrong size, reshape to (1, -1) and fix everything else
-        vp.sigma = np.exp(theta[start_idx : start_idx + K])
-        start_idx += K
-
-    if vp.optimize_lambd:
-        # TODO: wrong size, reshape to (-1, 1) and fix everything else.
-        vp.lambd = np.exp(theta[start_idx : start_idx + D]).T
+    vp.set_parameters(theta)
 
     if vp.optimize_weights:
         vp.eta = theta[-K:]
@@ -1216,8 +1070,6 @@ def _negelcbo(
         # below, but it might cause slightly different results
         # to MATLAB in some cases.
         # vp.eta = np.reshape(theta[-K:], (1, -1))
-        vp.w = np.exp(vp.eta)
-        vp.w /= np.sum(vp.w)
 
     # Which gradients should be computed, if any?
     if compute_grad:
@@ -1243,7 +1095,7 @@ def _negelcbo(
     #               optimization
     if separate_K:
         if compute_grad:
-            raise Exception(
+            raise ValueError(
                 "Computing the gradient of variational parameters and "
                 "requesting per-component results at the same time."
             )
@@ -1425,7 +1277,7 @@ def _gplogjoint(
 
     compute_vargrad = compute_var and np.any(grad_flags)
     if compute_vargrad and compute_var != 2:
-        raise Exception(
+        raise NotImplementedError(
             "Computation of gradient of log joint variance is currently "
             "available only for diagonal approximation of the variance."
         )
@@ -1467,6 +1319,7 @@ def _gplogjoint(
         varF = np.zeros((Ns,))
     # Compute gradient of variance?
     if compute_vargrad:
+        # TODO: compute vargrad is untested
         if grad_flags[0]:
             mu_vargrad = np.zeros((D, K, Ns))
         if grad_flags[1]:
@@ -1526,7 +1379,9 @@ def _gplogjoint(
         sn2_eff = 1 / gp.posteriors[s].sW[0] ** 2
 
         for k in range(0, K):
-            tau_k = np.sqrt(sigma[k] ** 2 * lambd ** 2 + ell ** 2 + delta ** 2)
+            tau_k = np.sqrt(
+                sigma[:, k] ** 2 * lambd ** 2 + ell ** 2 + delta ** 2
+            )
             lnnf_k = (
                 ln_sf2 + sum_lnell - np.sum(np.log(tau_k), axis=0)
             )  # Covariance normalization factor
@@ -1540,7 +1395,7 @@ def _gplogjoint(
                     / omega ** 2
                     * (
                         mu[:, k : k + 1] ** 2
-                        + sigma[k] ** 2 * lambd ** 2
+                        + sigma[:, k] ** 2 * lambd ** 2
                         - 2 * mu[:, k : k + 1] * xm
                         + xm ** 2
                         + delta ** 2
@@ -1564,27 +1419,27 @@ def _gplogjoint(
             if grad_flags[1]:
                 dz_dsigma = (
                     np.sum((lambd / tau_k) ** 2 * (delta_k ** 2 - 1), axis=0)
-                    * sigma[k]
+                    * sigma[:, k]
                     * z_k
                 )
                 sigma_grad[k, s] = w[k] * np.dot(dz_dsigma, alpha)
                 if quadratic_meanfun:
                     sigma_grad[k, s] -= (
                         w[k]
-                        * sigma[k]
+                        * sigma[:, k]
                         * np.sum(1 / omega ** 2 * lambd ** 2, axis=0)
                     )
 
             if grad_flags[2]:
                 dz_dlambd = (
-                    (sigma[k] / tau_k) ** 2
+                    (sigma[:, k] / tau_k) ** 2
                     * (delta_k ** 2 - 1)
                     * (lambd * z_k)
                 )
                 lambd_grad[:, s : s + 1] += w[k] * np.dot(dz_dlambd, alpha)
                 if quadratic_meanfun:
                     lambd_grad[:, s : s + 1] -= (
-                        w[k] * sigma[k] ** 2 / omega ** 2 * lambd
+                        w[k] * sigma[:, k] ** 2 / omega ** 2 * lambd
                     )
 
             if grad_flags[3]:
@@ -1596,14 +1451,14 @@ def _gplogjoint(
             elif compute_var:
                 for j in range(0, k + 1):
                     tau_j = np.sqrt(
-                        sigma[j] ** 2 * lambd ** 2 + ell ** 2 + delta ** 2
+                        sigma[:, j] ** 2 * lambd ** 2 + ell ** 2 + delta ** 2
                     )
                     lnnf_j = ln_sf2 + sum_lnell - np.sum(np.log(tau_j), axis=0)
                     delta_j = (mu[:, j : j + 1] - gp.X.T) / tau_j
                     z_j = np.exp(lnnf_j - 0.5 * np.sum(delta_j ** 2, axis=0))
 
                     tau_jk = np.sqrt(
-                        (sigma[j] ** 2 + sigma[k] ** 2) * lambd ** 2
+                        (sigma[:, j] ** 2 + sigma[:, k] ** 2) * lambd ** 2
                         + ell ** 2
                         + 2 * delta ** 2
                     )
@@ -1677,6 +1532,7 @@ def _gplogjoint(
         dF = None
 
     if compute_vargrad:
+        # TODO: compute vargrad is untested
         vargrad_list = []
         if grad_flags[0]:
             mu_vargrad = np.reshape(mu_vargrad, (D * K, Ns))
@@ -1712,6 +1568,7 @@ def _gplogjoint(
             varss = varFss + np.std(varF, ddof=1)
             varF = np.sum(varF, axis=0) / Ns + varFss
         if compute_vargrad:
+            # TODO: compute vargrad is untested
             dvv = 2 * np.sum(F * dF, axis=1) / (Ns - 1) - 2 * F_bar * np.sum(
                 dF, axis=1
             ) / (Ns - 1)

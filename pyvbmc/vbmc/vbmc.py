@@ -589,8 +589,8 @@ class VBMC:
         # Deterministic entropy approximation lower/upper factor
         optim_state["entropy_alpha"] = self.options.get("detentropyalpha")
 
-        # Repository of variational solutions
-        optim_state["vp_repo"] = []
+        # Repository of variational solutions (not used in Python)
+        # optim_state["vp_repo"] = []
 
         # Repeated measurement streak
         optim_state["repeated_observations_streak"] = 0
@@ -865,7 +865,6 @@ class VBMC:
                     N_fastopts * self.options.get("nselboincr")
                 )
                 N_slowopts = 1
-
             # Run optimization of variational parameters
             self.vp, varss, pruned = optimize_vp(
                 self.options,
@@ -876,7 +875,6 @@ class VBMC:
                 N_slowopts,
                 Knew,
             )
-            self.optim_state["vp_repo"].append(self.vp.get_parameters())
 
             self.optim_state["vpK"] = self.vp.K
             # Save current entropy
@@ -1021,8 +1019,7 @@ class VBMC:
                     # options = options_main
                     # Reset GP hyperparameter covariance
                     # hypstruct.runcov = []
-                    # Reset VP repository
-                    self.optim_state["vp_repo"] = []
+                    # Reset VP repository (not used in python)
                     # Re-get acq info
                     # self.optim_state['acqInfo'] = getAcqInfo(
                     #    options.SearchAcqFcn

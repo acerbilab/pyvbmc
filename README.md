@@ -24,6 +24,10 @@ conda env create --file environment.yml
 pip install -i requirements.txt
 ```
 
+## Install (temporary)
+In order to use pyvbmc like any other package, `setup.py` has been created.
+Just run the following command in the gpyreg directory: `pip install -e .` (redo it after changes in the packages).
+
 ## More detailed conventions
 
 Please read those as well! :)
