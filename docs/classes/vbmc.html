@@ -46,7 +46,9 @@
 <li><p>init a GP (wait for GPLite to be completed)</p></li>
 <li><p>experimental features (listed in <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/vbmc.m">vbmc.m</a> have not been ported yet)</p></li>
 <li><p><a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/private/acqhedge_vbmc.m">acqhedge_vbmc.m</a> has not been ported yet as it is considered to be experimental</p></li>
-<li><p>the warping in <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/vbmc.m">vbmc.m</a> has not been ported yet as it is considered to be experimental</p></li>
+<li><p>the warping in <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/vbmc.m">vbmc.m</a> is part of the 2020 paper and is well tested. We will implement it later as VBMC can run without it.</p></li>
+<li><p>in variational_optimization.py the compute vargrad is untested</p></li>
+<li><p>in variational_optimization.py the the vp_repo has not been ported for now (In is used in MATLAB in <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/vpsieve_vbmc.m">vpsieve_vbmc.m</a> and filled in active_sampling). (Note by Luigi: In practice, even in MATLAB this part seems to be implemented lazily and then it’s not used. I am not sure why I did not work on this more; probably the variational optimization was working fine and couldn’t be bothered to fix this properly (it seems it could help).)</p></li>
 </ul>
 </div>
 <section id="matlab-references-of-ported-methods">
@@ -370,7 +372,7 @@ of mixture components the given VP has.</p>
 
 
 <h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Classes:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Classes:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="acquisition_functions.html">Acquisition Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="function_logger.html">FunctionLogger</a></li>
@@ -385,7 +387,7 @@ of mixture components the given VP has.</p>
 </ul>
 </li>
 </ul>
-<p class="caption"><span class="caption-text">Functions:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Functions:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../functions/active_sample.html">active_sample</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../functions/decorators.html">decorators</a></li>
@@ -393,7 +395,7 @@ of mixture components the given VP has.</p>
 <li class="toctree-l1"><a class="reference internal" href="../functions/kde1d.html">kde1d</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../functions/entropy.html">entropy</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Options:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Options:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../options/vbmc_options.html">VBMC options</a></li>
 </ul>
@@ -411,7 +413,7 @@ of mixture components the given VP has.</p>
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -433,7 +435,7 @@ of mixture components the given VP has.</p>
       &copy;2021, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

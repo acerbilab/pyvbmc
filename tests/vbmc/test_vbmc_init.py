@@ -527,7 +527,6 @@ def test_vbmc_optimstate_constants():
     assert np.all(vbmc.optim_state["pruned"] == 0)
     assert np.all(vbmc.optim_state["variance_regularized_acqfcn"] == True)
     assert np.all(vbmc.optim_state["search_cache"] == [])
-    assert np.all(vbmc.optim_state["vp_repo"] == [])
     assert np.all(vbmc.optim_state["repeated_observations_streak"] == 0)
     assert np.all(vbmc.optim_state["data_trim_list"] == [])
     assert np.all(vbmc.optim_state["run_cov"] == [])
