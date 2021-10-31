@@ -212,6 +212,9 @@ class VBMC:
             self.logger.setLevel(logging.DEBUG)
         self.logger.addHandler(logging.StreamHandler(stream=sys.stdout))
 
+        # variable to keep track of logging actions
+        self.logging_action = []
+
     def _boundscheck(
         self,
         x0: np.ndarray,
@@ -733,6 +736,11 @@ class VBMC:
             self.optim_state["redo_roto_scaling"] = False
             vp_old = copy.deepcopy(self.vp)
 
+            self.logging_action = []
+
+            if iteration == 0 and self.optim_state["warmup"]:
+                self.logging_action.append("start warm-up")
+
             # Switch to stochastic entropy towards the end if still
             # deterministic.
             if self.optim_state.get("entropy_switch") and (
@@ -741,6 +749,7 @@ class VBMC:
                 * self.optim_state.get("max_fun_evals")
             ):
                 self.optim_state["entropy_switch"] = False
+                self.logging_action.append("entropy switch")
 
             # Actively sample new points into the training set
             timer.start_timer("activeSampling")
@@ -1056,6 +1065,17 @@ class VBMC:
                     ) * self.options.get("outwarpthreshmult")
 
             # Write iteration output
+            # Stopped GP sampling this iteration?
+            if (
+                Ns_gp == self.options["stablegpsamples"]
+                and self.iteration_history["Ns_gp"][max(0, iteration - 1)]
+                > self.options["stablegpsamples"]
+            ):
+                if Ns_gp == 0:
+                    self.logging_action.append("switch to GP opt")
+                else:
+                    self.logging_action.append("stable GP sampling")
+
             if self.optim_state["cache_active"]:
                 self.logger.info(
                     display_format.format(
@@ -1067,7 +1087,7 @@ class VBMC:
                         sKL,
                         self.vp.K,
                         self.optim_state["R"],
-                        "action",
+                        "".join(self.logging_action),
                     )
                 )
 
@@ -1086,7 +1106,7 @@ class VBMC:
                             sKL,
                             self.vp.K,
                             self.optim_state["R"],
-                            "action",
+                            "".join(self.logging_action),
                         )
                     )
                 else:
@@ -1099,7 +1119,7 @@ class VBMC:
                             sKL,
                             self.vp.K,
                             self.optim_state["R"],
-                            "action",
+                            "".join(self.logging_action),
                         )
                     )
 
@@ -1265,6 +1285,7 @@ class VBMC:
             or len(self.optim_state.get("data_trim_list")) >= 1
         ):
             self.optim_state["warmup"] = False
+            self.logging_action.append("end warm-up")
             threshold = self.options.get("warmupkeepthreshold") * (
                 len(self.optim_state.get("data_trim_list")) + 1
             )
@@ -1285,9 +1306,12 @@ class VBMC:
                 len(self.optim_state.get("data_trim_list")) + 1
             )
 
-        self.optim_state["data_trim_list"] = np.append(
-            self.optim_state.get("data_trim_list"), [self.optim_state.get("N")]
-        )
+            self.optim_state["data_trim_list"] = np.append(
+                self.optim_state.get("data_trim_list"),
+                [self.optim_state.get("N")],
+            )
+
+            self.logging_action.append("trim data")
 
         # Remove warm-up points from training set unless close to max
         ymax = max(self.function_logger.y_orig[: self.function_logger.Xn + 1])
