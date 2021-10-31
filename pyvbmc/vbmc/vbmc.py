@@ -1522,7 +1522,7 @@ class VBMC:
             self.options["maxiterstochastic"] = np.Inf
             self.optim_state["entropy_alpha"] = 0
 
-            # stable_flag = vp.stats["stable"]
+            stable_flag = np.copy(vp.stats["stable"])
             vp, varss, pruned = optimize_vp(
                 self.options,
                 self.optim_state,
@@ -1532,13 +1532,13 @@ class VBMC:
                 n_slow_opts,
                 K_new,
             )
-            # vp.stats["stable"] = stable_flag
+            vp.stats["stable"] = stable_flag
             changed_flag = True
         else:
             vp = self.vp
 
-        elbo = 3
-        elbo_sd = 3
+        elbo = vp.stats["elbo"]
+        elbo_sd = vp.stats["elbo_sd"]
         return vp, elbo, elbo_sd, changed_flag
 
     def determine_best_vp(
