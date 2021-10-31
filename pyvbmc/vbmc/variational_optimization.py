@@ -166,8 +166,12 @@ def optimize_vp(
         # Set basic options for deterministic (?) optimizer
         compute_grad = True
     else:
-        # TODO: Is there a suitable replacement for CMAES which works?
-        raise ValueError("""Gradients must be available for the optimizer.""")
+        if nsent_K > 0:
+            raise ValueError(
+                """Gradients must be available when nsent_K is > 0."""
+            )
+        else:
+            compute_grad = False
 
     vp0_fine = {}
     for i in range(0, slow_opts_N):
@@ -190,20 +194,6 @@ def optimize_vp(
         vp0_vec = np.delete(vp0_vec, idx)
         vp0_type = np.delete(vp0_type, idx)
         theta0 = vp0.get_parameters()
-
-        # Objective function, should only return value and gradient.
-        def vbtrain_mc_fun(theta_):
-            res = _negelcbo(
-                theta_,
-                gp,
-                vp0,
-                elcbo_beta,
-                nsent_K,
-                compute_grad=True,
-                compute_var=compute_var,
-                theta_bnd=theta_bnd,
-            )
-            return res[0], res[1]
 
         if nsent_K == 0:
             # Fast optimization via deterministic entropy approximation
@@ -240,6 +230,20 @@ def optimize_vp(
             else:
                 theta_opt = res.x
         else:
+            # Objective function, should only return value and gradient.
+            def vbtrain_mc_fun(theta_):
+                res = _negelcbo(
+                    theta_,
+                    gp,
+                    vp0,
+                    elcbo_beta,
+                    nsent_K,
+                    compute_grad=True,
+                    compute_var=compute_var,
+                    theta_bnd=theta_bnd,
+                )
+                return res[0], res[1]
+
             # Optimization via unbiased stochastic entroply approximation
             theta_opt = theta0
 
@@ -1375,7 +1379,9 @@ def _gplogjoint(
         sn2_eff = 1 / gp.posteriors[s].sW[0] ** 2
 
         for k in range(0, K):
-            tau_k = np.sqrt(sigma[:, k] ** 2 * lambd ** 2 + ell ** 2 + delta ** 2)
+            tau_k = np.sqrt(
+                sigma[:, k] ** 2 * lambd ** 2 + ell ** 2 + delta ** 2
+            )
             lnnf_k = (
                 ln_sf2 + sum_lnell - np.sum(np.log(tau_k), axis=0)
             )  # Covariance normalization factor
