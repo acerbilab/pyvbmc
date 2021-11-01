@@ -52,7 +52,7 @@ def test_active_uncertainty_sampling():
     user_options = {}
     # user_options = {"activesamplevpupdate": True, "activesamplegpupdate": True}
     vbmc = VBMC(fun, x0, LB, UB, PLB, PUB, user_options)
-    vp, elbo, elbo_sd = vbmc.optimize()
+    vp, elbo, elbo_sd = vbmc.optimize()[:3]
     assert abs(elbo + 2.294) < 0.1
     assert abs(elbo_sd - 0.001) < 0.01
 

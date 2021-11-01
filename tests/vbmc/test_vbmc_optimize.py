@@ -143,7 +143,7 @@ def test_vbmc_uniform():
     mu_bar = 0.5 * np.ones((1, D))
     f = lambda x: 0
 
-    options = {"searchoptimizer": "none"}
+    options = {"searchoptimizer": "Nelder-Mead"}
     err_1, err_2 = run_optim_block(
         f, x0, lb, ub, plb, pub, lnZ, mu_bar, options
     )

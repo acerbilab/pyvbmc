@@ -335,8 +335,15 @@ def active_sample(
             X_search = np.delete(X_search, idx, 0)
             idx_cache = np.delete(idx_cache, idx, 0)
 
+            acq_fun = lambda X: acqEval(
+                X, gp, vp, function_logger, optim_state
+            )[0]
             # Additional search via optimization
             if options["searchoptimizer"] != "none":
+                if gp.D == 1:
+                    # Use Nelder-Mead method for 1D optimization
+                    options["searchoptimizer"] = "Nelder-Mead"
+
                 # fval_old = acqEval(X_acq, gp, vp, function_logger, optim_state)
                 # x0 = AbstractAcqFcn._real2int(X_acq, parameter_transformer, optim_state["integervars"])
                 fval_old = acq_fast[idx]
@@ -374,11 +381,8 @@ def active_sample(
                         "bounds": (lb.squeeze(), ub.squeeze()),
                     }
 
-                    acq_cma = lambda X: acqEval(
-                        X, gp, vp, function_logger, optim_state
-                    )[0]
                     res = cma.fmin(
-                        acq_cma,
+                        acq_fun,
                         x0,
                         np.max(insigma),
                         options=cma_options,
@@ -390,6 +394,13 @@ def active_sample(
                     #         fval_optim = bestever.f;
                     # end
                     xsearch_optim, fval_optim = res[:2]
+                elif options["searchoptimizer"] == "Nelder-Mead":
+                    from scipy.optimize import minimize
+
+                    res = minimize(
+                        acq_fun, x0, method="Nelder-Mead", tol=tol_fun
+                    )
+                    xsearch_optim, fval_optim = res.x, res.fun
                 else:
                     raise NotImplementedError("Not implemented yet")
 
