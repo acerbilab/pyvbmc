@@ -1791,7 +1791,7 @@ class VBMC:
         vp = self.iteration_history.get("vp")[idx_best]
         elbo = self.iteration_history.get("elbo")[idx_best]
         elbo_sd = self.iteration_history.get("elbo_sd")[idx_best]
-        # vp.stats["stable"] = self.iteration_history.get("stable")[idx_best]
+        vp.stats["stable"] = self.iteration_history.get("stable")[idx_best]
         return vp, elbo, elbo_sd, idx_best
 
     def _create_result_dict(self, idx_best: int, termination_message: str):
