@@ -163,3 +163,12 @@ def test_validate_option_names_unknown_user_options():
     with pytest.raises(ValueError) as execinfo1:
         options.validate_option_names([basic_test_options, advanced_test_options])
     assert "The option failoption does not exist." in execinfo1.value.args[0]
+
+def test_load_options_invalid_path():
+    evaluation_parameters = {"D": 2}
+    basic_test_options = "./pyvbmc/vbmc/option_configs/test_options.ini"
+    options = Options(basic_test_options, evaluation_parameters)
+    non_existing_path = "./pyvbmc/vbmc/option_configs/does_not_exist.ini"
+    with pytest.raises(ValueError) as execinfo1:
+        options.load_options_file(non_existing_path, evaluation_parameters)
+    assert "does not contain options." in execinfo1.value.args[0]

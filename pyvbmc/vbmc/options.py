@@ -171,6 +171,13 @@ class Options(MutableMapping, dict):
                     option_list.append([key, value, description])
                     description = ""
 
+        if len(option_list) == 0:
+            raise ValueError(
+                "The option file at {} does not contain options.".format(
+                    options_path
+                )
+            )
+
         return np.array(option_list)
 
     def __setitem__(self, key, val):

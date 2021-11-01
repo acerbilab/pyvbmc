@@ -1,20 +1,22 @@
-import sys
-import math
 import copy
+import logging
+import math
+import os
+import sys
 
-import numpy as np
 import gpyreg as gpr
+import numpy as np
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.stats import kldiv_mvn
 from pyvbmc.timer import Timer
 from pyvbmc.variational_posterior import VariationalPosterior
 
-from .gaussian_process_train import train_gp, reupdate_gp
-from .variational_optimization import update_K, optimize_vp
-from .options import Options
-from .iteration_history import IterationHistory
 from .active_sample import active_sample
+from .gaussian_process_train import reupdate_gp, train_gp
+from .iteration_history import IterationHistory
+from .options import Options
+from .variational_optimization import optimize_vp, update_K
 
 
 class VBMC:
@@ -73,7 +75,6 @@ class VBMC:
         plausible_upper_bounds: np.ndarray = None,
         user_options: dict = None,
     ):
-
         # Initialize variables and algorithm structures
         if x0 is None:
             if (
@@ -88,6 +89,40 @@ class VBMC:
                 x0 = np.full((plausible_lower_bounds.shape), np.NaN)
 
         self.D = x0.shape[1]
+        # load basic and advanced options and validate the names
+        pyvbmc_path = os.path.dirname(os.path.realpath(__file__))
+        basic_path = pyvbmc_path + "/option_configs/basic_vbmc_options.ini"
+        self.options = Options(
+            basic_path,
+            evaluation_parameters={"D": self.D},
+            user_options=user_options,
+        )
+
+        advanced_path = (
+            pyvbmc_path + "/option_configs/advanced_vbmc_options.ini"
+        )
+        self.options.load_options_file(
+            advanced_path, evaluation_parameters={"D": self.D},
+        )
+
+        self.options.validate_option_names([basic_path, advanced_path])
+
+        # set up logging
+        self.logger = logging.getLogger("VBMC")
+        self.logger.setLevel(logging.INFO)
+        if self.options.get("display") == "off":
+            self.logger.setLevel(logging.WARN)
+        elif self.options.get("display") == "iter":
+            self.logger.setLevel(logging.INFO)
+        elif self.options.get("display") == "full":
+            self.logger.setLevel(logging.DEBUG)
+
+        # only add handler to print to console once
+        if not len(self.logger.handlers):
+            self.logger.addHandler(logging.StreamHandler(stream=sys.stdout))
+
+        # variable to keep track of logging actions
+        self.logging_action = []
 
         # Empty LB and UB are Infs
         if lower_bounds is None:
@@ -110,23 +145,6 @@ class VBMC:
             plausible_lower_bounds,
             plausible_upper_bounds,
         )
-
-        # load basic and advanced options and validate the names
-        basic_path = "./pyvbmc/vbmc/option_configs/basic_vbmc_options.ini"
-        self.options = Options(
-            basic_path,
-            evaluation_parameters={"D": self.D},
-            user_options=user_options,
-        )
-
-        advanced_path = (
-            "./pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini"
-        )
-        self.options.load_options_file(
-            advanced_path, evaluation_parameters={"D": self.D},
-        )
-
-        self.options.validate_option_names([basic_path, advanced_path])
 
         self.K = self.options.get("kwarmup")
 
@@ -194,6 +212,7 @@ class VBMC:
                 "pruned",
                 "varss",
                 "func_count",
+                "n_eff",
             ]
         )
 
@@ -213,6 +232,10 @@ class VBMC:
 
         if plausible_lower_bounds is None or plausible_upper_bounds is None:
             if N0 > 1:
+                self.logger.warning(
+                    "PLB and/or PUB not specified. Estimating"
+                    + "plausible bounds from starting set X0..."
+                )
                 width = x0.max(0) - x0.min(0)
                 if plausible_lower_bounds is None:
                     plausible_lower_bounds = x0.min(0) - width / N0
@@ -229,9 +252,17 @@ class VBMC:
                 if np.any(idx):
                     plausible_lower_bounds[idx] = lower_bounds[idx]
                     plausible_upper_bounds[idx] = upper_bounds[idx]
-                    # warning('vbmc:pbInitFailed')
+                    self.logger.warning(
+                        "vbmc:pbInitFailed: Some plausible bounds could not be "
+                        + "determined from starting set. Using hard upper/lower"
+                        + " bounds for those instead."
+                    )
             else:
-                # warning('vbmc:pbUnspecified')
+                self.logger.warning(
+                    "vbmc:pbUnspecified: Plausible lower/upper bounds PLB and"
+                    "/or PUB not specified and X0 is not a valid starting set. "
+                    + "Using hard upper/lower bounds instead."
+                )
                 if plausible_lower_bounds is None:
                     plausible_lower_bounds = np.copy(lower_bounds)
                 if plausible_upper_bounds is None:
@@ -327,7 +358,11 @@ class VBMC:
 
         # Fix when provided X0 are almost on the bounds -- move them inside
         if np.any(x0 < LB_eff) or np.any(x0 > UB_eff):
-            # warning('vbmc:InitialPointsTooClosePB')
+            self.logger.warning(
+                "vbmc:InitialPointsTooClosePB: The starting points X0 are on "
+                + "or numerically too close to the hard bounds LB and UB. "
+                + "Moving the initial points more inside..."
+            )
             x0 = np.maximum((np.minimum(x0, UB_eff)), LB_eff)
 
         # Test order of bounds (permissive)
@@ -346,14 +381,22 @@ class VBMC:
         if np.any(LB_eff > plausible_lower_bounds) or np.any(
             plausible_upper_bounds > UB_eff
         ):
-            # warning('vbmc:TooCloseBounds', ...
+            self.logger.warning(
+                "vbmc:TooCloseBounds: For each variable, hard "
+                + "and plausible bounds should not be too close. "
+                + "Moving plausible bounds."
+            )
             plausible_lower_bounds = np.maximum(plausible_lower_bounds, LB_eff)
             plausible_upper_bounds = np.minimum(plausible_upper_bounds, UB_eff)
 
         # Check that all X0 are inside the plausible bounds,
         # move bounds otherwise
         if np.any(x0 <= LB_eff) or np.any(x0 >= UB_eff):
-            # "warning('vbmc:InitialPointsOutsidePB', ...")
+            self.logger.warning(
+                "vbmc:InitialPointsOutsidePB. The starting points X0"
+                + " are not inside the provided plausible bounds PLB and "
+                + "PUB. Expanding the plausible bounds..."
+            )
             plausible_lower_bounds = np.minimum(
                 plausible_lower_bounds, x0.min(0)
             )
@@ -508,7 +551,7 @@ class VBMC:
             optim_state["proposalfcn"] = self.options.get("proposalfcn")
 
         # Quality of the variational posterior
-        optim_state["r"] = np.inf
+        optim_state["R"] = np.inf
 
         # Start with adaptive sampling
         optim_state["skip_active_sampling"] = False
@@ -574,8 +617,8 @@ class VBMC:
         # Deterministic entropy approximation lower/upper factor
         optim_state["entropy_alpha"] = self.options.get("detentropyalpha")
 
-        # Repository of variational solutions
-        optim_state["vp_repo"] = []
+        # Repository of variational solutions (not used in Python)
+        # optim_state["vp_repo"] = []
 
         # Repeated measurement streak
         optim_state["repeated_observations_streak"] = 0
@@ -661,17 +704,68 @@ class VBMC:
         timer = Timer()
         gp = None
         hyp_dict = {}
+        success_flag = True
 
         # Flag for turning on a dummy implementation of active
         # uncertainty sampling.
         # TODO: remove when active_sampling is implemented properly
         self.optim_state["active_uncertainty_sample_random"] = True
 
+        if self.optim_state["uncertainty_handling_level"] > 0:
+            self.logger.info(
+                "Beginning variational optimization assuming NOISY observations"
+                + " of the log-joint"
+            )
+        else:
+            self.logger.info(
+                "Beginning variational optimization assuming EXACT observations"
+                + " of the log-joint."
+            )
+
+        if self.optim_state["cache_active"]:
+            self.logger.info(
+                " Iteration f-count/f-cache    Mean[ELBO]     Std[ELBO]     "
+                + "sKL-iter[q]   K[q]  Convergence    Action"
+            )
+            display_format = " {:5.0f}     {:5.0f}  /{:5.0f}   {:12.2f}  "
+            display_format += (
+                "{:12.2f}  {:12.2f}     {:4.0f} {:10.3g}       {}"
+            )
+            display_format_warmup = " {:5.0f}     {:5.0f}  /{:5.0f}   {}"
+        else:
+            if (
+                self.optim_state["uncertainty_handling_level"] > 0
+                and self.options.get("maxrepeatedobservations") > 0
+            ):
+                self.logger.info(
+                    " Iteration   f-count (x-count)   Mean[ELBO]     Std[ELBO]"
+                    + "     sKL-iter[q]   K[q]  Convergence  Action"
+                )
+                display_format = " {:5.0f}       {:5.0f} {:5.0f} {:12.2f}  "
+                display_format += (
+                    "{:12.2f}  {:12.2f}     {:4.0f} {:10.3g}     "
+                )
+                display_format += "{}"
+                display_format_warmup = " %5.0f       %5.0f    %12.2f  %s"
+            else:
+                self.logger.info(
+                    " Iteration  f-count    Mean[ELBO]    Std[ELBO]    "
+                    + "sKL-iter[q]   K[q]  Convergence  Action"
+                )
+                display_format = " {:5.0f}      {:5.0f}   {:12.2f} {:12.2f} "
+                display_format += "{:12.2f}     {:4.0f} {:10.3g}     {}"
+                display_format_warmup = " %5.0f       %5.0f    %12.2f  %s"
+
         while not is_finished:
             iteration += 1
             self.optim_state["iter"] = iteration
             self.optim_state["redo_roto_scaling"] = False
             vp_old = copy.deepcopy(self.vp)
+
+            self.logging_action = []
+
+            if iteration == 0 and self.optim_state["warmup"]:
+                self.logging_action.append("start warm-up")
 
             # Switch to stochastic entropy towards the end if still
             # deterministic.
@@ -681,6 +775,7 @@ class VBMC:
                 * self.optim_state.get("max_fun_evals")
             ):
                 self.optim_state["entropy_switch"] = False
+                self.logging_action.append("entropy switch")
 
             # Missing port: Input warping / reparameterization, line 530-625
 
@@ -814,7 +909,6 @@ class VBMC:
                     N_fastopts * self.options.get("nselboincr")
                 )
                 N_slowopts = 1
-
             # Run optimization of variational parameters
             self.vp, varss, pruned = optimize_vp(
                 self.options,
@@ -825,7 +919,6 @@ class VBMC:
                 N_slowopts,
                 Knew,
             )
-            self.optim_state["vp_repo"].append(self.vp.get_parameters())
 
             self.optim_state["vpK"] = self.vp.K
             # Save current entropy
@@ -924,6 +1017,7 @@ class VBMC:
                 "timer": timer,
                 "func_count": self.function_logger.func_count,
                 "lcbmax": self.optim_state["lcbmax"],
+                "n_eff": self.optim_state["n_eff"],
             }
 
             # Record all useful stats
@@ -943,7 +1037,11 @@ class VBMC:
                     ] = self.optim_state.get("N")
 
             # Check termination conditions
-            is_finished = self._check_termination_conditions()
+            (
+                is_finished,
+                termination_message,
+                success_flag,
+            ) = self._check_termination_conditions()
 
             # Save stability
             self.vp.stats["stable"] = self.iteration_history["stable"][
@@ -970,8 +1068,9 @@ class VBMC:
                     # Reset GP hyperparameter covariance
                     # hypstruct.runcov = []
                     hyp_dict["runcov"] = None
-                    # Reset VP repository
+                    # Reset VP repository (not used in python)
                     self.optim_state["vp_repo"] = []
+
                     # Re-get acq info
                     # self.optim_state['acqInfo'] = getAcqInfo(
                     #    options.SearchAcqFcn
@@ -1008,19 +1107,143 @@ class VBMC:
                     ) * self.options.get("outwarpthreshmult")
 
             # Write iteration output
+            # Stopped GP sampling this iteration?
+            if (
+                Ns_gp == self.options["stablegpsamples"]
+                and self.iteration_history["Ns_gp"][max(0, iteration - 1)]
+                > self.options["stablegpsamples"]
+            ):
+                if Ns_gp == 0:
+                    self.logging_action.append("switch to GP opt")
+                else:
+                    self.logging_action.append("stable GP sampling")
+
+            if self.optim_state["cache_active"]:
+                self.logger.info(
+                    display_format.format(
+                        iteration,
+                        self.function_logger.func_count,
+                        self.function_logger.cache_count,
+                        elbo,
+                        elbo_sd,
+                        sKL,
+                        self.vp.K,
+                        self.optim_state["R"],
+                        "".join(self.logging_action),
+                    )
+                )
+
+            else:
+                if (
+                    self.optim_state["uncertainty_handling_level"] > 0
+                    and self.options.get("maxrepeatedobservations") > 0
+                ):
+                    self.logger.info(
+                        display_format.format(
+                            iteration,
+                            self.function_logger.func_count,
+                            self.optim_state["N"],
+                            elbo,
+                            elbo_sd,
+                            sKL,
+                            self.vp.K,
+                            self.optim_state["R"],
+                            "".join(self.logging_action),
+                        )
+                    )
+                else:
+                    self.logger.info(
+                        display_format.format(
+                            iteration,
+                            self.function_logger.func_count,
+                            elbo,
+                            elbo_sd,
+                            sKL,
+                            self.vp.K,
+                            self.optim_state["R"],
+                            "".join(self.logging_action),
+                        )
+                    )
 
         # Pick "best" variational solution to return
         self.vp, elbo, elbo_sd, idx_best = self.determine_best_vp()
 
         # Last variational optimization with large number of components
-        self.vp, elbo, elbo_sd, changedflag = self.finalboost(
+        self.vp, elbo, elbo_sd, changed_flag = self.finalboost(
             self.vp, self.iteration_history["gp"][idx_best]
         )
+
+        if changed_flag:
+            # Recompute symmetrized KL-divergence
+            sKL = max(
+                0,
+                0.5
+                * np.sum(
+                    self.vp.kldiv(
+                        vp2=vp_old,
+                        N=Nkl,
+                        gaussflag=self.options.get("klgauss"),
+                    )
+                ),
+            )
+
+            if (
+                self.optim_state["uncertainty_handling_level"] > 0
+                and self.options.get("maxrepeatedobservations") > 0
+            ):
+                self.logger.info(
+                    display_format.format(
+                        np.Inf,
+                        self.function_logger.func_count,
+                        self.optim_state["N"],
+                        elbo,
+                        elbo_sd,
+                        sKL,
+                        self.vp.K,
+                        self.iteration_history.get("rindex")[idx_best],
+                        "finalize",
+                    )
+                )
+            else:
+                self.logger.info(
+                    display_format.format(
+                        np.Inf,
+                        self.function_logger.func_count,
+                        elbo,
+                        elbo_sd,
+                        sKL,
+                        self.vp.K,
+                        self.iteration_history.get("rindex")[idx_best],
+                        "finalize",
+                    )
+                )
+        # Set exit_flag based on stability (check other things in the future)
+        if not success_flag:
+            if self.vp.stats["stable"]:
+                success_flag = True
+        else:
+            if not self.vp.stats["stable"]:
+                success_flag = False
+
+        # Print final message
+        self.logger.warning(termination_message)
+        self.logger.warning(
+            "Estimated ELBO: {:.3f} +/-{:.3f}.".format(elbo, elbo_sd)
+        )
+        if not success_flag:
+            self.logger.warning(
+                "Caution: Returned variational solution may have"
+                + " not converged."
+            )
+
+        result_dict = self._create_result_dict(idx_best, termination_message)
 
         return (
             copy.deepcopy(self.vp),
             self.vp.stats["elbo"],
             self.vp.stats["elbo_sd"],
+            success_flag,
+            result_dict,
         )
 
     # Loop termination:
@@ -1030,6 +1253,7 @@ class VBMC:
         Private method to check the warmup end conditions.
         """
         iteration = self.optim_state.get("iter")
+        exit_flag = 0
 
         # First requirement for stopping, no constant improvement of metric
         stable_count_flag = False
@@ -1120,6 +1344,7 @@ class VBMC:
             or len(self.optim_state.get("data_trim_list")) >= 1
         ):
             self.optim_state["warmup"] = False
+            self.logging_action.append("end warm-up")
             threshold = self.options.get("warmupkeepthreshold") * (
                 len(self.optim_state.get("data_trim_list")) + 1
             )
@@ -1140,9 +1365,12 @@ class VBMC:
                 len(self.optim_state.get("data_trim_list")) + 1
             )
 
-        self.optim_state["data_trim_list"] = np.append(
-            self.optim_state.get("data_trim_list"), [self.optim_state.get("N")]
-        )
+            self.optim_state["data_trim_list"] = np.append(
+                self.optim_state.get("data_trim_list"),
+                [self.optim_state.get("N")],
+            )
+
+            self.logging_action.append("trim data")
 
         # Remove warm-up points from training set unless close to max
         ymax = max(self.function_logger.y_orig[: self.function_logger.Xn + 1])
@@ -1176,18 +1404,27 @@ class VBMC:
         It also saves the reliability index, ELCBO improvement and stableflag
         to the iteration_history object.
         """
-        isFinished_flag = False
+        is_finished_flag = False
+        termination_message = ""
+        success_flag = True
+        output_dict = dict()
 
         # Maximum number of new function evaluations
         if self.function_logger.func_count >= self.options.get("maxfunevals"):
-            isFinished_flag = True
-            # msg "Inference terminated
+            is_finished_flag = True
+            termination_message = (
+                "Inference terminated: reached maximum number"
+                + "of function evaluations options.maxfunevals."
+            )
 
         # Maximum number of iterations
         iteration = self.optim_state.get("iter")
         if iteration + 1 >= self.options.get("maxiter"):
-            isFinished_flag = True
-            # msg = "Inference terminated
+            is_finished_flag = True
+            termination_message = (
+                "Inference terminated: reached maximum number"
+                + "of iterations options.maxiter."
+            )
 
         # Quicker stability check for entropy switching
         if self.optim_state.get("entropy_switch"):
@@ -1238,10 +1475,17 @@ class VBMC:
                     # If stable but entropy switch is On,
                     # turn it off and continue
                     self.optim_state["entropy_switch"] = False
+                    self.logging_action.append("entropy switch")
                 else:
-                    isFinished_flag = True
+                    is_finished_flag = True
                     stableflag = True
-                    # "msg = 'Inference terminated:"
+                    success_flag = False
+                    self.logging_action.append("stable")
+                    termination_message = (
+                        "Inference terminated: variational "
+                        + "solution stable for options.tolstablecount"
+                        + "fcn evaluations."
+                    )
 
         # Store stability flag
         self.iteration_history.record("stable", stableflag, iteration)
@@ -1250,9 +1494,13 @@ class VBMC:
         if self.function_logger.func_count < self.options.get(
             "minfunevals"
         ) or iteration < self.options.get("miniter"):
-            isFinished_flag = False
+            is_finished_flag = False
 
-        return isFinished_flag
+        return (
+            is_finished_flag,
+            termination_message,
+            success_flag,
+        )
 
     def _compute_reliability_index(self, tol_stable_iters):
         """
@@ -1429,7 +1677,7 @@ class VBMC:
             self.options["maxiterstochastic"] = np.Inf
             self.optim_state["entropy_alpha"] = 0
 
-            # stable_flag = vp.stats["stable"]
+            stable_flag = np.copy(vp.stats["stable"])
             vp, varss, pruned = optimize_vp(
                 self.options,
                 self.optim_state,
@@ -1439,13 +1687,13 @@ class VBMC:
                 n_slow_opts,
                 K_new,
             )
-            # vp.stats["stable"] = stable_flag
+            vp.stats["stable"] = stable_flag
             changed_flag = True
         else:
             vp = self.vp
 
-        elbo = 3
-        elbo_sd = 3
+        elbo = vp.stats["elbo"]
+        elbo_sd = vp.stats["elbo_sd"]
         return vp, elbo, elbo_sd, changed_flag
 
     def determine_best_vp(
@@ -1553,5 +1801,40 @@ class VBMC:
         vp = self.iteration_history.get("vp")[idx_best]
         elbo = self.iteration_history.get("elbo")[idx_best]
         elbo_sd = self.iteration_history.get("elbo_sd")[idx_best]
-        # vp.stats["stable"] = self.iteration_history.get("stable")[idx_best]
+        vp.stats["stable"] = self.iteration_history.get("stable")[idx_best]
         return vp, elbo, elbo_sd, idx_best
+
+    def _create_result_dict(self, idx_best: int, termination_message: str):
+        """
+        Private method to create the result dict.
+        """
+        output = dict()
+        output["function"] = str(self.function_logger.fun)
+        if np.all(np.isinf(self.optim_state["lb"])) and np.all(
+            np.isinf(self.optim_state["ub"])
+        ):
+            output["problemtype"] = "unconstrained"
+        else:
+            output["problemtype"] = "boundconstraints"
+
+        output["iterations"] = self.optim_state["iter"]
+        output["funccount"] = self.function_logger.func_count
+        output["bestiter"] = idx_best
+        output["trainsetsize"] = self.iteration_history["n_eff"][idx_best]
+        output["components"] = self.vp.K
+        output["rindex"] = self.iteration_history["rindex"][idx_best]
+        if self.iteration_history["stable"][idx_best]:
+            output["convergencestatus"] = "probable"
+        else:
+            output["convergencestatus"] = "no"
+
+        output["overhead"] = np.NaN
+        output["rngstate"] = "rng"
+        output["algorithm"] = "Variational Bayesian Monte Carlo"
+        output["version"] = "0.0.1"
+        output["message"] = termination_message
+
+        output["elbo"] = self.vp.stats["elbo"]
+        output["elbo_sd"] = self.vp.stats["elbo_sd"]
+
+        return output

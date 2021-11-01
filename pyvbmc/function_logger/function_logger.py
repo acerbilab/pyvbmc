@@ -128,6 +128,10 @@ class FunctionLogger:
                 + str(x_orig),
             )
             raise
+        
+        # if fval is an array with only one element, extract that element
+        if not np.isscalar(fval_orig) and np.size(fval_orig) == 1:
+            fval_orig = np.array(fval_orig).flat[0]
 
         # Check function value
         if np.any(

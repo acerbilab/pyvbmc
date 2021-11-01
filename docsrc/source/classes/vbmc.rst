@@ -11,7 +11,9 @@ Porting status
      - init a GP (wait for GPLite to be completed)
      - experimental features (listed in `vbmc.m <https://github.com/lacerbi/vbmc/blob/master/vbmc.m>`_ have not been ported yet)
      - `acqhedge_vbmc.m <https://github.com/lacerbi/vbmc/blob/master/private/acqhedge_vbmc.m>`_ has not been ported yet as it is considered to be experimental
-     - the warping in `vbmc.m <https://github.com/lacerbi/vbmc/blob/master/vbmc.m>`_ has not been ported yet as it is considered to be experimental
+     - the warping in `vbmc.m <https://github.com/lacerbi/vbmc/blob/master/vbmc.m>`_ is part of the 2020 paper and is well tested. We will implement it later as VBMC can run without it.
+     - in variational_optimization.py the compute vargrad is untested
+     - in variational_optimization.py the the vp_repo has not been ported for now (In is used in MATLAB in `vpsieve_vbmc.m <https://github.com/lacerbi/vbmc/blob/master/misc/vpsieve_vbmc.m>`_ and filled in active_sampling). (Note by Luigi: In practice, even in MATLAB this part seems to be implemented lazily and then it's not used. I am not sure why I did not work on this more; probably the variational optimization was working fine and couldn't be bothered to fix this properly (it seems it could help).)
 
 Matlab references of ported methods
 -----------------------------------
@@ -52,6 +54,7 @@ Matlab references of ported methods
 - Finalizing:
      - finalboost(): `finalboost_vbmc.m <https://github.com/lacerbi/vbmc/blob/master/misc/finalboost_vbmc.m>`_
      - determine_best_vp(): `best_vbmc.m <https://github.com/lacerbi/vbmc/blob/master/misc/best_vbmc.m>`_
+     - _create_result_dict(): `vbmc_output.m <https://github.com/lacerbi/vbmc/blob/master/private/vbmc_output.m>`_
 
 
 Python documentation

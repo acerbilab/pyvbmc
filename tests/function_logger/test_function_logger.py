@@ -250,6 +250,17 @@ def test_call_function_error():
         f_logger(x)
     assert "FunctionLogger:FuncError" in str(err.value)
 
+def test_call_non_scalar_return():
+    """
+    Test that the FunctionLogger is robust against a function returning an array
+    of size 1 instead of just a float.
+    """    
+    x = np.array([3, 4, 5])
+    f_logger = FunctionLogger(lambda x: np.array([np.sum(x)]), 3, False, 0)
+    f_logger(x)
+    f_logger(x * 2)
+    y = np.sum(x * 2)
+    assert np.all(f_logger.y_orig[1] == y)
 
 def test_add_invalid_func_value():
     x = np.array([3, 4, 5])

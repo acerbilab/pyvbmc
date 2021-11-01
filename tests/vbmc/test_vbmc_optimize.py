@@ -48,7 +48,7 @@ def run_optim_block(
         options["specifytargetnoise"] = True
 
     vbmc = VBMC(f, x0, lb, ub, plb, pub, user_options=options)
-    vp, elbo, _ = vbmc.optimize()
+    vp, elbo, _, _, _ = vbmc.optimize()
 
     vmu = vp.moments()
     err_1 = np.sqrt(np.mean((vmu - mu_bar) ** 2))
@@ -329,3 +329,55 @@ def mvnlogpdf(x, mu, sigma):
 
     y = -0.5 * quad_form - log_sqrt_det_sigma - d * np.log(2 * np.pi) / 2
     return y
+
+
+def test_optimize_result_dict(mocker):
+    """
+    Test that result dict is being recorded correctly.
+    """
+    D = 3
+    vbmc = VBMC(
+        lambda x: np.sum(x),
+        np.ones((1, D)),
+        np.full((1, D), -np.inf),
+        np.full((1, D), np.inf),
+        np.ones((1, D)) * -10,
+        np.ones((1, D)) * 10,
+        user_options={"maxiter": 1},
+    )
+    mocker.patch(
+        "pyvbmc.vbmc.VBMC._check_termination_conditions",
+        return_value=(True, "test message", True),
+    )
+    mocker.patch(
+        "pyvbmc.vbmc.vbmc.optimize_vp", return_value=(vbmc.vp, None, None)
+    )
+    mocker.patch(
+        "pyvbmc.vbmc.VBMC.finalboost", return_value=(vbmc.vp, -2, 1, False)
+    )
+
+    vbmc.iteration_history["stable"] = list()
+    vbmc.iteration_history["stable"].append(False)
+    vbmc.iteration_history["rindex"] = list()
+    vbmc.iteration_history["rindex"].append(2)
+    vbmc.vp.stats = dict()
+    vbmc.vp.stats["entropy"] = 1
+    vbmc.vp.stats["elbo"] = -2
+    vbmc.vp.stats["elbo_sd"] = 0
+    _, _, _, _, result_dict = vbmc.optimize()
+    assert "function" in result_dict
+    assert result_dict["problemtype"] == "unconstrained"
+    assert "iterations" in result_dict
+    assert "funccount" in result_dict
+    assert "bestiter" in result_dict
+    assert "trainsetsize" in result_dict
+    assert "components" in result_dict
+    assert result_dict["rindex"] == 2
+    assert result_dict["convergencestatus"] == "no"
+    assert np.isnan(result_dict["overhead"])
+    assert "rngstate" in result_dict
+    assert result_dict["algorithm"] == "Variational Bayesian Monte Carlo"
+    assert "version" in result_dict
+    assert result_dict["message"] == "test message"
+    assert "elbo" in result_dict
+    assert "elbo_sd" in result_dict
