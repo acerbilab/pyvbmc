@@ -518,7 +518,7 @@ def test_vbmc_optimstate_constants():
     assert np.all(vbmc.optim_state["warping_count"] == 0)
     assert np.all(vbmc.optim_state["recompute_var_post"] == True)
     assert np.all(vbmc.optim_state["warmup_stable_count"] == 0)
-    assert np.all(vbmc.optim_state["r"] == np.inf)
+    assert np.all(vbmc.optim_state["R"] == np.inf)
     assert np.all(vbmc.optim_state["skip_active_sampling"] == False)
     assert np.all(vbmc.optim_state["run_mean"] == [])
     assert np.all(vbmc.optim_state["run_cov"] == [])

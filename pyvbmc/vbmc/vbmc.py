@@ -125,9 +125,6 @@ class VBMC:
         # variable to keep track of logging actions
         self.logging_action = []
 
-
-
-
         # Empty LB and UB are Infs
         if lower_bounds is None:
             lower_bounds = np.ones((1, self.D)) * -np.inf
@@ -149,7 +146,6 @@ class VBMC:
             plausible_lower_bounds,
             plausible_upper_bounds,
         )
-
 
         self.K = self.options.get("kwarmup")
 
@@ -217,6 +213,7 @@ class VBMC:
                 "pruned",
                 "varss",
                 "func_count",
+                "n_eff",
             ]
         )
 
@@ -557,7 +554,7 @@ class VBMC:
             optim_state["proposalfcn"] = self.options.get("proposalfcn")
 
         # Quality of the variational posterior
-        optim_state["r"] = np.inf
+        optim_state["R"] = np.inf
 
         # Start with adaptive sampling
         optim_state["skip_active_sampling"] = False
@@ -1014,6 +1011,7 @@ class VBMC:
                 "timer": timer,
                 "func_count": self.function_logger.func_count,
                 "lcbmax": self.optim_state["lcbmax"],
+                "n_eff": self.optim_state["n_eff"],
             }
 
             # Record all useful stats
@@ -1036,7 +1034,7 @@ class VBMC:
             # Check termination conditions
             (
                 is_finished,
-                termination_output_dict,
+                termination_message,
                 success_flag,
             ) = self._check_termination_conditions()
 
@@ -1220,7 +1218,7 @@ class VBMC:
                 success_flag = False
 
         # Print final message
-        self.logger.warning(termination_output_dict['message'])
+        self.logger.warning(termination_message)
         self.logger.warning(
             "Estimated ELBO: {:.3f} +/-{:.3f}.".format(elbo, elbo_sd)
         )
@@ -1230,12 +1228,14 @@ class VBMC:
                 + " not converged."
             )
 
+        result_dict = self._create_result_dict(idx_best, termination_message)
+
         return (
             copy.deepcopy(self.vp),
             self.vp.stats["elbo"],
             self.vp.stats["elbo_sd"],
             success_flag,
-            termination_output_dict
+            result_dict,
         )
 
     # Loop termination:
@@ -1396,15 +1396,15 @@ class VBMC:
         It also saves the reliability index, ELCBO improvement and stableflag
         to the iteration_history object.
         """
-        isFinished_flag = False
-        logging_message = ""
+        is_finished_flag = False
+        termination_message = ""
         success_flag = True
         output_dict = dict()
 
         # Maximum number of new function evaluations
         if self.function_logger.func_count >= self.options.get("maxfunevals"):
-            isFinished_flag = True
-            output_dict["message"] = (
+            is_finished_flag = True
+            termination_message = (
                 "Inference terminated: reached maximum number"
                 + "of function evaluations options.maxfunevals."
             )
@@ -1412,8 +1412,8 @@ class VBMC:
         # Maximum number of iterations
         iteration = self.optim_state.get("iter")
         if iteration + 1 >= self.options.get("maxiter"):
-            isFinished_flag = True
-            output_dict["message"] = (
+            is_finished_flag = True
+            termination_message = (
                 "Inference terminated: reached maximum number"
                 + "of iterations options.maxiter."
             )
@@ -1469,11 +1469,11 @@ class VBMC:
                     self.optim_state["entropy_switch"] = False
                     self.logging_action.append("entropy switch")
                 else:
-                    isFinished_flag = True
+                    is_finished_flag = True
                     stableflag = True
                     success_flag = False
                     self.logging_action.append("stable")
-                    output_dict["message"] = (
+                    termination_message = (
                         "Inference terminated: variational "
                         + "solution stable for options.tolstablecount"
                         + "fcn evaluations."
@@ -1486,14 +1486,11 @@ class VBMC:
         if self.function_logger.func_count < self.options.get(
             "minfunevals"
         ) or iteration < self.options.get("miniter"):
-            isFinished_flag = False
-
-        output_dict["success_flag"] = success_flag
-        output_dict["exit_flag"] = int(success_flag)
+            is_finished_flag = False
 
         return (
-            isFinished_flag,
-            output_dict,
+            is_finished_flag,
+            termination_message,
             success_flag,
         )
 
@@ -1796,5 +1793,40 @@ class VBMC:
         vp = self.iteration_history.get("vp")[idx_best]
         elbo = self.iteration_history.get("elbo")[idx_best]
         elbo_sd = self.iteration_history.get("elbo_sd")[idx_best]
-        # vp.stats["stable"] = self.iteration_history.get("stable")[idx_best]
+        vp.stats["stable"] = self.iteration_history.get("stable")[idx_best]
         return vp, elbo, elbo_sd, idx_best
+
+    def _create_result_dict(self, idx_best: int, termination_message: str):
+        """
+        Private method to create the result dict.
+        """
+        output = dict()
+        output["function"] = str(self.function_logger.fun)
+        if np.all(np.isinf(self.optim_state["lb"])) and np.all(
+            np.isinf(self.optim_state["ub"])
+        ):
+            output["problemtype"] = "unconstrained"
+        else:
+            output["problemtype"] = "boundconstraints"
+
+        output["iterations"] = self.optim_state["iter"]
+        output["funccount"] = self.function_logger.func_count
+        output["bestiter"] = idx_best
+        output["trainsetsize"] = self.iteration_history["n_eff"][idx_best]
+        output["components"] = self.vp.K
+        output["rindex"] = self.iteration_history["rindex"][idx_best]
+        if self.iteration_history["stable"][idx_best]:
+            output["convergencestatus"] = "probable"
+        else:
+            output["convergencestatus"] = "no"
+
+        output["overhead"] = np.NaN
+        output["rngstate"] = "rng"
+        output["algorithm"] = "Variational Bayesian Monte Carlo"
+        output["version"] = "0.0.1"
+        output["message"] = termination_message
+
+        output["elbo"] = self.vp.stats["elbo"]
+        output["elbo_sd"] = self.vp.stats["elbo_sd"]
+
+        return output
