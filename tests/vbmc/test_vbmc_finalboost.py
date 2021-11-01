@@ -34,9 +34,12 @@ def test_final_boost_lambda_options(mocker):
     }
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.iteration_history["gp"] = np.arange(30)
+    vbmc.vp.stats = dict()
+    vbmc.vp.stats["elbo"] = -3
+    vbmc.vp.stats["elbo_sd"] = 0.1
+    vbmc.vp.stats["stable"] = True
     mocker.patch(
-        "pyvbmc.vbmc.vbmc.optimize_vp",
-        return_value=(VariationalPosterior(50), None, None)
+        "pyvbmc.vbmc.vbmc.optimize_vp", return_value=(vbmc.vp, None, None)
     )
     vp, elbo, elbo_sd, changedflag = vbmc.finalboost(vbmc.vp, dict())
     assert changedflag
@@ -55,9 +58,12 @@ def test_final_boost_fixed_value_options(mocker):
     }
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.iteration_history["gp"] = np.arange(30)
+    vbmc.vp.stats = dict()
+    vbmc.vp.stats["elbo"] = -3
+    vbmc.vp.stats["elbo_sd"] = 0.1
+    vbmc.vp.stats["stable"] = True
     mocker.patch(
-        "pyvbmc.vbmc.vbmc.optimize_vp",
-        return_value=(VariationalPosterior(50), None, None)
+        "pyvbmc.vbmc.vbmc.optimize_vp", return_value=(vbmc.vp, None, None)
     )
     vp, elbo, elbo_sd, changedflag = vbmc.finalboost(vbmc.vp, dict())
     assert changedflag
@@ -76,9 +82,12 @@ def test_final_boost_fixed_value_options_boost_none(mocker):
     }
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.iteration_history["gp"] = np.arange(30)
+    vbmc.vp.stats = dict()
+    vbmc.vp.stats["elbo"] = -3
+    vbmc.vp.stats["elbo_sd"] = 0.1
+    vbmc.vp.stats["stable"] = True
     mocker.patch(
-        "pyvbmc.vbmc.vbmc.optimize_vp",
-        return_value=(VariationalPosterior(50), None, None)
+        "pyvbmc.vbmc.vbmc.optimize_vp", return_value=(vbmc.vp, None, None)
     )
     vp, elbo, elbo_sd, changedflag = vbmc.finalboost(vbmc.vp, dict())
     assert changedflag
@@ -96,9 +105,12 @@ def test_final_boost_no_boost(mocker):
     }
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.iteration_history["gp"] = np.arange(30)
+    vbmc.vp.stats = dict()
+    vbmc.vp.stats["elbo"] = -3
+    vbmc.vp.stats["elbo_sd"] = 0.1
+    vbmc.vp.stats["stable"] = True
     mocker.patch(
-        "pyvbmc.vbmc.vbmc.optimize_vp",
-        return_value=(VariationalPosterior(50), None, None)
+        "pyvbmc.vbmc.vbmc.optimize_vp", return_value=(vbmc.vp, None, None)
     )
     vp, elbo, elbo_sd, changedflag = vbmc.finalboost(vbmc.vp, dict())
     assert changedflag == False

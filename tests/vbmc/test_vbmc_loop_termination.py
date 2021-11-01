@@ -38,9 +38,11 @@ def test_vbmc_check_termination_conditions_maxfunevals(mocker):
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.function_logger.func_count = 10
     vbmc.optim_state["iter"] = 10
-    assert vbmc._check_termination_conditions() == True
+    terminated, _, _ = vbmc._check_termination_conditions()
+    assert terminated
     vbmc.function_logger.func_count = 9
-    assert vbmc._check_termination_conditions() == False
+    terminated, _, _ = vbmc._check_termination_conditions()
+    assert not terminated
 
 
 def test_vbmc_check_termination_conditions_maxiter(mocker):
@@ -58,9 +60,12 @@ def test_vbmc_check_termination_conditions_maxiter(mocker):
     vbmc.function_logger.func_count = 9
     vbmc.optim_state["entropy_switch"] = True
     vbmc.optim_state["iter"] = 99
-    assert vbmc._check_termination_conditions() == True
+    terminated, _, _ = vbmc._check_termination_conditions()
+    assert terminated
     vbmc.optim_state["iter"] = 98
-    assert vbmc._check_termination_conditions() == False
+    terminated, _, _ = vbmc._check_termination_conditions()
+    assert not terminated
+
 
 
 def test_vbmc_check_termination_conditions_prevent_early_termination(mocker):
@@ -78,7 +83,9 @@ def test_vbmc_check_termination_conditions_prevent_early_termination(mocker):
     vbmc.function_logger.func_count = 9
     vbmc.optim_state["iter"] = 100
     vbmc.optim_state["entropy_switch"] = True
-    assert vbmc._check_termination_conditions() == False
+    terminated, _, _ = vbmc._check_termination_conditions()
+    assert not terminated
+
     user_options = {
         "maxfunevals": 10,
         "minfunevals": 11,
@@ -89,7 +96,8 @@ def test_vbmc_check_termination_conditions_prevent_early_termination(mocker):
     vbmc.function_logger.func_count = 9
     vbmc.optim_state["iter"] = 100
     vbmc.optim_state["entropy_switch"] = True
-    assert vbmc._check_termination_conditions() == False
+    terminated, _, _ = vbmc._check_termination_conditions()
+    assert not terminated
 
 
 def test_vbmc_check_termination_conditions_stability(mocker):
@@ -113,23 +121,30 @@ def test_vbmc_check_termination_conditions_stability(mocker):
         "pyvbmc.vbmc.VBMC._compute_reliability_index",
         return_value=(0.5, 0.005),
     )
-    assert vbmc._check_termination_conditions() == True
+    terminated, _, _ = vbmc._check_termination_conditions()
+    assert terminated
     mocker.patch(
         "pyvbmc.vbmc.VBMC._compute_reliability_index",
         return_value=(1, 0.005),
     )
-    assert vbmc._check_termination_conditions() == False
+    terminated, _, _ = vbmc._check_termination_conditions()
+    assert not terminated
+
     mocker.patch(
         "pyvbmc.vbmc.VBMC._compute_reliability_index",
         return_value=(0.5, 0.1),
     )
-    assert vbmc._check_termination_conditions() == False
+    terminated, _, _ = vbmc._check_termination_conditions()
+    assert not terminated
+
     vbmc.optim_state["iter"] = 9
     mocker.patch(
         "pyvbmc.vbmc.VBMC._compute_reliability_index",
         return_value=(1, 0.005),
     )
-    assert vbmc._check_termination_conditions() == False
+    terminated, _, _ = vbmc._check_termination_conditions()
+    assert not terminated
+
 
 
 def test_vbmc_is_finished_stability_entropyswitch(mocker):
@@ -151,7 +166,9 @@ def test_vbmc_is_finished_stability_entropyswitch(mocker):
         "pyvbmc.vbmc.VBMC._compute_reliability_index",
         return_value=(0.5, 0.005),
     )
-    assert vbmc._check_termination_conditions() == False
+    terminated, _, _ = vbmc._check_termination_conditions()
+    assert not terminated
+
 
 
 def test_vbmc_compute_reliability_index_less_than_2_iter():
@@ -311,7 +328,7 @@ def test_setup_vbmc_after_warmup_no_false_alarm_still_keep_points():
     assert vbmc.optim_state.get("lastwarmup") == 100
     assert vbmc.optim_state.get("recompute_var_post")
     assert not vbmc.optim_state.get("skipactivesampling")
-    assert vbmc.optim_state.get("data_trim_list")[-1] == 100
+    assert vbmc.optim_state.get("data_trim_list")[-1] == 1
 
 
 def test_setup_vbmc_after_warmup_false_alarm():

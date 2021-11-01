@@ -54,6 +54,7 @@ Matlab references of ported methods
 - Finalizing:
      - finalboost(): `finalboost_vbmc.m <https://github.com/lacerbi/vbmc/blob/master/misc/finalboost_vbmc.m>`_
      - determine_best_vp(): `best_vbmc.m <https://github.com/lacerbi/vbmc/blob/master/misc/best_vbmc.m>`_
+     - _create_result_dict(): `vbmc_output.m <https://github.com/lacerbi/vbmc/blob/master/private/vbmc_output.m>`_
 
 
 Python documentation
