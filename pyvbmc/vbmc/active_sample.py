@@ -1,19 +1,26 @@
 import logging
 import math
+import copy
+import cma
 
 import numpy as np
+import gpyreg as gpr
+
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.stats import get_hpd
+from pyvbmc.vbmc.gaussian_process_train import train_gp, reupdate_gp
+from pyvbmc.vbmc.iteration_history import IterationHistory
 from .options import Options
 
 
 def active_sample(
-    gp,
+    gp: gpr.GP,
     sample_count: int,
     optim_state: dict,
     function_logger: FunctionLogger,
+    iteration_history: IterationHistory,
     vp: VariationalPosterior,
     options: Options,
 ):
@@ -30,6 +37,8 @@ def active_sample(
         The optim_state from the VBMC instance this function is called from.
     function_logger : FunctionLogger
         The FunctionLogger from the VBMC instance this function is called from.
+    iteration_history : IterationHistory
+        The IterationHistory from the VBMC instance this function is called from.
     vp : VariationalPosterior
         The VariationalPosterior from the VBMC instance this function is called
         from.
@@ -39,9 +48,11 @@ def active_sample(
     Returns
     -------
     function_logger : FunctionLogger
-        The FunctionLogger from the VBMC instance this function is called from.
+        The updated FunctionLogger.
     optim_state : dict
-        The optim_state from the VBMC instance this function is called from.
+        The updated optim_state.
+    vp: VariationalPosterior
+        The updated variation posterior. 
     """
     # TODO: The timer is missing for now, we have to setup it throught pyvbmc.
 
@@ -79,9 +90,7 @@ def active_sample(
                     # Uniform random samples in the plausible box
                     # (in transformed space)
                     random_Xs = (
-                        np.random.standard_normal(
-                            (sample_count - provided_sample_count, D)
-                        )
+                        np.random.rand(sample_count - provided_sample_count, D)
                         * (pub - plb)
                         + plb
                     )
@@ -89,12 +98,9 @@ def active_sample(
                 elif options.get("initdesign") == "narrow":
                     start_Xs = parameter_transformer(Xs[0])
                     random_Xs = (
-                        np.random.standard_normal(
-                            (sample_count - provided_sample_count, D)
-                        )
-                        - 0.5 * 0.1 * (pub - plb)
-                        + start_Xs
-                    )
+                        np.random.rand(sample_count - provided_sample_count, D)
+                        - 0.5
+                    ) * 0.1 * (pub - plb) + start_Xs
                     random_Xs = np.minimum((np.maximum(random_Xs, plb)), pub)
 
                 else:
@@ -133,8 +139,12 @@ def active_sample(
             )
 
         # Remove points from starting cache
-        optim_state["cache"]["x_orig"][idx_remove] = None
-        optim_state["cache"]["y_orig"][idx_remove] = None
+        optim_state["cache"]["x_orig"] = np.delete(
+            optim_state["cache"]["x_orig"], idx_remove, 0
+        )
+        optim_state["cache"]["y_orig"] = np.delete(
+            optim_state["cache"]["y_orig"], idx_remove, 0
+        )
 
         Xs = parameter_transformer(Xs)
 
@@ -146,18 +156,458 @@ def active_sample(
 
     else:
         # active uncertainty sampling
-        
-        # Dummy implementation that samples points uniformly within
-        # the plausible bound windows. Remove once active uncertainty
-        # sampling is actually implemented.
-        if optim_state["active_uncertainty_sample_random"]:
-            window = optim_state["pub"] - optim_state["plb"]
-            rnd_tmp = np.random.rand(sample_count, window.shape[1])
-            Xs = window * rnd_tmp + optim_state["plb"]
-            for sample_idx in range(sample_count):
-                _, _, _ = function_logger(Xs[sample_idx])
+        SearchAcqFcn = options["searchacqfcn"]
 
-    return function_logger, optim_state
+        ###
+        # Use "hedge" strategy to propose an acquisition function? (unused, TODO)
+        ###
+
+        # Compute time cost (used by some acquisition functions)
+        if optim_state["iter"] > 1:
+            deltaNeff = max(
+                1,
+                iteration_history["optim_state"][optim_state["iter"] - 1][
+                    "n_eff"
+                ]
+                - iteration_history["optim_state"][optim_state["iter"] - 2][
+                    "n_eff"
+                ],
+            )
+        else:
+            deltaNeff = iteration_history["optim_state"][0]["n_eff"]
+
+        # time_iter = iteration_history["timer"][optim_state["iter"] - 1]
+
+        # gpTrain_vec = [None] * len(iteration_history["timer"])
+        # for i, (_, v) in enumerate(iteration_history["timer"].items()):
+        #     gpTrain_vec[i] = v["gpTrain"]
+
+        ###
+        # if options.ActiveVariationalSamples > 0 % Unused
+        ###
+
+        # Perform GP (and possibly variational) update after each active sample
+        ActiveSampleFullUpdate_flag = (
+            options["activesamplevpupdate"] or options["activesamplegpupdate"]
+        ) and (
+            (
+                optim_state["iter"]
+                - options["activesamplefullupdatepastwarmup"]
+                <= optim_state["last_warmup"]
+            )
+            or iteration_history["rindex"][-1]
+            > options["activesamplefullupdatethreshold"]
+        )
+
+        if ActiveSampleFullUpdate_flag and sample_count > 1:
+            # Temporarily change options for local updates
+            recompute_var_post_old = optim_state["recompute_var_post"]
+            entropy_alpha_old = optim_state["entropy_alpha"]
+
+            options_update = copy.deepcopy(options)
+            options_update["gptolopt"] = options["gptoloptactive"]
+            options_update["gptoloptmcmc"] = options["gptoloptmcmcactive"]
+            options_update["tolweight"] = 0
+            options_update["nsent"] = options["nsentactive"]
+            options_update["nsentfast"] = options["nsentfastactive"]
+            options_update["nsentfine"] = options["nsentfineactive"]
+
+            hyp_dict = None
+            vp0 = vp
+
+        ## Active sampling loop (sequentially acquire Ns new points)
+        for i in range(sample_count):
+            optim_state["N"] = function_logger.Xn  # Number of training inputs
+            optim_state["Neff"] = sum(
+                function_logger.nevals[function_logger.X_flag]
+            )
+            ###
+            # if options.ActiveVariationalSamples > 0 % Unused
+            ###
+            ###
+            # Nextra = evaloption_vbmc(options.SampleExtraVPMeans,vp.K);
+            # if Nextra > 0   % Unused
+            ###
+
+            if not options["acqhedge"]:
+                # If multiple acquisition functions are provided and not
+                # following a "hedge" strategy, pick one at random
+                idxAcq = np.random.randint(len(SearchAcqFcn))
+
+            ## Pre-computations for acquisition functions
+
+            # Evaluate noise at each training point
+            Ns_gp = np.size(gp.posteriors)
+            sn2new = np.zeros((gp.X.shape[0], Ns_gp))
+
+            cov_N = gp.covariance.hyperparameter_count(gp.D)
+            noise_N = gp.noise.hyperparameter_count()
+
+            for s in range(Ns_gp):
+
+                hyp_noise = gp.posteriors[s].hyp[cov_N : cov_N + noise_N]
+                if hasattr(function_logger, "S"):
+                    s2 = (
+                        function_logger.S[function_logger.X_flag] ** 2
+                    ) * function_logger.nevals[function_logger.X_flag]
+                else:
+                    s2 = None
+
+                # Missing port: noiseshaping
+
+                sn2new[:, s] = gp.noise.compute(hyp_noise, gp.X, gp.y, s2)
+
+            gp.temporary_data["sn2_new"] = sn2new.mean(1)
+
+            # Evaluate GP input length scale (use geometric mean)
+            D = gp.D
+            ln_ell = np.zeros((D, Ns_gp))
+            for s in range(Ns_gp):
+                ln_ell[:, s] = gp.posteriors[s].hyp[:D]
+            optim_state["gp_length_scale"] = np.exp(ln_ell.mean(1))
+
+            # Rescale GP training inputs by GP length scale
+            gp.temporary_data["X_rescaled"] = (
+                gp.X / optim_state["gp_length_scale"]
+            )
+
+            ### Missing port
+            # Algorithmic time per iteration (from last iteration)
+            # t_base = timer_iter.activeSampling + timer_iter.variationalFit + timer_iter.finalize + timer_iter.gpTrain;
+
+            # Estimated increase in cost for a new training input
+            # if optim_state["iter"] > 2:
+            #     length = 10
+            # xx = np.log(iteration_history["optim_state"]["N"] - length)
+            # % Algorithmic cost per function evaluation
+            # optimState.t_algoperfuneval = t_base/deltaNeff + max(0,gpTrain_diff);
+            ###
+
+            ### Missing port
+            # Prepare for importance sampling based acquisition function
+            ###
+
+            ## Start active search
+            # optim_state["acqrand"] = np.random.rand()  # unused
+
+            # Create fast search set from cache and randomly generated
+            X_search, idx_cache = _get_search_points(
+                options["nssearch"], optim_state, function_logger, vp, options
+            )
+
+            # TODO: put _real2int in proper place
+            from pyvbmc.acquisition_functions.abstract_acq_fcn import (
+                AbstractAcqFcn,
+            )
+
+            X_search = AbstractAcqFcn._real2int(
+                X_search, parameter_transformer, optim_state["integervars"]
+            )
+
+            if SearchAcqFcn[idxAcq] == "@acqf_vbmc":
+                from pyvbmc.acquisition_functions.acq_fcn import AcqFcn
+
+                acqEval = AcqFcn()
+            else:  # TODO
+                raise NotImplementedError("Not implemented yet")
+
+            # Re-evaluate variance of the log joint if requested
+            if acqEval.acq_info["compute_varlogjoint"]:
+                from pyvbmc.vbmc.variational_optimization import _gplogjoint
+
+                varF = _gplogjoint(vp, gp, 0, 0, 0, 1)[2]
+                optim_state["varlogjoint_samples"] = varF
+
+            # Evaluate acquisition function
+            acq_fast = acqEval(X_search, gp, vp, function_logger, optim_state)
+
+            if options["searchcachefrac"] > 0:
+                inds = np.argsort(acq_fast)
+                optim_state["searchcache"] = X_search[inds]
+                idx = inds[0]
+            else:
+                idx = np.argmin(acq_fast)
+
+            X_acq = X_search[[idx]]
+            idx_cache_acq = idx_cache[idx]
+
+            # Remove selected points from search set
+            X_search = np.delete(X_search, idx, 0)
+            idx_cache = np.delete(idx_cache, idx, 0)
+
+            # Additional search via optimization
+            if options["searchoptimizer"] != "none":
+                # fval_old = acqEval(X_acq, gp, vp, function_logger, optim_state)
+                # x0 = AbstractAcqFcn._real2int(X_acq, parameter_transformer, optim_state["integervars"])
+                fval_old = acq_fast[idx]
+                x0 = X_acq[0, :]
+
+                if (
+                    np.isfinite(optim_state["lb_search"]).all()
+                    and np.isfinite(optim_state["ub_search"]).all()
+                ):
+                    lb = np.minimum(x0, optim_state["lb_search"])
+                    ub = np.maximum(x0, optim_state["ub_search"])
+                else:
+                    xrange = gp.X.max(0) - gp.X.min(0)
+                    lb = np.minimum(gp.X, x0) - 0.1 * xrange
+                    ub = np.maximum(gp.X, x0) + 0.1 * xrange
+
+                if acqEval.acq_info["log_flag"]:
+                    tol_fun = 1e-2
+                else:
+                    tol_fun = max(1e-12, abs(fval_old * 1e-3))
+
+                if options["searchoptimizer"] == "cmaes":
+
+                    if options["searchcmaesvpinit"]:
+                        _, Sigma = vp.moments(origflag=False, covflag=True)
+                    else:
+                        X_hpd = get_hpd(gp.X, gp.y, options["hpdfrac"])[0]
+                        Sigma = np.cov(X_hpd, rowvar=False, bias=True)
+
+                    insigma = np.sqrt(np.diag(Sigma))
+                    cma_options = {
+                        "verbose": -9,
+                        "tolfun": tol_fun,
+                        "maxfevals": options["searchmaxfunevals"],
+                        "bounds": (lb.squeeze(), ub.squeeze()),
+                    }
+
+                    acq_cma = lambda X: acqEval(
+                        X, gp, vp, function_logger, optim_state
+                    )[0]
+                    res = cma.fmin(
+                        acq_cma,
+                        x0,
+                        np.max(insigma),
+                        options=cma_options,
+                        noise_handler=cma.NoiseHandler(np.size(x0)),
+                    )
+
+                    # if options.SearchCMAESbest
+                    #         xsearch_optim = bestever.x;
+                    #         fval_optim = bestever.f;
+                    # end
+                    xsearch_optim, fval_optim = res[:2]
+                else:
+                    raise NotImplementedError("Not implemented yet")
+
+                if fval_optim < fval_old:
+                    # print("cmaes found better solution.")
+                    X_acq[0, :] = AbstractAcqFcn._real2int(
+                        xsearch_optim,
+                        parameter_transformer,
+                        optim_state["integervars"],
+                    )
+                    idx_cache_acq = np.nan
+
+            # region
+            ## Missing port
+            # if (
+            #     options["uncertaintyhandling"]
+            #     and options["maxrepeatedobservations"] > 0
+            # ):
+            #     if (
+            #         optim_state["repeatedobservationsstreak"]
+            #         >= options["maxrepeatedobservations"]
+            #     ):
+            #         # Maximum number of consecutive repeated observations
+            #         # (to prevent getting stuck in a wrong belief state)
+            #         optim_state["repeatedobservationsstreak"] = 0
+            #     else:
+            #         from pyvbmc.vbmc.gaussian_process_train import (
+            #             _get_training_data,
+            #         )
+
+            #         # Re-evaluate acquisition function on training set
+            #         X_train = _get_training_data(function_logger)
+            #         # Disable variance-based regularization first
+            #         oldflag = optim_state["varianceregularizedacqfcn"]
+            #         optim_state["varianceregularizedacqfcn"] = False
+            #         # Use current cost of GP instead of future cost
+            #         old_t_algoperfuneval = optim_state["t_algoperfuneval"]
+            #         optim_state["t_algoperfuneval"] = t_base / deltaNeff
+            #         acq_train = acqEval(
+            #             X_train, gp, vp, function_logger, optim_state
+            #         )
+            #         optim_state["VarianceRegularizedAcqFcn"] = oldflag
+            #         optim_state["t_algoperfuneval"] = old_t_algoperfuneval
+
+            #         idx_train = np.argmin(acq_train)
+            #         acq_train = acq_train[idx_train]
+
+            #         acq_now = acqEval(
+            #             X_acq[0], gp, vp, function_logger, optim_state
+            #         )
+
+            #         if acq_train < options["repeatedacqdiscount"]*acq_now:
+            #             X_acq[0] = X_train[idx_train]
+            #             optim_state["repeatedobservationsstreak"] += 1
+            #         else:
+            #             optim_state["repeatedobservationsstreak"] = 0
+            # endregion
+
+            # Missing port: line 356-361, unused?
+
+            xnew = X_acq
+            # See if chosen point comes from starting cache
+            idx = idx_cache_acq
+            if np.isnan(idx):
+                y_orig = np.nan
+            else:
+                idx = int(idx)
+                y_orig = optim_state["cache"]["y_orig"][idx]
+
+            if np.isnan(y_orig):
+                # Function value is not available, evaluate
+                ynew, _, idx_new = function_logger(xnew)
+            else:
+                ynew, _, idx_new = function_logger.add(xnew, y_orig)
+                # Remove point from starting cache
+                optim_state["cache"]["x_orig"] = np.delete(
+                    optim_state["cache"]["x_orig"], idx, 0
+                )
+                optim_state["cache"]["y_orig"] = np.delete(
+                    optim_state["cache"]["y_orig"], idx, 0
+                )
+
+            if "S" in optim_state.keys():
+                s2new = optim_state["S"][idx_new] ** 2
+            else:
+                s2new = None
+
+            ## Missing port: line 392-402 in matlab
+
+            if i + 1 < sample_count:
+                # If not the last sample, update GP and possibly other things
+                # (no need perform updates after the last sample)
+                if ActiveSampleFullUpdate_flag:
+                    # If performing full updates with active sampling, the GP
+                    # hyperparameters are updated after each acquisition
+
+                    # Quick GP update
+                    if hyp_dict is None:
+                        hyp_dict = optim_state["hyp_dict"]
+
+                    # Missing port: line 425-432 in matlab (unused)
+                    gptmp = None
+                    fESS, fESS_thresh = 0, 1
+                    if fESS <= fESS_thresh:
+                        if options["activesamplegpupdate"]:
+                            train_gp(
+                                hyp_dict,
+                                optim_state,
+                                function_logger,
+                                iteration_history,
+                                options_update,
+                                optim_state["plb_orig"],
+                                optim_state["pub_orig"],
+                            )
+                        else:
+                            if gptmp is None:
+                                gp = reupdate_gp(function_logger, gp)
+                            else:
+                                gp = gptmp
+
+                        if options["activesamplevpupdate"]:
+                            from pyvbmc.vbmc.variational_optimization import (
+                                optimize_vp,
+                            )
+
+                            # Quick variational optimization
+
+                            # Decide number of fast optimizations
+                            N_fastopts = math.ceil(
+                                options_update["nselboincr"]
+                                * options_update["nselbo"](vp.K)
+                            )
+                            if options["updaterandomalpha"]:
+                                optim_state["entropy_alpha"] = 1 - np.sqrt(
+                                    np.random.rand()
+                                )
+
+                            vp, _, _ = optimize_vp(
+                                options_update,
+                                optim_state,
+                                vp,
+                                gp,
+                                N_fastopts,
+                                slow_opts_N=1,
+                            )
+
+                            optim_state["vp_repo"].append(vp.get_parameters())
+                    else:
+                        gp = gptmp
+                else:
+                    # If NOT performing full updates with active sampling, only
+                    # the GP posterior is updated (but not the hyperparameters)
+
+                    # Perform simple rank-1 update if no noise and first sample
+                    update1 = (
+                        (s2new is None)
+                        and function_logger.nevals[idx_new] == 1
+                    ) and not options["noiseshaping"]
+                    if update1:
+                        ynew = np.array([[ynew]])  # (1,1)
+                        gp.update(xnew, ynew, compute_posterior=True)
+                        # gp.t(end+1) = tnew
+                    else:
+                        gp = reupdate_gp(function_logger, gp)
+
+            # Check if active search bounds need to be expanded
+            delta_search = 0.05 * (
+                optim_state["ub_search"] - optim_state["lb_search"]
+            )
+
+            # ADD DIFFERENT CHECKS FOR INTEGER VARIABLES!
+            idx = np.abs(xnew - optim_state["ub_search"]) < delta_search
+            optim_state["lb_search"][idx] = np.maximum(
+                optim_state["lb"][idx],
+                optim_state["lb_search"][idx] - delta_search[idx],
+            )
+            idx = np.abs(xnew - optim_state["ub_search"]) < delta_search
+            optim_state["ub_search"][idx] = np.minimum(
+                optim_state["ub"][idx],
+                optim_state["ub_search"][idx] + delta_search[idx],
+            )
+
+            # Hard lower/upper bounds on search (unused)
+            prange = optim_state["pub"] - optim_state["plb"]
+            LB_searchmin = np.maximum(
+                optim_state["plb"] - 2 * prange * options["activesearchbound"],
+                optim_state["lb"],
+            )
+            UB_searchmin = np.minimum(
+                optim_state["pub"] + 2 * prange * options["activesearchbound"],
+                optim_state["ub"],
+            )
+
+        if ActiveSampleFullUpdate_flag and sample_count > 1:
+            # Reset optim_state
+            optim_state["recompute_var_post"] = recompute_var_post_old
+            optim_state["entropy_alpha"] = entropy_alpha_old
+            optim_state["hyp_dict"] = hyp_dict
+
+            # If variational posterior has changed, check if old variational
+            # posterior is better than current
+            theta0 = vp0.get_parameters()
+            theta = vp.get_parameters()
+
+            if np.size(theta0) != np.size(theta) or np.any(theta0 != theta):
+                from pyvbmc.vbmc.variational_optimization import _negelcbo
+
+                NSentFineK = math.ceil(
+                    options["nsentfineactive"](vp0.K) / vp0.K
+                )
+                elbo0 = -_negelcbo(
+                    theta0, gp, vp0, 0.0, NSentFineK, False, True
+                )[0]
+
+                if elbo0 > vp.stats["elbo"]:
+                    vp = vp0
+
+    return function_logger, optim_state, vp
 
 
 def _get_search_points(
@@ -201,8 +651,8 @@ def _get_search_points(
     # Take some points from starting cache, if not empty
     x0 = np.copy(optim_state["cache"]["x_orig"])
 
-    lb_search = optim_state.get("LB_search")
-    ub_search = optim_state.get("UB_search")
+    lb_search = optim_state.get("lb_search")
+    ub_search = optim_state.get("ub_search")
 
     D = ub_search.shape[1]
 
@@ -344,7 +794,7 @@ def _get_search_points(
             random_Xs = np.append(random_Xs, vp_Xs, axis=0)
 
         search_X = np.append(search_X, random_Xs, axis=0)
-        idx_cache = np.append(idx_cache, np.full(N_random_points, np.NaN))
+        idx_cache = np.append(idx_cache, np.full(N_random_points, np.nan))
 
     # Apply search bounds
     search_X = np.minimum((np.maximum(search_X, lb_search)), ub_search)

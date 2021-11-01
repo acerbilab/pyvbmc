@@ -124,23 +124,20 @@ def test_vbmc_check_termination_conditions_stability(mocker):
     terminated, _, _ = vbmc._check_termination_conditions()
     assert terminated
     mocker.patch(
-        "pyvbmc.vbmc.VBMC._compute_reliability_index",
-        return_value=(1, 0.005),
+        "pyvbmc.vbmc.VBMC._compute_reliability_index", return_value=(1, 0.005),
     )
     terminated, _, _ = vbmc._check_termination_conditions()
     assert not terminated
 
     mocker.patch(
-        "pyvbmc.vbmc.VBMC._compute_reliability_index",
-        return_value=(0.5, 0.1),
+        "pyvbmc.vbmc.VBMC._compute_reliability_index", return_value=(0.5, 0.1),
     )
     terminated, _, _ = vbmc._check_termination_conditions()
     assert not terminated
 
     vbmc.optim_state["iter"] = 9
     mocker.patch(
-        "pyvbmc.vbmc.VBMC._compute_reliability_index",
-        return_value=(1, 0.005),
+        "pyvbmc.vbmc.VBMC._compute_reliability_index", return_value=(1, 0.005),
     )
     terminated, _, _ = vbmc._check_termination_conditions()
     assert not terminated
@@ -325,7 +322,7 @@ def test_setup_vbmc_after_warmup_no_false_alarm_still_keep_points():
         assert vbmc.function_logger.X_flag[i]
 
     assert not vbmc.optim_state.get("warmup")
-    assert vbmc.optim_state.get("lastwarmup") == 100
+    assert vbmc.optim_state.get("last_warmup") == 100
     assert vbmc.optim_state.get("recompute_var_post")
     assert not vbmc.optim_state.get("skipactivesampling")
     assert vbmc.optim_state.get("data_trim_list")[-1] == 1
