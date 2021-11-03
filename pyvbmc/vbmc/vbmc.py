@@ -993,6 +993,9 @@ class VBMC:
             # timer.totalruntime = NaN;   # Update at the end of iteration
             # timer
 
+            # store current gp in vp
+            self.vp.gp = gp
+
             iteration_values = {
                 "iter": iteration,
                 "optim_state": self.optim_state,
