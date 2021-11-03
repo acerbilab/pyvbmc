@@ -82,7 +82,9 @@ def test_active_uncertainty_sampling(mocker):
         vbmc.options,
     )
     # Minimum of Rosenbrock function
-    np.allclose(function_logger.X[N_init : N_init + sample_count, :], 1)
+    assert np.allclose(
+        function_logger.X[N_init : N_init + sample_count, :], 1, atol=0.001
+    )
     return
 
 
