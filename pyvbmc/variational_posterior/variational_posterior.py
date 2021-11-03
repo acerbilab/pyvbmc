@@ -3,16 +3,16 @@ from __future__ import annotations
 
 import sys
 
+import corner
+import matplotlib.pyplot as plt
 import numpy as np
 from pyvbmc.decorators import handle_0D_1D_input
-from pyvbmc.stats import kde1d
 from pyvbmc.parameter_transformer import ParameterTransformer
+from pyvbmc.stats import kde1d, kldiv_mvn
 from scipy.integrate import trapezoid
 from scipy.interpolate import interp1d
 from scipy.optimize import fmin_l_bfgs_b
 from scipy.special import gammaln
-
-from pyvbmc.stats import kldiv_mvn
 
 
 class VariationalPosterior:
@@ -933,3 +933,140 @@ class VariationalPosterior:
         # Correct for numerical errors
         kls[kls < 0] = 0
         return kls
+
+    def plot(
+        self,
+        n_samples: int = int(1e5),
+        title: str = None,
+        show_figure: bool = False,
+        plot_data: bool = False,
+        highlight_data: list = None,
+        plot_vp_centres: bool = False,
+        plot_style: dict = None,
+    ):
+        """
+        Plot the VP as a cornerplot of samples with optionally the centres of
+        the components and the datapoints of the GP.
+
+        Parameters
+        ----------
+        n_samples : int, optional
+            The number of samples from the , by default int(1e5)
+        title : str, optional
+            The title of the plot, by default None
+        show_figure : bool, optional
+            Toggles `fig.show()`, by default False
+        plot_data : bool, optional
+            Whether to plot the datapoints of the GP, by default False
+        highlight_data : list, optional
+            Indicies of the datapoints that should be plotted in a different
+            way than the other datapoints, by default None
+        plot_vp_centres : bool, optional
+            Whether to plot the centres of the VP components, by default False
+        plot_style : dict, optional
+            A dictionary of sampler options. The possible options are:
+                **corner** : dict, by default None
+                    Styling options directly passed to the corner function.
+                    By default: `{"fig": plt.figure(figsize=(8, 8)),
+                    "labels": labels}`. See the documentation of `Corner
+                    <https://corner.readthedocs.io/en/latest/index.html>`_
+                **data** : dict, optional
+                    Styling options used to plot the GP data.
+                    By default: `{"s":15, "color":'blue', "facecolors": "none"}`
+                **highlight_data** : dict, by default None
+                    Styling options used to plot the highlighted GP data.
+                    By default: `{"s":15, "color":"orange"}`
+                **vp_centre** : dict, by default {}
+                    Styling options used to plot the VP centres.
+                    By default: `{"marker":"x", "color":"red"}`
+
+
+        Returns
+        -------
+        fig : matplotlib.figure.Figure
+            The resulting matplotlib figure of the plot.
+
+        """
+        # generate samples
+        Xs, _ = self.sample(n_samples)
+
+        # cornerplot with samples of vp
+        fig = plt.figure(figsize=(8, 8))
+        labels = ["$x_{}$".format(i + 1) for i in range(self.D)]
+        corner_style = dict({"fig": fig, "labels": labels})
+
+        if "corner" in plot_style:
+            corner_style.update(plot_style.get("corner"))
+
+        corner.corner(Xs, **corner_style)
+
+        # style of the gp data
+        data_style = dict({"s": 15, "color": "blue", "facecolors": "none"})
+
+        if "data" in plot_style:
+            data_style.update(plot_style.get("data"))
+
+        highlighted_data_style = dict(
+            {
+                "s": 15,
+                "color": "orange",
+            }
+        )
+
+        if "highlight_data" in plot_style:
+            highlighted_data_style.update(plot_style.get("highlight_data"))
+
+        axes = np.array(fig.axes).reshape((self.D, self.D))
+
+        # plot gp data
+        if plot_data and hasattr(self, "gp"):
+
+            orig_X_norm = self.parameter_transformer.inverse(
+                self.gp.X[~np.array(highlight_data)]
+            )
+            orig_X_highlight = self.parameter_transformer.inverse(
+                self.gp.X[highlight_data]
+            )
+
+            for r in range(1, self.D):
+                for c in range(self.D - 1):
+                    if r > c:
+                        axes[r, c].scatter(
+                            orig_X_norm[:, c], orig_X_norm[:, r], **data_style
+                        )
+                        axes[r, c].scatter(
+                            orig_X_highlight[:, c],
+                            orig_X_highlight[:, r],
+                            **highlighted_data_style
+                        )
+
+        # style of the vp centres
+        vp_centre_style = dict(
+            {
+                "marker": "x",
+                "color": "red",
+            }
+        )
+
+        if "vp_centre" in plot_style:
+            vp_centre_style.update(plot_style["vp_centre"])
+
+        # plot centres of vp components
+        if plot_vp_centres:
+            for r in range(1, self.D):
+                for c in range(self.D - 1):
+                    if r > c:
+                        for component in self.parameter_transformer.inverse(
+                            self.mu.T
+                        ):
+                            axes[r, c].plot(
+                                component[c], component[r], **vp_centre_style
+                            )
+
+        if title is not None:
+            fig.suptitle(title)
+
+        if show_figure:
+            fig.show()
+
+        return fig

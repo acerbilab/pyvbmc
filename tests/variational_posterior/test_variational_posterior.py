@@ -631,3 +631,15 @@ def test_soft_bounds_2():
     assert theta_bnd["tol_con"] == 0.0100
     assert theta_bnd["weight_threshold"] == 0.1250
     assert theta_bnd["weight_penalty"] == 0.1000
+
+def test_plot():
+    """
+    This is a really naive test of the plotting as everything else complicated.
+    """    
+    D = 2
+    K = 2
+    vp = VariationalPosterior(D, K)
+    test_title = "Test title"
+    fig = vp.plot(title=test_title, show_figure=False)
+    assert fig._suptitle.get_text() == test_title
+    assert len(fig.axes) == D*D
