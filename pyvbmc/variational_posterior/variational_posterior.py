@@ -946,7 +946,8 @@ class VariationalPosterior:
     ):
         """
         Plot the VP as a cornerplot of samples with optionally the centres of
-        the components and the datapoints of the GP.
+        the components and the datapoints of the GP. The plot can be enhanced
+        by custom styles and also datapoints of the GP can be highlighted.
 
         Parameters
         ----------
@@ -964,19 +965,19 @@ class VariationalPosterior:
         plot_vp_centres : bool, optional
             Whether to plot the centres of the VP components, by default False
         plot_style : dict, optional
-            A dictionary of sampler options. The possible options are:
-                **corner** : dict, by default None
+            A dictionary of plot styling options. The possible options are:
+                **corner** : dict, optional
                     Styling options directly passed to the corner function.
                     By default: `{"fig": plt.figure(figsize=(8, 8)),
-                    "labels": labels}`. See the documentation of `Corner
-                    <https://corner.readthedocs.io/en/latest/index.html>`_
+                    "labels": labels}`. See the documentation of `corner
+                    <https://corner.readthedocs.io/en/latest/index.html>`_.
                 **data** : dict, optional
                     Styling options used to plot the GP data.
                     By default: `{"s":15, "color":'blue', "facecolors": "none"}`
-                **highlight_data** : dict, by default None
+                **highlight_data** : dict, optional
                     Styling options used to plot the highlighted GP data.
                     By default: `{"s":15, "color":"orange"}`
-                **vp_centre** : dict, by default {}
+                **vp_centre** : dict, optional
                     Styling options used to plot the VP centres.
                     By default: `{"marker":"x", "color":"red"}`
 
