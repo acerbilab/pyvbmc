@@ -6,6 +6,7 @@ import pytest
 from pyvbmc.vbmc import VBMC, active_sample
 from pyvbmc.stats import get_hpd
 from pyvbmc.vbmc.active_sample import _get_search_points
+from pyvbmc.vbmc.gaussian_process_train import train_gp
 
 fun = lambda x: np.sum(x + 2)
 
@@ -27,35 +28,61 @@ def create_vbmc(
     return VBMC(fun, x0_array, lb, ub, plb, pub, user_options)
 
 
-def test_active_uncertainty_sampling():
-    D = 2
-
-    def llfun(x):
+def test_active_uncertainty_sampling(mocker):
+    def rosen(self, x, *args):
         x = np.atleast_2d(x)
-        return -np.sum(
-            (x[0, :-1] ** 2.0 - x[0, 1:]) ** 2.0 + (x[0, :-1] - 1) ** 2.0 / 100
+        r = np.sum(
+            100.0 * (x[:, 1:] - x[:, :-1] ** 2) ** 2.0 + (1 - x[:, :-1]) ** 2,
+            axis=1,
         )
+        return r
 
-    prior_mu = np.zeros((1, D))
-    prior_var = 3 ** 2 * np.ones((1, D))
-    lpriorfun = lambda x: (
-        -0.5 * np.sum((x - prior_mu) ** 2 / prior_var, axis=1)
-        - 0.5 * np.log(np.prod(2 * np.pi * prior_var))
-    )
-
-    fun = lambda x: llfun(x) + lpriorfun(x)
+    D = 2
     LB = -np.full((1, D), np.inf)  # Lower bounds
     UB = np.full((1, D), np.inf)  # Upper bounds
-    PLB = prior_mu - np.sqrt(prior_var)  # Plausible lower bounds
-    PUB = prior_mu + np.sqrt(prior_var)  # Plausible upper bounds
-    x0 = np.copy(prior_mu)
-    user_options = {}
-    # user_options = {"activesamplevpupdate": True, "activesamplegpupdate": True}
+    PLB = np.array([[-3.0, -3.0]])  # Plausible lower bounds
+    PUB = np.array([[3.0, 3.0]])  # Plausible upper bounds
+    x0 = np.zeros((1, D))
+    user_options = {"activesamplevpupdate": True, "activesamplegpupdate": True}
     vbmc = VBMC(fun, x0, LB, UB, PLB, PUB, user_options)
-    vp, elbo, elbo_sd = vbmc.optimize()[:3]
-    assert abs(elbo + 2.294) < 0.1
-    assert abs(elbo_sd - 0.001) < 0.01
-
+    mocker.patch("pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", rosen)
+    N_init = 10
+    function_logger, optim_state, _ = active_sample(
+        gp=None,
+        sample_count=N_init,
+        optim_state=vbmc.optim_state,
+        function_logger=vbmc.function_logger,
+        iteration_history=vbmc.iteration_history,
+        vp=vbmc.vp,
+        options=vbmc.options,
+    )
+    optim_state["N"] = function_logger.Xn
+    optim_state["n_eff"] = np.sum(
+        function_logger.nevals[function_logger.X_flag]
+    )
+    gp, _, _, hyp_dict = train_gp(
+        {},
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.options,
+        vbmc.plausible_lower_bounds,
+        vbmc.plausible_upper_bounds,
+    )
+    optim_state["hyp_dict"] = hyp_dict
+    optim_state["vp_repo"] = []
+    sample_count = 2
+    function_logger, _, _ = active_sample(
+        gp,
+        sample_count,
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+    # Minimum of Rosenbrock function
+    np.allclose(function_logger.X[N_init : N_init + sample_count, :], 1)
     return
 
 

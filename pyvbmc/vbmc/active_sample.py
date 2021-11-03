@@ -163,18 +163,18 @@ def active_sample(
         ###
 
         # Compute time cost (used by some acquisition functions)
-        if optim_state["iter"] > 1:
-            deltaNeff = max(
-                1,
-                iteration_history["optim_state"][optim_state["iter"] - 1][
-                    "n_eff"
-                ]
-                - iteration_history["optim_state"][optim_state["iter"] - 2][
-                    "n_eff"
-                ],
-            )
-        else:
-            deltaNeff = iteration_history["optim_state"][0]["n_eff"]
+        # if optim_state["iter"] > 1:
+        #     deltaNeff = max(
+        #         1,
+        #         iteration_history["optim_state"][optim_state["iter"] - 1][
+        #             "n_eff"
+        #         ]
+        #         - iteration_history["optim_state"][optim_state["iter"] - 2][
+        #             "n_eff"
+        #         ],
+        #     )
+        # else:
+        #     deltaNeff = iteration_history["optim_state"][0]["n_eff"]
 
         # time_iter = iteration_history["timer"][optim_state["iter"] - 1]
 
@@ -344,8 +344,6 @@ def active_sample(
                     # Use Nelder-Mead method for 1D optimization
                     options["searchoptimizer"] = "Nelder-Mead"
 
-                # fval_old = acqEval(X_acq, gp, vp, function_logger, optim_state)
-                # x0 = AbstractAcqFcn._real2int(X_acq, parameter_transformer, optim_state["integervars"])
                 fval_old = acq_fast[idx]
                 x0 = X_acq[0, :]
 
