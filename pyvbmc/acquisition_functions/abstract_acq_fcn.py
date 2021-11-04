@@ -62,6 +62,8 @@ class AbstractAcqFcn(ABC):
         acq : np.ndarray
             The output of the acquisition function.
         """
+        if Xs.ndim == 1:
+            Xs = Xs[None, :]
 
         # Map integer inputs
         Xs = self._real2int(

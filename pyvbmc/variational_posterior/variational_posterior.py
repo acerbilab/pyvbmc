@@ -226,12 +226,12 @@ class VariationalPosterior:
         elif gp_sample:
             pass
         else:
-            lamd_row = self.lambd.reshape(1, -1)
+            lambd_row = self.lambd.reshape(1, -1)
 
             rng = np.random.default_rng()
             if self.K > 1:
                 if balanceflag:
-                    # exact split of samples according to mixture weigths
+                    # exact split of samples according to mixture weights
                     repeats = np.floor(self.w * N).astype("int")
                     i = np.repeat(range(self.K), repeats.flatten())
 
@@ -256,7 +256,7 @@ class VariationalPosterior:
                 if not np.isfinite(df) or df == 0:
                     x = (
                         self.mu.T[i]
-                        + lamd_row
+                        + lambd_row
                         * np.random.randn(N, self.D)
                         * self.sigma[:, i].T
                     )
@@ -264,7 +264,7 @@ class VariationalPosterior:
                     t = df / 2 / np.sqrt(rng.gamma(df / 2, df / 2, (N, 1)))
                     x = (
                         self.mu.T[i]
-                        + lamd_row
+                        + lambd_row
                         * np.random.randn(N, self.D)
                         * t
                         * self.sigma[:, i].T
@@ -273,13 +273,13 @@ class VariationalPosterior:
                 if not np.isfinite(df) or df == 0:
                     x = (
                         self.mu.T
-                        + lamd_row * np.random.randn(N, self.D) * self.sigma
+                        + lambd_row * np.random.randn(N, self.D) * self.sigma
                     )
                 else:
                     t = df / 2 / np.sqrt(rng.gamma(df / 2, df / 2, (N, 1)))
                     x = (
                         self.mu.T
-                        + lamd_row
+                        + lambd_row
                         * t
                         * np.random.randn(N, self.D)
                         * self.sigma
