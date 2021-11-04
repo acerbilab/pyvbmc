@@ -72,7 +72,7 @@
 <p>These options are for advanced users of VBMC. Do not modify them unless you know
 what you are doing.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">AdvancedOptions</span><span class="p">]</span>
-<span class="c1"># Explicit noise handling</span>
+<span class="c1"># Explicit noise handling (0: none; 1: unknown noise level; 2: user-provided noise)</span>
 <span class="n">uncertaintyhandling</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="c1"># Array with indices of integer variables</span>
 <span class="n">integervars</span> <span class="o">=</span> <span class="p">[]</span>
@@ -113,7 +113,7 @@ what you are doing.</p>
 <span class="c1"># Automatic nonlinear rescaling of variables</span>
 <span class="n">nonlinearscaling</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="c1"># Fast search acquisition fcn(s)</span>
-<span class="n">searchacqfcn</span> <span class="o">=</span> <span class="s2">&quot;@acqf_vbmc&quot;</span>
+<span class="n">searchacqfcn</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;@acqf_vbmc&quot;</span><span class="p">]</span>
 <span class="c1"># Samples for fast acquisition fcn eval per new point</span>
 <span class="n">nssearch</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">**</span> <span class="mi">13</span>
 <span class="c1"># Total samples for Monte Carlo approx. of the entropy</span>
@@ -330,7 +330,7 @@ what you are doing.</p>
 <span class="n">temperature</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="c1"># Use separate GP with constant mean for active search</span>
 <span class="n">separatesearchgp</span> <span class="o">=</span> <span class="kc">False</span>
-<span class="c1"># Discount observations from from extremely low-density regions</span>
+<span class="c1"># Discount observations from extremely low-density regions</span>
 <span class="n">noiseshaping</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="c1"># Threshold from max observed value to start discounting</span>
 <span class="n">noiseshapingthreshold</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">D</span>
@@ -490,7 +490,7 @@ what you are doing.</p>
       &copy;2021, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
