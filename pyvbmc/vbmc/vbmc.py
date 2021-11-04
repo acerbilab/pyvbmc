@@ -706,11 +706,6 @@ class VBMC:
         hyp_dict = {}
         success_flag = True
 
-        # Flag for turning on a dummy implementation of active
-        # uncertainty sampling.
-        # TODO: remove when active_sampling is implemented properly
-        self.optim_state["active_uncertainty_sample_random"] = True
-
         if self.optim_state["uncertainty_handling_level"] > 0:
             self.logger.info(
                 "Beginning variational optimization assuming NOISY observations"

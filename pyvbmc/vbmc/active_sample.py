@@ -8,10 +8,13 @@ import gpyreg as gpr
 
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
-from pyvbmc.variational_posterior import VariationalPosterior
+from pyvbmc.variational_posterior import VariationalPosterior, _gplogjoint
 from pyvbmc.stats import get_hpd
 from pyvbmc.vbmc.gaussian_process_train import train_gp, reupdate_gp
 from pyvbmc.vbmc.iteration_history import IterationHistory
+from pyvbmc.vbmc.variational_optimization import optimize_vp, _negelcbo
+from pyvbmc.acquisition_functions.abstract_acq_fcn import AbstractAcqFcn
+from pyvbmc.acquisition_functions.acq_fcn import AcqFcn
 from .options import Options
 
 
@@ -158,8 +161,8 @@ def active_sample(
         # active uncertainty sampling
         SearchAcqFcn = options["searchacqfcn"]
 
-        ###
-        # Use "hedge" strategy to propose an acquisition function? (unused, TODO)
+        ### (unused, TODO)
+        # Use "hedge" strategy to propose an acquisition function? 
         ###
 
         # Compute time cost (used by some acquisition functions)
@@ -187,7 +190,7 @@ def active_sample(
         ###
 
         # Perform GP (and possibly variational) update after each active sample
-        ActiveSampleFullUpdate_flag = (
+        active_sample_full_update = (
             options["activesamplevpupdate"] or options["activesamplegpupdate"]
         ) and (
             (
@@ -199,7 +202,7 @@ def active_sample(
             > options["activesamplefullupdatethreshold"]
         )
 
-        if ActiveSampleFullUpdate_flag and sample_count > 1:
+        if active_sample_full_update and sample_count > 1:
             # Temporarily change options for local updates
             recompute_var_post_old = optim_state["recompute_var_post"]
             entropy_alpha_old = optim_state["entropy_alpha"]
@@ -213,7 +216,7 @@ def active_sample(
             options_update["nsentfine"] = options["nsentfineactive"]
 
             hyp_dict = None
-            vp0 = vp
+            vp0 = copy.deepcopy(vp)
 
         ## Active sampling loop (sequentially acquire Ns new points)
         for i in range(sample_count):
@@ -232,7 +235,7 @@ def active_sample(
             if not options["acqhedge"]:
                 # If multiple acquisition functions are provided and not
                 # following a "hedge" strategy, pick one at random
-                idxAcq = np.random.randint(len(SearchAcqFcn))
+                idx_acq = np.random.randint(len(SearchAcqFcn))
 
             ## Pre-computations for acquisition functions
 
@@ -271,55 +274,31 @@ def active_sample(
                 gp.X / optim_state["gp_length_scale"]
             )
 
-            ### Missing port
-            # Algorithmic time per iteration (from last iteration)
-            # t_base = timer_iter.activeSampling + timer_iter.variationalFit + timer_iter.finalize + timer_iter.gpTrain;
-
-            # Estimated increase in cost for a new training input
-            # if optim_state["iter"] > 2:
-            #     length = 10
-            # xx = np.log(iteration_history["optim_state"]["N"] - length)
-            # % Algorithmic cost per function evaluation
-            # optimState.t_algoperfuneval = t_base/deltaNeff + max(0,gpTrain_diff);
-            ###
-
-            ### Missing port
-            # Prepare for importance sampling based acquisition function
-            ###
+            ### Missing port: line 185-211
 
             ## Start active search
-            # optim_state["acqrand"] = np.random.rand()  # unused
 
             # Create fast search set from cache and randomly generated
             X_search, idx_cache = _get_search_points(
                 options["nssearch"], optim_state, function_logger, vp, options
             )
 
-            # TODO: put _real2int in proper place
-            from pyvbmc.acquisition_functions.abstract_acq_fcn import (
-                AbstractAcqFcn,
-            )
-
             X_search = AbstractAcqFcn._real2int(
                 X_search, parameter_transformer, optim_state["integervars"]
             )
 
-            if SearchAcqFcn[idxAcq] == "@acqf_vbmc":
-                from pyvbmc.acquisition_functions.acq_fcn import AcqFcn
-
-                acqEval = AcqFcn()
+            if SearchAcqFcn[idx_acq] == "@acqf_vbmc":
+                acq_eval = AcqFcn()
             else:  # TODO
                 raise NotImplementedError("Not implemented yet")
 
             # Re-evaluate variance of the log joint if requested
-            if acqEval.acq_info["compute_varlogjoint"]:
-                from pyvbmc.vbmc.variational_optimization import _gplogjoint
-
+            if acq_eval.acq_info["compute_varlogjoint"]:
                 varF = _gplogjoint(vp, gp, 0, 0, 0, 1)[2]
                 optim_state["varlogjoint_samples"] = varF
 
             # Evaluate acquisition function
-            acq_fast = acqEval(X_search, gp, vp, function_logger, optim_state)
+            acq_fast = acq_eval(X_search, gp, vp, function_logger, optim_state)
 
             if options["searchcachefrac"] > 0:
                 inds = np.argsort(acq_fast)
@@ -335,7 +314,7 @@ def active_sample(
             X_search = np.delete(X_search, idx, 0)
             idx_cache = np.delete(idx_cache, idx, 0)
 
-            acq_fun = lambda X: acqEval(
+            acq_fun = lambda X: acq_eval(
                 X, gp, vp, function_logger, optim_state
             )[0]
             # Additional search via optimization
@@ -358,7 +337,7 @@ def active_sample(
                     lb = np.minimum(gp.X, x0) - 0.1 * xrange
                     ub = np.maximum(gp.X, x0) + 0.1 * xrange
 
-                if acqEval.acq_info["log_flag"]:
+                if acq_eval.acq_info["log_flag"]:
                     tol_fun = 1e-2
                 else:
                     tol_fun = max(1e-12, abs(fval_old * 1e-3))
@@ -387,10 +366,6 @@ def active_sample(
                         noise_handler=cma.NoiseHandler(np.size(x0)),
                     )
 
-                    # if options.SearchCMAESbest
-                    #         xsearch_optim = bestever.x;
-                    #         fval_optim = bestever.f;
-                    # end
                     xsearch_optim, fval_optim = res[:2]
                 elif options["searchoptimizer"] == "Nelder-Mead":
                     from scipy.optimize import minimize
@@ -403,7 +378,6 @@ def active_sample(
                     raise NotImplementedError("Not implemented yet")
 
                 if fval_optim < fval_old:
-                    # print("cmaes found better solution.")
                     X_acq[0, :] = AbstractAcqFcn._real2int(
                         xsearch_optim,
                         parameter_transformer,
@@ -437,7 +411,7 @@ def active_sample(
             #         # Use current cost of GP instead of future cost
             #         old_t_algoperfuneval = optim_state["t_algoperfuneval"]
             #         optim_state["t_algoperfuneval"] = t_base / deltaNeff
-            #         acq_train = acqEval(
+            #         acq_train = acq_eval(
             #             X_train, gp, vp, function_logger, optim_state
             #         )
             #         optim_state["VarianceRegularizedAcqFcn"] = oldflag
@@ -446,7 +420,7 @@ def active_sample(
             #         idx_train = np.argmin(acq_train)
             #         acq_train = acq_train[idx_train]
 
-            #         acq_now = acqEval(
+            #         acq_now = acq_eval(
             #             X_acq[0], gp, vp, function_logger, optim_state
             #         )
 
@@ -491,7 +465,7 @@ def active_sample(
             if i + 1 < sample_count:
                 # If not the last sample, update GP and possibly other things
                 # (no need perform updates after the last sample)
-                if ActiveSampleFullUpdate_flag:
+                if active_sample_full_update:
                     # If performing full updates with active sampling, the GP
                     # hyperparameters are updated after each acquisition
 
@@ -520,10 +494,6 @@ def active_sample(
                                 gp = gptmp
 
                         if options["activesamplevpupdate"]:
-                            from pyvbmc.vbmc.variational_optimization import (
-                                optimize_vp,
-                            )
-
                             # Quick variational optimization
 
                             # Decide number of fast optimizations
@@ -592,7 +562,7 @@ def active_sample(
                 optim_state["ub"],
             )
 
-        if ActiveSampleFullUpdate_flag and sample_count > 1:
+        if active_sample_full_update and sample_count > 1:
             # Reset optim_state
             optim_state["recompute_var_post"] = recompute_var_post_old
             optim_state["entropy_alpha"] = entropy_alpha_old
@@ -604,8 +574,6 @@ def active_sample(
             theta = vp.get_parameters()
 
             if np.size(theta0) != np.size(theta) or np.any(theta0 != theta):
-                from pyvbmc.vbmc.variational_optimization import _negelcbo
-
                 NSentFineK = math.ceil(
                     options["nsentfineactive"](vp0.K) / vp0.K
                 )
