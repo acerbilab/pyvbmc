@@ -44,7 +44,7 @@
 </ul>
 <dl class="py function">
 <dt class="sig sig-object py" id="pyvbmc.vbmc.active_sample">
-<span class="sig-prename descclassname"><span class="pre">pyvbmc.vbmc.</span></span><span class="sig-name descname"><span class="pre">active_sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_count</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optim_state</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">function_logger</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../classes/function_logger.html#pyvbmc.function_logger.FunctionLogger" title="pyvbmc.function_logger.function_logger.FunctionLogger"><span class="pre">pyvbmc.function_logger.function_logger.FunctionLogger</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">vp</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior" title="pyvbmc.variational_posterior.variational_posterior.VariationalPosterior"><span class="pre">pyvbmc.variational_posterior.variational_posterior.VariationalPosterior</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../classes/options.html#pyvbmc.vbmc.Options" title="pyvbmc.vbmc.options.Options"><span class="pre">pyvbmc.vbmc.options.Options</span></a></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/vbmc/active_sample.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.active_sample" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">pyvbmc.vbmc.</span></span><span class="sig-name descname"><span class="pre">active_sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gp</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">gpyreg.gaussian_process.GP</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_count</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optim_state</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">function_logger</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../classes/function_logger.html#pyvbmc.function_logger.FunctionLogger" title="pyvbmc.function_logger.function_logger.FunctionLogger"><span class="pre">pyvbmc.function_logger.function_logger.FunctionLogger</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">iteration_history</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../classes/iteration_history.html#pyvbmc.vbmc.IterationHistory" title="pyvbmc.vbmc.iteration_history.IterationHistory"><span class="pre">pyvbmc.vbmc.iteration_history.IterationHistory</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">vp</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior" title="pyvbmc.variational_posterior.variational_posterior.VariationalPosterior"><span class="pre">pyvbmc.variational_posterior.variational_posterior.VariationalPosterior</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../classes/options.html#pyvbmc.vbmc.Options" title="pyvbmc.vbmc.options.Options"><span class="pre">pyvbmc.vbmc.options.Options</span></a></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/vbmc/active_sample.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.active_sample" title="Permalink to this definition">¶</a></dt>
 <dd><p>Actively sample points iteratively based on acquisition function.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -57,6 +57,8 @@
 </dd>
 <dt><strong>function_logger</strong><span class="classifier">FunctionLogger</span></dt><dd><p>The FunctionLogger from the VBMC instance this function is called from.</p>
 </dd>
+<dt><strong>iteration_history</strong><span class="classifier">IterationHistory</span></dt><dd><p>The IterationHistory from the VBMC instance this function is called from.</p>
+</dd>
 <dt><strong>vp</strong><span class="classifier">VariationalPosterior</span></dt><dd><p>The VariationalPosterior from the VBMC instance this function is called
 from.</p>
 </dd>
@@ -66,9 +68,11 @@ from.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
-<dt><strong>function_logger</strong><span class="classifier">FunctionLogger</span></dt><dd><p>The FunctionLogger from the VBMC instance this function is called from.</p>
+<dt><strong>function_logger</strong><span class="classifier">FunctionLogger</span></dt><dd><p>The updated FunctionLogger.</p>
 </dd>
-<dt><strong>optim_state</strong><span class="classifier">dict</span></dt><dd><p>The optim_state from the VBMC instance this function is called from.</p>
+<dt><strong>optim_state</strong><span class="classifier">dict</span></dt><dd><p>The updated optim_state.</p>
+</dd>
+<dt><strong>vp</strong><span class="classifier">VariationalPosterior</span></dt><dd><p>The updated variation posterior.</p>
 </dd>
 </dl>
 </dd>
@@ -157,7 +161,7 @@ from.</p>
       &copy;2021, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

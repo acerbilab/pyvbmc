@@ -143,7 +143,10 @@ def test_vbmc_uniform():
     mu_bar = 0.5 * np.ones((1, D))
     f = lambda x: 0
 
-    err_1, err_2 = run_optim_block(f, x0, lb, ub, plb, pub, lnZ, mu_bar)
+    options = {"searchoptimizer": "Nelder-Mead"}
+    err_1, err_2 = run_optim_block(
+        f, x0, lb, ub, plb, pub, lnZ, mu_bar, options
+    )
 
     assert err_1 < 0.5
     assert err_2 < 0.5

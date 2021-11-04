@@ -80,7 +80,8 @@ between constrained and unconstrained space, by default None.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>x</strong><span class="classifier">np.ndarray</span></dt><dd><p>The point at which the function will be evaluated.</p>
+<dt><strong>x</strong><span class="classifier">np.ndarray</span></dt><dd><p>The point at which the function will be evaluated. The shape of x 
+should be (1, D) or (D,).</p>
 </dd>
 </dl>
 </dd>
@@ -113,7 +114,8 @@ is not a finite, positive real-valued scalar.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>x</strong><span class="classifier">np.ndarray</span></dt><dd><p>The point at which the function has been evaluated.</p>
+<dt><strong>x</strong><span class="classifier">np.ndarray</span></dt><dd><p>The point at which the function has been evaluated. The shape of x 
+should be (1, D) or (D,).</p>
 </dd>
 <dt><strong>fval_orig</strong><span class="classifier">float</span></dt><dd><p>The result of the evaluation of the function.</p>
 </dd>
@@ -238,7 +240,7 @@ is not a finite, positive real-valued scalar.</p>
       &copy;2021, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

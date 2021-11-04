@@ -102,8 +102,7 @@ class VBMC:
             pyvbmc_path + "/option_configs/advanced_vbmc_options.ini"
         )
         self.options.load_options_file(
-            advanced_path,
-            evaluation_parameters={"D": self.D},
+            advanced_path, evaluation_parameters={"D": self.D},
         )
 
         self.options.validate_option_names([basic_path, advanced_path])
@@ -707,11 +706,6 @@ class VBMC:
         hyp_dict = {}
         success_flag = True
 
-        # Flag for turning on a dummy implementation of active
-        # uncertainty sampling.
-        # TODO: remove when active_sampling is implemented properly
-        self.optim_state["active_uncertainty_sample_random"] = True
-
         if self.optim_state["uncertainty_handling_level"] > 0:
             self.logger.info(
                 "Beginning variational optimization assuming NOISY observations"
@@ -778,7 +772,9 @@ class VBMC:
                 self.optim_state["entropy_switch"] = False
                 self.logging_action.append("entropy switch")
 
-            # Actively sample new points into the training set
+            # Missing port: Input warping / reparameterization, line 530-625
+
+            ## Actively sample new points into the training set
             timer.start_timer("activeSampling")
 
             if iteration == 0:
@@ -832,14 +828,21 @@ class VBMC:
                     # funwrapper,vp,vp_old,gp_search,options)
                     sys.exit("Function currently not supported")
                 else:
-                    active_sample(
+                    self.optim_state["hyp_dict"] = hyp_dict
+                    (
+                        self.function_logger,
+                        self.optim_state,
+                        self.vp,
+                    ) = active_sample(
                         gp_search,
                         new_funevals,
                         self.optim_state,
                         self.function_logger,
+                        self.iteration_history,
                         self.vp,
                         self.options,
                     )
+                    hyp_dict = self.optim_state["hyp_dict"]
 
             # Number of training inputs
             self.optim_state["N"] = self.function_logger.Xn
@@ -849,7 +852,7 @@ class VBMC:
 
             timer.stop_timer("activeSampling")
 
-            # train gp
+            ## Train gp
 
             timer.start_timer("gpTrain")
 
@@ -873,7 +876,7 @@ class VBMC:
             ):
                 self.optim_state["stop_sampling"] = self.optim_state.get("N")
 
-            # Optimize variational parameters
+            ## Optimize variational parameters
             timer.start_timer("variationalFit")
 
             if not self.vp.optimize_mu:
@@ -980,7 +983,7 @@ class VBMC:
                 Nnew = self.optim_state.get("N") - self.optim_state.get(
                     "last_run_avg"
                 )
-                wRun = self.options.get("momentsrunweight ") ** Nnew
+                wRun = self.options.get("momentsrunweight") ** Nnew
                 self.optim_state["run_mean"] = wRun * self.optim_state.get(
                     "run_mean"
                 ) + (1 - wRun) * mubar.reshape(1, -1)
@@ -1014,8 +1017,7 @@ class VBMC:
 
             # Record all useful stats
             self.iteration_history.record_iteration(
-                iteration_values,
-                iteration,
+                iteration_values, iteration,
             )
 
             # Check warmup
@@ -1060,7 +1062,10 @@ class VBMC:
                     # options = options_main
                     # Reset GP hyperparameter covariance
                     # hypstruct.runcov = []
+                    hyp_dict["runcov"] = None
                     # Reset VP repository (not used in python)
+                    self.optim_state["vp_repo"] = []
+
                     # Re-get acq info
                     # self.optim_state['acqInfo'] = getAcqInfo(
                     #    options.SearchAcqFcn
@@ -1338,7 +1343,7 @@ class VBMC:
             threshold = self.options.get("warmupkeepthreshold") * (
                 len(self.optim_state.get("data_trim_list")) + 1
             )
-            self.optim_state["lastwarmup"] = iteration
+            self.optim_state["last_warmup"] = iteration
 
         else:
             # This may be a false alarm; prune and continue

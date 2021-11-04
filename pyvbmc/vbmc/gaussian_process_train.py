@@ -96,13 +96,7 @@ def train_gp(
     )
 
     # Setup a GP.
-    gp = gpr.GP(
-        D=D,
-        covariance=covariance_f,
-        mean=mean_f,
-        noise=noise_f,
-    )
-
+    gp = gpr.GP(D=D, covariance=covariance_f, mean=mean_f, noise=noise_f)
     # Get number of samples and set priors and bounds.
     gp, hyp0, gp_s_N = _gp_hyp(
         optim_state, options, plb, pub, gp, x_train, y_train
@@ -142,7 +136,9 @@ def train_gp(
         N0 = hyp0.shape[0]
         if N0 > gp_train["init_N"] / 2:
             hyp0 = hyp0[
-                np.random.choice(N0, math.ceil(gp_train["init_N"] / 2), replace=False),
+                np.random.choice(
+                    N0, math.ceil(gp_train["init_N"] / 2), replace=False
+                ),
                 :,
             ]
     hyp0 = np.concatenate((hyp0, np.array([hyp_dict["hyp"]])))
@@ -372,8 +368,7 @@ def _gp_hyp(
     elif isinstance(gp.mean, gpr.mean_functions.NegativeQuadratic):
         if options["gpquadraticmeanbound"]:
             delta_y = max(
-                options["tolsd"],
-                min(D, np.max(hpd_y) - np.min(hpd_y)),
+                options["tolsd"], min(D, np.max(hpd_y) - np.min(hpd_y)),
             )
             bounds["mean_const"] = (-np.inf, np.max(hpd_y) + delta_y)
     else:
@@ -638,7 +633,7 @@ def _get_gp_training_options(
 
     gp_train["n_samples"] = round(gp_s_N)
     gp_train["burn"] = round(gp_train["burn"])
-    
+
     return gp_train
 
 
@@ -801,8 +796,9 @@ def _estimate_noise(gp: gpr.GP):
         sn2[:, s : s + 1] = gp.noise.compute(hyp, hpd_X, hpd_y, hpd_s2)
 
     return np.median(np.mean(sn2, axis=1))
-    
-def reupdate_gp(function_logger, gp):
+
+
+def reupdate_gp(function_logger: FunctionLogger, gp: gpr.GP):
     """
     Quick posterior reupdate of Gaussian process.
     
