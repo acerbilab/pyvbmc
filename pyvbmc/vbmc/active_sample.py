@@ -58,7 +58,7 @@ def active_sample(
         The updated FunctionLogger.
     optim_state : dict
         The updated optim_state.
-    vp: VariationalPosterior
+    vp : VariationalPosterior
         The updated variation posterior. 
     """
     # TODO: The timer is missing for now, we have to setup it throught pyvbmc.
