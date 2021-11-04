@@ -27,6 +27,7 @@ Note that this project is work in progress!
    :caption: Functions:
 
    functions/active_sample
+   functions/create_vbmc_animation
    functions/decorators
    functions/get_hpd
    functions/kde1d
