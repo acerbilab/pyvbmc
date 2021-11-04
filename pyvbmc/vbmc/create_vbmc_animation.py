@@ -16,7 +16,7 @@ def create_vbmc_animation(vbmc: VBMC, path: str):
         The optimized VBMC.
     path : str
         The path where the gif should be saved to.
-    """    
+    """
 
     # plot last figure to figure out x_lim and y_lim later
     last_figure_axes = np.array(vbmc.vp.plot().axes).reshape(
@@ -47,7 +47,19 @@ def create_vbmc_animation(vbmc: VBMC, path: str):
 
         fig = vp.plot(highlight_data=highlight_data, plot_data=True)
 
-        fig.suptitle("VBMC (iteration {})".format(i))
+        # set title of plot accordingly
+        fig.suptitle("VBMC iteration {}".format(i))
+
+        if (
+            i < len(vbmc.iteration_history["iter"])
+            and len(vbmc.iteration_history["logging_action"][i]) > 0
+        ):
+            fig.suptitle(
+                "VBMC iteration {} ({})".format(
+                    i, "".join(vbmc.iteration_history["logging_action"][i])
+                )
+            )
+
         if i == len(vbmc.iteration_history["iter"]):
             fig.suptitle("VBMC final ({} iterations)".format(i - 1))
 

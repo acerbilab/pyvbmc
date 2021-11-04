@@ -214,6 +214,7 @@ class VBMC:
                 "varss",
                 "func_count",
                 "n_eff",
+                "logging_action"
             ]
         )
 
@@ -1157,6 +1158,9 @@ class VBMC:
                             "".join(self.logging_action),
                         )
                     )
+            self.iteration_history.record(
+                "logging_action", self.logging_action, iteration
+            )
 
         # Pick "best" variational solution to return
         self.vp, elbo, elbo_sd, idx_best = self.determine_best_vp()
