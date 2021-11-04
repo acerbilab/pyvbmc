@@ -8,11 +8,15 @@ import gpyreg as gpr
 
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
-from pyvbmc.variational_posterior import VariationalPosterior, _gplogjoint
+from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.stats import get_hpd
 from pyvbmc.vbmc.gaussian_process_train import train_gp, reupdate_gp
 from pyvbmc.vbmc.iteration_history import IterationHistory
-from pyvbmc.vbmc.variational_optimization import optimize_vp, _negelcbo
+from pyvbmc.vbmc.variational_optimization import (
+    optimize_vp,
+    _negelcbo,
+    _gplogjoint,
+)
 from pyvbmc.acquisition_functions.abstract_acq_fcn import AbstractAcqFcn
 from pyvbmc.acquisition_functions.acq_fcn import AcqFcn
 from .options import Options
@@ -162,7 +166,7 @@ def active_sample(
         SearchAcqFcn = options["searchacqfcn"]
 
         ### (unused, TODO)
-        # Use "hedge" strategy to propose an acquisition function? 
+        # Use "hedge" strategy to propose an acquisition function?
         ###
 
         # Compute time cost (used by some acquisition functions)
