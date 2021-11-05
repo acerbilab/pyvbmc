@@ -102,7 +102,8 @@ class VBMC:
             pyvbmc_path + "/option_configs/advanced_vbmc_options.ini"
         )
         self.options.load_options_file(
-            advanced_path, evaluation_parameters={"D": self.D},
+            advanced_path,
+            evaluation_parameters={"D": self.D},
         )
 
         self.options.validate_option_names([basic_path, advanced_path])
@@ -213,7 +214,7 @@ class VBMC:
                 "varss",
                 "func_count",
                 "n_eff",
-                "logging_action"
+                "logging_action",
             ]
         )
 
@@ -1021,7 +1022,8 @@ class VBMC:
 
             # Record all useful stats
             self.iteration_history.record_iteration(
-                iteration_values, iteration,
+                iteration_values,
+                iteration,
             )
 
             # Check warmup
@@ -1167,6 +1169,31 @@ class VBMC:
                 "logging_action", self.logging_action, iteration
             )
 
+            # Plot iteration
+            if self.options.get("plot"):
+                if iteration > 0:
+                    previous_gp = self.iteration_history["vp"][
+                        iteration - 1
+                    ].gp
+                    # find points that are new in this iteration
+                    # (hacky cause numpy only has 1D set diff)
+                    highlight_data = np.array(
+                        [
+                            i
+                            for i, x in enumerate(self.vp.gp.X)
+                            if tuple(x) not in set(map(tuple, previous_gp.X))
+                        ]
+                    )
+                else:
+                    highlight_data = None
+
+                if len(self.logging_action) > 0:
+                    title = "VBMC iteration {} ({})".format(
+                        iteration, "".join(self.logging_action)
+                    )
+                else:
+                    title = "VBMC iteration {}".format(iteration)
+
         # Pick "best" variational solution to return
         self.vp, elbo, elbo_sd, idx_best = self.determine_best_vp()
 
@@ -1219,6 +1246,16 @@ class VBMC:
                         "finalize",
                     )
                 )
+
+        # plot final vp:
+        if self.options.get("plot"):
+            self.vp.plot(
+                show_figure=True,
+                plot_data=True,
+                highlight_data=highlight_data,
+                title="VBMC final ({} iterations".format(iteration),
+            )
+
         # Set exit_flag based on stability (check other things in the future)
         if not success_flag:
             if self.vp.stats["stable"]:
