@@ -1022,19 +1022,17 @@ class VariationalPosterior:
 
         axes = np.array(fig.axes).reshape((self.D, self.D))
 
-        # highlight nothing when argument is None
-        if highlight_data is None:
-            highlight_data = np.array([False] * len(self.gp.X))
-            normal_data = ~highlight_data
-        else:
-            normal_data = [
-                i
-                for i in range(len(self.gp.X))
-                if i not in highlight_data
-            ]
-
         # plot gp data
         if plot_data and hasattr(self, "gp"):
+
+            # highlight nothing when argument is None
+            if highlight_data is None:
+                highlight_data = np.array([False] * len(self.gp.X))
+                normal_data = ~highlight_data
+            else:
+                normal_data = [
+                    i for i in range(len(self.gp.X)) if i not in highlight_data
+                ]
 
             orig_X_norm = self.parameter_transformer.inverse(
                 self.gp.X[normal_data]
@@ -1082,6 +1080,6 @@ class VariationalPosterior:
             fig.suptitle(title)
 
         if show_figure:
-            fig.show()
+            plt.show(block=False)
 
         return fig
