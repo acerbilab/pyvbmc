@@ -708,6 +708,12 @@ class VBMC:
         hyp_dict = {}
         success_flag = True
 
+        # set up strings for logging of the iteration
+        (
+            display_format,
+            display_format_warmup,
+        ) = self._setup_logging_display_format()
+
         if self.optim_state["uncertainty_handling_level"] > 0:
             self.logger.info(
                 "Beginning variational optimization assuming NOISY observations"
@@ -719,39 +725,7 @@ class VBMC:
                 + " of the log-joint."
             )
 
-        if self.optim_state["cache_active"]:
-            self.logger.info(
-                " Iteration f-count/f-cache    Mean[ELBO]     Std[ELBO]     "
-                + "sKL-iter[q]   K[q]  Convergence    Action"
-            )
-            display_format = " {:5.0f}     {:5.0f}  /{:5.0f}   {:12.2f}  "
-            display_format += (
-                "{:12.2f}  {:12.2f}     {:4.0f} {:10.3g}       {}"
-            )
-            display_format_warmup = " {:5.0f}     {:5.0f}  /{:5.0f}   {}"
-        else:
-            if (
-                self.optim_state["uncertainty_handling_level"] > 0
-                and self.options.get("maxrepeatedobservations") > 0
-            ):
-                self.logger.info(
-                    " Iteration   f-count (x-count)   Mean[ELBO]     Std[ELBO]"
-                    + "     sKL-iter[q]   K[q]  Convergence  Action"
-                )
-                display_format = " {:5.0f}       {:5.0f} {:5.0f} {:12.2f}  "
-                display_format += (
-                    "{:12.2f}  {:12.2f}     {:4.0f} {:10.3g}     "
-                )
-                display_format += "{}"
-                display_format_warmup = " %5.0f       %5.0f    %12.2f  %s"
-            else:
-                self.logger.info(
-                    " Iteration  f-count    Mean[ELBO]    Std[ELBO]    "
-                    + "sKL-iter[q]   K[q]  Convergence  Action"
-                )
-                display_format = " {:5.0f}      {:5.0f}   {:12.2f} {:12.2f} "
-                display_format += "{:12.2f}     {:4.0f} {:10.3g}     {}"
-                display_format_warmup = " %5.0f       %5.0f    %12.2f  %s"
+        self._log_column_headers()
 
         while not is_finished:
             iteration += 1
@@ -1119,6 +1093,9 @@ class VBMC:
                 else:
                     self.logging_action.append("stable GP sampling")
 
+            if self.options.get("plot") and iteration > 0:
+                self._log_column_headers()
+
             if self.optim_state["cache_active"]:
                 self.logger.info(
                     display_format.format(
@@ -1193,6 +1170,13 @@ class VBMC:
                     )
                 else:
                     title = "VBMC iteration {}".format(iteration)
+
+                self.vp.plot(
+                    show_figure=True,
+                    plot_data=True,
+                    highlight_data=highlight_data,
+                    title="VBMC final ({} iterations".format(iteration),
+                )
 
         # Pick "best" variational solution to return
         self.vp, elbo, elbo_sd, idx_best = self.determine_best_vp()
@@ -1877,3 +1861,55 @@ class VBMC:
         output["elbo_sd"] = self.vp.stats["elbo_sd"]
 
         return output
+
+    def _log_column_headers(self):
+        """
+        Private method to log column headers for the iteration log.
+        """        
+        if self.optim_state["cache_active"]:
+            self.logger.info(
+                " Iteration f-count/f-cache    Mean[ELBO]     Std[ELBO]     "
+                + "sKL-iter[q]   K[q]  Convergence    Action"
+            )
+        else:
+            if (
+                self.optim_state["uncertainty_handling_level"] > 0
+                and self.options.get("maxrepeatedobservations") > 0
+            ):
+                self.logger.info(
+                    " Iteration   f-count (x-count)   Mean[ELBO]     Std[ELBO]"
+                    + "     sKL-iter[q]   K[q]  Convergence  Action"
+                )
+            else:
+                self.logger.info(
+                    " Iteration  f-count    Mean[ELBO]    Std[ELBO]    "
+                    + "sKL-iter[q]   K[q]  Convergence  Action"
+                )
+
+    def _setup_logging_display_format(self):
+        """
+        Private method to set up the display format for logging the iterations.
+        """        
+        if self.optim_state["cache_active"]:
+            display_format = " {:5.0f}     {:5.0f}  /{:5.0f}   {:12.2f}  "
+            display_format += (
+                "{:12.2f}  {:12.2f}     {:4.0f} {:10.3g}       {}"
+            )
+            display_format_warmup = " {:5.0f}     {:5.0f}  /{:5.0f}   {}"
+        else:
+            if (
+                self.optim_state["uncertainty_handling_level"] > 0
+                and self.options.get("maxrepeatedobservations") > 0
+            ):
+                display_format = " {:5.0f}       {:5.0f} {:5.0f} {:12.2f}  "
+                display_format += (
+                    "{:12.2f}  {:12.2f}     {:4.0f} {:10.3g}     "
+                )
+                display_format += "{}"
+                display_format_warmup = " %5.0f       %5.0f    %12.2f  %s"
+            else:
+                display_format = " {:5.0f}      {:5.0f}   {:12.2f} {:12.2f} "
+                display_format += "{:12.2f}     {:4.0f} {:10.3g}     {}"
+                display_format_warmup = " %5.0f       %5.0f    %12.2f  %s"
+
+        return display_format, display_format_warmup
