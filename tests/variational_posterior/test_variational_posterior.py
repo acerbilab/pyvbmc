@@ -634,7 +634,8 @@ def test_soft_bounds_2():
 
 def test_plot():
     """
-    This is a really naive test of the plotting as everything else complicated.
+    This is a really naive test of the plotting as everything else is 
+    complicated.
     """    
     D = 2
     K = 2
