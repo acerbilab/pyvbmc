@@ -1078,6 +1078,9 @@ class VariationalPosterior:
 
         if title is not None:
             fig.suptitle(title)
+        
+        # adjust spacing between subplots
+        fig.tight_layout(pad=0.5)
 
         if show_figure:
             plt.show(block=False)

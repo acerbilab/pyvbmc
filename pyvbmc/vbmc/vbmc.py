@@ -1175,7 +1175,7 @@ class VBMC:
                     show_figure=True,
                     plot_data=True,
                     highlight_data=highlight_data,
-                    title="VBMC final ({} iterations".format(iteration),
+                    title=title,
                 )
 
         # Pick "best" variational solution to return
@@ -1199,6 +1199,9 @@ class VBMC:
                     )
                 ),
             )
+
+            if self.options.get("plot"):
+                self._log_column_headers()
 
             if (
                 self.optim_state["uncertainty_handling_level"] > 0
@@ -1237,7 +1240,7 @@ class VBMC:
                 show_figure=True,
                 plot_data=True,
                 highlight_data=highlight_data,
-                title="VBMC final ({} iterations".format(iteration),
+                title="VBMC final ({} iterations)".format(iteration),
             )
 
         # Set exit_flag based on stability (check other things in the future)
@@ -1436,7 +1439,7 @@ class VBMC:
         if self.function_logger.func_count >= self.options.get("maxfunevals"):
             is_finished_flag = True
             termination_message = (
-                "Inference terminated: reached maximum number"
+                "Inference terminated: reached maximum number "
                 + "of function evaluations options.maxfunevals."
             )
 
@@ -1445,7 +1448,7 @@ class VBMC:
         if iteration + 1 >= self.options.get("maxiter"):
             is_finished_flag = True
             termination_message = (
-                "Inference terminated: reached maximum number"
+                "Inference terminated: reached maximum number "
                 + "of iterations options.maxiter."
             )
 
