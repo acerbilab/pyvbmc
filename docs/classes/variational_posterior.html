@@ -350,6 +350,58 @@ the gradient as well.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.variational_posterior.VariationalPosterior.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_samples</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">100000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_figure</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">highlight_data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_vp_centres</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_style</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/variational_posterior/variational_posterior.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.variational_posterior.VariationalPosterior.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the VP as a cornerplot of samples with optionally the centres of
+the components and the datapoints of the GP. The plot can be enhanced
+by custom styles and also datapoints of the GP can be highlighted.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n_samples</strong><span class="classifier">int, optional</span></dt><dd><p>The number of samples from the , by default int(1e5)</p>
+</dd>
+<dt><strong>title</strong><span class="classifier">str, optional</span></dt><dd><p>The title of the plot, by default None</p>
+</dd>
+<dt><strong>show_figure</strong><span class="classifier">bool, optional</span></dt><dd><p>Toggles <cite>fig.show()</cite>, by default False</p>
+</dd>
+<dt><strong>plot_data</strong><span class="classifier">bool, optional</span></dt><dd><p>Whether to plot the datapoints of the GP, by default False</p>
+</dd>
+<dt><strong>highlight_data</strong><span class="classifier">list, optional</span></dt><dd><p>Indicies of the datapoints that should be plotted in a different
+way than the other datapoints, by default None</p>
+</dd>
+<dt><strong>plot_vp_centres</strong><span class="classifier">bool, optional</span></dt><dd><p>Whether to plot the centres of the VP components, by default False</p>
+</dd>
+<dt><strong>plot_style</strong><span class="classifier">dict, optional</span></dt><dd><dl class="simple">
+<dt>A dictionary of plot styling options. The possible options are:</dt><dd><dl class="simple">
+<dt><strong>corner</strong><span class="classifier">dict, optional</span></dt><dd><p>Styling options directly passed to the corner function.
+By default: <cite>{“fig”: plt.figure(figsize=(8, 8)),
+“labels”: labels}</cite>. See the documentation of <a class="reference external" href="https://corner.readthedocs.io/en/latest/index.html">corner</a>.</p>
+</dd>
+<dt><strong>data</strong><span class="classifier">dict, optional</span></dt><dd><p>Styling options used to plot the GP data.
+By default: <cite>{“s”:15, “color”:’blue’, “facecolors”: “none”}</cite></p>
+</dd>
+<dt><strong>highlight_data</strong><span class="classifier">dict, optional</span></dt><dd><p>Styling options used to plot the highlighted GP data.
+By default: <cite>{“s”:15, “color”:”orange”}</cite></p>
+</dd>
+<dt><strong>vp_centre</strong><span class="classifier">dict, optional</span></dt><dd><p>Styling options used to plot the VP centres.
+By default: <cite>{“marker”:”x”, “color”:”red”}</cite></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>fig</strong><span class="classifier">matplotlib.figure.Figure</span></dt><dd><p>The resulting matplotlib figure of the plot.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.variational_posterior.VariationalPosterior.sample">
 <span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origflag</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">balanceflag</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">inf</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/variational_posterior/variational_posterior.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.variational_posterior.VariationalPosterior.sample" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sample random samples from variational posterior-</p>
