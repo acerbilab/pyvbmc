@@ -960,7 +960,7 @@ class VariationalPosterior:
         plot_data : bool, optional
             Whether to plot the datapoints of the GP, by default False
         highlight_data : list, optional
-            Indicies of the datapoints that should be plotted in a different
+            Indices of the datapoints that should be plotted in a different
             way than the other datapoints, by default None
         plot_vp_centres : bool, optional
             Whether to plot the centres of the VP components, by default False
