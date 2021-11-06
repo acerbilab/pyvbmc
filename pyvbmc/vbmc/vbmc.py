@@ -1154,6 +1154,8 @@ class VBMC:
                     ].gp
                     # find points that are new in this iteration
                     # (hacky cause numpy only has 1D set diff)
+                    # future fix: active sampling should return the set of
+                    # indices of the added points
                     highlight_data = np.array(
                         [
                             i
