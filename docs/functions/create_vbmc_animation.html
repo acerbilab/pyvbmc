@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>decorators &#8212; pyvbmc  documentation</title>
+    <title>create_vbmc_animation &#8212; pyvbmc  documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
@@ -15,8 +15,6 @@
     <script src="../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="get_hpd" href="get_hpd.html" />
-    <link rel="prev" title="active_sample" href="active_sample.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -33,30 +31,25 @@
 
           <div class="body" role="main">
             
-  <section id="decorators">
-<h1>decorators<a class="headerlink" href="#decorators" title="Permalink to this headline">¶</a></h1>
-<section id="handle-0d-1d-input">
-<h2>handle_0D_1D_input<a class="headerlink" href="#handle-0d-1d-input" title="Permalink to this headline">¶</a></h2>
+  <section id="create-vbmc-animation">
+<h1>create_vbmc_animation<a class="headerlink" href="#create-vbmc-animation" title="Permalink to this headline">¶</a></h1>
+<p>Newly implemented for python.</p>
 <dl class="py function">
-<dt class="sig sig-object py" id="pyvbmc.decorators.handle_0D_1D_input">
-<span class="sig-prename descclassname"><span class="pre">pyvbmc.decorators.</span></span><span class="sig-name descname"><span class="pre">handle_0D_1D_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">patched_kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patched_argpos</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_scalar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/decorators/handle_0D_1D_input.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.decorators.handle_0D_1D_input" title="Permalink to this definition">¶</a></dt>
-<dd><p>A decorator that handles 0D, 1D inputs and transforms them to 2D.</p>
+<dt class="sig sig-object py" id="pyvbmc.vbmc.create_vbmc_animation">
+<span class="sig-prename descclassname"><span class="pre">pyvbmc.vbmc.</span></span><span class="sig-name descname"><span class="pre">create_vbmc_animation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vbmc</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../classes/vbmc.html#pyvbmc.vbmc.VBMC" title="pyvbmc.vbmc.vbmc.VBMC"><span class="pre">pyvbmc.vbmc.vbmc.VBMC</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/vbmc/create_vbmc_animation.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.create_vbmc_animation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create and save a gif animation of a VBMC optimization run.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>kwarg</strong><span class="classifier">list of str</span></dt><dd><p>The names of the keyword arguments that should be handeled.</p>
+<dt><strong>vbmc</strong><span class="classifier">VBMC</span></dt><dd><p>The optimized VBMC.</p>
 </dd>
-<dt><strong>argpos</strong><span class="classifier">list of int</span></dt><dd><p>The positions of the arguments that should be handeled.</p>
-</dd>
-<dt><strong>return_scalar</strong><span class="classifier">bool, optional</span></dt><dd><p>If the input is 1D the function should return a scalar,
-by default False.</p>
+<dt><strong>path</strong><span class="classifier">str</span></dt><dd><p>The path where the gif should be saved to.</p>
 </dd>
 </dl>
 </dd>
 </dl>
 </dd></dl>
 
-</section>
 </section>
 
 
@@ -88,12 +81,9 @@ by default False.</p>
 <li class="toctree-l1"><a class="reference internal" href="../classes/vbmc.html">VBMC</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Functions:</span></p>
-<ul class="current">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="active_sample.html">active_sample</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">decorators</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#handle-0d-1d-input">handle_0D_1D_input</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="decorators.html">decorators</a></li>
 <li class="toctree-l1"><a class="reference internal" href="get_hpd.html">get_hpd</a></li>
 <li class="toctree-l1"><a class="reference internal" href="kde1d.html">kde1d</a></li>
 <li class="toctree-l1"><a class="reference internal" href="entropy.html">entropy</a></li>
@@ -107,8 +97,6 @@ by default False.</p>
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="active_sample.html" title="previous chapter">active_sample</a></li>
-      <li>Next: <a href="get_hpd.html" title="next chapter">get_hpd</a></li>
   </ul></li>
 </ul>
 </div>
@@ -142,7 +130,7 @@ by default False.</p>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
-      <a href="../_sources/functions/decorators.rst.txt"
+      <a href="../_sources/functions/create_vbmc_animation.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 

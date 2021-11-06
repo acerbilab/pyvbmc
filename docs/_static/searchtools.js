@@ -276,28 +276,19 @@ var Search = {
           setTimeout(function() {
             displayNextItem();
           }, 5);
-        } else if (DOCUMENTATION_OPTIONS.HAS_SOURCE) {
+        } else {
           $.ajax({url: requestUrl,
                   dataType: "text",
                   complete: function(jqxhr, textstatus) {
                     var data = jqxhr.responseText;
                     if (data !== '' && data !== undefined) {
-                      var summary = Search.makeSearchSummary(data, searchterms, hlterms);
-                      if (summary) {
-                        listItem.append(summary);
-                      }
+                      listItem.append(Search.makeSearchSummary(data, searchterms, hlterms));
                     }
                     Search.output.append(listItem);
                     setTimeout(function() {
                       displayNextItem();
                     }, 5);
                   }});
-        } else {
-          // no source available, just display title
-          Search.output.append(listItem);
-          setTimeout(function() {
-            displayNextItem();
-          }, 5);
         }
       }
       // search finished, update title and status message
@@ -501,9 +492,6 @@ var Search = {
    */
   makeSearchSummary : function(htmlText, keywords, hlwords) {
     var text = Search.htmlToText(htmlText);
-    if (text == "") {
-      return null;
-    }
     var textLower = text.toLowerCase();
     var start = 0;
     $.each(keywords, function() {
