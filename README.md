@@ -72,24 +72,26 @@ make github  (this builds the doc and copies the build version to ./docs)
 github pages listens to main branch, detects changes and rebuilds documentation
 ```
 
-Refer to existing documentation for an overview. So far the documentation includes the following:
-
-- Status of the Port (what is missing?)
-- Reference to the respective file of the original [MATLAB](https://github.com/lacerbi/vbmc) implementation
-- known issues (if something is currently suboptimal in pyvbmc)
-- the documentation of the Python code (generated from the docstrings)
-
-Please keep the documentation up to date. (Sphinx logs possible issues when compiling the documentation.)
+#### General structure
 
 For each new class, function, etc. a `.rst` file needs to be created in an appropriate folder. The folder names are arbitrary, for now we have `functions`, `classes`, etc.
-The `.rst` file contains the text (in a sort of Markdown) and special commands that tell Sphynx where to compile the documentation, for example
+The `.rst` file contains the text in [reStructuredText format](https://en.wikipedia.org/wiki/ReStructuredText), a lightweight markup language with special commands that tell Sphynx where to compile the documentation, for example:
 
 ```
 .. autoclass:: pyvbmc.vbmc.VBMC
    :members:
 ```
 
+Refer to existing documentation for an overview of the file structure. So far the documentation includes the following:
+
+- Status of the Port (what is missing?)
+- Reference to the respective file of the original [MATLAB](https://github.com/lacerbi/vbmc) implementation
+- known issues (if something is currently suboptimal in pyvbmc)
+- the documentation of the Python code (generated from the docstrings)
+
 For each new file, a link needs to be added manually to the [index page](https://github.com/lacerbi/pyvbmc/blob/main/docsrc/source/index.rst).
+Please keep the documentation up to date. (Sphinx logs possible issues when compiling the documentation.)
+
 
 ### Exceptions
 
