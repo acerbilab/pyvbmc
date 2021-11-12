@@ -1,7 +1,7 @@
 # PyVBMC
 
-In this repository we will build the port of the VBMC algorithm to Python 3.x. 
-The original source is the [MATLAB repository](https://github.com/lacerbi/vbmc).
+This repository contains the port of the VBMC algorithm to Python 3.x. 
+The original source is the [MATLAB toolbox](https://github.com/lacerbi/vbmc).
 
 ## General coding conventions
 
@@ -36,7 +36,7 @@ Just run the following command in the pyvbmc directory: `pip install -e .` (redo
 
 ## More detailed conventions
 
-Please read those as well! :)
+Please read these as well!
 
 ### Code formatting
 
@@ -51,13 +51,15 @@ Try to evaluate if pre- and postprocessing in a function can be generalized with
 
 ### Docstrings
 
-The docstrings are generated following the [numpy format](https://numpydoc.readthedocs.io/en/latest/format.html). There are addons to generate docstring blueprints using IDEs.
+The docstrings are generated following the [numpy format](https://numpydoc.readthedocs.io/en/latest/format.html).
+There are add-ons to generate docstring blueprints using IDEs.
 
 See an example for a correct docstring [here](https://numpydoc.readthedocs.io/en/latest/example.html).
 
 ### Documentation
 
-The documentation is currently hosted on [github.io](https://lacerbi.github.io/pyvbmc/). We build the pyvbmc documentation using [Sphinx](https://www.sphinx-doc.org/en/master/usage/quickstart.html), the source code for that is in the [docsrc folder](./docsrc) and the build version is in the [docs folder](./docs). From there new documentation can be compiled using the following commands:
+The documentation is currently hosted on [github.io](https://lacerbi.github.io/pyvbmc/). We build the pyvbmc documentation using [Sphinx](https://www.sphinx-doc.org/en/master/usage/quickstart.html). The source code of the documentation is in the [docsrc folder](./docsrc) and the build version is in the [docs folder](./docs).
+From there new documentation can be compiled using the following commands:
 
 ```
 merge featurebranch into main branch
@@ -77,7 +79,8 @@ Please keep the documentation up to date. (Sphinx logs possible issues when comp
 
 ### Exceptions
 
-Currently, the aim is to use the standard python exceptions whenever it is sensible. Here is a list of those [exceptions](https://docs.python.org/3/library/exceptions.html).
+Currently, the aim is to use the standard Python exceptions whenever it is sensible.
+Here is a list of those [exceptions](https://docs.python.org/3/library/exceptions.html).
 
 ### Git commits
 
@@ -100,14 +103,19 @@ We have decided against general util/misc modules for now. This means that gener
 
 ### Testing
 
-The testing is done using pytest with unit tests for each class in the respective folder.
-Most methods are also tested against test cases produced with the original [MATLAB](https://github.com/lacerbi/vbmc) implementation.
-
-They can be run with (occasionally look at the coverage):
+The testing is done using `pytest` with unit tests for each class in the respective folder. 
+Tests can be run with:
 
 ```
 pytest
-pytest --cov=. --cov-report html:cov_html
+pytest --reruns 5 --cov=. --cov-report html:cov_html
 ```
 
-Please try to keep the total runtime of the tests as low as sensible.
+The latter command creates an hmtl folder with a full report on coverage -- double-check it from time to time.
+
+A few comments about testing:
+
+- Please try to keep the total runtime of the tests as low as sensible.
+- A nice way of proceeding is `test first': write a test first, make it fail, write the code until the test is passed.
+- Many methods are tested against test cases produced with the original [MATLAB](https://github.com/lacerbi/vbmc) implementation.
+- The pytest-mock library is very useful for testing. It allows you to replace parts of your system under test with mock objects and make assertions about how they have been used. (Perhaps we should switch to `unittest.mock` in the future, which is part of the Python standard library.)
