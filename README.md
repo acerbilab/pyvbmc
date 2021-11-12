@@ -32,7 +32,11 @@ pip install -i requirements.txt
 ## Install (temporary)
 
 In order to use `pyvbmc` like any other package, we wrote `setup.py`.
-Just run the following command in the pyvbmc directory: `pip install -e .` (redo after changes in the package).
+Just run the following command in the pyvbmc directory: 
+
+```pip install -e .``` 
+
+Redo after changes in the package.
 
 ## More detailed conventions
 
@@ -76,6 +80,16 @@ Refer to existing documentation for an overview. So far the documentation includ
 - the documentation of the Python code (generated from the docstrings)
 
 Please keep the documentation up to date. (Sphinx logs possible issues when compiling the documentation.)
+
+For each new class, function, etc. a `.rst` file needs to be created in an appropriate folder. The folder names are arbitrary, for now we have `functions`, `classes`, etc.
+The `.rst` file contains the text (in a sort of Markdown) and special commands that tell Sphynx where to compile the documentation, for example
+
+```
+.. autoclass:: pyvbmc.vbmc.VBMC
+   :members:
+```
+
+For each new file, a link needs to be added manually to the [index page](https://github.com/lacerbi/pyvbmc/blob/main/docsrc/source/index.rst).
 
 ### Exceptions
 
