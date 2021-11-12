@@ -111,11 +111,13 @@ pytest
 pytest --reruns 5 --cov=. --cov-report html:cov_html
 ```
 
-The latter command creates an hmtl folder with a full report on coverage -- double-check it from time to time.
+The latter command creates an hmtl folder with a full report on coverage -- double-check it from time to time. Since some tests are stochastic and occasionally fail (occasional failures for stochastic parts are fine, we rerun a failed test up to five times with `rerun 5`).
 
 A few comments about testing:
 
 - Please try to keep the total runtime of the tests as low as sensible.
+- As a good practice, please run all tests before major commits and pull requests (might take a bit, but it is worth it).
 - A nice way of proceeding is `test first': write a test first, make it fail, write the code until the test is passed.
 - Many methods are tested against test cases produced with the original [MATLAB](https://github.com/lacerbi/vbmc) implementation.
 - The pytest-mock library is very useful for testing. It allows you to replace parts of your system under test with mock objects and make assertions about how they have been used. (Perhaps we should switch to `unittest.mock` in the future, which is part of the Python standard library.)
+- Things to look into in the future: We should perhaps automatize tests with GitHub actions.
