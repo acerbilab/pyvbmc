@@ -84,10 +84,10 @@ The `.rst` file contains the text in [reStructuredText format](https://en.wikipe
 
 Refer to existing documentation for an overview of the file structure. So far the documentation includes the following:
 
-- Status of the Port (what is missing?)
-- Reference to the respective file of the original [MATLAB](https://github.com/lacerbi/vbmc) implementation
-- known issues (if something is currently suboptimal in pyvbmc)
-- the documentation of the Python code (generated from the docstrings)
+- Status of the Port (what is missing?);
+- Reference to the respective file of the original [MATLAB](https://github.com/lacerbi/vbmc) implementation;
+- Known issues (if something is currently suboptimal in pyvbmc);
+- The documentation of the Python code (generated from the docstrings).
 
 For each new file, a link needs to be added manually to the [index page](https://github.com/lacerbi/pyvbmc/blob/main/docsrc/source/index.rst).
 Please keep the documentation up to date. (Sphinx logs possible issues when compiling the documentation.)
@@ -123,17 +123,19 @@ The testing is done using `pytest` with unit tests for each class in the respect
 Tests can be run with:
 
 ```
+pytest test_filename.py
 pytest
 pytest --reruns 5 --cov=. --cov-report html:cov_html
 ```
 
-The latter command creates an hmtl folder with a full report on coverage -- double-check it from time to time. Since some tests are stochastic and occasionally fail (occasional failures for stochastic parts are fine, we rerun a failed test up to five times with `rerun 5`).
+The final command creates an hmtl folder with a full report on coverage -- double-check it from time to time. Since some tests are stochastic and occasionally fail (occasional failures for stochastic parts are fine, we rerun a failed test up to five times with `rerun 5`).
 
 A few comments about testing:
 
-- Please try to keep the total runtime of the tests as low as sensible.
-- As a good practice, please run all tests before major commits and pull requests (might take a bit, but it is worth it).
+- Testing is mandatory!
+- Please try to keep the total runtime of the tests minimal for the task at hand.
+- As a good practice, please rerun all tests before major commits and pull requests (might take a while, but it is worth it to avoid surprises).
 - A nice way of proceeding is `test first': write a test first, make it fail, write the code until the test is passed.
 - Many methods are tested against test cases produced with the original [MATLAB](https://github.com/lacerbi/vbmc) implementation.
-- The pytest-mock library is very useful for testing. It allows you to replace parts of your system under test with mock objects and make assertions about how they have been used. (Perhaps we should switch to `unittest.mock` in the future, which is part of the Python standard library.)
+- The `pytest-mock` library is very useful for testing. It allows you to replace parts of your system under test with mock objects and make assertions about how they have been used. (Perhaps we should switch to `unittest.mock` in the future, which is part of the Python standard library.)
 - Things to look into in the future: We should perhaps automatize tests with GitHub actions.
