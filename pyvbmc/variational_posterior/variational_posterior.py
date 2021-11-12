@@ -347,15 +347,26 @@ class VariationalPosterior:
         NotImplementedError
             Raised if np.isfinite(df) and df < 0 and gradflag=True
             (Gradient of heavy-tailed pdf not supported yet).
-        NotImplementedError
-            Raised if oriflag=True and logflag=True and gradflag=True
+        NotImplementedError   
+            Raised if origflag=True and logflag=True and gradflag=True
             (Gradient computation in original space not supported yet).
         """
+        N, D = x.shape
+
+        # compute pdf only for points inside bounds in origspace
+        if origflag:
+            mask = np.logical_and(
+                np.all(x > self.parameter_transformer.lb_orig, axis=1),
+                np.all(x < self.parameter_transformer.ub_orig, axis=1),
+            )
+        else:
+            mask = np.full(N, True)
+
         # Convert points to transformed space
         if origflag and not transflag:
-            x = self.parameter_transformer(x)
+            x[mask] = self.parameter_transformer(x[mask])
         lamd_row = self.lambd.reshape(1, -1)
-        N, D = x.shape
+
         y = np.zeros((N, 1))
         if gradflag:
             dy = np.zeros((N, D))
@@ -453,20 +464,23 @@ class VariationalPosterior:
         # apply jacobian correction
         if origflag:
             if logflag:
-                y -= self.parameter_transformer.log_abs_det_jacobian(x)[
-                    :, np.newaxis
-                ]
+                y[mask] -= self.parameter_transformer.log_abs_det_jacobian(
+                    x[mask]
+                )[:, np.newaxis]
                 if gradflag:
                     raise NotImplementedError(
                         """vbmc_pdf:NoOriginalGrad: Gradient computation
                          in original space not supported yet."""
                     )
             else:
-                y /= np.exp(
-                    self.parameter_transformer.log_abs_det_jacobian(x)[
+                y[mask] /= np.exp(
+                    self.parameter_transformer.log_abs_det_jacobian(x[mask])[
                         :, np.newaxis
                     ]
                 )
+
+        # pdf is 0 outside the bounds in origspace
+        y[~mask] = 0
 
         if gradflag:
             return y, dy
