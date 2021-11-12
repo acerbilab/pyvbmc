@@ -1,32 +1,38 @@
 # PyVBMC
-This works as a repository to port the VBMC algorithm to Python3.
 
-## General conventions
+In this repository we will build the port of the VBMC algorithm to Python 3.x. 
+The original source is the [MATLAB repository](https://github.com/lacerbi/vbmc).
+
+## General coding conventions
+
 We try to follow common conventions whenever possible.
 
-Some useful reading hints regarding that:
+Some useful readings:
 
 - [PEP 8 -- Style Guide for Python Code](https://www.python.org/dev/peps/pep-0008/)
 - [Code style in The Hitchhiker's Guide to Python](https://docs.python-guide.org/writing/style/)
 
-Please note that we are developing in a way to enable third parties to maintain and use the algorithm. Certain things have to be followed to ensure that but please start a discussion when something does not seem sensible.
+Please note that we are developing in a way to enable third parties to maintain and use the algorithm. Some rules have to be followed to ensure coherence and coordination, but please start a discussion when something does not seem sensible.
 
-## How to Run
-We are using the dependencies listed in the requirements.txt. Please list all used dependencies there.
+## How to run the package
 
-They can be installed with [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) or pip.
+We are using the dependencies listed in `requirements.txt`. Please list all used dependencies there.
+
+The necessary packages can be installed with [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) or pip.
 
 ```
 conda env create --file environment.yml
 ```
+or
 
 ```
 pip install -i requirements.txt
 ```
 
 ## Install (temporary)
-In order to use pyvbmc like any other package, `setup.py` has been created.
-Just run the following command in the gpyreg directory: `pip install -e .` (redo it after changes in the packages).
+
+In order to use `pyvbmc` like any other package, we wrote `setup.py`.
+Just run the following command in the pyvbmc directory: `pip install -e .` (redo after changes in the package).
 
 ## More detailed conventions
 
