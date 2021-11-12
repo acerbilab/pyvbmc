@@ -347,7 +347,8 @@ class VariationalPosterior:
         NotImplementedError
             Raised if np.isfinite(df) and df < 0 and gradflag=True
             (Gradient of heavy-tailed pdf not supported yet).
-                    Raised if origflag=True and logflag=True and gradflag=True
+        NotImplementedError   
+            Raised if origflag=True and logflag=True and gradflag=True
             (Gradient computation in original space not supported yet).
         """
         N, D = x.shape
