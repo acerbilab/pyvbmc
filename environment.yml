@@ -4,4 +4,4 @@ dependencies:
   - python>=3.8
   - pip
   - pip:
-    - -r file:requirements.txt
+    - -r requirements.txt
