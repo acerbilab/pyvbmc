@@ -1,11 +1,15 @@
 # run: pip install -i requirements.txt
+cma
+corner
+imageio
+kaleido
+matplotlib
 numpy
 numpydoc
-scipy
-pytest-cov
-pytest-profiling
-pytest-mock
-sphinx
 pylint
-cma
-imageio
+pytest
+pytest-cov
+pytest-mock
+pytest-rerunfailures
+scipy
+sphinx
