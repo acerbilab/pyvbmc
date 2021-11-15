@@ -661,6 +661,6 @@ def test_plot():
     K = 2
     vp = VariationalPosterior(D, K)
     test_title = "Test title"
-    fig = vp.plot(title=test_title, show_figure=False)
+    fig = vp.plot(title=test_title)
     assert fig._suptitle.get_text() == test_title
     assert len(fig.axes) == D*D
