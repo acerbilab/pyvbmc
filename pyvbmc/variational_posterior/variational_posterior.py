@@ -952,7 +952,6 @@ class VariationalPosterior:
         self,
         n_samples: int = int(1e5),
         title: str = None,
-        show_figure: bool = False,
         plot_data: bool = False,
         highlight_data: list = None,
         plot_vp_centres: bool = False,
@@ -969,8 +968,6 @@ class VariationalPosterior:
             The number of samples from the , by default int(1e5)
         title : str, optional
             The title of the plot, by default None
-        show_figure : bool, optional
-            Toggles `fig.show()`, by default False
         plot_data : bool, optional
             Whether to plot the datapoints of the GP, by default False
         highlight_data : list, optional
@@ -1016,7 +1013,7 @@ class VariationalPosterior:
         if "corner" in plot_style:
             corner_style.update(plot_style.get("corner"))
 
-        corner.corner(Xs, **corner_style)
+        fig = corner.corner(Xs, **corner_style)
 
         # style of the gp data
         data_style = dict({"s": 15, "color": "blue", "facecolors": "none"})
@@ -1095,8 +1092,5 @@ class VariationalPosterior:
         
         # adjust spacing between subplots
         fig.tight_layout(pad=0.5)
-
-        if show_figure:
-            plt.show(block=False)
 
         return fig
