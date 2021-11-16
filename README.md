@@ -141,7 +141,7 @@ pytest
 pytest --reruns 5 --cov=. --cov-report html:cov_html
 ```
 
-The final command creates an hmtl folder with a full report on coverage -- double-check it from time to time. Since some tests are stochastic and occasionally fail (occasional failures for stochastic parts are fine, we rerun a failed test up to five times with `rerun 5`).
+The final command creates an html folder with a full report on coverage -- double-check it from time to time. Since some tests are stochastic and occasionally fail (occasional failures for stochastic parts are fine, we rerun a failed test up to five times with `--reruns 5`).
 
 A few comments about testing:
 
