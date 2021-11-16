@@ -18,9 +18,8 @@ sys.path.insert(0, os.path.abspath("../.."))
 
 # -- Project information -----------------------------------------------------
 
-project = "pyvbmc"
+project = "PyVBMC"
 copyright = "2021, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki)"
-author = "Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki)"
 
 
 # -- General configuration ---------------------------------------------------
@@ -81,12 +80,12 @@ exclude_patterns = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "alabaster"
+html_theme = "sphinx_book_theme"
+html_title = "PyVBMC"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["css/custom.css"]
 
-html_theme_options = {"page_width": "1200px"}
 todo_include_todos = True
