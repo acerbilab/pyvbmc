@@ -30,6 +30,7 @@ Documentation
    :maxdepth: 1
    :titlesonly:
 
+   installation
    api/classes/variational_posterior
    api/classes/vbmc
    api/advanced_docs
