@@ -65,12 +65,25 @@ See an example for a correct docstring [here](https://numpydoc.readthedocs.io/en
 The documentation is currently hosted on [github.io](https://lacerbi.github.io/pyvbmc/). We build the pyvbmc documentation using [Sphinx](https://www.sphinx-doc.org/en/master/usage/quickstart.html). The source code of the documentation is in the [docsrc folder](./docsrc) and the build version is in the [docs folder](./docs).
 From there new documentation can be compiled using the following commands:
 
+1) Merge main branch into feature branch (bring the branch up to date with whatever changes were done in main):
 ```
-merge featurebranch into main branch
-cd /docsrc
+git checkout main
+git pull
+git checkout <feature_branch>
+git merge master
+```
+
+2) Make sure that everything works, e.g. by running tests.
+3) Render new documentation:
+```
+cd /docsrc (navigate to documentation source folder)
 make github  (this builds the doc and copies the build version to ./docs)
-github pages listens to main branch, detects changes and rebuilds documentation
 ```
+
+4) Commit the new documentation.
+5) Create a new pull request.
+6) When the pull request is merged, [github.io](https://lacerbi.github.io/pyvbmc/) detects changes and rebuilds the documentation.
+
 
 #### General structure
 
