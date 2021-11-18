@@ -1177,6 +1177,7 @@ class VBMC:
                 self.vp.plot(
                     plot_data=True,
                     highlight_data=highlight_data,
+                    plot_vp_centres=True,
                     title=title,
                 )
                 plt.show()
@@ -1243,6 +1244,7 @@ class VBMC:
             self.vp.plot(
                 plot_data=True,
                 highlight_data=highlight_data,
+                plot_vp_centres=True,
                 title="VBMC final ({} iterations)".format(iteration),
             )
             plt.show()
