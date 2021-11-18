@@ -1004,7 +1004,7 @@ class VariationalPosterior:
 
         # cornerplot with samples of vp
         fig = plt.figure(figsize=(6, 6))
-        labels = ["$x_{}$".format(i + 1) for i in range(self.D)]
+        labels = ["$x_{}$".format(i) for i in range(self.D)]
         corner_style = dict({"fig": fig, "labels": labels})
 
         if plot_style is None:
