@@ -4,8 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Acquisition Functions &#8212; pyvbmc  documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
@@ -33,9 +32,9 @@
 
           <div class="body" role="main">
             
-  <section id="acquisition-functions">
+  <div class="section" id="acquisition-functions">
 <h1>Acquisition Functions<a class="headerlink" href="#acquisition-functions" title="Permalink to this headline">¶</a></h1>
-<section id="porting-status">
+<div class="section" id="porting-status">
 <h2>Porting status<a class="headerlink" href="#porting-status" title="Permalink to this headline">¶</a></h2>
 <div class="admonition-todo admonition" id="id1">
 <p class="admonition-title">Todo</p>
@@ -43,7 +42,7 @@
 <li><p>discuss which other functions from <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/acq">vbmc/acq</a> to port</p></li>
 </ul>
 </div>
-<section id="matlab-references">
+<div class="section" id="matlab-references">
 <h3>Matlab references<a class="headerlink" href="#matlab-references" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>AbstractAcqFcn: <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/acq/acqwrapper_vbmc.m">acqwrapper_vbmc.m</a></p></li>
@@ -52,18 +51,18 @@
 <li><p>AcqFcnNoisy: <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/acq/acqfsn2_vbmc.m">acqfsn2_vbmc.m</a></p></li>
 <li><p>AcqFcnVanila: <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/acq/acqus_vbmc.m">acqus_vbmc.m</a></p></li>
 </ul>
-</section>
-</section>
-<section id="module-pyvbmc.acquisition_functions">
+</div>
+</div>
+<div class="section" id="module-pyvbmc.acquisition_functions">
 <span id="python-documentation"></span><h2>Python documentation<a class="headerlink" href="#module-pyvbmc.acquisition_functions" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.acquisition_functions.AbstractAcqFcn">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyvbmc.acquisition_functions.</span></span><span class="sig-name descname"><span class="pre">AbstractAcqFcn</span></span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/acquisition_functions/abstract_acq_fcn.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AbstractAcqFcn" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.acquisition_functions.</span></span><span class="sig-name descname"><span class="pre">AbstractAcqFcn</span></span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/acquisition_functions/abstract_acq_fcn.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AbstractAcqFcn" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
 <p>Abstract acquisition function for VBMC.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.acquisition_functions.AbstractAcqFcn.__call__">
-<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Xs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gp</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">gpyreg.gaussian_process.GP</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vp</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior" title="pyvbmc.variational_posterior.variational_posterior.VariationalPosterior"><span class="pre">pyvbmc.variational_posterior.variational_posterior.VariationalPosterior</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">function_logger</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="function_logger.html#pyvbmc.function_logger.FunctionLogger" title="pyvbmc.function_logger.function_logger.FunctionLogger"><span class="pre">pyvbmc.function_logger.function_logger.FunctionLogger</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">optim_state</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/acquisition_functions/abstract_acq_fcn.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AbstractAcqFcn.__call__" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Xs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">gpyreg.gaussian_process.GP</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior" title="pyvbmc.variational_posterior.variational_posterior.VariationalPosterior"><span class="pre">pyvbmc.variational_posterior.variational_posterior.VariationalPosterior</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">function_logger</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="function_logger.html#pyvbmc.function_logger.FunctionLogger" title="pyvbmc.function_logger.function_logger.FunctionLogger"><span class="pre">pyvbmc.function_logger.function_logger.FunctionLogger</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">optim_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/acquisition_functions/abstract_acq_fcn.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AbstractAcqFcn.__call__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the acquisition function for the given inputs.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -111,34 +110,34 @@ called from.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.acquisition_functions.AcqFcn">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyvbmc.acquisition_functions.</span></span><span class="sig-name descname"><span class="pre">AcqFcn</span></span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/acquisition_functions/acq_fcn.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcn" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.acquisition_functions.</span></span><span class="sig-name descname"><span class="pre">AcqFcn</span></span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/acquisition_functions/acq_fcn.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcn" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pyvbmc.acquisition_functions.AbstractAcqFcn" title="pyvbmc.acquisition_functions.abstract_acq_fcn.AbstractAcqFcn"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyvbmc.acquisition_functions.abstract_acq_fcn.AbstractAcqFcn</span></code></a></p>
 <p>Acquisition function for prospective uncertainty search.</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.acquisition_functions.AcqFcnLog">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyvbmc.acquisition_functions.</span></span><span class="sig-name descname"><span class="pre">AcqFcnLog</span></span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/acquisition_functions/acq_fcn_log.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcnLog" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.acquisition_functions.</span></span><span class="sig-name descname"><span class="pre">AcqFcnLog</span></span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/acquisition_functions/acq_fcn_log.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcnLog" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pyvbmc.acquisition_functions.AbstractAcqFcn" title="pyvbmc.acquisition_functions.abstract_acq_fcn.AbstractAcqFcn"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyvbmc.acquisition_functions.abstract_acq_fcn.AbstractAcqFcn</span></code></a></p>
 <p>Acquisition function for prospective uncertainty search (log-valued).</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.acquisition_functions.AcqFcnNoisy">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyvbmc.acquisition_functions.</span></span><span class="sig-name descname"><span class="pre">AcqFcnNoisy</span></span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/acquisition_functions/acq_fcn_noisy.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcnNoisy" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.acquisition_functions.</span></span><span class="sig-name descname"><span class="pre">AcqFcnNoisy</span></span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/acquisition_functions/acq_fcn_noisy.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcnNoisy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pyvbmc.acquisition_functions.AbstractAcqFcn" title="pyvbmc.acquisition_functions.abstract_acq_fcn.AbstractAcqFcn"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyvbmc.acquisition_functions.abstract_acq_fcn.AbstractAcqFcn</span></code></a></p>
 <p>Acquisition function for noisy prospective uncertainty search.</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.acquisition_functions.AcqFcnVanilla">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyvbmc.acquisition_functions.</span></span><span class="sig-name descname"><span class="pre">AcqFcnVanilla</span></span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/acquisition_functions/acq_fcn_vanilla.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcnVanilla" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.acquisition_functions.</span></span><span class="sig-name descname"><span class="pre">AcqFcnVanilla</span></span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/acquisition_functions/acq_fcn_vanilla.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcnVanilla" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pyvbmc.acquisition_functions.AbstractAcqFcn" title="pyvbmc.acquisition_functions.abstract_acq_fcn.AbstractAcqFcn"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyvbmc.acquisition_functions.abstract_acq_fcn.AbstractAcqFcn</span></code></a></p>
 <p>Acquisition function via vanilla uncertainty sampling.</p>
 </dd></dl>
 
-</section>
-</section>
+</div>
+</div>
 
 
           </div>
@@ -175,6 +174,7 @@ called from.</p>
 <p class="caption" role="heading"><span class="caption-text">Functions:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../functions/active_sample.html">active_sample</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../functions/create_vbmc_animation.html">create_vbmc_animation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../functions/decorators.html">decorators</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../functions/get_hpd.html">get_hpd</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../functions/kde1d.html">kde1d</a></li>
@@ -220,7 +220,7 @@ called from.</p>
       &copy;2021, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

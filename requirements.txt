@@ -1,15 +1,22 @@
 # run: pip install -i requirements.txt
+# main dependencies
 cma
 corner
 imageio
 kaleido
 matplotlib
 numpy
-numpydoc
+scipy
+
+# testing and linting
 pylint
 pytest
 pytest-cov
 pytest-mock
 pytest-rerunfailures
-scipy
+
+# documentation
+myst_nb
+numpydoc
 sphinx
+sphinx-book-theme

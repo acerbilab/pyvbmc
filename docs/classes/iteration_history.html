@@ -4,8 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>IterationHistory &#8212; pyvbmc  documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
@@ -33,9 +32,9 @@
 
           <div class="body" role="main">
             
-  <section id="iterationhistory">
+  <div class="section" id="iterationhistory">
 <h1>IterationHistory<a class="headerlink" href="#iterationhistory" title="Permalink to this headline">¶</a></h1>
-<section id="porting-status">
+<div class="section" id="porting-status">
 <h2>Porting status<a class="headerlink" href="#porting-status" title="Permalink to this headline">¶</a></h2>
 <div class="admonition-todo admonition" id="id1">
 <p class="admonition-title">Todo</p>
@@ -44,18 +43,18 @@
 <li><p>implement all elements of record_iteration() (depends on the other objects as well).</p></li>
 </ul>
 </div>
-<section id="matlab-references">
+<div class="section" id="matlab-references">
 <h3>Matlab references<a class="headerlink" href="#matlab-references" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>function save_stats in: <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/vbmc.m">vbmc.m</a></p></li>
 </ul>
-</section>
-</section>
-<section id="python-documentation">
+</div>
+</div>
+<div class="section" id="python-documentation">
 <h2>Python documentation<a class="headerlink" href="#python-documentation" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.vbmc.IterationHistory">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyvbmc.vbmc.</span></span><span class="sig-name descname"><span class="pre">IterationHistory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">keys</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/vbmc/iteration_history.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.IterationHistory" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.vbmc.</span></span><span class="sig-name descname"><span class="pre">IterationHistory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">keys</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/vbmc/iteration_history.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.IterationHistory" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class is responsible for the VBMC iteration history.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -67,7 +66,7 @@
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.vbmc.IterationHistory.record">
-<span class="sig-name descname"><span class="pre">record</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iteration</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/vbmc/iteration_history.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.IterationHistory.record" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">record</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iteration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/vbmc/iteration_history.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.IterationHistory.record" title="Permalink to this definition">¶</a></dt>
 <dd><p>Store a value for a key in a given iteration.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -94,7 +93,7 @@ object.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.vbmc.IterationHistory.record_iteration">
-<span class="sig-name descname"><span class="pre">record_iteration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key_value</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iteration</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/vbmc/iteration_history.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.IterationHistory.record_iteration" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">record_iteration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iteration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/vbmc/iteration_history.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.IterationHistory.record_iteration" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convenience method to record multiple key-values for a given iteration.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -120,8 +119,8 @@ object</p>
 
 </dd></dl>
 
-</section>
-</section>
+</div>
+</div>
 
 
           </div>
@@ -158,6 +157,7 @@ object</p>
 <p class="caption" role="heading"><span class="caption-text">Functions:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../functions/active_sample.html">active_sample</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../functions/create_vbmc_animation.html">create_vbmc_animation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../functions/decorators.html">decorators</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../functions/get_hpd.html">get_hpd</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../functions/kde1d.html">kde1d</a></li>
@@ -203,7 +203,7 @@ object</p>
       &copy;2021, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

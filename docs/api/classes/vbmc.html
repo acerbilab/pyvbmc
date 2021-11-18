@@ -1,0 +1,652 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VBMC &#8212; PyVBMC</title>
+    
+  <link href="../../_static/css/theme.css" rel="stylesheet">
+  <link href="../../_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.css" />
+    
+  <link rel="preload" as="script" href="../../_static/js/index.be7d3bbb2ef33a8344ce.js">
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../_static/sphinx-book-theme.12a9622fbb08dcb3a2a40b2c02b83a57.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Advanced documentation" href="../advanced_docs.html" />
+    <link rel="prev" title="VariationalPosterior" href="variational_posterior.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="../../index.html">
+      
+      
+      
+      <h1 class="site-logo" id="site-title">PyVBMC</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        <ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../installation.html">
+   Installation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="variational_posterior.html">
+   VariationalPosterior
+  </a>
+ </li>
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   VBMC
+  </a>
+ </li>
+ <li class="toctree-l1 current active has-children">
+  <a class="reference internal" href="../advanced_docs.html">
+   Advanced documentation
+  </a>
+  <input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="current">
+   <li class="toctree-l2">
+    <a class="reference internal" href="acquisition_functions.html">
+     Acquisition Functions
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="function_logger.html">
+     FunctionLogger
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="options.html">
+     Options
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="parameter_transformer.html">
+     ParameterTransformer
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="iteration_history.html">
+     IterationHistory
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="timer.html">
+     Timer
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="variational_posterior.html">
+     VariationalPosterior
+    </a>
+   </li>
+   <li class="toctree-l2 current active">
+    <a class="current reference internal" href="#">
+     VBMC
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../functions/active_sample.html">
+     active_sample
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../functions/create_vbmc_animation.html">
+     create_vbmc_animation
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../functions/decorators.html">
+     decorators
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../functions/get_hpd.html">
+     get_hpd
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../functions/kde1d.html">
+     kde1d
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../functions/entropy.html">
+     entropy
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../options/vbmc_options.html">
+     VBMC options
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../_examples/pyvbmc_example_1.html">
+   Example 1: Basic usage
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../_examples/pyvbmc_example_2.html">
+   Example 2: Understanding the inputs and the output trace
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav> <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Theme by the <a href="https://ebp.jupyterbook.org">Executable Book Project</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="../../_sources/api/classes/vbmc.rst.txt"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.rst</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+            onClick="window.print()" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show">
+            
+            <div class="tocsection onthispage pt-5 pb-3">
+                <i class="fas fa-list"></i> Contents
+            </div>
+            <nav id="bd-toc-nav" aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#porting-status">
+   Porting status
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#matlab-references-of-ported-methods">
+     Matlab references of ported methods
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#python-documentation">
+   Python documentation
+  </a>
+ </li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+        
+              <div>
+                
+  <div class="section" id="vbmc">
+<h1>VBMC<a class="headerlink" href="#vbmc" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="porting-status">
+<h2>Porting status<a class="headerlink" href="#porting-status" title="Permalink to this headline">¶</a></h2>
+<div class="admonition-todo admonition" id="id2">
+<p class="admonition-title">Todo</p>
+<ul class="simple">
+<li><p>in _boundscheck the plausible bounds are set equal to the hard bounds, which is not admissible in VBMC (Fix by Luigi required)</p></li>
+<li><p>check the documentation of vbmc init and the class in general</p></li>
+<li><p>integrate the basic options somehow</p></li>
+<li><p>init a GP (wait for GPLite to be completed)</p></li>
+<li><p>experimental features (listed in <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/vbmc.m">vbmc.m</a> have not been ported yet)</p></li>
+<li><p><a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/private/acqhedge_vbmc.m">acqhedge_vbmc.m</a> has not been ported yet as it is considered to be experimental</p></li>
+<li><p>the warping in <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/vbmc.m">vbmc.m</a> is part of the 2020 paper and is well tested. We will implement it later as VBMC can run without it.</p></li>
+<li><p>in variational_optimization.py the compute vargrad is untested</p></li>
+<li><p>in variational_optimization.py the the vp_repo has not been ported for now (In is used in MATLAB in <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/vpsieve_vbmc.m">vpsieve_vbmc.m</a> and filled in active_sampling). (Note by Luigi: In practice, even in MATLAB this part seems to be implemented lazily and then it’s not used. I am not sure why I did not work on this more; probably the variational optimization was working fine and couldn’t be bothered to fix this properly (it seems it could help).)</p></li>
+</ul>
+</div>
+<div class="section" id="matlab-references-of-ported-methods">
+<h3>Matlab references of ported methods<a class="headerlink" href="#matlab-references-of-ported-methods" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><dl class="simple">
+<dt>initialization:</dt><dd><ul>
+<li><p>parts of the __init__(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/vbmc.m">vbmc.m</a></p></li>
+<li><p>parts of the __init__(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/setupvars_vbmc.m">setupvars_vbmc.m</a></p></li>
+<li><p>_boundscheck(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/boundscheck_vbmc.m">boundscheck_vbmc.m</a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>VBMC loop (optimize(): loop in <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/vbmc.m">vbmc.m</a>):</dt><dd><ul>
+<li><dl class="simple">
+<dt>Active Sampling:</dt><dd><ul>
+<li><p>see: <a class="reference internal" href="../functions/active_sample.html"><span class="doc">active_sample</span></a></p></li>
+<li><p>_reupdate_gp(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/gpreupdate.m">gpreupdate.m</a> (Wait for gpyreg progress)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Gaussian Process training:</dt><dd><ul>
+<li><p>train_gp(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/gptrain_vbmc.m">gptrain_vbmc.m</a></p></li>
+<li><p>_gp_hyp(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/gptrain_vbmc.m">gptrain_vbmc.m</a></p></li>
+<li><p>_get_gp_training_options(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/get_GPTrainOptions.m">get_GPTrainOptions.m</a></p></li>
+<li><p>_get_hyp_cov(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/get_GPTrainOptions.m">get_GPTrainOptions.m</a></p></li>
+<li><p>_get_hpd(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/gethpd_vbmc.m">gethpd_vbmc.m</a></p></li>
+<li><p>_get_training_data(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/get_traindata_vbmc.m">get_traindata_vbmc.m</a></p></li>
+<li><p>_estimate_noise(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/gptrain_vbmc.m">gptrain_vbmc.m</a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Variational optimization / training of VP:</dt><dd><ul>
+<li><p>update_K(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/private/updateK.m">updateK.m</a></p></li>
+<li><p>optimize_vp(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/vpoptimize_vbmc.m">vpoptimize_vbmc.m</a></p></li>
+<li><p>_initialize_full_elcbo(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/vpoptimize_vbmc.m">vpoptimize_vbmc.m</a></p></li>
+<li><p>_eval_full_elcbo(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/vpoptimize_vbmc.m">vpoptimize_vbmc.m</a></p></li>
+<li><p>_vp_bound_loss(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/vpbndloss.m">vpbndloss.m</a></p></li>
+<li><p>_soft_bound_loss(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/utils/softbndloss.m">softbndloss.m</a></p></li>
+<li><p>_sieve(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/vpsieve_vbmc.m">vpsieve_vbmc.m</a></p></li>
+<li><p>_vbinit(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/vbinit_vbmc.m">vbinit_vbmc.m</a></p></li>
+<li><p>_negelcbo(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/negelcbo_vbmc.m">negelcbo_vbmc.m</a></p></li>
+<li><p>_gplogjoint(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/gplogjoint.m">gplogjoint.m</a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Loop termination:</dt><dd><ul>
+<li><p>_check_warmup_end_conditions(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/private/vbmc_warmup.m">vbmc_warmup.m</a></p></li>
+<li><p>_setup_vbmc_after_warmup(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/private/vbmc_warmup.m">vbmc_warmup.m</a></p></li>
+<li><p>_recompute_lcbmax(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/private/recompute_lcbmax.m">recompute_lcbmax.m</a></p></li>
+<li><p>_is_finished(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/private/vbmc_termination.m">vbmc_termination.m</a></p></li>
+<li><p>_compute_reliability_index(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/private/vbmc_termination.m">vbmc_termination.m</a></p></li>
+<li><p>_is_gp_sampling_finished(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/private/vbmc_termination.m">vbmc_termination.m</a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Finalizing:</dt><dd><ul>
+<li><p>finalboost(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/finalboost_vbmc.m">finalboost_vbmc.m</a></p></li>
+<li><p>determine_best_vp(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/misc/best_vbmc.m">best_vbmc.m</a></p></li>
+<li><p>_create_result_dict(): <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/private/vbmc_output.m">vbmc_output.m</a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="python-documentation">
+<h2>Python documentation<a class="headerlink" href="#python-documentation" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyvbmc.vbmc.VBMC">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.vbmc.</span></span><span class="sig-name descname"><span class="pre">VBMC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fun</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plausible_lower_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plausible_upper_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/vbmc/vbmc.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.VBMC" title="Permalink to this definition">¶</a></dt>
+<dd><p>The VBMC algorithm class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>fun</strong><span class="classifier">callable</span></dt><dd><p>A given target log posterior FUN.</p>
+</dd>
+<dt><strong>x0</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>[description], by default None</p>
+</dd>
+<dt><strong>lower_bounds, upper_bounds</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>Lower_bounds (LB) and upper_bounds (UB) define a set
+of strict lower and upper bounds coordinate vector, X, so that the
+posterior has support on LB &lt; X &lt; UB.
+If scalars, the bound is replicated in each dimension. Use
+empty matrices for LB and UB if no bounds exist. Set LB[i] = -Inf
+and UB[i] = Inf if the i-th coordinate is unbounded (while other
+coordinates may be bounded). Note that if LB and UB contain
+unbounded variables, the respective values of PLB and PUB need to be
+specified (see below), by default None</p>
+</dd>
+<dt><strong>plausible_lower_bounds, plausible_upper_bounds</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>Specifies a set of plausible_lower_bounds (PLB) and
+plausible_upper_bounds (PUB) such that LB &lt; PLB &lt; PUB &lt; UB.
+Both PLB and PUB need to be finite. PLB and PUB represent a
+“plausible” range, which should denote a region of high posterior
+probability mass. Among other things, the plausible box is used to
+draw initial samples and to set priors over hyperparameters of the
+algorithm. When in doubt, we found that setting PLB and PUB using
+the topmost ~68% percentile range of the prior (e.g, mean +/- 1 SD
+for a Gaussian prior) works well in many cases (but note that
+additional information might afford a better guess), both are
+by default None.</p>
+</dd>
+<dt><strong>user_options</strong><span class="classifier">dict, optional</span></dt><dd><p>Modified options can be passed as a dict. Please refer to the
+respective VBMC options page for the default options. If no
+user_options are passed, the default options are used.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><dl class="simple">
+<dt>ValueError</dt><dd><p>When neither <cite>x0</cite> or (<cite>plausible_lower_bounds</cite> and
+<cite>plausible_upper_bounds</cite>) are specified.</p>
+</dd>
+<dt>ValueError</dt><dd><p>Various checks for the bounds (LB, UB, PLB, PUB) of VBMC.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.vbmc.VBMC.determine_best_vp">
+<span class="sig-name descname"><span class="pre">determine_best_vp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">safe_sd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frac_back</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rank_criterion_flag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/vbmc/vbmc.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.VBMC.determine_best_vp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the best VariationalPosterior found during the optimization of
+VBMC as well as its ELBO, ELBO_SD and the index of the iteration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>max_idx</strong><span class="classifier">int, optional</span></dt><dd><p>Check up to this iteration, by default None which means last iter.</p>
+</dd>
+<dt><strong>safe_sd</strong><span class="classifier">float, optional</span></dt><dd><p>Penalization for uncertainty, by default 5.</p>
+</dd>
+<dt><strong>frac_back</strong><span class="classifier">float, optional</span></dt><dd><p>If no past stable iteration, go back up to this fraction of
+iterations, by default 0.25.</p>
+</dd>
+<dt><strong>rank_criterion_flag</strong><span class="classifier">bool, optional</span></dt><dd><p>If True use new ranking criterion method to pick best solution.
+It finds a solution that combines ELCBO, stability, and recency,
+by default False.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>vp</strong><span class="classifier">VariationalPosterior</span></dt><dd><p>The VariationalPosterior found during the optimization of VBMC.</p>
+</dd>
+<dt><strong>elbo</strong><span class="classifier">VariationalPosterior</span></dt><dd><p>The ELBO of the iteration with the best VariationalPosterior.</p>
+</dd>
+<dt><strong>elbo_sd</strong><span class="classifier">VariationalPosterior</span></dt><dd><p>The ELBO_SD of the iteration with the best VariationalPosterior.</p>
+</dd>
+<dt><strong>idx_best</strong><span class="classifier">int</span></dt><dd><p>The index of the iteration with the best VariationalPosterior.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.vbmc.VBMC.finalboost">
+<span class="sig-name descname"><span class="pre">finalboost</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior" title="pyvbmc.variational_posterior.variational_posterior.VariationalPosterior"><span class="pre">pyvbmc.variational_posterior.variational_posterior.VariationalPosterior</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">gp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">gpyreg.gaussian_process.GP</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/vbmc/vbmc.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.VBMC.finalboost" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform a final boost of variational components.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>vp</strong><span class="classifier">VariationalPosterior</span></dt><dd><p>The VariationalPosterior that should be boosted.</p>
+</dd>
+<dt><strong>gp</strong><span class="classifier">GaussianProcess</span></dt><dd><p>The corresponding GaussianProcess of the VariationalPosterior.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>vp</strong><span class="classifier">VariationalPosterior</span></dt><dd><p>The VariationalPosterior resulting from the final boost.</p>
+</dd>
+<dt><strong>elbo</strong><span class="classifier">VariationalPosterior</span></dt><dd><p>The ELBO of the VariationalPosterior resulting from the final boost.</p>
+</dd>
+<dt><strong>elbo_sd</strong><span class="classifier">VariationalPosterior</span></dt><dd><p>The ELBO_SD of the VariationalPosterior resulting from the
+final boost.</p>
+</dd>
+<dt><strong>changed_flag</strong><span class="classifier">bool</span></dt><dd><p>Indicates if the final boost has taken place or not.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.vbmc.VBMC.optimize">
+<span class="sig-name descname"><span class="pre">optimize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/vbmc/vbmc.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.VBMC.optimize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute the VBMC loop. TBD.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyvbmc.vbmc.train_gp">
+<span class="sig-prename descclassname"><span class="pre">pyvbmc.vbmc.</span></span><span class="sig-name descname"><span class="pre">train_gp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hyp_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optim_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">function_logger</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="function_logger.html#pyvbmc.function_logger.FunctionLogger" title="pyvbmc.function_logger.function_logger.FunctionLogger"><span class="pre">pyvbmc.function_logger.function_logger.FunctionLogger</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">iteration_history</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="iteration_history.html#pyvbmc.vbmc.IterationHistory" title="pyvbmc.vbmc.iteration_history.IterationHistory"><span class="pre">pyvbmc.vbmc.iteration_history.IterationHistory</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="options.html#pyvbmc.vbmc.Options" title="pyvbmc.vbmc.options.Options"><span class="pre">pyvbmc.vbmc.options.Options</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">plb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pub</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/vbmc/gaussian_process_train.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.train_gp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Train Gaussian process model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>hyp_dict</strong><span class="classifier">dict</span></dt><dd><p>Hyperparameter summary statistics dictionary.
+If it does not contain the appropriate keys they will be added
+automatically.</p>
+</dd>
+<dt><strong>optim_state</strong><span class="classifier">dict</span></dt><dd><p>Optimization state from the VBMC instance we are calling this from.</p>
+</dd>
+<dt><strong>function_logger</strong><span class="classifier">FunctionLogger</span></dt><dd><p>Function logger from the VBMC instance which we are calling this from.</p>
+</dd>
+<dt><strong>iteration_history</strong><span class="classifier">IterationHistory</span></dt><dd><p>Iteration history from the VBMC instance we are calling this from.</p>
+</dd>
+<dt><strong>options</strong><span class="classifier">Options</span></dt><dd><p>Options from the VBMC instance we are calling this from.</p>
+</dd>
+<dt><strong>plb</strong><span class="classifier">ndarray, shape (hyp_N,)</span></dt><dd><p>Plausible lower bounds for hyperparameters.</p>
+</dd>
+<dt><strong>pub</strong><span class="classifier">ndarray, shape (hyp_N,)</span></dt><dd><p>Plausible upper bounds for hyperparameters.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>gp</strong><span class="classifier">GP</span></dt><dd><p>The trained GP.</p>
+</dd>
+<dt><strong>gp_s_N</strong><span class="classifier">int</span></dt><dd><p>The number of samples for fitting.</p>
+</dd>
+<dt><strong>sn2hpd</strong><span class="classifier">float</span></dt><dd><p>An estimate of the GP noise variance at high posterior density.</p>
+</dd>
+<dt><strong>hyp_dict</strong><span class="classifier">dict</span></dt><dd><p>The updated summary statistics.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyvbmc.vbmc.update_K">
+<span class="sig-prename descclassname"><span class="pre">pyvbmc.vbmc.</span></span><span class="sig-name descname"><span class="pre">update_K</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optim_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iteration_history</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="iteration_history.html#pyvbmc.vbmc.IterationHistory" title="pyvbmc.vbmc.iteration_history.IterationHistory"><span class="pre">pyvbmc.vbmc.iteration_history.IterationHistory</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="options.html#pyvbmc.vbmc.Options" title="pyvbmc.vbmc.options.Options"><span class="pre">pyvbmc.vbmc.options.Options</span></a></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/vbmc/variational_optimization.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.update_K" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update number of variational mixture components.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>optim_state</strong><span class="classifier">dict</span></dt><dd><p>Optimization state from the VBMC instance we are calling this from.</p>
+</dd>
+<dt><strong>iteration_history</strong><span class="classifier">IterationHistory</span></dt><dd><p>Iteration history from the VBMC instance we are calling this from.</p>
+</dd>
+<dt><strong>options</strong><span class="classifier">Options</span></dt><dd><p>Options from the VBMC instance we are calling this from.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>K_new</strong><span class="classifier">int</span></dt><dd><p>The new number of variational mixture components.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyvbmc.vbmc.optimize_vp">
+<span class="sig-prename descclassname"><span class="pre">pyvbmc.vbmc.</span></span><span class="sig-name descname"><span class="pre">optimize_vp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="options.html#pyvbmc.vbmc.Options" title="pyvbmc.vbmc.options.Options"><span class="pre">pyvbmc.vbmc.options.Options</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">optim_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior" title="pyvbmc.variational_posterior.variational_posterior.VariationalPosterior"><span class="pre">pyvbmc.variational_posterior.variational_posterior.VariationalPosterior</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">gp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">gpyreg.gaussian_process.GP</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fast_opts_N</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slow_opts_N</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/vbmc/variational_optimization.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.optimize_vp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optimize variational posterior.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>options</strong><span class="classifier">Options</span></dt><dd><p>Options from the VBMC instance we are calling this from.</p>
+</dd>
+<dt><strong>optim_state</strong><span class="classifier">dict</span></dt><dd><p>Optimization state from the VBMC instance we are calling this from.</p>
+</dd>
+<dt><strong>vp</strong><span class="classifier">VariationalPosterior</span></dt><dd><p>The variational posterior we want to optimize.</p>
+</dd>
+<dt><strong>fast_opts_N</strong><span class="classifier">int</span></dt><dd><p>Number of fast optimizations.</p>
+</dd>
+<dt><strong>slow_opts_N</strong><span class="classifier">int</span></dt><dd><p>Number of slow optimizations.</p>
+</dd>
+<dt><strong>K</strong><span class="classifier">int, optional</span></dt><dd><p>Number of mixture components. If not given defaults to the number
+of mixture components the given VP has.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>vp</strong><span class="classifier">VariationalPosterior</span></dt><dd><p>The optimized variational posterior.</p>
+</dd>
+<dt><strong>var_ss</strong><span class="classifier">int</span></dt><dd><p>To be written by Luigi.</p>
+</dd>
+<dt><strong>pruned</strong><span class="classifier">int</span></dt><dd><p>Number of pruned components.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+              </div>
+              
+        
+            <!-- Previous / next buttons -->
+<div class='prev-next-area'> 
+    <a class='left-prev' id="prev-link" href="variational_posterior.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">VariationalPosterior</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="../advanced_docs.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Advanced documentation</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+        
+        </div>
+    </div>
+    <footer class="footer">
+    <div class="container">
+      <p>
+        
+            &copy; Copyright 2021, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).<br/>
+      </p>
+    </div>
+  </footer>
+</main>
+
+
+      </div>
+    </div>
+  
+  <script src="../../_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+
+  </body>
+</html>

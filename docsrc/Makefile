@@ -12,10 +12,16 @@ BUILDDIR      = _build
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
+# copy example notebooks to source folder
+# render docs
+# copy rendered docs and .nojekyll (for github.io) to docs folder
+# remove example notebooks from source folder
 github:
+	@cp -a ../examples/. source/_examples
 	@make html
 	@cp -a _build/html/. ../docs
 	@cp .nojekyll ../docs/.nojekyll
+	@rm -r source/_examples
 
 .PHONY: help Makefile
 
