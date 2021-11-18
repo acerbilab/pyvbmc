@@ -88,7 +88,7 @@ class VBMC:
                 )
             else:
                 x0 = np.full((plausible_lower_bounds.shape), np.NaN)
-
+                
         self.D = x0.shape[1]
         # load basic and advanced options and validate the names
         pyvbmc_path = os.path.dirname(os.path.realpath(__file__))
@@ -103,8 +103,7 @@ class VBMC:
             pyvbmc_path + "/option_configs/advanced_vbmc_options.ini"
         )
         self.options.load_options_file(
-            advanced_path,
-            evaluation_parameters={"D": self.D},
+            advanced_path, evaluation_parameters={"D": self.D},
         )
 
         self.options.validate_option_names([basic_path, advanced_path])
@@ -218,6 +217,8 @@ class VBMC:
                 "logging_action",
             ]
         )
+
+
 
     def _boundscheck(
         self,
@@ -997,8 +998,7 @@ class VBMC:
 
             # Record all useful stats
             self.iteration_history.record_iteration(
-                iteration_values,
-                iteration,
+                iteration_values, iteration,
             )
 
             # Check warmup
