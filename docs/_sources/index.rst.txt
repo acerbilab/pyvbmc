@@ -53,3 +53,7 @@ Authors & License
 #################
 
 tbd
+
+Acknowledgments
+###############
+Work on the pyvbmc package was funded by the `Finnish Center for Artificial Intelligence FCAI <https://fcai.fi/>`_.
