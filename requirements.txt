@@ -16,6 +16,7 @@ pytest-mock
 pytest-rerunfailures
 
 # documentation
+myst_nb
 numpydoc
 sphinx
 sphinx-book-theme

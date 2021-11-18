@@ -35,6 +35,15 @@ Documentation
    api/classes/vbmc
    api/advanced_docs
 
+Examples
+########
+.. toctree::
+   :maxdepth: 1
+   :titlesonly:
+   :glob:
+
+   _examples/*
+
 Attribution
 ###########
 

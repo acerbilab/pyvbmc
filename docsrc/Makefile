@@ -13,9 +13,11 @@ help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
 github:
+	@cp -a ../examples/. source/_examples
 	@make html
 	@cp -a _build/html/. ../docs
 	@cp .nojekyll ../docs/.nojekyll
+	@rm -r source/_examples
 
 .PHONY: help Makefile
 
