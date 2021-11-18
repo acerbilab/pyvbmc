@@ -125,7 +125,15 @@ class ParameterTransformer:
         mask = self.type == 3
         if np.any(mask):
             z = (x[:, mask] - self.lb_orig) / (self.ub_orig - self.lb_orig)
-            u[:, mask] = np.log(np.divide(z, (1 - z)))
+
+            # prevent divide by zero
+            u_temp = np.zeros(x[:, mask].shape)
+            u_temp[z == 0] = -np.inf
+            u_temp[z == 1] = np.inf
+
+            u_temp[u_temp == 0] = np.log(z[u_temp == 0] / (1 - z[u_temp == 0]))
+            u[:, mask] = u_temp
+
             u[:, mask] = (u[:, mask] - self.mu[mask]) / self.delta[mask]
 
         # # rotate output

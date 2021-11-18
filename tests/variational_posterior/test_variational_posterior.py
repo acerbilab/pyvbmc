@@ -233,6 +233,26 @@ def test_pdf_origflag_gradient():
     with pytest.raises(NotImplementedError):
         vp.pdf(vp.mu.T, origflag=True, logflag=True, gradflag=True)
 
+def test_pdf_outside_bounds():
+    D = 2
+    lb = np.ones((1, D)) * -3
+    ub = np.ones((1, D)) * 3
+    x0 = np.array([[2,2],[-2,-2]])
+    parameter_transformer = ParameterTransformer(D, lb, ub)
+
+    vp = VariationalPosterior(D, 2, x0, parameter_transformer)
+    vp.sigma = np.ones((1,2))
+
+    # outside or on bounds should be 0
+    assert vp.pdf(lb, origflag=True) == 0
+    assert vp.pdf(lb-1e-3, origflag=True) == 0
+    assert vp.pdf(ub, origflag=True) == 0
+    assert vp.pdf(ub+1e-3, origflag=True) == 0
+
+    # inside should be more than 0
+    assert vp.pdf(lb+0.5, origflag=True) > 0
+    assert vp.pdf(ub-0.5, origflag=True) > 0    
+
 
 def test_set_parameters_raw():
     K = 2
@@ -641,6 +661,6 @@ def test_plot():
     K = 2
     vp = VariationalPosterior(D, K)
     test_title = "Test title"
-    fig = vp.plot(title=test_title, show_figure=False)
+    fig = vp.plot(title=test_title)
     assert fig._suptitle.get_text() == test_title
     assert len(fig.axes) == D*D

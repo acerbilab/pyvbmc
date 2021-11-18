@@ -1,36 +1,46 @@
 # PyVBMC
-This works as a repository to port the VBMC algorithm to Python3.
 
-## General conventions
+This repository contains the port of the VBMC algorithm to Python 3.x. 
+The original source is the [MATLAB toolbox](https://github.com/lacerbi/vbmc).
+
+## General coding conventions
+
 We try to follow common conventions whenever possible.
 
-Some useful reading hints regarding that:
+Some useful readings:
 
 - [PEP 8 -- Style Guide for Python Code](https://www.python.org/dev/peps/pep-0008/)
 - [Code style in The Hitchhiker's Guide to Python](https://docs.python-guide.org/writing/style/)
 
-Please note that we are developing in a way to enable third parties to maintain and use the algorithm. Certain things have to be followed to ensure that but please start a discussion when something does not seem sensible.
+Please note that we are developing in a way to enable third parties to maintain and use the algorithm. Some rules have to be followed to ensure coherence and coordination, but please start a discussion when something does not seem sensible.
 
-## How to Run
-We are using the dependencies listed in the requirements.txt. Please list all used dependencies there.
+## How to run the package
 
-They can be installed with [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) or pip.
+We are using the dependencies listed in `requirements.txt`. Please list all used dependencies there.
+
+The necessary packages can be installed with [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) or pip.
 
 ```
 conda env create --file environment.yml
 ```
+or
 
 ```
 pip install -i requirements.txt
 ```
 
 ## Install (temporary)
-In order to use pyvbmc like any other package, `setup.py` has been created.
-Just run the following command in the gpyreg directory: `pip install -e .` (redo it after changes in the packages).
+
+In order to use `pyvbmc` like any other package, we wrote `setup.py`.
+Just run the following command in the pyvbmc directory: 
+
+```pip install -e .``` 
+
+Redo after changes in the package.
 
 ## More detailed conventions
 
-Please read those as well! :)
+Please read these as well!
 
 ### Code formatting
 
@@ -45,33 +55,61 @@ Try to evaluate if pre- and postprocessing in a function can be generalized with
 
 ### Docstrings
 
-The docstrings are generated following the [numpy format](https://numpydoc.readthedocs.io/en/latest/format.html). There are addons to generate docstring blueprints using IDEs.
+The docstrings are generated following the [numpy format](https://numpydoc.readthedocs.io/en/latest/format.html).
+There are add-ons to generate docstring blueprints using IDEs.
 
 See an example for a correct docstring [here](https://numpydoc.readthedocs.io/en/latest/example.html).
 
 ### Documentation
 
-The documentation is currently hosted on [github.io](https://lacerbi.github.io/pyvbmc/). We build the pyvbmc documentation using [Sphinx](https://www.sphinx-doc.org/en/master/usage/quickstart.html), the source code for that is in the [docsrc folder](./docsrc) and the build version is in the [docs folder](./docs). From there new documentation can be compiled using the following commands:
+The documentation is currently hosted on [github.io](https://lacerbi.github.io/pyvbmc/). We build the pyvbmc documentation using [Sphinx](https://www.sphinx-doc.org/en/master/usage/quickstart.html). The source code of the documentation is in the [docsrc folder](./docsrc) and the build version is in the [docs folder](./docs).
+From there new documentation can be compiled using the following commands:
 
+1) Merge main branch into feature branch (bring the branch up to date with whatever changes were done in main):
 ```
-merge featurebranch into main branch
-cd /docsrc
+git checkout main
+git pull
+git checkout <feature_branch>
+git merge master
+```
+
+2) Make sure that everything works, e.g. by running tests.
+3) Render new documentation:
+```
+cd /docsrc (navigate to documentation source folder)
 make github  (this builds the doc and copies the build version to ./docs)
-github pages listens to main branch, detects changes and rebuilds documentation
 ```
 
-Refer to existing documentation for an overview. So far the documentation includes the following:
+4) Commit the new documentation.
+5) Create a new pull request.
+6) When the pull request is merged, [github.io](https://lacerbi.github.io/pyvbmc/) detects changes and rebuilds the documentation.
 
-- Status of the Port (what is missing?)
-- Reference to the respective file of the original [MATLAB](https://github.com/lacerbi/vbmc) implementation
-- known issues (if something is currently suboptimal in pyvbmc)
-- the documentation of the Python code (generated from the docstrings)
 
+#### General structure
+
+For each new class, function, etc. a `.rst` file needs to be created in an appropriate folder. The folder names are arbitrary, for now we have `functions`, `classes`, etc.
+The `.rst` file contains the text in [reStructuredText format](https://en.wikipedia.org/wiki/ReStructuredText), a lightweight markup language with special commands that tell Sphynx where to compile the documentation, for example:
+
+```
+.. autoclass:: pyvbmc.vbmc.VBMC
+   :members:
+```
+
+Refer to existing documentation for an overview of the file structure. So far the documentation includes the following:
+
+- Status of the Port (what is missing?);
+- Reference to the respective file of the original [MATLAB](https://github.com/lacerbi/vbmc) implementation;
+- Known issues (if something is currently suboptimal in pyvbmc);
+- The documentation of the Python code (generated from the docstrings).
+
+For each new file, a link needs to be added manually to the [index page](https://github.com/lacerbi/pyvbmc/blob/main/docsrc/source/index.rst).
 Please keep the documentation up to date. (Sphinx logs possible issues when compiling the documentation.)
+
 
 ### Exceptions
 
-Currently, the aim is to use the standard python exceptions whenever it is sensible. Here is a list of those [exceptions](https://docs.python.org/3/library/exceptions.html).
+Currently, the aim is to use the standard Python exceptions whenever it is sensible.
+Here is a list of those [exceptions](https://docs.python.org/3/library/exceptions.html).
 
 ### Git commits
 
@@ -94,14 +132,23 @@ We have decided against general util/misc modules for now. This means that gener
 
 ### Testing
 
-The testing is done using pytest with unit tests for each class in the respective folder.
-Most methods are also tested against test cases produced with the original [MATLAB](https://github.com/lacerbi/vbmc) implementation.
-
-They can be run with (occasionally look at the coverage):
+The testing is done using `pytest` with unit tests for each class in the respective folder. 
+Tests can be run with:
 
 ```
+pytest test_filename.py
 pytest
-pytest --cov=. --cov-report html:cov_html
+pytest --reruns 5 --cov=. --cov-report html:cov_html
 ```
 
-Please try to keep the total runtime of the tests as low as sensible.
+The final command creates an html folder with a full report on coverage -- double-check it from time to time. Since some tests are stochastic and occasionally fail (occasional failures for stochastic parts are fine, we rerun a failed test up to five times with `--reruns 5`).
+
+A few comments about testing:
+
+- Testing is mandatory!
+- Please try to keep the total runtime of the tests minimal for the task at hand.
+- As a good practice, please rerun all tests before major commits and pull requests (might take a while, but it is worth it to avoid surprises).
+- A nice way of proceeding is `test first': write a test first, make it fail, write the code until the test is passed.
+- Many methods are tested against test cases produced with the original [MATLAB](https://github.com/lacerbi/vbmc) implementation.
+- The `pytest-mock` library is very useful for testing. It allows you to replace parts of your system under test with mock objects and make assertions about how they have been used. (Perhaps we should switch to `unittest.mock` in the future, which is part of the Python standard library.)
+- Things to look into in the future: We should perhaps automatize tests with GitHub actions.

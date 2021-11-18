@@ -5,6 +5,7 @@ import os
 import sys
 
 import gpyreg as gpr
+import matplotlib.pyplot as plt
 import numpy as np
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
@@ -1174,11 +1175,12 @@ class VBMC:
                     title = "VBMC iteration {}".format(iteration)
 
                 self.vp.plot(
-                    show_figure=True,
                     plot_data=True,
                     highlight_data=highlight_data,
                     title=title,
                 )
+                plt.show()
+
 
         # Pick "best" variational solution to return
         self.vp, elbo, elbo_sd, idx_best = self.determine_best_vp()
@@ -1239,11 +1241,11 @@ class VBMC:
         # plot final vp:
         if self.options.get("plot"):
             self.vp.plot(
-                show_figure=True,
                 plot_data=True,
                 highlight_data=highlight_data,
                 title="VBMC final ({} iterations)".format(iteration),
             )
+            plt.show()
 
         # Set exit_flag based on stability (check other things in the future)
         if not success_flag:
