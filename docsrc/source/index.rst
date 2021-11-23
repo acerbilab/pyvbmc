@@ -19,10 +19,10 @@ Extensive benchmarks on both artificial test problems and a large number of real
 
 ``pyvbmc`` is a numerical Python 3.x implementation of the VBMC algorithm, licensed under `BSD3 <https://opensource.org/licenses/BSD-3-Clause>`_. 
 The Python source is on `GitHub <https://github.com/lacerbi/pyvbmc>`_.
-You may also want to check out the original the `MATLAB toolbox <https://github.com/lacerbi/vbmc>`_.
+You may also want to check out the original `MATLAB toolbox <https://github.com/lacerbi/vbmc>`_.
 
 .. note::
-    This project is work in progress. The current Python port implements VBMC with *exact* evaluations of the likelihood (Acerbi, 2018). We are currently planning to extend ``pyvbmc`` to support to *noisy* likelihood evaluations, such as those arising from simulator-based models (Acerbi, 2020).
+    This project is work in progress. The current Python port implements VBMC with *exact* evaluations of the likelihood (Acerbi, 2018). We are currently planning to extend ``pyvbmc`` to support *noisy* likelihood evaluations, such as those arising from simulator-based models (Acerbi, 2020).
 
 Documentation
 #############
