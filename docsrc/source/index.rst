@@ -43,12 +43,7 @@ Examples
 
    _examples/*
 
-Attribution
-###########
-
-tbd
-
-Authors & License
+License
 #################
 
 tbd
