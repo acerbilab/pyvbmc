@@ -267,11 +267,6 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#license">
-   License
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#references">
    References
   </a>
@@ -294,19 +289,22 @@
                 
   <div class="section" id="pyvbmc">
 <h1>PyVBMC<a class="headerlink" href="#pyvbmc" title="Permalink to this headline">¶</a></h1>
-<p>Variational Bayesian Monte Carlo (VBMC) is an approximate inference method designed to fit and evaluate computational models with a limited budget of potentially noisy likelihood evaluations, useful for computationally expensive models or for quick inference and model evaluation (Acerbi, 2018; 2020).</p>
-<a class="reference internal image-reference" href="_images/vbmc_animation.gif"><img alt="Animation of PyVBMC" class="align-center" src="_images/vbmc_animation.gif" style="width: 400px; height: 400px;" /></a>
+<p><code class="docutils literal notranslate"><span class="pre">pyvbmc</span></code> is a numerical Python 3.x implementation of Variational Bayesian Monte Carlo (VBMC).</p>
+<p>VBMC is an approximate Bayesian inference method designed to fit and evaluate computational models with a limited budget of potentially noisy likelihood evaluations, useful for computationally expensive models or for quick inference and model evaluation <a class="reference external" href="#references">(Acerbi, 2018; 2020)</a>.</p>
 <p>VBMC simultaneously computes:</p>
 <ul class="simple">
 <li><p>an approximate posterior distribution of the model parameters;</p></li>
 <li><p>an approximation — technically, an approximate lower bound — of the log model evidence (also known as log marginal likelihood or log Bayes factor), a metric used for Bayesian model selection.</p></li>
 </ul>
+<p>The figure below shows an example VBMC run on a “banana” target density. The corner plot shows the approximate posterior across iterations (contour plot and histograms of the marginals). The dots represent evaluations of the target density (<em>blue</em>: previously sampled points, <em>green</em>: points sampled in the current iteration).</p>
+<a class="reference internal image-reference" href="_images/vbmc_animation.gif"><img alt="Animation of PyVBMC" class="align-center" src="_images/vbmc_animation.gif" style="width: 400px; height: 400px;" /></a>
 <p>Extensive benchmarks on both artificial test problems and a large number of real model-fitting problems from computational and cognitive neuroscience show that VBMC generally — and often vastly — outperforms alternative methods for sample-efficient Bayesian inference. VBMC runs with virtually no tuning and it is very easy to set up for your problem.</p>
-<p><code class="docutils literal notranslate"><span class="pre">pyvbmc</span></code> is a numerical Python 3.x implementation of the VBMC algorithm.
-The original source is the <a class="reference external" href="https://github.com/lacerbi/vbmc">MATLAB toolbox</a>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">pyvbmc</span></code> is licensed under <a class="reference external" href="https://opensource.org/licenses/BSD-3-Clause">BSD3</a>.
+The Python source is on <a class="reference external" href="https://github.com/lacerbi/pyvbmc">GitHub</a>.
+You may also want to check out the original <a class="reference external" href="https://github.com/lacerbi/vbmc">MATLAB toolbox</a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This project is work in progress. The current Python port implements VBMC with <em>exact</em> evaluations of the likelihood (Acerbi, 2018). We are currently planning to extend <code class="docutils literal notranslate"><span class="pre">pyvbmc</span></code> to support to <em>noisy</em> likelihood evaluations, such as those arising from simulator-based models (Acerbi, 2020).</p>
+<p>This project is work in progress. The current Python port implements VBMC with <em>exact</em> evaluations of the likelihood (Acerbi, 2018). We are currently planning to extend <code class="docutils literal notranslate"><span class="pre">pyvbmc</span></code> to support <em>noisy</em> likelihood evaluations, such as those arising from simulator-based models (Acerbi, 2020).</p>
 </div>
 <div class="section" id="documentation">
 <h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
@@ -328,10 +326,6 @@ The original source is the <a class="reference external" href="https://github.co
 </ul>
 </div>
 </div>
-<div class="section" id="license">
-<h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
-<p>tbd</p>
-</div>
 <div class="section" id="references">
 <h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic simple">
@@ -339,7 +333,9 @@ The original source is the <a class="reference external" href="https://github.co
 <li><p>Acerbi, L. (2020). Variational Bayesian Monte Carlo with Noisy Likelihoods. In <em>Advances in Neural Information Processing Systems 33</em>: 8211-8222 (<a class="reference external" href="https://arxiv.org/abs/2006.08655">paper + supplement on arXiv</a>, <a class="reference external" href="https://papers.nips.cc/paper/2020/hash/5d40954183d62a82257835477ccad3d2-Abstract.html">NeurIPS Proceedings</a>).</p></li>
 </ol>
 <p>You can cite VBMC in your work with something along the lines of</p>
-<p><em>We estimated approximate posterior distibutions and approximate lower bounds to the model evidence of our models using Variational Bayesian Monte Carlo (VBMC; Acerbi, 2018, 2020). VBMC combines variational inference and active-sampling Bayesian quadrature to perform approximate Bayesian inference in a sample-efficient manner.</em></p>
+<blockquote>
+<div><p>We estimated approximate posterior distibutions and approximate lower bounds to the model evidence of our models using Variational Bayesian Monte Carlo (VBMC; Acerbi, 2018, 2020) via the <code class="docutils literal notranslate"><span class="pre">pyvbmc</span></code> software. VBMC combines variational inference and active-sampling Bayesian quadrature to perform approximate Bayesian inference in a sample-efficient manner.</p>
+</div></blockquote>
 </div>
 <div class="section" id="acknowledgments">
 <h2>Acknowledgments<a class="headerlink" href="#acknowledgments" title="Permalink to this headline">¶</a></h2>
