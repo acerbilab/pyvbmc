@@ -23,6 +23,7 @@ The figure below shows an example VBMC run on a "banana" target density. The cor
 Extensive benchmarks on both artificial test problems and a large number of real model-fitting problems from computational and cognitive neuroscience show that VBMC generally — and often vastly — outperforms alternative methods for sample-efficient Bayesian inference. VBMC runs with virtually no tuning and it is very easy to set up for your problem.
 
 ``pyvbmc`` is licensed under `BSD3 <https://opensource.org/licenses/BSD-3-Clause>`_. 
+
 The Python source is on `GitHub <https://github.com/lacerbi/pyvbmc>`_.
 You may also want to check out the original `MATLAB toolbox <https://github.com/lacerbi/vbmc>`_.
 
