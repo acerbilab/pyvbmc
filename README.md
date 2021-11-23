@@ -79,6 +79,7 @@ git merge master
 cd /docsrc (navigate to documentation source folder)
 make github  (this builds the doc and copies the build version to ./docs)
 ```
+(If you are using Windows, run `.\make.bat github` with `cmd` instead.)
 
 4) Commit the new documentation.
 5) Create a new pull request.
