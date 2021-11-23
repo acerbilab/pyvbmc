@@ -267,11 +267,6 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#license">
-   License
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#references">
    References
   </a>
@@ -302,11 +297,12 @@
 <li><p>an approximation — technically, an approximate lower bound — of the log model evidence (also known as log marginal likelihood or log Bayes factor), a metric used for Bayesian model selection.</p></li>
 </ul>
 <p>Extensive benchmarks on both artificial test problems and a large number of real model-fitting problems from computational and cognitive neuroscience show that VBMC generally — and often vastly — outperforms alternative methods for sample-efficient Bayesian inference. VBMC runs with virtually no tuning and it is very easy to set up for your problem.</p>
-<p><code class="docutils literal notranslate"><span class="pre">pyvbmc</span></code> is a numerical Python 3.x implementation of the VBMC algorithm.
-The original source is the <a class="reference external" href="https://github.com/lacerbi/vbmc">MATLAB toolbox</a>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">pyvbmc</span></code> is a numerical Python 3.x implementation of the VBMC algorithm, licensed under <a class="reference external" href="https://opensource.org/licenses/BSD-3-Clause">BSD3</a>.
+The Python source is on <a class="reference external" href="https://github.com/lacerbi/pyvbmc">GitHub</a>.
+You may also want to check out the original <a class="reference external" href="https://github.com/lacerbi/vbmc">MATLAB toolbox</a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This project is work in progress. The current Python port implements VBMC with <em>exact</em> evaluations of the likelihood (Acerbi, 2018). We are currently planning to extend <code class="docutils literal notranslate"><span class="pre">pyvbmc</span></code> to support to <em>noisy</em> likelihood evaluations, such as those arising from simulator-based models (Acerbi, 2020).</p>
+<p>This project is work in progress. The current Python port implements VBMC with <em>exact</em> evaluations of the likelihood (Acerbi, 2018). We are currently planning to extend <code class="docutils literal notranslate"><span class="pre">pyvbmc</span></code> to support <em>noisy</em> likelihood evaluations, such as those arising from simulator-based models (Acerbi, 2020).</p>
 </div>
 <div class="section" id="documentation">
 <h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
@@ -327,10 +323,6 @@ The original source is the <a class="reference external" href="https://github.co
 <li class="toctree-l1"><a class="reference internal" href="_examples/pyvbmc_example_2.html">Example 2: Understanding the inputs and the output trace</a></li>
 </ul>
 </div>
-</div>
-<div class="section" id="license">
-<h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
-<p>tbd</p>
 </div>
 <div class="section" id="references">
 <h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
