@@ -3,7 +3,7 @@ PyVBMC
 ******
 ``pyvbmc`` is a numerical Python 3.x implementation of Variational Bayesian Monte Carlo (VBMC).
 
-VBMC is an approximate Bayesian inference method designed to fit and evaluate computational models with a limited budget of potentially noisy likelihood evaluations, useful for computationally expensive models or for quick inference and model evaluation `(Acerbi, 2018; 2020) <#References>`_.
+VBMC is an approximate Bayesian inference method designed to fit and evaluate computational models with a limited budget of potentially noisy likelihood evaluations, useful for computationally expensive models or for quick inference and model evaluation `(Acerbi, 2018; 2020) <#references>`_.
 
 VBMC simultaneously computes:
 
@@ -18,7 +18,6 @@ The figure below shows an example VBMC run on a "banana" target density. The cor
     :align: center
     :height: 400px
     :alt: Animation of PyVBMC
-.. class:: center
 
 Extensive benchmarks on both artificial test problems and a large number of real model-fitting problems from computational and cognitive neuroscience show that VBMC generally — and often vastly — outperforms alternative methods for sample-efficient Bayesian inference. VBMC runs with virtually no tuning and it is very easy to set up for your problem.
 
