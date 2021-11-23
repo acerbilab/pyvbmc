@@ -15,14 +15,15 @@ VBMC is an approximate inference method designed to fit and evaluate computation
 
 - an approximation — technically, an approximate lower bound — of the log model evidence (also known as log marginal likelihood or log Bayes factor), a metric used for Bayesian model selection.
 
-Extensive benchmarks on both artificial test problems and a large number of real model-fitting problems from computational and cognitive neuroscience show that VBMC generally — and often vastly — outperforms alternative methods for sample-efficient Bayesian inference `[1,2] <https://github.com/lacerbi/vbmc#references>`_.  
+Extensive benchmarks on both artificial test problems and a large number of real model-fitting problems from computational and cognitive neuroscience show that VBMC generally — and often vastly — outperforms alternative methods for sample-efficient Bayesian inference.  
 
-VBMC runs with virtually no tuning and it is very easy to set up for your problem (especially if you are already familiar with `BADS <https://github.com/lacerbi/bads>`_, our model-fitting algorithm based on Bayesian optimization).
+VBMC runs with virtually no tuning and it is very easy to set up for your problem.
 
-This repository contains the port of the VBMC algorithm to Python 3.x. 
+This repository contains the port of the VBMC algorithm to Python 3.x, called ``pyvbmc``. 
 The original source is the `MATLAB toolbox <https://github.com/lacerbi/vbmc>`_.
 
-*Note that this project is work in progress!*
+.. warning::
+    This project is work in progress!
 
 Documentation
 #############
