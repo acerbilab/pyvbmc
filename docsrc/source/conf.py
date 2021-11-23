@@ -61,7 +61,7 @@ def linkcode_resolve(domain, info):
     filename = inspect.getsourcefile(inspect.unwrap(obj))
     
     # to get rid of the local path, quiet hacky, but works
-    filename = filename[filename.index("pyvbmc/") + 7 :]
+    filename = filename[filename.index("pyvbmc") + 7 :]
     return "https://github.com/lacerbi/pyvbmc/tree/main/%s" % filename
 
 
