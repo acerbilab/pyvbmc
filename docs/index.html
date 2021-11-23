@@ -290,7 +290,7 @@
   <div class="section" id="pyvbmc">
 <h1>PyVBMC<a class="headerlink" href="#pyvbmc" title="Permalink to this headline">¶</a></h1>
 <p><code class="docutils literal notranslate"><span class="pre">pyvbmc</span></code> is a numerical Python 3.x implementation of Variational Bayesian Monte Carlo (VBMC).</p>
-<p>VBMC is an approximate Bayesian inference method designed to fit and evaluate computational models with a limited budget of potentially noisy likelihood evaluations, useful for computationally expensive models or for quick inference and model evaluation <a class="reference external" href="#References">(Acerbi, 2018; 2020)</a>.</p>
+<p>VBMC is an approximate Bayesian inference method designed to fit and evaluate computational models with a limited budget of potentially noisy likelihood evaluations, useful for computationally expensive models or for quick inference and model evaluation <a class="reference external" href="#references">(Acerbi, 2018; 2020)</a>.</p>
 <p>VBMC simultaneously computes:</p>
 <ul class="simple">
 <li><p>an approximate posterior distribution of the model parameters;</p></li>
@@ -298,11 +298,6 @@
 </ul>
 <p>The figure below shows an example VBMC run on a “banana” target density. The corner plot shows the approximate posterior across iterations (contour plot and histograms of the marginals). The dots represent evaluations of the target density (<em>blue</em>: previously sampled points, <em>green</em>: points sampled in the current iteration).</p>
 <a class="reference internal image-reference" href="_images/vbmc_animation.gif"><img alt="Animation of PyVBMC" class="align-center" src="_images/vbmc_animation.gif" style="width: 400px; height: 400px;" /></a>
-<dl class="py class">
-<dt class="sig sig-object py" id="center">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">center</span></span><a class="headerlink" href="#center" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <p>Extensive benchmarks on both artificial test problems and a large number of real model-fitting problems from computational and cognitive neuroscience show that VBMC generally — and often vastly — outperforms alternative methods for sample-efficient Bayesian inference. VBMC runs with virtually no tuning and it is very easy to set up for your problem.</p>
 <p><code class="docutils literal notranslate"><span class="pre">pyvbmc</span></code> is licensed under <a class="reference external" href="https://opensource.org/licenses/BSD-3-Clause">BSD3</a>.
 The Python source is on <a class="reference external" href="https://github.com/lacerbi/pyvbmc">GitHub</a>.
