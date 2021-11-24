@@ -14,11 +14,35 @@ Some useful readings:
 
 Please note that we are developing in a way to enable third parties to maintain and use the algorithm. Some rules have to be followed to ensure coherence and coordination, but please start a discussion when something does not seem sensible.
 
-## How to run the package
+## How to install and run the package (temporary)
 
 We are using the dependencies listed in `requirements.txt`. Please list all used dependencies there.
+For convenience, we also have a temporary installer in `setup.py`. Also list the used dependencies there.
 
 The necessary packages can be installed with [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) or pip.
+
+The most stable way to install and run `pyvbmc` at the moment is:
+
+1. Clone/update the `pyvbmc` GitHub repo locally.
+2. Create a new environment in conda: `conda create --name pyvbmc-dev python=3.9`
+3. Activate the environment: `conda activate pyvbmc-dev`
+4. From the `pyvbmc` folder, run: `pip install -e .`
+5. Install Jupyter notebook: `conda install jupyter`
+
+If the list of requirements changes, you only need to rerun `pip install -e .`.
+
+### `gpyreg` package
+
+To run `pyvbmc` you will also need the `gpyreg` package, a lightweight Gaussian process regression library that we wrote specifically for `pyvbmc`.
+For now, since the package is not in a `conda` or `pip` package repository, you need to run the additional steps:
+
+- Clone `gpyreg` from its [GitHub repo](https://github.com/lacerbi/gpyreg). 
+- Install `gpyreg` in the `pyvbmc-dev` environment running `pip install -e .` from the `gpyreg` folder.
+
+
+### Alternative installation commands
+
+These are alternative ways to install the required dependencies:
 
 ```
 conda env create --file environment.yml
@@ -29,14 +53,6 @@ or
 pip install -i requirements.txt
 ```
 
-## Install (temporary)
-
-In order to use `pyvbmc` like any other package, we wrote `setup.py`.
-Just run the following command in the pyvbmc directory: 
-
-```pip install -e .``` 
-
-Redo after changes in the package.
 
 ## More detailed conventions
 
