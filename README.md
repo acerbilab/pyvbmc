@@ -53,6 +53,7 @@ or
 pip install -i requirements.txt
 ```
 
+The `environment.yml` seems not to work properly in some setups (e.g., Windows), which is something to be investigated.
 
 ## More detailed conventions
 
