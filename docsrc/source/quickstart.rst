@@ -2,7 +2,7 @@
 Getting started
 ***************
 
-The `pyvbmc` interface is quite simple. 
+The ``pyvbmc`` interface is quite simple. 
 
 .. code-block:: python
 
