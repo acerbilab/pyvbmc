@@ -19,7 +19,7 @@ VBMC simultaneously computes:
 Example run
 -----------
 
-The figure below shows an example `pyvbmc` run on a "banana" target density. The corner plot shows the approximate posterior across iterations (contour plot and histograms of the marginals). The dots represent evaluations of the target density (*blue*: previously sampled points, *green*: points sampled in the current iteration). `pyvbmc` converges to an excellent approximation of the true posterior with a few dozens evaluations of the target density.
+The figure below shows an example ``pyvbmc`` run on a "banana" target density. The corner plot shows the approximate posterior across iterations (contour plot and histograms of the marginals). The dots represent evaluations of the target density (*blue*: previously sampled points, *green*: points sampled in the current iteration). `pyvbmc` converges to an excellent approximation of the true posterior with a few dozens evaluations of the target density.
 
 .. image:: _static/vbmc_animation.gif
     :width: 400px
