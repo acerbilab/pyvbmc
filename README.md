@@ -3,6 +3,8 @@
 `pyvbmc` is the port of the VBMC algorithm to Python 3.x. 
 The reference code is the [MATLAB toolbox](https://github.com/lacerbi/vbmc).
 
+The documentation is available at: https://lacerbi.github.io/pyvbmc/
+
 ## How to install and run the package (temporary)
 
 We are using the dependencies listed in `requirements.txt`. Please list all used dependencies there.
