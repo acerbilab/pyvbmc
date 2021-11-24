@@ -262,24 +262,37 @@
             <nav id="bd-toc-nav" aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#documentation">
-   Documentation
+  <a class="reference internal nav-link" href="#should-i-use-pyvbmc">
+   Should I use
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     pyvbmc
+    </span>
+   </code>
+   ?
   </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#examples">
-   Examples
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#references">
-   References
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#acknowledgments">
-   Acknowledgments
-  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#documentation">
+     Documentation
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#examples">
+     Examples
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#references">
+     References
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#acknowledgments">
+     Acknowledgments
+    </a>
+   </li>
+  </ul>
  </li>
 </ul>
 
@@ -301,18 +314,29 @@
 <li><p>an approximate posterior distribution of the model parameters;</p></li>
 <li><p>an approximation — technically, an approximate lower bound — of the log model evidence (also known as log marginal likelihood or log Bayes factor), a metric used for Bayesian model selection.</p></li>
 </ul>
-<p>The figure below shows an example VBMC run on a “banana” target density. The corner plot shows the approximate posterior across iterations (contour plot and histograms of the marginals). The dots represent evaluations of the target density (<em>blue</em>: previously sampled points, <em>green</em>: points sampled in the current iteration).</p>
+<p>The figure below shows an example <cite>pyvbmc</cite> run on a “banana” target density. The corner plot shows the approximate posterior across iterations (contour plot and histograms of the marginals). The dots represent evaluations of the target density (<em>blue</em>: previously sampled points, <em>green</em>: points sampled in the current iteration). <cite>pyvbmc</cite> converges to an excellent approximation of the true posterior with a few dozens evaluations of the target density.</p>
 <a class="reference internal image-reference" href="_images/vbmc_animation.gif"><img alt="Animation of PyVBMC" class="align-center" src="_images/vbmc_animation.gif" style="width: 400px; height: 400px;" /></a>
 <p>Extensive benchmarks on both artificial test problems and a large number of real model-fitting problems from computational and cognitive neuroscience show that VBMC generally — and often vastly — outperforms alternative methods for sample-efficient Bayesian inference. VBMC runs with virtually no tuning and it is very easy to set up for your problem.</p>
 <p><code class="docutils literal notranslate"><span class="pre">pyvbmc</span></code> is licensed under <a class="reference external" href="https://opensource.org/licenses/BSD-3-Clause">BSD3</a>.
 The Python source is on <a class="reference external" href="https://github.com/lacerbi/pyvbmc">GitHub</a>.
 You may also want to check out the original <a class="reference external" href="https://github.com/lacerbi/vbmc">MATLAB toolbox</a>.</p>
+<div class="section" id="should-i-use-pyvbmc">
+<h2>Should I use <code class="docutils literal notranslate"><span class="pre">pyvbmc</span></code>?<a class="headerlink" href="#should-i-use-pyvbmc" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">pyvbmc</span></code> is effective when:</p>
+<ul class="simple">
+<li><p>the model log-likelihood function is a black-box (e.g., the gradient is unavailable);</p></li>
+<li><p>the likelihood is at least moderately expensive to compute (say, half a second or more per evaluation);</p></li>
+<li><p>the model has up to <code class="docutils literal notranslate"><span class="pre">D</span> <span class="pre">=</span> <span class="pre">10</span></code> continuous parameters (maybe a few more, but no more than <code class="docutils literal notranslate"><span class="pre">D</span> <span class="pre">=</span> <span class="pre">20</span></code>);</p></li>
+<li><p>the target posterior density is continuous and reasonably smooth;</p></li>
+<li><p>the log-likelihood can be evaluated <em>exactly</em> (e.g., analytically or numerically, but without noise in the evaluation itself).</p></li>
+</ul>
+<p>Conversely, if your model can be written in closed form and is fast to evaluate, you should exploit the powerful machinery of probabilistic programming frameworks such as <cite>Stan &lt;https://mc-stan.org/&gt;_</cite> or <a class="reference external" href="https://docs.pymc.io/">PyMC3</a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This project is work in progress. The current Python port implements VBMC with <em>exact</em> evaluations of the likelihood (Acerbi, 2018). We are currently planning to extend <code class="docutils literal notranslate"><span class="pre">pyvbmc</span></code> to support <em>noisy</em> likelihood evaluations, such as those arising from simulator-based models (Acerbi, 2020).</p>
 </div>
 <div class="section" id="documentation">
-<h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
+<h3>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h3>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
@@ -324,7 +348,7 @@ You may also want to check out the original <a class="reference external" href="
 </div>
 </div>
 <div class="section" id="examples">
-<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<h3>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="_examples/pyvbmc_example_1.html">Example 1: Basic usage</a></li>
@@ -333,7 +357,7 @@ You may also want to check out the original <a class="reference external" href="
 </div>
 </div>
 <div class="section" id="references">
-<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<h3>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h3>
 <ol class="arabic simple">
 <li><p>Acerbi, L. (2018). Variational Bayesian Monte Carlo. In <em>Advances in Neural Information Processing Systems 31</em>: 8222-8232. (<a class="reference external" href="https://arxiv.org/abs/1810.05558">paper + supplement on arXiv</a>, <a class="reference external" href="https://papers.nips.cc/paper/2018/hash/747c1bcceb6109a4ef936bc70cfe67de-Abstract.html">NeurIPS Proceedings</a>)</p></li>
 <li><p>Acerbi, L. (2020). Variational Bayesian Monte Carlo with Noisy Likelihoods. In <em>Advances in Neural Information Processing Systems 33</em>: 8211-8222 (<a class="reference external" href="https://arxiv.org/abs/2006.08655">paper + supplement on arXiv</a>, <a class="reference external" href="https://papers.nips.cc/paper/2020/hash/5d40954183d62a82257835477ccad3d2-Abstract.html">NeurIPS Proceedings</a>).</p></li>
@@ -344,8 +368,9 @@ You may also want to check out the original <a class="reference external" href="
 </div></blockquote>
 </div>
 <div class="section" id="acknowledgments">
-<h2>Acknowledgments<a class="headerlink" href="#acknowledgments" title="Permalink to this headline">¶</a></h2>
+<h3>Acknowledgments<a class="headerlink" href="#acknowledgments" title="Permalink to this headline">¶</a></h3>
 <p>Work on the <code class="docutils literal notranslate"><span class="pre">pyvbmc</span></code> package was funded by the <a class="reference external" href="https://fcai.fi/">Finnish Center for Artificial Intelligence FCAI</a>.</p>
+</div>
 </div>
 </div>
 

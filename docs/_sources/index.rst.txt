@@ -11,7 +11,7 @@ VBMC simultaneously computes:
 
 - an approximation — technically, an approximate lower bound — of the log model evidence (also known as log marginal likelihood or log Bayes factor), a metric used for Bayesian model selection.
 
-The figure below shows an example VBMC run on a "banana" target density. The corner plot shows the approximate posterior across iterations (contour plot and histograms of the marginals). The dots represent evaluations of the target density (*blue*: previously sampled points, *green*: points sampled in the current iteration). 
+The figure below shows an example `pyvbmc` run on a "banana" target density. The corner plot shows the approximate posterior across iterations (contour plot and histograms of the marginals). The dots represent evaluations of the target density (*blue*: previously sampled points, *green*: points sampled in the current iteration). `pyvbmc` converges to an excellent approximation of the true posterior with a few dozens evaluations of the target density.
 
 .. image:: _static/vbmc_animation.gif
     :width: 400px
@@ -24,6 +24,20 @@ Extensive benchmarks on both artificial test problems and a large number of real
 ``pyvbmc`` is licensed under `BSD3 <https://opensource.org/licenses/BSD-3-Clause>`_. 
 The Python source is on `GitHub <https://github.com/lacerbi/pyvbmc>`_.
 You may also want to check out the original `MATLAB toolbox <https://github.com/lacerbi/vbmc>`_.
+
+Should I use ``pyvbmc``?
+-----------------------
+
+``pyvbmc`` is effective when:
+
+- the model log-likelihood function is a black-box (e.g., the gradient is unavailable);
+- the likelihood is at least moderately expensive to compute (say, half a second or more per evaluation);
+- the model has up to ``D = 10`` continuous parameters (maybe a few more, but no more than ``D = 20``);
+- the target posterior density is continuous and reasonably smooth;
+- the log-likelihood can be evaluated *exactly* (e.g., analytically or numerically, but without noise in the evaluation itself).
+
+Conversely, if your model can be written in closed form and is fast to evaluate, you should exploit the powerful machinery of probabilistic programming frameworks such as `Stan <https://mc-stan.org/>_` or `PyMC3 <https://docs.pymc.io/>`_.
+
 
 .. note::
     This project is work in progress. The current Python port implements VBMC with *exact* evaluations of the likelihood (Acerbi, 2018). We are currently planning to extend ``pyvbmc`` to support *noisy* likelihood evaluations, such as those arising from simulator-based models (Acerbi, 2020).
