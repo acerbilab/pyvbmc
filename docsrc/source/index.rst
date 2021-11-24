@@ -35,6 +35,7 @@ Documentation
    :titlesonly:
 
    installation
+   quickstart
    api/classes/variational_posterior
    api/classes/vbmc
    api/advanced_docs
