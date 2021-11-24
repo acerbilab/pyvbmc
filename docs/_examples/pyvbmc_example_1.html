@@ -454,25 +454,23 @@ The output trace of VBMC provides a lot of information, which we will analyze in
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Beginning variational optimization assuming EXACT observations of the log-joint.
  Iteration  f-count    Mean[ELBO]    Std[ELBO]    sKL-iter[q]   K[q]  Convergence  Action
-     0         10          -4.23         2.84    146316.45        2        inf     start warm-up
-     1         15          -2.93         0.08        11.59        2        inf     
-     2         20          -2.82         0.01         0.55        2       13.4     
-     3         25          -2.80         0.00         0.06        2       1.58     
-     4         30          -2.78         0.00         0.01        2      0.414     end warm-up
-     5         35          -2.79         0.00         0.00        2      0.071     
-     6         40          -2.78         0.00         0.00        2       0.13     
-     7         45          -2.50         0.00         0.26        5       7.15     
-     8         50          -2.43         0.00         0.04        6       1.21     
-     9         55          -2.38         0.00         0.01        7      0.327     
-    10         60          -2.36         0.00         0.02       10      0.426     
-    11         65          -2.35         0.00         0.00       12      0.101     
-    12         70          -2.35         0.00         0.00       12     0.0367     
-    13         75          -2.32         0.00         0.00       12      0.109     
-    14         80          -2.32         0.00         0.00       13     0.0311     
-    15         85          -2.33         0.00         0.00       13     0.0352     stable
-   inf         85          -2.28         0.00         0.00       50     0.0352     finalize
+     0         10           2.06        11.26     41318.24        2        inf     start warm-up
+     1         15          -2.82         0.03        19.53        2        inf     
+     2         20          -2.80         0.00         0.03        2      0.714     
+     3         25          -2.82         0.00         0.01        2      0.418     
+     4         30          -2.81         0.00         0.01        2      0.375     end warm-up
+     5         35          -2.78         0.00         0.00        2      0.157     
+     6         40          -2.78         0.00         0.01        2      0.277     
+     7         45          -2.49         0.00         0.36        5       9.41     
+     8         50          -2.46         0.00         0.00        6      0.197     
+     9         55          -2.37         0.00         0.05        9       1.61     
+    10         60          -2.37         0.00         0.00       10     0.0885     
+    11         65          -2.33         0.00         0.00       13       0.16     
+    12         70          -2.31         0.00         0.01       16      0.332     
+    13         75          -2.30         0.00         0.00       17      0.101     stable
+   inf         75          -2.28         0.00         0.00       50      0.101     finalize
 Inference terminated: variational solution stable for options.tolstablecountfcn evaluations.
-Estimated ELBO: -2.285 +/-0.000.
+Estimated ELBO: -2.280 +/-0.001.
 </pre></div>
 </div>
 </div>
@@ -489,8 +487,8 @@ Estimated ELBO: -2.285 +/-0.000.
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The true log model evidence is: -2.272
-The obtained ELBO is: -2.285
-The obtained ELBO_SD is: 0.000
+The obtained ELBO is: -2.280
+The obtained ELBO_SD is: 0.001
 </pre></div>
 </div>
 </div>
@@ -523,10 +521,10 @@ The obtained ELBO_SD is: 0.000
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The approximate posterior mean is: [0.04778539 1.09654754]
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The approximate posterior mean is: [0.02064906 1.13397955]
 The approximate posterior covariance matrix is:
- [[1.15525083 0.08992236]
- [0.08992236 1.80004416]]
+ [[1.20310931 0.0235966 ]
+ [0.0235966  1.92045185]]
 </pre></div>
 </div>
 </div>
@@ -583,11 +581,10 @@ The approximate posterior covariance matrix is:
 
 <span class="n">LB</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="n">D</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>                 <span class="c1"># Lower bounds</span>
 <span class="n">UB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="n">D</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>                  <span class="c1"># Upper bounds</span>
-<span class="n">PLB</span> <span class="o">=</span> <span class="n">prior_mu</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">prior_var</span><span class="p">)</span>          <span class="c1"># Plausible lower bounds</span>
-<span class="n">PUB</span> <span class="o">=</span> <span class="n">prior_mu</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">prior_var</span><span class="p">)</span>          <span class="c1"># Plausible upper bounds</span>
-<span class="c1"># from scipy.stats import norm</span>
-<span class="c1"># PLB = norm.ppf(0.159,prior_mu,np.sqrt(prior_var))</span>
-<span class="c1"># PUB = norm.ppf(0.841,prior_mu,np.sqrt(prior_var))</span>
+<span class="n">PLB</span> <span class="o">=</span> <span class="n">prior_mu</span> <span class="o">-</span> <span class="n">prior_std</span>                   <span class="c1"># Plausible lower bounds</span>
+<span class="n">PUB</span> <span class="o">=</span> <span class="n">prior_mu</span> <span class="o">+</span> <span class="n">prior_std</span>                   <span class="c1"># Plausible upper bounds</span>
+<span class="c1"># PLB = scs.norm.ppf(0.1587, prior_mu, prior_std)</span>
+<span class="c1"># PUB = scs.norm.ppf(0.8413, prior_mu, prior_std)</span>
 
 <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">prior_mu</span><span class="p">)</span>
 <span class="c1"># x0 = PLB + np.random.uniform(size=(1,D))*(PUB - PLB)</span>
