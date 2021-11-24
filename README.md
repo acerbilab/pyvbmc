@@ -1,18 +1,7 @@
 # PyVBMC
 
-This repository contains the port of the VBMC algorithm to Python 3.x. 
-The original source is the [MATLAB toolbox](https://github.com/lacerbi/vbmc).
-
-## General coding conventions
-
-We try to follow common conventions whenever possible.
-
-Some useful readings:
-
-- [PEP 8 -- Style Guide for Python Code](https://www.python.org/dev/peps/pep-0008/)
-- [Code style in The Hitchhiker's Guide to Python](https://docs.python-guide.org/writing/style/)
-
-Please note that we are developing in a way to enable third parties to maintain and use the algorithm. Some rules have to be followed to ensure coherence and coordination, but please start a discussion when something does not seem sensible.
+\pyvbmc\ is the port of the VBMC algorithm to Python 3.x. 
+The reference code is the [MATLAB toolbox](https://github.com/lacerbi/vbmc).
 
 ## How to install and run the package (temporary)
 
@@ -55,9 +44,19 @@ pip install -i requirements.txt
 
 The `environment.yml` seems not to work properly in some setups (e.g., Windows), which is something to be investigated.
 
-## More detailed conventions
+## Coding conventions
 
-Please read these as well!
+We try to follow common conventions whenever possible.
+
+Some useful readings:
+
+- [PEP 8 -- Style Guide for Python Code](https://www.python.org/dev/peps/pep-0008/)
+- [Code style in The Hitchhiker's Guide to Python](https://docs.python-guide.org/writing/style/)
+
+Please note that we are developing `pyvbmc` in a way to eventually enable third parties to maintain and contribute to the package. 
+Basic rules have to be followed to ensure coherence and coordination (but please ask if something is unclear or does not seem sensible).
+
+In the following, we list more detailed conventions. Please read carefully if you are contributing to `pyvbmc`.
 
 ### Code formatting
 
