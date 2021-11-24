@@ -126,6 +126,8 @@ make github  (this builds the doc and copies the build version to ./docs)
 5) Create a new pull request.
 6) When the pull request is merged, [github.io](https://lacerbi.github.io/pyvbmc/) detects changes and rebuilds the documentation.
 
+If it seems that the documentation does not update correctly (e.g., items not appearing in the sidebar or table of content), try deleting the `./docs` folder and the cached folder `./docsrc/_build` before compiling the documentation.
+
 
 #### General structure
 
