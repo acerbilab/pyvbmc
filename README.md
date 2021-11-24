@@ -35,6 +35,29 @@ For now, since the package is not in a `conda` or `pip` package repository, you 
 
 These are alternative ways to install the required dependencies:
 
+The most stable way to install and run `pyvbmc` at the moment is:
+
+1. Clone/update the `pyvbmc` GitHub repo locally.
+2. Create a new environment in conda: `conda create --name pyvbmc-dev python=3.9`
+3. Activate the environment: `conda activate pyvbmc-dev`
+4. From the `pyvbmc` folder, run: `pip install -e .`
+5. Install Jupyter notebook: `conda install jupyter`
+
+If the list of requirements subsequently changes, you will only need to rerun `pip install -e .`.
+
+### `gpyreg` package
+
+To run `pyvbmc` you will also need the `gpyreg` package, a lightweight Gaussian process regression library that we wrote specifically for `pyvbmc`.
+For now, since the package is not in a `conda` or `pip` package repository, you need to run the additional steps:
+
+- Clone `gpyreg` from its [GitHub repo](https://github.com/lacerbi/gpyreg). 
+- Install `gpyreg` in the `pyvbmc-dev` environment running `pip install -e .` from the `gpyreg` folder.
+
+
+### Alternative installation commands
+
+These are alternative ways to install the required dependencies:
+
 ```
 conda env create --file environment.yml
 ```
