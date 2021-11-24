@@ -3,6 +3,11 @@ PyVBMC
 ******
 ``pyvbmc`` is a numerical Python 3.x implementation of Variational Bayesian Monte Carlo (VBMC).
 
+
+
+What is it?
+########################
+
 VBMC is an approximate Bayesian inference method designed to fit and evaluate computational models with a limited budget of potentially noisy likelihood evaluations, useful for computationally expensive models or for quick inference and model evaluation `(Acerbi, 2018; 2020) <#references>`_.
 
 VBMC simultaneously computes:
@@ -10,6 +15,10 @@ VBMC simultaneously computes:
 - an approximate posterior distribution of the model parameters;
 
 - an approximation — technically, an approximate lower bound — of the log model evidence (also known as log marginal likelihood or log Bayes factor), a metric used for Bayesian model selection.
+
+
+Example run
+-----------
 
 The figure below shows an example `pyvbmc` run on a "banana" target density. The corner plot shows the approximate posterior across iterations (contour plot and histograms of the marginals). The dots represent evaluations of the target density (*blue*: previously sampled points, *green*: points sampled in the current iteration). `pyvbmc` converges to an excellent approximation of the true posterior with a few dozens evaluations of the target density.
 
@@ -21,12 +30,9 @@ The figure below shows an example `pyvbmc` run on a "banana" target density. The
 
 Extensive benchmarks on both artificial test problems and a large number of real model-fitting problems from computational and cognitive neuroscience show that VBMC generally — and often vastly — outperforms alternative methods for sample-efficient Bayesian inference. VBMC runs with virtually no tuning and it is very easy to set up for your problem.
 
-``pyvbmc`` is licensed under `BSD3 <https://opensource.org/licenses/BSD-3-Clause>`_. 
-The Python source is on `GitHub <https://github.com/lacerbi/pyvbmc>`_.
-You may also want to check out the original `MATLAB toolbox <https://github.com/lacerbi/vbmc>`_.
 
 Should I use ``pyvbmc``?
------------------------
+########################
 
 ``pyvbmc`` is effective when:
 
@@ -36,7 +42,7 @@ Should I use ``pyvbmc``?
 - the target posterior density is continuous and reasonably smooth;
 - the log-likelihood can be evaluated *exactly* (e.g., analytically or numerically, but without noise in the evaluation itself).
 
-Conversely, if your model can be written in closed form and is fast to evaluate, you should exploit the powerful machinery of probabilistic programming frameworks such as `Stan <https://mc-stan.org/>_` or `PyMC3 <https://docs.pymc.io/>`_.
+Conversely, if your model can be written in closed form and is fast to evaluate, you should exploit the powerful machinery of probabilistic programming frameworks such as `Stan <https://mc-stan.org/>`_ or `PyMC3 <https://docs.pymc.io/>`_.
 
 
 .. note::
@@ -72,6 +78,14 @@ References
 You can cite VBMC in your work with something along the lines of
 
     We estimated approximate posterior distibutions and approximate lower bounds to the model evidence of our models using Variational Bayesian Monte Carlo (VBMC; Acerbi, 2018, 2020) via the ``pyvbmc`` software. VBMC combines variational inference and active-sampling Bayesian quadrature to perform approximate Bayesian inference in a sample-efficient manner.
+
+License and source
+------------------
+
+``pyvbmc`` is licensed under `BSD3 <https://opensource.org/licenses/BSD-3-Clause>`_. 
+The Python source code is on `GitHub <https://github.com/lacerbi/pyvbmc>`_.
+You may also want to check out the original `MATLAB toolbox <https://github.com/lacerbi/vbmc>`_.
+
 
 Acknowledgments
 ###############
