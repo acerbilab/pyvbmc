@@ -29,7 +29,7 @@ The most stable way to install and run `pyvbmc` at the moment is:
 4. From the `pyvbmc` folder, run: `pip install -e .`
 5. Install Jupyter notebook: `conda install jupyter`
 
-If the list of requirements changes, you only need to rerun `pip install -e .`.
+If the list of requirements subsequently changes, you will only need to rerun `pip install -e .`.
 
 ### `gpyreg` package
 
