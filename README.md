@@ -1,18 +1,9 @@
 # PyVBMC
 
-This repository contains the port of the VBMC algorithm to Python 3.x. 
-The original source is the [MATLAB toolbox](https://github.com/lacerbi/vbmc).
+`pyvbmc` is the port of the VBMC algorithm to Python 3.x. 
+The reference code is the [MATLAB toolbox](https://github.com/lacerbi/vbmc).
 
-## General coding conventions
-
-We try to follow common conventions whenever possible.
-
-Some useful readings:
-
-- [PEP 8 -- Style Guide for Python Code](https://www.python.org/dev/peps/pep-0008/)
-- [Code style in The Hitchhiker's Guide to Python](https://docs.python-guide.org/writing/style/)
-
-Please note that we are developing in a way to enable third parties to maintain and use the algorithm. Some rules have to be followed to ensure coherence and coordination, but please start a discussion when something does not seem sensible.
+The documentation is available at: https://lacerbi.github.io/pyvbmc/
 
 ## How to install and run the package (temporary)
 
@@ -20,6 +11,29 @@ We are using the dependencies listed in `requirements.txt`. Please list all used
 For convenience, we also have a temporary installer in `setup.py`. Also list the used dependencies there.
 
 The necessary packages can be installed with [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) or pip.
+
+The most stable way to install and run `pyvbmc` at the moment is:
+
+1. Clone/update the `pyvbmc` GitHub repo locally.
+2. Create a new environment in conda: `conda create --name pyvbmc-dev python=3.9`
+3. Activate the environment: `conda activate pyvbmc-dev`
+4. From the `pyvbmc` folder, run: `pip install -e .`
+5. Install Jupyter notebook: `conda install jupyter`
+
+If the list of requirements subsequently changes, you will only need to rerun `pip install -e .`.
+
+### `gpyreg` package
+
+To run `pyvbmc` you will also need the `gpyreg` package, a lightweight Gaussian process regression library that we wrote specifically for `pyvbmc`.
+For now, since the package is not in a `conda` or `pip` package repository, you need to run the additional steps:
+
+- Clone `gpyreg` from its [GitHub repo](https://github.com/lacerbi/gpyreg). 
+- Install `gpyreg` in the `pyvbmc-dev` environment running `pip install -e .` from the `gpyreg` folder.
+
+
+### Alternative installation commands
+
+These are alternative ways to install the required dependencies:
 
 The most stable way to install and run `pyvbmc` at the moment is:
 
@@ -55,9 +69,19 @@ pip install -i requirements.txt
 
 The `environment.yml` seems not to work properly in some setups (e.g., Windows), which is something to be investigated.
 
-## More detailed conventions
+## Coding conventions
 
-Please read these as well!
+We try to follow common conventions whenever possible.
+
+Some useful readings:
+
+- [PEP 8 -- Style Guide for Python Code](https://www.python.org/dev/peps/pep-0008/)
+- [Code style in The Hitchhiker's Guide to Python](https://docs.python-guide.org/writing/style/)
+
+Please note that we are developing `pyvbmc` in a way to eventually enable third parties to maintain and contribute to the package. 
+Basic rules have to be followed to ensure coherence and coordination (but please ask if something is unclear or does not seem sensible).
+
+In the following, we list more detailed conventions. Please read carefully if you are contributing to `pyvbmc`.
 
 ### Code formatting
 
