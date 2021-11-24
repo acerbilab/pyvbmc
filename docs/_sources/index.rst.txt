@@ -16,7 +16,6 @@ VBMC simultaneously computes:
 
 - an approximation — technically, an approximate lower bound — of the log model evidence (also known as log marginal likelihood or log Bayes factor), a metric used for Bayesian model selection.
 
-
 Example run
 -----------
 
@@ -43,6 +42,20 @@ Should I use ``pyvbmc``?
 - the log-likelihood can be evaluated *exactly* (e.g., analytically or numerically, but without noise in the evaluation itself).
 
 Conversely, if your model can be written in closed form and is fast to evaluate, you should exploit the powerful machinery of probabilistic programming frameworks such as `Stan <https://mc-stan.org/>`_ or `PyMC3 <https://docs.pymc.io/>`_.
+
+
+Should I use ``pyvbmc``?
+-----------------------
+
+``pyvbmc`` is effective when:
+
+- the model log-likelihood function is a black-box (e.g., the gradient is unavailable);
+- the likelihood is at least moderately expensive to compute (say, half a second or more per evaluation);
+- the model has up to ``D = 10`` continuous parameters (maybe a few more, but no more than ``D = 20``);
+- the target posterior density is continuous and reasonably smooth;
+- the log-likelihood can be evaluated *exactly* (e.g., analytically or numerically, but without noise in the evaluation itself).
+
+Conversely, if your model can be written in closed form and is fast to evaluate, you should exploit the powerful machinery of probabilistic programming frameworks such as `Stan <https://mc-stan.org/>_` or `PyMC3 <https://docs.pymc.io/>`_.
 
 
 .. note::
