@@ -1,0 +1,626 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Examples and tutorials for Variational Bayesian Monte Carlo &#8212; PyVBMC</title>
+    
+  <link href="_static/css/theme.css" rel="stylesheet">
+  <link href="_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-book-theme.css?digest=c3fdc42140077d1ad13ad2f1588a4309" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.css" />
+    
+  <link rel="preload" as="script" href="_static/js/index.be7d3bbb2ef33a8344ce.js">
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="_static/sphinx-book-theme.12a9622fbb08dcb3a2a40b2c02b83a57.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="VBMC options" href="api/options/vbmc_options.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="index.html">
+      
+      
+      
+      <h1 class="site-logo" id="site-title">PyVBMC</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        <ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="installation.html">
+   Installation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="api/classes/variational_posterior.html">
+   VariationalPosterior
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="api/classes/vbmc.html">
+   VBMC
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="api/advanced_docs.html">
+   Detailed API documentation
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="api/classes/acquisition_functions.html">
+     Acquisition Functions
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="api/classes/function_logger.html">
+     FunctionLogger
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="api/classes/options.html">
+     Options
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="api/classes/parameter_transformer.html">
+     ParameterTransformer
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="api/classes/iteration_history.html">
+     IterationHistory
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="api/classes/timer.html">
+     Timer
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="api/classes/variational_posterior.html">
+     VariationalPosterior
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="api/classes/vbmc.html">
+     VBMC
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="api/functions/active_sample.html">
+     active_sample
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="api/functions/create_vbmc_animation.html">
+     create_vbmc_animation
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="api/functions/decorators.html">
+     decorators
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="api/functions/get_hpd.html">
+     get_hpd
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="api/functions/kde1d.html">
+     kde1d
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="api/functions/entropy.html">
+     entropy
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="api/options/vbmc_options.html">
+     VBMC options
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   Examples and tutorials for Variational Bayesian Monte Carlo
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav> <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Theme by the <a href="https://ebp.jupyterbook.org">Executable Book Project</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="_sources/vbmc_example_1.ipynb.txt"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.ipynb</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+            onClick="window.print()" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show">
+            
+            <div class="tocsection onthispage pt-5 pb-3">
+                <i class="fas fa-list"></i> Contents
+            </div>
+            <nav id="bd-toc-nav" aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#example-1-basic-usage">
+   Example 1: Basic usage
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#model-definition-log-likelihood-log-prior-and-log-joint">
+     1. Model definition: log likelihood, log prior, and log joint
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#parameter-setup-bounds-and-starting-point">
+     2. Parameter setup: bounds and starting point
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#initialize-and-run-inference">
+     3. Initialize and run inference
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#remarks">
+       Remarks:
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#examine-and-visualize-results">
+     4. Examine and visualize results
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#conclusions">
+     5. Conclusions
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#example-1-full-code">
+   Example 1: full code
+  </a>
+ </li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+        
+              <div>
+                
+  <div class="tex2jax_ignore mathjax_ignore section" id="examples-and-tutorials-for-variational-bayesian-monte-carlo">
+<h1>Examples and tutorials for Variational Bayesian Monte Carlo<a class="headerlink" href="#examples-and-tutorials-for-variational-bayesian-monte-carlo" title="Permalink to this headline">¶</a></h1>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy.stats</span> <span class="k">as</span> <span class="nn">scs</span>
+<span class="kn">from</span> <span class="nn">pyvbmc.vbmc</span> <span class="kn">import</span> <span class="n">VBMC</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>In this series of notebooks, we will present various example usages for Variational Bayesian Monte Carlo (VBMC).</p>
+<div class="section" id="example-1-basic-usage">
+<h2>Example 1: Basic usage<a class="headerlink" href="#example-1-basic-usage" title="Permalink to this headline">¶</a></h2>
+<p>In this introductory notebook, we will show a simple example usage of VBMC to perform Bayesian inference on a synthetic target.</p>
+<div class="section" id="model-definition-log-likelihood-log-prior-and-log-joint">
+<h3>1. Model definition: log likelihood, log prior, and log joint<a class="headerlink" href="#model-definition-log-likelihood-log-prior-and-log-joint" title="Permalink to this headline">¶</a></h3>
+<p>Normally, the log likelihood function <span class="math notranslate nohighlight">\(\log p(\mathcal{D}|\mathbf{x})\)</span> depends on the model under consideration, where <span class="math notranslate nohighlight">\(\mathcal{D}\)</span> is the data and <span class="math notranslate nohighlight">\(\mathbf{x}\)</span> is a vector of model parameters.
+For this example, we set as toy log likelihood for our model a broad <a class="reference external" href="https://en.wikipedia.org/wiki/Rosenbrock_function">Rosenbrock’s banana function</a> in 2D.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">D</span> <span class="o">=</span> <span class="mi">2</span> <span class="c1"># We consider a 2-D problem</span>
+
+<span class="c1"># Log likelihood of the model</span>
+<span class="k">def</span> <span class="nf">llfun</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:])</span> <span class="o">**</span> <span class="mf">2.0</span>
+                <span class="o">+</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">/</span> <span class="mi">100</span>
+            <span class="p">)</span>
+
+<span class="c1"># In general, llfun would define the log likelihood of *your* model</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>We define now a prior <span class="math notranslate nohighlight">\(p(\mathbf{x})\)</span> over the parameters. For simplicity, we set an independent Gaussian prior on each variable, but you could use any prior of your choice. Note that VBMC uses the log prior, <span class="math notranslate nohighlight">\(\log p(\mathbf{x})\)</span>.</p>
+<p>Since in this example the priors for each variable are independent, we compute the log prior separately for each variable and then sum them:
+$<span class="math notranslate nohighlight">\(
+\log p(\mathbf{x}) = \log \prod_{d = 1}^D p(x_d) = \sum_{d = 1}^D \log p(x_d).
+\)</span>$</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">prior_mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="n">D</span><span class="p">))</span>
+<span class="n">prior_std</span> <span class="o">=</span> <span class="mi">3</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="n">D</span><span class="p">))</span>
+<span class="n">lpriorfun</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">scs</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">prior_mu</span><span class="p">,</span> <span class="n">prior_std</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>The target log density <code class="docutils literal notranslate"><span class="pre">fun</span></code> used by VBMC is the log joint, or unnormalized log posterior, defined as:
+$<span class="math notranslate nohighlight">\(
+\log p(\mathcal{D}, \mathbf{x}) =  \log p(\mathcal{D}| \mathbf{x}) + \log p(\mathbf{x}).
+\)</span>$</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fun</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">llfun</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">lpriorfun</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="parameter-setup-bounds-and-starting-point">
+<h3>2. Parameter setup: bounds and starting point<a class="headerlink" href="#parameter-setup-bounds-and-starting-point" title="Permalink to this headline">¶</a></h3>
+<p>We assume an unconstrained domain for the model parameters, specifying <code class="docutils literal notranslate"><span class="pre">-inf</span></code> and <code class="docutils literal notranslate"><span class="pre">inf</span></code> for the lower and upper bounds, respectively.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">LB</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="n">D</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>                 <span class="c1"># Lower bounds</span>
+<span class="n">UB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="n">D</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>                  <span class="c1"># Upper bounds</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>VBMC also requires the user to specify so-called <em>plausible bounds</em> which should denote a region of high posterior probability mass. The plausible range is used to initialize some hyperparameters of the inference algorithm and guide the initial exploration of the posterior landscape, but it does not otherwise affect the model (although a good choice of plausible range can considerably improve convergence of the algorithm).</p>
+<p>Not knowing better, we use mean +/- 1 SD of the prior (that is, the top ~68% prior credible interval) to set the plausible bounds.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">PLB</span> <span class="o">=</span> <span class="n">prior_mu</span> <span class="o">-</span> <span class="n">prior_std</span>                   <span class="c1"># Plausible lower bounds</span>
+<span class="n">PUB</span> <span class="o">=</span> <span class="n">prior_mu</span> <span class="o">+</span> <span class="n">prior_std</span>                   <span class="c1"># Plausible upper bounds</span>
+
+<span class="c1"># Alternatively, you could set the plausible bounds using the quantiles:</span>
+<span class="c1"># PLB = scs.norm.ppf(0.1587, prior_mu, prior_std)</span>
+<span class="c1"># PUB = scs.norm.ppf(0.8413, prior_mu, prior_std)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>As a starting point <span class="math notranslate nohighlight">\(\mathbf{x}_0\)</span> for the algorithm, we use the mean of the prior:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">prior_mu</span><span class="p">)</span>
+
+<span class="c1"># Alternatively, we could use a random sample from inside the plausible box:</span>
+<span class="c1"># x0 = PLB + np.random.uniform(size=(1,D))*(PUB - PLB)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="initialize-and-run-inference">
+<h3>3. Initialize and run inference<a class="headerlink" href="#initialize-and-run-inference" title="Permalink to this headline">¶</a></h3>
+<p>We now initialize the <code class="docutils literal notranslate"><span class="pre">vbmc</span></code> object.  For now, we use default options for the inference.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">LB</span><span class="p">,</span> <span class="n">UB</span><span class="p">,</span> <span class="n">PLB</span><span class="p">,</span> <span class="n">PUB</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>To perform inference, we run <code class="docutils literal notranslate"><span class="pre">vbmc.optimize()</span></code>.</p>
+<p>The algorithm returns the variational posterior <code class="docutils literal notranslate"><span class="pre">vp</span></code>, the lower bound on the log model evidence <code class="docutils literal notranslate"><span class="pre">elbo</span></code>, and its uncertainty <code class="docutils literal notranslate"><span class="pre">elbo_sd</span></code>.
+The output trace of VBMC provides a lot of information, which we will analyze in a subsequent notebook.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vp</span><span class="p">,</span> <span class="n">elbo</span><span class="p">,</span> <span class="n">elbo_sd</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Beginning variational optimization assuming EXACT observations of the log-joint.
+ Iteration  f-count    Mean[ELBO]    Std[ELBO]    sKL-iter[q]   K[q]  Convergence  Action
+     0         10          -2.64         1.42     13501.90        2        inf     start warm-up
+     1         15          -2.85         0.03         0.19        2        inf     
+     2         20          -2.79         0.00         0.33        2       7.96     
+     3         25          -2.79         0.00         0.00        2     0.0924     
+     4         30          -2.79         0.00         0.00        2     0.0661     end warm-up
+     5         35          -2.79         0.00         0.00        2      0.147     
+     6         40          -2.80         0.00         0.00        2      0.115     
+     7         45          -2.60         0.00         0.15        5       4.28     
+     8         50          -2.47         0.00         0.08        6       2.35     
+     9         55          -2.39         0.00         0.02        7      0.757     
+    10         60          -2.33         0.00         0.02       10      0.606     
+    11         65          -2.31         0.00         0.01       13      0.368     
+    12         70          -2.29         0.00         0.00       16       0.12     
+    13         75          -2.29         0.00         0.01       18       0.13     
+    14         80          -2.28         0.00         0.00       18     0.0626     stable
+   inf         80          -2.28         0.00         0.00       50     0.0626     finalize
+Inference terminated: variational solution stable for options.tolstablecountfcn evaluations.
+Estimated ELBO: -2.285 +/-0.000.
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">lml_true</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.272</span> <span class="c1"># ground truth, which we know for this toy scenario</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The true log model evidence is:&quot;</span><span class="p">,</span> <span class="n">lml_true</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The obtained ELBO is:&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="p">(</span><span class="n">elbo</span><span class="p">,</span> <span class="s1">&#39;.3f&#39;</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The obtained ELBO_SD is:&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="p">(</span><span class="n">elbo_sd</span><span class="p">,</span> <span class="s1">&#39;.3f&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The true log model evidence is: -2.272
+The obtained ELBO is: -2.285
+The obtained ELBO_SD is: 0.000
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="remarks">
+<h4>Remarks:<a class="headerlink" href="#remarks" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li><p>The ELBO is a <em>lower bound</em> on the true log model evidence <span class="math notranslate nohighlight">\(\log p(\mathcal{D})\)</span>.</p></li>
+<li><p>VBMC does not aim for high numerical precision of the ELBO (e.g., beyond the 1st or 2nd decimal place). In most realistic model-fitting problems, a higher resolution is not particularly useful.</p></li>
+<li><p>The reported standard deviation of the ELBO, <code class="docutils literal notranslate"><span class="pre">elbo_sd</span></code>, is a measure of the uncertainty on the ELBO as estimated via Bayesian quadrature (the approximation technique used by VBMC). <code class="docutils literal notranslate"><span class="pre">elbo_sd</span></code> is <strong>not</strong> a measure of the difference between the ELBO and the true log model evidence, which is generally unknown.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="examine-and-visualize-results">
+<h3>4. Examine and visualize results<a class="headerlink" href="#examine-and-visualize-results" title="Permalink to this headline">¶</a></h3>
+<p>We now examine the obtained variational posterior. We can instantly draw hundreds of thousands of random samples from the variational posterior to compute summary statistics of interests.</p>
+<p>For reporting uncertainty on model parameter estimates, you could use posterior mean +/- SD, or the median and interquartile range of the samples (the latter is better for a posterior that deviates substantially from Gaussian).</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># First, generate a large number of samples from the variational posterior:</span>
+<span class="n">n_samples</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">3e5</span><span class="p">)</span>
+<span class="n">Xs</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
+
+<span class="c1"># Easily compute statistics such as moments, credible intervals, etc.</span>
+<span class="n">post_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">Xs</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>             <span class="c1"># Posterior mean</span>
+<span class="n">post_cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">Xs</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>                    <span class="c1"># Posterior covariance matrix</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The approximate posterior mean is:&quot;</span><span class="p">,</span> <span class="n">post_mean</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The approximate posterior covariance matrix is:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">post_cov</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The approximate posterior mean is: [0.0298016  1.14782048]
+The approximate posterior covariance matrix is:
+ [[1.21264078 0.04563237]
+ [0.04563237 1.9314528 ]]
+</pre></div>
+</div>
+</div>
+</div>
+<p>Finally, we visualize the obtained variational approximation <code class="docutils literal notranslate"><span class="pre">vp</span></code> via the <code class="docutils literal notranslate"><span class="pre">vp.plot()</span></code> function, which is based on the beautiful <code class="docutils literal notranslate"><span class="pre">corner.py</span></code> module (see <a class="reference external" href="https://corner.readthedocs.io/en/latest/">here</a>).</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">_</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/vbmc_example_1_24_0.png" src="_images/vbmc_example_1_24_0.png" />
+</div>
+</div>
+<p>The figure represents the multidimensional posterior <code class="docutils literal notranslate"><span class="pre">vp</span></code> via one- and two-dimensional marginal plots for each variable and pairs of variables.</p>
+<p>Here, the bottom-left panel represents the two-dimensional joint distribution of <span class="math notranslate nohighlight">\(x_1\)</span> and <span class="math notranslate nohighlight">\(x_2\)</span>, whereas the two panels on the diagonal represent the one-dimensional marginal distributions of <span class="math notranslate nohighlight">\(x_1\)</span> and <span class="math notranslate nohighlight">\(x_2\)</span>, respectively. Note that VBMC has managed to approximate very well the highly non-Gaussian shape of the target.</p>
+</div>
+<div class="section" id="conclusions">
+<h3>5. Conclusions<a class="headerlink" href="#conclusions" title="Permalink to this headline">¶</a></h3>
+<p>In this notebook, we have seen how to set up and run Bayesian inference with VBMC with a fairly minimal example.</p>
+<p>An important step which is not considered in this example is a thorough validation of the results and diagnostics, which will be discussed in a later notebook.</p>
+<p>The next notebook will look more in detail at the output trace and plots of VBMC, which is a good starting point to check how inference is proceeding.</p>
+</div>
+</div>
+<div class="section" id="example-1-full-code">
+<h2>Example 1: full code<a class="headerlink" href="#example-1-full-code" title="Permalink to this headline">¶</a></h2>
+<p>The following cell includes in a single place all the code used in Example 1, without the extra fluff.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pyvbmc.vbmc</span> <span class="kn">import</span> <span class="n">VBMC</span>
+
+<span class="c1">#####################################################################</span>
+<span class="c1"># 1. Model definition: log likelihood, log prior, and log joint</span>
+
+<span class="n">D</span> <span class="o">=</span> <span class="mi">2</span>
+
+<span class="k">def</span> <span class="nf">llfun</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:])</span> <span class="o">**</span> <span class="mf">2.0</span>
+                <span class="o">+</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">/</span> <span class="mi">100</span>
+            <span class="p">)</span>
+
+<span class="n">prior_mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="n">D</span><span class="p">))</span>
+<span class="n">prior_var</span> <span class="o">=</span> <span class="mi">3</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="n">D</span><span class="p">))</span>
+<span class="n">lpriorfun</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">x</span><span class="o">-</span><span class="n">prior_mu</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">prior_var</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                        <span class="o">-</span><span class="mf">0.5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">prior_var</span><span class="p">)))</span>
+
+<span class="n">fun</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">llfun</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">lpriorfun</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="c1">#####################################################################</span>
+<span class="c1"># 2. Parameter setup: bounds and starting point</span>
+
+<span class="n">LB</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="n">D</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>                 <span class="c1"># Lower bounds</span>
+<span class="n">UB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="n">D</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>                  <span class="c1"># Upper bounds</span>
+<span class="n">PLB</span> <span class="o">=</span> <span class="n">prior_mu</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">prior_var</span><span class="p">)</span>          <span class="c1"># Plausible lower bounds</span>
+<span class="n">PUB</span> <span class="o">=</span> <span class="n">prior_mu</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">prior_var</span><span class="p">)</span>          <span class="c1"># Plausible upper bounds</span>
+<span class="c1"># from scipy.stats import norm</span>
+<span class="c1"># PLB = norm.ppf(0.159,prior_mu,np.sqrt(prior_var))</span>
+<span class="c1"># PUB = norm.ppf(0.841,prior_mu,np.sqrt(prior_var))</span>
+
+<span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">prior_mu</span><span class="p">)</span>
+<span class="c1"># x0 = PLB + np.random.uniform(size=(1,D))*(PUB - PLB)</span>
+
+<span class="c1">#####################################################################</span>
+<span class="c1"># 3. Initialize and run inference</span>
+
+<span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">LB</span><span class="p">,</span> <span class="n">UB</span><span class="p">,</span> <span class="n">PLB</span><span class="p">,</span> <span class="n">PUB</span><span class="p">)</span>
+<span class="n">vp</span><span class="p">,</span> <span class="n">elbo</span><span class="p">,</span> <span class="n">elbo_sd</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
+
+<span class="c1">#####################################################################</span>
+<span class="c1"># 4. Analyze and visualize results</span>
+
+<span class="n">n_samples</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">3e5</span><span class="p">)</span>
+<span class="n">Xs</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
+<span class="n">post_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">Xs</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">post_cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">Xs</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The approximate posterior mean is:&quot;</span><span class="p">,</span> <span class="n">post_mean</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The approximate posterior covariance matrix is:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">post_cov</span><span class="p">)</span>
+
+<span class="n">_</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+              </div>
+              
+        
+            <!-- Previous / next buttons -->
+<div class='prev-next-area'> 
+    <a class='left-prev' id="prev-link" href="api/options/vbmc_options.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">VBMC options</p>
+        </div>
+    </a>
+</div>
+        
+        </div>
+    </div>
+    <footer class="footer">
+    <div class="container">
+      <p>
+        
+            &copy; Copyright 2021, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).<br/>
+      </p>
+    </div>
+  </footer>
+</main>
+
+
+      </div>
+    </div>
+  
+  <script src="_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+
+  </body>
+</html>
