@@ -257,31 +257,6 @@
         <!-- Table of contents -->
         <div class="d-none d-md-block col-md-2 bd-toc show">
             
-            <div class="tocsection onthispage pt-5 pb-3">
-                <i class="fas fa-list"></i> Contents
-            </div>
-            <nav id="bd-toc-nav" aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#porting-status">
-   Porting status
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#matlab-references">
-     Matlab references
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#python-documentation">
-   Python documentation
-  </a>
- </li>
-</ul>
-
-            </nav>
         </div>
     </div>
 </div>
@@ -292,26 +267,13 @@
                 
   <div class="section" id="timer">
 <h1>Timer<a class="headerlink" href="#timer" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="porting-status">
-<h2>Porting status<a class="headerlink" href="#porting-status" title="Permalink to this headline">¶</a></h2>
-<div class="admonition-todo admonition" id="id1">
-<p class="admonition-title">Todo</p>
-<p>tbd</p>
-</div>
-<div class="section" id="matlab-references">
-<h3>Matlab references<a class="headerlink" href="#matlab-references" title="Permalink to this headline">¶</a></h3>
-<p>newly created (replaces many tic-toc calss)</p>
-</div>
-</div>
-<div class="section" id="python-documentation">
-<h2>Python documentation<a class="headerlink" href="#python-documentation" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.timer.Timer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.timer.</span></span><span class="sig-name descname"><span class="pre">Timer</span></span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc\timer\timer.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.timer.Timer" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.timer.</span></span><span class="sig-name descname"><span class="pre">Timer</span></span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/timer/timer.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.timer.Timer" title="Permalink to this definition">¶</a></dt>
 <dd><p>A small Timer class used in the context of VBMC.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.timer.Timer.get_duration">
-<span class="sig-name descname"><span class="pre">get_duration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc\timer\timer.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.timer.Timer.get_duration" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_duration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/timer/timer.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.timer.Timer.get_duration" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the duration of the specified timer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -331,7 +293,7 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.timer.Timer.start_timer">
-<span class="sig-name descname"><span class="pre">start_timer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc\timer\timer.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.timer.Timer.start_timer" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">start_timer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/timer/timer.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.timer.Timer.start_timer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Start the specified timer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -345,7 +307,7 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.timer.Timer.stop_timer">
-<span class="sig-name descname"><span class="pre">stop_timer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc\timer\timer.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.timer.Timer.stop_timer" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">stop_timer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/timer/timer.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.timer.Timer.stop_timer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Stop the specified timer</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -359,7 +321,6 @@
 
 </dd></dl>
 
-</div>
 </div>
 
 

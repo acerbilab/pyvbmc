@@ -45,7 +45,7 @@ Conversely, if your model can be written in closed form and is fast to evaluate,
 
 
 Should I use ``pyvbmc``?
------------------------
+------------------------
 
 ``pyvbmc`` is effective when:
 

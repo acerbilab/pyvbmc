@@ -257,31 +257,6 @@
         <!-- Table of contents -->
         <div class="d-none d-md-block col-md-2 bd-toc show">
             
-            <div class="tocsection onthispage pt-5 pb-3">
-                <i class="fas fa-list"></i> Contents
-            </div>
-            <nav id="bd-toc-nav" aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#porting-status">
-   Porting status
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#matlab-references">
-     Matlab references
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#python-documentation">
-   Python documentation
-  </a>
- </li>
-</ul>
-
-            </nav>
         </div>
     </div>
 </div>
@@ -292,27 +267,9 @@
                 
   <div class="section" id="iterationhistory">
 <h1>IterationHistory<a class="headerlink" href="#iterationhistory" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="porting-status">
-<h2>Porting status<a class="headerlink" href="#porting-status" title="Permalink to this headline">¶</a></h2>
-<div class="admonition-todo admonition" id="id1">
-<p class="admonition-title">Todo</p>
-<ul class="simple">
-<li><p>docstring of record_iteration() (depends on the other objects as well).</p></li>
-<li><p>implement all elements of record_iteration() (depends on the other objects as well).</p></li>
-</ul>
-</div>
-<div class="section" id="matlab-references">
-<h3>Matlab references<a class="headerlink" href="#matlab-references" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li><p>function save_stats in: <a class="reference external" href="https://github.com/lacerbi/vbmc/blob/master/vbmc.m">vbmc.m</a></p></li>
-</ul>
-</div>
-</div>
-<div class="section" id="python-documentation">
-<h2>Python documentation<a class="headerlink" href="#python-documentation" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.vbmc.IterationHistory">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.vbmc.</span></span><span class="sig-name descname"><span class="pre">IterationHistory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">keys</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc\vbmc\iteration_history.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.IterationHistory" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.vbmc.</span></span><span class="sig-name descname"><span class="pre">IterationHistory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">keys</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/vbmc/iteration_history.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.IterationHistory" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class is responsible for the VBMC iteration history.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -324,7 +281,7 @@
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.vbmc.IterationHistory.record">
-<span class="sig-name descname"><span class="pre">record</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iteration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc\vbmc\iteration_history.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.IterationHistory.record" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">record</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iteration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/vbmc/iteration_history.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.IterationHistory.record" title="Permalink to this definition">¶</a></dt>
 <dd><p>Store a value for a key in a given iteration.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -351,7 +308,7 @@ object.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.vbmc.IterationHistory.record_iteration">
-<span class="sig-name descname"><span class="pre">record_iteration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iteration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc\vbmc\iteration_history.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.IterationHistory.record_iteration" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">record_iteration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iteration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/vbmc/iteration_history.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.IterationHistory.record_iteration" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convenience method to record multiple key-values for a given iteration.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -377,7 +334,6 @@ object</p>
 
 </dd></dl>
 
-</div>
 </div>
 
 
