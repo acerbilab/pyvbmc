@@ -263,8 +263,8 @@
             <nav id="bd-toc-nav" aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#next-steps">
-   Next steps
+  <a class="reference internal nav-link" href="#summary-usage">
+   Summary usage
   </a>
  </li>
 </ul>
@@ -280,14 +280,19 @@
                 
   <div class="section" id="getting-started">
 <h1>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
+<p>The best way to get started with <code class="docutils literal notranslate"><span class="pre">pyvbmc</span></code> is via the tutorials and worked examples.
+In particular, start with <a class="reference external" href="_examples/pyvbmc_example_1.html">Example 1: Basic usage</a>, and continue from there.</p>
+<p>If you are already familiar with approximate inference methods, you can find a summary usage below.</p>
+<div class="section" id="summary-usage">
+<h2>Summary usage<a class="headerlink" href="#summary-usage" title="Permalink to this headline">¶</a></h2>
 <p>The typical usage pipeline of <code class="docutils literal notranslate"><span class="pre">pyvbmc</span></code> follows four steps:</p>
 <ol class="arabic simple">
-<li><p>Define your model (log likelihood and log prior) and the target log density;</p></li>
+<li><p>Define the model, which defines a target log density (i.e., an unnormalized log posterior density);</p></li>
 <li><p>Setup the parameters (parameter bounds, starting point);</p></li>
 <li><p>Initialize and run the inference;</p></li>
 <li><p>Examine and visualize the results.</p></li>
 </ol>
-<p><code class="docutils literal notranslate"><span class="pre">pyvbmc</span></code> does not care how your model is defined in step 1, as long as you can provide an (unnormalized) target log density.
+<p><code class="docutils literal notranslate"><span class="pre">pyvbmc</span></code> is not concerned with how you define your model in step 1, as long as you can provide an (unnormalized) target log density.
 Running the inference in step 3 only involves a couple of lines of code:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyvbmc.vbmc</span> <span class="kn">import</span> <span class="n">VBMC</span>
 <span class="c1"># ...</span>
@@ -297,9 +302,9 @@ Running the inference in step 3 only involves a couple of lines of code:</p>
 </div>
 <p>with input arguments:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">target</span></code>: the target (unnormalized) log density — often an unnormalized log posterior;</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">x0</span></code>: the starting point of the inference;</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">LB</span></code> and <code class="docutils literal notranslate"><span class="pre">UB</span></code>: hard lower and upper bounds for the parameters (can be <code class="docutils literal notranslate"><span class="pre">inf</span></code>);</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">target</span></code>: the target (unnormalized) log density — often an unnormalized log posterior. <code class="docutils literal notranslate"><span class="pre">target</span></code> takes as input a parameter vector and returns the log density at the point;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">x0</span></code>: the starting point of the inference in parameter space;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">LB</span></code> and <code class="docutils literal notranslate"><span class="pre">UB</span></code>: hard lower and upper bounds for the parameters (can be <code class="docutils literal notranslate"><span class="pre">-inf</span></code> and <code class="docutils literal notranslate"><span class="pre">inf</span></code>, or bounded);</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">PLB</span></code> and <code class="docutils literal notranslate"><span class="pre">PUB</span></code>: <em>plausible</em> lower and upper bounds, that is a box that ideally brackets a region of high density of the target.</p></li>
 </ul>
 <p>The outputs are:</p>
@@ -309,10 +314,7 @@ Running the inference in step 3 only involves a couple of lines of code:</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">elbo_sd</span></code>: the standard deviation of the estimate of the <code class="docutils literal notranslate"><span class="pre">elbo</span></code> (<em>not</em> the error between the <code class="docutils literal notranslate"><span class="pre">elbo</span></code> and the true log model evidence, which is generally unknown).</p></li>
 </ul>
 <p>The <code class="docutils literal notranslate"><span class="pre">vp</span></code> object can be manipulated in various ways, see the <a class="reference external" href="api/classes/variational_posterior.html">VariationalPosterior</a> class documentation.</p>
-<div class="section" id="next-steps">
-<h2>Next steps<a class="headerlink" href="#next-steps" title="Permalink to this headline">¶</a></h2>
-<p>The best way to get started with <code class="docutils literal notranslate"><span class="pre">pyvbmc</span></code> is via the worked examples.
-In particular, start with <a class="reference external" href="_examples/pyvbmc_example_1.html">Example 1: Basic usage</a>, and continue from there.</p>
+<p>See the examples for more detailed information.</p>
 </div>
 </div>
 
