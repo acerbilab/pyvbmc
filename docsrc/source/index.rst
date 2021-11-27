@@ -8,7 +8,9 @@ PyVBMC
 What is it?
 ########################
 
-VBMC is an approximate Bayesian inference method designed to fit and evaluate computational models with a limited budget of potentially noisy likelihood evaluations, useful for computationally expensive models or for quick inference and model evaluation `(Acerbi, 2018; 2020) <#references>`_.
+  Can we perform Bayesian inference with expensive, black-box models?
+
+VBMC is an approximate Bayesian inference method designed to fit computational models with a limited budget of potentially noisy likelihood evaluations, useful for computationally expensive models or for quick inference and model evaluation `(Acerbi, 2018; 2020) <#references>`_.
 ``pyvbmc`` works with *black-box* models in that it only needs to evaluate an unnormalized target log density (e.g., an unnormalized target log posterior).
 
 ``pyvbmc`` simultaneously computes:
@@ -21,7 +23,10 @@ VBMC is an approximate Bayesian inference method designed to fit and evaluate co
 Example run
 -----------
 
-The figure below shows an example ``pyvbmc`` run on a "banana" target density. The corner plot shows the approximate posterior across iterations (contour plot and histograms of the marginals). The dots represent evaluations of the target density (*blue*: previously sampled points, *green*: points sampled in the current iteration). `pyvbmc` converges to an excellent approximation of the true posterior with a few dozens evaluations of the target density.
+The figure below shows an example ``pyvbmc`` run on a "banana" target density.
+The corner plot shows the approximate posterior across iterations (contour plot and histograms of the marginals).
+The dots represent evaluations of the target density (*blue*: previously sampled points, *green*: points sampled in the current iteration).
+``pyvbmc`` converges to an excellent approximation of the true posterior with a few dozens evaluations of the target density.
 
 .. image:: _static/vbmc_animation.gif
     :width: 400px

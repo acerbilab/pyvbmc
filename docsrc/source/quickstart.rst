@@ -2,14 +2,22 @@
 Getting started
 ***************
 
+The best way to get started with ``pyvbmc`` is via the tutorials and worked examples. 
+In particular, start with `Example 1: Basic usage <_examples/pyvbmc_example_1.html>`_, and continue from there.
+
+If you are already familiar with approximate inference methods, you can find a summary usage below.
+
+Summary usage
+=============
+
 The typical usage pipeline of ``pyvbmc`` follows four steps:
 
-1. Define your model (log likelihood and log prior) and the target log density;
+1. Define the model, which defines a target log density (i.e., an unnormalized log posterior density);
 2. Setup the parameters (parameter bounds, starting point);
 3. Initialize and run the inference;
 4. Examine and visualize the results.
 
-``pyvbmc`` does not care how your model is defined in step 1, as long as you can provide an (unnormalized) target log density.
+``pyvbmc`` is not concerned with how you define your model in step 1, as long as you can provide an (unnormalized) target log density.
 Running the inference in step 3 only involves a couple of lines of code:
 
 .. code-block:: python
@@ -21,9 +29,9 @@ Running the inference in step 3 only involves a couple of lines of code:
 
 with input arguments:
 
-- ``target``: the target (unnormalized) log density — often an unnormalized log posterior;
-- ``x0``: the starting point of the inference;
-- ``LB`` and ``UB``: hard lower and upper bounds for the parameters (can be ``inf``);
+- ``target``: the target (unnormalized) log density — often an unnormalized log posterior. ``target`` takes as input a parameter vector and returns the log density at the point;
+- ``x0``: the starting point of the inference in parameter space;
+- ``LB`` and ``UB``: hard lower and upper bounds for the parameters (can be ``-inf`` and ``inf``, or bounded);
 - ``PLB`` and ``PUB``: *plausible* lower and upper bounds, that is a box that ideally brackets a region of high density of the target.
 
 The outputs are:
@@ -34,8 +42,4 @@ The outputs are:
 
 The ``vp`` object can be manipulated in various ways, see the `VariationalPosterior <api/classes/variational_posterior.html>`_ class documentation.
 
-Next steps
-==========
-
-The best way to get started with ``pyvbmc`` is via the worked examples. 
-In particular, start with `Example 1: Basic usage <_examples/pyvbmc_example_1.html>`_, and continue from there.
+See the examples for more detailed information.

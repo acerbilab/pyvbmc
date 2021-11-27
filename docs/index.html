@@ -327,7 +327,10 @@
 <p><code class="docutils literal notranslate"><span class="pre">pyvbmc</span></code> is a numerical Python 3.x implementation of Variational Bayesian Monte Carlo (VBMC).</p>
 <div class="section" id="what-is-it">
 <h2>What is it?<a class="headerlink" href="#what-is-it" title="Permalink to this headline">¶</a></h2>
-<p>VBMC is an approximate Bayesian inference method designed to fit and evaluate computational models with a limited budget of potentially noisy likelihood evaluations, useful for computationally expensive models or for quick inference and model evaluation <a class="reference external" href="#references">(Acerbi, 2018; 2020)</a>.
+<blockquote>
+<div><p>Can we perform Bayesian inference with expensive, black-box models?</p>
+</div></blockquote>
+<p>VBMC is an approximate Bayesian inference method designed to fit computational models with a limited budget of potentially noisy likelihood evaluations, useful for computationally expensive models or for quick inference and model evaluation <a class="reference external" href="#references">(Acerbi, 2018; 2020)</a>.
 <code class="docutils literal notranslate"><span class="pre">pyvbmc</span></code> works with <em>black-box</em> models in that it only needs to evaluate an unnormalized target log density (e.g., an unnormalized target log posterior).</p>
 <p><code class="docutils literal notranslate"><span class="pre">pyvbmc</span></code> simultaneously computes:</p>
 <ul class="simple">
@@ -336,7 +339,10 @@
 </ul>
 <div class="section" id="example-run">
 <h3>Example run<a class="headerlink" href="#example-run" title="Permalink to this headline">¶</a></h3>
-<p>The figure below shows an example <code class="docutils literal notranslate"><span class="pre">pyvbmc</span></code> run on a “banana” target density. The corner plot shows the approximate posterior across iterations (contour plot and histograms of the marginals). The dots represent evaluations of the target density (<em>blue</em>: previously sampled points, <em>green</em>: points sampled in the current iteration). <cite>pyvbmc</cite> converges to an excellent approximation of the true posterior with a few dozens evaluations of the target density.</p>
+<p>The figure below shows an example <code class="docutils literal notranslate"><span class="pre">pyvbmc</span></code> run on a “banana” target density.
+The corner plot shows the approximate posterior across iterations (contour plot and histograms of the marginals).
+The dots represent evaluations of the target density (<em>blue</em>: previously sampled points, <em>green</em>: points sampled in the current iteration).
+<code class="docutils literal notranslate"><span class="pre">pyvbmc</span></code> converges to an excellent approximation of the true posterior with a few dozens evaluations of the target density.</p>
 <a class="reference internal image-reference" href="_images/vbmc_animation.gif"><img alt="Animation of PyVBMC" class="align-center" src="_images/vbmc_animation.gif" style="width: 400px; height: 400px;" /></a>
 <p>Extensive benchmarks on both artificial test problems and a large number of real model-fitting problems from computational and cognitive neuroscience show that VBMC generally — and often vastly — outperforms alternative methods for sample-efficient Bayesian inference. VBMC runs with virtually no tuning and it is very easy to set up for your problem.</p>
 </div>
