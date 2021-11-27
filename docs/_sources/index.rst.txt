@@ -9,12 +9,14 @@ What is it?
 ########################
 
 VBMC is an approximate Bayesian inference method designed to fit and evaluate computational models with a limited budget of potentially noisy likelihood evaluations, useful for computationally expensive models or for quick inference and model evaluation `(Acerbi, 2018; 2020) <#references>`_.
+``pyvbmc`` works with *black-box* models in that it only needs to evaluate an unnormalized target log density (e.g., an unnormalized target log posterior).
 
-VBMC simultaneously computes:
+``pyvbmc`` simultaneously computes:
 
 - an approximate posterior distribution of the model parameters;
 
 - an approximation — technically, an approximate lower bound — of the log model evidence (also known as log marginal likelihood or log Bayes factor), a metric used for Bayesian model selection.
+
 
 Example run
 -----------
@@ -31,20 +33,6 @@ Extensive benchmarks on both artificial test problems and a large number of real
 
 
 Should I use ``pyvbmc``?
-########################
-
-``pyvbmc`` is effective when:
-
-- the model log-likelihood function is a black-box (e.g., the gradient is unavailable);
-- the likelihood is at least moderately expensive to compute (say, half a second or more per evaluation);
-- the model has up to ``D = 10`` continuous parameters (maybe a few more, but no more than ``D = 20``);
-- the target posterior density is continuous and reasonably smooth;
-- the log-likelihood can be evaluated *exactly* (e.g., analytically or numerically, but without noise in the evaluation itself).
-
-Conversely, if your model can be written in closed form and is fast to evaluate, you should exploit the powerful machinery of probabilistic programming frameworks such as `Stan <https://mc-stan.org/>`_ or `PyMC3 <https://docs.pymc.io/>`_.
-
-
-Should I use ``pyvbmc``?
 ------------------------
 
 ``pyvbmc`` is effective when:
@@ -55,7 +43,7 @@ Should I use ``pyvbmc``?
 - the target posterior density is continuous and reasonably smooth;
 - the log-likelihood can be evaluated *exactly* (e.g., analytically or numerically, but without noise in the evaluation itself).
 
-Conversely, if your model can be written in closed form and is fast to evaluate, you should exploit the powerful machinery of probabilistic programming frameworks such as `Stan <https://mc-stan.org/>_` or `PyMC3 <https://docs.pymc.io/>`_.
+Conversely, if your model can be written in closed form and is fast to evaluate, you should exploit the powerful machinery of probabilistic programming frameworks such as `Stan <https://mc-stan.org/>`_ or `PyMC3 <https://docs.pymc.io/>`_.
 
 
 .. note::
