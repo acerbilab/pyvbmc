@@ -92,3 +92,4 @@ html_static_path = ["css/custom.css"]
 todo_include_todos = True
 
 jupyter_execute_notebooks = "off"
+html_sourcelink_suffix = ''
