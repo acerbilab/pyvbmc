@@ -88,7 +88,7 @@ class VBMC:
                 )
             else:
                 x0 = np.full((plausible_lower_bounds.shape), np.NaN)
-                
+
         self.D = x0.shape[1]
         # load basic and advanced options and validate the names
         pyvbmc_path = os.path.dirname(os.path.realpath(__file__))
@@ -103,12 +103,16 @@ class VBMC:
             pyvbmc_path + "/option_configs/advanced_vbmc_options.ini"
         )
         self.options.load_options_file(
-            advanced_path, evaluation_parameters={"D": self.D},
+            advanced_path,
+            evaluation_parameters={"D": self.D},
         )
 
         self.options.validate_option_names([basic_path, advanced_path])
 
-        # set up logging
+        # set up root logger (only changes stuff if not initialized yet)
+        logging.basicConfig(stream=sys.stdout, format="%(message)s")
+
+        # set up VBMC logger
         self.logger = logging.getLogger("VBMC")
         self.logger.setLevel(logging.INFO)
         if self.options.get("display") == "off":
@@ -117,10 +121,6 @@ class VBMC:
             self.logger.setLevel(logging.INFO)
         elif self.options.get("display") == "full":
             self.logger.setLevel(logging.DEBUG)
-
-        # only add handler to print to console once
-        if not len(self.logger.handlers):
-            self.logger.addHandler(logging.StreamHandler(stream=sys.stdout))
 
         # variable to keep track of logging actions
         self.logging_action = []
@@ -217,8 +217,6 @@ class VBMC:
                 "logging_action",
             ]
         )
-
-
 
     def _boundscheck(
         self,
@@ -998,7 +996,8 @@ class VBMC:
 
             # Record all useful stats
             self.iteration_history.record_iteration(
-                iteration_values, iteration,
+                iteration_values,
+                iteration,
             )
 
             # Check warmup
@@ -1181,7 +1180,6 @@ class VBMC:
                     title=title,
                 )
                 plt.show()
-
 
         # Pick "best" variational solution to return
         self.vp, elbo, elbo_sd, idx_best = self.determine_best_vp()
@@ -1874,7 +1872,7 @@ class VBMC:
     def _log_column_headers(self):
         """
         Private method to log column headers for the iteration log.
-        """        
+        """
         if self.optim_state["cache_active"]:
             self.logger.info(
                 " Iteration f-count/f-cache    Mean[ELBO]     Std[ELBO]     "
@@ -1898,7 +1896,7 @@ class VBMC:
     def _setup_logging_display_format(self):
         """
         Private method to set up the display format for logging the iterations.
-        """        
+        """
         if self.optim_state["cache_active"]:
             display_format = " {:5.0f}     {:5.0f}  /{:5.0f}   {:12.2f}  "
             display_format += (
