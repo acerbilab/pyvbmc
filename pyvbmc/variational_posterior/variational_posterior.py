@@ -1013,7 +1013,8 @@ class VariationalPosterior:
         if "corner" in plot_style:
             corner_style.update(plot_style.get("corner"))
 
-        fig = corner.corner(Xs, **corner_style)
+        # suppress warnings for small datasets with quiet=True 
+        fig = corner.corner(Xs, quiet=True, **corner_style)
 
         # style of the gp data
         data_style = dict({"s": 15, "color": "blue", "facecolors": "none"})
