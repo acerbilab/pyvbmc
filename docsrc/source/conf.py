@@ -91,5 +91,8 @@ html_static_path = ["css/custom.css"]
 
 todo_include_todos = True
 
+# do not execute sphinx notebooks
 jupyter_execute_notebooks = "off"
+
+# download notebooks as .ipynb and not as .ipynb.txt
 html_sourcelink_suffix = ''
