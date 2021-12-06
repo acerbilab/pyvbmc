@@ -109,9 +109,10 @@ class VBMC:
 
         self.options.validate_option_names([basic_path, advanced_path])
 
-        # set up logging
+        # set up root logger (only changes stuff if not initialized yet)
         logging.basicConfig(stream=sys.stdout, format="%(message)s")
 
+        # set up VBMC logger
         self.logger = logging.getLogger("VBMC")
         self.logger.setLevel(logging.INFO)
         if self.options.get("display") == "off":
