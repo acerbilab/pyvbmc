@@ -96,3 +96,10 @@ You may also want to check out the original `MATLAB toolbox <https://github.com/
 Acknowledgments
 ###############
 Work on the ``pyvbmc`` package was funded by the `Finnish Center for Artificial Intelligence FCAI <https://fcai.fi/>`_.
+
+.. toctree::
+   :maxdepth: 1
+   :titlesonly:
+   :hidden:
+
+   about_us
