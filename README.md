@@ -122,18 +122,16 @@ make github  (this builds the doc and copies the build version to ./docs)
 ```
 (If you are using Windows, run `.\make.bat github` with `cmd` instead.)
 
-It can happen that the documentation does not render correctly. Thus there is a command to remove the cached documentation from the respective folders.
+4) Commit the new documentation.
+5) Create a new pull request.
+6) When the pull request is merged, [github.io](https://lacerbi.github.io/pyvbmc/) detects changes and rebuilds the documentation.
+
+If it seems that the documentation does not update correctly (e.g., items not appearing in the sidebar or table of content), try deleting the `./docs` folder and the cached folder `./docsrc/_build` before compiling the documentation. There is a command for that:
 
 ```
 make clean
 ```
 (If you are using Windows, run `.\make.bat clean` with `cmd` instead.)
-
-4) Commit the new documentation.
-5) Create a new pull request.
-6) When the pull request is merged, [github.io](https://lacerbi.github.io/pyvbmc/) detects changes and rebuilds the documentation.
-
-If it seems that the documentation does not update correctly (e.g., items not appearing in the sidebar or table of content), try deleting the `./docs` folder and the cached folder `./docsrc/_build` before compiling the documentation.
 
 
 #### General structure
