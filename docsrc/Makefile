@@ -23,6 +23,10 @@ github:
 	@cp .nojekyll ../docs/.nojekyll
 	@rm -r source/_examples
 
+clean:
+	@rm -r ../docs
+	@rm -r _build
+
 .PHONY: help Makefile
 
 # Catch-all target: route all unknown targets to Sphinx using the new

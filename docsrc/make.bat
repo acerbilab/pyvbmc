@@ -41,5 +41,9 @@ xcopy /y /s "%BUILDDIR%\html" ..\docs
 xcopy /y .nojekyll ..\docs\.nojekyll
 rmdir /q /s source\_examples
 
+:clean
+rmdir /q /s ..\docs
+rmdir /q /s %BUILDDIR%
+
 :end
 popd
