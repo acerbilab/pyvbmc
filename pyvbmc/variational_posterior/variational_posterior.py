@@ -228,7 +228,6 @@ class VariationalPosterior:
         else:
             lambd_row = self.lambd.reshape(1, -1)
 
-            rng = np.random.default_rng()
             if self.K > 1:
                 if balanceflag:
                     # exact split of samples according to mixture weights
@@ -241,17 +240,19 @@ class VariationalPosterior:
                         repeats_extra = np.ceil(np.sum(w_extra))
                         w_extra += self.w * (repeats_extra - sum(w_extra))
                         w_extra /= np.sum(w_extra)
-                        i_extra = rng.choice(
+                        i_extra = np.random.choice(
                             range(self.K),
                             size=repeats_extra.astype("int"),
                             p=w_extra.flatten(),
                         )
                         i = np.append(i, i_extra)
 
-                    rng.shuffle(i)
+                    np.random.shuffle(i)
                     i = i[:N]
                 else:
-                    i = rng.choice(range(self.K), size=N, p=self.w.flatten())
+                    i = np.random.choice(
+                        range(self.K), size=N, p=self.w.flatten()
+                    )
 
                 if not np.isfinite(df) or df == 0:
                     x = (
@@ -261,7 +262,11 @@ class VariationalPosterior:
                         * self.sigma[:, i].T
                     )
                 else:
-                    t = df / 2 / np.sqrt(rng.gamma(df / 2, df / 2, (N, 1)))
+                    t = (
+                        df
+                        / 2
+                        / np.sqrt(np.random.gamma(df / 2, df / 2, (N, 1)))
+                    )
                     x = (
                         self.mu.T[i]
                         + lambd_row
@@ -276,7 +281,11 @@ class VariationalPosterior:
                         + lambd_row * np.random.randn(N, self.D) * self.sigma
                     )
                 else:
-                    t = df / 2 / np.sqrt(rng.gamma(df / 2, df / 2, (N, 1)))
+                    t = (
+                        df
+                        / 2
+                        / np.sqrt(np.random.gamma(df / 2, df / 2, (N, 1)))
+                    )
                     x = (
                         self.mu.T
                         + lambd_row
@@ -1013,7 +1022,7 @@ class VariationalPosterior:
         if "corner" in plot_style:
             corner_style.update(plot_style.get("corner"))
 
-        # suppress warnings for small datasets with quiet=True 
+        # suppress warnings for small datasets with quiet=True
         fig = corner.corner(Xs, quiet=True, **corner_style)
 
         # style of the gp data
@@ -1022,12 +1031,7 @@ class VariationalPosterior:
         if "data" in plot_style:
             data_style.update(plot_style.get("data"))
 
-        highlighted_data_style = dict(
-            {
-                "s": 15,
-                "color": "orange",
-            }
-        )
+        highlighted_data_style = dict({"s": 15, "color": "orange",})
 
         if "highlight_data" in plot_style:
             highlighted_data_style.update(plot_style.get("highlight_data"))
@@ -1066,12 +1070,7 @@ class VariationalPosterior:
                         )
 
         # style of the vp centres
-        vp_centre_style = dict(
-            {
-                "marker": "x",
-                "color": "red",
-            }
-        )
+        vp_centre_style = dict({"marker": "x", "color": "red",})
 
         if "vp_centre" in plot_style:
             vp_centre_style.update(plot_style["vp_centre"])
@@ -1090,7 +1089,7 @@ class VariationalPosterior:
 
         if title is not None:
             fig.suptitle(title)
-        
+
         # adjust spacing between subplots
         fig.tight_layout(pad=0.5)
 
