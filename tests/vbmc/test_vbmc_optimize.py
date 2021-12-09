@@ -77,6 +77,7 @@ def test_vbmc_multivariate_normal():
 
     assert err_1 < 0.5
     assert err_2 < 0.5
+    return err_1, err_2
 
 
 def test_vbmc_multivariate_half_normal():
@@ -98,6 +99,7 @@ def test_vbmc_multivariate_half_normal():
 
     assert err_1 < 0.5
     assert err_2 < 0.5
+    return err_1, err_2
 
 
 def test_vbmc_correlated_multivariate_normal():
@@ -150,6 +152,7 @@ def test_vbmc_uniform():
 
     assert err_1 < 0.5
     assert err_2 < 0.5
+    return err_1, err_2
 
 
 def cigar(x):
@@ -381,3 +384,28 @@ def test_optimize_result_dict(mocker):
     assert result_dict["message"] == "test message"
     assert "elbo" in result_dict
     assert "elbo_sd" in result_dict
+
+
+def _test_optimize_reproducibility():
+    # 1D case with Nelder-Mead optimizer
+    result = {"err_1": [], "err_2": []}
+    for i in range(2):
+        np.random.seed(42)
+        err_1, err_2 = test_vbmc_uniform()
+        result["err_1"].append(err_1)
+        result["err_2"].append(err_2)
+
+    for k, v in result.items():
+        assert v[0] == v[1]
+
+    # Multi-dimensional case with cmaes optimizer
+    result = {"err_1": [], "err_2": []}
+    for i in range(2):
+        np.random.seed(42)
+        err_1, err_2 = test_vbmc_multivariate_half_normal()
+        result["err_1"].append(err_1)
+        result["err_2"].append(err_2)
+
+    for k, v in result.items():
+        assert v[0] == v[1]
+
