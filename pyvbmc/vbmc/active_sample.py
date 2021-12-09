@@ -360,6 +360,7 @@ def active_sample(
                         "tolfun": tol_fun,
                         "maxfevals": options["searchmaxfunevals"],
                         "bounds": (lb.squeeze(), ub.squeeze()),
+                        "seed": np.nan,
                     }
 
                     res = cma.fmin(
