@@ -40,6 +40,7 @@ xcopy /y /s ..\examples source\_examples
 xcopy /y /s "%BUILDDIR%\html" ..\docs
 xcopy /y .nojekyll ..\docs\.nojekyll
 rmdir /q /s source\_examples
+goto end
 
 :clean
 rmdir /q /s ..\docs
