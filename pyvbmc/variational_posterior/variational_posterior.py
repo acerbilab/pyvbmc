@@ -1042,7 +1042,7 @@ class VariationalPosterior:
         if plot_data and hasattr(self, "gp"):
 
             # highlight nothing when argument is None
-            if highlight_data is None:
+            if highlight_data is None or highlight_data.size == 0:
                 highlight_data = np.array([False] * len(self.gp.X))
                 normal_data = ~highlight_data
             else:
