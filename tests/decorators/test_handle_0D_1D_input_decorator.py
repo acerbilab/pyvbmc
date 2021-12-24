@@ -199,4 +199,3 @@ def test_0D_kwarg_posarg_mixed():
     assert np.ndim(res[1]) == 0
     assert np.all(x == res[0])
     assert y == res[1]
-    
