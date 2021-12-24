@@ -12,6 +12,7 @@ def test_acq_info():
     assert not acqf.acq_info.get("log_flag")
     assert not acqf.acq_info.get("compute_varlogjoint")
 
+
 def test__call__(mocker):
     acqf = AcqFcnVanilla()
     M = 3
@@ -48,5 +49,5 @@ def test__call__(mocker):
 
     acq = acqf(Xs, gp, vp, function_logger, optim_state)
 
-    assert acq.shape == (M, )
+    assert acq.shape == (M,)
     assert np.all(acq == -0.25)

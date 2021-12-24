@@ -22,7 +22,12 @@ def _compute_gradient(f, x0, dx):
 
 
 def check_grad(
-    f, grad, x0, rtol=1e-3, atol=1e-6, dx=np.finfo(float).eps ** 0.5, 
+    f,
+    grad,
+    x0,
+    rtol=1e-3,
+    atol=1e-6,
+    dx=np.finfo(float).eps ** 0.5,
 ):
     analytical_grad = grad(x0)
     numerical_grad = _compute_gradient(f, x0, dx)

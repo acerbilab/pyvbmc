@@ -10,6 +10,7 @@ def test_options_no_user_options():
     assert options.get("foo") == "iter"
     assert options.get("fooD") == 4
 
+
 def test_options_user_options():
     default_options_path = "./pyvbmc/vbmc/option_configs/test_options.ini"
     user_options = {"foo": "iter2"}
@@ -125,6 +126,7 @@ def test_eval_callable_too_many_args():
     with pytest.raises(TypeError):
         options.eval("bar", {"U": 2, "S": 2, "T": 4})
 
+
 def test_load_options_file():
     evaluation_parameters = {"D": 2}
     user_options = {"foo": "testuseroptions", "foo2": "testuseroptions2"}
@@ -140,6 +142,7 @@ def test_load_options_file():
     assert options.get("foo2") == "testuseroptions2"
     assert options.get("fooD2") == 200
 
+
 def test_validate_option_names():
     evaluation_parameters = {"D": 2}
     user_options = {"foo": "testuseroptions", "foo2": "testuseroptions2"}
@@ -153,6 +156,7 @@ def test_validate_option_names():
     with pytest.raises(ValueError) as execinfo1:
         options.validate_option_names([basic_test_options])
 
+
 def test_validate_option_names_unknown_user_options():
     evaluation_parameters = {"D": 2}
     user_options = {"failoption": "testuseroptions"}
@@ -161,8 +165,11 @@ def test_validate_option_names_unknown_user_options():
     advanced_test_options = "./pyvbmc/vbmc/option_configs/test_options2.ini"
     options.load_options_file(advanced_test_options, evaluation_parameters)
     with pytest.raises(ValueError) as execinfo1:
-        options.validate_option_names([basic_test_options, advanced_test_options])
+        options.validate_option_names(
+            [basic_test_options, advanced_test_options]
+        )
     assert "The option failoption does not exist." in execinfo1.value.args[0]
+
 
 def test_load_options_invalid_path():
     evaluation_parameters = {"D": 2}

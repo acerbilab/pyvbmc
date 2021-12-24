@@ -49,5 +49,5 @@ def test__call__(mocker):
 
     acq = acqf(Xs, gp, vp, function_logger, optim_state)
 
-    assert acq.shape == (M, )
+    assert acq.shape == (M,)
     assert np.all(acq == 1)

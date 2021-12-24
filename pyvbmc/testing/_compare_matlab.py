@@ -14,6 +14,7 @@ def randn2(*args, **kwargs):
     normal = np.sqrt(2.0) * erfinv(2 * uniform - 1)
     return np.reshape(normal.ravel(), args, "F")
 
+
 def fisher_yates_shuffle(a):
     """
     For reproducing same random shuffle with MATLAB.
@@ -28,14 +29,15 @@ def fisher_yates_shuffle(a):
         b[i], b[left] = b[left], b[i]
     return b
 
+
 def rand_perm(n):
     """
     For reproducing same random permutations with MATLAB.
     MATLAB needs to use the same algorithm as this.
     """
     return fisher_yates_shuffle(np.array(range(0, n)))
-    
-    
+
+
 def rand_int(hi):
     """
     For reproducing same random integer with MATLAB.
@@ -45,5 +47,5 @@ def rand_int(hi):
     tmp = np.random.rand()
     res = lo
     while res * proportion < tmp:
-        res += 1 
+        res += 1
     return res
