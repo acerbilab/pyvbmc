@@ -6,7 +6,7 @@ from pyvbmc.timer import Timer
 class FunctionLogger:
     """
     Class that evaluates a function and caches its values.
-    
+
     Parameters
     ----------
     fun : callable
@@ -25,7 +25,7 @@ class FunctionLogger:
         The initial size of caching table (default 500).
     parameter_transformer : ParameterTransformer, optional
         A ParameterTransformer is required to transform the parameters
-        between constrained and unconstrained space, by default None.    
+        between constrained and unconstrained space, by default None.
     """
 
     def __init__(
@@ -70,7 +70,7 @@ class FunctionLogger:
         Parameters
         ----------
         x : np.ndarray
-            The point at which the function will be evaluated. The shape of x 
+            The point at which the function will be evaluated. The shape of x
             should be (1, D) or (D,).
 
         Returns
@@ -128,7 +128,7 @@ class FunctionLogger:
                 + str(x_orig),
             )
             raise
-        
+
         # if fval is an array with only one element, extract that element
         if not np.isscalar(fval_orig) and np.size(fval_orig) == 1:
             fval_orig = np.array(fval_orig).flat[0]
@@ -177,7 +177,7 @@ class FunctionLogger:
         Parameters
         ----------
         x : np.ndarray
-            The point at which the function has been evaluated. The shape of x 
+            The point at which the function has been evaluated. The shape of x
             should be (1, D) or (D,).
         fval_orig : float
             The result of the evaluation of the function.
