@@ -6,6 +6,7 @@ These notes are used for keeping track of ToDos and porting information.
 - The function vbmc_power: [vbmc_power.m](https://github.com/lacerbi/vbmc/blob/master/vbmc_power.m) (according to Luigi this function is not as important for now)
 - The function in [vbmc.m](https://github.com/lacerbi/vbmc/blob/master/vbmc.m) has not been ported yet.
 - There is a bug with the mode() function: Luigi suspects it is related to the computation of the mode being invariant to different spaces. We have not investigated the bug in depth, but it occured in the example2 notebook.
+- In the mode() function we set the attribute \_mode. We should talk about this and double-check that it is being cleared correctly when the mode changes.
 
 ## Matlab references
 - get_parameters(): [get_vptheta.m](https://github.com/lacerbi/vbmc/blob/master/misc/get_vptheta.m) 
