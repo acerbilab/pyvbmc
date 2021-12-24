@@ -5,9 +5,13 @@ from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc import VBMC
 from pyvbmc.vbmc.gaussian_process_train import (
     train_gp,
-    _cov_identifier_to_covariance_function, _estimate_noise,
-    _get_gp_training_options, _get_hyp_cov, _get_training_data,
-    _meanfun_name_to_mean_function)
+    _cov_identifier_to_covariance_function,
+    _estimate_noise,
+    _get_gp_training_options,
+    _get_hyp_cov,
+    _get_training_data,
+    _meanfun_name_to_mean_function,
+)
 from scipy.stats import norm
 
 
@@ -214,7 +218,7 @@ def test_get_hyp_cov():
     #       maybe something like checking whether the returned thing is
     #       a covariance matrix?
     # vbmc.options["weightedhypcov"] = True
-    # res3 = _get_hyp_cov(vbmc.optim_state, vbmc.iteration_history, 
+    # res3 = _get_hyp_cov(vbmc.optim_state, vbmc.iteration_history,
     #                       vbmc.options, hyp_dict)
 
 
@@ -351,24 +355,25 @@ def test_get_gp_training_options_opts_N():
         vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 0
     )
     assert res4["opts_N"] == 2
-    
+
+
 def test_gp_hyp():
     D = 3
     f = lambda x: np.sum(x + 2, axis=1)
     x0 = np.ones((2, D)) * 3
     plb = np.ones((1, D)) * -1
     pub = np.ones((1, D)) * 1
-    
+
     user_options = {"specifytargetnoise": True}
     vbmc = VBMC(f, x0, None, None, plb, pub, user_options)
-    
+
     # Create dummy data.
     sample_count = 10
     window = vbmc.optim_state["pub"] - vbmc.optim_state["plb"]
     rnd_tmp = np.random.rand(sample_count, window.shape[1])
     Xs = window * rnd_tmp + vbmc.optim_state["plb"]
     ys = f(Xs)
-    
+
     # Add dummy training data explicitly since function_logger
     # has a parameter transformer which makes everything hard.
     for sample_idx in range(sample_count):
@@ -377,17 +382,21 @@ def test_gp_hyp():
         vbmc.function_logger.y[sample_idx] = ys[sample_idx]
         vbmc.function_logger.S[sample_idx] = 1
         vbmc.function_logger.fun_evaltime[sample_idx] = 1e-5
-        
+
     vbmc.optim_state["N"] = 10
     vbmc.optim_state["n_eff"] = 10
-    
-    gp, Ns_gp, _, _ = train_gp({},
-                               vbmc.optim_state, 
-                               vbmc.function_logger, 
-                               vbmc.iteration_history, 
-                               vbmc.options,
-                               vbmc.plausible_lower_bounds,
-                               vbmc.plausible_upper_bounds)
+
+    gp, Ns_gp, _, _ = train_gp(
+        {},
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.iteration_history,
+        vbmc.options,
+        vbmc.plausible_lower_bounds,
+        vbmc.plausible_upper_bounds,
+    )
     priors = gp.get_priors()
-    assert priors["noise_log_scale"][1][0] == np.log(vbmc.options["tolgpnoise"]) 
+    assert priors["noise_log_scale"][1][0] == np.log(
+        vbmc.options["tolgpnoise"]
+    )
     assert priors["noise_log_scale"][1][1] == 0.5

@@ -12,6 +12,7 @@ class AcqFcnLog(AbstractAcqFcn):
     """
     Acquisition function for prospective uncertainty search (log-valued).
     """
+
     def __init__(self):
         super().__init__()
         self.acq_info["log_flag"] = True
@@ -36,9 +37,9 @@ class AcqFcnLog(AbstractAcqFcn):
         # Probability density of variational posterior at test points
         realmin = sys.float_info.min
         p = np.ravel(np.maximum(vp.pdf(Xs, origflag=False), realmin))
-        
+
         # Log prospective uncertainty search
         z = function_logger.ymax
-        acq = -(np.log(var_tot) + f_bar-z + np.log(p))
+        acq = -(np.log(var_tot) + f_bar - z + np.log(p))
 
         return acq

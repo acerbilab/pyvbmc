@@ -37,6 +37,7 @@ def test_iteration_history_record_key_not_existing():
         iteration_history.record("rindex", 0.5, 0)
     assert "The key has not been specified" in execinfo.value.args[0]
 
+
 def test_iteration_lower_than_0():
     iteration_history = IterationHistory(["rindex"])
     with pytest.raises(ValueError) as execinfo:
@@ -121,6 +122,7 @@ def test_iteration_history_record_iteration_iteration_below_0():
         )
     assert "The iteration must be >= 0." in execinfo.value.args[0]
 
+
 def test_iteration_history_record_iteration_key_not_existing():
     iteration_history = IterationHistory([])
     iteration_key_values = dict()
@@ -131,6 +133,7 @@ def test_iteration_history_record_iteration_key_not_existing():
             1,
         )
     assert "The key has not been specified" in execinfo.value.args[0]
+
 
 def test_iteration__setitem___key_not_existing():
     iteration_history = IterationHistory([])

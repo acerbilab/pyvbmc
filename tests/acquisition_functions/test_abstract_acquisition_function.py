@@ -81,7 +81,7 @@ def test__call__simple(mocker):
     acq = acq_fcn(Xs, create_gp(3), vp, function_logger, optim_state)
 
     assert np.all(acq == 1)
-    assert acq.shape == (M, )
+    assert acq.shape == (M,)
 
 
 def test__call_constraints(mocker):
@@ -124,7 +124,7 @@ def test__call_constraints(mocker):
     function_logger = FunctionLogger(lambda x: x, 3, False, 0)
     acq = acq_fcn(Xs, create_gp(3), vp, function_logger, optim_state)
 
-    assert acq.shape == (M, )
+    assert acq.shape == (M,)
     assert np.all(acq == np.inf)
 
 
@@ -171,7 +171,7 @@ def test__call_quad(mocker):
     function_logger = FunctionLogger(lambda x: x, 3, False, 0)
     acq = acq_fcn(Xs, create_gp(3), vp, function_logger, optim_state)
 
-    assert acq.shape == (M, )
+    assert acq.shape == (M,)
     assert np.all(acq == 1)
 
 
@@ -220,13 +220,13 @@ def test__call__regularization(mocker):
     # no logflag
     acq_fcn.acq_info["log_flag"] = False
     acq = acq_fcn(Xs, create_gp(3), vp, function_logger, optim_state)
-    assert acq.shape == (M, )
+    assert acq.shape == (M,)
     assert np.allclose(acq, 0)
 
     # logflag
     acq_fcn.acq_info["log_flag"] = True
     acq = acq_fcn(Xs, create_gp(3), vp, function_logger, optim_state)
-    assert acq.shape == (M, )
+    assert acq.shape == (M,)
     assert np.all(acq == 2000)
 
 
@@ -272,7 +272,7 @@ def test__call__real_max(mocker):
     acq = acq_fcn(Xs, create_gp(3), vp, function_logger, optim_state)
 
     assert np.all(acq == -realmax)
-    assert acq.shape == (M, )
+    assert acq.shape == (M,)
 
 
 def test_real2int():
@@ -309,10 +309,12 @@ def test_real2int():
     X_after = acq_fcn._real2int(X, parameter_transformer, integervars)
     np.all(X_after == X)
 
+
 def test_sq_dist():
     """
     Test data has been crossvalidated with (original) VBMC in MATLAB.
     """
+
     class BasicAcqClass(AbstractAcqFcn):
         def _compute_acquisition_function(
             self,
@@ -327,7 +329,7 @@ def test_sq_dist():
             var_tot,
         ):
             pass
-        
+
     a = np.linspace((1, 11), (10, 20), 10)
     b = np.linspace((30, 40), (50, 60), 21)
     acqf = BasicAcqClass()

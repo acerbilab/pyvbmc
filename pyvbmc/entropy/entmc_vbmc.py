@@ -32,7 +32,7 @@ def entmc_vbmc(
         :math:`dH = \left[\nabla_{\mu_1}^{T} H, ..., \nabla_{\mu_K}^{T} H,
         \nabla_{\sigma}^{T} H, \nabla_{\lambda}^{T} H,
         \nabla_{\omega}^{T} H\right]`
-        
+
     """
 
     D = vp.D

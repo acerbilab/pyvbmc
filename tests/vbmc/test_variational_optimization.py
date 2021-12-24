@@ -350,6 +350,7 @@ def test_vp_optimize_2D_g_mixture():
         np.abs(kldiv_mvn(mixture_mu, mixture_sigma, vp_mu, vp_sigma)) < 1e-3
     )
 
+
 def test_vp_optimize_deterministic_entropy_approximation():
     """
     Test that the VP is being optimized to the 1D Gaussian Mixture ground truth.

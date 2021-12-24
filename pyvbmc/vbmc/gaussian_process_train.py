@@ -368,7 +368,8 @@ def _gp_hyp(
     elif isinstance(gp.mean, gpr.mean_functions.NegativeQuadratic):
         if options["gpquadraticmeanbound"]:
             delta_y = max(
-                options["tolsd"], min(D, np.max(hpd_y) - np.min(hpd_y)),
+                options["tolsd"],
+                min(D, np.max(hpd_y) - np.min(hpd_y)),
             )
             bounds["mean_const"] = (-np.inf, np.max(hpd_y) + delta_y)
     else:
@@ -801,7 +802,7 @@ def _estimate_noise(gp: gpr.GP):
 def reupdate_gp(function_logger: FunctionLogger, gp: gpr.GP):
     """
     Quick posterior reupdate of Gaussian process.
-    
+
     Parameters
     ==========
     gp : GP
