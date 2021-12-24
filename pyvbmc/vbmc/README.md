@@ -11,27 +11,21 @@ These notes are used for keeping track of ToDos and porting information.
 
 ## iteration_history.py
 
-### Porting status
-
-- docstring of record_iteration() (depends on the other objects as well).     
-- implement all elements of record_iteration() (depends on the other objects as well).
-
 ### Matlab references
 -  function save_stats in: [vbmc.m](https://github.com/lacerbi/vbmc/blob/master/vbmc.m) 
 
 ## vbmc.py and related functions
 
 ### Porting status
-- in _boundscheck the plausible bounds are set equal to the hard bounds, which is not admissible in VBMC (Fix by Luigi required)
-- check the documentation of vbmc init and the class in general
-- integrate the basic options somehow
-- init a GP (wait for GPLite to be completed)
-- experimental features (listed in [vbmc.m](https://github.com/lacerbi/vbmc/blob/master/vbmc.m) have not been ported yet)
+- in the function _boundscheck: The plausible bounds are set equal to the hard bounds, which is not admissible in VBMC (Fix by Luigi required).
+- The docstrings of the VBMC class have to be polished. They are currently still work-in-progress.
+- The experimental features (listed in [vbmc.m](https://github.com/lacerbi/vbmc/blob/master/vbmc.m)) have not been ported yet. Luigi has to decide on the order of the port for these features.
  - [acqhedge_vbmc.m](https://github.com/lacerbi/vbmc/blob/master/private/acqhedge_vbmc.m) has not been ported yet as it is considered to be experimental
-- the warping in [vbmc.m](https://github.com/lacerbi/vbmc/blob/master/vbmc.m) is part of the 2020 paper and is well tested. We will implement it later as VBMC can run without it.
-- in variational_optimization.py the compute vargrad is untested
-- in variational_optimization.py the the vp_repo has not been ported for now (In is used in MATLAB in [vpsieve_vbmc.m](https://github.com/lacerbi/vbmc/blob/master/misc/vpsieve_vbmc.m) and filled in active_sampling). (Note by Luigi: In practice, even in MATLAB this part seems to be implemented lazily and then it's not used. I am not sure why I did not work on this more; probably the variational optimization was working fine and couldn't be bothered to fix this properly (it seems it could help).)
-- We have to think about what should happen when somebody calls  vbmc.optimize twice, and stuff like that.
+- The warping in [vbmc.m](https://github.com/lacerbi/vbmc/blob/master/vbmc.m) is part of the 2020 paper and is well tested. We will implement it later as VBMC can run without it.
+- in variational_optimization.py: The branches dealing with compute vargrad are untested
+- in variational_optimization.py: The vp_repo has not been ported for now (In is used in MATLAB in [vpsieve_vbmc.m](https://github.com/lacerbi/vbmc/blob/master/misc/vpsieve_vbmc.m) and filled in active_sampling). (Note by Luigi: In practice, even in MATLAB this part seems to be implemented lazily and then it's not used. I am not sure why I did not work on this more; probably the variational optimization was working fine and couldn't be bothered to fix this properly (it seems it could help).)
+- We have to think about what should happen when somebody calls vbmc.optimize() twice, and stuff like that.
+- The logging feature is not working perfect yet, we need to think about a logging concepts. Open points have been discussed in slack.
 
 ### Matlab references:
 - initialization:
