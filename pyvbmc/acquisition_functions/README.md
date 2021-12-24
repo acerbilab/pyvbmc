@@ -4,6 +4,7 @@ These notes are used for keeping track of ToDos and porting information.
 
 ## Porting status
 - discuss which other functions from [vbmc/acq](https://github.com/lacerbi/vbmc/blob/master/acq) to port
+- discuss the naming of the AcqFcns, because AcqFcn and AcqFcnVanilla seem a bit arbitrary
 
 ## Matlab references
 - AbstractAcqFcn: [acqwrapper_vbmc.m](https://github.com/lacerbi/vbmc/blob/master/acq/acqwrapper_vbmc.m)
