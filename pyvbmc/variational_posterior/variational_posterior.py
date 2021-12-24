@@ -356,7 +356,7 @@ class VariationalPosterior:
         NotImplementedError
             Raised if np.isfinite(df) and df < 0 and gradflag=True
             (Gradient of heavy-tailed pdf not supported yet).
-        NotImplementedError   
+        NotImplementedError
             Raised if origflag=True and logflag=True and gradflag=True
             (Gradient computation in original space not supported yet).
         """
@@ -1031,7 +1031,12 @@ class VariationalPosterior:
         if "data" in plot_style:
             data_style.update(plot_style.get("data"))
 
-        highlighted_data_style = dict({"s": 15, "color": "orange",})
+        highlighted_data_style = dict(
+            {
+                "s": 15,
+                "color": "orange",
+            }
+        )
 
         if "highlight_data" in plot_style:
             highlighted_data_style.update(plot_style.get("highlight_data"))
@@ -1070,7 +1075,12 @@ class VariationalPosterior:
                         )
 
         # style of the vp centres
-        vp_centre_style = dict({"marker": "x", "color": "red",})
+        vp_centre_style = dict(
+            {
+                "marker": "x",
+                "color": "red",
+            }
+        )
 
         if "vp_centre" in plot_style:
             vp_centre_style.update(plot_style["vp_centre"])

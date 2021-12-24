@@ -13,7 +13,7 @@ class IterationHistory(MutableMapping, dict):
         The keys that can be recorded with this object.
     """
 
-    def __init__(self, keys : list):
+    def __init__(self, keys: list):
         self.check_keys = False
         for key in keys:
             self[key] = None
@@ -34,7 +34,7 @@ class IterationHistory(MutableMapping, dict):
         ------
         Raised if the key has not been specified on initialization of the
             object.
-        """        
+        """
         if self.check_keys and key not in self:
             raise ValueError(
                 """The key has not been specified 

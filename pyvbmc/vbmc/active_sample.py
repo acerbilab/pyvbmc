@@ -59,7 +59,7 @@ def active_sample(
     optim_state : dict
         The updated optim_state.
     vp : VariationalPosterior
-        The updated variation posterior. 
+        The updated variation posterior.
     """
     # TODO: The timer is missing for now, we have to setup it throught pyvbmc.
 

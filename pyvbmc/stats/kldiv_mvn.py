@@ -26,7 +26,7 @@ def kldiv_mvn(mu1, sigma1, mu2, sigma2):
     -------
     kldiv : np.array
         The computed Kullback-Leibler divergence.
-    """    
+    """
     D = mu1.size
     mu1 = mu1.reshape(-1, 1)
     mu2 = mu2.reshape(-1, 1)

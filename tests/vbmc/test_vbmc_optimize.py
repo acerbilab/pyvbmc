@@ -408,4 +408,3 @@ def _test_optimize_reproducibility():
 
     for k, v in result.items():
         assert v[0] == v[1]
-
