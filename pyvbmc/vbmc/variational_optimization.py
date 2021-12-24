@@ -1051,7 +1051,6 @@ def _negelcbo(
             "supported"
         )
 
-    D = vp.D
     K = vp.K
 
     # Average over multiple GP hyperparameters if provided

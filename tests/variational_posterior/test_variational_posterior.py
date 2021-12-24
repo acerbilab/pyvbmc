@@ -388,7 +388,7 @@ def test_get_set_parameters_delete_mode():
     vp._mode = np.ones(D)
     assert hasattr(vp, "_mode")
     vp.set_parameters(theta, rawflag=True)
-    assert not hasattr(vp, "_mode")
+    assert vp._mode is None
 
 
 def test_get_set_parameters_roundtrip_non_raw():

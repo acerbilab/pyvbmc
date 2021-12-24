@@ -110,7 +110,7 @@ class Options(MutableMapping, dict):
         for key, val in evaluation_parameters.items():
             exec(key + "=val")
 
-        options_list = self._read_config_file(options_path)
+        options_list = _read_config_file(options_path)
         for (key, value, description) in options_list:
             if key not in self.get("useroptions") and key != "useroptions":
                 self[key] = eval(value)
@@ -139,46 +139,12 @@ class Options(MutableMapping, dict):
         file_option_names = set()
         for options_path in options_paths:
             file_option_names.update(
-                self._read_config_file(options_path)[:, 0].flatten()
+                _read_config_file(options_path)[:, 0].flatten()
             )
 
         for key in self.keys():
             if key != "useroptions" and key not in file_option_names:
                 raise ValueError("The option {} does not exist.".format(key))
-
-    def _read_config_file(self, options_path: str):
-        """
-        Private helper method to read a config file and return the options as a
-        list of tuples (key, value, description).
-
-        Note that strings starting with # in the .ini file act as description to
-        the option in the following line.
-        """
-        conf = configparser.ConfigParser(
-            comment_prefixes="", allow_no_value=True
-        )
-        # do not lower() both values as well as descriptions
-        conf.optionxform = str
-        conf.read(options_path)
-
-        option_list = list()
-        description = ""
-        for section in conf.sections():
-            for (key, value) in conf.items(section):
-                if "#" in key:
-                    description = key.strip("# ")
-                else:
-                    option_list.append([key, value, description])
-                    description = ""
-
-        if len(option_list) == 0:
-            raise ValueError(
-                "The option file at {} does not contain options.".format(
-                    options_path
-                )
-            )
-
-        return np.array(option_list)
 
     def __setitem__(self, key, val):
         dict.__setitem__(self, key, val)
@@ -234,3 +200,36 @@ class Options(MutableMapping, dict):
                 for (k, v) in self.items()
             ]
         )
+
+
+def _read_config_file(options_path: str):
+    """
+    Private helper method to read a config file and return the options as a
+    list of tuples (key, value, description).
+
+    Note that strings starting with # in the .ini file act as description to
+    the option in the following line.
+    """
+    conf = configparser.ConfigParser(comment_prefixes="", allow_no_value=True)
+    # do not lower() both values as well as descriptions
+    conf.optionxform = str
+    conf.read(options_path)
+
+    option_list = list()
+    description = ""
+    for section in conf.sections():
+        for (key, value) in conf.items(section):
+            if "#" in key:
+                description = key.strip("# ")
+            else:
+                option_list.append([key, value, description])
+                description = ""
+
+    if len(option_list) == 0:
+        raise ValueError(
+            "The option file at {} does not contain options.".format(
+                options_path
+            )
+        )
+
+    return np.array(option_list)

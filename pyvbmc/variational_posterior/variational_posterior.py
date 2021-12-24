@@ -71,6 +71,7 @@ class VariationalPosterior:
         self.delta = None
         self.bounds = None
         self.stats = None
+        self._mode = None
 
     def get_bounds(self, X: np.ndarray, options, K: int = None):
         """
@@ -628,8 +629,7 @@ class VariationalPosterior:
             self.w = self.w.reshape(1, -1) / np.sum(self.w)
 
         # remove mode
-        if hasattr(self, "_mode"):
-            delattr(self, "_mode")
+        self._mode = None
 
     def moments(self, N: int = int(1e6), origflag=True, covflag=False):
         """
@@ -710,7 +710,7 @@ class VariationalPosterior:
                 )
                 return -y, -dy
 
-        if origflag and hasattr(self, "_mode") and self._mode is not None:
+        if origflag and self._mode is not None:
             return self._mode
         else:
             x0_mat = self.mu.T
