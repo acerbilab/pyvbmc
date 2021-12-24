@@ -1,24 +1,20 @@
+import copy
 import logging
 import math
-import copy
+
 import cma
-
-import numpy as np
 import gpyreg as gpr
-
-from pyvbmc.function_logger import FunctionLogger
-from pyvbmc.parameter_transformer import ParameterTransformer
-from pyvbmc.variational_posterior import VariationalPosterior
-from pyvbmc.stats import get_hpd
-from pyvbmc.vbmc.gaussian_process_train import train_gp, reupdate_gp
-from pyvbmc.vbmc.iteration_history import IterationHistory
-from pyvbmc.vbmc.variational_optimization import (
-    optimize_vp,
-    _negelcbo,
-    _gplogjoint,
-)
+import numpy as np
 from pyvbmc.acquisition_functions.abstract_acq_fcn import AbstractAcqFcn
 from pyvbmc.acquisition_functions.acq_fcn import AcqFcn
+from pyvbmc.function_logger import FunctionLogger
+from pyvbmc.stats import get_hpd
+from pyvbmc.variational_posterior import VariationalPosterior
+from pyvbmc.vbmc.gaussian_process_train import reupdate_gp, train_gp
+from pyvbmc.vbmc.iteration_history import IterationHistory
+from pyvbmc.vbmc.variational_optimization import (_gplogjoint, _negelcbo,
+                                                  optimize_vp)
+
 from .options import Options
 
 
@@ -293,7 +289,7 @@ def active_sample(
 
             if SearchAcqFcn[idx_acq] == "@acqf_vbmc":
                 acq_eval = AcqFcn()
-            else:  # TODO
+            else:  # TODO implement branch
                 raise NotImplementedError("Not implemented yet")
 
             # Re-evaluate variance of the log joint if requested

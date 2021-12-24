@@ -709,10 +709,7 @@ class VBMC:
         success_flag = True
 
         # set up strings for logging of the iteration
-        (
-            display_format,
-            display_format_warmup,
-        ) = self._setup_logging_display_format()
+        display_format = self._setup_logging_display_format()
 
         if self.optim_state["uncertainty_handling_level"] > 0:
             self.logger.info(
@@ -1620,6 +1617,7 @@ class VBMC:
         """
         RECOMPUTE_LCBMAX Recompute moving LCB maximum based on current GP.
         """
+        # ToDo: Recompute_lcbmax needs to be implemented.
         return np.array([])
 
     # Finalizing:
@@ -1902,7 +1900,6 @@ class VBMC:
             display_format += (
                 "{:12.2f}  {:12.2f}     {:4.0f} {:10.3g}       {}"
             )
-            display_format_warmup = " {:5.0f}     {:5.0f}  /{:5.0f}   {}"
         else:
             if (
                 self.optim_state["uncertainty_handling_level"] > 0
@@ -1913,10 +1910,8 @@ class VBMC:
                     "{:12.2f}  {:12.2f}     {:4.0f} {:10.3g}     "
                 )
                 display_format += "{}"
-                display_format_warmup = " %5.0f       %5.0f    %12.2f  %s"
             else:
                 display_format = " {:5.0f}      {:5.0f}   {:12.2f} {:12.2f} "
                 display_format += "{:12.2f}     {:4.0f} {:10.3g}     {}"
-                display_format_warmup = " %5.0f       %5.0f    %12.2f  %s"
 
-        return display_format, display_format_warmup
+        return display_format

@@ -31,7 +31,7 @@ def create_vbmc_animation(vbmc: VBMC, path: str):
         else:
             vp = vbmc.iteration_history["vp"][i]
 
-        if i > 0 and i < len(vbmc.iteration_history["vp"]) - 2:
+        if 0 < i < len(vbmc.iteration_history["vp"]) - 2:
             previous_gp = vbmc.iteration_history["vp"][i - 1].gp
             # find points that are new in this iteration
             # (hacky cause numpy only has 1D set diff)

@@ -14,6 +14,7 @@ class IterationHistory(MutableMapping, dict):
     """
 
     def __init__(self, keys: list):
+        super().__init__()
         self.check_keys = False
         for key in keys:
             self[key] = None
