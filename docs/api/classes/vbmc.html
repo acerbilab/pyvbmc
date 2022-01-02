@@ -274,42 +274,62 @@
                 
   <div class="section" id="vbmc">
 <h1>VBMC<a class="headerlink" href="#vbmc" title="Permalink to this headline">¶</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> class implements the Variational Bayesian Monte Carlo (VBMC) algorithm.</p>
+<p>VBMC computes a variational approximation of the full posterior and a lower
+bound on the log normalization constant (log marginal likelhood or log model evidence)
+for a provided unnormalized log posterior.</p>
+<p>To perform inference, first initialize a <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> object and then run <code class="docutils literal notranslate"><span class="pre">optimize()</span></code>.</p>
+<p>The current version of VBMC only supports noiseless evaluations of the log posterior.
+We are currently working on implementing VBMC with noisy likelihoods.</p>
+<p>See below for the <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> class methods and interface.
+For now, the only methods of interest for users are the <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> constructor and <code class="docutils literal notranslate"><span class="pre">optimize()</span></code>.</p>
+</div>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.vbmc.VBMC">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.vbmc.</span></span><span class="sig-name descname"><span class="pre">VBMC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fun</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plausible_lower_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plausible_upper_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc\vbmc\vbmc.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.VBMC" title="Permalink to this definition">¶</a></dt>
-<dd><p>The VBMC algorithm class.</p>
+<dd><p>Posterior and model inference via Variational Bayesian Monte Carlo (VBMC).</p>
+<p>VBMC computes a variational approximation of the full posterior and a lower 
+bound on the normalization constant (marginal likelhood or model evidence) 
+for a provided unnormalized log posterior.</p>
+<p>Initialize a <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> object to set up the inference problem, then run
+<code class="docutils literal notranslate"><span class="pre">optimize()</span></code>. See the examples for more details.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>fun</strong><span class="classifier">callable</span></dt><dd><p>A given target log posterior FUN.</p>
+<dt><strong>fun</strong><span class="classifier">callable</span></dt><dd><p>A given target log posterior <cite>fun</cite>. <cite>fun</cite> accepts input <cite>x</cite> and returns 
+the value of the target log-joint, that is the unnormalized 
+log-posterior density, at <cite>x</cite>.</p>
 </dd>
-<dt><strong>x0</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>[description], by default None</p>
+<dt><strong>x0</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>Starting point for the inference. Ideally <cite>x0</cite> is a point in the
+proximity of the mode of the posterior. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 </dd>
-<dt><strong>lower_bounds, upper_bounds</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>Lower_bounds (LB) and upper_bounds (UB) define a set
-of strict lower and upper bounds coordinate vector, X, so that the
-posterior has support on LB &lt; X &lt; UB.
+<dt><strong>lower_bounds, upper_bounds</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p><cite>lower_bounds</cite> (<cite>LB</cite>) and <cite>upper_bounds</cite> (<cite>UB</cite>) define a set
+of strict lower and upper bounds for the coordinate vector, <cite>x</cite>, so 
+that the posterior has support on <cite>LB</cite> &lt; <cite>x</cite> &lt; <cite>UB</cite>.
 If scalars, the bound is replicated in each dimension. Use
-empty matrices for LB and UB if no bounds exist. Set LB[i] = -Inf
-and UB[i] = Inf if the i-th coordinate is unbounded (while other
-coordinates may be bounded). Note that if LB and UB contain
-unbounded variables, the respective values of PLB and PUB need to be
-specified (see below), by default None</p>
+<code class="docutils literal notranslate"><span class="pre">None</span></code> for <cite>LB</cite> and <cite>UB</cite> if no bounds exist. Set <cite>LB</cite> [<cite>i</cite>] = -<code class="docutils literal notranslate"><span class="pre">inf</span></code>
+and <cite>UB</cite> [<cite>i</cite>] = <code class="docutils literal notranslate"><span class="pre">inf</span></code> if the <cite>i</cite>-th coordinate is unbounded (while 
+other coordinates may be bounded). Note that if <cite>LB</cite> and <cite>UB</cite> contain
+unbounded variables, the respective values of <cite>PLB</cite> and <cite>PUB</cite> need to 
+be specified (see below), by default <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 </dd>
-<dt><strong>plausible_lower_bounds, plausible_upper_bounds</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>Specifies a set of plausible_lower_bounds (PLB) and
-plausible_upper_bounds (PUB) such that LB &lt; PLB &lt; PUB &lt; UB.
-Both PLB and PUB need to be finite. PLB and PUB represent a
+<dt><strong>plausible_lower_bounds, plausible_upper_bounds</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>Specifies a set of <cite>plausible_lower_bounds</cite> (<cite>PLB</cite>) and
+<cite>plausible_upper_bounds</cite> (<cite>PUB</cite>) such that <cite>LB</cite> &lt; <cite>PLB</cite> &lt; <cite>PUB</cite> &lt; <cite>UB</cite>.
+Both <cite>PLB</cite> and <cite>PUB</cite> need to be finite. <cite>PLB</cite> and <cite>PUB</cite> represent a
 “plausible” range, which should denote a region of high posterior
 probability mass. Among other things, the plausible box is used to
 draw initial samples and to set priors over hyperparameters of the
-algorithm. When in doubt, we found that setting PLB and PUB using
+algorithm. When in doubt, we found that setting <cite>PLB</cite> and <cite>PUB</cite> using
 the topmost ~68% percentile range of the prior (e.g, mean +/- 1 SD
 for a Gaussian prior) works well in many cases (but note that
-additional information might afford a better guess), both are
-by default None.</p>
+additional information might afford a better guess). Both are
+by default <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 </dd>
-<dt><strong>user_options</strong><span class="classifier">dict, optional</span></dt><dd><p>Modified options can be passed as a dict. Please refer to the
-respective VBMC options page for the default options. If no
-user_options are passed, the default options are used.</p>
+<dt><strong>user_options</strong><span class="classifier">dict, optional</span></dt><dd><p>Additional options can be passed as a dict. Please refer to the
+VBMC options page for the default options. If no <cite>user_options</cite> are 
+passed, the default options are used.</p>
 </dd>
 </dl>
 </dd>
@@ -318,11 +338,30 @@ user_options are passed, the default options are used.</p>
 <dt>ValueError</dt><dd><p>When neither <cite>x0</cite> or (<cite>plausible_lower_bounds</cite> and
 <cite>plausible_upper_bounds</cite>) are specified.</p>
 </dd>
-<dt>ValueError</dt><dd><p>Various checks for the bounds (LB, UB, PLB, PUB) of VBMC.</p>
+<dt>ValueError</dt><dd><p>When various checks for the bounds (LB, UB, PLB, PUB) of VBMC fail.</p>
 </dd>
 </dl>
 </dd>
 </dl>
+<p class="rubric">Notes</p>
+<p>The current version of <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> only supports noiseless evaluations of the 
+log posterior <a class="reference internal" href="#r27124873b5f9-1" id="id1">[1]</a>. Noisy evaluations as in <a class="reference internal" href="#r27124873b5f9-2" id="id2">[2]</a> are not implemented yet.</p>
+<p class="rubric">References</p>
+<dl class="citation">
+<dt class="label" id="r27124873b5f9-1"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
+<dd><p>Acerbi, L. (2018). “Variational Bayesian Monte Carlo”. In Advances 
+in Neural Information Processing Systems 31 (NeurIPS 2018), pp. 8213-8223.</p>
+</dd>
+<dt class="label" id="r27124873b5f9-2"><span class="brackets"><a class="fn-backref" href="#id2">2</a></span></dt>
+<dd><p>Acerbi, L. (2020). “Variational Bayesian Monte Carlo with Noisy
+Likelihoods”. In Advances in Neural Information Processing Systems 33 
+(NeurIPS 2020).</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>For <cite>VBMC</cite> usage examples, please look up the Jupyter notebook tutorials
+in the pyvbmc documentation: 
+<a class="reference external" href="https://lacerbi.github.io/pyvbmc/_examples/pyvbmc_example_1.html">https://lacerbi.github.io/pyvbmc/_examples/pyvbmc_example_1.html</a></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.vbmc.VBMC.determine_best_vp">
 <span class="sig-name descname"><span class="pre">determine_best_vp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">safe_sd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frac_back</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rank_criterion_flag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc\vbmc\vbmc.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.VBMC.determine_best_vp" title="Permalink to this definition">¶</a></dt>
@@ -348,9 +387,9 @@ by default False.</p>
 <dd class="field-even"><dl class="simple">
 <dt><strong>vp</strong><span class="classifier">VariationalPosterior</span></dt><dd><p>The VariationalPosterior found during the optimization of VBMC.</p>
 </dd>
-<dt><strong>elbo</strong><span class="classifier">VariationalPosterior</span></dt><dd><p>The ELBO of the iteration with the best VariationalPosterior.</p>
+<dt><strong>elbo</strong><span class="classifier">float</span></dt><dd><p>The ELBO of the iteration with the best VariationalPosterior.</p>
 </dd>
-<dt><strong>elbo_sd</strong><span class="classifier">VariationalPosterior</span></dt><dd><p>The ELBO_SD of the iteration with the best VariationalPosterior.</p>
+<dt><strong>elbo_sd</strong><span class="classifier">float</span></dt><dd><p>The ELBO_SD of the iteration with the best VariationalPosterior.</p>
 </dd>
 <dt><strong>idx_best</strong><span class="classifier">int</span></dt><dd><p>The index of the iteration with the best VariationalPosterior.</p>
 </dd>
@@ -391,7 +430,32 @@ final boost.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.vbmc.VBMC.optimize">
 <span class="sig-name descname"><span class="pre">optimize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc\vbmc\vbmc.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.VBMC.optimize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Execute the VBMC loop. TBD.</p>
+<dd><p>Run inference on an initialized <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> object.</p>
+<p>VBMC computes a variational approximation of the full posterior and the
+ELBO (evidence lower bound), a lower bound on the log normalization 
+constant (log marginal likelhood or log model evidence) for the provided 
+unnormalized log posterior.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>vp</strong><span class="classifier">VariationalPosterior</span></dt><dd><p>The <code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code> computed by VBMC.</p>
+</dd>
+<dt><strong>elbo</strong><span class="classifier">float</span></dt><dd><p>An estimate of the ELBO for the returned <cite>vp</cite>.</p>
+</dd>
+<dt><strong>elbo_sd</strong><span class="classifier">float</span></dt><dd><p>The standard deviation of the estimate of the ELBO. Note that this 
+standard deviation is <em>not</em> representative of the error between the 
+<cite>elbo</cite> and the true log marginal likelihood.</p>
+</dd>
+<dt><strong>success_flag</strong><span class="classifier">bool</span></dt><dd><p><cite>success_flag</cite> is <code class="docutils literal notranslate"><span class="pre">True</span></code> if the inference reached stability within 
+the provided budget of function evaluations, suggesting convergence.
+If <code class="docutils literal notranslate"><span class="pre">False</span></code>, the returned solution has not stabilized and should
+not be trusted.</p>
+</dd>
+<dt><strong>results_dict</strong><span class="classifier">dict</span></dt><dd><p>A dictionary with additional information about the VBMC run.</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -525,7 +589,7 @@ of mixture components the given VP has.</p>
     <div class="container">
       <p>
         
-            &copy; Copyright 2021, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).<br/>
+            &copy; Copyright 2022, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).<br/>
       </p>
     </div>
   </footer>

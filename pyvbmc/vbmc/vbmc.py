@@ -22,40 +22,50 @@ from .variational_optimization import optimize_vp, update_K
 
 class VBMC:
     """
-    The VBMC algorithm class.
+    Posterior and model inference via Variational Bayesian Monte Carlo (VBMC).
+    
+    VBMC computes a variational approximation of the full posterior and a lower 
+    bound on the normalization constant (marginal likelhood or model evidence) 
+    for a provided unnormalized log posterior. 
+
+    Initialize a ``VBMC`` object to set up the inference problem, then run
+    ``optimize()``. See the examples for more details.
 
     Parameters
     ----------
     fun : callable
-        A given target log posterior FUN.
+        A given target log posterior `fun`. `fun` accepts input `x` and returns 
+        the value of the target log-joint, that is the unnormalized 
+        log-posterior density, at `x`.
     x0 : np.ndarray, optional
-        [description], by default None
+        Starting point for the inference. Ideally `x0` is a point in the
+        proximity of the mode of the posterior. Default is ``None``.
     lower_bounds, upper_bounds : np.ndarray, optional
-        Lower_bounds (LB) and upper_bounds (UB) define a set
-        of strict lower and upper bounds coordinate vector, X, so that the
-        posterior has support on LB < X < UB.
+        `lower_bounds` (`LB`) and `upper_bounds` (`UB`) define a set
+        of strict lower and upper bounds for the coordinate vector, `x`, so 
+        that the posterior has support on `LB` < `x` < `UB`.
         If scalars, the bound is replicated in each dimension. Use
-        empty matrices for LB and UB if no bounds exist. Set LB[i] = -Inf
-        and UB[i] = Inf if the i-th coordinate is unbounded (while other
-        coordinates may be bounded). Note that if LB and UB contain
-        unbounded variables, the respective values of PLB and PUB need to be
-        specified (see below), by default None
+        ``None`` for `LB` and `UB` if no bounds exist. Set `LB` [`i`] = -``inf``
+        and `UB` [`i`] = ``inf`` if the `i`-th coordinate is unbounded (while 
+        other coordinates may be bounded). Note that if `LB` and `UB` contain
+        unbounded variables, the respective values of `PLB` and `PUB` need to 
+        be specified (see below), by default ``None``.
     plausible_lower_bounds, plausible_upper_bounds : np.ndarray, optional
-        Specifies a set of plausible_lower_bounds (PLB) and
-        plausible_upper_bounds (PUB) such that LB < PLB < PUB < UB.
-        Both PLB and PUB need to be finite. PLB and PUB represent a
+        Specifies a set of `plausible_lower_bounds` (`PLB`) and
+        `plausible_upper_bounds` (`PUB`) such that `LB` < `PLB` < `PUB` < `UB`.
+        Both `PLB` and `PUB` need to be finite. `PLB` and `PUB` represent a
         "plausible" range, which should denote a region of high posterior
         probability mass. Among other things, the plausible box is used to
         draw initial samples and to set priors over hyperparameters of the
-        algorithm. When in doubt, we found that setting PLB and PUB using
+        algorithm. When in doubt, we found that setting `PLB` and `PUB` using
         the topmost ~68% percentile range of the prior (e.g, mean +/- 1 SD
         for a Gaussian prior) works well in many cases (but note that
-        additional information might afford a better guess), both are
-        by default None.
+        additional information might afford a better guess). Both are
+        by default ``None``.
     user_options : dict, optional
-        Modified options can be passed as a dict. Please refer to the
-        respective VBMC options page for the default options. If no
-        user_options are passed, the default options are used.
+        Additional options can be passed as a dict. Please refer to the
+        VBMC options page for the default options. If no `user_options` are 
+        passed, the default options are used.
 
     Raises
     ------
@@ -63,7 +73,26 @@ class VBMC:
         When neither `x0` or (`plausible_lower_bounds` and
         `plausible_upper_bounds`) are specified.
     ValueError
-        Various checks for the bounds (LB, UB, PLB, PUB) of VBMC.
+        When various checks for the bounds (LB, UB, PLB, PUB) of VBMC fail.
+
+    Notes
+    -----
+    The current version of ``VBMC`` only supports noiseless evaluations of the 
+    log posterior [1]_. Noisy evaluations as in [2]_ are not implemented yet.
+
+    References
+    ----------
+    .. [1] Acerbi, L. (2018). "Variational Bayesian Monte Carlo". In Advances 
+       in Neural Information Processing Systems 31 (NeurIPS 2018), pp. 8213-8223.
+    .. [2] Acerbi, L. (2020). "Variational Bayesian Monte Carlo with Noisy
+       Likelihoods". In Advances in Neural Information Processing Systems 33 
+       (NeurIPS 2020).
+
+    Examples
+    --------
+    For `VBMC` usage examples, please look up the Jupyter notebook tutorials
+    in the pyvbmc documentation: 
+    https://lacerbi.github.io/pyvbmc/_examples/pyvbmc_example_1.html
     """
 
     def __init__(
@@ -698,7 +727,30 @@ class VBMC:
 
     def optimize(self):
         """
-        Execute the VBMC loop. TBD.
+        Run inference on an initialized ``VBMC`` object. 
+        
+        VBMC computes a variational approximation of the full posterior and the
+        ELBO (evidence lower bound), a lower bound on the log normalization 
+        constant (log marginal likelhood or log model evidence) for the provided 
+        unnormalized log posterior.
+
+        Returns
+        -------
+        vp : VariationalPosterior
+            The ``VariationalPosterior`` computed by VBMC.
+        elbo : float
+            An estimate of the ELBO for the returned `vp`.
+        elbo_sd : float
+            The standard deviation of the estimate of the ELBO. Note that this 
+            standard deviation is *not* representative of the error between the 
+            `elbo` and the true log marginal likelihood.
+        success_flag : bool
+           `success_flag` is ``True`` if the inference reached stability within 
+           the provided budget of function evaluations, suggesting convergence.
+           If ``False``, the returned solution has not stabilized and should
+           not be trusted.
+        results_dict : dict
+            A dictionary with additional information about the VBMC run.
         """
         is_finished = False
         # the iterations of pyvbmc start at 0
@@ -1753,9 +1805,9 @@ class VBMC:
         -------
         vp : VariationalPosterior
             The VariationalPosterior found during the optimization of VBMC.
-        elbo : VariationalPosterior
+        elbo : float
             The ELBO of the iteration with the best VariationalPosterior.
-        elbo_sd : VariationalPosterior
+        elbo_sd : float
             The ELBO_SD of the iteration with the best VariationalPosterior.
         idx_best : int
             The index of the iteration with the best VariationalPosterior.

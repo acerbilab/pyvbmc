@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.abspath("../.."))
 # -- Project information -----------------------------------------------------
 
 project = "PyVBMC"
-copyright = "2021, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki)"
+copyright = "2022, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki)"
 
 
 # -- General configuration ---------------------------------------------------

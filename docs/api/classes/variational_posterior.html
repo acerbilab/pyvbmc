@@ -36,6 +36,8 @@
     <script src="../../_static/togglebutton.js"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
     <script src="../../_static/sphinx-book-theme.12a9622fbb08dcb3a2a40b2c02b83a57.js"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="VBMC" href="vbmc.html" />
@@ -294,29 +296,50 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.variational_posterior.VariationalPosterior">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.variational_posterior.</span></span><span class="sig-name descname"><span class="pre">VariationalPosterior</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter_transformer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc\variational_posterior\variational_posterior.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.variational_posterior.VariationalPosterior" title="Permalink to this definition">¶</a></dt>
-<dd><p>The Variational Posterior class used in the context of VBMC.</p>
+<dd><p>The variational posterior class used in <code class="docutils literal notranslate"><span class="pre">pyvbmc</span></code>.</p>
+<p>The variational posterior represents the approximate posterior as returned 
+by the Variational Bayesian Monte Carlo (VBMC) algorithm.</p>
+<p>In VBMC, the variational posterior is a weighted mixture of multivariate 
+normal distributions (see Notes below for details).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>D</strong><span class="classifier">int</span></dt><dd><p>The number of dimensions of the Variational Posterior.</p>
+<dt><strong>D</strong><span class="classifier">int</span></dt><dd><p>The number of dimensions (i.e., parameters) of the posterior.</p>
 </dd>
 <dt><strong>K</strong><span class="classifier">int, optional</span></dt><dd><p>The number of mixture components, default 2.</p>
 </dd>
-<dt><strong>x0</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>The starting vector for the mixture components means, it can be a
-single array or multiple rows (up to K); missing rows are
-duplicated by making copies of x0, default np.zeros.</p>
+<dt><strong>x0</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>The starting vector for the mixture components means. It can be a
+single array or multiple rows (up to <cite>K</cite>); missing rows are
+duplicated by making copies of <cite>x0</cite>, default <code class="docutils literal notranslate"><span class="pre">np.zeros</span></code>.</p>
 </dd>
-<dt><strong>parameter_transformer</strong><span class="classifier">ParameterTransformer, optional</span></dt><dd><p>The ParameterTransformer object specifying the transformation of the
-input space that leads to the current representation used by the
+<dt><strong>parameter_transformer</strong><span class="classifier">ParameterTransformer, optional</span></dt><dd><p>The <code class="docutils literal notranslate"><span class="pre">ParameterTransformer</span></code> object specifying the transformation of 
+the input space that leads to the current representation used by the
 variational posterior, by default uses an identity transform.</p>
 </dd>
 </dl>
 </dd>
 </dl>
+<p class="rubric">Notes</p>
+<p>In VBMC, the variational posterior is defined as a mixture of multivariate 
+normal distributions as follows:</p>
+<div class="math notranslate nohighlight">
+\[q({\theta}) = \sum_{k = 1}^K w_k N(\theta, \mu_k, \sigma^2_k \Lambda)\]</div>
+<p>where <span class="math notranslate nohighlight">\(w_k\)</span> are the mixture weights, <span class="math notranslate nohighlight">\(\mu_k\)</span> the component means, 
+<span class="math notranslate nohighlight">\(\sigma_k\)</span> scaling factors, and <span class="math notranslate nohighlight">\(\Lambda\)</span> is a diagonal matrix 
+common to all components with elements <span class="math notranslate nohighlight">\(\lambda^2_d\)</span> on the diagonal,
+for <span class="math notranslate nohighlight">\(1 \le d \le D\)</span>.</p>
+<p>Note that <span class="math notranslate nohighlight">\(q({\theta})\)</span> is defined in an unconstrained space. 
+Constrained variables in the posterior are mapped to a trasformed, 
+unconstrained space via a nonlinear mapping (represented by a 
+<code class="docutils literal notranslate"><span class="pre">ParameterTransformer</span></code> object). The transformation is handled 
+automatically.</p>
+<p>In practice, you would almost never create a new <code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code> 
+object, simply use the variational posteriors returned by <code class="docutils literal notranslate"><span class="pre">VBMC</span></code>.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.variational_posterior.VariationalPosterior.get_bounds">
 <span class="sig-name descname"><span class="pre">get_bounds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc\variational_posterior\variational_posterior.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.variational_posterior.VariationalPosterior.get_bounds" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute soft bounds for variational posterior parameters.</p>
+<p>These bounds are used during the variational optimization in <code class="docutils literal notranslate"><span class="pre">VBMC</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
@@ -356,19 +379,20 @@ variational parameters.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.variational_posterior.VariationalPosterior.get_parameters">
 <span class="sig-name descname"><span class="pre">get_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rawflag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc\variational_posterior\variational_posterior.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.variational_posterior.VariationalPosterior.get_parameters" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return all the active VariationalPosterior parameters
-flattened as a 1D (numpy) array and properly transformed.</p>
+<dd><p>Get variational posterior parameters as single array.</p>
+<p>Return all the active <code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code> parameters
+flattened as a 1D (numpy) array, possibly transformed.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>rawflag</strong><span class="classifier">bool, optional</span></dt><dd><p>Specifies whether the sigma and lambda are
-returned as raw (unconstrained) or not, by default True.</p>
+<dt><strong>rawflag</strong><span class="classifier">bool, optional</span></dt><dd><p>Specifies whether the sigma and lambda parameters are
+returned as raw (unconstrained) or not, by default <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
 </dd>
 </dl>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
-<dt><strong>theta</strong><span class="classifier">np.ndarray</span></dt><dd><p>The VP parameters flattenend as an 1D array.</p>
+<dt><strong>theta</strong><span class="classifier">np.ndarray</span></dt><dd><p>The variational posterior parameters flattenend as a 1D array.</p>
 </dd>
 </dl>
 </dd>
@@ -378,61 +402,66 @@ returned as raw (unconstrained) or not, by default True.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.variational_posterior.VariationalPosterior.kldiv">
 <span class="sig-name descname"><span class="pre">kldiv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vp2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyvbmc.variational_posterior.VariationalPosterior" title="pyvbmc.variational_posterior.variational_posterior.VariationalPosterior"><span class="pre">pyvbmc.variational_posterior.variational_posterior.VariationalPosterior</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaussflag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc\variational_posterior\variational_posterior.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.variational_posterior.VariationalPosterior.kldiv" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the Kullback-Leibler divergence between two variational
-posteriors.</p>
-<p>The other variational posterior can be specified as <cite>vp2</cite> (an instance
-of the class VariationalPosterior) or using with <cite>samples</cite> from the
-other VariationalPosterior. One of the two must be specified.</p>
+<dd><p>Kullback-Leibler divergence between two variational posteriors.</p>
+<p>Compute the forward and reverse Kullback-Leibler (KL) divergence between
+two posteriors. The other variational posterior can be specified as 
+<cite>vp2</cite> (an instance of the class <code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code>) or with 
+<cite>samples</cite>. One of the two must be specified.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>vp2</strong><span class="classifier">VariationalPosterior, optional</span></dt><dd><p>The other VariationalPosterior, by default None.</p>
+<dt><strong>vp2</strong><span class="classifier">VariationalPosterior, optional</span></dt><dd><p>The other <code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code>, by default None.</p>
 </dd>
-<dt><strong>samples</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>An N-by-D matrix of samples from the other variational
-posterior, by default None.</p>
+<dt><strong>samples</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>An <cite>N</cite>-by-<cite>D</cite> matrix of samples from the other variational
+posterior, by default <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 </dd>
-<dt><strong>N</strong><span class="classifier">int, optional</span></dt><dd><p>The number of random draws to estimate the kldiv,
-by default int(1e5).</p>
+<dt><strong>N</strong><span class="classifier">int, optional</span></dt><dd><p>The number of random samples to estimate the KL divergence,
+by default <code class="docutils literal notranslate"><span class="pre">int(1e5)</span></code>.</p>
 </dd>
-<dt><strong>gaussflag</strong><span class="classifier">bool, optional</span></dt><dd><p>Returns a “Gaussianized” KL-divergence if gaussflag=True,
-that is the KL divergence between two
-multivariate normal distibutions with the same moments
-as the variational posteriors given as inputs, by default False.</p>
+<dt><strong>gaussflag</strong><span class="classifier">bool, optional</span></dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">True</span></code>, returns a “Gaussianized” KL-divergence, that is the KL 
+divergence between two multivariate normal distributions with the 
+same moments as the variational posteriors given as inputs. 
+By default <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
 </dd>
 </dl>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
-<dt>kldiv: np.ndarray</dt><dd><p>The Kullback-Leibler divergence between the two VPs.</p>
+<dt>kldiv: np.ndarray</dt><dd><p>A two-element vector containing the forward and reverse 
+Kullback-Leibler divergence between the two posteriors.</p>
 </dd>
 </dl>
 </dd>
 <dt class="field-odd">Raises</dt>
 <dd class="field-odd"><dl class="simple">
-<dt>ValueError</dt><dd><p>Raised if neither vp2 nor samples are specified.</p>
+<dt>ValueError</dt><dd><p>Raised if neither <cite>vp2</cite> nor <cite>samples</cite> are specified.</p>
 </dd>
-<dt>ValueError</dt><dd><p>Raised if vp2 is not provided but gaussflag=true.</p>
-</dd>
-</dl>
+<dt>ValueError</dt><dd><p>Raised if <cite>vp2</cite> is not provided but <cite>gaussflag</cite> = <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
 </dd>
 </dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Since the KL divergence is not symmetric, the method returns both the
+forward and the reverse KL divergence, that is KL(<cite>vp1</cite> || <cite>vp2</cite>) and 
+KL(<cite>vp2</cite> || <cite>vp1</cite>).</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.variational_posterior.VariationalPosterior.mode">
 <span class="sig-name descname"><span class="pre">mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nmax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origflag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc\variational_posterior\variational_posterior.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.variational_posterior.VariationalPosterior.mode" title="Permalink to this definition">¶</a></dt>
-<dd><p>Find the mode of Variational Posterior.</p>
+<dd><p>Find the mode of the variational posterior.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>nmax</strong><span class="classifier">int, optional</span></dt><dd><p>Maximum number of optimization runs to find the mode.
-If nmax &lt; self.K the starting points for the optimization are chosen
-as the centers of the components with the highest values of the pdf
-at those points, by default 20.</p>
+If <cite>nmax</cite> &lt; <cite>self.K</cite>, the starting points for the optimization are 
+chosen as the centers of the components with the highest values of 
+the pdf at those points. By default <cite>nmax</cite> = 20.</p>
 </dd>
-<dt><strong>origflag</strong><span class="classifier">bool, optional</span></dt><dd><p>if origflag=True (default) find the  mode of the
-variational posterior in the original parameter space or if
-origflag=False in the transformed parameter space, by default True.</p>
+<dt><strong>origflag</strong><span class="classifier">bool, optional</span></dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">True</span></code> find the mode of the variational posterior in the 
+original parameter space, otherwise in the transformed parameter 
+space. By default <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
 </dd>
 </dl>
 </dd>
@@ -443,24 +472,30 @@ origflag=False in the transformed parameter space, by default True.</p>
 </dl>
 </dd>
 </dl>
+<p class="rubric">Notes</p>
+<p>The mode is not invariant to nonlinear reparameterizations of 
+the input space, so the mode in the original space and the mode in the
+transformed (unconstrained) space will generally be in different 
+locations (even after applying the appropriate transformations).</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.variational_posterior.VariationalPosterior.moments">
 <span class="sig-name descname"><span class="pre">moments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origflag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">covflag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc\variational_posterior\variational_posterior.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.variational_posterior.VariationalPosterior.moments" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the mean MU and covariance matrix SIGMA
-of the variational posterior via Monte Carlo sampling.</p>
+<dd><p>Compute mean and covariance matrix of variational posterior.</p>
+<p>In the original space, the moments are estimated via Monte Carlo
+sampling. If requested in the transformed (unconstrained) space used
+internally by VBMC, the moments can be computed analytically.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>N</strong><span class="classifier">int, optional</span></dt><dd><p>The number of samples to compute moments from, by default int(1e6).</p>
+<dt><strong>N</strong><span class="classifier">int, optional</span></dt><dd><p>Number of samples used to estimate the moments, by default <code class="docutils literal notranslate"><span class="pre">int(1e6)</span></code>.</p>
 </dd>
-<dt><strong>origflag</strong><span class="classifier">bool, optional</span></dt><dd><p>if origflag=True (default) sample in the original parameter space or
-if origflag=False sample in the transformed VBMC space,
-by default True.</p>
+<dt><strong>origflag</strong><span class="classifier">bool, optional</span></dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">True</span></code>, compute moments in the original parameter space, 
+otherwise in the transformed VBMC space. By default <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
 </dd>
-<dt><strong>covflag</strong><span class="classifier">bool, optional</span></dt><dd><p>If covflag=True returns covariance as second return value,
-by default False.</p>
+<dt><strong>covflag</strong><span class="classifier">bool, optional</span></dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">True</span></code>, return the covariance matrix as a second return value,
+by default <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
 </dd>
 </dl>
 </dd>
@@ -468,7 +503,7 @@ by default False.</p>
 <dd class="field-even"><dl class="simple">
 <dt>mean: np.ndarray</dt><dd><p>The mean of the variational posterior.</p>
 </dd>
-<dt>cov: np.ndarray</dt><dd><p>If covflag=True returns covariance as second return value.</p>
+<dt>cov: np.ndarray</dt><dd><p>If <cite>covflag</cite> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, returns the covariance matrix as well.</p>
 </dd>
 </dl>
 </dd>
@@ -478,94 +513,97 @@ by default False.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.variational_posterior.VariationalPosterior.mtv">
 <span class="sig-name descname"><span class="pre">mtv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vp2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyvbmc.variational_posterior.VariationalPosterior" title="pyvbmc.variational_posterior.variational_posterior.VariationalPosterior"><span class="pre">pyvbmc.variational_posterior.variational_posterior.VariationalPosterior</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100000</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc\variational_posterior\variational_posterior.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.variational_posterior.VariationalPosterior.mtv" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the marginal total variation (MTV) distances between the VP and
-another variational posterior.</p>
-<p>The other variational posterior can be specified as <cite>vp2</cite> (an instance
-of the class VariationalPosterior) or using with <cite>samples</cite> from the
-other VariationalPosterior. One of the two must be specified.</p>
+<dd><p>Marginal total variation distances between two variational posteriors.</p>
+<p>Compute the total variation distance between the variational 
+posterior and a second posterior, separately for each dimension (hence
+“marginal” total variation distance, MTV). The second posterior can be
+specified either as a <code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code> or as a set of samples.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>vp2</strong><span class="classifier">VariationalPosterior, optional</span></dt><dd><p>The other VariationalPosterior, by default None.</p>
+<dt><strong>vp2</strong><span class="classifier">VariationalPosterior, optional</span></dt><dd><p>The other <code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code>, by default <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 </dd>
-<dt><strong>samples</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>An N-by-D matrix of samples from the other variational
-posterior, by default None.</p>
+<dt><strong>samples</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>An <cite>N</cite>-by-<cite>D</cite> matrix of samples from the other variational
+posterior, by default <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 </dd>
-<dt><strong>N</strong><span class="classifier">int, optional</span></dt><dd><p>The number of random draws to estimate the MTV, by default int(1e5).</p>
+<dt><strong>N</strong><span class="classifier">int, optional</span></dt><dd><p>The number of random draws to estimate the MTV, by default <code class="docutils literal notranslate"><span class="pre">int(1e5)</span></code>.</p>
 </dd>
 </dl>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
-<dt>mtv: np.ndarray</dt><dd><p>A D-element vector whose elements are the total variation distance
-between the marginal distributions of VP and VP2 or samples,
+<dt>mtv: np.ndarray</dt><dd><p>A <cite>D</cite>-element vector whose elements are the total variation distance
+between the marginal distributions of <cite>vp</cite> and <cite>vp1</cite> or <cite>samples</cite>,
 for each coordinate dimension.</p>
 </dd>
 </dl>
 </dd>
 <dt class="field-odd">Raises</dt>
 <dd class="field-odd"><dl class="simple">
-<dt>ValueError</dt><dd><p>Raised if neither vp2 nor samples are specified.</p>
+<dt>ValueError</dt><dd><p>Raised if neither <cite>vp2</cite> nor <cite>samples</cite> are specified.</p>
 </dd>
 </dl>
 </dd>
 </dl>
+<p class="rubric">Notes</p>
+<p>The total variation distance between two densities <cite>p1</cite> and <cite>p2</cite> is:</p>
+<div class="math notranslate nohighlight">
+\[TV(p1, p2) = \frac{1}{2} \int | p1(x) - p2(x) | dx.\]</div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.variational_posterior.VariationalPosterior.pdf">
 <span class="sig-name descname"><span class="pre">pdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origflag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logflag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transflag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gradflag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">inf</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc\variational_posterior\variational_posterior.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.variational_posterior.VariationalPosterior.pdf" title="Permalink to this definition">¶</a></dt>
-<dd><p>Implements the probability density function of VP approximation.</p>
+<dd><p>Probability density function of the variational posterior.</p>
+<p>Compute the probability density function (pdf) of the variational 
+posterior at one or multiple input points.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>x</strong><span class="classifier">np.ndarray</span></dt><dd><p>X is a matrix of rows to evaluate the pdf at.
-The Rows of the N-by-D matrix x
-correspond to observations or points,
-and columns correspond to variables or coordinates.</p>
+<dt><strong>x</strong><span class="classifier">np.ndarray</span></dt><dd><p><cite>x</cite> is a matrix of inputs to evaluate the pdf at.
+The rows of the <cite>N</cite>-by-<cite>D</cite> matrix <cite>x</cite> correspond to observations or 
+points, and columns correspond to variables or coordinates.</p>
 </dd>
 <dt><strong>origflag</strong><span class="classifier">bool, optional</span></dt><dd><p>Controls if the value of the posterior density should be evaluated
-in the original parameter space for origflag=True (default), or
-in the transformed space if origflag=False, by default True.</p>
+in the original parameter space for <cite>origflag</cite> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, or in the 
+transformed space if <cite>origflag</cite> is <code class="docutils literal notranslate"><span class="pre">False</span></code>, by default <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
 </dd>
-<dt><strong>logflag</strong><span class="classifier">bool, optional</span></dt><dd><p>Controls if the the log pdf should be returned if logflag=True,
-this is by default False.</p>
+<dt><strong>logflag</strong><span class="classifier">bool, optional</span></dt><dd><p>If <cite>logflag</cite> is <code class="docutils literal notranslate"><span class="pre">True</span></code> return the logarithm of the pdf, 
+by default <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
 </dd>
-<dt><strong>transflag</strong><span class="classifier">bool, optional</span></dt><dd><p>Specifies if X is already specified in transformed space.
-TRANSFLAG=True assumes that X is already specified in tranformed
-space. Otherwise, X is specified in the original parameter
-space, by default False.</p>
+<dt><strong>transflag</strong><span class="classifier">bool, optional</span></dt><dd><p>Specifies if <cite>x</cite> is already specified in transformed space.
+<cite>transflag</cite> = <code class="docutils literal notranslate"><span class="pre">True</span></code> assumes that <cite>x</cite> is already specified in 
+tranformed space. Otherwise, <cite>x</cite> is specified in the original 
+parameter space. By default <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
 </dd>
-<dt><strong>gradflag</strong><span class="classifier">bool, optional</span></dt><dd><p>If gradflag=True the gradient should be returned, by default False.</p>
+<dt><strong>gradflag</strong><span class="classifier">bool, optional</span></dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">True</span></code> the gradient of the pdf is returned as a second output, 
+by default <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
 </dd>
-<dt><strong>df</strong><span class="classifier">float, optional</span></dt><dd><p>Compute the pdf of a heavy-tailed version of the
-variational posterior, in which the multivariate normal components
-have been replaced by  multivariate t-distributions with
-DF degrees of freedom.The default is df=Inf, limit in which the
-t-distribution becomes a multivariate normal., by default np.inf</p>
+<dt><strong>df</strong><span class="classifier">float, optional</span></dt><dd><p>Compute the pdf of a heavy-tailed version of the variational 
+posterior, in which the multivariate normal components
+have been replaced by multivariate <cite>t</cite>-distributions with
+<cite>df</cite> degrees of freedom. The default is <cite>df</cite> = <code class="docutils literal notranslate"><span class="pre">np.inf</span></code>, limit in 
+which the <cite>t</cite>-distribution becomes a multivariate normal.</p>
 </dd>
 </dl>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
 <dt>pdf: np.ndarray</dt><dd><p>The probability density of the variational posterior
-evaluated at each row of x.</p>
+evaluated at each row of <cite>x</cite>.</p>
 </dd>
-<dt>gradient: np.ndarray</dt><dd><p>If the gradflag=True, the function returns
-the gradient as well.</p>
+<dt>gradient: np.ndarray</dt><dd><p>If <cite>gradflag</cite> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, the function returns the gradient as well.</p>
 </dd>
 </dl>
 </dd>
 <dt class="field-odd">Raises</dt>
 <dd class="field-odd"><dl class="simple">
-<dt>NotImplementedError</dt><dd><p>Raised if np.isfinite(df) and df &gt; 0 and gradflag=True
+<dt>NotImplementedError</dt><dd><p>Raised if <cite>df</cite> is non-zero and finite and <cite>gradflag</cite> = <code class="docutils literal notranslate"><span class="pre">True</span></code>
 (Gradient of heavy-tailed pdf not supported yet).</p>
 </dd>
-<dt>NotImplementedError</dt><dd><p>Raised if np.isfinite(df) and df &lt; 0 and gradflag=True
-(Gradient of heavy-tailed pdf not supported yet).</p>
-</dd>
-<dt>NotImplementedError</dt><dd><p>Raised if origflag=True and logflag=True and gradflag=True
-(Gradient computation in original space not supported yet).</p>
+<dt>NotImplementedError</dt><dd><p>Raised if <cite>origflag</cite> = <code class="docutils literal notranslate"><span class="pre">True</span></code> and <cite>logflag</cite> = <code class="docutils literal notranslate"><span class="pre">True</span></code> and 
+<cite>gradflag</cite> = <code class="docutils literal notranslate"><span class="pre">True</span></code> (Gradient computation in original space not 
+supported yet).</p>
 </dd>
 </dl>
 </dd>
@@ -575,37 +613,42 @@ the gradient as well.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.variational_posterior.VariationalPosterior.plot">
 <span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">highlight_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_vp_centres</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_style</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc\variational_posterior\variational_posterior.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.variational_posterior.VariationalPosterior.plot" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot the VP as a cornerplot of samples with optionally the centres of
-the components and the datapoints of the GP. The plot can be enhanced
-by custom styles and also datapoints of the GP can be highlighted.</p>
+<dd><p>Plot the variational posterior.</p>
+<p><cite>plot</cite> displays the variational posterior as a cornerplot showing the 
+1D and 2D marginals, estimated from samples. It uses the  <a class="reference external" href="https://corner.readthedocs.io/en/latest/index.html">corner</a> package.</p>
+<p><cite>plot</cite> also optionally displays the centres of the variational mixture
+components and the datapoints of the underlying Gaussian process (GP) 
+used by <code class="docutils literal notranslate"><span class="pre">VBMC</span></code>. The plot can be enhanced by custom styles and specific 
+datapoints of the GP can be highlighted.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>n_samples</strong><span class="classifier">int, optional</span></dt><dd><p>The number of samples from the , by default int(1e5)</p>
+<dt><strong>n_samples</strong><span class="classifier">int, optional</span></dt><dd><p>The number of posterior samples used to create the plot, by default 
+<code class="docutils literal notranslate"><span class="pre">int(1e5)</span></code>.</p>
 </dd>
-<dt><strong>title</strong><span class="classifier">str, optional</span></dt><dd><p>The title of the plot, by default None</p>
+<dt><strong>title</strong><span class="classifier">str, optional</span></dt><dd><p>The title of the plot, by default <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 </dd>
-<dt><strong>plot_data</strong><span class="classifier">bool, optional</span></dt><dd><p>Whether to plot the datapoints of the GP, by default False</p>
+<dt><strong>plot_data</strong><span class="classifier">bool, optional</span></dt><dd><p>Whether to plot the datapoints of the GP, by default <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
 </dd>
-<dt><strong>highlight_data</strong><span class="classifier">list, optional</span></dt><dd><p>Indices of the datapoints that should be plotted in a different
-way than the other datapoints, by default None</p>
+<dt><strong>highlight_data</strong><span class="classifier">list, optional</span></dt><dd><p>Indices of the GP datapoints that should be plotted in a different
+way than the other datapoints, by default <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 </dd>
-<dt><strong>plot_vp_centres</strong><span class="classifier">bool, optional</span></dt><dd><p>Whether to plot the centres of the VP components, by default False</p>
+<dt><strong>plot_vp_centres</strong><span class="classifier">bool, optional</span></dt><dd><p>Whether to plot the centres of the <cite>vp</cite> components, by default <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
 </dd>
 <dt><strong>plot_style</strong><span class="classifier">dict, optional</span></dt><dd><dl class="simple">
 <dt>A dictionary of plot styling options. The possible options are:</dt><dd><dl class="simple">
 <dt><strong>corner</strong><span class="classifier">dict, optional</span></dt><dd><p>Styling options directly passed to the corner function.
-By default: <cite>{“fig”: plt.figure(figsize=(8, 8)),
-“labels”: labels}</cite>. See the documentation of <a class="reference external" href="https://corner.readthedocs.io/en/latest/index.html">corner</a>.</p>
+By default: <code class="docutils literal notranslate"><span class="pre">{&quot;fig&quot;:</span> <span class="pre">plt.figure(figsize=(8,</span> <span class="pre">8)),</span>
+<span class="pre">&quot;labels&quot;:</span> <span class="pre">labels}</span></code>. See the documentation of <a class="reference external" href="https://corner.readthedocs.io/en/latest/index.html">corner</a>.</p>
 </dd>
 <dt><strong>data</strong><span class="classifier">dict, optional</span></dt><dd><p>Styling options used to plot the GP data.
-By default: <cite>{“s”:15, “color”:’blue’, “facecolors”: “none”}</cite></p>
+By default: <code class="docutils literal notranslate"><span class="pre">{&quot;s&quot;:15,</span> <span class="pre">&quot;color&quot;:'blue',</span> <span class="pre">&quot;facecolors&quot;:</span> <span class="pre">&quot;none&quot;}</span></code>.</p>
 </dd>
 <dt><strong>highlight_data</strong><span class="classifier">dict, optional</span></dt><dd><p>Styling options used to plot the highlighted GP data.
-By default: <cite>{“s”:15, “color”:”orange”}</cite></p>
+By default: <code class="docutils literal notranslate"><span class="pre">{&quot;s&quot;:15,</span> <span class="pre">&quot;color&quot;:&quot;orange&quot;}</span></code>.</p>
 </dd>
-<dt><strong>vp_centre</strong><span class="classifier">dict, optional</span></dt><dd><p>Styling options used to plot the VP centres.
-By default: <cite>{“marker”:”x”, “color”:”red”}</cite></p>
+<dt><strong>vp_centre</strong><span class="classifier">dict, optional</span></dt><dd><p>Styling options used to plot the <cite>vp</cite> centres.
+By default: <code class="docutils literal notranslate"><span class="pre">{&quot;marker&quot;:&quot;x&quot;,</span> <span class="pre">&quot;color&quot;:&quot;red&quot;}</span></code>.</p>
 </dd>
 </dl>
 </dd>
@@ -615,7 +658,7 @@ By default: <cite>{“marker”:”x”, “color”:”red”}</cite></p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
-<dt><strong>fig</strong><span class="classifier">matplotlib.figure.Figure</span></dt><dd><p>The resulting matplotlib figure of the plot.</p>
+<dt><strong>fig</strong><span class="classifier">matplotlib.figure.Figure</span></dt><dd><p>The resulting <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> figure of the plot.</p>
 </dd>
 </dl>
 </dd>
@@ -625,43 +668,40 @@ By default: <cite>{“marker”:”x”, “color”:”red”}</cite></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.variational_posterior.VariationalPosterior.sample">
 <span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origflag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">balanceflag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">inf</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc\variational_posterior\variational_posterior.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.variational_posterior.VariationalPosterior.sample" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sample random samples from variational posterior-</p>
+<dd><p>Draw random samples from the variational posterior.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>N</strong><span class="classifier">int</span></dt><dd><p>The number of samples to be sampled.</p>
+<dt><strong>N</strong><span class="classifier">int</span></dt><dd><p>Number of samples to draw.</p>
 </dd>
-<dt><strong>origflag</strong><span class="classifier">bool, optional</span></dt><dd><p>Controls if the the random vectors should be returned in the
-original parameter space if origflag=True (default),
-or in the transformed VBMC space
-if origflag=False, by default True.</p>
+<dt><strong>origflag</strong><span class="classifier">bool, optional</span></dt><dd><p>If <cite>origflag</cite> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, the random vectors are returned 
+in the original parameter space. If <code class="docutils literal notranslate"><span class="pre">False</span></code>, they are returned in 
+the transformed, unconstrained space used internally by VBMC. 
+By default <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
 </dd>
-<dt><strong>balanceflag</strong><span class="classifier">bool, optional</span></dt><dd><p>The boolean balanceflag=True balances the generating process
-such that the random samples in X come from each
-mixture component exactly proportionally
-(or as close as possible) to the variational mixture weights.
-If balanceflag=False (default), the generating mixture
-for each sample is determined randomly according to
-the mixture weights, by default False.</p>
+<dt><strong>balanceflag</strong><span class="classifier">bool, optional</span></dt><dd><p>If <cite>balanceflag</cite> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, the generating process is balanced 
+such that the random samples come from each mixture component 
+exactly proportionally (or as close as possible) to the variational 
+mixture weights. If <code class="docutils literal notranslate"><span class="pre">False</span></code>, the generating mixture component for 
+each sample is determined randomly, according to the mixture weights.
+By default <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
 </dd>
-<dt><strong>df</strong><span class="classifier">float, optional</span></dt><dd><p>Generate the samples from a heavy-tailed version
-of the variational posterior, in which
-the multivariate normal components have been replaced by
-multivariate t-distributions with DF degrees of freedom.
-The default is df=Inf, limit in which the t-distribution
-becomes a multivariate normal, by default np.inf.</p>
+<dt><strong>df</strong><span class="classifier">float, optional</span></dt><dd><p>Generate the samples from a heavy-tailed version of the variational 
+posterior, in which the multivariate normal components have been 
+replaced by multivariate <cite>t</cite>-distributions with <cite>df</cite> degrees of 
+freedom. The default is <code class="docutils literal notranslate"><span class="pre">np.inf</span></code>, limit in which the 
+<cite>t</cite>-distribution becomes a multivariate normal.</p>
 </dd>
 </dl>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
-<dt><strong>X</strong><span class="classifier">np.ndarray</span></dt><dd><p>X is an N-by-D matrix of random vectors chosen
-from the variational posterior.</p>
+<dt><strong>X</strong><span class="classifier">np.ndarray</span></dt><dd><p><cite>X</cite> is an <cite>N</cite>-by-<cite>D</cite> matrix of random vectors drawn from the 
+variational posterior.</p>
 </dd>
-<dt><strong>I</strong><span class="classifier">np.ndarray</span></dt><dd><p>I is an N-by-1 array such that the N-th
-element of I indicates the index of the
-variational mixture component from which
-the N-th row of X has been generated.</p>
+<dt><strong>I</strong><span class="classifier">np.ndarray</span></dt><dd><p><cite>I</cite> is an <cite>N</cite>-by-1 array such that the <cite>i</cite>-th element of <cite>I</cite> 
+indicates the index of the variational mixture component from which
+the <cite>i</cite>-th row of X has been generated.</p>
 </dd>
 </dl>
 </dd>
@@ -671,22 +711,23 @@ the N-th row of X has been generated.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.variational_posterior.VariationalPosterior.set_parameters">
 <span class="sig-name descname"><span class="pre">set_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rawflag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc\variational_posterior\variational_posterior.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.variational_posterior.VariationalPosterior.set_parameters" title="Permalink to this definition">¶</a></dt>
-<dd><p>Takes as input an np array and assigns it to the
+<dd><p>Set variational posterior parameters from a single array.</p>
+<p>Takes as input a <code class="docutils literal notranslate"><span class="pre">numpy</span></code> array and assigns it to the
 variational posterior parameters.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>theta</strong><span class="classifier">np.ndarray</span></dt><dd><p>The array with the parameters that should be assigned.</p>
 </dd>
-<dt><strong>rawflag</strong><span class="classifier">bool, optional</span></dt><dd><p>Specifies whether the sigma and lambda are
-passed as raw (unconstrained) or not, by default True.</p>
+<dt><strong>rawflag</strong><span class="classifier">bool, optional</span></dt><dd><p>Specifies whether the sigma and lambda parameters are
+passed as raw (unconstrained) or not, by default <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
 </dd>
 </dl>
 </dd>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><dl class="simple">
 <dt>ValueError</dt><dd><p>Raised if sigma, lambda and weights are not positive
-and rawflag = False</p>
+and rawflag = <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
 </dd>
 </dl>
 </dd>
@@ -725,7 +766,7 @@ and rawflag = False</p>
     <div class="container">
       <p>
         
-            &copy; Copyright 2021, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).<br/>
+            &copy; Copyright 2022, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).<br/>
       </p>
     </div>
   </footer>
