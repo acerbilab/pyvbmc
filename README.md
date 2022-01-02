@@ -99,7 +99,9 @@ Try to evaluate if pre- and postprocessing in a function can be generalized with
 The docstrings are generated following the [numpy format](https://numpydoc.readthedocs.io/en/latest/format.html).
 There are add-ons to generate docstring blueprints using IDEs.
 
-See an example for a correct docstring [here](https://numpydoc.readthedocs.io/en/latest/example.html).
+- See an example for a correct docstring from `numpy` [here](https://numpydoc.readthedocs.io/en/latest/example.html). 
+- In `pyvbmc`, the `VariationalPosterior` class can be taken as an example of (mostly) correct docstring structure, see [here](https://github.com/lacerbi/pyvbmc/blob/main/pyvbmc/variational_posterior/variational_posterior.py). 
+  - In particular, see how the single quotes and double quotes are used; the math notation is used; full stops are added at the end of each sentence, etc.
 
 ### Documentation
 
