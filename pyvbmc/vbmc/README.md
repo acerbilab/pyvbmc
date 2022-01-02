@@ -24,6 +24,7 @@ These notes are used for keeping track of ToDos and porting information.
 - in variational_optimization.py: The branches dealing with compute vargrad are untested
 - in variational_optimization.py: The vp_repo has not been ported for now (In is used in MATLAB in [vpsieve_vbmc.m](https://github.com/lacerbi/vbmc/blob/master/misc/vpsieve_vbmc.m) and filled in active_sampling). (Note by Luigi: *In practice, even in MATLAB this part seems to be implemented lazily and then it's not used. I am not sure why I did not work on this more; probably the variational optimization was working fine and couldn't be bothered to fix this properly (it seems it could help).*)
 - We have to think about what should happen when somebody calls `vbmc.optimize()` twice. More in general, we should "open the black-box" and allow (advanced) users to perform partial operations on the VBMC object. At the moment, the user can only initialize VBMC and run a full optimization (like in Matlab). Instead, we should allow users a more fine-grained control on what happens (to be discussed how).
+- Related to the point above, currently the only truly public methods of the VBMC class are `__init__` and `optimize`. The other methods, despite being visible in the documentation, are not really user-facing (for now at least). We should either make them private (add a `_` to the method name) or rethink them.
 - The logging feature is not working perfect yet, we need to think about a logging concepts. Open points have been discussed in slack.
 
 ### Matlab references:
