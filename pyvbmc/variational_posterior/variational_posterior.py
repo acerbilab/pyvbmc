@@ -17,22 +17,50 @@ from scipy.special import gammaln
 
 class VariationalPosterior:
     """
-    The Variational Posterior class used in the context of VBMC.
+    The variational posterior class used in ``pyvbmc``.
+
+    The variational posterior represents the approximate posterior as returned 
+    by the Variational Bayesian Monte Carlo (VBMC) algorithm.
+    
+    In VBMC, the variational posterior is a weighted mixture of multivariate 
+    normal distributions (see Notes below for details).
 
     Parameters
     ----------
     D : int
-        The number of dimensions of the Variational Posterior.
+        The number of dimensions (i.e., parameters) of the posterior.
     K : int, optional
         The number of mixture components, default 2.
     x0 : np.ndarray, optional
-        The starting vector for the mixture components means, it can be a
-        single array or multiple rows (up to K); missing rows are
-        duplicated by making copies of x0, default np.zeros.
+        The starting vector for the mixture components means. It can be a
+        single array or multiple rows (up to `K`); missing rows are
+        duplicated by making copies of `x0`, default ``np.zeros``.
     parameter_transformer : ParameterTransformer, optional
-        The ParameterTransformer object specifying the transformation of the
-        input space that leads to the current representation used by the
+        The ``ParameterTransformer`` object specifying the transformation of 
+        the input space that leads to the current representation used by the
         variational posterior, by default uses an identity transform.
+    
+    Notes
+    -----
+    In VBMC, the variational posterior is defined as a mixture of multivariate 
+    normal distributions as follows:
+
+    .. math:: q({\\theta}) = \sum_{k = 1}^K w_k N(\\theta, \mu_k, \sigma^2_k \Lambda)
+
+    where :math:`w_k` are the mixture weights, :math:`\mu_k` the component means, 
+    :math:`\sigma_k` scaling factors, and :math:`\Lambda` is a diagonal matrix 
+    common to all components with elements :math:`\lambda^2_d` on the diagonal,
+    for :math:`1 \le d \le D`.
+
+    Note that :math:`q({\\theta})` is defined in an unconstrained space. 
+    Constrained variables in the posterior are mapped to a trasformed, 
+    unconstrained space via a nonlinear mapping (represented by a 
+    ``ParameterTransformer`` object). The transformation is handled 
+    automatically.
+
+    In practice, you would almost never create a new ``VariationalPosterior`` 
+    object, simply use the variational posteriors returned by ``VBMC``.
+
     """
 
     def __init__(
@@ -77,8 +105,10 @@ class VariationalPosterior:
         """
         Compute soft bounds for variational posterior parameters.
 
+        These bounds are used during the variational optimization in ``VBMC``.
+
         Parameters
-        ==========
+        ----------
         X : ndarray, shape (N, D)
             Training inputs.
         options : Options
@@ -88,7 +118,7 @@ class VariationalPosterior:
             number provided at class instantiation.
 
         Returns
-        =======
+        -------
         theta_bnd : dict
             A dictionary of soft bounds with the following elements:
                 **lb** : np.ndarray
@@ -180,43 +210,40 @@ class VariationalPosterior:
         df: float = np.inf,
     ):
         """
-        Sample random samples from variational posterior-
+        Draw random samples from the variational posterior.
 
         Parameters
         ----------
         N : int
-            The number of samples to be sampled.
+            Number of samples to draw.
         origflag : bool, optional
-            Controls if the the random vectors should be returned in the
-            original parameter space if origflag=True (default),
-            or in the transformed VBMC space
-            if origflag=False, by default True.
+            If `origflag` is ``True``, the random vectors are returned 
+            in the original parameter space. If ``False``, they are returned in 
+            the transformed, unconstrained space used internally by VBMC. 
+            By default ``True``.
         balanceflag : bool, optional
-            The boolean balanceflag=True balances the generating process
-            such that the random samples in X come from each
-            mixture component exactly proportionally
-            (or as close as possible) to the variational mixture weights.
-            If balanceflag=False (default), the generating mixture
-            for each sample is determined randomly according to
-            the mixture weights, by default False.
+            If `balanceflag` is ``True``, the generating process is balanced 
+            such that the random samples come from each mixture component 
+            exactly proportionally (or as close as possible) to the variational 
+            mixture weights. If ``False``, the generating mixture component for 
+            each sample is determined randomly, according to the mixture weights.
+            By default ``False``.
         df : float, optional
-            Generate the samples from a heavy-tailed version
-            of the variational posterior, in which
-            the multivariate normal components have been replaced by
-            multivariate t-distributions with DF degrees of freedom.
-            The default is df=Inf, limit in which the t-distribution
-            becomes a multivariate normal, by default np.inf.
+            Generate the samples from a heavy-tailed version of the variational 
+            posterior, in which the multivariate normal components have been 
+            replaced by multivariate `t`-distributions with `df` degrees of 
+            freedom. The default is ``np.inf``, limit in which the 
+            `t`-distribution becomes a multivariate normal.
 
         Returns
         -------
         X : np.ndarray
-            X is an N-by-D matrix of random vectors chosen
-            from the variational posterior.
+            `X` is an `N`-by-`D` matrix of random vectors drawn from the 
+            variational posterior.
         I : np.ndarray
-            I is an N-by-1 array such that the N-th
-            element of I indicates the index of the
-            variational mixture component from which
-            the N-th row of X has been generated.
+            `I` is an `N`-by-1 array such that the `i`-th element of `I` 
+            indicates the index of the variational mixture component from which
+            the `i`-th row of X has been generated.
         """
         # missing to sample from gp
         gp_sample = False
@@ -310,56 +337,56 @@ class VariationalPosterior:
         df: float = np.inf,
     ):
         """
-        Implements the probability density function of VP approximation.
+        Probability density function of the variational posterior.
+
+        Compute the probability density function (pdf) of the variational 
+        posterior at one or multiple input points.
 
         Parameters
         ----------
         x : np.ndarray
-            X is a matrix of rows to evaluate the pdf at.
-            The Rows of the N-by-D matrix x
-            correspond to observations or points,
-            and columns correspond to variables or coordinates.
+            `x` is a matrix of inputs to evaluate the pdf at.
+            The rows of the `N`-by-`D` matrix `x` correspond to observations or 
+            points, and columns correspond to variables or coordinates.
         origflag : bool, optional
             Controls if the value of the posterior density should be evaluated
-            in the original parameter space for origflag=True (default), or
-            in the transformed space if origflag=False, by default True.
+            in the original parameter space for `origflag` is ``True``, or in the 
+            transformed space if `origflag` is ``False``, by default ``True``.
         logflag : bool, optional
-            Controls if the the log pdf should be returned if logflag=True,
-            this is by default False.
+            If `logflag` is ``True`` return the logarithm of the pdf, 
+            by default ``False``.
         transflag : bool, optional
-            Specifies if X is already specified in transformed space.
-            TRANSFLAG=True assumes that X is already specified in tranformed
-            space. Otherwise, X is specified in the original parameter
-            space, by default False.
+            Specifies if `x` is already specified in transformed space.
+            `transflag` = ``True`` assumes that `x` is already specified in 
+            tranformed space. Otherwise, `x` is specified in the original 
+            parameter space. By default ``False``.
         gradflag : bool, optional
-            If gradflag=True the gradient should be returned, by default False.
+            If ``True`` the gradient of the pdf is returned as a second output, 
+            by default ``False``.
         df : float, optional
-            Compute the pdf of a heavy-tailed version of the
-            variational posterior, in which the multivariate normal components
-            have been replaced by  multivariate t-distributions with
-            DF degrees of freedom.The default is df=Inf, limit in which the
-            t-distribution becomes a multivariate normal., by default np.inf
-
+            Compute the pdf of a heavy-tailed version of the variational 
+            posterior, in which the multivariate normal components
+            have been replaced by multivariate `t`-distributions with
+            `df` degrees of freedom. The default is `df` = ``np.inf``, limit in 
+            which the `t`-distribution becomes a multivariate normal.
+        
         Returns
         -------
         pdf: np.ndarray
             The probability density of the variational posterior
-            evaluated at each row of x.
+            evaluated at each row of `x`.
         gradient: np.ndarray
-            If the gradflag=True, the function returns
-            the gradient as well.
+            If `gradflag` is ``True``, the function returns the gradient as well.
 
         Raises
         ------
         NotImplementedError
-            Raised if np.isfinite(df) and df > 0 and gradflag=True
+            Raised if `df` is non-zero and finite and `gradflag` = ``True``
             (Gradient of heavy-tailed pdf not supported yet).
         NotImplementedError
-            Raised if np.isfinite(df) and df < 0 and gradflag=True
-            (Gradient of heavy-tailed pdf not supported yet).
-        NotImplementedError
-            Raised if origflag=True and logflag=True and gradflag=True
-            (Gradient computation in original space not supported yet).
+            Raised if `origflag` = ``True`` and `logflag` = ``True`` and 
+            `gradflag` = ``True`` (Gradient computation in original space not 
+            supported yet).
         """
         N, D = x.shape
 
@@ -499,19 +526,21 @@ class VariationalPosterior:
 
     def get_parameters(self, rawflag=True):
         """
-        Return all the active VariationalPosterior parameters
-        flattened as a 1D (numpy) array and properly transformed.
+        Get variational posterior parameters as single array.
+
+        Return all the active ``VariationalPosterior`` parameters
+        flattened as a 1D (numpy) array, possibly transformed.
 
         Parameters
         ----------
         rawflag : bool, optional
-            Specifies whether the sigma and lambda are
-            returned as raw (unconstrained) or not, by default True.
+            Specifies whether the sigma and lambda parameters are
+            returned as raw (unconstrained) or not, by default ``True``.
 
         Returns
         -------
         theta : np.ndarray
-            The VP parameters flattenend as an 1D array.
+            The variational posterior parameters flattenend as a 1D array.
         """
 
         nl = np.sqrt(np.sum(self.lambd ** 2) / self.D)
@@ -554,7 +583,9 @@ class VariationalPosterior:
 
     def set_parameters(self, theta: np.ndarray, rawflag=True):
         """
-        Takes as input an np array and assigns it to the
+        Set variational posterior parameters from a single array.
+
+        Takes as input a ``numpy`` array and assigns it to the
         variational posterior parameters.
 
         Parameters
@@ -562,14 +593,14 @@ class VariationalPosterior:
         theta : np.ndarray
             The array with the parameters that should be assigned.
         rawflag : bool, optional
-            Specifies whether the sigma and lambda are
-            passed as raw (unconstrained) or not, by default True.
+            Specifies whether the sigma and lambda parameters are
+            passed as raw (unconstrained) or not, by default ``True``.
 
         Raises
         ------
         ValueError
             Raised if sigma, lambda and weights are not positive
-            and rawflag = False
+            and rawflag = ``False``.
         """
 
         # Make sure we don't get issues with references.
@@ -633,27 +664,29 @@ class VariationalPosterior:
 
     def moments(self, N: int = int(1e6), origflag=True, covflag=False):
         """
-        Compute the mean MU and covariance matrix SIGMA
-        of the variational posterior via Monte Carlo sampling.
+        Compute mean and covariance matrix of variational posterior.
+
+        In the original space, the moments are estimated via Monte Carlo
+        sampling. If requested in the transformed (unconstrained) space used
+        internally by VBMC, the moments can be computed analytically.
 
         Parameters
         ----------
         N : int, optional
-            The number of samples to compute moments from, by default int(1e6).
+            Number of samples used to estimate the moments, by default ``int(1e6)``.
         origflag : bool, optional
-            if origflag=True (default) sample in the original parameter space or
-            if origflag=False sample in the transformed VBMC space,
-            by default True.
+            If ``True``, compute moments in the original parameter space, 
+            otherwise in the transformed VBMC space. By default ``True``.
         covflag : bool, optional
-            If covflag=True returns covariance as second return value,
-            by default False.
+            If ``True``, return the covariance matrix as a second return value,
+            by default ``False``.
 
         Returns
         -------
         mean: np.ndarray
             The mean of the variational posterior.
         cov: np.ndarray
-            If covflag=True returns covariance as second return value.
+            If `covflag` is ``True``, returns the covariance matrix as well.
         """
         if origflag:
             x, _ = self.sample(int(N), origflag=True, balanceflag=True)
@@ -680,24 +713,31 @@ class VariationalPosterior:
 
     def mode(self, nmax: int = 20, origflag=True):
         """
-        Find the mode of Variational Posterior.
+        Find the mode of the variational posterior.
 
         Parameters
         ----------
         nmax : int, optional
             Maximum number of optimization runs to find the mode.
-            If nmax < self.K the starting points for the optimization are chosen
-            as the centers of the components with the highest values of the pdf
-            at those points, by default 20.
+            If `nmax` < `self.K`, the starting points for the optimization are 
+            chosen as the centers of the components with the highest values of 
+            the pdf at those points. By default `nmax` = 20.
         origflag : bool, optional
-            if origflag=True (default) find the  mode of the
-            variational posterior in the original parameter space or if
-            origflag=False in the transformed parameter space, by default True.
+            If ``True`` find the mode of the variational posterior in the 
+            original parameter space, otherwise in the transformed parameter 
+            space. By default ``True``.
 
         Returns
         -------
         mode: np.ndarray
             The mode of the variational posterior.
+
+        Notes
+        -----
+        The mode is not invariant to nonlinear reparameterizations of 
+        the input space, so the mode in the original space and the mode in the
+        transformed (unconstrained) space will generally be in different 
+        locations (even after applying the appropriate transformations).
         """
 
         def nlnpdf(x0, origflag=origflag):
@@ -770,34 +810,41 @@ class VariationalPosterior:
         N: int = int(1e5),
     ):
         """
-        Returns the marginal total variation (MTV) distances between the VP and
-        another variational posterior.
+        Marginal total variation distances between two variational posteriors.
 
-        The other variational posterior can be specified as `vp2` (an instance
-        of the class VariationalPosterior) or using with `samples` from the
-        other VariationalPosterior. One of the two must be specified.
+        Compute the total variation distance between the variational 
+        posterior and a second posterior, separately for each dimension (hence
+        "marginal" total variation distance, MTV). The second posterior can be
+        specified either as a ``VariationalPosterior`` or as a set of samples.
 
         Parameters
         ----------
         vp2 : VariationalPosterior, optional
-            The other VariationalPosterior, by default None.
+            The other ``VariationalPosterior``, by default ``None``.
         samples : np.ndarray, optional
-            An N-by-D matrix of samples from the other variational
-            posterior, by default None.
+            An `N`-by-`D` matrix of samples from the other variational
+            posterior, by default ``None``.
         N : int, optional
-            The number of random draws to estimate the MTV, by default int(1e5).
+            The number of random draws to estimate the MTV, by default ``int(1e5)``.
 
         Returns
         -------
         mtv: np.ndarray
-            A D-element vector whose elements are the total variation distance
-            between the marginal distributions of VP and VP2 or samples,
+            A `D`-element vector whose elements are the total variation distance
+            between the marginal distributions of `vp` and `vp1` or `samples`,
             for each coordinate dimension.
 
         Raises
         ------
         ValueError
-            Raised if neither vp2 nor samples are specified.
+            Raised if neither `vp2` nor `samples` are specified.
+
+        Notes
+        -----
+        The total variation distance between two densities `p1` and `p2` is:
+
+        .. math:: TV(p1, p2) = \\frac{1}{2} \int | p1(x) - p2(x) | dx.
+
         """
         if vp2 is None and samples is None:
             raise ValueError("Either vp2 or samples have to be not None")
@@ -876,40 +923,48 @@ class VariationalPosterior:
         gaussflag: bool = False,
     ):
         """
-        Compute the Kullback-Leibler divergence between two variational
-        posteriors.
+        Kullback-Leibler divergence between two variational posteriors.
 
-        The other variational posterior can be specified as `vp2` (an instance
-        of the class VariationalPosterior) or using with `samples` from the
-        other VariationalPosterior. One of the two must be specified.
+        Compute the forward and reverse Kullback-Leibler (KL) divergence between
+        two posteriors. The other variational posterior can be specified as 
+        `vp2` (an instance of the class ``VariationalPosterior``) or with 
+        `samples`. One of the two must be specified.
 
         Parameters
         ----------
         vp2 : VariationalPosterior, optional
-            The other VariationalPosterior, by default None.
+            The other ``VariationalPosterior``, by default None.
         samples : np.ndarray, optional
-            An N-by-D matrix of samples from the other variational
-            posterior, by default None.
+            An `N`-by-`D` matrix of samples from the other variational
+            posterior, by default ``None``.
         N : int, optional
-            The number of random draws to estimate the kldiv,
-            by default int(1e5).
+            The number of random samples to estimate the KL divergence,
+            by default ``int(1e5)``.
         gaussflag : bool, optional
-            Returns a "Gaussianized" KL-divergence if gaussflag=True,
-            that is the KL divergence between two
-            multivariate normal distibutions with the same moments
-            as the variational posteriors given as inputs, by default False.
+            If ``True``, returns a "Gaussianized" KL-divergence, that is the KL 
+            divergence between two multivariate normal distributions with the 
+            same moments as the variational posteriors given as inputs. 
+            By default ``False``.
 
         Returns
         -------
         kldiv: np.ndarray
-            The Kullback-Leibler divergence between the two VPs.
+            A two-element vector containing the forward and reverse 
+            Kullback-Leibler divergence between the two posteriors.
 
         Raises
         ------
         ValueError
-            Raised if neither vp2 nor samples are specified.
+            Raised if neither `vp2` nor `samples` are specified.
         ValueError
-            Raised if vp2 is not provided but gaussflag=true.
+            Raised if `vp2` is not provided but `gaussflag` = ``False``.
+
+        Notes
+        -----
+        Since the KL divergence is not symmetric, the method returns both the
+        forward and the reverse KL divergence, that is KL(`vp1` || `vp2`) and 
+        KL(`vp2` || `vp1`).
+
         """
 
         if samples is None and vp2 is None:
@@ -967,45 +1022,54 @@ class VariationalPosterior:
         plot_style: dict = None,
     ):
         """
-        Plot the VP as a cornerplot of samples with optionally the centres of
-        the components and the datapoints of the GP. The plot can be enhanced
-        by custom styles and also datapoints of the GP can be highlighted.
+        Plot the variational posterior.
+
+        `plot` displays the variational posterior as a cornerplot showing the 
+        1D and 2D marginals, estimated from samples. It uses the  `corner
+        <https://corner.readthedocs.io/en/latest/index.html>`_ package.
+                    
+        
+        `plot` also optionally displays the centres of the variational mixture
+        components and the datapoints of the underlying Gaussian process (GP) 
+        used by ``VBMC``. The plot can be enhanced by custom styles and specific 
+        datapoints of the GP can be highlighted.
 
         Parameters
         ----------
         n_samples : int, optional
-            The number of samples from the , by default int(1e5)
+            The number of posterior samples used to create the plot, by default 
+            ``int(1e5)``.
         title : str, optional
-            The title of the plot, by default None
+            The title of the plot, by default ``None``.
         plot_data : bool, optional
-            Whether to plot the datapoints of the GP, by default False
+            Whether to plot the datapoints of the GP, by default ``False``.
         highlight_data : list, optional
-            Indices of the datapoints that should be plotted in a different
-            way than the other datapoints, by default None
+            Indices of the GP datapoints that should be plotted in a different
+            way than the other datapoints, by default ``None``.
         plot_vp_centres : bool, optional
-            Whether to plot the centres of the VP components, by default False
+            Whether to plot the centres of the `vp` components, by default ``False``.
         plot_style : dict, optional
             A dictionary of plot styling options. The possible options are:
                 **corner** : dict, optional
                     Styling options directly passed to the corner function.
-                    By default: `{"fig": plt.figure(figsize=(8, 8)),
-                    "labels": labels}`. See the documentation of `corner
+                    By default: ``{"fig": plt.figure(figsize=(8, 8)),
+                    "labels": labels}``. See the documentation of `corner
                     <https://corner.readthedocs.io/en/latest/index.html>`_.
                 **data** : dict, optional
                     Styling options used to plot the GP data.
-                    By default: `{"s":15, "color":'blue', "facecolors": "none"}`
+                    By default: ``{"s":15, "color":'blue', "facecolors": "none"}``.
                 **highlight_data** : dict, optional
                     Styling options used to plot the highlighted GP data.
-                    By default: `{"s":15, "color":"orange"}`
+                    By default: ``{"s":15, "color":"orange"}``.
                 **vp_centre** : dict, optional
-                    Styling options used to plot the VP centres.
-                    By default: `{"marker":"x", "color":"red"}`
+                    Styling options used to plot the `vp` centres.
+                    By default: ``{"marker":"x", "color":"red"}``.
 
 
         Returns
         -------
         fig : matplotlib.figure.Figure
-            The resulting matplotlib figure of the plot.
+            The resulting ``matplotlib`` figure of the plot.
 
         """
         # generate samples
