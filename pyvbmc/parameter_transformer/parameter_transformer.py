@@ -32,6 +32,8 @@ class ParameterTransformer:
         upper_bounds: np.ndarray = None,
         plausible_lower_bounds: np.ndarray = None,
         plausible_upper_bounds: np.ndarray = None,
+        scale: np.ndarray = None,
+        rotation_matrix: np.ndarray = None
     ):
         # Empty LB and UB are Infs
         if lower_bounds is None:
@@ -44,6 +46,12 @@ class ParameterTransformer:
             plausible_lower_bounds = np.copy(lower_bounds)
         if plausible_upper_bounds is None:
             plausible_upper_bounds = np.copy(upper_bounds)
+
+        # Empty rotation matrix is identity:
+        if scale is None:
+            self.scale = np.ones(D)
+        if rotation_matrix is None:
+            self.R_mat = np.identity(D)
 
         # Convert scalar inputs to row vectors (I do not think it is necessary)
 
@@ -142,6 +150,18 @@ class ParameterTransformer:
         # # rescale input
         # if scale is not None:
         #     print(scale)
+        # print(self.R_mat.shape)
+
+        # Rotoscale whitening:
+        # Rotate the points in the transformed space.
+        # (Rotations of infinite points are ill-defined. Leave those points
+        # alone.)
+        if np.all(np.isfinite(u)):
+            if self.R_mat is not None:
+                u = u @ self.R_mat
+        # Rescale variables in transformed space:
+            if self.scale is not None:
+                u = u/self.scale
 
         return u
 
@@ -168,7 +188,21 @@ class ParameterTransformer:
         # if scale is not None:
         #     print(scale)
 
+        # Rotational whitening:
+        # Undo rescaling:
+        if self.scale is not None:
+            u = u*self.scale
+        # Undo rotation:
+        # (Rotations of infinite points are ill-defined. Leave those points
+        # alone.)
+        if np.all(np.isfinite(u)):
+            if self.R_mat is not None:
+                u = u @ np.transpose(self.R_mat)
+
         x = np.copy(u)
+        if np.all(np.isfinite(x)):
+            if self.R_mat is not None:
+                x = np.transpose(np.linalg.solve(self.R_mat, np.transpose(x)))
 
         # Unbounded scalars (possibly unscale and uncenter)
         mask = self.type == 0
@@ -220,6 +254,17 @@ class ParameterTransformer:
         # # rescale input
         # if scale is not None:
         #     print(scale)
+
+        # Rotational whitening:
+        # Undo rescaling:
+        # if self.scale is not None:
+        #    u = u*self.scale
+        # Undo rotation:
+        # (Rotations of infinite points are ill-defined. Leave those points
+        # alone.)
+        # if np.all(np.isfinite(u)):
+        #    if self.R_mat is not None:
+        #        u = u @ np.transpose(self.R_mat)
 
         p = np.zeros(u_c.shape)
 

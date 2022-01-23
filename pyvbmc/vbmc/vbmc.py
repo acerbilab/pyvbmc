@@ -798,6 +798,14 @@ class VBMC:
                 self.logging_action.append("entropy switch")
 
             # Missing port: Input warping / reparameterization, line 530-625
+            doWarping = True
+            if doWarping and not self.optim_state["warmup"]:
+                # rotation_matrix, scale = calculateRotoScale(self)
+                # self.parameter_transformer.R_mat = rotation_matrix
+                # self.parameter_transformer.scale = scale
+                print("Whitening...")
+                self.vp.whiten()
+                # pass
 
             ## Actively sample new points into the training set
             timer.start_timer("activeSampling")

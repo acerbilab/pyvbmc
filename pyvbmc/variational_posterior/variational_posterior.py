@@ -711,7 +711,52 @@ class VariationalPosterior:
         else:
             return mubar.reshape(1, -1)
 
-    def mode(self, nmax: int = 20, origflag=True):
+    def whiten(
+        self,
+        transformer=None,
+    ):
+        """
+        Calculate whitening and update self.parameter_transformer accordingly
+
+        Parameters
+        ----------
+        transformer : ParameterTransformer, optional
+            A specified parameter transformer to apply may be used to revert to
+            a previously recorded transformer. By default, the method computes
+            and applies a parameter transformer from the covariance of the
+            current vp.
+        Returns
+        -------
+        old_transformer: ParameterTransformer
+            The previous parameter transformer.
+        new_transformer: ParameterTransformer
+            The updated parameter transformer.
+
+        """
+
+        old_transformer = self.parameter_transformer
+
+        if transformer is None:
+            mean, cov = self.moments(origflag=True, covflag=True)
+            u, s, vh = np.linalg.svd(cov)
+            # [U,S] = svd(vp_Sigma);
+            if np.linalg.det(u) < 0:
+                u[:, 0] = -u[:, 0]
+            # %scale = fliplr(sqrt(diag(S+eps))');
+            scale = np.sqrt(s)
+            print(scale)
+            self.parameter_transformer.R_mat = u
+            self.parameter_transformer.scale = scale
+        else:
+            self.parameter_transformer = transformer
+
+        return old_transformer, self.parameter_transformer
+
+    def mode(
+        self,
+        nmax: int = 20,
+        origflag=True,
+    ):
         """
         Find the mode of the variational posterior.
 
