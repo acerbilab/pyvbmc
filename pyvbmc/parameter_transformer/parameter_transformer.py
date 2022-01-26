@@ -128,6 +128,7 @@ class ParameterTransformer:
         mask = self.type == 0
         if np.any(mask):
             u[:, mask] = (x[:, mask] - self.mu[mask]) / self.delta[mask]
+            # u[:, mask] = (x[:, mask] - self.mu[mask])
 
         # Lower and upper bounded scalars
         mask = self.type == 3
@@ -181,6 +182,9 @@ class ParameterTransformer:
         x : np.ndarray
             The original variables which result of the transformation.
         """
+
+        x = np.copy(u)
+
         # # rotate input (copy array before)
         # if self.R_mat is not None:
         #     u = u * self.R_mat
@@ -188,43 +192,42 @@ class ParameterTransformer:
         # if scale is not None:
         #     print(scale)
 
-        # Rotational whitening:
+        # Rotoscale whitening:
         # Undo rescaling:
         if self.scale is not None:
-            u = u*self.scale
+            x = x*self.scale
         # Undo rotation:
         # (Rotations of infinite points are ill-defined. Leave those points
         # alone.)
-        if np.all(np.isfinite(u)):
-            if self.R_mat is not None:
-                u = u @ np.transpose(self.R_mat)
-
-        x = np.copy(u)
         if np.all(np.isfinite(x)):
             if self.R_mat is not None:
-                x = np.transpose(np.linalg.solve(self.R_mat, np.transpose(x)))
+                x = x @ np.transpose(self.R_mat)
+
+        xNew = np.copy(x)
 
         # Unbounded scalars (possibly unscale and uncenter)
         mask = self.type == 0
         if np.any(mask):
-            x[:, mask] = u[:, mask] * self.delta[mask] + self.mu[mask]
+            xNew[:, mask] = x[:, mask] * self.delta[mask] + self.mu[mask]
+            # x[:, mask] = u[:, mask] + self.mu[mask]
 
         # Lower and upper bounded scalars
         mask = self.type == 3
         if np.any(mask):
-            x[:, mask] = u[:, mask] * self.delta[mask] + self.mu[mask]
-            x[:, mask] = self.lb_orig[:, mask] + (
+            xNew[:, mask] = x[:, mask] * self.delta[mask] + self.mu[mask]
+            xNew[:, mask] = self.lb_orig[:, mask] + (
                 (self.ub_orig[:, mask] - self.lb_orig[:, mask])
-                * (1 / (1 + np.exp(-x[:, mask])))
+                * (1 / (1 + np.exp(-xNew[:, mask])))
             )
 
         # Force to stay within bounds
         mask = np.isfinite(self.lb_orig)[0]
-        x[:, mask] = np.maximum(x[:, mask], self.lb_orig[:, mask])
+        xNew[:, mask] = np.maximum(xNew[:, mask], self.lb_orig[:, mask])
 
         mask = np.isfinite(self.ub_orig)[0]
-        x[:, mask] = np.minimum(x[:, mask], self.ub_orig[:, mask])
-        return x
+        xNew[:, mask] = np.minimum(xNew[:, mask], self.ub_orig[:, mask])
+
+        return xNew
 
     @handle_0D_1D_input(
         patched_kwargs=["u"], patched_argpos=[0], return_scalar=True
@@ -255,17 +258,6 @@ class ParameterTransformer:
         # if scale is not None:
         #     print(scale)
 
-        # Rotational whitening:
-        # Undo rescaling:
-        # if self.scale is not None:
-        #    u = u*self.scale
-        # Undo rotation:
-        # (Rotations of infinite points are ill-defined. Leave those points
-        # alone.)
-        # if np.all(np.isfinite(u)):
-        #    if self.R_mat is not None:
-        #        u = u @ np.transpose(self.R_mat)
-
         p = np.zeros(u_c.shape)
 
         # Unbounded scalars
@@ -284,7 +276,7 @@ class ParameterTransformer:
             p[:, mask] = p[:, mask] + np.log(self.delta[mask])
 
         # Scale transform
-        # if scale is not None:
-        #     p + np.log(scale)
+        if self.scale is not None:
+            p + np.log(self.scale)
         p = np.sum(p, axis=1)
         return p

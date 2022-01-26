@@ -736,19 +736,26 @@ class VariationalPosterior:
 
         old_transformer = self.parameter_transformer
 
-        if transformer is None:
-            mean, cov = self.moments(origflag=True, covflag=True)
-            u, s, vh = np.linalg.svd(cov)
-            # [U,S] = svd(vp_Sigma);
-            if np.linalg.det(u) < 0:
-                u[:, 0] = -u[:, 0]
-            # %scale = fliplr(sqrt(diag(S+eps))');
-            scale = np.sqrt(s)
-            print(scale)
-            self.parameter_transformer.R_mat = u
-            self.parameter_transformer.scale = scale
-        else:
+        oldMu = self.parameter_transformer.inverse(self.mu.T)
+
+        if transformer is not None:
             self.parameter_transformer = transformer
+
+        mean, cov = self.moments(origflag=True, covflag=True)
+        R_mat = self.parameter_transformer.R_mat
+        scale = self.parameter_transformer.scale
+        delta = self.parameter_transformer.delta
+        cov = R_mat @ np.diag(scale) @ cov @ np.diag(scale) @ R_mat.T
+        cov = np.diag(delta) @ cov @ np.diag(delta)
+        U, s, Vh = np.linalg.svd(cov)
+        if np.linalg.det(U) < 0:
+            U[:, 0] = -U[:, 0]
+        scale = np.sqrt(s)
+        # print(scale)
+        self.parameter_transformer.R_mat = U
+        self.parameter_transformer.scale = scale
+
+        self.mu = self.parameter_transformer(oldMu).T
 
         return old_transformer, self.parameter_transformer
 
