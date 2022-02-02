@@ -13,6 +13,7 @@ from scipy.integrate import trapezoid
 from scipy.interpolate import interp1d
 from scipy.optimize import fmin_l_bfgs_b
 from scipy.special import gammaln
+import gpyreg
 
 
 class VariationalPosterior:
@@ -712,35 +713,29 @@ class VariationalPosterior:
             return mubar.reshape(1, -1)
 
     def whiten(
-        self,
-        transformer=None,
+            self, vbmc, vp_old
     ):
         """
         Calculate whitening and update self.parameter_transformer accordingly
 
         Parameters
         ----------
-        transformer : ParameterTransformer, optional
-            A specified parameter transformer to apply may be used to revert to
-            a previously recorded transformer. By default, the method computes
-            and applies a parameter transformer from the covariance of the
-            current vp.
+        vbmc: VBMC
+            The VBMC object from which the whitening routine was called.
+        vp_old: VariationalPosterior
+            A (deep) copy of the current variational posterior.
+
         Returns
         -------
-        old_transformer: ParameterTransformer
-            The previous parameter transformer.
-        new_transformer: ParameterTransformer
-            The updated parameter transformer.
-
+        None.
         """
 
         old_transformer = self.parameter_transformer
-
+        old_lb = self.parameter_transformer.lb_orig
+        old_ub = self.parameter_transformer.ub_orig
         oldMu = self.parameter_transformer.inverse(self.mu.T)
 
-        if transformer is not None:
-            self.parameter_transformer = transformer
-
+        # Calculate rescaling and rotation from moments:
         mean, cov = self.moments(origflag=True, covflag=True)
         R_mat = self.parameter_transformer.R_mat
         scale = self.parameter_transformer.scale
@@ -751,13 +746,189 @@ class VariationalPosterior:
         if np.linalg.det(U) < 0:
             U[:, 0] = -U[:, 0]
         scale = np.sqrt(s)
-        # print(scale)
-        self.parameter_transformer.R_mat = U
-        self.parameter_transformer.scale = scale
+        # scale = np.ones(self.D)
+        print(scale)
+        print(U)
 
-        self.mu = self.parameter_transformer(oldMu).T
+        # TODO: Add temperature scaling?
+        T = 1
+        # Adjust stored points after warping:
+        X_flag = vbmc.function_logger.X_flag
+        # x_orig = vbmc.optim_state["cache"]["x_orig"][X_flag, :]
+        # y_orig = vbmc.optim_state["cache"]["y_orig"][X_flag]
+        X_orig = vbmc.function_logger.X[X_flag, :]
+        y_orig = vbmc.function_logger.y[X_flag].T
+        X = self.parameter_transformer(X_orig)
+        dy = self.parameter_transformer.log_abs_det_jacobian(X)
+        y = y_orig + dy/T
+        print(y.shape)
+        vbmc.function_logger.X[X_flag, :] = X
+        vbmc.function_logger.y[X_flag] = y.T
 
-        return old_transformer, self.parameter_transformer
+        # vbmc.x0 = self.parameter_transformer(x_orig)
+
+        # Update Plausible Bounds:
+        Nrnd = 100000
+        xx = np.random.rand(Nrnd, self.D) * \
+            (vbmc.optim_state["pub_orig"]-vbmc.optim_state["plb_orig"])\
+            + vbmc.optim_state["plb_orig"]
+        self.parameter_transformer = ParameterTransformer(
+            self.D,
+            vbmc.lower_bounds,
+            vbmc.upper_bounds,
+            vbmc.plausible_lower_bounds,
+            vbmc.plausible_upper_bounds,
+            scale,
+            U
+        )
+        self.parameter_transformer.mu = np.zeros(self.D)
+        self.parameter_transformer.delta = np.ones(self.D)
+        yy = self.parameter_transformer(xx)
+        [plb, pub] = np.quantile(yy, [0.05, 0.95], axis=0)
+        delta_temp = pub-plb
+        plb = plb - delta_temp/9
+        pub = pub + delta_temp/9
+        plb = np.reshape(plb, (-1, len(plb)))
+        pub = np.reshape(pub, (-1, len(pub)))
+        self.parameter_transformer = ParameterTransformer(
+            self.D,
+            vbmc.lower_bounds,
+            vbmc.upper_bounds,
+            plb,
+            pub,
+            scale,
+            U
+        )
+        self.parameter_transformer.mu = np.zeros(self.D)
+        self.parameter_transformer.delta = np.ones(self.D)
+        # FIXME: Method should return new optim_state, to be
+        # explicitly updated in main routine?
+        vbmc.plausible_lower_bounds = plb
+        vbmc.plausible_upper_bounds = pub
+        # vbmc.optim_state["plb"] = plb
+        # vbmc.optim_state["pub"] = pub
+        vbmc.parameter_transformer = self.parameter_transformer
+        # self.parameter_transformer.R_mat = U
+        # self.parameter_transformer.scale = scale
+
+        # Update search bounds:
+        def warpfun(x):
+            x = np.copy(x)
+            return self.parameter_transformer(
+                                    vp_old.parameter_transformer.inverse(x)
+                                              )
+        Nrnd = 1000
+        xx = np.random.rand(Nrnd, self.D) * \
+            (vbmc.optim_state["ub_search"] - vbmc.optim_state["lb_search"])\
+            + vbmc.optim_state["lb_search"]
+        yy = warpfun(xx)
+        yyMin = np.min(yy, axis=0)
+        yyMax = np.max(yy, axis=0)
+        delta = yyMax - yyMin
+        vbmc.optim_state["lb_search"] = np.reshape(yyMin - delta/Nrnd,
+                                                   (-1, len(yyMin - delta/Nrnd)
+                                                    ))
+        vbmc.optim_state["ub_search"] = np.reshape(yyMax + delta/Nrnd,
+                                                   (-1, len(yyMax + delta/Nrnd)
+                                                    ))
+        # If search cache is not empty, update it:
+        if vbmc.optim_state["search_cache"]:
+            vbmc.optim_state["search_cache"] = warpfun(
+                vbmc.optim_state["search_cache"]
+            )
+
+        # Update other state fields:
+        vbmc.optim_state["recompute_var_post"] = True
+        vbmc.optim_state["skipactivesampling"] = True
+        vbmc.optim_state["warping_count"] += 1
+        vbmc.optim_state["last_warping"] = vbmc.optim_state["iter"]
+        vbmc.optim_state["last_successful_warping"] = vbmc.optim_state["iter"]
+
+        # Reset GP Hyperparameters:
+        vbmc.optim_state["run_mean"] = []
+        vbmc.optim_state["run_cov"] = []
+        vbmc.optim_state["last_run_avg"] = np.nan
+
+        # Warp VP components (warp_gpandvp_vbmc.m):
+        Ncov = vp_old.gp.covariance.hyperparameter_count(self.D)
+        Nnoise = vp_old.gp.noise.hyperparameter_count()
+        Nmean = vp_old.gp.mean.hyperparameter_count(self.D)
+        # MATLAB: if ~isempty(gp_old.outwarpfun); Noutwarp = gp_old.Noutwarp; else; Noutwarp = 0; end
+        # (Not used, see gaussian_process.py)
+
+        Ns_gp = len(vp_old.gp.posteriors)
+        hyp_warped = np.zeros([Ncov + Nnoise + Nmean, Ns_gp])
+
+        for s in range(Ns_gp):
+            hyp = vp_old.gp.posteriors[s].hyp
+            hyp_warped[:, s] = hyp
+
+            # UpdateGP input length scales (Not needed for linear warping?)
+            # ell = np.exp(hyp(1:D)).T
+            # [__, ell_new] = unscent_warp(warpfun, vp_old.gp.X, ell);
+            # hyp_warped(1:D,s) = np.mean(np.log(ell_new), axis=0)
+
+            # We assume relatively no change to GP output and noise scales
+            if isinstance(vp_old.gp.mean, gpyreg.mean_functions.ConstantMean):
+                # Warp constant mean
+                m0 = hyp(Ncov+Nnoise+1);
+                dy_old = vp_old.parameter_transformer.log_abs_det_jacobian(vp_old.gp.X)
+                dy = self.parameter_transformer.log_abs_det_jacobian(warpfun(vp_old.gp.X))
+                m0w = m0 + (np.mean(dy, axis=0) - np.mean(dy_old, axis=0))/T
+
+                hyp_warped[Ncov+Nnoise+1, s] = m0w
+
+            elif isinstance(vp_old.gp.mean, gpyreg.mean_functions.NegativeQuadratic):
+                # Warp quadratic mean
+                m0 = hyp[Ncov + Nnoise + 1]
+                xm = hyp[Ncov + Nnoise + 1 : Ncov + Nnoise + 1 + self.D].T
+                omega = np.exp(hyp[Ncov + Nnoise + 1 + self.D : Ncov + Nnoise + 1 + self.D + self.D]).T
+
+                # Warp location and scale
+                # [xmw, omegaw] = unscent_warp(warpfun, xm, omega)
+                [xmw, omegaw] = [xm, omega]
+
+                # Warp maximum
+                dy_old = vp_old.parameter_transformer.log_abs_det_jacobian(xm)
+                dy = self.parameter_transformer.log_abs_det_jacobian(xmw)
+                m0w = m0 + (dy - dy_old)/T
+
+                hyp_warped[Ncov + Nnoise + 1, s] = m0w
+                hyp_warped[Ncov + Nnoise + 1 : Ncov + Nnoise + 1 + self.D, s] = xmw.T
+                hyp_warped[Ncov + Nnoise + 1 + self.D : Ncov + Nnoise + 1 + self.D + self.D, s] = np.log(omegaw).T
+            else:
+                raise ValueError("Unsupported GP mean function for input warping.")
+
+        # Update GP:
+        # TODO: Check for correctness
+        self.gp.hyp = hyp_warped
+        mu = vp_old.mu.T
+        sigmalambda = vp_old.lambd * vp_old.sigma
+
+        # [muw, sigmalambdaw] = unscent_warp(warpfun, mu, sigmalambda)
+        self.mu = warpfun(mu).T
+        plt.scatter(*zip(*vp_old.mu.T))
+        plt.scatter(*zip(*self.mu.T))
+        plt.axis("equal")
+        print(self.parameter_transformer.R_mat)
+        print(vp_old.parameter_transformer.R_mat)
+        lambdaw = np.sqrt(self.D*np.mean(
+            sigmalambda**2 / (sigmalambda**2+2),
+            axis=1))
+        lambdaw = np.reshape(lambdaw, (-1, len(lambdaw)))
+        print(lambdaw.shape)
+
+        print(self.lambd.shape)
+        self.lambd[:, 0] = lambdaw
+
+        sigmaw = np.exp(np.mean(np.log(sigmalambda / lambdaw.T), axis=0))
+        self.sigma[0, :] = sigmaw
+
+        # Probably unnecessary: should be shared with parent by reference:
+        vbmc.function_logger.parameter_transformer = self.parameter_transformer
+        # TODO: Approximate change in weight: warp_gpandvp_vbmc.m, lines 87:
+        # TODO: Implement logging of warp action, see warp_input_vbmc.m,
+        # lines 171 to 178.
 
     def mode(
         self,

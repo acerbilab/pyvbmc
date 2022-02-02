@@ -797,16 +797,34 @@ class VBMC:
                 self.optim_state["entropy_switch"] = False
                 self.logging_action.append("entropy switch")
 
-            # Missing port: Input warping / reparameterization, line 530-625
-            doWarping = True
-            if doWarping and not self.optim_state["warmup"]:
+            # In Progress: Input warping / reparameterization, MATLAB lines 530-625
+            self.options["warpeveriters"] = 1
+            if self.options["incrementalwarpdelay"]:
+                WarpDelay = self.options["warpeveryiters"]*np.max([1, self.optim_state["warping_count"]])
+            else:
+                WarpDelay = self.options["warpeveryiters"]
+
+            doWarping = (self.options["warprotoscaling"]\
+                or self.options["warpnonlinear"])\
+                and (iteration > 0)\
+                and (not self.optim_state["warmup"])\
+                and (iteration - self.optim_state["last_warping"] > WarpDelay)\
+                and (self.vp.K >= self.options["warpmink"])\
+                and (self.iteration_history["rindex"][iteration-1]\
+                     < self.options["warptolreliability"])\
+                and (self.vp.D > 1)
+
+            if doWarping:
                 # rotation_matrix, scale = calculateRotoScale(self)
                 # self.parameter_transformer.R_mat = rotation_matrix
                 # self.parameter_transformer.scale = scale
+                # plt.scatter(*zip(*vp_old.mu.T))
+                print(vp_old.parameter_transformer.R_mat)
+                print(self.vp.parameter_transformer.R_mat)
                 print("Whitening...")
-                self.vp.whiten()
+                self.vp.whiten(self, vp_old)
                 # pass
-
+            print(self.vp.mu)
             ## Actively sample new points into the training set
             timer.start_timer("activeSampling")
 
@@ -1245,7 +1263,6 @@ class VBMC:
         self.vp, elbo, elbo_sd, changed_flag = self.finalboost(
             self.vp, self.iteration_history["gp"][idx_best]
         )
-
         if changed_flag:
             # Recompute symmetrized KL-divergence
             sKL = max(
@@ -1294,6 +1311,15 @@ class VBMC:
                     )
                 )
 
+            # Recompute indices of data to highlight:
+            highlight_data = np.array(
+                [
+                    i
+                    for i, x in enumerate(self.vp.gp.X)
+                    if tuple(x) not in set(map(tuple, previous_gp.X))
+                ]
+            )
+
         # plot final vp:
         if self.options.get("plot"):
             self.vp.plot(
@@ -1323,7 +1349,8 @@ class VBMC:
                 + " not converged."
             )
 
-        result_dict = self._create_result_dict(idx_best, termination_message)
+        # result_dict = self._create_result_dict(idx_best, termination_message)
+        result_dict = None
 
         return (
             copy.deepcopy(self.vp),

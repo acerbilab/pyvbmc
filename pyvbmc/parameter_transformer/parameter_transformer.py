@@ -37,7 +37,7 @@ class ParameterTransformer:
     ):
         # Empty LB and UB are Infs
         if lower_bounds is None:
-            lower_bounds = np.ones((1, D)) * -np.inf
+            lower_bound = np.ones((1, D)) * -np.inf
         if upper_bounds is None:
             upper_bounds = np.ones((1, D)) * np.inf
 
@@ -49,9 +49,11 @@ class ParameterTransformer:
 
         # Empty rotation matrix is identity:
         if scale is None:
-            self.scale = np.ones(D)
+            scale = np.ones(D)
         if rotation_matrix is None:
-            self.R_mat = np.identity(D)
+            rotation_matrix = np.identity(D)
+        self.scale = scale
+        self.R_mat = rotation_matrix
 
         # Convert scalar inputs to row vectors (I do not think it is necessary)
 
