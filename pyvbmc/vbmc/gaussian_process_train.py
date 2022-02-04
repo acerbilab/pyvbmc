@@ -117,7 +117,8 @@ def train_gp(
         gp_train["widths"] = None
 
     # Build starting points
-    hyp0 = np.empty((0, np.size(hyp_dict["hyp"])))
+    # hyp0 = np.empty((0, np.size(hyp_dict["hyp"])))
+    hyp0 = np.empty((0, hyp_dict["hyp"].shape[0]))
     if gp_train["init_N"] > 0 and optim_state["iter"] > 0:
         # Be very careful with off-by-one errors compared to MATLAB in the
         # range here.
@@ -141,7 +142,11 @@ def train_gp(
                 ),
                 :,
             ]
-    hyp0 = np.concatenate((hyp0, np.array([hyp_dict["hyp"]])))
+    # Clunky workaround for different shaped arrays:
+    if len(hyp_dict["hyp"].shape) == 2:
+        hyp0 = np.concatenate((hyp0, np.array(hyp_dict["hyp"]).T))
+    else:
+        hyp0 = np.concatenate((hyp0, np.array([hyp_dict["hyp"]])))
     hyp0 = np.unique(hyp0, axis=0)
 
     # In some cases the model can change so be careful.

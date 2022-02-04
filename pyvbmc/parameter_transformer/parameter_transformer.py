@@ -37,7 +37,7 @@ class ParameterTransformer:
     ):
         # Empty LB and UB are Infs
         if lower_bounds is None:
-            lower_bound = np.ones((1, D)) * -np.inf
+            lower_bounds = np.ones((1, D)) * -np.inf
         if upper_bounds is None:
             upper_bounds = np.ones((1, D)) * np.inf
 

@@ -798,7 +798,7 @@ class VBMC:
                 self.logging_action.append("entropy switch")
 
             # In Progress: Input warping / reparameterization, MATLAB lines 530-625
-            self.options["warpeveriters"] = 1
+            # self.options["warpeveriters"] = 1
             if self.options["incrementalwarpdelay"]:
                 WarpDelay = self.options["warpeveryiters"]*np.max([1, self.optim_state["warping_count"]])
             else:
@@ -822,7 +822,7 @@ class VBMC:
                 print(vp_old.parameter_transformer.R_mat)
                 print(self.vp.parameter_transformer.R_mat)
                 print("Whitening...")
-                self.vp.whiten(self, vp_old)
+                self.vp.whiten(self, vp_old, self.options)
                 # pass
             print(self.vp.mu)
             ## Actively sample new points into the training set
@@ -907,6 +907,8 @@ class VBMC:
 
             timer.start_timer("gpTrain")
 
+            if self.optim_state["hyp_dict"].get("hyp") is not None:
+                print(self.optim_state["hyp_dict"]["hyp"].shape)
             gp, Ns_gp, sn2hpd, hyp_dict = train_gp(
                 hyp_dict,
                 self.optim_state,
