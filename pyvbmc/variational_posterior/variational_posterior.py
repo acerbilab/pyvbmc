@@ -14,6 +14,7 @@ from scipy.interpolate import interp1d
 from scipy.optimize import fmin_l_bfgs_b
 from scipy.special import gammaln
 import gpyreg
+from pyvbmc.rotoscaling.unscent_warp import unscent_warp
 
 
 class VariationalPosterior:
@@ -730,6 +731,8 @@ class VariationalPosterior:
         None.
         """
 
+        # vp_old = copy.deepcopy(vp_old)
+
         old_transformer = self.parameter_transformer
         old_lb = self.parameter_transformer.lb_orig
         old_ub = self.parameter_transformer.ub_orig
@@ -749,23 +752,6 @@ class VariationalPosterior:
         # scale = np.ones(self.D)
         print(scale)
         print(U)
-
-        # TODO: Add temperature scaling?
-        T = 1
-        # Adjust stored points after warping:
-        X_flag = vbmc.function_logger.X_flag
-        # x_orig = vbmc.optim_state["cache"]["x_orig"][X_flag, :]
-        # y_orig = vbmc.optim_state["cache"]["y_orig"][X_flag]
-        X_orig = vbmc.function_logger.X[X_flag, :]
-        y_orig = vbmc.function_logger.y[X_flag].T
-        X = self.parameter_transformer(X_orig)
-        dy = self.parameter_transformer.log_abs_det_jacobian(X)
-        y = y_orig + dy/T
-        print(y.shape)
-        vbmc.function_logger.X[X_flag, :] = X
-        vbmc.function_logger.y[X_flag] = y.T
-
-        # vbmc.x0 = self.parameter_transformer(x_orig)
 
         # Update Plausible Bounds:
         Nrnd = 100000
@@ -807,12 +793,32 @@ class VariationalPosterior:
         vbmc.plausible_upper_bounds = pub
         # vbmc.optim_state["plb"] = plb
         # vbmc.optim_state["pub"] = pub
+
+        # Not needed, shared object:
         vbmc.parameter_transformer = self.parameter_transformer
         # self.parameter_transformer.R_mat = U
         # self.parameter_transformer.scale = scale
 
+        # TODO: Add temperature scaling?
+        T = 1
+        # Adjust stored points after warping:
+        X_flag = vbmc.function_logger.X_flag
+        # x_orig = vbmc.optim_state["cache"]["x_orig"][X_flag, :]
+        # y_orig = vbmc.optim_state["cache"]["y_orig"][X_flag]
+        X_orig = vbmc.function_logger.X[X_flag, :]
+        y_orig = vbmc.function_logger.y[X_flag].T
+        X = self.parameter_transformer(X_orig)
+        dy = self.parameter_transformer.log_abs_det_jacobian(X)
+        y = y_orig + dy/T
+        print(y.shape)
+        vbmc.function_logger.X[X_flag, :] = X
+        vbmc.function_logger.y[X_flag] = y.T
+
+        # vbmc.x0 = self.parameter_transformer(x_orig)
+
         # Update search bounds:
         def warpfun(x):
+            # Copy probably unneccesary:
             x = np.copy(x)
             return self.parameter_transformer(
                                     vp_old.parameter_transformer.inverse(x)
@@ -831,6 +837,7 @@ class VariationalPosterior:
         vbmc.optim_state["ub_search"] = np.reshape(yyMax + delta/Nrnd,
                                                    (-1, len(yyMax + delta/Nrnd)
                                                     ))
+
         # If search cache is not empty, update it:
         if vbmc.optim_state["search_cache"]:
             vbmc.optim_state["search_cache"] = warpfun(
@@ -861,12 +868,12 @@ class VariationalPosterior:
 
         for s in range(Ns_gp):
             hyp = vp_old.gp.posteriors[s].hyp
-            hyp_warped[:, s] = hyp
+            hyp_warped[:, s] = hyp.copy()
 
             # UpdateGP input length scales (Not needed for linear warping?)
-            # ell = np.exp(hyp(1:D)).T
-            # [__, ell_new] = unscent_warp(warpfun, vp_old.gp.X, ell);
-            # hyp_warped(1:D,s) = np.mean(np.log(ell_new), axis=0)
+            ell = np.exp(hyp[0:self.D]).T
+            (__, ell_new, __) = unscent_warp(warpfun, vp_old.gp.X, ell)
+            hyp_warped[0:self.D,s] = np.mean(np.log(ell_new), axis=0)
 
             # We assume relatively no change to GP output and noise scales
             if isinstance(vp_old.gp.mean, gpyreg.mean_functions.ConstantMean):
@@ -881,11 +888,11 @@ class VariationalPosterior:
             elif isinstance(vp_old.gp.mean, gpyreg.mean_functions.NegativeQuadratic):
                 # Warp quadratic mean
                 m0 = hyp[Ncov + Nnoise + 1]
-                xm = hyp[Ncov + Nnoise + 1 : Ncov + Nnoise + 1 + self.D].T
-                omega = np.exp(hyp[Ncov + Nnoise + 1 + self.D : Ncov + Nnoise + 1 + self.D + self.D]).T
+                xm = hyp[Ncov + Nnoise + 1 : Ncov + Nnoise + 1 + self.D]
+                omega = np.exp(hyp[Ncov + Nnoise + 1 + self.D : Ncov + Nnoise + 1 + self.D + self.D])
 
                 # Warp location and scale
-                # [xmw, omegaw] = unscent_warp(warpfun, xm, omega)
+                (xmw, omegaw, __) = unscent_warp(warpfun, xm, omega)
                 [xmw, omegaw] = [xm, omega]
 
                 # Warp maximum
@@ -894,8 +901,8 @@ class VariationalPosterior:
                 m0w = m0 + (dy - dy_old)/T
 
                 hyp_warped[Ncov + Nnoise + 1, s] = m0w
-                hyp_warped[Ncov + Nnoise + 1 : Ncov + Nnoise + 1 + self.D, s] = xmw.T
-                hyp_warped[Ncov + Nnoise + 1 + self.D : Ncov + Nnoise + 1 + self.D + self.D, s] = np.log(omegaw).T
+                hyp_warped[Ncov + Nnoise + 1 : Ncov + Nnoise + 1 + self.D, s] = xmw
+                hyp_warped[Ncov + Nnoise + 1 + self.D : Ncov + Nnoise + 1 + self.D + self.D, s] = np.log(omegaw)
             else:
                 raise ValueError("Unsupported GP mean function for input warping.")
 
@@ -903,30 +910,36 @@ class VariationalPosterior:
         # TODO: Check for correctness
         self.gp.hyp = hyp_warped
         mu = vp_old.mu.T
-        sigmalambda = vp_old.lambd * vp_old.sigma
+        sigmalambda = (vp_old.lambd * vp_old.sigma).T
 
-        # [muw, sigmalambdaw] = unscent_warp(warpfun, mu, sigmalambda)
-        self.mu = warpfun(mu).T
+        (muw, sigmalambdaw, __) = unscent_warp(warpfun, mu, sigmalambda)
+
+        self.mu = muw.T
         plt.scatter(*zip(*vp_old.mu.T))
         plt.scatter(*zip(*self.mu.T))
         plt.axis("equal")
         print(self.parameter_transformer.R_mat)
         print(vp_old.parameter_transformer.R_mat)
         lambdaw = np.sqrt(self.D*np.mean(
-            sigmalambda**2 / (sigmalambda**2+2),
-            axis=1))
-        lambdaw = np.reshape(lambdaw, (-1, len(lambdaw)))
+            sigmalambdaw**2 / (sigmalambdaw**2+2),
+            axis=0))
+        # lambdaw = np.reshape(lambdaw, (-1, len(lambdaw)))
         print(lambdaw.shape)
-
         print(self.lambd.shape)
         self.lambd[:, 0] = lambdaw
 
-        sigmaw = np.exp(np.mean(np.log(sigmalambda / lambdaw.T), axis=0))
+        sigmaw = np.exp(np.mean(np.log(sigmalambdaw / lambdaw), axis=1))
         self.sigma[0, :] = sigmaw
 
         # Probably unnecessary: should be shared with parent by reference:
         vbmc.function_logger.parameter_transformer = self.parameter_transformer
-        # TODO: Approximate change in weight: warp_gpandvp_vbmc.m, lines 87:
+        # Approximate change in weight:
+        dy_old = vp_old.parameter_transformer.log_abs_det_jacobian(mu)
+        dy = self.parameter_transformer.log_abs_det_jacobian(mu)
+
+        ww = vp_old.w * np.exp((dy - dy_old)/T)
+        self.w = ww / np.sum(ww)
+
         # TODO: Implement logging of warp action, see warp_input_vbmc.m,
         # lines 171 to 178.
 
