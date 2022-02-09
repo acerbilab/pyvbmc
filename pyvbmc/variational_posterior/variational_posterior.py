@@ -766,8 +766,8 @@ class VariationalPosterior:
             U[:, 0] = -U[:, 0]
         scale = np.sqrt(s)
         # scale = np.ones(self.D)
-        print(scale)
-        print(U)
+        # print(scale)
+        # print(U)
         self.parameter_transformer.R_mat = U
         self.parameter_transformer.scale = scale
 
@@ -942,17 +942,17 @@ class VariationalPosterior:
         (muw, sigmalambdaw, __) = unscent_warp(warpfun, mu, sigmalambda)
 
         self.mu = muw.T
-        plt.scatter(*zip(*vp_old.mu.T))
-        plt.scatter(*zip(*self.mu.T))
-        plt.axis("equal")
-        print(self.parameter_transformer.R_mat)
-        print(vp_old.parameter_transformer.R_mat)
+        # plt.scatter(*zip(*vp_old.mu.T))
+        # plt.scatter(*zip(*self.mu.T))
+        # plt.axis("equal")
+        # print(self.parameter_transformer.R_mat)
+        # print(vp_old.parameter_transformer.R_mat)
         lambdaw = np.sqrt(self.D*np.mean(
             sigmalambdaw**2 / (sigmalambdaw**2+2),
             axis=0))
         # lambdaw = np.reshape(lambdaw, (-1, len(lambdaw)))
-        print(lambdaw.shape)
-        print(self.lambd.shape)
+        # print(lambdaw.shape)
+        # print(self.lambd.shape)
         self.lambd[:, 0] = lambdaw
 
         sigmaw = np.exp(np.mean(np.log(sigmalambdaw / lambdaw), axis=1))

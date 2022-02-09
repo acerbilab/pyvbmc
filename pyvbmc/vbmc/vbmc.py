@@ -804,8 +804,8 @@ class VBMC:
             else:
                 WarpDelay = self.options["warpeveryiters"]
 
-            doWarping = (self.options["warprotoscaling"]\
-                or self.options["warpnonlinear"])\
+            doWarping = (self.options.get("warprotoscaling")\
+                or self.options.get("warpnonlinear"))\
                 and (iteration > 0)\
                 and (not self.optim_state["warmup"])\
                 and (iteration - self.optim_state["last_warping"] > WarpDelay)\
@@ -815,16 +815,101 @@ class VBMC:
                 and (self.vp.D > 1)
 
             if doWarping:
+                timer.start_timer("warping")
+                # Store variables in case warp needs to be undone:
+                # ()vp_old copied above)
+                optim_state_old = copy.deepcopy(self.optim_state)
+                gp_old = copy.deepcopy(gp)
+                function_logger_old = copy.deepcopy(self.function_logger)
+                elbo_old = elbo
+                elbo_sd_old = elbo_sd
                 # rotation_matrix, scale = calculateRotoScale(self)
                 # self.parameter_transformer.R_mat = rotation_matrix
                 # self.parameter_transformer.scale = scale
                 # plt.scatter(*zip(*vp_old.mu.T))
-                print(vp_old.parameter_transformer.R_mat)
-                print(self.vp.parameter_transformer.R_mat)
-                print("Whitening...")
+                # print(vp_old.parameter_transformer.R_mat)
+                # print(self.vp.parameter_transformer.R_mat)
+                # print("Whitening...")
                 self.vp.whiten(self, vp_old, self.options)
                 # pass
-            print(self.vp.mu)
+                # print(self.vp.mu)
+
+                self.logging_action.append("rotoscaling")
+                timer.stop_timer("warping")
+
+                if self.options.get("warpundocheck"):
+                    ## Train gp
+
+                    timer.start_timer("gpTrain")
+
+                    gp, Ns_gp, sn2hpd, hyp_dict = train_gp(
+                        hyp_dict,
+                        self.optim_state,
+                        self.function_logger,
+                        self.iteration_history,
+                        self.options,
+                        self.plausible_lower_bounds,
+                        self.plausible_upper_bounds,
+                    )
+                    self.optim_state["sn2hpd"] = sn2hpd
+
+                    timer.stop_timer("gpTrain")
+
+                    ## Optimize variational parameters
+                    timer.start_timer("variationalFit")
+
+                    if not self.vp.optimize_mu:
+                        # Variational components fixed to training inputs
+                        self.vp.mu = gp.X.T
+                        Knew = self.vp.mu.shape[1]
+                    else:
+                        # Update number of variational mixture components
+                        Knew = self.vp.K
+
+                    # Decide number of fast/slow optimizations
+                    N_fastopts = math.ceil(self.options.eval("nselbo", {"K": self.K}))
+                    N_slowops = self.options.get("elbostarts") # Full optimizations.
+
+                    # Run optimization of variational parameters
+                    self.vp, varss, pruned = optimize_vp(
+                        self.options,
+                        self.optim_state,
+                        self.vp,
+                        gp,
+                        N_fastopts,
+                        N_slowopts,
+                        Knew,
+                    )
+
+                    self.optim_state["vpK"] = self.vp.K
+                    # Save current entropy
+                    self.optim_state["H"] = self.vp.stats["entropy"]
+
+                    # Get real variational posterior (might differ from training posterior)
+                    # vp_real = vp.vptrain2real(0, self.options)
+                    vp_real = self.vp
+                    elbo = vp_real.stats["elbo"]
+                    elbo_sd = vp_real.stats["elbo_sd"]
+
+                    timer.stop_timer("variationalFit")
+
+                    # Keep warping only if it substantially improves ELBO
+                    # and uncertainty does not blow up too much
+                    if (elbo < (elbo_old + self.options["warptolimprovement"]))\
+                    or (elbo_sd > (elbo_sd_old * self.options["warptolsdmultiplier"] + self.options["warptolsdbase"])):
+                        # Undo input warping:
+                        self.vp = vp_old
+                        self.gp = gp_old
+                        self.optim_state = optim_state_old
+                        self.function_logger = function_logger_old
+                        # self.optim_state["hyp_dict"] = hyp_dict_old
+
+                        # Still keep track of failed warping (failed warp counts twice)
+                        self.optim_state["warping_count"] += 2
+                        self.optim_state["last_warping"] = self.optim_state["iter"]
+                        self.logging_action.append(", undo")
+
+
             ## Actively sample new points into the training set
             timer.start_timer("activeSampling")
 
@@ -907,8 +992,6 @@ class VBMC:
 
             timer.start_timer("gpTrain")
 
-            if self.optim_state["hyp_dict"].get("hyp") is not None:
-                print(self.optim_state["hyp_dict"]["hyp"].shape)
             gp, Ns_gp, sn2hpd, hyp_dict = train_gp(
                 hyp_dict,
                 self.optim_state,
@@ -1318,7 +1401,6 @@ class VBMC:
                 [
                     i
                     for i, x in enumerate(self.vp.gp.X)
-                    if tuple(x) not in set(map(tuple, previous_gp.X))
                 ]
             )
 
