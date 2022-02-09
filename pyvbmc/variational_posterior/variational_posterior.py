@@ -789,7 +789,7 @@ class VariationalPosterior:
         ## )
         # self.parameter_transformer.mu = np.zeros(self.D)
         # self.parameter_transformer.delta = np.ones(self.D)
-        yy = self.parameter_transformer(xx)
+        yy = self.parameter_transformer(xx, no_infs=True)
         [plb, pub] = np.quantile(yy, [0.05, 0.95], axis=0)
         delta_temp = pub-plb
         plb = plb - delta_temp/9
@@ -828,7 +828,7 @@ class VariationalPosterior:
         # y_orig = vbmc.optim_state["cache"]["y_orig"][X_flag]
         X_orig = vbmc.function_logger.X_orig[X_flag, :]
         y_orig = vbmc.function_logger.y_orig[X_flag].T
-        X = self.parameter_transformer(X_orig)
+        X = self.parameter_transformer(X_orig, no_infs=True)
         dy = self.parameter_transformer.log_abs_det_jacobian(X)
         y = y_orig + dy/T
         # print(y.shape)
@@ -843,7 +843,7 @@ class VariationalPosterior:
             # Copy probably unneccesary:
             x = np.copy(x)
             return self.parameter_transformer(
-                                    vp_old.parameter_transformer.inverse(x)
+                                    vp_old.parameter_transformer.inverse(x), no_infs=True
                                               )
         Nrnd = 1000
         xx = np.random.rand(Nrnd, self.D) * \
@@ -892,8 +892,9 @@ class VariationalPosterior:
         Ns_gp = len(vp_old.gp.posteriors)
         hyp_warped = np.zeros([Ncov + Nnoise + Nmean, Ns_gp])
 
+        hyps = vp_old.gp.get_hyperparameters(as_array = True)
         for s in range(Ns_gp):
-            hyp = vp_old.gp.posteriors[s].hyp
+            hyp = hyps[s]
             hyp_warped[:, s] = hyp.copy()
 
             # UpdateGP input length scales (Not needed for linear warping?)
@@ -935,7 +936,7 @@ class VariationalPosterior:
         # Update GP:
         # TODO: Check for correctness
         # self.gp.hyp = hyp_warped
-        vbmc.optim_state["hyp_dict"]["hyp"] = hyp_warped
+        vbmc.optim_state["hyp_dict"]["hyp"] = hyp_warped.T
         mu = vp_old.mu.T
         sigmalambda = (vp_old.lambd * vp_old.sigma).T
 

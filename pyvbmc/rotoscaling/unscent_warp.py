@@ -38,7 +38,10 @@ def unscent_warp(fun, x, sigma):
         xx[2*d, :, d] = xx[2*d, :, d] - sigma3
 
     xu = np.reshape(xx, [N*U, D])
+    assert np.all(np.isfinite(xu))
     xu = fun(xu)
+    assert np.all(~np.isnan(xu))
+    assert np.all(np.isfinite(xu))
     xu = np.reshape(xu, [U, N, D])
     # xu = np.reshape(fun(np.reshape(xx, [N*U, D])), [U, N, D])
 
