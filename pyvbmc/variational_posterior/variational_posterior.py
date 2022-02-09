@@ -826,8 +826,8 @@ class VariationalPosterior:
         X_flag = vbmc.function_logger.X_flag
         # x_orig = vbmc.optim_state["cache"]["x_orig"][X_flag, :]
         # y_orig = vbmc.optim_state["cache"]["y_orig"][X_flag]
-        X_orig = vbmc.function_logger.X[X_flag, :]
-        y_orig = vbmc.function_logger.y[X_flag].T
+        X_orig = vbmc.function_logger.X_orig[X_flag, :]
+        y_orig = vbmc.function_logger.y_orig[X_flag].T
         X = self.parameter_transformer(X_orig)
         dy = self.parameter_transformer.log_abs_det_jacobian(X)
         y = y_orig + dy/T
