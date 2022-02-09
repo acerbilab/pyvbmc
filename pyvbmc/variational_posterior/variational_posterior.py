@@ -895,6 +895,7 @@ class VariationalPosterior:
         hyps = vp_old.gp.get_hyperparameters(as_array = True)
         for s in range(Ns_gp):
             hyp = hyps[s]
+            # print(hyp)
             hyp_warped[:, s] = hyp.copy()
 
             # UpdateGP input length scales (Not needed for linear warping?)
@@ -915,21 +916,21 @@ class VariationalPosterior:
             elif isinstance(vp_old.gp.mean, gpyreg.mean_functions.NegativeQuadratic):
                 # Warp quadratic mean
                 m0 = hyp[Ncov + Nnoise]
-                xm = hyp[Ncov + Nnoise : Ncov + Nnoise + self.D]
-                omega = np.exp(hyp[Ncov + Nnoise + self.D : Ncov + Nnoise + 2*self.D])
+                xm = hyp[Ncov + Nnoise : Ncov + Nnoise + self.D].T
+                omega = np.exp(hyp[Ncov + Nnoise + self.D : Ncov + Nnoise + 2*self.D]).T
 
                 # Warp location and scale
                 (xmw, omegaw, __) = unscent_warp(warpfun, xm, omega)
                 # [xmw, omegaw] = [xm, omega]
 
                 # Warp maximum
-                dy_old = vp_old.parameter_transformer.log_abs_det_jacobian(xm)
-                dy = self.parameter_transformer.log_abs_det_jacobian(xmw)
+                dy_old = vp_old.parameter_transformer.log_abs_det_jacobian(xm).T
+                dy = self.parameter_transformer.log_abs_det_jacobian(xmw).T
                 m0w = m0 + (dy - dy_old)/T
 
                 hyp_warped[Ncov + Nnoise, s] = m0w
-                hyp_warped[Ncov + Nnoise : Ncov + Nnoise + self.D, s] = xmw
-                hyp_warped[Ncov + Nnoise + self.D : Ncov + Nnoise + 2*self.D, s] = np.log(omegaw)
+                hyp_warped[Ncov + Nnoise : Ncov + Nnoise + self.D, s] = xmw.T
+                hyp_warped[Ncov + Nnoise + self.D : Ncov + Nnoise + 2*self.D, s] = np.log(omegaw).reshape(-1)
             else:
                 raise ValueError("Unsupported GP mean function for input warping.")
 
@@ -937,6 +938,9 @@ class VariationalPosterior:
         # TODO: Check for correctness
         # self.gp.hyp = hyp_warped
         vbmc.optim_state["hyp_dict"]["hyp"] = hyp_warped.T
+        # print(hyp.shape)
+        print(hyp_warped.shape)
+        # self.gp.set_hyperparameters(hyp_warped.T)
         mu = vp_old.mu.T
         sigmalambda = (vp_old.lambd * vp_old.sigma).T
 
