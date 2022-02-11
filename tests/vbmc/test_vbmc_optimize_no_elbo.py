@@ -334,7 +334,6 @@ def mvnlogpdf(x, mu, sigma):
     y = -0.5 * quad_form - log_sqrt_det_sigma - d * np.log(2 * np.pi) / 2
     return y
 
-@pytest.mark.skip
 def test_optimize_result_dict(mocker):
     """
     Test that result dict is being recorded correctly.

@@ -825,7 +825,7 @@ class VBMC:
                 elbo_old = elbo
                 elbo_sd_old = elbo_sd
                 # Compute and apply whitening transform:
-                self.whiten(vp_old)
+                hyp_dict = self.whiten(vp_old, hyp_dict)
 
                 self.logging_action.append("rotoscaling")
                 timer.stop_timer("warping")
@@ -1996,7 +1996,7 @@ class VBMC:
         return vp, elbo, elbo_sd, idx_best
 
     def whiten(
-            self, vp_old
+            self, vp_old, hyp_dict
     ):
         """
         Calculate and apply whitening transform (rotoscaling).
@@ -2005,7 +2005,14 @@ class VBMC:
         ----------
         vp_old: VariationalPosterior
             A (deep) copy of the current variational posterior.
+        hyp_dict: Dictionary
+            The current dictionary of GP hyperparameters.
+
+        Returns
+        -------
+        hyp_new: The updated dictionary of GP hyperparameters.
         """
+        hyp_new = copy.deepcopy(hyp_dict)
 
         U, scale = warp_input_vbmc(self)
         self.parameter_transformer.R_mat = U
@@ -2143,7 +2150,8 @@ class VBMC:
         # Update GP:
         # TODO: Check for correctness
         # self.gp.hyp = hyp_warped
-        self.optim_state["hyp_dict"]["hyp"] = hyp_warped.T
+        # self.optim_state["hyp_dict"]["hyp"] = hyp_warped.T
+        hyp_new["hyp"] = hyp_warped.T
         # self.gp.set_hyperparameters(hyp_warped.T)
         mu = vp_old.mu.T
         sigmalambda = (vp_old.lambd * vp_old.sigma).T
@@ -2165,6 +2173,8 @@ class VBMC:
 
         ww = vp_old.w * np.exp((dy - dy_old)/T)
         self.vp.w = ww / np.sum(ww)
+
+        return hyp_new
 
     def _create_result_dict(self, idx_best: int, termination_message: str):
         """
