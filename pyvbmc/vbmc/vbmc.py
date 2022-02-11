@@ -19,8 +19,7 @@ from .iteration_history import IterationHistory
 from .options import Options
 from .variational_optimization import optimize_vp, update_K
 
-from pyvbmc.rotoscaling.unscent_warp import unscent_warp
-
+from pyvbmc.whitening.whitening import unscent_warp, warp_input_vbmc
 
 class VBMC:
     """
@@ -819,20 +818,14 @@ class VBMC:
             if doWarping:
                 timer.start_timer("warping")
                 # Store variables in case warp needs to be undone:
-                # ()vp_old copied above)
+                # (vp_old copied above)
                 optim_state_old = copy.deepcopy(self.optim_state)
                 gp_old = copy.deepcopy(gp)
                 function_logger_old = copy.deepcopy(self.function_logger)
                 elbo_old = elbo
                 elbo_sd_old = elbo_sd
-                # rotation_matrix, scale = calculateRotoScale(self)
-                # self.parameter_transformer.R_mat = rotation_matrix
-                # self.parameter_transformer.scale = scale
-                # plt.scatter(*zip(*vp_old.mu.T))
-                # print(vp_old.parameter_transformer.R_mat)
-                # print(self.vp.parameter_transformer.R_mat)
-                # print("Whitening...")
-                new_parameter_transformer = self.whiten(vp_old)
+                # Compute and apply whitening transform:
+                self.whiten(vp_old)
 
                 self.logging_action.append("rotoscaling")
                 timer.stop_timer("warping")
@@ -2006,7 +1999,7 @@ class VBMC:
             self, vp_old
     ):
         """
-        Calculate whitening transform and return new parameter_transformer ???
+        Calculate and apply whitening transform (rotoscaling).
 
         Parameters
         ----------
@@ -2014,33 +2007,7 @@ class VBMC:
             A (deep) copy of the current variational posterior.
         """
 
-        # Calculate rescaling and rotation from moments:
-        __, vp_Sigma = self.vp.moments(origflag=False, covflag=True)
-        R_mat = self.parameter_transformer.R_mat
-        scale = self.parameter_transformer.scale
-        delta = self.parameter_transformer.delta
-        vp_Sigma = R_mat @ np.diag(scale) @ vp_Sigma @ np.diag(scale) @ R_mat.T
-        vp_Sigma = np.diag(delta) @ vp_Sigma @ np.diag(delta)
-
-        # Remove low-correlation entries
-        if self.options["warprotocorrthresh"] > 0:
-            vp_corr = vp_Sigma / np.sqrt(np.outer(np.diag(vp_Sigma), np.diag(vp_Sigma)))
-            mask_idx = (np.abs(vp_corr) <= self.options["warprotocorrthresh"])
-            vp_Sigma[mask_idx] = 0
-
-        # Regularization of covariance matrix towards diagonal
-        if type(self.options["warpcovreg"]) == float or type(self.options["warpcovreg"]) == int:
-            w_reg = self.options["warpcovreg"]
-        else:
-            w_reg = self.options.warpcovreg[self.optim_state["N"]]
-        w_reg = np.max([0, np.min([1, w_reg])])
-        vp_Sigma = (1 - w_reg) * vp_Sigma + w_reg * np.diag(np.diag(vp_Sigma))
-
-        # Compute whitening transform (rotoscaling)
-        U, s, Vh = np.linalg.svd(vp_Sigma)
-        if np.linalg.det(U) < 0:
-            U[:, 0] = -U[:, 0]
-        scale = np.sqrt(s)
+        U, scale = warp_input_vbmc(self)
         self.parameter_transformer.R_mat = U
         self.parameter_transformer.scale = scale
 

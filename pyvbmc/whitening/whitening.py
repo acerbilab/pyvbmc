@@ -50,3 +50,35 @@ def unscent_warp(fun, x, sigma):
     # print(xw.shape)
     # print(sigmaw.shape)
     return (xw, sigmaw, xu)
+
+def warp_input_vbmc(vbmc):
+
+        # Calculate rescaling and rotation from moments:
+        __, vp_Sigma = vbmc.vp.moments(origflag=False, covflag=True)
+        R_mat = vbmc.parameter_transformer.R_mat
+        scale = vbmc.parameter_transformer.scale
+        delta = vbmc.parameter_transformer.delta
+        vp_Sigma = R_mat @ np.diag(scale) @ vp_Sigma @ np.diag(scale) @ R_mat.T
+        vp_Sigma = np.diag(delta) @ vp_Sigma @ np.diag(delta)
+
+        # Remove low-correlation entries
+        if vbmc.options["warprotocorrthresh"] > 0:
+            vp_corr = vp_Sigma / np.sqrt(np.outer(np.diag(vp_Sigma), np.diag(vp_Sigma)))
+            mask_idx = (np.abs(vp_corr) <= vbmc.options["warprotocorrthresh"])
+            vp_Sigma[mask_idx] = 0
+
+        # Regularization of covariance matrix towards diagonal
+        if type(vbmc.options["warpcovreg"]) == float or type(vbmc.options["warpcovreg"]) == int:
+            w_reg = vbmc.options["warpcovreg"]
+        else:
+            w_reg = vbmc.options.warpcovreg[vbmc.optim_state["N"]]
+        w_reg = np.max([0, np.min([1, w_reg])])
+        vp_Sigma = (1 - w_reg) * vp_Sigma + w_reg * np.diag(np.diag(vp_Sigma))
+
+        # Compute whitening transform (rotoscaling)
+        U, s, Vh = np.linalg.svd(vp_Sigma)
+        if np.linalg.det(U) < 0:
+            U[:, 0] = -U[:, 0]
+        scale = np.sqrt(s)
+
+        return U, scale
