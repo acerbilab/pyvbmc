@@ -1433,8 +1433,7 @@ class VBMC:
                 + " not converged."
             )
 
-        # result_dict = self._create_result_dict(idx_best, termination_message)
-        result_dict = None
+        result_dict = self._create_result_dict(idx_best, termination_message)
 
         return (
             copy.deepcopy(self.vp),
