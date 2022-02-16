@@ -30,12 +30,12 @@ def unscent_warp(fun, x, sigma):
     x3[0, :, :] = x
     xx = np.tile(x3, [U, 1, 1])
 
-    for d in range(D):
+    for d in range(1,D+1):
         # sigma3 = np.zeros([1, N, 1])
         # sigma3[0, :, 0] = np.sqrt(D)*sigma[:, d]
-        sigma3 = np.sqrt(D)*sigma[:, d]
-        xx[2*d-1, :, d] = xx[2*d-1, :, d] + sigma3
-        xx[2*d, :, d] = xx[2*d, :, d] - sigma3
+        sigma3 = np.sqrt(D)*sigma[:, d-1]
+        xx[2*d-1, :, d-1] = xx[2*d-1, :, d-1] + sigma3
+        xx[2*d, :, d-1] = xx[2*d, :, d-1] - sigma3
 
     xu = np.reshape(xx, [N*U, D])
     assert np.all(np.isfinite(xu))
@@ -46,10 +46,9 @@ def unscent_warp(fun, x, sigma):
     # xu = np.reshape(fun(np.reshape(xx, [N*U, D])), [U, N, D])
 
     xw = np.reshape(np.mean(xu, axis=0), x_shape)
-    sigmaw = np.std(xu, axis=0)
-    # print(xw.shape)
-    # print(sigmaw.shape)
+    sigmaw = np.std(xu, axis=0, ddof=1)
     return (xw, sigmaw, xu)
+
 
 def warp_input_vbmc(vbmc):
 

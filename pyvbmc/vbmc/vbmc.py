@@ -824,8 +824,10 @@ class VBMC:
                 function_logger_old = copy.deepcopy(self.function_logger)
                 elbo_old = elbo
                 elbo_sd_old = elbo_sd
+                hyp_dict_old = copy.deepcopy(hyp_dict)
                 # Compute and apply whitening transform:
-                hyp_dict = self.whiten(vp_old, hyp_dict)
+                hyp_dict["hyp"] = self.whiten(vp_old, hyp_dict)
+                # print(hyp_dict["hyp"])
 
                 self.logging_action.append("rotoscaling")
                 timer.stop_timer("warping")
@@ -895,6 +897,7 @@ class VBMC:
                         self.gp = gp_old
                         self.optim_state = optim_state_old
                         self.function_logger = function_logger_old
+                        hyp_dict = hyp_dict_old
                         # self.optim_state["hyp_dict"] = hyp_dict_old
 
                         # Still keep track of failed warping (failed warp counts twice)
@@ -2012,7 +2015,8 @@ class VBMC:
         -------
         hyp_new: The updated dictionary of GP hyperparameters.
         """
-        hyp_new = copy.deepcopy(hyp_dict)
+        # TODO: Don't need hyp_dict
+        # hyp_new = copy.deepcopy(hyp_dict)
 
         U, scale = warp_input_vbmc(self)
         self.parameter_transformer.R_mat = U
@@ -2130,8 +2134,8 @@ class VBMC:
             elif isinstance(vp_old.gp.mean, gpr.mean_functions.NegativeQuadratic):
                 # Warp quadratic mean
                 m0 = hyp[Ncov + Nnoise]
-                xm = hyp[Ncov + Nnoise : Ncov + Nnoise + self.D].T
-                omega = np.exp(hyp[Ncov + Nnoise + self.D : Ncov + Nnoise + 2*self.D]).T
+                xm = hyp[Ncov + Nnoise + 1 : Ncov + Nnoise + self.D + 1].T
+                omega = np.exp(hyp[Ncov + Nnoise + self.D + 1 :]).T
 
                 # Warp location and scale
                 (xmw, omegaw, __) = unscent_warp(warpfun, xm, omega)
@@ -2142,8 +2146,8 @@ class VBMC:
                 m0w = m0 + (dy - dy_old)/T
 
                 hyp_warped[Ncov + Nnoise, s] = m0w
-                hyp_warped[Ncov + Nnoise : Ncov + Nnoise + self.D, s] = xmw.T
-                hyp_warped[Ncov + Nnoise + self.D : Ncov + Nnoise + 2*self.D, s] = np.log(omegaw).reshape(-1)
+                hyp_warped[Ncov + Nnoise + 1 : Ncov + Nnoise + self.D + 1, s] = xmw.T
+                hyp_warped[Ncov + Nnoise + self.D + 1 : , s] = np.log(omegaw).reshape(-1)
             else:
                 raise ValueError("Unsupported GP mean function for input warping.")
 
@@ -2151,7 +2155,8 @@ class VBMC:
         # TODO: Check for correctness
         # self.gp.hyp = hyp_warped
         # self.optim_state["hyp_dict"]["hyp"] = hyp_warped.T
-        hyp_new["hyp"] = hyp_warped.T
+        # hyp_new["hyp"] = hyp_warped.T.copy()
+        # hyp_new["hyp"] = np.zeros(hyp_warped.T.shape)
         # self.gp.set_hyperparameters(hyp_warped.T)
         mu = vp_old.mu.T
         sigmalambda = (vp_old.lambd * vp_old.sigma).T
@@ -2174,7 +2179,7 @@ class VBMC:
         ww = vp_old.w * np.exp((dy - dy_old)/T)
         self.vp.w = ww / np.sum(ww)
 
-        return hyp_new
+        return hyp_warped.T.copy()
 
     def _create_result_dict(self, idx_best: int, termination_message: str):
         """
