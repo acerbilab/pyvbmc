@@ -204,12 +204,12 @@ class ParameterTransformer:
 
         # Rotoscale whitening:
         # Undo rescaling:
-        if self.scale is not None:
-            x = x*self.scale
         # Undo rotation:
         # (Rotations of infinite points are ill-defined. Leave those points
         # alone.)
         if np.all(np.isfinite(x)):
+            if self.scale is not None:
+                x = x*self.scale
             if self.R_mat is not None:
                 x = x @ np.transpose(self.R_mat)
 
