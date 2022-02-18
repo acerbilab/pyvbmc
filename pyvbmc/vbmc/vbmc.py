@@ -835,10 +835,14 @@ class VBMC:
                 elbo_sd_old = elbo_sd
                 hyp_dict_old = copy.deepcopy(hyp_dict)
                 # Compute and apply whitening transform:
-                hyp_dict["hyp"] = self.whiten(vp_tmp)
+                parameter_transformer_warp, self.optim_state, self.function_logger, warp_action = warp_input_vbmc(vp_tmp, self.optim_state, self.function_logger, self.options)
+
+                self.vp, hyp_dict["hyp"] = warp_gpandvp_vbmc(parameter_transformer_warp, self.vp, self)
+                # self.parameter_transformer = self.vp.parameter_transformer
+                # self.function_logger.parameter_transformer = self.vp.parameter_transformer
                 # print(hyp_dict["hyp"])
 
-                self.logging_action.append("rotoscaling")
+                self.logging_action.append(warp_action)
                 timer.stop_timer("warping")
 
                 if self.options.get("warpundocheck"):
@@ -901,6 +905,10 @@ class VBMC:
                     # and uncertainty does not blow up too much
                     if (elbo < (elbo_old + self.options["warptolimprovement"]))\
                     or (elbo_sd > (elbo_sd_old * self.options["warptolsdmultiplier"] + self.options["warptolsdbase"])):
+                        print(elbo)
+                        print(elbo_old)
+                        print(elbo_sd)
+                        print(elbo_sd_old)
                         # Undo input warping:
                         self.vp = vp_old
                         self.gp = gp_old
@@ -917,6 +925,8 @@ class VBMC:
 
             ## Actively sample new points into the training set
             timer.start_timer("activeSampling")
+            self.parameter_transformer = self.vp.parameter_transformer
+            self.function_logger.parameter_transformer = self.vp.parameter_transformer
 
             if iteration == 0:
                 new_funevals = self.options.get("funevalstart")
@@ -2023,6 +2033,7 @@ class VBMC:
         hyp_new: The updated dictionary of GP hyperparameters.
         """
 
+        parameter_transformer, self.optim_state, warp_action = warp_input_vbmc(vp_tmp, self.optim_state, self.options)
         U, scale = warp_input_vbmc(self)
         self.parameter_transformer.R_mat = U
         self.parameter_transformer.scale = scale
