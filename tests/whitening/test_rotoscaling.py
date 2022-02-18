@@ -91,37 +91,86 @@ def test_unscent_warp():
     assert np.all(np.isclose(muu, matlab_result_muu, atol=0.0001))
     assert np.all(np.isclose(sigmaw, matlab_result_sigmaw, atol=0.0001))
 
-def test_direct_transform_type3_within():
-    parameter_transformer = ParameterTransformer(
-        D=D,
-        lower_bounds=np.ones((1, D)) * -10,
-        upper_bounds=np.ones((1, D)) * 10,
-    )
-    X = np.ones((10, D)) * 3
-    Y = parameter_transformer(X)
-    Y2 = np.ones((10, D)) * 0.619
-    assert np.all(np.isclose(Y, Y2, atol=1e-04))
+@pytest.mark.skip(reason="Test not finished.")
+def test_warp_input_vbmc():
+    angle = 1.309355600770139
+    R = np.array([[np.cos(angle), np.sin(angle)],
+                 [-np.sin(angle), np.cos(angle)]]
+                )
+    rands = np.array([
+        [0.863077542531699, -0.289939258766329],
+        [0.101677144891506, 1.69671085524996],
+        [-1.17160077378450, 1.29031232184773],
+        [-0.526269140864695, -0.428892744565227],
+        [0.0705080370696098, 0.146809594851066],
+        [0.135530782339547, -0.828601492654749],
+        [0.466400424678227, -0.348101222370484],
+        [0.982295558613529, -0.530377396742441],
+        [-0.869041937718951, 0.213931172533040],
+        [1.69021741525964, 0.342465817734047],
+        [-0.999222742785420, 0.907289056500305],
+        [-1.01540654957279, 0.0353655540333276],
+        [2.27105278214723, -2.19296246215682],
+        [-0.424485568767445, -0.448203991593693],
+        [-0.387472065949968, 1.56389797220726],
+        [1.86824800611932, 0.716488449201314],
+        [0.818844814102036, -1.18763931148113],
+        [0.659882563140113, -0.689711355484945],
+        [0.164481921324160, 0.0973280257720499],
+        [0.238865495645372, -0.499735706323105],
+        [-0.211254607409097, -2.13406450434705],
+        [-0.541986424337808, -0.546479319514447],
+        [1.39098281872649, 0.921037471295941],
+        [-0.393516065199629, 2.04861663786019],
+        [-0.643206933657155, -0.145338009545600],
+        [1.58849304511189, -1.39562083957419],
+        [0.751025462317757, -0.701659075823514],
+        [0.911078511724154, -0.358878957781475],
+        [-0.593717984063518, -0.146240078627267],
+        [-0.420334072643720, 1.43205266879963],
+        [-0.215926641120469, 0.714435897821756],
+        [1.05554244043582, 1.21619028188551],
+        [0.912810629960210, 0.425178531426115],
+        [-0.365417499940999, -0.346584887549622],
+        [1.37687121914998, -1.38216937459364],
+        [-1.06048073942646, 0.786685955156052],
+        [-0.698311279064511, 2.22617972777297],
+        [-0.508466707129491, -0.506954526924362],
+        [-0.549555921013203, 0.208964515691570],
+        [0.708676552007701,  -1.49272448916073],
+        [-1.13511844745561,  -0.282654228212148],
+        [-2.04179725039980,  -0.769244891917382],
+        [0.505696022291427,  -0.571390826423346],
+        [0.357174924064903,  -1.29273752721148],
+        [0.370761962746280,  -0.579564581236171],
+        [-0.499694205126650, -0.369808886585155],
+        [0.726746148964249,  0.529845152234478],
+        [-0.758195880280548, 0.399606668462689],
+        [1.42005120331928,   -0.184391418591077],
+        [1.40306400326931,   0.122953370152712]
+    ])
+    rands[:,0] = 10*rands[:,0]
+    mus   = rands@R
+    vp = VariationalPosterior(D, 50, mus)
+    vbmc = VBMC(lambda x: np.sum(x),
+                mus,
+                np.full((1, D), -np.inf),
+                np.full((1, D), np.inf),
+                np.ones((1, D)) * -10,
+                np.ones((1, D)) * 10)
+    # vbmc.vp = vp
+    parameter_transformer_warp, vbmc.optim_state, vbmc.function_logger, warp_action = warp_input_vbmc(vp, vbmc.optim_state, vbmc.function_logger, vbmc.options)
 
-
-def test_transform_direct_inverse():
-    parameter_transformer = ParameterTransformer(
-        D=D,
-        lower_bounds=np.ones((1, D)) * -10,
-        upper_bounds=np.ones((1, D)) * 10,
-    )
-    X = np.ones((10, D)) * 0.05
-    U = parameter_transformer(X)
-    X2 = parameter_transformer.inverse(U)
-    assert np.all(np.isclose(X, X2, rtol=1e-12, atol=1e-14))
-
-
-def test_transform_inverse_direct():
-    parameter_transformer = ParameterTransformer(
-        D=D,
-        lower_bounds=np.ones((1, D)) * -10,
-        upper_bounds=np.ones((1, D)) * 10,
-    )
-    U = np.ones((10, D)) * 0.2
-    X = parameter_transformer.inverse(U)
-    U2 = parameter_transformer(X)
-    assert np.all(np.isclose(U, U2, rtol=1e-12, atol=1e-14))
+    assert np.all(parameter_transformer_warp.lb_orig == [-np.inf, -np.inf])
+    assert np.all(parameter_transformer_warp.ub_orig == [np.inf, np.inf])
+    assert np.all(parameter_transformer_warp.type == [0, 0])
+    assert np.all(parameter_transformer_warp.mu == [0.0, 0.0])
+    assert np.all(parameter_transformer_warp.delta == [1.0, 1.0])
+    print(parameter_transformer_warp.R_mat)
+    assert np.all(np.isclose(parameter_transformer_warp.R_mat, np.array([
+        [0.493952340977679, -0.869488979138132],
+        [0.869488979138132, 0.493952340977679]
+    ])))
+    assert np.all(np.isclose(parameter_transformer_warp.scale, np.array([
+        3.93465312348704, 0.0268047056002401
+    ])))
