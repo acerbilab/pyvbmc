@@ -80,7 +80,7 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
     U, s, Vh = np.linalg.svd(vp_Sigma)
     if np.linalg.det(U) < 0:
         U[:, 0] = -U[:, 0]
-    scale = np.sqrt(s)
+    scale = np.sqrt(s+np.finfo(np.float64).eps)
     parameter_transformer.R_mat = U
     parameter_transformer.scale = scale
 
@@ -230,7 +230,7 @@ def warp_gpandvp_vbmc(parameter_transformer, vp_old, vbmc):
     # Update VP:
 
     vp = copy.deepcopy(vp_old)
-    vp.parameter_transformer = parameter_transformer
+    vp.parameter_transformer = copy.deepcopy(parameter_transformer)
 
     mu = vp.mu.T
     sigmalambda = (vp_old.lambd * vp_old.sigma).T
