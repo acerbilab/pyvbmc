@@ -290,6 +290,6 @@ class ParameterTransformer:
 
         # Scale transform
         if self.scale is not None:
-            p + np.log(self.scale)
+            p = p + np.log(self.scale)
         p = np.sum(p, axis=1)
         return p
