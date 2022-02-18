@@ -107,7 +107,7 @@ class ParameterTransformer:
                     )
 
     @handle_0D_1D_input(patched_kwargs=["x"], patched_argpos=[0])
-    def __call__(self, x: np.ndarray, no_infs=False):
+    def __call__(self, x: np.ndarray):
         """
         Performs direct transform of original variables X into
         unconstrained variables U.
@@ -117,9 +117,6 @@ class ParameterTransformer:
         x : np.ndarray
             A N x D array, where N is the number of input data
             and D is the number of dimensions
-        no_infs : boolean (default=False)
-            If true, replaces all positive/negative infinite values by
-            np.float64 max/min (for avoiding unexpected nan's).
 
         Returns
         -------
@@ -169,11 +166,6 @@ class ParameterTransformer:
             if self.scale is not None:
                 u = u/self.scale
 
-        if no_infs:
-            neg_infs = u == -np.inf
-            pos_infs = u == np.inf
-            u[neg_infs] = np.finfo(np.float64).min
-            u[pos_infs] = np.finfo(np.float64).max
         return u
 
     @handle_0D_1D_input(patched_kwargs=["u"], patched_argpos=[0])
