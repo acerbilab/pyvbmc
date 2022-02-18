@@ -2100,9 +2100,11 @@ class VBMC:
         self.optim_state["last_run_avg"] = np.nan
 
         # Warp VP components (warp_gpandvp_vbmc.m):
-
-        hyp_warped = warp_gpandvp_vbmc(self, vp_old, warpfun)
-
+        hyp_warped, muw, lambdaw, sigmaw, ww = warp_gpandvp_vbmc(self, vp_old, warpfun)
+        self.vp.mu = muw
+        self.vp.lambd[:, 0] = lambdaw
+        self.vp.sigma[0, :] = sigmaw
+        self.vp.w = ww
         return hyp_warped
 
     def _create_result_dict(self, idx_best: int, termination_message: str):

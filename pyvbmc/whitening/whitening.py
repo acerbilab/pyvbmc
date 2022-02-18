@@ -132,26 +132,27 @@ def warp_gpandvp_vbmc(vbmc, vp_old, warpfun):
             hyp_warped[Ncov + Nnoise + vbmc.D + 1 : , s] = np.log(omegaw).reshape(-1)
         else:
             raise ValueError("Unsupported GP mean function for input warping.")
+    hyp_warped = hyp_warped.T
 
+    # Update VP:
     mu = vp_old.mu.T
     sigmalambda = (vp_old.lambd * vp_old.sigma).T
 
     (muw, sigmalambdaw, __) = unscent_warp(warpfun, mu, sigmalambda)
 
-    vbmc.vp.mu = muw.T
     lambdaw = np.sqrt(vbmc.D*np.mean(
         sigmalambdaw**2 / (sigmalambdaw**2+2),
         axis=0))
-    vbmc.vp.lambd[:, 0] = lambdaw
 
     sigmaw = np.exp(np.mean(np.log(sigmalambdaw / lambdaw), axis=1))
-    vbmc.vp.sigma[0, :] = sigmaw
 
     # Approximate change in weight:
     dy_old = vp_old.parameter_transformer.log_abs_det_jacobian(mu)
     dy = vbmc.parameter_transformer.log_abs_det_jacobian(muw)
 
     ww = vp_old.w * np.exp((dy - dy_old)/T)
-    vbmc.vp.w = ww / np.sum(ww)
+    ww = ww / np.sum(ww)
 
-    return hyp_warped.T
+    muw = muw.T
+
+    return hyp_warped, muw, lambdaw, sigmaw, ww
