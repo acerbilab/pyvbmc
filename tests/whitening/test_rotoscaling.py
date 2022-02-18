@@ -24,7 +24,8 @@ def test_rotoscaling_rotation_2d():
                 np.ones((1, D)) * -10,
                 np.ones((1, D)) * 10)
     vbmc.vp = vp
-    U, scale = warp_input_vbmc(vbmc)
+    parameter_transformer, __, __, __ = warp_input_vbmc(vp, vbmc.optim_state, vbmc.function_logger, vbmc.options)
+    U = parameter_transformer.R_mat
 
     # U should undo rotation of R, up to a sign:
     assert np.all(np.isclose(np.abs(U@R), np.eye(D), atol=0.05))

@@ -173,7 +173,7 @@ def warp_gpandvp_vbmc(parameter_transformer, vp_old, vbmc):
     vp_old = copy.deepcopy(vp_old)
     def warpfun(x):
         return parameter_transformer(
-            vp_old.parameter_transformer.inverse(x)
+            vp_old.parameter_transformer.inverse(x), no_infs=True
         )
     # TODO: Add temperature scaling?
     T = 1
