@@ -46,6 +46,7 @@ def unscent_warp(fun, x, sigma):
 
     xw = np.reshape(np.mean(xu, axis=0), x_shape)
     sigmaw = np.std(xu, axis=0, ddof=1)
+    assert np.all(~np.isinf(sigmaw))
     return (xw, sigmaw, xu)
 
 
@@ -91,7 +92,7 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
     xx = np.random.rand(Nrnd, vp.D) * \
         (optim_state["pub_orig"]-optim_state["plb_orig"])\
         + optim_state["plb_orig"]
-    yy = parameter_transformer(xx, no_infs=True)
+    yy = parameter_transformer(xx)
     [plb, pub] = np.quantile(yy, [0.05, 0.95], axis=0)
     delta_temp = pub-plb
     plb = plb - delta_temp/9
@@ -110,7 +111,7 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
     # y_orig = self.optim_state["cache"]["y_orig"][X_flag]
     X_orig = function_logger.X_orig[X_flag, :]
     y_orig = function_logger.y_orig[X_flag].T
-    X = parameter_transformer(X_orig, no_infs=True)
+    X = parameter_transformer(X_orig)
     dy = parameter_transformer.log_abs_det_jacobian(X)
     y = y_orig + dy/T
     function_logger.X[X_flag, :] = X
@@ -125,7 +126,7 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
         # Copy probably unneccesary:
         x = np.copy(x)
         return parameter_transformer(
-                   vp.parameter_transformer.inverse(x), no_infs=True
+                   vp.parameter_transformer.inverse(x)
                )
     Nrnd = 1000
     xx = np.random.rand(Nrnd, vp.D) * \
@@ -173,7 +174,7 @@ def warp_gpandvp_vbmc(parameter_transformer, vp_old, vbmc):
     vp_old = copy.deepcopy(vp_old)
     def warpfun(x):
         return parameter_transformer(
-            vp_old.parameter_transformer.inverse(x), no_infs=True
+            vp_old.parameter_transformer.inverse(x)
         )
     # TODO: Add temperature scaling?
     T = 1
