@@ -1,5 +1,6 @@
 import numpy as np
 from pyvbmc.decorators import handle_0D_1D_input
+import gpyreg as gpr
 
 
 # @handle_0D_1D_input(patched_kwargs=["x", "sigma"], patched_argpos=[1, 2])
@@ -81,3 +82,79 @@ def warp_input_vbmc(vbmc):
         scale = np.sqrt(s)
 
         return U, scale
+
+
+def warp_gpandvp_vbmc(vbmc, vp_old, warpfun):
+    # TODO: Add temperature scaling?
+    T = 1
+    Ncov = vp_old.gp.covariance.hyperparameter_count(vbmc.D)
+    Nnoise = vp_old.gp.noise.hyperparameter_count()
+    Nmean = vp_old.gp.mean.hyperparameter_count(vbmc.D)
+    # MATLAB: if ~isempty(gp_old.outwarpfun); Noutwarp = gp_old.Noutwarp; else; Noutwarp = 0; end
+    # (Not used, see gaussian_process.py)
+
+    Ns_gp = len(vp_old.gp.posteriors)
+    hyp_warped = np.zeros([Ncov + Nnoise + Nmean, Ns_gp])
+
+    hyps = vp_old.gp.get_hyperparameters(as_array=True)
+    for s in range(Ns_gp):
+        hyp = hyps[s]
+        hyp_warped[:, s] = hyp.copy()
+
+        # UpdateGP input length scales
+        ell = np.exp(hyp[0:vbmc.D]).T
+        (__, ell_new, __) = unscent_warp(warpfun, vp_old.gp.X, ell)
+        hyp_warped[0:vbmc.D, s] = np.mean(np.log(ell_new), axis=0)
+
+        # We assume relatively no change to GP output and noise scales
+        if isinstance(vp_old.gp.mean, gpr.mean_functions.ConstantMean):
+            # Warp constant mean
+            m0 = hyp[Ncov+Nnoise]
+            dy_old = vp_old.parameter_transformer.log_abs_det_jacobian(vp_old.gp.X)
+            dy = vbmc.parameter_transformer.log_abs_det_jacobian(warpfun(vp_old.gp.X))
+            m0w = m0 + (np.mean(dy, axis=0) - np.mean(dy_old, axis=0))/T
+
+            hyp_warped[Ncov+Nnoise, s] = m0w
+
+        elif isinstance(vp_old.gp.mean, gpr.mean_functions.NegativeQuadratic):
+            # Warp quadratic mean
+            m0 = hyp[Ncov + Nnoise]
+            xm = hyp[Ncov + Nnoise + 1 : Ncov + Nnoise + vbmc.D + 1].T
+            omega = np.exp(hyp[Ncov + Nnoise + vbmc.D + 1 : ]).T
+
+            # Warp location and scale
+            (xmw, omegaw, __) = unscent_warp(warpfun, xm, omega)
+
+            # Warp maximum
+            dy_old = vp_old.parameter_transformer.log_abs_det_jacobian(xm).T
+            dy = vbmc.parameter_transformer.log_abs_det_jacobian(xmw).T
+            m0w = m0 + (dy - dy_old)/T
+
+            hyp_warped[Ncov + Nnoise, s] = m0w
+            hyp_warped[Ncov + Nnoise + 1 : Ncov + Nnoise + vbmc.D + 1, s] = xmw.T
+            hyp_warped[Ncov + Nnoise + vbmc.D + 1 : , s] = np.log(omegaw).reshape(-1)
+        else:
+            raise ValueError("Unsupported GP mean function for input warping.")
+
+    mu = vp_old.mu.T
+    sigmalambda = (vp_old.lambd * vp_old.sigma).T
+
+    (muw, sigmalambdaw, __) = unscent_warp(warpfun, mu, sigmalambda)
+
+    vbmc.vp.mu = muw.T
+    lambdaw = np.sqrt(vbmc.D*np.mean(
+        sigmalambdaw**2 / (sigmalambdaw**2+2),
+        axis=0))
+    vbmc.vp.lambd[:, 0] = lambdaw
+
+    sigmaw = np.exp(np.mean(np.log(sigmalambdaw / lambdaw), axis=1))
+    vbmc.vp.sigma[0, :] = sigmaw
+
+    # Approximate change in weight:
+    dy_old = vp_old.parameter_transformer.log_abs_det_jacobian(mu)
+    dy = vbmc.parameter_transformer.log_abs_det_jacobian(muw)
+
+    ww = vp_old.w * np.exp((dy - dy_old)/T)
+    vbmc.vp.w = ww / np.sum(ww)
+
+    return hyp_warped.T

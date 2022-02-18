@@ -19,7 +19,8 @@ from .iteration_history import IterationHistory
 from .options import Options
 from .variational_optimization import optimize_vp, update_K
 
-from pyvbmc.whitening.whitening import unscent_warp, warp_input_vbmc
+from pyvbmc.whitening.whitening import warp_input_vbmc, warp_gpandvp_vbmc
+
 
 class VBMC:
     """
@@ -2100,86 +2101,9 @@ class VBMC:
 
         # Warp VP components (warp_gpandvp_vbmc.m):
 
-        assert(vp_old.gp.X.shape[1] == self.D)
+        hyp_warped = warp_gpandvp_vbmc(self, vp_old, warpfun)
 
-        Ncov = vp_old.gp.covariance.hyperparameter_count(self.D)
-        Nnoise = vp_old.gp.noise.hyperparameter_count()
-        Nmean = vp_old.gp.mean.hyperparameter_count(self.D)
-        # MATLAB: if ~isempty(gp_old.outwarpfun); Noutwarp = gp_old.Noutwarp; else; Noutwarp = 0; end
-        # (Not used, see gaussian_process.py)
-
-        Ns_gp = len(vp_old.gp.posteriors)
-        hyp_warped = np.zeros([Ncov + Nnoise + Nmean, Ns_gp])
-
-        hyps = vp_old.gp.get_hyperparameters(as_array = True)
-        for s in range(Ns_gp):
-            hyp = hyps[s]
-            hyp_warped[:, s] = hyp.copy()
-
-            # UpdateGP input length scales
-            ell = np.exp(hyp[0:self.D]).T
-            (__, ell_new, __) = unscent_warp(warpfun, vp_old.gp.X, ell)
-            hyp_warped[0:self.D,s] = np.mean(np.log(ell_new), axis=0)
-
-            # We assume relatively no change to GP output and noise scales
-            if isinstance(vp_old.gp.mean, gpr.mean_functions.ConstantMean):
-                # Warp constant mean
-                m0 = hyp[Ncov+Nnoise];
-                dy_old = vp_old.parameter_transformer.log_abs_det_jacobian(vp_old.gp.X)
-                dy = self.parameter_transformer.log_abs_det_jacobian(warpfun(vp_old.gp.X))
-                m0w = m0 + (np.mean(dy, axis=0) - np.mean(dy_old, axis=0))/T
-
-                hyp_warped[Ncov+Nnoise, s] = m0w
-
-            elif isinstance(vp_old.gp.mean, gpr.mean_functions.NegativeQuadratic):
-                # Warp quadratic mean
-                m0 = hyp[Ncov + Nnoise]
-                xm = hyp[Ncov + Nnoise + 1 : Ncov + Nnoise + self.D + 1].T
-                omega = np.exp(hyp[Ncov + Nnoise + self.D + 1 :]).T
-
-                # Warp location and scale
-                (xmw, omegaw, __) = unscent_warp(warpfun, xm, omega)
-
-                # Warp maximum
-                dy_old = vp_old.parameter_transformer.log_abs_det_jacobian(xm).T
-                dy = self.parameter_transformer.log_abs_det_jacobian(xmw).T
-                m0w = m0 + (dy - dy_old)/T
-
-                hyp_warped[Ncov + Nnoise, s] = m0w
-                hyp_warped[Ncov + Nnoise + 1 : Ncov + Nnoise + self.D + 1, s] = xmw.T
-                hyp_warped[Ncov + Nnoise + self.D + 1 : , s] = np.log(omegaw).reshape(-1)
-            else:
-                raise ValueError("Unsupported GP mean function for input warping.")
-
-        # Update GP:
-        # TODO: Check for correctness
-        # self.gp.hyp = hyp_warped
-        # self.optim_state["hyp_dict"]["hyp"] = hyp_warped.T
-        # hyp_new["hyp"] = hyp_warped.T.copy()
-        # hyp_new["hyp"] = np.zeros(hyp_warped.T.shape)
-        # self.gp.set_hyperparameters(hyp_warped.T)
-        mu = vp_old.mu.T
-        sigmalambda = (vp_old.lambd * vp_old.sigma).T
-
-        (muw, sigmalambdaw, __) = unscent_warp(warpfun, mu, sigmalambda)
-
-        self.vp.mu = muw.T
-        lambdaw = np.sqrt(self.D*np.mean(
-            sigmalambdaw**2 / (sigmalambdaw**2+2),
-            axis=0))
-        self.vp.lambd[:, 0] = lambdaw
-
-        sigmaw = np.exp(np.mean(np.log(sigmalambdaw / lambdaw), axis=1))
-        self.vp.sigma[0, :] = sigmaw
-
-        # Approximate change in weight:
-        dy_old = vp_old.parameter_transformer.log_abs_det_jacobian(mu)
-        dy = self.parameter_transformer.log_abs_det_jacobian(muw)
-
-        ww = vp_old.w * np.exp((dy - dy_old)/T)
-        self.vp.w = ww / np.sum(ww)
-
-        return hyp_warped.T.copy()
+        return hyp_warped
 
     def _create_result_dict(self, idx_best: int, termination_message: str):
         """
