@@ -827,7 +827,7 @@ class VBMC:
                 elbo_sd_old = elbo_sd
                 hyp_dict_old = copy.deepcopy(hyp_dict)
                 # Compute and apply whitening transform:
-                hyp_dict["hyp"] = self.whiten(vp_old, hyp_dict)
+                hyp_dict["hyp"] = self.whiten(vp_old)
                 # print(hyp_dict["hyp"])
 
                 self.logging_action.append("rotoscaling")
@@ -2000,7 +2000,7 @@ class VBMC:
         return vp, elbo, elbo_sd, idx_best
 
     def whiten(
-            self, vp_old, hyp_dict
+            self, vp_old
     ):
         """
         Calculate and apply whitening transform (rotoscaling).
@@ -2009,15 +2009,11 @@ class VBMC:
         ----------
         vp_old: VariationalPosterior
             A (deep) copy of the current variational posterior.
-        hyp_dict: Dictionary
-            The current dictionary of GP hyperparameters.
 
         Returns
         -------
         hyp_new: The updated dictionary of GP hyperparameters.
         """
-        # TODO: Don't need hyp_dict
-        # hyp_new = copy.deepcopy(hyp_dict)
 
         U, scale = warp_input_vbmc(self)
         self.parameter_transformer.R_mat = U
