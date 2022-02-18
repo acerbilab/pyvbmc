@@ -2026,7 +2026,7 @@ class VBMC:
         xx = np.random.rand(Nrnd, self.D) * \
             (self.optim_state["pub_orig"]-self.optim_state["plb_orig"])\
             + self.optim_state["plb_orig"]
-        yy = self.parameter_transformer(xx)
+        yy = self.parameter_transformer(xx, no_infs=True)
         [plb, pub] = np.quantile(yy, [0.05, 0.95], axis=0)
         delta_temp = pub-plb
         plb = plb - delta_temp/9
@@ -2045,7 +2045,7 @@ class VBMC:
         # y_orig = self.optim_state["cache"]["y_orig"][X_flag]
         X_orig = self.function_logger.X_orig[X_flag, :]
         y_orig = self.function_logger.y_orig[X_flag].T
-        X = self.parameter_transformer(X_orig)
+        X = self.parameter_transformer(X_orig, no_infs=True)
         dy = self.parameter_transformer.log_abs_det_jacobian(X)
         y = y_orig + dy/T
         self.function_logger.X[X_flag, :] = X
@@ -2060,7 +2060,7 @@ class VBMC:
             # Copy probably unneccesary:
             x = np.copy(x)
             return self.parameter_transformer(
-                                    vp_old.parameter_transformer.inverse(x)
+                                    vp_old.parameter_transformer.inverse(x), no_infs=True
                                               )
         Nrnd = 1000
         xx = np.random.rand(Nrnd, self.D) * \
