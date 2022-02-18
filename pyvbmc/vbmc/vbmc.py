@@ -818,6 +818,14 @@ class VBMC:
 
             if doWarping:
                 timer.start_timer("warping")
+                # TODO: Implement options below:
+                # vp_tmp, __, __, idx_best = self.determine_best_vp(
+                    # safe_sd=self.options["bestsafesd"],
+                    # frac_back=self.options["bestfracback"],
+                    # rank_criterion_flag=self.options["rankcriterion"]
+                # )
+                vp_tmp, __, __, __ = self.determine_best_vp()
+                vp_tmp = copy.deepcopy(vp_tmp)
                 # Store variables in case warp needs to be undone:
                 # (vp_old copied above)
                 optim_state_old = copy.deepcopy(self.optim_state)
@@ -827,7 +835,7 @@ class VBMC:
                 elbo_sd_old = elbo_sd
                 hyp_dict_old = copy.deepcopy(hyp_dict)
                 # Compute and apply whitening transform:
-                hyp_dict["hyp"] = self.whiten(vp_old)
+                hyp_dict["hyp"] = self.whiten(vp_tmp)
                 # print(hyp_dict["hyp"])
 
                 self.logging_action.append("rotoscaling")

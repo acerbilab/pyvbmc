@@ -1,6 +1,7 @@
 import numpy as np
 from pyvbmc.decorators import handle_0D_1D_input
 import gpyreg as gpr
+import copy
 
 
 # @handle_0D_1D_input(patched_kwargs=["x", "sigma"], patched_argpos=[1, 2])
@@ -82,6 +83,7 @@ def warp_input_vbmc(vbmc):
 
 
 def warp_gpandvp_vbmc(vbmc, vp_old, warpfun):
+    vp_old = copy.deepcopy(vp_old)
     # TODO: Add temperature scaling?
     T = 1
     Ncov = vp_old.gp.covariance.hyperparameter_count(vbmc.D)
