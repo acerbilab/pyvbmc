@@ -905,10 +905,6 @@ class VBMC:
                     # and uncertainty does not blow up too much
                     if (elbo < (elbo_old + self.options["warptolimprovement"]))\
                     or (elbo_sd > (elbo_sd_old * self.options["warptolsdmultiplier"] + self.options["warptolsdbase"])):
-                        print(elbo)
-                        print(elbo_old)
-                        print(elbo_sd)
-                        print(elbo_sd_old)
                         # Undo input warping:
                         self.vp = vp_old
                         self.gp = gp_old
