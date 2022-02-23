@@ -55,17 +55,22 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
     optim_state = copy.deepcopy(optim_state)
     function_logger = copy.deepcopy(function_logger)
 
-    # Calculate rescaling and rotation from moments:
-    __, vp_Sigma = vp.moments(origflag=False, covflag=True)
-    R_mat = parameter_transformer.R_mat
-    scale = parameter_transformer.scale
-    if R_mat is None:
-        R_mat = np.eye(vp.D)
-    if scale is None:
-        scale = np.ones(vp.D)
-    delta = parameter_transformer.delta
-    vp_Sigma = R_mat @ np.diag(scale) @ vp_Sigma @ np.diag(scale) @ R_mat.T
-    vp_Sigma = np.diag(delta) @ vp_Sigma @ np.diag(delta)
+    if options.get("warprotoscaling"):
+        if options.get("warpnonlinear"):
+            raise NotImplementedError
+        else:
+            # Get covariance matrix analytically:
+            __, vp_Sigma = vp.moments(origflag=False, covflag=True)
+            delta = parameter_transformer.delta
+            R_mat = parameter_transformer.R_mat
+            scale = parameter_transformer.scale
+            if R_mat is None:
+                R_mat = np.eye(vp.D)
+            if scale is None:
+                scale = np.ones(vp.D)
+            vp_Sigma = R_mat @ np.diag(scale) @ vp_Sigma @ np.diag(scale) @ R_mat.T
+            vp_Sigma = np.diag(delta) @ vp_Sigma @ np.diag(delta)
+
 
     # Remove low-correlation entries
     if options["warprotocorrthresh"] > 0:
@@ -97,6 +102,8 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
         (optim_state["pub_orig"]-optim_state["plb_orig"])\
         + optim_state["plb_orig"]
     yy = parameter_transformer(xx)
+
+    # Quantile-based estimate of plausible bounds
     [plb, pub] = np.quantile(yy, [0.05, 0.95], axis=0)
     delta_temp = pub-plb
     plb = plb - delta_temp/9
@@ -107,12 +114,12 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
     optim_state["plb"] = plb
     optim_state["pub"] = pub
 
-    # TODO: Add temperature scaling?
-    T = 1
+    if optim_state.get("temperature"):
+        T = optim_state["temperature"]
+    else:
+        T = 1
     # Adjust stored points after warping:
     X_flag = function_logger.X_flag
-    # x_orig = self.optim_state["cache"]["x_orig"][X_flag, :]
-    # y_orig = self.optim_state["cache"]["y_orig"][X_flag]
     X_orig = function_logger.X_orig[X_flag, :]
     y_orig = function_logger.y_orig[X_flag].T
     X = parameter_transformer(X_orig)
@@ -122,13 +129,9 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
     function_logger.y[X_flag] = y.T
 
     # Update search bounds:
-    assert not (parameter_transformer is vp.parameter_transformer)
-    # vp.parameter_transformer = parameter_transformer
-    # self.function_logger.parameter_transformer = parameter_transformer
-
+    # Invert points to original space with old transform,
+    # then map to new space with new transform:
     def warpfun(x):
-        # Copy probably unneccesary:
-        x = np.copy(x)
         return parameter_transformer(
                    vp.parameter_transformer.inverse(x)
                )
@@ -140,12 +143,8 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
     yyMin = np.min(yy, axis=0)
     yyMax = np.max(yy, axis=0)
     delta = yyMax - yyMin
-    optim_state["lb_search"] = np.reshape(yyMin - delta/Nrnd,
-                                                (-1, len(yyMin - delta/Nrnd)
-                                                ))
-    optim_state["ub_search"] = np.reshape(yyMax + delta/Nrnd,
-                                                (-1, len(yyMax + delta/Nrnd)
-                                                ))
+    optim_state["lb_search"] = np.atleast_2d(yyMin - delta/Nrnd)
+    optim_state["ub_search"] = np.atleast_2d(yyMax + delta/Nrnd)
 
     # If search cache is not empty, update it:
     if optim_state.get("search_cache"):
@@ -180,8 +179,10 @@ def warp_gpandvp_vbmc(parameter_transformer, vp_old, vbmc):
         return parameter_transformer(
             vp_old.parameter_transformer.inverse(x)
         )
-    # TODO: Add temperature scaling?
-    T = 1
+    if vbmc.optim_state.get("temperature"):
+        T = vbmc.optim_state["temperature"]
+    else:
+        T = 1
     Ncov = vp_old.gp.covariance.hyperparameter_count(vbmc.D)
     Nnoise = vp_old.gp.noise.hyperparameter_count()
     Nmean = vp_old.gp.mean.hyperparameter_count(vbmc.D)
@@ -232,7 +233,7 @@ def warp_gpandvp_vbmc(parameter_transformer, vp_old, vbmc):
             raise ValueError("Unsupported GP mean function for input warping.")
     hyp_warped = hyp_warped.T
 
-    # Update VP:
+    # Update variational posterior:
 
     vp = copy.deepcopy(vp_old)
     vp.parameter_transformer = copy.deepcopy(parameter_transformer)
