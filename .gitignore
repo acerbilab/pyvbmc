@@ -1,5 +1,9 @@
 # ides
 .vscode
+.idea
+
+# Autosaves
+.#*
 
 # test coverage
 cov_html
