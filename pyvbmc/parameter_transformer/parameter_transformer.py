@@ -169,11 +169,6 @@ class ParameterTransformer:
             if self.scale is not None:
                 u = u/self.scale
 
-        if no_infs:
-            neg_infs = u == -np.inf
-            pos_infs = u == np.inf
-            u[neg_infs] = np.finfo(np.float32).min
-            u[pos_infs] = np.finfo(np.float32).max
         return u
 
     @handle_0D_1D_input(patched_kwargs=["u"], patched_argpos=[0])
@@ -231,11 +226,12 @@ class ParameterTransformer:
             )
 
         # Force to stay within bounds
+        # (8*eps is too small in some cases to prevent infinite values)
         mask = np.isfinite(self.lb_orig)[0]
-        xNew[:, mask] = np.maximum(xNew[:, mask], self.lb_orig[:, mask]) + np.finfo(np.float32).eps
+        xNew[:, mask] = np.maximum(xNew[:, mask], self.lb_orig[:, mask] + 9*np.finfo(np.float64).eps) 
 
         mask = np.isfinite(self.ub_orig)[0]
-        xNew[:, mask] = np.minimum(xNew[:, mask], self.ub_orig[:, mask]) - np.finfo(np.float32).eps
+        xNew[:, mask] = np.minimum(xNew[:, mask], self.ub_orig[:, mask] - 9*np.finfo(np.float64).eps)
 
         return xNew
 
