@@ -263,6 +263,11 @@ class ParameterTransformer:
         # # rescale input
         # if scale is not None:
         #     print(scale)
+        if np.all(np.isfinite(u_c)):
+            if self.scale is not None:
+                u_c = u_c*self.scale
+            if self.R_mat is not None:
+                u_c = u_c @ np.transpose(self.R_mat)
 
         p = np.zeros(u_c.shape)
 
