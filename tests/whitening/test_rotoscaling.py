@@ -49,7 +49,7 @@ def test_unscent_warp():
         # Copy probably unneccesary:
         x = np.copy(x)
         return parameter_transformer_2(
-                                parameter_transformer_1.inverse(x), no_infs=True
+                                parameter_transformer_1.inverse(x)
                                       )
     sigma = np.array([3.0, 0.7])
     mu = np.array([[1.2, -3.3],
@@ -90,6 +90,54 @@ def test_unscent_warp():
     assert np.all(np.isclose(muw, matlab_result_muw, atol=0.0001))
     assert np.all(np.isclose(muu, matlab_result_muu, atol=0.0001))
     assert np.all(np.isclose(sigmaw, matlab_result_sigmaw, atol=0.0001))
+
+
+def test_parameter_transformer_log_det_abs():
+    D = 3
+    x = np.array([1.0, -3.0, 8.5])
+    parameter_transformer = ParameterTransformer(
+                                                D=D,
+                                                lower_bounds=np.ones((1, D)) * -10,
+                                                upper_bounds=np.ones((1, D)) * 10,
+    )
+    u = parameter_transformer(x)
+    # MATLAB result:
+    assert np.allclose(u, np.array([0.200670695462151, -0.619039208406224, 2.51230562397612]))
+    log_abs_det = parameter_transformer.log_abs_det_jacobian(u)
+    assert np.isclose(log_abs_det, 3.44201837618191)
+
+    # Now with rotation and scale:
+    angle = np.pi/6.6
+    R1 = np.array([
+                  [1.0, 0.0, 0.0],
+                  [0.0, np.cos(angle), -np.sin(angle)],
+                  [0.0, np.sin(angle), np.cos(angle)]
+                 ])
+    angle = np.pi/3
+    R2 = np.array([
+                   [np.cos(angle), -np.sin(angle), 0.0],
+                   [np.sin(angle), np.cos(angle), 0.0],
+                   [0.0, 0.0, 1.0]
+                 ])
+    R = R1@R2
+    parameter_transformer = ParameterTransformer(
+                                                D=D,
+                                                lower_bounds=np.ones((1, D)) * -10,
+                                                upper_bounds=np.ones((1, D)) * 10,
+                                                rotation_matrix = R,
+                                                scale = np.array([0.9, 0.7, 2.3])
+    )
+    u = parameter_transformer(x)
+    print(u)
+    assert np.allclose(u, np.array([0.689778028799817, 0.181006596372446, 1.09421151292434]))
+    log_abs_det = parameter_transformer.log_abs_det_jacobian(u)
+    print(log_abs_det)
+    print(parameter_transformer.delta)
+    print(parameter_transformer.mu)
+    print(parameter_transformer.scale)
+    print(parameter_transformer.type)
+    assert np.isclose(log_abs_det, 3.81289203952045)
+
 
 @pytest.mark.skip(reason="Test not finished.")
 def test_warp_input_vbmc():
