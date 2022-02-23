@@ -818,12 +818,6 @@ class VBMC:
 
             if doWarping:
                 timer.start_timer("warping")
-                # TODO: Implement options below:
-                # vp_tmp, __, __, idx_best = self.determine_best_vp(
-                    # safe_sd=self.options["bestsafesd"],
-                    # frac_back=self.options["bestfracback"],
-                    # rank_criterion_flag=self.options["rankcriterion"]
-                # )
                 vp_tmp, __, __, __ = self.determine_best_vp()
                 vp_tmp = copy.deepcopy(vp_tmp)
                 # Store variables in case warp needs to be undone:
@@ -838,9 +832,8 @@ class VBMC:
                 parameter_transformer_warp, self.optim_state, self.function_logger, warp_action = warp_input_vbmc(vp_tmp, self.optim_state, self.function_logger, self.options)
 
                 self.vp, hyp_dict["hyp"] = warp_gpandvp_vbmc(parameter_transformer_warp, self.vp, self)
-                # self.parameter_transformer = self.vp.parameter_transformer
-                # self.function_logger.parameter_transformer = self.vp.parameter_transformer
-                # print(hyp_dict["hyp"])
+                self.parameter_transformer = parameter_transformer_warp
+                self.function_logger.parameter_transformer = parameter_transformer_warp
 
                 self.logging_action.append(warp_action)
                 timer.stop_timer("warping")
@@ -911,7 +904,6 @@ class VBMC:
                         self.optim_state = optim_state_old
                         self.function_logger = function_logger_old
                         hyp_dict = hyp_dict_old
-                        # self.optim_state["hyp_dict"] = hyp_dict_old
 
                         # Still keep track of failed warping (failed warp counts twice)
                         self.optim_state["warping_count"] += 2
