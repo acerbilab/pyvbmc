@@ -144,21 +144,10 @@ class ParameterTransformer:
 
             u[:, mask] = (u[:, mask] - self.mu[mask]) / self.delta[mask]
 
-        # # rotate output
-        # if self.R_mat is not None:
-        #     u = u * self.R_mat
-        # # rescale input
-        # if scale is not None:
-        #     print(scale)
-        # print(self.R_mat.shape)
-
         # Rotoscale whitening:
-        # Rotate the points in the transformed space.
-        # (Rotations of infinite points are ill-defined. Leave those points
-        # alone.)
+        # Rotate and rescale points in transformed space.
         if self.R_mat is not None:
             u = u @ self.R_mat
-        # Rescale variables in transformed space:
         if self.scale is not None:
             u = u/self.scale
 
@@ -183,18 +172,8 @@ class ParameterTransformer:
 
         x = np.copy(u)
 
-        # # rotate input (copy array before)
-        # if self.R_mat is not None:
-        #     u = u * self.R_mat
-        # # rescale input
-        # if scale is not None:
-        #     print(scale)
-
         # Rotoscale whitening:
-        # Undo rescaling:
-        # Undo rotation:
-        # (Rotations of infinite points are ill-defined. Leave those points
-        # alone.)
+        # Undo rescaling and rotation.
         if self.scale is not None:
             x = x*self.scale
         if self.R_mat is not None:
@@ -249,12 +228,8 @@ class ParameterTransformer:
         """
         u_c = np.copy(u)
 
-        # # rotate input (copy array before)
-        # if self.R_mat is not None:
-        #     u_c = u_c * self.R_mat
-        # # rescale input
-        # if scale is not None:
-        #     print(scale)
+        # Rotoscale whitening:
+        # Undo rescaling and rotation.
         if self.scale is not None:
             u_c = u_c*self.scale
         if self.R_mat is not None:
@@ -280,8 +255,9 @@ class ParameterTransformer:
             )
             p[:, mask] = p[:, mask] + np.log(self.delta[mask])
 
-        # Scale transform
+        # Whitening/rotoscaling density correction:
         if self.scale is not None:
             p = p + np.log(self.scale)
+
         p = np.sum(p, axis=1)
         return p
