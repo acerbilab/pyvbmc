@@ -59,6 +59,10 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
     __, vp_Sigma = vp.moments(origflag=False, covflag=True)
     R_mat = parameter_transformer.R_mat
     scale = parameter_transformer.scale
+    if R_mat is None:
+        R_mat = np.eye(vp.D)
+    if scale is None:
+        scale = np.ones(vp.D)
     delta = parameter_transformer.delta
     vp_Sigma = R_mat @ np.diag(scale) @ vp_Sigma @ np.diag(scale) @ R_mat.T
     vp_Sigma = np.diag(delta) @ vp_Sigma @ np.diag(delta)

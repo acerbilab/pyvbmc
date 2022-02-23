@@ -35,6 +35,9 @@ class ParameterTransformer:
         scale: np.ndarray = None,
         rotation_matrix: np.ndarray = None
     ):
+        self.scale = scale
+        self.R_mat = rotation_matrix
+
         # Empty LB and UB are Infs
         if lower_bounds is None:
             lower_bounds = np.ones((1, D)) * -np.inf
@@ -47,16 +50,7 @@ class ParameterTransformer:
         if plausible_upper_bounds is None:
             plausible_upper_bounds = np.copy(upper_bounds)
 
-        # Empty rotation matrix is identity:
-        if scale is None:
-            scale = np.ones(D)
-        if rotation_matrix is None:
-            rotation_matrix = np.identity(D)
-        self.scale = scale
-        self.R_mat = rotation_matrix
-
         # Convert scalar inputs to row vectors (I do not think it is necessary)
-
         if not (
             np.all(lower_bounds <= plausible_lower_bounds)
             and np.all(plausible_lower_bounds < plausible_upper_bounds)
@@ -162,12 +156,11 @@ class ParameterTransformer:
         # Rotate the points in the transformed space.
         # (Rotations of infinite points are ill-defined. Leave those points
         # alone.)
-        if np.all(np.isfinite(u)):
-            if self.R_mat is not None:
-                u = u @ self.R_mat
+        if self.R_mat is not None:
+            u = u @ self.R_mat
         # Rescale variables in transformed space:
-            if self.scale is not None:
-                u = u/self.scale
+        if self.scale is not None:
+            u = u/self.scale
 
         return u
 
@@ -202,11 +195,10 @@ class ParameterTransformer:
         # Undo rotation:
         # (Rotations of infinite points are ill-defined. Leave those points
         # alone.)
-        if np.all(np.isfinite(x)):
-            if self.scale is not None:
-                x = x*self.scale
-            if self.R_mat is not None:
-                x = x @ np.transpose(self.R_mat)
+        if self.scale is not None:
+            x = x*self.scale
+        if self.R_mat is not None:
+            x = x @ np.transpose(self.R_mat)
 
         xNew = np.copy(x)
 
@@ -263,11 +255,10 @@ class ParameterTransformer:
         # # rescale input
         # if scale is not None:
         #     print(scale)
-        if np.all(np.isfinite(u_c)):
-            if self.scale is not None:
-                u_c = u_c*self.scale
-            if self.R_mat is not None:
-                u_c = u_c @ np.transpose(self.R_mat)
+        if self.scale is not None:
+            u_c = u_c*self.scale
+        if self.R_mat is not None:
+            u_c = u_c @ np.transpose(self.R_mat)
 
         p = np.zeros(u_c.shape)
 
