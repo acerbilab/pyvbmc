@@ -108,8 +108,8 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
     delta_temp = pub-plb
     plb = plb - delta_temp/9
     pub = pub + delta_temp/9
-    plb = np.reshape(plb, (-1, len(plb)))
-    pub = np.reshape(pub, (-1, len(pub)))
+    plb = np.atleast_2d(plb)
+    pub = np.atleast_2d(pub)
 
     optim_state["plb"] = plb
     optim_state["pub"] = pub
