@@ -206,7 +206,7 @@ def test_inverse_type3_min_space():
     )
     Y = np.ones((10, D)) * -500
     X = parameter_transformer.inverse(Y)
-    assert np.all(X == np.ones((1, D)) * -10)
+    assert np.allclose(X, np.ones((1, D)) * -10)
 
 
 def test_inverse_type3_max_space():
@@ -217,7 +217,7 @@ def test_inverse_type3_max_space():
     )
     Y = np.ones((10, D)) * 3000
     X = parameter_transformer.inverse(Y)
-    assert np.all(X == np.ones((10, D)) * 10)
+    assert np.allclose(X, np.ones((10, D)) * 10)
 
 
 def test_transform_direct_inverse():
