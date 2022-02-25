@@ -4,7 +4,6 @@ import gpyreg as gpr
 import copy
 
 
-@handle_0D_1D_input(patched_kwargs=["x", "sigma"], patched_argpos=[1, 2], flatten_output=False)
 def unscent_warp(fun, x, sigma):
     r"""Compute the unscented transform of the warping function `fun`.
 
@@ -34,10 +33,10 @@ def unscent_warp(fun, x, sigma):
         If the rows of `x` and `sigma` cannot be coerced to match.
     """
     x_shape_orig = x.shape
-    x = x.copy()
-    sigma = sigma.copy()
-    N1, D = x.shape
-    N2, D2 = sigma.shape
+    x = np.atleast_2d(x).copy()
+    sigma = np.atleast_2d(sigma).copy()
+    (N1, D) = x.shape
+    (N2, D2) = sigma.shape
 
     N = np.max([N1, N2])
 
@@ -302,7 +301,7 @@ def warp_gpandvp_vbmc(parameter_transformer, vp_old, vbmc):
             omega = np.exp(hyp[Ncov + Nnoise + vbmc.D + 1:]).T
 
             # Warp location and scale
-            (xmw, omegaw, __) = unscent_warp(warpfun, x=xm, sigma=omega)
+            (xmw, omegaw, __) = unscent_warp(warpfun, xm, omega)
 
             # Warp maximum
             dy_old = vp_old.parameter_transformer.log_abs_det_jacobian(xm).T
