@@ -182,6 +182,7 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
     y = y_orig + dy/T
     function_logger.X[X_flag, :] = X
     function_logger.y[X_flag] = y.T
+    function_logger.parameter_transformer = parameter_transformer
 
     # Update search bounds:
     # Invert points to original space with old transform,
@@ -241,18 +242,30 @@ def warp_gpandvp_vbmc(parameter_transformer, vp_old, vbmc):
         The current variational posterior.
     vbmc : VBMC
         The current VBMC object.
+
+    Returns
+    -------
+    vp : VariationalPosterior
+        An updated copy of the original variational posterior.
+    hyp_warped : dict
+        An updated copy of the dictionary of original GP hyperparameters, with the warping transformation apploed.
     """
     vp_old = copy.deepcopy(vp_old)
 
+    # Invert points from the old inference space to the input space,
+    # then push them back to the new inference space
     def warpfun(x):
         return parameter_transformer(
             vp_old.parameter_transformer.inverse(x)
         )
 
+    # Temperature scaling
     if vbmc.optim_state.get("temperature"):
         T = vbmc.optim_state["temperature"]
     else:
         T = 1
+
+    # Get the number of GP hyperparameters, for indexing:
     Ncov = vp_old.gp.covariance.hyperparameter_count(vbmc.D)
     Nnoise = vp_old.gp.noise.hyperparameter_count()
     Nmean = vp_old.gp.mean.hyperparameter_count(vbmc.D)
@@ -261,8 +274,8 @@ def warp_gpandvp_vbmc(parameter_transformer, vp_old, vbmc):
 
     Ns_gp = len(vp_old.gp.posteriors)
     hyp_warped = np.zeros([Ncov + Nnoise + Nmean, Ns_gp])
-
     hyps = vp_old.gp.get_hyperparameters(as_array=True)
+
     for s in range(Ns_gp):
         hyp = hyps[s]
         hyp_warped[:, s] = hyp.copy()
