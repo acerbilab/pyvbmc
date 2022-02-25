@@ -799,7 +799,8 @@ class VBMC:
                 self.optim_state["entropy_switch"] = False
                 self.logging_action.append("entropy switch")
 
-            # In Progress: Input warping / reparameterization, MATLAB lines 530-625
+
+            ## Input warping / reparameterization
             # self.options["warpeveriters"] = 1
             if self.options["incrementalwarpdelay"]:
                 WarpDelay = self.options["warpeveryiters"]*np.max([1, self.optim_state["warping_count"]])
@@ -834,7 +835,6 @@ class VBMC:
                 self.vp, hyp_dict["hyp"] = warp_gpandvp_vbmc(parameter_transformer_warp, self.vp, self)
                 # Update the VBMC ParameterTransformer
                 self.parameter_transformer = parameter_transformer_warp
-                self.function_logger.parameter_transformer = parameter_transformer_warp
 
                 self.logging_action.append(warp_action)
                 timer.stop_timer("warping")

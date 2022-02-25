@@ -12,19 +12,19 @@ def unscent_warp(fun, x, sigma):
     ----------
     fun : function
         A single-argument function which warps input points.
-    x : (n,D) or (D,) ndarray
+    x : (n,D) or (D,) np.ndarray
         The input mean for which to approximate the unscented transform.
-    sigma : (n,D) or (D,) ndarray
+    sigma : (n,D) or (D,) np.ndarray
         The input standard deviation matrix for which to approximate the
         unscented transform.
 
     Returns
     -------
-    x_warped_mean : (n,D) or (D,) ndarray
+    x_warped_mean : (n,D) or (D,) np.ndarray
         The unscented estimate of the mean.
-    x_warped_sigma : (n,D) ndarray
+    x_warped_sigma : (n,D) np.ndarray
         The unscented estimate of the std.
-    x_warped : (U,n,D) ndarray
+    x_warped : (U,n,D) np.ndarray
         The warped mean points at `x_warped[0, :, :]`, and the warped std simplex
         points, at `[1:, :, :]`. Here `U=2*D+1`.
 
@@ -36,8 +36,8 @@ def unscent_warp(fun, x, sigma):
     x_shape_orig = x.shape
     x = x.copy()
     sigma = sigma.copy()
-    [N1, D] = x.shape
-    [N2, D2] = sigma.shape
+    N1, D = x.shape
+    N2, D2 = sigma.shape
 
     N = np.max([N1, N2])
 
@@ -71,7 +71,7 @@ def unscent_warp(fun, x, sigma):
     # by the mean and std of these sigma-points
     x_warped_mean = np.reshape(np.mean(x_warped, axis=0), x_shape_orig)
     x_warped_sigma = np.std(x_warped, axis=0, ddof=1)
-    assert np.all(~np.isinf(x_warped_mean))
+
     return x_warped_mean, x_warped_sigma, x_warped
 
 
@@ -302,7 +302,7 @@ def warp_gpandvp_vbmc(parameter_transformer, vp_old, vbmc):
             omega = np.exp(hyp[Ncov + Nnoise + vbmc.D + 1:]).T
 
             # Warp location and scale
-            (xmw, omegaw, __) = unscent_warp(warpfun, xm, omega)
+            (xmw, omegaw, __) = unscent_warp(warpfun, x=xm, sigma=omega)
 
             # Warp maximum
             dy_old = vp_old.parameter_transformer.log_abs_det_jacobian(xm).T
