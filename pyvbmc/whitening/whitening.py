@@ -53,7 +53,7 @@ def unscent_warp(fun, x, sigma):
     U = 2*D+1
 
     # For each dimension, collect the points at +- one std. deviation
-    # along that dimension, and the original points x:
+    # along that dimension, and the original points x
     xx = np.tile(x, [U, 1, 1])
     for d in range(D):
         sigma_slice = np.sqrt(D) * sigma[:, d]
@@ -62,13 +62,13 @@ def unscent_warp(fun, x, sigma):
         xx[2*d+1, :, d] = xx[2*d+1, :, d] + sigma_slice
         xx[2*d+2, :, d] = xx[2*d+2, :, d] - sigma_slice
 
-    # Drop points into column to apply warping:
+    # Drop points into column to apply warping
     x_warped = np.reshape(xx, [N*U, D])
     x_warped = fun(x_warped)
     x_warped = np.reshape(x_warped, [U, N, D])
 
     # Estimate the mean and standard deviation of the warped points
-    # by the mean and std of these sigma-points:
+    # by the mean and std of these sigma-points
     x_warped_mean = np.reshape(np.mean(x_warped, axis=0), x_shape_orig)
     x_warped_sigma = np.std(x_warped, axis=0, ddof=1)
     assert np.all(~np.isinf(x_warped_mean))
@@ -76,6 +76,35 @@ def unscent_warp(fun, x, sigma):
 
 
 def warp_input_vbmc(vp, optim_state, function_logger, options):
+    r"""Compute the whitening transformation and update the cached points in function_logger.
+
+    The whitening transformation is a rotation and rescaling (implemented) or nonlinear transformation (not implemented) which is applied to the inference space such that the variational posterior acheives unit diagonal covariance.
+
+    Parameters
+    ----------
+    vp : VariationalPosterior
+        The current VP object for which to compute the transformation.
+    optim_state : dict
+        The dictionary recording the current optimization state.
+    function_logger : FunctionLogger
+        The record including cached function values.
+
+    Returns
+    -------
+    parameter_transformer : ParameterTransformer
+        A ParameterTransformer object representing the new transformation between original coordinates and inference space coordinates, with the input warping applied.
+    optim_state : dict
+        An updated copy of the original optimization state dict.
+    function_logger : FunctionLogger
+        An updated copy of the original function logger.
+    warp_action : str
+        The type of warping performed ("rotoscaling" or "warp")
+
+    Raises
+    ------
+    NotImplementedError
+        If vbmc.options["warpnonlinear"] is set other than False.
+    """
     parameter_transformer = copy.deepcopy(vp.parameter_transformer)
     optim_state = copy.deepcopy(optim_state)
     function_logger = copy.deepcopy(function_logger)
@@ -84,7 +113,7 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
         if options.get("warpnonlinear"):
             raise NotImplementedError
         else:
-            # Get covariance matrix analytically:
+            # Get covariance matrix analytically
             __, vp_Sigma = vp.moments(origflag=False, covflag=True)
             delta = parameter_transformer.delta
             R_mat = parameter_transformer.R_mat
@@ -138,11 +167,13 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
     optim_state["plb"] = plb
     optim_state["pub"] = pub
 
+    # Temperature scaling
     if optim_state.get("temperature"):
         T = optim_state["temperature"]
     else:
         T = 1
-    # Adjust stored points after warping:
+
+    # Adjust stored points after warping
     X_flag = function_logger.X_flag
     X_orig = function_logger.X_orig[X_flag, :]
     y_orig = function_logger.y_orig[X_flag].T
@@ -154,7 +185,7 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
 
     # Update search bounds:
     # Invert points to original space with old transform,
-    # then map to new space with new transform:
+    # then map to new space with new transform
     def warpfun(x):
         return parameter_transformer(
                    vp.parameter_transformer.inverse(x)
@@ -170,25 +201,25 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
     optim_state["lb_search"] = np.atleast_2d(yyMin - delta/Nrnd)
     optim_state["ub_search"] = np.atleast_2d(yyMax + delta/Nrnd)
 
-    # If search cache is not empty, update it:
+    # If search cache is not empty, update it
     if optim_state.get("search_cache"):
         optim_state["search_cache"] = warpfun(
             optim_state["search_cache"]
         )
 
-    # Update other state fields:
+    # Update other state fields
     optim_state["recompute_var_post"] = True
     optim_state["skipactivesampling"] = True
     optim_state["warping_count"] += 1
     optim_state["last_warping"] = optim_state["iter"]
     optim_state["last_successful_warping"] = optim_state["iter"]
 
-    # Reset GP Hyperparameters:
+    # Reset GP Hyperparameters
     optim_state["run_mean"] = []
     optim_state["run_cov"] = []
     optim_state["last_run_avg"] = np.nan
 
-    # Warp action for output display:
+    # Warp action for output display
     if options.get("warpnonlinear"):
         warp_action = "warp"
     else:
@@ -198,6 +229,19 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
 
 
 def warp_gpandvp_vbmc(parameter_transformer, vp_old, vbmc):
+    r"""Update the GP and VP with a given warp transformation.
+
+    Applies an updated ParameterTransformer object (with new warping transformation) to the GP and VP parameters.
+
+    Parameters
+    ----------
+    parameter_transformer : ParameterTransformer
+        The new (warped) transformation between input coordinates and inference coordinates.
+    vp_old : VariationalPosterior
+        The current variational posterior.
+    vbmc : VBMC
+        The current VBMC object.
+    """
     vp_old = copy.deepcopy(vp_old)
 
     def warpfun(x):
@@ -259,7 +303,7 @@ def warp_gpandvp_vbmc(parameter_transformer, vp_old, vbmc):
             raise ValueError("Unsupported GP mean function for input warping.")
     hyp_warped = hyp_warped.T
 
-    # Update variational posterior:
+    # Update variational posterior
 
     vp = copy.deepcopy(vp_old)
     vp.parameter_transformer = copy.deepcopy(parameter_transformer)

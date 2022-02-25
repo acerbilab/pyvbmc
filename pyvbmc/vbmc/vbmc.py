@@ -832,6 +832,7 @@ class VBMC:
                 parameter_transformer_warp, self.optim_state, self.function_logger, warp_action = warp_input_vbmc(vp_tmp, self.optim_state, self.function_logger, self.options)
 
                 self.vp, hyp_dict["hyp"] = warp_gpandvp_vbmc(parameter_transformer_warp, self.vp, self)
+                # Update the VBMC ParameterTransformer
                 self.parameter_transformer = parameter_transformer_warp
                 self.function_logger.parameter_transformer = parameter_transformer_warp
 
