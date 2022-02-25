@@ -1,12 +1,12 @@
 import numpy as np
 import pytest
 import os
+import gpyreg
 
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.vbmc import VBMC
 from pyvbmc.variational_posterior import VariationalPosterior
-from pyvbmc.whitening.whitening import unscent_warp, warp_input_vbmc
-
+from pyvbmc.whitening.whitening import unscent_warp, warp_input_vbmc, warp_gpandvp_vbmc
 D = 2
 
 def test_rotoscaling_rotation_2d():
@@ -140,7 +140,6 @@ def test_parameter_transformer_log_det_abs():
     assert np.isclose(log_abs_det, 3.81289203952045)
 
 
-#@pytest.mark.skip(reason="Test not finished.")
 def test_warp_input_vbmc():
     D = 2
     angle = 1.309355600770139
@@ -160,6 +159,52 @@ def test_warp_input_vbmc():
                 np.ones((1, D)) * 10)
     # vbmc.vp = vp
     parameter_transformer_warp, vbmc.optim_state, vbmc.function_logger, warp_action = warp_input_vbmc(vp, vbmc.optim_state, vbmc.function_logger, vbmc.options)
+
+    assert np.all(parameter_transformer_warp.lb_orig == [-np.inf, -np.inf])
+    assert np.all(parameter_transformer_warp.ub_orig == [np.inf, np.inf])
+    assert np.all(parameter_transformer_warp.type == [0, 0])
+    assert np.all(parameter_transformer_warp.mu == [0.0, 0.0])
+    assert np.all(parameter_transformer_warp.delta == [1.0, 1.0])
+    assert np.all(np.isclose(parameter_transformer_warp.R_mat, np.array([
+        [0.278003671780883, -0.960580011491155],
+        [0.960580011491155, 0.278003671780883]
+    ])))
+    assert np.all(np.isclose(parameter_transformer_warp.scale, np.array(
+        [11.0521101052146, 1.00626951493545]
+    )))
+
+@pytest.mark.skip(reason="Not complete.")
+def test_warp_gpandvp_vbmc():
+    D = 2
+    angle = 1.309355600770139
+    R = np.array([[np.cos(angle), np.sin(angle)],
+                 [-np.sin(angle), np.cos(angle)]]
+                )
+    filepath = os.path.join(os.path.dirname(__file__), "test_warp_input_vbmc_rands.txt")
+    rands = np.loadtxt(filepath, delimiter=',')
+    mus   = rands@R
+    vp = VariationalPosterior(D, 50, mus)
+    vbmc = VBMC(lambda x: np.sum(x),
+                mus,
+                np.full((1, D), -np.inf),
+                np.full((1, D), np.inf),
+                np.ones((1, D)) * -10,
+                np.ones((1, D)) * 10)
+    parameter_transformer_warp, vbmc.optim_state, vbmc.function_logger, warp_action = warp_input_vbmc(vp, vbmc.optim_state, vbmc.function_logger, vbmc.options)
+
+    filepath = os.path.join(os.path.dirname(__file__), "test_warp_gpandvp_vbmc_gp_X.txt")
+    gp_X = np.loadtxt(filepath, delimiter=',')
+    filepath = os.path.join(os.path.dirname(__file__), "test_warp_gpandvp_vbmc_gp_y.txt")
+    gp_y = np.loadtxt(filepath, delimiter=',')
+    filepath = os.path.join(os.path.dirname(__file__), f"test_warp_gpandvp_vbmc_gp_hyps.txt")
+    gp_posterior_hyps = np.loadtxt(filepath, delimiter=',')
+
+    vp.gp = gpyreg.GP(D, gpyreg.covariance_functions.SquaredExponential, gpyreg.mean_functions.NegativeQuadratic, gpyreg.noise_functions.GaussianNoise)
+    vp.gp.X = gp_X
+    vp.gp.y = gp_y
+    for i in range(gp_posterior_hyps.shape[1]):
+        vp.gp.posteriors[i].hyp = gp_posterior_hyps[:, i]
+    vp_new, hyp = warp_gpandvp_vbmc(parameter_transformer_warp, vp, vbmc)
 
     assert np.all(parameter_transformer_warp.lb_orig == [-np.inf, -np.inf])
     assert np.all(parameter_transformer_warp.ub_orig == [np.inf, np.inf])
