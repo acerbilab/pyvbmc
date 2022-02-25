@@ -3,7 +3,7 @@ from functools import wraps
 
 
 def handle_0D_1D_input(
-    patched_kwargs: [], patched_argpos: [], return_scalar=False
+        patched_kwargs: [], patched_argpos: [], return_scalar=False, flatten_output=True
 ):
     """
     A decorator that handles 0D, 1D inputs and transforms them to 2D.
@@ -46,7 +46,8 @@ def handle_0D_1D_input(
                 # handle functions with multiple return values
                 if type(res) is tuple:
                     returnvalues = list(res)
-                    returnvalues = [o.flatten() for o in returnvalues]
+                    if flatten_output:
+                        returnvalues = [o.flatten() for o in returnvalues]
                     if return_scalar:
                         returnvalues = [o[0] for o in returnvalues]
                     return tuple(returnvalues)

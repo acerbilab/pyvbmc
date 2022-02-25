@@ -4,7 +4,7 @@ import gpyreg as gpr
 import copy
 
 
-# @handle_0D_1D_input(patched_kwargs=["x", "sigma"], patched_argpos=[1, 2])
+@handle_0D_1D_input(patched_kwargs=["x", "sigma"], patched_argpos=[1, 2], flatten_output=False)
 def unscent_warp(fun, x, sigma):
     r"""Compute the unscented transform of the warping function `fun`.
 
@@ -34,8 +34,8 @@ def unscent_warp(fun, x, sigma):
         If the rows of `x` and `sigma` cannot be coerced to match.
     """
     x_shape_orig = x.shape
-    x = np.atleast_2d(x).copy()
-    sigma = np.atleast_2d(sigma).copy()
+    x = x.copy()
+    sigma = sigma.copy()
     [N1, D] = x.shape
     [N2, D2] = sigma.shape
 
@@ -62,7 +62,7 @@ def unscent_warp(fun, x, sigma):
         xx[2*d+1, :, d] = xx[2*d+1, :, d] + sigma_slice
         xx[2*d+2, :, d] = xx[2*d+2, :, d] - sigma_slice
 
-    # Drop points into column to apply warping
+    # Drop points into column to apply warping, then reshape back
     x_warped = np.reshape(xx, [N*U, D])
     x_warped = fun(x_warped)
     x_warped = np.reshape(x_warped, [U, N, D])
