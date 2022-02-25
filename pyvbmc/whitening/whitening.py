@@ -6,10 +6,34 @@ import copy
 
 # @handle_0D_1D_input(patched_kwargs=["x", "sigma"], patched_argpos=[1, 2])
 def unscent_warp(fun, x, sigma):
-    x_shape = x.shape
-    # sigma_shape = sigma.shape
-    # print(x.shape)
-    # print(sigma.shape)
+    r"""Compute the unscented transform of the warping function `fun`.
+
+    Parameters
+    ----------
+    fun : function
+        A single-argument function which warps input points.
+    x : (n,D) or (D,) ndarray
+        The input mean for which to approximate the unscented transform.
+    sigma : (n,D) or (D,) ndarray
+        The input standard deviation matrix for which to approximate the
+        unscented transform.
+
+    Returns
+    -------
+    x_warped_mean : (n,D) or (D,) ndarray
+        The unscented estimate of the mean.
+    x_warped_sigma : (n,D) ndarray
+        The unscented estimate of the std.
+    x_warped : (U,n,D) ndarray
+        The warped mean points at `x_warped[0, :, :]`, and the warped std simplex
+        points, at `[1:, :, :]`. Here `U=2*D+1`.
+
+    Raises
+    ------
+    AssertionError
+        If the rows of `x` and `sigma` cannot be coerced to match.
+    """
+    x_shape_orig = x.shape
     x = np.atleast_2d(x).copy()
     sigma = np.atleast_2d(sigma).copy()
     [N1, D] = x.shape
@@ -17,8 +41,8 @@ def unscent_warp(fun, x, sigma):
 
     N = np.max([N1, N2])
 
-    assert (N1 == N) or (N1 == 1), "Mismatch between rows of X and SIGMA."
-    assert (N2 == N) or (N2 == 1), "Mismatch between rows of X and SIGMA."
+    assert N1 in (1, N), "Mismatch between rows of X and SIGMA."
+    assert N2 in (1, N), "Mismatch between rows of X and SIGMA."
     assert (D == D2), "Mismatch between columns of X and SIGMA."
 
     if (N1 == 1) and (N > 1):
@@ -28,26 +52,27 @@ def unscent_warp(fun, x, sigma):
 
     U = 2*D+1
 
-    x3 = np.zeros([1, N1, D])
-    x3[0, :, :] = x
-    xx = np.tile(x3, [U, 1, 1])
+    # For each dimension, collect the points at +- one std. deviation
+    # along that dimension, and the original points x:
+    xx = np.tile(x, [U, 1, 1])
+    for d in range(D):
+        sigma_slice = np.sqrt(D) * sigma[:, d]
+        # xx already contains:
+        # xx[0, :, d] = x[d]
+        xx[2*d+1, :, d] = xx[2*d+1, :, d] + sigma_slice
+        xx[2*d+2, :, d] = xx[2*d+2, :, d] - sigma_slice
 
-    for d in range(1,D+1):
-        # sigma3 = np.zeros([1, N, 1])
-        # sigma3[0, :, 0] = np.sqrt(D)*sigma[:, d]
-        sigma3 = np.sqrt(D)*sigma[:, d-1]
-        xx[2*d-1, :, d-1] = xx[2*d-1, :, d-1] + sigma3
-        xx[2*d, :, d-1] = xx[2*d, :, d-1] - sigma3
+    # Drop points into column to apply warping:
+    x_warped = np.reshape(xx, [N*U, D])
+    x_warped = fun(x_warped)
+    x_warped = np.reshape(x_warped, [U, N, D])
 
-    xu = np.reshape(xx, [N*U, D])
-    xu = fun(xu)
-    xu = np.reshape(xu, [U, N, D])
-    # xu = np.reshape(fun(np.reshape(xx, [N*U, D])), [U, N, D])
-
-    xw = np.reshape(np.mean(xu, axis=0), x_shape)
-    sigmaw = np.std(xu, axis=0, ddof=1)
-    assert np.all(~np.isinf(sigmaw))
-    return (xw, sigmaw, xu)
+    # Estimate the mean and standard deviation of the warped points
+    # by the mean and std of these sigma-points:
+    x_warped_mean = np.reshape(np.mean(x_warped, axis=0), x_shape_orig)
+    x_warped_sigma = np.std(x_warped, axis=0, ddof=1)
+    assert np.all(~np.isinf(x_warped_mean))
+    return x_warped_mean, x_warped_sigma, x_warped
 
 
 def warp_input_vbmc(vp, optim_state, function_logger, options):
@@ -71,7 +96,6 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
             vp_Sigma = R_mat @ np.diag(scale) @ vp_Sigma @ np.diag(scale) @ R_mat.T
             vp_Sigma = np.diag(delta) @ vp_Sigma @ np.diag(delta)
 
-
     # Remove low-correlation entries
     if options["warprotocorrthresh"] > 0:
         vp_corr = vp_Sigma / np.sqrt(np.outer(np.diag(vp_Sigma), np.diag(vp_Sigma)))
@@ -87,7 +111,7 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
     vp_Sigma = (1 - w_reg) * vp_Sigma + w_reg * np.diag(np.diag(vp_Sigma))
 
     # Compute whitening transform (rotoscaling)
-    U, s, Vh = np.linalg.svd(vp_Sigma)
+    U, s, __ = np.linalg.svd(vp_Sigma)
     if np.linalg.det(U) < 0:
         U[:, 0] = -U[:, 0]
     scale = np.sqrt(s+np.finfo(np.float64).eps)
@@ -175,10 +199,12 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
 
 def warp_gpandvp_vbmc(parameter_transformer, vp_old, vbmc):
     vp_old = copy.deepcopy(vp_old)
+
     def warpfun(x):
         return parameter_transformer(
             vp_old.parameter_transformer.inverse(x)
         )
+
     if vbmc.optim_state.get("temperature"):
         T = vbmc.optim_state["temperature"]
     else:
@@ -216,7 +242,7 @@ def warp_gpandvp_vbmc(parameter_transformer, vp_old, vbmc):
             # Warp quadratic mean
             m0 = hyp[Ncov + Nnoise]
             xm = hyp[Ncov + Nnoise + 1 : Ncov + Nnoise + vbmc.D + 1].T
-            omega = np.exp(hyp[Ncov + Nnoise + vbmc.D + 1 : ]).T
+            omega = np.exp(hyp[Ncov + Nnoise + vbmc.D + 1:]).T
 
             # Warp location and scale
             (xmw, omegaw, __) = unscent_warp(warpfun, xm, omega)
@@ -228,7 +254,7 @@ def warp_gpandvp_vbmc(parameter_transformer, vp_old, vbmc):
 
             hyp_warped[Ncov + Nnoise, s] = m0w
             hyp_warped[Ncov + Nnoise + 1 : Ncov + Nnoise + vbmc.D + 1, s] = xmw.T
-            hyp_warped[Ncov + Nnoise + vbmc.D + 1 : , s] = np.log(omegaw).reshape(-1)
+            hyp_warped[Ncov + Nnoise + vbmc.D + 1 :, s] = np.log(omegaw).reshape(-1)
         else:
             raise ValueError("Unsupported GP mean function for input warping.")
     hyp_warped = hyp_warped.T
