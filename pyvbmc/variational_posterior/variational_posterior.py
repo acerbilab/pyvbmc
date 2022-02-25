@@ -701,7 +701,7 @@ class VariationalPosterior:
                 sigma = (
                     np.sum(self.w * self.sigma ** 2)
                     * np.eye(len(self.lambd))
-                    * self.lambd
+                    * self.lambd**2
                 )
                 for k in range(self.K):
                     sigma += self.w[:, k] * (
