@@ -124,7 +124,6 @@ class ParameterTransformer:
         mask = self.type == 0
         if np.any(mask):
             u[:, mask] = (x[:, mask] - self.mu[mask]) / self.delta[mask]
-            # u[:, mask] = (x[:, mask] - self.mu[mask])
 
         # Lower and upper bounded scalars
         mask = self.type == 3
@@ -182,7 +181,6 @@ class ParameterTransformer:
         mask = self.type == 0
         if np.any(mask):
             xNew[:, mask] = x[:, mask] * self.delta[mask] + self.mu[mask]
-            # x[:, mask] = u[:, mask] + self.mu[mask]
 
         # Lower and upper bounded scalars
         mask = self.type == 3
@@ -196,10 +194,10 @@ class ParameterTransformer:
         # Force to stay within bounds
         # (8*eps is too small in some cases to prevent infinite values)
         mask = np.isfinite(self.lb_orig)[0]
-        xNew[:, mask] = np.maximum(xNew[:, mask], self.lb_orig[:, mask] + 9*np.finfo(np.float64).eps) 
+        xNew[:, mask] = np.maximum(xNew[:, mask], self.lb_orig[:, mask] + 10*np.finfo(np.float64).eps)
 
         mask = np.isfinite(self.ub_orig)[0]
-        xNew[:, mask] = np.minimum(xNew[:, mask], self.ub_orig[:, mask] - 9*np.finfo(np.float64).eps)
+        xNew[:, mask] = np.minimum(xNew[:, mask], self.ub_orig[:, mask] - 10*np.finfo(np.float64).eps)
 
         return xNew
 
@@ -238,9 +236,6 @@ class ParameterTransformer:
         mask = self.type == 0
         if np.any(mask):
             p[:, mask] = np.log(self.delta[mask])[np.newaxis]
-            if not np.all(~np.isnan(p[:, mask])):
-                print("1")
-                print(np.log(self.delta[mask]))
 
         # Lower and upper bounded scalars
         mask = self.type == 3
