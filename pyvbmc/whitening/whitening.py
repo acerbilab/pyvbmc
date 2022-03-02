@@ -326,8 +326,8 @@ def warp_gpandvp_vbmc(parameter_transformer, vp_old, vbmc):
 
     vp.mu = muw.T
     lambdaw = np.sqrt(vbmc.D*np.mean(
-        sigmalambdaw**2 / (sigmalambdaw**2+2),
-        axis=0))
+        (sigmalambdaw**2).T / np.sum(sigmalambdaw**2, axis=1),
+        axis=1)).T
     vp.lambd[:, 0] = lambdaw
 
     sigmaw = np.exp(np.mean(np.log(sigmalambdaw / lambdaw), axis=1))

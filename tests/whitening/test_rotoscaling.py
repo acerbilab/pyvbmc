@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.stats as st
 import pytest
 import os
 import gpyreg
@@ -173,7 +174,7 @@ def test_warp_input_vbmc():
         [11.0521101052146, 1.00626951493545]
     )))
 
-@pytest.mark.skip(reason="Not complete.")
+
 def test_warp_gpandvp_vbmc():
     D = 2
     angle = 1.309355600770139
@@ -182,9 +183,10 @@ def test_warp_gpandvp_vbmc():
                 )
     filepath = os.path.join(os.path.dirname(__file__), "test_warp_input_vbmc_rands.txt")
     rands = np.loadtxt(filepath, delimiter=',')
+    rands[:,0] = 10*rands[:,0]
     mus   = rands@R
     vp = VariationalPosterior(D, 50, mus)
-    vbmc = VBMC(lambda x: np.sum(x),
+    vbmc = VBMC(lambda x: st.multivariate_normal.logpdf(x),
                 mus,
                 np.full((1, D), -np.inf),
                 np.full((1, D), np.inf),
@@ -192,19 +194,43 @@ def test_warp_gpandvp_vbmc():
                 np.ones((1, D)) * 10)
     parameter_transformer_warp, vbmc.optim_state, vbmc.function_logger, warp_action = warp_input_vbmc(vp, vbmc.optim_state, vbmc.function_logger, vbmc.options)
 
-    filepath = os.path.join(os.path.dirname(__file__), "test_warp_gpandvp_vbmc_gp_X.txt")
+    filepath = os.path.join(os.path.dirname(__file__), "test_warp_gpandvp_vbmc_gp_X_3.txt")
     gp_X = np.loadtxt(filepath, delimiter=',')
-    filepath = os.path.join(os.path.dirname(__file__), "test_warp_gpandvp_vbmc_gp_y.txt")
+    filepath = os.path.join(os.path.dirname(__file__), "test_warp_gpandvp_vbmc_gp_y_3.txt")
     gp_y = np.loadtxt(filepath, delimiter=',')
-    filepath = os.path.join(os.path.dirname(__file__), f"test_warp_gpandvp_vbmc_gp_hyps.txt")
-    gp_posterior_hyps = np.loadtxt(filepath, delimiter=',')
+    filepath = os.path.join(os.path.dirname(__file__), f"test_warp_gpandvp_vbmc_gp_hyps_3.txt")
+    gp_posterior_hyps = np.atleast_2d(np.loadtxt(filepath, delimiter=','))
 
-    vp.gp = gpyreg.GP(D, gpyreg.covariance_functions.SquaredExponential, gpyreg.mean_functions.NegativeQuadratic, gpyreg.noise_functions.GaussianNoise)
-    vp.gp.X = gp_X
-    vp.gp.y = gp_y
-    for i in range(gp_posterior_hyps.shape[1]):
-        vp.gp.posteriors[i].hyp = gp_posterior_hyps[:, i]
-    vp_new, hyp = warp_gpandvp_vbmc(parameter_transformer_warp, vp, vbmc)
+    vp.gp = gpyreg.GP(D, gpyreg.covariance_functions.SquaredExponential(), gpyreg.mean_functions.NegativeQuadratic(), gpyreg.noise_functions.GaussianNoise(constant_add=True))
+    # __ = vp.gp.get_hyperparameters()
+    # vp.gp.X = gp_X
+    # vp.gp.y = gp_y
+    # for i in range(gp_posterior_hyps.shape[1]):
+    #     vp.gp.posteriors[i].hyp = gp_posterior_hyps[:, i]
+    vp.gp.update(X_new=gp_X, y_new=gp_y, hyp=gp_posterior_hyps)
+    vp_new, hyps_new = warp_gpandvp_vbmc(parameter_transformer_warp, vp, vbmc)
+
+    filepath = os.path.join(os.path.dirname(__file__), f"test_warp_gpandvp_vbmc_gp_hyps_new_3.txt")
+    hyps_new_MATLAB = np.atleast_2d(np.loadtxt(filepath, delimiter=','))
+    assert np.allclose(hyps_new, hyps_new_MATLAB)
+
+    filepath = os.path.join(os.path.dirname(__file__), f"test_warp_gpandvp_vbmc_vp_mu_3.txt")
+    vp_mu_MATLAB = np.atleast_2d(np.loadtxt(filepath, delimiter=','))
+    filepath = os.path.join(os.path.dirname(__file__), f"test_warp_gpandvp_vbmc_vp_w_3.txt")
+    vp_w_MATLAB = np.atleast_2d(np.loadtxt(filepath, delimiter=','))
+    filepath = os.path.join(os.path.dirname(__file__), f"test_warp_gpandvp_vbmc_vp_K_3.txt")
+    vp_K_MATLAB = np.atleast_2d(np.loadtxt(filepath, delimiter=','))
+    filepath = os.path.join(os.path.dirname(__file__), f"test_warp_gpandvp_vbmc_vp_sigma_3.txt")
+    vp_sigma_MATLAB = np.atleast_2d(np.loadtxt(filepath, delimiter=','))
+    filepath = os.path.join(os.path.dirname(__file__), f"test_warp_gpandvp_vbmc_vp_lambda_3.txt")
+    vp_lambda_MATLAB = np.atleast_2d(np.loadtxt(filepath, delimiter=',')).T
+
+    assert np.allclose(vp_new.mu, vp_mu_MATLAB, atol=1e-5)
+    assert np.allclose(vp_new.w, vp_w_MATLAB)
+    assert np.allclose(vp_new.K, vp_K_MATLAB)
+    assert np.allclose(vp_new.lambd, vp_lambda_MATLAB)
+    assert np.allclose(vp_new.sigma, vp_sigma_MATLAB)
+
 
     assert np.all(parameter_transformer_warp.lb_orig == [-np.inf, -np.inf])
     assert np.all(parameter_transformer_warp.ub_orig == [np.inf, np.inf])
