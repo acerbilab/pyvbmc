@@ -194,11 +194,11 @@ def test_warp_gpandvp_vbmc():
                 np.ones((1, D)) * 10)
     parameter_transformer_warp, vbmc.optim_state, vbmc.function_logger, warp_action = warp_input_vbmc(vp, vbmc.optim_state, vbmc.function_logger, vbmc.options)
 
-    filepath = os.path.join(os.path.dirname(__file__), "test_warp_gpandvp_vbmc_gp_X_3.txt")
+    filepath = os.path.join(os.path.dirname(__file__), "test_warp_gpandvp_vbmc_gp_X.txt")
     gp_X = np.loadtxt(filepath, delimiter=',')
-    filepath = os.path.join(os.path.dirname(__file__), "test_warp_gpandvp_vbmc_gp_y_3.txt")
+    filepath = os.path.join(os.path.dirname(__file__), "test_warp_gpandvp_vbmc_gp_y.txt")
     gp_y = np.loadtxt(filepath, delimiter=',')
-    filepath = os.path.join(os.path.dirname(__file__), f"test_warp_gpandvp_vbmc_gp_hyps_3.txt")
+    filepath = os.path.join(os.path.dirname(__file__), f"test_warp_gpandvp_vbmc_gp_hyps.txt")
     gp_posterior_hyps = np.atleast_2d(np.loadtxt(filepath, delimiter=','))
 
     vp.gp = gpyreg.GP(D, gpyreg.covariance_functions.SquaredExponential(), gpyreg.mean_functions.NegativeQuadratic(), gpyreg.noise_functions.GaussianNoise(constant_add=True))
@@ -210,19 +210,19 @@ def test_warp_gpandvp_vbmc():
     vp.gp.update(X_new=gp_X, y_new=gp_y, hyp=gp_posterior_hyps)
     vp_new, hyps_new = warp_gpandvp_vbmc(parameter_transformer_warp, vp, vbmc)
 
-    filepath = os.path.join(os.path.dirname(__file__), f"test_warp_gpandvp_vbmc_gp_hyps_new_3.txt")
+    filepath = os.path.join(os.path.dirname(__file__), f"test_warp_gpandvp_vbmc_gp_hyps_new.txt")
     hyps_new_MATLAB = np.atleast_2d(np.loadtxt(filepath, delimiter=','))
     assert np.allclose(hyps_new, hyps_new_MATLAB)
 
-    filepath = os.path.join(os.path.dirname(__file__), f"test_warp_gpandvp_vbmc_vp_mu_3.txt")
+    filepath = os.path.join(os.path.dirname(__file__), f"test_warp_gpandvp_vbmc_vp_mu.txt")
     vp_mu_MATLAB = np.atleast_2d(np.loadtxt(filepath, delimiter=','))
-    filepath = os.path.join(os.path.dirname(__file__), f"test_warp_gpandvp_vbmc_vp_w_3.txt")
+    filepath = os.path.join(os.path.dirname(__file__), f"test_warp_gpandvp_vbmc_vp_w.txt")
     vp_w_MATLAB = np.atleast_2d(np.loadtxt(filepath, delimiter=','))
-    filepath = os.path.join(os.path.dirname(__file__), f"test_warp_gpandvp_vbmc_vp_K_3.txt")
+    filepath = os.path.join(os.path.dirname(__file__), f"test_warp_gpandvp_vbmc_vp_K.txt")
     vp_K_MATLAB = np.atleast_2d(np.loadtxt(filepath, delimiter=','))
-    filepath = os.path.join(os.path.dirname(__file__), f"test_warp_gpandvp_vbmc_vp_sigma_3.txt")
+    filepath = os.path.join(os.path.dirname(__file__), f"test_warp_gpandvp_vbmc_vp_sigma.txt")
     vp_sigma_MATLAB = np.atleast_2d(np.loadtxt(filepath, delimiter=','))
-    filepath = os.path.join(os.path.dirname(__file__), f"test_warp_gpandvp_vbmc_vp_lambda_3.txt")
+    filepath = os.path.join(os.path.dirname(__file__), f"test_warp_gpandvp_vbmc_vp_lambda.txt")
     vp_lambda_MATLAB = np.atleast_2d(np.loadtxt(filepath, delimiter=',')).T
 
     assert np.allclose(vp_new.mu, vp_mu_MATLAB, atol=1e-5)
