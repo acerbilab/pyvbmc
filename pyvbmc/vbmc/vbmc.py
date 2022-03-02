@@ -915,7 +915,6 @@ class VBMC:
             ## Actively sample new points into the training set
             timer.start_timer("activeSampling")
             self.parameter_transformer = self.vp.parameter_transformer
-            self.function_logger.parameter_transformer = self.vp.parameter_transformer
 
             if iteration == 0:
                 new_funevals = self.options.get("funevalstart")
