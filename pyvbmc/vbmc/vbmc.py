@@ -19,6 +19,8 @@ from .iteration_history import IterationHistory
 from .options import Options
 from .variational_optimization import optimize_vp, update_K
 
+from pyvbmc.whitening.whitening import warp_input_vbmc, warp_gpandvp_vbmc
+
 
 class VBMC:
     """
@@ -797,10 +799,122 @@ class VBMC:
                 self.optim_state["entropy_switch"] = False
                 self.logging_action.append("entropy switch")
 
-            # Missing port: Input warping / reparameterization, line 530-625
+
+            ## Input warping / reparameterization
+            # self.options["warpeveriters"] = 1
+            if self.options["incrementalwarpdelay"]:
+                WarpDelay = self.options["warpeveryiters"]*np.max([1, self.optim_state["warping_count"]])
+            else:
+                WarpDelay = self.options["warpeveryiters"]
+
+            doWarping = (self.options.get("warprotoscaling")\
+                or self.options.get("warpnonlinear"))\
+                and (iteration > 0)\
+                and (not self.optim_state["warmup"])\
+                and (iteration - self.optim_state["last_warping"] > WarpDelay)\
+                and (self.vp.K >= self.options["warpmink"])\
+                and (self.iteration_history["rindex"][iteration-1]\
+                     < self.options["warptolreliability"])\
+                and (self.vp.D > 1)
+
+            if doWarping:
+                timer.start_timer("warping")
+                vp_tmp, __, __, __ = self.determine_best_vp()
+                vp_tmp = copy.deepcopy(vp_tmp)
+                # Store variables in case warp needs to be undone:
+                # (vp_old copied above)
+                optim_state_old = copy.deepcopy(self.optim_state)
+                gp_old = copy.deepcopy(gp)
+                function_logger_old = copy.deepcopy(self.function_logger)
+                elbo_old = elbo
+                elbo_sd_old = elbo_sd
+                hyp_dict_old = copy.deepcopy(hyp_dict)
+                # Compute and apply whitening transform:
+                parameter_transformer_warp, self.optim_state, self.function_logger, warp_action = warp_input_vbmc(vp_tmp, self.optim_state, self.function_logger, self.options)
+
+                self.vp, hyp_dict["hyp"] = warp_gpandvp_vbmc(parameter_transformer_warp, self.vp, self)
+                # Update the VBMC ParameterTransformer
+                self.parameter_transformer = parameter_transformer_warp
+
+                self.logging_action.append(warp_action)
+                timer.stop_timer("warping")
+
+                if self.options.get("warpundocheck"):
+                    ## Train gp
+
+                    timer.start_timer("gpTrain")
+
+                    gp, Ns_gp, sn2hpd, hyp_dict = train_gp(
+                        hyp_dict,
+                        self.optim_state,
+                        self.function_logger,
+                        self.iteration_history,
+                        self.options,
+                        self.plausible_lower_bounds,
+                        self.plausible_upper_bounds,
+                    )
+                    self.optim_state["sn2hpd"] = sn2hpd
+
+                    timer.stop_timer("gpTrain")
+
+                    ## Optimize variational parameters
+                    timer.start_timer("variationalFit")
+
+                    if not self.vp.optimize_mu:
+                        # Variational components fixed to training inputs
+                        self.vp.mu = gp.X.T
+                        Knew = self.vp.mu.shape[1]
+                    else:
+                        # Update number of variational mixture components
+                        Knew = self.vp.K
+
+                    # Decide number of fast/slow optimizations
+                    N_fastopts = math.ceil(self.options.eval("nselbo", {"K": self.K}))
+                    N_slowops = self.options.get("elbostarts") # Full optimizations.
+
+                    # Run optimization of variational parameters
+                    self.vp, varss, pruned = optimize_vp(
+                        self.options,
+                        self.optim_state,
+                        self.vp,
+                        gp,
+                        N_fastopts,
+                        N_slowopts,
+                        Knew,
+                    )
+
+                    self.optim_state["vpK"] = self.vp.K
+                    # Save current entropy
+                    self.optim_state["H"] = self.vp.stats["entropy"]
+
+                    # Get real variational posterior (might differ from training posterior)
+                    # vp_real = vp.vptrain2real(0, self.options)
+                    vp_real = self.vp
+                    elbo = vp_real.stats["elbo"]
+                    elbo_sd = vp_real.stats["elbo_sd"]
+
+                    timer.stop_timer("variationalFit")
+
+                    # Keep warping only if it substantially improves ELBO
+                    # and uncertainty does not blow up too much
+                    if (elbo < (elbo_old + self.options["warptolimprovement"]))\
+                    or (elbo_sd > (elbo_sd_old * self.options["warptolsdmultiplier"] + self.options["warptolsdbase"])):
+                        # Undo input warping:
+                        self.vp = vp_old
+                        self.gp = gp_old
+                        self.optim_state = optim_state_old
+                        self.function_logger = function_logger_old
+                        hyp_dict = hyp_dict_old
+
+                        # Still keep track of failed warping (failed warp counts twice)
+                        self.optim_state["warping_count"] += 2
+                        self.optim_state["last_warping"] = self.optim_state["iter"]
+                        self.logging_action.append(", undo")
+
 
             ## Actively sample new points into the training set
             timer.start_timer("activeSampling")
+            self.parameter_transformer = self.vp.parameter_transformer
 
             if iteration == 0:
                 new_funevals = self.options.get("funevalstart")
@@ -1237,7 +1351,6 @@ class VBMC:
         self.vp, elbo, elbo_sd, changed_flag = self.finalboost(
             self.vp, self.iteration_history["gp"][idx_best]
         )
-
         if changed_flag:
             # Recompute symmetrized KL-divergence
             sKL = max(
@@ -1285,6 +1398,14 @@ class VBMC:
                         "finalize",
                     )
                 )
+
+            # Recompute indices of data to highlight:
+            highlight_data = np.array(
+                [
+                    i
+                    for i, x in enumerate(self.vp.gp.X)
+                ]
+            )
 
         # plot final vp:
         if self.options.get("plot"):

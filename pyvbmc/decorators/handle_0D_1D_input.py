@@ -3,7 +3,7 @@ from functools import wraps
 
 
 def handle_0D_1D_input(
-    patched_kwargs: [], patched_argpos: [], return_scalar=False
+        patched_kwargs: [], patched_argpos: [], return_scalar=False
 ):
     """
     A decorator that handles 0D, 1D inputs and transforms them to 2D.

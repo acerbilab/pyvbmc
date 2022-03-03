@@ -32,7 +32,12 @@ class ParameterTransformer:
         upper_bounds: np.ndarray = None,
         plausible_lower_bounds: np.ndarray = None,
         plausible_upper_bounds: np.ndarray = None,
+        scale: np.ndarray = None,
+        rotation_matrix: np.ndarray = None
     ):
+        self.scale = scale
+        self.R_mat = rotation_matrix
+
         # Empty LB and UB are Infs
         if lower_bounds is None:
             lower_bounds = np.ones((1, D)) * -np.inf
@@ -46,7 +51,6 @@ class ParameterTransformer:
             plausible_upper_bounds = np.copy(upper_bounds)
 
         # Convert scalar inputs to row vectors (I do not think it is necessary)
-
         if not (
             np.all(lower_bounds <= plausible_lower_bounds)
             and np.all(plausible_lower_bounds < plausible_upper_bounds)
@@ -136,12 +140,12 @@ class ParameterTransformer:
 
             u[:, mask] = (u[:, mask] - self.mu[mask]) / self.delta[mask]
 
-        # # rotate output
-        # if self.R_mat is not None:
-        #     u = u * self.R_mat
-        # # rescale input
-        # if scale is not None:
-        #     print(scale)
+        # Rotoscale whitening:
+        # Rotate and rescale points in transformed space.
+        if self.R_mat is not None:
+            u = u @ self.R_mat
+        if self.scale is not None:
+            u = u/self.scale
 
         return u
 
@@ -161,36 +165,41 @@ class ParameterTransformer:
         x : np.ndarray
             The original variables which result of the transformation.
         """
-        # # rotate input (copy array before)
-        # if self.R_mat is not None:
-        #     u = u * self.R_mat
-        # # rescale input
-        # if scale is not None:
-        #     print(scale)
 
         x = np.copy(u)
+
+        # Rotoscale whitening:
+        # Undo rescaling and rotation.
+        if self.scale is not None:
+            x = x*self.scale
+        if self.R_mat is not None:
+            x = x @ np.transpose(self.R_mat)
+
+        xNew = np.copy(x)
 
         # Unbounded scalars (possibly unscale and uncenter)
         mask = self.type == 0
         if np.any(mask):
-            x[:, mask] = u[:, mask] * self.delta[mask] + self.mu[mask]
+            xNew[:, mask] = x[:, mask] * self.delta[mask] + self.mu[mask]
 
         # Lower and upper bounded scalars
         mask = self.type == 3
         if np.any(mask):
-            x[:, mask] = u[:, mask] * self.delta[mask] + self.mu[mask]
-            x[:, mask] = self.lb_orig[:, mask] + (
+            xNew[:, mask] = x[:, mask] * self.delta[mask] + self.mu[mask]
+            xNew[:, mask] = self.lb_orig[:, mask] + (
                 (self.ub_orig[:, mask] - self.lb_orig[:, mask])
-                * (1 / (1 + np.exp(-x[:, mask])))
+                * (1 / (1 + np.exp(-xNew[:, mask])))
             )
 
         # Force to stay within bounds
+        # (8*eps is too small in some cases to prevent infinite values)
         mask = np.isfinite(self.lb_orig)[0]
-        x[:, mask] = np.maximum(x[:, mask], self.lb_orig[:, mask])
+        xNew[:, mask] = np.maximum(xNew[:, mask], self.lb_orig[:, mask] + 10*np.finfo(np.float64).eps)
 
         mask = np.isfinite(self.ub_orig)[0]
-        x[:, mask] = np.minimum(x[:, mask], self.ub_orig[:, mask])
-        return x
+        xNew[:, mask] = np.minimum(xNew[:, mask], self.ub_orig[:, mask] - 10*np.finfo(np.float64).eps)
+
+        return xNew
 
     @handle_0D_1D_input(
         patched_kwargs=["u"], patched_argpos=[0], return_scalar=True
@@ -214,12 +223,12 @@ class ParameterTransformer:
         """
         u_c = np.copy(u)
 
-        # # rotate input (copy array before)
-        # if self.R_mat is not None:
-        #     u_c = u_c * self.R_mat
-        # # rescale input
-        # if scale is not None:
-        #     print(scale)
+        # Rotoscale whitening:
+        # Undo rescaling and rotation.
+        if self.scale is not None:
+            u_c = u_c*self.scale
+        if self.R_mat is not None:
+            u_c = u_c @ np.transpose(self.R_mat)
 
         p = np.zeros(u_c.shape)
 
@@ -238,8 +247,9 @@ class ParameterTransformer:
             )
             p[:, mask] = p[:, mask] + np.log(self.delta[mask])
 
-        # Scale transform
-        # if scale is not None:
-        #     p + np.log(scale)
+        # Whitening/rotoscaling density correction:
+        if self.scale is not None:
+            p = p + np.log(self.scale)
+
         p = np.sum(p, axis=1)
         return p

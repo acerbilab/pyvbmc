@@ -13,6 +13,7 @@ from scipy.integrate import trapezoid
 from scipy.interpolate import interp1d
 from scipy.optimize import fmin_l_bfgs_b
 from scipy.special import gammaln
+import gpyreg
 
 
 class VariationalPosterior:
@@ -700,7 +701,7 @@ class VariationalPosterior:
                 sigma = (
                     np.sum(self.w * self.sigma ** 2)
                     * np.eye(len(self.lambd))
-                    * self.lambd
+                    * self.lambd**2
                 )
                 for k in range(self.K):
                     sigma += self.w[:, k] * (
@@ -711,7 +712,13 @@ class VariationalPosterior:
         else:
             return mubar.reshape(1, -1)
 
-    def mode(self, nmax: int = 20, origflag=True):
+
+
+    def mode(
+        self,
+        nmax: int = 20,
+        origflag=True,
+    ):
         """
         Find the mode of the variational posterior.
 
