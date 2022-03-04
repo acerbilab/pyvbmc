@@ -1399,19 +1399,11 @@ class VBMC:
                     )
                 )
 
-            # Recompute indices of data to highlight:
-            highlight_data = np.array(
-                [
-                    i
-                    for i, x in enumerate(self.vp.gp.X)
-                ]
-            )
-
         # plot final vp:
         if self.options.get("plot"):
             self.vp.plot(
                 plot_data=True,
-                highlight_data=highlight_data,
+                highlight_data=None,
                 plot_vp_centres=True,
                 title="VBMC final ({} iterations)".format(iteration),
             )
