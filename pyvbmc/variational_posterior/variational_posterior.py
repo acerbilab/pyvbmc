@@ -693,22 +693,22 @@ class VariationalPosterior:
             x, _ = self.sample(int(N), origflag=True, balanceflag=True)
             mubar = np.mean(x, axis=0)
             if covflag:
-                sigma = np.cov(x.T)
+                cov = np.cov(x.T)
         else:
             mubar = np.sum(self.w * self.mu, axis=1)
 
             if covflag:
-                sigma = (
+                cov = (
                     np.sum(self.w * self.sigma ** 2)
                     * np.eye(len(self.lambd))
                     * self.lambd**2
                 )
                 for k in range(self.K):
-                    sigma += self.w[:, k] * (
+                    cov += self.w[:, k] * (
                         (self.mu[:, k] - mubar)[:, np.newaxis]
                     ).dot((self.mu[:, k] - mubar)[:, np.newaxis].T)
         if covflag:
-            return mubar.reshape(1, -1), sigma
+            return mubar.reshape(1, -1), cov
         else:
             return mubar.reshape(1, -1)
 
