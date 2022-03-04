@@ -143,15 +143,8 @@ class VBMC:
         # set up root logger (only changes stuff if not initialized yet)
         logging.basicConfig(stream=sys.stdout, format="%(message)s")
 
-        # set up VBMC logger
-        self.logger = logging.getLogger("VBMC")
-        self.logger.setLevel(logging.INFO)
-        if self.options.get("display") == "off":
-            self.logger.setLevel(logging.WARN)
-        elif self.options.get("display") == "iter":
-            self.logger.setLevel(logging.INFO)
-        elif self.options.get("display") == "full":
-            self.logger.setLevel(logging.DEBUG)
+        self.logger = self._init_logger()
+
 
         # variable to keep track of logging actions
         self.logging_action = []
@@ -761,7 +754,6 @@ class VBMC:
         gp = None
         hyp_dict = {}
         success_flag = True
-
         # set up strings for logging of the iteration
         display_format = self._setup_logging_display_format()
 
@@ -2044,8 +2036,15 @@ class VBMC:
         """
         Private method to log column headers for the iteration log.
         """
+        # We only want to log the column headers once when writing to a file,
+        # but we re-write them to stdout when plotting.
+        if self.optim_state.get("iter") > 0:
+            logger = self.logger.stdout_only
+        else:
+            logger = self.logger
+
         if self.optim_state["cache_active"]:
-            self.logger.info(
+            logger.info(
                 " Iteration f-count/f-cache    Mean[ELBO]     Std[ELBO]     "
                 + "sKL-iter[q]   K[q]  Convergence    Action"
             )
@@ -2054,12 +2053,12 @@ class VBMC:
                 self.optim_state["uncertainty_handling_level"] > 0
                 and self.options.get("maxrepeatedobservations") > 0
             ):
-                self.logger.info(
+                logger.info(
                     " Iteration   f-count (x-count)   Mean[ELBO]     Std[ELBO]"
                     + "     sKL-iter[q]   K[q]  Convergence  Action"
                 )
             else:
-                self.logger.info(
+                logger.info(
                     " Iteration  f-count    Mean[ELBO]    Std[ELBO]    "
                     + "sKL-iter[q]   K[q]  Convergence  Action"
                 )
@@ -2088,3 +2087,46 @@ class VBMC:
                 display_format += "{:12.2f}     {:4.0f} {:10.3g}     {}"
 
         return display_format
+
+    def _init_logger(self):
+        # set up VBMC logger
+        logger = logging.getLogger("VBMC")
+        logger.setLevel(logging.INFO)
+        if self.options.get("display") == "off":
+            logger.setLevel(logging.WARN)
+        elif self.options.get("display") == "iter":
+            logger.setLevel(logging.INFO)
+        elif self.options.get("display") == "full":
+            logger.setLevel(logging.DEBUG)
+        # Add a special logger for messages that should be sent only to stdout:
+        logger.stdout_only = logging.getLogger("VBMC.stdout_only")
+
+        # For options and special handling for writing to a file:
+        if self.options.get("logfilename")\
+           and self.options.get("logfilelevel"):
+            log_file_mode = self.options.get("logfilemode", "a")
+            file_handler = logging.FileHandler(
+                filename=self.options["logfilename"],
+                mode=log_file_mode
+            )
+
+            log_file_level = self.options.get("logfilelevel", logging.INFO)
+            if log_file_level == "off":
+                file_handler.setLevel(logging.WARN)
+            elif log_file_level == "iter":
+                file_handler.setLevel(logging.INFO)
+            elif log_file_level == "full":
+                file_handler.setLevel(logging.DEBUG)
+            elif log_file_level in [0, 10, 20, 30, 40, 50]:
+                file_handler.setLevel(log_file_level)
+            else:
+                raise ValueError("Log file logging level is not a recognized" +
+                                 "string or logging level.")
+
+            def log_file_filter(record):
+                return record.name != "VBMC.stdout_only"
+            file_handler.addFilter(log_file_filter)
+
+            logger.addHandler(file_handler)
+
+        return logger

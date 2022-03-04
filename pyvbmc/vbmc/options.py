@@ -5,6 +5,7 @@ import configparser
 from collections.abc import MutableMapping
 
 import numpy as np
+import logging
 
 
 class Options(MutableMapping, dict):
