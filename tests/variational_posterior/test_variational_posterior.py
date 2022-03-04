@@ -439,6 +439,26 @@ def test_moments_no_origflag():
     assert np.all(sigma == sigma2)
 
 
+def test_moments_no_origflag_2():
+    # A second test with more unusual (non-ones) vp.lambd
+    D = 6
+    K = 3
+    vp = VariationalPosterior(D, K)
+    vp.mu = np.linspace(-3, 3, D*K).reshape([D, K], order='F')
+    vp.sigma = np.atleast_2d(np.array(range(2,5)))
+    vp.lambd = np.atleast_2d(np.array(range(3,9))).T
+    vp.w = np.atleast_2d(np.array(range(1,4)))
+    vp.w = vp.w/np.sum(vp.w)
+
+    mubar, sigma = vp.moments(N=1e6, covflag=True, origflag=False)
+    matlab = loadmat("./tests/variational_posterior/test_moments_no_origflag_2_MATLAB.mat")
+
+    assert mubar.shape == (1, 6)
+    assert sigma.shape == (6, 6)
+    assert np.allclose(mubar, matlab["mubar"])
+    assert np.allclose(sigma, matlab["sigma"])
+
+
 def test_moments_no_covflag():
     vp = VariationalPosterior(3, 2, np.array([[5]]))
     mubar = vp.moments(N=1e6, origflag=False)
