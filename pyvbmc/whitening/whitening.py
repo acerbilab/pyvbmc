@@ -74,14 +74,17 @@ def unscent_warp(fun, x, sigma):
 
 
 def warp_input_vbmc(vp, optim_state, function_logger, options):
-    r"""Compute the whitening transformation and update the cached points in function_logger.
+    r"""Compute input warping of variables and update the cached points in
+        function_logger accordingly.
 
-    The whitening transformation is a rotation and rescaling (implemented) or nonlinear transformation (not implemented) which is applied to the inference space such that the variational posterior acheives unit diagonal covariance.
+    Currently supports only a whitening transformation: a rotation and
+    rescaling of the inference space such that the variational posterior
+    acheives unit diagonal covariance.
 
     Parameters
     ----------
     vp : VariationalPosterior
-        The current VP object for which to compute the transformation.
+        The current VP object for which to compute the warping.
     optim_state : dict
         The dictionary recording the current optimization state.
     function_logger : FunctionLogger
@@ -90,7 +93,9 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
     Returns
     -------
     parameter_transformer : ParameterTransformer
-        A ParameterTransformer object representing the new transformation between original coordinates and inference space coordinates, with the input warping applied.
+        A ParameterTransformer object representing the new transformation
+        between original coordinates and inference space coordinates, with the
+        input warping applied.
     optim_state : dict
         An updated copy of the original optimization state dict.
     function_logger : FunctionLogger
