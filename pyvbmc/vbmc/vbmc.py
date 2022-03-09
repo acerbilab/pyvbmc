@@ -2037,9 +2037,9 @@ class VBMC:
         Private method to log column headers for the iteration log.
         """
         # We only want to log the column headers once when writing to a file,
-        # but we re-write them to stdout when plotting.
+        # but we re-write them to the stream (stdout) when plotting.
         if self.optim_state.get("iter") > 0:
-            logger = self.logger.stdout_only
+            logger = self.logger.stream_only
         else:
             logger = self.logger
 
@@ -2098,10 +2098,10 @@ class VBMC:
             logger.setLevel(logging.INFO)
         elif self.options.get("display") == "full":
             logger.setLevel(logging.DEBUG)
-        # Add a special logger for messages that should be sent only to stdout:
-        logger.stdout_only = logging.getLogger("VBMC.stdout_only")
+        # Add a special logger for sending messages only to the default stream:
+        logger.stream_only = logging.getLogger("VBMC.stream_only")
 
-        # For options and special handling for writing to a file:
+        # Options and special handling for writing to a file:
         if self.options.get("logfilename")\
            and self.options.get("logfilelevel"):
             log_file_mode = self.options.get("logfilemode", "a")
@@ -2110,6 +2110,7 @@ class VBMC:
                 mode=log_file_mode
             )
 
+            # Set file logger level according to string or logging level:
             log_file_level = self.options.get("logfilelevel", logging.INFO)
             if log_file_level == "off":
                 file_handler.setLevel(logging.WARN)
@@ -2123,8 +2124,9 @@ class VBMC:
                 raise ValueError("Log file logging level is not a recognized" +
                                  "string or logging level.")
 
+            # Add a filter to ignore messages sent to logger.stream_only:
             def log_file_filter(record):
-                return record.name != "VBMC.stdout_only"
+                return record.name != "VBMC.stream_only"
             file_handler.addFilter(log_file_filter)
 
             logger.addHandler(file_handler)
