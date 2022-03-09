@@ -417,7 +417,8 @@ class VBMC:
 
         # Check that all X0 are inside the plausible bounds,
         # move bounds otherwise
-        if np.any(x0 <= LB_eff) or np.any(x0 >= UB_eff):
+        if np.any(x0 <= plausible_lower_bounds)\
+           or np.any(x0 >= plausible_upper_bounds):
             self.logger.warning(
                 "vbmc:InitialPointsOutsidePB. The starting points X0"
                 + " are not inside the provided plausible bounds PLB and "
