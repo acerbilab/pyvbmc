@@ -2130,7 +2130,8 @@ class VBMC:
         else:
             log_file_mode = "a"
 
-        # Avoid duplicating a handler for the same log file:
+        # Avoid duplicating a handler for the same log file
+        # (remove duplicates, re-add below)
         for handler in logger.handlers:
             if handler.baseFilename == os.path.abspath(
                     self.options.get("logfilename")
