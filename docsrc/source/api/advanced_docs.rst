@@ -29,6 +29,7 @@ This is the advanced documentation for developers.
    functions/get_hpd
    functions/kde1d
    functions/entropy
+   functions/whitening
 
 .. toctree::
    :maxdepth: 2
