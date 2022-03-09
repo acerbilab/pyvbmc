@@ -2089,6 +2089,14 @@ class VBMC:
         return display_format
 
     def _init_logger(self):
+        """
+        Private method to initialize the logging object.
+
+        Returns
+        -------
+        logger : logging.Logger
+            The main logging object.
+        """
         # set up VBMC logger
         logger = logging.getLogger("VBMC")
         logger.setLevel(logging.INFO)
