@@ -75,7 +75,7 @@ def unscent_warp(fun, x, sigma):
 
 def warp_input_vbmc(vp, optim_state, function_logger, options):
     r"""Compute input warping of variables and update the cached points in
-        function_logger accordingly.
+    function_logger accordingly.
 
     Currently supports only a whitening transformation: a rotation and
     rescaling of the inference space such that the variational posterior
@@ -106,7 +106,7 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
     Raises
     ------
     NotImplementedError
-        If vbmc.options["warpnonlinear"] is set other than False.
+        If `vbmc.options["warpnonlinear"]` is set other than False.
     """
     parameter_transformer = copy.deepcopy(vp.parameter_transformer)
     optim_state = copy.deepcopy(optim_state)
