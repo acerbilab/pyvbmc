@@ -143,7 +143,8 @@ class VBMC:
         # set up root logger (only changes stuff if not initialized yet)
         logging.basicConfig(stream=sys.stdout, format="%(message)s")
 
-        self.logger = self._init_logger()
+        # Create an initial logger for initialization messages:
+        self.logger = self._init_logger("_init")
 
 
         # variable to keep track of logging actions
@@ -755,6 +756,8 @@ class VBMC:
         gp = None
         hyp_dict = {}
         success_flag = True
+        # Initialize main logger with potentially new options:
+        self.logger = self._init_logger()
         # set up strings for logging of the iteration
         display_format = self._setup_logging_display_format()
 
@@ -2089,17 +2092,24 @@ class VBMC:
 
         return display_format
 
-    def _init_logger(self):
+    def _init_logger(self, substring=""):
         """
         Private method to initialize the logging object.
+
+        Parameters
+        ----------
+        substring : str
+            A substring to append to the logger name (used to create separate
+            logging objects for initialization and optimization, in case
+            options change in between). Default "" (empty string).
 
         Returns
         -------
         logger : logging.Logger
-            The main logging object.
+            The main logging interface.
         """
         # set up VBMC logger
-        logger = logging.getLogger("VBMC")
+        logger = logging.getLogger("VBMC" + substring)
         logger.setLevel(logging.INFO)
         if self.options.get("display") == "off":
             logger.setLevel(logging.WARN)
@@ -2111,9 +2121,24 @@ class VBMC:
         logger.stream_only = logging.getLogger("VBMC.stream_only")
 
         # Options and special handling for writing to a file:
+
+        # If logging for the first time, get write mode from user options
+        # (default "a" for append)
+        if substring == "_init":
+            log_file_mode = self.options.get("logfilemode", "a")
+        # On subsequent writes, switch to append mode:
+        else:
+            log_file_mode = "a"
+
+        # Avoid duplicating a handler for the same log file:
+        for handler in logger.handlers:
+            if handler.baseFilename == os.path.abspath(
+                    self.options.get("logfilename")
+            ):
+                logger.removeHandler(handler)
+
         if self.options.get("logfilename")\
            and self.options.get("logfilelevel"):
-            log_file_mode = self.options.get("logfilemode", "a")
             file_handler = logging.FileHandler(
                 filename=self.options["logfilename"],
                 mode=log_file_mode
