@@ -11,19 +11,19 @@ def unscent_warp(fun, x, sigma):
     fun : function
         A single-argument function which warps input points.
     x : (n,D) or (D,) np.ndarray
-        The input mean for which to approximate the unscented transform.
+        The input mean for which to compute the unscented transform.
     sigma : (n,D) or (D,) np.ndarray
-        The input standard deviation matrix for which to approximate the
-        unscented transform.
+        The input matrix of standard deviations or scale parameters for which
+        to compute the unscented transform.
 
     Returns
     -------
     x_warped_mean : (n,D) or (D,) np.ndarray
         The unscented estimate of the mean.
     x_warped_sigma : (n,D) np.ndarray
-        The unscented estimate of the std.
+        The unscented estimate of the standard deviation / scale parameters.
     x_warped : (U,n,D) np.ndarray
-        The warped mean points at `x_warped[0, :, :]`, and the warped std
+        The warped mean points at `x_warped[0, :, :]`, and the warped std.
         simplex points, at `[1:, :, :]`. Here `U=2*D+1`.
 
     Raises
