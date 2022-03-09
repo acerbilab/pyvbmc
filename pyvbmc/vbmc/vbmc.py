@@ -19,7 +19,7 @@ from .iteration_history import IterationHistory
 from .options import Options
 from .variational_optimization import optimize_vp, update_K
 
-from pyvbmc.whitening.whitening import warp_input_vbmc, warp_gpandvp_vbmc
+from pyvbmc.whitening import warp_input_vbmc, warp_gpandvp_vbmc
 
 
 class VBMC:
