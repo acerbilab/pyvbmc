@@ -1252,7 +1252,19 @@ class VBMC:
                 else:
                     self.logging_action.append("stable GP sampling")
 
-            if self.options.get("plot") and iteration > 0:
+            if self.options.get("printiterationheader") is None:
+                # Default behavior, try to guess based on plotting options:
+                reprint_headers = self.options.get("plot")\
+                    and iteration > 0\
+                    and "inline" in plt.get_backend()
+            elif self.options.get("printiterationheader"):
+                # Re-print every iteration after 0th
+                reprint_headers = iteration > 0
+            else:
+                # Never re-print headers
+                reprint_headers = False
+            # Reprint the headers if desired:
+            if reprint_headers:
                 self._log_column_headers()
 
             if self.optim_state["cache_active"]:
