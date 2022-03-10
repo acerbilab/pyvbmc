@@ -114,7 +114,7 @@ class Options(MutableMapping, dict):
         options_list = _read_config_file(options_path)
         for (key, value, description) in options_list:
             if key not in self.get("useroptions") and key != "useroptions":
-                self[key] = eval(value)
+                self.__setitem__(key, eval(value), warn=False)
                 self.descriptions[key] = description
 
     def validate_option_names(self, options_paths: list):
@@ -147,7 +147,9 @@ class Options(MutableMapping, dict):
             if key != "useroptions" and key not in file_option_names:
                 raise ValueError("The option {} does not exist.".format(key))
 
-    def __setitem__(self, key, val):
+    def __setitem__(self, key, val, warn=True):
+        if warn:
+            logging.getLogger("VBMC").warn("Warning: Setting VBMC options after initialization may cause unexpected behavior.")
         dict.__setitem__(self, key, val)
 
     def __getitem__(self, key):
