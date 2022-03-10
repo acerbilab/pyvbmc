@@ -1257,7 +1257,7 @@ class VBMC:
                 reprint_headers = self.options.get("plot")\
                     and iteration > 0\
                     and "inline" in plt.get_backend()
-            elif self.options.get("printiterationheader"):
+            elif self.options["printiterationheader"]:
                 # Re-print every iteration after 0th
                 reprint_headers = iteration > 0
             else:
