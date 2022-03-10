@@ -7,7 +7,7 @@ import gpyreg
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.vbmc import VBMC
 from pyvbmc.variational_posterior import VariationalPosterior
-from pyvbmc.whitening.whitening import unscent_warp, warp_input_vbmc, warp_gpandvp_vbmc
+from pyvbmc.whitening import unscent_warp, warp_input_vbmc, warp_gpandvp_vbmc
 D = 2
 
 def test_rotoscaling_rotation_2d():

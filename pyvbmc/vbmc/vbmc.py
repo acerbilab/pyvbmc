@@ -19,7 +19,7 @@ from .iteration_history import IterationHistory
 from .options import Options
 from .variational_optimization import optimize_vp, update_K
 
-from pyvbmc.whitening.whitening import warp_input_vbmc, warp_gpandvp_vbmc
+from pyvbmc.whitening import warp_input_vbmc, warp_gpandvp_vbmc
 
 
 class VBMC:
@@ -1399,19 +1399,11 @@ class VBMC:
                     )
                 )
 
-            # Recompute indices of data to highlight:
-            highlight_data = np.array(
-                [
-                    i
-                    for i, x in enumerate(self.vp.gp.X)
-                ]
-            )
-
         # plot final vp:
         if self.options.get("plot"):
             self.vp.plot(
                 plot_data=True,
-                highlight_data=highlight_data,
+                highlight_data=None,
                 plot_vp_centres=True,
                 title="VBMC final ({} iterations)".format(iteration),
             )
