@@ -39,6 +39,9 @@ class Options(MutableMapping, dict):
         Initialize the options using default options and specified options from
         the user.
         """
+        # Flag initialization as in-progress
+        # (completed in self.validate_option_names)
+        self.is_initialized = False
         super().__init__()
         self.descriptions = dict()
         self["useroptions"] = set()
@@ -114,7 +117,7 @@ class Options(MutableMapping, dict):
         options_list = _read_config_file(options_path)
         for (key, value, description) in options_list:
             if key not in self.get("useroptions") and key != "useroptions":
-                self.__setitem__(key, eval(value), warn=False)
+                self[key] = eval(value)
                 self.descriptions[key] = description
 
     def validate_option_names(self, options_paths: list):
@@ -123,7 +126,9 @@ class Options(MutableMapping, dict):
         the option names from this options object at least once.
 
         Note that this method checks not if there are option names in files that
-        are not in the object.
+        are not in the object. After option names are validated, initialization
+        is flagged as complete and `self.is_initialized` is set to `True` to
+        prevent further modification of options.
 
         Parameters
         ----------
@@ -147,10 +152,15 @@ class Options(MutableMapping, dict):
             if key != "useroptions" and key not in file_option_names:
                 raise ValueError("The option {} does not exist.".format(key))
 
-    def __setitem__(self, key, val, warn=True):
-        if warn:
-            logging.getLogger("VBMC").warn("Warning: Setting VBMC options after initialization may cause unexpected behavior.")
-        dict.__setitem__(self, key, val)
+        # After 
+        self.is_initialized = True
+
+    def __setitem__(self, key, val):
+        # Prevent user from attempting to modify options after initialization
+        if self.is_initialized:
+            logging.getLogger("VBMC").warn("Warning: Cannot set options after initialization. Please re-initialize with `user_options = {...}`")
+        else:
+            dict.__setitem__(self, key, val)
 
     def __getitem__(self, key):
         return dict.__getitem__(self, key)
