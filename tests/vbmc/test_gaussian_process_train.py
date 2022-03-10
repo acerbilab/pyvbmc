@@ -206,7 +206,7 @@ def test_get_hyp_cov():
     assert res1 is None
 
     vbmc.optim_state["iter"] = 1
-    vbmc.options["weightedhypcov"] = False
+    vbmc.options.__setitem__("weightedhypcov", False, force=True)
     res2 = _get_hyp_cov(
         vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict
     )
@@ -230,13 +230,13 @@ def test_get_gp_training_options_samplers():
     plb = np.ones((1, D)) * 2
     pub = np.ones((1, D)) * 4
     f = lambda x: np.sum(x + 2)
-    vbmc = VBMC(f, x0, lb, ub, plb, pub)
+    user_options = {"weightedhypcov" : False}
+    vbmc = VBMC(f, x0, lb, ub, plb, pub, user_options)
 
     hyp_dict = {"run_cov": np.eye(3)}
     hyp_dict_none = {"run_cov": None}
     vbmc.optim_state["n_eff"] = 10
     vbmc.optim_state["iter"] = 1
-    vbmc.options["weightedhypcov"] = False
     vbmc.iteration_history.record("rindex", 5, 0)
 
     res1 = _get_gp_training_options(
@@ -244,13 +244,13 @@ def test_get_gp_training_options_samplers():
     )
     assert res1["sampler"] == "slicesample"
 
-    vbmc.options["gphypsampler"] = "npv"
+    vbmc.options.__setitem__("gphypsampler", "npv", force=True)
     res2 = _get_gp_training_options(
         vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 8
     )
     assert res2["sampler"] == "npv"
 
-    vbmc.options["gphypsampler"] = "mala"
+    vbmc.options.__setitem__("gphypsampler", "mala", force=True)
     vbmc.optim_state["gpmala_stepsize"] = 10
     res3 = _get_gp_training_options(
         vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 8
@@ -258,19 +258,19 @@ def test_get_gp_training_options_samplers():
     assert res3["sampler"] == "mala"
     assert res3["step_size"] == 10
 
-    vbmc.options["gphypsampler"] = "slicelite"
+    vbmc.options.__setitem__("gphypsampler", "slicelite", force=True)
     res4 = _get_gp_training_options(
         vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 8
     )
     assert res4["sampler"] == "slicelite"
 
-    vbmc.options["gphypsampler"] = "splitsample"
+    vbmc.options.__setitem__("gphypsampler", "splitsample", force=True)
     res5 = _get_gp_training_options(
         vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 8
     )
     assert res5["sampler"] == "splitsample"
 
-    vbmc.options["gphypsampler"] = "covsample"
+    vbmc.options.__setitem__("gphypsampler", "covsample", force=True)
     res6 = _get_gp_training_options(
         vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 8
     )
@@ -293,7 +293,7 @@ def test_get_gp_training_options_samplers():
     assert res8["sampler"] == "covsample"
 
     # Test too small n_eff laplace sampler
-    vbmc.options["gphypsampler"] = "laplace"
+    vbmc.options.__setitem__("gphypsampler", "laplace", force=True)
     res9 = _get_gp_training_options(
         vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 8
     )
@@ -301,14 +301,14 @@ def test_get_gp_training_options_samplers():
 
     # Test enough n_eff laplace sampler
     vbmc.optim_state["n_eff"] = 50
-    vbmc.options["gphypsampler"] = "laplace"
+    vbmc.options.__setitem__("gphypsampler", "laplace", force=True)
     res10 = _get_gp_training_options(
         vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 8
     )
     assert res10["sampler"] == "laplace"
 
     # Test sampler that does not exist.
-    vbmc.options["gphypsampler"] = "does_not_exist"
+    vbmc.options.__setitem__("gphypsampler", "does_not_exist", force=True)
     with pytest.raises(ValueError):
         res11 = _get_gp_training_options(
             vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 8
@@ -328,10 +328,10 @@ def test_get_gp_training_options_opts_N():
     vbmc.optim_state["n_eff"] = 10
     vbmc.optim_state["iter"] = 2
     vbmc.iteration_history.record("rindex", 5, 1)
-    vbmc.options["weightedhypcov"] = False
+    vbmc.options.__setitem__("weightedhypcov", False, force=True)
     hyp_dict = {"run_cov": np.eye(3)}
     hyp_dict_none = {"run_cov": None}
-    vbmc.options["gpretrainthreshold"] = 10
+    vbmc.options.__setitem__("gpretrainthreshold", 10, force=True)
 
     res1 = _get_gp_training_options(
         vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 0
@@ -339,7 +339,7 @@ def test_get_gp_training_options_opts_N():
     assert res1["opts_N"] == 2
 
     vbmc.optim_state["recompute_var_post"] = False
-    vbmc.options["gphypsampler"] = "slicelite"
+    vbmc.options.__setitem__("gphypsampler", "slicelite", force=True)
     res2 = _get_gp_training_options(
         vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 0
     )
@@ -350,7 +350,7 @@ def test_get_gp_training_options_opts_N():
     )
     assert res3["opts_N"] == 0
 
-    vbmc.options["gpretrainthreshold"] = 1
+    vbmc.options.__setitem__("gpretrainthreshold", 1, force=True)
     res4 = _get_gp_training_options(
         vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 0
     )

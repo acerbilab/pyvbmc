@@ -6,6 +6,7 @@ from collections.abc import MutableMapping
 
 import numpy as np
 import logging
+import copy
 
 
 class Options(MutableMapping, dict):
@@ -155,9 +156,9 @@ class Options(MutableMapping, dict):
         # After 
         self.is_initialized = True
 
-    def __setitem__(self, key, val):
+    def __setitem__(self, key, val, force=False):
         # Prevent user from attempting to modify options after initialization
-        if self.is_initialized:
+        if self.is_initialized and not force:
             logging.getLogger("VBMC").warn("Warning: Cannot set options after initialization. Please re-initialize with `user_options = {...}`")
         else:
             dict.__setitem__(self, key, val)
@@ -173,6 +174,30 @@ class Options(MutableMapping, dict):
 
     def __delitem__(self, key):
         return dict.__delitem__(self, key)
+
+    def __copy__(self):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        # Copy class properties:
+        result.__dict__.update(self.__dict__)
+        # Copy options dict:
+        for k, v in dict.items(self):
+            result.__setitem__(k, v, force=True)
+        return result
+
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+
+        # Avoid infinite recursion in deepcopy
+        memo[id(self)] = result
+        # Copy class properties:
+        for k, v in self.__dict__.items():
+            setattr(result, k, copy.deepcopy(v, memo))
+        # Copy options dict:
+        for k, v in dict.items(self):
+            result.__setitem__(k, copy.deepcopy(v, memo), force=True)
+        return result
 
     def eval(self, key: str, evaluation_parameters: dict):
         """
