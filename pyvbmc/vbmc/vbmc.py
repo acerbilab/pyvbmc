@@ -143,9 +143,15 @@ class VBMC:
         # set up root logger (only changes stuff if not initialized yet)
         logging.basicConfig(stream=sys.stdout, format="%(message)s")
 
-        # Create an initial logger for initialization messages:
-        self.logger = self._init_logger("_init")
-
+        # set up VBMC logger
+        self.logger = logging.getLogger("VBMC")
+        self.logger.setLevel(logging.INFO)
+        if self.options.get("display") == "off":
+            self.logger.setLevel(logging.WARN)
+        elif self.options.get("display") == "iter":
+            self.logger.setLevel(logging.INFO)
+        elif self.options.get("display") == "full":
+            self.logger.setLevel(logging.DEBUG)
 
         # variable to keep track of logging actions
         self.logging_action = []
@@ -418,8 +424,7 @@ class VBMC:
 
         # Check that all X0 are inside the plausible bounds,
         # move bounds otherwise
-        if np.any(x0 <= plausible_lower_bounds)\
-           or np.any(x0 >= plausible_upper_bounds):
+        if np.any(x0 <= LB_eff) or np.any(x0 >= UB_eff):
             self.logger.warning(
                 "vbmc:InitialPointsOutsidePB. The starting points X0"
                 + " are not inside the provided plausible bounds PLB and "
@@ -756,8 +761,7 @@ class VBMC:
         gp = None
         hyp_dict = {}
         success_flag = True
-        # Initialize main logger with potentially new options:
-        self.logger = self._init_logger()
+
         # set up strings for logging of the iteration
         display_format = self._setup_logging_display_format()
 
@@ -1252,19 +1256,7 @@ class VBMC:
                 else:
                     self.logging_action.append("stable GP sampling")
 
-            if self.options.get("printiterationheader") is None:
-                # Default behavior, try to guess based on plotting options:
-                reprint_headers = self.options.get("plot")\
-                    and iteration > 0\
-                    and "inline" in plt.get_backend()
-            elif self.options.get("printiterationheader"):
-                # Re-print every iteration after 0th
-                reprint_headers = iteration > 0
-            else:
-                # Never re-print headers
-                reprint_headers = False
-            # Reprint the headers if desired:
-            if reprint_headers:
+            if self.options.get("plot") and iteration > 0:
                 self._log_column_headers()
 
             if self.optim_state["cache_active"]:
@@ -2052,15 +2044,8 @@ class VBMC:
         """
         Private method to log column headers for the iteration log.
         """
-        # We only want to log the column headers once when writing to a file,
-        # but we re-write them to the stream (stdout) when plotting.
-        if self.optim_state.get("iter") > 0:
-            logger = self.logger.stream_only
-        else:
-            logger = self.logger
-
         if self.optim_state["cache_active"]:
-            logger.info(
+            self.logger.info(
                 " Iteration f-count/f-cache    Mean[ELBO]     Std[ELBO]     "
                 + "sKL-iter[q]   K[q]  Convergence    Action"
             )
@@ -2069,12 +2054,12 @@ class VBMC:
                 self.optim_state["uncertainty_handling_level"] > 0
                 and self.options.get("maxrepeatedobservations") > 0
             ):
-                logger.info(
+                self.logger.info(
                     " Iteration   f-count (x-count)   Mean[ELBO]     Std[ELBO]"
                     + "     sKL-iter[q]   K[q]  Convergence  Action"
                 )
             else:
-                logger.info(
+                self.logger.info(
                     " Iteration  f-count    Mean[ELBO]    Std[ELBO]    "
                     + "sKL-iter[q]   K[q]  Convergence  Action"
                 )
@@ -2103,79 +2088,3 @@ class VBMC:
                 display_format += "{:12.2f}     {:4.0f} {:10.3g}     {}"
 
         return display_format
-
-    def _init_logger(self, substring=""):
-        """
-        Private method to initialize the logging object.
-
-        Parameters
-        ----------
-        substring : str
-            A substring to append to the logger name (used to create separate
-            logging objects for initialization and optimization, in case
-            options change in between). Default "" (empty string).
-
-        Returns
-        -------
-        logger : logging.Logger
-            The main logging interface.
-        """
-        # set up VBMC logger
-        logger = logging.getLogger("VBMC" + substring)
-        logger.setLevel(logging.INFO)
-        if self.options.get("display") == "off":
-            logger.setLevel(logging.WARN)
-        elif self.options.get("display") == "iter":
-            logger.setLevel(logging.INFO)
-        elif self.options.get("display") == "full":
-            logger.setLevel(logging.DEBUG)
-        # Add a special logger for sending messages only to the default stream:
-        logger.stream_only = logging.getLogger("VBMC.stream_only")
-
-        # Options and special handling for writing to a file:
-
-        # If logging for the first time, get write mode from user options
-        # (default "a" for append)
-        if substring == "_init":
-            log_file_mode = self.options.get("logfilemode", "a")
-        # On subsequent writes, switch to append mode:
-        else:
-            log_file_mode = "a"
-
-        # Avoid duplicating a handler for the same log file
-        # (remove duplicates, re-add below)
-        for handler in logger.handlers:
-            if handler.baseFilename == os.path.abspath(
-                    self.options.get("logfilename")
-            ):
-                logger.removeHandler(handler)
-
-        if self.options.get("logfilename")\
-           and self.options.get("logfilelevel"):
-            file_handler = logging.FileHandler(
-                filename=self.options["logfilename"],
-                mode=log_file_mode
-            )
-
-            # Set file logger level according to string or logging level:
-            log_file_level = self.options.get("logfilelevel", logging.INFO)
-            if log_file_level == "off":
-                file_handler.setLevel(logging.WARN)
-            elif log_file_level == "iter":
-                file_handler.setLevel(logging.INFO)
-            elif log_file_level == "full":
-                file_handler.setLevel(logging.DEBUG)
-            elif log_file_level in [0, 10, 20, 30, 40, 50]:
-                file_handler.setLevel(log_file_level)
-            else:
-                raise ValueError("Log file logging level is not a recognized" +
-                                 "string or logging level.")
-
-            # Add a filter to ignore messages sent to logger.stream_only:
-            def log_file_filter(record):
-                return record.name != "VBMC.stream_only"
-            file_handler.addFilter(log_file_filter)
-
-            logger.addHandler(file_handler)
-
-        return logger
