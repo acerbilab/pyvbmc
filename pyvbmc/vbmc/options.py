@@ -159,7 +159,7 @@ class Options(MutableMapping, dict):
     def __setitem__(self, key, val, force=False):
         # Prevent user from attempting to modify options after initialization
         if self.is_initialized and not force:
-            logging.getLogger("VBMC").warn("Warning: Cannot set options after initialization. Please re-initialize with `user_options = {...}`")
+           raise AttributeError("Warning: Cannot set options after initialization. Please re-initialize with `user_options = {...}`")
         else:
             dict.__setitem__(self, key, val)
 
