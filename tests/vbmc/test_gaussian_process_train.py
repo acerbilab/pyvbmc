@@ -217,7 +217,7 @@ def test_get_hyp_cov():
     #       currently I don't have reference values
     #       maybe something like checking whether the returned thing is
     #       a covariance matrix?
-    # vbmc.options["weightedhypcov"] = True
+    # vbmc.options.__setitem__("weightedhypcov", True, force=True)
     # res3 = _get_hyp_cov(vbmc.optim_state, vbmc.iteration_history,
     #                       vbmc.options, hyp_dict)
 

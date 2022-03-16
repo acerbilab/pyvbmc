@@ -321,7 +321,7 @@ def active_sample(
             if options["searchoptimizer"] != "none":
                 if gp.D == 1:
                     # Use Nelder-Mead method for 1D optimization
-                    options["searchoptimizer"] = "Nelder-Mead"
+                    options.__setitem__("searchoptimizer", "Nelder-Mead", force=True)
 
                 fval_old = acq_fast[idx]
                 x0 = X_acq[0, :]
