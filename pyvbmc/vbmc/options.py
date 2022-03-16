@@ -5,8 +5,10 @@ import configparser
 from collections.abc import MutableMapping
 
 import numpy as np
-import logging
+<<<<<<< HEAD
 import copy
+=======
+>>>>>>> main
 
 
 class Options(MutableMapping, dict):
