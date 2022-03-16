@@ -5,10 +5,7 @@ import configparser
 from collections.abc import MutableMapping
 
 import numpy as np
-<<<<<<< HEAD
 import copy
-=======
->>>>>>> main
 
 
 class Options(MutableMapping, dict):
@@ -155,7 +152,7 @@ class Options(MutableMapping, dict):
             if key != "useroptions" and key not in file_option_names:
                 raise ValueError("The option {} does not exist.".format(key))
 
-        # After 
+        # After initialzation is complete prevent changes to options:
         self.is_initialized = True
 
     def __setitem__(self, key, val, force=False):
