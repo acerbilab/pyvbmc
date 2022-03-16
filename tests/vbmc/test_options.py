@@ -1,5 +1,6 @@
 import pytest
 from pyvbmc.vbmc import Options
+import copy
 
 
 def test_options_no_user_options():
@@ -179,3 +180,41 @@ def test_load_options_invalid_path():
     with pytest.raises(ValueError) as execinfo1:
         options.load_options_file(non_existing_path, evaluation_parameters)
     assert "does not contain options." in execinfo1.value.args[0]
+
+
+def test_options_copy():
+    default_options_path = "./pyvbmc/vbmc/option_configs/test_options.ini"
+    test_list = [1, 2, 3, 4]
+    user_options = {"foo": test_list}
+    options = Options(default_options_path, {"D": 2}, user_options)
+
+    options_copy = copy.copy(options)
+    # Check that we have a copy:
+    assert options == options_copy
+    assert options_copy.get("foo") == test_list
+    # Check that the copy is not deep:
+    assert options.get("foo") is options_copy.get("foo")
+
+    assert options_copy.get("bar") == 40
+    assert len(options_copy.get("useroptions")) == 1
+    assert options_copy.get("fooD") == 4
+    assert "foo" in options_copy.get("useroptions")
+
+
+def test_options_deepcopy():
+    default_options_path = "./pyvbmc/vbmc/option_configs/test_options.ini"
+    test_list = [1, 2, 3, 4]
+    user_options = {"foo": test_list}
+    options = Options(default_options_path, {"D": 2}, user_options)
+
+    options_copy = copy.deepcopy(options)
+    # Check that we have a copy:
+    assert options == options_copy
+    assert options_copy.get("foo") == test_list
+    # Check that the copy is deep:
+    assert options.get("foo") is not options_copy.get("foo")
+
+    assert options_copy.get("bar") == 40
+    assert len(options_copy.get("useroptions")) == 1
+    assert options_copy.get("fooD") == 4
+    assert "foo" in options_copy.get("useroptions")
