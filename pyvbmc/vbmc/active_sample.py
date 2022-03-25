@@ -7,6 +7,7 @@ import gpyreg as gpr
 import numpy as np
 from pyvbmc.acquisition_functions.abstract_acq_fcn import AbstractAcqFcn
 from pyvbmc.acquisition_functions.acq_fcn import AcqFcn
+from pyvbmc.acquisition_functions.acq_fcn_noisy import AcqFcnNoisy
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.stats import get_hpd
 from pyvbmc.variational_posterior import VariationalPosterior
@@ -258,7 +259,7 @@ def active_sample(
 
                 # Missing port: noiseshaping
 
-                sn2new[:, s] = gp.noise.compute(hyp_noise, gp.X, gp.y, s2)
+                sn2new[:, s] = gp.noise.compute(hyp_noise, gp.X, gp.y, s2).reshape(-1,)
 
             gp.temporary_data["sn2_new"] = sn2new.mean(1)
 
@@ -289,7 +290,10 @@ def active_sample(
 
             if SearchAcqFcn[idx_acq] == "@acqf_vbmc":
                 acq_eval = AcqFcn()
+            elif SearchAcqFcn[idx_acq] == "@acqfn_vbmc":
+                acq_eval = AcqFcnNoisy()
             else:  # TODO implement branch
+                print(SearchAcqFcn[idx_acq])
                 raise NotImplementedError("Not implemented yet")
 
             # Re-evaluate variance of the log joint if requested
@@ -456,8 +460,8 @@ def active_sample(
                     optim_state["cache"]["y_orig"], idx, 0
                 )
 
-            if "S" in optim_state.keys():
-                s2new = optim_state["S"][idx_new] ** 2
+            if hasattr(function_logger, "S"):
+                s2new = function_logger.S[idx_new] ** 2
             else:
                 s2new = None
 
