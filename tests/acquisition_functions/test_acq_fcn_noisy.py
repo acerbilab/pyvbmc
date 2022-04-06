@@ -60,7 +60,7 @@ def test__call__(mocker):
 def test_complex__call__(mocker):
     acqf = AcqFcnNoisy()
     M = 4
-    Xs = np.ones((M, 3))
+    Xs = np.arange(-3, 9).reshape(M, 3) / 10
 
     mocker.patch(
         "gpyreg.GP.predict",
@@ -83,9 +83,10 @@ def test_complex__call__(mocker):
     optim_state["ub_eps_orig"] = np.inf
 
     vp = VariationalPosterior(3)
-    function_logger = FunctionLogger(np.sum, 3, False, 0)
+    fun = lambda x: (np.sum(x), np.abs(0.5*np.sum(x)))
+    function_logger = FunctionLogger(fun, 3, True, 2)
+    function_logger(-0.5*np.ones(3))
     function_logger(np.ones(3))
-    function_logger(-np.ones(3))
 
     gp = gpr.GP(
         D=3,
@@ -96,16 +97,17 @@ def test_complex__call__(mocker):
 
     gp.temporary_data["sn2_new"] = np.exp(-1) *\
         np.arange(1, M*2+1).reshape((M, 2), order="F")
-    gp.temporary_data["X_rescaled"] = Xs / optim_state["gp_length_scale"]
+    gp.temporary_data["X_rescaled"] = function_logger.X[
+        ~np.isnan(function_logger.X).all(axis=1)
+    ] / optim_state["gp_length_scale"]
 
     acq = acqf(Xs, gp, vp, function_logger, optim_state)
 
     assert acq.shape == (M,)
-    print(acq)
     acq_MATLAB = np.array([
         -4.64016986306700e-311,
         -0.00133615097976628,
-        -0.00414035897633624,
-        -0.00894224652574921
+        -0.00254878290767088,
+        -0.00565418068738646
     ])
     assert np.allclose(acq, acq_MATLAB)
