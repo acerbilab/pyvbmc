@@ -259,6 +259,7 @@ class AbstractAcqFcn(ABC):
                 axis=1,
             ),
             gp.temporary_data.get("sn2_new").shape,
+            order="F"
         )
         sn2 = gp.temporary_data.get("sn2_new")[pos]
 
