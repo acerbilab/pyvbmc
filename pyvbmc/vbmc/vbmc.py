@@ -1471,12 +1471,12 @@ class VBMC:
             elcbo_vec = self.iteration_history.get("elbo") - self.options.get(
                 "elcboimproweight"
             ) * self.iteration_history.get("elbo_sd")
-            # Here and below the max is one higher in MATLAB.
+            # NB: Take care with MATLAB "end" indexing and off-by-one errors:
             max_now = np.amax(
-                elcbo_vec[max(3, -tol_stable_warmup_iters + 1) :]
+                elcbo_vec[max(3, len(elcbo_vec)-tol_stable_warmup_iters) :]
             )
             max_before = np.amax(
-                elcbo_vec[3 : max(2, -tol_stable_warmup_iters)], initial=0
+                elcbo_vec[2 : max(3, len(elcbo_vec)-tol_stable_warmup_iters)], initial=0
             )
             stable_count_flag = (max_now - max_before) < stop_warmup_thresh
 
