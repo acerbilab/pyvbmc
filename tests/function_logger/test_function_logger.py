@@ -188,13 +188,13 @@ def test_finalize():
 
     # noise level 2
     f_logger = FunctionLogger(noisy_function, 3, True, 2)
-    for i in range(10):
+    for i in range(1, 10):
         f_logger(x * i)
     f_logger.finalize()
     fval, fsd = noisy_function(x * 9)
-    assert f_logger.S[9] == fsd
-    assert f_logger.y_orig[9] == fval
-    assert f_logger.S.shape[0] == 10
+    assert f_logger.S[8] == fsd
+    assert f_logger.y_orig[8] == fval
+    assert f_logger.S.shape[0] == 9
 
 
 def test_call_parameter_transform_no_constraints():
