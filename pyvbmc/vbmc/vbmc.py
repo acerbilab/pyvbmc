@@ -1476,7 +1476,7 @@ class VBMC:
                 elcbo_vec[max(3, len(elcbo_vec)-tol_stable_warmup_iters) :]
             )
             max_before = np.amax(
-                elcbo_vec[2 : max(3, len(elcbo_vec)-tol_stable_warmup_iters)], initial=0
+                elcbo_vec[2 : max(3, len(elcbo_vec)-tol_stable_warmup_iters)]
             )
             stable_count_flag = (max_now - max_before) < stop_warmup_thresh
 
