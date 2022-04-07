@@ -6,7 +6,7 @@ import numpy as np
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.variational_posterior import VariationalPosterior
-
+from pyvbmc.acquisition_functions import sq_dist
 
 class AbstractAcqFcn(ABC):
     """
@@ -214,17 +214,8 @@ class AbstractAcqFcn(ABC):
         c: np.array, shape(n, m)
             The matrix of all pairwise squared distances.
         """
-        n = a.shape[0]
-        m = b.shape[0]
-        mu = (m / (n + m)) * np.mean(b, axis=0) + (n / (n + m)) * np.mean(
-            a, axis=0
-        )
-        a = a - mu
-        b = b - mu
-        c = np.sum(a * a, axis=1, keepdims=True) + (
-            np.sum(b * b, axis=1, keepdims=True).T - (2 * a @ b.T)
-        )
-        return np.maximum(c, 0)
+        return sq_dist(a, b)
+
 
     def _estimate_observation_noise(
         self, Xs: np.ndarray, gp: gpr.GP, optim_state: dict
