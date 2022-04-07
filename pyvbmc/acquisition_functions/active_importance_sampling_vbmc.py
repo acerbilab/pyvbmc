@@ -1,6 +1,9 @@
 import logging
 import numpy as np
 import copy
+import math
+import sys
+import gpyreg as gpr
 
 def active_importance_sampling_vbmc(vp, gp, acqfcn, acqinfo, options):
     """
@@ -22,7 +25,7 @@ def active_importance_sampling_vbmc(vp, gp, acqfcn, acqinfo, options):
         The GP surrogate.
     vp : VariationalPosterior
         The variational posterior.
-    acqfun : AbstractAcqFcn
+    acqfcn : AbstractAcqFcn
         The acquisition function.
     acqinfo : dict
         The information of the acquisition function.
@@ -53,7 +56,7 @@ def active_importance_sampling_vbmc(vp, gp, acqfcn, acqinfo, options):
     active_is = {}
     active_is["log_weight"] = None
     active_is["Xa"] = None
-    active_is["fs2a"] = None
+    active_is["f_s2a"] = None
 
     if only_vp_flag:
         # Step 0: Simply sample from variational posterior.
@@ -61,12 +64,12 @@ def active_importance_sampling_vbmc(vp, gp, acqfcn, acqinfo, options):
         Na = options["activeimportancesamplingmcmcsamples"]
         Xa = vp.sample(Na, origflag=False)
 
-        fmu, fs1 = gp.predict(Xa, separate_samples=True)
+        f_mu, f_s2 = gp.predict(Xa, separate_samples=True)
 
         if hasattr(acqfcn, "mcmc_importance_sampling")\
            and acqfcn.mcmc_importance_sampling:
             # Compute fractional effective sample size (ESS)
-            fESS = fess_vbmc(vp, fmu, Xa)
+            fESS = fess_vbmc(vp, f_mu, Xa)
 
             if fESS < options["activeimportancesamplingfessthresh"]:
                 Xa_old = copy.deepcopy(Xa)
@@ -80,24 +83,24 @@ def active_importance_sampling_vbmc(vp, gp, acqfcn, acqinfo, options):
                 Nmcmc_samples = Na * options["activeimportancesamplingmcmcthin"]
                 thin = 1
                 burnin = 0
-                sample_opts = get_mcmcopts(None, thin, burnin)
+                sample_opts = get_mcmc_opts(None, thin, burnin)
                 log_p_funs = log_p_fun
                 W = Na # walkers
 
                 # Perform a single MCMC step for all samples
                 Xa = eis_sample_lite(log_p_funs, Xa, Nmcmc_samples, W, widths, LB, UB, sample_opts)
                 Xa = Xa[-Na:, :]
-                fmu, fs2 = gp.predict(Xa, add_noise=True)
+                f_mu, f_s2 = gp.predict(Xa, separate_samples=True)
 
         if isample_vp_flag:
-            vlnpdf = np.max(vp.pdf(Xa, origflag=False, logflag=True),
+            v_ln_pdf = np.max(vp.pdf(Xa, origflag=False, logflag=True),
                             np.log(np.finfo(np.float64).min))
-            lny = acqfun('islogf1', vlnpdf, None, None, fmu, fs2)
+            ln_y = acqfcn('islogf1', v_ln_pdf, None, None, f_mu, f_s2)
         else:
-            lny = acqfun('islogf1', None, None, None, fmu, fs2)
+            ln_y = acqfcn('islogf1', None, None, None, f_mu, f_s2)
 
-        active_is["fs2a"] = fs2
-        active_is["lnw"] = lny.T
+        active_is["f_s2a"] = f_s2
+        active_is["ln_w"] = ln_y.T
         active_is["Xa"] = Xa
 
         return active_is
@@ -109,14 +112,14 @@ def active_importance_sampling_vbmc(vp, gp, acqfcn, acqinfo, options):
         Nbox_samples = options["activeimportancesamplingboxsamples"]
         w_vp = Nvp_samples / (Nvp_samples + Nbox_samples)
 
-        rect_delta = 2 * std(gp.X, ddof=1)
+        rect_delta = 2 * np.std(gp.X, ddof=1)
 
         # Smoothed posterior for importance sampling-resampling
         if Nvp_samples > 0:
             scale_vec = np.array([0.05, 0.2, 1.0])
 
             vp_is = copy.deepcopy(vp)
-            for i in range(length(scale_vec)):
+            for i in range(len(scale_vec)):
                 vp_is.K = vp_is.K + vp.K
                 vp_is.w = np.append(vp_is.w, vp.w)
                 vp_is.mu = np.append(vp_is.mu, vp.mu)
@@ -125,10 +128,10 @@ def active_importance_sampling_vbmc(vp, gp, acqfcn, acqinfo, options):
 
             # Sample from smoothed posterior
             Xa_vp = vp_is.sample(Nvp_samples, origflag=False)
-            lnw, fs2a_vp = activesample_proposalpdf(Xa_vp, gp, vp_is, w_vp, rect_delta, acqfcn, vp, isample_vp_flag)
-            active_is["lnw"] = np.append(active_is["lnw"], lnw.T)
+            ln_w, f_s2a_vp = activesample_proposalpdf(Xa_vp, gp, vp_is, w_vp, rect_delta, acqfcn, vp, isample_vp_flag)
+            active_is["ln_w"] = np.append(active_is["ln_w"], ln_w.T)
             active_is["Xa"] = np.append(active_is["Xa"], Xa_vp)
-            active_is["fs2a"] = np.append(active_is["fs2a"], fs2a_vp)
+            active_is["f_s2a"] = np.append(active_is["f_s2a"], f_s2a_vp)
         else:
             vp_is = None
 
@@ -136,12 +139,12 @@ def active_importance_sampling_vbmc(vp, gp, acqfcn, acqinfo, options):
         if Nbox_samples > 0:
             jj = np.random.randint(0, len(gp.X), size=(1, Nbox_samples))
             Xa_box = gp.X[jj, :] + (2 * np.random.rand(jj.size, D) - 1) * rect_delta
-            lnw, fs2a_box = activesample_proposalpdf(Xa_box, vp_is, w_vp, rect_delta, acqfcn, vp, isample_vp_flag)
-            active_is["lnw"] = np.append(active_is["lnw"], lnw.T)
+            ln_w, f_s2a_box = activesample_proposalpdf(Xa_box, vp_is, w_vp, rect_delta, acqfcn, vp, isample_vp_flag)
+            active_is["ln_w"] = np.append(active_is["ln_w"], ln_w.T)
             active_is["Xa"] = np.append(active_is["Xa"], Xa_box)
-            active_is["fs2a"] = np.append(active_is["fs2a"], fs2a_box)
+            active_is["f_s2a"] = np.append(active_is["f_s2a"], f_s2a_box)
 
-        active_is["lnw"][~np.isfinite(active_is["lnw"])] = -np.inf
+        active_is["ln_w"][~np.isfinite(active_is["ln_w"])] = -np.inf
 
         # Step 2 (optional): MCMC sample
 
@@ -150,9 +153,9 @@ def active_importance_sampling_vbmc(vp, gp, acqfcn, acqinfo, options):
         if Nmcmc_samples > 0:
             active_is_old = copy.deepcopy(active_is)
 
-            active_is["lnw"] = np.zeros((Ns_gp, Nmcmc_samples))
+            active_is["ln_w"] = np.zeros((Ns_gp, Nmcmc_samples))
             active_is["Xa"] = np.zeros((Nmcmc_samples, D, Ns_gp))
-            active_is["fs2a"] = np.zeros((Nmcmc_samples, Ns_gp))
+            active_is["f_s2a"] = np.zeros((Nmcmc_samples, Ns_gp))
 
             # Consider only one GP sample at a time
             gp1 = copy.deepcopy(gp)
@@ -168,3 +171,190 @@ def active_importance_sampling_vbmc(vp, gp, acqfcn, acqinfo, options):
                     log_p_fun = lambda x : log_isbasefun(x , acqfcn, gp1, None)
 
                 # Get MCMC Options
+                thin = options["activeimportancesamplingmcmcthin"]
+                burn_in = math.ceil(thin * Nmcmc_samples/2)
+                sample_opts = get_mcmc_opts(Nmcmc_samples, thin, burn_in)
+
+                W = 2 * (D + 1)
+
+                # Use importance sampling-resampling
+                f_mu, f_s2 = gp.predict(active_is_old["Xa"], separate_samples=True)
+                ln_w = active_is_old["ln_w"]
+                w = np.exp(ln_w - np.amax(ln_w, axis=2))
+                x0 = np.zeros(W, D)
+                # Select without replacement by weight w:
+                indices = np.random.choice(a=len(w), p=w, replace=False)
+                x0[indices, :] = active_is_old["Xa"][indices, :]
+
+                Xa, log_p = eissample_lite(log_p_fun, x0, Nmcmc_samples, W, widths, LB, UB, sample_opts)
+                f_mu, f_s2 = gp.predict(Xa, separate_samples=True)
+
+                # Fixed log weight for importance sampling (log fixed integrand)
+                if isample_vp_flag:
+                    v_ln_pdf = max(vp.pdf(Xa, origflag=False, logflag=True),
+                                   np.log(sys.float_info.min))
+                    ln_y = acqfcn('islogf1', v_ln_pdf, [], [], f_mu, f_s2)
+                else:
+                    ln_y = acqfcn('islogf1', [], [], [], f_mu, f_s2)
+
+                active_is["f_s2a"][:, s] = f_s2
+                active_is["ln_w"][s, :] = ln_y.T - log_p.T
+                active_is["Xa"][:, :, s] = Xa
+
+    # Step 3: Pre-compute quantities for importance sampling calculations:
+
+    # Pre-compute cross-kernel matrix on importance points
+    Kax_mat = np.zeros(
+        (active_is["Xa"].shape[0], gp.X.shape[0], Ns_gp)
+        )
+    for s in range(Ns_gp):
+        if active_is["Xa"].shape(2) == 1:
+            Xa = active_is["Xa"]
+        else:
+            Xa = active_is["Xa"][:, :, s]
+        hyp = gp.posteriors[s].hyp
+        if isinstance(gp.covariance, gpr.covariance_functions.SquaredExponential):
+            ell = np.exp(hyp[0:D]).T
+            sf2 = np.exp(2 * hyp[D])
+            Kax_tmp = sq_dist(Xa * np.diag(1 / ell), gp.X * np.diag(1 / ell))
+            Kax_mat[:, :, s] = sf2 * np.exp(-Kax_tmp / 2)
+        else:
+            raise ValueError("Covariance functions besides SquaredExponential are not supported yet.")
+    active_is["Kax_mat"] = Kax_mat
+
+    # Pre-compute integrated mean basis function on importance points
+    if not (isinstance(gp.mean, gpr.mean_function.ZeroMean)
+            or isinstance(gp.mean, gpr.mean_function.ZeroMean)
+            or isinstance(gp.mean, gpr.mean_function.ZeroMean)
+            or isinstance(gp.mean, gpr.mean_function.ZeroMean)):
+        pass
+    # Missing port, activeimportancesampling_vbmc.m, lines 257 to 266.
+    return active_is
+
+def activesample_proposalpdf(Xa, gp, vp_is, w_vp, rect_delta, acqfcn, vp, isample_vp_flag):
+    r"""Compute importance weights for proposal pdf.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
+    N, D = gp.Xa.shape
+    Na = Xa.shape(0)
+
+    f_mu, f_s2 = gp.predict(Xa, separate_samples=True)
+
+    Ntot = 1 + N  # Total number of mixture elements
+
+    if w_vp < 1:
+        temp_lpdf = np.zeros(Na, Ntot)
+
+    # Mixture of variational posteriors
+    if w_vp > 0:
+        temp_lpdf[:, 0] = vp_is.pdf(Xa, origflag=False, logflag=True)
+    else:
+        temp_lpdf[:, 0] = -np.inf
+
+    # Fixed log weight for importance sampling (log fixed integrand)
+    if isample_vp_flag:
+        v_ln_pdf = max(vp.pdf(Xa, origflag=False, logflag=True),
+                       np.log(sys.float_info.min))
+        ln_y = acqfcn('islogf1', v_ln_pdf, [], [], f_mu, f_s2)
+    else:
+        ln_y = acqfcn('islogf1', [], [], f_mu, f_s2)
+
+    # Mixture of box-uniforms
+    if w_vp < 1:
+        VV = np.product(2 * rect_delta)
+
+        for ii in range(N):
+            temp_lpdf[:, ii+2] = np.log(
+                (1 - w_vp) * np.all(
+                    np.abs(Xa - gp.X[ii, :]) < rect_delta, axis=1
+                ) / VV / N
+            )
+
+        m_max = np.amax(temp_lpdf, axis=1)
+        l_pdf = np.log(np.sum(np.exp(temp_lpdf - m_max), axis=2))
+        ln_w = ln_y - (l_pdf + m_max)
+    else:
+        ln_w = ln_y - temp_lpdf
+
+    return ln_w, f_s2
+
+
+def log_isbasefun(x, acqfcn, gp, vp=None):
+    r"""Base importance sampling proposal log pdf.
+
+    Parameters
+    ---------
+
+    Returns
+    -------
+    """
+
+    f_mu, f_s2 = gp.predict(x)
+    if vp is None:
+        y = acqfcn('islogf', [], [], [], f_mu, f_s2)
+    else:
+        v_ln_pdf = max(vp.pdf(x, origflag=False, logflag=True),
+                       np.log(sys.float_info.min))
+        y = acqfcn('islogf', v_ln_pdf, [], [], f_mu, f_s2)
+
+    return y
+
+
+def sq_dist(a, b):
+    """
+    Compute matrix of all pairwise squared distances between two sets
+    of vectors, stored in the columns of the two matrices `a` and `b`.
+
+    Parameters
+    ----------
+    a : np.array, shape (n, D)
+        First set of vectors.
+    b : np.array, shape (m, D)
+        Second set of vectors.
+
+    Returns
+    -------
+    c: np.array, shape(n, m)
+        The matrix of all pairwise squared distances.
+    """
+    n = a.shape[0]
+    m = b.shape[0]
+    mu = (m / (n + m)) * np.mean(b, axis=0) + (n / (n + m)) * np.mean(
+        a, axis=0
+    )
+    a = a - mu
+    b = b - mu
+    c = np.sum(a * a, axis=1, keepdims=True) + (
+        np.sum(b * b, axis=1, keepdims=True).T - (2 * a @ b.T)
+    )
+    return np.maximum(c, 0)
+
+def get_mcmc_opts(Ns, thin=1, burn_in=None):
+    r"""Get standard MCMC options.
+
+    Parameters
+    ---------
+
+    Returns
+    -------
+    """
+
+    sample_opts = {}
+    sample_opts["thin"] = thin
+    if burn_in is None:
+        sample_opts["burn_in"] = math.ceil(sample_opts["thin"] * Ns / 2)
+    else:
+        sample_opts["burn_in"] = burn_in
+    sample_opts["display"] = 'off'
+    sample_opts["diagnostics"] = False
+    sample_opts["var_transform"] = False
+    sample_opts["inversion_samples"] = False
+    sample_opts["fit_gmm"] = False
+
+    return sample_opts
