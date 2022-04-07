@@ -390,6 +390,5 @@ class FunctionLogger:
                 self.S[self.Xn] = fsd
             self.X_flag[self.Xn] = True
             self.nevals[self.Xn] += 1
-            assert not np.isnan(self.nevals[self.Xn])
             self.ymax = np.amax(self.y[self.X_flag])
             return fval, self.Xn

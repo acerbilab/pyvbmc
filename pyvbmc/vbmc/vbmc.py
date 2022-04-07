@@ -983,8 +983,6 @@ class VBMC:
             self.optim_state["n_eff"] = np.sum(
                 self.function_logger.nevals[self.function_logger.X_flag]
             )
-            assert not np.isnan(self.optim_state["N"])
-            assert not np.isnan(self.optim_state["n_eff"])
 
             timer.stop_timer("activeSampling")
 
