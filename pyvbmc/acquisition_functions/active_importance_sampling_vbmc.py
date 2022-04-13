@@ -222,13 +222,9 @@ def active_importance_sampling_vbmc(vp, gp, acqfcn, acqinfo, options):
             raise ValueError("Covariance functions besides SquaredExponential are not supported yet.")
     active_is["Kax_mat"] = Kax_mat
 
-    # Pre-compute integrated mean basis function on importance points
-    if not (isinstance(gp.mean, gpr.mean_function.ZeroMean)
-            or isinstance(gp.mean, gpr.mean_function.ZeroMean)
-            or isinstance(gp.mean, gpr.mean_function.ZeroMean)
-            or isinstance(gp.mean, gpr.mean_function.ZeroMean)):
-        pass
-    # Missing port, activeimportancesampling_vbmc.m, lines 257 to 266.
+    # Omitted port, integrated mean functions:
+    # activeimportancesampling_vbmc.m, lines 257 to 266.
+
     return active_is
 
 
