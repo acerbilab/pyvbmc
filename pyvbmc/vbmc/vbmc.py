@@ -979,7 +979,7 @@ class VBMC:
                     hyp_dict = self.optim_state["hyp_dict"]
 
             # Number of training inputs
-            self.optim_state["N"] = self.function_logger.Xn
+            self.optim_state["N"] = self.function_logger.Xn + 1
             self.optim_state["n_eff"] = np.sum(
                 self.function_logger.nevals[self.function_logger.X_flag]
             )
