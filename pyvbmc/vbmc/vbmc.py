@@ -1580,7 +1580,7 @@ class VBMC:
             y_temp[~np.isfinite(y_temp)] = -np.Inf
             order = np.argsort(y_temp * -1, axis=0)
             idx_keep[
-                order[: min(n_keep_min, self.function_logger.Xn) + 1]
+                order[: min(n_keep_min, self.function_logger.Xn + 1)]
             ] = True
         # Note that using idx_keep[:, 0] is necessary since X_flag
         # is a 1D array and idx_keep a 2D array.
