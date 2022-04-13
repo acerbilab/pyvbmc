@@ -186,7 +186,7 @@ def active_importance_sampling_vbmc(vp, gp, acqfcn, acqinfo, options):
                 indices = np.random.choice(a=len(w), p=w, replace=False)
                 x0[indices, :] = active_is_old["Xa"][indices, :]
 
-                Xa, log_p = eissample_lite(log_p_fun, x0, Nmcmc_samples, W, widths, LB, UB, sample_opts)
+                Xa, log_p = eis_sample_lite(log_p_fun, x0, Nmcmc_samples, W, widths, LB, UB, sample_opts)
                 f_mu, f_s2 = gp.predict(Xa, separate_samples=True)
 
                 # Fixed log weight for importance sampling (log fixed integrand)
@@ -230,6 +230,7 @@ def active_importance_sampling_vbmc(vp, gp, acqfcn, acqinfo, options):
         pass
     # Missing port, activeimportancesampling_vbmc.m, lines 257 to 266.
     return active_is
+
 
 def activesample_proposalpdf(Xa, gp, vp_is, w_vp, rect_delta, acqfcn, vp, isample_vp_flag):
     r"""Compute importance weights for proposal pdf.
@@ -335,6 +336,7 @@ def sq_dist(a, b):
     )
     return np.maximum(c, 0)
 
+
 def get_mcmc_opts(Ns, thin=1, burn_in=None):
     r"""Get standard MCMC options.
 
@@ -358,11 +360,37 @@ def get_mcmc_opts(Ns, thin=1, burn_in=None):
     sample_opts["fit_gmm"] = False
 
     return sample_opts
-<<<<<<< Updated upstream
-=======
 
 
-def fess_vbmc(vp, f_mu, Xa):
-    r"""
+def fess_vbmc(vp, gp, X=100):
+    r"""Compute fractional effective sample size through importance sampling.
     """
->>>>>>> Stashed changes
+
+    # If a single number is passed, interpret it as the number of samples
+    if np.isscalar(X):
+        N = X
+        X = vp.sample(N, origflag=False)
+    else:
+        N = X.shape[0]
+
+    # Can pass the GP, or the GP means directly:
+    if isinstance(gp, gpr.GP):
+        fbar, __ = gp.predict(X)
+    else:
+        fbar = np.mean(gp, axis=1)
+
+    if fbar.shape[0] != X.shape[0]:
+        raise ValueError("Mismatch between number of samples from VP and GP.")
+
+    # Compute effective sample size (ESS) with importance sampling
+    v_logpdf = max(vp.pdf(X, origflag=False, logflag=True), np.log(sys.float_info.min))
+    log_w = fbar - v_logpdf
+    weight = np.exp(log_w - max(log_w))
+    weight = weight / sum(weight)
+
+    return (1 / sum(weight**2)) / N  # Fractional ESS
+
+
+def eis_samples_lite(logPfuns, x0, N, K, widths, LB, UB, options):
+    r"""Ensemble slice sampling MCMC (lite version)
+    """
