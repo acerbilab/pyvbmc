@@ -358,3 +358,11 @@ def get_mcmc_opts(Ns, thin=1, burn_in=None):
     sample_opts["fit_gmm"] = False
 
     return sample_opts
+<<<<<<< Updated upstream
+=======
+
+
+def fess_vbmc(vp, f_mu, Xa):
+    r"""
+    """
+>>>>>>> Stashed changes
