@@ -6,8 +6,8 @@ import numpy as np
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.stats import get_hpd
 
-from .options import Options
 from .iteration_history import IterationHistory
+from .options import Options
 
 
 def train_gp(
@@ -560,7 +560,7 @@ def _get_gp_training_options(
                 hyp_n = hyp_cov.shape[0]
                 gp_train["widths"] = (
                     hyp_cov + 1e-6 * np.eye(hyp_n)
-                ) * width_mult ** 2
+                ) * width_mult**2
                 gp_train["sampler"] = "covsample"
                 gp_train["thin"] *= math.ceil(np.sqrt(hyp_n))
             else:
@@ -591,7 +591,7 @@ def _get_gp_training_options(
     x = (optim_state["n_eff"] - options["funevalstart"]) / (
         min(options["maxfunevals"], 1e3) - options["funevalstart"]
     )
-    f = lambda x_: a * x_ ** 3 + b * x ** 2 + c * x + d
+    f = lambda x_: a * x_**3 + b * x**2 + c * x + d
     init_N = max(round(f(x)), 9)
 
     # Set other hyperparameter fitting parameters
@@ -640,7 +640,6 @@ def _get_gp_training_options(
 
     gp_train["n_samples"] = round(gp_s_N)
     gp_train["burn"] = round(gp_train["burn"])
-
 
     return gp_train
 
@@ -719,7 +718,7 @@ def _get_hyp_cov(
                     np.dot((hyp_list[j] - mu_star).T, hyp_list[j] - mu_star),
                 )
 
-            hyp_cov /= 1 - np.sum(w_list ** 2)
+            hyp_cov /= 1 - np.sum(w_list**2)
 
             return hyp_cov
 

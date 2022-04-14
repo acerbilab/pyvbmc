@@ -1,8 +1,9 @@
 import numpy as np
 from scipy.io import loadmat
-from pyvbmc.variational_posterior import VariationalPosterior
+
 from pyvbmc.entropy import entlb_vbmc
 from pyvbmc.testing import check_grad
+from pyvbmc.variational_posterior import VariationalPosterior
 
 
 def entlb_vbmc_wrapper(theta, D, K, ret="H"):
@@ -50,12 +51,12 @@ def test_entlb_vbmc_nonoverlapping_mixture():
 
     nconst = 1 / (2 * np.pi) ** (D / 2) / np.prod(vp.lambd)
     H_appro = -np.sum(
-        vp.w * np.log(vp.w * nconst / (2 * vp.sigma ** 2) ** (D / 2))
+        vp.w * np.log(vp.w * nconst / (2 * vp.sigma**2) ** (D / 2))
     )
     dH_appro_mu = np.zeros(D * K)
     dH_appro_lambd = (vp.w[:, None] / vp.lambd).sum(0)
     dH_appro_sigma = vp.w / vp.sigma * D
-    dH_appro_w = -np.log(vp.w * nconst / (2 * vp.sigma ** 2) ** (D / 2)) - 1
+    dH_appro_w = -np.log(vp.w * nconst / (2 * vp.sigma**2) ** (D / 2)) - 1
     dH_appro = np.concatenate(
         [dH_appro_mu, dH_appro_sigma, dH_appro_lambd, dH_appro_w]
     )

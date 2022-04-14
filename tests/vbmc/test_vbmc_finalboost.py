@@ -1,4 +1,5 @@
 import numpy as np
+
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc import VBMC
 
@@ -26,10 +27,10 @@ def test_final_boost_lambda_options(mocker):
         "minfinalcomponents": 50,
         "nsent": lambda K: 100 * K ** (2 / 3),
         "nsentfast": lambda K: 0,
-        "nsentfine": lambda K: 2 ** 12 * K,
+        "nsentfine": lambda K: 2**12 * K,
         "nsentboost": lambda K: 100 * K ** (2 / 3) - 10,
         "nsentfastboost": lambda K: 0,
-        "nsentfineboost": lambda K: 2 ** 12 * K,
+        "nsentfineboost": lambda K: 2**12 * K,
         "nselbo": lambda K: 50 * K,
     }
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)

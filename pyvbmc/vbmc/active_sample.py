@@ -5,6 +5,7 @@ import math
 import cma
 import gpyreg as gpr
 import numpy as np
+
 from pyvbmc.acquisition_functions.abstract_acq_fcn import AbstractAcqFcn
 from pyvbmc.acquisition_functions.acq_fcn import AcqFcn
 from pyvbmc.function_logger import FunctionLogger
@@ -12,8 +13,11 @@ from pyvbmc.stats import get_hpd
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc.gaussian_process_train import reupdate_gp, train_gp
 from pyvbmc.vbmc.iteration_history import IterationHistory
-from pyvbmc.vbmc.variational_optimization import (_gplogjoint, _negelcbo,
-                                                  optimize_vp)
+from pyvbmc.vbmc.variational_optimization import (
+    _gplogjoint,
+    _negelcbo,
+    optimize_vp,
+)
 
 from .options import Options
 
@@ -208,12 +212,22 @@ def active_sample(
             entropy_alpha_old = optim_state["entropy_alpha"]
 
             options_update = copy.deepcopy(options)
-            options_update.__setitem__("gptolopt", options["gptoloptactive"], force=True)
-            options_update.__setitem__("gptoloptmcmc", options["gptoloptmcmcactive"], force=True)
+            options_update.__setitem__(
+                "gptolopt", options["gptoloptactive"], force=True
+            )
+            options_update.__setitem__(
+                "gptoloptmcmc", options["gptoloptmcmcactive"], force=True
+            )
             options_update.__setitem__("tolweight", 0, force=True)
-            options_update.__setitem__("nsent", options["nsentactive"], force=True)
-            options_update.__setitem__("nsentfast", options["nsentfastactive"], force=True)
-            options_update.__setitem__("nsentfine", options["nsentfineactive"], force=True)
+            options_update.__setitem__(
+                "nsent", options["nsentactive"], force=True
+            )
+            options_update.__setitem__(
+                "nsentfast", options["nsentfastactive"], force=True
+            )
+            options_update.__setitem__(
+                "nsentfine", options["nsentfineactive"], force=True
+            )
 
             hyp_dict = None
             vp0 = copy.deepcopy(vp)
@@ -321,7 +335,9 @@ def active_sample(
             if options["searchoptimizer"] != "none":
                 if gp.D == 1:
                     # Use Nelder-Mead method for 1D optimization
-                    options.__setitem__("searchoptimizer", "Nelder-Mead", force=True)
+                    options.__setitem__(
+                        "searchoptimizer", "Nelder-Mead", force=True
+                    )
 
                 fval_old = acq_fast[idx]
                 x0 = X_acq[0, :]

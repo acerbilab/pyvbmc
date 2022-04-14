@@ -1,19 +1,19 @@
 """Variational optimization / training of variational posterior"""
 
-import math
 import copy
+import math
+
+import gpyreg as gpr
 import numpy as np
 import scipy as sp
 
-import gpyreg as gpr
-
-from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.entropy import entlb_vbmc, entmc_vbmc
 from pyvbmc.stats import get_hpd
+from pyvbmc.variational_posterior import VariationalPosterior
 
-from .options import Options
 from .iteration_history import IterationHistory
 from .minimize_adam import minimize_adam
+from .options import Options
 
 
 def update_K(
@@ -857,7 +857,7 @@ def _vbinit(
             V = np.var(mu0, axis=1, ddof=1)
         else:
             V = np.var(X_star, axis=0, ddof=1)
-        sigma0 = np.sqrt(np.mean(V / lambd0 ** 2) / K_new) * np.exp(
+        sigma0 = np.sqrt(np.mean(V / lambd0**2) / K_new) * np.exp(
             0.2 * np.random.randn(1, K_new)
         )
     else:
@@ -904,7 +904,7 @@ def _vbinit(
                 add_jitter = False
             if vp.optimize_lambd:
                 lambd = np.reshape(np.std(X_star, axis=0, ddof=1), (-1, 1))
-                lambd *= np.sqrt(D / np.sum(lambd ** 2))
+                lambd *= np.sqrt(D / np.sum(lambd**2))
             if vp.optimize_weights:
                 w = np.ones((1, K_new)) / K_new
         elif vbtype == 3:
@@ -930,7 +930,7 @@ def _vbinit(
 
             if vp.optimize_lambd:
                 lambd = np.reshape(np.std(X_star, axis=0, ddof=1), (-1, 1))
-                lambd *= np.sqrt(D / np.sum(lambd ** 2))
+                lambd *= np.sqrt(D / np.sum(lambd**2))
 
             if vp.optimize_weights:
                 w = np.ones((1, K_new)) / K_new
@@ -1205,7 +1205,7 @@ def _negelcbo(
                 )
                 eta_sum = np.sum(np.exp(vp.eta))
                 J_w = (
-                    -np.exp(vp.eta).T * np.exp(vp.eta) / eta_sum ** 2
+                    -np.exp(vp.eta).T * np.exp(vp.eta) / eta_sum**2
                 ) + np.diag(np.exp(vp.eta.flatten()) / eta_sum)
                 w_grad = np.dot(J_w, w_grad)
                 dL = np.zeros(dF.shape)
@@ -1379,25 +1379,25 @@ def _gplogjoint(
 
         for k in range(0, K):
             tau_k = np.sqrt(
-                sigma[:, k] ** 2 * lambd ** 2 + ell ** 2 + delta ** 2
+                sigma[:, k] ** 2 * lambd**2 + ell**2 + delta**2
             )
             lnnf_k = (
                 ln_sf2 + sum_lnell - np.sum(np.log(tau_k), axis=0)
             )  # Covariance normalization factor
             delta_k = Xt[:, :, k] / tau_k
-            z_k = np.exp(lnnf_k - 0.5 * np.sum(delta_k ** 2, axis=0))
+            z_k = np.exp(lnnf_k - 0.5 * np.sum(delta_k**2, axis=0))
             I_k = np.dot(z_k, alpha) + m0
 
             if quadratic_meanfun:
                 nu_k = -0.5 * np.sum(
                     1
-                    / omega ** 2
+                    / omega**2
                     * (
                         mu[:, k : k + 1] ** 2
-                        + sigma[:, k] ** 2 * lambd ** 2
+                        + sigma[:, k] ** 2 * lambd**2
                         - 2 * mu[:, k : k + 1] * xm
-                        + xm ** 2
-                        + delta ** 2
+                        + xm**2
+                        + delta**2
                     ),
                     axis=0,
                 )
@@ -1412,12 +1412,12 @@ def _gplogjoint(
                 mu_grad[:, k, s : s + 1] = w[k] * np.dot(dz_dmu, alpha)
                 if quadratic_meanfun:
                     mu_grad[:, k, s : s + 1] -= (
-                        w[k] / omega ** 2 * (mu[:, k : k + 1] - xm)
+                        w[k] / omega**2 * (mu[:, k : k + 1] - xm)
                     )
 
             if grad_flags[1]:
                 dz_dsigma = (
-                    np.sum((lambd / tau_k) ** 2 * (delta_k ** 2 - 1), axis=0)
+                    np.sum((lambd / tau_k) ** 2 * (delta_k**2 - 1), axis=0)
                     * sigma[:, k]
                     * z_k
                 )
@@ -1426,19 +1426,19 @@ def _gplogjoint(
                     sigma_grad[k, s] -= (
                         w[k]
                         * sigma[:, k]
-                        * np.sum(1 / omega ** 2 * lambd ** 2, axis=0)
+                        * np.sum(1 / omega**2 * lambd**2, axis=0)
                     )
 
             if grad_flags[2]:
                 dz_dlambd = (
                     (sigma[:, k] / tau_k) ** 2
-                    * (delta_k ** 2 - 1)
+                    * (delta_k**2 - 1)
                     * (lambd * z_k)
                 )
                 lambd_grad[:, s : s + 1] += w[k] * np.dot(dz_dlambd, alpha)
                 if quadratic_meanfun:
                     lambd_grad[:, s : s + 1] -= (
-                        w[k] * sigma[:, k] ** 2 / omega ** 2 * lambd
+                        w[k] * sigma[:, k] ** 2 / omega**2 * lambd
                     )
 
             if grad_flags[3]:
@@ -1450,22 +1450,22 @@ def _gplogjoint(
             elif compute_var:
                 for j in range(0, k + 1):
                     tau_j = np.sqrt(
-                        sigma[:, j] ** 2 * lambd ** 2 + ell ** 2 + delta ** 2
+                        sigma[:, j] ** 2 * lambd**2 + ell**2 + delta**2
                     )
                     lnnf_j = ln_sf2 + sum_lnell - np.sum(np.log(tau_j), axis=0)
                     delta_j = (mu[:, j : j + 1] - gp.X.T) / tau_j
-                    z_j = np.exp(lnnf_j - 0.5 * np.sum(delta_j ** 2, axis=0))
+                    z_j = np.exp(lnnf_j - 0.5 * np.sum(delta_j**2, axis=0))
 
                     tau_jk = np.sqrt(
-                        (sigma[:, j] ** 2 + sigma[:, k] ** 2) * lambd ** 2
-                        + ell ** 2
-                        + 2 * delta ** 2
+                        (sigma[:, j] ** 2 + sigma[:, k] ** 2) * lambd**2
+                        + ell**2
+                        + 2 * delta**2
                     )
                     lnnf_jk = ln_sf2 + sum_lnell - np.sum(np.log(tau_jk))
                     delta_jk = (mu[:, j : j + 1] - mu[:, k : k + 1]) / tau_jk
 
                     J_jk = np.exp(
-                        lnnf_jk - 0.5 * np.sum(delta_jk ** 2, axis=0)
+                        lnnf_jk - 0.5 * np.sum(delta_jk**2, axis=0)
                     )
                     if L_chol:
                         J_jk -= np.dot(
@@ -1520,7 +1520,7 @@ def _gplogjoint(
         if jacobian_flag and grad_flags[3]:
             eta_sum = np.sum(np.exp(vp.eta))
             J_w = (
-                -np.exp(vp.eta).T * np.exp(vp.eta) / eta_sum ** 2
+                -np.exp(vp.eta).T * np.exp(vp.eta) / eta_sum**2
                 + np.diag(np.exp(vp.eta.flatten())) / eta_sum
             )
             w_grad = np.dot(J_w, w_grad)

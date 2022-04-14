@@ -1,4 +1,5 @@
 import numpy as np
+
 from pyvbmc.decorators import handle_0D_1D_input
 
 
@@ -33,7 +34,7 @@ class ParameterTransformer:
         plausible_lower_bounds: np.ndarray = None,
         plausible_upper_bounds: np.ndarray = None,
         scale: np.ndarray = None,
-        rotation_matrix: np.ndarray = None
+        rotation_matrix: np.ndarray = None,
     ):
         self.scale = scale
         self.R_mat = rotation_matrix
@@ -145,7 +146,7 @@ class ParameterTransformer:
         if self.R_mat is not None:
             u = u @ self.R_mat
         if self.scale is not None:
-            u = u/self.scale
+            u = u / self.scale
 
         return u
 
@@ -171,7 +172,7 @@ class ParameterTransformer:
         # Rotoscale whitening:
         # Undo rescaling and rotation.
         if self.scale is not None:
-            x = x*self.scale
+            x = x * self.scale
         if self.R_mat is not None:
             x = x @ np.transpose(self.R_mat)
 
@@ -194,10 +195,16 @@ class ParameterTransformer:
         # Force to stay within bounds
         # (8*eps is too small in some cases to prevent infinite values)
         mask = np.isfinite(self.lb_orig)[0]
-        xNew[:, mask] = np.maximum(xNew[:, mask], self.lb_orig[:, mask] + 10*np.finfo(np.float64).eps)
+        xNew[:, mask] = np.maximum(
+            xNew[:, mask],
+            self.lb_orig[:, mask] + 10 * np.finfo(np.float64).eps,
+        )
 
         mask = np.isfinite(self.ub_orig)[0]
-        xNew[:, mask] = np.minimum(xNew[:, mask], self.ub_orig[:, mask] - 10*np.finfo(np.float64).eps)
+        xNew[:, mask] = np.minimum(
+            xNew[:, mask],
+            self.ub_orig[:, mask] - 10 * np.finfo(np.float64).eps,
+        )
 
         return xNew
 
@@ -226,7 +233,7 @@ class ParameterTransformer:
         # Rotoscale whitening:
         # Undo rescaling and rotation.
         if self.scale is not None:
-            u_c = u_c*self.scale
+            u_c = u_c * self.scale
         if self.R_mat is not None:
             u_c = u_c @ np.transpose(self.R_mat)
 

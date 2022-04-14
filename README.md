@@ -1,6 +1,6 @@
 # PyVBMC
 
-`pyvbmc` is the port of the VBMC algorithm to Python 3.x. 
+`pyvbmc` is the port of the VBMC algorithm to Python 3.x.
 The reference code is the [MATLAB toolbox](https://github.com/lacerbi/vbmc).
 
 The documentation is available at: https://lacerbi.github.io/pyvbmc/
@@ -27,9 +27,8 @@ If the list of requirements subsequently changes, you will only need to rerun `p
 To run `pyvbmc` you will also need the `gpyreg` package, a lightweight Gaussian process regression library that we wrote specifically for `pyvbmc`.
 For now, since the package is not in a `conda` or `pip` package repository, you need to run the additional steps:
 
-- Clone `gpyreg` from its [GitHub repo](https://github.com/lacerbi/gpyreg). 
+- Clone `gpyreg` from its [GitHub repo](https://github.com/lacerbi/gpyreg).
 - Install `gpyreg` in the `pyvbmc-dev` environment running `pip install -e .` from the `gpyreg` folder.
-
 
 ### Alternative installation commands
 
@@ -50,9 +49,8 @@ If the list of requirements subsequently changes, you will only need to rerun `p
 To run `pyvbmc` you will also need the `gpyreg` package, a lightweight Gaussian process regression library that we wrote specifically for `pyvbmc`.
 For now, since the package is not in a `conda` or `pip` package repository, you need to run the additional steps:
 
-- Clone `gpyreg` from its [GitHub repo](https://github.com/lacerbi/gpyreg). 
+- Clone `gpyreg` from its [GitHub repo](https://github.com/lacerbi/gpyreg).
 - Install `gpyreg` in the `pyvbmc-dev` environment running `pip install -e .` from the `gpyreg` folder.
-
 
 ### Alternative installation commands
 
@@ -61,6 +59,7 @@ These are alternative ways to install the required dependencies:
 ```
 conda env create --file environment.yml
 ```
+
 or
 
 ```
@@ -78,14 +77,20 @@ Some useful readings:
 - [PEP 8 -- Style Guide for Python Code](https://www.python.org/dev/peps/pep-0008/)
 - [Code style in The Hitchhiker's Guide to Python](https://docs.python-guide.org/writing/style/)
 
-Please note that we are developing `pyvbmc` in a way to eventually enable third parties to maintain and contribute to the package. 
+Please note that we are developing `pyvbmc` in a way to eventually enable third parties to maintain and contribute to the package.
 Basic rules have to be followed to ensure coherence and coordination (but please ask if something is unclear or does not seem sensible).
 
 In the following, we list more detailed conventions. Please read carefully if you are contributing to `pyvbmc`.
 
 ### Code formatting
 
-The code is formatted using [Black](https://pypi.org/project/black/) with a line length of 79.
+The code is formatted using [Black](https://pypi.org/project/black/) with a line length of 79, with the help of precommit hooks. To use:
+
+```{bash}
+pip install pre-commit
+pre-commit install
+pre-commit run -a  # run for all files
+```
 
 If you want, you can also check with pylint for more excessive errors. (Although pylint seems to raise many false positives.)
 
@@ -93,14 +98,13 @@ If you want, you can also check with pylint for more excessive errors. (Although
 
 Try to evaluate if pre- and postprocessing in a function can be generalized with a decorator. One example is the handling of arrays of shape (N, ) to (N, 1) with the [handle_1D_decorator](./decorators/handle_1D_input.py) in the decorator module.
 
-
 ### Docstrings
 
 The docstrings are generated following the [numpy format](https://numpydoc.readthedocs.io/en/latest/format.html).
 There are add-ons to generate docstring blueprints using IDEs.
 
-- See an example for a correct docstring from `numpy` [here](https://numpydoc.readthedocs.io/en/latest/example.html). 
-- In `pyvbmc`, the `VariationalPosterior` class can be taken as an example of (mostly) correct docstring structure, see [here](https://github.com/lacerbi/pyvbmc/blob/main/pyvbmc/variational_posterior/variational_posterior.py). 
+- See an example for a correct docstring from `numpy` [here](https://numpydoc.readthedocs.io/en/latest/example.html).
+- In `pyvbmc`, the `VariationalPosterior` class can be taken as an example of (mostly) correct docstring structure, see [here](https://github.com/lacerbi/pyvbmc/blob/main/pyvbmc/variational_posterior/variational_posterior.py).
   - In particular, see how the single quotes and double quotes are used; the math notation is used; full stops are added at the end of each sentence, etc.
 
 ### Documentation
@@ -108,7 +112,8 @@ There are add-ons to generate docstring blueprints using IDEs.
 The documentation is currently hosted on [github.io](https://lacerbi.github.io/pyvbmc/). We build the pyvbmc documentation using [Sphinx](https://www.sphinx-doc.org/en/master/usage/quickstart.html). The source code of the documentation is in the [docsrc folder](./docsrc) and the build version is in the [docs folder](./docs).
 From there new documentation can be compiled using the following commands:
 
-1) Merge main branch into feature branch (bring the branch up to date with whatever changes were done in main):
+1. Merge main branch into feature branch (bring the branch up to date with whatever changes were done in main):
+
 ```
 git checkout main
 git pull
@@ -116,25 +121,27 @@ git checkout <feature_branch>
 git merge master
 ```
 
-2) Make sure that everything works, e.g. by running tests.
-3) Render new documentation:
+2. Make sure that everything works, e.g. by running tests.
+3. Render new documentation:
+
 ```
 cd /docsrc (navigate to documentation source folder)
 make github  (this builds the doc and copies the build version to ./docs)
 ```
+
 (If you are using Windows, run `.\make.bat github` with `cmd` instead.)
 
-4) Commit the new documentation.
-5) Create a new pull request.
-6) When the pull request is merged, [github.io](https://lacerbi.github.io/pyvbmc/) detects changes and rebuilds the documentation.
+4. Commit the new documentation.
+5. Create a new pull request.
+6. When the pull request is merged, [github.io](https://lacerbi.github.io/pyvbmc/) detects changes and rebuilds the documentation.
 
 If it seems that the documentation does not update correctly (e.g., items not appearing in the sidebar or table of content), try deleting the `./docs` folder and the cached folder `./docsrc/_build` before compiling the documentation. There is a command for that:
 
 ```
 make clean
 ```
-(If you are using Windows, run `.\make.bat clean` with `cmd` instead.)
 
+(If you are using Windows, run `.\make.bat clean` with `cmd` instead.)
 
 #### General structure
 
@@ -155,7 +162,6 @@ Refer to existing documentation for an overview of the file structure. So far th
 
 For each new file, a link needs to be added manually to the [index page](https://github.com/lacerbi/pyvbmc/blob/main/docsrc/source/index.rst).
 Please keep the documentation up to date. (Sphinx logs possible issues when compiling the documentation.)
-
 
 ### Exceptions
 
@@ -183,7 +189,7 @@ We have decided against general util/misc modules for now. This means that gener
 
 ### Testing
 
-The testing is done using `pytest` with unit tests for each class in the respective folder. 
+The testing is done using `pytest` with unit tests for each class in the respective folder.
 Tests can be run with:
 
 ```

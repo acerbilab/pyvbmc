@@ -15,7 +15,7 @@ These notes are used for keeping track of ToDos and porting information.
 ## iteration_history.py
 
 ### Matlab references
--  function save_stats in: [vbmc.m](https://github.com/lacerbi/vbmc/blob/master/vbmc.m) 
+-  function save_stats in: [vbmc.m](https://github.com/lacerbi/vbmc/blob/master/vbmc.m)
 
 ## vbmc.py and related functions
 

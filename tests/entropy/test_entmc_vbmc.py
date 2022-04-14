@@ -1,8 +1,9 @@
 import numpy as np
 from scipy.io import loadmat
-from pyvbmc.variational_posterior import VariationalPosterior
+
 from pyvbmc.entropy import entmc_vbmc
 from pyvbmc.testing import check_grad
+from pyvbmc.variational_posterior import VariationalPosterior
 
 
 def single_gaussian_entropy(D, sigma, lambd):

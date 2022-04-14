@@ -6,13 +6,14 @@
 
 # -- Path setup --------------------------------------------------------------
 
+import inspect
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
 import sys
-import inspect
 
 sys.path.insert(0, os.path.abspath("../.."))
 
@@ -45,6 +46,7 @@ autodoc_default_options = {
     "exclude-members": "__weakref__",
 }
 
+
 def linkcode_resolve(domain, info):
     """
     Used for sphinx.ext.linkcode.
@@ -59,7 +61,7 @@ def linkcode_resolve(domain, info):
 
     # unwrap to get rid of decorators.
     filename = inspect.getsourcefile(inspect.unwrap(obj))
-    
+
     # to get rid of the local path, quiet hacky, but works
     filename = filename[filename.index("pyvbmc") + 7 :]
     return "https://github.com/lacerbi/pyvbmc/tree/main/%s" % filename
@@ -95,4 +97,4 @@ todo_include_todos = True
 jupyter_execute_notebooks = "off"
 
 # download notebooks as .ipynb and not as .ipynb.txt
-html_sourcelink_suffix = ''
+html_sourcelink_suffix = ""

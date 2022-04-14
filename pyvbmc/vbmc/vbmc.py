@@ -7,11 +7,13 @@ import sys
 import gpyreg as gpr
 import matplotlib.pyplot as plt
 import numpy as np
+
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.stats import kldiv_mvn
 from pyvbmc.timer import Timer
 from pyvbmc.variational_posterior import VariationalPosterior
+from pyvbmc.whitening import warp_gpandvp_vbmc, warp_input_vbmc
 
 from .active_sample import active_sample
 from .gaussian_process_train import reupdate_gp, train_gp
@@ -19,16 +21,14 @@ from .iteration_history import IterationHistory
 from .options import Options
 from .variational_optimization import optimize_vp, update_K
 
-from pyvbmc.whitening import warp_input_vbmc, warp_gpandvp_vbmc
-
 
 class VBMC:
     """
     Posterior and model inference via Variational Bayesian Monte Carlo (VBMC).
-    
-    VBMC computes a variational approximation of the full posterior and a lower 
-    bound on the normalization constant (marginal likelhood or model evidence) 
-    for a provided unnormalized log posterior. 
+
+    VBMC computes a variational approximation of the full posterior and a lower
+    bound on the normalization constant (marginal likelhood or model evidence)
+    for a provided unnormalized log posterior.
 
     Initialize a ``VBMC`` object to set up the inference problem, then run
     ``optimize()``. See the examples for more details.
@@ -36,21 +36,21 @@ class VBMC:
     Parameters
     ----------
     fun : callable
-        A given target log posterior `fun`. `fun` accepts input `x` and returns 
-        the value of the target log-joint, that is the unnormalized 
+        A given target log posterior `fun`. `fun` accepts input `x` and returns
+        the value of the target log-joint, that is the unnormalized
         log-posterior density, at `x`.
     x0 : np.ndarray, optional
         Starting point for the inference. Ideally `x0` is a point in the
         proximity of the mode of the posterior. Default is ``None``.
     lower_bounds, upper_bounds : np.ndarray, optional
         `lower_bounds` (`LB`) and `upper_bounds` (`UB`) define a set
-        of strict lower and upper bounds for the coordinate vector, `x`, so 
+        of strict lower and upper bounds for the coordinate vector, `x`, so
         that the posterior has support on `LB` < `x` < `UB`.
         If scalars, the bound is replicated in each dimension. Use
         ``None`` for `LB` and `UB` if no bounds exist. Set `LB` [`i`] = -``inf``
-        and `UB` [`i`] = ``inf`` if the `i`-th coordinate is unbounded (while 
+        and `UB` [`i`] = ``inf`` if the `i`-th coordinate is unbounded (while
         other coordinates may be bounded). Note that if `LB` and `UB` contain
-        unbounded variables, the respective values of `PLB` and `PUB` need to 
+        unbounded variables, the respective values of `PLB` and `PUB` need to
         be specified (see below), by default ``None``.
     plausible_lower_bounds, plausible_upper_bounds : np.ndarray, optional
         Specifies a set of `plausible_lower_bounds` (`PLB`) and
@@ -66,7 +66,7 @@ class VBMC:
         by default ``None``.
     user_options : dict, optional
         Additional options can be passed as a dict. Please refer to the
-        VBMC options page for the default options. If no `user_options` are 
+        VBMC options page for the default options. If no `user_options` are
         passed, the default options are used.
 
     Raises
@@ -79,21 +79,21 @@ class VBMC:
 
     Notes
     -----
-    The current version of ``VBMC`` only supports noiseless evaluations of the 
+    The current version of ``VBMC`` only supports noiseless evaluations of the
     log posterior [1]_. Noisy evaluations as in [2]_ are not implemented yet.
 
     References
     ----------
-    .. [1] Acerbi, L. (2018). "Variational Bayesian Monte Carlo". In Advances 
+    .. [1] Acerbi, L. (2018). "Variational Bayesian Monte Carlo". In Advances
        in Neural Information Processing Systems 31 (NeurIPS 2018), pp. 8213-8223.
     .. [2] Acerbi, L. (2020). "Variational Bayesian Monte Carlo with Noisy
-       Likelihoods". In Advances in Neural Information Processing Systems 33 
+       Likelihoods". In Advances in Neural Information Processing Systems 33
        (NeurIPS 2020).
 
     Examples
     --------
     For `VBMC` usage examples, please look up the Jupyter notebook tutorials
-    in the pyvbmc documentation: 
+    in the pyvbmc documentation:
     https://lacerbi.github.io/pyvbmc/_examples/pyvbmc_example_1.html
     """
 
@@ -145,7 +145,6 @@ class VBMC:
 
         # Create an initial logger for initialization messages:
         self.logger = self._init_logger("_init")
-
 
         # variable to keep track of logging actions
         self.logging_action = []
@@ -342,7 +341,7 @@ class VBMC:
         )
         if np.any(fixidx):
             raise ValueError(
-                """vbmc:FixedVariables VBMC does not support fixed 
+                """vbmc:FixedVariables VBMC does not support fixed
             variables. Lower and upper bounds should be different."""
             )
 
@@ -418,8 +417,9 @@ class VBMC:
 
         # Check that all X0 are inside the plausible bounds,
         # move bounds otherwise
-        if np.any(x0 <= plausible_lower_bounds)\
-           or np.any(x0 >= plausible_upper_bounds):
+        if np.any(x0 <= plausible_lower_bounds) or np.any(
+            x0 >= plausible_upper_bounds
+        ):
             self.logger.warning(
                 "vbmc:InitialPointsOutsidePB. The starting points X0"
                 + " are not inside the provided plausible bounds PLB and "
@@ -504,7 +504,7 @@ class VBMC:
             ):
                 raise ValueError(
                     """Hard bounds of integer variables need to be
-                 set at +/- 0.5 points from their boundary values (e.g., -0.5 
+                 set at +/- 0.5 points from their boundary values (e.g., -0.5
                  nd 10.5 for a variable that takes values from 0 to 10)"""
                 )
 
@@ -724,11 +724,11 @@ class VBMC:
 
     def optimize(self):
         """
-        Run inference on an initialized ``VBMC`` object. 
-        
+        Run inference on an initialized ``VBMC`` object.
+
         VBMC computes a variational approximation of the full posterior and the
-        ELBO (evidence lower bound), a lower bound on the log normalization 
-        constant (log marginal likelhood or log model evidence) for the provided 
+        ELBO (evidence lower bound), a lower bound on the log normalization
+        constant (log marginal likelhood or log model evidence) for the provided
         unnormalized log posterior.
 
         Returns
@@ -738,11 +738,11 @@ class VBMC:
         elbo : float
             An estimate of the ELBO for the returned `vp`.
         elbo_sd : float
-            The standard deviation of the estimate of the ELBO. Note that this 
-            standard deviation is *not* representative of the error between the 
+            The standard deviation of the estimate of the ELBO. Note that this
+            standard deviation is *not* representative of the error between the
             `elbo` and the true log marginal likelihood.
         success_flag : bool
-           `success_flag` is ``True`` if the inference reached stability within 
+           `success_flag` is ``True`` if the inference reached stability within
            the provided budget of function evaluations, suggesting convergence.
            If ``False``, the returned solution has not stabilized and should
            not be trusted.
@@ -795,22 +795,29 @@ class VBMC:
                 self.optim_state["entropy_switch"] = False
                 self.logging_action.append("entropy switch")
 
-
             ## Input warping / reparameterization
             if self.options["incrementalwarpdelay"]:
-                WarpDelay = self.options["warpeveryiters"]*np.max([1, self.optim_state["warping_count"]])
+                WarpDelay = self.options["warpeveryiters"] * np.max(
+                    [1, self.optim_state["warping_count"]]
+                )
             else:
                 WarpDelay = self.options["warpeveryiters"]
 
-            doWarping = (self.options.get("warprotoscaling")\
-                or self.options.get("warpnonlinear"))\
-                and (iteration > 0)\
-                and (not self.optim_state["warmup"])\
-                and (iteration - self.optim_state["last_warping"] > WarpDelay)\
-                and (self.vp.K >= self.options["warpmink"])\
-                and (self.iteration_history["rindex"][iteration-1]\
-                     < self.options["warptolreliability"])\
+            doWarping = (
+                (
+                    self.options.get("warprotoscaling")
+                    or self.options.get("warpnonlinear")
+                )
+                and (iteration > 0)
+                and (not self.optim_state["warmup"])
+                and (iteration - self.optim_state["last_warping"] > WarpDelay)
+                and (self.vp.K >= self.options["warpmink"])
+                and (
+                    self.iteration_history["rindex"][iteration - 1]
+                    < self.options["warptolreliability"]
+                )
                 and (self.vp.D > 1)
+            )
 
             if doWarping:
                 timer.start_timer("warping")
@@ -825,9 +832,21 @@ class VBMC:
                 elbo_sd_old = elbo_sd
                 hyp_dict_old = copy.deepcopy(hyp_dict)
                 # Compute and apply whitening transform:
-                parameter_transformer_warp, self.optim_state, self.function_logger, warp_action = warp_input_vbmc(vp_tmp, self.optim_state, self.function_logger, self.options)
+                (
+                    parameter_transformer_warp,
+                    self.optim_state,
+                    self.function_logger,
+                    warp_action,
+                ) = warp_input_vbmc(
+                    vp_tmp,
+                    self.optim_state,
+                    self.function_logger,
+                    self.options,
+                )
 
-                self.vp, hyp_dict["hyp"] = warp_gpandvp_vbmc(parameter_transformer_warp, self.vp, self)
+                self.vp, hyp_dict["hyp"] = warp_gpandvp_vbmc(
+                    parameter_transformer_warp, self.vp, self
+                )
                 # Update the VBMC ParameterTransformer
                 self.parameter_transformer = parameter_transformer_warp
 
@@ -864,8 +883,12 @@ class VBMC:
                         Knew = self.vp.K
 
                     # Decide number of fast/slow optimizations
-                    N_fastopts = math.ceil(self.options.eval("nselbo", {"K": self.K}))
-                    N_slowops = self.options.get("elbostarts") # Full optimizations.
+                    N_fastopts = math.ceil(
+                        self.options.eval("nselbo", {"K": self.K})
+                    )
+                    N_slowops = self.options.get(
+                        "elbostarts"
+                    )  # Full optimizations.
 
                     # Run optimization of variational parameters
                     self.vp, varss, pruned = optimize_vp(
@@ -892,8 +915,15 @@ class VBMC:
 
                     # Keep warping only if it substantially improves ELBO
                     # and uncertainty does not blow up too much
-                    if (elbo < (elbo_old + self.options["warptolimprovement"]))\
-                    or (elbo_sd > (elbo_sd_old * self.options["warptolsdmultiplier"] + self.options["warptolsdbase"])):
+                    if (
+                        elbo < (elbo_old + self.options["warptolimprovement"])
+                    ) or (
+                        elbo_sd
+                        > (
+                            elbo_sd_old * self.options["warptolsdmultiplier"]
+                            + self.options["warptolsdbase"]
+                        )
+                    ):
                         # Undo input warping:
                         self.vp = vp_old
                         self.gp = gp_old
@@ -903,9 +933,10 @@ class VBMC:
 
                         # Still keep track of failed warping (failed warp counts twice)
                         self.optim_state["warping_count"] += 2
-                        self.optim_state["last_warping"] = self.optim_state["iter"]
+                        self.optim_state["last_warping"] = self.optim_state[
+                            "iter"
+                        ]
                         self.logging_action.append(", undo")
-
 
             ## Actively sample new points into the training set
             timer.start_timer("activeSampling")
@@ -1253,9 +1284,11 @@ class VBMC:
 
             if self.options.get("printiterationheader") is None:
                 # Default behavior, try to guess based on plotting options:
-                reprint_headers = self.options.get("plot")\
-                    and iteration > 0\
+                reprint_headers = (
+                    self.options.get("plot")
+                    and iteration > 0
                     and "inline" in plt.get_backend()
+                )
             elif self.options["printiterationheader"]:
                 # Re-print every iteration after 0th
                 reprint_headers = iteration > 0
@@ -1873,8 +1906,12 @@ class VBMC:
             self.vp.optimize_weights = self.options.get("variableweights")
 
             self.options.__setitem__("nsent", n_sent_boost, force=True)
-            self.options.__setitem__("nsentfast", n_sent_fast_boost, force=True)
-            self.options.__setitem__("nsentfine", n_sent_fine_boost, force=True)
+            self.options.__setitem__(
+                "nsentfast", n_sent_fast_boost, force=True
+            )
+            self.options.__setitem__(
+                "nsentfine", n_sent_fine_boost, force=True
+            )
             self.options.__setitem__("maxiterstochastic", np.Inf, force=True)
             self.optim_state["entropy_alpha"] = 0
 
@@ -2138,15 +2175,15 @@ class VBMC:
         # (remove duplicates, re-add below)
         for handler in logger.handlers:
             if handler.baseFilename == os.path.abspath(
-                    self.options.get("logfilename")
+                self.options.get("logfilename")
             ):
                 logger.removeHandler(handler)
 
-        if self.options.get("logfilename")\
-           and self.options.get("logfilelevel"):
+        if self.options.get("logfilename") and self.options.get(
+            "logfilelevel"
+        ):
             file_handler = logging.FileHandler(
-                filename=self.options["logfilename"],
-                mode=log_file_mode
+                filename=self.options["logfilename"], mode=log_file_mode
             )
 
             # Set file logger level according to string or logging level:
@@ -2160,12 +2197,15 @@ class VBMC:
             elif log_file_level in [0, 10, 20, 30, 40, 50]:
                 file_handler.setLevel(log_file_level)
             else:
-                raise ValueError("Log file logging level is not a recognized" +
-                                 "string or logging level.")
+                raise ValueError(
+                    "Log file logging level is not a recognized"
+                    + "string or logging level."
+                )
 
             # Add a filter to ignore messages sent to logger.stream_only:
             def log_file_filter(record):
                 return record.name != "VBMC.stream_only"
+
             file_handler.addFilter(log_file_filter)
 
             logger.addHandler(file_handler)

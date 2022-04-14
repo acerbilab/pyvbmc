@@ -49,7 +49,7 @@ def _fixed_point(t: float, N: int, irange_squared: np.ndarray, a2: np.ndarray):
         * np.sum(
             np.power(irange_squared, ell)
             * a2
-            * np.exp(-irange_squared * np.pi ** 2.0 * t)
+            * np.exp(-irange_squared * np.pi**2.0 * t)
         )
     )
 
@@ -69,7 +69,7 @@ def _fixed_point(t: float, N: int, irange_squared: np.ndarray, a2: np.ndarray):
             * np.sum(
                 np.power(irange_squared, s)
                 * a2
-                * np.exp(-irange_squared * np.pi ** 2.0 * time)
+                * np.exp(-irange_squared * np.pi**2.0 * time)
             )
         )
 
@@ -141,7 +141,7 @@ def _validate_kde1d_args(n, lower_bound, upper_bound):
 
 def kde1d(
     samples: np.ndarray,
-    n: int = 2 ** 14,
+    n: int = 2**14,
     lower_bound: float = None,
     upper_bound: float = None,
 ):
@@ -251,7 +251,7 @@ def kde1d(
 
     # Smooth the discrete cosine transform of initial data using t_star
     a_t = a * np.exp(
-        -np.arange(n, dtype=float) ** 2 * np.pi ** 2.0 * t_star / 2.0
+        -np.arange(n, dtype=float) ** 2 * np.pi**2.0 * t_star / 2.0
     )
 
     # Diving by 2 because of the implementation of fftpack.idct

@@ -1,6 +1,7 @@
 """Module that contains a version of ADAM for function minimization."""
 
 import math
+
 import numpy as np
 
 
@@ -86,7 +87,7 @@ def minimize_adam(
         y_tab[i], grad = f(x)
 
         m = beta_1 * m + (1 - beta_1) * grad
-        v = beta_2 * v + (1 - beta_2) * grad ** 2
+        v = beta_2 * v + (1 - beta_2) * grad**2
         m_hat = m / (1 - beta_1 ** (i + 1))
         v_hat = v / (1 - beta_2 ** (i + 1))
 
@@ -109,8 +110,8 @@ def minimize_adam(
 
             # Highest power first
             slope = p[0]
-            slope_err = np.sqrt(V[0, 0] + tol_fun ** 2)
-            slope_err_max = np.sqrt(V[0, 0] + tol_fun_max ** 2)
+            slope_err = np.sqrt(V[0, 0] + tol_fun**2)
+            slope_err_max = np.sqrt(V[0, 0] + tol_fun_max**2)
 
             # Check random walk distance as termination condition.
             dx = np.sqrt(

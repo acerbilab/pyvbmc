@@ -2,6 +2,7 @@ import sys
 
 import gpyreg as gpr
 import numpy as np
+
 from pyvbmc.acquisition_functions import AbstractAcqFcn
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
