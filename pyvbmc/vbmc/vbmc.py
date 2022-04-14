@@ -864,8 +864,12 @@ class VBMC:
                         Knew = self.vp.K
 
                     # Decide number of fast/slow optimizations
-                    N_fastopts = math.ceil(self.options.eval("nselbo", {"K": self.K}))
-                    N_slowops = self.options.get("elbostarts") # Full optimizations.
+                    N_fastopts = math.ceil(
+                        self.options.eval("nselbo", {"K": self.K})
+                    )
+                    N_slowopts = self.options.get(
+                        "elbostarts"
+                    )  # Full optimizations.
 
                     # Run optimization of variational parameters
                     self.vp, varss, pruned = optimize_vp(
