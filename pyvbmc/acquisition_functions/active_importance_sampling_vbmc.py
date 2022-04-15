@@ -84,11 +84,16 @@ def active_importance_sampling_vbmc(vp, gp, acqfcn, acqinfo, options):
                 thin = 1
                 burnin = 0
                 sample_opts = get_mcmc_opts(None, thin, burnin)
-                log_p_funs = log_p_fun
-                W = Na # walkers
+                W = Na # walkers, not used (see below).
 
-                # Perform a single MCMC step for all samples
-                Xa = eis_sample_lite(log_p_funs, Xa, Nmcmc_samples, W, widths, LB, UB, sample_opts)
+                # Perform a single MCMC step for all samples.
+                # Contrary to MATLAB, we are using simple slice sampling.
+                # Better (e.g. ensemble slice) sampling methods could
+                # later be implemented.
+                sampler = gpr.SliceSampler(log_p_fun, Xa, widths, LB, UB, sample_opts)
+                results = sampler.sample(Nmcmc_samples, thin, burn_in)
+                Xa = results["samples"]
+                # Xa = eis_sample_lite(log_p_fun, Xa, Nmcmc_samples, W, widths, LB, UB, sample_opts)
                 Xa = Xa[-Na:, :]
                 f_mu, f_s2 = gp.predict(Xa, separate_samples=True)
 
@@ -175,7 +180,8 @@ def active_importance_sampling_vbmc(vp, gp, acqfcn, acqinfo, options):
                 burn_in = math.ceil(thin * Nmcmc_samples/2)
                 sample_opts = get_mcmc_opts(Nmcmc_samples, thin, burn_in)
 
-                W = 2 * (D + 1)
+                # Not used (see comment below regarding simple slice sampling.)
+                Walkers = 2 * (D + 1)
 
                 # Use importance sampling-resampling
                 f_mu, f_s2 = gp.predict(active_is_old["Xa"], separate_samples=True)
@@ -186,7 +192,13 @@ def active_importance_sampling_vbmc(vp, gp, acqfcn, acqinfo, options):
                 indices = np.random.choice(a=len(w), p=w, replace=False)
                 x0[indices, :] = active_is_old["Xa"][indices, :]
 
-                Xa, log_p = eis_sample_lite(log_p_fun, x0, Nmcmc_samples, W, widths, LB, UB, sample_opts)
+                # Contrary to MATLAB, we are using simple slice sampling.
+                # Better (e.g. ensemble slice) sampling methods could
+                # later be implemented.
+                sampler = gpr.SliceSampler(log_p_fun, x0, widths, LB, UB, sample_opts)
+                results = sampler.sample(Nmcmc_samples, thin, burn_in)
+                Xa, log_p = results["samples"], results["f_vals"]
+                # Xa, log_p = eis_sample_lite(log_p_fun, x0, Nmcmc_samples, W, widths, LB, UB, sample_opts)
                 f_mu, f_s2 = gp.predict(Xa, separate_samples=True)
 
                 # Fixed log weight for importance sampling (log fixed integrand)
