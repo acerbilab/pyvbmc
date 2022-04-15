@@ -82,15 +82,15 @@ def active_importance_sampling_vbmc(vp, gp, acqfcn, acqinfo, options):
                 # Get MCMC options
                 Nmcmc_samples = Na * options["activeimportancesamplingmcmcthin"]
                 thin = 1
-                burnin = 0
-                sample_opts = get_mcmc_opts(None, thin, burnin)
+                burn_in = 0
+                sampler_opts, __, __ = get_mcmc_opts()
                 W = Na # walkers, not used (see below).
 
                 # Perform a single MCMC step for all samples.
                 # Contrary to MATLAB, we are using simple slice sampling.
                 # Better (e.g. ensemble slice) sampling methods could
                 # later be implemented.
-                sampler = gpr.SliceSampler(log_p_fun, Xa, widths, LB, UB, sample_opts)
+                sampler = gpr.SliceSampler(log_p_fun, Xa, widths, LB, UB, sampler_opts)
                 results = sampler.sample(Nmcmc_samples, thin, burn_in)
                 Xa = results["samples"]
                 # Xa = eis_sample_lite(log_p_fun, Xa, Nmcmc_samples, W, widths, LB, UB, sample_opts)
@@ -178,7 +178,7 @@ def active_importance_sampling_vbmc(vp, gp, acqfcn, acqinfo, options):
                 # Get MCMC Options
                 thin = options["activeimportancesamplingmcmcthin"]
                 burn_in = math.ceil(thin * Nmcmc_samples/2)
-                sample_opts = get_mcmc_opts(Nmcmc_samples, thin, burn_in)
+                sampler_opts, __, __ = get_mcmc_opts(Nmcmc_samples)
 
                 # Not used (see comment below regarding simple slice sampling.)
                 Walkers = 2 * (D + 1)
@@ -195,7 +195,7 @@ def active_importance_sampling_vbmc(vp, gp, acqfcn, acqinfo, options):
                 # Contrary to MATLAB, we are using simple slice sampling.
                 # Better (e.g. ensemble slice) sampling methods could
                 # later be implemented.
-                sampler = gpr.SliceSampler(log_p_fun, x0, widths, LB, UB, sample_opts)
+                sampler = gpr.SliceSampler(log_p_fun, x0, widths, LB, UB, sampler_opts)
                 results = sampler.sample(Nmcmc_samples, thin, burn_in)
                 Xa, log_p = results["samples"], results["f_vals"]
                 # Xa, log_p = eis_sample_lite(log_p_fun, x0, Nmcmc_samples, W, widths, LB, UB, sample_opts)
@@ -345,7 +345,7 @@ def sq_dist(a, b):
     return np.maximum(c, 0)
 
 
-def get_mcmc_opts(Ns, thin=1, burn_in=None):
+def get_mcmc_opts(Ns=100, thin=1, burn_in=None):
     r"""Get standard MCMC options.
 
     Parameters
@@ -355,19 +355,13 @@ def get_mcmc_opts(Ns, thin=1, burn_in=None):
     -------
     """
 
-    sample_opts = {}
-    sample_opts["thin"] = thin
+    sampler_opts = {}
     if burn_in is None:
-        sample_opts["burn_in"] = math.ceil(sample_opts["thin"] * Ns / 2)
-    else:
-        sample_opts["burn_in"] = burn_in
-    sample_opts["display"] = 'off'
-    sample_opts["diagnostics"] = False
-    sample_opts["var_transform"] = False
-    sample_opts["inversion_samples"] = False
-    sample_opts["fit_gmm"] = False
+        burn_in = math.ceil(thin * Ns / 2)
+    sampler_opts["display"] = 'off'
+    sampler_opts["diagnostics"] = False
 
-    return sample_opts
+    return sampler_opts, thin, burn_in
 
 
 def fess_vbmc(vp, gp, X=100):
