@@ -304,16 +304,18 @@ def log_isbasefun(x, acqfcn, gp, vp=None):
     -------
     """
 
+    u = 0.6745  # inverse normal cdf of 0.75
     f_mu, f_s2 = gp.predict(x)
+    f_s = np.sqrt(f_s2)
+
     if vp is None:
-        y = acqfcn('islogf', [], [], [], f_mu, f_s2)
+        return u * f_s + np.log1p(-np.exp(-2 * u * f_s))
+        # y = acqfcn('islogf', [], [], [], f_mu, f_s2)
     else:
         v_ln_pdf = max(vp.pdf(x, origflag=False, logflag=True),
-                       np.log(sys.float_info.min))
-        y = acqfcn('islogf', v_ln_pdf, [], [], f_mu, f_s2)
-
-    return y
-
+                        np.log(sys.float_info.min))
+        return v_ln_pdf + u * f_s + np.log1p(-np.exp(-2 * u * f_s))
+        # y = acqfcn('islogf', v_ln_pdf, [], [], f_mu, f_s2)
 
 def sq_dist(a, b):
     """
@@ -391,8 +393,3 @@ def fess_vbmc(vp, gp, X=100):
     weight = weight / sum(weight)
 
     return (1 / sum(weight**2)) / N  # Fractional ESS
-
-
-def eis_samples_lite(logPfuns, x0, N, K, widths, LB, UB, options):
-    r"""Ensemble slice sampling MCMC (lite version)
-    """
