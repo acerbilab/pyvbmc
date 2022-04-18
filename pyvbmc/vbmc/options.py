@@ -5,7 +5,7 @@ import configparser
 from collections.abc import MutableMapping
 
 import numpy as np
-import logging
+import copy
 
 
 class Options(MutableMapping, dict):
@@ -39,6 +39,9 @@ class Options(MutableMapping, dict):
         Initialize the options using default options and specified options from
         the user.
         """
+        # Flag initialization as in-progress
+        # (completed in self.validate_option_names)
+        self.is_initialized = False
         super().__init__()
         self.descriptions = dict()
         self["useroptions"] = set()
@@ -123,7 +126,9 @@ class Options(MutableMapping, dict):
         the option names from this options object at least once.
 
         Note that this method checks not if there are option names in files that
-        are not in the object.
+        are not in the object. After option names are validated, initialization
+        is flagged as complete and `self.is_initialized` is set to `True` to
+        prevent further modification of options.
 
         Parameters
         ----------
@@ -147,8 +152,15 @@ class Options(MutableMapping, dict):
             if key != "useroptions" and key not in file_option_names:
                 raise ValueError("The option {} does not exist.".format(key))
 
-    def __setitem__(self, key, val):
-        dict.__setitem__(self, key, val)
+        # After initialzation is complete prevent changes to options:
+        self.is_initialized = True
+
+    def __setitem__(self, key, val, force=False):
+        # Prevent user from attempting to modify options after initialization
+        if self.is_initialized and not force:
+           raise AttributeError("Warning: Cannot set options after initialization. Please re-initialize with `user_options = {...}`")
+        else:
+            dict.__setitem__(self, key, val)
 
     def __getitem__(self, key):
         return dict.__getitem__(self, key)
@@ -161,6 +173,30 @@ class Options(MutableMapping, dict):
 
     def __delitem__(self, key):
         return dict.__delitem__(self, key)
+
+    def __copy__(self):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        # Copy class properties:
+        result.__dict__.update(self.__dict__)
+        # Copy options dict:
+        for k, v in dict.items(self):
+            result.__setitem__(k, v, force=True)
+        return result
+
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+
+        # Avoid infinite recursion in deepcopy
+        memo[id(self)] = result
+        # Copy class properties:
+        for k, v in self.__dict__.items():
+            setattr(result, k, copy.deepcopy(v, memo))
+        # Copy options dict:
+        for k, v in dict.items(self):
+            result.__setitem__(k, copy.deepcopy(v, memo), force=True)
+        return result
 
     def eval(self, key: str, evaluation_parameters: dict):
         """

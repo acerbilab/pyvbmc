@@ -2,6 +2,9 @@
 
 These notes are used for keeping track of ToDos and porting information.
 
+## Options Class:
+- In order to prevent setting options after initialization, but allowing for an override to this behavior, I added an `is_initialized` flag to the Options class and a special keyword to the `Options.__setitem__` method, which means that `options['foo'] = 'bar'` will raise an error after initialization, but `options.__setitem__('foo', 'bar', force=True)` will change the setting without error. This mean also adding a custom `Options.deepcopy()` method, and for completeness I added a similar `Options.copy()` method. I added simple tests for these copy methods, but am adding a warning here in case something breaks down the line. (Bobby H., 23.03.2022)
+
 ## active_sample.py
 
 ### Matlab references:

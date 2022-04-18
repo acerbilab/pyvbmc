@@ -797,7 +797,6 @@ class VBMC:
 
 
             ## Input warping / reparameterization
-            # self.options["warpeveriters"] = 1
             if self.options["incrementalwarpdelay"]:
                 WarpDelay = self.options["warpeveryiters"]*np.max([1, self.optim_state["warping_count"]])
             else:
@@ -1865,17 +1864,18 @@ class VBMC:
             )
             n_slow_opts = 1
 
-            self.options["tolweight"] = 0  # No pruning of components
+            # No pruning of components
+            self.options.__setitem__("tolweight", 0, force=True)
 
             # End warmup
             self.optim_state["warmup"] = False
             self.vp.optimize_mu = self.options.get("variablemeans")
             self.vp.optimize_weights = self.options.get("variableweights")
 
-            self.options["nsent"] = n_sent_boost
-            self.options["nsentfast"] = n_sent_fast_boost
-            self.options["nsentfine"] = n_sent_fine_boost
-            self.options["maxiterstochastic"] = np.Inf
+            self.options.__setitem__("nsent", n_sent_boost, force=True)
+            self.options.__setitem__("nsentfast", n_sent_fast_boost, force=True)
+            self.options.__setitem__("nsentfine", n_sent_fine_boost, force=True)
+            self.options.__setitem__("maxiterstochastic", np.Inf, force=True)
             self.optim_state["entropy_alpha"] = 0
 
             stable_flag = np.copy(vp.stats["stable"])

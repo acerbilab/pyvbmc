@@ -8,6 +8,7 @@ import numpy as np
 from pyvbmc.acquisition_functions.abstract_acq_fcn import AbstractAcqFcn
 from pyvbmc.acquisition_functions.acq_fcn import AcqFcn
 from pyvbmc.acquisition_functions.acq_fcn_noisy import AcqFcnNoisy
+from pyvbmc.acquisition_functions.acq_fcn_viqr import AcqFcnVIQR
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.stats import get_hpd
 from pyvbmc.variational_posterior import VariationalPosterior
@@ -209,12 +210,12 @@ def active_sample(
             entropy_alpha_old = optim_state["entropy_alpha"]
 
             options_update = copy.deepcopy(options)
-            options_update["gptolopt"] = options["gptoloptactive"]
-            options_update["gptoloptmcmc"] = options["gptoloptmcmcactive"]
-            options_update["tolweight"] = 0
-            options_update["nsent"] = options["nsentactive"]
-            options_update["nsentfast"] = options["nsentfastactive"]
-            options_update["nsentfine"] = options["nsentfineactive"]
+            options_update.__setitem__("gptolopt", options["gptoloptactive"], force=True)
+            options_update.__setitem__("gptoloptmcmc", options["gptoloptmcmcactive"], force=True)
+            options_update.__setitem__("tolweight", 0, force=True)
+            options_update.__setitem__("nsent", options["nsentactive"], force=True)
+            options_update.__setitem__("nsentfast", options["nsentfastactive"], force=True)
+            options_update.__setitem__("nsentfine", options["nsentfineactive"], force=True)
 
             hyp_dict = None
             vp0 = copy.deepcopy(vp)
@@ -275,7 +276,7 @@ def active_sample(
                 gp.X / optim_state["gp_length_scale"]
             )
 
-            ### Missing port: line 185-211
+            ### Missing port: line 185-205
 
             ## Start active search
 
@@ -292,12 +293,19 @@ def active_sample(
                 acq_eval = AcqFcn()
             elif SearchAcqFcn[idx_acq] == "@acqfn_vbmc":
                 acq_eval = AcqFcnNoisy()
+            elif SearchAcqFcn[idx_acq] == "@acqviqr_vbmc":
+                acq_eval = AcqFcnVIQR()
             else:  # TODO implement branch
                 print(SearchAcqFcn[idx_acq])
-                raise NotImplementedError("Not implemented yet")
+                raise NotImplementedError(f"Acquisition function {SearchAcqFcn[idx_acq]} is not implemented yet")
+
+            # Prepare for importance sampling based acquistion function
+            if getattr(acq_eval, "importance_sampling", None):
+                optim_state["active_importance_sampling"] = True
 
             # Re-evaluate variance of the log joint if requested
-            if acq_eval.acq_info["compute_varlogjoint"]:
+            if hasattr(acq_eval, "acq_info")\
+               and acq_eval.acq_info.get("compute_varlogjoint"):
                 varF = _gplogjoint(vp, gp, 0, 0, 0, 1)[2]
                 optim_state["varlogjoint_samples"] = varF
 
@@ -325,7 +333,7 @@ def active_sample(
             if options["searchoptimizer"] != "none":
                 if gp.D == 1:
                     # Use Nelder-Mead method for 1D optimization
-                    options["searchoptimizer"] = "Nelder-Mead"
+                    options.__setitem__("searchoptimizer", "Nelder-Mead", force=True)
 
                 fval_old = acq_fast[idx]
                 x0 = X_acq[0, :]
@@ -341,7 +349,8 @@ def active_sample(
                     lb = np.minimum(gp.X, x0) - 0.1 * xrange
                     ub = np.maximum(gp.X, x0) + 0.1 * xrange
 
-                if acq_eval.acq_info["log_flag"]:
+                if hasattr(acq_eval, "acq_info")\
+                   and acq_eval.acq_info.get("log_flag"):
                     tol_fun = 1e-2
                 else:
                     tol_fun = max(1e-12, abs(fval_old * 1e-3))
