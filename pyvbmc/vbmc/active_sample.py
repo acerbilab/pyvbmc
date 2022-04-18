@@ -8,6 +8,7 @@ import numpy as np
 from pyvbmc.acquisition_functions.abstract_acq_fcn import AbstractAcqFcn
 from pyvbmc.acquisition_functions.acq_fcn import AcqFcn
 from pyvbmc.acquisition_functions.acq_fcn_noisy import AcqFcnNoisy
+from pyvbmc.acquisition_functions.acq_fcn_viqr import AcqFcnVIQR
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.stats import get_hpd
 from pyvbmc.variational_posterior import VariationalPosterior
@@ -275,7 +276,7 @@ def active_sample(
                 gp.X / optim_state["gp_length_scale"]
             )
 
-            ### Missing port: line 185-211
+            ### Missing port: line 185-205
 
             ## Start active search
 
@@ -292,9 +293,16 @@ def active_sample(
                 acq_eval = AcqFcn()
             elif SearchAcqFcn[idx_acq] == "@acqfn_vbmc":
                 acq_eval = AcqFcnNoisy()
+            elif SearchAcqFcn[idx_acq] == "@acqviqr_vbmc":
+                acq_eval = AcqFcnVIQR()
             else:  # TODO implement branch
                 print(SearchAcqFcn[idx_acq])
-                raise NotImplementedError("Not implemented yet")
+                raise NotImplementedError(f"Acquisition function {SearchAcqFcn[idx_acq]} is not implemented yet")
+
+            # Prepare for importance sampling based acquistion function
+            if hasattr(acq_eval, "importance_sampling")\
+               and acq_eval.importance_sampling:
+                optim_state["active_importance_sampling"] = True
 
             # Re-evaluate variance of the log joint if requested
             if acq_eval.acq_info["compute_varlogjoint"]:
