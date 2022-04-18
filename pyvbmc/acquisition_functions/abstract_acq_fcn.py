@@ -6,7 +6,8 @@ import numpy as np
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.variational_posterior import VariationalPosterior
-from pyvbmc.acquisition_functions import sq_dist
+from .utilities import sq_dist
+
 
 class AbstractAcqFcn(ABC):
     """

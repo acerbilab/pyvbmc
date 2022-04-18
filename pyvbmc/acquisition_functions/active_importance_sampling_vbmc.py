@@ -4,6 +4,7 @@ import copy
 import math
 import sys
 import gpyreg as gpr
+from .utilities import sq_dist
 
 def active_importance_sampling_vbmc(vp, gp, acqfcn, acqinfo, options):
     """
@@ -316,35 +317,6 @@ def log_isbasefun(x, acqfcn, gp, vp=None):
                         np.log(sys.float_info.min))
         return v_ln_pdf + u * f_s + np.log1p(-np.exp(-2 * u * f_s))
         # y = acqfcn('islogf', v_ln_pdf, [], [], f_mu, f_s2)
-
-def sq_dist(a, b):
-    """
-    Compute matrix of all pairwise squared distances between two sets
-    of vectors, stored in the columns of the two matrices `a` and `b`.
-
-    Parameters
-    ----------
-    a : np.array, shape (n, D)
-        First set of vectors.
-    b : np.array, shape (m, D)
-        Second set of vectors.
-
-    Returns
-    -------
-    c: np.array, shape(n, m)
-        The matrix of all pairwise squared distances.
-    """
-    n = a.shape[0]
-    m = b.shape[0]
-    mu = (m / (n + m)) * np.mean(b, axis=0) + (n / (n + m)) * np.mean(
-        a, axis=0
-    )
-    a = a - mu
-    b = b - mu
-    c = np.sum(a * a, axis=1, keepdims=True) + (
-        np.sum(b * b, axis=1, keepdims=True).T - (2 * a @ b.T)
-    )
-    return np.maximum(c, 0)
 
 
 def get_mcmc_opts(Ns=100, thin=1, burn_in=None):
