@@ -68,7 +68,7 @@ class AcqFcnVIQR(AbstractAcqFcn):
                 raise ValueError("Covariance functions besides SquaredExponential are not supported yet.")
 
             if L_chol:
-                C = Ka_mat.T - Ks_mat.T * \
+                C = Ka_mat.T - Ks_mat.T @ \
                     solve_triangular(L,
                                      solve_triangular(L,
                                                       Kax_mat.T,
@@ -78,15 +78,15 @@ class AcqFcnVIQR(AbstractAcqFcn):
                                      check_finite=False
                                      ) / sn2_eff
             else:
-                C = Ka_mat.T + Ks_mat.T * (L * Kax_mat.T)
+                C = Ka_mat.T + Ks_mat.T @ (L @ Kax_mat.T)
 
             # Missing port, integrated meanfun
 
-            tau2 = C**2 / y_s2[:, s]
-            s_pred = np.sqrt(max(
+            tau2 = C**2 / y_s2[:, s].reshape(-1,1)
+            s_pred = np.sqrt(np.maximum(
                 optim_state["active_importance_sampling"]["f_s2a"][:, s].T
                 - tau2,
-                0
+                0.0
             ))
 
             ln_w = optim_state["active_importance_sampling"]["ln_w"][s, :]
@@ -94,11 +94,11 @@ class AcqFcnVIQR(AbstractAcqFcn):
             u = 0.6745  # inverse normal cdf of 0.75
             zz = ln_w + u * s_pred + np.log1p(-np.exp(-2 * u * s_pred))
             ln_max = np.amax(zz, axis=1)
-            acq[:, s] = np.log(np.sum(np.exp(zz - ln_max), axis=1)) + ln_max
+            acq[:, s] = np.log(np.sum(np.exp(zz - ln_max.reshape(-1,1)), axis=1)) + ln_max
 
         if Ns > 1:
             M = np.amax(acq, axis=1)
-            acq = M + np.log(np.sum(np.exp(acq - M), axis=1) / Ns)
+            acq = M + np.log(np.sum(np.exp(acq - M.reshape(-1,1)), axis=1) / Ns)
 
         return acq
 
