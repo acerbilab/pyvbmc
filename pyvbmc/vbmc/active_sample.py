@@ -209,12 +209,12 @@ def active_sample(
             entropy_alpha_old = optim_state["entropy_alpha"]
 
             options_update = copy.deepcopy(options)
-            options_update["gptolopt"] = options["gptoloptactive"]
-            options_update["gptoloptmcmc"] = options["gptoloptmcmcactive"]
-            options_update["tolweight"] = 0
-            options_update["nsent"] = options["nsentactive"]
-            options_update["nsentfast"] = options["nsentfastactive"]
-            options_update["nsentfine"] = options["nsentfineactive"]
+            options_update.__setitem__("gptolopt", options["gptoloptactive"], force=True)
+            options_update.__setitem__("gptoloptmcmc", options["gptoloptmcmcactive"], force=True)
+            options_update.__setitem__("tolweight", 0, force=True)
+            options_update.__setitem__("nsent", options["nsentactive"], force=True)
+            options_update.__setitem__("nsentfast", options["nsentfastactive"], force=True)
+            options_update.__setitem__("nsentfine", options["nsentfineactive"], force=True)
 
             hyp_dict = None
             vp0 = copy.deepcopy(vp)
@@ -325,7 +325,7 @@ def active_sample(
             if options["searchoptimizer"] != "none":
                 if gp.D == 1:
                     # Use Nelder-Mead method for 1D optimization
-                    options["searchoptimizer"] = "Nelder-Mead"
+                    options.__setitem__("searchoptimizer", "Nelder-Mead", force=True)
 
                 fval_old = acq_fast[idx]
                 x0 = X_acq[0, :]
