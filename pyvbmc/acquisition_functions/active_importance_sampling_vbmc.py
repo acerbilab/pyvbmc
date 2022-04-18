@@ -6,7 +6,7 @@ import sys
 import gpyreg as gpr
 from .utilities import sq_dist
 
-def active_importance_sampling_vbmc(vp, gp, acqfcn, acqinfo, options):
+def active_importance_sampling_vbmc(vp, gp, acqfcn, options):
     """
     Setup importance sampling acquisition functions (viqr/imiqr).
 
@@ -28,8 +28,6 @@ def active_importance_sampling_vbmc(vp, gp, acqfcn, acqinfo, options):
         The variational posterior.
     acqfcn : AbstractAcqFcn
         The acquisition function.
-    acqinfo : dict
-        The information of the acquisition function.
 
     Returns
     -------
@@ -45,14 +43,14 @@ def active_importance_sampling_vbmc(vp, gp, acqfcn, acqinfo, options):
         and acqfcn.variational_importance_sampling
 
     D = gp.X.shape[1]
-    Ns_gp = len(gp.post)# Number of gp hyperparameter samples
+    Ns_gp = len(gp.posteriors)  # Number of gp hyperparameter samples
 
     # Input space bounds and typical scales (for MCMC only)
     widths = np.std(gp.X, axis=0, ddof=1)
     max_bnd = 0.5
-    diam = max(gp.X) - min(gp.X)
-    LB = min(gp.X) - max_bnd * diam
-    UB = max(gp.X) + max_bnd * diam
+    diam = np.amax(gp.X, axis=0) - np.amin(gp.X, axis=0)
+    LB = np.amin(gp.X, axis=0) - max_bnd * diam
+    UB = np.amax(gp.X, axis=0) + max_bnd * diam
 
     active_is = {}
     active_is["log_weight"] = None
@@ -63,7 +61,7 @@ def active_importance_sampling_vbmc(vp, gp, acqfcn, acqinfo, options):
         # Step 0: Simply sample from variational posterior.
 
         Na = options["activeimportancesamplingmcmcsamples"]
-        Xa = vp.sample(Na, origflag=False)
+        Xa, __ = vp.sample(Na, origflag=False)
 
         f_mu, f_s2 = gp.predict(Xa, separate_samples=True)
 
@@ -99,17 +97,15 @@ def active_importance_sampling_vbmc(vp, gp, acqfcn, acqinfo, options):
                 f_mu, f_s2 = gp.predict(Xa, separate_samples=True)
 
         if isample_vp_flag:
-            v_ln_pdf = np.max(vp.pdf(Xa, origflag=False, logflag=True),
+            v_ln_pdf = max(vp.pdf(Xa, origflag=False, logflag=True),
                             np.log(np.finfo(np.float64).min))
-            ln_y = acqfcn('islogf1', v_ln_pdf, None, None, f_mu, f_s2)
+            ln_y = acqfcn.is_log_f1(v_ln_pdf, f_mu, f_s2)
         else:
-            ln_y = acqfcn('islogf1', None, None, None, f_mu, f_s2)
+            ln_y = acqfcn.is_log_f1(None, f_mu, f_s2)
 
         active_is["f_s2a"] = f_s2
         active_is["ln_w"] = ln_y.T
         active_is["Xa"] = Xa
-
-        return active_is
 
     else:
         # Step 1: Importance sampling-resampling
@@ -187,7 +183,7 @@ def active_importance_sampling_vbmc(vp, gp, acqfcn, acqinfo, options):
                 # Use importance sampling-resampling
                 f_mu, f_s2 = gp.predict(active_is_old["Xa"], separate_samples=True)
                 ln_w = active_is_old["ln_w"]
-                w = np.exp(ln_w - np.amax(ln_w, axis=2))
+                w = np.exp(ln_w - np.amax(ln_w, axis=1))
                 x0 = np.zeros(W, D)
                 # Select without replacement by weight w:
                 indices = np.random.choice(a=len(w), p=w, replace=False)
@@ -221,7 +217,7 @@ def active_importance_sampling_vbmc(vp, gp, acqfcn, acqinfo, options):
         (active_is["Xa"].shape[0], gp.X.shape[0], Ns_gp)
         )
     for s in range(Ns_gp):
-        if active_is["Xa"].shape(2) == 1:
+        if len(active_is["Xa"].shape) == 2:
             Xa = active_is["Xa"]
         else:
             Xa = active_is["Xa"][:, :, s]
@@ -252,7 +248,7 @@ def activesample_proposalpdf(Xa, gp, vp_is, w_vp, rect_delta, acqfcn, vp, isampl
 
     """
     N, D = gp.Xa.shape
-    Na = Xa.shape(0)
+    Na = Xa.shape[0]
 
     f_mu, f_s2 = gp.predict(Xa, separate_samples=True)
 
@@ -287,7 +283,7 @@ def activesample_proposalpdf(Xa, gp, vp_is, w_vp, rect_delta, acqfcn, vp, isampl
             )
 
         m_max = np.amax(temp_lpdf, axis=1)
-        l_pdf = np.log(np.sum(np.exp(temp_lpdf - m_max), axis=2))
+        l_pdf = np.log(np.sum(np.exp(temp_lpdf - m_max), axis=1))
         ln_w = ln_y - (l_pdf + m_max)
     else:
         ln_w = ln_y - temp_lpdf
@@ -360,8 +356,8 @@ def fess_vbmc(vp, gp, X=100):
 
     # Compute effective sample size (ESS) with importance sampling
     v_logpdf = max(vp.pdf(X, origflag=False, logflag=True), np.log(sys.float_info.min))
-    log_w = fbar - v_logpdf
-    weight = np.exp(log_w - max(log_w))
+    ln_w = fbar - v_logpdf
+    weight = np.exp(ln_w - np.amax(ln_w, axis=1))
     weight = weight / sum(weight)
 
     return (1 / sum(weight**2)) / N  # Fractional ESS

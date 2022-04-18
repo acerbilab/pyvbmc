@@ -2,10 +2,12 @@ import sys
 
 import gpyreg as gpr
 import numpy as np
+from scipy.linalg import solve_triangular
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.variational_posterior import VariationalPosterior
 
 from .abstract_acq_fcn import AbstractAcqFcn
+from .utilities import sq_dist
 
 
 class AcqFcnVIQR(AbstractAcqFcn):
@@ -34,17 +36,73 @@ class AcqFcnVIQR(AbstractAcqFcn):
         """
         Compute the value of the acquisition function.
         """
-        # Xs is in *transformed* coordinates
+        # Missing port, integrated mean function, lines 49 to 57.
 
-        # Probability density of variational posterior at test points
-        realmin = sys.float_info.min
-        p = np.ravel(np.maximum(vp.pdf(Xs, origflag=False), realmin))
+        # Xs is in *transformed* coordinates
+        [Nx, D] = Xs.shape
+        Ns = f_mu.shape[1]
 
         # Estimate observation noise at test points from nearest neighbor.
         sn2 = super()._estimate_observation_noise(Xs, gp, optim_state)
+        y_s2 = f_s2 + sn2.reshape(-1,1)  # Predictive variance at test points
 
-        z = function_logger.ymax
+        Xa = optim_state["active_importance_sampling"]["Xa"]
+        acq = np.zeros((Nx, Ns))
+        cov_N = gp.covariance.hyperparameter_count(gp.D)
 
-        # Prospective uncertainty search corrected for noisy observations
-        acq = -var_tot * (1 - sn2 / (var_tot + sn2)) * np.exp(f_bar - z) * p
+        # Compute acquisition function via importance sampling
+
+        for s in range(len(gp.posteriors)):
+            hyp = gp.posteriors[s].hyp[0:cov_N]  # Covariance hyperparameters
+            L = gp.posteriors[s].L
+            L_chol = gp.posteriors[s].L_chol
+            sn2_eff = 1 / gp.posteriors[s].sW[1]**2
+
+            # Compute cross-kernel matrix Ks_mat
+            if isinstance(gp.covariance,
+                          gpr.covariance_functions.SquaredExponential):
+                Ks_mat = gp.covariance.compute(hyp, gp.X, Xs)
+                Ka_mat = gp.covariance.compute(hyp, Xa, Xs)
+                Kax_mat = optim_state["active_importance_sampling"]["Kax_mat"][:, :, s]
+            else:
+                raise ValueError("Covariance functions besides SquaredExponential are not supported yet.")
+
+            if L_chol:
+                C = Ka_mat.T - Ks_mat.T * \
+                    solve_triangular(L,
+                                     solve_triangular(L,
+                                                      Kax_mat.T,
+                                                      trans=True,
+                                                      check_finite=False
+                                                      ),
+                                     check_finite=False
+                                     ) / sn2_eff
+            else:
+                C = Ka_mat.T + Ks_mat.T * (L * Kax_mat.T)
+
+            # Missing port, integrated meanfun
+
+            tau2 = C**2 / y_s2[:, s]
+            s_pred = np.sqrt(max(
+                optim_state["active_importance_sampling"]["f_s2a"][:, s].T
+                - tau2,
+                0
+            ))
+
+            ln_w = optim_state["active_importance_sampling"]["ln_w"][s, :]
+
+            u = 0.6745  # inverse normal cdf of 0.75
+            zz = ln_w + u * s_pred + np.log1p(-np.exp(-2 * u * s_pred))
+            ln_max = np.amax(zz, axis=1)
+            acq[:, s] = np.log(np.sum(np.exp(zz - ln_max), axis=1)) + ln_max
+
+        if Ns > 1:
+            M = np.amax(acq, axis=1)
+            acq = M + np.log(np.sum(np.exp(acq - M), axis=1) / Ns)
+
         return acq
+
+
+    def is_log_f1(self, v_ln_pdf, f_mu, f_s2):
+        # Importance sampling log base proposal (shared part)
+        return np.zeros(f_s2.shape)
