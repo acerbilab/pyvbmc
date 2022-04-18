@@ -300,12 +300,12 @@ def active_sample(
                 raise NotImplementedError(f"Acquisition function {SearchAcqFcn[idx_acq]} is not implemented yet")
 
             # Prepare for importance sampling based acquistion function
-            if hasattr(acq_eval, "importance_sampling")\
-               and acq_eval.importance_sampling:
+            if getattr(acq_eval, "importance_sampling", None):
                 optim_state["active_importance_sampling"] = True
 
             # Re-evaluate variance of the log joint if requested
-            if acq_eval.acq_info["compute_varlogjoint"]:
+            if hasattr(acq_eval, "acq_info")\
+               and acq_eval.acq_info.get("compute_varlogjoint"):
                 varF = _gplogjoint(vp, gp, 0, 0, 0, 1)[2]
                 optim_state["varlogjoint_samples"] = varF
 
@@ -349,7 +349,8 @@ def active_sample(
                     lb = np.minimum(gp.X, x0) - 0.1 * xrange
                     ub = np.maximum(gp.X, x0) + 0.1 * xrange
 
-                if acq_eval.acq_info["log_flag"]:
+                if hasattr(acq_eval, "acq_info")\
+                   and acq_eval.acq_info.get("log_flag"):
                     tol_fun = 1e-2
                 else:
                     tol_fun = max(1e-12, abs(fval_old * 1e-3))
