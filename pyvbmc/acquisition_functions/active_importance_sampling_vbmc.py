@@ -222,11 +222,13 @@ def active_importance_sampling_vbmc(vp, gp, acqfcn, options):
         else:
             Xa = active_is["Xa"][:, :, s]
         cov_N = gp.covariance.hyperparameter_count(gp.D)
-        hyp = gp.posteriors[s].hyp[0:cov_N]
-        if isinstance(gp.covariance, gpr.covariance_functions.SquaredExponential):
+        hyp = gp.posteriors[s].hyp[0:cov_N]  # just covariance hyperparameters
+        if isinstance(gp.covariance,
+                      gpr.covariance_functions.SquaredExponential):
             Kax_mat[:, :, s] = gp.covariance.compute(hyp, Xa, gp.X)
         else:
-            raise ValueError("Covariance functions besides SquaredExponential are not supported yet.")
+            raise ValueError("Covariance functions besides" ++
+                             "SquaredExponential are not supported yet.")
     active_is["Kax_mat"] = Kax_mat
 
     # Omitted port, integrated mean functions:
