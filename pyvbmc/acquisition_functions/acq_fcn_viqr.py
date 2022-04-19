@@ -20,6 +20,7 @@ class AcqFcnVIQR(AbstractAcqFcn):
         self.importance_sampling_vp = False
         self.variational_importance_sampling = True
         self.log_flag = True
+        self.u = 0.6745  # inverse normal cdf of 0.75
 
     def _compute_acquisition_function(
         self,
@@ -91,9 +92,9 @@ class AcqFcnVIQR(AbstractAcqFcn):
 
             ln_w = optim_state["active_importance_sampling"]["ln_w"][s, :]
 
-            u = 0.6745  # inverse normal cdf of 0.75
             # zz = ln(weights * sinh(u * s_pred))
-            zz = ln_w + u * s_pred + np.log1p(-np.exp(-2 * u * s_pred))
+            zz = ln_w + self.u * s_pred\
+                + np.log1p(-np.exp(-2 * self.u * s_pred))
             # logsumexp
             ln_max = np.amax(zz, axis=1)
             acq[:, s] = np.log(np.sum(np.exp(zz - ln_max.reshape(-1,1)), axis=1)) + ln_max
@@ -108,3 +109,13 @@ class AcqFcnVIQR(AbstractAcqFcn):
     def is_log_f1(self, v_ln_pdf, f_mu, f_s2):
         # Importance sampling log base proposal (shared part)
         return np.zeros(f_s2.shape)
+
+    def is_log_f2(self, f_mu, f_s2):
+        # Importance sampling log base proposal (shared part)
+        f_s = np.sqrt(f_s2)
+        return self.u * f_s + np.log1p(-np.exp(-2 * self.u * f_s))
+
+    def is_log_f(self, v_ln_pdf, f_mu, f_s2):
+        # Importance sampling log base proposal distribution
+        f_s = np.sqrt(f_s2)
+        return v_ln_pdf + self.u * f_s + np.log1p(-np.exp(-2 * self.u * f_s))

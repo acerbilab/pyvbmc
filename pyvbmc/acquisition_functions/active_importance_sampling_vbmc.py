@@ -97,8 +97,8 @@ def active_importance_sampling_vbmc(vp, gp, acqfcn, options):
                 f_mu, f_s2 = gp.predict(Xa, separate_samples=True)
 
         if isample_vp_flag:
-            v_ln_pdf = max(vp.pdf(Xa, origflag=False, logflag=True),
-                            np.log(np.finfo(np.float64).min))
+            v_ln_pdf = np.maximum(vp.pdf(Xa, origflag=False, logflag=True),
+                                  np.log(np.finfo(np.float64).min))
             ln_y = acqfcn.is_log_f1(v_ln_pdf, f_mu, f_s2)
         else:
             ln_y = acqfcn.is_log_f1(None, f_mu, f_s2)
@@ -200,11 +200,11 @@ def active_importance_sampling_vbmc(vp, gp, acqfcn, options):
 
                 # Fixed log weight for importance sampling (log fixed integrand)
                 if isample_vp_flag:
-                    v_ln_pdf = max(vp.pdf(Xa, origflag=False, logflag=True),
-                                   np.log(sys.float_info.min))
-                    ln_y = acqfcn('islogf1', v_ln_pdf, [], [], f_mu, f_s2)
+                    v_ln_pdf = np.maximum(vp.pdf(Xa, origflag=False, logflag=True),
+                                          np.log(sys.float_info.min))
+                    ln_y = acqfcn.is_log_f1(v_ln_pdf, f_mu, f_s2)
                 else:
-                    ln_y = acqfcn('islogf1', [], [], [], f_mu, f_s2)
+                    ln_y = acqfcn.is_log_f1(None, f_mu, f_s2)
 
                 active_is["f_s2a"][:, s] = f_s2
                 active_is["ln_w"][s, :] = ln_y.T - log_p.T
@@ -265,11 +265,11 @@ def activesample_proposalpdf(Xa, gp, vp_is, w_vp, rect_delta, acqfcn, vp, isampl
 
     # Fixed log weight for importance sampling (log fixed integrand)
     if isample_vp_flag:
-        v_ln_pdf = max(vp.pdf(Xa, origflag=False, logflag=True),
-                       np.log(sys.float_info.min))
-        ln_y = acqfcn('islogf1', v_ln_pdf, [], [], f_mu, f_s2)
+        v_ln_pdf = np.maximum(vp.pdf(Xa, origflag=False, logflag=True),
+                              np.log(sys.float_info.min))
+        ln_y = acqfcn.is_log_f1(v_ln_pdf, f_mu, f_s2)
     else:
-        ln_y = acqfcn('islogf1', [], [], f_mu, f_s2)
+        ln_y = acqfcn.is_log_f1(None, f_mu, f_s2)
 
     # Mixture of box-uniforms
     if w_vp < 1:
@@ -291,7 +291,7 @@ def activesample_proposalpdf(Xa, gp, vp_is, w_vp, rect_delta, acqfcn, vp, isampl
     return ln_w, f_s2
 
 
-def log_isbasefun(x, acqfcn, gp, vp=None):
+def log_isbasefun(x, acq_fcn, gp, vp=None):
     r"""Base importance sampling proposal log pdf.
 
     Parameters
@@ -306,13 +306,11 @@ def log_isbasefun(x, acqfcn, gp, vp=None):
     f_s = np.sqrt(f_s2)
 
     if vp is None:
-        return u * f_s + np.log1p(-np.exp(-2 * u * f_s))
-        # y = acqfcn('islogf', [], [], [], f_mu, f_s2)
+        return acq_fcn.is_log_f(0, f_mu, f_s2)
     else:
-        v_ln_pdf = max(vp.pdf(x, origflag=False, logflag=True),
-                        np.log(sys.float_info.min))
-        return v_ln_pdf + u * f_s + np.log1p(-np.exp(-2 * u * f_s))
-        # y = acqfcn('islogf', v_ln_pdf, [], [], f_mu, f_s2)
+        v_ln_pdf = np.maximum(vp.pdf(x, origflag=False, logflag=True),
+                              np.log(sys.float_info.min))
+        return acq_fcn.is_log_f(v_ln_pdf, f_mu, f_s2)
 
 
 def get_mcmc_opts(Ns=100, thin=1, burn_in=None):
@@ -355,8 +353,9 @@ def fess_vbmc(vp, gp, X=100):
         raise ValueError("Mismatch between number of samples from VP and GP.")
 
     # Compute effective sample size (ESS) with importance sampling
-    v_logpdf = max(vp.pdf(X, origflag=False, logflag=True), np.log(sys.float_info.min))
-    ln_w = fbar - v_logpdf
+    v_ln_pdf = np.maximum(vp.pdf(X, origflag=False, logflag=True),
+                          np.log(sys.float_info.min))
+    ln_w = fbar - v_ln_pdf
     weight = np.exp(ln_w - np.amax(ln_w, axis=1))
     weight = weight / sum(weight)
 
