@@ -293,15 +293,25 @@ def log_isbasefun(x, acq_fcn, gp, vp=None):
     r"""Base importance sampling proposal log pdf.
 
     Parameters
-    ---------
+    ----------
+    x : np.ndarray, shape (N, D)
+        The points at which to evaluate the log pdf of the proposal.
+    acq_fcn : AbstractAcqFcn
+        The acquisition function (must implement ``is_log_f`` method which
+        evaluates the log pdf.
+    gp : gpr.GP
+        The GP surrogate.
+    vp : VariationalPosterior, optional
+        The current VP. If ``None``, no importance sampling weights
+        will be added to the log pdf.
 
     Returns
     -------
+    is_log_f : np.ndarray, shape (N,)
+        The proposal log pdf evaluated at the input points.
     """
 
-    u = 0.6745  # inverse normal cdf of 0.75
     f_mu, f_s2 = gp.predict(x)
-    f_s = np.sqrt(f_s2)
 
     if vp is None:
         return acq_fcn.is_log_f(0, f_mu, f_s2)
@@ -315,10 +325,26 @@ def get_mcmc_opts(Ns=100, thin=1, burn_in=None):
     r"""Get standard MCMC options.
 
     Parameters
-    ---------
+    ----------
+    Ns : int, optional
+        The number of MCMC samples to return, after thinning and burn-in.
+        Default 100.
+    thin : int, optional
+        The thinning parameter will omit ``thin-1`` out of ``thin`` values in
+        the generated sequence (after burn-in). Default 1.
+    burn_in : int, optional
+        The burn-in omits the first ``burn_in`` points before returning any
+        samples. Default ``thin * Ns / 2``.
 
     Returns
     -------
+    sampler_opts : dict
+        The default sampler options: ``"display" : off`` and
+        ``diagnostics : False''.
+    thin : int
+        The selected value for ``thin``.
+    burn_in : int
+        The selected value for ``burn_in``.
     """
 
     sampler_opts = {}
@@ -332,6 +358,24 @@ def get_mcmc_opts(Ns=100, thin=1, burn_in=None):
 
 def fess_vbmc(vp, gp, X=100):
     r"""Compute fractional effective sample size through importance sampling.
+
+    Parameters
+    ----------
+    vp : VariationalPosterior
+        The ``VP`` object for calculating importance sampling weights.
+    gp : gpr.GP or np.ndarray, shape(N, Ns_gp)
+        The ``GP`` object for calculating the average posterior mean, or an
+        ``ndarray`` of separate GP posterior means, over ``Ns_gp``
+        hyperparameter samples.
+    X : np.ndarray(N, D) or int
+        The domain points at which to calculate the VP pdf for importance
+        sampling weights, or an integer number of samples to draw from the
+        VP for the same purpose.
+
+    Returns
+    -------
+    fESS : float
+        The estimated fractional Effective Samples Size.
     """
 
     # If a single number is passed, interpret it as the number of samples

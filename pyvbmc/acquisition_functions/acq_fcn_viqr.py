@@ -11,8 +11,11 @@ from .utilities import sq_dist
 
 
 class AcqFcnVIQR(AbstractAcqFcn):
-    """
-    Acquisition Function based on Variational Inter-Quantile Range
+    r"""
+    Variational Interquantile Range (VIQR) acquisition function.
+
+    Approximates the Integrated Median Interquantile Range (IMIQR) by simple
+    Monte Carlo using samples from the Variational Posterior.
     """
 
     def __init__(self):
@@ -34,7 +37,7 @@ class AcqFcnVIQR(AbstractAcqFcn):
         f_bar: np.ndarray,
         var_tot: np.ndarray,
     ):
-        """
+        r"""
         Compute the value of the acquisition function.
         """
         # Missing port, integrated mean function, lines 49 to 57.
@@ -91,6 +94,9 @@ class AcqFcnVIQR(AbstractAcqFcn):
             ))
 
             ln_w = optim_state["active_importance_sampling"]["ln_w"][s, :]
+            # ln_w should be 0 here: since we are sampling Xa from the VP
+            # no extra importance sampling weight is required.
+            # It is included for compatibility.
 
             # zz = ln(weights * sinh(u * s_pred))
             zz = ln_w + self.u * s_pred\
