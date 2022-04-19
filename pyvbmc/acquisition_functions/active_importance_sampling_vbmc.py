@@ -36,11 +36,9 @@ def active_importance_sampling_vbmc(vp, gp, acqfcn, options):
     """
 
     # Does the importance sampling step use the variational posterior?
-    isample_vp_flag = hasattr(acqfcn, "importance_sampling_vp")\
-        and acqfcn.importance_sampling_vp
+    isample_vp_flag = getattr(acqfcn, "importance_sampling_vp", False)
     # Do we simply sample from the variational posterior?
-    only_vp_flag = hasattr(acqfcn, "variational_importance_sampling")\
-        and acqfcn.variational_importance_sampling
+    only_vp_flag = getattr(acqfcn, "variational_importance_sampling", False)
 
     D = gp.X.shape[1]
     Ns_gp = len(gp.posteriors)  # Number of gp hyperparameter samples
@@ -182,7 +180,7 @@ def active_importance_sampling_vbmc(vp, gp, acqfcn, options):
 
                 # Use importance sampling-resampling
                 f_mu, f_s2 = gp.predict(active_is_old["Xa"], separate_samples=True)
-                ln_w = active_is_old["ln_w"]
+                ln_w = active_is_old["ln_w"] + acqfcn.is_log_f2(f_mu, f_s2)
                 w = np.exp(ln_w - np.amax(ln_w, axis=1))
                 x0 = np.zeros(W, D)
                 # Select without replacement by weight w:
