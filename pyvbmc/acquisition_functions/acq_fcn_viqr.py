@@ -40,25 +40,25 @@ class AcqFcnVIQR(AbstractAcqFcn):
 
         # Xs is in *transformed* coordinates
         [Nx, D] = Xs.shape
-        Ns = f_mu.shape[1]
+        Ns_gp = f_mu.shape[1]
 
         # Estimate observation noise at test points from nearest neighbor.
         sn2 = super()._estimate_observation_noise(Xs, gp, optim_state)
         y_s2 = f_s2 + sn2.reshape(-1,1)  # Predictive variance at test points
 
         Xa = optim_state["active_importance_sampling"]["Xa"]
-        acq = np.zeros((Nx, Ns))
+        acq = np.zeros((Nx, Ns_gp))
         cov_N = gp.covariance.hyperparameter_count(gp.D)
 
         # Compute acquisition function via importance sampling
 
-        for s in range(len(gp.posteriors)):
+        for s in range(Ns_gp):
             hyp = gp.posteriors[s].hyp[0:cov_N]  # Covariance hyperparameters
             L = gp.posteriors[s].L
             L_chol = gp.posteriors[s].L_chol
             sn2_eff = 1 / gp.posteriors[s].sW[1]**2
 
-            # Compute cross-kernel matrix Ks_mat
+            # Compute cross-kernel matrices
             if isinstance(gp.covariance,
                           gpr.covariance_functions.SquaredExponential):
                 Ks_mat = gp.covariance.compute(hyp, gp.X, Xs)
@@ -92,13 +92,15 @@ class AcqFcnVIQR(AbstractAcqFcn):
             ln_w = optim_state["active_importance_sampling"]["ln_w"][s, :]
 
             u = 0.6745  # inverse normal cdf of 0.75
+            # zz = ln(weights * sinh(u * s_pred))
             zz = ln_w + u * s_pred + np.log1p(-np.exp(-2 * u * s_pred))
+            # logsumexp
             ln_max = np.amax(zz, axis=1)
             acq[:, s] = np.log(np.sum(np.exp(zz - ln_max.reshape(-1,1)), axis=1)) + ln_max
 
-        if Ns > 1:
+        if Ns_gp > 1:
             M = np.amax(acq, axis=1)
-            acq = M + np.log(np.sum(np.exp(acq - M.reshape(-1,1)), axis=1) / Ns)
+            acq = M + np.log(np.sum(np.exp(acq - M.reshape(-1,1)), axis=1) / Ns_gp)
 
         return acq
 
