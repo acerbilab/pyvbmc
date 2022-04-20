@@ -7,7 +7,6 @@ from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.variational_posterior import VariationalPosterior
 
 from .abstract_acq_fcn import AbstractAcqFcn
-from .utilities import sq_dist
 
 
 class AcqFcnVIQR(AbstractAcqFcn):
@@ -52,10 +51,10 @@ class AcqFcnVIQR(AbstractAcqFcn):
 
         Xa = optim_state["active_importance_sampling"]["Xa"]
         acq = np.zeros((Nx, Ns_gp))
-        cov_N = gp.covariance.hyperparameter_count(gp.D)
 
         # Compute acquisition function via importance sampling
 
+        cov_N = gp.covariance.hyperparameter_count(gp.D)
         for s in range(Ns_gp):
             hyp = gp.posteriors[s].hyp[0:cov_N]  # Covariance hyperparameters
             L = gp.posteriors[s].L
@@ -69,7 +68,8 @@ class AcqFcnVIQR(AbstractAcqFcn):
                 Ka_mat = gp.covariance.compute(hyp, Xa, Xs)
                 Kax_mat = optim_state["active_importance_sampling"]["Kax_mat"][:, :, s]
             else:
-                raise ValueError("Covariance functions besides SquaredExponential are not supported yet.")
+                raise ValueError("Covariance functions besides" ++
+                                 "SquaredExponential are not supported yet.")
 
             if L_chol:
                 C = Ka_mat.T - Ks_mat.T @ \
@@ -86,7 +86,7 @@ class AcqFcnVIQR(AbstractAcqFcn):
 
             # Missing port, integrated meanfun
 
-            tau2 = C**2 / y_s2[:, s].reshape(-1,1)
+            tau2 = C**2 / y_s2[:, s].reshape(-1, 1)
             s_pred = np.sqrt(np.maximum(
                 optim_state["active_importance_sampling"]["f_s2a"][:, s].T
                 - tau2,
@@ -104,12 +104,17 @@ class AcqFcnVIQR(AbstractAcqFcn):
             # logsumexp
             ln_max = np.amax(zz, axis=1)
             ln_max[ln_max == -np.inf] = 0.0  # Avoid -inf + inf
-            acq[:, s] = np.log(np.sum(np.exp(zz - ln_max.reshape(-1,1)), axis=1)) + ln_max
+            acq[:, s] = np.log(
+                np.sum(np.exp(zz - ln_max.reshape(-1, 1)), axis=1)
+            ) + ln_max
 
         if Ns_gp > 1:
             M = np.amax(acq, axis=1)
             M[M == -np.inf] = 0.0  # Avoid -inf + inf
-            acq = M + np.log(np.sum(np.exp(acq - M.reshape(-1,1)), axis=1) / Ns_gp)
+            acq = M + np.log(
+                np.sum(np.exp(acq - M.reshape(-1, 1)), axis=1)
+                / Ns_gp
+            )
 
         return acq
 
