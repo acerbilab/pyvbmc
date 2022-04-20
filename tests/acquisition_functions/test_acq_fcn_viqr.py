@@ -35,8 +35,8 @@ def test__call__():
                 ])
     gp.posteriors = np.array([gpr.gaussian_process.Posterior(
         hyp=hyp,
-        alpha=np.array([1.0, 2.0]),
-        sW=np.array([0.5, 1.5]),
+        alpha=np.array([[1.0, 2.0]]).T,
+        sW=np.array([[0.5, 1.5]]).T,
         L=np.eye(N),
         sn2_mult=None,
         Lchol=True
@@ -53,10 +53,12 @@ def test__call__():
         "gp_length_scale" : 2.0,
         "active_importance_sampling" : {
             "Xa" : np.arange(1,10).reshape((3, 3)) - 4.5,
-            "Kax_mat" : np.eye(3,3).reshape((3, 3, 1)),
+            "Kax_mat" : np.eye(3,2).reshape((3, 2, 1)),
             "f_s2a" : np.arange(1,4).reshape(3, 1),
             "ln_w" : np.arange(1,4).reshape(1, 3) - 0.5
-        }
+        },
+        "lb_eps_orig" : -np.inf,
+        "ub_eps_orig" : np.inf
     }
     sn2_new = np.zeros((1,1))
     sn2_new[:, 0] = gp.noise.compute(hyp[4:5], gp.X, gp.y, s2=None).reshape(-1,)
