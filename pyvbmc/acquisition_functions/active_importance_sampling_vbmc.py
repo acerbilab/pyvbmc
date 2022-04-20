@@ -45,12 +45,10 @@ def active_importance_sampling_vbmc(vp, gp, acqfcn, options):
 
     # Input space bounds and typical scales (for MCMC only)
     widths = np.std(gp.X, axis=0, ddof=1)
-    max_bnd = 500
+    max_bnd = 0.5
     diam = np.amax(gp.X, axis=0) - np.amin(gp.X, axis=0)
     LB = np.amin(gp.X, axis=0) - max_bnd * diam
     UB = np.amax(gp.X, axis=0) + max_bnd * diam
-    print(LB)
-    print(UB)
 
     active_is = {}
     active_is["log_weight"] = None
@@ -114,7 +112,7 @@ def active_importance_sampling_vbmc(vp, gp, acqfcn, options):
         Nbox_samples = options["activeimportancesamplingboxsamples"]
         w_vp = Nvp_samples / (Nvp_samples + Nbox_samples)
 
-        rect_delta = 2 * np.std(gp.X, ddof=1)
+        rect_delta = 2 * np.std(gp.X, ddof=1, axis=0)
 
         # Smoothed posterior for importance sampling-resampling
         if Nvp_samples > 0:
@@ -147,7 +145,7 @@ def active_importance_sampling_vbmc(vp, gp, acqfcn, options):
         else:
             vp_is = None
 
-        # Box-uniform sampling around training inputes
+        # Box-uniform sampling around training inputs
         if Nbox_samples > 0:
             jj = np.random.randint(0, len(gp.X), size=(Nbox_samples,))
             Xa_box = gp.X[jj, :] + (2 * np.random.rand(jj.size, D) - 1) * rect_delta
@@ -210,9 +208,9 @@ def active_importance_sampling_vbmc(vp, gp, acqfcn, options):
                 w = w / np.sum(w)
                 # x0 = np.zeros((Walkers, D))
                 # Select without replacement by weight w:
-                indices = np.random.choice(a=len(w), p=w, replace=False)
-                x0 = active_is_old["Xa"][indices, :]
-                print(x0)
+                index = np.random.choice(a=len(w), p=w, replace=False)
+                x0 = active_is_old["Xa"][index, :]
+                x0 = np.maximum(np.minimum(x0, UB), LB)  # Force inside bounds
 
                 # Contrary to MATLAB, we are using simple slice sampling.
                 # Better (e.g. ensemble slice) sampling methods could
