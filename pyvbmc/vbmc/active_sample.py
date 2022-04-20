@@ -9,6 +9,7 @@ from pyvbmc.acquisition_functions.abstract_acq_fcn import AbstractAcqFcn
 from pyvbmc.acquisition_functions.acq_fcn import AcqFcn
 from pyvbmc.acquisition_functions.acq_fcn_noisy import AcqFcnNoisy
 from pyvbmc.acquisition_functions.acq_fcn_viqr import AcqFcnVIQR
+from pyvbmc.acquisition_functions.acq_fcn_imiqr import AcqFcnIMIQR
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.stats import get_hpd
 from pyvbmc.variational_posterior import VariationalPosterior
@@ -296,6 +297,8 @@ def active_sample(
                 acq_eval = AcqFcnNoisy()
             elif SearchAcqFcn[idx_acq] == "@acqviqr_vbmc":
                 acq_eval = AcqFcnVIQR()
+            elif SearchAcqFcn[idx_acq] == "@acqimiqr_vbmc":
+                acq_eval = AcqFcnIMIQR()
             else:  # TODO implement branch
                 print(SearchAcqFcn[idx_acq])
                 raise NotImplementedError(f"Acquisition function {SearchAcqFcn[idx_acq]} is not implemented yet")
