@@ -51,7 +51,7 @@ class FunctionLogger:
         self.X = np.full([cache_size, self.D], np.nan)
         self.y = np.full([cache_size, 1], np.nan)
         self.ymax = np.nan
-        self.nevals = np.full([cache_size, 1], np.nan)
+        self.nevals = np.full([cache_size, 1], 0)
 
         if self.noise_flag:
             self.S = np.full([cache_size, 1], np.nan)
@@ -294,13 +294,13 @@ class FunctionLogger:
                 self.S, np.full([resize_amount, 1], np.nan), axis=0
             )
         self.X_flag = np.append(
-            self.X_flag, np.full((resize_amount,), True, dtype=bool)
+            self.X_flag, np.full((resize_amount,), False, dtype=bool)
         )
         self.fun_evaltime = np.append(
             self.fun_evaltime, np.full([resize_amount, 1], np.nan), axis=0
         )
         self.nevals = np.append(
-            self.nevals, np.full([resize_amount, 1], np.nan), axis=0
+            self.nevals, np.full([resize_amount, 1], 0), axis=0
         )
 
     def _record(
@@ -389,6 +389,6 @@ class FunctionLogger:
             if fsd is not None:
                 self.S[self.Xn] = fsd
             self.X_flag[self.Xn] = True
-            self.nevals[self.Xn] = max(1, self.nevals[self.Xn] + 1)
-            self.ymax = np.amax(self.y[self.X_flag])
+            self.nevals[self.Xn] += 1
+            self.ymax = np.nanmax(self.y[self.X_flag])
             return fval, self.Xn

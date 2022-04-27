@@ -12,8 +12,11 @@ from pyvbmc.stats import get_hpd
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc.gaussian_process_train import reupdate_gp, train_gp
 from pyvbmc.vbmc.iteration_history import IterationHistory
-from pyvbmc.vbmc.variational_optimization import (_gplogjoint, _negelcbo,
-                                                  optimize_vp)
+from pyvbmc.vbmc.variational_optimization import (
+    _gplogjoint,
+    _negelcbo,
+    optimize_vp,
+)
 
 from .options import Options
 
@@ -208,19 +211,31 @@ def active_sample(
             entropy_alpha_old = optim_state["entropy_alpha"]
 
             options_update = copy.deepcopy(options)
-            options_update.__setitem__("gptolopt", options["gptoloptactive"], force=True)
-            options_update.__setitem__("gptoloptmcmc", options["gptoloptmcmcactive"], force=True)
+            options_update.__setitem__(
+                "gptolopt", options["gptoloptactive"], force=True
+            )
+            options_update.__setitem__(
+                "gptoloptmcmc", options["gptoloptmcmcactive"], force=True
+            )
             options_update.__setitem__("tolweight", 0, force=True)
-            options_update.__setitem__("nsent", options["nsentactive"], force=True)
-            options_update.__setitem__("nsentfast", options["nsentfastactive"], force=True)
-            options_update.__setitem__("nsentfine", options["nsentfineactive"], force=True)
+            options_update.__setitem__(
+                "nsent", options["nsentactive"], force=True
+            )
+            options_update.__setitem__(
+                "nsentfast", options["nsentfastactive"], force=True
+            )
+            options_update.__setitem__(
+                "nsentfine", options["nsentfineactive"], force=True
+            )
 
             hyp_dict = None
             vp0 = copy.deepcopy(vp)
 
         ## Active sampling loop (sequentially acquire Ns new points)
         for i in range(sample_count):
-            optim_state["N"] = function_logger.Xn  # Number of training inputs
+            optim_state["N"] = (
+                function_logger.Xn + 1
+            )  # Number of training inputs
             optim_state["Neff"] = sum(
                 function_logger.nevals[function_logger.X_flag]
             )
@@ -321,7 +336,9 @@ def active_sample(
             if options["searchoptimizer"] != "none":
                 if gp.D == 1:
                     # Use Nelder-Mead method for 1D optimization
-                    options.__setitem__("searchoptimizer", "Nelder-Mead", force=True)
+                    options.__setitem__(
+                        "searchoptimizer", "Nelder-Mead", force=True
+                    )
 
                 fval_old = acq_fast[idx]
                 x0 = X_acq[0, :]
