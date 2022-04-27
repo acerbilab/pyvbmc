@@ -886,7 +886,7 @@ class VBMC:
                     N_fastopts = math.ceil(
                         self.options.eval("nselbo", {"K": self.K})
                     )
-                    N_slowops = self.options.get(
+                    N_slowopts = self.options.get(
                         "elbostarts"
                     )  # Full optimizations.
 
@@ -1010,7 +1010,7 @@ class VBMC:
                     hyp_dict = self.optim_state["hyp_dict"]
 
             # Number of training inputs
-            self.optim_state["N"] = self.function_logger.Xn
+            self.optim_state["N"] = self.function_logger.Xn + 1
             self.optim_state["n_eff"] = np.sum(
                 self.function_logger.nevals[self.function_logger.X_flag]
             )
@@ -1613,7 +1613,7 @@ class VBMC:
             y_temp[~np.isfinite(y_temp)] = -np.Inf
             order = np.argsort(y_temp * -1, axis=0)
             idx_keep[
-                order[: min(n_keep_min, self.function_logger.Xn) + 1]
+                order[: min(n_keep_min, self.function_logger.Xn + 1)]
             ] = True
         # Note that using idx_keep[:, 0] is necessary since X_flag
         # is a 1D array and idx_keep a 2D array.

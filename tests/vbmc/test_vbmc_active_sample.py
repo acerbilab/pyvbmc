@@ -56,7 +56,7 @@ def test_active_uncertainty_sampling(mocker):
         vp=vbmc.vp,
         options=vbmc.options,
     )
-    optim_state["N"] = function_logger.Xn
+    optim_state["N"] = function_logger.Xn + 1
     optim_state["n_eff"] = np.sum(
         function_logger.nevals[function_logger.X_flag]
     )
