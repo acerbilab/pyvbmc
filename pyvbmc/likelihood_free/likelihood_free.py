@@ -67,6 +67,6 @@ def pseudo_likelihood(sim_fun, summary, data=None, epsilon=1.0, a=0.9, p=0.99, d
         return ll(delta)
 
     if return_scale:  # Primarily for testing
-        return log_likelihood, v_scale, h_scale
+        return log_likelihood, norm_factor, h_scale
     else:
         return log_likelihood
