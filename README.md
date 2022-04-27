@@ -84,13 +84,15 @@ In the following, we list more detailed conventions. Please read carefully if yo
 
 ### Code formatting
 
-The code is formatted using [Black](https://pypi.org/project/black/) with a line length of 79, with the help of precommit hooks. To use:
+The code is formatted using [Black](https://pypi.org/project/black/) with a line length of 79, with the help of pre-commit hooks. To install and use:
 
 ```{bash}
 pip install pre-commit
 pre-commit install
-pre-commit run -a  # run for all files
+pre-commit run -a  # run for all files, optional
 ```
+
+After installation, when you try to commit the staged files, git will automatically check the files and modify them for meeting the requirements of the hooks in `.pre-commit-config.yaml`. The settings of the hooks are specified in `pyproject.toml`. You need to restage the file if it gets modified by the hooks.
 
 If you want, you can also check with pylint for more excessive errors. (Although pylint seems to raise many false positives.)
 
