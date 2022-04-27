@@ -1,4 +1,5 @@
 import numpy as np
+
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.timer import Timer
 
@@ -350,7 +351,7 @@ class FunctionLogger:
             N = self.nevals[idx]
             if fsd is not None:
                 tau_n = 1 / self.S[idx] ** 2
-                tau_1 = 1 / fsd ** 2
+                tau_1 = 1 / fsd**2
                 self.y_orig[idx] = (
                     tau_n * self.y_orig[idx] + tau_1 * fval_orig
                 ) / (tau_n + tau_1)

@@ -5,6 +5,7 @@ import math
 import cma
 import gpyreg as gpr
 import numpy as np
+
 from pyvbmc.acquisition_functions.abstract_acq_fcn import AbstractAcqFcn
 from pyvbmc.acquisition_functions.acq_fcn import AcqFcn
 from pyvbmc.function_logger import FunctionLogger

@@ -1,4 +1,5 @@
 import numpy as np
+
 from pyvbmc.stats import get_hpd
 
 

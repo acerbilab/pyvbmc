@@ -1,4 +1,5 @@
 import numpy as np
+
 from pyvbmc.variational_posterior import VariationalPosterior
 
 
@@ -84,12 +85,12 @@ def entmc_vbmc(
             norm_j1 = ((Xs[..., None] - mu) / sigmalambd) ** 2  # [Ns, D, K]
             norm_j1 = norm_j1.sum(1)  # [Ns, K]
             norm_j1 = np.exp(-0.5 * norm_j1)
-            norm_j1 = nconst / (sigma ** D) * norm_j1  # [Ns, K]
+            norm_j1 = nconst / (sigma**D) * norm_j1  # [Ns, K]
 
             q_j = (w * norm_j1).sum(1)  # [Ns, ]
 
             # Compute sum for gradient wrt mu
-            lsum = (Xs[..., None] - mu) / sigmalambd ** 2  # [Ns, D, K]
+            lsum = (Xs[..., None] - mu) / sigmalambd**2  # [Ns, D, K]
             lsum = lsum * w * norm_j1[:, None, :]  # [Ns, D, K]
             lsum = lsum.sum(2)  # [Ns, D]
 
@@ -123,7 +124,7 @@ def entmc_vbmc(
         eta_exp = np.exp(eta)
         eta_sum = eta_exp.sum()
         J_w = (
-            -eta_exp[:, None] * eta_exp[None, :] / eta_sum ** 2
+            -eta_exp[:, None] * eta_exp[None, :] / eta_sum**2
             + np.diag(eta_exp) / eta_sum
         )
         w_grad = J_w @ w_grad

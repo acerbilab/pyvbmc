@@ -1,5 +1,7 @@
 import gpyreg as gpr
 import numpy as np
+from scipy.stats import multivariate_normal, norm
+
 from pyvbmc.stats import kldiv_mvn
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc import Options
@@ -11,7 +13,6 @@ from pyvbmc.vbmc.variational_optimization import (
     optimize_vp,
     update_K,
 )
-from scipy.stats import multivariate_normal, norm
 
 
 def setup_options(D: int, user_options: dict = None):

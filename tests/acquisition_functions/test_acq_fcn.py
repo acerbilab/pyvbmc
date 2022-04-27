@@ -1,5 +1,6 @@
 import gpyreg as gpr
 import numpy as np
+
 from pyvbmc.acquisition_functions import AcqFcn
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.variational_posterior import VariationalPosterior

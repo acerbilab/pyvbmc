@@ -2,7 +2,7 @@
 Getting started
 ***************
 
-The best way to get started with ``pyvbmc`` is via the tutorials and worked examples. 
+The best way to get started with ``pyvbmc`` is via the tutorials and worked examples.
 In particular, start with `Example 1: Basic usage <_examples/pyvbmc_example_1.html>`_, and continue from there.
 
 If you are already familiar with approximate inference methods, you can find a summary usage below.
@@ -21,8 +21,8 @@ The typical usage pipeline of ``pyvbmc`` follows four steps:
 Running the inference in step 3 only involves a couple of lines of code:
 
 .. code-block:: python
-  
-  from pyvbmc.vbmc import VBMC 
+
+  from pyvbmc.vbmc import VBMC
   # ...
   vbmc = VBMC(target, x0, LB, UB, PLB, PUB)
   vp, elbo, elbo_sd, _, _ = vbmc.optimize()

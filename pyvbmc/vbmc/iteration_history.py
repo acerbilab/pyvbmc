@@ -1,6 +1,7 @@
-from collections.abc import MutableMapping
-import numpy as np
 import copy
+from collections.abc import MutableMapping
+
+import numpy as np
 
 
 class IterationHistory(MutableMapping, dict):
@@ -38,7 +39,7 @@ class IterationHistory(MutableMapping, dict):
         """
         if self.check_keys and key not in self:
             raise ValueError(
-                """The key has not been specified 
+                """The key has not been specified
                 on initialization of the object"""
             )
         else:
@@ -81,7 +82,7 @@ class IterationHistory(MutableMapping, dict):
             raise ValueError("The iteration must be >= 0.")
         if key not in self:
             raise ValueError(
-                """The key has not been specified 
+                """The key has not been specified
                 on initialization of the object"""
             )
         else:
@@ -129,7 +130,7 @@ class IterationHistory(MutableMapping, dict):
         for key, value in key_value.items():
             if key not in self:
                 raise ValueError(
-                    """The key has not been specified 
+                    """The key has not been specified
                 on initialization of the object"""
                 )
             else:

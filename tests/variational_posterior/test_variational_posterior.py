@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
-from pyvbmc.parameter_transformer import ParameterTransformer
 from scipy.io import loadmat
 
+from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.variational_posterior import VariationalPosterior
 
 
@@ -269,7 +269,7 @@ def test_set_parameters_raw():
         vp.mu[: D * K] == np.reshape(theta[: D * K], (D, K), order="F")
     )
     lamb = np.exp(theta[D * K + K : D * K + K + D])
-    nl = np.sqrt(np.sum(lamb ** 2) / D)
+    nl = np.sqrt(np.sum(lamb**2) / D)
     assert vp.sigma.shape == (1, K)
     assert np.all(
         vp.sigma == np.exp(theta[D * K : D * K + K]).reshape(1, -1) * nl
@@ -296,7 +296,7 @@ def test_set_parameters_not_raw():
         vp.mu[: D * K] == np.reshape(theta[: D * K], (D, K), order="F")
     )
     lamb = theta[D * K + K : D * K + K + D]
-    nl = np.sqrt(np.sum(lamb ** 2) / D)
+    nl = np.sqrt(np.sum(lamb**2) / D)
     assert vp.sigma.shape == (1, K)
     assert np.all(vp.sigma == theta[D * K : D * K + K].reshape(1, -1) * nl)
     assert vp.lambd.shape == (D, 1)
@@ -435,7 +435,7 @@ def test_moments_no_origflag():
     assert mubar.shape == (1, 3)
     assert sigma.shape == (3, 3)
     assert np.all(mubar == 2.5)
-    sigma2 = np.ones((3, 3)) * 2.25 + np.eye(3) * 1e-3 ** 2
+    sigma2 = np.ones((3, 3)) * 2.25 + np.eye(3) * 1e-3**2
     assert np.all(sigma == sigma2)
 
 
@@ -444,14 +444,16 @@ def test_moments_no_origflag_2():
     D = 6
     K = 3
     vp = VariationalPosterior(D, K)
-    vp.mu = np.linspace(-3, 3, D*K).reshape([D, K], order='F')
-    vp.sigma = np.atleast_2d(np.array(range(2,5)))
-    vp.lambd = np.atleast_2d(np.array(range(3,9))).T
-    vp.w = np.atleast_2d(np.array(range(1,4)))
-    vp.w = vp.w/np.sum(vp.w)
+    vp.mu = np.linspace(-3, 3, D * K).reshape([D, K], order="F")
+    vp.sigma = np.atleast_2d(np.array(range(2, 5)))
+    vp.lambd = np.atleast_2d(np.array(range(3, 9))).T
+    vp.w = np.atleast_2d(np.array(range(1, 4)))
+    vp.w = vp.w / np.sum(vp.w)
 
     mubar, sigma = vp.moments(N=1e6, covflag=True, origflag=False)
-    matlab = loadmat("./tests/variational_posterior/test_moments_no_origflag_2_MATLAB.mat")
+    matlab = loadmat(
+        "./tests/variational_posterior/test_moments_no_origflag_2_MATLAB.mat"
+    )
 
     assert mubar.shape == (1, 6)
     assert sigma.shape == (6, 6)

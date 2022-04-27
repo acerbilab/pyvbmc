@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 
 import gpyreg as gpr
 import numpy as np
+
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.variational_posterior import VariationalPosterior

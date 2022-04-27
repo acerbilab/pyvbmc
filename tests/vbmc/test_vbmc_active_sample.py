@@ -2,6 +2,7 @@ import logging
 
 import numpy as np
 import pytest
+
 from pyvbmc.stats import get_hpd
 from pyvbmc.vbmc import VBMC, active_sample
 from pyvbmc.vbmc.active_sample import _get_search_points
@@ -154,7 +155,10 @@ def test_active_sample_initial_sample_y_values():
         function_logger.X_orig[:10], X_orig, rtol=1e-12, atol=1e-14
     )
     assert np.allclose(
-        np.ravel(function_logger.y_orig[:10]), y_orig, rtol=1e-12, atol=1e-14,
+        np.ravel(function_logger.y_orig[:10]),
+        y_orig,
+        rtol=1e-12,
+        atol=1e-14,
     )
     assert np.all(np.isnan(optim_state["cache"]["x_orig"][:10]))
     assert np.all(np.isnan(optim_state["cache"]["y_orig"][:10]))
@@ -201,7 +205,10 @@ def test_active_sample_initial_sample_plausible(mocker):
         function_logger.X_orig[:10], X_orig, rtol=1e-12, atol=1e-14
     )
     assert np.allclose(
-        np.ravel(function_logger.y_orig[:10]), y_orig, rtol=1e-12, atol=1e-14,
+        np.ravel(function_logger.y_orig[:10]),
+        y_orig,
+        rtol=1e-12,
+        atol=1e-14,
     )
     assert np.all(np.isnan(optim_state["cache"]["x_orig"][:10]))
     assert np.all(np.isnan(optim_state["cache"]["y_orig"][:10]))
@@ -258,7 +265,10 @@ def test_active_sample_initial_sample_narrow(mocker):
         function_logger.X_orig[:10], X_orig, rtol=1e-12, atol=1e-14
     )
     assert np.allclose(
-        np.ravel(function_logger.y_orig[:10]), y_orig, rtol=1e-12, atol=1e-14,
+        np.ravel(function_logger.y_orig[:10]),
+        y_orig,
+        rtol=1e-12,
+        atol=1e-14,
     )
     assert np.all(np.isnan(optim_state["cache"]["x_orig"][:10]))
     assert np.all(np.isnan(optim_state["cache"]["y_orig"][:10]))
@@ -621,10 +631,13 @@ def test_get_search_points_all_box_search(mocker):
 
     # return a linespace so that random samples are predicatable.
     random_values = np.linspace(
-        (-100, -100, -100), (100, 100, 100), number_of_points,
+        (-100, -100, -100),
+        (100, 100, 100),
+        number_of_points,
     )
     mocker.patch(
-        "numpy.random.standard_normal", return_value=random_values,
+        "numpy.random.standard_normal",
+        return_value=random_values,
     )
     # infinite bounds
     vbmc.optim_state["lb_search"] = np.full((1, 3), -np.inf)
