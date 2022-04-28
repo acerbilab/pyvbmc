@@ -108,7 +108,7 @@ def test_vbmc_optimize_pseudo_ll():
     def fake_sim(theta):  # Deterministic simulation
         return np.linalg.norm(theta) * sim_data
 
-    # Variance close to 1 for d_obs, close to norm(theta) for d_theta:
+    # Variance close to k^2 for d_obs, close to norm(theta)^2 for d_theta:
     def fake_summary(d_theta):
         return np.mean(np.var(d_theta, axis=0))
 
