@@ -44,9 +44,11 @@ def test_pseudo_likelihood_complex():
         fake_summary,
     )
 
+    # Call without default data produces missing argument error:
     with pytest.raises(TypeError) as execinfo:
         ll_no_data(0)
-    assert "NoneType" in execinfo.value.args[0]
+    assert "log_likelihood() missing 1 required positional argument: 'd'"\
+        in execinfo.value.args[0]
 
     M = 10
     thetas = np.arange(M)
