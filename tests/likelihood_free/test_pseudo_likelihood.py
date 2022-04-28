@@ -100,9 +100,10 @@ def test_q_random():
 def test_vbmc_optimize_pseudo_ll():
     D = 5
     N = 500
+    k = 2
 
     sim_data = sps.multivariate_normal.rvs(cov=np.eye(D), size=N)
-    d_obs = 2 * sps.multivariate_normal.rvs(cov=np.eye(D), size=N)
+    d_obs = k * sps.multivariate_normal.rvs(cov=np.eye(D), size=N)
 
     def fake_sim(theta):  # Deterministic simulation
         return np.linalg.norm(theta) * sim_data
@@ -116,7 +117,7 @@ def test_vbmc_optimize_pseudo_ll():
     def ltarget(t):  # Pseudo-likelihood + wide prior
         return llfun(t) + sps.multivariate_normal.logpdf(t, cov=8 * np.eye(D))
 
-    x0 = np.ones((1, D)) ** (1 / D)
+    x0 = k * np.ones((1, D)) * np.sqrt(1/D)  # Start in high-density region
     lb = np.full((1, D), -np.inf)
     ub = np.full((1, D), np.inf)
     plb = -2 * np.ones((1, D))
