@@ -11,7 +11,8 @@ def pseudo_likelihood(
     a=0.9,
     p=0.99,
     df=7,
-    return_scale=False,
+    return_plot_fun = False,
+    return_scale=False
 ):
     r"""Construct a pseudo-likelihood for likelihood-free inference.
 
@@ -43,10 +44,21 @@ def pseudo_likelihood(
         The degrees of freedom for the Student's t-distribution determining the
         rate at which :math: `q(u)` vanishes for :math: `u > \epsilon`.
         Default `7`.
+    return_plot_fun : bool
+        Whether to return the likelihood as a function of :math: `s = S(D)`,
+        e.g. for plotting/debugging. Default `False`
     return_scale : bool
         Whether to return the vertical and horizontal scaling factors of the
         Student's t-distribution. Default `False`.
 
+    Returns
+    -------
+    log_likelihood : callable
+        If `data` is not `None`, the returned `log_likelihood` will take `theta` as a required first argument, and `d=data` as an optional second argument with default `data`. Otherwise `log_likelihood` will have two required arguments `theta` and `d`.
+    plot_fun : callable, optional
+        If `return_plot_fun` is `True`, this will return the log-likelihood as a function of the distance of summary statistics :math: `\delta = |S(d_{\theta}) - S(d_{obs})|`, for plotting/debugging purposes.
+    v_scale : float
+        If `return_scale` is `True`, returns the normalization constant 
     Raises
     ------
     ValueError
@@ -78,18 +90,18 @@ def pseudo_likelihood(
 
     norm_factor = a * epsilon + 0.5 * (v_scale / h_scale)
 
-    def ll(s):
-        if s <= a * epsilon:
+    def ll(delta):
+        if delta <= a * epsilon:
             return -np.log(norm_factor)
         else:
             return (
                 -st.logpdf(0.0)
-                + st.logpdf((s - a * epsilon) * h_scale)
+                + st.logpdf((delta - a * epsilon) * h_scale)
                 - np.log(norm_factor)
             )
 
     if not np.isclose(
-        p, sp.integrate.quad(lambda s: np.exp(ll(s)), 0, epsilon)[0]
+        p, sp.integrate.quad(lambda delta: np.exp(ll(delta)), 0, epsilon)[0]
     ):
         raise ValueError(
             "Could not find a solution, please try with softer"
@@ -97,20 +109,39 @@ def pseudo_likelihood(
         )
 
     if data is not None:
-
         def log_likelihood(theta, d=data):
-            d_theta = sim_fun(theta)
-            delta = np.abs(summary(d_theta) - summary(d))
-            return ll(delta)
+            if np.ndim(theta) > 1:
+                lls = []
+                nrows, __ = theta.shape
+                for i in range(nrows):
+                    d_theta = sim_fun(theta[i, :])
+                    delta = np.abs(summary(d_theta) - summary(d))
+                    lls.append(ll(delta))
+                return np.array(lls)
+            else:
+                d_theta = sim_fun(theta)
+                delta = np.abs(summary(d_theta) - summary(d))
+                return ll(delta)
 
     else:
-
         def log_likelihood(theta, d):
             d_theta = sim_fun(theta)
             delta = np.abs(summary(d_theta) - summary(d))
             return ll(delta)
 
-    if return_scale:  # Primarily for testing
-        return log_likelihood, norm_factor, h_scale
+    if return_plot_fun:
+        def ll_plot(delta):
+            if np.ndim(delta) == 0:
+                return ll(delta)
+            else:
+                return np.array([ll(d) for d in delta])
+        if return_scale:
+            return log_likelihood, ll_plot, 1/norm_factor, h_scale
+        else:
+            return log_likelihood, ll_plot
     else:
-        return log_likelihood
+        if return_scale:
+            return log_likelihood, 1/norm_factor, h_scale
+        else:
+            return log_likelihood
+
