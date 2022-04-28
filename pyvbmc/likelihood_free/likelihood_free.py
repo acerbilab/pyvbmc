@@ -27,7 +27,14 @@ def pseudo_likelihood(sim_fun, summary, data=None, epsilon=1.0, a=0.9, p=0.99, d
         The degrees of freedom for the Student's t-distribution determining the rate at which :math: `q(u)` vanishes for :math: `u > \epsilon`. Default `7`.
     return_scale : bool
         Whether to return the vertical and horizontal scaling factors of the Student's t-distribution. Default `False`.
+
+    Raises
+    ------
+    ValueError
+        If it is not the case that epsilon > 0,  0 <= a <= 0.995  and  0 < p < 1.
     """
+    if not (epsilon >= 0):
+        raise ValueError("Parameter epsilon be > 0.")
     if not (0 <= a) and (a <= 0.995):
         raise ValueError("Parameter should be 0 <= a <= 0.995.")
     if not (0 <= a) and (a <= 0.995):
@@ -35,6 +42,7 @@ def pseudo_likelihood(sim_fun, summary, data=None, epsilon=1.0, a=0.9, p=0.99, d
     st = sps.t(df=df)  # Base Student's t-distribution
     v_scale = 1 / st.pdf(0)  # Continuity at a * epsilon
 
+    # Find horizontal scale such that `p` prob. mass is inside (0, a*epsilon)
     def target(h_scale):
         int_0_eps = a*epsilon + (v_scale / h_scale) * (st.cdf((1-a) * epsilon * h_scale) - 0.5)
         int_0_inf = a*epsilon + 0.5 * (v_scale / h_scale)
