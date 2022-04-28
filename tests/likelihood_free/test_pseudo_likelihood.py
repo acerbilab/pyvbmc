@@ -63,7 +63,7 @@ def test_pseudo_likelihood_complex():
     )
     # Difference in variance should be about 1.
     # q(u) is truncated Student's t:
-    val = np.log(2) + sps.t(df=7, scale=1 / h_scale).logpdf(1.0)
+    val = np.log(2) + sps.t(df=7, scale=h_scale).logpdf(1.0)
     lls = np.array([ll(theta) for theta in range(10)])
     assert np.allclose(lls, val, rtol=1e-1)
 
@@ -92,7 +92,7 @@ def test_q_random():
             return_scale=True,
         )
         x = np.linspace(0, 5 * ep)
-        y1 = np.log(2) + sps.t(df=df, scale=1 / h_scale).logpdf(x)
+        y1 = np.log(2) + sps.t(df=df, scale=h_scale).logpdf(x)
         y2 = np.array([ll(xi, 0.0) for xi in x])
         assert np.allclose(y1, y2)
 

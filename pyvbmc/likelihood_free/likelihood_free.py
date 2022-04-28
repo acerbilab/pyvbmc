@@ -54,11 +54,22 @@ def pseudo_likelihood(
     Returns
     -------
     log_likelihood : callable
-        If `data` is not `None`, the returned `log_likelihood` will take `theta` as a required first argument, and `d=data` as an optional second argument with default `data`. Otherwise `log_likelihood` will have two required arguments `theta` and `d`.
+        If `data` is not `None`, the returned `log_likelihood` will require
+        `theta` as a first argument, and `d=data` as an optional
+        second argument with default `data`. Otherwise `log_likelihood` will
+        require two arguments, `theta` and `d`.
     plot_fun : callable, optional
-        If `return_plot_fun` is `True`, this will return the log-likelihood as a function of the distance of summary statistics :math: `\delta = |S(d_{\theta}) - S(d_{obs})|`, for plotting/debugging purposes.
+        If `return_plot_fun` is `True`, this will return the log-likelihood as
+        a function of the distance of summary statistics
+        :math: `\delta = |S(d_{\theta}) - S(d_{obs})|`, for plotting/debugging
+        purposes.
     v_scale : float
-        If `return_scale` is `True`, returns the normalization constant 
+        If `return_scale` is `True`, returns the maximum value of the
+        likelihood.
+    h_scale : float
+        If `return_scale` is `True`, returns the horizontal rescaling factor
+        chosen for the Student's t tail (equivalent to scipy's `scale`
+        parameter).
     Raises
     ------
     ValueError
@@ -136,12 +147,12 @@ def pseudo_likelihood(
             else:
                 return np.array([ll(d) for d in delta])
         if return_scale:
-            return log_likelihood, ll_plot, 1/norm_factor, h_scale
+            return log_likelihood, ll_plot, 1/norm_factor, 1/h_scale
         else:
             return log_likelihood, ll_plot
     else:
         if return_scale:
-            return log_likelihood, 1/norm_factor, h_scale
+            return log_likelihood, 1/norm_factor, 1/h_scale
         else:
             return log_likelihood
 
