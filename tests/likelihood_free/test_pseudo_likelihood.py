@@ -44,8 +44,9 @@ def test_pseudo_likelihood_complex():
         fake_summary,
     )
 
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError) as execinfo:
         ll_no_data(0)
+    assert "NoneType" in execinfo.value.args[0]
 
     M = 10
     thetas = np.arange(M)
@@ -108,35 +109,38 @@ def test_q_random():
         assert np.allclose(y1, y2)
 
 
-@pytest.mark.skip
 def test_vbmc_optimize_pseudo_ll():
     D = 5
-    N = 1000
+    N = 500
 
-    def fake_sim(theta):
-        return sps.multivariate_normal.rvs(cov=np.eye(D), size=N)
-
-    def fake_summary(d_theta):
-        return np.var(d_theta[:, 0], ddof=1)
-
+    sim_data = sps.multivariate_normal.rvs(cov=np.eye(D), size=N)
     d_obs = sps.multivariate_normal.rvs(cov=np.eye(D), size=N)
+
+    def fake_sim(theta):  # Deterministic simulation
+        return np.linalg.norm(theta) * sim_data
+
+    # Variance close to 1 for d_obs, close to norm(theta) for d_theta:
+    def fake_summary(d_theta):
+        return np.mean(np.var(d_theta, axis=0))
 
     llfun = pseudo_likelihood(
         fake_sim,
         fake_summary,
         data=d_obs,
+        epsilon=0.1
     )
-    def ltarget(t):
-        return llfun(t) + sps.multivariate_normal.logpdf(t, cov=np.eye(D))
 
-    x0 = np.ones((1, D))
+    def ltarget(t):  # Pseudo-likelihood + wide prior
+        return llfun(t) + sps.multivariate_normal.logpdf(t, cov=8*np.eye(D))
+
+    x0 = np.ones((1, D))**(1/D)
     lb = np.full((1, D), -np.inf)
     ub = np.full((1, D), np.inf)
-    plb = np.zeros((1, D))
+    plb = -2 * np.ones((1, D))
     pub = 2 * np.ones((1, D))
     options = {
-        # "searchacqfcn" : ["@acqviqr_vbmc"],
-        "maxfunevals" : 10
+        # "searchacqfcn": ["@acqviqr_vbmc"],
+        "maxfunevals": 15  # Just run until end of warm-up.
     }
 
     vbmc = VBMC(ltarget, x0, lb, ub, plb, pub, user_options=options)
