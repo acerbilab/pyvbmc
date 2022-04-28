@@ -2,7 +2,17 @@ import numpy as np
 import scipy as sp
 import scipy.stats as sps
 
-def pseudo_likelihood(sim_fun, summary, data=None, epsilon=1.0, a=0.9, p=0.99, df=7, return_scale=False):
+
+def pseudo_likelihood(
+    sim_fun,
+    summary,
+    data=None,
+    epsilon=1.0,
+    a=0.9,
+    p=0.99,
+    df=7,
+    return_scale=False,
+):
     r"""Construct a pseudo-likelihood for likelihood-free inference.
 
     Parameters
@@ -43,37 +53,46 @@ def pseudo_likelihood(sim_fun, summary, data=None, epsilon=1.0, a=0.9, p=0.99, d
     v_scale = 1 / st.pdf(0)  # Continuity at a * epsilon
     # Find horizontal scale such that `p` prob. mass is inside (0, a*epsilon)
     def target(h_scale):
-        int_0_eps = a*epsilon + (v_scale / h_scale) * (st.cdf((1-a) * epsilon * h_scale) - 0.5)
-        int_0_inf = a*epsilon + 0.5 * (v_scale / h_scale)
+        int_0_eps = a * epsilon + (v_scale / h_scale) * (
+            st.cdf((1 - a) * epsilon * h_scale) - 0.5
+        )
+        int_0_inf = a * epsilon + 0.5 * (v_scale / h_scale)
         return int_0_eps / int_0_inf - p
 
     # Establish lower and upper bounds, then optimize:
-    lower = 1/epsilon * a * p + 1e-16
-    upper = 1/epsilon * 1/(1-a) * 1/(1-p)
+    lower = 1 / epsilon * a * p + 1e-16
+    upper = 1 / epsilon * 1 / (1 - a) * 1 / (1 - p)
     h_scale = sp.optimize.brentq(target, lower, upper)
 
-    norm_factor = a*epsilon + 0.5 * (v_scale / h_scale)
+    norm_factor = a * epsilon + 0.5 * (v_scale / h_scale)
 
     def ll(s):
         if s <= a * epsilon:
             return -np.log(norm_factor)
         else:
-            return -st.logpdf(0.0) + st.logpdf((s - a * epsilon) * h_scale)\
+            return (
+                -st.logpdf(0.0)
+                + st.logpdf((s - a * epsilon) * h_scale)
                 - np.log(norm_factor)
+            )
 
     if not np.isclose(
-            p,
-            sp.integrate.quad(lambda s: np.exp(ll(s)), 0, epsilon)[0]
+        p, sp.integrate.quad(lambda s: np.exp(ll(s)), 0, epsilon)[0]
     ):
-        raise ValueError("Could not find a solution, please try with softer" +
-                         "rolloff (lower a and/or p).")
+        raise ValueError(
+            "Could not find a solution, please try with softer"
+            + "rolloff (lower a and/or p)."
+        )
 
     if data is not None:
+
         def log_likelihood(theta, d=data):
             d_theta = sim_fun(theta)
             delta = np.abs(summary(d_theta) - summary(d))
             return ll(delta)
+
     else:
+
         def log_likelihood(theta, d):
             d_theta = sim_fun(theta)
             delta = np.abs(summary(d_theta) - summary(d))

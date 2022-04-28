@@ -8,11 +8,7 @@ from pyvbmc.vbmc import VBMC
 
 
 def test_pseudo_likelihood_simple():
-    ll = pseudo_likelihood(
-        lambda t : t,
-        lambda d : d,
-        data = 0.0
-    )
+    ll = pseudo_likelihood(lambda t: t, lambda d: d, data=0.0)
     x1 = np.linspace(0, 0.9)
     x2 = np.linspace(0.9, 10.0)
     y1 = np.array([ll(xi) for xi in x1])
@@ -34,10 +30,7 @@ def test_pseudo_likelihood_complex():
     d_obs = 0.5 * sps.multivariate_normal.rvs(cov=np.eye(D), size=N)
 
     ll_data, v_scale, h_scale = pseudo_likelihood(
-        fake_sim,
-        fake_summary,
-        data = d_obs,
-        return_scale=True
+        fake_sim, fake_summary, data=d_obs, return_scale=True
     )
     ll_no_data = pseudo_likelihood(
         fake_sim,
@@ -47,8 +40,10 @@ def test_pseudo_likelihood_complex():
     # Call without default data produces missing argument error:
     with pytest.raises(TypeError) as execinfo:
         ll_no_data(0)
-    assert "log_likelihood() missing 1 required positional argument: 'd'"\
+    assert (
+        "log_likelihood() missing 1 required positional argument: 'd'"
         in execinfo.value.args[0]
+    )
 
     M = 10
     thetas = np.arange(M)
@@ -63,15 +58,11 @@ def test_pseudo_likelihood_complex():
     N = 10000
     d_obs = np.sqrt(2) * sps.multivariate_normal.rvs(cov=np.eye(D), size=N)
     ll, v_scale, h_scale = pseudo_likelihood(
-        fake_sim,
-        fake_summary,
-        data = d_obs,
-        a = 0.0,
-        return_scale=True
+        fake_sim, fake_summary, data=d_obs, a=0.0, return_scale=True
     )
     # Difference in variance should be about 1.
     # q(u) is truncated Student's t:
-    val = np.log(2) + sps.t(df=7, scale=1/h_scale).logpdf(1.0)
+    val = np.log(2) + sps.t(df=7, scale=1 / h_scale).logpdf(1.0)
     lls = np.array([ll(theta) for theta in range(10)])
     assert np.allclose(lls, val, rtol=1e-1)
 
@@ -85,28 +76,22 @@ def test_q_random():
     for (df, ep, a, p) in zip(dfs, eps, aas, ps):
         # Should find a solution without error:
         ll = pseudo_likelihood(
-            lambda t : t,
-            lambda d : d,
-            data = 0.0,
-            epsilon = ep,
-            a = a,
-            p = p,
-            df = df
+            lambda t: t, lambda d: d, data=0.0, epsilon=ep, a=a, p=p, df=df
         )
 
         # When a is zero, should be a truncated Student's t:
         ll, v_scale, h_scale = pseudo_likelihood(
-            lambda t : t,
-            lambda d : d,
-            data = 0.0,
-            epsilon = ep,
-            a = 0.0,
-            p = p,
-            df = df,
-            return_scale=True
+            lambda t: t,
+            lambda d: d,
+            data=0.0,
+            epsilon=ep,
+            a=0.0,
+            p=p,
+            df=df,
+            return_scale=True,
         )
         x = np.linspace(0, 5 * ep)
-        y1 = np.log(2) + sps.t(df=df, scale=1/h_scale).logpdf(x)
+        y1 = np.log(2) + sps.t(df=df, scale=1 / h_scale).logpdf(x)
         y2 = np.array([ll(xi, 0.0) for xi in x])
         assert np.allclose(y1, y2)
 
@@ -125,17 +110,12 @@ def test_vbmc_optimize_pseudo_ll():
     def fake_summary(d_theta):
         return np.mean(np.var(d_theta, axis=0))
 
-    llfun = pseudo_likelihood(
-        fake_sim,
-        fake_summary,
-        data=d_obs,
-        epsilon=0.1
-    )
+    llfun = pseudo_likelihood(fake_sim, fake_summary, data=d_obs, epsilon=0.1)
 
     def ltarget(t):  # Pseudo-likelihood + wide prior
-        return llfun(t) + sps.multivariate_normal.logpdf(t, cov=8*np.eye(D))
+        return llfun(t) + sps.multivariate_normal.logpdf(t, cov=8 * np.eye(D))
 
-    x0 = np.ones((1, D))**(1/D)
+    x0 = np.ones((1, D)) ** (1 / D)
     lb = np.full((1, D), -np.inf)
     ub = np.full((1, D), np.inf)
     plb = -2 * np.ones((1, D))
