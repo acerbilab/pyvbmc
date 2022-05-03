@@ -7,11 +7,12 @@ def pseudo_likelihood(
     sim_fun,
     epsilon,
     summary=lambda d: d,
+    distance=np.linalg.norm,
     data=None,
     a=0.9,
     p=0.99,
     df=7,
-    return_plot_fun = False,
+    return_plot_fun=False,
     return_scale=False
 ):
     r"""Construct a pseudo-likelihood for likelihood-free inference.
@@ -25,13 +26,17 @@ def pseudo_likelihood(
     epsilon : float
         The window :math: `(0, \epsilon)` will contain a fraction `p` of the
         likelihood probability mass of :math: `q`.
-    summary : callable
+    summary : callable, optional
         The summary statistic, which takes data and returns a scalar. The
         likelihood is then computed as
-        :math: `q(|summary(d_{\theta}) - summary(d_{obs})|)`, where :math: `q`
-        is described below. Default is identity, in case the simulation itself
-        already returns a scalar summary statistic.
-    data
+        :math: `q(d(summary(d_{\theta}),\ summary(d_{obs})))`, where :math: `d`
+        is the `distance` function and :math: `q` is the distribution
+        determined by the `epsilon`, `a`, `p`, and `df` parameters. Default is
+        identity.
+    distance : callable, optional
+        A non-zero scalar function of `summary(d_theta)` and `summary(d_obs)`.
+        Default is the l2-norm.
+    data : unspecified, optional
         The observed data :math: `d_{obs}`. If `None`, then the
         returned callable will require the data as a second argument, and will
         evaluate `summary(d_obs)` on each call in addition to
@@ -133,7 +138,7 @@ def pseudo_likelihood(
                 nrows, __ = theta.shape
                 for i in range(nrows):
                     d_theta = sim_fun(theta[i, :])
-                    delta = np.abs(summary(d_theta) - summary_data)
+                    delta = distance(summary(d_theta) - summary_data)
                     lls.append(ll(delta))
                 return np.array(lls)
             else:
