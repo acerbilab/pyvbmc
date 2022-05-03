@@ -197,13 +197,13 @@ class ParameterTransformer:
         mask = np.isfinite(self.lb_orig)[0]
         xNew[:, mask] = np.maximum(
             xNew[:, mask],
-            self.lb_orig[:, mask] + 10 * np.finfo(np.float64).eps,
+            np.nextafter(self.lb_orig[:, mask], np.inf)
         )
 
         mask = np.isfinite(self.ub_orig)[0]
         xNew[:, mask] = np.minimum(
             xNew[:, mask],
-            self.ub_orig[:, mask] - 10 * np.finfo(np.float64).eps,
+            np.nextafter(self.ub_orig[:, mask], -np.inf)
         )
 
         return xNew
