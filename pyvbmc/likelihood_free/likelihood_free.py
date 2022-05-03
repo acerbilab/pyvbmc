@@ -7,7 +7,7 @@ def pseudo_likelihood(
     sim_fun,
     epsilon,
     summary=lambda d: d,
-    distance=np.linalg.norm,
+    distance=lambda dt, do: np.linalg.norm(dt - do),
     data=None,
     a=0.9,
     p=0.99,
@@ -138,18 +138,18 @@ def pseudo_likelihood(
                 nrows, __ = theta.shape
                 for i in range(nrows):
                     d_theta = sim_fun(theta[i, :])
-                    delta = distance(summary(d_theta) - summary_data)
+                    delta = distance(summary(d_theta), summary_data)
                     lls.append(ll(delta))
                 return np.array(lls)
             else:
                 d_theta = sim_fun(theta)
-                delta = np.abs(summary(d_theta) - summary_data)
+                delta = distance(summary(d_theta), summary_data)
                 return ll(delta)
 
     else:
         def log_likelihood(theta, d):
             d_theta = sim_fun(theta)
-            delta = np.abs(summary(d_theta) - summary(d))
+            delta = distance(summary(d_theta), summary(d))
             return ll(delta)
 
     if return_plot_fun:
