@@ -85,7 +85,10 @@ def pseudo_likelihood(
     if not (0 <= a) and (a <= 0.995):
         raise ValueError("Parameter p should be 0 < p < 1.")
 
-    st = sps.t(df=df)  # Base Student's t-distribution
+    if df == np.inf:
+        st = sps.norm()  # Base normal distribution
+    else:
+        st = sps.t(df=df)  # Base Student's t-distribution
     v_scale = 1 / st.pdf(0)  # Continuity at a * epsilon
     # Find horizontal scale such that `p` prob. mass is inside (0, a*epsilon)
 
