@@ -6,7 +6,7 @@ import scipy.stats as sps
 def pseudo_likelihood(
     sim_fun,
     epsilon,
-    summary,
+    summary=lambda d: d,
     data=None,
     a=0.9,
     p=0.99,
@@ -29,7 +29,8 @@ def pseudo_likelihood(
         The summary statistic, which takes data and returns a scalar. The
         likelihood is then computed as
         :math: `q(|summary(d_{\theta}) - summary(d_{obs})|)`, where :math: `q`
-        is described below.
+        is described below. Default is identity, in case the simulation itself
+        already returns a scalar summary statistic.
     data
         The observed data :math: `d_{obs}`, which becomes the default second
         argument of the returned callable log-likelihood. If `None`, then the
