@@ -32,9 +32,10 @@ def pseudo_likelihood(
         is described below. Default is identity, in case the simulation itself
         already returns a scalar summary statistic.
     data
-        The observed data :math: `d_{obs}`, which becomes the default second
-        argument of the returned callable log-likelihood. If `None`, then the
-        returned callable will require the data as a second argument.
+        The observed data :math: `d_{obs}`. If `None`, then the
+        returned callable will require the data as a second argument, and will
+        evaluate `summary(d_obs)` on each call in addition to
+        `summary(d_theta)`.
     a : float, optional, in [0, 0.995]
         :math: `q(u)` will be maximum and constant for
         :math: `u \in [0, a*\epsilon]`. Default `0.9`.
@@ -121,18 +122,20 @@ def pseudo_likelihood(
         )
 
     if data is not None:
-        def log_likelihood(theta, d=data):
+        summary_data = summary(data)
+
+        def log_likelihood(theta):
             if np.ndim(theta) > 1:
                 lls = []
                 nrows, __ = theta.shape
                 for i in range(nrows):
                     d_theta = sim_fun(theta[i, :])
-                    delta = np.abs(summary(d_theta) - summary(d))
+                    delta = np.abs(summary(d_theta) - summary_data)
                     lls.append(ll(delta))
                 return np.array(lls)
             else:
                 d_theta = sim_fun(theta)
-                delta = np.abs(summary(d_theta) - summary(d))
+                delta = np.abs(summary(d_theta) - summary_data)
                 return ll(delta)
 
     else:
@@ -156,4 +159,3 @@ def pseudo_likelihood(
             return log_likelihood, 1/norm_factor, 1/h_scale
         else:
             return log_likelihood
-
