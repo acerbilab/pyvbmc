@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
 import numpy.random as npr
+import scipy as sp
 import scipy.stats as sps
 
 from pyvbmc.likelihood_free import pseudo_likelihood
@@ -8,14 +9,25 @@ from pyvbmc.vbmc import VBMC
 
 
 def test_pseudo_likelihood_simple():
-    ll, v_scale, h_scale = pseudo_likelihood(lambda t: t, lambda d: d, data=0.0, return_scale=True)
+    ll, v_scale, h_scale = pseudo_likelihood(
+        sim_fun=lambda t: t,
+        epsilon=1.0,
+        data=0.0,
+        return_scale=True
+    )
     x1 = np.linspace(0, 0.9)
     x2 = np.linspace(0.9, 10.0)
     y1 = np.array([ll(xi) for xi in x1])
     y2 = np.array([ll(xi) for xi in x2])
     assert np.all(y1 == y1[0])  # Constant up to a * epsilon
+    assert np.isclose(y1[-1], y2[0])  # Continuity at a * epsilon
     assert np.all(y2[1:] < y2[:-1])  # Decreasing after a*epsilon
     assert np.allclose(y1, np.log(v_scale))
+    assert np.isclose(1, sp.integrate.quad(
+        lambda d: np.exp(ll(d)),
+        0,
+        np.inf
+    )[0])  # Normalization
 
 
 def test_pseudo_likelihood_complex():
@@ -31,11 +43,16 @@ def test_pseudo_likelihood_complex():
     d_obs = 0.5 * sps.multivariate_normal.rvs(cov=np.eye(D), size=N)
 
     ll_data, v_scale, h_scale = pseudo_likelihood(
-        fake_sim, fake_summary, data=d_obs, return_scale=True
+        fake_sim,
+        epsilon=1.0,
+        summary=fake_summary,
+        data=d_obs,
+        return_scale=True
     )
     ll_no_data = pseudo_likelihood(
         fake_sim,
-        fake_summary,
+        epsilon=1.0,
+        summary=fake_summary,
     )
 
     # Call without default data produces missing argument error:
@@ -59,7 +76,12 @@ def test_pseudo_likelihood_complex():
     N = 10000
     d_obs = np.sqrt(2) * sps.multivariate_normal.rvs(cov=np.eye(D), size=N)
     ll, v_scale, h_scale = pseudo_likelihood(
-        fake_sim, fake_summary, data=d_obs, a=0.0, return_scale=True
+        fake_sim,
+        epsilon=1.0,
+        summary=fake_summary,
+        data=d_obs,
+        a=0.0,
+        return_scale=True
     )
     # Difference in variance should be about 1.
     # q(u) is truncated Student's t:
@@ -71,29 +93,64 @@ def test_pseudo_likelihood_complex():
 def test_q_random():
     N = 10
     dfs = npr.randint(low=1, high=30, size=N)
-    eps = npr.lognormal(sigma=8, size=N)
+    eps = npr.lognormal(sigma=6, size=N)
     aas = npr.uniform(0, 0.995, size=N)
     ps = npr.uniform(0, 1, size=N)
     for (df, ep, a, p) in zip(dfs, eps, aas, ps):
         # Should find a solution without error:
-        ll = pseudo_likelihood(
-            lambda t: t, lambda d: d, data=0.0, epsilon=ep, a=a, p=p, df=df
+        ll, v_scale, h_scale = pseudo_likelihood(
+            sim_fun=lambda t: t,
+            epsilon=ep,
+            data=0.0,
+            a=a,
+            p=p,
+            df=df,
+            return_scale=True
         )
+        x1 = np.linspace(0, a * ep)
+        x2 = np.linspace(a * ep, a * ep * 10.0)
+        y1 = np.array([ll(xi) for xi in x1])
+        y2 = np.array([ll(xi) for xi in x2])
+        assert np.all(y1 == y1[0])  # Constant up to a * epsilon
+        assert np.isclose(y1[-1], y2[0])  # Continuity at a * epsilon
+        assert np.all(y2[1:] < y2[:-1])  # Decreasing after a*epsilon
+        assert np.allclose(y1, np.log(v_scale))
+
+        # Normalization:
+        # if h_scale is small, sp.integrate (0, inf) does not do well:
+        if h_scale < 1e-3:
+            assert np.isclose(1, sp.integrate.quad(
+                lambda d: np.exp(ll(d)),
+                0,
+                ep + 10 * h_scale  # large to tail, but finite
+            )[0])
+        else:
+            assert np.isclose(1, sp.integrate.quad(
+                lambda d: np.exp(ll(d)),
+                0,
+                np.inf
+            )[0])
+
+        # p prob. mass in (0, epsilon):
+        assert np.isclose(p, sp.integrate.quad(
+            lambda d: np.exp(ll(d)),
+            0,
+            ep
+        )[0])
 
         # When a is zero, should be a truncated Student's t:
         ll, v_scale, h_scale = pseudo_likelihood(
-            lambda t: t,
-            lambda d: d,
-            data=0.0,
+            sim_fun=lambda t: t,
             epsilon=ep,
+            data=0.0,
             a=0.0,
             p=p,
             df=df,
-            return_scale=True,
+            return_scale=True
         )
         x = np.linspace(0, 5 * ep)
         y1 = np.log(2) + sps.t(df=df, scale=h_scale).logpdf(x)
-        y2 = np.array([ll(xi, 0.0) for xi in x])
+        y2 = np.array([ll(xi) for xi in x])
         assert np.allclose(y1, y2)
 
 
@@ -112,7 +169,12 @@ def test_vbmc_optimize_pseudo_ll():
     def fake_summary(d_theta):
         return np.mean(np.var(d_theta, axis=0))
 
-    llfun = pseudo_likelihood(fake_sim, fake_summary, data=d_obs, epsilon=1.0)
+    llfun = pseudo_likelihood(
+        fake_sim,
+        epsilon=1.0,
+        summary=fake_summary,
+        data=d_obs
+    )
 
     def ltarget(t):  # Pseudo-likelihood + wide prior
         return llfun(t) + sps.multivariate_normal.logpdf(t, cov=8 * np.eye(D))
