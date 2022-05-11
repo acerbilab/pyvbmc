@@ -20,7 +20,7 @@ def test_acq_info():
     assert np.isclose(sps.norm.cdf(acqf.u), 0.75)
 
 
-def test__call__3():
+def test__call__():
     D = 2
 
     gp = gpr.GP(
@@ -33,14 +33,14 @@ def test__call__3():
         )
     )
 
-    def ltarget(theta):  # Standard MVN with noise propto dist. from origin
+    def ltarget(theta):  # Standard MVN with s2 est. propto dist. from origin
         return sps.multivariate_normal(
             mean=np.zeros((D,)),
             cov=np.eye(D)
         ).logpdf(theta), np.linalg.norm(theta)
 
     # Fit a GP to a large number of training points from the target
-    M = 10  # Number of training points = M^2
+    M = 20  # Number of training points = M^2
     x1 = x2 = np.linspace(-5, 5, M)
     X1, X2 = np.meshgrid(x1, x2)
     X = np.vstack([X1.ravel(), X2.ravel()]).T
@@ -48,22 +48,32 @@ def test__call__3():
     y = lls[:, 0].reshape(-1, 1)
     s2 = lls[:, 1].reshape(-1, 1)
     gp.fit(X.reshape(-1, D), y, s2)
+    # gp.plot()
 
     # Acquisition function evaluation points:
     N_eval = 5
-    X_eval = np.random.normal(size=N_eval * D).reshape((-1, D))
+    X_eval = np.arange(-5, N_eval * D - 5).reshape(N_eval, D)
     lls_eval = np.array([ltarget(x) for x in X_eval])
     y_eval = lls_eval[:, 0].reshape(-1, 1)
     s2_eval = lls_eval[:, 0].reshape(-1, 1)
     f_mu, f_s2 = gp.predict(x_star=X_eval, separate_samples=True)
 
+    ## Setup grid approximation of VIQR/IMIQR:
+
     def s_xsi_new(theta, theta_new):
         __, cov = gp.predict_full(np.vstack([theta, theta_new]))
         c_xsi2_t_tn = np.mean(cov, axis=2)[0, 1]
-        __, cov = gp.predict_full(np.atleast_2d(theta_new))
-        c_xsi2_tn_tn = np.mean(cov, axis=2)[0, 0]
+        # __, cov = gp.predict_full(np.atleast_2d(theta_new))
+        # c_xsi2_tn_tn = np.mean(cov, axis=2)[0, 0]
+        __, c_xsi2_tn_tn = gp.predict(np.atleast_2d(theta_new))
+        c_xsi2_tn_tn = c_xsi2_tn_tn[0,0]
         __, s_xsi2 = gp.predict(np.atleast_2d(theta), add_noise=True)
         s_xsi2 = s_xsi2[0,0]
+        # print(c_xsi2_t_tn / (c_xsi2_tn_tn + np.linalg.norm(theta_new)))
+        s_xsi2 = np.linalg.norm(theta)
+        c_xsi2_tn_tn = np.linalg.norm(theta_new)
+        print(s_xsi2 - c_xsi2_t_tn / (c_xsi2_tn_tn + np.linalg.norm(theta_new)))
+        # print(np.linalg.norm(theta_new))
         return s_xsi2 - c_xsi2_t_tn / (c_xsi2_tn_tn + np.linalg.norm(theta_new))
 
     u = sps.norm.ppf(0.75)
@@ -71,13 +81,18 @@ def test__call__3():
     vp.mu = np.zeros((1, D))
     vp.sigma = np.ones((1, 1))  # VP is standard normal
     def viqr_integrand(theta, theta_new):
-        return -2 * vp.pdf(theta) * np.sinh(u * s_xsi_new(theta, theta_new))
-    t1 = t2 = np.linspace(-10, 10)
+        return vp.pdf(theta) * np.sinh(u * s_xsi_new(theta, theta_new))
+    M = 10
+    t1 = t2 = np.linspace(-20, 20, M)
     T1, T2 = np.meshgrid(t1, t2)
     thetas = np.vstack([T1.ravel(), T2.ravel()]).T
 
+    # VIQR (IMIQR) values by grid approximationL
     viqrs = np.array([viqr_integrand(theta, X_eval[0]) for theta in thetas])
-    print(sum(viqrs))
+    print(sum(viqrs) * (40/M)**2)
+
+    ## Setup acquisition function and necessary preliminaries:
+
     acqviqr = AcqFcnVIQR()
     optim_state = {
         "lb_eps_orig" : -np.inf,
@@ -106,6 +121,7 @@ def test__call__3():
     vbmc_options = Options(
         basic_path,
         evaluation_parameters={"D": D},
+        user_options={"activeimportancesamplingmcmcsamples" : 100}
     )
     advanced_path = (
         pyvbmc_path + "/option_configs/advanced_vbmc_options.ini"
@@ -116,13 +132,13 @@ def test__call__3():
     )
     vbmc_options.validate_option_names([basic_path, advanced_path])
 
-    print(vp.lambd)
     optim_state["active_importance_sampling"] = active_importance_sampling_vbmc(vp, gp, acqviqr, vbmc_options)
-    print(acqviqr(X_eval[0, :], gp, vp, function_logger=None, optim_state=optim_state))
 
+    # VIQR Acquisition Function Values:
+    print(np.exp(acqviqr(X_eval[0], gp, vp, function_logger=None, optim_state=optim_state)))
 
 @pytest.mark.skip
-def test__call__():
+def test__call__2():
     D=3
     gp = gpr.GP(D,
                 covariance=gpr.covariance_functions.SquaredExponential(),
@@ -173,104 +189,3 @@ def test__call__():
     gp.temporary_data["X_rescaled"] = gp.X / optim_state["gp_length_scale"]
     result = acqf(np.arange(1, 7).reshape(2, 3), gp, vp, None, optim_state)
     print(result)
-
-@pytest.mark.skip
-def test__call__2(mocker):
-    acqf = AcqFcnVIQR()
-    M = 3
-    Xs = np.ones((M, 3))
-
-    mocker.patch(
-        "gpyreg.GP.predict",
-        return_value=(np.ones((M, 2)) * 3, np.ones((M, 2))),
-    )
-
-    mocker.patch(
-        "pyvbmc.variational_posterior.VariationalPosterior.pdf",
-        return_value=np.ones((M, 1)),
-    )
-
-    optim_state = dict()
-    optim_state["integervars"] = None
-    optim_state["variance_regularized_acq_fcn"] = False
-    optim_state["gp_length_scale"] = np.exp(np.mean(np.ones((3, 2)), axis=1)).T
-
-    # no constraints for test
-    optim_state["lb_eps_orig"] = -np.inf
-    optim_state["ub_eps_orig"] = np.inf
-
-    vp = VariationalPosterior(3)
-    function_logger = FunctionLogger(np.sum, 3, False, 0)
-    function_logger(np.ones(3))
-
-    gp = gpr.GP(
-        D=3,
-        covariance=gpr.covariance_functions.SquaredExponential(),
-        mean=gpr.mean_functions.NegativeQuadratic(),
-        noise=gpr.noise_functions.GaussianNoise(constant_add=True),
-    )
-
-    gp.temporary_data["sn2_new"] = np.ones((M, 2))
-    gp.temporary_data["X_rescaled"] = Xs / optim_state["gp_length_scale"]
-
-    acq = acqf(Xs, gp, vp, function_logger, optim_state)
-
-    assert acq.shape == (M,)
-    assert np.all(acq == -0.5)
-
-
-@pytest.mark.skip
-def test_complex__call__(mocker):
-    acqf = AcqFcnNoisy()
-    M = 4
-    Xs = np.arange(-3, 9).reshape(M, 3) / 10
-
-    mocker.patch(
-        "gpyreg.GP.predict",
-        return_value=(np.arange(0, 2*M).reshape((M, 2), order="F")/13,
-                      np.arange(0, 2*M).reshape((M, 2), order="F")/23 ),
-    )
-
-    mocker.patch(
-        "pyvbmc.variational_posterior.VariationalPosterior.pdf",
-        return_value=np.arange(0, M).reshape((M, 1), order="F") * np.exp(-1)
-    )
-
-    optim_state = dict()
-    optim_state["integervars"] = None
-    optim_state["variance_regularized_acq_fcn"] = False
-    optim_state["gp_length_scale"] = np.exp(np.mean(np.arange(0, 3*2).reshape((3, 2), order="F"), axis=1)).T
-
-    # no constraints for test
-    optim_state["lb_eps_orig"] = -np.inf
-    optim_state["ub_eps_orig"] = np.inf
-
-    vp = VariationalPosterior(3)
-    fun = lambda x: (np.sum(x), np.abs(0.5*np.sum(x)))
-    function_logger = FunctionLogger(fun, 3, True, 2)
-    function_logger(-0.5*np.ones(3))
-    function_logger(np.ones(3))
-
-    gp = gpr.GP(
-        D=3,
-        covariance=gpr.covariance_functions.SquaredExponential(),
-        mean=gpr.mean_functions.NegativeQuadratic(),
-        noise=gpr.noise_functions.GaussianNoise(constant_add=True),
-    )
-
-    gp.temporary_data["sn2_new"] = np.exp(-1) *\
-        np.arange(1, M*2+1).reshape((M, 2), order="F")
-    gp.temporary_data["X_rescaled"] = function_logger.X[
-        ~np.isnan(function_logger.X).all(axis=1)
-    ] / optim_state["gp_length_scale"]
-
-    acq = acqf(Xs, gp, vp, function_logger, optim_state)
-
-    assert acq.shape == (M,)
-    acq_MATLAB = np.array([
-        -4.64016986306700e-311,
-        -0.00133615097976628,
-        -0.00254878290767088,
-        -0.00565418068738646
-    ])
-    assert np.allclose(acq, acq_MATLAB)
