@@ -78,7 +78,7 @@ def test__call__():
 
     u = sps.norm.ppf(0.75)
     vp = VariationalPosterior(D, 1)  # VP with one component
-    vp.mu = np.zeros((1, D))
+    vp.mu = np.zeros((D, 1))
     vp.sigma = np.ones((1, 1))  # VP is standard normal
     def viqr_integrand(theta, theta_new):
         return vp.pdf(theta) * np.sinh(u * s_xsi_new(theta, theta_new))
