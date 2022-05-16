@@ -63,9 +63,8 @@ def test_simple__call__():
     )
     # gp.plot(lb=np.array([-5.0, -5.0]), ub=np.array([5.0, 5.0]))
 
-    # Acquisition function evaluation points:
+    # Acquisition function evaluation point:
     X_eval = np.zeros((1,D))
-    f_mu, f_s2 = gp.predict(x_star=X_eval, separate_samples=True)
 
     vp = VariationalPosterior(D, 1)  # VP with one component
     vp.mu = np.zeros((D, 1))
@@ -126,14 +125,23 @@ def test_complex__call__():
     D = 2
 
     def ltarget(theta):  # Standard MVN with s2 est. propto dist. from origin
-        return sps.multivariate_normal(mean=np.zeros((D,)), cov=np.eye(D)).logpdf(theta) + np.sqrt(np.linalg.norm(theta)) * np.random.normal(), 1 * np.linalg.norm(theta)
+        ll = sps.multivariate_normal(mean=np.zeros((D,)), cov=np.eye(D)).logpdf(theta)
+        if theta[0] < 0:
+            return ll, 0.001
+        else:
+            return ll, np.linalg.norm(theta)
 
     # GP training data
-    M = 3  # Number of training points = M^2
+    M = 9  # Number of training points = M^2
     x1 = x2 = np.linspace(-5, 5, M)
     X1, X2 = np.meshgrid(x1, x2)
     X = np.vstack([X1.ravel(), X2.ravel()]).T
-    X = np.array([[1.0, 1.0], [1.0, 0.0], [1.0, -1.0]])
+    # Delete every other point on half of the plane
+    # (to create some variation in the expected information gain)
+    for i in range(len(X), len(X)//2, -1):
+        if i % 2 == 0:
+            X = np.delete(X, i, 0)
+    # X = np.array([[1.0, 1.0], [1.0, 0.0], [1.0, -1.0]])
     lls = np.array([ltarget(x) for x in X])
     y = lls[:, 0].reshape(-1, 1)
     s2 = lls[:, 1].reshape(-1, 1)
@@ -170,11 +178,11 @@ def test_complex__call__():
     ## Setup grid approximation of VIQR/IMIQR:
 
     def s_xsi_new(theta, theta_new):
-        __, cov = gp.predict_full(np.vstack([theta, theta_new]), add_noise=True)
+        __, cov = gp.predict_full(np.vstack([theta, theta_new]), add_noise=False)
         c_xsi2_t_tn = np.mean(cov, axis=2)[0, 1]
         # __, cov = gp.predict_full(np.atleast_2d(theta_new))
         # c_xsi2_tn_tn = np.mean(cov, axis=2)[0, 0]
-        __, c_xsi2_tn_tn = gp.predict(np.atleast_2d(theta_new), add_noise=True)
+        __, c_xsi2_tn_tn = gp.predict(np.atleast_2d(theta_new), add_noise=False)
         c_xsi2_tn_tn = c_xsi2_tn_tn[0,0]
         __, s_xsi2 = gp.predict(np.atleast_2d(theta), add_noise=True)
         s_xsi2 = s_xsi2[0,0]
@@ -193,9 +201,10 @@ def test_complex__call__():
     thetas = np.vstack([T1.ravel(), T2.ravel()]).T
 
     # Acquisition function evaluation points:
-    N_eval = 4
-    X_eval = np.arange(-2, N_eval * D - 2).reshape(N_eval, D)
-    f_mu, f_s2 = gp.predict(x_star=X_eval, separate_samples=True)
+    N_eval = 5
+    X_eval = np.arange(-5, N_eval * D - 5).reshape(N_eval, D)
+    X_eval = np.tile(np.linspace(-5, 5, N_eval).reshape((N_eval, 1)), (1,2))
+    print(X_eval)
 
     # VIQR (IMIQR) values by grid approximationL
     viqrs = np.zeros((N_eval, M**2))
@@ -252,7 +261,7 @@ def test_complex__call__():
     # VIQR Acquisition Function Values:
     result = np.exp(acqviqr(X_eval, gp, vp, function_logger=None, optim_state=optim_state) - np.log(2)).reshape((N_eval,))
     print(result)
-    assert np.allclose(result, viqr_grid, atol=0.25)
+    assert np.allclose(result, viqr_grid, rtol=0.10)
 
 @pytest.mark.skip
 def test__call__2():
