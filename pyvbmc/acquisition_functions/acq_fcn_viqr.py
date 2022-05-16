@@ -94,6 +94,7 @@ class AcqFcnVIQR(AbstractAcqFcn):
             ))
 
             ln_w = optim_state["active_importance_sampling"]["ln_w"][s, :]
+            assert np.all(ln_w == 0.0)
             # ln_w should be 0 here: since we are sampling Xa from the VP
             # no extra importance sampling weight is required.
             # It is included for compatibility.
@@ -104,9 +105,10 @@ class AcqFcnVIQR(AbstractAcqFcn):
             # logsumexp
             ln_max = np.amax(zz, axis=1)
             ln_max[ln_max == -np.inf] = 0.0  # Avoid -inf + inf
+            __, n_samples = zz.shape
             acq[:, s] = np.log(
                 np.sum(np.exp(zz - ln_max.reshape(-1, 1)), axis=1)
-            ) + ln_max
+            ) + ln_max - np.log(n_samples)
 
         if Ns_gp > 1:
             M = np.amax(acq, axis=1)
