@@ -23,6 +23,36 @@ def test_acq_info():
 def test__call__():
     D = 2
 
+
+    def ltarget(theta):  # Standard MVN with s2 est. propto dist. from origin
+        return sps.multivariate_normal(
+            mean=np.zeros((D,)),
+            cov=np.eye(D)
+        ).logpdf(theta), 1 * np.linalg.norm(theta)
+        # ).logpdf(theta) + np.sqrt(np.linalg.norm(theta)) * np.random.normal(), 1 * np.linalg.norm(theta)
+
+    # Fit a GP to a large number of training points from the target
+    M = 21  # Number of training points = M^2
+    x1 = x2 = np.linspace(-5, 5, M)
+    X1, X2 = np.meshgrid(x1, x2)
+    X = np.vstack([X1.ravel(), X2.ravel()]).T
+    lls = np.array([ltarget(x) for x in X])
+    # lls = np.zeros(lls.shape)
+    y = lls[:, 0].reshape(-1, 1)
+    s2 = lls[:, 1].reshape(-1, 1)
+    # gp.fit(X.reshape(-1, D), y, s2)
+
+    hyp = np.array([[
+        # Covariance
+        0.0, 0.0,  # log ell
+        1.0,  # log sf2
+        # Noise
+        -10.0,  # log std. dev. of noise
+        # Mean
+        -(D/2) * np.log(2 * np.pi),  # MVN mode
+        0.0, 0.0,  # Mode location
+        0.0, 0.0,  # log scale
+    ]])
     gp = gpr.GP(
         D,
         covariance=gpr.covariance_functions.SquaredExponential(),
@@ -30,25 +60,15 @@ def test__call__():
         noise=gpr.noise_functions.GaussianNoise(
             constant_add=True,
             user_provided_add=True
-        )
+        ),
     )
-
-    def ltarget(theta):  # Standard MVN with s2 est. propto dist. from origin
-        return sps.multivariate_normal(
-            mean=np.zeros((D,)),
-            cov=np.eye(D)
-        ).logpdf(theta), np.linalg.norm(theta)
-
-    # Fit a GP to a large number of training points from the target
-    M = 20  # Number of training points = M^2
-    x1 = x2 = np.linspace(-5, 5, M)
-    X1, X2 = np.meshgrid(x1, x2)
-    X = np.vstack([X1.ravel(), X2.ravel()]).T
-    lls = np.array([ltarget(x) for x in X])
-    y = lls[:, 0].reshape(-1, 1)
-    s2 = lls[:, 1].reshape(-1, 1)
-    gp.fit(X.reshape(-1, D), y, s2)
-    # gp.plot()
+    gp.update(
+        X_new=X,
+        y_new=y,
+        s2_new=s2,
+        hyp=hyp
+    )
+    gp.plot(lb=np.array([-10.0, -10.0]), ub=np.array([10.0, 10.0]))
 
     # Acquisition function evaluation points:
     N_eval = 5
@@ -72,7 +92,7 @@ def test__call__():
         # print(c_xsi2_t_tn / (c_xsi2_tn_tn + np.linalg.norm(theta_new)))
         s_xsi2 = np.linalg.norm(theta)
         c_xsi2_tn_tn = np.linalg.norm(theta_new)
-        print(s_xsi2 - c_xsi2_t_tn / (c_xsi2_tn_tn + np.linalg.norm(theta_new)))
+        # print(s_xsi2 - c_xsi2_t_tn / (c_xsi2_tn_tn + np.linalg.norm(theta_new)))
         # print(np.linalg.norm(theta_new))
         return s_xsi2 - c_xsi2_t_tn / (c_xsi2_tn_tn + np.linalg.norm(theta_new))
 
@@ -136,6 +156,8 @@ def test__call__():
 
     # VIQR Acquisition Function Values:
     print(np.exp(acqviqr(X_eval[0], gp, vp, function_logger=None, optim_state=optim_state)))
+    fmu, fs2 = gp.predict(x_star=np.array([[8.0, 8.0]]))
+    print(fs2)
 
 @pytest.mark.skip
 def test__call__2():
