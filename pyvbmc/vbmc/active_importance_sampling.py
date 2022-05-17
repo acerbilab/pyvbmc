@@ -132,11 +132,11 @@ def active_importance_sampling(vp, gp, acqfcn, options):
                 active_is["ln_weights"] = ln_weights.T
             else:
                 active_is["ln_weights"] = np.append(active_is["ln_weights"], ln_weights.T, axis=1)
-            if active_is.get("Xa") is None:
+            if active_is.get("X") is None:
                 active_is["X"] = Xa_vp
             else:
                 active_is["X"] = np.append(active_is["X"], Xa_vp, axis=0)
-            if active_is.get("f_s2a") is None:
+            if active_is.get("f_s2") is None:
                 active_is["f_s2"] = f_s2a_vp
             else:
                 active_is["f_s2"] = np.append(active_is["f_s2"], f_s2a_vp, axis=0)
@@ -152,11 +152,11 @@ def active_importance_sampling(vp, gp, acqfcn, options):
                 active_is["ln_weights"] = ln_weights.T
             else:
                 active_is["ln_weights"] = np.append(active_is["ln_weights"], ln_weights.T, axis=1)
-            if active_is.get("Xa") is None:
+            if active_is.get("X") is None:
                 active_is["X"] = Xa_box
             else:
                 active_is["X"] = np.append(active_is["X"], Xa_box, axis=0)
-            if active_is.get("f_s2a") is None:
+            if active_is.get("f_s2") is None:
                 active_is["f_s2"] = f_s2a_box
             else:
                 active_is["f_s2"] = np.append(active_is["f_s2"], f_s2a_box, axis=0)
