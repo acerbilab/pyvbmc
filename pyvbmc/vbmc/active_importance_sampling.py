@@ -100,7 +100,7 @@ def active_importance_sampling(vp, gp, acqfcn, options):
             ln_y = acqfcn.is_log_f1(None, f_mu, f_s2)
 
         active_is["f_s2a"] = f_s2
-        active_is["ln_w"] = ln_y.T
+        active_is["ln_weights"] = ln_y.T
         active_is["Xa"] = Xa
 
     else:
@@ -127,11 +127,11 @@ def active_importance_sampling(vp, gp, acqfcn, options):
 
             # Sample from smoothed posterior
             Xa_vp, __ = vp_is.sample(Nvp_samples, origflag=False)
-            ln_w, f_s2a_vp = activesample_proposalpdf(Xa_vp, gp, vp_is, w_vp, rect_delta, acqfcn, vp, isample_vp_flag)
-            if active_is.get("ln_w") is None:
-                active_is["ln_w"] = ln_w.T
+            ln_weights, f_s2a_vp = activesample_proposalpdf(Xa_vp, gp, vp_is, w_vp, rect_delta, acqfcn, vp, isample_vp_flag)
+            if active_is.get("ln_weights") is None:
+                active_is["ln_weights"] = ln_weights.T
             else:
-                active_is["ln_w"] = np.append(active_is["ln_w"], ln_w.T, axis=1)
+                active_is["ln_weights"] = np.append(active_is["ln_weights"], ln_weights.T, axis=1)
             if active_is.get("Xa") is None:
                 active_is["Xa"] = Xa_vp
             else:
@@ -147,11 +147,11 @@ def active_importance_sampling(vp, gp, acqfcn, options):
         if Nbox_samples > 0:
             jj = np.random.randint(0, len(gp.X), size=(Nbox_samples,))
             Xa_box = gp.X[jj, :] + (2 * np.random.rand(jj.size, D) - 1) * rect_delta
-            ln_w, f_s2a_box = activesample_proposalpdf(Xa_box, gp, vp_is, w_vp, rect_delta, acqfcn, vp, isample_vp_flag)
-            if active_is.get("ln_w") is None:
-                active_is["ln_w"] = ln_w.T
+            ln_weights, f_s2a_box = activesample_proposalpdf(Xa_box, gp, vp_is, w_vp, rect_delta, acqfcn, vp, isample_vp_flag)
+            if active_is.get("ln_weights") is None:
+                active_is["ln_weights"] = ln_weights.T
             else:
-                active_is["ln_w"] = np.append(active_is["ln_w"], ln_w.T, axis=1)
+                active_is["ln_weights"] = np.append(active_is["ln_weights"], ln_weights.T, axis=1)
             if active_is.get("Xa") is None:
                 active_is["Xa"] = Xa_box
             else:
@@ -161,7 +161,7 @@ def active_importance_sampling(vp, gp, acqfcn, options):
             else:
                 active_is["f_s2a"] = np.append(active_is["f_s2a"], f_s2a_box, axis=0)
 
-        active_is["ln_w"][~np.isfinite(active_is["ln_w"])] = -np.inf
+        active_is["ln_weights"][~np.isfinite(active_is["ln_weights"])] = -np.inf
 
         # Step 2 (optional): MCMC sample
 
@@ -170,7 +170,7 @@ def active_importance_sampling(vp, gp, acqfcn, options):
         if Nmcmc_samples > 0:
             active_is_old = copy.deepcopy(active_is)
 
-            active_is["ln_w"] = np.zeros((Ns_gp, Nmcmc_samples))
+            active_is["ln_weights"] = np.zeros((Ns_gp, Nmcmc_samples))
             active_is["Xa"] = np.zeros((Nmcmc_samples, D, Ns_gp))
             active_is["f_s2a"] = np.zeros((Nmcmc_samples, Ns_gp))
 
@@ -198,11 +198,11 @@ def active_importance_sampling(vp, gp, acqfcn, options):
 
                 # Use importance sampling-resampling
                 f_mu, f_s2 = gp1.predict(active_is_old["Xa"], separate_samples=True)
-                ln_w = active_is_old["ln_w"][s, :].reshape(-1, 1)\
+                ln_weights = active_is_old["ln_weights"][s, :].reshape(-1, 1)\
                        + acqfcn.is_log_f2(f_mu, f_s2)
-                ln_w_max = np.amax(ln_w, axis=1).reshape(-1, 1)
-                assert np.all(ln_w_max != -np.inf)
-                w = np.exp(ln_w - ln_w_max).reshape(-1)
+                ln_weights_max = np.amax(ln_weights, axis=1).reshape(-1, 1)
+                assert np.all(ln_weights_max != -np.inf)
+                w = np.exp(ln_weights - ln_weights_max).reshape(-1)
                 w = w / np.sum(w)
                 # x0 = np.zeros((Walkers, D))
                 # Select without replacement by weight w:
@@ -228,7 +228,7 @@ def active_importance_sampling(vp, gp, acqfcn, options):
                     ln_y = acqfcn.is_log_f1(None, f_mu, f_s2)
 
                 active_is["f_s2a"][:, s] = f_s2.reshape(-1)
-                active_is["ln_w"][s, :] = ln_y.T - log_p.T
+                active_is["ln_weights"][s, :] = ln_y.T - log_p.T
                 active_is["Xa"][:, :, s] = Xa
 
     # Step 3: Pre-compute quantities for importance sampling calculations:
@@ -307,11 +307,11 @@ def activesample_proposalpdf(Xa, gp, vp_is, w_vp, rect_delta, acqfcn, vp, isampl
         assert np.all(m_max != -np.inf)
         l_pdf = np.log(np.sum(np.exp(temp_lpdf - m_max.reshape(-1, 1)),
                               axis=1))
-        ln_w = ln_y - (l_pdf + m_max).reshape(-1, 1)
+        ln_weights = ln_y - (l_pdf + m_max).reshape(-1, 1)
     else:
-        ln_w = ln_y - temp_lpdf
+        ln_weights = ln_y - temp_lpdf
 
-    return ln_w, f_s2
+    return ln_weights, f_s2
 
 
 def log_isbasefun(x, acq_fcn, gp, vp=None):
@@ -422,8 +422,8 @@ def fess_vbmc(vp, gp, X=100):
     # Compute effective sample size (ESS) with importance sampling
     v_ln_pdf = np.maximum(vp.pdf(X, origflag=False, logflag=True),
                           np.log(sys.float_info.min))
-    ln_w = fbar - v_ln_pdf
-    weight = np.exp(ln_w - np.amax(ln_w, axis=1))
+    ln_weights = fbar - v_ln_pdf
+    weight = np.exp(ln_weights - np.amax(ln_weights, axis=1))
     weight = weight / sum(weight)
 
     return (1 / sum(weight**2)) / N  # Fractional ESS
