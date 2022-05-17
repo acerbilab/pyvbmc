@@ -4,6 +4,7 @@ import numpy as np
 import scipy as sp
 import scipy.stats as sps
 import os
+import matplotlib.pyplot as plt
 
 from pyvbmc.acquisition_functions import AcqFcnVIQR
 from pyvbmc.function_logger import FunctionLogger
@@ -22,9 +23,10 @@ def test_acq_info():
 
 def test_simple__call__():
     D = 2
+    epsilon = 1e-6
 
     def ltarget(theta):  # Standard MVN with s2 est. propto dist. from origin
-        return sps.multivariate_normal(mean=np.zeros((D,)), cov=np.eye(D)).logpdf(theta) + np.sqrt(np.linalg.norm(theta)) * np.random.normal(), 1 * np.linalg.norm(theta)
+        return sps.multivariate_normal(mean=np.zeros((D,)), cov=np.eye(D)).logpdf(theta) + np.sqrt(np.linalg.norm(theta)) * np.random.normal(), np.linalg.norm(theta) + epsilon
 
     # Train GP on "dummy" points far away from I.S. points.
     # This way the predictive variance at I.S. points will approximate the
@@ -123,21 +125,23 @@ def test_simple__call__():
 
 def test_complex__call__():
     D = 2
+    epsilon = 1e-3
 
     def ltarget(theta):  # Standard MVN with s2 est. propto dist. from origin
         ll = sps.multivariate_normal(mean=np.zeros((D,)), cov=np.eye(D)).logpdf(theta)
         if theta[0] < 0:
-            return ll, 0.001
+            return ll, epsilon
         else:
-            return ll, np.linalg.norm(theta)
+            return ll, np.linalg.norm(theta) + epsilon
 
     # GP training data
-    M = 9  # Number of training points = M^2
+    M = 17  # Number of training points = M^2
     x1 = x2 = np.linspace(-5, 5, M)
     X1, X2 = np.meshgrid(x1, x2)
     X = np.vstack([X1.ravel(), X2.ravel()]).T
-    # Delete every other point on half of the plane
-    # (to create some variation in the expected information gain)
+    # Delete every other point on half of the plane, to create some variation
+    # in the expected posterior covariance, but leave the points dense enough
+    # that _estimate_observation_noise() is accurate:
     for i in range(len(X), len(X)//2, -1):
         if i % 2 == 0:
             X = np.delete(X, i, 0)
@@ -163,7 +167,6 @@ def test_complex__call__():
         covariance=gpr.covariance_functions.SquaredExponential(),
         mean=gpr.mean_functions.NegativeQuadratic(),
         noise=gpr.noise_functions.GaussianNoise(
-            constant_add=True,
             user_provided_add=True
         ),
     )
@@ -173,28 +176,28 @@ def test_complex__call__():
         s2_new=s2,
         hyp=hyp
     )
-    gp.plot(lb=np.array([-5.0, -5.0]), ub=np.array([5.0, 5.0]))
+    # gp.plot(lb=np.array([-5.0, -5.0]), ub=np.array([5.0, 5.0]))
 
     ## Setup grid approximation of VIQR/IMIQR:
 
     def s_xsi_new(theta, theta_new):
-        __, cov = gp.predict_full(np.vstack([theta, theta_new]), add_noise=False)
+        __, cov = gp.predict_full(np.vstack([theta, theta_new]))
         c_xsi2_t_tn = np.mean(cov, axis=2)[0, 1]
         # __, cov = gp.predict_full(np.atleast_2d(theta_new))
         # c_xsi2_tn_tn = np.mean(cov, axis=2)[0, 0]
-        __, c_xsi2_tn_tn = gp.predict(np.atleast_2d(theta_new), add_noise=False)
+        __, c_xsi2_tn_tn = gp.predict(np.atleast_2d(theta_new))
         c_xsi2_tn_tn = c_xsi2_tn_tn[0,0]
-        __, s_xsi2 = gp.predict(np.atleast_2d(theta), add_noise=True)
+        __, s_xsi2 = gp.predict(np.atleast_2d(theta))
         s_xsi2 = s_xsi2[0,0]
-        ret = s_xsi2 - c_xsi2_t_tn / (c_xsi2_tn_tn + np.exp(1)**2)
-        return np.sqrt(ret)
+        ret = s_xsi2 - c_xsi2_t_tn**2 / (c_xsi2_tn_tn + np.linalg.norm(theta_new) + epsilon)
+        return np.sqrt(max(ret, 0.0))
 
     u = sps.norm.ppf(0.75)
     vp = VariationalPosterior(D, 1)  # VP with one component
     vp.mu = np.zeros((D, 1))
     vp.sigma = np.ones((1, 1))  # VP is standard normal
     def viqr_integrand(theta, theta_new):
-        return vp.pdf(theta) * np.sinh(u * s_xsi_new(theta, theta_new))
+        return 2 * vp.pdf(theta) * np.sinh(u * s_xsi_new(theta, theta_new))
     M = 60
     t1 = t2 = np.linspace(-30, 30, M)
     T1, T2 = np.meshgrid(t1, t2)
@@ -204,7 +207,6 @@ def test_complex__call__():
     N_eval = 5
     X_eval = np.arange(-5, N_eval * D - 5).reshape(N_eval, D)
     X_eval = np.tile(np.linspace(-5, 5, N_eval).reshape((N_eval, 1)), (1,2))
-    print(X_eval)
 
     # VIQR (IMIQR) values by grid approximationL
     viqrs = np.zeros((N_eval, M**2))
@@ -213,7 +215,6 @@ def test_complex__call__():
         v_int = np.array([viqr_integrand(theta, np.atleast_2d(x)) for theta in thetas])
         viqrs[i, :] = v_int.reshape((M**2,))
     viqr_grid = np.sum(viqrs * (60/M)**2, axis=1)  # Grid approx. of expectation
-    print(viqr_grid)
 
     ## Setup acquisition function and necessary preliminaries:
 
@@ -245,7 +246,7 @@ def test_complex__call__():
     vbmc_options = Options(
         basic_path,
         evaluation_parameters={"D": D},
-        user_options={"activeimportancesamplingmcmcsamples" : 100}
+        user_options={"activeimportancesamplingmcmcsamples" : 8000}
     )
     advanced_path = (
         pyvbmc_path + "/option_configs/advanced_vbmc_options.ini"
@@ -259,9 +260,10 @@ def test_complex__call__():
     optim_state["active_importance_sampling"] = active_importance_sampling_vbmc(vp, gp, acqviqr, vbmc_options)
 
     # VIQR Acquisition Function Values:
-    result = np.exp(acqviqr(X_eval, gp, vp, function_logger=None, optim_state=optim_state) - np.log(2)).reshape((N_eval,))
-    print(result)
-    assert np.allclose(result, viqr_grid, rtol=0.10)
+    result = np.exp(acqviqr(X_eval, gp, vp, function_logger=None, optim_state=optim_state)).reshape((N_eval,))
+    # print(result)
+    # print(viqr_grid)
+    assert np.allclose(result, viqr_grid, rtol=0.05)
 
 @pytest.mark.skip
 def test__call__2():
@@ -275,7 +277,7 @@ def test__call__2():
     gp.X = np.array([[-1.0, 0.0, 1.0],[2.0, 1.0, -3.0]])
     gp.y = np.array([[1.0],[-1.5]])
     hyp=np.array([
-        -2.0, -2.0, -2.0,  # log ell, cov
+        -3.0, -3.0, -3.0,  # log ell, cov
         1.5, # log sf
         1.8,  # log sn, noise
         1.1, # m0, mean
