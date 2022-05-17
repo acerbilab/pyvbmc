@@ -155,6 +155,25 @@ def test_vbmc_uniform():
     return err_1, err_2
 
 
+def test_vbmc_correlated_multivariate_normal_noisy():
+    D = 3
+    x0 = 0.5 * np.ones((1, D))
+    plb = np.full((1, D), -1.0)
+    pub = np.full((1, D), 1.0)
+    lb = np.full((1, D), -4.0)
+    ub = np.full((1, D), 4.0)
+    lnZ = 0.0
+    mu_bar = np.reshape(np.linspace(-0.5, 0.5, D), (1, -1))
+    options = {"specifytargetnoise" : True, "searchacqfcn": ["@acqviqr_vbmc", "@acqimiqr_vbmc", "@acqfn_vbmc"]}
+    err_1, err_2 = run_optim_block(noisy_cigar, x0, lb, ub, plb, pub, lnZ, mu_bar, options=options)
+
+    assert err_1 < 0.5
+    assert err_2 < 0.2
+
+def noisy_cigar(x, noise_scale=0.4):
+    return cigar(x) + noise_scale * np.random.normal(), noise_scale ** 2
+
+
 def cigar(x):
     """
     Benchmark log pdf -- cigar density.

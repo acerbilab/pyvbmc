@@ -17,7 +17,7 @@ from pyvbmc.vbmc.gaussian_process_train import reupdate_gp, train_gp
 from pyvbmc.vbmc.iteration_history import IterationHistory
 from pyvbmc.vbmc.variational_optimization import (_gplogjoint, _negelcbo,
                                                   optimize_vp)
-from pyvbmc.vbmc import active_importance_sampling
+from pyvbmc.vbmc.active_importance_sampling import active_importance_sampling
 
 from .options import Options
 
