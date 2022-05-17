@@ -1,5 +1,3 @@
-import sys
-
 import gpyreg as gpr
 import numpy as np
 from scipy.linalg import solve_triangular

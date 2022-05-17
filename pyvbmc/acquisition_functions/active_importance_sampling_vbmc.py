@@ -1,10 +1,8 @@
-import logging
 import numpy as np
 import copy
 import math
 import sys
 import gpyreg as gpr
-from .utilities import sq_dist
 
 def active_importance_sampling_vbmc(vp, gp, acqfcn, options):
     """
