@@ -1,16 +1,15 @@
-import pytest
 import gpyreg as gpr
 import numpy as np
-import scipy as sp
 import scipy.stats as sps
 import os
-import matplotlib.pyplot as plt
 
 from pyvbmc.acquisition_functions import AcqFcnVIQR
-from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.variational_posterior import VariationalPosterior
-from pyvbmc.acquisition_functions.active_importance_sampling_vbmc import active_importance_sampling_vbmc
+from pyvbmc.acquisition_functions.active_importance_sampling_vbmc import (
+    active_importance_sampling_vbmc,
+)
 from pyvbmc.vbmc.options import Options
+
 
 def test_acq_info():
     acqf = AcqFcnVIQR()
@@ -26,47 +25,54 @@ def test_simple__call__():
     epsilon = 1e-6
 
     def ltarget(theta):  # Standard MVN with s2 est. propto dist. from origin
-        return sps.multivariate_normal(mean=np.zeros((D,)), cov=np.eye(D)).logpdf(theta) + np.sqrt(np.linalg.norm(theta)) * np.random.normal(), np.linalg.norm(theta) + epsilon
+        return (
+            sps.multivariate_normal(mean=np.zeros((D,)), cov=np.eye(D)).logpdf(
+                theta
+            )
+            + np.sqrt(np.linalg.norm(theta)) * np.random.normal(),
+            np.linalg.norm(theta) + epsilon,
+        )
 
     # Train GP on "dummy" points far away from I.S. points.
     # This way the predictive variance at I.S. points will approximate the
     # GP prior variance.
-    X = np.array([[50.0,-50.0], [-50.0, 50.0]])
+    X = np.array([[50.0, -50.0], [-50.0, 50.0]])
     lls = np.array([ltarget(x) for x in X])
     y = lls[:, 0].reshape(-1, 1)
     s2 = lls[:, 1].reshape(-1, 1)
 
-    # Choose a GP with a short lengthscale, 
-    hyp = np.array([[
-        # Covariance
-        -4.0, -4.0,  # log ell
-        1.0,  # log sf2
-        # Noise
-        0.0,  # log std. dev. of noise
-        # Mean
-        -(D/2) * np.log(2 * np.pi),  # MVN mode
-        0.0, 0.0,  # Mode location
-        0.0, 0.0,  # log scale
-    ]])
+    # Choose a GP with a short lengthscale,
+    hyp = np.array(
+        [
+            [
+                # Covariance
+                -4.0,
+                -4.0,  # log ell
+                1.0,  # log sf2
+                # Noise
+                0.0,  # log std. dev. of noise
+                # Mean
+                -(D / 2) * np.log(2 * np.pi),  # MVN mode
+                0.0,
+                0.0,  # Mode location
+                0.0,
+                0.0,  # log scale
+            ]
+        ]
+    )
     gp = gpr.GP(
         D,
         covariance=gpr.covariance_functions.SquaredExponential(),
         mean=gpr.mean_functions.NegativeQuadratic(),
         noise=gpr.noise_functions.GaussianNoise(
-            constant_add=True,
-            user_provided_add=True
+            constant_add=True, user_provided_add=True
         ),
     )
-    gp.update(
-        X_new=X,
-        y_new=y,
-        s2_new=s2,
-        hyp=hyp
-    )
+    gp.update(X_new=X, y_new=y, s2_new=s2, hyp=hyp)
     # gp.plot(lb=np.array([-5.0, -5.0]), ub=np.array([5.0, 5.0]))
 
     # Acquisition function evaluation point:
-    X_eval = np.zeros((1,D))
+    X_eval = np.zeros((1, D))
 
     vp = VariationalPosterior(D, 1)  # VP with one component
     vp.mu = np.zeros((D, 1))
@@ -84,41 +90,51 @@ def test_simple__call__():
     for s in range(Ns_gp):
         ln_ell[:, s] = gp.posteriors[s].hyp[:D]
     optim_state["gp_length_scale"] = np.exp(ln_ell.mean(1))
-    gp.temporary_data["X_rescaled"] = (
-        gp.X / optim_state["gp_length_scale"]
-    )
+    gp.temporary_data["X_rescaled"] = gp.X / optim_state["gp_length_scale"]
     sn2new = np.zeros((gp.X.shape[0], Ns_gp))
 
     cov_N = gp.covariance.hyperparameter_count(gp.D)
     noise_N = gp.noise.hyperparameter_count()
     for s in range(Ns_gp):
         hyp_noise = gp.posteriors[s].hyp[cov_N : cov_N + noise_N]
-        sn2new[:, s] = gp.noise.compute(hyp_noise, gp.X, gp.y, s2).reshape(-1,)
+        sn2new[:, s] = gp.noise.compute(hyp_noise, gp.X, gp.y, s2).reshape(
+            -1,
+        )
     gp.temporary_data["sn2_new"] = sn2new.mean(1)
 
     # load basic and advanced options and validate the names
-    pyvbmc_path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'pyvbmc', 'vbmc'))
+    pyvbmc_path = os.path.abspath(
+        os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            "..",
+            "..",
+            "pyvbmc",
+            "vbmc",
+        )
+    )
     basic_path = pyvbmc_path + "/option_configs/basic_vbmc_options.ini"
     vbmc_options = Options(
         basic_path,
         evaluation_parameters={"D": D},
-        user_options={"activeimportancesamplingmcmcsamples" : 100}
+        user_options={"activeimportancesamplingmcmcsamples": 100},
     )
-    advanced_path = (
-        pyvbmc_path + "/option_configs/advanced_vbmc_options.ini"
-    )
+    advanced_path = pyvbmc_path + "/option_configs/advanced_vbmc_options.ini"
     vbmc_options.load_options_file(
         advanced_path,
         evaluation_parameters={"D": D},
     )
     vbmc_options.validate_option_names([basic_path, advanced_path])
 
-    optim_state["active_importance_sampling"] = active_importance_sampling_vbmc(vp, gp, acqviqr, vbmc_options)
+    optim_state[
+        "active_importance_sampling"
+    ] = active_importance_sampling_vbmc(vp, gp, acqviqr, vbmc_options)
 
     # Test VIQR Acquisition Function Values:
     # Should be close to log(sinh(0.6745 * e)), because tau^2 approx= 0,
     # so s_pred^2 approx= fs2. -log(2) correction is due to constant factor.
-    result = acqviqr(X_eval[0], gp, vp, function_logger=None, optim_state=optim_state) - np.log(2)
+    result = acqviqr(
+        X_eval[0], gp, vp, function_logger=None, optim_state=optim_state
+    ) - np.log(2)
     u = sps.norm.ppf(0.75)
     assert np.isclose(result, np.log(np.sinh(u * np.exp(1))), atol=1e-4)
 
@@ -128,7 +144,9 @@ def test_complex__call__():
     epsilon = 1e-3
 
     def ltarget(theta):  # Standard MVN with s2 est. propto dist. from origin
-        ll = sps.multivariate_normal(mean=np.zeros((D,)), cov=np.eye(D)).logpdf(theta)
+        ll = sps.multivariate_normal(
+            mean=np.zeros((D,)), cov=np.eye(D)
+        ).logpdf(theta)
         if theta[0] < 0:
             return ll, epsilon
         else:
@@ -142,7 +160,7 @@ def test_complex__call__():
     # Delete every other point on half of the plane, to create some variation
     # in the expected posterior covariance, but leave the points dense enough
     # that _estimate_observation_noise() is accurate:
-    for i in range(len(X), len(X)//2, -1):
+    for i in range(len(X), len(X) // 2, -1):
         if i % 2 == 0:
             X = np.delete(X, i, 0)
     # X = np.array([[1.0, 1.0], [1.0, 0.0], [1.0, -1.0]])
@@ -151,31 +169,31 @@ def test_complex__call__():
     s2 = lls[:, 1].reshape(-1, 1)
 
     # Fixed GP hyperparameters
-    hyp = np.array([[
-        # Covariance
-        1.0, 1.0,  # log ell
-        1.0,  # log sf2
-        # Noise
-        -10.0,  # log std. dev. of noise
-        # Mean
-        -(D/2) * np.log(2 * np.pi),  # MVN mode
-        0.0, 0.0,  # Mode location
-        0.0, 0.0,  # log scale
-    ]])
+    hyp = np.array(
+        [
+            [
+                # Covariance
+                1.0,
+                1.0,  # log ell
+                1.0,  # log sf2
+                # Noise
+                -10.0,  # log std. dev. of noise
+                # Mean
+                -(D / 2) * np.log(2 * np.pi),  # MVN mode
+                0.0,
+                0.0,  # Mode location
+                0.0,
+                0.0,  # log scale
+            ]
+        ]
+    )
     gp = gpr.GP(
         D,
         covariance=gpr.covariance_functions.SquaredExponential(),
         mean=gpr.mean_functions.NegativeQuadratic(),
-        noise=gpr.noise_functions.GaussianNoise(
-            user_provided_add=True
-        ),
+        noise=gpr.noise_functions.GaussianNoise(user_provided_add=True),
     )
-    gp.update(
-        X_new=X,
-        y_new=y,
-        s2_new=s2,
-        hyp=hyp
-    )
+    gp.update(X_new=X, y_new=y, s2_new=s2, hyp=hyp)
     # gp.plot(lb=np.array([-5.0, -5.0]), ub=np.array([5.0, 5.0]))
 
     ## Setup grid approximation of VIQR/IMIQR:
@@ -186,18 +204,22 @@ def test_complex__call__():
         # __, cov = gp.predict_full(np.atleast_2d(theta_new))
         # c_xsi2_tn_tn = np.mean(cov, axis=2)[0, 0]
         __, c_xsi2_tn_tn = gp.predict(np.atleast_2d(theta_new))
-        c_xsi2_tn_tn = c_xsi2_tn_tn[0,0]
+        c_xsi2_tn_tn = c_xsi2_tn_tn[0, 0]
         __, s_xsi2 = gp.predict(np.atleast_2d(theta))
-        s_xsi2 = s_xsi2[0,0]
-        ret = s_xsi2 - c_xsi2_t_tn**2 / (c_xsi2_tn_tn + np.linalg.norm(theta_new) + epsilon)
+        s_xsi2 = s_xsi2[0, 0]
+        ret = s_xsi2 - c_xsi2_t_tn ** 2 / (
+            c_xsi2_tn_tn + np.linalg.norm(theta_new) + epsilon
+        )
         return np.sqrt(max(ret, 0.0))
 
     u = sps.norm.ppf(0.75)
     vp = VariationalPosterior(D, 1)  # VP with one component
     vp.mu = np.zeros((D, 1))
     vp.sigma = np.ones((1, 1))  # VP is standard normal
+
     def viqr_integrand(theta, theta_new):
         return 2 * vp.pdf(theta) * np.sinh(u * s_xsi_new(theta, theta_new))
+
     M = 60
     t1 = t2 = np.linspace(-30, 30, M)
     T1, T2 = np.meshgrid(t1, t2)
@@ -206,114 +228,75 @@ def test_complex__call__():
     # Acquisition function evaluation points:
     N_eval = 5
     X_eval = np.arange(-5, N_eval * D - 5).reshape(N_eval, D)
-    X_eval = np.tile(np.linspace(-5, 5, N_eval).reshape((N_eval, 1)), (1,2))
+    X_eval = np.tile(np.linspace(-5, 5, N_eval).reshape((N_eval, 1)), (1, 2))
 
     # VIQR (IMIQR) values by grid approximationL
-    viqrs = np.zeros((N_eval, M**2))
+    viqrs = np.zeros((N_eval, M ** 2))
     for i in range(N_eval):
         x = X_eval[i, :]
-        v_int = np.array([viqr_integrand(theta, np.atleast_2d(x)) for theta in thetas])
-        viqrs[i, :] = v_int.reshape((M**2,))
-    viqr_grid = np.sum(viqrs * (60/M)**2, axis=1)  # Grid approx. of expectation
+        v_int = np.array(
+            [viqr_integrand(theta, np.atleast_2d(x)) for theta in thetas]
+        )
+        viqrs[i, :] = v_int.reshape((M ** 2,))
+    viqr_grid = np.sum(
+        viqrs * (60 / M) ** 2, axis=1
+    )  # Grid approx. of expectation
 
     ## Setup acquisition function and necessary preliminaries:
 
     acqviqr = AcqFcnVIQR()
     optim_state = {
-        "lb_eps_orig" : -np.inf,
-        "ub_eps_orig" : np.inf,
+        "lb_eps_orig": -np.inf,
+        "ub_eps_orig": np.inf,
     }
     Ns_gp = len(gp.posteriors)
     ln_ell = np.zeros((D, Ns_gp))
     for s in range(Ns_gp):
         ln_ell[:, s] = gp.posteriors[s].hyp[:D]
     optim_state["gp_length_scale"] = np.exp(ln_ell.mean(1))
-    gp.temporary_data["X_rescaled"] = (
-        gp.X / optim_state["gp_length_scale"]
-    )
+    gp.temporary_data["X_rescaled"] = gp.X / optim_state["gp_length_scale"]
     sn2new = np.zeros((gp.X.shape[0], Ns_gp))
 
     cov_N = gp.covariance.hyperparameter_count(gp.D)
     noise_N = gp.noise.hyperparameter_count()
     for s in range(Ns_gp):
         hyp_noise = gp.posteriors[s].hyp[cov_N : cov_N + noise_N]
-        sn2new[:, s] = gp.noise.compute(hyp_noise, gp.X, gp.y, s2).reshape(-1,)
+        sn2new[:, s] = gp.noise.compute(hyp_noise, gp.X, gp.y, s2).reshape(
+            -1,
+        )
     gp.temporary_data["sn2_new"] = sn2new.mean(1)
 
     # load basic and advanced options and validate the names
-    pyvbmc_path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'pyvbmc', 'vbmc'))
+    pyvbmc_path = os.path.abspath(
+        os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            "..",
+            "..",
+            "pyvbmc",
+            "vbmc",
+        )
+    )
     basic_path = pyvbmc_path + "/option_configs/basic_vbmc_options.ini"
     vbmc_options = Options(
         basic_path,
         evaluation_parameters={"D": D},
-        user_options={"activeimportancesamplingmcmcsamples" : 8000}
+        user_options={"activeimportancesamplingmcmcsamples": 8000},
     )
-    advanced_path = (
-        pyvbmc_path + "/option_configs/advanced_vbmc_options.ini"
-    )
+    advanced_path = pyvbmc_path + "/option_configs/advanced_vbmc_options.ini"
     vbmc_options.load_options_file(
         advanced_path,
         evaluation_parameters={"D": D},
     )
     vbmc_options.validate_option_names([basic_path, advanced_path])
 
-    optim_state["active_importance_sampling"] = active_importance_sampling_vbmc(vp, gp, acqviqr, vbmc_options)
+    optim_state[
+        "active_importance_sampling"
+    ] = active_importance_sampling_vbmc(vp, gp, acqviqr, vbmc_options)
 
     # VIQR Acquisition Function Values:
-    result = np.exp(acqviqr(X_eval, gp, vp, function_logger=None, optim_state=optim_state)).reshape((N_eval,))
+    result = np.exp(
+        acqviqr(X_eval, gp, vp, function_logger=None, optim_state=optim_state)
+    ).reshape((N_eval,))
     # print(result)
     # print(viqr_grid)
     assert np.allclose(result, viqr_grid, rtol=0.05)
-
-@pytest.mark.skip
-def test__call__2():
-    D=3
-    gp = gpr.GP(D,
-                covariance=gpr.covariance_functions.SquaredExponential(),
-                mean=gpr.mean_functions.NegativeQuadratic(),
-                noise=gpr.noise_functions.GaussianNoise(constant_add=True)
-            )
-    N=2
-    gp.X = np.array([[-1.0, 0.0, 1.0],[2.0, 1.0, -3.0]])
-    gp.y = np.array([[1.0],[-1.5]])
-    hyp=np.array([
-        -3.0, -3.0, -3.0,  # log ell, cov
-        1.5, # log sf
-        1.8,  # log sn, noise
-        1.1, # m0, mean
-        1.2, 1.3, 1.4, # x_m
-        -1.5, 0.0, 1.5 # log omega
-                ])
-    gp.posteriors = np.array([gpr.gaussian_process.Posterior(
-        hyp=hyp,
-        alpha=np.array([[1.0, 2.0]]).T,
-        sW=np.array([[0.5, 1.5]]).T,
-        L=np.eye(N),
-        sn2_mult=None,
-        Lchol=True
-    )])
-    vp = VariationalPosterior(D)
-    vp.mu = np.array([
-        [-1.0, 1.0],
-        [-1.0, 1.0],
-        [-1.0, 1.0]
-    ])
-
-    acqf = AcqFcnVIQR()
-    optim_state = {
-        "gp_length_scale" : 2.0,
-        "active_importance_sampling" : {
-            "Xa" : np.arange(1,10).reshape((3, 3)) - 4.5,
-            "Kax_mat" : np.eye(3,2).reshape((3, 2, 1)),
-            "f_s2a" : np.arange(1,4).reshape(3, 1),
-            "ln_w" : np.arange(1,4).reshape(1, 3) - 0.5
-        },
-        "lb_eps_orig" : -np.inf,
-        "ub_eps_orig" : np.inf
-    }
-    sn2_new = np.zeros((1,1))
-    sn2_new[:, 0] = gp.noise.compute(hyp[4:5], gp.X, gp.y, s2=None).reshape(-1,)
-    gp.temporary_data["sn2_new"] = sn2_new.mean(1)
-    gp.temporary_data["X_rescaled"] = gp.X / optim_state["gp_length_scale"]
-    result = acqf(np.arange(1, 7).reshape(2, 3), gp, vp, None, optim_state)
-    print(result)
