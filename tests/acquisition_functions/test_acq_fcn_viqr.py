@@ -241,11 +241,17 @@ def test_complex__call__():
         )
         viqrs[i, :] = v_int.reshape((M ** 2,))
     # Rough approximation for missing tails of grid:
-    corrections = np.array([sps.multivariate_normal.pdf(theta, mean=np.zeros((D,))) for theta in thetas])
+    corrections = np.array(
+        [
+            sps.multivariate_normal.pdf(theta, mean=np.zeros((D,)))
+            for theta in thetas
+        ]
+    )
     correction = np.sum(corrections * (60 / M) ** 2)
-    viqr_grid = np.sum(  # Grid approx. of expectation
-        viqrs * (60 / M) ** 2, axis=1
-    ) / correction
+    viqr_grid = (
+        np.sum(viqrs * (60 / M) ** 2, axis=1)  # Grid approx. of expectation
+        / correction
+    )
 
     ## Setup acquisition function and necessary preliminaries:
 
