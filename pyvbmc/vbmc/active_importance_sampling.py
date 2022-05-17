@@ -234,7 +234,7 @@ def active_importance_sampling(vp, gp, acqfcn, options):
     # Step 3: Pre-compute quantities for importance sampling calculations:
 
     # Pre-compute cross-kernel matrix on importance points
-    Kax_mat = np.zeros(
+    K_Xa_X = np.zeros(
         (active_is["Xa"].shape[0], gp.X.shape[0], Ns_gp)
         )
     for s in range(Ns_gp):
@@ -246,11 +246,11 @@ def active_importance_sampling(vp, gp, acqfcn, options):
         hyp = gp.posteriors[s].hyp[0:cov_N]  # just covariance hyperparameters
         if isinstance(gp.covariance,
                       gpr.covariance_functions.SquaredExponential):
-            Kax_mat[:, :, s] = gp.covariance.compute(hyp, Xa, gp.X)
+            K_Xa_X[:, :, s] = gp.covariance.compute(hyp, Xa, gp.X)
         else:
             raise ValueError("Covariance functions besides" ++
                              "SquaredExponential are not supported yet.")
-    active_is["Kax_mat"] = Kax_mat
+    active_is["K_Xa_X"] = K_Xa_X
 
     # Omitted port, integrated mean functions:
     # activeimportancesampling_vbmc.m, lines 257 to 266.

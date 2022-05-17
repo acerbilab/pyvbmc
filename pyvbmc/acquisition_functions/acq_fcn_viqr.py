@@ -62,25 +62,25 @@ class AcqFcnVIQR(AbstractAcqFcn):
             # Compute cross-kernel matrices
             if isinstance(gp.covariance,
                           gpr.covariance_functions.SquaredExponential):
-                Ks_mat = gp.covariance.compute(hyp, gp.X, Xs)
-                Ka_mat = gp.covariance.compute(hyp, Xa, Xs)
-                Kax_mat = optim_state["active_importance_sampling"]["Kax_mat"][:, :, s]
+                K_X_Xs = gp.covariance.compute(hyp, gp.X, Xs)
+                K_Xa_Xs = gp.covariance.compute(hyp, Xa, Xs)
+                K_Xa_X = optim_state["active_importance_sampling"]["K_Xa_X"][:, :, s]
             else:
                 raise ValueError("Covariance functions besides" ++
                                  "SquaredExponential are not supported yet.")
 
             if L_chol:
-                C = Ka_mat.T - Ks_mat.T @ \
+                C = K_Xa_Xs.T - K_X_Xs.T @ \
                     solve_triangular(L,
                                      solve_triangular(L,
-                                                      Kax_mat.T,
+                                                      K_Xa_X.T,
                                                       trans=True,
                                                       check_finite=False
                                                       ),
                                      check_finite=False
                                      ) / sn2_eff
             else:
-                C = Ka_mat.T + Ks_mat.T @ (L @ Kax_mat.T)
+                C = K_Xa_Xs.T + K_X_Xs.T @ (L @ K_Xa_X.T)
 
             # Missing port, integrated meanfun
 
