@@ -49,9 +49,9 @@ def active_importance_sampling(vp, gp, acqfcn, options):
     UB = np.amax(gp.X, axis=0) + max_bnd * diam
 
     active_is = {}
-    active_is["log_weight"] = None
-    active_is["Xa"] = None
-    active_is["f_s2a"] = None
+    active_is["ln_weights"] = None
+    active_is["X"] = None
+    active_is["f_s2"] = None
 
     if only_vp_flag:
         # Step 0: Simply sample from variational posterior.
@@ -99,9 +99,9 @@ def active_importance_sampling(vp, gp, acqfcn, options):
         else:
             ln_y = acqfcn.is_log_f1(None, f_mu, f_s2)
 
-        active_is["f_s2a"] = f_s2
+        active_is["f_s2"] = f_s2
         active_is["ln_weights"] = ln_y.T
-        active_is["Xa"] = Xa
+        active_is["X"] = Xa
 
     else:
         # Step 1: Importance sampling-resampling
@@ -133,13 +133,13 @@ def active_importance_sampling(vp, gp, acqfcn, options):
             else:
                 active_is["ln_weights"] = np.append(active_is["ln_weights"], ln_weights.T, axis=1)
             if active_is.get("Xa") is None:
-                active_is["Xa"] = Xa_vp
+                active_is["X"] = Xa_vp
             else:
-                active_is["Xa"] = np.append(active_is["Xa"], Xa_vp, axis=0)
+                active_is["X"] = np.append(active_is["X"], Xa_vp, axis=0)
             if active_is.get("f_s2a") is None:
-                active_is["f_s2a"] = f_s2a_vp
+                active_is["f_s2"] = f_s2a_vp
             else:
-                active_is["f_s2a"] = np.append(active_is["f_s2a"], f_s2a_vp, axis=0)
+                active_is["f_s2"] = np.append(active_is["f_s2"], f_s2a_vp, axis=0)
         else:
             vp_is = None
 
@@ -153,13 +153,13 @@ def active_importance_sampling(vp, gp, acqfcn, options):
             else:
                 active_is["ln_weights"] = np.append(active_is["ln_weights"], ln_weights.T, axis=1)
             if active_is.get("Xa") is None:
-                active_is["Xa"] = Xa_box
+                active_is["X"] = Xa_box
             else:
-                active_is["Xa"] = np.append(active_is["Xa"], Xa_box, axis=0)
+                active_is["X"] = np.append(active_is["X"], Xa_box, axis=0)
             if active_is.get("f_s2a") is None:
-                active_is["f_s2a"] = f_s2a_box
+                active_is["f_s2"] = f_s2a_box
             else:
-                active_is["f_s2a"] = np.append(active_is["f_s2a"], f_s2a_box, axis=0)
+                active_is["f_s2"] = np.append(active_is["f_s2"], f_s2a_box, axis=0)
 
         active_is["ln_weights"][~np.isfinite(active_is["ln_weights"])] = -np.inf
 
@@ -171,8 +171,8 @@ def active_importance_sampling(vp, gp, acqfcn, options):
             active_is_old = copy.deepcopy(active_is)
 
             active_is["ln_weights"] = np.zeros((Ns_gp, Nmcmc_samples))
-            active_is["Xa"] = np.zeros((Nmcmc_samples, D, Ns_gp))
-            active_is["f_s2a"] = np.zeros((Nmcmc_samples, Ns_gp))
+            active_is["X"] = np.zeros((Nmcmc_samples, D, Ns_gp))
+            active_is["f_s2"] = np.zeros((Nmcmc_samples, Ns_gp))
 
             # Consider only one GP sample at a time
             gp1 = copy.deepcopy(gp)
@@ -197,7 +197,7 @@ def active_importance_sampling(vp, gp, acqfcn, options):
                 Walkers = 1
 
                 # Use importance sampling-resampling
-                f_mu, f_s2 = gp1.predict(active_is_old["Xa"], separate_samples=True)
+                f_mu, f_s2 = gp1.predict(active_is_old["X"], separate_samples=True)
                 ln_weights = active_is_old["ln_weights"][s, :].reshape(-1, 1)\
                        + acqfcn.is_log_f2(f_mu, f_s2)
                 ln_weights_max = np.amax(ln_weights, axis=1).reshape(-1, 1)
@@ -207,7 +207,7 @@ def active_importance_sampling(vp, gp, acqfcn, options):
                 # x0 = np.zeros((Walkers, D))
                 # Select without replacement by weight w:
                 index = np.random.choice(a=len(w), p=w, replace=False)
-                x0 = active_is_old["Xa"][index, :]
+                x0 = active_is_old["X"][index, :]
                 x0 = np.maximum(np.minimum(x0, UB), LB)  # Force inside bounds
 
                 # Contrary to MATLAB, we are using simple slice sampling.
@@ -227,21 +227,21 @@ def active_importance_sampling(vp, gp, acqfcn, options):
                 else:
                     ln_y = acqfcn.is_log_f1(None, f_mu, f_s2)
 
-                active_is["f_s2a"][:, s] = f_s2.reshape(-1)
+                active_is["f_s2"][:, s] = f_s2.reshape(-1)
                 active_is["ln_weights"][s, :] = ln_y.T - log_p.T
-                active_is["Xa"][:, :, s] = Xa
+                active_is["X"][:, :, s] = Xa
 
     # Step 3: Pre-compute quantities for importance sampling calculations:
 
     # Pre-compute cross-kernel matrix on importance points
     K_Xa_X = np.zeros(
-        (active_is["Xa"].shape[0], gp.X.shape[0], Ns_gp)
+        (active_is["X"].shape[0], gp.X.shape[0], Ns_gp)
         )
     for s in range(Ns_gp):
-        if active_is["Xa"].ndim == 3:
-            Xa = active_is["Xa"][:, :, s]
+        if active_is["X"].ndim == 3:
+            Xa = active_is["X"][:, :, s]
         else:
-            Xa = active_is["Xa"]
+            Xa = active_is["X"]
         cov_N = gp.covariance.hyperparameter_count(gp.D)
         hyp = gp.posteriors[s].hyp[0:cov_N]  # just covariance hyperparameters
         if isinstance(gp.covariance,

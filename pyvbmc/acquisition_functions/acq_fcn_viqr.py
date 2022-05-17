@@ -47,7 +47,7 @@ class AcqFcnVIQR(AbstractAcqFcn):
         sn2 = super()._estimate_observation_noise(Xs, gp, optim_state)
         y_s2 = f_s2 + sn2.reshape(-1,1)  # Predictive variance at test points
 
-        Xa = optim_state["active_importance_sampling"]["Xa"]
+        Xa = optim_state["active_importance_sampling"]["X"]
         acq = np.zeros((Nx, Ns_gp))
 
         # Compute acquisition function via importance sampling
@@ -86,7 +86,7 @@ class AcqFcnVIQR(AbstractAcqFcn):
 
             tau2 = C**2 / y_s2[:, s].reshape(-1, 1)
             s_pred = np.sqrt(np.maximum(
-                optim_state["active_importance_sampling"]["f_s2a"][:, s].T
+                optim_state["active_importance_sampling"]["f_s2"][:, s].T
                 - tau2,
                 0.0
             ))

@@ -41,7 +41,7 @@ class AcqFcnIMIQR(AbstractAcqFcn):
         # Xs is in *transformed* coordinates
         [Nx, D] = Xs.shape
         Ns_gp = f_mu.shape[1]
-        Na = optim_state["active_importance_sampling"]["Xa"].shape[0]
+        Na = optim_state["active_importance_sampling"]["X"].shape[0]
 
         # Estimate observation noise at test points from nearest neighbor.
         sn2 = super()._estimate_observation_noise(Xs, gp, optim_state)
@@ -49,11 +49,11 @@ class AcqFcnIMIQR(AbstractAcqFcn):
 
         # Different importance sampling inputs for different GP
         # hyperparameters?
-        multiple_inputs_flag = optim_state["active_importance_sampling"]["Xa"].ndim == 3
+        multiple_inputs_flag = optim_state["active_importance_sampling"]["X"].ndim == 3
         if multiple_inputs_flag:
             Xa = np.zeros((Na, D))
         else:
-            Xa = optim_state["active_importance_sampling"]["Xa"]
+            Xa = optim_state["active_importance_sampling"]["X"]
         acq = np.zeros((Nx, Ns_gp))
 
         # Compute acquisition function via importance sampling
@@ -66,7 +66,7 @@ class AcqFcnIMIQR(AbstractAcqFcn):
             sn2_eff = 1 / gp.posteriors[s].sW[1]**2
 
             if multiple_inputs_flag:
-                Xa[:, :] = optim_state["active_importance_sampling"]["Xa"][:, :, s]
+                Xa[:, :] = optim_state["active_importance_sampling"]["X"][:, :, s]
 
             # Compute cross-kernel matrices
             if isinstance(gp.covariance,
@@ -93,7 +93,7 @@ class AcqFcnIMIQR(AbstractAcqFcn):
 
             tau2 = C**2 / y_s2[:, s].reshape(-1, 1)
             s_pred = np.sqrt(np.maximum(
-                optim_state["active_importance_sampling"]["f_s2a"][:, s].T
+                optim_state["active_importance_sampling"]["f_s2"][:, s].T
                 - tau2,
                 0.0
             ))
