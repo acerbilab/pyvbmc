@@ -99,7 +99,7 @@ class AcqFcnVIQR(AbstractAcqFcn):
             # no extra importance sampling weight is required.
             # It is included for compatibility.
 
-            # zz = ln(weights * sinh(u * s_pred))
+            # zz = ln(weights * sinh(u * s_pred)) + C
             zz = ln_w + self.u * s_pred\
                 + np.log1p(-np.exp(-2 * self.u * s_pred))
             # logsumexp

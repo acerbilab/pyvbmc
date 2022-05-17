@@ -99,11 +99,8 @@ class AcqFcnIMIQR(AbstractAcqFcn):
             ))
 
             ln_w = optim_state["active_importance_sampling"]["ln_w"][s, :]
-            # ln_w should be 0 here: since we are sampling Xa from the VP
-            # no extra importance sampling weight is required.
-            # It is included for compatibility.
 
-            # zz = ln(weights * sinh(u * s_pred))
+            # zz = ln(weights * sinh(u * s_pred)) + C
             zz = ln_w + self.u * s_pred\
                 + np.log1p(-np.exp(-2 * self.u * s_pred))
             # logsumexp
