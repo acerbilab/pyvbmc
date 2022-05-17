@@ -341,7 +341,7 @@ def log_isbasefun(x, acq_fcn, gp, vp=None):
     f_mu, f_s2 = gp.predict(x.reshape(1, -1))
 
     if vp is None:
-        return acq_fcn.is_log_f(0, f_mu, f_s2)
+        return acq_fcn.is_log_f1(0, f_mu, f_s2)
     else:
         v_ln_pdf = np.maximum(vp.pdf(x, origflag=False, logflag=True),
                               np.log(sys.float_info.min))
