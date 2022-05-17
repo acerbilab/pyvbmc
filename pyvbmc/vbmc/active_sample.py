@@ -17,7 +17,7 @@ from pyvbmc.vbmc.gaussian_process_train import reupdate_gp, train_gp
 from pyvbmc.vbmc.iteration_history import IterationHistory
 from pyvbmc.vbmc.variational_optimization import (_gplogjoint, _negelcbo,
                                                   optimize_vp)
-from pyvbmc.acquisition_functions.active_importance_sampling_vbmc import active_importance_sampling_vbmc
+from pyvbmc.vbmc import active_importance_sampling
 
 from .options import Options
 
@@ -305,7 +305,7 @@ def active_sample(
 
             # Prepare for importance sampling based acquistion function
             if getattr(acq_eval, "importance_sampling", None):
-                optim_state["active_importance_sampling"] = active_importance_sampling_vbmc(vp, gp, acq_eval, options)
+                optim_state["active_importance_sampling"] = active_importance_sampling(vp, gp, acq_eval, options)
 
             # Re-evaluate variance of the log joint if requested
             if hasattr(acq_eval, "acq_info")\

@@ -4,7 +4,7 @@ import math
 import sys
 import gpyreg as gpr
 
-def active_importance_sampling_vbmc(vp, gp, acqfcn, options):
+def active_importance_sampling(vp, gp, acqfcn, options):
     """
     Setup importance sampling acquisition functions (viqr/imiqr).
 

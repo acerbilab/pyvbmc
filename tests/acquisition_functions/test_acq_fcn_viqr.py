@@ -5,8 +5,8 @@ import os
 
 from pyvbmc.acquisition_functions import AcqFcnVIQR
 from pyvbmc.variational_posterior import VariationalPosterior
-from pyvbmc.acquisition_functions.active_importance_sampling_vbmc import (
-    active_importance_sampling_vbmc,
+from pyvbmc.vbmc import (
+    active_importance_sampling,
 )
 from pyvbmc.vbmc.options import Options
 
@@ -127,7 +127,7 @@ def test_simple__call__():
 
     optim_state[
         "active_importance_sampling"
-    ] = active_importance_sampling_vbmc(vp, gp, acqviqr, vbmc_options)
+    ] = active_importance_sampling(vp, gp, acqviqr, vbmc_options)
 
     # Test VIQR Acquisition Function Values:
     # Should be close to log(sinh(0.6745 * e)), because tau^2 approx= 0,
@@ -302,7 +302,7 @@ def test_complex__call__():
 
     optim_state[
         "active_importance_sampling"
-    ] = active_importance_sampling_vbmc(vp, gp, acqviqr, vbmc_options)
+    ] = active_importance_sampling(vp, gp, acqviqr, vbmc_options)
 
     # VIQR Acquisition Function Values:
     result = np.exp(

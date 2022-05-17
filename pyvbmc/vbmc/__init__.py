@@ -6,3 +6,4 @@ from .variational_optimization import optimize_vp, update_K
 from .iteration_history import IterationHistory
 from .options import Options
 from .vbmc import VBMC
+from .active_importance_sampling import active_importance_sampling
