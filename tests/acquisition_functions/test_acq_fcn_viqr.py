@@ -136,7 +136,9 @@ def test_simple__call__():
         X_eval[0], gp, vp, function_logger=None, optim_state=optim_state
     ) - np.log(2)
     u = sps.norm.ppf(0.75)
-    assert np.isclose(result, np.log(np.sinh(u * np.exp(1))), atol=1e-4)
+    # print(result)
+    # print(np.log(np.sinh(u * np.exp(1))))
+    assert np.isclose(np.log(np.sinh(u * np.exp(1))), result, atol=1e-4)
 
 
 def test_complex__call__():
@@ -220,7 +222,7 @@ def test_complex__call__():
     def viqr_integrand(theta, theta_new):
         return 2 * vp.pdf(theta) * np.sinh(u * s_xsi_new(theta, theta_new))
 
-    M = 60
+    M = 40
     t1 = t2 = np.linspace(-30, 30, M)
     T1, T2 = np.meshgrid(t1, t2)
     thetas = np.vstack([T1.ravel(), T2.ravel()]).T
@@ -238,9 +240,12 @@ def test_complex__call__():
             [viqr_integrand(theta, np.atleast_2d(x)) for theta in thetas]
         )
         viqrs[i, :] = v_int.reshape((M ** 2,))
-    viqr_grid = np.sum(
+    # Rough approximation for missing tails of grid:
+    corrections = np.array([sps.multivariate_normal.pdf(theta, mean=np.zeros((D,))) for theta in thetas])
+    correction = np.sum(corrections * (60 / M) ** 2)
+    viqr_grid = np.sum(  # Grid approx. of expectation
         viqrs * (60 / M) ** 2, axis=1
-    )  # Grid approx. of expectation
+    ) / correction
 
     ## Setup acquisition function and necessary preliminaries:
 
@@ -299,4 +304,6 @@ def test_complex__call__():
     ).reshape((N_eval,))
     # print(result)
     # print(viqr_grid)
-    assert np.allclose(result, viqr_grid, rtol=0.05)
+    assert np.allclose(viqr_grid, result, rtol=0.05)
+    bias = np.mean(result - viqr_grid)
+    assert np.allclose(viqr_grid + bias, result, rtol=0.01)
