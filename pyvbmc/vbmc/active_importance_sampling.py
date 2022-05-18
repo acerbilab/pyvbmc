@@ -68,7 +68,7 @@ def active_importance_sampling(vp, gp, acqfcn, options):
             and acqfcn.mcmc_importance_sampling
         ):
             # Compute fractional effective sample size (ESS)
-            fESS = fess_vbmc(vp, f_mu, Xa)
+            fESS = fess(vp, f_mu, Xa)
 
             if fESS < options["activeimportancesamplingfessthresh"]:
                 if isample_vp_flag:
@@ -445,7 +445,7 @@ def get_mcmc_opts(Ns=100, thin=1, burn_in=None):
     return sampler_opts, thin, burn_in
 
 
-def fess_vbmc(vp, gp, X=100):
+def fess(vp, gp, X=100):
     r"""Compute fractional effective sample size through importance sampling.
 
     Parameters
@@ -491,9 +491,9 @@ def fess_vbmc(vp, gp, X=100):
     # Compute effective sample size (ESS) with importance sampling
     v_ln_pdf = np.maximum(
         vp.pdf(X, origflag=False, logflag=True), np.log(sys.float_info.min)
-    )
+    ).reshape((N,))
     ln_weights = fbar - v_ln_pdf
-    weight = np.exp(ln_weights - np.amax(ln_weights, axis=1))
-    weight = weight / sum(weight)
+    weight = np.exp(ln_weights - np.amax(ln_weights))
+    weight = weight / np.sum(weight)
 
-    return (1 / sum(weight ** 2)) / N  # Fractional ESS
+    return (1 / np.sum(weight ** 2)) / N  # Fractional ESS
