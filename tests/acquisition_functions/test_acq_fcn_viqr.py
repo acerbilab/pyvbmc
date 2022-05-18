@@ -125,9 +125,9 @@ def test_simple__call__():
     )
     vbmc_options.validate_option_names([basic_path, advanced_path])
 
-    optim_state[
-        "active_importance_sampling"
-    ] = active_importance_sampling(vp, gp, acqviqr, vbmc_options)
+    optim_state["active_importance_sampling"] = active_importance_sampling(
+        vp, gp, acqviqr, vbmc_options
+    )
 
     # Renormalize importance weights
     # (VIQR function only calculates expectation up to a constant factor)
@@ -307,9 +307,9 @@ def test_complex__call__():
     )
     vbmc_options.validate_option_names([basic_path, advanced_path])
 
-    optim_state[
-        "active_importance_sampling"
-    ] = active_importance_sampling(vp, gp, acqviqr, vbmc_options)
+    optim_state["active_importance_sampling"] = active_importance_sampling(
+        vp, gp, acqviqr, vbmc_options
+    )
 
     # Renormalize importance weights
     # (VIQR function only calculates expectation up to a constant factor)

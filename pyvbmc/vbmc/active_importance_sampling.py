@@ -166,13 +166,7 @@ def active_importance_sampling(vp, gp, acqfcn, options):
                 gp.X[jj, :] + (2 * np.random.rand(jj.size, D) - 1) * rect_delta
             )
             ln_weights, f_s2a_box = activesample_proposalpdf(
-                Xa_box,
-                gp,
-                vp_is,
-                w_vp,
-                rect_delta,
-                acqfcn,
-                vp
+                Xa_box, gp, vp_is, w_vp, rect_delta, acqfcn, vp
             )
             if active_is.get("ln_weights") is None:
                 active_is["ln_weights"] = ln_weights.T
@@ -301,9 +295,7 @@ def active_importance_sampling(vp, gp, acqfcn, options):
     return active_is
 
 
-def activesample_proposalpdf(
-    Xa, gp, vp_is, w_vp, rect_delta, acqfcn, vp
-):
+def activesample_proposalpdf(Xa, gp, vp_is, w_vp, rect_delta, acqfcn, vp):
     r"""Compute importance weights for proposal pdf.
 
     Parameters

@@ -126,9 +126,9 @@ def test_simple__call__():
     )
     vbmc_options.validate_option_names([basic_path, advanced_path])
 
-    optim_state[
-        "active_importance_sampling"
-    ] = active_importance_sampling(vp, gp, acqimiqr, vbmc_options)
+    optim_state["active_importance_sampling"] = active_importance_sampling(
+        vp, gp, acqimiqr, vbmc_options
+    )
 
     # Test IMIQR Acquisition Function Values:
     # Should be close to log(2 * sinh(0.6745 * e)), because tau^2 approx= 0,
@@ -309,9 +309,9 @@ def test_complex__call__():
     )
     vbmc_options.validate_option_names([basic_path, advanced_path])
 
-    optim_state[
-        "active_importance_sampling"
-    ] = active_importance_sampling(vp, gp, acqimiqr, vbmc_options)
+    optim_state["active_importance_sampling"] = active_importance_sampling(
+        vp, gp, acqimiqr, vbmc_options
+    )
 
     # Renormalize importance weights
     # (IMIQR function only calculates expectation up to a constant factor)

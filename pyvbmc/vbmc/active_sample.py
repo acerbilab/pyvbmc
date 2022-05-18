@@ -279,7 +279,9 @@ def active_sample(
 
                 sn2new[:, s] = gp.noise.compute(
                     hyp_noise, gp.X, gp.y, s2
-                ).reshape(-1,)
+                ).reshape(
+                    -1,
+                )
 
             gp.temporary_data["sn2_new"] = sn2new.mean(1)
 
@@ -319,8 +321,8 @@ def active_sample(
             else:  # TODO implement branch
                 print(SearchAcqFcn[idx_acq])
                 raise NotImplementedError(
-                    "Acquisition function {SearchAcqFcn[idx_acq]} is not" ++
-                    "implemented yet"
+                    "Acquisition function {SearchAcqFcn[idx_acq]} is not"
+                    + +"implemented yet"
                 )
 
             # Prepare for importance sampling based acquistion function
