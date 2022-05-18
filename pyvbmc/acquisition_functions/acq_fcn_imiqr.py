@@ -109,7 +109,7 @@ class AcqFcnIMIQR(AbstractAcqFcn):
             __, n_samples = zz.shape
             acq[:, s] = np.log(
                 np.sum(np.exp(zz - ln_max.reshape(-1, 1)), axis=1)
-            ) + ln_max - np.log(n_samples)
+            ) + ln_max
 
         if Ns_gp > 1:
             M = np.amax(acq, axis=1)

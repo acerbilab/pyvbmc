@@ -129,6 +129,13 @@ def test_simple__call__():
         "active_importance_sampling"
     ] = active_importance_sampling(vp, gp, acqviqr, vbmc_options)
 
+    # Renormalize importance weights
+    # (VIQR function only calculates expectation up to a constant factor)
+    ln_w = optim_state["active_importance_sampling"]["ln_weights"]
+    ln_w_max = np.amax(ln_w)
+    ln_w = ln_w - (ln_w_max + np.log(np.sum(np.exp(ln_w - ln_w_max))))
+    optim_state["active_importance_sampling"]["ln_weights"] = ln_w
+
     # Test VIQR Acquisition Function Values:
     # Should be close to log(sinh(0.6745 * e)), because tau^2 approx= 0,
     # so s_pred^2 approx= fs2. -log(2) correction is due to constant factor.
@@ -303,6 +310,13 @@ def test_complex__call__():
     optim_state[
         "active_importance_sampling"
     ] = active_importance_sampling(vp, gp, acqviqr, vbmc_options)
+
+    # Renormalize importance weights
+    # (VIQR function only calculates expectation up to a constant factor)
+    ln_w = optim_state["active_importance_sampling"]["ln_weights"]
+    ln_w_max = np.amax(ln_w)
+    ln_w = ln_w - (ln_w_max + np.log(np.sum(np.exp(ln_w - ln_w_max))))
+    optim_state["active_importance_sampling"]["ln_weights"] = ln_w
 
     # VIQR Acquisition Function Values:
     result = np.exp(
