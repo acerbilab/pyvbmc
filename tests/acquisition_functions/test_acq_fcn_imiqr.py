@@ -131,15 +131,23 @@ def test_simple__call__():
     ] = active_importance_sampling(vp, gp, acqimiqr, vbmc_options)
 
     # Test IMIQR Acquisition Function Values:
-    # Should be close to log(sinh(0.6745 * e)), because tau^2 approx= 0,
-    # so s_pred^2 approx= fs2. -log(2) correction is due to constant factor.
+    # Should be close to log(2 * sinh(0.6745 * e)), because tau^2 approx= 0,
+    # so s_pred^2 approx= fs2.
+
+    # Renormalize importance weights
+    # (IMIQR function only calculates expectation up to a constant factor)
+    ln_w = optim_state["active_importance_sampling"]["ln_weights"]
+    ln_w_max = np.amax(ln_w)
+    ln_w = ln_w - (ln_w_max + np.log(np.sum(np.exp(ln_w - ln_w_max)))) + np.log(ln_w.size)
+    optim_state["active_importance_sampling"]["ln_weights"] = ln_w
+
     result = acqimiqr(
         X_eval[0], gp, vp, function_logger=None, optim_state=optim_state
-    ) - np.log(2)
+    )
     u = sps.norm.ppf(0.75)
     # print(result)
     # print(np.log(np.sinh(u * np.exp(1))))
-    assert np.isclose(np.log(np.sinh(u * np.exp(1))), result, atol=1e-4)
+    assert np.isclose(np.log(2 * np.sinh(u * np.exp(1))), result, atol=1e-4)
 
 
 def test_complex__call__():
@@ -305,12 +313,17 @@ def test_complex__call__():
         "active_importance_sampling"
     ] = active_importance_sampling(vp, gp, acqimiqr, vbmc_options)
 
+    # Renormalize importance weights
+    # (IMIQR function only calculates expectation up to a constant factor)
+    ln_w = optim_state["active_importance_sampling"]["ln_weights"]
+    ln_w_max = np.amax(ln_w)
+    ln_w = ln_w - (ln_w_max + np.log(np.sum(np.exp(ln_w - ln_w_max)))) + np.log(ln_w.size)
+    optim_state["active_importance_sampling"]["ln_weights"] = ln_w
+
     # IMIQR Acquisition Function Values:
     result = np.exp(
         acqimiqr(X_eval, gp, vp, function_logger=None, optim_state=optim_state)
     ).reshape((N_eval,))
     # print(imiqr_grid)
     # print(result)
-    assert np.allclose(imiqr_grid, result, rtol=0.05)
-    bias = np.mean(result - imiqr_grid)
-    assert np.allclose(imiqr_grid + bias, result, rtol=0.01)
+    assert np.allclose(imiqr_grid, result, rtol=0.02)

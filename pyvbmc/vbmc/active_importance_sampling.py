@@ -238,11 +238,13 @@ def active_importance_sampling(vp, gp, acqfcn, options):
                 ) + acqfcn.is_log_f2(f_mu, f_s2)
                 ln_weights_max = np.amax(ln_weights, axis=1).reshape(-1, 1)
                 assert np.all(ln_weights_max != -np.inf)
-                w = np.exp(ln_weights - ln_weights_max).reshape(-1)
-                w = w / np.sum(w)
+                weights = np.exp(ln_weights - ln_weights_max).reshape(-1)
+                weights = weights / np.sum(weights)
                 # x0 = np.zeros((Walkers, D))
-                # Select without replacement by weight w:
-                index = np.random.choice(a=len(w), p=w, replace=False)
+                # Select replacement by weights:
+                index = np.random.choice(
+                    a=len(weights), p=weights, replace=True
+                )
                 x0 = active_is_old["X"][index, :]
                 x0 = np.maximum(np.minimum(x0, UB), LB)  # Force inside bounds
 
@@ -385,7 +387,7 @@ def log_isbasefun(x, acq_fcn, gp, vp=None):
     f_mu, f_s2 = gp.predict(x.reshape(1, -1))
 
     if vp is None:
-        return acq_fcn.is_log_f1(0, f_mu, f_s2)
+        return acq_fcn.is_log_f(0, f_mu, f_s2)
     else:
         v_ln_pdf = np.maximum(
             vp.pdf(x, origflag=False, logflag=True), np.log(sys.float_info.min)
