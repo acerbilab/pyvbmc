@@ -26,12 +26,14 @@ def active_importance_sampling(vp, gp, acqfcn, options):
     vp : VariationalPosterior
         The variational posterior.
     acqfcn : AbstractAcqFcn
-        The acquisition function.
+        The acquisition function callable.
+    options : Options
+        The VBMC options.
 
     Returns
     -------
     active_is : dict
-        A dictionary of IS statistics and bookkeeping.
+        A dictionary of importance sampling values and bookkeeping.
     """
     # Does the importance sampling step use the variational posterior?
     isample_vp_flag = getattr(acqfcn, "importance_sampling_vp", False)
@@ -81,7 +83,7 @@ def active_importance_sampling(vp, gp, acqfcn, options):
                 thin = 1
                 burn_in = 0
                 sampler_opts, __, __ = get_mcmc_opts()
-                W = Na  # walkers, not used (see below).
+                # W = Na  # walkers, not applicable for simple slice sampling.
 
                 # Perform a single MCMC step for all samples.
                 # Contrary to MATLAB, we are using simple slice sampling.
@@ -136,7 +138,7 @@ def active_importance_sampling(vp, gp, acqfcn, options):
             # Sample from smoothed posterior
             Xa_vp, __ = vp_is.sample(Nvp_samples, origflag=False)
             ln_weights, f_s2a_vp = activesample_proposalpdf(
-                Xa_vp, gp, vp_is, w_vp, rect_delta, acqfcn, vp, isample_vp_flag
+                Xa_vp, gp, vp_is, w_vp, rect_delta, acqfcn, vp
             )
             if active_is.get("ln_weights") is None:
                 active_is["ln_weights"] = ln_weights.T
@@ -170,8 +172,7 @@ def active_importance_sampling(vp, gp, acqfcn, options):
                 w_vp,
                 rect_delta,
                 acqfcn,
-                vp,
-                isample_vp_flag,
+                vp
             )
             if active_is.get("ln_weights") is None:
                 active_is["ln_weights"] = ln_weights.T
@@ -225,9 +226,8 @@ def active_importance_sampling(vp, gp, acqfcn, options):
                 burn_in = math.ceil(thin * Nmcmc_samples / 2)
                 sampler_opts, __, __ = get_mcmc_opts(Nmcmc_samples)
 
-                # Not used (see comment below regarding simple slice sampling.)
-                # Walkers = 2 * (D + 1)
-                Walkers = 1
+                # Walkers = 2 * (D + 1)  # For ensemble slice sampling,
+                # not applicable for simple slice sampling.
 
                 # Use importance sampling-resampling
                 f_mu, f_s2 = gp1.predict(
@@ -241,7 +241,7 @@ def active_importance_sampling(vp, gp, acqfcn, options):
                 weights = np.exp(ln_weights - ln_weights_max).reshape(-1)
                 weights = weights / np.sum(weights)
                 # x0 = np.zeros((Walkers, D))
-                # Select replacement by weights:
+                # Select x0 with replacement by weight:
                 index = np.random.choice(
                     a=len(weights), p=weights, replace=True
                 )
@@ -302,19 +302,40 @@ def active_importance_sampling(vp, gp, acqfcn, options):
 
 
 def activesample_proposalpdf(
-    Xa, gp, vp_is, w_vp, rect_delta, acqfcn, vp, isample_vp_flag
+    Xa, gp, vp_is, w_vp, rect_delta, acqfcn, vp
 ):
     r"""Compute importance weights for proposal pdf.
 
     Parameters
     ----------
-
+    Xa : np.ndarray
+        Array of ``N`` importance sampling evaluation points, of shape ``(N, D)``
+        where ``D`` is the problem dimension.
+    gp : gpyreg.GP
+        The GP object.
+    vp_is : VariationalPosterior
+        The smoothed VP for importance sampling.
+    w_vp : float
+        The ratio of VP samples: ``n_vp / (n_vp + n_box)``.
+    rect_delta : float
+        The half-widths of the rectangle for box-uniform sampling.
+    acqfcn : AbstractAcqFcn
+        The acquisition function callable.
+    vp : VariationalPosterior
+        The unsmoothed VP.
     Returns
     -------
-
+    ln_weights : np.ndarray
+        The log importance weights, of shape ``(N, Ns_gp)`` where ``Ns_gp`` is the
+        number of GP posterior hyperparameter samples.
+    f_s2 : np.ndarray
+        The predicted GP variance at the importance sampling points, of shape
+        ``(N, Ns_gp)`` where ``Ns_gp`` is the number of GP posterior hyperparameter
+        samples.
     """
     N, D = gp.X.shape
     Na = Xa.shape[0]
+    isample_vp_flag = getattr(acqfcn, "importance_sampling_vp", False)
 
     f_mu, f_s2 = gp.predict(Xa, separate_samples=True)
 
@@ -322,6 +343,8 @@ def activesample_proposalpdf(
 
     if w_vp < 1:
         temp_lpdf = np.zeros((Na, Ntot))
+    else:
+        temp_lpdf = np.zeros((Na, 1))
 
     # Mixture of variational posteriors
     if w_vp > 0:
@@ -368,8 +391,9 @@ def log_isbasefun(x, acq_fcn, gp, vp=None):
 
     Parameters
     ----------
-    x : np.ndarray, shape (N, D)
-        The points at which to evaluate the log pdf of the proposal.
+    x : np.ndarray
+        The points at which to evaluate the log pdf of the proposal, of shape
+        ``(N, D)`` where ``D`` is the problem dimension.
     acq_fcn : AbstractAcqFcn
         The acquisition function (must implement ``is_log_f`` method which
         evaluates the log pdf.
@@ -381,8 +405,8 @@ def log_isbasefun(x, acq_fcn, gp, vp=None):
 
     Returns
     -------
-    is_log_f : np.ndarray, shape (N,)
-        The proposal log pdf evaluated at the input points.
+    is_log_f : np.ndarray
+        The proposal log pdf evaluated at the input points, of shape ``(N,)``
     """
     f_mu, f_s2 = gp.predict(x.reshape(1, -1))
 
@@ -449,8 +473,13 @@ def fess_vbmc(vp, gp, X=100):
     -------
     fESS : float
         The estimated fractional Effective Samples Size.
-    """
 
+    Raises
+    ------
+    ValueError
+        If the number of provided GP means does not match the number of VP
+        samples.
+    """
     # If a single number is passed, interpret it as the number of samples
     if np.isscalar(X):
         N = X

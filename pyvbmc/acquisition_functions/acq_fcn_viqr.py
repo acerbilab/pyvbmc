@@ -36,6 +36,34 @@ class AcqFcnVIQR(AbstractAcqFcn):
     ):
         r"""
         Compute the value of the acquisition function.
+
+        Parameters
+        ----------
+        Xs : np.ndarray
+            The coordinates at which to evaluate the acquisition function. Of
+            shape ``(N, D)`` where ``D`` is the problem dimension.
+        vp : VariationalPosterior
+            The VP object.
+        gp : gpyreg.GP
+            The GP object.
+        function_logger : FunctionLogger
+            The object responsible for caching evaluations of the log-joint.
+        optim_state : dict
+            The dictionary describing PyVBMC's internal state.
+        f_mu : np.ndarray
+            A ``(N, Ns_gp)`` array of GP predictive means at the importance
+            sampling points, where ``Ns_gp`` is the number of GP posterior
+            hyperparameter samples.
+        f_s2 : np.ndarray
+            A ``(N, Ns_gp)`` array of GP predictive variances at the importance
+            sampling points, where ``Ns_gp`` is the number of GP posterior
+            hyperparameter samples.
+
+        Raises
+        ------
+        ValueError
+            For choices of GP covariance function which are not implemented.
+            Currently, only ``SquaredExponential`` covariance is implemented.
         """
         # Missing port, integrated mean function, lines 49 to 57.
 
@@ -45,7 +73,8 @@ class AcqFcnVIQR(AbstractAcqFcn):
 
         # Estimate observation noise at test points from nearest neighbor.
         sn2 = super()._estimate_observation_noise(Xs, gp, optim_state)
-        y_s2 = f_s2 + sn2.reshape(-1,1)  # Predictive variance at test points
+        y_s2 = f_s2 + sn2.reshape(-1, 1)  # Predictive variance at test points,
+        # inclusive of observation noise.
 
         Xa = optim_state["active_importance_sampling"]["X"]
         acq = np.zeros((Nx, Ns_gp))
@@ -119,15 +148,15 @@ class AcqFcnVIQR(AbstractAcqFcn):
 
 
     def is_log_f1(self, v_ln_pdf, f_mu, f_s2):
-        # Importance sampling log base proposal (shared part)
+        """Importance sampling log base proposal (shared part)."""
         return np.zeros(f_s2.shape)
 
     def is_log_f2(self, f_mu, f_s2):
-        # Importance sampling log base proposal (shared part)
+        """Importance sampling log base proposal (shared part)."""
         f_s = np.sqrt(f_s2)
         return self.u * f_s + np.log1p(-np.exp(-2 * self.u * f_s))
 
     def is_log_f(self, v_ln_pdf, f_mu, f_s2):
-        # Importance sampling log base proposal distribution
+        """Importance sampling log base proposal distribution."""
         f_s = np.sqrt(f_s2)
         return v_ln_pdf + self.u * f_s + np.log1p(-np.exp(-2 * self.u * f_s))
