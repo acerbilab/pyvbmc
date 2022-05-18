@@ -15,8 +15,11 @@ from pyvbmc.stats import get_hpd
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc.gaussian_process_train import reupdate_gp, train_gp
 from pyvbmc.vbmc.iteration_history import IterationHistory
-from pyvbmc.vbmc.variational_optimization import (_gplogjoint, _negelcbo,
-                                                  optimize_vp)
+from pyvbmc.vbmc.variational_optimization import (
+    _gplogjoint,
+    _negelcbo,
+    optimize_vp,
+)
 from pyvbmc.vbmc.active_importance_sampling import active_importance_sampling
 
 from .options import Options
@@ -37,7 +40,8 @@ def active_sample(
     Parameters
     ----------
     gp : GaussianProcess
-        The GaussianProcess from the VBMC instance this function is called from.
+        The GaussianProcess from the VBMC instance this function is called
+        from.
     sample_count : int
         The number of samples.
     optim_state : dict
@@ -45,7 +49,8 @@ def active_sample(
     function_logger : FunctionLogger
         The FunctionLogger from the VBMC instance this function is called from.
     iteration_history : IterationHistory
-        The IterationHistory from the VBMC instance this function is called from.
+        The IterationHistory from the VBMC instance this function is called
+        from.
     vp : VariationalPosterior
         The VariationalPosterior from the VBMC instance this function is called
         from.
@@ -212,12 +217,22 @@ def active_sample(
             entropy_alpha_old = optim_state["entropy_alpha"]
 
             options_update = copy.deepcopy(options)
-            options_update.__setitem__("gptolopt", options["gptoloptactive"], force=True)
-            options_update.__setitem__("gptoloptmcmc", options["gptoloptmcmcactive"], force=True)
+            options_update.__setitem__(
+                "gptolopt", options["gptoloptactive"], force=True
+            )
+            options_update.__setitem__(
+                "gptoloptmcmc", options["gptoloptmcmcactive"], force=True
+            )
             options_update.__setitem__("tolweight", 0, force=True)
-            options_update.__setitem__("nsent", options["nsentactive"], force=True)
-            options_update.__setitem__("nsentfast", options["nsentfastactive"], force=True)
-            options_update.__setitem__("nsentfine", options["nsentfineactive"], force=True)
+            options_update.__setitem__(
+                "nsent", options["nsentactive"], force=True
+            )
+            options_update.__setitem__(
+                "nsentfast", options["nsentfastactive"], force=True
+            )
+            options_update.__setitem__(
+                "nsentfine", options["nsentfineactive"], force=True
+            )
 
             hyp_dict = None
             vp0 = copy.deepcopy(vp)
@@ -262,7 +277,9 @@ def active_sample(
 
                 # Missing port: noiseshaping
 
-                sn2new[:, s] = gp.noise.compute(hyp_noise, gp.X, gp.y, s2).reshape(-1,)
+                sn2new[:, s] = gp.noise.compute(
+                    hyp_noise, gp.X, gp.y, s2
+                ).reshape(-1,)
 
             gp.temporary_data["sn2_new"] = sn2new.mean(1)
 
@@ -301,15 +318,21 @@ def active_sample(
                 acq_eval = AcqFcnIMIQR()
             else:  # TODO implement branch
                 print(SearchAcqFcn[idx_acq])
-                raise NotImplementedError(f"Acquisition function {SearchAcqFcn[idx_acq]} is not implemented yet")
+                raise NotImplementedError(
+                    "Acquisition function {SearchAcqFcn[idx_acq]} is not" ++
+                    "implemented yet"
+                )
 
             # Prepare for importance sampling based acquistion function
             if getattr(acq_eval, "importance_sampling", None):
-                optim_state["active_importance_sampling"] = active_importance_sampling(vp, gp, acq_eval, options)
+                optim_state[
+                    "active_importance_sampling"
+                ] = active_importance_sampling(vp, gp, acq_eval, options)
 
             # Re-evaluate variance of the log joint if requested
-            if hasattr(acq_eval, "acq_info")\
-               and acq_eval.acq_info.get("compute_varlogjoint"):
+            if hasattr(acq_eval, "acq_info") and acq_eval.acq_info.get(
+                "compute_varlogjoint"
+            ):
                 varF = _gplogjoint(vp, gp, 0, 0, 0, 1)[2]
                 optim_state["varlogjoint_samples"] = varF
 
@@ -337,7 +360,9 @@ def active_sample(
             if options["searchoptimizer"] != "none":
                 if gp.D == 1:
                     # Use Nelder-Mead method for 1D optimization
-                    options.__setitem__("searchoptimizer", "Nelder-Mead", force=True)
+                    options.__setitem__(
+                        "searchoptimizer", "Nelder-Mead", force=True
+                    )
 
                 fval_old = acq_fast[idx]
                 x0 = X_acq[0, :]
@@ -353,8 +378,9 @@ def active_sample(
                     lb = np.minimum(gp.X, x0) - 0.1 * xrange
                     ub = np.maximum(gp.X, x0) + 0.1 * xrange
 
-                if hasattr(acq_eval, "acq_info")\
-                   and acq_eval.acq_info.get("log_flag"):
+                if hasattr(acq_eval, "acq_info") and acq_eval.acq_info.get(
+                    "log_flag"
+                ):
                     tol_fun = 1e-2
                 else:
                     tol_fun = max(1e-12, abs(fval_old * 1e-3))
