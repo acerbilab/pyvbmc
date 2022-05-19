@@ -395,7 +395,7 @@ def log_isbasefun(x, acq_fcn, gp, vp=None):
     Returns
     -------
     is_log_f : np.ndarray
-        The proposal log pdf evaluated at the input points, of shape ``(N,)``
+        The proposal log pdf evaluated at the input points, of shape ``(N, 1)``
     """
     f_mu, f_s2 = gp.predict(np.atleast_2d(x), add_noise=True)
 
@@ -408,14 +408,13 @@ def log_isbasefun(x, acq_fcn, gp, vp=None):
         return acq_fcn.is_log_f(v_ln_pdf, f_mu, f_s2)
 
 
-def get_mcmc_opts(Ns=100, thin=1, burn_in=None):
+def get_mcmc_opts(Ns, thin=1, burn_in=None):
     r"""Get standard MCMC options.
 
     Parameters
     ----------
     Ns : int, optional
         The number of MCMC samples to return, after thinning and burn-in.
-        Default 100.
     thin : int, optional
         The thinning parameter will omit ``thin-1`` out of ``thin`` values in
         the generated sequence (after burn-in). Default 1.
@@ -478,18 +477,19 @@ def fess(vp, gp, X=100):
 
     # Can pass the GP, or the GP means directly:
     if isinstance(gp, gpr.GP):
-        fbar, __ = gp.predict(X)
+        f_bar, __ = gp.predict(X)
+        f_bar = f_bar.reshape(-1)
     else:
-        fbar = np.mean(gp, axis=1)
+        f_bar = np.mean(gp, axis=1)
 
-    if fbar.shape[0] != X.shape[0]:
+    if f_bar.shape[0] != X.shape[0]:
         raise ValueError("Mismatch between number of samples from VP and GP.")
 
     # Compute effective sample size (ESS) with importance sampling
     v_ln_pdf = np.maximum(
         vp.pdf(X, origflag=False, logflag=True), np.log(sys.float_info.min)
     ).reshape((N,))
-    ln_weights = fbar - v_ln_pdf
+    ln_weights = f_bar - np.atleast_2d(v_ln_pdf)
     weight = np.exp(ln_weights - np.amax(ln_weights))
     weight = weight / np.sum(weight)
 
