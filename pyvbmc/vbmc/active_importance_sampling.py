@@ -359,12 +359,14 @@ def activesample_proposalpdf(Xa, gp, vp_is, w_vp, rect_delta, acqfcn, vp):
         VV = np.product(2 * rect_delta)
 
         for i in range(N):
-            temp_lpdf[:, i + 1] = np.log(
+            mask = temp_lpdf[:, i + 1] != 0.0
+            temp_lpdf[mask, i + 1] = np.log(
                 (1 - w_vp)
-                * np.all(np.abs(Xa - gp.X[i, :]) < rect_delta, axis=1)
+                * np.all(np.abs(Xa[mask] - gp.X[i, :]) < rect_delta, axis=1)
                 / VV
                 / N
             )
+            temp_lpdf[~mask, i + 1] = -np.inf
 
         m_max = np.amax(temp_lpdf, axis=1)
         assert np.all(m_max != -np.inf)
@@ -400,7 +402,7 @@ def log_isbasefun(x, acq_fcn, gp, vp=None):
     is_log_f : np.ndarray
         The proposal log pdf evaluated at the input points, of shape ``(N,)``
     """
-    f_mu, f_s2 = gp.predict(x.reshape(1, -1))
+    f_mu, f_s2 = gp.predict(np.atleast_2d(x))
 
     if vp is None:
         return acq_fcn.is_log_f(0, f_mu, f_s2)
