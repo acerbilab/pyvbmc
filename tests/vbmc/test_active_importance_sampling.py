@@ -35,7 +35,7 @@ def test_activesample_proposalpdf():
     vp.w = np.array([[0.7, 0.3]])
     vp.sigma = np.ones(vp.sigma.shape)
     X = np.arange(-7, 8).reshape((5, 3), order="F")
-    y = np.array([sps.multivariate_normal.logpdf(x, mean=np.zeros(D,)) for x in X])
+    y = np.array([sps.multivariate_normal.logpdf(x, mean=np.zeros(D,)) for x in X]).reshape((-1, 1))
     hyp = np.array(
         [
             [
@@ -55,11 +55,13 @@ def test_activesample_proposalpdf():
         D,
         covariance=gpr.covariance_functions.SquaredExponential(),
         mean=gpr.mean_functions.NegativeQuadratic(),
-        noise=gpr.noise_functions.GaussianNoise(),
+        noise=gpr.noise_functions.GaussianNoise(
+            constant_add=True,
+        ),
     )
     gp.update(X_new=X, y_new=y, hyp=hyp)
 
-    Xa = np.arange(-4, 5).reshape((3, 3), order="F")
+    Xa = np.arange(-4, 5).reshape((3, 3), order="F") / np.pi
     w_vp = 0.5
     rect_delta = 0.1
     acqviqr = AcqFcnVIQR()
