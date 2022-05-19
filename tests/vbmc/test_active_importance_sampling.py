@@ -1,4 +1,6 @@
 import numpy as np
+import os.path
+import scipy.io
 
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc.active_importance_sampling import fess
@@ -15,5 +17,7 @@ def test_fess():
     gp_means = np.arange(-5, 5).reshape((5, 2), order="F") * np.pi
     X = np.arange(-7, 8).reshape((5, 3), order="F")
 
-    fess_MATLAB = 0.218066216419553
+    dirpath = os.path.dirname(os.path.realpath(__file__))
+    filepath = os.path.join(dirpath, "compare_MATLAB", "fess.mat")
+    fess_MATLAB = scipy.io.loadmat(filepath)["fess_MATLAB"]
     assert np.isclose(fess(vp, gp_means, X), fess_MATLAB)
