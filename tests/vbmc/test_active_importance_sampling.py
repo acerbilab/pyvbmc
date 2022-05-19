@@ -5,7 +5,7 @@ import scipy.stats as sps
 
 import gpyreg as gpr
 from pyvbmc.variational_posterior import VariationalPosterior
-from pyvbmc.vbmc.active_importance_sampling import fess, activesample_proposalpdf
+from pyvbmc.vbmc.active_importance_sampling import fess, activesample_proposalpdf, log_isbasefun
 from pyvbmc.acquisition_functions import AcqFcnVIQR, AcqFcnIMIQR
 
 
@@ -76,3 +76,52 @@ def test_activesample_proposalpdf():
     assert np.allclose(f_s2_viqr, MATLAB["f_s2_viqr"])
     assert np.allclose(ln_weights_imiqr, MATLAB["ln_weights_imiqr"])
     assert np.allclose(f_s2_imiqr, MATLAB["f_s2_imiqr"])
+
+def test_log_isbasefun():
+    D = 3
+    K = 2
+    vp = VariationalPosterior(
+        D=D, K=K
+    )
+    vp.mu = np.array([[-1.0, -1.0, -1.0], [1.0, 1.0, 1.0]]).T
+    vp.w = np.array([[0.7, 0.3]])
+    vp.sigma = np.ones(vp.sigma.shape)
+    vp.lambd = np.ones(vp.lambd.shape)
+    X = np.arange(-7, 8).reshape((5, 3), order="F")
+    y = np.array([sps.multivariate_normal.logpdf(x, mean=np.zeros(D,)) for x in X]).reshape((-1, 1))
+    hyp = np.array(
+        [
+            [
+                # Covariance
+                -2.0, -3.0, -4.0, # log ell
+                1.0,  # log sf2
+                # Noise
+                0.0,  # log std. dev. of noise
+                # Mean
+                -(D / 2) * np.log(2 * np.pi),  # MVN mode
+                0.0, 0.0, 0.0,  # Mode location
+                0.0, 0.0, 0.0  # log scale
+            ]
+        ]
+    )
+    gp = gpr.GP(
+        D,
+        covariance=gpr.covariance_functions.SquaredExponential(),
+        mean=gpr.mean_functions.NegativeQuadratic(),
+        noise=gpr.noise_functions.GaussianNoise(
+            constant_add=True,
+        ),
+    )
+    gp.update(X_new=X, y_new=y, hyp=hyp)
+
+    Xa = 2 * np.arange(-4, 5).reshape((3, 3), order="F") / np.pi
+
+    dirpath = os.path.dirname(os.path.realpath(__file__))
+    filepath = os.path.join(dirpath, "compare_MATLAB", "log_isbasefun.mat")
+    MATLAB = scipy.io.loadmat(filepath)
+
+    y_viqr = log_isbasefun(Xa, AcqFcnVIQR(), gp, vp)
+    y_imiqr = log_isbasefun(Xa, AcqFcnIMIQR(), gp, vp)
+
+    assert np.allclose(y_viqr, MATLAB["y_viqr"])
+    assert np.allclose(y_imiqr, MATLAB["y_imiqr"])
