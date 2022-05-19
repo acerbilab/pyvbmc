@@ -309,8 +309,9 @@ def activesample_proposalpdf(Xa, gp, vp_is, w_vp, rect_delta, acqfcn, vp):
         The smoothed VP for importance sampling.
     w_vp : float
         The ratio of VP samples: ``n_vp / (n_vp + n_box)``.
-    rect_delta : float
-        The half-widths of the rectangle for box-uniform sampling.
+    rect_delta : np.ndarray
+        The half-widths (in each dimension) of the rectangle used for
+        box-uniform sampling.
     acqfcn : AbstractAcqFcn
         The acquisition function callable.
     vp : VariationalPosterior
@@ -340,7 +341,9 @@ def activesample_proposalpdf(Xa, gp, vp_is, w_vp, rect_delta, acqfcn, vp):
 
     # Mixture of variational posteriors
     if w_vp > 0:
-        temp_lpdf[:, 0] = vp_is.pdf(Xa, origflag=False, logflag=True).T + np.log(w_vp)
+        temp_lpdf[:, 0] = vp_is.pdf(
+            Xa, origflag=False, logflag=True
+        ).T + np.log(w_vp)
     else:
         temp_lpdf[:, 0] = -np.inf
 
@@ -359,7 +362,7 @@ def activesample_proposalpdf(Xa, gp, vp_is, w_vp, rect_delta, acqfcn, vp):
         VV = np.product(2 * rect_delta)
 
         for i in range(N):
-            mask = (np.all(np.abs(Xa[:] - gp.X[i, :]) < rect_delta, axis=1))
+            mask = np.all(np.abs(Xa[:] - gp.X[i, :]) < rect_delta, axis=1)
             temp_lpdf[mask, i + 1] = np.log((1 - w_vp) / VV / N)
             temp_lpdf[~mask, i + 1] = -np.inf
 
