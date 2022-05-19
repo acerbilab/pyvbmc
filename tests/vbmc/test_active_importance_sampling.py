@@ -34,6 +34,7 @@ def test_activesample_proposalpdf():
     vp.mu = np.array([[-1.0, -1.0, -1.0], [1.0, 1.0, 1.0]]).T
     vp.w = np.array([[0.7, 0.3]])
     vp.sigma = np.ones(vp.sigma.shape)
+    vp.lambd = np.ones(vp.lambd.shape)
     X = np.arange(-7, 8).reshape((5, 3), order="F")
     y = np.array([sps.multivariate_normal.logpdf(x, mean=np.zeros(D,)) for x in X]).reshape((-1, 1))
     hyp = np.array(
@@ -61,10 +62,15 @@ def test_activesample_proposalpdf():
     )
     gp.update(X_new=X, y_new=y, hyp=hyp)
 
-    Xa = np.arange(-4, 5).reshape((3, 3), order="F") / np.pi
+    Xa = 2 * np.arange(-4, 5).reshape((3, 3), order="F") / np.pi
     w_vp = 0.5
-    rect_delta = 0.1
+    rect_delta = 2 * np.std(gp.X, ddof=1, axis=0)
     acqviqr = AcqFcnVIQR()
 
-    result = activesample_proposalpdf(Xa, gp, vp, w_vp, rect_delta, acqviqr, vp)
-    print(result)
+    dirpath = os.path.dirname(os.path.realpath(__file__))
+    filepath = os.path.join(dirpath, "compare_MATLAB", "activesample_proposalpdf.mat")
+    MATLAB = scipy.io.loadmat(filepath)
+
+    ln_weights, f_s2 = activesample_proposalpdf(Xa, gp, vp, w_vp, rect_delta, acqviqr, vp)
+    assert np.allclose(ln_weights, MATLAB["ln_weights"])
+    assert np.allclose(f_s2, MATLAB["f_s2"])
