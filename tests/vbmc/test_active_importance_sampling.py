@@ -65,7 +65,10 @@ def test_active_importance_sampling():
     active_is_viqr = active_importance_sampling(vp, gp, AcqFcnVIQR(), options)
     active_is_imiqr = active_importance_sampling(vp, gp, AcqFcnIMIQR(), options)
 
-    assert active_is_viqr["ln_weights"].shape == active_is_viqr["f_s2"].shape == (23, 1)
+    assert active_is_viqr["ln_weights"].shape == active_is_viqr["f_s2"].T.shape == (2, 10)
+    assert active_is_viqr["X"].shape == (10, D)
+    assert active_is_imiqr["X"].shape == (10, D, 2)
+    assert active_is_imiqr["ln_weights"].shape == active_is_imiqr["f_s2"].T.shape == (2, 10)
 
 def test_fess():
     D = 3
