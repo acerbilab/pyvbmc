@@ -6,12 +6,66 @@ import scipy.stats as sps
 import gpyreg as gpr
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc.active_importance_sampling import (
+    active_importance_sampling,
     fess,
     activesample_proposalpdf,
     log_isbasefun,
 )
 from pyvbmc.acquisition_functions import AcqFcnVIQR, AcqFcnIMIQR
 
+
+def test_active_importance_sampling():
+    D = 3
+    K = 2
+    vp = VariationalPosterior(D=D, K=K)
+    vp.mu = np.array([[-1.0, -1.0, -1.0], [1.0, 1.0, 1.0]]).T
+    vp.w = np.array([[0.7, 0.3]])
+    vp.lambd = np.ones(vp.lambd.shape)
+    gp_means = np.arange(-5, 5).reshape((5, 2), order="F") * np.pi
+
+    X = np.arange(-7, 8).reshape((5, 3), order="F")
+    y = np.array(
+        [sps.multivariate_normal.logpdf(x, mean=np.zeros(D,)) for x in X]
+    ).reshape((-1, 1))
+    hyp = np.array(
+        [
+            # Covariance
+            -2.0,
+            -3.0,
+            -4.0,  # log ell
+            1.0,  # log sf2
+            # Noise
+            0.0,  # log std. dev. of noise
+            # Mean
+            -(D / 2) * np.log(2 * np.pi),  # MVN mode
+            0.0,
+            0.25,
+            0.5,  # Mode location
+            -0.5,
+            0.0,
+            0.5,  # log scale
+        ]
+    )
+    hyp = np.vstack([hyp, 2 * hyp])
+    gp = gpr.GP(
+        D,
+        covariance=gpr.covariance_functions.SquaredExponential(),
+        mean=gpr.mean_functions.NegativeQuadratic(),
+        noise=gpr.noise_functions.GaussianNoise(constant_add=True,),
+    )
+    gp.update(X_new=X, y_new=y, hyp=hyp)
+
+    options = {
+        "activeimportancesamplingmcmcsamples": 10,
+        "activeimportancesamplingfessthresh": 0,
+        "activeimportancesamplingmcmcthin": 2,
+        "activeimportancesamplingvpsamples": 11,
+        "activeimportancesamplingboxsamples": 12,
+    }
+    active_is_viqr = active_importance_sampling(vp, gp, AcqFcnVIQR(), options)
+    active_is_imiqr = active_importance_sampling(vp, gp, AcqFcnIMIQR(), options)
+
+    assert active_is_viqr["ln_weights"].shape == active_is_viqr["f_s2"].shape == (23, 1)
 
 def test_fess():
     D = 3
