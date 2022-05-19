@@ -11,24 +11,6 @@ end
 y = y(:);
 hyp = [-2.0, -3.0, -4.0, 1.0, 0.0, -(D / 2) * log(2 * pi), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]';
 gp = gplite_post(hyp, X, y, 1, 4);
-% gp.post(1).hyp = [-4.0, -4.0, -4.0, -4.0, 1.0, 0.0, -(D / 2) * log(2 * pi), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]';
-% gp.post(1).alpha = [];
-% gp.post(1).L = [];
-% gp.post(1).Lchol = [];
-% gp.post(1).sW = [];
-% gp.post(1).sn2_mult = [];
-% gp.Ncov = 5;
-% gp.Nnoise = 1;
-% gp.Nmean = 7;
-% gp.covfun = 1;
-% gp.noisefun = [1, 0, 0];
-% gp.meanfun = 4;
-% gp.meanfun_extras = [];
-% gp.X = reshape(-7:7, 5, 3);
-% for ii = 1:5
-%     gp.y(ii) = mvnormlpdf(gp.X(ii, :), zeros(D,1), eye(D));
-% end
-% gp.y = gp.y(:)
 
 Xa = 2 * reshape(-4:4, 3, 3) / pi;
 w_vp = 0.5;
