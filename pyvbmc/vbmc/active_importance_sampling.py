@@ -397,7 +397,7 @@ def log_isbasefun(x, acq_fcn, gp, vp=None):
     is_log_f : np.ndarray
         The proposal log pdf evaluated at the input points, of shape ``(N,)``
     """
-    f_mu, f_s2 = gp.predict(np.atleast_2d(x))
+    f_mu, f_s2 = gp.predict(np.atleast_2d(x), add_noise=True)
 
     if vp is None:
         return acq_fcn.is_log_f(0, f_mu, f_s2)
