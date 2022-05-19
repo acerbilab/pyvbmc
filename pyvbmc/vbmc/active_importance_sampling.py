@@ -340,7 +340,7 @@ def activesample_proposalpdf(Xa, gp, vp_is, w_vp, rect_delta, acqfcn, vp):
 
     # Mixture of variational posteriors
     if w_vp > 0:
-        temp_lpdf[:, 0] = vp_is.pdf(Xa, origflag=False, logflag=True).T
+        temp_lpdf[:, 0] = vp_is.pdf(Xa, origflag=False, logflag=True).T + np.log(w_vp)
     else:
         temp_lpdf[:, 0] = -np.inf
 
@@ -359,13 +359,8 @@ def activesample_proposalpdf(Xa, gp, vp_is, w_vp, rect_delta, acqfcn, vp):
         VV = np.product(2 * rect_delta)
 
         for i in range(N):
-            mask = temp_lpdf[:, i + 1] != 0.0
-            temp_lpdf[mask, i + 1] = np.log(
-                (1 - w_vp)
-                * np.all(np.abs(Xa[mask] - gp.X[i, :]) < rect_delta, axis=1)
-                / VV
-                / N
-            )
+            mask = (np.all(np.abs(Xa[:] - gp.X[i, :]) < rect_delta, axis=1))
+            temp_lpdf[mask, i + 1] = np.log((1 - w_vp) / VV / N)
             temp_lpdf[~mask, i + 1] = -np.inf
 
         m_max = np.amax(temp_lpdf, axis=1)
