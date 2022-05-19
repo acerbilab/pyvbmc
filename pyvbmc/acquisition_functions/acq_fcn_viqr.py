@@ -31,8 +31,8 @@ class AcqFcnVIQR(AbstractAcqFcn):
         optim_state: dict,
         f_mu: np.ndarray,
         f_s2: np.ndarray,
-        f_bar: np.ndarray,
-        var_tot: np.ndarray,
+        f_bar: None,
+        var_tot: None,
     ):
         r"""
         Compute the value of the acquisition function.
@@ -58,6 +58,10 @@ class AcqFcnVIQR(AbstractAcqFcn):
             A ``(N, Ns_gp)`` array of GP predictive variances at the importance
             sampling points, where ``Ns_gp`` is the number of GP posterior
             hyperparameter samples.
+        f_bar : None
+            Unused for this acquisition function.
+        var_tot : None
+            Unused for this acquisition function.
 
         Raises
         ------
