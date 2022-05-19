@@ -6,7 +6,7 @@ import scipy.stats as sps
 import gpyreg as gpr
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc.active_importance_sampling import fess, activesample_proposalpdf
-from pyvbmc.acquisition_functions import AcqFcnVIQR
+from pyvbmc.acquisition_functions import AcqFcnVIQR, AcqFcnIMIQR
 
 
 def test_fess():
@@ -65,12 +65,14 @@ def test_activesample_proposalpdf():
     Xa = 2 * np.arange(-4, 5).reshape((3, 3), order="F") / np.pi
     w_vp = 0.5
     rect_delta = 2 * np.std(gp.X, ddof=1, axis=0)
-    acqviqr = AcqFcnVIQR()
 
     dirpath = os.path.dirname(os.path.realpath(__file__))
     filepath = os.path.join(dirpath, "compare_MATLAB", "activesample_proposalpdf.mat")
     MATLAB = scipy.io.loadmat(filepath)
 
-    ln_weights, f_s2 = activesample_proposalpdf(Xa, gp, vp, w_vp, rect_delta, acqviqr, vp)
-    assert np.allclose(ln_weights, MATLAB["ln_weights"])
-    assert np.allclose(f_s2, MATLAB["f_s2"])
+    ln_weights_viqr, f_s2_viqr = activesample_proposalpdf(Xa, gp, vp, w_vp, rect_delta, AcqFcnVIQR(), vp)
+    ln_weights_imiqr, f_s2_imiqr = activesample_proposalpdf(Xa, gp, vp, w_vp, rect_delta, AcqFcnIMIQR(), vp)
+    assert np.allclose(ln_weights_viqr, MATLAB["ln_weights_viqr"])
+    assert np.allclose(f_s2_viqr, MATLAB["f_s2_viqr"])
+    assert np.allclose(ln_weights_imiqr, MATLAB["ln_weights_imiqr"])
+    assert np.allclose(f_s2_imiqr, MATLAB["f_s2_imiqr"])

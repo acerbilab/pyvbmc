@@ -33,10 +33,10 @@ gp = gplite_post(hyp, X, y, 1, 4);
 Xa = 2 * reshape(-4:4, 3, 3) / pi;
 w_vp = 0.5;
 rect_delta = 2 * std(gp.X);
-acqfcn = @acqviqr_vbmc;
-[ln_weights, f_s2] = activesample_proposalpdf(Xa, gp, vp, w_vp, rect_delta, acqfcn, vp, true)
+[ln_weights_viqr, f_s2_viqr] = activesample_proposalpdf(Xa, gp, vp, w_vp, rect_delta, @acqviqr_vbmc, vp, true)
+[ln_weights_imiqr, f_s2_imiqr] = activesample_proposalpdf(Xa, gp, vp, w_vp, rect_delta, @acqimiqr_vbmc, vp, true)
 dirpath = fileparts(matlab.desktop.editor.getActiveFilename);
-save(dirpath + "/activesample_proposalpdf.mat", "ln_weights", "f_s2")
+save(dirpath + "/activesample_proposalpdf.mat", "ln_weights_viqr", "f_s2_viqr", "ln_weights_imiqr", "f_s2_imiqr")
 
 %%
 function ll = mvnormlpdf(theta, mu, Sigma)
