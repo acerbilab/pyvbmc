@@ -1,8 +1,10 @@
 import copy
+import numpy as np
+from math import ceil
 
 import pytest
 
-from pyvbmc.vbmc import Options
+from pyvbmc.vbmc import Options, VBMC
 
 
 def test_options_no_user_options():
@@ -78,6 +80,41 @@ def test_init_from_existing_options_without_other_options():
     assert options_1 == options_2
     assert len(options_1) == len(options_2)
 
+
+def test_init_with_specifytargetnoise():
+    """Turning on specifytargetnoise should adjust defaults."""
+    D=1
+    user_options = {
+        "specifytargetnoise": True,
+        "activesamplegpupdate": "foo",  # But don't touch user options!
+    }
+    vbmc1 = VBMC(
+        lambda x, y: (x+y, y),
+        np.zeros((1, D)),
+        -np.ones((1, D)),
+        np.ones((1, D)),
+        -0.5 * np.ones((1, D)),
+        0.5 * np.ones((1, D)),
+    )
+    vbmc2 = VBMC(
+        lambda x, y: (x+y, y),
+        np.zeros((1, D)),
+        -np.ones((1, D)),
+        np.ones((1, D)),
+        -0.5 * np.ones((1, D)),
+        0.5 * np.ones((1, D)),
+        user_options=user_options,
+    )
+
+    # Check that default options are changed:
+    assert vbmc1.options != vbmc2.options
+    assert vbmc2.options["maxfunevals"] == ceil(vbmc1.options["maxfunevals"] * 1.5)
+    assert vbmc2.options["tolstablecount"] == ceil(vbmc1.options["tolstablecount"] * 1.5)
+    assert vbmc2.options["searchacqfcn"] == ["@acqviqr_vbmc"]
+    # assert vbmc2.options["activesamplevpupdate"] == True
+
+    # Check that user-specified option is unchanged:
+    assert vbmc2.options["activesamplegpupdate"] == "foo"
 
 def test_str():
     default_options_path = "./pyvbmc/vbmc/option_configs/test_options.ini"

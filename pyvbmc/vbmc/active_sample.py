@@ -564,7 +564,10 @@ def active_sample(
                                 slow_opts_N=1,
                             )
 
-                            optim_state["vp_repo"].append(vp.get_parameters())
+                            if optim_state.get("vp_repo"):
+                                optim_state["vp_repo"].append(vp.get_parameters())
+                            else:
+                                optim_state["vp_repo"] = vp.get_parameters()
                     else:
                         gp = gptmp
                 else:
