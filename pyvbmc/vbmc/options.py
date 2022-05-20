@@ -2,10 +2,10 @@
 from __future__ import annotations
 
 import configparser
+import copy
 from collections.abc import MutableMapping
 
 import numpy as np
-import copy
 
 
 class Options(MutableMapping, dict):
@@ -158,7 +158,9 @@ class Options(MutableMapping, dict):
     def __setitem__(self, key, val, force=False):
         # Prevent user from attempting to modify options after initialization
         if self.is_initialized and not force:
-           raise AttributeError("Warning: Cannot set options after initialization. Please re-initialize with `user_options = {...}`")
+            raise AttributeError(
+                "Warning: Cannot set options after initialization. Please re-initialize with `user_options = {...}`"
+            )
         else:
             dict.__setitem__(self, key, val)
 

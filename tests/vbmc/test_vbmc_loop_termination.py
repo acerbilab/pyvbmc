@@ -1,5 +1,4 @@
 import numpy as np
-
 from pyvbmc.vbmc import VBMC
 
 fun = lambda x: np.sum(x + 2)
@@ -355,7 +354,8 @@ def test_setup_vbmc_after_warmup_false_alarm():
         vbmc.function_logger.add(np.ones((3)) * i, 3000 * i)
     vbmc._setup_vbmc_after_warmup()
     assert vbmc.function_logger.X_flag[0] == False
-    for i in range(1, 6):
+    assert vbmc.function_logger.X_flag[1] == False
+    for i in range(2, 6):
         assert vbmc.function_logger.X_flag[i]
 
     assert vbmc.optim_state.get("recompute_var_post")
@@ -392,7 +392,8 @@ def test_setup_vbmc_after_warmup_false_alarm_no_warmupkeepthresholdfalsealarm():
         vbmc.function_logger.add(np.ones((3)) * i, 3000 * i)
     vbmc._setup_vbmc_after_warmup()
     assert vbmc.function_logger.X_flag[0] == False
-    for i in range(1, 6):
+    assert vbmc.function_logger.X_flag[1] == False
+    for i in range(2, 6):
         assert vbmc.function_logger.X_flag[i]
 
     assert vbmc.optim_state.get("recompute_var_post")

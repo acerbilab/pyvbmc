@@ -1,18 +1,19 @@
 import gpyreg as gpr
 import numpy as np
 import pytest
+from scipy.stats import norm
+
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc import VBMC
 from pyvbmc.vbmc.gaussian_process_train import (
-    train_gp,
     _cov_identifier_to_covariance_function,
     _estimate_noise,
     _get_gp_training_options,
     _get_hyp_cov,
     _get_training_data,
     _meanfun_name_to_mean_function,
+    train_gp,
 )
-from scipy.stats import norm
 
 
 def test_estimate_noise():
@@ -230,7 +231,7 @@ def test_get_gp_training_options_samplers():
     plb = np.ones((1, D)) * 2
     pub = np.ones((1, D)) * 4
     f = lambda x: np.sum(x + 2)
-    user_options = {"weightedhypcov" : False}
+    user_options = {"weightedhypcov": False}
     vbmc = VBMC(f, x0, lb, ub, plb, pub, user_options)
 
     hyp_dict = {"run_cov": np.eye(3)}
@@ -384,7 +385,10 @@ def test_gp_hyp():
         vbmc.function_logger.fun_evaltime[sample_idx] = 1e-5
 
     vbmc.optim_state["N"] = 10
-    vbmc.optim_state["n_eff"] = 10
+    vbmc.optim_state["n_eff"] = np.sum(
+        vbmc.function_logger.nevals[vbmc.function_logger.X_flag]
+    )
+    assert not np.isnan(vbmc.optim_state["n_eff"])
 
     gp, Ns_gp, _, _ = train_gp(
         {},

@@ -1,6 +1,7 @@
-import numpy as np
-import gpyreg as gpr
 import copy
+
+import gpyreg as gpr
+import numpy as np
 
 
 def unscent_warp(fun, x, sigma):
@@ -347,7 +348,7 @@ def warp_gpandvp_vbmc(parameter_transformer, vp_old, vbmc):
     lambdaw = np.sqrt(
         vbmc.D
         * np.mean(
-            (sigmalambdaw ** 2).T / np.sum(sigmalambdaw ** 2, axis=1), axis=1
+            (sigmalambdaw**2).T / np.sum(sigmalambdaw**2, axis=1), axis=1
         )
     ).T
     vp.lambd[:, 0] = lambdaw

@@ -2,11 +2,11 @@ import sys
 
 import numpy as np
 import pytest
-from pyvbmc.variational_posterior import VariationalPosterior
-from pyvbmc.vbmc import VBMC
-
 import scipy as sp
 import scipy.stats
+
+from pyvbmc.variational_posterior import VariationalPosterior
+from pyvbmc.vbmc import VBMC
 
 fun = lambda x: np.sum(x + 2)
 

@@ -1,4 +1,5 @@
 import numpy as np
+
 from pyvbmc.variational_posterior import VariationalPosterior
 
 
@@ -90,7 +91,7 @@ def entlb_vbmc(
             / (sumsigma[..., None] * lambd)
         ) ** 2  # [K, K, D]
         d2 = d2.sum(2)  # [K, K]
-        gamma = nconst / sumsigma ** D * np.exp(-0.5 * d2)  # [K, K]
+        gamma = nconst / sumsigma**D * np.exp(-0.5 * d2)  # [K, K]
         gammasum = (w * gamma).sum(1)  # [K, ]
 
         H = -(w * np.log(gammasum)).sum()
@@ -105,11 +106,11 @@ def entlb_vbmc(
 
             if grad_flags[0]:
                 dmu = (mu_t[:, None, :] - mu_t[None, :, :]) / (
-                    sumsigma2[..., None] * lambd ** 2
+                    sumsigma2[..., None] * lambd**2
                 )  # [K, K, D], dmu[i,j,:] = (mu_i - mu_j)/sumsigma2[i]/lambd^2
 
             if grad_flags[1]:
-                dsigma = -D / sumsigma2 + 1 / sumsigma2 ** 2 * np.sum(
+                dsigma = -D / sumsigma2 + 1 / sumsigma2**2 * np.sum(
                     ((mu_t[:, None, :] - mu_t[None, :, :]) / lambd) ** 2, 2
                 )  # [K, K]
 
@@ -138,7 +139,7 @@ def entlb_vbmc(
                 dmu2 = (
                     (mu_t[:, None, :] - mu_t[None, :, :]) ** 2
                     / sumsigma2[..., None]
-                    / lambd ** 2
+                    / lambd**2
                 )  # [K, K, D]
 
                 lambd_grad[:] = (
@@ -170,7 +171,7 @@ def entlb_vbmc(
         eta_exp = np.exp(eta)
         eta_sum = eta_exp.sum()
         J_w = (
-            -eta_exp[:, None] * eta_exp[None, :] / eta_sum ** 2
+            -eta_exp[:, None] * eta_exp[None, :] / eta_sum**2
             + np.diag(eta_exp) / eta_sum
         )
         w_grad = J_w @ w_grad

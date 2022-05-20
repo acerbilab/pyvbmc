@@ -3,8 +3,8 @@ import logging
 import numpy as np
 import pytest
 
-from pyvbmc.vbmc import VBMC, active_sample
 from pyvbmc.stats import get_hpd
+from pyvbmc.vbmc import VBMC, active_sample
 from pyvbmc.vbmc.active_sample import _get_search_points
 from pyvbmc.vbmc.gaussian_process_train import train_gp
 
@@ -56,7 +56,7 @@ def test_active_uncertainty_sampling(mocker):
         vp=vbmc.vp,
         options=vbmc.options,
     )
-    optim_state["N"] = function_logger.Xn
+    optim_state["N"] = function_logger.Xn + 1
     optim_state["n_eff"] = np.sum(
         function_logger.nevals[function_logger.X_flag]
     )

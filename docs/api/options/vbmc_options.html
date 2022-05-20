@@ -360,6 +360,14 @@
 <span class="n">minfinalcomponents</span> <span class="o">=</span> <span class="mi">50</span>
 <span class="c1"># Target log joint function returns noise estimate (SD) as second output</span>
 <span class="n">specifytargetnoise</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="c1"># Name of file to write logs to (if None, no log file will be written)</span>
+<span class="n">logfilename</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="c1"># Logging level for log file, one of (&quot;iter&quot;, &quot;notify&quot;, &quot;final&quot;, or &quot;off&quot;), or a level from logging module (e.g. logging.DEBUG)</span>
+<span class="n">logfilelevel</span> <span class="o">=</span> <span class="s2">&quot;iter&quot;</span>
+<span class="c1"># Logging write mode, one of (&quot;w&quot;, &quot;w+&quot;, or &quot;a&quot;)</span>
+<span class="n">logfilemode</span> <span class="o">=</span> <span class="s2">&quot;a&quot;</span>
+<span class="c1"># Whether to re-print column headers for optimization statistics at each iteration. If None, PyVBMC tries to guess based on plotting options.</span>
+<span class="n">printiterationheader</span> <span class="o">=</span> <span class="kc">None</span>
 </pre></div>
 </div>
 </div>

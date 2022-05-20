@@ -2,6 +2,7 @@ import sys
 
 import gpyreg as gpr
 import numpy as np
+
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.variational_posterior import VariationalPosterior
 
@@ -35,6 +36,6 @@ class AcqFcnVanilla(AbstractAcqFcn):
         p = np.ravel(np.maximum(vp.pdf(Xs, origflag=False), realmin))
 
         # Uncertainty search
-        acq = -var_tot * p ** 2
+        acq = -var_tot * p**2
 
         return acq

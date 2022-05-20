@@ -1,4 +1,5 @@
 import numpy as np
+
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.timer import Timer
 
@@ -51,7 +52,7 @@ class FunctionLogger:
         self.X = np.full([cache_size, self.D], np.nan)
         self.y = np.full([cache_size, 1], np.nan)
         self.ymax = np.nan
-        self.nevals = np.full([cache_size, 1], np.nan)
+        self.nevals = np.full([cache_size, 1], 0)
 
         if self.noise_flag:
             self.S = np.full([cache_size, 1], np.nan)
@@ -298,13 +299,13 @@ class FunctionLogger:
                 self.S, np.full([resize_amount, 1], np.nan), axis=0
             )
         self.X_flag = np.append(
-            self.X_flag, np.full((resize_amount,), True, dtype=bool)
+            self.X_flag, np.full((resize_amount,), False, dtype=bool)
         )
         self.fun_evaltime = np.append(
             self.fun_evaltime, np.full([resize_amount, 1], np.nan), axis=0
         )
         self.nevals = np.append(
-            self.nevals, np.full([resize_amount, 1], np.nan), axis=0
+            self.nevals, np.full([resize_amount, 1], 0), axis=0
         )
 
     def _record(
@@ -347,14 +348,14 @@ class FunctionLogger:
             Raise if there is more than one match for a duplicate entry.
         """
         duplicate_flag = self.X == x
-        if np.any(duplicate_flag):
-            if np.sum((duplicate_flag).all(axis=1)) > 1:
+        if np.any(duplicate_flag.all(axis=1)):
+            if np.sum(duplicate_flag.all(axis=1)) > 1:
                 raise ValueError("More than one match for duplicate entry.")
             idx = np.argwhere(duplicate_flag)[0, 0]
             N = self.nevals[idx]
             if fsd is not None:
                 tau_n = 1 / self.S[idx] ** 2
-                tau_1 = 1 / fsd ** 2
+                tau_1 = 1 / fsd**2
                 self.y_orig[idx] = (
                     tau_n * self.y_orig[idx] + tau_1 * fval_orig
                 ) / (tau_n + tau_1)
@@ -393,6 +394,6 @@ class FunctionLogger:
             if fsd is not None:
                 self.S[self.Xn] = fsd
             self.X_flag[self.Xn] = True
-            self.nevals[self.Xn] = max(1, self.nevals[self.Xn] + 1)
-            self.ymax = np.amax(self.y[self.X_flag])
+            self.nevals[self.Xn] += 1
+            self.ymax = np.nanmax(self.y[self.X_flag])
             return fval, self.Xn

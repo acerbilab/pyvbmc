@@ -6,7 +6,7 @@ from pyvbmc.vbmc.minimize_adam import minimize_adam
 
 
 def test_minimize_adam_sphere():
-    f = lambda x_: (np.sum(x_ ** 2), 2 * x_)
+    f = lambda x_: (np.sum(x_**2), 2 * x_)
     x0 = np.array([-3.0, -4.0])
 
     x, y, _, _, _ = minimize_adam(f, x0)
@@ -22,7 +22,7 @@ def test_minimize_adam_sphere_with_noise():
     # Here we have i.i.d. Gaussian noise at each gadient with
     # variance not too small.
     f = lambda x_: (
-        np.sum(x_ ** 2),
+        np.sum(x_**2),
         2 * x_ + np.random.normal(scale=3, size=x_.shape),
     )
     x0 = np.array([-0.3, -0.4])

@@ -1,5 +1,4 @@
 import numpy as np
-
 import scipy as sp
 import scipy.stats
 
@@ -21,7 +20,7 @@ def _test_vbmc_optimize_rosenbrock():
             )
 
     prior_mu = np.zeros((1, D))
-    prior_var = 3 ** 2 * np.ones((1, D))
+    prior_var = 3**2 * np.ones((1, D))
     lpriorfun = lambda x: -0.5 * (
         np.sum((x - prior_mu) ** 2 / prior_var)
         + np.log(np.prod(2 * np.pi * prior_var))
@@ -334,7 +333,7 @@ def cigar(x):
 
     ell = np.ones((D,)) / 100
     ell[-1] = 1
-    cov = np.dot(R.T, np.dot(np.diag(ell ** 2), R))
+    cov = np.dot(R.T, np.dot(np.diag(ell**2), R))
 
     y = mvnlogpdf(x, mean, cov)  # + mvnlogpdf(x, prior_mean, prior_cov)
     s = 0
@@ -353,7 +352,7 @@ def mvnlogpdf(x, mu, sigma):
     log_sqrt_det_sigma = np.sum(np.log(np.diag(R)))
 
     # The quadratic form is the inner product of the standardized data.
-    quad_form = np.sum(xRinv ** 2)
+    quad_form = np.sum(xRinv**2)
 
     y = -0.5 * quad_form - log_sqrt_det_sigma - d * np.log(2 * np.pi) / 2
     return y

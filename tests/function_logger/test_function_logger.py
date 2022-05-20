@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
-from pyvbmc.parameter_transformer import ParameterTransformer
 
 from pyvbmc.function_logger import FunctionLogger
+from pyvbmc.parameter_transformer import ParameterTransformer
 
 non_noisy_function = lambda x: np.sum(x + 2)
 noisy_function = lambda x: (np.sum(x + 2), np.sum(x))

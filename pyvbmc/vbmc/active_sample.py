@@ -5,6 +5,7 @@ import math
 import cma
 import gpyreg as gpr
 import numpy as np
+
 from pyvbmc.acquisition_functions.abstract_acq_fcn import AbstractAcqFcn
 from pyvbmc.acquisition_functions.acq_fcn import AcqFcn
 from pyvbmc.acquisition_functions.acq_fcn_noisy import AcqFcnNoisy
@@ -239,7 +240,9 @@ def active_sample(
 
         ## Active sampling loop (sequentially acquire Ns new points)
         for i in range(sample_count):
-            optim_state["N"] = function_logger.Xn  # Number of training inputs
+            optim_state["N"] = (
+                function_logger.Xn + 1
+            )  # Number of training inputs
             optim_state["Neff"] = sum(
                 function_logger.nevals[function_logger.X_flag]
             )

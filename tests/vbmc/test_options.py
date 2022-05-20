@@ -1,6 +1,8 @@
-import pytest
-from pyvbmc.vbmc import Options
 import copy
+
+import pytest
+
+from pyvbmc.vbmc import Options
 
 
 def test_options_no_user_options():
@@ -218,6 +220,7 @@ def test_options_deepcopy():
     assert len(options_copy.get("useroptions")) == 1
     assert options_copy.get("fooD") == 4
     assert "foo" in options_copy.get("useroptions")
+
 
 def test_prevent_option_set_post_init():
     evaluation_parameters = {"D": 2}

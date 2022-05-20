@@ -1,5 +1,6 @@
-from pyvbmc.timer import Timer
 from time import sleep
+
+from pyvbmc.timer import Timer
 
 
 def test_start_stop_get_normal():
