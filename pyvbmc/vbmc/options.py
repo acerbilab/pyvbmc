@@ -61,8 +61,8 @@ class Options(MutableMapping, dict):
             updates = {
                 "maxfunevals": ceil(self["maxfunevals"] * 1.5),
                 "tolstablecount": ceil(self["tolstablecount"] * 1.5),
-                # "activesamplegpupdate": True,
-                # "activesamplevpupdate": True,
+                "activesamplegpupdate": True,
+                "activesamplevpupdate": True,
                 "searchacqfcn": ["@acqviqr_vbmc"]
             }
             for key, val in updates.items():

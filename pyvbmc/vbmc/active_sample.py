@@ -527,7 +527,7 @@ def active_sample(
                     fESS, fESS_thresh = 0, 1
                     if fESS <= fESS_thresh:
                         if options["activesamplegpupdate"]:
-                            train_gp(
+                            gp, __, optim_state["sn2hpd"], optim_state["hyp_dict"] = train_gp(
                                 hyp_dict,
                                 optim_state,
                                 function_logger,
@@ -564,8 +564,8 @@ def active_sample(
                                 slow_opts_N=1,
                             )
 
-                            if optim_state.get("vp_repo"):
-                                optim_state["vp_repo"].append(vp.get_parameters())
+                            if optim_state.get("vp_repo") is not None:
+                                np.append(optim_state["vp_repo"], vp.get_parameters())
                             else:
                                 optim_state["vp_repo"] = vp.get_parameters()
                     else:
