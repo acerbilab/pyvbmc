@@ -8,6 +8,9 @@ import numpy as np
 
 from pyvbmc.acquisition_functions.abstract_acq_fcn import AbstractAcqFcn
 from pyvbmc.acquisition_functions.acq_fcn import AcqFcn
+from pyvbmc.acquisition_functions.acq_fcn_noisy import AcqFcnNoisy
+from pyvbmc.acquisition_functions.acq_fcn_viqr import AcqFcnVIQR
+from pyvbmc.acquisition_functions.acq_fcn_imiqr import AcqFcnIMIQR
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.stats import get_hpd
 from pyvbmc.variational_posterior import VariationalPosterior
@@ -18,6 +21,7 @@ from pyvbmc.vbmc.variational_optimization import (
     _negelcbo,
     optimize_vp,
 )
+from pyvbmc.vbmc.active_importance_sampling import active_importance_sampling
 
 from .options import Options
 
@@ -37,7 +41,8 @@ def active_sample(
     Parameters
     ----------
     gp : GaussianProcess
-        The GaussianProcess from the VBMC instance this function is called from.
+        The GaussianProcess from the VBMC instance this function is called
+        from.
     sample_count : int
         The number of samples.
     optim_state : dict
@@ -45,7 +50,8 @@ def active_sample(
     function_logger : FunctionLogger
         The FunctionLogger from the VBMC instance this function is called from.
     iteration_history : IterationHistory
-        The IterationHistory from the VBMC instance this function is called from.
+        The IterationHistory from the VBMC instance this function is called
+        from.
     vp : VariationalPosterior
         The VariationalPosterior from the VBMC instance this function is called
         from.
@@ -274,7 +280,11 @@ def active_sample(
 
                 # Missing port: noiseshaping
 
-                sn2new[:, s] = gp.noise.compute(hyp_noise, gp.X, gp.y, s2)
+                sn2new[:, s] = gp.noise.compute(
+                    hyp_noise, gp.X, gp.y, s2
+                ).reshape(
+                    -1,
+                )
 
             gp.temporary_data["sn2_new"] = sn2new.mean(1)
 
@@ -290,7 +300,7 @@ def active_sample(
                 gp.X / optim_state["gp_length_scale"]
             )
 
-            ### Missing port: line 185-211
+            ### Missing port: line 185-205
 
             ## Start active search
 
@@ -305,11 +315,29 @@ def active_sample(
 
             if SearchAcqFcn[idx_acq] == "@acqf_vbmc":
                 acq_eval = AcqFcn()
+            elif SearchAcqFcn[idx_acq] == "@acqfn_vbmc":
+                acq_eval = AcqFcnNoisy()
+            elif SearchAcqFcn[idx_acq] == "@acqviqr_vbmc":
+                acq_eval = AcqFcnVIQR()
+            elif SearchAcqFcn[idx_acq] == "@acqimiqr_vbmc":
+                acq_eval = AcqFcnIMIQR()
             else:  # TODO implement branch
-                raise NotImplementedError("Not implemented yet")
+                print(SearchAcqFcn[idx_acq])
+                raise NotImplementedError(
+                    "Acquisition function {SearchAcqFcn[idx_acq]} is not"
+                    + +"implemented yet"
+                )
+
+            # Prepare for importance sampling based acquistion function
+            if getattr(acq_eval, "importance_sampling", None):
+                optim_state[
+                    "active_importance_sampling"
+                ] = active_importance_sampling(vp, gp, acq_eval, options)
 
             # Re-evaluate variance of the log joint if requested
-            if acq_eval.acq_info["compute_varlogjoint"]:
+            if hasattr(acq_eval, "acq_info") and acq_eval.acq_info.get(
+                "compute_varlogjoint"
+            ):
                 varF = _gplogjoint(vp, gp, 0, 0, 0, 1)[2]
                 optim_state["varlogjoint_samples"] = varF
 
@@ -355,7 +383,9 @@ def active_sample(
                     lb = np.minimum(gp.X, x0) - 0.1 * xrange
                     ub = np.maximum(gp.X, x0) + 0.1 * xrange
 
-                if acq_eval.acq_info["log_flag"]:
+                if hasattr(acq_eval, "acq_info") and acq_eval.acq_info.get(
+                    "log_flag"
+                ):
                     tol_fun = 1e-2
                 else:
                     tol_fun = max(1e-12, abs(fval_old * 1e-3))
@@ -474,8 +504,8 @@ def active_sample(
                     optim_state["cache"]["y_orig"], idx, 0
                 )
 
-            if "S" in optim_state.keys():
-                s2new = optim_state["S"][idx_new] ** 2
+            if hasattr(function_logger, "S"):
+                s2new = function_logger.S[idx_new] ** 2
             else:
                 s2new = None
 

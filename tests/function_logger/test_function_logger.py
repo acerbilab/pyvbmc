@@ -6,7 +6,7 @@ from pyvbmc.parameter_transformer import ParameterTransformer
 
 non_noisy_function = lambda x: np.sum(x + 2)
 noisy_function = lambda x: (np.sum(x + 2), np.sum(x))
-
+noisy_function_2 = lambda x: (np.sum(x + 2)+0.5, np.sum(x)+0.25)
 
 def test_call_index():
     f_logger = FunctionLogger(non_noisy_function, 3, False, 0)
@@ -41,6 +41,33 @@ def test_call_noisy_function_level_2():
     assert fsd == fsd2
     assert idx == 0
     assert f_logger.S[0] == fsd2
+
+
+def test_call_duplicate_noisy_function_level_2():
+    x = np.array([3, 4, 5])
+    f_logger = FunctionLogger(noisy_function, 3, True, 2)
+    fval_1, fsd_1, idx_1 = f_logger(x)
+    assert f_logger.y[0,0] == fval_1
+    assert f_logger.S[0,0] == fsd_1
+    assert fval_1, fsd_1 == noisy_function(x)
+
+    # Change the function to simulate another different observation:
+    f_logger.fun = noisy_function_2
+    fval_2, fsd_2, idx_2 = f_logger(x)
+    fval_meas, fsd_meas = noisy_function_2(x)
+    assert fsd_2 == fsd_meas
+
+    assert idx_1 == 0
+    assert idx_2 == 0
+    tau_1 = 1 / fsd_1 ** 2
+    tau_2 = 1 / fsd_2 ** 2
+    assert f_logger.S[0] == 1 / np.sqrt(tau_1 + tau_2)
+    assert f_logger.y_orig[0, 0] == fval_2
+    assert f_logger.y_orig[0] == (
+        tau_1 * fval_1 + tau_2 * fval_meas
+    ) / (tau_1 + tau_2)
+    assert f_logger.y[0] == f_logger.y_orig[0]
+    assert f_logger.S[0] == 1 / np.sqrt((1 / fsd_1 ** 2) + (1 / fsd_2 ** 2))
 
 
 def test_call_expand_cache():
@@ -188,13 +215,13 @@ def test_finalize():
 
     # noise level 2
     f_logger = FunctionLogger(noisy_function, 3, True, 2)
-    for i in range(10):
+    for i in range(1, 10):
         f_logger(x * i)
     f_logger.finalize()
     fval, fsd = noisy_function(x * 9)
-    assert f_logger.S[9] == fsd
-    assert f_logger.y_orig[9] == fval
-    assert f_logger.S.shape[0] == 10
+    assert f_logger.S[8] == fsd
+    assert f_logger.y_orig[8] == fval
+    assert f_logger.S.shape[0] == 9
 
 
 def test_call_parameter_transform_no_constraints():

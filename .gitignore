@@ -1,6 +1,7 @@
 # ides
 .vscode
 .idea
+*.~undo-tree~
 
 # Autosaves
 .#*
