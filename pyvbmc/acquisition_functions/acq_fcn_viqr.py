@@ -134,16 +134,14 @@ class AcqFcnVIQR(AbstractAcqFcn):
                 + np.log1p(-np.exp(-2 * self.u * s_pred))
             # logsumexp
             ln_max = np.amax(zz, axis=1)
-            mask = ln_max == -np.inf  # Avoid -inf + inf
-            ln_max[mask] = 0.0
+            ln_max[ln_max == -np.inf] = 0.0  # Avoid -inf + inf
             acq[:, s] = ln_max + np.log(
                 np.sum(np.exp(zz - ln_max.reshape(-1, 1)), axis=1)
             )
 
         if Ns_gp > 1:
             M = np.amax(acq, axis=1)
-            mask = M == -np.inf  # Avoid -inf + inf
-            M[mask] = 0.0
+            M[M == -np.inf] = 0.0  # Avoid -inf + inf
             acq = M + np.log(
                 np.sum(np.exp(acq - M.reshape(-1, 1)), axis=1)
                 / Ns_gp
