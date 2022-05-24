@@ -292,6 +292,7 @@ def active_importance_sampling(vp, gp, acqfcn, options):
     # Omitted port, integrated mean functions:
     # activeimportancesampling_vbmc.m, lines 257 to 266.
 
+    active_is["ln_weights"] = renormalize_weights(active_is["ln_weights"])
     return active_is
 
 
@@ -497,3 +498,8 @@ def fess(vp, gp, X=100):
     weight = weight / np.sum(weight)
 
     return (1 / np.sum(weight ** 2)) / N  # Fractional ESS
+
+
+def renormalize_weights(ln_w):
+    M = np.amax(ln_w)
+    return ln_w - (M + np.log(np.sum(np.exp(ln_w - M))))

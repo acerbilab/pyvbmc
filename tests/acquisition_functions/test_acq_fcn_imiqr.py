@@ -134,13 +134,6 @@ def test_simple__call__():
     # Should be close to log(2 * sinh(0.6745 * e)), because tau^2 approx= 0,
     # so s_pred^2 approx= fs2.
 
-    # Renormalize importance weights
-    # (IMIQR function only calculates expectation up to a constant factor)
-    ln_w = optim_state["active_importance_sampling"]["ln_weights"]
-    ln_w_max = np.amax(ln_w)
-    ln_w = ln_w - (ln_w_max + np.log(np.sum(np.exp(ln_w - ln_w_max))))
-    optim_state["active_importance_sampling"]["ln_weights"] = ln_w
-
     result = acqimiqr(
         X_eval[0], gp, vp, function_logger=None, optim_state=optim_state
     )
@@ -312,13 +305,6 @@ def test_complex__call__():
     optim_state["active_importance_sampling"] = active_importance_sampling(
         vp, gp, acqimiqr, vbmc_options
     )
-
-    # Renormalize importance weights
-    # (IMIQR function only calculates expectation up to a constant factor)
-    ln_w = optim_state["active_importance_sampling"]["ln_weights"]
-    ln_w_max = np.amax(ln_w)
-    ln_w = ln_w - (ln_w_max + np.log(np.sum(np.exp(ln_w - ln_w_max))))
-    optim_state["active_importance_sampling"]["ln_weights"] = ln_w
 
     # IMIQR Acquisition Function Values:
     result = np.exp(
