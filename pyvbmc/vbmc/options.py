@@ -55,7 +55,7 @@ class Options(MutableMapping, dict):
             self.update(user_options)
             self["useroptions"].update(user_options.keys())
 
-    def edit_defaults(self):
+    def update_defaults(self):
         """Change defaults as needed based on values of other options."""
         if self.get("specifytargetnoise"):
             updates = {

@@ -137,7 +137,7 @@ class VBMC:
             advanced_path,
             evaluation_parameters={"D": self.D},
         )
-        self.options.edit_defaults()
+        self.options.update_defaults()
         self.options.validate_option_names([basic_path, advanced_path])
 
         # set up root logger (only changes stuff if not initialized yet)
