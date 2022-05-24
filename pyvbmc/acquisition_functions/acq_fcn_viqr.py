@@ -90,7 +90,7 @@ class AcqFcnVIQR(AbstractAcqFcn):
             hyp = gp.posteriors[s].hyp[0:cov_N]  # Covariance hyperparameters
             L = gp.posteriors[s].L
             L_chol = gp.posteriors[s].L_chol
-            sn2_eff = 1 / gp.posteriors[s].sW[1]**2
+            sn2_eff = 1 / gp.posteriors[s].sW[0]**2
 
             # Compute cross-kernel matrices
             if isinstance(gp.covariance,
@@ -134,20 +134,22 @@ class AcqFcnVIQR(AbstractAcqFcn):
                 + np.log1p(-np.exp(-2 * self.u * s_pred))
             # logsumexp
             ln_max = np.amax(zz, axis=1)
-            ln_max[ln_max == -np.inf] = 0.0  # Avoid -inf + inf
-            __, n_samples = zz.shape
+            mask = ln_max == -np.inf  # Avoid -inf + inf
+            ln_max[mask] = 0.0
             acq[:, s] = ln_max + np.log(
                 np.sum(np.exp(zz - ln_max.reshape(-1, 1)), axis=1)
             )
 
         if Ns_gp > 1:
             M = np.amax(acq, axis=1)
-            M[M == -np.inf] = 0.0  # Avoid -inf + inf
+            mask = M == -np.inf  # Avoid -inf + inf
+            M[mask] = 0.0
             acq = M + np.log(
                 np.sum(np.exp(acq - M.reshape(-1, 1)), axis=1)
                 / Ns_gp
             )
 
+        assert np.all(~np.isnan(acq))
         return acq
 
 

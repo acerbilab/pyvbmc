@@ -69,7 +69,6 @@ class Options(MutableMapping, dict):
                 if key not in self["useroptions"]:
                     self[key] = val
 
-
     @classmethod
     def init_from_existing_options(
         cls,

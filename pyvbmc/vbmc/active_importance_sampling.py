@@ -285,7 +285,7 @@ def active_importance_sampling(vp, gp, acqfcn, options):
         else:
             raise ValueError(
                 "Covariance functions besides"
-                + +"SquaredExponential are not supported yet."
+                + "SquaredExponential are not supported yet."
             )
     active_is["K_Xa_X"] = K_Xa_X
 

@@ -251,16 +251,12 @@ class AbstractAcqFcn(ABC):
         """
 
         # unravel_index as the indicies are 1D otherwise
-        pos = np.unravel_index(
-            np.argmin(
-                self._sq_dist(
-                    Xs / optim_state.get("gp_length_scale"),
-                    gp.temporary_data.get("X_rescaled"),
-                ),
-                axis=1,
+        pos = np.argmin(
+            self._sq_dist(
+                Xs / optim_state.get("gp_length_scale"),
+                gp.temporary_data.get("X_rescaled"),
             ),
-            gp.temporary_data.get("sn2_new").shape,
-            order="F"
+            axis=1,
         )
         sn2 = gp.temporary_data.get("sn2_new")[pos]
 

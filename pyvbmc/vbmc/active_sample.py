@@ -282,9 +282,7 @@ def active_sample(
 
                 sn2new[:, s] = gp.noise.compute(
                     hyp_noise, gp.X, gp.y, s2
-                ).reshape(
-                    -1,
-                )
+                ).reshape(-1,)
 
             gp.temporary_data["sn2_new"] = sn2new.mean(1)
 
@@ -527,7 +525,12 @@ def active_sample(
                     fESS, fESS_thresh = 0, 1
                     if fESS <= fESS_thresh:
                         if options["activesamplegpupdate"]:
-                            gp, __, optim_state["sn2hpd"], optim_state["hyp_dict"] = train_gp(
+                            (
+                                gp,
+                                __,
+                                optim_state["sn2hpd"],
+                                optim_state["hyp_dict"],
+                            ) = train_gp(
                                 hyp_dict,
                                 optim_state,
                                 function_logger,
@@ -565,7 +568,9 @@ def active_sample(
                             )
 
                             if optim_state.get("vp_repo") is not None:
-                                np.append(optim_state["vp_repo"], vp.get_parameters())
+                                np.append(
+                                    optim_state["vp_repo"], vp.get_parameters()
+                                )
                             else:
                                 optim_state["vp_repo"] = vp.get_parameters()
                     else:
@@ -625,7 +630,7 @@ def active_sample(
             theta0 = vp0.get_parameters()
             theta = vp.get_parameters()
 
-            if np.size(theta0) != np.size(theta) or np.any(theta0 != theta):
+            if (np.size(theta0) != np.size(theta)) or (np.any(theta0 != theta)):
                 NSentFineK = math.ceil(
                     options["nsentfineactive"](vp0.K) / vp0.K
                 )
