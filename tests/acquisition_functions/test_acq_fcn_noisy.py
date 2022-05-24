@@ -16,12 +16,14 @@ def test_acq_info():
 
 def test__call__(mocker):
     acqf = AcqFcnNoisy()
-    M = 3
-    Xs = np.ones((M, 3))
+    M = 4
+    D = 3
+    Ns = 2  # GP samples
+    Xs = np.ones((M, D))
 
     mocker.patch(
         "gpyreg.GP.predict",
-        return_value=(np.ones((M, 2)) * 3, np.ones((M, 2))),
+        return_value=(np.ones((M, Ns)) * 3, np.ones((M, Ns))),
     )
 
     mocker.patch(
@@ -32,7 +34,7 @@ def test__call__(mocker):
     optim_state = dict()
     optim_state["integervars"] = None
     optim_state["variance_regularized_acq_fcn"] = False
-    optim_state["gp_length_scale"] = np.exp(np.mean(np.ones((3, 2)), axis=1)).T
+    optim_state["gp_length_scale"] = np.exp(np.mean(np.ones((D, Ns)), axis=1)).T
 
     # no constraints for test
     optim_state["lb_eps_orig"] = -np.inf
@@ -49,7 +51,7 @@ def test__call__(mocker):
         noise=gpr.noise_functions.GaussianNoise(constant_add=True),
     )
 
-    gp.temporary_data["sn2_new"] = np.ones((M, 2))
+    gp.temporary_data["sn2_new"] = np.ones(M,)
     gp.temporary_data["X_rescaled"] = Xs / optim_state["gp_length_scale"]
 
     acq = acqf(Xs, gp, vp, function_logger, optim_state)
@@ -61,13 +63,15 @@ def test__call__(mocker):
 def test_complex__call__(mocker):
     acqf = AcqFcnNoisy()
     M = 4
-    Xs = np.arange(-3, 9).reshape(M, 3) / 10
+    D = 3
+    Ns = 2  # GP samples
+    Xs = np.arange(-3, 9).reshape(M, D) / 10
 
     mocker.patch(
         "gpyreg.GP.predict",
         return_value=(
-            np.arange(0, 2 * M).reshape((M, 2), order="F") / 13,
-            np.arange(0, 2 * M).reshape((M, 2), order="F") / 23,
+            np.arange(0, 2 * M).reshape((M, Ns), order="F") / 13,
+            np.arange(0, 2 * M).reshape((M, Ns), order="F") / 23,
         ),
     )
 
@@ -80,7 +84,7 @@ def test_complex__call__(mocker):
     optim_state["integervars"] = None
     optim_state["variance_regularized_acq_fcn"] = False
     optim_state["gp_length_scale"] = np.exp(
-        np.mean(np.arange(0, 3 * 2).reshape((3, 2), order="F"), axis=1)
+        np.mean(np.arange(0, 3 * 2).reshape((D, Ns), order="F"), axis=1)
     ).T
 
     # no constraints for test
@@ -101,8 +105,8 @@ def test_complex__call__(mocker):
     )
 
     gp.temporary_data["sn2_new"] = np.exp(-1) * np.arange(
-        1, M * 2 + 1
-    ).reshape((M, 2), order="F")
+        1, M + 1
+    ).reshape((M,), order="F")
     gp.temporary_data["X_rescaled"] = (
         function_logger.X[~np.isnan(function_logger.X).all(axis=1)]
         / optim_state["gp_length_scale"]
