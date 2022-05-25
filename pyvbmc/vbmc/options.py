@@ -8,7 +8,7 @@ from collections.abc import MutableMapping
 from math import ceil
 import numpy as np
 
-from pyvbmc.acquisition_functions import AcqFcn, AcqFcnNoisy, AcqFcnVIQR, AcqFcnIMIQR
+from pyvbmc.acquisition_functions import *
 
 
 class Options(MutableMapping, dict):
