@@ -5,12 +5,9 @@ import math
 import cma
 import gpyreg as gpr
 import numpy as np
+import importlib
 
-from pyvbmc.acquisition_functions.abstract_acq_fcn import AbstractAcqFcn
-from pyvbmc.acquisition_functions.acq_fcn import AcqFcn
-from pyvbmc.acquisition_functions.acq_fcn_noisy import AcqFcnNoisy
-from pyvbmc.acquisition_functions.acq_fcn_viqr import AcqFcnVIQR
-from pyvbmc.acquisition_functions.acq_fcn_imiqr import AcqFcnIMIQR
+from pyvbmc.acquisition_functions import AbstractAcqFcn
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.stats import get_hpd
 from pyvbmc.variational_posterior import VariationalPosterior
@@ -311,7 +308,11 @@ def active_sample(
                 X_search, parameter_transformer, optim_state["integervars"]
             )
 
-            acq_eval = SearchAcqFcn[idx_acq]
+            if type(SearchAcqFcn[idx_acq]) == str:
+                mod = importlib.import_module("pyvbmc.acquisition_functions")
+                acq_eval = getattr(mod, SearchAcqFcn[idx_acq])()
+            else:
+                acq_eval = SearchAcqFcn[idx_acq]
 
             # Prepare for importance sampling based acquistion function
             if getattr(acq_eval, "importance_sampling", None):
