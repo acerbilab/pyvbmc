@@ -8,6 +8,8 @@ from collections.abc import MutableMapping
 from math import ceil
 import numpy as np
 
+from pyvbmc.acquisition_functions import AcqFcn, AcqFcnNoisy, AcqFcnVIQR, AcqFcnIMIQR
+
 
 class Options(MutableMapping, dict):
     """
@@ -63,7 +65,7 @@ class Options(MutableMapping, dict):
                 "tolstablecount": ceil(self["tolstablecount"] * 1.5),
                 "activesamplegpupdate": True,
                 "activesamplevpupdate": True,
-                "searchacqfcn": ["@acqviqr_vbmc"]
+                "searchacqfcn": [AcqFcnVIQR()]
             }
             for key, val in updates.items():
                 if key not in self["useroptions"]:

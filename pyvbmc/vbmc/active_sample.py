@@ -311,20 +311,7 @@ def active_sample(
                 X_search, parameter_transformer, optim_state["integervars"]
             )
 
-            if SearchAcqFcn[idx_acq] == "@acqf_vbmc":
-                acq_eval = AcqFcn()
-            elif SearchAcqFcn[idx_acq] == "@acqfn_vbmc":
-                acq_eval = AcqFcnNoisy()
-            elif SearchAcqFcn[idx_acq] == "@acqviqr_vbmc":
-                acq_eval = AcqFcnVIQR()
-            elif SearchAcqFcn[idx_acq] == "@acqimiqr_vbmc":
-                acq_eval = AcqFcnIMIQR()
-            else:  # TODO implement branch
-                print(SearchAcqFcn[idx_acq])
-                raise NotImplementedError(
-                    "Acquisition function {SearchAcqFcn[idx_acq]} is not"
-                    + +"implemented yet"
-                )
+            acq_eval = SearchAcqFcn[idx_acq]
 
             # Prepare for importance sampling based acquistion function
             if getattr(acq_eval, "importance_sampling", None):
