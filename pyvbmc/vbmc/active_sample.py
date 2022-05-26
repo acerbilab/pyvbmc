@@ -309,8 +309,7 @@ def active_sample(
             )
 
             if type(SearchAcqFcn[idx_acq]) == str:
-                mod = importlib.import_module("pyvbmc.acquisition_functions")
-                acq_eval = eval(SearchAcqFcn[idx_acq])
+                acq_eval = string_to_acq(SearchAcqFcn[idx_acq])
             else:
                 acq_eval = SearchAcqFcn[idx_acq]
 
