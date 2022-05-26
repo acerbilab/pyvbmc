@@ -5,7 +5,7 @@ import os
 import matplotlib.pyplot as plt
 import functools
 
-from pyvbmc.acquisition_functions import AcqFcnIMIQR
+from pyvbmc.acquisition_functions import AcqFcnIMIQR, string_to_acq
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc import active_importance_sampling
 from pyvbmc.vbmc.options import Options
@@ -18,6 +18,16 @@ def test_acq_info():
     assert acqf.acq_info["log_flag"]
     assert np.isclose(sps.norm.cdf(acqf.u), 0.75)
 
+    # Test handling of string input for SearchAcqFcn:
+    acqf2 = string_to_acq("AcqFcnIMIQR")
+    acqf3 = string_to_acq("AcqFcnIMIQR()")
+    assert acqf.u == acqf2.u == acqf3.u
+
+    acqf4 = AcqFcnIMIQR(quantile=0.666)
+    acqf5 = string_to_acq("AcqFcnIMIQR(quantile=0.666)")
+    acqf6 = string_to_acq("AcqFcnIMIQR(0.666)")
+    assert acqf4.u == acqf5.u == acqf6.u
+    assert np.isclose(sps.norm.cdf(acqf4.u), 0.666)
 
 def test_simple__call__():
     D = 2
