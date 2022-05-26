@@ -13,9 +13,9 @@ from pyvbmc.vbmc.options import Options
 
 def test_acq_info():
     acqf = AcqFcnIMIQR()
-    assert acqf.importance_sampling
-    assert not acqf.importance_sampling_vp
-    assert acqf.log_flag
+    assert acqf.acq_info["importance_sampling"]
+    assert not acqf.acq_info["importance_sampling_vp"]
+    assert acqf.acq_info["log_flag"]
     assert np.isclose(sps.norm.cdf(acqf.u), 0.75)
 
 

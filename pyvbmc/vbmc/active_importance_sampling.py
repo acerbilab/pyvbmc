@@ -5,7 +5,7 @@ import sys
 import gpyreg as gpr
 
 
-def active_importance_sampling(vp, gp, acqfcn, options):
+def active_importance_sampling(vp, gp, acq_fcn, options):
     """
     Set up importance sampling acquisition functions (viqr/imiqr).
 
@@ -25,7 +25,7 @@ def active_importance_sampling(vp, gp, acqfcn, options):
         The GP surrogate.
     vp : VariationalPosterior
         The variational posterior.
-    acqfcn : AbstractAcqFcn
+    acq_fcn : AbstractAcqFcn
         The acquisition function callable.
     options : Options
         The VBMC options.
@@ -36,9 +36,9 @@ def active_importance_sampling(vp, gp, acqfcn, options):
         A dictionary of importance sampling values and bookkeeping.
     """
     # Does the importance sampling step use the variational posterior?
-    isample_vp_flag = getattr(acqfcn, "importance_sampling_vp", False)
+    isample_vp_flag = acq_fcn.acq_info.get("importance_sampling_vp", False)
     # Do we simply sample from the variational posterior?
-    only_vp_flag = getattr(acqfcn, "variational_importance_sampling", False)
+    only_vp_flag = acq_fcn.acq_info.get("variational_importance_sampling", False)
 
     D = gp.X.shape[1]
     Ns_gp = len(gp.posteriors)  # Number of gp hyperparameter samples
@@ -63,18 +63,15 @@ def active_importance_sampling(vp, gp, acqfcn, options):
 
         f_mu, f_s2 = gp.predict(Xa, separate_samples=True)
 
-        if (
-            hasattr(acqfcn, "mcmc_importance_sampling")
-            and acqfcn.mcmc_importance_sampling
-        ):
+        if acq_fcn.acq_info.get("mcmc_importance_sampling"):
             # Compute fractional effective sample size (ESS)
             fESS = fess(vp, f_mu, Xa)
 
             if fESS < options["activeimportancesamplingfessthresh"]:
                 if isample_vp_flag:
-                    log_p_fun = lambda x: log_isbasefun(x, acqfcn, gp, vp)
+                    log_p_fun = lambda x: log_isbasefun(x, acq_fcn, gp, vp)
                 else:
-                    log_p_fun = lambda x: log_isbasefun(x, acqfcn, gp, None)
+                    log_p_fun = lambda x: log_isbasefun(x, acq_fcn, gp, None)
 
                 # Get MCMC options
                 Nmcmc_samples = (
@@ -104,9 +101,9 @@ def active_importance_sampling(vp, gp, acqfcn, options):
                 vp.pdf(Xa, origflag=False, logflag=True),
                 np.log(np.finfo(np.float64).min),
             )
-            ln_y = acqfcn.is_log_f1(v_ln_pdf, f_mu, f_s2)
+            ln_y = acq_fcn.is_log_f1(v_ln_pdf, f_mu, f_s2)
         else:
-            ln_y = acqfcn.is_log_f1(None, f_mu, f_s2)
+            ln_y = acq_fcn.is_log_f1(None, f_mu, f_s2)
 
         active_is["f_s2"] = f_s2
         active_is["ln_weights"] = ln_y.T
@@ -138,7 +135,7 @@ def active_importance_sampling(vp, gp, acqfcn, options):
             # Sample from smoothed posterior
             Xa_vp, __ = vp_is.sample(Nvp_samples, origflag=False)
             ln_weights, f_s2a_vp = activesample_proposalpdf(
-                Xa_vp, gp, vp_is, w_vp, rect_delta, acqfcn, vp
+                Xa_vp, gp, vp_is, w_vp, rect_delta, acq_fcn, vp
             )
             if active_is.get("ln_weights") is None:
                 active_is["ln_weights"] = ln_weights.T
@@ -166,7 +163,7 @@ def active_importance_sampling(vp, gp, acqfcn, options):
                 gp.X[jj, :] + (2 * np.random.rand(jj.size, D) - 1) * rect_delta
             )
             ln_weights, f_s2a_box = activesample_proposalpdf(
-                Xa_box, gp, vp_is, w_vp, rect_delta, acqfcn, vp
+                Xa_box, gp, vp_is, w_vp, rect_delta, acq_fcn, vp
             )
             if active_is.get("ln_weights") is None:
                 active_is["ln_weights"] = ln_weights.T
@@ -211,9 +208,9 @@ def active_importance_sampling(vp, gp, acqfcn, options):
                 # See activeimportancesampling_vbmc.m, lines 159 to 165.
 
                 if isample_vp_flag:
-                    log_p_fun = lambda x: log_isbasefun(x, acqfcn, gp1, vp)
+                    log_p_fun = lambda x: log_isbasefun(x, acq_fcn, gp1, vp)
                 else:
-                    log_p_fun = lambda x: log_isbasefun(x, acqfcn, gp1, None)
+                    log_p_fun = lambda x: log_isbasefun(x, acq_fcn, gp1, None)
 
                 # Get MCMC Options
                 thin = options["activeimportancesamplingmcmcthin"]
@@ -229,7 +226,7 @@ def active_importance_sampling(vp, gp, acqfcn, options):
                 )
                 ln_weights = active_is_old["ln_weights"][s, :].reshape(
                     -1, 1
-                ) + acqfcn.is_log_f2(f_mu, f_s2)
+                ) + acq_fcn.is_log_f2(f_mu, f_s2)
                 ln_weights_max = np.amax(ln_weights, axis=1).reshape(-1, 1)
                 assert np.all(ln_weights_max != -np.inf)
                 weights = np.exp(ln_weights - ln_weights_max).reshape(-1)
@@ -259,9 +256,9 @@ def active_importance_sampling(vp, gp, acqfcn, options):
                         vp.pdf(Xa, origflag=False, logflag=True),
                         np.log(sys.float_info.min),
                     )
-                    ln_y = acqfcn.is_log_f1(v_ln_pdf, f_mu, f_s2)
+                    ln_y = acq_fcn.is_log_f1(v_ln_pdf, f_mu, f_s2)
                 else:
-                    ln_y = acqfcn.is_log_f1(None, f_mu, f_s2)
+                    ln_y = acq_fcn.is_log_f1(None, f_mu, f_s2)
 
                 active_is["f_s2"][:, s] = f_s2.reshape(-1)
                 active_is["ln_weights"][s, :] = ln_y.T - log_p.T
@@ -296,7 +293,7 @@ def active_importance_sampling(vp, gp, acqfcn, options):
     return active_is
 
 
-def activesample_proposalpdf(Xa, gp, vp_is, w_vp, rect_delta, acqfcn, vp):
+def activesample_proposalpdf(Xa, gp, vp_is, w_vp, rect_delta, acq_fcn, vp):
     r"""Compute importance weights for proposal pdf.
 
     Parameters
@@ -313,7 +310,7 @@ def activesample_proposalpdf(Xa, gp, vp_is, w_vp, rect_delta, acqfcn, vp):
     rect_delta : np.ndarray
         The half-widths (in each dimension) of the rectangle used for
         box-uniform sampling.
-    acqfcn : AbstractAcqFcn
+    acq_fcn : AbstractAcqFcn
         The acquisition function callable.
     vp : VariationalPosterior
         The unsmoothed VP.
@@ -329,7 +326,7 @@ def activesample_proposalpdf(Xa, gp, vp_is, w_vp, rect_delta, acqfcn, vp):
     """
     N, D = gp.X.shape
     Na = Xa.shape[0]
-    isample_vp_flag = getattr(acqfcn, "importance_sampling_vp", False)
+    isample_vp_flag = acq_fcn.acq_info.get("importance_sampling_vp", False)
 
     f_mu, f_s2 = gp.predict(Xa, separate_samples=True)
 
@@ -354,9 +351,9 @@ def activesample_proposalpdf(Xa, gp, vp_is, w_vp, rect_delta, acqfcn, vp):
             vp.pdf(Xa, origflag=False, logflag=True),
             np.log(sys.float_info.min),
         )
-        ln_y = acqfcn.is_log_f1(v_ln_pdf, f_mu, f_s2)
+        ln_y = acq_fcn.is_log_f1(v_ln_pdf, f_mu, f_s2)
     else:
-        ln_y = acqfcn.is_log_f1(None, f_mu, f_s2)
+        ln_y = acq_fcn.is_log_f1(None, f_mu, f_s2)
 
     # Mixture of box-uniforms
     if w_vp < 1:

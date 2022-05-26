@@ -7,7 +7,7 @@ import gpyreg as gpr
 import numpy as np
 import importlib
 
-from pyvbmc.acquisition_functions import AbstractAcqFcn
+from pyvbmc.acquisition_functions import *
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.stats import get_hpd
 from pyvbmc.variational_posterior import VariationalPosterior
@@ -310,18 +310,18 @@ def active_sample(
 
             if type(SearchAcqFcn[idx_acq]) == str:
                 mod = importlib.import_module("pyvbmc.acquisition_functions")
-                acq_eval = getattr(mod, SearchAcqFcn[idx_acq])()
+                acq_eval = eval(SearchAcqFcn[idx_acq])
             else:
                 acq_eval = SearchAcqFcn[idx_acq]
 
             # Prepare for importance sampling based acquistion function
-            if getattr(acq_eval, "importance_sampling", None):
+            if acq_eval.acq_info.get("importance_sampling"):
                 optim_state[
                     "active_importance_sampling"
                 ] = active_importance_sampling(vp, gp, acq_eval, options)
 
             # Re-evaluate variance of the log joint if requested
-            if hasattr(acq_eval, "acq_info") and acq_eval.acq_info.get(
+            if acq_eval.acq_info.get(
                 "compute_varlogjoint"
             ):
                 varF = _gplogjoint(vp, gp, 0, 0, 0, 1)[2]
@@ -369,7 +369,7 @@ def active_sample(
                     lb = np.minimum(gp.X, x0) - 0.1 * xrange
                     ub = np.maximum(gp.X, x0) + 0.1 * xrange
 
-                if hasattr(acq_eval, "acq_info") and acq_eval.acq_info.get(
+                if acq_eval.acq_info.get(
                     "log_flag"
                 ):
                     tol_fun = 1e-2

@@ -1,5 +1,6 @@
 import gpyreg as gpr
 import numpy as np
+from scipy.stats import norm
 from scipy.linalg import solve_triangular
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.variational_posterior import VariationalPosterior
@@ -15,11 +16,14 @@ class AcqFcnIMIQR(AbstractAcqFcn):
     importance samples from the GP surrogate.
     """
 
-    def __init__(self):
-        self.importance_sampling = True
-        self.importance_sampling_vp = False
-        self.log_flag = True
-        self.u = 0.6745  # inverse normal cdf of 0.75
+    def __init__(self, quantile=0.75):
+        self.acq_info = dict()
+        self.acq_info["log_flag"] = True
+        self.acq_info["importance_sampling"] = True
+        self.acq_info["importance_sampling_vp"] = False
+        self.acq_info["quantile"] = quantile
+
+        self.u = norm.ppf(quantile)
 
     def _compute_acquisition_function(
         self,
@@ -87,9 +91,9 @@ class AcqFcnIMIQR(AbstractAcqFcn):
             Xa = np.zeros((Na, D))
         else:
             Xa = optim_state["active_importance_sampling"]["X"]
-        acq = np.zeros((Nx, Ns_gp))
 
         # Compute acquisition function via importance sampling
+        acq = np.zeros((Nx, Ns_gp))
 
         cov_N = gp.covariance.hyperparameter_count(gp.D)
         for s in range(Ns_gp):

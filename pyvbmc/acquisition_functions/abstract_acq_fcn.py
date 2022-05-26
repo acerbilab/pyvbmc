@@ -128,9 +128,7 @@ class AbstractAcqFcn(ABC):
             idx_gp_uncertainty = var_tot < tol_var
 
             if np.any(idx_gp_uncertainty):
-                if "log_flag" in self.acq_info and self.acq_info.get(
-                    "log_flag"
-                ):
+                if self.acq_info.get("log_flag"):
                     acq[idx_gp_uncertainty] += (
                         tol_var / var_tot[idx_gp_uncertainty] - 1
                     )
