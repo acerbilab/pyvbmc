@@ -5,7 +5,6 @@ import math
 import cma
 import gpyreg as gpr
 import numpy as np
-import importlib
 
 from pyvbmc.acquisition_functions import *
 from pyvbmc.function_logger import FunctionLogger
