@@ -6,11 +6,7 @@ import cma
 import gpyreg as gpr
 import numpy as np
 
-from pyvbmc.acquisition_functions.abstract_acq_fcn import AbstractAcqFcn
-from pyvbmc.acquisition_functions.acq_fcn import AcqFcn
-from pyvbmc.acquisition_functions.acq_fcn_noisy import AcqFcnNoisy
-from pyvbmc.acquisition_functions.acq_fcn_viqr import AcqFcnVIQR
-from pyvbmc.acquisition_functions.acq_fcn_imiqr import AcqFcnIMIQR
+from pyvbmc.acquisition_functions import *
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.stats import get_hpd
 from pyvbmc.variational_posterior import VariationalPosterior
@@ -282,9 +278,7 @@ def active_sample(
 
                 sn2new[:, s] = gp.noise.compute(
                     hyp_noise, gp.X, gp.y, s2
-                ).reshape(
-                    -1,
-                )
+                ).reshape(-1,)
 
             gp.temporary_data["sn2_new"] = sn2new.mean(1)
 
@@ -313,29 +307,19 @@ def active_sample(
                 X_search, parameter_transformer, optim_state["integervars"]
             )
 
-            if SearchAcqFcn[idx_acq] == "@acqf_vbmc":
-                acq_eval = AcqFcn()
-            elif SearchAcqFcn[idx_acq] == "@acqfn_vbmc":
-                acq_eval = AcqFcnNoisy()
-            elif SearchAcqFcn[idx_acq] == "@acqviqr_vbmc":
-                acq_eval = AcqFcnVIQR()
-            elif SearchAcqFcn[idx_acq] == "@acqimiqr_vbmc":
-                acq_eval = AcqFcnIMIQR()
-            else:  # TODO implement branch
-                print(SearchAcqFcn[idx_acq])
-                raise NotImplementedError(
-                    "Acquisition function {SearchAcqFcn[idx_acq]} is not"
-                    + +"implemented yet"
-                )
+            if type(SearchAcqFcn[idx_acq]) == str:
+                acq_eval = string_to_acq(SearchAcqFcn[idx_acq])
+            else:
+                acq_eval = SearchAcqFcn[idx_acq]
 
             # Prepare for importance sampling based acquistion function
-            if getattr(acq_eval, "importance_sampling", None):
+            if acq_eval.acq_info.get("importance_sampling"):
                 optim_state[
                     "active_importance_sampling"
                 ] = active_importance_sampling(vp, gp, acq_eval, options)
 
             # Re-evaluate variance of the log joint if requested
-            if hasattr(acq_eval, "acq_info") and acq_eval.acq_info.get(
+            if acq_eval.acq_info.get(
                 "compute_varlogjoint"
             ):
                 varF = _gplogjoint(vp, gp, 0, 0, 0, 1)[2]
@@ -383,7 +367,7 @@ def active_sample(
                     lb = np.minimum(gp.X, x0) - 0.1 * xrange
                     ub = np.maximum(gp.X, x0) + 0.1 * xrange
 
-                if hasattr(acq_eval, "acq_info") and acq_eval.acq_info.get(
+                if acq_eval.acq_info.get(
                     "log_flag"
                 ):
                     tol_fun = 1e-2
@@ -527,7 +511,12 @@ def active_sample(
                     fESS, fESS_thresh = 0, 1
                     if fESS <= fESS_thresh:
                         if options["activesamplegpupdate"]:
-                            train_gp(
+                            (
+                                gp,
+                                __,
+                                optim_state["sn2hpd"],
+                                optim_state["hyp_dict"],
+                            ) = train_gp(
                                 hyp_dict,
                                 optim_state,
                                 function_logger,
@@ -564,7 +553,12 @@ def active_sample(
                                 slow_opts_N=1,
                             )
 
-                            optim_state["vp_repo"].append(vp.get_parameters())
+                            if optim_state.get("vp_repo") is not None:
+                                np.append(
+                                    optim_state["vp_repo"], vp.get_parameters()
+                                )
+                            else:
+                                optim_state["vp_repo"] = vp.get_parameters()
                     else:
                         gp = gptmp
                 else:
@@ -622,7 +616,7 @@ def active_sample(
             theta0 = vp0.get_parameters()
             theta = vp.get_parameters()
 
-            if np.size(theta0) != np.size(theta) or np.any(theta0 != theta):
+            if (np.size(theta0) != np.size(theta)) or (np.any(theta0 != theta)):
                 NSentFineK = math.ceil(
                     options["nsentfineactive"](vp0.K) / vp0.K
                 )

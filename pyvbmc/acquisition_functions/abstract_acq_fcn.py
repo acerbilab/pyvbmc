@@ -128,9 +128,7 @@ class AbstractAcqFcn(ABC):
             idx_gp_uncertainty = var_tot < tol_var
 
             if np.any(idx_gp_uncertainty):
-                if "log_flag" in self.acq_info and self.acq_info.get(
-                    "log_flag"
-                ):
+                if self.acq_info.get("log_flag"):
                     acq[idx_gp_uncertainty] += (
                         tol_var / var_tot[idx_gp_uncertainty] - 1
                     )
@@ -251,16 +249,12 @@ class AbstractAcqFcn(ABC):
         """
 
         # unravel_index as the indicies are 1D otherwise
-        pos = np.unravel_index(
-            np.argmin(
-                self._sq_dist(
-                    Xs / optim_state.get("gp_length_scale"),
-                    gp.temporary_data.get("X_rescaled"),
-                ),
-                axis=1,
+        pos = np.argmin(
+            self._sq_dist(
+                Xs / optim_state.get("gp_length_scale"),
+                gp.temporary_data.get("X_rescaled"),
             ),
-            gp.temporary_data.get("sn2_new").shape,
-            order="F"
+            axis=1,
         )
         sn2 = gp.temporary_data.get("sn2_new")[pos]
 

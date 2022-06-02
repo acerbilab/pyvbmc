@@ -1,7 +1,7 @@
 import gpyreg as gpr
 import numpy as np
 
-from pyvbmc.acquisition_functions import AcqFcn
+from pyvbmc.acquisition_functions import AcqFcn, string_to_acq
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.variational_posterior import VariationalPosterior
 
@@ -12,6 +12,12 @@ def test_acq_info():
     assert isinstance(acqf.get_info(), dict)
     assert not acqf.acq_info.get("log_flag")
     assert not acqf.acq_info.get("compute_varlogjoint")
+
+    # Test handling of string input for SearchAcqFcn:
+    acqf2 = AcqFcn()
+    acqf2 = string_to_acq("AcqFcn")
+    acqf3 = string_to_acq("AcqFcn()")
+    assert type(acqf) == type(acqf2) == type(acqf3)
 
 
 def test__call__(mocker):

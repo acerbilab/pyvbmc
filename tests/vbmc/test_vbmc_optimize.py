@@ -3,6 +3,7 @@ import scipy as sp
 import scipy.stats
 
 from pyvbmc.vbmc import VBMC
+from pyvbmc.acquisition_functions import *
 
 
 def _test_vbmc_optimize_rosenbrock():
@@ -165,7 +166,7 @@ def test_vbmc_correlated_multivariate_normal_noisy():
     mu_bar = np.reshape(np.linspace(-0.5, 0.5, D), (1, -1))
     options = {
         "specifytargetnoise": True,
-        "searchacqfcn": ["@acqviqr_vbmc", "@acqimiqr_vbmc", "@acqfn_vbmc"],
+        "searchacqfcn": [AcqFcnVIQR(), AcqFcnIMIQR(), AcqFcnNoisy()],
     }
     err_1, err_2 = run_optim_block(
         noisy_cigar, x0, lb, ub, plb, pub, lnZ, mu_bar, options=options

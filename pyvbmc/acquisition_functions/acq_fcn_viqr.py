@@ -1,5 +1,6 @@
 import gpyreg as gpr
 import numpy as np
+from scipy.stats import norm
 from scipy.linalg import solve_triangular
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.variational_posterior import VariationalPosterior
@@ -15,12 +16,15 @@ class AcqFcnVIQR(AbstractAcqFcn):
     Monte Carlo using samples from the Variational Posterior.
     """
 
-    def __init__(self):
-        self.importance_sampling = True
-        self.importance_sampling_vp = False
-        self.variational_importance_sampling = True
-        self.log_flag = True
-        self.u = 0.6745  # inverse normal cdf of 0.75
+    def __init__(self, quantile=0.75):
+        self.acq_info = dict()
+        self.acq_info["log_flag"] = True
+        self.acq_info["importance_sampling"] = True
+        self.acq_info["importance_sampling_vp"] = False
+        self.acq_info["variational_importance_sampling"] = True
+        self.acq_info["quantile"] = quantile
+
+        self.u = norm.ppf(quantile)
 
     def _compute_acquisition_function(
         self,
@@ -90,7 +94,7 @@ class AcqFcnVIQR(AbstractAcqFcn):
             hyp = gp.posteriors[s].hyp[0:cov_N]  # Covariance hyperparameters
             L = gp.posteriors[s].L
             L_chol = gp.posteriors[s].L_chol
-            sn2_eff = 1 / gp.posteriors[s].sW[1]**2
+            sn2_eff = 1 / gp.posteriors[s].sW[0]**2
 
             # Compute cross-kernel matrices
             if isinstance(gp.covariance,
@@ -99,7 +103,7 @@ class AcqFcnVIQR(AbstractAcqFcn):
                 K_Xa_Xs = gp.covariance.compute(hyp, Xa, Xs)
                 K_Xa_X = optim_state["active_importance_sampling"]["K_Xa_X"][:, :, s]
             else:
-                raise ValueError("Covariance functions besides" ++
+                raise ValueError("Covariance functions besides" +
                                  "SquaredExponential are not supported yet.")
 
             if L_chol:
@@ -135,7 +139,6 @@ class AcqFcnVIQR(AbstractAcqFcn):
             # logsumexp
             ln_max = np.amax(zz, axis=1)
             ln_max[ln_max == -np.inf] = 0.0  # Avoid -inf + inf
-            __, n_samples = zz.shape
             acq[:, s] = ln_max + np.log(
                 np.sum(np.exp(zz - ln_max.reshape(-1, 1)), axis=1)
             )
@@ -148,6 +151,7 @@ class AcqFcnVIQR(AbstractAcqFcn):
                 / Ns_gp
             )
 
+        assert np.all(~np.isnan(acq))
         return acq
 
 

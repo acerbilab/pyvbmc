@@ -5,7 +5,10 @@ import configparser
 import copy
 from collections.abc import MutableMapping
 
+from math import ceil
 import numpy as np
+
+from pyvbmc.acquisition_functions import *
 
 
 class Options(MutableMapping, dict):
@@ -53,6 +56,20 @@ class Options(MutableMapping, dict):
         if user_options is not None:
             self.update(user_options)
             self["useroptions"].update(user_options.keys())
+
+    def update_defaults(self):
+        """Change defaults as needed based on values of other options."""
+        if self.get("specifytargetnoise"):
+            updates = {
+                "maxfunevals": ceil(self["maxfunevals"] * 1.5),
+                "tolstablecount": ceil(self["tolstablecount"] * 1.5),
+                "activesamplegpupdate": True,
+                "activesamplevpupdate": True,
+                "searchacqfcn": [AcqFcnVIQR()]
+            }
+            for key, val in updates.items():
+                if key not in self["useroptions"]:
+                    self[key] = val
 
     @classmethod
     def init_from_existing_options(
@@ -119,6 +136,7 @@ class Options(MutableMapping, dict):
             if key not in self.get("useroptions") and key != "useroptions":
                 self[key] = eval(value)
                 self.descriptions[key] = description
+
 
     def validate_option_names(self, options_paths: list):
         """

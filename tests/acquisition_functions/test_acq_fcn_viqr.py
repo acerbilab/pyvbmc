@@ -3,22 +3,30 @@ import numpy as np
 import scipy.stats as sps
 import os
 
-from pyvbmc.acquisition_functions import AcqFcnVIQR
+from pyvbmc.acquisition_functions import AcqFcnVIQR, string_to_acq
 from pyvbmc.variational_posterior import VariationalPosterior
-from pyvbmc.vbmc import (
-    active_importance_sampling,
-)
+from pyvbmc.vbmc import active_importance_sampling
 from pyvbmc.vbmc.options import Options
 
 
 def test_acq_info():
     acqf = AcqFcnVIQR()
-    assert acqf.importance_sampling
-    assert not acqf.importance_sampling_vp
-    assert acqf.variational_importance_sampling
-    assert acqf.log_flag
+    assert acqf.acq_info["importance_sampling"]
+    assert not acqf.acq_info["importance_sampling_vp"]
+    assert acqf.acq_info["variational_importance_sampling"]
+    assert acqf.acq_info["log_flag"]
     assert np.isclose(sps.norm.cdf(acqf.u), 0.75)
 
+    # Test handling of string input for SearchAcqFcn:
+    acqf2 = string_to_acq("AcqFcnVIQR")
+    acqf3 = string_to_acq("AcqFcnVIQR()")
+    assert acqf.u == acqf2.u == acqf3.u
+
+    acqf4 = AcqFcnVIQR(quantile=0.666)
+    acqf5 = string_to_acq("AcqFcnVIQR(quantile=0.666)")
+    acqf6 = string_to_acq("AcqFcnVIQR(0.666)")
+    assert acqf4.u == acqf5.u == acqf6.u
+    assert np.isclose(sps.norm.cdf(acqf4.u), 0.666)
 
 def test_simple__call__():
     D = 2
@@ -97,9 +105,7 @@ def test_simple__call__():
     noise_N = gp.noise.hyperparameter_count()
     for s in range(Ns_gp):
         hyp_noise = gp.posteriors[s].hyp[cov_N : cov_N + noise_N]
-        sn2new[:, s] = gp.noise.compute(hyp_noise, gp.X, gp.y, s2).reshape(
-            -1,
-        )
+        sn2new[:, s] = gp.noise.compute(hyp_noise, gp.X, gp.y, s2).reshape(-1,)
     gp.temporary_data["sn2_new"] = sn2new.mean(1)
 
     # load basic and advanced options and validate the names
@@ -120,21 +126,13 @@ def test_simple__call__():
     )
     advanced_path = pyvbmc_path + "/option_configs/advanced_vbmc_options.ini"
     vbmc_options.load_options_file(
-        advanced_path,
-        evaluation_parameters={"D": D},
+        advanced_path, evaluation_parameters={"D": D},
     )
     vbmc_options.validate_option_names([basic_path, advanced_path])
 
     optim_state["active_importance_sampling"] = active_importance_sampling(
         vp, gp, acqviqr, vbmc_options
     )
-
-    # Renormalize importance weights
-    # (VIQR function only calculates expectation up to a constant factor)
-    ln_w = optim_state["active_importance_sampling"]["ln_weights"]
-    ln_w_max = np.amax(ln_w)
-    ln_w = ln_w - (ln_w_max + np.log(np.sum(np.exp(ln_w - ln_w_max))))
-    optim_state["active_importance_sampling"]["ln_weights"] = ln_w
 
     # Test VIQR Acquisition Function Values:
     # Should be close to log(sinh(0.6745 * e)), because tau^2 approx= 0,
@@ -279,9 +277,7 @@ def test_complex__call__():
     noise_N = gp.noise.hyperparameter_count()
     for s in range(Ns_gp):
         hyp_noise = gp.posteriors[s].hyp[cov_N : cov_N + noise_N]
-        sn2new[:, s] = gp.noise.compute(hyp_noise, gp.X, gp.y, s2).reshape(
-            -1,
-        )
+        sn2new[:, s] = gp.noise.compute(hyp_noise, gp.X, gp.y, s2).reshape(-1,)
     gp.temporary_data["sn2_new"] = sn2new.mean(1)
 
     # load basic and advanced options and validate the names
@@ -302,21 +298,13 @@ def test_complex__call__():
     )
     advanced_path = pyvbmc_path + "/option_configs/advanced_vbmc_options.ini"
     vbmc_options.load_options_file(
-        advanced_path,
-        evaluation_parameters={"D": D},
+        advanced_path, evaluation_parameters={"D": D},
     )
     vbmc_options.validate_option_names([basic_path, advanced_path])
 
     optim_state["active_importance_sampling"] = active_importance_sampling(
         vp, gp, acqviqr, vbmc_options
     )
-
-    # Renormalize importance weights
-    # (VIQR function only calculates expectation up to a constant factor)
-    ln_w = optim_state["active_importance_sampling"]["ln_weights"]
-    ln_w_max = np.amax(ln_w)
-    ln_w = ln_w - (ln_w_max + np.log(np.sum(np.exp(ln_w - ln_w_max))))
-    optim_state["active_importance_sampling"]["ln_weights"] = ln_w
 
     # VIQR Acquisition Function Values:
     result = np.exp(

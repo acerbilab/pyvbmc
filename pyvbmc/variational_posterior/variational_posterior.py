@@ -1143,6 +1143,8 @@ class VariationalPosterior:
                             orig_X_highlight[:, r],
                             **highlighted_data_style,
                         )
+                        # Rescale to capture new GP training points:
+                        # axes[r, c].autoscale()
 
         # style of the vp centres
         vp_centre_style = dict(

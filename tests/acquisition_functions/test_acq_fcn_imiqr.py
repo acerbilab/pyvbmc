@@ -5,21 +5,29 @@ import os
 import matplotlib.pyplot as plt
 import functools
 
-from pyvbmc.acquisition_functions import AcqFcnIMIQR
+from pyvbmc.acquisition_functions import AcqFcnIMIQR, string_to_acq
 from pyvbmc.variational_posterior import VariationalPosterior
-from pyvbmc.vbmc import (
-    active_importance_sampling,
-)
+from pyvbmc.vbmc import active_importance_sampling
 from pyvbmc.vbmc.options import Options
 
 
 def test_acq_info():
     acqf = AcqFcnIMIQR()
-    assert acqf.importance_sampling
-    assert not acqf.importance_sampling_vp
-    assert acqf.log_flag
+    assert acqf.acq_info["importance_sampling"]
+    assert not acqf.acq_info["importance_sampling_vp"]
+    assert acqf.acq_info["log_flag"]
     assert np.isclose(sps.norm.cdf(acqf.u), 0.75)
 
+    # Test handling of string input for SearchAcqFcn:
+    acqf2 = string_to_acq("AcqFcnIMIQR")
+    acqf3 = string_to_acq("AcqFcnIMIQR()")
+    assert acqf.u == acqf2.u == acqf3.u
+
+    acqf4 = AcqFcnIMIQR(quantile=0.666)
+    acqf5 = string_to_acq("AcqFcnIMIQR(quantile=0.666)")
+    acqf6 = string_to_acq("AcqFcnIMIQR(0.666)")
+    assert acqf4.u == acqf5.u == acqf6.u
+    assert np.isclose(sps.norm.cdf(acqf4.u), 0.666)
 
 def test_simple__call__():
     D = 2
@@ -98,9 +106,7 @@ def test_simple__call__():
     noise_N = gp.noise.hyperparameter_count()
     for s in range(Ns_gp):
         hyp_noise = gp.posteriors[s].hyp[cov_N : cov_N + noise_N]
-        sn2new[:, s] = gp.noise.compute(hyp_noise, gp.X, gp.y, s2).reshape(
-            -1,
-        )
+        sn2new[:, s] = gp.noise.compute(hyp_noise, gp.X, gp.y, s2).reshape(-1,)
     gp.temporary_data["sn2_new"] = sn2new.mean(1)
 
     # load basic and advanced options and validate the names
@@ -121,8 +127,7 @@ def test_simple__call__():
     )
     advanced_path = pyvbmc_path + "/option_configs/advanced_vbmc_options.ini"
     vbmc_options.load_options_file(
-        advanced_path,
-        evaluation_parameters={"D": D},
+        advanced_path, evaluation_parameters={"D": D},
     )
     vbmc_options.validate_option_names([basic_path, advanced_path])
 
@@ -133,13 +138,6 @@ def test_simple__call__():
     # Test IMIQR Acquisition Function Values:
     # Should be close to log(2 * sinh(0.6745 * e)), because tau^2 approx= 0,
     # so s_pred^2 approx= fs2.
-
-    # Renormalize importance weights
-    # (IMIQR function only calculates expectation up to a constant factor)
-    ln_w = optim_state["active_importance_sampling"]["ln_weights"]
-    ln_w_max = np.amax(ln_w)
-    ln_w = ln_w - (ln_w_max + np.log(np.sum(np.exp(ln_w - ln_w_max))))
-    optim_state["active_importance_sampling"]["ln_weights"] = ln_w
 
     result = acqimiqr(
         X_eval[0], gp, vp, function_logger=None, optim_state=optim_state
@@ -281,9 +279,7 @@ def test_complex__call__():
     noise_N = gp.noise.hyperparameter_count()
     for s in range(Ns_gp):
         hyp_noise = gp.posteriors[s].hyp[cov_N : cov_N + noise_N]
-        sn2new[:, s] = gp.noise.compute(hyp_noise, gp.X, gp.y, s2).reshape(
-            -1,
-        )
+        sn2new[:, s] = gp.noise.compute(hyp_noise, gp.X, gp.y, s2).reshape(-1,)
     gp.temporary_data["sn2_new"] = sn2new.mean(1)
 
     # load basic and advanced options and validate the names
@@ -304,21 +300,13 @@ def test_complex__call__():
     )
     advanced_path = pyvbmc_path + "/option_configs/advanced_vbmc_options.ini"
     vbmc_options.load_options_file(
-        advanced_path,
-        evaluation_parameters={"D": D},
+        advanced_path, evaluation_parameters={"D": D},
     )
     vbmc_options.validate_option_names([basic_path, advanced_path])
 
     optim_state["active_importance_sampling"] = active_importance_sampling(
         vp, gp, acqimiqr, vbmc_options
     )
-
-    # Renormalize importance weights
-    # (IMIQR function only calculates expectation up to a constant factor)
-    ln_w = optim_state["active_importance_sampling"]["ln_weights"]
-    ln_w_max = np.amax(ln_w)
-    ln_w = ln_w - (ln_w_max + np.log(np.sum(np.exp(ln_w - ln_w_max))))
-    optim_state["active_importance_sampling"]["ln_weights"] = ln_w
 
     # IMIQR Acquisition Function Values:
     result = np.exp(
