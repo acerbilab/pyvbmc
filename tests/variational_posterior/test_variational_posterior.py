@@ -674,21 +674,21 @@ def test_soft_bounds_2():
         "tollength": 1e-6,
     }
     X = np.loadtxt(
-        open("./tests/variational_posterior/X.dat", "rb"), delimiter=","
+        open("./tests/variational_posterior/X.txt", "rb"), delimiter=","
     )
     vp.mu = np.loadtxt(
-        open("./tests/variational_posterior/mu.dat", "rb"), delimiter=","
+        open("./tests/variational_posterior/mu.txt", "rb"), delimiter=","
     )
 
     theta_bnd = vp.get_bounds(X, options)
 
     bnd_lb = np.loadtxt(
-        open("./tests/variational_posterior/bnd_lb.dat", "rb"), delimiter=","
+        open("./tests/variational_posterior/bnd_lb.txt", "rb"), delimiter=","
     )
     assert np.allclose(theta_bnd["lb"], bnd_lb)
 
     bnd_ub = np.loadtxt(
-        open("./tests/variational_posterior/bnd_ub.dat", "rb"), delimiter=","
+        open("./tests/variational_posterior/bnd_ub.txt", "rb"), delimiter=","
     )
     assert np.allclose(theta_bnd["ub"], bnd_ub)
 

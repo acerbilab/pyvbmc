@@ -116,7 +116,7 @@ def test_gplogjoint():
     K = 2
     vp = VariationalPosterior(D, K)
     vp.mu = np.loadtxt(
-        open("./tests/variational_posterior/mu.dat", "rb"), delimiter=","
+        open("./tests/variational_posterior/mu.txt", "rb"), delimiter=","
     )
     vp.eta = vp.eta.flatten()
     vp.lambd = vp.lambd.flatten()
@@ -127,11 +127,11 @@ def test_gplogjoint():
         mean=gpr.mean_functions.NegativeQuadratic(),
         noise=gpr.noise_functions.GaussianNoise(constant_add=True),
     )
-    X = np.loadtxt(open("./tests/vbmc/X.dat", "rb"), delimiter=",")
-    y = np.loadtxt(open("./tests/vbmc/y.dat", "rb"), delimiter=",").reshape(
+    X = np.loadtxt(open("./tests/vbmc/X.txt", "rb"), delimiter=",")
+    y = np.loadtxt(open("./tests/vbmc/y.txt", "rb"), delimiter=",").reshape(
         (-1, 1)
     )
-    hyp = np.loadtxt(open("./tests/vbmc/hyp.dat", "rb"), delimiter=",")
+    hyp = np.loadtxt(open("./tests/vbmc/hyp.txt", "rb"), delimiter=",")
     gp.update(X_new=X, y_new=y, hyp=hyp)
 
     F, dF, varF, dvarF, varss, I_sk, J_sjk = _gplogjoint(
@@ -148,7 +148,7 @@ def test_gplogjoint():
         vp, gp, True, True, True, False, False
     )
     matlab_dF = np.loadtxt(
-        open("./tests/vbmc/dF_gplogjoint.dat", "rb"), delimiter=","
+        open("./tests/vbmc/dF_gplogjoint.txt", "rb"), delimiter=","
     )
     assert np.allclose(dF, matlab_dF)
 
@@ -158,7 +158,7 @@ def test_negelcbo():
     K = 2
     vp = VariationalPosterior(D, K)
     vp.mu = np.loadtxt(
-        open("./tests/variational_posterior/mu.dat", "rb"), delimiter=","
+        open("./tests/variational_posterior/mu.txt", "rb"), delimiter=","
     )
 
     gp = gpr.GP(
@@ -167,11 +167,11 @@ def test_negelcbo():
         mean=gpr.mean_functions.NegativeQuadratic(),
         noise=gpr.noise_functions.GaussianNoise(constant_add=True),
     )
-    X = np.loadtxt(open("./tests/vbmc/X.dat", "rb"), delimiter=",")
-    y = np.loadtxt(open("./tests/vbmc/y.dat", "rb"), delimiter=",").reshape(
+    X = np.loadtxt(open("./tests/vbmc/X.txt", "rb"), delimiter=",")
+    y = np.loadtxt(open("./tests/vbmc/y.txt", "rb"), delimiter=",").reshape(
         (-1, 1)
     )
-    hyp = np.loadtxt(open("./tests/vbmc/hyp.dat", "rb"), delimiter=",")
+    hyp = np.loadtxt(open("./tests/vbmc/hyp.txt", "rb"), delimiter=",")
     gp.update(X_new=X, y_new=y, hyp=hyp)
 
     options = {
@@ -199,7 +199,7 @@ def test_negelcbo():
     F, dF, G, H, varF = _negelcbo(
         theta, gp, vp, 0.0, 0, True, False, theta_bnd, 0.0, False
     )
-    matlab_dF = np.loadtxt(open("./tests/vbmc/dF.dat", "rb"), delimiter=",")
+    matlab_dF = np.loadtxt(open("./tests/vbmc/dF.txt", "rb"), delimiter=",")
 
     assert np.allclose(dF, matlab_dF)
 
@@ -209,7 +209,7 @@ def test_vp_bound_loss():
     K = 2
     vp = VariationalPosterior(D, K)
     vp.mu = np.loadtxt(
-        open("./tests/variational_posterior/mu.dat", "rb"), delimiter=","
+        open("./tests/variational_posterior/mu.txt", "rb"), delimiter=","
     )
 
     options = {
@@ -218,7 +218,7 @@ def test_vp_bound_loss():
         "weightpenalty": 0.1,
         "tollength": 1e-6,
     }
-    X = np.loadtxt(open("./tests/vbmc/X.dat", "rb"), delimiter=",")
+    X = np.loadtxt(open("./tests/vbmc/X.txt", "rb"), delimiter=",")
     theta = vp.get_parameters()
     theta_bnd = vp.get_bounds(X, options, K)
 
