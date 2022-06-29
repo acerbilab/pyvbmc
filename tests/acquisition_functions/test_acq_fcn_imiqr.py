@@ -1,9 +1,9 @@
+import os
+
 import gpyreg as gpr
+import matplotlib.pyplot as plt
 import numpy as np
 import scipy.stats as sps
-import os
-import matplotlib.pyplot as plt
-import functools
 
 from pyvbmc.acquisition_functions import AcqFcnIMIQR, string_to_acq
 from pyvbmc.variational_posterior import VariationalPosterior
@@ -28,6 +28,7 @@ def test_acq_info():
     acqf6 = string_to_acq("AcqFcnIMIQR(0.666)")
     assert acqf4.u == acqf5.u == acqf6.u
     assert np.isclose(sps.norm.cdf(acqf4.u), 0.666)
+
 
 def test_simple__call__():
     D = 2
@@ -106,7 +107,9 @@ def test_simple__call__():
     noise_N = gp.noise.hyperparameter_count()
     for s in range(Ns_gp):
         hyp_noise = gp.posteriors[s].hyp[cov_N : cov_N + noise_N]
-        sn2new[:, s] = gp.noise.compute(hyp_noise, gp.X, gp.y, s2).reshape(-1,)
+        sn2new[:, s] = gp.noise.compute(hyp_noise, gp.X, gp.y, s2).reshape(
+            -1,
+        )
     gp.temporary_data["sn2_new"] = sn2new.mean(1)
 
     # load basic and advanced options and validate the names
@@ -127,7 +130,8 @@ def test_simple__call__():
     )
     advanced_path = pyvbmc_path + "/option_configs/advanced_vbmc_options.ini"
     vbmc_options.load_options_file(
-        advanced_path, evaluation_parameters={"D": D},
+        advanced_path,
+        evaluation_parameters={"D": D},
     )
     vbmc_options.validate_option_names([basic_path, advanced_path])
 
@@ -216,7 +220,7 @@ def test_complex__call__():
         c_xsi2_tn_tn = c_xsi2_tn_tn[0, 0]
         __, s_xsi2 = gp.predict(np.atleast_2d(theta))
         s_xsi2 = s_xsi2[0, 0]
-        ret = s_xsi2 - c_xsi2_t_tn ** 2 / (
+        ret = s_xsi2 - c_xsi2_t_tn**2 / (
             c_xsi2_tn_tn + np.linalg.norm(theta_new) + epsilon
         )
         return np.sqrt(max(ret, 0.0))
@@ -240,13 +244,13 @@ def test_complex__call__():
     X_eval = np.tile(np.linspace(-5, 5, N_eval).reshape((N_eval, 1)), (1, 2))
 
     # IMIQR values by grid approximation:
-    imiqrs = np.zeros((N_eval, M ** 2))
+    imiqrs = np.zeros((N_eval, M**2))
     for i in range(N_eval):
         x = X_eval[i, :]
         v_int = np.array(
             [imiqr_integrand(theta, np.atleast_2d(x)) for theta in thetas]
         )
-        imiqrs[i, :] = v_int.reshape((M ** 2,))
+        imiqrs[i, :] = v_int.reshape((M**2,))
     # Rough approximation for missing tails of grid:
     corrections = np.array(
         [
@@ -279,7 +283,9 @@ def test_complex__call__():
     noise_N = gp.noise.hyperparameter_count()
     for s in range(Ns_gp):
         hyp_noise = gp.posteriors[s].hyp[cov_N : cov_N + noise_N]
-        sn2new[:, s] = gp.noise.compute(hyp_noise, gp.X, gp.y, s2).reshape(-1,)
+        sn2new[:, s] = gp.noise.compute(hyp_noise, gp.X, gp.y, s2).reshape(
+            -1,
+        )
     gp.temporary_data["sn2_new"] = sn2new.mean(1)
 
     # load basic and advanced options and validate the names
@@ -300,7 +306,8 @@ def test_complex__call__():
     )
     advanced_path = pyvbmc_path + "/option_configs/advanced_vbmc_options.ini"
     vbmc_options.load_options_file(
-        advanced_path, evaluation_parameters={"D": D},
+        advanced_path,
+        evaluation_parameters={"D": D},
     )
     vbmc_options.validate_option_names([basic_path, advanced_path])
 

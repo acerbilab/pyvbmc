@@ -10,6 +10,7 @@ from pyvbmc.acquisition_functions import *
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.stats import get_hpd
 from pyvbmc.variational_posterior import VariationalPosterior
+from pyvbmc.vbmc.active_importance_sampling import active_importance_sampling
 from pyvbmc.vbmc.gaussian_process_train import reupdate_gp, train_gp
 from pyvbmc.vbmc.iteration_history import IterationHistory
 from pyvbmc.vbmc.variational_optimization import (
@@ -17,7 +18,6 @@ from pyvbmc.vbmc.variational_optimization import (
     _negelcbo,
     optimize_vp,
 )
-from pyvbmc.vbmc.active_importance_sampling import active_importance_sampling
 
 from .options import Options
 
@@ -278,7 +278,9 @@ def active_sample(
 
                 sn2new[:, s] = gp.noise.compute(
                     hyp_noise, gp.X, gp.y, s2
-                ).reshape(-1,)
+                ).reshape(
+                    -1,
+                )
 
             gp.temporary_data["sn2_new"] = sn2new.mean(1)
 
@@ -319,9 +321,7 @@ def active_sample(
                 ] = active_importance_sampling(vp, gp, acq_eval, options)
 
             # Re-evaluate variance of the log joint if requested
-            if acq_eval.acq_info.get(
-                "compute_varlogjoint"
-            ):
+            if acq_eval.acq_info.get("compute_varlogjoint"):
                 varF = _gplogjoint(vp, gp, 0, 0, 0, 1)[2]
                 optim_state["varlogjoint_samples"] = varF
 
@@ -367,9 +367,7 @@ def active_sample(
                     lb = np.minimum(gp.X, x0) - 0.1 * xrange
                     ub = np.maximum(gp.X, x0) + 0.1 * xrange
 
-                if acq_eval.acq_info.get(
-                    "log_flag"
-                ):
+                if acq_eval.acq_info.get("log_flag"):
                     tol_fun = 1e-2
                 else:
                     tol_fun = max(1e-12, abs(fval_old * 1e-3))
@@ -616,7 +614,9 @@ def active_sample(
             theta0 = vp0.get_parameters()
             theta = vp.get_parameters()
 
-            if (np.size(theta0) != np.size(theta)) or (np.any(theta0 != theta)):
+            if (np.size(theta0) != np.size(theta)) or (
+                np.any(theta0 != theta)
+            ):
                 NSentFineK = math.ceil(
                     options["nsentfineactive"](vp0.K) / vp0.K
                 )

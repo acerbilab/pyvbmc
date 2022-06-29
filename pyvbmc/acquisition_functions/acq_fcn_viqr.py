@@ -1,7 +1,8 @@
 import gpyreg as gpr
 import numpy as np
-from scipy.stats import norm
 from scipy.linalg import solve_triangular
+from scipy.stats import norm
+
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.variational_posterior import VariationalPosterior
 
@@ -94,48 +95,63 @@ class AcqFcnVIQR(AbstractAcqFcn):
             hyp = gp.posteriors[s].hyp[0:cov_N]  # Covariance hyperparameters
             L = gp.posteriors[s].L
             L_chol = gp.posteriors[s].L_chol
-            sn2_eff = 1 / gp.posteriors[s].sW[0]**2
+            sn2_eff = 1 / gp.posteriors[s].sW[0] ** 2
 
             # Compute cross-kernel matrices
-            if isinstance(gp.covariance,
-                          gpr.covariance_functions.SquaredExponential):
+            if isinstance(
+                gp.covariance, gpr.covariance_functions.SquaredExponential
+            ):
                 K_X_Xs = gp.covariance.compute(hyp, gp.X, Xs)
                 K_Xa_Xs = gp.covariance.compute(hyp, Xa, Xs)
-                K_Xa_X = optim_state["active_importance_sampling"]["K_Xa_X"][:, :, s]
+                K_Xa_X = optim_state["active_importance_sampling"]["K_Xa_X"][
+                    :, :, s
+                ]
             else:
-                raise ValueError("Covariance functions besides" +
-                                 "SquaredExponential are not supported yet.")
+                raise ValueError(
+                    "Covariance functions besides"
+                    + "SquaredExponential are not supported yet."
+                )
 
             if L_chol:
-                C = K_Xa_Xs.T - K_X_Xs.T @ \
-                    solve_triangular(L,
-                                     solve_triangular(L,
-                                                      K_Xa_X.T,
-                                                      trans=True,
-                                                      check_finite=False
-                                                      ),
-                                     check_finite=False
-                                     ) / sn2_eff
+                C = (
+                    K_Xa_Xs.T
+                    - K_X_Xs.T
+                    @ solve_triangular(
+                        L,
+                        solve_triangular(
+                            L, K_Xa_X.T, trans=True, check_finite=False
+                        ),
+                        check_finite=False,
+                    )
+                    / sn2_eff
+                )
             else:
                 C = K_Xa_Xs.T + K_X_Xs.T @ (L @ K_Xa_X.T)
 
             # Missing port, integrated meanfun
 
             tau2 = C**2 / y_s2[:, s].reshape(-1, 1)
-            s_pred = np.sqrt(np.maximum(
-                optim_state["active_importance_sampling"]["f_s2"][:, s].T
-                - tau2,
-                0.0
-            ))
+            s_pred = np.sqrt(
+                np.maximum(
+                    optim_state["active_importance_sampling"]["f_s2"][:, s].T
+                    - tau2,
+                    0.0,
+                )
+            )
 
-            ln_weights = optim_state["active_importance_sampling"]["ln_weights"][s, :]
+            ln_weights = optim_state["active_importance_sampling"][
+                "ln_weights"
+            ][s, :]
             # ln_weights should be 0 here: since we are sampling Xa from the VP
             # no extra importance sampling weight is required.
             # It is included for compatibility.
 
             # zz = ln(weights * sinh(u * s_pred)) + C
-            zz = ln_weights + self.u * s_pred\
+            zz = (
+                ln_weights
+                + self.u * s_pred
                 + np.log1p(-np.exp(-2 * self.u * s_pred))
+            )
             # logsumexp
             ln_max = np.amax(zz, axis=1)
             ln_max[ln_max == -np.inf] = 0.0  # Avoid -inf + inf
@@ -147,13 +163,11 @@ class AcqFcnVIQR(AbstractAcqFcn):
             M = np.amax(acq, axis=1)
             M[M == -np.inf] = 0.0  # Avoid -inf + inf
             acq = M + np.log(
-                np.sum(np.exp(acq - M.reshape(-1, 1)), axis=1)
-                / Ns_gp
+                np.sum(np.exp(acq - M.reshape(-1, 1)), axis=1) / Ns_gp
             )
 
         assert np.all(~np.isnan(acq))
         return acq
-
 
     def is_log_f1(self, v_ln_pdf, f_mu, f_s2):
         """Importance sampling log base proposal (shared part)."""

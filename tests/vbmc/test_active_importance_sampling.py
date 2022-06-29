@@ -1,17 +1,18 @@
-import numpy as np
 import os.path
+
+import gpyreg as gpr
+import numpy as np
 import scipy.io
 import scipy.stats as sps
 
-import gpyreg as gpr
+from pyvbmc.acquisition_functions import AcqFcnIMIQR, AcqFcnVIQR
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc.active_importance_sampling import (
     active_importance_sampling,
-    fess,
     activesample_proposalpdf,
+    fess,
     log_isbasefun,
 )
-from pyvbmc.acquisition_functions import AcqFcnVIQR, AcqFcnIMIQR
 
 
 def test_active_importance_sampling():
@@ -25,7 +26,15 @@ def test_active_importance_sampling():
 
     X = np.arange(-7, 8).reshape((5, 3), order="F")
     y = np.array(
-        [sps.multivariate_normal.logpdf(x, mean=np.zeros(D,)) for x in X]
+        [
+            sps.multivariate_normal.logpdf(
+                x,
+                mean=np.zeros(
+                    D,
+                ),
+            )
+            for x in X
+        ]
     ).reshape((-1, 1))
     hyp = np.array(
         [
@@ -51,7 +60,9 @@ def test_active_importance_sampling():
         D,
         covariance=gpr.covariance_functions.SquaredExponential(),
         mean=gpr.mean_functions.NegativeQuadratic(),
-        noise=gpr.noise_functions.GaussianNoise(constant_add=True,),
+        noise=gpr.noise_functions.GaussianNoise(
+            constant_add=True,
+        ),
     )
     gp.update(X_new=X, y_new=y, hyp=hyp)
 
@@ -63,12 +74,23 @@ def test_active_importance_sampling():
         "activeimportancesamplingboxsamples": 12,
     }
     active_is_viqr = active_importance_sampling(vp, gp, AcqFcnVIQR(), options)
-    active_is_imiqr = active_importance_sampling(vp, gp, AcqFcnIMIQR(), options)
+    active_is_imiqr = active_importance_sampling(
+        vp, gp, AcqFcnIMIQR(), options
+    )
 
-    assert active_is_viqr["ln_weights"].shape == active_is_viqr["f_s2"].T.shape == (2, 10)
+    assert (
+        active_is_viqr["ln_weights"].shape
+        == active_is_viqr["f_s2"].T.shape
+        == (2, 10)
+    )
     assert active_is_viqr["X"].shape == (10, D)
     assert active_is_imiqr["X"].shape == (10, D, 2)
-    assert active_is_imiqr["ln_weights"].shape == active_is_imiqr["f_s2"].T.shape == (2, 10)
+    assert (
+        active_is_imiqr["ln_weights"].shape
+        == active_is_imiqr["f_s2"].T.shape
+        == (2, 10)
+    )
+
 
 def test_fess():
     D = 3
@@ -81,7 +103,15 @@ def test_fess():
 
     X = np.arange(-7, 8).reshape((5, 3), order="F")
     y = np.array(
-        [sps.multivariate_normal.logpdf(x, mean=np.zeros(D,)) for x in X]
+        [
+            sps.multivariate_normal.logpdf(
+                x,
+                mean=np.zeros(
+                    D,
+                ),
+            )
+            for x in X
+        ]
     ).reshape((-1, 1))
     hyp = np.array(
         [
@@ -107,7 +137,9 @@ def test_fess():
         D,
         covariance=gpr.covariance_functions.SquaredExponential(),
         mean=gpr.mean_functions.NegativeQuadratic(),
-        noise=gpr.noise_functions.GaussianNoise(constant_add=True,),
+        noise=gpr.noise_functions.GaussianNoise(
+            constant_add=True,
+        ),
     )
     gp.update(X_new=X, y_new=y, hyp=hyp)
 
@@ -135,7 +167,15 @@ def test_activesample_proposalpdf():
     vp.lambd = np.ones(vp.lambd.shape)
     X = np.arange(-7, 8).reshape((5, 3), order="F")
     y = np.array(
-        [sps.multivariate_normal.logpdf(x, mean=np.zeros(D,)) for x in X]
+        [
+            sps.multivariate_normal.logpdf(
+                x,
+                mean=np.zeros(
+                    D,
+                ),
+            )
+            for x in X
+        ]
     ).reshape((-1, 1))
     hyp = np.array(
         [
@@ -161,7 +201,9 @@ def test_activesample_proposalpdf():
         D,
         covariance=gpr.covariance_functions.SquaredExponential(),
         mean=gpr.mean_functions.NegativeQuadratic(),
-        noise=gpr.noise_functions.GaussianNoise(constant_add=True,),
+        noise=gpr.noise_functions.GaussianNoise(
+            constant_add=True,
+        ),
     )
     gp.update(X_new=X, y_new=y, hyp=hyp)
 
@@ -200,7 +242,15 @@ def test_log_isbasefun():
     vp.lambd = np.ones(vp.lambd.shape)
     X = np.arange(-7, 8).reshape((5, 3), order="F")
     y = np.array(
-        [sps.multivariate_normal.logpdf(x, mean=np.zeros(D,)) for x in X]
+        [
+            sps.multivariate_normal.logpdf(
+                x,
+                mean=np.zeros(
+                    D,
+                ),
+            )
+            for x in X
+        ]
     ).reshape((-1, 1))
     hyp = np.array(
         [
@@ -226,7 +276,9 @@ def test_log_isbasefun():
         D,
         covariance=gpr.covariance_functions.SquaredExponential(),
         mean=gpr.mean_functions.NegativeQuadratic(),
-        noise=gpr.noise_functions.GaussianNoise(constant_add=True,),
+        noise=gpr.noise_functions.GaussianNoise(
+            constant_add=True,
+        ),
     )
     gp.update(X_new=X, y_new=y, hyp=hyp)
 

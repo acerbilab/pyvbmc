@@ -25,7 +25,7 @@ save(dirpath + "/log_isbasefun.mat", "y_viqr", "y_imiqr");
 function ll = mvnormlpdf(theta, mu, Sigma)
     theta = theta(:);
     mu = mu(:);
-    D = length(mu);    
+    D = length(mu);
     L = chol(Sigma);
     halflogdet = sum(log(diag(L)));
     z = L \ (theta - mu);

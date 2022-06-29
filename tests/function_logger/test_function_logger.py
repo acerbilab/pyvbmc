@@ -6,7 +6,8 @@ from pyvbmc.parameter_transformer import ParameterTransformer
 
 non_noisy_function = lambda x: np.sum(x + 2)
 noisy_function = lambda x: (np.sum(x + 2), np.sum(x))
-noisy_function_2 = lambda x: (np.sum(x + 2)+0.5, np.sum(x)+0.25)
+noisy_function_2 = lambda x: (np.sum(x + 2) + 0.5, np.sum(x) + 0.25)
+
 
 def test_call_index():
     f_logger = FunctionLogger(non_noisy_function, 3, False, 0)
@@ -47,8 +48,8 @@ def test_call_duplicate_noisy_function_level_2():
     x = np.array([3, 4, 5])
     f_logger = FunctionLogger(noisy_function, 3, True, 2)
     fval_1, fsd_1, idx_1 = f_logger(x)
-    assert f_logger.y[0,0] == fval_1
-    assert f_logger.S[0,0] == fsd_1
+    assert f_logger.y[0, 0] == fval_1
+    assert f_logger.S[0, 0] == fsd_1
     assert fval_1, fsd_1 == noisy_function(x)
 
     # Change the function to simulate another different observation:
@@ -59,15 +60,15 @@ def test_call_duplicate_noisy_function_level_2():
 
     assert idx_1 == 0
     assert idx_2 == 0
-    tau_1 = 1 / fsd_1 ** 2
-    tau_2 = 1 / fsd_2 ** 2
+    tau_1 = 1 / fsd_1**2
+    tau_2 = 1 / fsd_2**2
     assert f_logger.S[0] == 1 / np.sqrt(tau_1 + tau_2)
     assert f_logger.y_orig[0, 0] == fval_2
-    assert f_logger.y_orig[0] == (
-        tau_1 * fval_1 + tau_2 * fval_meas
-    ) / (tau_1 + tau_2)
+    assert f_logger.y_orig[0] == (tau_1 * fval_1 + tau_2 * fval_meas) / (
+        tau_1 + tau_2
+    )
     assert f_logger.y[0] == f_logger.y_orig[0]
-    assert f_logger.S[0] == 1 / np.sqrt((1 / fsd_1 ** 2) + (1 / fsd_2 ** 2))
+    assert f_logger.S[0] == 1 / np.sqrt((1 / fsd_1**2) + (1 / fsd_2**2))
 
 
 def test_call_expand_cache():

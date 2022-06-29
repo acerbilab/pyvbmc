@@ -2,8 +2,8 @@ import numpy as np
 import scipy as sp
 import scipy.stats
 
-from pyvbmc.vbmc import VBMC
 from pyvbmc.acquisition_functions import *
+from pyvbmc.vbmc import VBMC
 
 
 def _test_vbmc_optimize_rosenbrock():
@@ -177,7 +177,7 @@ def test_vbmc_correlated_multivariate_normal_noisy():
 
 
 def noisy_cigar(x, noise_scale=0.4):
-    return cigar(x) + noise_scale * np.random.normal(), noise_scale ** 2
+    return cigar(x) + noise_scale * np.random.normal(), noise_scale**2
 
 
 def cigar(x):

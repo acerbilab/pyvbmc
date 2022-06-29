@@ -26,7 +26,7 @@ save(dirpath + "/fess.mat", "fess_means", "fess_gp");
 function ll = mvnormlpdf(theta, mu, Sigma)
     theta = theta(:);
     mu = mu(:);
-    D = length(mu);    
+    D = length(mu);
     L = chol(Sigma);
     halflogdet = sum(log(diag(L)));
     z = L \ (theta - mu);

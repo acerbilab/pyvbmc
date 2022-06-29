@@ -40,7 +40,9 @@ def test__call__(mocker):
     optim_state = dict()
     optim_state["integervars"] = None
     optim_state["variance_regularized_acq_fcn"] = False
-    optim_state["gp_length_scale"] = np.exp(np.mean(np.ones((D, Ns)), axis=1)).T
+    optim_state["gp_length_scale"] = np.exp(
+        np.mean(np.ones((D, Ns)), axis=1)
+    ).T
 
     # no constraints for test
     optim_state["lb_eps_orig"] = -np.inf
@@ -57,7 +59,9 @@ def test__call__(mocker):
         noise=gpr.noise_functions.GaussianNoise(constant_add=True),
     )
 
-    gp.temporary_data["sn2_new"] = np.ones(M,)
+    gp.temporary_data["sn2_new"] = np.ones(
+        M,
+    )
     gp.temporary_data["X_rescaled"] = Xs / optim_state["gp_length_scale"]
 
     acq = acqf(Xs, gp, vp, function_logger, optim_state)
@@ -110,9 +114,9 @@ def test_complex__call__(mocker):
         noise=gpr.noise_functions.GaussianNoise(constant_add=True),
     )
 
-    gp.temporary_data["sn2_new"] = np.exp(-1) * np.arange(
-        1, M + 1
-    ).reshape((M,), order="F")
+    gp.temporary_data["sn2_new"] = np.exp(-1) * np.arange(1, M + 1).reshape(
+        (M,), order="F"
+    )
     gp.temporary_data["X_rescaled"] = (
         function_logger.X[~np.isnan(function_logger.X).all(axis=1)]
         / optim_state["gp_length_scale"]

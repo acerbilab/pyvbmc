@@ -1,7 +1,8 @@
 import gpyreg as gpr
 import numpy as np
-from scipy.stats import norm
 from scipy.linalg import solve_triangular
+from scipy.stats import norm
+
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.variational_posterior import VariationalPosterior
 
@@ -35,7 +36,7 @@ class AcqFcnIMIQR(AbstractAcqFcn):
         f_mu: np.ndarray,
         f_s2: np.ndarray,
         f_bar: None,
-        var_tot: None
+        var_tot: None,
     ):
         r"""
         Compute the value of the acquisition function.
@@ -138,7 +139,7 @@ class AcqFcnIMIQR(AbstractAcqFcn):
             else:
                 C = K_Xa_Xs.T + K_X_Xs.T @ (L @ K_Xa_X.T)
 
-            tau2 = C ** 2 / y_s2[:, s].reshape(-1, 1)
+            tau2 = C**2 / y_s2[:, s].reshape(-1, 1)
             s_pred = np.sqrt(
                 np.maximum(
                     optim_state["active_importance_sampling"]["f_s2"][:, s].T

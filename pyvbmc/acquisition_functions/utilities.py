@@ -1,6 +1,7 @@
-import sys
-import pyvbmc.acquisition_functions
 from ast import literal_eval
+
+import pyvbmc.acquisition_functions
+
 
 def string_to_acq(string):
     """Safely convert an input string to an acquisition function."""

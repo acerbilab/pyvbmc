@@ -1,8 +1,9 @@
-import numpy as np
 import copy
 import math
 import sys
+
 import gpyreg as gpr
+import numpy as np
 
 
 def active_importance_sampling(vp, gp, acq_fcn, options):
@@ -38,7 +39,9 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
     # Does the importance sampling step use the variational posterior?
     isample_vp_flag = acq_fcn.acq_info.get("importance_sampling_vp", False)
     # Do we simply sample from the variational posterior?
-    only_vp_flag = acq_fcn.acq_info.get("variational_importance_sampling", False)
+    only_vp_flag = acq_fcn.acq_info.get(
+        "variational_importance_sampling", False
+    )
 
     D = gp.X.shape[1]
     Ns_gp = len(gp.posteriors)  # Number of gp hyperparameter samples
@@ -128,7 +131,7 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
                 vp_is.w = np.hstack((vp_is.w, vp.w))
                 vp_is.mu = np.hstack((vp_is.mu, vp.mu))
                 vp_is.sigma = np.hstack(
-                    (vp_is.sigma, vp.sigma ** 2 + scale_vec[i] ** 2)
+                    (vp_is.sigma, vp.sigma**2 + scale_vec[i] ** 2)
                 )
             vp_is.w = vp_is.w / np.sum(vp_is.w)
 
@@ -494,7 +497,7 @@ def fess(vp, gp, X=100):
     weight = np.exp(ln_weights - np.amax(ln_weights))
     weight = weight / np.sum(weight)
 
-    return (1 / np.sum(weight ** 2)) / N  # Fractional ESS
+    return (1 / np.sum(weight**2)) / N  # Fractional ESS
 
 
 def renormalize_weights(ln_w):

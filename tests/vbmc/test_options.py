@@ -1,11 +1,11 @@
 import copy
-import numpy as np
 from math import ceil
 
+import numpy as np
 import pytest
 
-from pyvbmc.vbmc import Options, VBMC
-from pyvbmc.acquisition_functions import AcqFcnVIQR, AcqFcn
+from pyvbmc.acquisition_functions import AcqFcn, AcqFcnVIQR
+from pyvbmc.vbmc import VBMC, Options
 
 
 def test_options_no_user_options():
@@ -84,13 +84,13 @@ def test_init_from_existing_options_without_other_options():
 
 def test_init_with_specifytargetnoise():
     """Turning on specifytargetnoise should adjust defaults."""
-    D=1
+    D = 1
     user_options = {
         "specifytargetnoise": True,
         "activesamplegpupdate": "foo",  # But don't touch user options!
     }
     vbmc1 = VBMC(
-        lambda x, y: (x+y, y),
+        lambda x, y: (x + y, y),
         np.zeros((1, D)),
         -np.ones((1, D)),
         np.ones((1, D)),
@@ -98,7 +98,7 @@ def test_init_with_specifytargetnoise():
         0.5 * np.ones((1, D)),
     )
     vbmc2 = VBMC(
-        lambda x, y: (x+y, y),
+        lambda x, y: (x + y, y),
         np.zeros((1, D)),
         -np.ones((1, D)),
         np.ones((1, D)),
@@ -109,8 +109,12 @@ def test_init_with_specifytargetnoise():
 
     # Check that default options are changed:
     assert vbmc1.options != vbmc2.options
-    assert vbmc2.options["maxfunevals"] == ceil(vbmc1.options["maxfunevals"] * 1.5)
-    assert vbmc2.options["tolstablecount"] == ceil(vbmc1.options["tolstablecount"] * 1.5)
+    assert vbmc2.options["maxfunevals"] == ceil(
+        vbmc1.options["maxfunevals"] * 1.5
+    )
+    assert vbmc2.options["tolstablecount"] == ceil(
+        vbmc1.options["tolstablecount"] * 1.5
+    )
     assert len(vbmc2.options["searchacqfcn"]) == 1
     assert isinstance(vbmc2.options["searchacqfcn"][0], AcqFcnVIQR)
     assert vbmc2.options["activesamplevpupdate"] == True
@@ -123,6 +127,7 @@ def test_init_with_specifytargetnoise():
     assert isinstance(vbmc1.options["searchacqfcn"][0], AcqFcn)
     assert vbmc1.options["activesamplevpupdate"] == False
     assert vbmc1.options["activesamplegpupdate"] == False
+
 
 def test_str():
     default_options_path = "./pyvbmc/vbmc/option_configs/test_options.ini"
