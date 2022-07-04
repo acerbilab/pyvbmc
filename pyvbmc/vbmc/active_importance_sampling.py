@@ -131,7 +131,7 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
                 vp_is.w = np.hstack((vp_is.w, vp.w))
                 vp_is.mu = np.hstack((vp_is.mu, vp.mu))
                 vp_is.sigma = np.hstack(
-                    (vp_is.sigma, vp.sigma**2 + scale_vec[i] ** 2)
+                    (vp_is.sigma, np.sqrt(vp.sigma**2 + scale_vec[i] ** 2))
                 )
             vp_is.w = vp_is.w / np.sum(vp_is.w)
 
