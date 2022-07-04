@@ -170,11 +170,12 @@ class AcqFcnVIQR(AbstractAcqFcn):
         return acq
 
     def is_log_f1(self, v_ln_pdf, f_mu, f_s2):
-        """Importance sampling log base proposal (shared part)."""
+        """Importance sampling log base proposal (fixed part)."""
         return np.zeros(f_s2.shape)
 
     def is_log_f2(self, f_mu, f_s2):
-        """Importance sampling log base proposal (shared part)."""
+        """% Importance sampling log base proposal (added part)
+        (Full log base proposal is fixed + added)"""
         f_s = np.sqrt(f_s2)
         return self.u * f_s + np.log1p(-np.exp(-2 * self.u * f_s))
 

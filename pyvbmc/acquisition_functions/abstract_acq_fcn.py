@@ -17,6 +17,7 @@ class AbstractAcqFcn(ABC):
     def __init__(self):
         self.acq_info = dict()
         self.acq_info["compute_varlogjoint"] = False
+        # Whether the function value is in log space
         self.acq_info["log_flag"] = False
 
     def get_info(self):

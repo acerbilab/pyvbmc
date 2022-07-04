@@ -181,7 +181,8 @@ class AcqFcnIMIQR(AbstractAcqFcn):
         return f_mu
 
     def is_log_f2(self, f_mu, f_s2):
-        r"""Importance sampling log base proposal (shared part)."""
+        r"""Importance sampling log base proposal (added part)
+        (Full log base proposal is fixed + added)"""
         f_s = np.sqrt(f_s2)
         return self.u * f_s + np.log1p(-np.exp(-2 * self.u * f_s))
 

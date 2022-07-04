@@ -292,5 +292,5 @@ def test_log_isbasefun():
     y_imiqr = log_isbasefun(Xa, AcqFcnIMIQR(), gp, vp)
 
     assert y_viqr.shape == y_imiqr.shape == (D, 1)
-    assert np.allclose(y_viqr, MATLAB["y_viqr"], atol=1e3)
-    assert np.allclose(y_imiqr, MATLAB["y_imiqr"], atol=1e3)
+    assert np.allclose(y_viqr, MATLAB["y_viqr"], atol=1e-3)
+    assert np.allclose(y_imiqr, MATLAB["y_imiqr"], atol=1e-3)
