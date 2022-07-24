@@ -2,6 +2,7 @@ import gpyreg as gpr
 import numpy as np
 from scipy.linalg import solve_triangular
 from scipy.stats import norm
+from sys import float_info
 
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.variational_posterior import VariationalPosterior
@@ -169,17 +170,60 @@ class AcqFcnVIQR(AbstractAcqFcn):
         assert np.all(~np.isnan(acq))
         return acq
 
-    def is_log_f1(self, v_ln_pdf, f_mu, f_s2):
-        """Importance sampling log base proposal (fixed part)."""
-        return np.zeros(f_s2.shape)
+    def is_log_target(self, x, **kwargs):
+        r"""Importance sampling log target density.
 
-    def is_log_f2(self, f_mu, f_s2):
-        """% Importance sampling log base proposal (added part)
-        (Full log base proposal is fixed + added)"""
-        f_s = np.sqrt(f_s2)
+        VIQR approximates an expectation w.r.t. to VP, using simple Monte
+        Carlo, so the 'importance sampling' weights are just constant.
+
+        Parameters
+        ----------
+        f_s2 : np.ndarray
+            The predicted posterior variance at the points of interest.
+
+        Returns
+        -------
+        z : np.ndarray
+            A an array of zeros of the same shape as ``f_s2``.
+        """
+        f_s2 = kwargs["f_s2"]
+        if self.acq_info["importance_sampling_vp"]:
+            # True importance sampling via VP (uses VP density in weights).
+            vp = kwargs.get("vp")
+            f_s = np.sqrt(f_s2)
+            if vp is None:
+                raise ValueError(
+                    "Must provide vp as keyword argument if using vp"
+                    + "importance sampling."
+                )
+            v_ln_pdf = np.maximum(
+                vp.pdf(x, origflag=False, logflag=True), np.log(float_info.min)
+            )
+            return v_ln_pdf
+        else:  # Simple Monte Carlo (constant weights)
+            return np.zeros(f_s2.shape)
+
+    def is_log_integrand(self, **kwargs):
+        r"""Importance sampling log integrand.
+
+        For IMIQR/VIQR, this is :math: `\\log [\\sinh(u * f_s)]`.
+        """
+        f_s = np.sqrt(kwargs["f_s2"])
         return self.u * f_s + np.log1p(-np.exp(-2 * self.u * f_s))
 
-    def is_log_f(self, v_ln_pdf, f_mu, f_s2):
-        """Importance sampling log base proposal distribution."""
-        f_s = np.sqrt(f_s2)
-        return v_ln_pdf + self.u * f_s + np.log1p(-np.exp(-2 * self.u * f_s))
+    def is_log_f(self, x, **kwargs):
+        r"""Importance sampling full log quantities.
+
+        Returns the log of the full VIQR integrand: the log of the VP density
+        times the sinh term.
+        """
+        f_s2 = kwargs.pop("f_s2", None)  # Try to get pre-computed f_s2
+        if f_s2 is None:  # Otherwise use GP to predict
+            gp = kwargs.get("gp")
+            if gp is None:
+                raise ValueError(
+                    "Must provide gp as keyword argument if f_s2 is not"
+                    + "provided."
+                )
+            __, f_s2 = gp.predict(np.atleast_2d(x), add_noise=True)
+        return self.is_log_target(x, f_s2=f_s2, **kwargs) + self.is_log_integrand(f_s2=f_s2, **kwargs)

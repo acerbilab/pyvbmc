@@ -176,17 +176,79 @@ class AcqFcnIMIQR(AbstractAcqFcn):
 
         return acq
 
-    def is_log_f1(self, v_ln_pdf, f_mu, f_s2):
-        r"""Importance sampling log base proposal (shared part)."""
-        return f_mu
+    def is_log_target(self, x, **kwargs):
+        r"""Importance sampling log target density.
 
-    def is_log_f2(self, f_mu, f_s2):
-        r"""Importance sampling log base proposal (added part)
-        (Full log base proposal is fixed + added)"""
-        f_s = np.sqrt(f_s2)
+        IMIQR approximates an expectation w.r.t. the (exponentiated,
+        unnormalized) GP, and so uses the GP mean f_mu as the target log
+        density.
+
+        Parameters
+        ----------
+        f_mu : np.ndarray
+            The gp posterior mean at the points of interest.
+
+        Returns
+        -------
+        f_mu : np.ndarray
+            The log density of the target against which the i.s. expectation is
+            taken. Here, just the log density as modeled by the GP.
+        """
+        return kwargs["f_mu"]
+
+    def is_log_integrand(self, **kwargs):
+        r"""Importance sampling log integrand.
+
+        For IMIQR/VIQR, this is :math: `\\log [\\sinh(u * f_s)]`.
+
+        Parameters
+        ----------
+        f_s2 : np.ndarray
+            The predicted posterior variance at the points of interest.
+
+        Returns
+        -------
+        y : np.ndarray
+            The value of the (log) integrand (the quantity whose expectation is
+            being estimated).
+        """
+        f_s = np.sqrt(kwargs["f_s2"])
         return self.u * f_s + np.log1p(-np.exp(-2 * self.u * f_s))
 
-    def is_log_f(self, v_ln_pdf, f_mu, f_s2):
-        r"""Importance sampling log base proposal distribution."""
-        f_s = np.sqrt(f_s2)
-        return f_mu + self.u * f_s + np.log1p(-np.exp(-2 * self.u * f_s))
+    def is_log_f(self, x, **kwargs):
+        r"""Importance sampling uncorrected log quantities.
+
+        Returns the log target density plus the log integrand, which are the
+        complete importance sampling log quantities `except` for the :math:
+        `-\\log(q(x))` correction term, where :math: `q(x)` is the density of
+        the proposal distribution (added in ``active_importance_sampling.py``).
+
+        Parameters
+        ----------
+        f_mu : np.ndarray
+            The gp posterior mean at the points of interest. Either [``f_s2``
+            and ``f_mu``] or ``gp`` must be provided.
+        f_s2 : np.ndarray, optional
+            The predicted posterior variance at the points of interest. Either
+            [``f_s2`` and ``f_mu``] or ``gp`` must be provided.
+        gp : gpyreg.GaussianProcess, optional
+            The GP modeling the log-density. Either [``f_s2`` and ``f_mu``] or
+            ``gp`` must be provided.
+
+        Raises
+        ------
+        ValueError
+            If [``f_s2`` or ``f_mu``] are not provided, and ``gp`` is not
+            provided.
+        """
+        f_mu = kwargs.pop("f_mu", None)
+        f_s2 = kwargs.pop("f_s2", None)
+        if f_mu is None or f_s2 is None:  # Try to get pre-computed f_mu/s2
+            gp = kwargs.get("gp")
+            if gp is None:  # Otherwise use GP to predict
+                raise ValueError(
+                    "Must provide gp as keyword argument if f_mu/f_s2 are not"
+                    + "provided."
+                )
+            f_mu, f_s2 = gp.predict(np.atleast_2d(x), add_noise=True)
+        return self.is_log_target(x, f_mu=f_mu, f_s2=f_s2, **kwargs) + self.is_log_integrand(f_mu=f_mu, f_s2=f_s2, **kwargs)

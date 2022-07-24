@@ -11,7 +11,6 @@ from pyvbmc.vbmc.active_importance_sampling import (
     active_importance_sampling,
     activesample_proposalpdf,
     fess,
-    log_isbasefun,
 )
 
 
@@ -232,7 +231,7 @@ def test_activesample_proposalpdf():
     assert np.allclose(f_s2_imiqr, MATLAB["f_s2_imiqr"])
 
 
-def test_log_isbasefun():
+def test_acq_log_f():
     D = 3
     K = 2
     vp = VariationalPosterior(D=D, K=K)
@@ -288,8 +287,11 @@ def test_log_isbasefun():
     filepath = os.path.join(dirpath, "compare_MATLAB", "log_isbasefun.mat")
     MATLAB = scipy.io.loadmat(filepath)
 
-    y_viqr = log_isbasefun(Xa, AcqFcnVIQR(), gp, vp)
-    y_imiqr = log_isbasefun(Xa, AcqFcnIMIQR(), gp, vp)
+    viqr = AcqFcnVIQR()
+    # Use vp weights for this test:
+    viqr.acq_info["importance_sampling_vp"] = True
+    y_viqr = viqr.is_log_f(Xa, gp=gp, vp=vp)
+    y_imiqr = AcqFcnIMIQR().is_log_f(Xa, gp=gp, vp=vp)
 
     assert y_viqr.shape == y_imiqr.shape == (D, 1)
     assert np.allclose(y_viqr, MATLAB["y_viqr"], atol=1e-3)
