@@ -180,11 +180,23 @@ class AcqFcnVIQR(AbstractAcqFcn):
         ----------
         f_s2 : np.ndarray
             The predicted posterior variance at the points of interest.
+        vp : pyvbmc.variational_posterior.VariationalPosterior, optional
+            The VP, unused by default: only used if
+            ``self.acq_info["active_importance_sampling_vp"]`` is set to
+            ``True``, in which case the proposal distribution differs from the
+            VP, and the density of the VP proposal distribution needs to be
+            accounted for in the importance sampling.
 
         Returns
         -------
         z : np.ndarray
             A an array of zeros of the same shape as ``f_s2``.
+
+        Raises
+        ------
+        ValueError
+            If ``self.acq_info["active_importance_sampling_vp"]`` but no ``vp``
+            is provided.
         """
         f_s2 = kwargs["f_s2"]
         if self.acq_info["importance_sampling_vp"]:
@@ -207,6 +219,17 @@ class AcqFcnVIQR(AbstractAcqFcn):
         r"""Importance sampling log integrand.
 
         For IMIQR/VIQR, this is :math: `\\log [\\sinh(u * f_s)]`.
+
+        Parameters
+        ----------
+        f_s2 : np.ndarray
+            The predicted posterior variance at the points of interest.
+
+        Returns
+        -------
+        y : np.ndarray
+            The value of the (log) integrand (the quantity whose expectation is
+            being estimated).
         """
         f_s = np.sqrt(kwargs["f_s2"])
         return self.u * f_s + np.log1p(-np.exp(-2 * self.u * f_s))
@@ -215,7 +238,25 @@ class AcqFcnVIQR(AbstractAcqFcn):
         r"""Importance sampling full log quantities.
 
         Returns the log of the full VIQR integrand: the log of the VP density
-        times the sinh term.
+        times the sinh term. If
+        ``self.acq_info["active_importance_sampling_vp"]`` is forced ``True``,
+        includes the log density of the VP evaluated at ``x`` (but not the
+        :math: `-\\log(q(x))` correction term, where :math: `q(x)` is the
+        proposal density.)
+
+        Parameters
+        ----------
+        f_s2 : np.ndarray, optional
+            The predicted posterior variance at the points of interest. Either
+            ``f_s2`` or ``gp`` must be provided.
+        gp : gpyreg.GaussianProcess, optional
+            The GP modeling the log-density. Either ``f_s2`` or ``gp`` must be
+            provided.
+
+        Raises
+        ------
+        ValueError
+            If neither ``f_s2`` nor ``gp`` are provided.
         """
         f_s2 = kwargs.pop("f_s2", None)  # Try to get pre-computed f_s2
         if f_s2 is None:  # Otherwise use GP to predict
