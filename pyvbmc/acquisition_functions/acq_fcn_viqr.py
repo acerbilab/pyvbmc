@@ -1,7 +1,7 @@
 import gpyreg as gpr
 import numpy as np
-from scipy.linalg import solve_triangular
 from scipy.stats import norm
+from scipy.spatial.distance import cdist
 
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.variational_posterior import VariationalPosterior
@@ -93,19 +93,34 @@ class AcqFcnVIQR(AbstractAcqFcn):
         cov_N = gp.covariance.hyperparameter_count(gp.D)
         for s in range(Ns_gp):
             hyp = gp.posteriors[s].hyp[0:cov_N]  # Covariance hyperparameters
-            L = gp.posteriors[s].L
+            # L = gp.posteriors[s].L
             L_chol = gp.posteriors[s].L_chol
-            sn2_eff = 1 / gp.posteriors[s].sW[0] ** 2
+            # sn2_eff = 1 / gp.posteriors[s].sW[0] ** 2
 
             # Compute cross-kernel matrices
             if isinstance(
                 gp.covariance, gpr.covariance_functions.SquaredExponential
-            ):
-                K_X_Xs = gp.covariance.compute(hyp, gp.X, Xs)
-                K_Xa_Xs = gp.covariance.compute(hyp, Xa, Xs)
-                K_Xa_X = optim_state["active_importance_sampling"]["K_Xa_X"][
-                    :, :, s
-                ]
+            ):  # Hard-coded SE-ard for speed (re-use Xs_ell)
+                # Functionally equivalent to:
+                # K_X_Xs = gp.covariance.compute(hyp, gp.X, Xs)
+                # K_Xa_Xs = gp.covariance.compute(hyp, Xa, Xs)
+                # K_Xa_X = optim_state["active_importance_sampling"]["K_Xa_X"][
+                #     :, :, s
+                # ]
+                ell = np.exp(hyp[0:D])
+                sf2 = np.exp(2 * hyp[D])
+                Xs_ell = Xs / ell
+
+                K_X_Xs = cdist(gp.X / ell, Xs_ell, "sqeuclidean")
+                K_X_Xs = sf2 * np.exp(-K_X_Xs / 2)
+
+                K_Xa_Xs = cdist(Xs_ell, Xa / ell, "sqeuclidean")
+                K_Xa_Xs = sf2 * np.exp(-K_Xa_Xs / 2)
+
+                # K_Xa_X = optim_state["active_importance_sampling"]["K_Xa_X"][
+                #     :, :, s
+                # ]
+                C_tmp = optim_state["active_importance_sampling"]["C_tmp"][:, :, s]
             else:
                 raise ValueError(
                     "Covariance functions besides"
@@ -113,20 +128,22 @@ class AcqFcnVIQR(AbstractAcqFcn):
                 )
 
             if L_chol:
-                C = (
-                    K_Xa_Xs.T
-                    - K_X_Xs.T
-                    @ solve_triangular(
-                        L,
-                        solve_triangular(
-                            L, K_Xa_X.T, trans=True, check_finite=False
-                        ),
-                        check_finite=False,
-                    )
-                    / sn2_eff
-                )
+                # C = (
+                #     K_Xa_Xs.T
+                #     - K_X_Xs.T
+                #     @ solve_triangular(
+                #         L,
+                #         solve_triangular(
+                #             L, K_Xa_X.T, trans=True, check_finite=False
+                #         ),
+                #         check_finite=False,
+                #     )
+                #     / sn2_eff
+                # )
+                C = K_Xa_Xs - K_X_Xs.T @ C_tmp
             else:
-                C = K_Xa_Xs.T + K_X_Xs.T @ (L @ K_Xa_X.T)
+                # C = K_Xa_Xs.T + K_X_Xs.T @ (L @ K_Xa_X.T)
+                C = K_Xa_Xs + K_X_Xs.T @ C_tmp
 
             # Missing port, integrated meanfun
 
@@ -139,14 +156,13 @@ class AcqFcnVIQR(AbstractAcqFcn):
                 )
             )
 
+            # ln_weights is 0 here: VIQR uses simple Monte Carlo, not
+            # importance sampling.
             ln_weights = optim_state["active_importance_sampling"][
                 "ln_weights"
             ][s, :]
-            # ln_weights should be 0 here: since we are sampling Xa from the VP
-            # no extra importance sampling weight is required.
-            # It is included for compatibility.
 
-            # zz = ln(weights * sinh(u * s_pred)) + C
+            # zz = ln(sinh(u * s_pred)) + C
             zz = (
                 ln_weights
                 + self.u * s_pred

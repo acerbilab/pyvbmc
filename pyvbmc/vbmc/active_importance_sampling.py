@@ -1,6 +1,8 @@
 import copy
-import math
+from math import ceil
 import sys
+
+from scipy.linalg.basic import solve_triangular
 
 import gpyreg as gpr
 import numpy as np
@@ -61,7 +63,21 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
     if only_vp_flag:
         # Step 0: Simply sample from variational posterior.
 
-        Na = options["activeimportancesamplingmcmcsamples"]
+        if type(options["activeimportancesamplingmcmcsamples"]) == str:
+            K = vp.K
+            n_vars = D
+            Na = ceil(float(options["activeimportancesamplingmcmcsamples"]))
+        elif np.isscalar(options["activeimportancesamplingmcmcsamples"]):
+            Na = ceil(options["activeimportancesamplingmcmcsamples"])
+        else:
+            Na = 0
+
+        if not np.isfinite(Na) or not np.isscalar(Na) or Na <= 0:
+            raise ValueError(
+                "options['activeimportancesamplingmcmcsamples']"
+                + "should evaluate to a positive integer."
+            )
+
         Xa, __ = vp.sample(Na, origflag=False)
 
         f_mu, f_s2 = gp.predict(Xa, separate_samples=True)
@@ -217,7 +233,7 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
 
                 # Get MCMC Options
                 thin = options["activeimportancesamplingmcmcthin"]
-                burn_in = math.ceil(thin * Nmcmc_samples / 2)
+                burn_in = ceil(thin * Nmcmc_samples / 2)
                 sampler_opts, __, __ = get_mcmc_opts(Nmcmc_samples)
 
                 # Walkers = 2 * (D + 1)  # For ensemble slice sampling,
@@ -271,6 +287,7 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
 
     # Pre-compute cross-kernel matrix on importance points
     K_Xa_X = np.zeros((active_is["X"].shape[0], gp.X.shape[0], Ns_gp))
+    C_tmp = np.zeros((gp.X.shape[0], active_is["X"].shape[0], Ns_gp))
     for s in range(Ns_gp):
         if active_is["X"].ndim == 3:
             Xa = active_is["X"][:, :, s]
@@ -278,6 +295,9 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
             Xa = active_is["X"]
         cov_N = gp.covariance.hyperparameter_count(gp.D)
         hyp = gp.posteriors[s].hyp[0:cov_N]  # just covariance hyperparameters
+        L = gp.posteriors[s].L
+        L_chol = gp.posteriors[s].L_chol
+        sn2_eff = 1 / gp.posteriors[s].sW[0] ** 2
         if isinstance(
             gp.covariance, gpr.covariance_functions.SquaredExponential
         ):
@@ -287,7 +307,13 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
                 "Covariance functions besides"
                 + "SquaredExponential are not supported yet."
             )
+
+        if L_chol:
+            C_tmp[:, :, s] = solve_triangular(L, solve_triangular(L, K_Xa_X[:, :, s].T, trans=True, check_finite=False), check_finite=False) / sn2_eff
+        else:
+            C_tmp[:, :, s] = L @ K_Xa_X[:, :, s].T
     active_is["K_Xa_X"] = K_Xa_X
+    active_is["C_tmp"] = C_tmp
 
     # Omitted port, integrated mean functions:
     # activeimportancesampling_vbmc.m, lines 257 to 266.
@@ -438,7 +464,7 @@ def get_mcmc_opts(Ns, thin=1, burn_in=None):
     """
     sampler_opts = {}
     if burn_in is None:
-        burn_in = math.ceil(thin * Ns / 2)
+        burn_in = ceil(thin * Ns / 2)
     sampler_opts["display"] = "off"
     sampler_opts["diagnostics"] = False
 
