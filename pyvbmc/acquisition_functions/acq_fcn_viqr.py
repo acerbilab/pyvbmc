@@ -100,8 +100,8 @@ class AcqFcnVIQR(AbstractAcqFcn):
                 gp.covariance, gpr.covariance_functions.SquaredExponential
             ):  # Hard-coded SE-ard for speed (re-use Xs_ell)
                 # Functionally equivalent to:
-                # K_X_Xs = gp.covariance.compute(hyp, gp.X, Xs)
-                # K_Xa_Xs = gp.covariance.compute(hyp, Xa, Xs)
+                # K_Xs_X = gp.covariance.compute(hyp, Xs, gp.X)
+                # K_Xs_Xa = gp.covariance.compute(hyp, Xs, Xa)
                 # K_Xa_X = optim_state["active_importance_sampling"]["K_Xa_X"][
                 #     :, :, s
                 # ]
@@ -109,15 +109,12 @@ class AcqFcnVIQR(AbstractAcqFcn):
                 sf2 = np.exp(2 * hyp[D])
                 Xs_ell = Xs / ell
 
-                tmp = cdist(gp.X / ell, Xs_ell, "sqeuclidean")
-                K_X_Xs = sf2 * np.exp(-tmp / 2)
+                tmp = cdist(Xs_ell, gp.X / ell, "sqeuclidean")
+                K_Xs_X = sf2 * np.exp(-tmp / 2)
 
-                tmp = cdist(Xa / ell, Xs_ell, "sqeuclidean")
-                K_Xa_Xs = sf2 * np.exp(-tmp / 2)
+                tmp = cdist(Xs_ell, Xa / ell, "sqeuclidean")
+                K_Xs_Xa = sf2 * np.exp(-tmp / 2)
 
-                # K_Xa_X = optim_state["active_importance_sampling"]["K_Xa_X"][
-                #     :, :, s
-                # ]
                 C_tmp = optim_state["active_importance_sampling"]["C_tmp"][
                     :, :, s
                 ].copy()
@@ -128,23 +125,9 @@ class AcqFcnVIQR(AbstractAcqFcn):
                 )
 
             if L_chol:
-                # C = (
-                #     K_Xa_Xs.T
-                #     - K_X_Xs.T
-                #     @ solve_triangular(
-                #         L,
-                #         solve_triangular(
-                #             L, K_Xa_X.T, trans=True, check_finite=False
-                #         ),
-                #         check_finite=False,
-                #     )
-                #     / sn2_eff
-                # )
-                C = K_Xa_Xs.T - K_X_Xs.T @ C_tmp
-                # print(C.shape)
+                C = K_Xs_Xa - K_Xs_X @ C_tmp
             else:
-                # C = K_Xa_Xs.T + K_X_Xs.T @ (L @ K_Xa_X.T)
-                C = K_Xa_Xs.T + K_X_Xs.T @ C_tmp
+                C = K_Xs_Xa + K_Xs_X @ C_tmp
 
             # Missing port, integrated meanfun
 
