@@ -65,7 +65,11 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
         if type(options["activeimportancesamplingmcmcsamples"]) == str:
             K = vp.K
             n_vars = D
-            Na = ceil(float(options["activeimportancesamplingmcmcsamples"]))
+            Na = ceil(
+                eval(
+                    options["activeimportancesamplingmcmcsamples"], {"vp": vp}
+                )
+            )
         elif np.isscalar(options["activeimportancesamplingmcmcsamples"]):
             Na = ceil(options["activeimportancesamplingmcmcsamples"])
         else:
