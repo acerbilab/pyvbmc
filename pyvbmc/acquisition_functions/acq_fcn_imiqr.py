@@ -101,7 +101,7 @@ class AcqFcnIMIQR(AbstractAcqFcn):
             cov_hyp = gp.posteriors[s].hyp[0:cov_N]  # Covariance hyperparams
             L = gp.posteriors[s].L
             L_chol = gp.posteriors[s].L_chol
-            sn2_eff = 1 / gp.posteriors[s].sW[1] ** 2
+            sn2_eff = 1 / gp.posteriors[s].sW[0] ** 2
 
             if multiple_inputs_flag:
                 Xa[:, :] = optim_state["active_importance_sampling"]["X"][
@@ -120,7 +120,7 @@ class AcqFcnIMIQR(AbstractAcqFcn):
             else:
                 raise ValueError(
                     "Covariance functions besides"
-                    + +"SquaredExponential are not supported yet."
+                    + "SquaredExponential are not supported yet."
                 )
 
             if L_chol:

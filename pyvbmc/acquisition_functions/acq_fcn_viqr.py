@@ -93,9 +93,7 @@ class AcqFcnVIQR(AbstractAcqFcn):
         cov_N = gp.covariance.hyperparameter_count(gp.D)
         for s in range(Ns_gp):
             hyp = gp.posteriors[s].hyp[0:cov_N]  # Covariance hyperparameters
-            # L = gp.posteriors[s].L
             L_chol = gp.posteriors[s].L_chol
-            # sn2_eff = 1 / gp.posteriors[s].sW[0] ** 2
 
             # Compute cross-kernel matrices
             if isinstance(
@@ -111,11 +109,11 @@ class AcqFcnVIQR(AbstractAcqFcn):
                 sf2 = np.exp(2 * hyp[D])
                 Xs_ell = Xs / ell
 
-                K_X_Xs = cdist(gp.X / ell, Xs_ell, "sqeuclidean")
-                K_X_Xs = sf2 * np.exp(-K_X_Xs / 2)
+                tmp = cdist(gp.X / ell, Xs_ell, "sqeuclidean")
+                K_X_Xs = sf2 * np.exp(-tmp / 2)
 
-                K_Xa_Xs = cdist(Xs_ell, Xa / ell, "sqeuclidean")
-                K_Xa_Xs = sf2 * np.exp(-K_Xa_Xs / 2)
+                tmp = cdist(Xa / ell, Xs_ell, "sqeuclidean")
+                K_Xa_Xs = sf2 * np.exp(-tmp / 2)
 
                 # K_Xa_X = optim_state["active_importance_sampling"]["K_Xa_X"][
                 #     :, :, s
@@ -140,10 +138,11 @@ class AcqFcnVIQR(AbstractAcqFcn):
                 #     )
                 #     / sn2_eff
                 # )
-                C = K_Xa_Xs - K_X_Xs.T @ C_tmp
+                C = K_Xa_Xs.T - K_X_Xs.T @ C_tmp
+                # print(C.shape)
             else:
                 # C = K_Xa_Xs.T + K_X_Xs.T @ (L @ K_Xa_X.T)
-                C = K_Xa_Xs + K_X_Xs.T @ C_tmp
+                C = K_Xa_Xs.T + K_X_Xs.T @ C_tmp
 
             # Missing port, integrated meanfun
 
