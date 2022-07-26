@@ -1,11 +1,10 @@
 import copy
-from math import ceil
 import sys
-
-from scipy.linalg.basic import solve_triangular
+from math import ceil
 
 import gpyreg as gpr
 import numpy as np
+from scipy.linalg.basic import solve_triangular
 
 
 def active_importance_sampling(vp, gp, acq_fcn, options):
@@ -309,7 +308,16 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
             )
 
         if L_chol:
-            C_tmp[:, :, s] = solve_triangular(L, solve_triangular(L, K_Xa_X[:, :, s].T, trans=True, check_finite=False), check_finite=False) / sn2_eff
+            C_tmp[:, :, s] = (
+                solve_triangular(
+                    L,
+                    solve_triangular(
+                        L, K_Xa_X[:, :, s].T, trans=True, check_finite=False
+                    ),
+                    check_finite=False,
+                )
+                / sn2_eff
+            )
         else:
             C_tmp[:, :, s] = L @ K_Xa_X[:, :, s].T
     active_is["K_Xa_X"] = K_Xa_X

@@ -1,7 +1,7 @@
 import gpyreg as gpr
 import numpy as np
-from scipy.stats import norm
 from scipy.spatial.distance import cdist
+from scipy.stats import norm
 
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.variational_posterior import VariationalPosterior
@@ -118,7 +118,9 @@ class AcqFcnVIQR(AbstractAcqFcn):
                 # K_Xa_X = optim_state["active_importance_sampling"]["K_Xa_X"][
                 #     :, :, s
                 # ]
-                C_tmp = optim_state["active_importance_sampling"]["C_tmp"][:, :, s]
+                C_tmp = optim_state["active_importance_sampling"]["C_tmp"][
+                    :, :, s
+                ]
             else:
                 raise ValueError(
                     "Covariance functions besides"
