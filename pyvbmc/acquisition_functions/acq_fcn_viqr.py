@@ -120,7 +120,7 @@ class AcqFcnVIQR(AbstractAcqFcn):
                 # ]
                 C_tmp = optim_state["active_importance_sampling"]["C_tmp"][
                     :, :, s
-                ]
+                ].copy()
             else:
                 raise ValueError(
                     "Covariance functions besides"
