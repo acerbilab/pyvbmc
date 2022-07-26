@@ -1,8 +1,9 @@
+from sys import float_info
+
 import gpyreg as gpr
 import numpy as np
 from scipy.linalg import solve_triangular
 from scipy.stats import norm
-from sys import float_info
 
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.variational_posterior import VariationalPosterior
@@ -267,4 +268,6 @@ class AcqFcnVIQR(AbstractAcqFcn):
                     + "provided."
                 )
             __, f_s2 = gp.predict(np.atleast_2d(x), add_noise=True)
-        return self.is_log_target(x, f_s2=f_s2, **kwargs) + self.is_log_integrand(f_s2=f_s2, **kwargs)
+        return self.is_log_target(
+            x, f_s2=f_s2, **kwargs
+        ) + self.is_log_integrand(f_s2=f_s2, **kwargs)

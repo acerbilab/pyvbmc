@@ -212,7 +212,9 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
                 f_mu, f_s2 = gp1.predict(
                     active_is_old["X"], separate_samples=True
                 )
-                ln_weights = active_is_old["ln_weights"][s, :].reshape(-1, 1) + acq_fcn.is_log_integrand(f_mu=f_mu, f_s2=f_s2)
+                ln_weights = active_is_old["ln_weights"][s, :].reshape(
+                    -1, 1
+                ) + acq_fcn.is_log_integrand(f_mu=f_mu, f_s2=f_s2)
                 ln_weights_max = np.amax(ln_weights, axis=1).reshape(-1, 1)
                 assert np.all(ln_weights_max != -np.inf)
                 weights = np.exp(ln_weights - ln_weights_max).reshape(-1)

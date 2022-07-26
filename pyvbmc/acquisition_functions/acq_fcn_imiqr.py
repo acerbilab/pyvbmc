@@ -251,4 +251,6 @@ class AcqFcnIMIQR(AbstractAcqFcn):
                     + "provided."
                 )
             f_mu, f_s2 = gp.predict(np.atleast_2d(x), add_noise=True)
-        return self.is_log_target(x, f_mu=f_mu, f_s2=f_s2, **kwargs) + self.is_log_integrand(f_mu=f_mu, f_s2=f_s2, **kwargs)
+        return self.is_log_target(
+            x, f_mu=f_mu, f_s2=f_s2, **kwargs
+        ) + self.is_log_integrand(f_mu=f_mu, f_s2=f_s2, **kwargs)
