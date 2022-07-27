@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.special import erfc, erfcinv
 
 from pyvbmc.decorators import handle_0D_1D_input
 
@@ -24,6 +25,9 @@ class ParameterTransformer:
     plausible_upper_bounds : np.ndarray, optional
         The plausible_upper_bound (PUB) such that LB < PLB < PUB < UB.
         PLB and PUB represent a "plausible" range, by default None.
+    type : str
+        A string indicating the type of transform, one of ["logit", "norminv",
+        "student4"]. Default "logit".
     """
 
     def __init__(
@@ -35,6 +39,7 @@ class ParameterTransformer:
         plausible_upper_bounds: np.ndarray = None,
         scale: np.ndarray = None,
         rotation_matrix: np.ndarray = None,
+        transform_type="logit",
     ):
         self.scale = scale
         self.R_mat = rotation_matrix
@@ -66,6 +71,86 @@ class ParameterTransformer:
         self.lb_orig = lower_bounds
         self.ub_orig = upper_bounds
 
+        # Select and validate the type of transform:
+        transform_types = {"logit": 3, "norminv": 12, "student4": 13}
+        if type(transform_type) == str:
+            try:
+                bounded_type = transform_types[transform_type]
+            except KeyError:
+                raise ValueError(
+                    f"Unrecognized bounded transform {transform_type}."
+                )
+        else:
+            if transform_type not in transform_types.values():
+                raise ValueError(
+                    f"Unrecognized bounded transform {transform_type}."
+                )
+            bounded_type = transform_type
+        if bounded_type == 3:
+
+            def bounded_transform(x, mask):
+                return self._center(
+                    _logit(self._to_unit_interval(x[:, mask])), mask
+                )
+
+            def bounded_inverse(u, mask):
+                return self._from_unit_interval(
+                    _inverse_logit(self._uncenter(u[:, mask], mask))
+                )
+
+            def bounded_jacobian(u, mask):
+                j1 = np.log(self.ub_orig - self.lb_orig)
+                y = self._uncenter(u, mask)
+                z = -np.log1p(np.exp(-y))
+                j2 = -y + 2 * z
+                j3 = np.log(self.delta[mask])
+                return j1 + j2 + j3
+
+        elif bounded_type == 12:
+
+            def bounded_transform(x, mask):
+                return self._center(
+                    _norminv(self._to_unit_interval(x[:, mask])), mask
+                )
+
+            def bounded_inverse(u, mask):
+                return self._from_unit_interval(
+                    _inverse_norminv(self._uncenter(u[:, mask], mask))
+                )
+
+            def bounded_jacobian(u, mask):
+                j1 = np.log(self.ub_orig - self.lb_orig)
+                y = self._uncenter(u, mask)
+                j2 = -0.5 * np.log(2 * np.pi) - 0.5 * y**2
+                j3 = np.log(self.delta[mask])
+                return j1 + j2 + j3
+
+        elif bounded_type == 13:
+
+            def bounded_transform(x, mask):
+                return self._center(
+                    _student4(self._to_unit_interval(x[:, mask])), mask
+                )
+
+            def bounded_inverse(u, mask):
+                return self._from_unit_interval(
+                    _inverse_student4(self._uncenter(u[:, mask], mask))
+                )
+
+            def bounded_jacobian(u, mask):
+                j1 = np.log(self.ub_orig - self.lb_orig)
+                y = self._uncenter(u, mask)
+                j2 = np.log(3 / 8) - (5 / 2) * np.log1p(y**2 / 4)
+                j3 = np.log(self.delta[mask])
+                return j1 + j2 + j3
+
+        else:
+            raise NotImplementedError
+
+        self._bounded_transform = bounded_transform
+        self._bounded_inverse = bounded_inverse
+        self._bounded_jacobian = bounded_jacobian
+
         self.type = np.zeros((D))
         for i in range(D):
             if (
@@ -73,7 +158,7 @@ class ParameterTransformer:
                 and np.isfinite(upper_bounds[:, i])
                 and lower_bounds[:, i] < upper_bounds[:, i]
             ):
-                self.type[i] = 3
+                self.type[i] = bounded_type
 
         # Centering (at the end of the transform)
         self.mu = np.zeros(D)
@@ -129,17 +214,18 @@ class ParameterTransformer:
         # Lower and upper bounded scalars
         mask = self.type == 3
         if np.any(mask):
-            z = (x[:, mask] - self.lb_orig) / (self.ub_orig - self.lb_orig)
+            u[:, mask] = self._bounded_transform(x, mask)
+            # z = (x[:, mask] - self.lb_orig) / (self.ub_orig - self.lb_orig)
 
-            # prevent divide by zero
-            u_temp = np.zeros(x[:, mask].shape)
-            u_temp[z == 0] = -np.inf
-            u_temp[z == 1] = np.inf
+            # # prevent divide by zero
+            # u_temp = np.zeros(x[:, mask].shape)
+            # u_temp[z == 0] = -np.inf
+            # u_temp[z == 1] = np.inf
 
-            u_temp[u_temp == 0] = np.log(z[u_temp == 0] / (1 - z[u_temp == 0]))
-            u[:, mask] = u_temp
+            # u_temp[u_temp == 0] = np.log(z[u_temp == 0] / (1 - z[u_temp == 0]))
+            # u[:, mask] = u_temp
 
-            u[:, mask] = (u[:, mask] - self.mu[mask]) / self.delta[mask]
+            # u[:, mask] = (u[:, mask] - self.mu[mask]) / self.delta[mask]
 
         # Rotoscale whitening:
         # Rotate and rescale points in transformed space.
@@ -186,11 +272,12 @@ class ParameterTransformer:
         # Lower and upper bounded scalars
         mask = self.type == 3
         if np.any(mask):
-            xNew[:, mask] = x[:, mask] * self.delta[mask] + self.mu[mask]
-            xNew[:, mask] = self.lb_orig[:, mask] + (
-                (self.ub_orig[:, mask] - self.lb_orig[:, mask])
-                * (1 / (1 + np.exp(-xNew[:, mask])))
-            )
+            xNew[:, mask] = self._bounded_inverse(x, mask)
+            # xNew[:, mask] = x[:, mask] * self.delta[mask] + self.mu[mask]
+            # xNew[:, mask] = self.lb_orig[:, mask] + (
+            #     (self.ub_orig[:, mask] - self.lb_orig[:, mask])
+            #     * (1 / (1 + np.exp(-xNew[:, mask])))
+            # )
 
         # Force to stay within bounds
         # (8*eps is too small in some cases to prevent infinite values)
@@ -247,12 +334,13 @@ class ParameterTransformer:
         # Lower and upper bounded scalars
         mask = self.type == 3
         if np.any(mask):
-            u_c[:, mask] = u_c[:, mask] * self.delta[mask] + self.mu[mask]
-            z = -np.log1p(np.exp(-u_c[:, mask]))
-            p[:, mask] = (
-                np.log(self.ub_orig - self.lb_orig) - u_c[:, mask] + 2 * z
-            )
-            p[:, mask] = p[:, mask] + np.log(self.delta[mask])
+            p[:, mask] = self._bounded_jacobian(u_c[:, mask], mask)
+            # u_c[:, mask] = u_c[:, mask] * self.delta[mask] + self.mu[mask]
+            # z = -np.log1p(np.exp(-u_c[:, mask]))
+            # p[:, mask] = (
+            #     np.log(self.ub_orig - self.lb_orig) - u_c[:, mask] + 2 * z
+            # )
+            # p[:, mask] = p[:, mask] + np.log(self.delta[mask])
 
         # Whitening/rotoscaling density correction:
         if self.scale is not None:
@@ -260,3 +348,50 @@ class ParameterTransformer:
 
         p = np.sum(p, axis=1)
         return p
+
+    def _to_unit_interval(self, x):
+        return (x - self.lb_orig) / (self.ub_orig - self.lb_orig)
+
+    def _from_unit_interval(self, z):
+        return z * (self.ub_orig - self.lb_orig) + self.lb_orig
+
+    def _center(self, u, mask):
+        return (u - self.mu[mask]) / self.delta[mask]
+
+    def _uncenter(self, v, mask):
+        return v * self.delta[mask] + self.mu[mask]
+
+
+def _logit(z):
+    # prevent divide by zero
+    u = np.zeros(z.shape)
+    u[z == 0] = -np.inf
+    u[z == 1] = np.inf
+
+    u[u == 0] = np.log(z[u == 0] / (1 - z[u == 0]))
+    return u
+
+
+def _inverse_logit(u):
+    return 1 / (1 + np.exp(-u))
+
+
+def _norminv(z):
+    return -np.sqrt(2) * erfcinv(2 * z)
+
+
+def _inverse_norminv(u):
+    return 0.5 * erfc(-u / np.sqrt(2))
+
+
+def _student4(z):
+    aa = np.sqrt(4 * z * (1 - z))
+    q = np.cos(np.arccos(aa) / 3) / aa
+    return np.sign(z - 0.5) * (2 * np.sqrt(q - 1))
+
+
+def _inverse_student4(u):
+    t2 = u**2
+    return 0.5 + (3 / 8) * (u / np.sqrt(1 + t2 / 4)) * (
+        1 - t2 / (1 + t2 / 4) / 12
+    )
