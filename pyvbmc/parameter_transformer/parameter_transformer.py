@@ -80,7 +80,7 @@ class ParameterTransformer:
         }
         if type(transform_type) == str:
             try:
-                self.bounded_type = transform_types[transform_type]
+                bounded_type = transform_types[transform_type]
             except KeyError:
                 raise ValueError(
                     f"Unrecognized bounded transform {transform_type}."
@@ -90,74 +90,12 @@ class ParameterTransformer:
                 raise ValueError(
                     f"Unrecognized bounded transform {transform_type}."
                 )
-            self.bounded_type = transform_type
-        if self.bounded_type == 3:
-            # logit: default transform
+            bounded_type = transform_type
 
-            def bounded_transform(x, mask):
-                return self._center(
-                    _logit(self._to_unit_interval(x[:, mask])), mask
-                )
-
-            def bounded_inverse(u, mask):
-                return self._from_unit_interval(
-                    _inverse_logit(self._uncenter(u[:, mask], mask))
-                )
-
-            def bounded_jacobian(u, mask):
-                j1 = np.log(self.ub_orig - self.lb_orig)
-                y = self._uncenter(u, mask)
-                z = -np.log1p(np.exp(-y))
-                j2 = -y + 2 * z
-                j3 = np.log(self.delta[mask])
-                return j1 + j2 + j3
-
-        elif self.bounded_type == 12:
-            # norminv: normal CDF (probit) transform
-
-            def bounded_transform(x, mask):
-                return self._center(
-                    _norminv(self._to_unit_interval(x[:, mask])), mask
-                )
-
-            def bounded_inverse(u, mask):
-                return self._from_unit_interval(
-                    _inverse_norminv(self._uncenter(u[:, mask], mask))
-                )
-
-            def bounded_jacobian(u, mask):
-                j1 = np.log(self.ub_orig - self.lb_orig)
-                y = self._uncenter(u, mask)
-                j2 = -0.5 * np.log(2 * np.pi) - 0.5 * y**2
-                j3 = np.log(self.delta[mask])
-                return j1 + j2 + j3
-
-        elif self.bounded_type == 13:
-            # student4: Student's T with nu=4 CDF transform
-
-            def bounded_transform(x, mask):
-                return self._center(
-                    _student4(self._to_unit_interval(x[:, mask])), mask
-                )
-
-            def bounded_inverse(u, mask):
-                return self._from_unit_interval(
-                    _inverse_student4(self._uncenter(u[:, mask], mask))
-                )
-
-            def bounded_jacobian(u, mask):
-                j1 = np.log(self.ub_orig - self.lb_orig)
-                y = self._uncenter(u, mask)
-                j2 = np.log(3 / 8) - (5 / 2) * np.log1p(y**2 / 4)
-                j3 = np.log(self.delta[mask])
-                return j1 + j2 + j3
-
-        else:
-            raise NotImplementedError
-
-        self._bounded_transform = bounded_transform
-        self._bounded_inverse = bounded_inverse
-        self._bounded_jacobian = bounded_jacobian
+        # Setup bounded transforms:
+        self.bounded_types = [bounded_type]
+        self._bounded_transforms = {}
+        self._set_bounded_transforms()
 
         self.type = np.zeros((D))
         for i in range(D):
@@ -166,7 +104,7 @@ class ParameterTransformer:
                 and np.isfinite(upper_bounds[:, i])
                 and lower_bounds[:, i] < upper_bounds[:, i]
             ):
-                self.type[i] = self.bounded_type
+                self.type[i] = bounded_type
 
         # Centering (at the end of the transform)
         self.mu = np.zeros(D)
@@ -220,9 +158,12 @@ class ParameterTransformer:
             u[:, mask] = (x[:, mask] - self.mu[mask]) / self.delta[mask]
 
         # Lower and upper bounded scalars
-        mask = self.type == self.bounded_type
-        if np.any(mask):
-            u[:, mask] = self._bounded_transform(x, mask)
+        for t in self.bounded_types:
+            mask = self.type == t
+            if np.any(mask):
+                u[:, mask] = self._bounded_transforms[t]["direct"](
+                    x[:, mask], mask
+                )
 
         # Rotoscale whitening:
         # Rotate and rescale points in transformed space.
@@ -267,9 +208,12 @@ class ParameterTransformer:
             xNew[:, mask] = x[:, mask] * self.delta[mask] + self.mu[mask]
 
         # Lower and upper bounded scalars
-        mask = self.type == self.bounded_type
-        if np.any(mask):
-            xNew[:, mask] = self._bounded_inverse(x, mask)
+        for t in self.bounded_types:
+            mask = self.type == t
+            if np.any(mask):
+                xNew[:, mask] = self._bounded_transforms[t]["inverse"](
+                    x[:, mask], mask
+                )
 
         # Force to stay within bounds
         # (8*eps is too small in some cases to prevent infinite values)
@@ -324,9 +268,12 @@ class ParameterTransformer:
             p[:, mask] = np.log(self.delta[mask])[np.newaxis]
 
         # Lower and upper bounded scalars
-        mask = self.type == self.bounded_type
-        if np.any(mask):
-            p[:, mask] = self._bounded_jacobian(u_c[:, mask], mask)
+        for t in self.bounded_types:
+            mask = self.type == t
+            if np.any(mask):
+                p[:, mask] = self._bounded_transforms[t]["jacobian"](
+                    u_c[:, mask], mask
+                )
 
         # Whitening/rotoscaling density correction:
         if self.scale is not None:
@@ -334,6 +281,91 @@ class ParameterTransformer:
 
         p = np.sum(p, axis=1)
         return p
+
+    def _set_bounded_transforms(self):
+        for t in self.bounded_types:
+            self._bounded_transforms[t] = {}
+            if t == 3:
+                # logit: default transform
+
+                def bounded_transform(x, mask):
+                    return self._center(
+                        _logit(self._to_unit_interval(x[:, mask])), mask
+                    )
+
+                self._bounded_transforms[t]["direct"] = bounded_transform
+
+                def bounded_inverse(u, mask):
+                    return self._from_unit_interval(
+                        _inverse_logit(self._uncenter(u[:, mask], mask))
+                    )
+
+                self._bounded_transforms[t]["inverse"] = bounded_inverse
+
+                def bounded_jacobian(u, mask):
+                    j1 = np.log(self.ub_orig - self.lb_orig)
+                    y = self._uncenter(u, mask)
+                    z = -np.log1p(np.exp(-y))
+                    j2 = -y + 2 * z
+                    j3 = np.log(self.delta[mask])
+                    return j1 + j2 + j3
+
+                self._bounded_transforms[t]["jacobian"] = bounded_jacobian
+
+            elif t == 12:
+                # norminv: normal CDF (probit) transform
+
+                def bounded_transform(x, mask):
+                    return self._center(
+                        _norminv(self._to_unit_interval(x[:, mask])), mask
+                    )
+
+                self._bounded_transforms[t]["direct"] = bounded_transform
+
+                def bounded_inverse(u, mask):
+                    return self._from_unit_interval(
+                        _inverse_norminv(self._uncenter(u[:, mask], mask))
+                    )
+
+                self._bounded_transforms[t]["inverse"] = bounded_inverse
+
+                def bounded_jacobian(u, mask):
+                    j1 = np.log(self.ub_orig - self.lb_orig)
+                    y = self._uncenter(u, mask)
+                    j2 = -0.5 * np.log(2 * np.pi) - 0.5 * y**2
+                    j3 = np.log(self.delta[mask])
+                    return j1 + j2 + j3
+
+                self._bounded_transforms[t]["jacobian"] = bounded_jacobian
+
+            elif t == 13:
+                # student4: Student's T with nu=4 CDF transform
+
+                def bounded_transform(x, mask):
+                    return self._center(
+                        _student4(self._to_unit_interval(x[:, mask])), mask
+                    )
+
+                self._bounded_transforms[t]["direct"] = bounded_transform
+
+                def bounded_inverse(u, mask):
+                    return self._from_unit_interval(
+                        _inverse_student4(self._uncenter(u[:, mask], mask))
+                    )
+
+                self._bounded_transforms[t]["inverse"] = bounded_inverse
+
+                def bounded_jacobian(u, mask):
+                    j1 = np.log(self.ub_orig - self.lb_orig)
+                    y = self._uncenter(u, mask)
+                    j2 = np.log(3 / 8) - (5 / 2) * np.log1p(y**2 / 4)
+                    j3 = np.log(self.delta[mask])
+                    return j1 + j2 + j3
+
+                self._bounded_transforms[t]["jacobian"] = bounded_jacobian
+
+            else:
+                raise NotImplementedError
 
     def _to_unit_interval(self, x):
         return (x - self.lb_orig) / (self.ub_orig - self.lb_orig)
