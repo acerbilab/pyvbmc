@@ -288,10 +288,10 @@ def test_acq_log_f():
     MATLAB = scipy.io.loadmat(filepath)
 
     viqr = AcqFcnVIQR()
-    # Use vp weights for this test:
+    # Use vp weights for this test, since IMIQR uses them.
     viqr.acq_info["importance_sampling_vp"] = True
-    y_viqr = viqr.is_log_f(Xa, gp=gp, vp=vp)
-    y_imiqr = AcqFcnIMIQR().is_log_f(Xa, gp=gp, vp=vp)
+    y_viqr = viqr.is_log_full(Xa, gp=gp, vp=vp)
+    y_imiqr = AcqFcnIMIQR().is_log_full(Xa, gp=gp, vp=vp)
 
     assert y_viqr.shape == y_imiqr.shape == (D, 1)
     assert np.allclose(y_viqr, MATLAB["y_viqr"], atol=1e-3)

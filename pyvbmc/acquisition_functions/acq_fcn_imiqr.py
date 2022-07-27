@@ -101,7 +101,7 @@ class AcqFcnIMIQR(AbstractAcqFcn):
             cov_hyp = gp.posteriors[s].hyp[0:cov_N]  # Covariance hyperparams
             L = gp.posteriors[s].L
             L_chol = gp.posteriors[s].L_chol
-            sn2_eff = 1 / gp.posteriors[s].sW[1] ** 2
+            sn2_eff = 1 / gp.posteriors[s].sW[0] ** 2
 
             if multiple_inputs_flag:
                 Xa[:, :] = optim_state["active_importance_sampling"]["X"][
@@ -120,7 +120,7 @@ class AcqFcnIMIQR(AbstractAcqFcn):
             else:
                 raise ValueError(
                     "Covariance functions besides"
-                    + +"SquaredExponential are not supported yet."
+                    + "SquaredExponential are not supported yet."
                 )
 
             if L_chol:
@@ -176,12 +176,15 @@ class AcqFcnIMIQR(AbstractAcqFcn):
 
         return acq
 
-    def is_log_target(self, x, **kwargs):
-        r"""Importance sampling log target density.
+    def is_log_base(self, x, **kwargs):
+        r"""Importance sampling proposal log density, base part.
 
-        IMIQR approximates an expectation w.r.t. the (exponentiated,
-        unnormalized) GP, and so uses the GP mean f_mu as the target log
-        density.
+        The base density of the importance sampling proposal distribution, used
+        for computing i.s. weights (in addition to the full proposal density).
+        The full proposal log density is ``is_log_full = is_log_base +
+        is_log_added``. IMIQR approximates an expectation w.r.t. to the
+        (exponentiated) GP using importance sampling, so this base log density
+        is the GP mean, ``f_mu``.
 
         Parameters
         ----------
@@ -196,10 +199,14 @@ class AcqFcnIMIQR(AbstractAcqFcn):
         """
         return kwargs["f_mu"]
 
-    def is_log_integrand(self, **kwargs):
-        r"""Importance sampling log integrand.
+    def is_log_added(self, **kwargs):
+        r"""Importance sampling proposal log density, added part.
 
-        For IMIQR/VIQR, this is :math: `\\log [\\sinh(u * f_s)]`.
+        The added term in the importance sampling proposal log density: The
+        full proposal log density is ``is_log_full = is_log_base +
+        is_log_added``. Added part for VIQR/IMIQR is :math: `\\log [\\sinh(u *
+        f_s)]``, where ``f_s`` is the GP predictive variance at the input
+        points.
 
         Parameters
         ----------
@@ -209,19 +216,16 @@ class AcqFcnIMIQR(AbstractAcqFcn):
         Returns
         -------
         y : np.ndarray
-            The value of the (log) integrand (the quantity whose expectation is
-            being estimated).
+            The added log density term at the points of interest.
         """
         f_s = np.sqrt(kwargs["f_s2"])
         return self.u * f_s + np.log1p(-np.exp(-2 * self.u * f_s))
 
-    def is_log_f(self, x, **kwargs):
-        r"""Importance sampling uncorrected log quantities.
+    def is_log_full(self, x, **kwargs):
+        r"""Importance sampling full proposal log density.
 
-        Returns the log target density plus the log integrand, which are the
-        complete importance sampling log quantities `except` for the :math:
-        `-\\log(q(x))` correction term, where :math: `q(x)` is the density of
-        the proposal distribution (added in ``active_importance_sampling.py``).
+        The full proposal log density, used for MCMC sampling: ``is_log_full =
+        is_log_base + is_log_added``.
 
         Parameters
         ----------
@@ -234,6 +238,13 @@ class AcqFcnIMIQR(AbstractAcqFcn):
         gp : gpyreg.GaussianProcess, optional
             The GP modeling the log-density. Either [``f_s2`` and ``f_mu``] or
             ``gp`` must be provided.
+
+        Returns
+        -------
+        y : np.ndarray
+            The full log density of the importance sampling proposal
+            distribution at the points of interest. Of the same shape as
+            ``f_s2``.
 
         Raises
         ------
@@ -251,6 +262,6 @@ class AcqFcnIMIQR(AbstractAcqFcn):
                     + "provided."
                 )
             f_mu, f_s2 = gp.predict(np.atleast_2d(x), add_noise=True)
-        return self.is_log_target(
+        return self.is_log_base(
             x, f_mu=f_mu, f_s2=f_s2, **kwargs
-        ) + self.is_log_integrand(f_mu=f_mu, f_s2=f_s2, **kwargs)
+        ) + self.is_log_added(f_mu=f_mu, f_s2=f_s2, **kwargs)

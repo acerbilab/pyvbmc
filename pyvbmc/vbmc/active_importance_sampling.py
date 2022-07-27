@@ -69,7 +69,7 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
             fESS = fess(vp, f_mu, Xa)
 
             if fESS < options["activeimportancesamplingfessthresh"]:
-                log_p_fun = lambda x: acq_fcn.is_log_f(x, vp=vp, gp=gp)
+                log_p_fun = lambda x: acq_fcn.is_log_full(x, vp=vp, gp=gp)
 
                 # Get MCMC options
                 Nmcmc_samples = (
@@ -94,7 +94,7 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
                 Xa = Xa[-Na:, :]
                 f_mu, f_s2 = gp.predict(Xa, separate_samples=True)
 
-        ln_y = acq_fcn.is_log_target(Xa, f_mu=f_mu, f_s2=f_s2)
+        ln_y = acq_fcn.is_log_base(Xa, f_mu=f_mu, f_s2=f_s2)
 
         active_is["f_s2"] = f_s2
         active_is["ln_weights"] = ln_y.T
@@ -198,7 +198,7 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
                 # quasi-random grid for D <= 2, not implemented
                 # See activeimportancesampling_vbmc.m, lines 159 to 165.
 
-                log_p_fun = lambda x: acq_fcn.is_log_f(x, vp=vp, gp=gp1)
+                log_p_fun = lambda x: acq_fcn.is_log_full(x, vp=vp, gp=gp1)
 
                 # Get MCMC Options
                 thin = options["activeimportancesamplingmcmcthin"]
@@ -214,7 +214,7 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
                 )
                 ln_weights = active_is_old["ln_weights"][s, :].reshape(
                     -1, 1
-                ) + acq_fcn.is_log_integrand(f_mu=f_mu, f_s2=f_s2)
+                ) + acq_fcn.is_log_added(f_mu=f_mu, f_s2=f_s2)
                 ln_weights_max = np.amax(ln_weights, axis=1).reshape(-1, 1)
                 assert np.all(ln_weights_max != -np.inf)
                 weights = np.exp(ln_weights - ln_weights_max).reshape(-1)
@@ -239,7 +239,7 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
 
                 # Fixed log weight for importance sampling
                 # (log fixed integrand)
-                ln_y = acq_fcn.is_log_target(Xa, f_mu=f_mu, f_s2=f_s2)
+                ln_y = acq_fcn.is_log_base(Xa, f_mu=f_mu, f_s2=f_s2)
 
                 active_is["f_s2"][:, s] = f_s2.reshape(-1)
                 active_is["ln_weights"][s, :] = ln_y.T - log_p.T
@@ -326,7 +326,7 @@ def activesample_proposalpdf(Xa, gp, vp_is, w_vp, rect_delta, acq_fcn, vp):
         temp_lpdf[:, 0] = -np.inf
 
     # Fixed log weight for importance sampling (log fixed integrand)
-    ln_y = acq_fcn.is_log_target(Xa, f_mu=f_mu, f_s2=f_s2)
+    ln_y = acq_fcn.is_log_base(Xa, f_mu=f_mu, f_s2=f_s2)
 
     # Mixture of box-uniforms
     if w_vp < 1:
