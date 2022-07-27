@@ -72,7 +72,12 @@ class ParameterTransformer:
         self.ub_orig = upper_bounds
 
         # Select and validate the type of transform:
-        transform_types = {"logit": 3, "norminv": 12, "student4": 13}
+        transform_types = {
+            "logit": 3,
+            "norminv": 12,
+            "probit": 12,
+            "student4": 13,
+        }
         if type(transform_type) == str:
             try:
                 self.bounded_type = transform_types[transform_type]
