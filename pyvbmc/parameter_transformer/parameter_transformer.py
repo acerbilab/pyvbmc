@@ -87,6 +87,7 @@ class ParameterTransformer:
                 )
             self.bounded_type = transform_type
         if self.bounded_type == 3:
+            # logit: default transform
 
             def bounded_transform(x, mask):
                 return self._center(
@@ -107,6 +108,7 @@ class ParameterTransformer:
                 return j1 + j2 + j3
 
         elif self.bounded_type == 12:
+            # norminv: normal CDF (probit) transform
 
             def bounded_transform(x, mask):
                 return self._center(
@@ -126,6 +128,7 @@ class ParameterTransformer:
                 return j1 + j2 + j3
 
         elif self.bounded_type == 13:
+            # student4: Student's T with nu=4 CDF transform
 
             def bounded_transform(x, mask):
                 return self._center(
@@ -215,17 +218,6 @@ class ParameterTransformer:
         mask = self.type == self.bounded_type
         if np.any(mask):
             u[:, mask] = self._bounded_transform(x, mask)
-            # z = (x[:, mask] - self.lb_orig) / (self.ub_orig - self.lb_orig)
-
-            # # prevent divide by zero
-            # u_temp = np.zeros(x[:, mask].shape)
-            # u_temp[z == 0] = -np.inf
-            # u_temp[z == 1] = np.inf
-
-            # u_temp[u_temp == 0] = np.log(z[u_temp == 0] / (1 - z[u_temp == 0]))
-            # u[:, mask] = u_temp
-
-            # u[:, mask] = (u[:, mask] - self.mu[mask]) / self.delta[mask]
 
         # Rotoscale whitening:
         # Rotate and rescale points in transformed space.
@@ -273,11 +265,6 @@ class ParameterTransformer:
         mask = self.type == self.bounded_type
         if np.any(mask):
             xNew[:, mask] = self._bounded_inverse(x, mask)
-            # xNew[:, mask] = x[:, mask] * self.delta[mask] + self.mu[mask]
-            # xNew[:, mask] = self.lb_orig[:, mask] + (
-            #     (self.ub_orig[:, mask] - self.lb_orig[:, mask])
-            #     * (1 / (1 + np.exp(-xNew[:, mask])))
-            # )
 
         # Force to stay within bounds
         # (8*eps is too small in some cases to prevent infinite values)
@@ -335,12 +322,6 @@ class ParameterTransformer:
         mask = self.type == self.bounded_type
         if np.any(mask):
             p[:, mask] = self._bounded_jacobian(u_c[:, mask], mask)
-            # u_c[:, mask] = u_c[:, mask] * self.delta[mask] + self.mu[mask]
-            # z = -np.log1p(np.exp(-u_c[:, mask]))
-            # p[:, mask] = (
-            #     np.log(self.ub_orig - self.lb_orig) - u_c[:, mask] + 2 * z
-            # )
-            # p[:, mask] = p[:, mask] + np.log(self.delta[mask])
 
         # Whitening/rotoscaling density correction:
         if self.scale is not None:
