@@ -208,16 +208,20 @@ class ParameterTransformer:
         # Lower and upper bounded scalars
         for t in self.bounded_types:
             mask = self.type == t
+            widths = self.ub_orig[:, mask] - self.lb_orig[:, mask]
             if np.any(mask):
                 xNew[:, mask] = self._bounded_transforms[t]["inverse"](x, mask)
-
-        # Force to stay within bounds
-        # (8*eps is too small in some cases to prevent infinite values)
-        mask = np.isfinite(self.lb_orig)[0]
-        xNew[:, mask] = np.maximum(
-            xNew[:, mask],
-            self.lb_orig[:, mask] + 10 * np.finfo(np.float64).eps,
-        )
+            # Force to stay within bounds
+            xNew[:, mask] = np.maximum(
+                xNew[:, mask],
+                self.lb_orig[:, mask]
+                + np.finfo(np.float64).eps * np.maximum(1.0, widths),
+            )
+            xNew[:, mask] = np.minimum(
+                xNew[:, mask],
+                self.ub_orig[:, mask]
+                - np.finfo(np.float64).eps * np.maximum(1.0, widths),
+            )
 
         mask = np.isfinite(self.ub_orig)[0]
         xNew[:, mask] = np.minimum(
