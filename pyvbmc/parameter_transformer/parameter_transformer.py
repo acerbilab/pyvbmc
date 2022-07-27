@@ -75,7 +75,7 @@ class ParameterTransformer:
         transform_types = {"logit": 3, "norminv": 12, "student4": 13}
         if type(transform_type) == str:
             try:
-                bounded_type = transform_types[transform_type]
+                self.bounded_type = transform_types[transform_type]
             except KeyError:
                 raise ValueError(
                     f"Unrecognized bounded transform {transform_type}."
@@ -85,8 +85,8 @@ class ParameterTransformer:
                 raise ValueError(
                     f"Unrecognized bounded transform {transform_type}."
                 )
-            bounded_type = transform_type
-        if bounded_type == 3:
+            self.bounded_type = transform_type
+        if self.bounded_type == 3:
 
             def bounded_transform(x, mask):
                 return self._center(
@@ -106,7 +106,7 @@ class ParameterTransformer:
                 j3 = np.log(self.delta[mask])
                 return j1 + j2 + j3
 
-        elif bounded_type == 12:
+        elif self.bounded_type == 12:
 
             def bounded_transform(x, mask):
                 return self._center(
@@ -125,7 +125,7 @@ class ParameterTransformer:
                 j3 = np.log(self.delta[mask])
                 return j1 + j2 + j3
 
-        elif bounded_type == 13:
+        elif self.bounded_type == 13:
 
             def bounded_transform(x, mask):
                 return self._center(
@@ -158,7 +158,7 @@ class ParameterTransformer:
                 and np.isfinite(upper_bounds[:, i])
                 and lower_bounds[:, i] < upper_bounds[:, i]
             ):
-                self.type[i] = bounded_type
+                self.type[i] = self.bounded_type
 
         # Centering (at the end of the transform)
         self.mu = np.zeros(D)
@@ -212,7 +212,7 @@ class ParameterTransformer:
             u[:, mask] = (x[:, mask] - self.mu[mask]) / self.delta[mask]
 
         # Lower and upper bounded scalars
-        mask = self.type == 3
+        mask = self.type == self.bounded_type
         if np.any(mask):
             u[:, mask] = self._bounded_transform(x, mask)
             # z = (x[:, mask] - self.lb_orig) / (self.ub_orig - self.lb_orig)
@@ -270,7 +270,7 @@ class ParameterTransformer:
             xNew[:, mask] = x[:, mask] * self.delta[mask] + self.mu[mask]
 
         # Lower and upper bounded scalars
-        mask = self.type == 3
+        mask = self.type == self.bounded_type
         if np.any(mask):
             xNew[:, mask] = self._bounded_inverse(x, mask)
             # xNew[:, mask] = x[:, mask] * self.delta[mask] + self.mu[mask]
@@ -332,7 +332,7 @@ class ParameterTransformer:
             p[:, mask] = np.log(self.delta[mask])[np.newaxis]
 
         # Lower and upper bounded scalars
-        mask = self.type == 3
+        mask = self.type == self.bounded_type
         if np.any(mask):
             p[:, mask] = self._bounded_jacobian(u_c[:, mask], mask)
             # u_c[:, mask] = u_c[:, mask] * self.delta[mask] + self.mu[mask]
