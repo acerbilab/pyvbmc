@@ -25,7 +25,7 @@ class ParameterTransformer:
     plausible_upper_bounds : np.ndarray, optional
         The plausible_upper_bound (PUB) such that LB < PLB < PUB < UB.
         PLB and PUB represent a "plausible" range, by default None.
-    type : str
+    transform_type : str, optional
         A string indicating the type of transform, one of ["logit", ("norminv"
         || "probit"), "student4"]. Default "logit".
     """
@@ -275,6 +275,13 @@ class ParameterTransformer:
         return p
 
     def _set_bounded_transforms(self):
+        r"""Initialize functions for bounded transform(s) by type.
+
+        Stores the resulting callables in a dictionary
+        ``self._bounded_transforms[t][case]``, where ``t`` is the integer name
+        of the transform type, and ``case`` is one of ``["direct", "inverse",
+        "jacobian"]`` for the corresponding function.
+        """
         for t in self.bounded_types:
             self._bounded_transforms[t] = {}
             if t == 3:
