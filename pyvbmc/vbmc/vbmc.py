@@ -181,12 +181,14 @@ class VBMC:
                 self.plausible_lower_bounds + self.plausible_upper_bounds
             )
 
+        # Initialize transformation to unbounded parameters
         self.parameter_transformer = ParameterTransformer(
             self.D,
             self.lower_bounds,
             self.upper_bounds,
             self.plausible_lower_bounds,
             self.plausible_upper_bounds,
+            transform_type=self.options["boundedtransform"],
         )
 
         # Initialize variational posterior
