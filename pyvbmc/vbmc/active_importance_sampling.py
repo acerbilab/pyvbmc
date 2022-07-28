@@ -37,8 +37,6 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
     active_is : dict
         A dictionary of importance sampling values and bookkeeping.
     """
-    # Does the importance sampling step use the variational posterior?
-    isample_vp_flag = acq_fcn.acq_info.get("importance_sampling_vp", False)
     # Do we simply sample from the variational posterior?
     only_vp_flag = acq_fcn.acq_info.get(
         "variational_importance_sampling", False
@@ -90,10 +88,7 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
             fESS = fess(vp, f_mu, Xa)
 
             if fESS < options["activeimportancesamplingfessthresh"]:
-                if isample_vp_flag:
-                    log_p_fun = lambda x: log_isbasefun(x, acq_fcn, gp, vp)
-                else:
-                    log_p_fun = lambda x: log_isbasefun(x, acq_fcn, gp, None)
+                log_p_fun = lambda x: acq_fcn.is_log_full(x, vp=vp, gp=gp)
 
                 # Get MCMC options
                 Nmcmc_samples = (
@@ -118,14 +113,7 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
                 Xa = Xa[-Na:, :]
                 f_mu, f_s2 = gp.predict(Xa, separate_samples=True)
 
-        if isample_vp_flag:
-            v_ln_pdf = np.maximum(
-                vp.pdf(Xa, origflag=False, logflag=True),
-                np.log(np.finfo(np.float64).min),
-            )
-            ln_y = acq_fcn.is_log_f1(v_ln_pdf, f_mu, f_s2)
-        else:
-            ln_y = acq_fcn.is_log_f1(None, f_mu, f_s2)
+        ln_y = acq_fcn.is_log_base(Xa, f_mu=f_mu, f_s2=f_s2)
 
         active_is["f_s2"] = f_s2
         active_is["ln_weights"] = ln_y.T
@@ -229,10 +217,7 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
                 # quasi-random grid for D <= 2, not implemented
                 # See activeimportancesampling_vbmc.m, lines 159 to 165.
 
-                if isample_vp_flag:
-                    log_p_fun = lambda x: log_isbasefun(x, acq_fcn, gp1, vp)
-                else:
-                    log_p_fun = lambda x: log_isbasefun(x, acq_fcn, gp1, None)
+                log_p_fun = lambda x: acq_fcn.is_log_full(x, vp=vp, gp=gp1)
 
                 # Get MCMC Options
                 thin = options["activeimportancesamplingmcmcthin"]
@@ -248,15 +233,15 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
                 )
                 ln_weights = active_is_old["ln_weights"][s, :].reshape(
                     -1, 1
-                ) + acq_fcn.is_log_f2(f_mu, f_s2)
+                ) + acq_fcn.is_log_added(f_mu=f_mu, f_s2=f_s2)
                 ln_weights_max = np.amax(ln_weights, axis=1).reshape(-1, 1)
                 assert np.all(ln_weights_max != -np.inf)
                 weights = np.exp(ln_weights - ln_weights_max).reshape(-1)
                 weights = weights / np.sum(weights)
                 # x0 = np.zeros((Walkers, D))
-                # Select x0 with replacement by weight:
+                # Select x0 without replacement by weight:
                 index = np.random.choice(
-                    a=len(weights), p=weights, replace=True
+                    a=len(weights), p=weights, replace=False
                 )
                 x0 = active_is_old["X"][index, :]
                 x0 = np.maximum(np.minimum(x0, UB), LB)  # Force inside bounds
@@ -273,14 +258,7 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
 
                 # Fixed log weight for importance sampling
                 # (log fixed integrand)
-                if isample_vp_flag:
-                    v_ln_pdf = np.maximum(
-                        vp.pdf(Xa, origflag=False, logflag=True),
-                        np.log(sys.float_info.min),
-                    )
-                    ln_y = acq_fcn.is_log_f1(v_ln_pdf, f_mu, f_s2)
-                else:
-                    ln_y = acq_fcn.is_log_f1(None, f_mu, f_s2)
+                ln_y = acq_fcn.is_log_base(Xa, f_mu=f_mu, f_s2=f_s2)
 
                 active_is["f_s2"][:, s] = f_s2.reshape(-1)
                 active_is["ln_weights"][s, :] = ln_y.T - log_p.T
@@ -367,7 +345,6 @@ def activesample_proposalpdf(Xa, gp, vp_is, w_vp, rect_delta, acq_fcn, vp):
     """
     N, D = gp.X.shape
     Na = Xa.shape[0]
-    isample_vp_flag = acq_fcn.acq_info.get("importance_sampling_vp", False)
 
     f_mu, f_s2 = gp.predict(Xa, separate_samples=True)
 
@@ -387,14 +364,7 @@ def activesample_proposalpdf(Xa, gp, vp_is, w_vp, rect_delta, acq_fcn, vp):
         temp_lpdf[:, 0] = -np.inf
 
     # Fixed log weight for importance sampling (log fixed integrand)
-    if isample_vp_flag:
-        v_ln_pdf = np.maximum(
-            vp.pdf(Xa, origflag=False, logflag=True),
-            np.log(sys.float_info.min),
-        )
-        ln_y = acq_fcn.is_log_f1(v_ln_pdf, f_mu, f_s2)
-    else:
-        ln_y = acq_fcn.is_log_f1(None, f_mu, f_s2)
+    ln_y = acq_fcn.is_log_base(Xa, f_mu=f_mu, f_s2=f_s2)
 
     # Mixture of box-uniforms
     if w_vp < 1:
@@ -415,39 +385,6 @@ def activesample_proposalpdf(Xa, gp, vp_is, w_vp, rect_delta, acq_fcn, vp):
         ln_weights = ln_y - temp_lpdf
 
     return ln_weights, f_s2
-
-
-def log_isbasefun(x, acq_fcn, gp, vp=None):
-    r"""Base importance sampling proposal log pdf.
-
-    Parameters
-    ----------
-    x : np.ndarray
-        The points at which to evaluate the log pdf of the proposal, of shape
-        ``(N, D)`` where ``D`` is the problem dimension.
-    acq_fcn : AbstractAcqFcn
-        The acquisition function (must implement ``is_log_f`` method which
-        evaluates the log pdf.
-    gp : gpr.GP
-        The GP surrogate.
-    vp : VariationalPosterior, optional
-        The current VP. If ``None``, no importance sampling weights
-        will be added to the log pdf.
-
-    Returns
-    -------
-    is_log_f : np.ndarray
-        The proposal log pdf evaluated at the input points, of shape ``(N, 1)``
-    """
-    f_mu, f_s2 = gp.predict(np.atleast_2d(x), add_noise=True)
-
-    if vp is None:
-        return acq_fcn.is_log_f(0, f_mu, f_s2)
-    else:
-        v_ln_pdf = np.maximum(
-            vp.pdf(x, origflag=False, logflag=True), np.log(sys.float_info.min)
-        )
-        return acq_fcn.is_log_f(v_ln_pdf, f_mu, f_s2)
 
 
 def get_mcmc_opts(Ns, thin=1, burn_in=None):
