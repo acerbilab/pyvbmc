@@ -25,9 +25,9 @@ class ParameterTransformer:
     plausible_upper_bounds : np.ndarray, optional
         The plausible_upper_bound (PUB) such that LB < PLB < PUB < UB.
         PLB and PUB represent a "plausible" range, by default None.
-    transform_type : str, optional
-        A string indicating the type of transform, one of ["logit", ("norminv"
-        || "probit"), "student4"]. Default "logit".
+    bounded_transform_type : str, optional
+        A string indicating the type of transform for bounded variables: one of
+        ["logit", ("norminv" || "probit"), "student4"]. Default "logit".
     """
 
     def __init__(
