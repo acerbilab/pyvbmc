@@ -1,3 +1,5 @@
+from sys import float_info
+
 import gpyreg as gpr
 import numpy as np
 from scipy.linalg import solve_triangular
@@ -169,17 +171,117 @@ class AcqFcnVIQR(AbstractAcqFcn):
         assert np.all(~np.isnan(acq))
         return acq
 
-    def is_log_f1(self, v_ln_pdf, f_mu, f_s2):
-        """Importance sampling log base proposal (fixed part)."""
-        return np.zeros(f_s2.shape)
+    def is_log_base(self, x, **kwargs):
+        r"""Importance sampling proposal log density, base part.
 
-    def is_log_f2(self, f_mu, f_s2):
-        """% Importance sampling log base proposal (added part)
-        (Full log base proposal is fixed + added)"""
-        f_s = np.sqrt(f_s2)
+        The base density of the importance sampling proposal distribution, used
+        for computing i.s. weights (in addition to the full proposal density).
+        The full proposal log density is ``is_log_full = is_log_base +
+        is_log_added``. VIQR approximates an expectation w.r.t. to the VP
+        using simple Monte Carlo, so this base density is constant (log=0) by
+        default. If ``self.acq_info["importance_sampling_vp"]`` is forced to
+        ``True``, will return the VP log pdf at the points ``x``.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            The input points, shape ``(N, D)`` where ``N`` is the number of
+            points and ``D`` is the dimension.
+        f_s2 : np.ndarray
+            The predicted posterior variance at the points of interest.
+        vp : pyvbmc.variational_posterior.VariationalPosterior, optional
+            The VP, unused by default: only used if
+            ``self.acq_info["active_importance_sampling_vp"]`` is set to
+            ``True``, in which case the density of the VP needs to be accounted
+            for in the importance sampling weights.
+
+        Returns
+        -------
+        z : np.ndarray
+            The base part of the importance sampling weights, shape ``f_s2``.
+
+        Raises
+        ------
+        ValueError
+            If ``self.acq_info["active_importance_sampling_vp"]`` is ``True``
+            but no ``vp`` is provided.
+        """
+        f_s2 = kwargs["f_s2"]
+        if self.acq_info["importance_sampling_vp"]:
+            # True importance sampling via VP (uses VP density in weights).
+            vp = kwargs.get("vp")
+            f_s = np.sqrt(f_s2)
+            if vp is None:
+                raise ValueError(
+                    "Must provide vp as keyword argument if using vp"
+                    + "importance sampling."
+                )
+            v_ln_pdf = np.maximum(
+                vp.pdf(x, origflag=False, logflag=True), np.log(float_info.min)
+            )
+            return v_ln_pdf
+        else:  # Simple Monte Carlo (constant weights)
+            return np.zeros(f_s2.shape)
+
+    def is_log_added(self, **kwargs):
+        r"""Importance sampling proposal log density, added part.
+
+        The added term in the importance sampling proposal log density: The
+        full proposal log density is ``is_log_full = is_log_base +
+        is_log_added``. Added part for VIQR/IMIQR is :math: `\\log [\\sinh(u *
+        f_s)]``, where ``f_s`` is the GP predictive variance at the input
+        points.
+
+        Parameters
+        ----------
+        f_s2 : np.ndarray
+            The predicted posterior variance at the points of interest.
+
+        Returns
+        -------
+        y : np.ndarray
+            The added log density term at the points of interest. Of the same
+            shape as ``f_s2``.
+        """
+        f_s = np.sqrt(kwargs["f_s2"])
         return self.u * f_s + np.log1p(-np.exp(-2 * self.u * f_s))
 
-    def is_log_f(self, v_ln_pdf, f_mu, f_s2):
-        """Importance sampling log base proposal distribution."""
-        f_s = np.sqrt(f_s2)
-        return v_ln_pdf + self.u * f_s + np.log1p(-np.exp(-2 * self.u * f_s))
+    def is_log_full(self, x, **kwargs):
+        r"""Importance sampling full proposal log density.
+
+        The full proposal log density, used for MCMC sampling: ``is_log_full =
+        is_log_base + is_log_added``.
+
+        Parameters
+        ----------
+        f_s2 : np.ndarray, optional
+            The predicted posterior variance at the points of interest. Either
+            ``f_s2`` or ``gp`` must be provided.
+        gp : gpyreg.GaussianProcess, optional
+            The GP modeling the log-density. Either ``f_s2`` or ``gp`` must be
+            provided.
+
+        Returns
+        -------
+        y : np.ndarray
+            The full log density of the importance sampling proposal
+            distribution at the points of interest. Of the same shape as
+            ``f_s2``.
+
+        Raises
+        ------
+        ValueError
+            If neither ``f_s2`` nor ``gp`` are provided.
+        """
+        f_s2 = kwargs.pop("f_s2", None)  # Try to get pre-computed f_s2
+        if f_s2 is None:  # Otherwise use GP to predict
+            gp = kwargs.get("gp")
+            if gp is None:
+                raise ValueError(
+                    "Must provide gp as keyword argument if f_s2 is not"
+                    + "provided."
+                )
+            __, f_s2 = gp.predict(np.atleast_2d(x), add_noise=True)
+        return self.is_log_base(x, f_s2=f_s2, **kwargs) + self.is_log_added(
+            f_s2=f_s2, **kwargs
+        )
