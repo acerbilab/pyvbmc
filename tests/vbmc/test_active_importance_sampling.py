@@ -84,7 +84,7 @@ def test_active_importance_sampling():
         == (2, 10)
     )
     assert active_is_viqr["X"].shape == (10, D)
-    assert active_is_imiqr["X"].shape == (10, D, 2)
+    assert active_is_imiqr["X"].shape == (2, 10, D)
     assert (
         active_is_imiqr["ln_weights"].shape
         == active_is_imiqr["f_s2"].T.shape
