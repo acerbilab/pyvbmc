@@ -174,16 +174,10 @@ def test_parameter_transformer_log_det_abs():
         scale=np.array([0.9, 0.7, 2.3]),
     )
     u = parameter_transformer(x)
-    print(u)
     assert np.allclose(
         u, np.array([0.689778028799817, 0.181006596372446, 1.09421151292434])
     )
     log_abs_det = parameter_transformer.log_abs_det_jacobian(u)
-    print(log_abs_det)
-    print(parameter_transformer.delta)
-    print(parameter_transformer.mu)
-    print(parameter_transformer.scale)
-    print(parameter_transformer.type)
     assert np.isclose(log_abs_det, 3.81289203952045)
 
 
