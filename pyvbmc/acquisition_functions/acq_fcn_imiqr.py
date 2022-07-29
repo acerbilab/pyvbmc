@@ -1,6 +1,6 @@
 import gpyreg as gpr
 import numpy as np
-from scipy.linalg import solve_triangular
+from scipy.linalg.basic import solve_triangular
 from scipy.stats import norm
 
 from pyvbmc.function_logger import FunctionLogger
