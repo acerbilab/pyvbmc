@@ -1,8 +1,6 @@
-from sys import float_info
-
 import gpyreg as gpr
 import numpy as np
-from scipy.linalg import solve_triangular
+from scipy.spatial.distance import cdist
 from scipy.stats import norm
 
 from pyvbmc.function_logger import FunctionLogger
@@ -95,19 +93,31 @@ class AcqFcnVIQR(AbstractAcqFcn):
         cov_N = gp.covariance.hyperparameter_count(gp.D)
         for s in range(Ns_gp):
             hyp = gp.posteriors[s].hyp[0:cov_N]  # Covariance hyperparameters
-            L = gp.posteriors[s].L
             L_chol = gp.posteriors[s].L_chol
-            sn2_eff = 1 / gp.posteriors[s].sW[0] ** 2
 
             # Compute cross-kernel matrices
             if isinstance(
                 gp.covariance, gpr.covariance_functions.SquaredExponential
-            ):
-                K_X_Xs = gp.covariance.compute(hyp, gp.X, Xs)
-                K_Xa_Xs = gp.covariance.compute(hyp, Xa, Xs)
-                K_Xa_X = optim_state["active_importance_sampling"]["K_Xa_X"][
+            ):  # Hard-coded SE-ard for speed (re-use Xs_ell)
+                # Functionally equivalent to:
+                # K_Xs_X = gp.covariance.compute(hyp, Xs, gp.X)
+                # K_Xs_Xa = gp.covariance.compute(hyp, Xs, Xa)
+                # K_Xa_X = optim_state["active_importance_sampling"]["K_Xa_X"][
+                #     :, :, s
+                # ]
+                ell = np.exp(hyp[0:D])
+                sf2 = np.exp(2 * hyp[D])
+                Xs_ell = Xs / ell
+
+                tmp = cdist(Xs_ell, gp.X / ell, "sqeuclidean")
+                K_Xs_X = sf2 * np.exp(-tmp / 2)
+
+                tmp = cdist(Xs_ell, Xa / ell, "sqeuclidean")
+                K_Xs_Xa = sf2 * np.exp(-tmp / 2)
+
+                C_tmp = optim_state["active_importance_sampling"]["C_tmp"][
                     :, :, s
-                ]
+                ].copy()
             else:
                 raise ValueError(
                     "Covariance functions besides"
@@ -115,20 +125,9 @@ class AcqFcnVIQR(AbstractAcqFcn):
                 )
 
             if L_chol:
-                C = (
-                    K_Xa_Xs.T
-                    - K_X_Xs.T
-                    @ solve_triangular(
-                        L,
-                        solve_triangular(
-                            L, K_Xa_X.T, trans=True, check_finite=False
-                        ),
-                        check_finite=False,
-                    )
-                    / sn2_eff
-                )
+                C = K_Xs_Xa - K_Xs_X @ C_tmp
             else:
-                C = K_Xa_Xs.T + K_X_Xs.T @ (L @ K_Xa_X.T)
+                C = K_Xs_Xa + K_Xs_X @ C_tmp
 
             # Missing port, integrated meanfun
 
@@ -141,19 +140,9 @@ class AcqFcnVIQR(AbstractAcqFcn):
                 )
             )
 
-            ln_weights = optim_state["active_importance_sampling"][
-                "ln_weights"
-            ][s, :]
-            # ln_weights should be 0 here: since we are sampling Xa from the VP
-            # no extra importance sampling weight is required.
-            # It is included for compatibility.
-
             # zz = ln(weights * sinh(u * s_pred)) + C
-            zz = (
-                ln_weights
-                + self.u * s_pred
-                + np.log1p(-np.exp(-2 * self.u * s_pred))
-            )
+            # (VIQR uses simple Monte Carlo, so weights are constant).
+            zz = self.u * s_pred + np.log1p(-np.exp(-2 * self.u * s_pred))
             # logsumexp
             ln_max = np.amax(zz, axis=1)
             ln_max[ln_max == -np.inf] = 0.0  # Avoid -inf + inf
@@ -178,9 +167,7 @@ class AcqFcnVIQR(AbstractAcqFcn):
         for computing i.s. weights (in addition to the full proposal density).
         The full proposal log density is ``is_log_full = is_log_base +
         is_log_added``. VIQR approximates an expectation w.r.t. to the VP
-        using simple Monte Carlo, so this base density is constant (log=0) by
-        default. If ``self.acq_info["importance_sampling_vp"]`` is forced to
-        ``True``, will return the VP log pdf at the points ``x``.
+        using simple Monte Carlo, so this base density is constant (log=0).
 
         Parameters
         ----------
@@ -189,39 +176,15 @@ class AcqFcnVIQR(AbstractAcqFcn):
             points and ``D`` is the dimension.
         f_s2 : np.ndarray
             The predicted posterior variance at the points of interest.
-        vp : pyvbmc.variational_posterior.VariationalPosterior, optional
-            The VP, unused by default: only used if
-            ``self.acq_info["active_importance_sampling_vp"]`` is set to
-            ``True``, in which case the density of the VP needs to be accounted
-            for in the importance sampling weights.
 
         Returns
         -------
         z : np.ndarray
-            The base part of the importance sampling weights, shape ``f_s2``.
-
-        Raises
-        ------
-        ValueError
-            If ``self.acq_info["active_importance_sampling_vp"]`` is ``True``
-            but no ``vp`` is provided.
+            The log base part of the importance sampling weights (zeros), shape
+            ``f_s2``.
         """
         f_s2 = kwargs["f_s2"]
-        if self.acq_info["importance_sampling_vp"]:
-            # True importance sampling via VP (uses VP density in weights).
-            vp = kwargs.get("vp")
-            f_s = np.sqrt(f_s2)
-            if vp is None:
-                raise ValueError(
-                    "Must provide vp as keyword argument if using vp"
-                    + "importance sampling."
-                )
-            v_ln_pdf = np.maximum(
-                vp.pdf(x, origflag=False, logflag=True), np.log(float_info.min)
-            )
-            return v_ln_pdf
-        else:  # Simple Monte Carlo (constant weights)
-            return np.zeros(f_s2.shape)
+        return np.zeros(f_s2.shape)
 
     def is_log_added(self, **kwargs):
         r"""Importance sampling proposal log density, added part.
@@ -282,6 +245,5 @@ class AcqFcnVIQR(AbstractAcqFcn):
                     + "provided."
                 )
             __, f_s2 = gp.predict(np.atleast_2d(x), add_noise=True)
-        return self.is_log_base(x, f_s2=f_s2, **kwargs) + self.is_log_added(
-            f_s2=f_s2, **kwargs
-        )
+        # base + added (base part is 0):
+        return self.is_log_added(f_s2=f_s2, **kwargs)
