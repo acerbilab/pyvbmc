@@ -1,5 +1,3 @@
-from sys import float_info
-
 import gpyreg as gpr
 import numpy as np
 from scipy.spatial.distance import cdist
@@ -142,18 +140,9 @@ class AcqFcnVIQR(AbstractAcqFcn):
                 )
             )
 
-            # ln_weights is 0 here: VIQR uses simple Monte Carlo, not
-            # importance sampling.
-            ln_weights = optim_state["active_importance_sampling"][
-                "ln_weights"
-            ][s, :]
-
-            # zz = ln(sinh(u * s_pred)) + C
-            zz = (
-                ln_weights
-                + self.u * s_pred
-                + np.log1p(-np.exp(-2 * self.u * s_pred))
-            )
+            # zz = ln(weights * sinh(u * s_pred)) + C
+            # (VIQR uses simple Monte Carlo, so weights are constant).
+            zz = self.u * s_pred + np.log1p(-np.exp(-2 * self.u * s_pred))
             # logsumexp
             ln_max = np.amax(zz, axis=1)
             ln_max[ln_max == -np.inf] = 0.0  # Avoid -inf + inf
@@ -178,9 +167,7 @@ class AcqFcnVIQR(AbstractAcqFcn):
         for computing i.s. weights (in addition to the full proposal density).
         The full proposal log density is ``is_log_full = is_log_base +
         is_log_added``. VIQR approximates an expectation w.r.t. to the VP
-        using simple Monte Carlo, so this base density is constant (log=0) by
-        default. If ``self.acq_info["importance_sampling_vp"]`` is forced to
-        ``True``, will return the VP log pdf at the points ``x``.
+        using simple Monte Carlo, so this base density is constant (log=0).
 
         Parameters
         ----------
@@ -189,39 +176,15 @@ class AcqFcnVIQR(AbstractAcqFcn):
             points and ``D`` is the dimension.
         f_s2 : np.ndarray
             The predicted posterior variance at the points of interest.
-        vp : pyvbmc.variational_posterior.VariationalPosterior, optional
-            The VP, unused by default: only used if
-            ``self.acq_info["active_importance_sampling_vp"]`` is set to
-            ``True``, in which case the density of the VP needs to be accounted
-            for in the importance sampling weights.
 
         Returns
         -------
         z : np.ndarray
-            The base part of the importance sampling weights, shape ``f_s2``.
-
-        Raises
-        ------
-        ValueError
-            If ``self.acq_info["active_importance_sampling_vp"]`` is ``True``
-            but no ``vp`` is provided.
+            The log base part of the importance sampling weights (zeros), shape
+            ``f_s2``.
         """
         f_s2 = kwargs["f_s2"]
-        if self.acq_info["importance_sampling_vp"]:
-            # True importance sampling via VP (uses VP density in weights).
-            vp = kwargs.get("vp")
-            f_s = np.sqrt(f_s2)
-            if vp is None:
-                raise ValueError(
-                    "Must provide vp as keyword argument if using vp"
-                    + "importance sampling."
-                )
-            v_ln_pdf = np.maximum(
-                vp.pdf(x, origflag=False, logflag=True), np.log(float_info.min)
-            )
-            return v_ln_pdf
-        else:  # Simple Monte Carlo (constant weights)
-            return np.zeros(f_s2.shape)
+        return np.zeros(f_s2.shape)
 
     def is_log_added(self, **kwargs):
         r"""Importance sampling proposal log density, added part.
@@ -282,6 +245,5 @@ class AcqFcnVIQR(AbstractAcqFcn):
                     + "provided."
                 )
             __, f_s2 = gp.predict(np.atleast_2d(x), add_noise=True)
-        return self.is_log_base(x, f_s2=f_s2, **kwargs) + self.is_log_added(
-            f_s2=f_s2, **kwargs
-        )
+        # base + added (base part is 0):
+        return self.is_log_added(f_s2=f_s2, **kwargs)

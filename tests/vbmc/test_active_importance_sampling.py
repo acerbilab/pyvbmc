@@ -1,4 +1,5 @@
 import os.path
+from sys import float_info
 
 import gpyreg as gpr
 import numpy as np
@@ -291,6 +292,13 @@ def test_acq_log_f():
     # Use vp weights for this test, since IMIQR uses them.
     viqr.acq_info["importance_sampling_vp"] = True
     y_viqr = viqr.is_log_full(Xa, gp=gp, vp=vp)
+    y_imiqr = AcqFcnIMIQR().is_log_full(Xa, gp=gp, vp=vp)
+    viqr = AcqFcnVIQR()
+    y_viqr = viqr.is_log_full(Xa, gp=gp, vp=vp)
+    # Add VP density to i.s. weights:
+    y_viqr += np.maximum(
+        vp.pdf(Xa, origflag=False, logflag=True), np.log(float_info.min)
+    )
     y_imiqr = AcqFcnIMIQR().is_log_full(Xa, gp=gp, vp=vp)
 
     assert y_viqr.shape == y_imiqr.shape == (D, 1)

@@ -145,6 +145,8 @@ def test_simple__call__():
     result = acqviqr(
         X_eval[0], gp, vp, function_logger=None, optim_state=optim_state
     ) - np.log(2)
+    # Re-normalize:
+    result += -np.log(optim_state["active_importance_sampling"]["X"].shape[0])
     u = sps.norm.ppf(0.75)
     # print(result)
     # print(np.log(np.sinh(u * np.exp(1))))
@@ -315,9 +317,14 @@ def test_complex__call__():
     )
 
     # VIQR Acquisition Function Values:
-    result = np.exp(
-        acqviqr(X_eval, gp, vp, function_logger=None, optim_state=optim_state)
-    ).reshape((N_eval,))
+    log_result = acqviqr(
+        X_eval, gp, vp, function_logger=None, optim_state=optim_state
+    )
+    # Re-normalize:
+    log_result += -np.log(
+        optim_state["active_importance_sampling"]["X"].shape[0]
+    )
+    result = np.exp(log_result).reshape((N_eval,))
     # print(result)
     # print(viqr_grid)
     assert np.allclose(viqr_grid, result, rtol=0.05)
