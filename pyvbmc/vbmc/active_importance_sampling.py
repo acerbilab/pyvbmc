@@ -60,18 +60,12 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
     if only_vp_flag:
         # Step 0: Simply sample from variational posterior.
 
-        if type(options["activeimportancesamplingmcmcsamples"]) == str:
-            K = vp.K
-            n_vars = D
-            Na = ceil(
-                eval(
-                    options["activeimportancesamplingmcmcsamples"], {"vp": vp}
-                )
+        Na = ceil(
+            options.eval(
+                "activeimportancesamplingmcmcsamples",
+                {"K": vp.K, "n_vars": D, "D": D},
             )
-        elif np.isscalar(options["activeimportancesamplingmcmcsamples"]):
-            Na = ceil(options["activeimportancesamplingmcmcsamples"])
-        else:
-            Na = 0
+        )
 
         if not np.isfinite(Na) or not np.isscalar(Na) or Na <= 0:
             raise ValueError(
