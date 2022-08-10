@@ -161,7 +161,7 @@ def train_gp(
         hyp0 = hyp_dict["hyp_vp"]
 
     # print(hyp0.shape)
-    _, _, res = gp.fit(x_train, y_train, s2_train, hyp0=hyp0, options=gp_train)
+    hyp_dict["hyp"], _, res = gp.fit(x_train, y_train, s2_train, hyp0=hyp0, options=gp_train)
 
     if res is not None:
         # Pre-thinning GP hyperparameters
