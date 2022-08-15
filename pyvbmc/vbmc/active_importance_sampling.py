@@ -289,7 +289,7 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
             )
 
         if L_chol:
-            C_tmp[s] = (
+            C_tmp[s, :, :] = (
                 solve_triangular(
                     L,
                     solve_triangular(
