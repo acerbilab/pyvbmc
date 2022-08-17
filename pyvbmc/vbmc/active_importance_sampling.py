@@ -60,18 +60,12 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
     if only_vp_flag:
         # Step 0: Simply sample from variational posterior.
 
-        if type(options["activeimportancesamplingmcmcsamples"]) == str:
-            K = vp.K
-            n_vars = D
-            Na = ceil(
-                eval(
-                    options["activeimportancesamplingmcmcsamples"], {"vp": vp}
-                )
+        Na = ceil(
+            options.eval(
+                "activeimportancesamplingmcmcsamples",
+                {"K": vp.K, "n_vars": D, "D": D},
             )
-        elif np.isscalar(options["activeimportancesamplingmcmcsamples"]):
-            Na = ceil(options["activeimportancesamplingmcmcsamples"])
-        else:
-            Na = 0
+        )
 
         if not np.isfinite(Na) or not np.isscalar(Na) or Na <= 0:
             raise ValueError(
@@ -204,7 +198,7 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
             active_is_old = copy.deepcopy(active_is)
 
             active_is["ln_weights"] = np.zeros((Ns_gp, Nmcmc_samples))
-            active_is["X"] = np.zeros((Nmcmc_samples, D, Ns_gp))
+            active_is["X"] = np.zeros((Ns_gp, Nmcmc_samples, D))
             active_is["f_s2"] = np.zeros((Nmcmc_samples, Ns_gp))
 
             # Consider only one GP sample at a time
@@ -262,16 +256,21 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
 
                 active_is["f_s2"][:, s] = f_s2.reshape(-1)
                 active_is["ln_weights"][s, :] = ln_y.T - log_p.T
-                active_is["X"][:, :, s] = Xa
+                active_is["X"][s, :, :] = Xa
 
     # Step 3: Pre-compute quantities for importance sampling calculations:
 
     # Pre-compute cross-kernel matrix on importance points
-    K_Xa_X = np.zeros((active_is["X"].shape[0], gp.X.shape[0], Ns_gp))
-    C_tmp = np.zeros((gp.X.shape[0], active_is["X"].shape[0], Ns_gp))
+    if active_is["X"].ndim == 3:
+        K_Xa_X = np.zeros((Ns_gp, active_is["X"].shape[1], gp.X.shape[0]))
+        C_tmp = np.zeros((Ns_gp, gp.X.shape[0], active_is["X"].shape[1]))
+    else:
+        K_Xa_X = np.zeros((Ns_gp, active_is["X"].shape[0], gp.X.shape[0]))
+        C_tmp = np.zeros((Ns_gp, gp.X.shape[0], active_is["X"].shape[0]))
+
     for s in range(Ns_gp):
         if active_is["X"].ndim == 3:
-            Xa = active_is["X"][:, :, s]
+            Xa = active_is["X"][s, :, :]
         else:
             Xa = active_is["X"]
         cov_N = gp.covariance.hyperparameter_count(gp.D)
@@ -282,7 +281,7 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
         if isinstance(
             gp.covariance, gpr.covariance_functions.SquaredExponential
         ):
-            K_Xa_X[:, :, s] = gp.covariance.compute(hyp, Xa, gp.X)
+            K_Xa_X[s, :, :] = gp.covariance.compute(hyp, Xa, gp.X)
         else:
             raise ValueError(
                 "Covariance functions besides"
@@ -290,18 +289,18 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
             )
 
         if L_chol:
-            C_tmp[:, :, s] = (
+            C_tmp[s, :, :] = (
                 solve_triangular(
                     L,
                     solve_triangular(
-                        L, K_Xa_X[:, :, s].T, trans=True, check_finite=False
+                        L, K_Xa_X[s, :, :].T, trans=True, check_finite=False
                     ),
                     check_finite=False,
                 )
                 / sn2_eff
             )
         else:
-            C_tmp[:, :, s] = L @ K_Xa_X[:, :, s].T
+            C_tmp[s, :, :] = L @ K_Xa_X[s, :, :].T
     active_is["K_Xa_X"] = K_Xa_X
     active_is["C_tmp"] = C_tmp
 

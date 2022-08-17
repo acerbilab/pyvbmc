@@ -13,6 +13,7 @@ from pyvbmc.vbmc.active_importance_sampling import (
     activesample_proposalpdf,
     fess,
 )
+from pyvbmc.vbmc.options import Options
 
 
 def test_active_importance_sampling():
@@ -66,16 +67,34 @@ def test_active_importance_sampling():
     )
     gp.update(X_new=X, y_new=y, hyp=hyp)
 
-    options = {
+    # Initialize options:
+    user_options = {
         "activeimportancesamplingmcmcsamples": 10,
         "activeimportancesamplingfessthresh": 0,
         "activeimportancesamplingmcmcthin": 2,
         "activeimportancesamplingvpsamples": 11,
         "activeimportancesamplingboxsamples": 12,
     }
-    active_is_viqr = active_importance_sampling(vp, gp, AcqFcnVIQR(), options)
+    pyvbmc_path = os.path.abspath(
+        os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            "..",
+            "..",
+            "pyvbmc",
+            "vbmc",
+        )
+    )
+    basic_path = pyvbmc_path + "/option_configs/basic_vbmc_options.ini"
+    vbmc_options = Options(
+        basic_path,
+        evaluation_parameters={"D": D},
+        user_options=user_options,
+    )
+    active_is_viqr = active_importance_sampling(
+        vp, gp, AcqFcnVIQR(), vbmc_options
+    )
     active_is_imiqr = active_importance_sampling(
-        vp, gp, AcqFcnIMIQR(), options
+        vp, gp, AcqFcnIMIQR(), vbmc_options
     )
 
     assert (
@@ -84,7 +103,7 @@ def test_active_importance_sampling():
         == (2, 10)
     )
     assert active_is_viqr["X"].shape == (10, D)
-    assert active_is_imiqr["X"].shape == (10, D, 2)
+    assert active_is_imiqr["X"].shape == (2, 10, D)
     assert (
         active_is_imiqr["ln_weights"].shape
         == active_is_imiqr["f_s2"].T.shape

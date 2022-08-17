@@ -103,7 +103,7 @@ class AcqFcnVIQR(AbstractAcqFcn):
                 # K_Xs_X = gp.covariance.compute(hyp, Xs, gp.X)
                 # K_Xs_Xa = gp.covariance.compute(hyp, Xs, Xa)
                 # K_Xa_X = optim_state["active_importance_sampling"]["K_Xa_X"][
-                #     :, :, s
+                #     s, :, :
                 # ]
                 ell = np.exp(hyp[0:D])
                 sf2 = np.exp(2 * hyp[D])
@@ -116,8 +116,8 @@ class AcqFcnVIQR(AbstractAcqFcn):
                 K_Xs_Xa = sf2 * np.exp(-tmp / 2)
 
                 C_tmp = optim_state["active_importance_sampling"]["C_tmp"][
-                    :, :, s
-                ].copy()
+                    s, :, :
+                ]
             else:
                 raise ValueError(
                     "Covariance functions besides"
