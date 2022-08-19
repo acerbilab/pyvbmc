@@ -1,3 +1,5 @@
+import copy
+
 import numpy as np
 
 from pyvbmc.parameter_transformer import ParameterTransformer
@@ -413,3 +415,18 @@ class FunctionLogger:
             self.nevals[self.Xn] += 1
             self.ymax = np.nanmax(self.y[self.X_flag])
             return fval, self.Xn
+
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+
+        # Avoid infinite recursion in deepcopy
+        memo[id(self)] = result
+        # Copy class properties:
+        for k, v in self.__dict__.items():
+            if k == "fun":  # Avoid deepcopy of log-joint function
+                # (interferes with benchmark logging)
+                setattr(result, k, v)
+            else:
+                setattr(result, k, copy.deepcopy(v, memo))
+        return result
