@@ -984,9 +984,9 @@ class VBMC:
                         self.optim_state["sn2hpd"] = sn2hpd
                         self.optim_state["gp_meanfun"] = meantemp
                     else:
-                        gp_search = copy.deepcopy(gp)
+                        gp_search = gp
                 else:
-                    gp_search = copy.deepcopy(gp)
+                    gp_search = gp
 
                 # Perform active sampling
                 if self.options.get("varactivesample"):
