@@ -849,8 +849,6 @@ class VBMC:
                 self.vp, hyp_dict["hyp"] = warp_gpandvp_vbmc(
                     parameter_transformer_warp, self.vp, self
                 )
-                # Update the VBMC ParameterTransformer
-                self.parameter_transformer = parameter_transformer_warp
 
                 self.logging_action.append(warp_action)
                 timer.stop_timer("warping")
@@ -928,7 +926,7 @@ class VBMC:
                     ):
                         # Undo input warping:
                         self.vp = vp_old
-                        self.gp = gp_old
+                        gp = gp_old
                         self.optim_state = optim_state_old
                         self.function_logger = function_logger_old
                         hyp_dict = hyp_dict_old
@@ -943,6 +941,9 @@ class VBMC:
             ## Actively sample new points into the training set
             timer.start_timer("activeSampling")
             self.parameter_transformer = self.vp.parameter_transformer
+            self.function_logger.parameter_transformer = (
+                self.parameter_transformer
+            )
 
             if iteration == 0:
                 new_funevals = self.options.get("funevalstart")
@@ -983,9 +984,9 @@ class VBMC:
                         self.optim_state["sn2hpd"] = sn2hpd
                         self.optim_state["gp_meanfun"] = meantemp
                     else:
-                        gp_search = gp
+                        gp_search = copy.deepcopy(gp)
                 else:
-                    gp_search = gp
+                    gp_search = copy.deepcopy(gp)
 
                 # Perform active sampling
                 if self.options.get("varactivesample"):
@@ -1049,7 +1050,7 @@ class VBMC:
 
             if not self.vp.optimize_mu:
                 # Variational components fixed to training inputs
-                self.vp.mu = gp.X.T
+                self.vp.mu = gp.X.T.copy()
                 Knew = self.vp.mu.shape[1]
             else:
                 # Update number of variational mixture components
@@ -1116,7 +1117,7 @@ class VBMC:
 
             # Evaluate max LCB of GP prediction on all training inputs
             fmu, fs2 = gp.predict(gp.X, gp.y, gp.s2, add_noise=False)
-            self.optim_state["lcbmax"] = np.max(
+            self.optim_state["lcbmax"] = np.amax(
                 fmu - self.options.get("elcboimproweight") * np.sqrt(fs2)
             )
 
@@ -1559,8 +1560,7 @@ class VBMC:
         ) >= 10
 
         stop_warmup = (
-            stable_count_flag
-            and no_recent_improvement_flag
+            (stable_count_flag and no_recent_improvement_flag)
             or no_longterm_improvement_flag
         ) and no_recent_trim_flag
 
