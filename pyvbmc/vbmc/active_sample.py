@@ -61,7 +61,9 @@ def active_sample(
     optim_state : dict
         The updated optim_state.
     vp : VariationalPosterior
-        The updated variation posterior.
+        The updated VP.
+    gp : gpyreg.GaussianProcess
+        The updated GP.
     """
     # TODO: The timer is missing for now, we have to setup it throught pyvbmc.
 
@@ -628,7 +630,7 @@ def active_sample(
                 if elbo0 > vp.stats["elbo"]:
                     vp = vp0
 
-    return function_logger, optim_state, vp
+    return function_logger, optim_state, vp, gp
 
 
 def _get_search_points(

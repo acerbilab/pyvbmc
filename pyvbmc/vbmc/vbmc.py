@@ -1000,6 +1000,7 @@ class VBMC:
                         self.function_logger,
                         self.optim_state,
                         self.vp,
+                        gp,
                     ) = active_sample(
                         gp_search,
                         new_funevals,
