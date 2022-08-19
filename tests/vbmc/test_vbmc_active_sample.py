@@ -47,7 +47,7 @@ def test_active_uncertainty_sampling(mocker):
     vbmc = VBMC(fun, x0, LB, UB, PLB, PUB, user_options)
     mocker.patch("pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", rosen)
     N_init = 10
-    function_logger, optim_state, _ = active_sample(
+    function_logger, optim_state, _, _ = active_sample(
         gp=None,
         sample_count=N_init,
         optim_state=vbmc.optim_state,
@@ -72,7 +72,7 @@ def test_active_uncertainty_sampling(mocker):
     optim_state["hyp_dict"] = hyp_dict
     optim_state["vp_repo"] = []
     sample_count = 2
-    function_logger, _, _ = active_sample(
+    function_logger, _, _, _ = active_sample(
         gp,
         sample_count,
         vbmc.optim_state,
@@ -103,7 +103,7 @@ def test_active_sample_initial_sample_no_y_values():
     assert not np.all(np.isnan(vbmc.optim_state["cache"]["x_orig"][:10]))
     assert np.all(np.isnan(vbmc.optim_state["cache"]["y_orig"][:10]))
 
-    function_logger, optim_state, _ = active_sample(
+    function_logger, optim_state, _, _ = active_sample(
         gp=None,
         sample_count=sample_count,
         optim_state=vbmc.optim_state,
@@ -141,7 +141,7 @@ def test_active_sample_initial_sample_y_values():
     assert not np.all(np.isnan(vbmc.optim_state["cache"]["x_orig"][:10]))
     assert not np.all(np.isnan(vbmc.optim_state["cache"]["y_orig"][:10]))
 
-    function_logger, optim_state, _ = active_sample(
+    function_logger, optim_state, _, _ = active_sample(
         gp=None,
         sample_count=sample_count,
         optim_state=vbmc.optim_state,
@@ -190,7 +190,7 @@ def test_active_sample_initial_sample_plausible(mocker):
             sample_count - provided_sample_count,
         ),
     )
-    function_logger, optim_state, _ = active_sample(
+    function_logger, optim_state, _, _ = active_sample(
         gp=None,
         sample_count=sample_count,
         optim_state=vbmc.optim_state,
@@ -250,7 +250,7 @@ def test_active_sample_initial_sample_narrow(mocker):
             sample_count - provided_sample_count,
         ),
     )
-    function_logger, optim_state, _ = active_sample(
+    function_logger, optim_state, _, _ = active_sample(
         gp=None,
         sample_count=sample_count,
         optim_state=vbmc.optim_state,
@@ -383,7 +383,7 @@ def test_active_sample_initial_sample_more_provided(caplog):
 
     assert not np.all(np.isnan(vbmc.optim_state["cache"]["y_orig"]))
     caplog.set_level(logging.INFO)
-    function_logger, optim_state, _ = active_sample(
+    function_logger, optim_state, _, _ = active_sample(
         gp=None,
         sample_count=sample_count,
         optim_state=vbmc.optim_state,

@@ -849,8 +849,6 @@ class VBMC:
                 self.vp, hyp_dict["hyp"] = warp_gpandvp_vbmc(
                     parameter_transformer_warp, self.vp, self
                 )
-                # Update the VBMC ParameterTransformer
-                self.parameter_transformer = parameter_transformer_warp
 
                 self.logging_action.append(warp_action)
                 timer.stop_timer("warping")
@@ -928,7 +926,7 @@ class VBMC:
                     ):
                         # Undo input warping:
                         self.vp = vp_old
-                        self.gp = gp_old
+                        gp = gp_old
                         self.optim_state = optim_state_old
                         self.function_logger = function_logger_old
                         hyp_dict = hyp_dict_old
@@ -943,6 +941,9 @@ class VBMC:
             ## Actively sample new points into the training set
             timer.start_timer("activeSampling")
             self.parameter_transformer = self.vp.parameter_transformer
+            self.function_logger.parameter_transformer = (
+                self.parameter_transformer
+            )
 
             if iteration == 0:
                 new_funevals = self.options.get("funevalstart")
@@ -1000,6 +1001,7 @@ class VBMC:
                         self.function_logger,
                         self.optim_state,
                         self.vp,
+                        gp,
                     ) = active_sample(
                         gp_search,
                         new_funevals,
@@ -1048,7 +1050,7 @@ class VBMC:
 
             if not self.vp.optimize_mu:
                 # Variational components fixed to training inputs
-                self.vp.mu = gp.X.T
+                self.vp.mu = gp.X.T.copy()
                 Knew = self.vp.mu.shape[1]
             else:
                 # Update number of variational mixture components
@@ -1115,7 +1117,7 @@ class VBMC:
 
             # Evaluate max LCB of GP prediction on all training inputs
             fmu, fs2 = gp.predict(gp.X, gp.y, gp.s2, add_noise=False)
-            self.optim_state["lcbmax"] = np.max(
+            self.optim_state["lcbmax"] = np.amax(
                 fmu - self.options.get("elcboimproweight") * np.sqrt(fs2)
             )
 
@@ -1558,8 +1560,7 @@ class VBMC:
         ) >= 10
 
         stop_warmup = (
-            stable_count_flag
-            and no_recent_improvement_flag
+            (stable_count_flag and no_recent_improvement_flag)
             or no_longterm_improvement_flag
         ) and no_recent_trim_flag
 
@@ -1853,9 +1854,10 @@ class VBMC:
            Indicates if the final boost has taken place or not.
         """
 
+        vp = copy.deepcopy(vp)
         changed_flag = False
 
-        K_new = max(self.vp.K, self.options.get("minfinalcomponents"))
+        K_new = max(vp.K, self.options.get("minfinalcomponents"))
 
         # Current entropy samples during variational optimization
         n_sent = self.options.eval("nsent", {"K": K_new})
@@ -1883,9 +1885,8 @@ class VBMC:
             )
 
         # Perform final boost?
-
         do_boost = (
-            self.vp.K < self.options.get("minfinalcomponents")
+            vp.K < self.options.get("minfinalcomponents")
             or n_sent != n_sent_boost
             or n_sent_fine != n_sent_fine_boost
         )
@@ -1904,8 +1905,8 @@ class VBMC:
 
             # End warmup
             self.optim_state["warmup"] = False
-            self.vp.optimize_mu = self.options.get("variablemeans")
-            self.vp.optimize_weights = self.options.get("variableweights")
+            vp.optimize_mu = self.options.get("variablemeans")
+            vp.optimize_weights = self.options.get("variableweights")
 
             self.options.__setitem__("nsent", n_sent_boost, force=True)
             self.options.__setitem__(
@@ -1929,8 +1930,6 @@ class VBMC:
             )
             vp.stats["stable"] = stable_flag
             changed_flag = True
-        else:
-            vp = self.vp
 
         elbo = vp.stats["elbo"]
         elbo_sd = vp.stats["elbo_sd"]

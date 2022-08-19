@@ -188,7 +188,7 @@ def optimize_vp(
             else:
                 idx = np.where((vp0_type == 2) | (vp0_type == 3))[0][0]
         else:
-            idx = np.where(vp0_type == math.remainder(i, 3) + 1)[0][0]
+            idx = np.where(vp0_type == (i % 3) + 1)[0][0]
 
         vp0 = vp0_vec[idx]
         vp0_vec = np.delete(vp0_vec, idx)
@@ -310,8 +310,8 @@ def optimize_vp(
     varH = elbo_stats["varH"][idx]
     I_sk = np.zeros((Ns, K))
     J_sjk = np.zeros((Ns, K, K))
-    I_sk[:, :] = elbo_stats["I_sk"][idx, :, :]
-    J_sjk[:, :, :] = elbo_stats["J_sjk"][idx, :, :, :]
+    I_sk[:, :] = elbo_stats["I_sk"][idx, :, :].copy()
+    J_sjk[:, :, :] = elbo_stats["J_sjk"][idx, :, :, :].copy()
     vp = vp0_fine[idx]
     vp.set_parameters(elbo_stats["theta"][idx, :])
 
@@ -325,7 +325,7 @@ def optimize_vp(
 
             # Choose a random component below threshold
             idx = np.argwhere(
-                (vp.w < options["tolweight"]) & ~already_checked
+                (vp.w < options["tolweight"]).flatten() & ~already_checked
             ).flatten()
             idx = idx[np.random.randint(0, np.size(idx))]
             vp_pruned.w = np.delete(vp_pruned.w, idx)

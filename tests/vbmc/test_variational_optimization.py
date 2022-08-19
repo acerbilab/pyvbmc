@@ -151,6 +151,7 @@ def test_gplogjoint():
         open("./tests/vbmc/dF_gplogjoint.txt", "rb"), delimiter=","
     )
     assert np.allclose(dF, matlab_dF)
+    assert np.isclose(F, -0.461812484952867)
 
 
 def test_negelcbo():

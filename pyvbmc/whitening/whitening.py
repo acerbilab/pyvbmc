@@ -33,8 +33,8 @@ def unscent_warp(fun, x, sigma):
         If the rows of `x` and `sigma` cannot be coerced to match.
     """
     x_shape_orig = x.shape
-    x = np.atleast_2d(x).copy()
-    sigma = np.atleast_2d(sigma).copy()
+    x = np.atleast_2d(x)
+    sigma = np.atleast_2d(sigma)
     (N1, D) = x.shape
     (N2, D2) = sigma.shape
 
@@ -68,8 +68,8 @@ def unscent_warp(fun, x, sigma):
 
     # Estimate the mean and standard deviation of the warped points
     # by the mean and std of these sigma-points
-    x_warped_mean = np.reshape(np.mean(x_warped, axis=0), x_shape_orig)
-    x_warped_sigma = np.std(x_warped, axis=0, ddof=1)
+    x_warped_mean = np.mean(x_warped, axis=0).reshape(x_shape_orig)
+    x_warped_sigma = np.std(x_warped, axis=0, ddof=1).reshape(x_shape_orig)
 
     return x_warped_mean, x_warped_sigma, x_warped
 
@@ -284,10 +284,9 @@ def warp_gpandvp_vbmc(parameter_transformer, vp_old, vbmc):
 
     Ns_gp = len(vp_old.gp.posteriors)
     hyp_warped = np.zeros([Ncov + Nnoise + Nmean, Ns_gp])
-    hyps = vp_old.gp.get_hyperparameters(as_array=True)
 
     for s in range(Ns_gp):
-        hyp = hyps[s]
+        hyp = vp_old.gp.posteriors[s].hyp.copy()
         hyp_warped[:, s] = hyp.copy()
 
         # UpdateGP input length scales
@@ -313,7 +312,11 @@ def warp_gpandvp_vbmc(parameter_transformer, vp_old, vbmc):
             # Warp quadratic mean
             m0 = hyp[Ncov + Nnoise]
             xm = hyp[Ncov + Nnoise + 1 : Ncov + Nnoise + vbmc.D + 1].T
-            omega = np.exp(hyp[Ncov + Nnoise + vbmc.D + 1 :]).T
+            omega = np.exp(
+                hyp[
+                    Ncov + Nnoise + vbmc.D + 1 : Ncov + Nnoise + 2 * vbmc.D + 1
+                ]
+            ).T
 
             # Warp location and scale
             (xmw, omegaw, __) = unscent_warp(warpfun, xm, omega)
@@ -327,9 +330,9 @@ def warp_gpandvp_vbmc(parameter_transformer, vp_old, vbmc):
             hyp_warped[
                 Ncov + Nnoise + 1 : Ncov + Nnoise + vbmc.D + 1, s
             ] = xmw.T
-            hyp_warped[Ncov + Nnoise + vbmc.D + 1 :, s] = np.log(
-                omegaw
-            ).reshape(-1)
+            hyp_warped[
+                Ncov + Nnoise + vbmc.D + 1 : Ncov + Nnoise + 2 * vbmc.D + 1, s
+            ] = np.log(omegaw).T
         else:
             raise ValueError("Unsupported GP mean function for input warping.")
     hyp_warped = hyp_warped.T
