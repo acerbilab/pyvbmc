@@ -1854,9 +1854,10 @@ class VBMC:
            Indicates if the final boost has taken place or not.
         """
 
+        vp = copy.deepcopy(vp)
         changed_flag = False
 
-        K_new = max(self.vp.K, self.options.get("minfinalcomponents"))
+        K_new = max(vp.K, self.options.get("minfinalcomponents"))
 
         # Current entropy samples during variational optimization
         n_sent = self.options.eval("nsent", {"K": K_new})
@@ -1884,9 +1885,8 @@ class VBMC:
             )
 
         # Perform final boost?
-
         do_boost = (
-            self.vp.K < self.options.get("minfinalcomponents")
+            vp.K < self.options.get("minfinalcomponents")
             or n_sent != n_sent_boost
             or n_sent_fine != n_sent_fine_boost
         )
@@ -1905,8 +1905,8 @@ class VBMC:
 
             # End warmup
             self.optim_state["warmup"] = False
-            self.vp.optimize_mu = self.options.get("variablemeans")
-            self.vp.optimize_weights = self.options.get("variableweights")
+            vp.optimize_mu = self.options.get("variablemeans")
+            vp.optimize_weights = self.options.get("variableweights")
 
             self.options.__setitem__("nsent", n_sent_boost, force=True)
             self.options.__setitem__(
@@ -1930,8 +1930,6 @@ class VBMC:
             )
             vp.stats["stable"] = stable_flag
             changed_flag = True
-        else:
-            vp = self.vp
 
         elbo = vp.stats["elbo"]
         elbo_sd = vp.stats["elbo_sd"]
