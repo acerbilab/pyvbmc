@@ -1339,9 +1339,9 @@ def _gplogjoint(
     else:
         delta = vp.delta.copy().T
 
-    Xt = np.zeros((D, N, K))
+    Xt = np.zeros((K, D, N))
     for k in range(0, K):
-        Xt[:, :, k] = np.reshape(mu[:, k], (-1, 1)) - gp.X.T
+        Xt[k, :, :] = np.reshape(mu[:, k], (-1, 1)) - gp.X.T
 
     # Number of GP hyperparameters
     cov_N = gp.covariance.hyperparameter_count(D)
@@ -1384,7 +1384,7 @@ def _gplogjoint(
             lnnf_k = (
                 ln_sf2 + sum_lnell - np.sum(np.log(tau_k), axis=0)
             )  # Covariance normalization factor
-            delta_k = Xt[:, :, k] / tau_k
+            delta_k = Xt[k, :, :] / tau_k
             z_k = np.exp(lnnf_k - 0.5 * np.sum(delta_k**2, axis=0))
             I_k = np.dot(z_k, alpha) + m0
 
