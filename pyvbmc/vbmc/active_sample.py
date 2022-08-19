@@ -559,7 +559,7 @@ def active_sample(
                                     optim_state["vp_repo"], vp.get_parameters()
                                 )
                             else:
-                                optim_state["vp_repo"] = vp.get_parameters()
+                                optim_state["vp_repo"] = [vp.get_parameters()]
                     else:
                         gp = gptmp
                 else:
