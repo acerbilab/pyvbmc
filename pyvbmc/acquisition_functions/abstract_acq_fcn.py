@@ -62,7 +62,8 @@ class AbstractAcqFcn(ABC):
         Returns
         -------
         acq : np.ndarray
-            The output of the acquisition function.
+            The output of the acquisition function, shape ``(N,)`` where ``N``
+            is the number of input points.
         """
         if Xs.ndim == 1:
             Xs = Xs[None, :]
@@ -149,6 +150,13 @@ class AbstractAcqFcn(ABC):
         )
         acq[idx_bounds] = np.Inf
 
+        # Re-shape to 1-D, if necessary (to avoid errors in cma.fmin)
+        if acq.ndim > 1:
+            if acq.shape[0] != acq.size and acq.shape[1] != acq.size:
+                raise ValueError(
+                    "Acquisition function should return a 1-D result (or a 2-D result which has size 1 along at least one axis)."
+                )
+            acq = acq.reshape(-1)
         return acq
 
     @abstractmethod

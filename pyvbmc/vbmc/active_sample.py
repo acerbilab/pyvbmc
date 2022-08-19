@@ -344,7 +344,8 @@ def active_sample(
 
             acq_fun = lambda X: acq_eval(
                 X, gp, vp, function_logger, optim_state
-            )[0]
+            ).item()
+
             # Additional search via optimization
             if options["searchoptimizer"] != "none":
                 if gp.D == 1:
