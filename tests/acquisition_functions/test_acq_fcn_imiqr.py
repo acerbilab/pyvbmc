@@ -213,9 +213,9 @@ def test_complex__call__():
 
     def s_xsi_new(theta, theta_new):
         __, cov = gp.predict_full(np.vstack([theta, theta_new]))
-        c_xsi2_t_tn = np.mean(cov, axis=0)[0, 1]
+        c_xsi2_t_tn = np.mean(cov, axis=2)[0, 1]
         # __, cov = gp.predict_full(np.atleast_2d(theta_new))
-        # c_xsi2_tn_tn = np.mean(cov, axis=0)[0, 0]
+        # c_xsi2_tn_tn = np.mean(cov, axis=2)[0, 0]
         __, c_xsi2_tn_tn = gp.predict(np.atleast_2d(theta_new))
         c_xsi2_tn_tn = c_xsi2_tn_tn[0, 0]
         __, s_xsi2 = gp.predict(np.atleast_2d(theta))
