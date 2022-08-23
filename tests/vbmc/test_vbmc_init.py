@@ -651,3 +651,97 @@ def test_vbmc_optimstate_outwarp_delta():
     user_options = {"fitnessshaping": True}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     assert vbmc.optim_state["outwarp_delta"] == outwarpthreshbase
+
+
+def test_vbmc_init_log_joint():
+    D = 3
+    lb = np.ones((1, D)) * -1
+    ub = np.ones((1, D))
+    x0_array = np.zeros((1, D))
+    plb = np.ones((1, D)) * -0.5
+    pub = np.ones((1, D)) * 0.5
+
+    def log_joint(x):
+        return x**2 + x + 1
+
+    def sample_prior(n):
+        return np.random.normal(size=(n, D))
+
+    vbmc = VBMC(
+        log_joint, x0_array, lb, ub, plb, pub, sample_prior=sample_prior
+    )
+    x = np.random.normal()
+    assert vbmc.log_joint is log_joint
+    assert vbmc.function_logger.fun is log_joint
+    assert vbmc.sample_prior is sample_prior
+    with pytest.raises(AttributeError) as e_info:
+        vbmc.log_prior
+    with pytest.raises(AttributeError) as e_info:
+        vbmc.log_likelihood
+
+    def log_lklhd(x):
+        return x**2
+
+    def log_prior(x):
+        return x + 1
+
+    vbmc = VBMC(
+        log_lklhd,
+        x0_array,
+        lb,
+        ub,
+        plb,
+        pub,
+        log_prior=log_prior,
+        sample_prior=sample_prior,
+    )
+    x = np.random.normal()
+    assert vbmc.log_joint(x) == log_joint(x)
+    assert vbmc.function_logger.fun(x) == log_joint(x)
+    assert vbmc.sample_prior is sample_prior
+    assert vbmc.log_prior is log_prior
+    assert vbmc.log_likelihood is log_lklhd
+
+
+def test_vbmc_init_log_joint_noisy():
+    options = {"specifytargetnoise": 2}
+    D = 3
+    lb = np.ones((1, D)) * -1
+    ub = np.ones((1, D))
+    x0_array = np.zeros((1, D))
+    plb = np.ones((1, D)) * -0.5
+    pub = np.ones((1, D)) * 0.5
+
+    def log_joint(x):
+        return x**2 + x + 1, 1.0
+
+    vbmc = VBMC(log_joint, x0_array, lb, ub, plb, pub, user_options=options)
+    x = np.random.normal()
+    assert vbmc.log_joint is log_joint
+    assert vbmc.function_logger.fun is log_joint
+    with pytest.raises(AttributeError) as e_info:
+        vbmc.log_prior
+    with pytest.raises(AttributeError) as e_info:
+        vbmc.log_likelihood
+
+    def log_lklhd(x):
+        return x**2, 1.0
+
+    def log_prior(x):
+        return x + 1
+
+    vbmc = VBMC(
+        log_lklhd,
+        x0_array,
+        lb,
+        ub,
+        plb,
+        pub,
+        log_prior=log_prior,
+        user_options=options,
+    )
+    x = np.random.normal()
+    assert vbmc.log_joint(x) == log_joint(x)
+    assert vbmc.function_logger.fun(x) == log_joint(x)
+    assert vbmc.log_prior is log_prior
+    assert vbmc.log_likelihood is log_lklhd
