@@ -210,7 +210,6 @@ class ParameterTransformer:
             mask = self.type == t
             if np.any(mask):
                 xNew[:, mask] = self._bounded_transforms[t]["inverse"](x, mask)
-
         # Force to stay within bounds
         mask = np.isfinite(self.lb_orig)[0] & np.isfinite(self.ub_orig)[0]
         xNew[:, mask] = np.maximum(
