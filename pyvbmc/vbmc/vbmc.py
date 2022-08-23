@@ -36,14 +36,19 @@ class VBMC:
     Parameters
     ----------
     fun : callable
-        A given target log posterior `fun`. `fun` accepts input `x` and returns
-        the value of the target log-joint, that is the unnormalized
-        log-posterior density, at `x`.
+        A given target log-posterior or log-likelihood. If ``log_prior`` is
+        ``None``, ``fun`` accepts input ``x`` and returns the value of the
+        target log-joint, that is, the unnormalized log-posterior density at
+        ``x``. If ``log_prior`` is not ``None``, ``fun`` should return the
+        unnormalized log-likelihood. In either case, if
+        ``user_options["specifytargetnoise"]`` is true, ``fun`` should return a
+        tuple where the first element is the noisy log-density, and the second
+        is an estimate of the standard deviation of the noise.
     x0 : np.ndarray, optional
-        Starting point for the inference. Ideally `x0` is a point in the
+        Starting point for the inference. Ideally ``x0`` is a point in the
         proximity of the mode of the posterior. Default is ``None``.
     lower_bounds, upper_bounds : np.ndarray, optional
-        `lower_bounds` (`LB`) and `upper_bounds` (`UB`) define a set
+        ``lower_bounds`` (`LB`) and ``upper_bounds`` (`UB`) define a set
         of strict lower and upper bounds for the coordinate vector, `x`, so
         that the posterior has support on `LB` < `x` < `UB`.
         If scalars, the bound is replicated in each dimension. Use
@@ -53,8 +58,8 @@ class VBMC:
         unbounded variables, the respective values of `PLB` and `PUB` need to
         be specified (see below), by default ``None``.
     plausible_lower_bounds, plausible_upper_bounds : np.ndarray, optional
-        Specifies a set of `plausible_lower_bounds` (`PLB`) and
-        `plausible_upper_bounds` (`PUB`) such that `LB` < `PLB` < `PUB` < `UB`.
+        Specifies a set of ``plausible_lower_bounds`` (`PLB`) and
+        ``plausible_upper_bounds`` (`PUB`) such that `LB` < `PLB` < `PUB` < `UB`.
         Both `PLB` and `PUB` need to be finite. `PLB` and `PUB` represent a
         "plausible" range, which should denote a region of high posterior
         probability mass. Among other things, the plausible box is used to
@@ -66,8 +71,18 @@ class VBMC:
         by default ``None``.
     user_options : dict, optional
         Additional options can be passed as a dict. Please refer to the
-        VBMC options page for the default options. If no `user_options` are
+        VBMC options page for the default options. If no ``user_options`` are
         passed, the default options are used.
+    log_prior : callable, optional
+        An optional separate log-prior function, which should accept a single
+        argument `x` and return the log-density of the prior at `x`. If
+        ``log_prior`` is not ``None``, the argument ``fun`` is assumed to
+        represent the log-likelihood (otherwise it is assumed to represent the
+        log-joint).
+    sample_prior : callable, optional
+        An optional function which accepts a single argument `n` and returns an
+        array of samples from the prior, of shape `(n, D)`, where `D` is the
+        problem dimension. Currently unused.
 
     Raises
     ------
@@ -106,6 +121,8 @@ class VBMC:
         plausible_lower_bounds: np.ndarray = None,
         plausible_upper_bounds: np.ndarray = None,
         user_options: dict = None,
+        log_prior: callable = None,
+        sample_prior: callable = None,
     ):
         # Initialize variables and algorithm structures
         if x0 is None:
@@ -204,8 +221,30 @@ class VBMC:
 
         self.optim_state = self._init_optim_state()
 
+        # Initialize log-joint
+        self.sample_prior = sample_prior
+        if callable(log_prior):
+            self.log_prior = log_prior
+            self.log_likelihood = fun
+            if self.optim_state["uncertainty_handling_level"] == 2:
+
+                def log_joint(theta):
+                    log_likelihood, noise_est = fun(theta)
+                    return log_likelihood + log_prior(theta), noise_est
+
+            else:
+
+                def log_joint(theta):
+                    return fun(theta) + log_prior(theta)
+
+        elif log_prior is None:
+            log_joint = fun
+        else:
+            raise TypeError("`prior` must be a callable or `None`.")
+        self.log_joint = log_joint
+
         self.function_logger = FunctionLogger(
-            fun=fun,
+            fun=log_joint,
             D=self.D,
             noise_flag=self.optim_state.get("uncertainty_handling_level") > 0,
             uncertainty_handling_level=self.optim_state.get(
