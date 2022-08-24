@@ -155,29 +155,35 @@ def test_vbmc_uniform():
     return err_1, err_2
 
 
-def test_vbmc_correlated_multivariate_normal_noisy():
-    D = 3
-    x0 = 0.5 * np.ones((1, D))
-    plb = np.full((1, D), -1.0)
-    pub = np.full((1, D), 1.0)
-    lb = np.full((1, D), -4.0)
-    ub = np.full((1, D), 4.0)
-    lnZ = 0.0
-    mu_bar = np.reshape(np.linspace(-0.5, 0.5, D), (1, -1))
-    options = {
-        "specifytargetnoise": True,
-        "searchacqfcn": [AcqFcnVIQR(), AcqFcnIMIQR(), AcqFcnNoisy()],
-    }
+def test_vbmc_multivariate_half_normal_noisy():
+    D = 2
+    noise_scale = 0.5
+    x0 = -np.ones((1, D))
+    plb = np.full((1, D), -6.0)
+    pub = np.full((1, D), -0.05)
+    lb = np.full((1, D), -D * 10.0)
+    ub = np.full((1, D), 0.0)
+    lnZ = -D * np.log(2)
+    mu_bar = -2 / np.sqrt(2 * np.pi) * np.array(range(1, D + 1))
+    f = lambda x: (
+        np.sum(-0.5 * (x / np.array(range(1, np.size(x) + 1))) ** 2)
+        - np.sum(np.log(np.array(range(1, np.size(x) + 1))))
+        - 0.5 * np.size(x) * np.log(2 * np.pi)
+        + noise_scale * np.random.normal(),
+        noise_scale,
+    )
+
     err_1, err_2 = run_optim_block(
-        noisy_cigar, x0, lb, ub, plb, pub, lnZ, mu_bar, options=options
+        f, x0, lb, ub, plb, pub, lnZ, mu_bar, noise_flag=True
     )
 
     assert err_1 < 0.5
-    assert err_2 < 0.2
+    assert err_2 < 0.5
+    return err_1, err_2
 
 
 def noisy_cigar(x, noise_scale=0.4):
-    return cigar(x) + noise_scale * np.random.normal(), noise_scale**2
+    return cigar(x) + noise_scale * np.random.normal(), noise_scale
 
 
 def cigar(x):
