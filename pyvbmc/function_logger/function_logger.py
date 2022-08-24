@@ -86,6 +86,8 @@ class FunctionLogger:
         Raises
         ------
         ValueError
+            If the input cannot be coerced to 1-D.
+        ValueError
             Raise if the function value is not a finite real-valued scalar.
         ValueError
             Raise if the (estimated) SD (second function output)
@@ -93,11 +95,15 @@ class FunctionLogger:
         """
 
         timer = Timer()
+        x_shape_orig = x.shape
         if x.ndim > 1:
             x = x.squeeze()
         if x.ndim == 0:
             x = np.atleast_1d(x)
-        assert x.size == x.shape[0]
+        if x.size != x.shape[0]:
+            raise ValueError(
+                f"Input should be one-dimensional but has shape {x_shape_orig}."
+            )
         # Convert back to original space
         if self.transform_parameters:
             x_orig = self.parameter_transformer.inverse(
@@ -205,16 +211,22 @@ class FunctionLogger:
         Raises
         ------
         ValueError
+            If the input cannot be coerced to 1-D.
+        ValueError
             Raise if the function value is not a finite real-valued scalar.
         ValueError
             Raise if the (estimated) SD (second function output)
             is not a finite, positive real-valued scalar.
         """
+        x_shape_orig = x.shape
         if x.ndim > 1:
             x = x.squeeze()
         if x.ndim == 0:
             x = np.atleast_1d(x)
-        assert x.size == x.shape[0]
+        if x.size != x.shape[0]:
+            raise ValueError(
+                f"Input should be one-dimensional but has shape {x_shape_orig}."
+            )
         # Convert back to original space
         if self.transform_parameters:
             x_orig = self.parameter_transformer.inverse(

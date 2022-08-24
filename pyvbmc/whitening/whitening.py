@@ -29,8 +29,8 @@ def unscent_warp(fun, x, sigma):
 
     Raises
     ------
-    AssertionError
-        If the rows of `x` and `sigma` cannot be coerced to match.
+    ValueError
+        If the rows/columns of `x` and `sigma` cannot be coerced to match.
     """
     x_shape_orig = x.shape
     x = np.atleast_2d(x)
@@ -40,9 +40,12 @@ def unscent_warp(fun, x, sigma):
 
     N = np.max([N1, N2])
 
-    assert N1 in (1, N), "Mismatch between rows of X and SIGMA."
-    assert N2 in (1, N), "Mismatch between rows of X and SIGMA."
-    assert D == D2, "Mismatch between columns of X and SIGMA."
+    if N1 not in (1, N):
+        raise ValueError("Mismatch between rows of X and SIGMA.")
+    if N2 not in (1, N):
+        raise ValueError("Mismatch between rows of X and SIGMA.")
+    if D != D2:
+        raise ValueError("Mismatch between columns of X and SIGMA.")
 
     if (N1 == 1) and (N > 1):
         x = np.tile(x, [N, 1])

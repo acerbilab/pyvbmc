@@ -1267,6 +1267,13 @@ def _gplogjoint(
         To be written by Luigi.
     J_sjk : np.ndarray, optional
         To be written by Luigi.
+
+    Raises
+    ------
+    NotImplementedError
+        If the diagonal approximation of the gradient is requested
+        (``compute_var == 2``) or if the gradient of the variance is requested
+        without the diagonal approximation.
     """
     if np.isscalar(grad_flags):
         if grad_flags:
@@ -1446,7 +1453,9 @@ def _gplogjoint(
 
             if compute_var == 2:
                 # Missing port: compute_var == 2 skipped since it is not used
-                assert False
+                raise NotImplementedError(
+                    "Diagonal approximation of GP log-joint variance not implemented."
+                )
             elif compute_var:
                 for j in range(0, k + 1):
                     tau_j = np.sqrt(
