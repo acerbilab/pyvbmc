@@ -758,3 +758,63 @@ def test_abs_det_jacobian_bounded_and_unbounded():
 
     assert np.allclose(j2, 0.0)
     assert np.allclose(j, j1)
+
+
+def test_boundary_edge_cases():
+    D = 4
+    for t in [3, 12, 13]:
+        lb = np.full((1, D), 1000.0)
+        ub = np.full((1, D), 1001.0)
+        parameter_transformer = ParameterTransformer(
+            D=D, lower_bounds=lb, upper_bounds=ub, transform_type=t
+        )
+        close_to_lb = np.nextafter(lb, np.inf)
+        close_to_ub = np.nextafter(ub, -np.inf)
+        close_to_lb_transformed = parameter_transformer(close_to_lb)
+        close_to_ub_transformed = parameter_transformer(close_to_ub)
+        assert np.all(np.isfinite(close_to_lb_transformed))
+        assert np.all(np.isfinite(close_to_ub_transformed))
+        assert np.all(
+            parameter_transformer.inverse(close_to_lb_transformed)
+            == close_to_lb
+        )
+        assert np.all(
+            parameter_transformer.inverse(close_to_ub_transformed)
+            == close_to_ub
+        )
+        big_num = np.sqrt(np.finfo(np.float64).max)
+        assert np.all(
+            parameter_transformer.inverse(np.full((1, D), -big_num))
+            == close_to_lb
+        )
+        assert np.all(
+            parameter_transformer.inverse(np.full((1, D), big_num))
+            == close_to_ub
+        )
+
+        lb = np.full((1, D), -1000.0)
+        ub = np.full((1, D), 0.0)
+        parameter_transformer = ParameterTransformer(
+            D=D, lower_bounds=lb, upper_bounds=ub, transform_type=t
+        )
+        close_to_lb = np.nextafter(lb, np.inf)
+        close_to_ub = np.nextafter(ub, -np.inf)
+        close_to_lb_transformed = parameter_transformer(close_to_lb)
+        close_to_ub_transformed = parameter_transformer(close_to_ub)
+        assert np.all(np.isfinite(close_to_lb_transformed))
+        assert np.all(np.isfinite(close_to_ub_transformed))
+        assert np.allclose(
+            parameter_transformer.inverse(close_to_lb_transformed), close_to_lb
+        )
+        assert np.allclose(
+            parameter_transformer.inverse(close_to_ub_transformed), close_to_ub
+        )
+        big_num = np.sqrt(np.finfo(np.float64).max)
+        assert np.all(
+            parameter_transformer.inverse(np.full((1, D), -big_num))
+            == close_to_lb
+        )
+        assert np.all(
+            parameter_transformer.inverse(np.full((1, D), big_num))
+            == close_to_ub
+        )
