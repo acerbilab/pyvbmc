@@ -267,11 +267,11 @@ def test_vp_optimize_1D_g_mixture():
     optim_state["entropy_switch"] = False
 
     options = setup_options(D, {})
-    vp, _, _ = optimize_vp(options, optim_state, vp, gp, 10, 1)
+    vp, _, _ = optimize_vp(options, optim_state, vp, gp, 100, 2)
 
     # ELBO should be equal to the log normalization constant of the distribution
     # that is 0 for a normalized density
-    assert np.abs(vp.stats["elbo"]) < 1e-2 * 2.5
+    assert np.abs(vp.stats["elbo"]) < 1e-2 * 5
 
     # compute kldiv between gaussian mixture and vp
     vp_samples, _ = vp.sample(int(10e6))
@@ -288,7 +288,7 @@ def test_vp_optimize_1D_g_mixture():
     mixture_sigma = np.std(mixture_samples)
     assert np.all(
         np.abs(kldiv_mvn(mixture_mu, mixture_sigma, vp_mu, vp_sigma))
-        < 1e-4 * 1.25
+        < 1e-3 * 1.25
     )
 
 
@@ -329,11 +329,11 @@ def test_vp_optimize_2D_g_mixture():
     optim_state["entropy_switch"] = False
 
     options = setup_options(D, {})
-    vp, _, _ = optimize_vp(options, optim_state, vp, gp, 10, 1)
+    vp, _, _ = optimize_vp(options, optim_state, vp, gp, 100, 2)
 
     # ELBO should be equal to the log normalization constant of the distribution
     # that is 0 for a normalized density
-    assert np.abs(vp.stats["elbo"]) < 1e-2 * 5
+    assert np.abs(vp.stats["elbo"]) < 1e-1
 
     # compute kldiv between gaussian mixture and vp
     vp_samples, _ = vp.sample(int(10e6))
@@ -349,7 +349,7 @@ def test_vp_optimize_2D_g_mixture():
     mixture_mu = np.mean(mixture_samples)
     mixture_sigma = np.std(mixture_samples)
     assert np.all(
-        np.abs(kldiv_mvn(mixture_mu, mixture_sigma, vp_mu, vp_sigma)) < 1e-3
+        np.abs(kldiv_mvn(mixture_mu, mixture_sigma, vp_mu, vp_sigma)) < 1e-2
     )
 
 
