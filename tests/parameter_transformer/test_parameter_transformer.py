@@ -124,6 +124,37 @@ def test_init_type_3():
     assert "Unrecognized bounded transform" in e_info.value.args[0]
 
 
+def test_init_mixed_bounds():
+    parameter_transformer = ParameterTransformer(
+        D=4,
+        lower_bounds=np.array([[0.0, -np.inf, -10.0, -np.inf]]),
+        upper_bounds=np.array([[10.0, np.inf, 0.0, np.inf]]),
+    )
+    assert np.all(
+        parameter_transformer.type == np.array([3, 0, 3, 0], dtype=int)
+    )
+
+    parameter_transformer = ParameterTransformer(
+        D=4,
+        lower_bounds=np.array([[0.0, -np.inf, -10.0, -np.inf]]),
+        upper_bounds=np.array([[10.0, np.inf, 0.0, np.inf]]),
+        transform_type="probit",
+    )
+    assert np.all(
+        parameter_transformer.type == np.array([12, 0, 12, 0], dtype=int)
+    )
+
+    parameter_transformer = ParameterTransformer(
+        D=4,
+        lower_bounds=np.array([[0.0, -np.inf, -10.0, -np.inf]]),
+        upper_bounds=np.array([[10.0, np.inf, 0.0, np.inf]]),
+        transform_type="student4",
+    )
+    assert np.all(
+        parameter_transformer.type == np.array([13, 0, 13, 0], dtype=int)
+    )
+
+
 def test_init_bounds_check():
     with pytest.raises(ValueError):
         ParameterTransformer(
@@ -615,7 +646,7 @@ def test_1D_input_log_abs_det_jacobian():
         assert np.ndim(log_j2) == 0
 
 
-def test_log_abs_det_jacobian_type3_numerically():
+def test_bounded_log_abs_det_jacobian_numerically():
     D = np.random.randint(1, 13)
     LB = -2 * np.ones((1, D))
     UB = 2 * np.ones((1, D))
@@ -641,3 +672,89 @@ def test_log_abs_det_jacobian_type3_numerically():
             vol1 / vol2,
             np.exp(parameter_transformer.log_abs_det_jacobian(x1_t)),
         )
+
+
+def test_transform_bounded_and_unbounded():
+    D = 2
+    n = 10
+    x1 = np.random.uniform(0, 10, size=(n, 1))
+    x2 = np.random.normal(size=(n, 1))
+    x = np.hstack([x1, x2])
+
+    parameter_transformer = ParameterTransformer(
+        D=D,
+        lower_bounds=np.array([[0.0, -np.inf]]),
+        upper_bounds=np.array([[10.0, np.inf]]),
+    )
+    assert np.allclose(
+        x, parameter_transformer.inverse(parameter_transformer(x))
+    )
+    assert np.allclose(
+        x,
+        parameter_transformer(parameter_transformer.inverse(x)),
+    )
+
+    parameter_transformer = ParameterTransformer(
+        D=D,
+        lower_bounds=np.array([[0.0, -np.inf]]),
+        upper_bounds=np.array([[10.0, np.inf]]),
+        plausible_lower_bounds=np.array([[4.5, -np.inf]]),
+        plausible_upper_bounds=np.array([[5.5, np.inf]]),
+        transform_type="probit",
+    )
+    assert np.allclose(
+        x, parameter_transformer.inverse(parameter_transformer(x))
+    )
+    assert np.allclose(
+        x,
+        parameter_transformer(parameter_transformer.inverse(x)),
+    )
+
+    parameter_transformer = ParameterTransformer(
+        D=D,
+        lower_bounds=np.array([[0.0, -np.inf]]),
+        upper_bounds=np.array([[10.0, np.inf]]),
+        transform_type="student4",
+    )
+    assert np.allclose(
+        x, parameter_transformer.inverse(parameter_transformer(x))
+    )
+    assert np.allclose(
+        x,
+        parameter_transformer(parameter_transformer.inverse(x)),
+    )
+
+
+def test_abs_det_jacobian_bounded_and_unbounded():
+    D = 2
+    n = 10
+    x1 = np.random.uniform(0, 10, size=(n, 1))
+    x2 = np.random.normal(size=(n, 1))
+    x = np.hstack([x1, x2])
+
+    bounded_transformer = ParameterTransformer(
+        D=1,
+        lower_bounds=np.array([[0.0]]),
+        upper_bounds=np.array([[10.0]]),
+    )
+    unbounded_transformer = ParameterTransformer(
+        D=1,
+        lower_bounds=np.array([[-np.inf]]),
+        upper_bounds=np.array([[np.inf]]),
+        plausible_lower_bounds=np.array([[-0.5]]),
+        plausible_upper_bounds=np.array([[0.5]]),
+    )
+    parameter_transformer = ParameterTransformer(
+        D=D,
+        lower_bounds=np.array([[0.0, -np.inf]]),
+        upper_bounds=np.array([[10.0, np.inf]]),
+        plausible_lower_bounds=np.array([[0.0, -0.5]]),
+        plausible_upper_bounds=np.array([[10.0, 0.5]]),
+    )
+
+    j1 = bounded_transformer.log_abs_det_jacobian(x1)
+    j2 = unbounded_transformer.log_abs_det_jacobian(x2)
+    j = parameter_transformer.log_abs_det_jacobian(x)
+
+    assert np.allclose(j2, 0.0)
+    assert np.allclose(j, j1)
