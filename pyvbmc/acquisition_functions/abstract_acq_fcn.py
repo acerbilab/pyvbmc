@@ -70,7 +70,7 @@ class AbstractAcqFcn(ABC):
 
         # Map integer inputs
         Xs = self._real2int(
-            Xs, vp.parameter_transformer, optim_state.get("integervars")
+            Xs, vp.parameter_transformer, optim_state.get("integer_vars")
         )
 
         # Compute GP posterior predictive mean and variance
@@ -181,7 +181,7 @@ class AbstractAcqFcn(ABC):
     def _real2int(
         X: np.ndarray,
         parameter_transformer: ParameterTransformer,
-        integervars: np.ndarray,
+        integer_vars: np.ndarray,
     ):
         """
         Convert to integer-valued representation.
@@ -192,15 +192,15 @@ class AbstractAcqFcn(ABC):
             The points to be converted.
         parameter_transformer : ParameterTransformer
             The appropriate ParameterTransformer to convert between the spaces.
-        integervars : np.ndarray
+        integer_vars : np.ndarray
             A mask to determine which dimensions are integer vars.
         """
 
-        if np.any(integervars):
+        if np.any(integer_vars):
             X_temp = parameter_transformer.inverse(X)
-            X_temp[:, integervars] = np.around(X_temp[:, integervars])
+            X_temp[:, integer_vars] = np.around(X_temp[:, integer_vars])
             X_temp = parameter_transformer(X_temp)
-            X[:, integervars] = X_temp[:, integervars]
+            X[:, integer_vars] = X_temp[:, integer_vars]
 
         return X
 
