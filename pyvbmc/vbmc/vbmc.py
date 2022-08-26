@@ -936,7 +936,7 @@ class VBMC:
                         self.optim_state["last_warping"] = self.optim_state[
                             "iter"
                         ]
-                        self.logging_action.append(", undo")
+                        self.logging_action.append("undo " + warp_action)
 
             ## Actively sample new points into the training set
             timer.start_timer("activeSampling")
@@ -1314,7 +1314,7 @@ class VBMC:
                         sKL,
                         self.vp.K,
                         self.optim_state["R"],
-                        "".join(self.logging_action),
+                        ", ".join(self.logging_action),
                     )
                 )
 
@@ -1333,7 +1333,7 @@ class VBMC:
                             sKL,
                             self.vp.K,
                             self.optim_state["R"],
-                            "".join(self.logging_action),
+                            ", ".join(self.logging_action),
                         )
                     )
                 else:
@@ -1346,7 +1346,7 @@ class VBMC:
                             sKL,
                             self.vp.K,
                             self.optim_state["R"],
-                            "".join(self.logging_action),
+                            ", ".join(self.logging_action),
                         )
                     )
             self.iteration_history.record(
@@ -1375,7 +1375,7 @@ class VBMC:
 
                 if len(self.logging_action) > 0:
                     title = "VBMC iteration {} ({})".format(
-                        iteration, "".join(self.logging_action)
+                        iteration, ", ".join(self.logging_action)
                     )
                 else:
                     title = "VBMC iteration {}".format(iteration)
@@ -1718,7 +1718,7 @@ class VBMC:
                     self.logging_action.append("stable")
                     termination_message = (
                         "Inference terminated: variational "
-                        + "solution stable for options.tolstablecount"
+                        + "solution stable for options.tolstablecount "
                         + "fcn evaluations."
                     )
 
