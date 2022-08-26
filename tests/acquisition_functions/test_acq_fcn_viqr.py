@@ -234,7 +234,7 @@ def test_complex__call__():
     def viqr_integrand(theta, theta_new):
         return 2 * vp.pdf(theta) * np.sinh(u * s_xsi_new(theta, theta_new))
 
-    M = 40
+    M = 60
     t1 = t2 = np.linspace(-30, 30, M)
     T1, T2 = np.meshgrid(t1, t2)
     thetas = np.vstack([T1.ravel(), T2.ravel()]).T
@@ -327,6 +327,6 @@ def test_complex__call__():
     result = np.exp(log_result).reshape((N_eval,))
     # print(result)
     # print(viqr_grid)
-    assert np.allclose(viqr_grid, result, rtol=0.05)
+    assert np.allclose(viqr_grid, result, rtol=0.03)
     bias = np.mean(result - viqr_grid)
     assert np.allclose(viqr_grid + bias, result, rtol=0.01)
