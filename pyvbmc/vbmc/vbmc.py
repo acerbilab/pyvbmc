@@ -35,15 +35,15 @@ class VBMC:
 
     Parameters
     ----------
-    fun : callable
+    log_density : callable
         A given target log-posterior or log-likelihood. If ``log_prior`` is
-        ``None``, ``fun`` accepts input ``x`` and returns the value of the
-        target log-joint, that is, the unnormalized log-posterior density at
-        ``x``. If ``log_prior`` is not ``None``, ``fun`` should return the
-        unnormalized log-likelihood. In either case, if
-        ``user_options["specifytargetnoise"]`` is true, ``fun`` should return a
-        tuple where the first element is the noisy log-density, and the second
-        is an estimate of the standard deviation of the noise.
+        ``None``, ``log_density`` accepts input ``x`` and returns the value of
+        the target log-joint, that is, the unnormalized log-posterior density
+        at ``x``. If ``log_prior`` is not ``None``, ``log_density`` should
+        return the unnormalized log-likelihood. In either case, if
+        ``user_options["specifytargetnoise"]`` is true, ``log_density`` should
+        return a tuple where the first element is the noisy log-density, and
+        the second is an estimate of the standard deviation of the noise.
     x0 : np.ndarray, optional
         Starting point for the inference. Ideally ``x0`` is a point in the
         proximity of the mode of the posterior. Default is ``None``.
@@ -76,9 +76,9 @@ class VBMC:
     log_prior : callable, optional
         An optional separate log-prior function, which should accept a single
         argument `x` and return the log-density of the prior at `x`. If
-        ``log_prior`` is not ``None``, the argument ``fun`` is assumed to
-        represent the log-likelihood (otherwise it is assumed to represent the
-        log-joint).
+        ``log_prior`` is not ``None``, the argument ``log_density`` is assumed
+        to represent the log-likelihood (otherwise it is assumed to represent
+        the log-joint).
     sample_prior : callable, optional
         An optional function which accepts a single argument `n` and returns an
         array of samples from the prior, of shape `(n, D)`, where `D` is the
@@ -114,7 +114,7 @@ class VBMC:
 
     def __init__(
         self,
-        fun: callable,
+        log_density: callable,
         x0: np.ndarray = None,
         lower_bounds: np.ndarray = None,
         upper_bounds: np.ndarray = None,
@@ -225,20 +225,20 @@ class VBMC:
         self.sample_prior = sample_prior
         if callable(log_prior):
             self.log_prior = log_prior
-            self.log_likelihood = fun
+            self.log_likelihood = log_density
             if self.optim_state["uncertainty_handling_level"] == 2:
 
                 def log_joint(theta):
-                    log_likelihood, noise_est = fun(theta)
+                    log_likelihood, noise_est = log_density(theta)
                     return log_likelihood + log_prior(theta), noise_est
 
             else:
 
                 def log_joint(theta):
-                    return fun(theta) + log_prior(theta)
+                    return log_density(theta) + log_prior(theta)
 
         elif log_prior is None:
-            log_joint = fun
+            log_joint = log_density
         else:
             raise TypeError("`prior` must be a callable or `None`.")
         self.log_joint = log_joint
