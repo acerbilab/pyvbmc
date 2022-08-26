@@ -24,14 +24,14 @@ def create_vbmc(
 
 def test_final_boost_lambda_options(mocker):
     user_options = {
-        "minfinalcomponents": 50,
-        "nsent": lambda K: 100 * K ** (2 / 3),
-        "nsentfast": lambda K: 0,
-        "nsentfine": lambda K: 2**12 * K,
-        "nsentboost": lambda K: 100 * K ** (2 / 3) - 10,
-        "nsentfastboost": lambda K: 0,
-        "nsentfineboost": lambda K: 2**12 * K,
-        "nselbo": lambda K: 50 * K,
+        "min_final_components": 50,
+        "ns_ent": lambda K: 100 * K ** (2 / 3),
+        "ns_ent_fast": lambda K: 0,
+        "ns_ent_fine": lambda K: 2**12 * K,
+        "ns_ent_boost": lambda K: 100 * K ** (2 / 3) - 10,
+        "ns_ent_fast_boost": lambda K: 0,
+        "ns_ent_fine_boost": lambda K: 2**12 * K,
+        "ns_elbo": lambda K: 50 * K,
     }
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.iteration_history["gp"] = np.arange(30)
@@ -48,14 +48,14 @@ def test_final_boost_lambda_options(mocker):
 
 def test_final_boost_fixed_value_options(mocker):
     user_options = {
-        "minfinalcomponents": 50,
-        "nsent": 1300,
-        "nsentfast": 0,
-        "nsentfine": 204800,
-        "nsentboost": 1300,
-        "nsentfastboost": 20,
-        "nsentfineboost": 204800,
-        "nselbo": 2500,
+        "min_final_components": 50,
+        "ns_ent": 1300,
+        "ns_ent_fast": 0,
+        "ns_ent_fine": 204800,
+        "ns_ent_boost": 1300,
+        "ns_ent_fast_boost": 20,
+        "ns_ent_fine_boost": 204800,
+        "ns_elbo": 2500,
     }
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.iteration_history["gp"] = np.arange(30)
@@ -72,14 +72,14 @@ def test_final_boost_fixed_value_options(mocker):
 
 def test_final_boost_fixed_value_options_boost_none(mocker):
     user_options = {
-        "minfinalcomponents": 50,
-        "nsent": 1300,
-        "nsentfast": 0,
-        "nsentfine": 204800,
-        "nsentboost": [],
-        "nsentfastboost": [],
-        "nsentfineboost": [],
-        "nselbo": 2500,
+        "min_final_components": 50,
+        "ns_ent": 1300,
+        "ns_ent_fast": 0,
+        "ns_ent_fine": 204800,
+        "ns_ent_boost": [],
+        "ns_ent_fast_boost": [],
+        "ns_ent_fine_boost": [],
+        "ns_elbo": 2500,
     }
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.iteration_history["gp"] = np.arange(30)
@@ -96,13 +96,13 @@ def test_final_boost_fixed_value_options_boost_none(mocker):
 
 def test_final_boost_no_boost(mocker):
     user_options = {
-        "minfinalcomponents": 1,
-        "nsent": 1300,
-        "nsentfast": 0,
-        "nsentfine": 204800,
-        "nsentboost": [],
-        "nsentfastboost": [],
-        "nsentfineboost": [],
+        "min_final_components": 1,
+        "ns_ent": 1300,
+        "ns_ent_fast": 0,
+        "ns_ent_fine": 204800,
+        "ns_ent_boost": [],
+        "ns_ent_fast_boost": [],
+        "ns_ent_fine_boost": [],
     }
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.iteration_history["gp"] = np.arange(30)

@@ -42,10 +42,10 @@ def run_optim_block(
     if options is None:
         options = {}
 
-    # options["maxfunevals"] = 100
+    # options["max_fun_evals"] = 100
     options["plot"] = False
     if noise_flag:
-        options["specifytargetnoise"] = True
+        options["specify_target_noise"] = True
 
     vbmc = VBMC(f, x0, lb, ub, plb, pub, user_options=options)
     vp, elbo, _, _, _ = vbmc.optimize()
@@ -145,7 +145,7 @@ def test_vbmc_uniform():
     mu_bar = 0.5 * np.ones((1, D))
     f = lambda x: 0
 
-    options = {"searchoptimizer": "Nelder-Mead"}
+    options = {"search_optimizer": "Nelder-Mead"}
     err_1, err_2 = run_optim_block(
         f, x0, lb, ub, plb, pub, lnZ, mu_bar, options
     )
@@ -165,8 +165,8 @@ def test_vbmc_correlated_multivariate_normal_noisy():
     lnZ = 0.0
     mu_bar = np.reshape(np.linspace(-0.5, 0.5, D), (1, -1))
     options = {
-        "specifytargetnoise": True,
-        "searchacqfcn": [AcqFcnVIQR(), AcqFcnIMIQR(), AcqFcnNoisy()],
+        "specify_target_noise": True,
+        "search_acq_fcn": [AcqFcnVIQR(), AcqFcnIMIQR(), AcqFcnNoisy()],
     }
     err_1, err_2 = run_optim_block(
         noisy_cigar, x0, lb, ub, plb, pub, lnZ, mu_bar, options=options
@@ -371,7 +371,7 @@ def test_optimize_result_dict(mocker):
         np.full((1, D), np.inf),
         np.ones((1, D)) * -10,
         np.ones((1, D)) * 10,
-        user_options={"maxiter": 1},
+        user_options={"max_iter": 1},
     )
     mocker.patch(
         "pyvbmc.vbmc.VBMC._check_termination_conditions",

@@ -69,11 +69,11 @@ def test_active_importance_sampling():
 
     # Initialize options:
     user_options = {
-        "activeimportancesamplingmcmcsamples": 10,
-        "activeimportancesamplingfessthresh": 0,
-        "activeimportancesamplingmcmcthin": 2,
-        "activeimportancesamplingvpsamples": 11,
-        "activeimportancesamplingboxsamples": 12,
+        "active_importance_sampling_mcmc_samples": 10,
+        "active_importance_sampling_fess_thresh": 0,
+        "active_importance_sampling_mcmc_thin": 2,
+        "active_importance_sampling_vp_samples": 11,
+        "active_importance_sampling_box_samples": 12,
     }
     pyvbmc_path = os.path.abspath(
         os.path.join(

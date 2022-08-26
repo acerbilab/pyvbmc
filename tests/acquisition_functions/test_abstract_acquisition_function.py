@@ -72,7 +72,7 @@ def test__call__simple(mocker):
 
     acq_fcn = BasicAcqClass()
     optim_state = dict()
-    optim_state["integervars"] = None
+    optim_state["integer_vars"] = None
     optim_state["variance_regularized_acq_fcn"] = False
     # no constraints for test
     optim_state["lb_eps_orig"] = -np.inf
@@ -115,7 +115,7 @@ def test__call_constraints(mocker):
 
     acq_fcn = BasicAcqClass()
     optim_state = dict()
-    optim_state["integervars"] = None
+    optim_state["integer_vars"] = None
     optim_state["variance_regularized_acq_fcn"] = False
 
     # set constraints for this test
@@ -161,7 +161,7 @@ def test__call_quad(mocker):
 
     acq_fcn = BasicAcqClass()
     optim_state = dict()
-    optim_state["integervars"] = None
+    optim_state["integer_vars"] = None
     optim_state["variance_regularized_acq_fcn"] = False
     # no constraints for test
     optim_state["lb_eps_orig"] = -np.inf
@@ -207,7 +207,7 @@ def test__call__regularization(mocker):
 
     acq_fcn = BasicAcqClass()
     optim_state = dict()
-    optim_state["integervars"] = None
+    optim_state["integer_vars"] = None
     optim_state["variance_regularized_acq_fcn"] = True
     optim_state["tol_gp_var"] = 2000
 
@@ -263,7 +263,7 @@ def test__call__real_max(mocker):
 
     acq_fcn = BasicAcqClass()
     optim_state = dict()
-    optim_state["integervars"] = None
+    optim_state["integer_vars"] = None
     optim_state["variance_regularized_acq_fcn"] = False
     # no constraints for test
     optim_state["lb_eps_orig"] = -np.inf
@@ -300,14 +300,14 @@ def test_real2int():
     D = 3
     parameter_transformer = ParameterTransformer(D)
     X = np.ones((10, D)) * 0.5
-    integervars = np.array([True, False, False])
-    X_after = acq_fcn._real2int(X, parameter_transformer, integervars)
+    integer_vars = np.array([True, False, False])
+    X_after = acq_fcn._real2int(X, parameter_transformer, integer_vars)
     np.all(X_after[:, 0] == 0)
     np.all(X_after[:, 1] == 0.5)
     np.all(X_after[:, 2] == 0.5)
 
-    integervars = np.array([False, False, False])
-    X_after = acq_fcn._real2int(X, parameter_transformer, integervars)
+    integer_vars = np.array([False, False, False])
+    X_after = acq_fcn._real2int(X, parameter_transformer, integer_vars)
     np.all(X_after == X)
 
 

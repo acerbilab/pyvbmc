@@ -82,12 +82,12 @@ def test_init_from_existing_options_without_other_options():
     assert len(options_1) == len(options_2)
 
 
-def test_init_with_specifytargetnoise():
-    """Turning on specifytargetnoise should adjust defaults."""
+def test_init_with_specify_target_noise():
+    """Turning on specify_target_noise should adjust defaults."""
     D = 1
     user_options = {
-        "specifytargetnoise": True,
-        "activesamplegpupdate": "foo",  # But don't touch user options!
+        "specify_target_noise": True,
+        "active_sample_gp_update": "foo",  # But don't touch user options!
     }
     vbmc1 = VBMC(
         lambda x, y: (x + y, y),
@@ -109,24 +109,24 @@ def test_init_with_specifytargetnoise():
 
     # Check that default options are changed:
     assert vbmc1.options != vbmc2.options
-    assert vbmc2.options["maxfunevals"] == ceil(
-        vbmc1.options["maxfunevals"] * 1.5
+    assert vbmc2.options["max_fun_evals"] == ceil(
+        vbmc1.options["max_fun_evals"] * 1.5
     )
-    assert vbmc2.options["tolstablecount"] == ceil(
-        vbmc1.options["tolstablecount"] * 1.5
+    assert vbmc2.options["tol_stable_count"] == ceil(
+        vbmc1.options["tol_stable_count"] * 1.5
     )
-    assert len(vbmc2.options["searchacqfcn"]) == 1
-    assert isinstance(vbmc2.options["searchacqfcn"][0], AcqFcnVIQR)
-    assert vbmc2.options["activesamplevpupdate"] == True
+    assert len(vbmc2.options["search_acq_fcn"]) == 1
+    assert isinstance(vbmc2.options["search_acq_fcn"][0], AcqFcnVIQR)
+    assert vbmc2.options["active_sample_vp_update"] == True
 
     # Check that user-specified option is unchanged:
-    assert vbmc2.options["activesamplegpupdate"] == "foo"
+    assert vbmc2.options["active_sample_gp_update"] == "foo"
 
     # Check defaults for non-noisy target:
-    assert len(vbmc1.options["searchacqfcn"]) == 1
-    assert isinstance(vbmc1.options["searchacqfcn"][0], AcqFcn)
-    assert vbmc1.options["activesamplevpupdate"] == False
-    assert vbmc1.options["activesamplegpupdate"] == False
+    assert len(vbmc1.options["search_acq_fcn"]) == 1
+    assert isinstance(vbmc1.options["search_acq_fcn"][0], AcqFcn)
+    assert vbmc1.options["active_sample_vp_update"] == False
+    assert vbmc1.options["active_sample_gp_update"] == False
 
 
 def test_str():
@@ -159,17 +159,17 @@ def test_eval_callable():
 
 def test_eval_constant():
     default_options_path = "./pyvbmc/vbmc/option_configs/test_options.ini"
-    user_options = {"nsent": (5, 3)}
+    user_options = {"ns_ent": (5, 3)}
     options = Options(default_options_path, {"D": 2, "Y": 3}, user_options)
-    assert (5, 3) == options.eval("nsent", {"K": 2})
+    assert (5, 3) == options.eval("ns_ent", {"K": 2})
 
 
 def test_eval_callable_args_missing():
     default_options_path = "./pyvbmc/vbmc/option_configs/test_options.ini"
-    user_options = {"nsent": lambda Y, K: (Y, K)}
+    user_options = {"ns_ent": lambda Y, K: (Y, K)}
     options = Options(default_options_path, {"D": 2}, user_options)
     with pytest.raises(TypeError):
-        options.eval("nsent", {})
+        options.eval("ns_ent", {})
 
 
 def test_eval_callable_too_many_args():
