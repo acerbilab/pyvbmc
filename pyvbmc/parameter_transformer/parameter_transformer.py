@@ -210,17 +210,6 @@ class ParameterTransformer:
             mask = self.type == t
             if np.any(mask):
                 xNew[:, mask] = self._bounded_transforms[t]["inverse"](x, mask)
-        # Force to stay within bounds
-        mask = np.isfinite(self.lb_orig)[0]
-        xNew[:, mask] = np.maximum(
-            xNew[:, mask],
-            self.lb_orig[:, mask] + np.abs(np.spacing(self.lb_orig[:, mask])),
-        )
-        mask = np.isfinite(self.ub_orig)[0]
-        xNew[:, mask] = np.minimum(
-            xNew[:, mask],
-            self.ub_orig[:, mask] - np.abs(np.spacing(self.ub_orig[:, mask])),
-        )
 
         return xNew
 
@@ -290,7 +279,9 @@ class ParameterTransformer:
                     return _center(
                         _logit(
                             _to_unit_interval(
-                                x[:, mask], self.lb_orig, self.ub_orig
+                                x[:, mask],
+                                self.lb_orig[:, mask],
+                                self.ub_orig[:, mask],
                             )
                         ),
                         self.mu[mask],
@@ -306,14 +297,14 @@ class ParameterTransformer:
                                 u[:, mask], self.mu[mask], self.delta[mask]
                             )
                         ),
-                        self.lb_orig,
-                        self.ub_orig,
+                        self.lb_orig[:, mask],
+                        self.ub_orig[:, mask],
                     )
 
                 self._bounded_transforms[t]["inverse"] = bounded_inverse
 
                 def bounded_jacobian(u, mask):
-                    j1 = np.log(self.ub_orig - self.lb_orig)
+                    j1 = np.log(self.ub_orig[:, mask] - self.lb_orig[:, mask])
                     y = _uncenter(u[:, mask], self.mu[mask], self.delta[mask])
                     z = -np.log1p(np.exp(-y))
                     j2 = -y + 2 * z
@@ -329,7 +320,9 @@ class ParameterTransformer:
                     return _center(
                         _norminv(
                             _to_unit_interval(
-                                x[:, mask], self.lb_orig, self.ub_orig
+                                x[:, mask],
+                                self.lb_orig[:, mask],
+                                self.ub_orig[:, mask],
                             )
                         ),
                         self.mu[mask],
@@ -345,14 +338,14 @@ class ParameterTransformer:
                                 u[:, mask], self.mu[mask], self.delta[mask]
                             )
                         ),
-                        self.lb_orig,
-                        self.ub_orig,
+                        self.lb_orig[:, mask],
+                        self.ub_orig[:, mask],
                     )
 
                 self._bounded_transforms[t]["inverse"] = bounded_inverse
 
                 def bounded_jacobian(u, mask):
-                    j1 = np.log(self.ub_orig - self.lb_orig)
+                    j1 = np.log(self.ub_orig[:, mask] - self.lb_orig[:, mask])
                     y = _uncenter(u[:, mask], self.mu[mask], self.delta[mask])
                     j2 = -0.5 * np.log(2 * np.pi) - 0.5 * y**2
                     j3 = np.log(self.delta[mask])
@@ -367,7 +360,9 @@ class ParameterTransformer:
                     return _center(
                         _student4(
                             _to_unit_interval(
-                                x[:, mask], self.lb_orig, self.ub_orig
+                                x[:, mask],
+                                self.lb_orig[:, mask],
+                                self.ub_orig[:, mask],
                             )
                         ),
                         self.mu[mask],
@@ -383,14 +378,14 @@ class ParameterTransformer:
                                 u[:, mask], self.mu[mask], self.delta[mask]
                             )
                         ),
-                        self.lb_orig,
-                        self.ub_orig,
+                        self.lb_orig[:, mask],
+                        self.ub_orig[:, mask],
                     )
 
                 self._bounded_transforms[t]["inverse"] = bounded_inverse
 
                 def bounded_jacobian(u, mask):
-                    j1 = np.log(self.ub_orig - self.lb_orig)
+                    j1 = np.log(self.ub_orig[:, mask] - self.lb_orig[:, mask])
                     y = _uncenter(u[:, mask], self.mu[mask], self.delta[mask])
                     j2 = np.log(3 / 8) - (5 / 2) * np.log1p(y**2 / 4)
                     j3 = np.log(self.delta[mask])
@@ -402,12 +397,24 @@ class ParameterTransformer:
                 raise NotImplementedError
 
 
-def _to_unit_interval(x, lb, ub):
-    return (x - lb) / (ub - lb)
+def _to_unit_interval(x, lb, ub, safe=True):
+    z = (x - lb) / (ub - lb)
+    if safe:  # Nudge points away from boundary
+        mask = (z == 0) & (x != lb)
+        if np.any(mask):
+            z[mask] = np.nextafter(0, np.inf)
+        mask = (z == 1) & (x != ub)
+        if np.any(mask):
+            z[mask] = np.nextafter(1, -np.inf)
+    return z
 
 
-def _from_unit_interval(z, lb, ub):
-    return z * (ub - lb) + lb
+def _from_unit_interval(z, lb, ub, safe=True):
+    y = z * (ub - lb) + lb
+    if safe:  # Nudge points away from boundary
+        y = np.maximum(y, np.nextafter(lb, np.inf))
+        y = np.minimum(y, np.nextafter(ub, -np.inf))
+    return y
 
 
 def _center(u, mu, delta):

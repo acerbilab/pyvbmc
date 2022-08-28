@@ -27,17 +27,26 @@ def _test_vbmc_optimize_rosenbrock():
         + np.log(np.prod(2 * np.pi * prior_var))
     )
 
-    f = lambda x: llfun(x) + lpriorfun(x)
     plb = prior_mu - 3 * np.sqrt(prior_var)
     pub = prior_mu + 3 * np.sqrt(prior_var)
     x0 = prior_mu.copy()
 
-    vbmc = VBMC(f, x0, None, None, plb, pub)
+    vbmc = VBMC(llfun, x0, None, None, plb, pub, log_prior=lpriorfun)
     vbmc.optimize()
 
 
 def run_optim_block(
-    f, x0, lb, ub, plb, pub, ln_Z, mu_bar, options=None, noise_flag=False
+    f,
+    x0,
+    lb,
+    ub,
+    plb,
+    pub,
+    ln_Z,
+    mu_bar,
+    options=None,
+    noise_flag=False,
+    log_prior=None,
 ):
     if options is None:
         options = {}
@@ -47,7 +56,9 @@ def run_optim_block(
     if noise_flag:
         options["specify_target_noise"] = True
 
-    vbmc = VBMC(f, x0, lb, ub, plb, pub, user_options=options)
+    vbmc = VBMC(
+        f, x0, lb, ub, plb, pub, user_options=options, log_prior=log_prior
+    )
     vp, elbo, _, _, _ = vbmc.optimize()
 
     vmu = vp.moments()
@@ -94,6 +105,7 @@ def test_vbmc_multivariate_half_normal():
         - np.sum(np.log(np.array(range(1, np.size(x) + 1))))
         - 0.5 * np.size(x) * np.log(2 * np.pi)
     )
+    print(f(np.array([1.5, np.pi])))
 
     err_1, err_2 = run_optim_block(f, x0, lb, ub, plb, pub, lnZ, mu_bar)
 
@@ -168,8 +180,21 @@ def test_vbmc_correlated_multivariate_normal_noisy():
         "specify_target_noise": True,
         "search_acq_fcn": [AcqFcnVIQR(), AcqFcnIMIQR(), AcqFcnNoisy()],
     }
+
+    def mock_prior(theta):
+        return 0.0
+
     err_1, err_2 = run_optim_block(
-        noisy_cigar, x0, lb, ub, plb, pub, lnZ, mu_bar, options=options
+        noisy_cigar,
+        x0,
+        lb,
+        ub,
+        plb,
+        pub,
+        lnZ,
+        mu_bar,
+        options=options,
+        log_prior=mock_prior,
     )
 
     assert err_1 < 0.5
@@ -177,7 +202,7 @@ def test_vbmc_correlated_multivariate_normal_noisy():
 
 
 def noisy_cigar(x, noise_scale=0.4):
-    return cigar(x) + noise_scale * np.random.normal(), noise_scale**2
+    return cigar(x) + noise_scale * np.random.normal(), noise_scale
 
 
 def cigar(x):
