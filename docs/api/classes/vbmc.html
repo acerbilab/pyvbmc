@@ -308,35 +308,40 @@ For now, the only methods of interest for users are the <code class="docutils li
 </div>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.vbmc.VBMC">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.vbmc.</span></span><span class="sig-name descname"><span class="pre">VBMC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fun</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plausible_lower_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plausible_upper_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/vbmc/vbmc.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.VBMC" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.vbmc.</span></span><span class="sig-name descname"><span class="pre">VBMC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_density</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plausible_lower_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plausible_upper_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_prior</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">callable</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_prior</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">callable</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/vbmc/vbmc.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.VBMC" title="Permalink to this definition">¶</a></dt>
 <dd><p>Posterior and model inference via Variational Bayesian Monte Carlo (VBMC).</p>
-<p>VBMC computes a variational approximation of the full posterior and a lower 
-bound on the normalization constant (marginal likelhood or model evidence) 
+<p>VBMC computes a variational approximation of the full posterior and a lower
+bound on the normalization constant (marginal likelhood or model evidence)
 for a provided unnormalized log posterior.</p>
 <p>Initialize a <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> object to set up the inference problem, then run
 <code class="docutils literal notranslate"><span class="pre">optimize()</span></code>. See the examples for more details.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>fun</strong><span class="classifier">callable</span></dt><dd><p>A given target log posterior <cite>fun</cite>. <cite>fun</cite> accepts input <cite>x</cite> and returns 
-the value of the target log-joint, that is the unnormalized 
-log-posterior density, at <cite>x</cite>.</p>
+<dt><strong>log_density</strong><span class="classifier">callable</span></dt><dd><p>A given target log-posterior or log-likelihood. If <code class="docutils literal notranslate"><span class="pre">log_prior</span></code> is
+<code class="docutils literal notranslate"><span class="pre">None</span></code>, <code class="docutils literal notranslate"><span class="pre">log_density</span></code> accepts input <code class="docutils literal notranslate"><span class="pre">x</span></code> and returns the value of
+the target log-joint, that is, the unnormalized log-posterior density
+at <code class="docutils literal notranslate"><span class="pre">x</span></code>. If <code class="docutils literal notranslate"><span class="pre">log_prior</span></code> is not <code class="docutils literal notranslate"><span class="pre">None</span></code>, <code class="docutils literal notranslate"><span class="pre">log_density</span></code> should
+return the unnormalized log-likelihood. In either case, if
+<code class="docutils literal notranslate"><span class="pre">user_options[&quot;specifytargetnoise&quot;]</span></code> is true, <code class="docutils literal notranslate"><span class="pre">log_density</span></code> should
+return a tuple where the first element is the noisy log-density, and
+the second is an estimate of the standard deviation of the noise.</p>
 </dd>
-<dt><strong>x0</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>Starting point for the inference. Ideally <cite>x0</cite> is a point in the
+<dt><strong>x0</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>Starting point for the inference. Ideally <code class="docutils literal notranslate"><span class="pre">x0</span></code> is a point in the
 proximity of the mode of the posterior. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 </dd>
-<dt><strong>lower_bounds, upper_bounds</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p><cite>lower_bounds</cite> (<cite>LB</cite>) and <cite>upper_bounds</cite> (<cite>UB</cite>) define a set
-of strict lower and upper bounds for the coordinate vector, <cite>x</cite>, so 
+<dt><strong>lower_bounds, upper_bounds</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p><code class="docutils literal notranslate"><span class="pre">lower_bounds</span></code> (<cite>LB</cite>) and <code class="docutils literal notranslate"><span class="pre">upper_bounds</span></code> (<cite>UB</cite>) define a set
+of strict lower and upper bounds for the coordinate vector, <cite>x</cite>, so
 that the posterior has support on <cite>LB</cite> &lt; <cite>x</cite> &lt; <cite>UB</cite>.
 If scalars, the bound is replicated in each dimension. Use
 <code class="docutils literal notranslate"><span class="pre">None</span></code> for <cite>LB</cite> and <cite>UB</cite> if no bounds exist. Set <cite>LB</cite> [<cite>i</cite>] = -<code class="docutils literal notranslate"><span class="pre">inf</span></code>
-and <cite>UB</cite> [<cite>i</cite>] = <code class="docutils literal notranslate"><span class="pre">inf</span></code> if the <cite>i</cite>-th coordinate is unbounded (while 
+and <cite>UB</cite> [<cite>i</cite>] = <code class="docutils literal notranslate"><span class="pre">inf</span></code> if the <cite>i</cite>-th coordinate is unbounded (while
 other coordinates may be bounded). Note that if <cite>LB</cite> and <cite>UB</cite> contain
-unbounded variables, the respective values of <cite>PLB</cite> and <cite>PUB</cite> need to 
+unbounded variables, the respective values of <cite>PLB</cite> and <cite>PUB</cite> need to
 be specified (see below), by default <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 </dd>
-<dt><strong>plausible_lower_bounds, plausible_upper_bounds</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>Specifies a set of <cite>plausible_lower_bounds</cite> (<cite>PLB</cite>) and
-<cite>plausible_upper_bounds</cite> (<cite>PUB</cite>) such that <cite>LB</cite> &lt; <cite>PLB</cite> &lt; <cite>PUB</cite> &lt; <cite>UB</cite>.
+<dt><strong>plausible_lower_bounds, plausible_upper_bounds</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>Specifies a set of <code class="docutils literal notranslate"><span class="pre">plausible_lower_bounds</span></code> (<cite>PLB</cite>) and
+<code class="docutils literal notranslate"><span class="pre">plausible_upper_bounds</span></code> (<cite>PUB</cite>) such that <cite>LB</cite> &lt; <cite>PLB</cite> &lt; <cite>PUB</cite> &lt; <cite>UB</cite>.
 Both <cite>PLB</cite> and <cite>PUB</cite> need to be finite. <cite>PLB</cite> and <cite>PUB</cite> represent a
 “plausible” range, which should denote a region of high posterior
 probability mass. Among other things, the plausible box is used to
@@ -348,8 +353,18 @@ additional information might afford a better guess). Both are
 by default <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 </dd>
 <dt><strong>user_options</strong><span class="classifier">dict, optional</span></dt><dd><p>Additional options can be passed as a dict. Please refer to the
-VBMC options page for the default options. If no <cite>user_options</cite> are 
+VBMC options page for the default options. If no <code class="docutils literal notranslate"><span class="pre">user_options</span></code> are
 passed, the default options are used.</p>
+</dd>
+<dt><strong>log_prior</strong><span class="classifier">callable, optional</span></dt><dd><p>An optional separate log-prior function, which should accept a single
+argument <cite>x</cite> and return the log-density of the prior at <cite>x</cite>. If
+<code class="docutils literal notranslate"><span class="pre">log_prior</span></code> is not <code class="docutils literal notranslate"><span class="pre">None</span></code>, the argument <code class="docutils literal notranslate"><span class="pre">log_density</span></code> is assumed
+to represent the log-likelihood (otherwise it is assumed to represent
+the log-joint).</p>
+</dd>
+<dt><strong>sample_prior</strong><span class="classifier">callable, optional</span></dt><dd><p>An optional function which accepts a single argument <cite>n</cite> and returns an
+array of samples from the prior, of shape <cite>(n, D)</cite>, where <cite>D</cite> is the
+problem dimension. Currently unused.</p>
 </dd>
 </dl>
 </dd>
@@ -364,23 +379,23 @@ passed, the default options are used.</p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
-<p>The current version of <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> only supports noiseless evaluations of the 
+<p>The current version of <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> only supports noiseless evaluations of the
 log posterior <a class="reference internal" href="#r27124873b5f9-1" id="id1">[1]</a>. Noisy evaluations as in <a class="reference internal" href="#r27124873b5f9-2" id="id2">[2]</a> are not implemented yet.</p>
 <p class="rubric">References</p>
 <dl class="citation">
 <dt class="label" id="r27124873b5f9-1"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
-<dd><p>Acerbi, L. (2018). “Variational Bayesian Monte Carlo”. In Advances 
+<dd><p>Acerbi, L. (2018). “Variational Bayesian Monte Carlo”. In Advances
 in Neural Information Processing Systems 31 (NeurIPS 2018), pp. 8213-8223.</p>
 </dd>
 <dt class="label" id="r27124873b5f9-2"><span class="brackets"><a class="fn-backref" href="#id2">2</a></span></dt>
 <dd><p>Acerbi, L. (2020). “Variational Bayesian Monte Carlo with Noisy
-Likelihoods”. In Advances in Neural Information Processing Systems 33 
+Likelihoods”. In Advances in Neural Information Processing Systems 33
 (NeurIPS 2020).</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
 <p>For <cite>VBMC</cite> usage examples, please look up the Jupyter notebook tutorials
-in the pyvbmc documentation: 
+in the pyvbmc documentation:
 <a class="reference external" href="https://lacerbi.github.io/pyvbmc/_examples/pyvbmc_example_1.html">https://lacerbi.github.io/pyvbmc/_examples/pyvbmc_example_1.html</a></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.vbmc.VBMC.determine_best_vp">
@@ -452,8 +467,8 @@ final boost.</p>
 <span class="sig-name descname"><span class="pre">optimize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/vbmc/vbmc.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.VBMC.optimize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run inference on an initialized <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> object.</p>
 <p>VBMC computes a variational approximation of the full posterior and the
-ELBO (evidence lower bound), a lower bound on the log normalization 
-constant (log marginal likelhood or log model evidence) for the provided 
+ELBO (evidence lower bound), a lower bound on the log normalization
+constant (log marginal likelhood or log model evidence) for the provided
 unnormalized log posterior.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -462,11 +477,11 @@ unnormalized log posterior.</p>
 </dd>
 <dt><strong>elbo</strong><span class="classifier">float</span></dt><dd><p>An estimate of the ELBO for the returned <cite>vp</cite>.</p>
 </dd>
-<dt><strong>elbo_sd</strong><span class="classifier">float</span></dt><dd><p>The standard deviation of the estimate of the ELBO. Note that this 
-standard deviation is <em>not</em> representative of the error between the 
+<dt><strong>elbo_sd</strong><span class="classifier">float</span></dt><dd><p>The standard deviation of the estimate of the ELBO. Note that this
+standard deviation is <em>not</em> representative of the error between the
 <cite>elbo</cite> and the true log marginal likelihood.</p>
 </dd>
-<dt><strong>success_flag</strong><span class="classifier">bool</span></dt><dd><p><cite>success_flag</cite> is <code class="docutils literal notranslate"><span class="pre">True</span></code> if the inference reached stability within 
+<dt><strong>success_flag</strong><span class="classifier">bool</span></dt><dd><p><cite>success_flag</cite> is <code class="docutils literal notranslate"><span class="pre">True</span></code> if the inference reached stability within
 the provided budget of function evaluations, suggesting convergence.
 If <code class="docutils literal notranslate"><span class="pre">False</span></code>, the returned solution has not stabilized and should
 not be trusted.</p>

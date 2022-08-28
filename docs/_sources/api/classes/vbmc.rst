@@ -6,10 +6,10 @@ VBMC
 
   The ``VBMC`` class implements the Variational Bayesian Monte Carlo (VBMC) algorithm.
 
-  VBMC computes a variational approximation of the full posterior and a lower 
-  bound on the log normalization constant (log marginal likelhood or log model evidence) 
-  for a provided unnormalized log posterior. 
-  
+  VBMC computes a variational approximation of the full posterior and a lower
+  bound on the log normalization constant (log marginal likelhood or log model evidence)
+  for a provided unnormalized log posterior.
+
   To perform inference, first initialize a ``VBMC`` object and then run ``optimize()``.
 
   The current version of VBMC only supports noiseless evaluations of the log posterior.

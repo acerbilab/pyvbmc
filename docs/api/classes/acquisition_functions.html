@@ -324,7 +324,8 @@ called from.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
-<dt><strong>acq</strong><span class="classifier">np.ndarray</span></dt><dd><p>The output of the acquisition function.</p>
+<dt><strong>acq</strong><span class="classifier">np.ndarray</span></dt><dd><p>The output of the acquisition function, shape <code class="docutils literal notranslate"><span class="pre">(N,)</span></code> where <code class="docutils literal notranslate"><span class="pre">N</span></code>
+is the number of input points.</p>
 </dd>
 </dl>
 </dd>
@@ -355,6 +356,105 @@ called from.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="pyvbmc.acquisition_functions.AcqFcnIMIQR">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.acquisition_functions.</span></span><span class="sig-name descname"><span class="pre">AcqFcnIMIQR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quantile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.75</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/acquisition_functions/acq_fcn_imiqr.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcnIMIQR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyvbmc.acquisition_functions.AbstractAcqFcn" title="pyvbmc.acquisition_functions.abstract_acq_fcn.AbstractAcqFcn"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyvbmc.acquisition_functions.abstract_acq_fcn.AbstractAcqFcn</span></code></a></p>
+<p>Integrated Median Interquantile Range (IMIQR) acquisition function.</p>
+<p>Approximates the Integrated Median Interquantile Range (IMIQR) via
+importance samples from the GP surrogate.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.acquisition_functions.AcqFcnIMIQR.is_log_added">
+<span class="sig-name descname"><span class="pre">is_log_added</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/acquisition_functions/acq_fcn_imiqr.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcnIMIQR.is_log_added" title="Permalink to this definition">¶</a></dt>
+<dd><p>Importance sampling proposal log density, added part.</p>
+<p>The added term in the importance sampling proposal log density: The
+full proposal log density is <code class="docutils literal notranslate"><span class="pre">is_log_full</span> <span class="pre">=</span> <span class="pre">is_log_base</span> <span class="pre">+</span>
+<span class="pre">is_log_added</span></code>. Added part for VIQR/IMIQR is :math: <cite>\log [\sinh(u *
+f_s)]`</cite>, where <code class="docutils literal notranslate"><span class="pre">f_s</span></code> is the GP predictive variance at the input
+points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>f_s2</strong><span class="classifier">np.ndarray</span></dt><dd><p>The predicted posterior variance at the points of interest.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">np.ndarray</span></dt><dd><p>The added log density term at the points of interest.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.acquisition_functions.AcqFcnIMIQR.is_log_base">
+<span class="sig-name descname"><span class="pre">is_log_base</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/acquisition_functions/acq_fcn_imiqr.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcnIMIQR.is_log_base" title="Permalink to this definition">¶</a></dt>
+<dd><p>Importance sampling proposal log density, base part.</p>
+<p>The base density of the importance sampling proposal distribution, used
+for computing i.s. weights (in addition to the full proposal density).
+The full proposal log density is <code class="docutils literal notranslate"><span class="pre">is_log_full</span> <span class="pre">=</span> <span class="pre">is_log_base</span> <span class="pre">+</span>
+<span class="pre">is_log_added</span></code>. IMIQR approximates an expectation w.r.t. to the
+(exponentiated) GP using importance sampling, so this base log density
+is the GP mean, <code class="docutils literal notranslate"><span class="pre">f_mu</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>f_mu</strong><span class="classifier">np.ndarray</span></dt><dd><p>The gp posterior mean at the points of interest.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>f_mu</strong><span class="classifier">np.ndarray</span></dt><dd><p>The log density of the target against which the i.s. expectation is
+taken. Here, just the log density as modeled by the GP.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.acquisition_functions.AcqFcnIMIQR.is_log_full">
+<span class="sig-name descname"><span class="pre">is_log_full</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/acquisition_functions/acq_fcn_imiqr.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcnIMIQR.is_log_full" title="Permalink to this definition">¶</a></dt>
+<dd><p>Importance sampling full proposal log density.</p>
+<p>The full proposal log density, used for MCMC sampling: <code class="docutils literal notranslate"><span class="pre">is_log_full</span> <span class="pre">=</span>
+<span class="pre">is_log_base</span> <span class="pre">+</span> <span class="pre">is_log_added</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>f_mu</strong><span class="classifier">np.ndarray</span></dt><dd><p>The gp posterior mean at the points of interest. Either [<code class="docutils literal notranslate"><span class="pre">f_s2</span></code>
+and <code class="docutils literal notranslate"><span class="pre">f_mu</span></code>] or <code class="docutils literal notranslate"><span class="pre">gp</span></code> must be provided.</p>
+</dd>
+<dt><strong>f_s2</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>The predicted posterior variance at the points of interest. Either
+[<code class="docutils literal notranslate"><span class="pre">f_s2</span></code> and <code class="docutils literal notranslate"><span class="pre">f_mu</span></code>] or <code class="docutils literal notranslate"><span class="pre">gp</span></code> must be provided.</p>
+</dd>
+<dt><strong>gp</strong><span class="classifier">gpyreg.GaussianProcess, optional</span></dt><dd><p>The GP modeling the log-density. Either [<code class="docutils literal notranslate"><span class="pre">f_s2</span></code> and <code class="docutils literal notranslate"><span class="pre">f_mu</span></code>] or
+<code class="docutils literal notranslate"><span class="pre">gp</span></code> must be provided.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">np.ndarray</span></dt><dd><p>The full log density of the importance sampling proposal
+distribution at the points of interest. Of the same shape as
+<code class="docutils literal notranslate"><span class="pre">f_s2</span></code>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>ValueError</dt><dd><p>If [<code class="docutils literal notranslate"><span class="pre">f_s2</span></code> or <code class="docutils literal notranslate"><span class="pre">f_mu</span></code>] are not provided, and <code class="docutils literal notranslate"><span class="pre">gp</span></code> is not
+provided.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.acquisition_functions.AcqFcnLog">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.acquisition_functions.</span></span><span class="sig-name descname"><span class="pre">AcqFcnLog</span></span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/acquisition_functions/acq_fcn_log.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcnLog" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pyvbmc.acquisition_functions.AbstractAcqFcn" title="pyvbmc.acquisition_functions.abstract_acq_fcn.AbstractAcqFcn"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyvbmc.acquisition_functions.abstract_acq_fcn.AbstractAcqFcn</span></code></a></p>
@@ -369,10 +469,114 @@ called from.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="pyvbmc.acquisition_functions.AcqFcnVIQR">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.acquisition_functions.</span></span><span class="sig-name descname"><span class="pre">AcqFcnVIQR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quantile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.75</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/acquisition_functions/acq_fcn_viqr.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcnVIQR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyvbmc.acquisition_functions.AbstractAcqFcn" title="pyvbmc.acquisition_functions.abstract_acq_fcn.AbstractAcqFcn"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyvbmc.acquisition_functions.abstract_acq_fcn.AbstractAcqFcn</span></code></a></p>
+<p>Variational Interquantile Range (VIQR) acquisition function.</p>
+<p>Approximates the Integrated Median Interquantile Range (IMIQR) by simple
+Monte Carlo using samples from the Variational Posterior.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.acquisition_functions.AcqFcnVIQR.is_log_added">
+<span class="sig-name descname"><span class="pre">is_log_added</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/acquisition_functions/acq_fcn_viqr.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcnVIQR.is_log_added" title="Permalink to this definition">¶</a></dt>
+<dd><p>Importance sampling proposal log density, added part.</p>
+<p>The added term in the importance sampling proposal log density: The
+full proposal log density is <code class="docutils literal notranslate"><span class="pre">is_log_full</span> <span class="pre">=</span> <span class="pre">is_log_base</span> <span class="pre">+</span>
+<span class="pre">is_log_added</span></code>. Added part for VIQR/IMIQR is :math: <cite>\log [\sinh(u *
+f_s)]`</cite>, where <code class="docutils literal notranslate"><span class="pre">f_s</span></code> is the GP predictive variance at the input
+points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>f_s2</strong><span class="classifier">np.ndarray</span></dt><dd><p>The predicted posterior variance at the points of interest.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">np.ndarray</span></dt><dd><p>The added log density term at the points of interest. Of the same
+shape as <code class="docutils literal notranslate"><span class="pre">f_s2</span></code>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.acquisition_functions.AcqFcnVIQR.is_log_base">
+<span class="sig-name descname"><span class="pre">is_log_base</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/acquisition_functions/acq_fcn_viqr.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcnVIQR.is_log_base" title="Permalink to this definition">¶</a></dt>
+<dd><p>Importance sampling proposal log density, base part.</p>
+<p>The base density of the importance sampling proposal distribution, used
+for computing i.s. weights (in addition to the full proposal density).
+The full proposal log density is <code class="docutils literal notranslate"><span class="pre">is_log_full</span> <span class="pre">=</span> <span class="pre">is_log_base</span> <span class="pre">+</span>
+<span class="pre">is_log_added</span></code>. VIQR approximates an expectation w.r.t. to the VP
+using simple Monte Carlo, so this base density is constant (log=0).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">np.ndarray</span></dt><dd><p>The input points, shape <code class="docutils literal notranslate"><span class="pre">(N,</span> <span class="pre">D)</span></code> where <code class="docutils literal notranslate"><span class="pre">N</span></code> is the number of
+points and <code class="docutils literal notranslate"><span class="pre">D</span></code> is the dimension.</p>
+</dd>
+<dt><strong>f_s2</strong><span class="classifier">np.ndarray</span></dt><dd><p>The predicted posterior variance at the points of interest.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>z</strong><span class="classifier">np.ndarray</span></dt><dd><p>The log base part of the importance sampling weights (zeros), shape
+<code class="docutils literal notranslate"><span class="pre">f_s2</span></code>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.acquisition_functions.AcqFcnVIQR.is_log_full">
+<span class="sig-name descname"><span class="pre">is_log_full</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/acquisition_functions/acq_fcn_viqr.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcnVIQR.is_log_full" title="Permalink to this definition">¶</a></dt>
+<dd><p>Importance sampling full proposal log density.</p>
+<p>The full proposal log density, used for MCMC sampling: <code class="docutils literal notranslate"><span class="pre">is_log_full</span> <span class="pre">=</span>
+<span class="pre">is_log_base</span> <span class="pre">+</span> <span class="pre">is_log_added</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>f_s2</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>The predicted posterior variance at the points of interest. Either
+<code class="docutils literal notranslate"><span class="pre">f_s2</span></code> or <code class="docutils literal notranslate"><span class="pre">gp</span></code> must be provided.</p>
+</dd>
+<dt><strong>gp</strong><span class="classifier">gpyreg.GaussianProcess, optional</span></dt><dd><p>The GP modeling the log-density. Either <code class="docutils literal notranslate"><span class="pre">f_s2</span></code> or <code class="docutils literal notranslate"><span class="pre">gp</span></code> must be
+provided.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">np.ndarray</span></dt><dd><p>The full log density of the importance sampling proposal
+distribution at the points of interest. Of the same shape as
+<code class="docutils literal notranslate"><span class="pre">f_s2</span></code>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>ValueError</dt><dd><p>If neither <code class="docutils literal notranslate"><span class="pre">f_s2</span></code> nor <code class="docutils literal notranslate"><span class="pre">gp</span></code> are provided.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.acquisition_functions.AcqFcnVanilla">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.acquisition_functions.</span></span><span class="sig-name descname"><span class="pre">AcqFcnVanilla</span></span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/acquisition_functions/acq_fcn_vanilla.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcnVanilla" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pyvbmc.acquisition_functions.AbstractAcqFcn" title="pyvbmc.acquisition_functions.abstract_acq_fcn.AbstractAcqFcn"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyvbmc.acquisition_functions.abstract_acq_fcn.AbstractAcqFcn</span></code></a></p>
 <p>Acquisition function via vanilla uncertainty sampling.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyvbmc.acquisition_functions.string_to_acq">
+<span class="sig-prename descclassname"><span class="pre">pyvbmc.acquisition_functions.</span></span><span class="sig-name descname"><span class="pre">string_to_acq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/acquisition_functions/utilities.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.string_to_acq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Safely convert an input string to an acquisition function.</p>
 </dd></dl>
 
 </div>
