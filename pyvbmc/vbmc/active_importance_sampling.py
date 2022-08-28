@@ -62,14 +62,14 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
 
         Na = ceil(
             options.eval(
-                "activeimportancesamplingmcmcsamples",
+                "active_importance_sampling_mcmc_samples",
                 {"K": vp.K, "n_vars": D, "D": D},
             )
         )
 
         if not np.isfinite(Na) or not np.isscalar(Na) or Na <= 0:
             raise ValueError(
-                "options['activeimportancesamplingmcmcsamples']"
+                "options['active_importance_sampling_mcmc_samples']"
                 + "should evaluate to a positive integer."
             )
 
@@ -81,12 +81,12 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
             # Compute fractional effective sample size (ESS)
             fESS = fess(vp, f_mu, Xa)
 
-            if fESS < options["activeimportancesamplingfessthresh"]:
+            if fESS < options["active_importance_sampling_fess_thresh"]:
                 log_p_fun = lambda x: acq_fcn.is_log_full(x, vp=vp, gp=gp)
 
                 # Get MCMC options
                 Nmcmc_samples = (
-                    Na * options["activeimportancesamplingmcmcthin"]
+                    Na * options["active_importance_sampling_mcmc_thin"]
                 )
                 thin = 1
                 burn_in = 0
@@ -116,8 +116,8 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
     else:
         # Step 1: Importance sampling-resampling
 
-        Nvp_samples = options["activeimportancesamplingvpsamples"]
-        Nbox_samples = options["activeimportancesamplingboxsamples"]
+        Nvp_samples = options["active_importance_sampling_vp_samples"]
+        Nbox_samples = options["active_importance_sampling_box_samples"]
         w_vp = Nvp_samples / (Nvp_samples + Nbox_samples)
 
         rect_delta = 2 * np.std(gp.X, ddof=1, axis=0)
@@ -192,7 +192,7 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
 
         # Step 2 (optional): MCMC sample
 
-        Nmcmc_samples = options["activeimportancesamplingmcmcsamples"]
+        Nmcmc_samples = options["active_importance_sampling_mcmc_samples"]
 
         if Nmcmc_samples > 0:
             active_is_old = copy.deepcopy(active_is)
@@ -214,7 +214,7 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
                 log_p_fun = lambda x: acq_fcn.is_log_full(x, vp=vp, gp=gp1)
 
                 # Get MCMC Options
-                thin = options["activeimportancesamplingmcmcthin"]
+                thin = options["active_importance_sampling_mcmc_thin"]
                 burn_in = ceil(thin * Nmcmc_samples / 2)
                 sampler_opts, __, __ = get_mcmc_opts(Nmcmc_samples)
 

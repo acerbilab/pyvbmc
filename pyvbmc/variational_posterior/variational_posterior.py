@@ -161,7 +161,7 @@ class VariationalPosterior:
         # Set bounds for log scale parameters of variational components.
         ln_range = np.log(np.max(X, axis=0) - np.min(X, axis=0))
         self.bounds["lnscale_lb"] = np.minimum(
-            self.bounds["lnscale_lb"], ln_range + np.log(options["tollength"])
+            self.bounds["lnscale_lb"], ln_range + np.log(options["tol_length"])
         )
         self.bounds["lnscale_ub"] = np.maximum(
             self.bounds["lnscale_ub"], ln_range
@@ -170,10 +170,10 @@ class VariationalPosterior:
         # Set bounds for log weight parameters of variation components.
         if self.optimize_weights:
             # prevent warning to be printed when doing final boost
-            if options["tolweight"] == 0:
+            if options["tol_weight"] == 0:
                 self.bounds["eta_lb"] = -np.inf
             else:
-                self.bounds["eta_lb"] = np.log(0.5 * options["tolweight"])
+                self.bounds["eta_lb"] = np.log(0.5 * options["tol_weight"])
             self.bounds["eta_ub"] = 0
 
         lb_list = []
@@ -193,14 +193,14 @@ class VariationalPosterior:
             "ub": np.concatenate(ub_list),
         }
 
-        theta_bnd["tol_con"] = options["tolconloss"]
+        theta_bnd["tol_con"] = options["tol_con_loss"]
 
         # Weight below a certain threshold are penalized.
         if self.optimize_weights:
             theta_bnd["weight_threshold"] = max(
-                1 / (4 * K), options["tolweight"]
+                1 / (4 * K), options["tol_weight"]
             )
-            theta_bnd["weight_penalty"] = options["weightpenalty"]
+            theta_bnd["weight_penalty"] = options["weight_penalty"]
 
         return theta_bnd
 

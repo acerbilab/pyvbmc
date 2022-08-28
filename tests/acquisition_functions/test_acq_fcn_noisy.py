@@ -38,7 +38,7 @@ def test__call__(mocker):
     )
 
     optim_state = dict()
-    optim_state["integervars"] = None
+    optim_state["integer_vars"] = None
     optim_state["variance_regularized_acq_fcn"] = False
     optim_state["gp_length_scale"] = np.exp(
         np.mean(np.ones((D, Ns)), axis=1)
@@ -91,7 +91,7 @@ def test_complex__call__(mocker):
     )
 
     optim_state = dict()
-    optim_state["integervars"] = None
+    optim_state["integer_vars"] = None
     optim_state["variance_regularized_acq_fcn"] = False
     optim_state["gp_length_scale"] = np.exp(
         np.mean(np.arange(0, 3 * 2).reshape((D, Ns), order="F"), axis=1)

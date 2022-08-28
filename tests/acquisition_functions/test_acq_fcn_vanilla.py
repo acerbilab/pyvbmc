@@ -36,7 +36,7 @@ def test__call__(mocker):
     )
 
     optim_state = dict()
-    optim_state["integervars"] = None
+    optim_state["integer_vars"] = None
     optim_state["variance_regularized_acq_fcn"] = False
 
     # no constraints for test

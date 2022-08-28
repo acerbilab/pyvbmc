@@ -176,10 +176,10 @@ def test_negelcbo():
     gp.update(X_new=X, y_new=y, hyp=hyp)
 
     options = {
-        "tolconloss": 0.01,
-        "tolweight": 1e-2,
-        "weightpenalty": 0.1,
-        "tollength": 1e-6,
+        "tol_con_loss": 0.01,
+        "tol_weight": 1e-2,
+        "weight_penalty": 0.1,
+        "tol_length": 1e-6,
     }
     theta_bnd = None  # vp.get_bounds(gp.X, options, K)
     theta = vp.get_parameters()
@@ -214,10 +214,10 @@ def test_vp_bound_loss():
     )
 
     options = {
-        "tolconloss": 0.01,
-        "tolweight": 1e-2,
-        "weightpenalty": 0.1,
-        "tollength": 1e-6,
+        "tol_con_loss": 0.01,
+        "tol_weight": 1e-2,
+        "weight_penalty": 0.1,
+        "tol_length": 1e-6,
     }
     X = np.loadtxt(open("./tests/vbmc/X.txt", "rb"), delimiter=",")
     theta = vp.get_parameters()

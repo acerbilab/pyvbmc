@@ -636,10 +636,10 @@ def test_soft_bounds_1():
 
     # use a fake options struct
     options = {
-        "tolconloss": 0.01,
-        "tolweight": 1e-2,
-        "weightpenalty": 0.1,
-        "tollength": 1e-6,
+        "tol_con_loss": 0.01,
+        "tol_weight": 1e-2,
+        "weight_penalty": 0.1,
+        "tol_length": 1e-6,
     }
 
     # Make up some fake data.
@@ -650,16 +650,16 @@ def test_soft_bounds_1():
     assert vp.bounds is not None
     assert np.all(vp.bounds["mu_lb"] == 0)
     assert np.all(vp.bounds["mu_ub"] == 1)
-    assert np.all(vp.bounds["lnscale_lb"] == np.log(options["tollength"]))
+    assert np.all(vp.bounds["lnscale_lb"] == np.log(options["tol_length"]))
     assert np.all(vp.bounds["lnscale_ub"] == 0)
-    assert vp.bounds["eta_lb"] == np.log(0.5 * options["tolweight"])
+    assert vp.bounds["eta_lb"] == np.log(0.5 * options["tol_weight"])
     assert vp.bounds["eta_ub"] == 0
 
-    assert theta_bnd["tol_con"] == options["tolconloss"]
+    assert theta_bnd["tol_con"] == options["tol_con_loss"]
     assert theta_bnd["weight_threshold"] == max(
-        1 / (4 * K), options["tolweight"]
+        1 / (4 * K), options["tol_weight"]
     )
-    assert theta_bnd["weight_penalty"] == options["weightpenalty"]
+    assert theta_bnd["weight_penalty"] == options["weight_penalty"]
 
 
 def test_soft_bounds_2():
@@ -668,10 +668,10 @@ def test_soft_bounds_2():
     vp = VariationalPosterior(D, K)
 
     options = {
-        "tolconloss": 0.01,
-        "tolweight": 1e-2,
-        "weightpenalty": 0.1,
-        "tollength": 1e-6,
+        "tol_con_loss": 0.01,
+        "tol_weight": 1e-2,
+        "weight_penalty": 0.1,
+        "tol_length": 1e-6,
     }
     X = np.loadtxt(
         open("./tests/variational_posterior/X.txt", "rb"), delimiter=","

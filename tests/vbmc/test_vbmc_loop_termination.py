@@ -22,14 +22,14 @@ def create_vbmc(
     return VBMC(fun, x0_array, lb, ub, plb, pub, user_options)
 
 
-def test_vbmc_check_termination_conditions_maxfunevals(mocker):
+def test_vbmc_check_termination_conditions_max_fun_evals(mocker):
     user_options = {
-        "maxfunevals": 10,
-        "minfunevals": 5,
-        "miniter": 5,
-        "maxiter": 100,
-        "tolstablecount": 60,
-        "funevalsperiter": 5,
+        "max_fun_evals": 10,
+        "min_fun_evals": 5,
+        "min_iter": 5,
+        "max_iter": 100,
+        "tol_stable_count": 60,
+        "fun_evals_per_iter": 5,
     }
     mocker.patch(
         "pyvbmc.vbmc.VBMC._compute_reliability_index",
@@ -45,16 +45,16 @@ def test_vbmc_check_termination_conditions_maxfunevals(mocker):
     assert not terminated
 
 
-def test_vbmc_check_termination_conditions_maxiter(mocker):
+def test_vbmc_check_termination_conditions_max_iter(mocker):
     mocker.patch(
         "pyvbmc.vbmc.VBMC._compute_reliability_index",
         return_value=(np.Inf, np.NaN),
     )
     user_options = {
-        "maxfunevals": 10,
-        "minfunevals": 5,
-        "miniter": 5,
-        "maxiter": 100,
+        "max_fun_evals": 10,
+        "min_fun_evals": 5,
+        "min_iter": 5,
+        "max_iter": 100,
     }
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.function_logger.func_count = 9
@@ -69,10 +69,10 @@ def test_vbmc_check_termination_conditions_maxiter(mocker):
 
 def test_vbmc_check_termination_conditions_prevent_early_termination(mocker):
     user_options = {
-        "maxfunevals": 10,
-        "minfunevals": 5,
-        "miniter": 101,
-        "maxiter": 100,
+        "max_fun_evals": 10,
+        "min_fun_evals": 5,
+        "min_iter": 101,
+        "max_iter": 100,
     }
     mocker.patch(
         "pyvbmc.vbmc.VBMC._compute_reliability_index",
@@ -86,10 +86,10 @@ def test_vbmc_check_termination_conditions_prevent_early_termination(mocker):
     assert not terminated
 
     user_options = {
-        "maxfunevals": 10,
-        "minfunevals": 11,
-        "miniter": 5,
-        "maxiter": 100,
+        "max_fun_evals": 10,
+        "min_fun_evals": 11,
+        "min_iter": 5,
+        "max_iter": 100,
     }
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.function_logger.func_count = 9
@@ -101,14 +101,14 @@ def test_vbmc_check_termination_conditions_prevent_early_termination(mocker):
 
 def test_vbmc_check_termination_conditions_stability(mocker):
     user_options = {
-        "maxfunevals": 10,
-        "minfunevals": 5,
-        "miniter": 5,
-        "maxiter": 100,
-        "tolimprovement": 0.01,
-        "tolstablecount": 60,
-        "funevalsperiter": 5,
-        "tolstableexcptfrac": 0.2,
+        "max_fun_evals": 10,
+        "min_fun_evals": 5,
+        "min_iter": 5,
+        "max_iter": 100,
+        "tol_improvement": 0.01,
+        "tol_stable_count": 60,
+        "fun_evals_per_iter": 5,
+        "tol_stable_excpt_frac": 0.2,
     }
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.function_logger.func_count = 9
@@ -145,15 +145,15 @@ def test_vbmc_check_termination_conditions_stability(mocker):
     assert not terminated
 
 
-def test_vbmc_is_finished_stability_entropyswitch(mocker):
+def test_vbmc_is_finished_stability_entropy_switch(mocker):
     user_options = {
-        "maxfunevals": 10,
-        "minfunevals": 5,
-        "miniter": 5,
-        "maxiter": 100,
-        "tolimprovement": 0.01,
-        "tolstableentropyiters": 6,
-        "tolstableexcptfrac": 0.2,
+        "max_fun_evals": 10,
+        "min_fun_evals": 5,
+        "min_iter": 5,
+        "max_iter": 100,
+        "tol_improvement": 0.01,
+        "tol_stable_entropy_iters": 6,
+        "tol_stable_excpt_frac": 0.2,
     }
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.function_logger.func_count = 9
@@ -177,7 +177,7 @@ def test_vbmc_compute_reliability_index_less_than_2_iter():
 
 
 def test_vbmc_compute_reliability_index():
-    user_options = {"elcboimproweight": 0, "tolskl": 0.03}
+    user_options = {"elcbo_impro_weight": 0, "tol_skl": 0.03}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.optim_state["iter"] = 49
     vbmc.iteration_history.check_keys = False
@@ -191,7 +191,7 @@ def test_vbmc_compute_reliability_index():
 
 
 def test_is_gp_sampling_finished():
-    user_options = {"tolgpvarmcmc": 1e-4}
+    user_options = {"tol_gp_var_mcmc": 1e-4}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.optim_state["N"] = 300
     vbmc.optim_state["iter"] = 9
@@ -223,7 +223,7 @@ def test_check_warmup_end_conditions_false():
     """
     no_recent_trim_flag is False
     """
-    user_options = {"funevalsperiter": 5}
+    user_options = {"fun_evals_per_iter": 5}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.optim_state["iter"] = 100
     vbmc.function_logger.func_count = 5
@@ -241,7 +241,7 @@ def test_check_warmup_end_conditions_bo_warmup():
     stable_count_flag and no_recent_improvement_flag and no_recent_trim_flag
     are True
     """
-    user_options = {"warmupcheckmax": False}
+    user_options = {"warmup_check_max": False}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.optim_state["iter"] = 100
     vbmc.function_logger.func_count = 5
@@ -259,7 +259,7 @@ def test_check_warmup_end_conditions_first_conditions_true():
     stable_count_flag and no_recent_improvement_flag and no_recent_trim_flag
     are True
     """
-    user_options = {"funevalsperiter": 5}
+    user_options = {"fun_evals_per_iter": 5}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.optim_state["iter"] = 100
     vbmc.function_logger.func_count = 5
@@ -277,9 +277,9 @@ def test_check_warmup_end_conditions_alternative_conditions_true():
     no_longterm_improvement_flag and no_recent_trim_flag are True
     """
     user_options = {
-        "funevalsperiter": 5,
-        "stopwarmupthresh": 0,
-        "warmupnoimprothreshold": 0,
+        "fun_evals_per_iter": 5,
+        "stop_warmup_thresh": 0,
+        "warmup_no_impro_threshold": 0,
     }
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.optim_state["iter"] = 100
@@ -299,10 +299,10 @@ def test_setup_vbmc_after_warmup_no_false_alarm_still_keep_points():
     despite being above the threshold to keep D+1 points in total.
     """
     user_options = {
-        "funevalsperiter": 5,
-        "stopwarmupthresh": 0,
-        "warmupnoimprothreshold": 0,
-        "skipactivesamplingafterwarmup": False,
+        "fun_evals_per_iter": 5,
+        "stop_warmup_thresh": 0,
+        "warmup_no_impro_threshold": 0,
+        "skip_active_sampling_after_warmup": False,
     }
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.optim_state["iter"] = 100
@@ -333,12 +333,12 @@ def test_setup_vbmc_after_warmup_false_alarm():
     Test the behaviour when it has been detected as a false alarm.
     """
     user_options = {
-        "funevalsperiter": 5,
-        "stopwarmupthresh": 0,
-        "warmupnoimprothreshold": 0,
-        "skipactivesamplingafterwarmup": False,
-        "warmupkeepthresholdfalsealarm": 400,
-        "stopwarmupreliability": 1,
+        "fun_evals_per_iter": 5,
+        "stop_warmup_thresh": 0,
+        "warmup_no_impro_threshold": 0,
+        "skip_active_sampling_after_warmup": False,
+        "warmup_keep_threshold_false_alarm": 400,
+        "stop_warmup_reliability": 1,
     }
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.optim_state["iter"] = 100
@@ -364,19 +364,19 @@ def test_setup_vbmc_after_warmup_false_alarm():
     assert vbmc.optim_state.get("data_trim_list")[-1] == 100
 
 
-def test_setup_vbmc_after_warmup_false_alarm_no_warmupkeepthresholdfalsealarm():
+def test_setup_vbmc_after_warmup_false_alarm_no_warmup_keep_threshold_false_alarm():
     """
     Same as the test_setup_vbmc_after_warmup_false_alarm test but with one
     option being None.
     """
     user_options = {
-        "funevalsperiter": 5,
-        "stopwarmupthresh": 0,
-        "warmupnoimprothreshold": 0,
-        "skipactivesamplingafterwarmup": False,
-        "warmupkeepthreshold": 400,
-        "warmupkeepthresholdfalsealarm": None,
-        "stopwarmupreliability": 1,
+        "fun_evals_per_iter": 5,
+        "stop_warmup_thresh": 0,
+        "warmup_no_impro_threshold": 0,
+        "skip_active_sampling_after_warmup": False,
+        "warmup_keep_threshold": 400,
+        "warmup_keep_threshold_false_alarm": None,
+        "stop_warmup_reliability": 1,
     }
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     vbmc.optim_state["iter"] = 100

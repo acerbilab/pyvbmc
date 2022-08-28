@@ -113,7 +113,7 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
     optim_state = copy.deepcopy(optim_state)
     function_logger = copy.deepcopy(function_logger)
 
-    if options.get("warprotoscaling"):
+    if options.get("warp_rotoscaling"):
         if options.get("warpnonlinear"):
             raise NotImplementedError
         else:
@@ -130,19 +130,19 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
             vp_cov = np.diag(delta) @ vp_cov @ np.diag(delta)
 
     # Remove low-correlation entries
-    if options["warprotocorrthresh"] > 0:
+    if options["warp_roto_corr_thresh"] > 0:
         vp_corr = vp_cov / np.sqrt(np.outer(np.diag(vp_cov), np.diag(vp_cov)))
-        mask_idx = np.abs(vp_corr) <= options["warprotocorrthresh"]
+        mask_idx = np.abs(vp_corr) <= options["warp_roto_corr_thresh"]
         vp_cov[mask_idx] = 0
 
     # Regularization of covariance matrix towards diagonal
     if (
-        type(options["warpcovreg"]) == float
-        or type(options["warpcovreg"]) == int
+        type(options["warp_cov_reg"]) == float
+        or type(options["warp_cov_reg"]) == int
     ):
-        w_reg = options["warpcovreg"]
+        w_reg = options["warp_cov_reg"]
     else:
-        w_reg = options.warpcovreg[optim_state["N"]]
+        w_reg = options.warp_cov_reg[optim_state["N"]]
     w_reg = np.max([0, np.min([1, w_reg])])
     vp_cov = (1 - w_reg) * vp_cov + w_reg * np.diag(np.diag(vp_cov))
 
