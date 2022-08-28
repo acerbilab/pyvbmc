@@ -210,17 +210,6 @@ class ParameterTransformer:
             mask = self.type == t
             if np.any(mask):
                 xNew[:, mask] = self._bounded_transforms[t]["inverse"](x, mask)
-        # Force to stay within bounds
-        mask = np.isfinite(self.lb_orig)[0]
-        xNew[:, mask] = np.maximum(
-            xNew[:, mask],
-            self.lb_orig[:, mask] + np.abs(np.spacing(self.lb_orig[:, mask])),
-        )
-        mask = np.isfinite(self.ub_orig)[0]
-        xNew[:, mask] = np.minimum(
-            xNew[:, mask],
-            self.ub_orig[:, mask] - np.abs(np.spacing(self.ub_orig[:, mask])),
-        )
 
         return xNew
 
@@ -408,12 +397,24 @@ class ParameterTransformer:
                 raise NotImplementedError
 
 
-def _to_unit_interval(x, lb, ub):
-    return (x - lb) / (ub - lb)
+def _to_unit_interval(x, lb, ub, safe=True):
+    z = (x - lb) / (ub - lb)
+    if safe:  # Nudge points away from boundary
+        mask = (z == 0) & (x != lb)
+        if np.any(mask):
+            z[mask] = np.nextafter(0, np.inf)
+        mask = (z == 1) & (x != ub)
+        if np.any(mask):
+            z[mask] = np.nextafter(1, -np.inf)
+    return z
 
 
-def _from_unit_interval(z, lb, ub):
-    return z * (ub - lb) + lb
+def _from_unit_interval(z, lb, ub, safe=True):
+    y = z * (ub - lb) + lb
+    if safe:  # Nudge points away from boundary
+        y = np.maximum(y, np.nextafter(lb, np.inf))
+        y = np.minimum(y, np.nextafter(ub, -np.inf))
+    return y
 
 
 def _center(u, mu, delta):
