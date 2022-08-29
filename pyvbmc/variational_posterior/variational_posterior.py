@@ -42,6 +42,39 @@ class VariationalPosterior:
         the input space that leads to the current representation used by the
         variational posterior, by default uses an identity transform.
 
+    Attributes
+    ----------
+    w : np.ndarray
+        The weights of the VP mixture components, shape ``(1, K)``.
+    eta : np.ndarray
+        The unbounded (softmax) parametrization of the VP mixture components,
+        shape ``(1, K)``.
+    mu : np.ndarray
+        The means of the VP mixture components, shape ``(D, K)``.
+    sigma : np.ndarray
+        The per-component scale of the VP mixture components. Shape ``(1, K)``.
+    lambd : np.ndarray
+        The per-dimension scale of the VP mixture components. Shape ``(D, 1)``.
+    optimize_weights : bool
+        Whether to optimize the weights.
+    optimize_mu : bool
+        Whether to optimize the means.
+    optimize_sigma : bool
+        Whether to optimize ``sigma``.
+    optimize_lambd : bool
+        Whether to optimize ``lambd``.
+    parameter_transformer : ParameterTransformer
+        The parameter transformer implementing transformations to/from
+        unbounded space.
+    delta : np.ndarray or None (optional)
+        An additional overall scaling factor, of shape ``(1, D)``. Default ``None``.
+    bounds : dict
+        A dictionary containing the soft bounds for each variable to be
+        optimized.
+    stats : dict
+        A dictionary of statistics and other relevant info computed during
+        optimization.
+
     Notes
     -----
     In VBMC, the variational posterior is defined as a mixture of multivariate
