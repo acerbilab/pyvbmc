@@ -374,6 +374,28 @@ class VBMC:
                  need to be real valued."""
             )
 
+        # Cast all vectors to floats
+        # (integer_vars are represented as floats but handled separately).
+        if np.issubdtype(x0.dtype, np.integer):
+            logging.warning("Casting initial points to floating point.")
+            x0 = x0.astype(np.float64)
+        if np.issubdtype(lower_bounds.dtype, np.integer):
+            logging.warning("Casting lower bounds to floating point.")
+            lower_bounds = lower_bounds.astype(np.float64)
+        if np.issubdtype(upper_bounds.dtype, np.integer):
+            logging.warning("Casting upper bounds to floating point.")
+            upper_bounds = upper_bounds.astype(np.float64)
+        if np.issubdtype(plausible_lower_bounds.dtype, np.integer):
+            logging.warning(
+                "Casting plausible lower bounds to floating point."
+            )
+            plausible_lower_bounds = plausible_lower_bounds.astype(np.float64)
+        if np.issubdtype(plausible_upper_bounds.dtype, np.integer):
+            logging.warning(
+                "Casting plausible upper bounds to floating point."
+            )
+            plausible_upper_bounds = plausible_upper_bounds.astype(np.float64)
+
         # Fixed variables (all bounds equal) are not supported
         fixidx = (
             (lower_bounds == upper_bounds)
