@@ -1011,6 +1011,7 @@ class VBMC:
                     if iteration % 2 == 1:
                         meantemp = self.optim_state.get("gp_meanfun")
                         self.optim_state["gp_meanfun"] = "const"
+                        timer.start_timer("separate_gp_train")
                         gp_search, Ns_gp, sn2hpd, hyp_dict = train_gp(
                             hyp_dict,
                             self.optim_state,
@@ -1020,6 +1021,7 @@ class VBMC:
                             self.plausible_lower_bounds,
                             self.plausible_upper_bounds,
                         )
+                        timer.stop_timer("separate_gp_train")
                         self.optim_state["sn2hpd"] = sn2hpd
                         self.optim_state["gp_meanfun"] = meantemp
                     else:
