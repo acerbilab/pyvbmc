@@ -462,7 +462,7 @@ def test_get_search_points_all_search_cache():
     number_of_points = 2
     X = np.linspace((0, 0, 0), (10, 10, 10), number_of_points)
     vbmc.optim_state["cache"]["x_orig"] = np.zeros(0)
-    vbmc.optim_state["searchcache"] = np.copy(X)
+    vbmc.optim_state["search_cache"] = np.copy(X)
 
     # no search bounds for test
     vbmc.optim_state["lb_search"] = np.full((1, 3), -np.inf)

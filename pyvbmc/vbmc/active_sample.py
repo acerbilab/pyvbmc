@@ -175,7 +175,7 @@ def active_sample(
 
         # Compute time cost (used by some acquisition functions)
         # if optim_state["iter"] > 1:
-        #     deltaNeff = max(
+        #     deltaN_eff = max(
         #         1,
         #         iteration_history["optim_state"][optim_state["iter"] - 1][
         #             "n_eff"
@@ -185,7 +185,7 @@ def active_sample(
         #         ],
         #     )
         # else:
-        #     deltaNeff = iteration_history["optim_state"][0]["n_eff"]
+        #     deltaN_eff = iteration_history["optim_state"][0]["n_eff"]
 
         # time_iter = iteration_history["timer"][optim_state["iter"] - 1]
 
@@ -244,7 +244,7 @@ def active_sample(
             optim_state["N"] = (
                 function_logger.Xn + 1
             )  # Number of training inputs
-            optim_state["Neff"] = sum(
+            optim_state["N_eff"] = sum(
                 function_logger.nevals[function_logger.X_flag]
             )
             ###
@@ -328,14 +328,14 @@ def active_sample(
             # Re-evaluate variance of the log joint if requested
             if acq_eval.acq_info.get("compute_varlogjoint"):
                 varF = _gplogjoint(vp, gp, 0, 0, 0, 1)[2]
-                optim_state["varlogjoint_samples"] = varF
+                optim_state["var_log_joint_samples"] = varF
 
             # Evaluate acquisition function
             acq_fast = acq_eval(X_search, gp, vp, function_logger, optim_state)
 
             if options["search_cache_frac"] > 0:
                 inds = np.argsort(acq_fast)
-                optim_state["searchcache"] = X_search[inds]
+                optim_state["search_cache"] = X_search[inds]
                 idx = inds[0]
             else:
                 idx = np.argmin(acq_fast)
@@ -429,12 +429,12 @@ def active_sample(
             #     and options["max_repeated_observations"] > 0
             # ):
             #     if (
-            #         optim_state["repeatedobservationsstreak"]
+            #         optim_state["repeated_observations_streak"]
             #         >= options["max_repeated_observations"]
             #     ):
             #         # Maximum number of consecutive repeated observations
             #         # (to prevent getting stuck in a wrong belief state)
-            #         optim_state["repeatedobservationsstreak"] = 0
+            #         optim_state["repeated_observations_streak"] = 0
             #     else:
             #         from pyvbmc.vbmc.gaussian_process_train import (
             #             _get_training_data,
@@ -443,16 +443,16 @@ def active_sample(
             #         # Re-evaluate acquisition function on training set
             #         X_train = _get_training_data(function_logger)
             #         # Disable variance-based regularization first
-            #         oldflag = optim_state["varianceregularizedacqfcn"]
-            #         optim_state["varianceregularizedacqfcn"] = False
+            #         oldflag = optim_state["variance_regularized_acq_fcn"]
+            #         optim_state["variance_regularized_acq_fcn"] = False
             #         # Use current cost of GP instead of future cost
-            #         old_t_algoperfuneval = optim_state["t_algoperfuneval"]
-            #         optim_state["t_algoperfuneval"] = t_base / deltaNeff
+            #         old_t_algo_per_fun_eval = optim_state["t_algo_per_fun_eval"]
+            #         optim_state["t_algo_per_fun_eval"] = t_base / deltaN_eff
             #         acq_train = acq_eval(
             #             X_train, gp, vp, function_logger, optim_state
             #         )
-            #         optim_state["VarianceRegularizedAcqFcn"] = oldflag
-            #         optim_state["t_algoperfuneval"] = old_t_algoperfuneval
+            #         optim_state["variance_regularized_acq_fcn"] = oldflag
+            #         optim_state["t_algo_per_fun_eval"] = old_t_algo_per_fun_eval
 
             #         idx_train = np.argmin(acq_train)
             #         acq_train = acq_train[idx_train]
@@ -463,9 +463,9 @@ def active_sample(
 
             #         if acq_train < options["repeated_acq_discount"]*acq_now:
             #             X_acq[0] = X_train[idx_train]
-            #             optim_state["repeatedobservationsstreak"] += 1
+            #             optim_state["repeated_observations_streak"] += 1
             #         else:
-            #             optim_state["repeatedobservationsstreak"] = 0
+            #             optim_state["repeated_observations_streak"] = 0
             # endregion
 
             # Missing port: line 356-361, unused?
@@ -518,7 +518,7 @@ def active_sample(
                             (
                                 gp,
                                 __,
-                                optim_state["sn2hpd"],
+                                optim_state["sn2_hpd"],
                                 optim_state["hyp_dict"],
                             ) = train_gp(
                                 hyp_dict,
@@ -708,7 +708,7 @@ def _get_search_points(
             options.get("search_cache_frac") * N_random_points
         )
         if N_search_cache > 0:  # Take points from search cache
-            search_cache = optim_state.get("searchcache")
+            search_cache = optim_state.get("search_cache")
             random_Xs = np.append(
                 random_Xs,
                 search_cache[: min(len(search_cache), N_search_cache)],

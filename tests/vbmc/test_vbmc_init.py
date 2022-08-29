@@ -457,18 +457,18 @@ def test_vbmc_optimstate_gp_functions():
     assert exception_message in execinfo2.value.args[0]
     user_options = {"gp_mean_fun": "const"}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
-    assert vbmc.optim_state.get("gp_meanfun") == user_options.get(
+    assert vbmc.optim_state.get("gp_mean_fun") == user_options.get(
         "gp_mean_fun"
     )
     # uncertainty_handling_level 2
-    assert vbmc.optim_state["gp_covfun"] == 1
+    assert vbmc.optim_state["gp_cov_fun"] == 1
     user_options = {"specify_target_noise": True}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     # uncertainty_handling_level 1
-    assert vbmc.optim_state["gp_noisefun"] == [1, 1, 0]
+    assert vbmc.optim_state["gp_noise_fun"] == [1, 1, 0]
     user_options = {"specify_target_noise": False, "uncertainty_handling": [3]}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
-    assert vbmc.optim_state["gp_noisefun"] == [1, 2, 0]
+    assert vbmc.optim_state["gp_noise_fun"] == [1, 2, 0]
     # uncertainty_handling_level 0
     user_options = {
         "specify_target_noise": False,
@@ -477,7 +477,7 @@ def test_vbmc_optimstate_gp_functions():
     }
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     assert vbmc.optim_state["uncertainty_handling_level"] == 0
-    assert vbmc.optim_state["gp_noisefun"] == [1, 1, 0]
+    assert vbmc.optim_state["gp_noise_fun"] == [1, 1, 0]
     user_options = {
         "specify_target_noise": False,
         "uncertainty_handling": [],
@@ -485,7 +485,7 @@ def test_vbmc_optimstate_gp_functions():
     }
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
     assert vbmc.optim_state["uncertainty_handling_level"] == 0
-    assert vbmc.optim_state["gp_noisefun"] == [1, 0, 0]
+    assert vbmc.optim_state["gp_noise_fun"] == [1, 0, 0]
 
 
 def test_vbmc_optimstate_bounds():
@@ -514,7 +514,7 @@ def test_vbmc_optimstate_bounds():
 def test_vbmc_optimstate_constants():
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
     assert np.all(vbmc.optim_state["iter"] == -1)
-    assert np.all(vbmc.optim_state["sn2hpd"] == np.inf)
+    assert np.all(vbmc.optim_state["sn2_hpd"] == np.inf)
     assert np.all(vbmc.optim_state["last_warping"] == -np.inf)
     assert np.all(vbmc.optim_state["last_successful_warping"] == -np.inf)
     assert np.all(vbmc.optim_state["warping_count"] == 0)
@@ -525,7 +525,7 @@ def test_vbmc_optimstate_constants():
     assert np.all(vbmc.optim_state["run_mean"] == [])
     assert np.all(vbmc.optim_state["run_cov"] == [])
     assert np.all(np.isnan(vbmc.optim_state["last_run_avg"]))
-    assert np.all(vbmc.optim_state["vpK"] == vbmc.K)
+    assert np.all(vbmc.optim_state["vp_K"] == vbmc.K)
     assert np.all(vbmc.optim_state["pruned"] == 0)
     assert np.all(vbmc.optim_state["variance_regularized_acqfcn"] == True)
     assert np.all(vbmc.optim_state["search_cache"] == [])
@@ -534,12 +534,12 @@ def test_vbmc_optimstate_constants():
     assert np.all(vbmc.optim_state["run_cov"] == [])
 
 
-def test_vbmc_optimstate_iterlist():
+def test_vbmc_optimstate_iter_list():
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
-    assert np.all(vbmc.optim_state["iterlist"]["u"] == [])
-    assert np.all(vbmc.optim_state["iterlist"]["fval"] == [])
-    assert np.all(vbmc.optim_state["iterlist"]["fsd"] == [])
-    assert np.all(vbmc.optim_state["iterlist"]["fhyp"] == [])
+    assert np.all(vbmc.optim_state["iter_list"]["u"] == [])
+    assert np.all(vbmc.optim_state["iter_list"]["fval"] == [])
+    assert np.all(vbmc.optim_state["iter_list"]["fsd"] == [])
+    assert np.all(vbmc.optim_state["iter_list"]["fhyp"] == [])
 
 
 def test_vbmc_optimstate_stop_sampling():
@@ -643,20 +643,20 @@ def test_vbmc_optimstate_entropy_alpha():
     assert np.all(vbmc.optim_state["entropy_alpha"] == True)
 
 
-def test_vbmc_optimstate_int_meanfun():
+def test_vbmc_optimstate_int_mean_fun():
     user_options = {"gp_int_mean_fun": fun}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
-    assert np.all(vbmc.optim_state["int_meanfun"] == fun)
+    assert np.all(vbmc.optim_state["int_mean_fun"] == fun)
 
 
 def test_vbmc_optimstate_outwarp_delta():
     user_options = {"fitness_shaping": False}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
-    assert vbmc.optim_state["outwarp_delta"] == []
+    assert vbmc.optim_state["out_warp_delta"] == []
     out_warp_thresh_base = vbmc.options.get("out_warp_thresh_base")
     user_options = {"fitness_shaping": True}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
-    assert vbmc.optim_state["outwarp_delta"] == out_warp_thresh_base
+    assert vbmc.optim_state["out_warp_delta"] == out_warp_thresh_base
 
 
 def test_vbmc_init_log_joint():

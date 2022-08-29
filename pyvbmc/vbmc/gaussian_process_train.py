@@ -47,7 +47,7 @@ def train_gp(
         The trained GP.
     gp_s_N : int
         The number of samples for fitting.
-    sn2hpd : float
+    sn2_hpd : float
         An estimate of the GP noise variance at high posterior density.
     hyp_dict : dict
         The updated summary statistics.
@@ -76,18 +76,18 @@ def train_gp(
     #  end
 
     # Pick the mean function
-    mean_f = _meanfun_name_to_mean_function(optim_state["gp_meanfun"])
+    mean_f = _meanfun_name_to_mean_function(optim_state["gp_mean_fun"])
 
     # Pick the covariance function.
     covariance_f = _cov_identifier_to_covariance_function(
-        optim_state["gp_covfun"]
+        optim_state["gp_cov_fun"]
     )
 
     # Pick the noise function.
-    const_add = optim_state["gp_noisefun"][0] == 1
-    user_add = optim_state["gp_noisefun"][1] == 1
-    user_scale = optim_state["gp_noisefun"][1] == 2
-    rlod_add = optim_state["gp_noisefun"][2] == 1
+    const_add = optim_state["gp_noise_fun"][0] == 1
+    user_add = optim_state["gp_noise_fun"][1] == 1
+    user_scale = optim_state["gp_noise_fun"][1] == 2
+    rlod_add = optim_state["gp_noise_fun"][2] == 1
     noise_f = gpr.noise_functions.GaussianNoise(
         constant_add=const_add,
         user_provided_add=user_add,
@@ -173,7 +173,7 @@ def train_gp(
         # end
 
         # if isfield(gpoutput,'stepsize')
-        #     optimState.gpmala_stepsize = gpoutput.stepsize;
+        #     optimState.gp_mala_step_size = gpoutput.stepsize;
         #     gpoutput.stepsize
         # end
 
@@ -194,10 +194,10 @@ def train_gp(
     # Missing port: sample for GP for debug (not used)
 
     # Estimate of GP noise around the top high posterior density region
-    # We don't modify optim_state to contain sn2hpd here.
-    sn2hpd = _estimate_noise(gp)
+    # We don't modify optim_state to contain sn2_hpd here.
+    sn2_hpd = _estimate_noise(gp)
 
-    return gp, gp_s_N, sn2hpd, hyp_dict
+    return gp, gp_s_N, sn2_hpd, hyp_dict
 
 
 def _meanfun_name_to_mean_function(name: str):
@@ -397,7 +397,7 @@ def _gp_hyp(
 
     # Change bounds and hyperprior over output-dependent noise modulation
     # Note: currently this branch is not used.
-    if optim_state["gp_noisefun"][2] == 1:
+    if optim_state["gp_noise_fun"][2] == 1:
         bounds["noise_rectified_log_multiplier"] = (
             [np.min(np.min(y), np.max(y) - 20 * D), -np.inf],
             [np.max(y) - 10 * D, np.inf],
@@ -454,7 +454,7 @@ def _gp_hyp(
             stop_sampling = optim_state["N"]
 
         # Stop sampling after reaching threshold of variational components
-        if optim_state["vpK"] >= options["stable_gp_vp_k"]:
+        if optim_state["vp_K"] >= options["stable_gp_vp_k"]:
             stop_sampling = optim_state["N"]
 
     if stop_sampling > 0:
@@ -532,8 +532,8 @@ def _get_gp_training_options(
         gp_train["sampler"] = "mala"
         if hyp_cov is not None:
             gp_train["widths"] = np.sqrt(np.diag(hyp_cov).T)
-        if "gpmala_stepsize" in optim_state:
-            gp_train["step_size"] = optim_state["gpmala_stepsize"]
+        if "gp_mala_step_size" in optim_state:
+            gp_train["step_size"] = optim_state["gp_mala_step_size"]
 
     elif options["gp_hyp_sampler"] == "slicelite":
         gp_train["sampler"] = "slicelite"

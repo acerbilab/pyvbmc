@@ -36,7 +36,7 @@ def update_K(
     K_new : int
         The new number of variational mixture components.
     """
-    K_new = optim_state["vpK"]
+    K_new = optim_state["vp_K"]
 
     # Compute maximum number of components
     K_max = math.ceil(options.eval("k_fun_max", {"N": optim_state["n_eff"]}))
@@ -82,7 +82,7 @@ def update_K(
             if np.all(iteration_history["pruned"][new_lower_end:] == 0):
                 K_new += K_bonus
 
-        K_new = max(optim_state["vpK"], min(K_new, K_max))
+        K_new = max(optim_state["vp_K"], min(K_new, K_max))
 
     return K_new
 
