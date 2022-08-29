@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 
 from pyvbmc.stats import get_hpd
+from pyvbmc.timer import Timer
 from pyvbmc.vbmc import VBMC, active_sample
 from pyvbmc.vbmc.active_sample import _get_search_points
 from pyvbmc.vbmc.gaussian_process_train import train_gp
@@ -50,11 +51,13 @@ def test_active_uncertainty_sampling(mocker):
     vbmc = VBMC(fun, x0, LB, UB, PLB, PUB, user_options)
     mocker.patch("pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", rosen)
     N_init = 10
+    timer = Timer()
     function_logger, optim_state, _, _ = active_sample(
         gp=None,
         sample_count=N_init,
         optim_state=vbmc.optim_state,
         function_logger=vbmc.function_logger,
+        timer=timer,
         iteration_history=vbmc.iteration_history,
         vp=vbmc.vp,
         options=vbmc.options,
@@ -80,6 +83,7 @@ def test_active_uncertainty_sampling(mocker):
         sample_count,
         vbmc.optim_state,
         vbmc.function_logger,
+        timer,
         vbmc.iteration_history,
         vbmc.vp,
         vbmc.options,
@@ -102,6 +106,7 @@ def test_active_sample_initial_sample_no_y_values():
     vbmc.optim_state["cache"]["x_orig"] = np.copy(X_orig)
     y_orig = np.full(sample_count, np.nan)
     vbmc.optim_state["cache"]["y_orig"] = y_orig
+    timer = Timer()
 
     assert not np.all(np.isnan(vbmc.optim_state["cache"]["x_orig"][:10]))
     assert np.all(np.isnan(vbmc.optim_state["cache"]["y_orig"][:10]))
@@ -111,6 +116,7 @@ def test_active_sample_initial_sample_no_y_values():
         sample_count=sample_count,
         optim_state=vbmc.optim_state,
         function_logger=vbmc.function_logger,
+        timer=timer,
         iteration_history=vbmc.iteration_history,
         vp=vbmc.vp,
         options=vbmc.options,
@@ -140,6 +146,7 @@ def test_active_sample_initial_sample_y_values():
     vbmc.optim_state["cache"]["x_orig"] = np.copy(X_orig)
     y_orig = [fun(x) for x in X_orig]
     vbmc.optim_state["cache"]["y_orig"] = np.copy(y_orig)
+    timer = Timer()
 
     assert not np.all(np.isnan(vbmc.optim_state["cache"]["x_orig"][:10]))
     assert not np.all(np.isnan(vbmc.optim_state["cache"]["y_orig"][:10]))
@@ -149,6 +156,7 @@ def test_active_sample_initial_sample_y_values():
         sample_count=sample_count,
         optim_state=vbmc.optim_state,
         function_logger=vbmc.function_logger,
+        timer=timer,
         iteration_history=vbmc.iteration_history,
         vp=vbmc.vp,
         options=vbmc.options,
@@ -180,6 +188,7 @@ def test_active_sample_initial_sample_plausible(mocker):
     vbmc.optim_state["cache"]["x_orig"] = np.copy(X_orig)
     y_orig = [fun(x) for x in X_orig]
     vbmc.optim_state["cache"]["y_orig"] = np.copy(y_orig)
+    timer = Timer()
 
     assert not np.all(np.isnan(vbmc.optim_state["cache"]["x_orig"][:10]))
     assert not np.all(np.isnan(vbmc.optim_state["cache"]["y_orig"][:10]))
@@ -198,6 +207,7 @@ def test_active_sample_initial_sample_plausible(mocker):
         sample_count=sample_count,
         optim_state=vbmc.optim_state,
         function_logger=vbmc.function_logger,
+        timer=timer,
         iteration_history=vbmc.iteration_history,
         vp=vbmc.vp,
         options=vbmc.options,
@@ -240,6 +250,7 @@ def test_active_sample_initial_sample_narrow(mocker):
     vbmc.optim_state["cache"]["x_orig"] = np.copy(X_orig)
     y_orig = [fun(x) for x in X_orig]
     vbmc.optim_state["cache"]["y_orig"] = np.copy(y_orig)
+    timer = Timer()
 
     assert not np.all(np.isnan(vbmc.optim_state["cache"]["x_orig"][:10]))
     assert not np.all(np.isnan(vbmc.optim_state["cache"]["y_orig"][:10]))
@@ -258,6 +269,7 @@ def test_active_sample_initial_sample_narrow(mocker):
         sample_count=sample_count,
         optim_state=vbmc.optim_state,
         function_logger=vbmc.function_logger,
+        timer=timer,
         iteration_history=vbmc.iteration_history,
         vp=vbmc.vp,
         options=vbmc.options,
@@ -298,6 +310,7 @@ def test_active_sample_initial_sample_unknown_initial_design():
     user_options = {"init_design": "unknown"}
     vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
     sample_count = 10
+    timer = Timer()
 
     with pytest.raises(ValueError) as execinfo:
         active_sample(
@@ -305,6 +318,7 @@ def test_active_sample_initial_sample_unknown_initial_design():
             sample_count=sample_count,
             optim_state=vbmc.optim_state,
             function_logger=vbmc.function_logger,
+            timer=timer,
             iteration_history=vbmc.iteration_history,
             vp=vbmc.vp,
             options=vbmc.options,
@@ -319,11 +333,13 @@ def test_active_sample_logger():
     # iter which is INFO
     user_options = {"display": "iter"}
     vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
+    timer = Timer()
     active_sample(
         gp=None,
         sample_count=1,
         optim_state=vbmc.optim_state,
         function_logger=vbmc.function_logger,
+        timer=timer,
         iteration_history=vbmc.iteration_history,
         vp=vbmc.vp,
         options=vbmc.options,
@@ -338,6 +354,7 @@ def test_active_sample_logger():
         sample_count=1,
         optim_state=vbmc.optim_state,
         function_logger=vbmc.function_logger,
+        timer=timer,
         iteration_history=vbmc.iteration_history,
         vp=vbmc.vp,
         options=vbmc.options,
@@ -351,6 +368,7 @@ def test_active_sample_logger():
         sample_count=1,
         optim_state=vbmc.optim_state,
         function_logger=vbmc.function_logger,
+        timer=timer,
         iteration_history=vbmc.iteration_history,
         vp=vbmc.vp,
         options=vbmc.options,
@@ -365,6 +383,7 @@ def test_active_sample_logger():
         sample_count=1,
         optim_state=vbmc.optim_state,
         function_logger=vbmc.function_logger,
+        timer=timer,
         iteration_history=vbmc.iteration_history,
         vp=vbmc.vp,
         options=vbmc.options,
@@ -383,6 +402,7 @@ def test_active_sample_initial_sample_more_provided(caplog):
     vbmc.optim_state["cache"]["x_orig"] = np.copy(X_orig)
     y_orig = [fun(x) for x in X_orig]
     vbmc.optim_state["cache"]["y_orig"] = np.copy(y_orig)
+    timer = Timer()
 
     assert not np.all(np.isnan(vbmc.optim_state["cache"]["y_orig"]))
     caplog.set_level(logging.INFO)
@@ -391,6 +411,7 @@ def test_active_sample_initial_sample_more_provided(caplog):
         sample_count=sample_count,
         optim_state=vbmc.optim_state,
         function_logger=vbmc.function_logger,
+        timer=timer,
         iteration_history=vbmc.iteration_history,
         vp=vbmc.vp,
         options=vbmc.options,
