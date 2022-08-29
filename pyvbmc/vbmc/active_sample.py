@@ -97,7 +97,7 @@ def active_sample(
                 pub = optim_state.get("pub")
                 plb = optim_state.get("plb")
 
-                if options.get("initdesign") == "plausible":
+                if options.get("init_design") == "plausible":
                     # Uniform random samples in the plausible box
                     # (in transformed space)
                     random_Xs = (
@@ -106,7 +106,7 @@ def active_sample(
                         + plb
                     )
 
-                elif options.get("initdesign") == "narrow":
+                elif options.get("init_design") == "narrow":
                     start_Xs = parameter_transformer(Xs[0])
                     random_Xs = (
                         np.random.rand(sample_count - provided_sample_count, D)
@@ -117,9 +117,9 @@ def active_sample(
                 else:
                     raise ValueError(
                         "Unknown initial design for VBMC. "
-                        "The option 'initdesign' must be 'plausible' or "
+                        "The option 'init_design' must be 'plausible' or "
                         "'narrow' but was {}.".format(
-                            options.get("initdesign")
+                            options.get("init_design")
                         )
                     )
 
@@ -167,7 +167,7 @@ def active_sample(
 
     else:
         # active uncertainty sampling
-        SearchAcqFcn = options["searchacqfcn"]
+        SearchAcqFcn = options["search_acq_fcn"]
 
         ### (unused, TODO)
         # Use "hedge" strategy to propose an acquisition function?
@@ -199,15 +199,16 @@ def active_sample(
 
         # Perform GP (and possibly variational) update after each active sample
         active_sample_full_update = (
-            options["activesamplevpupdate"] or options["activesamplegpupdate"]
+            options["active_sample_vp_update"]
+            or options["active_sample_gp_update"]
         ) and (
             (
                 optim_state["iter"]
-                - options["activesamplefullupdatepastwarmup"]
+                - options["active_sample_full_update_past_warmup"]
                 <= optim_state["last_warmup"]
             )
             or iteration_history["rindex"][-1]
-            > options["activesamplefullupdatethreshold"]
+            > options["active_sample_full_update_threshold"]
         )
 
         if active_sample_full_update and sample_count > 1:
@@ -217,20 +218,22 @@ def active_sample(
 
             options_update = copy.deepcopy(options)
             options_update.__setitem__(
-                "gptolopt", options["gptoloptactive"], force=True
+                "gp_tol_opt", options["gp_tol_opt_active"], force=True
             )
             options_update.__setitem__(
-                "gptoloptmcmc", options["gptoloptmcmcactive"], force=True
+                "gp_tol_opt_mcmc",
+                options["gp_tol_opt_mcmc_active"],
+                force=True,
             )
-            options_update.__setitem__("tolweight", 0, force=True)
+            options_update.__setitem__("tol_weight", 0, force=True)
             options_update.__setitem__(
-                "nsent", options["nsentactive"], force=True
+                "ns_ent", options["ns_ent_active"], force=True
             )
             options_update.__setitem__(
-                "nsentfast", options["nsentfastactive"], force=True
+                "ns_ent_fast", options["ns_ent_fast_active"], force=True
             )
             options_update.__setitem__(
-                "nsentfine", options["nsentfineactive"], force=True
+                "ns_ent_fine", options["ns_ent_fine_active"], force=True
             )
 
             hyp_dict = None
@@ -252,7 +255,7 @@ def active_sample(
             # if Nextra > 0   % Unused
             ###
 
-            if not options["acqhedge"]:
+            if not options["acq_hedge"]:
                 # If multiple acquisition functions are provided and not
                 # following a "hedge" strategy, pick one at random
                 idx_acq = np.random.randint(len(SearchAcqFcn))
@@ -276,7 +279,7 @@ def active_sample(
                 else:
                     s2 = None
 
-                # Missing port: noiseshaping
+                # Missing port: noise_shaping
 
                 sn2new[:, s] = gp.noise.compute(
                     hyp_noise, gp.X, gp.y, s2
@@ -304,11 +307,11 @@ def active_sample(
 
             # Create fast search set from cache and randomly generated
             X_search, idx_cache = _get_search_points(
-                options["nssearch"], optim_state, function_logger, vp, options
+                options["ns_search"], optim_state, function_logger, vp, options
             )
 
             X_search = AbstractAcqFcn._real2int(
-                X_search, parameter_transformer, optim_state["integervars"]
+                X_search, parameter_transformer, optim_state["integer_vars"]
             )
 
             if type(SearchAcqFcn[idx_acq]) == str:
@@ -330,7 +333,7 @@ def active_sample(
             # Evaluate acquisition function
             acq_fast = acq_eval(X_search, gp, vp, function_logger, optim_state)
 
-            if options["searchcachefrac"] > 0:
+            if options["search_cache_frac"] > 0:
                 inds = np.argsort(acq_fast)
                 optim_state["searchcache"] = X_search[inds]
                 idx = inds[0]
@@ -349,11 +352,11 @@ def active_sample(
             ).item()
 
             # Additional search via optimization
-            if options["searchoptimizer"] != "none":
+            if options["search_optimizer"] != "none":
                 if gp.D == 1:
                     # Use Nelder-Mead method for 1D optimization
                     options.__setitem__(
-                        "searchoptimizer", "Nelder-Mead", force=True
+                        "search_optimizer", "Nelder-Mead", force=True
                     )
 
                 fval_old = acq_fast[idx]
@@ -375,19 +378,19 @@ def active_sample(
                 else:
                     tol_fun = max(1e-12, abs(fval_old * 1e-3))
 
-                if options["searchoptimizer"] == "cmaes":
+                if options["search_optimizer"] == "cmaes":
 
-                    if options["searchcmaesvpinit"]:
+                    if options["search_cmaes_vp_init"]:
                         _, Sigma = vp.moments(origflag=False, covflag=True)
                     else:
-                        X_hpd = get_hpd(gp.X, gp.y, options["hpdfrac"])[0]
+                        X_hpd = get_hpd(gp.X, gp.y, options["hpd_frac"])[0]
                         Sigma = np.cov(X_hpd, rowvar=False, bias=True)
 
                     insigma = np.sqrt(np.diag(Sigma))
                     cma_options = {
                         "verbose": -9,
                         "tolfun": tol_fun,
-                        "maxfevals": options["searchmaxfunevals"],
+                        "maxfevals": options["search_max_fun_evals"],
                         "bounds": (lb.squeeze(), ub.squeeze()),
                         "seed": np.nan,
                     }
@@ -401,7 +404,7 @@ def active_sample(
                     )
 
                     xsearch_optim, fval_optim = res[:2]
-                elif options["searchoptimizer"] == "Nelder-Mead":
+                elif options["search_optimizer"] == "Nelder-Mead":
                     from scipy.optimize import minimize
 
                     res = minimize(
@@ -415,19 +418,19 @@ def active_sample(
                     X_acq[0, :] = AbstractAcqFcn._real2int(
                         xsearch_optim,
                         parameter_transformer,
-                        optim_state["integervars"],
+                        optim_state["integer_vars"],
                     )
                     idx_cache_acq = np.nan
 
             # region
             ## Missing port
             # if (
-            #     options["uncertaintyhandling"]
-            #     and options["maxrepeatedobservations"] > 0
+            #     options["uncertainty_handling"]
+            #     and options["max_repeated_observations"] > 0
             # ):
             #     if (
             #         optim_state["repeatedobservationsstreak"]
-            #         >= options["maxrepeatedobservations"]
+            #         >= options["max_repeated_observations"]
             #     ):
             #         # Maximum number of consecutive repeated observations
             #         # (to prevent getting stuck in a wrong belief state)
@@ -458,7 +461,7 @@ def active_sample(
             #             X_acq[0], gp, vp, function_logger, optim_state
             #         )
 
-            #         if acq_train < options["repeatedacqdiscount"]*acq_now:
+            #         if acq_train < options["repeated_acq_discount"]*acq_now:
             #             X_acq[0] = X_train[idx_train]
             #             optim_state["repeatedobservationsstreak"] += 1
             #         else:
@@ -511,7 +514,7 @@ def active_sample(
                     gptmp = None
                     fESS, fESS_thresh = 0, 1
                     if fESS <= fESS_thresh:
-                        if options["activesamplegpupdate"]:
+                        if options["active_sample_gp_update"]:
                             (
                                 gp,
                                 __,
@@ -532,15 +535,15 @@ def active_sample(
                             else:
                                 gp = gptmp
 
-                        if options["activesamplevpupdate"]:
+                        if options["active_sample_vp_update"]:
                             # Quick variational optimization
 
                             # Decide number of fast optimizations
                             N_fastopts = math.ceil(
-                                options_update["nselboincr"]
-                                * options_update["nselbo"](vp.K)
+                                options_update["ns_elbo_incr"]
+                                * options_update["ns_elbo"](vp.K)
                             )
-                            if options["updaterandomalpha"]:
+                            if options["update_random_alpha"]:
                                 optim_state["entropy_alpha"] = 1 - np.sqrt(
                                     np.random.rand()
                                 )
@@ -570,7 +573,7 @@ def active_sample(
                     update1 = (
                         (s2new is None)
                         and function_logger.nevals[idx_new] == 1
-                    ) and not options["noiseshaping"]
+                    ) and not options["noise_shaping"]
                     if update1:
                         ynew = np.array([[ynew]])  # (1,1)
                         gp.update(xnew, ynew, compute_posterior=True)
@@ -598,11 +601,13 @@ def active_sample(
             # Hard lower/upper bounds on search (unused)
             prange = optim_state["pub"] - optim_state["plb"]
             LB_searchmin = np.maximum(
-                optim_state["plb"] - 2 * prange * options["activesearchbound"],
+                optim_state["plb"]
+                - 2 * prange * options["active_search_bound"],
                 optim_state["lb"],
             )
             UB_searchmin = np.minimum(
-                optim_state["pub"] + 2 * prange * options["activesearchbound"],
+                optim_state["pub"]
+                + 2 * prange * options["active_search_bound"],
                 optim_state["ub"],
             )
 
@@ -621,7 +626,7 @@ def active_sample(
                 np.any(theta0 != theta)
             ):
                 NSentFineK = math.ceil(
-                    options["nsentfineactive"](vp0.K) / vp0.K
+                    options["ns_ent_fine_active"](vp0.K) / vp0.K
                 )
                 elbo0 = -_negelcbo(
                     theta0, gp, vp0, 0.0, NSentFineK, False, True
@@ -685,7 +690,7 @@ def _get_search_points(
 
     if x0.size > 0:
         # Fraction of points from cache (if nonempty)
-        N_cache = math.ceil(number_of_points * options.get("cachefrac"))
+        N_cache = math.ceil(number_of_points * options.get("cache_frac"))
 
         # idx_cache contains min(n_cache, x0.shape[0]) random indicies
         idx_cache = np.random.permutation(x0.shape[0])[
@@ -700,7 +705,7 @@ def _get_search_points(
         random_Xs = np.full((0, D), np.NaN)
 
         N_search_cache = round(
-            options.get("searchcachefrac") * N_random_points
+            options.get("search_cache_frac") * N_random_points
         )
         if N_search_cache > 0:  # Take points from search cache
             search_cache = optim_state.get("searchcache")
@@ -710,14 +715,16 @@ def _get_search_points(
                 axis=0,
             )
 
-        N_heavy = round(options.get("heavytailsearchfrac") * N_random_points)
+        N_heavy = round(
+            options.get("heavy_tail_search_frac") * N_random_points
+        )
         if N_heavy > 0:
             heavy_Xs, _ = vp.sample(
                 N=N_heavy, origflag=False, balanceflag=True, df=3
             )
             random_Xs = np.append(random_Xs, heavy_Xs, axis=0)
 
-        N_mvn = round(options.get("mvnsearchfrac") * N_random_points)
+        N_mvn = round(options.get("mvn_search_frac") * N_random_points)
         if N_mvn > 0:
             mubar, sigmabar = vp.moments(origflag=False, covflag=True)
             mvn_Xs = np.random.multivariate_normal(
@@ -725,10 +732,10 @@ def _get_search_points(
             )
             random_Xs = np.append(random_Xs, mvn_Xs, axis=0)
 
-        N_hpd = round(options.get("hpdsearchfrac") * N_random_points)
+        N_hpd = round(options.get("hpd_search_frac") * N_random_points)
         if N_hpd > 0:
-            hpd_min = options.get("hpdfrac") / 8
-            hpd_max = options.get("hpdfrac")
+            hpd_min = options.get("hpd_frac") / 8
+            hpd_max = options.get("hpd_frac")
             hpd_fracs = np.sort(
                 np.concatenate(
                     (
@@ -771,7 +778,7 @@ def _get_search_points(
                 )
                 random_Xs = np.append(random_Xs, hpd_Xs, axis=0)
 
-        N_box = round(options.get("boxsearchfrac") * N_random_points)
+        N_box = round(options.get("box_search_frac") * N_random_points)
         if N_box > 0:
             X = function_logger.X[function_logger.X_flag]
             X_diam = np.amax(X, axis=0) - np.amin(X, axis=0)

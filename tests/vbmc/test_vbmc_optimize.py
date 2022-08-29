@@ -27,27 +27,38 @@ def _test_vbmc_optimize_rosenbrock():
         + np.log(np.prod(2 * np.pi * prior_var))
     )
 
-    f = lambda x: llfun(x) + lpriorfun(x)
     plb = prior_mu - 3 * np.sqrt(prior_var)
     pub = prior_mu + 3 * np.sqrt(prior_var)
     x0 = prior_mu.copy()
 
-    vbmc = VBMC(f, x0, None, None, plb, pub)
+    vbmc = VBMC(llfun, x0, None, None, plb, pub, log_prior=lpriorfun)
     vbmc.optimize()
 
 
 def run_optim_block(
-    f, x0, lb, ub, plb, pub, ln_Z, mu_bar, options=None, noise_flag=False
+    f,
+    x0,
+    lb,
+    ub,
+    plb,
+    pub,
+    ln_Z,
+    mu_bar,
+    options=None,
+    noise_flag=False,
+    log_prior=None,
 ):
     if options is None:
         options = {}
 
-    # options["maxfunevals"] = 100
+    # options["max_fun_evals"] = 100
     options["plot"] = False
     if noise_flag:
-        options["specifytargetnoise"] = True
+        options["specify_target_noise"] = True
 
-    vbmc = VBMC(f, x0, lb, ub, plb, pub, user_options=options)
+    vbmc = VBMC(
+        f, x0, lb, ub, plb, pub, user_options=options, log_prior=log_prior
+    )
     vp, elbo, _, _, _ = vbmc.optimize()
 
     vmu = vp.moments()
@@ -94,6 +105,7 @@ def test_vbmc_multivariate_half_normal():
         - np.sum(np.log(np.array(range(1, np.size(x) + 1))))
         - 0.5 * np.size(x) * np.log(2 * np.pi)
     )
+    print(f(np.array([1.5, np.pi])))
 
     err_1, err_2 = run_optim_block(f, x0, lb, ub, plb, pub, lnZ, mu_bar)
 
@@ -145,7 +157,7 @@ def test_vbmc_uniform():
     mu_bar = 0.5 * np.ones((1, D))
     f = lambda x: 0
 
-    options = {"searchoptimizer": "Nelder-Mead"}
+    options = {"search_optimizer": "Nelder-Mead"}
     err_1, err_2 = run_optim_block(
         f, x0, lb, ub, plb, pub, lnZ, mu_bar, options
     )
@@ -172,9 +184,13 @@ def test_vbmc_multivariate_half_normal_noisy():
         + noise_scale * np.random.normal(),
         noise_scale,
     )
+    options = {
+        "specify_target_noise": True,
+        "search_acq_fcn": [AcqFcnVIQR(), AcqFcnIMIQR(), AcqFcnNoisy()],
+    }
 
     err_1, err_2 = run_optim_block(
-        f, x0, lb, ub, plb, pub, lnZ, mu_bar, noise_flag=True
+        f, x0, lb, ub, plb, pub, lnZ, mu_bar, options=options
     )
 
     assert err_1 < 0.5
@@ -377,7 +393,7 @@ def test_optimize_result_dict(mocker):
         np.full((1, D), np.inf),
         np.ones((1, D)) * -10,
         np.ones((1, D)) * 10,
-        user_options={"maxiter": 1},
+        user_options={"max_iter": 1},
     )
     mocker.patch(
         "pyvbmc.vbmc.VBMC._check_termination_conditions",

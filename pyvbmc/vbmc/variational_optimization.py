@@ -39,22 +39,22 @@ def update_K(
     K_new = optim_state["vpK"]
 
     # Compute maximum number of components
-    K_max = math.ceil(options.eval("kfunmax", {"N": optim_state["n_eff"]}))
+    K_max = math.ceil(options.eval("k_fun_max", {"N": optim_state["n_eff"]}))
 
     # Evaluate bonus for stable solution.
-    K_bonus = round(options.eval("adaptivek", {"unkn": K_new}))
+    K_bonus = round(options.eval("adaptive_k", {"unkn": K_new}))
 
     # If not warming up, check if number of components gets to be increased.
     if not optim_state["warmup"] and optim_state["iter"] > 0:
         recent_iters = math.ceil(
-            0.5 * options["tolstablecount"] / options["funevalsperiter"]
+            0.5 * options["tol_stable_count"] / options["fun_evals_per_iter"]
         )
 
         # Check if ELCBO has improved wrt recent iterations
         lower_end = max(0, optim_state["iter"] - recent_iters)
         elbos = iteration_history["elbo"][lower_end:]
         elboSDs = iteration_history["elbo_sd"][lower_end:]
-        elcbos = elbos - options["elcboimproweight"] * elboSDs
+        elcbos = elbos - options["elcbo_impro_weight"] * elboSDs
         warmups = iteration_history["warmup"][lower_end:].astype(bool)
         elcbos_after = elcbos[~warmups]
         # Ignore two iterations right after warmup.
@@ -139,7 +139,7 @@ def optimize_vp(
         vp.optimize_weights = False
 
     # Quick sieve optimization to determine starting point(s)
-    vp0_vec, vp0_type, elcbo_beta, compute_var, nsent_K, _ = _sieve(
+    vp0_vec, vp0_type, elcbo_beta, compute_var, ns_ent_K, _ = _sieve(
         options,
         optim_state,
         vp,
@@ -166,9 +166,9 @@ def optimize_vp(
         # Set basic options for deterministic (?) optimizer
         compute_grad = True
     else:
-        if nsent_K > 0:
+        if ns_ent_K > 0:
             raise ValueError(
-                """Gradients must be available when nsent_K is > 0."""
+                """Gradients must be available when ns_ent_K is > 0."""
             )
         else:
             compute_grad = False
@@ -195,7 +195,7 @@ def optimize_vp(
         vp0_type = np.delete(vp0_type, idx)
         theta0 = vp0.get_parameters()
 
-        if nsent_K == 0:
+        if ns_ent_K == 0:
             # Fast optimization via deterministic entropy approximation
 
             # Objective function
@@ -218,7 +218,7 @@ def optimize_vp(
                 vbtrain_fun,
                 theta0,
                 jac=compute_grad,
-                tol=options["detenttolopt"],
+                tol=options["det_entropy_tol_opt"],
             )
 
             if not res.success:
@@ -237,7 +237,7 @@ def optimize_vp(
                     gp,
                     vp0,
                     elcbo_beta,
-                    nsent_K,
+                    ns_ent_K,
                     compute_grad=True,
                     compute_var=compute_var,
                     theta_bnd=theta_bnd,
@@ -247,12 +247,12 @@ def optimize_vp(
             # Optimization via unbiased stochastic entroply approximation
             theta_opt = theta0
 
-            if options["stochasticoptimizer"] == "adam":
-                master_min = min(options["sgdstepsize"], 0.001)
+            if options["stochastic_optimizer"] == "adam":
+                master_min = min(options["sgd_step_size"], 0.001)
                 if optim_state["warmup"] or not vp.optimize_weights:
-                    scaling_factor = min(0.1, options["sgdstepsize"] * 10)
+                    scaling_factor = min(0.1, options["sgd_step_size"] * 10)
                 else:
-                    scaling_factor = min(0.1, options["sgdstepsize"])
+                    scaling_factor = min(0.1, options["sgd_step_size"])
 
                 # Fixed master stepsize
                 master_max = scaling_factor
@@ -262,19 +262,19 @@ def optimize_vp(
                 # experimental option was "GPStochasticStepsize").
                 master_max = max(master_min, master_max)
                 master_decay = 200
-                max_iter = min(10000, options["maxiterstochastic"])
+                max_iter = min(10000, options["max_iter_stochastic"])
 
                 theta_opt, _, theta_lst, f_val_lst, _ = minimize_adam(
                     vbtrain_mc_fun,
                     theta_opt,
-                    tol_fun=options["tolfunstochastic"],
+                    tol_fun=options["tol_fun_stochastic"],
                     max_iter=max_iter,
                     master_min=master_min,
                     master_max=master_max,
                     master_decay=master_decay,
                 )
 
-                if options["elcbomidpoint"]:
+                if options["elcbo_midpoint"]:
                     # Recompute ELCBO at best midpoint with full variance
                     # and more precision.
                     idx_mid = np.argmin(f_val_lst)
@@ -320,12 +320,12 @@ def optimize_vp(
     if vp.optimize_weights:
         already_checked = np.full((vp.K,), False)
 
-        while np.any((vp.w < options["tolweight"]) & ~already_checked):
+        while np.any((vp.w < options["tol_weight"]) & ~already_checked):
             vp_pruned = copy.deepcopy(vp)
 
             # Choose a random component below threshold
             idx = np.argwhere(
-                (vp.w < options["tolweight"]).flatten() & ~already_checked
+                (vp.w < options["tol_weight"]).flatten() & ~already_checked
             ).flatten()
             idx = idx[np.random.randint(0, np.size(idx))]
             vp_pruned.w = np.delete(vp_pruned.w, idx)
@@ -349,12 +349,12 @@ def optimize_vp(
 
             # Difference in ELCBO (before and after pruning)
             delta_elcbo = np.abs(
-                (elbo_pruned - options["elcboimproweight"] * elbo_pruned_sd)
-                - (elbo - options["elcboimproweight"] * elbo_sd)
+                (elbo_pruned - options["elcbo_impro_weight"] * elbo_pruned_sd)
+                - (elbo - options["elcbo_impro_weight"] * elbo_sd)
             )
             # Prune component if it has neglible influence on ELCBO
-            pruning_threshold = options["tolimprovement"] * options.eval(
-                "pruningthresholdmultiplier", {"K": K}
+            pruning_threshold = options["tol_improvement"] * options.eval(
+                "pruning_threshold_multiplier", {"K": K}
             )
 
             if delta_elcbo < pruning_threshold:
@@ -459,7 +459,7 @@ def _eval_full_elcbo(
     """
     # Number of samples per component for MC approximation of the entropy.
     K = vp.K
-    nsent_fine_K = math.ceil(options.eval("nsentfine", {"K": K}) / K)
+    ns_ent_fine_K = math.ceil(options.eval("ns_ent_fine", {"K": K}) / K)
 
     if "skipelbovariance" in options and options["skipelbovariance"]:
         compute_var = False
@@ -471,7 +471,7 @@ def _eval_full_elcbo(
         gp,
         vp,
         0,
-        nsent_fine_K,
+        ns_ent_fine_K,
         False,
         compute_var,
         None,
@@ -692,9 +692,9 @@ def _sieve(
         Confidence weight.
     compute_var : bool
         Whether to compute variance in later optimization.
-    nsent_K : int
+    ns_ent_K : int
         Number of samples per component for MC approximation of the entropy.
-    nsent_K_fast : int
+    ns_ent_K_fast : int
         Number of samples per component for preliminary MC approximation of
         the entropy.
     """
@@ -714,20 +714,20 @@ def _sieve(
 
     # Number of initial starting points
     if init_N is None:
-        init_N = math.ceil(options.eval("nselbo", {"K": K}))
+        init_N = math.ceil(options.eval("ns_elbo", {"K": K}))
     nelcbo_fill = np.zeros((init_N,))
 
     # Number of samples per component for MC approximation of the entropy.
-    nsent_K = math.ceil(options.eval("nsent", {"K": K}) / K)
+    ns_ent_K = math.ceil(options.eval("ns_ent", {"K": K}) / K)
 
     # Number of samples per component for preliminary MC approximation
     # of the entropy.
-    nsent_K_fast = math.ceil(options.eval("nsentfast", {"K": K}) / K)
+    ns_ent_K_fast = math.ceil(options.eval("ns_ent_fast", {"K": K}) / K)
 
     # Deterministic entropy if entropy switch is on or only one component
     if optim_state["entropy_switch"] or K == 1:
-        nsent_K = 0
-        nsent_K_fast = 0
+        ns_ent_K = 0
+        ns_ent_K_fast = 0
 
     # Confidence weight
     # Missing port: elcboweight does not exist
@@ -743,7 +743,7 @@ def _sieve(
 
     if init_N > 0:
         # Get high-posterior density points
-        X_star, y_star, _, _ = get_hpd(gp.X, gp.y, options["hpdfrac"])
+        X_star, y_star, _, _ = get_hpd(gp.X, gp.y, options["hpd_frac"])
 
         # Generate a bunch of random candidate variational parameters.
         if best_N == 1:
@@ -772,7 +772,7 @@ def _sieve(
                 gp,
                 vp0,
                 0,
-                nsent_K_fast,
+                ns_ent_K_fast,
                 0,
                 compute_var,
                 theta_bnd,
@@ -789,11 +789,18 @@ def _sieve(
             vp0_type,
             elcbo_beta,
             compute_var,
-            nsent_K,
-            nsent_K_fast,
+            ns_ent_K,
+            ns_ent_K_fast,
         )
 
-    return copy.deepcopy(vp), 1, elcbo_beta, compute_var, nsent_K, nsent_K_fast
+    return (
+        copy.deepcopy(vp),
+        1,
+        elcbo_beta,
+        compute_var,
+        ns_ent_K,
+        ns_ent_K_fast,
+    )
 
 
 def _vbinit(

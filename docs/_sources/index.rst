@@ -88,7 +88,7 @@ You can cite VBMC in your work with something along the lines of
 License and source
 ------------------
 
-``pyvbmc`` is licensed under `BSD3 <https://opensource.org/licenses/BSD-3-Clause>`_. 
+``pyvbmc`` is licensed under `BSD3 <https://opensource.org/licenses/BSD-3-Clause>`_.
 The Python source code is on `GitHub <https://github.com/lacerbi/pyvbmc>`_.
 You may also want to check out the original `MATLAB toolbox <https://github.com/lacerbi/vbmc>`_.
 

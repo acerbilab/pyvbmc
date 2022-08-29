@@ -126,7 +126,7 @@ def test_simple__call__():
     vbmc_options = Options(
         basic_path,
         evaluation_parameters={"D": D},
-        user_options={"activeimportancesamplingmcmcsamples": 100},
+        user_options={"active_importance_sampling_mcmc_samples": 100},
     )
     advanced_path = pyvbmc_path + "/option_configs/advanced_vbmc_options.ini"
     vbmc_options.load_options_file(
@@ -302,7 +302,7 @@ def test_complex__call__():
     vbmc_options = Options(
         basic_path,
         evaluation_parameters={"D": D},
-        user_options={"activeimportancesamplingmcmcsamples": 8000},
+        user_options={"active_importance_sampling_mcmc_samples": 8000},
     )
     advanced_path = pyvbmc_path + "/option_configs/advanced_vbmc_options.ini"
     vbmc_options.load_options_file(

@@ -439,15 +439,15 @@ In the following, we see how to set up and run VBMC on a toy example.</p>
 For this example, we set as toy log likelihood for our model a broad <a class="reference external" href="https://en.wikipedia.org/wiki/Rosenbrock_function">Rosenbrock’s banana function</a> in <span class="math notranslate nohighlight">\(D = 2\)</span>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">D</span> <span class="o">=</span> <span class="mi">2</span> <span class="c1"># We consider a 2-D problem</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">D</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># We consider a 2-D problem</span>
 
 <span class="c1"># Log likelihood of the model</span>
 <span class="k">def</span> <span class="nf">llfun</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
     <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
-                <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:])</span> <span class="o">**</span> <span class="mf">2.0</span>
-                <span class="o">+</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">/</span> <span class="mi">100</span>
-            <span class="p">)</span>
+        <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:])</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">/</span> <span class="mi">100</span>
+    <span class="p">)</span>
+
 
 <span class="c1"># In general, llfun would depend on the data and define the log likelihood of *your* model</span>
 </pre></div>
@@ -462,8 +462,8 @@ For this example, we set as toy log likelihood for our model a broad <a class="r
 \]</div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">prior_mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="n">D</span><span class="p">))</span>
-<span class="n">prior_std</span> <span class="o">=</span> <span class="mi">3</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="n">D</span><span class="p">))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">prior_mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">))</span>
+<span class="n">prior_std</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">))</span>
 <span class="n">lpriorfun</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">scs</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">prior_mu</span><span class="p">,</span> <span class="n">prior_std</span><span class="p">))</span>
 </pre></div>
 </div>
@@ -487,8 +487,8 @@ For this example, we set as toy log likelihood for our model a broad <a class="r
 <p>We assume an unconstrained domain for the model parameters, that is <span class="math notranslate nohighlight">\(\mathbf{x} \in \mathbb{R}^D\)</span>, specifying <code class="docutils literal notranslate"><span class="pre">-inf</span></code> and <code class="docutils literal notranslate"><span class="pre">inf</span></code> for the lower and upper bounds, respectively.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">LB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="n">D</span><span class="p">),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>                 <span class="c1"># Lower bounds</span>
-<span class="n">UB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="n">D</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>                  <span class="c1"># Upper bounds</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">LB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>  <span class="c1"># Lower bounds</span>
+<span class="n">UB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>  <span class="c1"># Upper bounds</span>
 </pre></div>
 </div>
 </div>
@@ -497,8 +497,8 @@ For this example, we set as toy log likelihood for our model a broad <a class="r
 <p>Not knowing better, we use mean +/- 1 SD of the prior (that is, the top ~68% prior credible interval) to set the plausible bounds.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">PLB</span> <span class="o">=</span> <span class="n">prior_mu</span> <span class="o">-</span> <span class="n">prior_std</span>                   <span class="c1"># Plausible lower bounds</span>
-<span class="n">PUB</span> <span class="o">=</span> <span class="n">prior_mu</span> <span class="o">+</span> <span class="n">prior_std</span>                   <span class="c1"># Plausible upper bounds</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">PLB</span> <span class="o">=</span> <span class="n">prior_mu</span> <span class="o">-</span> <span class="n">prior_std</span>  <span class="c1"># Plausible lower bounds</span>
+<span class="n">PUB</span> <span class="o">=</span> <span class="n">prior_mu</span> <span class="o">+</span> <span class="n">prior_std</span>  <span class="c1"># Plausible upper bounds</span>
 
 <span class="c1"># Alternatively, you could set the plausible bounds using the quantiles:</span>
 <span class="c1"># PLB = scs.norm.ppf(0.1587, prior_mu, prior_std)</span>
@@ -564,11 +564,11 @@ Estimated ELBO: -2.280 +/-0.001.
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">lml_true</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.272</span> <span class="c1"># ground truth, which we know for this toy scenario</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">lml_true</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.272</span>  <span class="c1"># ground truth, which we know for this toy scenario</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The true log model evidence is:&quot;</span><span class="p">,</span> <span class="n">lml_true</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The obtained ELBO is:&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="p">(</span><span class="n">elbo</span><span class="p">,</span> <span class="s1">&#39;.3f&#39;</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The obtained ELBO_SD is:&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="p">(</span><span class="n">elbo_sd</span><span class="p">,</span> <span class="s1">&#39;.3f&#39;</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The obtained ELBO is:&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="p">(</span><span class="n">elbo</span><span class="p">,</span> <span class="s2">&quot;.3f&quot;</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The obtained ELBO_SD is:&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="p">(</span><span class="n">elbo_sd</span><span class="p">,</span> <span class="s2">&quot;.3f&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -600,8 +600,8 @@ The obtained ELBO_SD is: 0.001
 <span class="n">Xs</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
 
 <span class="c1"># Easily compute statistics such as moments, credible intervals, etc.</span>
-<span class="n">post_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">Xs</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>             <span class="c1"># Posterior mean</span>
-<span class="n">post_cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">Xs</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>                    <span class="c1"># Posterior covariance matrix</span>
+<span class="n">post_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">Xs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># Posterior mean</span>
+<span class="n">post_cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">Xs</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>  <span class="c1"># Posterior covariance matrix</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The approximate posterior mean is:&quot;</span><span class="p">,</span> <span class="n">post_mean</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The approximate posterior covariance matrix is:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">post_cov</span><span class="p">)</span>
 </pre></div>
@@ -650,15 +650,16 @@ The approximate posterior covariance matrix is:
 
 <span class="n">D</span> <span class="o">=</span> <span class="mi">2</span>
 
+
 <span class="k">def</span> <span class="nf">llfun</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
     <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
-                <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:])</span> <span class="o">**</span> <span class="mf">2.0</span>
-                <span class="o">+</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">/</span> <span class="mi">100</span>
-            <span class="p">)</span>
+        <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:])</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">/</span> <span class="mi">100</span>
+    <span class="p">)</span>
 
-<span class="n">prior_mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="n">D</span><span class="p">))</span>
-<span class="n">prior_std</span> <span class="o">=</span> <span class="mi">3</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="n">D</span><span class="p">))</span>
+
+<span class="n">prior_mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">))</span>
+<span class="n">prior_std</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">))</span>
 <span class="n">lpriorfun</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">scs</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">prior_mu</span><span class="p">,</span> <span class="n">prior_std</span><span class="p">))</span>
 
 <span class="n">target</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">llfun</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">lpriorfun</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -666,10 +667,10 @@ The approximate posterior covariance matrix is:
 <span class="c1">#####################################################################</span>
 <span class="c1"># 2. Parameter setup: bounds and starting point</span>
 
-<span class="n">LB</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="n">D</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>                 <span class="c1"># Lower bounds</span>
-<span class="n">UB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="n">D</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>                  <span class="c1"># Upper bounds</span>
-<span class="n">PLB</span> <span class="o">=</span> <span class="n">prior_mu</span> <span class="o">-</span> <span class="n">prior_std</span>                   <span class="c1"># Plausible lower bounds</span>
-<span class="n">PUB</span> <span class="o">=</span> <span class="n">prior_mu</span> <span class="o">+</span> <span class="n">prior_std</span>                   <span class="c1"># Plausible upper bounds</span>
+<span class="n">LB</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>  <span class="c1"># Lower bounds</span>
+<span class="n">UB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>  <span class="c1"># Upper bounds</span>
+<span class="n">PLB</span> <span class="o">=</span> <span class="n">prior_mu</span> <span class="o">-</span> <span class="n">prior_std</span>  <span class="c1"># Plausible lower bounds</span>
+<span class="n">PUB</span> <span class="o">=</span> <span class="n">prior_mu</span> <span class="o">+</span> <span class="n">prior_std</span>  <span class="c1"># Plausible upper bounds</span>
 <span class="c1"># PLB = scs.norm.ppf(0.1587, prior_mu, prior_std)</span>
 <span class="c1"># PUB = scs.norm.ppf(0.8413, prior_mu, prior_std)</span>
 
@@ -682,17 +683,17 @@ The approximate posterior covariance matrix is:
 <span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">LB</span><span class="p">,</span> <span class="n">UB</span><span class="p">,</span> <span class="n">PLB</span><span class="p">,</span> <span class="n">PUB</span><span class="p">)</span>
 <span class="n">vp</span><span class="p">,</span> <span class="n">elbo</span><span class="p">,</span> <span class="n">elbo_sd</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
 
-<span class="n">lml_true</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.272</span> <span class="c1"># ground truth, which we know for this toy scenario</span>
+<span class="n">lml_true</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.272</span>  <span class="c1"># ground truth, which we know for this toy scenario</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The true log model evidence is:&quot;</span><span class="p">,</span> <span class="n">lml_true</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The obtained ELBO is:&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="p">(</span><span class="n">elbo</span><span class="p">,</span> <span class="s1">&#39;.3f&#39;</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The obtained ELBO_SD is:&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="p">(</span><span class="n">elbo_sd</span><span class="p">,</span> <span class="s1">&#39;.3f&#39;</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The obtained ELBO is:&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="p">(</span><span class="n">elbo</span><span class="p">,</span> <span class="s2">&quot;.3f&quot;</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The obtained ELBO_SD is:&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="p">(</span><span class="n">elbo_sd</span><span class="p">,</span> <span class="s2">&quot;.3f&quot;</span><span class="p">))</span>
 
 <span class="c1">#####################################################################</span>
 <span class="c1"># 4. Analyze and visualize results</span>
 
 <span class="n">n_samples</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">3e5</span><span class="p">)</span>
 <span class="n">Xs</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
-<span class="n">post_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">Xs</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">post_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">Xs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">post_cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">Xs</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The approximate posterior mean is:&quot;</span><span class="p">,</span> <span class="n">post_mean</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The approximate posterior covariance matrix is:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">post_cov</span><span class="p">)</span>

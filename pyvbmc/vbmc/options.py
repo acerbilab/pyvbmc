@@ -59,13 +59,13 @@ class Options(MutableMapping, dict):
 
     def update_defaults(self):
         """Change defaults as needed based on values of other options."""
-        if self.get("specifytargetnoise"):
+        if self.get("specify_target_noise"):
             updates = {
-                "maxfunevals": ceil(self["maxfunevals"] * 1.5),
-                "tolstablecount": ceil(self["tolstablecount"] * 1.5),
-                "activesamplegpupdate": True,
-                "activesamplevpupdate": True,
-                "searchacqfcn": [AcqFcnVIQR()],
+                "max_fun_evals": ceil(self["max_fun_evals"] * 1.5),
+                "tol_stable_count": ceil(self["tol_stable_count"] * 1.5),
+                "active_sample_gp_update": True,
+                "active_sample_vp_update": True,
+                "search_acq_fcn": [AcqFcnVIQR()],
             }
             for key, val in updates.items():
                 if key not in self["useroptions"]:
