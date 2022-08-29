@@ -124,6 +124,9 @@ class VBMC:
         log_prior: callable = None,
         sample_prior: callable = None,
     ):
+        # set up root logger (only changes stuff if not initialized yet)
+        logging.basicConfig(stream=sys.stdout, format="%(message)s")
+
         # Initialize variables and algorithm structures
         if x0 is None:
             if (
@@ -137,6 +140,9 @@ class VBMC:
             else:
                 x0 = np.full((plausible_lower_bounds.shape), np.NaN)
 
+        if x0.ndim == 1:
+            logging.warning(f"Reshaping x0 to row vector.")
+            x0 = x0.reshape((1, -1))
         self.D = x0.shape[1]
         # load basic and advanced options and validate the names
         pyvbmc_path = os.path.dirname(os.path.realpath(__file__))
@@ -156,9 +162,6 @@ class VBMC:
         )
         self.options.update_defaults()
         self.options.validate_option_names([basic_path, advanced_path])
-
-        # set up root logger (only changes stuff if not initialized yet)
-        logging.basicConfig(stream=sys.stdout, format="%(message)s")
 
         # Create an initial logger for initialization messages:
         self.logger = self._init_logger("_init")
@@ -335,22 +338,32 @@ class VBMC:
                 if plausible_upper_bounds is None:
                     plausible_upper_bounds = np.copy(upper_bounds)
 
-        # check that all bounds are row vectors with D elements
-        if (
-            np.ndim(lower_bounds) != 2
-            or np.ndim(upper_bounds) != 2
-            or np.ndim(plausible_lower_bounds) != 2
-            or np.ndim(plausible_upper_bounds) != 2
-            or lower_bounds.shape != (1, D)
-            or upper_bounds.shape != (1, D)
-            or plausible_lower_bounds.shape != (1, D)
-            or plausible_upper_bounds.shape != (1, D)
-        ):
+        # Try to reshape bounds to row vectors
+        lower_bounds = np.atleast_1d(lower_bounds)
+        upper_bounds = np.atleast_1d(upper_bounds)
+        plausible_lower_bounds = np.atleast_1d(plausible_lower_bounds)
+        plausible_upper_bounds = np.atleast_1d(plausible_upper_bounds)
+        try:
+            if lower_bounds.shape != (1, D):
+                logging.warning(f"Reshaping lower bounds to {(1, D)}.")
+                lower_bounds = lower_bounds.reshape((1, D))
+            if upper_bounds.shape != (1, D):
+                logging.warning(f"Reshaping upper bounds to {(1, D)}.")
+                upper_bounds = upper_bounds.reshape((1, D))
+            if plausible_lower_bounds.shape != (1, D):
+                logging.warning(
+                    f"Reshaping plausible lower bounds to {(1, D)}."
+                )
+                plausible_lower_bounds = plausible_lower_bounds.reshape((1, D))
+            if plausible_upper_bounds.shape != (1, D):
+                logging.warning(
+                    f"Reshaping plausible upper bounds to {(1, D)}."
+                )
+                plausible_upper_bounds = plausible_upper_bounds.reshape((1, D))
+        except ValueError as exc:
             raise ValueError(
-                """All input vectors (x0, lower_bounds, upper_bounds,
-                 plausible_lower_bounds, plausible_upper_bounds), if specified,
-                 need to be row vectors with D elements."""
-            )
+                f"Bounds must match problem dimension D={D}."
+            ) from exc
 
         # check that plausible bounds are finite
         if np.any(np.invert(np.isfinite(plausible_lower_bounds))) or np.any(
