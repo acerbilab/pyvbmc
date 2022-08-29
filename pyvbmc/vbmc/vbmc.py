@@ -1815,12 +1815,12 @@ class VBMC:
         ] / self.options.get("tol_skl")
 
         # Compute average ELCBO improvement per fcn eval in the past few iters
-        # TODO: off by one error
         idx0 = int(
             max(
                 0,
                 self.optim_state.get("iter")
-                - math.ceil(0.5 * tol_stable_iters),
+                - math.ceil(0.5 * tol_stable_iters)
+                + 1,
             )
         )
         # Remember than upper end of range is exclusive in Python, so +1 is
