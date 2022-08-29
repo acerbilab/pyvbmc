@@ -1592,9 +1592,7 @@ def _gplogjoint(
         if np.any(grad_flags):
             dF = np.sum(dF, axis=1) / Ns
 
-    # In case of separate samples but only one sample simplify
-    # expressions slightly.
-    # TODO: what other parts need to be fixed like this?
+    # Drop extra dims if Ns == 1
     if Ns == 1:
         F = F[0]
         if np.any(grad_flags):
