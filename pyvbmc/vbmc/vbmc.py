@@ -893,7 +893,7 @@ class VBMC:
                 if self.options.get("warp_undo_check"):
                     ## Train gp
 
-                    timer.start_timer("gpTrain")
+                    timer.start_timer("gp_train")
 
                     gp, Ns_gp, sn2hpd, hyp_dict = train_gp(
                         hyp_dict,
@@ -906,10 +906,10 @@ class VBMC:
                     )
                     self.optim_state["sn2hpd"] = sn2hpd
 
-                    timer.stop_timer("gpTrain")
+                    timer.stop_timer("gp_train")
 
                     ## Optimize variational parameters
-                    timer.start_timer("variationalFit")
+                    timer.start_timer("variational_fit")
 
                     if not self.vp.optimize_mu:
                         # Variational components fixed to training inputs
@@ -948,7 +948,7 @@ class VBMC:
                     elbo = vp_real.stats["elbo"]
                     elbo_sd = vp_real.stats["elbo_sd"]
 
-                    timer.stop_timer("variationalFit")
+                    timer.stop_timer("variational_fit")
 
                     # Keep warping only if it substantially improves ELBO
                     # and uncertainty does not blow up too much
@@ -978,7 +978,7 @@ class VBMC:
                         self.logging_action.append("undo " + warp_action)
 
             ## Actively sample new points into the training set
-            timer.start_timer("activeSampling")
+            timer.start_timer("active_sampling")
             self.parameter_transformer = self.vp.parameter_transformer
             self.function_logger.parameter_transformer = (
                 self.parameter_transformer
@@ -1058,11 +1058,11 @@ class VBMC:
                 self.function_logger.nevals[self.function_logger.X_flag]
             )
 
-            timer.stop_timer("activeSampling")
+            timer.stop_timer("active_sampling")
 
             ## Train gp
 
-            timer.start_timer("gpTrain")
+            timer.start_timer("gp_train")
 
             gp, Ns_gp, sn2hpd, hyp_dict = train_gp(
                 hyp_dict,
@@ -1075,7 +1075,7 @@ class VBMC:
             )
             self.optim_state["sn2hpd"] = sn2hpd
 
-            timer.stop_timer("gpTrain")
+            timer.stop_timer("gp_train")
 
             # Check if reached stable sampling regime
             if (
@@ -1085,7 +1085,7 @@ class VBMC:
                 self.optim_state["stop_sampling"] = self.optim_state.get("N")
 
             ## Optimize variational parameters
-            timer.start_timer("variationalFit")
+            timer.start_timer("variational_fit")
 
             if not self.vp.optimize_mu:
                 # Variational components fixed to training inputs
@@ -1133,7 +1133,7 @@ class VBMC:
             elbo = vp_real.stats["elbo"]
             elbo_sd = vp_real.stats["elbo_sd"]
 
-            timer.stop_timer("variationalFit")
+            timer.stop_timer("variational_fit")
 
             # Finalize iteration
 

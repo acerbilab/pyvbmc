@@ -113,7 +113,7 @@ class FunctionLogger:
             x_orig = x
 
         try:
-            timer.start_timer("funtime")
+            timer.start_timer("fun_time")
             if self.noise_flag and self.uncertainty_handling_level == 2:
                 fval_orig, fsd = self.fun(x_orig)
             else:
@@ -125,7 +125,7 @@ class FunctionLogger:
             if isinstance(fval_orig, np.ndarray):
                 # fval_orig can only be an array with size 1
                 fval_orig = fval_orig.item()
-            timer.stop_timer("funtime")
+            timer.stop_timer("fun_time")
 
         except Exception as err:
             err.args += (
@@ -165,7 +165,7 @@ class FunctionLogger:
             raise ValueError(error_message.format(str(fsd)))
 
         # record timer stats
-        funtime = timer.get_duration("funtime")
+        funtime = timer.get_duration("fun_time")
 
         self.func_count += 1
         fval, idx = self._record(x_orig, x, fval_orig, fsd, funtime)
