@@ -104,7 +104,7 @@ def test_vbmc_boundscheck_not_D():
     pub = np.ones((1, D))
     x0 = np.ones((2, D))
     incorrect = np.ones((1, D - 1))
-    exception_message = "need to be row vectors with D elements"
+    exception_message = "Bounds must match problem dimension D="
     with pytest.raises(ValueError) as execinfo1:
         VBMC(fun, x0, lb, ub)._boundscheck(x0, incorrect, ub, plb, pub)
     assert exception_message in execinfo1.value.args[0]
@@ -128,7 +128,7 @@ def test_vbmc_boundscheck_not_vectors():
     pub = np.ones((1, D))
     x0 = np.ones((2, D))
     incorrect = 1
-    exception_message = "need to be row vectors with D elements"
+    exception_message = "Bounds must match problem dimension D="
     with pytest.raises(ValueError) as execinfo1:
         VBMC(fun, x0, lb, ub)._boundscheck(x0, incorrect, ub, plb, pub)
     assert exception_message in execinfo1.value.args[0]
@@ -152,19 +152,10 @@ def test_vbmc_boundscheck_not_row_vectors():
     plb = np.ones((1, D)) * -1
     pub = np.ones((1, D))
     incorrect = np.ones((D, 1))
-    exception_message = "need to be row vectors with D elements"
-    with pytest.raises(ValueError) as execinfo1:
-        VBMC(fun, x0, lb, ub)._boundscheck(x0, incorrect, ub, plb, pub)
-    assert exception_message in execinfo1.value.args[0]
-    with pytest.raises(ValueError) as execinfo2:
-        VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, incorrect, plb, pub)
-    assert exception_message in execinfo2.value.args[0]
-    with pytest.raises(ValueError) as execinfo3:
-        VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, ub, incorrect, pub)
-    assert exception_message in execinfo3.value.args[0]
-    with pytest.raises(ValueError) as execinfo4:
-        VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, ub, plb, incorrect)
-    assert exception_message in execinfo4.value.args[0]
+    VBMC(fun, x0, lb, ub)._boundscheck(x0, -2 * incorrect, ub, plb, pub)
+    VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, 2 * incorrect, plb, pub)
+    VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, ub, -1 * incorrect, pub)
+    VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, ub, plb, 1 * incorrect)
     VBMC(fun, x0, lb, ub)._boundscheck(x0, lb, ub, plb, pub)
 
 
@@ -751,3 +742,47 @@ def test_vbmc_init_log_joint_noisy():
     assert vbmc.function_logger.fun(x) == log_joint(x)
     assert vbmc.log_prior is log_prior
     assert vbmc.log_likelihood is log_lklhd
+
+
+def test_init_integer_input():
+    D = 2
+    lb = np.full((1, D), -10)
+    ub = np.full((1, D), 10)
+    x0_array = np.full((1, D), 0)
+    plb = np.full((1, D), -5)
+    pub = np.full((1, D), 5)
+
+    def log_joint(x):
+        return x**2 + x + 1, 1.0
+
+    vbmc = VBMC(log_joint, x0_array, lb, ub, plb, pub)
+    for arr in [
+        vbmc.optim_state["cache"]["x_orig"],
+        vbmc.optim_state["lb_orig"],
+        vbmc.optim_state["ub_orig"],
+        vbmc.optim_state["plb_orig"],
+        vbmc.optim_state["pub_orig"],
+    ]:
+        assert arr.dtype == np.float64
+
+
+def test_init_1D_input():
+    D = 2
+    lb = np.full((D,), -10)
+    ub = np.full((D,), 10)
+    x0_array = np.full((D,), 0)
+    plb = np.full((D,), -5)
+    pub = np.full((D,), 5)
+
+    def log_joint(x):
+        return x**2 + x + 1, 1.0
+
+    vbmc = VBMC(log_joint, x0_array, lb, ub, plb, pub)
+
+    assert np.all(
+        vbmc.optim_state["cache"]["x_orig"] == x0_array.reshape((1, D))
+    )
+    assert np.all(vbmc.optim_state["lb_orig"] == lb.reshape((1, D)))
+    assert np.all(vbmc.optim_state["ub_orig"] == ub.reshape((1, D)))
+    assert np.all(vbmc.optim_state["plb_orig"] == plb.reshape((1, D)))
+    assert np.all(vbmc.optim_state["pub_orig"] == pub.reshape((1, D)))
