@@ -325,8 +325,8 @@ def optimize_vp(
 
             # Choose a random component below threshold
             idx = np.argwhere(
-                (vp.w < options["tol_weight"]).flatten() & ~already_checked
-            ).flatten()
+                (vp.w < options["tol_weight"]).ravel() & ~already_checked
+            ).ravel()
             idx = idx[np.random.randint(0, np.size(idx))]
             vp_pruned.w = np.delete(vp_pruned.w, idx)
             vp_pruned.eta = np.delete(vp_pruned.eta, idx)
@@ -532,19 +532,19 @@ def _vp_bound_loss(
         mu = theta[: vp.D * vp.K]
         start_idx = vp.D * vp.K
     else:
-        mu = vp.mu.flatten(order="F")
+        mu = vp.mu.ravel(order="F")
         start_idx = 0
 
     if vp.optimize_sigma:
         ln_sigma = theta[start_idx : start_idx + vp.K]
         start_idx += vp.K
     else:
-        ln_sigma = np.log(vp.sigma.flatten())
+        ln_sigma = np.log(vp.sigma.ravel())
 
     if vp.optimize_lambd:
         ln_lambd = theta[start_idx : start_idx + vp.D].T
     else:
-        ln_lambd = np.log(vp.lambd.flatten())
+        ln_lambd = np.log(vp.lambd.ravel())
 
     if vp.optimize_weights:
         eta = theta[-vp.K :]
@@ -552,25 +552,25 @@ def _vp_bound_loss(
     ln_scale = np.reshape(ln_lambd, (-1, 1)) + np.reshape(ln_sigma, (1, -1))
     theta_ext = []
     if vp.optimize_mu:
-        theta_ext.append(mu.flatten())
+        theta_ext.append(mu.ravel())
     if vp.optimize_sigma or vp.optimize_lambda:
-        theta_ext.append(ln_scale.flatten(order="F"))
+        theta_ext.append(ln_scale.ravel(order="F"))
     if vp.optimize_weights:
-        theta_ext.append(eta.flatten())
+        theta_ext.append(eta.ravel())
     theta_ext = np.concatenate(theta_ext)
 
     if compute_grad:
         L, dL = _soft_bound_loss(
             theta_ext,
-            theta_bnd["lb"].flatten(),
-            theta_bnd["ub"].flatten(),
+            theta_bnd["lb"].ravel(),
+            theta_bnd["ub"].ravel(),
             tol_con,
             compute_grad=True,
         )
 
         dL_new = np.array([])
         if vp.optimize_mu:
-            dL_new = np.concatenate((dL_new, dL[0 : vp.D * vp.K].flatten()))
+            dL_new = np.concatenate((dL_new, dL[0 : vp.D * vp.K].ravel()))
             start_idx = vp.D * vp.K
         else:
             start_idx = 0
@@ -587,14 +587,14 @@ def _vp_bound_loss(
                 dL_new = np.concatenate((dL_new, np.sum(dlnscale, axis=1)))
 
         if vp.optimize_weights:
-            dL_new = np.concatenate((dL_new, dL[-vp.K :].flatten()))
+            dL_new = np.concatenate((dL_new, dL[-vp.K :].ravel()))
 
         return L, dL_new
 
     L = _soft_bound_loss(
         theta_ext,
-        theta_bnd["lb"].flatten(),
-        theta_bnd["ub"].flatten(),
+        theta_bnd["lb"].ravel(),
+        theta_bnd["ub"].ravel(),
         tol_con,
     )
 
@@ -1207,13 +1207,11 @@ def _negelcbo(
 
             F += L
             if compute_grad:
-                w_grad = theta_bnd["weight_penalty"] * (
-                    vp.w.flatten() < thresh
-                )
+                w_grad = theta_bnd["weight_penalty"] * (vp.w.ravel() < thresh)
                 eta_sum = np.sum(np.exp(vp.eta))
                 J_w = (
                     -np.exp(vp.eta).T * np.exp(vp.eta) / eta_sum**2
-                ) + np.diag(np.exp(vp.eta.flatten()) / eta_sum)
+                ) + np.diag(np.exp(vp.eta.ravel()) / eta_sum)
                 w_grad = np.dot(J_w, w_grad)
                 dL = np.zeros(dF.shape)
                 dL[-vp.K :] = w_grad
@@ -1537,7 +1535,7 @@ def _gplogjoint(
             eta_sum = np.sum(np.exp(vp.eta))
             J_w = (
                 -np.exp(vp.eta).T * np.exp(vp.eta) / eta_sum**2
-                + np.diag(np.exp(vp.eta.flatten())) / eta_sum
+                + np.diag(np.exp(vp.eta.ravel())) / eta_sum
             )
             w_grad = np.dot(J_w, w_grad)
             grad_list.append(w_grad)

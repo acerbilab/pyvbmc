@@ -295,7 +295,7 @@ class VariationalPosterior:
                 if balanceflag:
                     # exact split of samples according to mixture weights
                     repeats = np.floor(self.w * N).astype("int")
-                    i = np.repeat(range(self.K), repeats.flatten())
+                    i = np.repeat(range(self.K), repeats.ravel())
 
                     # compute remainder samples (with correct weights) if needed
                     if N > i.shape[0]:
@@ -306,7 +306,7 @@ class VariationalPosterior:
                         i_extra = np.random.choice(
                             range(self.K),
                             size=repeats_extra.astype("int"),
-                            p=w_extra.flatten(),
+                            p=w_extra.ravel(),
                         )
                         i = np.append(i, i_extra)
 
@@ -314,7 +314,7 @@ class VariationalPosterior:
                     i = i[:N]
                 else:
                     i = np.random.choice(
-                        range(self.K), size=N, p=self.w.flatten()
+                        range(self.K), size=N, p=self.w.ravel()
                     )
 
                 if not np.isfinite(df) or df == 0:
@@ -590,7 +590,7 @@ class VariationalPosterior:
         # remove mode (at least this is done in Matlab)
 
         if self.optimize_mu:
-            theta = self.mu.flatten(order="F")
+            theta = self.mu.ravel(order="F")
         else:
             theta = np.array(list())
 
@@ -598,17 +598,17 @@ class VariationalPosterior:
 
         if self.optimize_sigma:
             constrained_parameters = np.concatenate(
-                (constrained_parameters, self.sigma.flatten())
+                (constrained_parameters, self.sigma.ravel())
             )
 
         if self.optimize_lambd:
             constrained_parameters = np.concatenate(
-                (constrained_parameters, self.lambd.flatten())
+                (constrained_parameters, self.lambd.ravel())
             )
 
         if self.optimize_weights:
             constrained_parameters = np.concatenate(
-                (constrained_parameters, self.w.flatten())
+                (constrained_parameters, self.w.ravel())
             )
 
         if rawflag:

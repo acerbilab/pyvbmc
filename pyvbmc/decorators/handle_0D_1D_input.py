@@ -47,15 +47,15 @@ def handle_0D_1D_input(
                 # handle functions with multiple return values
                 if type(res) is tuple:
                     returnvalues = list(res)
-                    returnvalues = [o.flatten() for o in returnvalues]
+                    returnvalues = [o.ravel() for o in returnvalues]
                     if return_scalar:
                         returnvalues = [o[0] for o in returnvalues]
                     return tuple(returnvalues)
 
                 elif return_scalar and np.ndim(res) != 0:
-                    return res.flatten()[0]
+                    return res.ravel()[0]
                 elif np.ndim(res) != 0:
-                    return res.flatten()
+                    return res.ravel()
 
             return res
 

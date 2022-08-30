@@ -545,7 +545,7 @@ class VBMC:
         information about VBMC variables.
         """
         # Record starting points (original coordinates)
-        y_orig = np.array(self.options.get("f_vals")).flatten()
+        y_orig = np.array(self.options.get("f_vals")).ravel()
         if len(y_orig) == 0:
             y_orig = np.full([self.x0.shape[0]], np.nan)
         if len(self.x0) != len(y_orig):
