@@ -11,7 +11,7 @@ import numpy as np
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.stats import kldiv_mvn
-from pyvbmc.timer import Timer
+from pyvbmc.timer import main_timer as timer
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.whitening import warp_gpandvp_vbmc, warp_input_vbmc
 
@@ -826,7 +826,8 @@ class VBMC:
         is_finished = False
         # the iterations of pyvbmc start at 0
         iteration = -1
-        timer = Timer()
+        # Reset timer:
+        timer.clear()
         gp = None
         hyp_dict = {}
         success_flag = True
@@ -1083,7 +1084,6 @@ class VBMC:
                         new_funevals,
                         self.optim_state,
                         self.function_logger,
-                        timer,
                         self.iteration_history,
                         self.vp,
                         self.options,

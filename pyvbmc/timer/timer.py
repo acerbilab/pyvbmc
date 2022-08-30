@@ -1,3 +1,4 @@
+import logging
 import time
 
 
@@ -42,6 +43,10 @@ class Timer:
             else:
                 self._durations[name] = end_time - self._start_times[name]
             self._start_times.pop(name)
+        else:
+            logging.getLogger("timer").warning(
+                f"Timer not found for key '{name}'."
+            )
 
     def get_duration(self, name: str):
         """
@@ -57,4 +62,13 @@ class Timer:
         duration : float
             The duration of the timer or None when the timer is not existing.
         """
-        return self._durations.get(name)
+        return self._durations.get(
+            name,
+            logging.getLogger("timer").warning(
+                f"Timer not found for key '{name}'."
+            ),
+        )
+
+    def clear(self):
+        self._durations = dict()
+        self._start_times = dict()

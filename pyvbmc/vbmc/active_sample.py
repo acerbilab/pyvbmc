@@ -10,6 +10,7 @@ from pyvbmc.acquisition_functions import *
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.stats import get_hpd
 from pyvbmc.timer import Timer
+from pyvbmc.timer import main_timer as timer
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc.active_importance_sampling import active_importance_sampling
 from pyvbmc.vbmc.gaussian_process_train import reupdate_gp, train_gp
@@ -28,7 +29,6 @@ def active_sample(
     sample_count: int,
     optim_state: dict,
     function_logger: FunctionLogger,
-    timer: Timer,
     iteration_history: IterationHistory,
     vp: VariationalPosterior,
     options: Options,
@@ -47,8 +47,6 @@ def active_sample(
         The optim_state from the VBMC instance this function is called from.
     function_logger : FunctionLogger
         The FunctionLogger from the VBMC instance this function is called from.
-    timer : Timer
-        The Timer from the VBMC instance this function is called from.
     iteration_history : IterationHistory
         The IterationHistory from the VBMC instance this function is called
         from.
