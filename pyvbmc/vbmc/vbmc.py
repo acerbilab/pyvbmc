@@ -826,8 +826,6 @@ class VBMC:
         is_finished = False
         # the iterations of pyvbmc start at 0
         iteration = -1
-        # Reset timer:
-        timer.clear()
         gp = None
         hyp_dict = {}
         success_flag = True
@@ -851,6 +849,8 @@ class VBMC:
 
         while not is_finished:
             iteration += 1
+            # Reset timer:
+            timer.reset()
             self.optim_state["iter"] = iteration
             self.optim_state["redo_roto_scaling"] = False
             vp_old = copy.deepcopy(self.vp)

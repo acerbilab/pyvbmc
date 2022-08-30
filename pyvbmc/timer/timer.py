@@ -69,6 +69,6 @@ class Timer:
             ),
         )
 
-    def clear(self):
+    def reset(self):
         self._durations = dict()
         self._start_times = dict()
