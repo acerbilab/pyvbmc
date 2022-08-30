@@ -28,7 +28,10 @@ class Timer:
 
     def stop_timer(self, name: str):
         """
-        Stop the specified timer
+        Stop the specified timer.
+
+        If this is the first call to ``stop_timer(name)`` for string ``name``,
+        record the duration. Otherwise, add to the duration.
 
         Parameters
         ----------
@@ -70,5 +73,8 @@ class Timer:
         )
 
     def reset(self):
+        """
+        Reset the timer be emptying the durations and start times.
+        """
         self._durations = dict()
         self._start_times = dict()
