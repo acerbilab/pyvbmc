@@ -42,6 +42,39 @@ class VariationalPosterior:
         the input space that leads to the current representation used by the
         variational posterior, by default uses an identity transform.
 
+    Attributes
+    ----------
+    w : np.ndarray
+        The weights of the VP mixture components, shape ``(1, K)``.
+    eta : np.ndarray
+        The unbounded (softmax) parametrization of the VP mixture components,
+        shape ``(1, K)``.
+    mu : np.ndarray
+        The means of the VP mixture components, shape ``(D, K)``.
+    sigma : np.ndarray
+        The per-component scale of the VP mixture components. Shape ``(1, K)``.
+    lambd : np.ndarray
+        The per-dimension scale of the VP mixture components. Shape ``(D, 1)``.
+    optimize_weights : bool
+        Whether to optimize the weights.
+    optimize_mu : bool
+        Whether to optimize the means.
+    optimize_sigma : bool
+        Whether to optimize ``sigma``.
+    optimize_lambd : bool
+        Whether to optimize ``lambd``.
+    parameter_transformer : ParameterTransformer
+        The parameter transformer implementing transformations to/from
+        unbounded space.
+    delta : np.ndarray or None (optional)
+        An additional overall scaling factor, of shape ``(1, D)``. Default ``None``.
+    bounds : dict
+        A dictionary containing the soft bounds for each variable to be
+        optimized.
+    stats : dict
+        A dictionary of statistics and other relevant info computed during
+        optimization.
+
     Notes
     -----
     In VBMC, the variational posterior is defined as a mixture of multivariate
@@ -262,7 +295,7 @@ class VariationalPosterior:
                 if balanceflag:
                     # exact split of samples according to mixture weights
                     repeats = np.floor(self.w * N).astype("int")
-                    i = np.repeat(range(self.K), repeats.flatten())
+                    i = np.repeat(range(self.K), repeats.ravel())
 
                     # compute remainder samples (with correct weights) if needed
                     if N > i.shape[0]:
@@ -273,7 +306,7 @@ class VariationalPosterior:
                         i_extra = np.random.choice(
                             range(self.K),
                             size=repeats_extra.astype("int"),
-                            p=w_extra.flatten(),
+                            p=w_extra.ravel(),
                         )
                         i = np.append(i, i_extra)
 
@@ -281,7 +314,7 @@ class VariationalPosterior:
                     i = i[:N]
                 else:
                     i = np.random.choice(
-                        range(self.K), size=N, p=self.w.flatten()
+                        range(self.K), size=N, p=self.w.ravel()
                     )
 
                 if not np.isfinite(df) or df == 0:
@@ -557,7 +590,7 @@ class VariationalPosterior:
         # remove mode (at least this is done in Matlab)
 
         if self.optimize_mu:
-            theta = self.mu.flatten(order="F")
+            theta = self.mu.ravel(order="F")
         else:
             theta = np.array(list())
 
@@ -565,17 +598,17 @@ class VariationalPosterior:
 
         if self.optimize_sigma:
             constrained_parameters = np.concatenate(
-                (constrained_parameters, self.sigma.flatten())
+                (constrained_parameters, self.sigma.ravel())
             )
 
         if self.optimize_lambd:
             constrained_parameters = np.concatenate(
-                (constrained_parameters, self.lambd.flatten())
+                (constrained_parameters, self.lambd.ravel())
             )
 
         if self.optimize_weights:
             constrained_parameters = np.concatenate(
-                (constrained_parameters, self.w.flatten())
+                (constrained_parameters, self.w.ravel())
             )
 
         if rawflag:

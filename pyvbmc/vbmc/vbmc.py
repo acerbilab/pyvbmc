@@ -11,7 +11,7 @@ import numpy as np
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.stats import kldiv_mvn
-from pyvbmc.timer import Timer
+from pyvbmc.timer import main_timer as timer
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.whitening import warp_gpandvp_vbmc, warp_input_vbmc
 
@@ -124,6 +124,9 @@ class VBMC:
         log_prior: callable = None,
         sample_prior: callable = None,
     ):
+        # set up root logger (only changes stuff if not initialized yet)
+        logging.basicConfig(stream=sys.stdout, format="%(message)s")
+
         # Initialize variables and algorithm structures
         if x0 is None:
             if (
@@ -137,6 +140,9 @@ class VBMC:
             else:
                 x0 = np.full((plausible_lower_bounds.shape), np.NaN)
 
+        if x0.ndim == 1:
+            logging.warning(f"Reshaping x0 to row vector.")
+            x0 = x0.reshape((1, -1))
         self.D = x0.shape[1]
         # load basic and advanced options and validate the names
         pyvbmc_path = os.path.dirname(os.path.realpath(__file__))
@@ -156,9 +162,6 @@ class VBMC:
         )
         self.options.update_defaults()
         self.options.validate_option_names([basic_path, advanced_path])
-
-        # set up root logger (only changes stuff if not initialized yet)
-        logging.basicConfig(stream=sys.stdout, format="%(message)s")
 
         # Create an initial logger for initialization messages:
         self.logger = self._init_logger("_init")
@@ -335,22 +338,32 @@ class VBMC:
                 if plausible_upper_bounds is None:
                     plausible_upper_bounds = np.copy(upper_bounds)
 
-        # check that all bounds are row vectors with D elements
-        if (
-            np.ndim(lower_bounds) != 2
-            or np.ndim(upper_bounds) != 2
-            or np.ndim(plausible_lower_bounds) != 2
-            or np.ndim(plausible_upper_bounds) != 2
-            or lower_bounds.shape != (1, D)
-            or upper_bounds.shape != (1, D)
-            or plausible_lower_bounds.shape != (1, D)
-            or plausible_upper_bounds.shape != (1, D)
-        ):
+        # Try to reshape bounds to row vectors
+        lower_bounds = np.atleast_1d(lower_bounds)
+        upper_bounds = np.atleast_1d(upper_bounds)
+        plausible_lower_bounds = np.atleast_1d(plausible_lower_bounds)
+        plausible_upper_bounds = np.atleast_1d(plausible_upper_bounds)
+        try:
+            if lower_bounds.shape != (1, D):
+                logging.warning(f"Reshaping lower bounds to {(1, D)}.")
+                lower_bounds = lower_bounds.reshape((1, D))
+            if upper_bounds.shape != (1, D):
+                logging.warning(f"Reshaping upper bounds to {(1, D)}.")
+                upper_bounds = upper_bounds.reshape((1, D))
+            if plausible_lower_bounds.shape != (1, D):
+                logging.warning(
+                    f"Reshaping plausible lower bounds to {(1, D)}."
+                )
+                plausible_lower_bounds = plausible_lower_bounds.reshape((1, D))
+            if plausible_upper_bounds.shape != (1, D):
+                logging.warning(
+                    f"Reshaping plausible upper bounds to {(1, D)}."
+                )
+                plausible_upper_bounds = plausible_upper_bounds.reshape((1, D))
+        except ValueError as exc:
             raise ValueError(
-                """All input vectors (x0, lower_bounds, upper_bounds,
-                 plausible_lower_bounds, plausible_upper_bounds), if specified,
-                 need to be row vectors with D elements."""
-            )
+                f"Bounds must match problem dimension D={D}."
+            ) from exc
 
         # check that plausible bounds are finite
         if np.any(np.invert(np.isfinite(plausible_lower_bounds))) or np.any(
@@ -373,6 +386,28 @@ class VBMC:
                  plausible_lower_bounds, plausible_upper_bounds), if specified,
                  need to be real valued."""
             )
+
+        # Cast all vectors to floats
+        # (integer_vars are represented as floats but handled separately).
+        if np.issubdtype(x0.dtype, np.integer):
+            logging.warning("Casting initial points to floating point.")
+            x0 = x0.astype(np.float64)
+        if np.issubdtype(lower_bounds.dtype, np.integer):
+            logging.warning("Casting lower bounds to floating point.")
+            lower_bounds = lower_bounds.astype(np.float64)
+        if np.issubdtype(upper_bounds.dtype, np.integer):
+            logging.warning("Casting upper bounds to floating point.")
+            upper_bounds = upper_bounds.astype(np.float64)
+        if np.issubdtype(plausible_lower_bounds.dtype, np.integer):
+            logging.warning(
+                "Casting plausible lower bounds to floating point."
+            )
+            plausible_lower_bounds = plausible_lower_bounds.astype(np.float64)
+        if np.issubdtype(plausible_upper_bounds.dtype, np.integer):
+            logging.warning(
+                "Casting plausible upper bounds to floating point."
+            )
+            plausible_upper_bounds = plausible_upper_bounds.astype(np.float64)
 
         # Fixed variables (all bounds equal) are not supported
         fixidx = (
@@ -510,7 +545,7 @@ class VBMC:
         information about VBMC variables.
         """
         # Record starting points (original coordinates)
-        y_orig = np.array(self.options.get("f_vals")).flatten()
+        y_orig = np.array(self.options.get("f_vals")).ravel()
         if len(y_orig) == 0:
             y_orig = np.full([self.x0.shape[0]], np.nan)
         if len(self.x0) != len(y_orig):
@@ -791,7 +826,6 @@ class VBMC:
         is_finished = False
         # the iterations of pyvbmc start at 0
         iteration = -1
-        timer = Timer()
         gp = None
         hyp_dict = {}
         success_flag = True
@@ -815,6 +849,8 @@ class VBMC:
 
         while not is_finished:
             iteration += 1
+            # Reset timer:
+            timer.reset()
             self.optim_state["iter"] = iteration
             self.optim_state["redo_roto_scaling"] = False
             vp_old = copy.deepcopy(self.vp)
@@ -893,7 +929,7 @@ class VBMC:
                 if self.options.get("warp_undo_check"):
                     ## Train gp
 
-                    timer.start_timer("gpTrain")
+                    timer.start_timer("gp_train")
 
                     gp, Ns_gp, sn2_hpd, hyp_dict = train_gp(
                         hyp_dict,
@@ -906,10 +942,10 @@ class VBMC:
                     )
                     self.optim_state["sn2_hpd"] = sn2_hpd
 
-                    timer.stop_timer("gpTrain")
+                    timer.stop_timer("gp_train")
 
                     ## Optimize variational parameters
-                    timer.start_timer("variationalFit")
+                    timer.start_timer("variational_fit")
 
                     if not self.vp.optimize_mu:
                         # Variational components fixed to training inputs
@@ -948,7 +984,7 @@ class VBMC:
                     elbo = vp_real.stats["elbo"]
                     elbo_sd = vp_real.stats["elbo_sd"]
 
-                    timer.stop_timer("variationalFit")
+                    timer.stop_timer("variational_fit")
 
                     # Keep warping only if it substantially improves ELBO
                     # and uncertainty does not blow up too much
@@ -975,10 +1011,10 @@ class VBMC:
                         self.optim_state["last_warping"] = self.optim_state[
                             "iter"
                         ]
-                        self.logging_action.append(", undo")
+                        self.logging_action.append("undo " + warp_action)
 
             ## Actively sample new points into the training set
-            timer.start_timer("activeSampling")
+            timer.start_timer("active_sampling")
             self.parameter_transformer = self.vp.parameter_transformer
             self.function_logger.parameter_transformer = (
                 self.parameter_transformer
@@ -1011,6 +1047,7 @@ class VBMC:
                     if iteration % 2 == 1:
                         meantemp = self.optim_state.get("gp_mean_fun")
                         self.optim_state["gp_mean_fun"] = "const"
+                        timer.start_timer("separate_gp_train")
                         gp_search, Ns_gp, sn2_hpd, hyp_dict = train_gp(
                             hyp_dict,
                             self.optim_state,
@@ -1020,6 +1057,7 @@ class VBMC:
                             self.plausible_lower_bounds,
                             self.plausible_upper_bounds,
                         )
+                        timer.stop_timer("separate_gp_train")
                         self.optim_state["sn2_hpd"] = sn2_hpd
                         self.optim_state["gp_mean_fun"] = meantemp
                     else:
@@ -1058,11 +1096,11 @@ class VBMC:
                 self.function_logger.nevals[self.function_logger.X_flag]
             )
 
-            timer.stop_timer("activeSampling")
+            timer.stop_timer("active_sampling")
 
             ## Train gp
 
-            timer.start_timer("gpTrain")
+            timer.start_timer("gp_train")
 
             gp, Ns_gp, sn2_hpd, hyp_dict = train_gp(
                 hyp_dict,
@@ -1075,7 +1113,7 @@ class VBMC:
             )
             self.optim_state["sn2_hpd"] = sn2_hpd
 
-            timer.stop_timer("gpTrain")
+            timer.stop_timer("gp_train")
 
             # Check if reached stable sampling regime
             if (
@@ -1085,7 +1123,7 @@ class VBMC:
                 self.optim_state["stop_sampling"] = self.optim_state.get("N")
 
             ## Optimize variational parameters
-            timer.start_timer("variationalFit")
+            timer.start_timer("variational_fit")
 
             if not self.vp.optimize_mu:
                 # Variational components fixed to training inputs
@@ -1133,7 +1171,7 @@ class VBMC:
             elbo = vp_real.stats["elbo"]
             elbo_sd = vp_real.stats["elbo_sd"]
 
-            timer.stop_timer("variationalFit")
+            timer.stop_timer("variational_fit")
 
             # Finalize iteration
 
@@ -1355,7 +1393,7 @@ class VBMC:
                         sKL,
                         self.vp.K,
                         self.optim_state["R"],
-                        "".join(self.logging_action),
+                        ", ".join(self.logging_action),
                     )
                 )
 
@@ -1374,7 +1412,7 @@ class VBMC:
                             sKL,
                             self.vp.K,
                             self.optim_state["R"],
-                            "".join(self.logging_action),
+                            ", ".join(self.logging_action),
                         )
                     )
                 else:
@@ -1387,7 +1425,7 @@ class VBMC:
                             sKL,
                             self.vp.K,
                             self.optim_state["R"],
-                            "".join(self.logging_action),
+                            ", ".join(self.logging_action),
                         )
                     )
             self.iteration_history.record(
@@ -1416,7 +1454,7 @@ class VBMC:
 
                 if len(self.logging_action) > 0:
                     title = "VBMC iteration {} ({})".format(
-                        iteration, "".join(self.logging_action)
+                        iteration, ", ".join(self.logging_action)
                     )
                 else:
                     title = "VBMC iteration {}".format(iteration)
@@ -1763,7 +1801,7 @@ class VBMC:
                     self.logging_action.append("stable")
                     termination_message = (
                         "Inference terminated: variational "
-                        + "solution stable for options.tol_stable_count"
+                        + "solution stable for options.tol_stable_count "
                         + "fcn evaluations."
                     )
 
@@ -1818,12 +1856,12 @@ class VBMC:
         ] / self.options.get("tol_skl")
 
         # Compute average ELCBO improvement per fcn eval in the past few iters
-        # TODO: off by one error
         idx0 = int(
             max(
                 0,
                 self.optim_state.get("iter")
-                - math.ceil(0.5 * tol_stable_iters),
+                - math.ceil(0.5 * tol_stable_iters)
+                + 1,
             )
         )
         # Remember than upper end of range is exclusive in Python, so +1 is

@@ -177,9 +177,6 @@ def train_gp(
         #     gpoutput.stepsize
         # end
 
-    # TODO: think about the purpose of this line elsewhere in the program.
-    # gp.t = t_train
-
     # Update running average of GP hyperparameter covariance (coarse)
     if hyp_dict["full"] is not None and hyp_dict["full"].shape[1] > 1:
         hyp_cov = np.cov(hyp_dict["full"].T)

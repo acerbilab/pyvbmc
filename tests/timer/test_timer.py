@@ -41,3 +41,15 @@ def test_timer_two_timers():
     timer2 = timer.get_duration("testimer2")
     assert timer1 >= 0.2 and timer2 >= 0
     assert timer1 >= timer2 + 0.2
+
+
+def test_timer_cumulative():
+    timer = Timer()
+    timer.start_timer("a")
+    sleep(0.1)
+    timer.stop_timer("a")
+    timer.start_timer("a")
+    sleep(0.1)
+    timer.stop_timer("a")
+    a = timer.get_duration("a")
+    assert a > 0.19

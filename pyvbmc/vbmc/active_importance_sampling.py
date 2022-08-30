@@ -229,8 +229,9 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
                     -1, 1
                 ) + acq_fcn.is_log_added(f_mu=f_mu, f_s2=f_s2)
                 ln_weights_max = np.amax(ln_weights, axis=1).reshape(-1, 1)
-                assert np.all(ln_weights_max != -np.inf)
-                weights = np.exp(ln_weights - ln_weights_max).reshape(-1)
+                if np.any(ln_weights_max == -np.inf):
+                    raise ValueError("Invalid value.")
+                weights = np.exp(ln_weights - ln_weights_max).ravel()
                 weights = weights / np.sum(weights)
                 # x0 = np.zeros((Walkers, D))
                 # Select x0 without replacement by weight:
@@ -254,7 +255,7 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
                 # (log fixed integrand)
                 ln_y = acq_fcn.is_log_base(Xa, f_mu=f_mu, f_s2=f_s2)
 
-                active_is["f_s2"][:, s] = f_s2.reshape(-1)
+                active_is["f_s2"][:, s] = f_s2.ravel()
                 active_is["ln_weights"][s, :] = ln_y.T - log_p.T
                 active_is["X"][s, :, :] = Xa
 
@@ -375,7 +376,8 @@ def activesample_proposalpdf(Xa, gp, vp_is, w_vp, rect_delta, acq_fcn, vp):
             temp_lpdf[~mask, i + 1] = -np.inf
 
         m_max = np.amax(temp_lpdf, axis=1)
-        assert np.all(m_max != -np.inf)
+        if np.any(m_max == -np.inf):
+            raise ValueError("Invalid value.")
         l_pdf = np.log(
             np.sum(np.exp(temp_lpdf - m_max.reshape(-1, 1)), axis=1)
         )
@@ -456,7 +458,7 @@ def fess(vp, gp, X=100):
     # Can pass the GP, or the GP means directly:
     if isinstance(gp, gpr.GP):
         f_bar, __ = gp.predict(X)
-        f_bar = f_bar.reshape(-1)
+        f_bar = f_bar.ravel()
     else:
         f_bar = np.mean(gp, axis=1)
 
@@ -466,7 +468,7 @@ def fess(vp, gp, X=100):
     # Compute effective sample size (ESS) with importance sampling
     v_ln_pdf = np.maximum(
         vp.pdf(X, origflag=False, logflag=True), np.log(sys.float_info.min)
-    ).reshape((N,))
+    ).ravel()
     ln_weights = f_bar - np.atleast_2d(v_ln_pdf)
     weight = np.exp(ln_weights - np.amax(ln_weights))
     weight = weight / np.sum(weight)

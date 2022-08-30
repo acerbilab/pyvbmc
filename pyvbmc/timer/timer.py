@@ -1,3 +1,4 @@
+import logging
 import time
 
 
@@ -23,13 +24,14 @@ class Timer:
             The name of the timer that should be started.
         """
         if name not in self._start_times:
-            if name in self._durations:
-                self._durations.pop(name)
             self._start_times[name] = time.time()
 
     def stop_timer(self, name: str):
         """
-        Stop the specified timer
+        Stop the specified timer.
+
+        If this is the first call to ``stop_timer(name)`` for string ``name``,
+        record the duration. Otherwise, add to the duration.
 
         Parameters
         ----------
@@ -39,8 +41,15 @@ class Timer:
 
         if name in self._start_times:
             end_time = time.time()
-            self._durations[name] = end_time - self._start_times[name]
+            if self._durations.get(name) is not None:
+                self._durations[name] += end_time - self._start_times[name]
+            else:
+                self._durations[name] = end_time - self._start_times[name]
             self._start_times.pop(name)
+        else:
+            logging.getLogger("timer").warning(
+                f"Timer not found for key '{name}'."
+            )
 
     def get_duration(self, name: str):
         """
@@ -56,4 +65,16 @@ class Timer:
         duration : float
             The duration of the timer or None when the timer is not existing.
         """
-        return self._durations.get(name)
+        return self._durations.get(
+            name,
+            logging.getLogger("timer").warning(
+                f"Timer not found for key '{name}'."
+            ),
+        )
+
+    def reset(self):
+        """
+        Reset the timer be emptying the durations and start times.
+        """
+        self._durations = dict()
+        self._start_times = dict()

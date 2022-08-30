@@ -9,6 +9,8 @@ import numpy as np
 from pyvbmc.acquisition_functions import *
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.stats import get_hpd
+from pyvbmc.timer import Timer
+from pyvbmc.timer import main_timer as timer
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc.active_importance_sampling import active_importance_sampling
 from pyvbmc.vbmc.gaussian_process_train import reupdate_gp, train_gp
@@ -65,8 +67,6 @@ def active_sample(
     gp : gpyreg.GaussianProcess
         The updated GP.
     """
-    # TODO: The timer is missing for now, we have to setup it throught pyvbmc.
-
     # Logging
     logger = logging.getLogger("ActiveSample")
     logger.setLevel(logging.INFO)
@@ -478,7 +478,7 @@ def active_sample(
             else:
                 idx = int(idx)
                 y_orig = optim_state["cache"]["y_orig"][idx]
-
+            timer.start_timer("fun_time")
             if np.isnan(y_orig):
                 # Function value is not available, evaluate
                 ynew, _, idx_new = function_logger(xnew)
@@ -491,6 +491,7 @@ def active_sample(
                 optim_state["cache"]["y_orig"] = np.delete(
                     optim_state["cache"]["y_orig"], idx, 0
                 )
+            timer.stop_timer("fun_time")
 
             if hasattr(function_logger, "S"):
                 s2new = function_logger.S[idx_new] ** 2
@@ -514,6 +515,7 @@ def active_sample(
                     gptmp = None
                     fESS, fESS_thresh = 0, 1
                     if fESS <= fESS_thresh:
+                        timer.start_timer("gp_train")
                         if options["active_sample_gp_update"]:
                             (
                                 gp,
@@ -529,6 +531,7 @@ def active_sample(
                                 optim_state["plb_orig"],
                                 optim_state["pub_orig"],
                             )
+                            timer.stop_timer("gp_train")
                         else:
                             if gptmp is None:
                                 gp = reupdate_gp(function_logger, gp)
@@ -537,7 +540,7 @@ def active_sample(
 
                         if options["active_sample_vp_update"]:
                             # Quick variational optimization
-
+                            timer.start_timer("variational_fit")
                             # Decide number of fast optimizations
                             N_fastopts = math.ceil(
                                 options_update["ns_elbo_incr"]
@@ -563,6 +566,7 @@ def active_sample(
                                 )
                             else:
                                 optim_state["vp_repo"] = [vp.get_parameters()]
+                            timer.stop_timer("variational_fit")
                     else:
                         gp = gptmp
                 else:
@@ -570,6 +574,7 @@ def active_sample(
                     # the GP posterior is updated (but not the hyperparameters)
 
                     # Perform simple rank-1 update if no noise and first sample
+                    timer.start_timer("gp_train")
                     update1 = (
                         (s2new is None)
                         and function_logger.nevals[idx_new] == 1
@@ -580,6 +585,7 @@ def active_sample(
                         # gp.t(end+1) = tnew
                     else:
                         gp = reupdate_gp(function_logger, gp)
+                    timer.stop_timer("gp_train")
 
             # Check if active search bounds need to be expanded
             delta_search = 0.05 * (

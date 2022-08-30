@@ -44,12 +44,12 @@ def entlb_vbmc(
 
     D = vp.D
     K = vp.K
-    mu = vp.mu.copy()  # [D, K]
-    mu_t = mu.transpose()  # [K, D]
-    sigma = vp.sigma.flatten()  # [1,K] -> [K, ]
-    lambd = vp.lambd.flatten()  # [D,1] -> [D, ]
-    w = vp.w.flatten()  # [1,K] -> [K, ]
-    eta = vp.eta.flatten()  # [1,K] -> [K, ]
+    mu = vp.mu  # [D, K]
+    mu_t = mu.T  # [K, D]
+    sigma = vp.sigma.ravel()  # [1,K] -> [K, ]
+    lambd = vp.lambd.ravel()  # [D,1] -> [D, ]
+    w = vp.w.ravel()  # [1,K] -> [K, ]
+    eta = vp.eta.ravel()  # [1,K] -> [K, ]
 
     # Check which gradients are computed
     mu_grad = np.zeros((D, K)) if grad_flags[0] else np.empty(0)
