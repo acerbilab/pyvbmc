@@ -112,8 +112,8 @@ class FunctionLogger:
         else:
             x_orig = x
 
+        timer.start_timer("fun_time")
         try:
-            timer.start_timer("fun_time")
             if self.noise_flag and self.uncertainty_handling_level == 2:
                 fval_orig, fsd = self.fun(x_orig)
             else:
@@ -125,7 +125,6 @@ class FunctionLogger:
             if isinstance(fval_orig, np.ndarray):
                 # fval_orig can only be an array with size 1
                 fval_orig = fval_orig.item()
-            timer.stop_timer("fun_time")
 
         except Exception as err:
             err.args += (
@@ -135,6 +134,7 @@ class FunctionLogger:
                 + str(x_orig),
             )
             raise
+        timer.stop_timer("fun_time")
 
         # if fval is an array with only one element, extract that element
         if not np.isscalar(fval_orig) and np.size(fval_orig) == 1:

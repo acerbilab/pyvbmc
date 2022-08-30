@@ -48,7 +48,7 @@ class Timer:
             self._start_times.pop(name)
         else:
             logging.getLogger("timer").warning(
-                f"Timer not found for key '{name}'."
+                f"Timer start not found for key '{name}'."
             )
 
     def get_duration(self, name: str):
@@ -65,12 +65,12 @@ class Timer:
         duration : float
             The duration of the timer or None when the timer is not existing.
         """
-        return self._durations.get(
-            name,
+        time = self._durations.get(name)
+        if time is None:
             logging.getLogger("timer").warning(
-                f"Timer not found for key '{name}'."
-            ),
-        )
+                f"Timer duration not found for key '{name}'."
+            )
+        return time
 
     def reset(self):
         """
