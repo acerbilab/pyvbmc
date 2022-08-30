@@ -229,7 +229,7 @@ def test_check_warmup_end_conditions_false():
     vbmc.function_logger.func_count = 5
     vbmc.optim_state["N"] = 100
     vbmc.optim_state["data_trim_list"] = np.ones(101) * 91
-    vbmc.iteration_history["lcbmax"] = np.ones(101)
+    vbmc.iteration_history["lcb_max"] = np.ones(101)
     vbmc.iteration_history["elbo"] = np.ones(101)
     vbmc.iteration_history["elbo_sd"] = np.ones(101) * 1e-4
     vbmc.iteration_history["func_count"] = np.ones(101)
@@ -247,7 +247,7 @@ def test_check_warmup_end_conditions_bo_warmup():
     vbmc.function_logger.func_count = 5
     vbmc.optim_state["N"] = 100
     vbmc.optim_state["data_trim_list"] = np.ones(101)
-    vbmc.iteration_history["lcbmax"] = np.ones(101)
+    vbmc.iteration_history["lcb_max"] = np.ones(101)
     vbmc.iteration_history["elbo"] = np.ones(101)
     vbmc.iteration_history["elbo_sd"] = np.ones(101) * 1e-4
     vbmc.iteration_history["func_count"] = np.ones(101)
@@ -265,7 +265,7 @@ def test_check_warmup_end_conditions_first_conditions_true():
     vbmc.function_logger.func_count = 5
     vbmc.optim_state["N"] = 11
     vbmc.optim_state["data_trim_list"] = []
-    vbmc.iteration_history["lcbmax"] = np.ones(101)
+    vbmc.iteration_history["lcb_max"] = np.ones(101)
     vbmc.iteration_history["elbo"] = np.ones(101)
     vbmc.iteration_history["elbo_sd"] = np.ones(101) * 1e-4
     vbmc.iteration_history["func_count"] = np.ones(101)
@@ -286,7 +286,7 @@ def test_check_warmup_end_conditions_alternative_conditions_true():
     vbmc.function_logger.func_count = 5
     vbmc.optim_state["N"] = 100
     vbmc.optim_state["data_trim_list"] = np.ones(101)
-    vbmc.iteration_history["lcbmax"] = np.ones(101)
+    vbmc.iteration_history["lcb_max"] = np.ones(101)
     vbmc.iteration_history["elbo"] = np.ones(101)
     vbmc.iteration_history["elbo_sd"] = np.ones(101) * 1e-4
     vbmc.iteration_history["func_count"] = np.ones(101)
@@ -309,7 +309,7 @@ def test_setup_vbmc_after_warmup_no_false_alarm_still_keep_points():
     vbmc.function_logger.func_count = 5
     vbmc.optim_state["N"] = 100
     vbmc.optim_state["data_trim_list"] = np.ones(101)
-    vbmc.iteration_history["lcbmax"] = np.ones(101)
+    vbmc.iteration_history["lcb_max"] = np.ones(101)
     vbmc.iteration_history["elbo"] = np.ones(101)
     vbmc.iteration_history["elbo_sd"] = np.ones(101) * 1e-4
     vbmc.iteration_history["func_count"] = np.ones(101)
@@ -324,7 +324,7 @@ def test_setup_vbmc_after_warmup_no_false_alarm_still_keep_points():
     assert not vbmc.optim_state.get("warmup")
     assert vbmc.optim_state.get("last_warmup") == 100
     assert vbmc.optim_state.get("recompute_var_post")
-    assert not vbmc.optim_state.get("skipactivesampling")
+    assert not vbmc.optim_state.get("skip_active_sampling")
     assert vbmc.optim_state.get("data_trim_list")[-1] == 1
 
 
@@ -345,7 +345,7 @@ def test_setup_vbmc_after_warmup_false_alarm():
     vbmc.function_logger.func_count = 5
     vbmc.optim_state["N"] = 100
     vbmc.optim_state["data_trim_list"] = np.ones(0)
-    vbmc.iteration_history["lcbmax"] = np.ones(101)
+    vbmc.iteration_history["lcb_max"] = np.ones(101)
     vbmc.iteration_history["elbo"] = np.ones(101)
     vbmc.iteration_history["elbo_sd"] = np.ones(101) * 1e-4
     vbmc.iteration_history["func_count"] = np.ones(101)
@@ -360,7 +360,7 @@ def test_setup_vbmc_after_warmup_false_alarm():
         assert vbmc.function_logger.X_flag[i]
 
     assert vbmc.optim_state.get("recompute_var_post")
-    assert not vbmc.optim_state.get("skipactivesampling")
+    assert not vbmc.optim_state.get("skip_active_sampling")
     assert vbmc.optim_state.get("data_trim_list")[-1] == 100
 
 
@@ -383,7 +383,7 @@ def test_setup_vbmc_after_warmup_false_alarm_no_warmup_keep_threshold_false_alar
     vbmc.function_logger.func_count = 5
     vbmc.optim_state["N"] = 100
     vbmc.optim_state["data_trim_list"] = np.ones(0)
-    vbmc.iteration_history["lcbmax"] = np.ones(101)
+    vbmc.iteration_history["lcb_max"] = np.ones(101)
     vbmc.iteration_history["elbo"] = np.ones(101)
     vbmc.iteration_history["elbo_sd"] = np.ones(101) * 1e-4
     vbmc.iteration_history["func_count"] = np.ones(101)
@@ -398,5 +398,5 @@ def test_setup_vbmc_after_warmup_false_alarm_no_warmup_keep_threshold_false_alar
         assert vbmc.function_logger.X_flag[i]
 
     assert vbmc.optim_state.get("recompute_var_post")
-    assert not vbmc.optim_state.get("skipactivesampling")
+    assert not vbmc.optim_state.get("skip_active_sampling")
     assert vbmc.optim_state.get("data_trim_list")[-1] == 100

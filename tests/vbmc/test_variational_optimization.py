@@ -58,7 +58,7 @@ def test_update_K():
     D = 2
 
     # Dummy option state and iteration history.
-    optim_state = {"vpK": 2, "n_eff": 10, "warmup": True}
+    optim_state = {"vp_K": 2, "n_eff": 10, "warmup": True}
     iteration_history = {}
 
     # Load options
