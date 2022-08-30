@@ -157,7 +157,6 @@ class AcqFcnVIQR(AbstractAcqFcn):
                 np.sum(np.exp(acq - M.reshape(-1, 1)), axis=1) / Ns_gp
             )
 
-        assert np.all(~np.isnan(acq))
         return acq
 
     def is_log_base(self, x, **kwargs):

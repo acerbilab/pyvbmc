@@ -229,7 +229,8 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
                     -1, 1
                 ) + acq_fcn.is_log_added(f_mu=f_mu, f_s2=f_s2)
                 ln_weights_max = np.amax(ln_weights, axis=1).reshape(-1, 1)
-                assert np.all(ln_weights_max != -np.inf)
+                if np.any(ln_weights_max == -np.inf):
+                    raise ValueError("Invalid value.")
                 weights = np.exp(ln_weights - ln_weights_max).reshape(-1)
                 weights = weights / np.sum(weights)
                 # x0 = np.zeros((Walkers, D))
@@ -375,7 +376,8 @@ def activesample_proposalpdf(Xa, gp, vp_is, w_vp, rect_delta, acq_fcn, vp):
             temp_lpdf[~mask, i + 1] = -np.inf
 
         m_max = np.amax(temp_lpdf, axis=1)
-        assert np.all(m_max != -np.inf)
+        if np.any(m_max == -np.inf):
+            raise ValueError("Invalid value.")
         l_pdf = np.log(
             np.sum(np.exp(temp_lpdf - m_max.reshape(-1, 1)), axis=1)
         )
