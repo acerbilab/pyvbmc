@@ -252,7 +252,7 @@ def test_get_gp_training_options_samplers():
     assert res2["sampler"] == "npv"
 
     vbmc.options.__setitem__("gp_hyp_sampler", "mala", force=True)
-    vbmc.optim_state["gpmala_stepsize"] = 10
+    vbmc.optim_state["gp_mala_step_size"] = 10
     res3 = _get_gp_training_options(
         vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 8
     )

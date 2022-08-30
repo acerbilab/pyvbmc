@@ -61,7 +61,7 @@ These notes are used for keeping track of ToDos and porting information.
      - Loop termination:
           - _check_warmup_end_conditions(): [vbmc_warmup.m](https://github.com/lacerbi/vbmc/blob/master/private/vbmc_warmup.m)
           - _setup_vbmc_after_warmup(): [vbmc_warmup.m](https://github.com/lacerbi/vbmc/blob/master/private/vbmc_warmup.m)
-          - _recompute_lcbmax(): [recompute_lcbmax.m](https://github.com/lacerbi/vbmc/blob/master/private/recompute_lcbmax.m)
+          - _recompute_lcb_max(): [recompute_lcbmax.m](https://github.com/lacerbi/vbmc/blob/master/private/recompute_lcbmax.m)
           - _is_finished(): [vbmc_termination.m](https://github.com/lacerbi/vbmc/blob/master/private/vbmc_termination.m)
           - _compute_reliability_index(): [vbmc_termination.m](https://github.com/lacerbi/vbmc/blob/master/private/vbmc_termination.m)
           - _is_gp_sampling_finished(): [vbmc_termination.m](https://github.com/lacerbi/vbmc/blob/master/private/vbmc_termination.m)

@@ -218,7 +218,7 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
 
     # Update other state fields
     optim_state["recompute_var_post"] = True
-    optim_state["skipactivesampling"] = True
+    optim_state["skip_active_sampling"] = True
     optim_state["warping_count"] += 1
     optim_state["last_warping"] = optim_state["iter"]
     optim_state["last_successful_warping"] = optim_state["iter"]
