@@ -355,6 +355,42 @@ unconstrained space via a nonlinear mapping (represented by a
 automatically.</p>
 <p>In practice, you would almost never create a new <code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code>
 object, simply use the variational posteriors returned by <code class="docutils literal notranslate"><span class="pre">VBMC</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>w</strong><span class="classifier">np.ndarray</span></dt><dd><p>The weights of the VP mixture components, shape <code class="docutils literal notranslate"><span class="pre">(1,</span> <span class="pre">K)</span></code>.</p>
+</dd>
+<dt><strong>eta</strong><span class="classifier">np.ndarray</span></dt><dd><p>The unbounded (softmax) parametrization of the VP mixture components,
+shape <code class="docutils literal notranslate"><span class="pre">(1,</span> <span class="pre">K)</span></code>.</p>
+</dd>
+<dt><strong>mu</strong><span class="classifier">np.ndarray</span></dt><dd><p>The means of the VP mixture components, shape <code class="docutils literal notranslate"><span class="pre">(D,</span> <span class="pre">K)</span></code>.</p>
+</dd>
+<dt><strong>sigma</strong><span class="classifier">np.ndarray</span></dt><dd><p>The per-component scale of the VP mixture components. Shape <code class="docutils literal notranslate"><span class="pre">(1,</span> <span class="pre">K)</span></code>.</p>
+</dd>
+<dt><strong>lambd</strong><span class="classifier">np.ndarray</span></dt><dd><p>The per-dimension scale of the VP mixture components. Shape <code class="docutils literal notranslate"><span class="pre">(D,</span> <span class="pre">1)</span></code>.</p>
+</dd>
+<dt><strong>optimize_weights</strong><span class="classifier">bool</span></dt><dd><p>Whether to optimize the weights.</p>
+</dd>
+<dt><strong>optimize_mu</strong><span class="classifier">bool</span></dt><dd><p>Whether to optimize the means.</p>
+</dd>
+<dt><strong>optimize_sigma</strong><span class="classifier">bool</span></dt><dd><p>Whether to optimize <code class="docutils literal notranslate"><span class="pre">sigma</span></code>.</p>
+</dd>
+<dt><strong>optimize_lambd</strong><span class="classifier">bool</span></dt><dd><p>Whether to optimize <code class="docutils literal notranslate"><span class="pre">lambd</span></code>.</p>
+</dd>
+<dt><strong>parameter_transformer</strong><span class="classifier">ParameterTransformer</span></dt><dd><p>The parameter transformer implementing transformations to/from
+unbounded space.</p>
+</dd>
+<dt><strong>delta</strong><span class="classifier">np.ndarray or None (optional)</span></dt><dd><p>An additional overall scaling factor, of shape <code class="docutils literal notranslate"><span class="pre">(1,</span> <span class="pre">D)</span></code>. Default <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd>
+<dt><strong>bounds</strong><span class="classifier">dict</span></dt><dd><p>A dictionary containing the soft bounds for each variable to be
+optimized.</p>
+</dd>
+<dt><strong>stats</strong><span class="classifier">dict</span></dt><dd><p>A dictionary of statistics and other relevant info computed during
+optimization.</p>
+</dd>
+</dl>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.variational_posterior.VariationalPosterior.get_bounds">
 <span class="sig-name descname"><span class="pre">get_bounds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/variational_posterior/variational_posterior.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.variational_posterior.VariationalPosterior.get_bounds" title="Permalink to this definition">¶</a></dt>

@@ -319,6 +319,12 @@
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.timer.Timer.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/timer/timer.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.timer.Timer.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the timer be emptying the durations and start times.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.timer.Timer.start_timer">
 <span class="sig-name descname"><span class="pre">start_timer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/timer/timer.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.timer.Timer.start_timer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Start the specified timer.</p>
@@ -335,7 +341,9 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.timer.Timer.stop_timer">
 <span class="sig-name descname"><span class="pre">stop_timer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/timer/timer.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.timer.Timer.stop_timer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Stop the specified timer</p>
+<dd><p>Stop the specified timer.</p>
+<p>If this is the first call to <code class="docutils literal notranslate"><span class="pre">stop_timer(name)</span></code> for string <code class="docutils literal notranslate"><span class="pre">name</span></code>,
+record the duration. Otherwise, add to the duration.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
