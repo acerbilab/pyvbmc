@@ -593,7 +593,7 @@ def active_sample(
             )
 
             # ADD DIFFERENT CHECKS FOR INTEGER VARIABLES!
-            idx = np.abs(xnew - optim_state["ub_search"]) < delta_search
+            idx = np.abs(xnew - optim_state["lb_search"]) < delta_search
             optim_state["lb_search"][idx] = np.maximum(
                 optim_state["lb"][idx],
                 optim_state["lb_search"][idx] - delta_search[idx],
