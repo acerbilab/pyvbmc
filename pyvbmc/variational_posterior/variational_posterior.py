@@ -423,6 +423,7 @@ class VariationalPosterior:
             `gradflag` = ``True`` (Gradient computation in original space not
             supported yet).
         """
+        x = x.copy()
         N, D = x.shape
 
         # compute pdf only for points inside bounds in origspace
