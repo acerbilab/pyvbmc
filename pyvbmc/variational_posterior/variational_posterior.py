@@ -423,6 +423,7 @@ class VariationalPosterior:
             `gradflag` = ``True`` (Gradient computation in original space not
             supported yet).
         """
+        x = x.copy()
         N, D = x.shape
 
         # compute pdf only for points inside bounds in origspace
@@ -1035,20 +1036,20 @@ class VariationalPosterior:
             xx1, _ = self.sample(N, True, True)
             q1 = self.pdf(xx1, True)
             q2 = vp2.pdf(xx1, True)
-            q1[np.logical_or(q1 == 0, np.isinf(q1))] = 1
-            q2[np.logical_or(q2 == 0, np.isinf(q2))] = minp
+            q1[q1 == 0 | np.isinf(q1)] = 1.0
+            q2[q2 == 0 | np.isinf(q2)] = minp
             kl1 = -np.mean(np.log(q2) - np.log(q1))
 
             xx2, _ = vp2.sample(N, True, True)
             q1 = self.pdf(xx2, True)
             q2 = vp2.pdf(xx2, True)
-            q1[np.logical_or(q1 == 0, np.isinf(q1))] = minp
-            q2[np.logical_or(q2 == 0, np.isinf(q2))] = 1
+            q1[q1 == 0 | np.isinf(q1)] = minp
+            q2[q2 == 0 | np.isinf(q2)] = 1.0
             kl2 = -np.mean(np.log(q1) - np.log(q2))
             kls = np.concatenate((kl1, kl2), axis=None)
 
         # Correct for numerical errors
-        kls[kls < 0] = 0
+        kls = np.maximum(0, kls)
         return kls
 
     def plot(
