@@ -3,12 +3,14 @@ import logging
 import math
 import os
 import sys
+from textwrap import indent
 
 import gpyreg as gpr
 import matplotlib.pyplot as plt
 import numpy as np
 
 from pyvbmc.function_logger import FunctionLogger
+from pyvbmc.io import format_dict, summarize
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.stats import kldiv_mvn
 from pyvbmc.timer import main_timer as timer
@@ -2295,3 +2297,41 @@ class VBMC:
             logger.addHandler(file_handler)
 
         return logger
+
+    def __str__(self):
+        """Construct a string summary."""
+        user_options_dict = dict(
+            [
+                (key, self.options[key])
+                for key in self.options.get("useroptions", [])
+            ]
+        )  # Find the values for the options keys set by the user.
+        return f"""VBMC:
+    Dimension = {self.D},
+    log-density = {getattr(self, "log_likelihood", self.log_joint)},
+    log-prior = {getattr(self, "log_prior", None)},
+    x0{summarize(self.x0)},
+    lower bounds{summarize(self.lower_bounds)},
+    upper bounds{summarize(self.upper_bounds)},
+    plausible lower bounds{summarize(self.plausible_lower_bounds)},
+    plausible upper bounds{summarize(self.plausible_upper_bounds)},
+    variational posterior = \n{indent(str(getattr(self, "vp", None)), "        ")},
+    Gaussian process = {repr(getattr(self, "gp", None))},
+    user_options = \n{indent(str(user_options_dict), "        ")}.
+        """
+
+    def __repr__(self):
+        """Construct a detailed string summary."""
+        return f"""VBMC:
+    Dimension = {self.D},
+    log-density = {getattr(self, "log_likelihood", self.log_joint)},
+    log-prior = {getattr(self, "log_prior", None)},
+    x0{summarize(self.x0)},
+    lower bounds{summarize(self.lower_bounds)},
+    upper bounds{summarize(self.upper_bounds)},
+    plausible lower bounds{summarize(self.plausible_lower_bounds)},
+    plausible upper bounds{summarize(self.plausible_upper_bounds)},
+    variational posterior = \n{indent(repr(getattr(self, "vp")), "        ")},
+    Gaussian process = {repr(getattr(self, "gp", None))},
+    options = \n{indent(format_dict(self.options), "        ")}.
+        """

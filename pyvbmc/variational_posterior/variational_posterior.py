@@ -1226,9 +1226,6 @@ class VariationalPosterior:
 
     def __repr__(self):
         """Print a detailed string representation."""
-        summarized_stats = {}
-        for key, val in self.stats.items():
-            summarized_stats[key] = summarize(val, add_prefix=False)
         return f"""VariationalPosterior:
     self.mu{summarize(self.mu)},
     self.w{summarize(self.w)},
