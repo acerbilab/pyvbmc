@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import sys
+from textwrap import indent
 
 import corner
 import gpyreg
@@ -13,6 +14,7 @@ from scipy.optimize import fmin_l_bfgs_b
 from scipy.special import gammaln
 
 from pyvbmc.decorators import handle_0D_1D_input
+from pyvbmc.io import format_dict, summarize
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.stats import kde1d, kldiv_mvn
 
@@ -1210,3 +1212,35 @@ class VariationalPosterior:
         fig.tight_layout(pad=0.5)
 
         return fig
+
+    def __str__(self):
+        """Print a string summary."""
+        return f"""VariationalPosterior:
+    means{summarize(self.mu)},
+    weights{summarize(self.w)},
+    sigma (per-component scale){summarize(self.sigma)},
+    lambd (per-dimension scale){summarize(self.lambd)},
+    delta (overall scale){summarize(self.delta)},
+    self.stats = \n{indent(format_dict(self.stats), '        ')}.
+        """
+
+    def __repr__(self):
+        """Print a detailed string representation."""
+        summarized_stats = {}
+        for key, val in self.stats.items():
+            summarized_stats[key] = summarize(val, add_prefix=False)
+        return f"""VariationalPosterior:
+    self.mu{summarize(self.mu)},
+    self.w{summarize(self.w)},
+    self.sigma{summarize(self.sigma)},
+    self.lambd{summarize(self.lambd)},
+    self.eta{summarize(self.eta)},
+    self.optimize_mu = {self.optimize_mu},
+    self.optimize_weights = {self.optimize_weights},
+    self.optimize_sigma = {self.optimize_sigma},
+    self.optimize_lambd = {self.optimize_lambd},
+    self.delta{summarize(self.delta)},
+    self.bounds{summarize(self.bounds)},
+    self.parameter_transformer = \n{indent(self.parameter_transformer.__repr__(), '        ')},
+    self.stats = \n{indent(format_dict(self.stats), '        ')}.
+        """
