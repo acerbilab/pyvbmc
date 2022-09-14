@@ -396,6 +396,34 @@ class ParameterTransformer:
             else:
                 raise NotImplementedError
 
+    def __str__(self):
+        """Print a string summary."""
+        transform_names = {
+            0: "unbounded",
+            3: "logit",
+            12: "norminv",
+            12: "probit",
+            13: "student4",
+        }
+        transforms = [transform_names[number] for number in self.type]
+        return f"""ParameterTransformer:
+    D = {self.lb_orig.shape[1]},
+    lower bounds = {self.lb_orig},
+    upper bounds = {self.ub_orig},
+    transform type(s) = {transforms}."""
+
+    def __repr__(self):
+        """Print a detailed string representation."""
+        return f"""ParameterTransformer:
+    D = {self.lb_orig.shape[1]},
+    self.lb_orig = {self.lb_orig},
+    self.ub_orig = {self.ub_orig},
+    self.type = {self.type},
+    self.mu = {self.mu},
+    self.delta = {self.delta},
+    self.scale = {self.scale},
+    self.R_mat = {self.R_mat}."""
+
 
 def _to_unit_interval(x, lb, ub, safe=True):
     z = (x - lb) / (ub - lb)
