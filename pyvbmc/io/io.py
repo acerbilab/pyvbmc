@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def summarize(arr, thresh=10, add_prefix=True, precision=4):
+def summarize(obj, thresh=10, add_prefix=True, precision=4):
     """Construct a string summary of an array.
 
     If the size of the array is small enough, print the full array and type.
@@ -11,26 +11,26 @@ def summarize(arr, thresh=10, add_prefix=True, precision=4):
     string = ""
     prefix = ""
 
-    if not isinstance(arr, np.ndarray):
+    if not isinstance(obj, np.ndarray):
         # Stringify anything that's not an array.
         prefix = " = "
         if (
-            type(arr) == str or type(arr) == np.str_
+            type(obj) == str or type(obj) == np.str_
         ):  # Enclose string values in quotes
-            string = "'" + str(arr) + "'"
+            string = "'" + str(obj) + "'"
         else:
-            string = str(arr)
-    elif np.prod(arr.shape) < thresh:
+            string = str(obj)
+    elif np.prod(obj.shape) < thresh:
         # Print the full (but abbreviated precision) array on one line.
         prefix = " = "
         array_string = np.array2string(
-            arr, precision=precision, suppress_small=True, separator=", "
+            obj, precision=precision, suppress_small=True, separator=", "
         ).replace("\n", "")
-        string = array_string + f": {type(arr).__name__}"
+        string = array_string + f": {type(obj).__name__}"
     else:
         # Print the shape of the array.
         prefix = ": "
-        string = f"{arr.shape} {type(arr).__name__}"
+        string = f"{obj.shape} {type(obj).__name__}"
 
     if add_prefix:
         return prefix + string
@@ -38,7 +38,7 @@ def summarize(arr, thresh=10, add_prefix=True, precision=4):
         return string
 
 
-def format_dict(d):
+def format_dict(d, arr_size_thresh=np.inf):
     """Pretty-print a dictionary.
 
     Summarize possible array values with ``sumarrize()``.
@@ -50,11 +50,11 @@ def format_dict(d):
         for key, val in d.items():
             if (
                 type(key) == str or type(key) == np.str_
-            ):  # Enclose strings in quotes
+            ):  # Enclose string keys in quotes
                 string += "'" + str(key) + "'" + ": "
             else:
                 string += str(key) + ": "
-            string += summarize(val, add_prefix=False) + ",\n"
+            string += summarize(val, arr_size_thresh, add_prefix=False) + ",\n"
         string += "}"
 
     return string
