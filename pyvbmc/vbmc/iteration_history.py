@@ -153,20 +153,29 @@ class IterationHistory(MutableMapping, dict):
             "    ",
         )
 
-    def __repr__(self, full=False, expand=False):
-        """
-        Returns the iteration history in a format key: value.
+    def __repr__(self, full=False, arr_size_thresh=10, expand=False):
+        """Construct a detailed string summary.
+
+        Parameters
+        ----------
+        arr_size_thresh : float, optional
+            If ``obj`` is an array whose product of dimensions is less than
+            ``arr_size_thresh``, print the full array. Otherwise print only the
+            shape. Default `10`.
+        full : bool, optional
+            If ``full`` is `False`, print only the relevant object attributes.
+            Otherwise print all attributes.
 
         Returns
         -------
         string : str
-            The str to describe an IterationHistory object.
+            The string representation of ``self``.
         """
         if full:  # Output every class attribute (for debugging)
             return (
                 "IterationHistory:\n"
                 + "self.check_keys = {self.check_keys},\ndict = "
-                + format_dict(self, arr_size_thresh=10)
+                + format_dict(self, arr_size_thresh=arr_size_thresh)
             )
         else:  # Summary
             return str(self)

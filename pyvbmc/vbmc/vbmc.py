@@ -2318,7 +2318,28 @@ user options = {str(self.options)}.""",
         )
 
     def __repr__(self, arr_size_thresh=10, full=False, expand=False):
-        """Construct a detailed string summary."""
+        """Construct a detailed string summary.
+
+        Parameters
+        ----------
+        arr_size_thresh : float, optional
+            If ``obj`` is an array whose product of dimensions is less than
+            ``arr_size_thresh``, print the full array. Otherwise print only the
+            shape. Default `10`.
+        full : bool, optional
+            If ``full`` is `False`, print only the relevant object attributes.
+            Otherwise print all attributes.
+        expand : bool, optional
+            If ``expand`` is `False`, then describe any complex child
+            attributes of the object by their name and memory location.
+            Otherwise, recursively expand the child attributes into their own
+            representations. Default `False`.
+
+        Returns
+        -------
+        string : str
+            The string representation of ``self``.
+        """
         if full:  # Output every class attribute (for debugging)
             return full_repr(
                 self, "VBMC", expand=expand, arr_size_thresh=arr_size_thresh
@@ -2340,7 +2361,7 @@ self.gp = {get_repr(getattr(self, "gp", None), expand=expand)},
 self.function_logger = {get_repr(getattr(self, "function_logger", None), expand=expand)},
 self.iteration_history = {get_repr(getattr(self, "function_logger", None), expand=expand)},
 self.optim_state = {get_repr(self.optim_state, arr_size_thresh=arr_size_thresh, expand=expand)},
-options = {get_repr(self.options, expand=expand)}.""",
+self.options = {get_repr(self.options, expand=expand)}.""",
                 "    ",
             )
 

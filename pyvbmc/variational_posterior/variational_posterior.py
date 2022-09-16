@@ -1229,7 +1229,29 @@ self.stats = {format_dict(self.stats, arr_size_thresh=arr_size_thresh)}.""",
         )
 
     def __repr__(self, arr_size_thresh=10, expand=False, full=False):
-        """Print a detailed string representation."""
+        """Construct a detailed string summary.
+
+        Parameters
+        ----------
+        arr_size_thresh : float, optional
+            If ``obj`` is an array whose product of dimensions is less than
+            ``arr_size_thresh``, print the full array. Otherwise print only the
+            shape. Default `10`.
+        full : bool, optional
+            If ``full`` is `False`, print only the relevant object attributes.
+            Otherwise print all attributes. If ``expand`` is also `True`, then the
+            children will follow this behavior. Default `False`.
+        expand : bool, optional
+            If ``expand`` is `False`, then describe the object's complex child
+            attributes by their name and memory location. Otherwise,
+            recursively expand the child attributes into their own
+            representations. Default `False`.
+
+        Returns
+        -------
+        string : str
+            The string representation of ``self``.
+        """
         if full:  # Output every class attribute (for debugging)
             return full_repr(
                 self,

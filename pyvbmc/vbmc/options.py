@@ -264,8 +264,16 @@ class Options(MutableMapping, dict):
 
         Returns
         -------
-        str
-            The str to describe an options object.
+        string : str
+            The str to describe the Options object.
+        full : bool, optional
+            If ``full`` is `False`, print only the relevant object attributes.
+            Otherwise print all attributes.
+        expand : bool, optional
+            If ``expand`` is `False`, then describe any complex child
+            attributes of the object by their name and memory location.
+            Otherwise, recursively expand the child attributes into their own
+            representations. Default `False`.
         """
         if full:  # Output every class attribute (for debugging)
             return full_repr(self, "Options", expand=expand)

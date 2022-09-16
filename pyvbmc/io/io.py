@@ -6,14 +6,30 @@ import numpy as np
 def summarize(
     obj,
     arr_size_thresh=10,
-    add_prefix=True,
     precision=4,
 ):
     """Construct a string summary of an object.
 
     If the object is an array and the array is small enough, print the full
     array and type. Otherwise, just print the size and type. If the passed
-    object is not an array, just return its usual string summary.
+    object is not an array, get a short representation with get_repr().
+
+    Parameters
+    ----------
+    obj : any
+        The object to summarize.
+    arr_size_thresh : float, optional
+        If ``obj`` is an array whose product of dimensions is less than
+        ``arr_size_thresh``, print the full array. Otherwise print only the
+        shape. Default `10`.
+    precision : int, optional
+        The number of decimal points to use when printing float values within
+        arrays. Default `4`.
+
+    Returns
+    -------
+    string : str
+        The string summarizing the object/array.
     """
     string = ""
     prefix = ""
@@ -34,16 +50,26 @@ def summarize(
         prefix = ": "
         string = f"{obj.shape} {type(obj).__name__}"
 
-    if add_prefix:
-        return prefix + string
-    else:
-        return string
+    return prefix + string
 
 
 def format_dict(d, **kwargs):
     """Pretty-print a dictionary.
 
     Summarize possible array values with ``summarize()``.
+
+    Parameters
+    ----------
+    d : dict or None
+        The dictionary to format.
+    kwargs : dict, optional
+        The keywords for summarizing child objects, forwarded to
+        ``summarize()``.
+
+    Returns
+    -------
+    string : str
+        The formatted dictionary, as a string.
     """
     if d is None:
         string = "None"
@@ -70,6 +96,27 @@ def format_dict(d, **kwargs):
 
 
 def get_repr(obj, expand=False, full=False, **kwargs):
+    """Get a (possibly abbreviated) string representation of an object.
+
+    Parameters
+    ----------
+    obj : any
+        the object to represent.
+    expand : bool, optional
+        If ``expand`` is `False`, then describe the object's complex child
+        attributes by their name and memory location. Otherwise, recursively
+        expand the child attributes into their own representations, passing
+        along the appropriate keyword arguments. Default `False`.
+    full : bool, optional
+        If ``full`` is `False`, print only the relevant object attributes.
+        Otherwise print all attributes. If ``expand`` is also `True`, then the
+        children will follow this behavior. Default `False`.
+
+    Returns
+    -------
+    string : str
+        The string representation of ``obj``.
+    """
     if expand:  # Expand child elements
         if type(obj) == dict:
             return format_dict(obj, **kwargs)
@@ -88,6 +135,18 @@ def get_repr(obj, expand=False, full=False, **kwargs):
 
 
 def full_repr(obj, title, **kwargs):
+    """Get a complete string representation of an object.
+
+    Parameters
+    ----------
+    obj : any
+        The object to represent.
+    title : string
+        The title to print (e.g. class name).
+    kwargs : dict, optional
+        The keyword arguments for printing the objects child attributes,
+        forwarded to ``get_repr()``.
+    """
     body = ""
     try:
         for key, val in sorted(obj.__dict__.items()):
