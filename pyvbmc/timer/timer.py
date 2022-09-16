@@ -1,6 +1,8 @@
 import logging
 import time
 
+from pyvbmc.io import full_repr
+
 
 class Timer:
     """
@@ -78,3 +80,19 @@ class Timer:
         """
         self._durations = dict()
         self._start_times = dict()
+
+    def __repr__(self, arr_size_thresh=10, full=False, expand=True):
+        """Construct a detailed string summary."""
+        return full_repr(
+            self, "Timer", expand=expand, arr_size_thresh=arr_size_thresh
+        )
+
+    def _short_repr(self):
+        """Returns abbreviated string representation with memory location.
+
+        Returns
+        -------
+        string : str
+            The abbreviated string representation of the VBMC object.
+        """
+        return object.__repr__(self)
