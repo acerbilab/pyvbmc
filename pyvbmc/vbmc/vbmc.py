@@ -2300,33 +2300,37 @@ class VBMC:
 
     def __str__(self):
         """Construct a string summary."""
-        return f"""VBMC:
-    Dimension = {self.D},
-    log-density = {getattr(self, "log_likelihood", self.log_joint)},
-    log-prior = {getattr(self, "log_prior", None)},
-    x0{summarize(self.x0)},
-    lower bounds{summarize(self.lower_bounds)},
-    upper bounds{summarize(self.upper_bounds)},
-    plausible lower bounds{summarize(self.plausible_lower_bounds)},
-    plausible upper bounds{summarize(self.plausible_upper_bounds)},
-    variational posterior = \n{indent(str(getattr(self, "vp", None)), "        ")},
-    Gaussian process = {str(getattr(self, "gp", None))},
-    user_options = \n{indent(str(self.options), "        ")}.
-        """
+        return "VBMC:" + indent(
+            f"""
+Dimension = {self.D},
+log-density = {getattr(self, "log_likelihood", self.log_joint)},
+log-prior = {getattr(self, "log_prior", None)},
+x0{summarize(self.x0)},
+lower bounds{summarize(self.lower_bounds)},
+upper bounds{summarize(self.upper_bounds)},
+plausible lower bounds{summarize(self.plausible_lower_bounds)},
+plausible upper bounds{summarize(self.plausible_upper_bounds)},
+variational posterior = {str(getattr(self, "vp", None))},
+Gaussian process = {str(getattr(self, "gp", None))},
+user_options = {str(self.options)}.""",
+            "    ",
+        )
 
-    def __repr__(self):
+    def __repr__(self, arr_size_thresh=np.inf):
         """Construct a detailed string summary."""
-        return f"""VBMC:
-    self.D = {self.D},
-    self.log-density = {getattr(self, "log_likelihood", self.log_joint)},
-    self.log-prior = {getattr(self, "log_prior", None)},
-    self.x0 = {self.x0},
-    self.lower_bounds = {self.lower_bounds},
-    self.upper_bounds = {self.upper_bounds},
-    self.plausible_lower_bounds = {self.plausible_lower_bounds},
-    self.plausible_upper_bounds = {self.plausible_upper_bounds},
-    self.vp = \n{indent(repr(getattr(self, "vp", None)), "        ")},
-    self.gp = {repr(getattr(self, "gp", None))},
-    options = \n{indent(repr(self.options), "        ")}.
-    self.optim_state = \n{indent(format_dict(self.optim_state), "        ")}
-        """
+        return "VBMC:" + indent(
+            f"""
+self.D{summarize(self.D, arr_size_thresh)},
+self.log-density = {getattr(self, "log_likelihood", self.log_joint)},
+self.log-prior = {getattr(self, "log_prior", None)},
+self.x0{summarize(self.x0, arr_size_thresh)},
+self.lower_bounds{summarize(self.lower_bounds, arr_size_thresh)},
+self.upper_bounds{summarize(self.upper_bounds, arr_size_thresh)},
+self.plausible_lower_bounds{summarize(self.plausible_lower_bounds, arr_size_thresh)},
+self.plausible_upper_bounds{summarize(self.plausible_upper_bounds, arr_size_thresh)},
+self.vp = {repr(getattr(self, "vp", None))},
+self.gp = {repr(getattr(self, "gp", None))},
+options = {repr(self.options)}.
+self.optim_state = {format_dict(self.optim_state, arr_size_thresh)}""",
+            "    ",
+        )

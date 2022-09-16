@@ -1,3 +1,5 @@
+from textwrap import indent
+
 import numpy as np
 
 
@@ -47,14 +49,21 @@ def format_dict(d, arr_size_thresh=np.inf):
         string = "None"
     else:
         string = "{\n"
+        body = ""
         for key, val in d.items():
             if (
                 type(key) == str or type(key) == np.str_
             ):  # Enclose string keys in quotes
-                string += "'" + str(key) + "'" + ": "
+                body += "'" + str(key) + "'" + ": "
             else:
-                string += str(key) + ": "
-            string += summarize(val, arr_size_thresh, add_prefix=False) + ",\n"
+                body += str(key) + ": "
+            if type(val) == dict:  # Recursively format nested dictionaries
+                val_string = format_dict(val, arr_size_thresh)
+            else:  # Format possible array values
+                val_string = summarize(val, arr_size_thresh, add_prefix=False)
+            body += val_string + ",\n"
+        body = indent(body, "    ")
+        string += body
         string += "}"
 
     return string

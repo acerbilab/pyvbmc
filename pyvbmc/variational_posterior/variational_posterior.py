@@ -1213,31 +1213,35 @@ class VariationalPosterior:
 
         return fig
 
-    def __str__(self):
+    def __str__(self, arr_size_thresh=10):
         """Print a string summary."""
-        return f"""VariationalPosterior:
-    means{summarize(self.mu)},
-    weights{summarize(self.w)},
-    sigma (per-component scale){summarize(self.sigma)},
-    lambd (per-dimension scale){summarize(self.lambd)},
-    delta (overall scale){summarize(self.delta)},
-    self.stats = \n{indent(format_dict(self.stats), '        ')}.
-        """
+        return "VariationalPosterior:" + indent(
+            f"""
+means{summarize(self.mu, arr_size_thresh)},
+weights{summarize(self.w, arr_size_thresh)},
+sigma (per-component scale){summarize(self.sigma, arr_size_thresh)},
+lambd (per-dimension scale){summarize(self.lambd, arr_size_thresh)},
+delta (overall scale){summarize(self.delta, arr_size_thresh)},
+self.stats = {format_dict(self.stats, arr_size_thresh)}.""",
+            "    ",
+        )
 
-    def __repr__(self):
+    def __repr__(self, arr_size_thresh=np.inf):
         """Print a detailed string representation."""
-        return f"""VariationalPosterior:
-    self.mu{summarize(self.mu)},
-    self.w{summarize(self.w)},
-    self.sigma{summarize(self.sigma)},
-    self.lambd{summarize(self.lambd)},
-    self.eta{summarize(self.eta)},
-    self.optimize_mu = {self.optimize_mu},
-    self.optimize_weights = {self.optimize_weights},
-    self.optimize_sigma = {self.optimize_sigma},
-    self.optimize_lambd = {self.optimize_lambd},
-    self.delta{summarize(self.delta)},
-    self.bounds{summarize(self.bounds)},
-    self.parameter_transformer = \n{indent(self.parameter_transformer.__repr__(), '        ')},
-    self.stats = \n{indent(format_dict(self.stats), '        ')}.
-        """
+        return "VariationalPosterior:" + indent(
+            f"""
+self.mu{summarize(self.mu, arr_size_thresh)},
+self.w{summarize(self.w, arr_size_thresh)},
+self.sigma{summarize(self.sigma, arr_size_thresh)},
+self.lambd{summarize(self.lambd, arr_size_thresh)},
+self.eta{summarize(self.eta, arr_size_thresh)},
+self.optimize_mu = {self.optimize_mu},
+self.optimize_weights = {self.optimize_weights},
+self.optimize_sigma = {self.optimize_sigma},
+self.optimize_lambd = {self.optimize_lambd},
+self.delta{summarize(self.delta, arr_size_thresh)},
+self.bounds{summarize(self.bounds, arr_size_thresh)},
+self.parameter_transformer = {repr(self.parameter_transformer)},
+self.stats = {format_dict(self.stats, arr_size_thresh)}.""",
+            "    ",
+        )

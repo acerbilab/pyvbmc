@@ -1,3 +1,5 @@
+from textwrap import indent
+
 import numpy as np
 from scipy.special import erfc, erfcinv
 
@@ -406,23 +408,29 @@ class ParameterTransformer:
             13: "student4",
         }
         transforms = [transform_names[number] for number in self.type]
-        return f"""ParameterTransformer:
+        return "ParameterTransformer:" + indent(
+            f"""
     D = {self.lb_orig.shape[1]},
     lower bounds = {self.lb_orig},
     upper bounds = {self.ub_orig},
-    transform type(s) = {transforms}."""
+    transform type(s) = {transforms}.""",
+            "    ",
+        )
 
     def __repr__(self):
         """Print a detailed string representation."""
-        return f"""ParameterTransformer:
-    D = {self.lb_orig.shape[1]},
-    self.lb_orig = {self.lb_orig},
-    self.ub_orig = {self.ub_orig},
-    self.type = {self.type},
-    self.mu = {self.mu},
-    self.delta = {self.delta},
-    self.scale = {self.scale},
-    self.R_mat = {self.R_mat}."""
+        return "ParameterTransformer:" + indent(
+            f"""
+D = {self.lb_orig.shape[1]},
+self.lb_orig = {self.lb_orig},
+self.ub_orig = {self.ub_orig},
+self.type = {self.type},
+self.mu = {self.mu},
+self.delta = {self.delta},
+self.scale = {self.scale},
+self.R_mat = {self.R_mat}.""",
+            "    ",
+        )
 
 
 def _to_unit_interval(x, lb, ub, safe=True):
