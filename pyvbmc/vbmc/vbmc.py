@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from pyvbmc.function_logger import FunctionLogger
-from pyvbmc.io import format_dict, summarize
+from pyvbmc.io import full_repr, get_repr, summarize
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.stats import kldiv_mvn
 from pyvbmc.timer import main_timer as timer
@@ -2305,6 +2305,7 @@ class VBMC:
 Dimension = {self.D},
 log-density = {getattr(self, "log_likelihood", self.log_joint)},
 log-prior = {getattr(self, "log_prior", None)},
+prior sampler = {getattr(self, "sample_prior", None)},
 x0{summarize(self.x0)},
 lower bounds{summarize(self.lower_bounds)},
 upper bounds{summarize(self.upper_bounds)},
@@ -2312,25 +2313,43 @@ plausible lower bounds{summarize(self.plausible_lower_bounds)},
 plausible upper bounds{summarize(self.plausible_upper_bounds)},
 variational posterior = {str(getattr(self, "vp", None))},
 Gaussian process = {str(getattr(self, "gp", None))},
-user_options = {str(self.options)}.""",
+user options = {str(self.options)}.""",
             "    ",
         )
 
-    def __repr__(self, arr_size_thresh=np.inf):
+    def __repr__(self, arr_size_thresh=10, full=False, expand=False):
         """Construct a detailed string summary."""
-        return "VBMC:" + indent(
-            f"""
+        if full:  # Output every class attribute (for debugging)
+            return full_repr(
+                self, "VBMC", expand=expand, arr_size_thresh=arr_size_thresh
+            )
+        else:  # Output relevant class attributes in meaningful order
+            return "VBMC:" + indent(
+                f"""
 self.D{summarize(self.D, arr_size_thresh)},
-self.log-density = {getattr(self, "log_likelihood", self.log_joint)},
-self.log-prior = {getattr(self, "log_prior", None)},
+self.log_density = {getattr(self, "log_likelihood", self.log_joint)},
+self.log_prior = {getattr(self, "log_prior", None)},
+self.sample_prior = {getattr(self, "sample_prior", None)},
 self.x0{summarize(self.x0, arr_size_thresh)},
 self.lower_bounds{summarize(self.lower_bounds, arr_size_thresh)},
 self.upper_bounds{summarize(self.upper_bounds, arr_size_thresh)},
 self.plausible_lower_bounds{summarize(self.plausible_lower_bounds, arr_size_thresh)},
 self.plausible_upper_bounds{summarize(self.plausible_upper_bounds, arr_size_thresh)},
-self.vp = {repr(getattr(self, "vp", None))},
-self.gp = {repr(getattr(self, "gp", None))},
-options = {repr(self.options)}.
-self.optim_state = {format_dict(self.optim_state, arr_size_thresh)}""",
-            "    ",
-        )
+self.vp = {get_repr(getattr(self, "vp", None), expand=expand)},
+self.gp = {get_repr(getattr(self, "gp", None), expand=expand)},
+self.function_logger = {get_repr(getattr(self, "function_logger", None), expand=expand)},
+self.iteration_history = {get_repr(getattr(self, "function_logger", None), expand=expand)},
+self.optim_state = {get_repr(self.optim_state, arr_size_thresh=arr_size_thresh, expand=expand)},
+options = {get_repr(self.options, expand=expand)}.""",
+                "    ",
+            )
+
+    def _short_repr(self):
+        """Returns abbreviated string representation with memory location.
+
+        Returns
+        -------
+        string : str
+            The abbreviated string representation of the VBMC object.
+        """
+        return object.__repr__(self)

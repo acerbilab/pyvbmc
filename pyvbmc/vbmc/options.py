@@ -9,6 +9,7 @@ from math import ceil
 import numpy as np
 
 from pyvbmc.acquisition_functions import *
+from pyvbmc.io import full_repr
 
 
 class Options(MutableMapping, dict):
@@ -257,7 +258,7 @@ class Options(MutableMapping, dict):
             ]
         )
 
-    def __repr__(self):
+    def __repr__(self, full=False, expand=False):
         """
         Return the options in a format key: value (description).
 
@@ -266,12 +267,25 @@ class Options(MutableMapping, dict):
         str
             The str to describe an options object.
         """
-        return "Options:\n\t" + "\n\t".join(
-            [
-                f"{key}: {value} ({self.descriptions.get(key)})"
-                for (key, value) in self.items()
-            ]
-        )
+        if full:  # Output every class attribute (for debugging)
+            return full_repr(self, "Options", expand=expand)
+        else:  # Output relevant class attributes in meaningful order
+            return "Options:\n\t" + "\n\t".join(
+                [
+                    f"{key}: {value} ({self.descriptions.get(key)})"
+                    for (key, value) in self.items()
+                ]
+            )
+
+    def _short_repr(self):
+        """Returns abbreviated string representation with memory location.
+
+        Returns
+        -------
+        string : str
+            The abbreviated string representation of the Options object.
+        """
+        return object.__repr__(self)
 
 
 def _read_config_file(options_path: str):

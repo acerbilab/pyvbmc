@@ -14,7 +14,7 @@ from scipy.optimize import fmin_l_bfgs_b
 from scipy.special import gammaln
 
 from pyvbmc.decorators import handle_0D_1D_input
-from pyvbmc.io import format_dict, summarize
+from pyvbmc.io import format_dict, full_repr, get_repr, summarize
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.stats import kde1d, kldiv_mvn
 
@@ -1217,19 +1217,31 @@ class VariationalPosterior:
         """Print a string summary."""
         return "VariationalPosterior:" + indent(
             f"""
+dimension = {self.D},
+num. componenets = {self.K},
 means{summarize(self.mu, arr_size_thresh)},
 weights{summarize(self.w, arr_size_thresh)},
 sigma (per-component scale){summarize(self.sigma, arr_size_thresh)},
 lambd (per-dimension scale){summarize(self.lambd, arr_size_thresh)},
 delta (overall scale){summarize(self.delta, arr_size_thresh)},
-self.stats = {format_dict(self.stats, arr_size_thresh)}.""",
+self.stats = {format_dict(self.stats, arr_size_thresh=arr_size_thresh)}.""",
             "    ",
         )
 
-    def __repr__(self, arr_size_thresh=np.inf):
+    def __repr__(self, arr_size_thresh=10, expand=False, full=False):
         """Print a detailed string representation."""
-        return "VariationalPosterior:" + indent(
-            f"""
+        if full:  # Output every class attribute (for debugging)
+            return full_repr(
+                self,
+                "VariationalPosterior",
+                expand=expand,
+                arr_size_thresh=arr_size_thresh,
+            )
+        else:  # Output relevant class attributes in meaningful order
+            return "VariationalPosterior:" + indent(
+                f"""
+self.D = {self.D},
+self.K = {self.K},
 self.mu{summarize(self.mu, arr_size_thresh)},
 self.w{summarize(self.w, arr_size_thresh)},
 self.sigma{summarize(self.sigma, arr_size_thresh)},
@@ -1241,7 +1253,17 @@ self.optimize_sigma = {self.optimize_sigma},
 self.optimize_lambd = {self.optimize_lambd},
 self.delta{summarize(self.delta, arr_size_thresh)},
 self.bounds{summarize(self.bounds, arr_size_thresh)},
-self.parameter_transformer = {repr(self.parameter_transformer)},
-self.stats = {format_dict(self.stats, arr_size_thresh)}.""",
-            "    ",
-        )
+self.parameter_transformer = {get_repr(getattr(self, "parameter_transformer", None), expand=expand)},
+self.stats = {get_repr(self.stats, arr_size_thresh=arr_size_thresh, expand=expand)}.""",
+                "    ",
+            )
+
+    def _short_repr(self):
+        """Returns abbreviated string representation with memory location.
+
+        Returns
+        -------
+        string : str
+            The abbreviated string representation of the VP.
+        """
+        return object.__repr__(self)

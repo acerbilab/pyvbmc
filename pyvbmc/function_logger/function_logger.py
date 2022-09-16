@@ -1,5 +1,8 @@
+from textwrap import indent
+
 import numpy as np
 
+from pyvbmc.io import full_repr
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.timer import Timer
 
@@ -413,3 +416,33 @@ class FunctionLogger:
             self.nevals[self.Xn] += 1
             self.ymax = np.nanmax(self.y[self.X_flag])
             return fval, self.Xn
+
+    def __str__(self, arr_size_thresh=10):
+        """Print a string summary."""
+        return "FunctionLogger:" + indent(
+            f"""
+function = {self.fun},
+dimension = {self.D},
+noisy = {self.noise_flag},
+num. evaluations = {self.func_count},
+y max = {self.ymax},
+fun. eval. time = {self.total_fun_evaltime}.""",
+            "    ",
+        )
+
+    def __repr__(self, full=False, expand=False, arr_size_thresh=np.inf):
+        """Print a detailed string representation."""
+        if full:  # Output every class attribute (for debugging)
+            return full_repr(self, "FunctionLogger", expand=expand)
+        else:  # Output relevant class attributes in meaningful order
+            return str(self)
+
+    def _short_repr(self):
+        """Returns abbreviated string representation with memory location.
+
+        Returns
+        -------
+        string : str
+            The abbreviated string representation of the FunctionLogger.
+        """
+        return object.__repr__(self)

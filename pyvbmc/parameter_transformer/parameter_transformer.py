@@ -410,10 +410,10 @@ class ParameterTransformer:
         transforms = [transform_names[number] for number in self.type]
         return "ParameterTransformer:" + indent(
             f"""
-    D = {self.lb_orig.shape[1]},
-    lower bounds = {self.lb_orig},
-    upper bounds = {self.ub_orig},
-    transform type(s) = {transforms}.""",
+D = {self.lb_orig.shape[1]},
+lower bounds = {self.lb_orig},
+upper bounds = {self.ub_orig},
+transform type(s) = {transforms}.""",
             "    ",
         )
 
@@ -431,6 +431,16 @@ self.scale = {self.scale},
 self.R_mat = {self.R_mat}.""",
             "    ",
         )
+
+    def _short_repr(self):
+        """Returns abbreviated string representation with memory location.
+
+        Returns
+        -------
+        string : str
+            The abbreviated string representation of the ParameterTransformer.
+        """
+        return object.__repr__(self)
 
 
 def _to_unit_interval(x, lb, ub, safe=True):

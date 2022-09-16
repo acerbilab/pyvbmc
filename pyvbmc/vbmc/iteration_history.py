@@ -1,7 +1,10 @@
 import copy
 from collections.abc import MutableMapping
+from textwrap import indent
 
 import numpy as np
+
+from pyvbmc.io import format_dict, full_repr
 
 
 class IterationHistory(MutableMapping, dict):
@@ -137,12 +140,33 @@ class IterationHistory(MutableMapping, dict):
                 self.record(key, value, iteration)
 
     def __str__(self):
+        """Construct a string summary.
+
+        Returns
+        -------
+        string : str
+            The string summarizing the IterationHistory object.
+        """
+        return "IterationHistory:\n" + indent(
+            f"num. iterations = {len(self)}\nkeys = \n"
+            + indent(",\n".join(key for key in self.keys()) + ".", "    "),
+            "    ",
+        )
+
+    def __repr__(self, full=False, expand=False):
         """
         Returns the iteration history in a format key: value.
 
         Returns
         -------
-        str
+        string : str
             The str to describe an IterationHistory object.
         """
-        return "".join(["{}: {} \n".format(k, v) for (k, v) in self.items()])
+        if full:  # Output every class attribute (for debugging)
+            return full_repr(self, "IterationHistory", expand=expand)
+        else:  # Output relevant class attributes in meaningful order
+            return "IterationHistory:" + format_dict(self, arr_size_thresh=10)
+
+    def _short_repr(self):
+        """Returns abbreviated string representation with memory location."""
+        return object.__repr__(self)
