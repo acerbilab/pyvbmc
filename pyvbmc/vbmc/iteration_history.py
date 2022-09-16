@@ -163,9 +163,13 @@ class IterationHistory(MutableMapping, dict):
             The str to describe an IterationHistory object.
         """
         if full:  # Output every class attribute (for debugging)
-            return full_repr(self, "IterationHistory", expand=expand)
-        else:  # Output relevant class attributes in meaningful order
-            return "IterationHistory:" + format_dict(self, arr_size_thresh=10)
+            return (
+                "IterationHistory:\n"
+                + "self.check_keys = {self.check_keys},\ndict = "
+                + format_dict(self, arr_size_thresh=10)
+            )
+        else:  # Summary
+            return str(self)
 
     def _short_repr(self):
         """Returns abbreviated string representation with memory location."""
