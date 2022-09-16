@@ -430,7 +430,7 @@ fun. eval. time = {self.total_fun_evaltime}.""",
             "    ",
         )
 
-    def __repr__(self, arr_size_thresh=10, full=False, expand=False):
+    def __repr__(self, arr_size_thresh=10, expand=False):
         """Construct a detailed string summary.
 
         Parameters
@@ -439,9 +439,6 @@ fun. eval. time = {self.total_fun_evaltime}.""",
             If ``obj`` is an array whose product of dimensions is less than
             ``arr_size_thresh``, print the full array. Otherwise print only the
             shape. Default `10`.
-        full : bool, optional
-            If ``full`` is `False`, print only the relevant object attributes.
-            Otherwise print all attributes.
         expand : bool, optional
             If ``expand`` is `False`, then describe any complex child
             attributes of the object by their name and memory location.
@@ -453,15 +450,12 @@ fun. eval. time = {self.total_fun_evaltime}.""",
         string : str
             The string representation of ``self``.
         """
-        if full:  # Output every class attribute (for debugging)
-            return full_repr(
-                self,
-                "FunctionLogger",
-                expand=expand,
-                arr_size_thresh=arr_size_thresh,
-            )
-        else:  # Output relevant class attributes in meaningful order
-            return str(self)
+        return full_repr(
+            self,
+            "FunctionLogger",
+            expand=expand,
+            arr_size_thresh=arr_size_thresh,
+        )
 
     def _short_repr(self):
         """Returns abbreviated string representation with memory location.

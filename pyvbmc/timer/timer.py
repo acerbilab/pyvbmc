@@ -81,7 +81,7 @@ class Timer:
         self._durations = dict()
         self._start_times = dict()
 
-    def __repr__(self, arr_size_thresh=10, full=False, expand=True):
+    def __repr__(self, arr_size_thresh=10, expand=True):
         """Construct a detailed string summary.
 
         Parameters
@@ -90,8 +90,6 @@ class Timer:
             If ``obj`` is an array whose product of dimensions is less than
             ``arr_size_thresh``, print the full array. Otherwise print only the
             shape. Default `10`.
-        full : bool, optional
-            Unused.
         expand : bool, optional
             If ``expand`` is `False`, then describe any complex child
             attributes of the object by their name and memory location.

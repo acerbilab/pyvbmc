@@ -165,6 +165,8 @@ class IterationHistory(MutableMapping, dict):
         full : bool, optional
             If ``full`` is `False`, print only the relevant object attributes.
             Otherwise print all attributes.
+        expand : bool, optional
+            Unused.
 
         Returns
         -------

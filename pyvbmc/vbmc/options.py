@@ -277,7 +277,7 @@ class Options(MutableMapping, dict):
         """
         if full:  # Output every class attribute (for debugging)
             return full_repr(self, "Options", expand=expand)
-        else:  # Output relevant class attributes in meaningful order
+        else:  # Output relevant class attributes in meaningful format
             return "Options:\n\t" + "\n\t".join(
                 [
                     f"{key}: {value} ({self.descriptions.get(key)})"

@@ -4,6 +4,7 @@ import numpy as np
 from scipy.special import erfc, erfcinv
 
 from pyvbmc.decorators import handle_0D_1D_input
+from pyvbmc.io import full_repr
 
 
 class ParameterTransformer:
@@ -417,19 +418,40 @@ transform type(s) = {transforms}.""",
             "    ",
         )
 
-    def __repr__(self):
-        """Print a detailed string representation."""
-        return "ParameterTransformer:" + indent(
-            f"""
-D = {self.lb_orig.shape[1]},
-self.lb_orig = {self.lb_orig},
-self.ub_orig = {self.ub_orig},
-self.type = {self.type},
-self.mu = {self.mu},
-self.delta = {self.delta},
-self.scale = {self.scale},
-self.R_mat = {self.R_mat}.""",
-            "    ",
+    def __repr__(self, arr_size_thresh=10, expand=False):
+        """Construct a detailed string summary.
+
+        Parameters
+        ----------
+        arr_size_thresh : float, optional
+            If ``obj`` is an array whose product of dimensions is less than
+            ``arr_size_thresh``, print the full array. Otherwise print only the
+            shape. Default `10`.
+        expand : bool, optional
+            If ``expand`` is `False`, then describe any complex child
+            attributes of the object by their name and memory location.
+            Otherwise, recursively expand the child attributes into their own
+            representations. Default `False`.
+
+        Returns
+        -------
+        string : str
+            The string representation of ``self``.
+        """
+        return full_repr(
+            self,
+            "ParameterTransformer",
+            order=[
+                "lb_orig",
+                "ub_orig",
+                "type",
+                "mu",
+                "delta",
+                "scale",
+                "R_mat",
+            ],
+            expand=expand,
+            arr_size_thresh=arr_size_thresh,
         )
 
     def _short_repr(self):

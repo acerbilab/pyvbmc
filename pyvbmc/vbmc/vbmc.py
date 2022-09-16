@@ -2303,21 +2303,21 @@ class VBMC:
         return "VBMC:" + indent(
             f"""
 Dimension = {self.D},
-log-density = {getattr(self, "log_likelihood", self.log_joint)},
-log-prior = {getattr(self, "log_prior", None)},
-prior sampler = {getattr(self, "sample_prior", None)},
 x0{summarize(self.x0)},
 lower bounds{summarize(self.lower_bounds)},
 upper bounds{summarize(self.upper_bounds)},
 plausible lower bounds{summarize(self.plausible_lower_bounds)},
 plausible upper bounds{summarize(self.plausible_upper_bounds)},
+log-density = {getattr(self, "log_likelihood", self.log_joint)},
+log-prior = {getattr(self, "log_prior", None)},
+prior sampler = {getattr(self, "sample_prior", None)},
 variational posterior = {str(getattr(self, "vp", None))},
 Gaussian process = {str(getattr(self, "gp", None))},
 user options = {str(self.options)}.""",
             "    ",
         )
 
-    def __repr__(self, arr_size_thresh=10, full=False, expand=False):
+    def __repr__(self, arr_size_thresh=10, expand=False):
         """Construct a detailed string summary.
 
         Parameters
@@ -2326,9 +2326,6 @@ user options = {str(self.options)}.""",
             If ``obj`` is an array whose product of dimensions is less than
             ``arr_size_thresh``, print the full array. Otherwise print only the
             shape. Default `10`.
-        full : bool, optional
-            If ``full`` is `False`, print only the relevant object attributes.
-            Otherwise print all attributes.
         expand : bool, optional
             If ``expand`` is `False`, then describe any complex child
             attributes of the object by their name and memory location.
@@ -2340,30 +2337,31 @@ user options = {str(self.options)}.""",
         string : str
             The string representation of ``self``.
         """
-        if full:  # Output every class attribute (for debugging)
-            return full_repr(
-                self, "VBMC", expand=expand, arr_size_thresh=arr_size_thresh
-            )
-        else:  # Output relevant class attributes in meaningful order
-            return "VBMC:" + indent(
-                f"""
-self.D{summarize(self.D, arr_size_thresh)},
-self.log_density = {getattr(self, "log_likelihood", self.log_joint)},
-self.log_prior = {getattr(self, "log_prior", None)},
-self.sample_prior = {getattr(self, "sample_prior", None)},
-self.x0{summarize(self.x0, arr_size_thresh)},
-self.lower_bounds{summarize(self.lower_bounds, arr_size_thresh)},
-self.upper_bounds{summarize(self.upper_bounds, arr_size_thresh)},
-self.plausible_lower_bounds{summarize(self.plausible_lower_bounds, arr_size_thresh)},
-self.plausible_upper_bounds{summarize(self.plausible_upper_bounds, arr_size_thresh)},
-self.vp = {get_repr(getattr(self, "vp", None), expand=expand)},
-self.gp = {get_repr(getattr(self, "gp", None), expand=expand)},
-self.function_logger = {get_repr(getattr(self, "function_logger", None), expand=expand)},
-self.iteration_history = {get_repr(getattr(self, "function_logger", None), expand=expand)},
-self.optim_state = {get_repr(self.optim_state, arr_size_thresh=arr_size_thresh, expand=expand)},
-self.options = {get_repr(self.options, expand=expand)}.""",
-                "    ",
-            )
+        return full_repr(
+            self,
+            "VBMC",
+            order=[
+                "D",
+                "x0",
+                "lower_bounds",
+                "upper_bounds",
+                "plausible_lower_bounds",
+                "plausible_upper_bounds",
+                "log_joint",
+                "log_prior",
+                "sample_prior",
+                "vp",
+                "K",
+                "gp",
+                "parameter_transformer",
+                "logger",
+                "logging_action",
+                "optim_state",
+                "options",
+            ],
+            expand=expand,
+            arr_size_thresh=arr_size_thresh,
+        )
 
     def _short_repr(self):
         """Returns abbreviated string representation with memory location.

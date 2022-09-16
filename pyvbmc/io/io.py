@@ -120,21 +120,25 @@ def get_repr(obj, expand=False, full=False, **kwargs):
     if expand:  # Expand child elements
         if type(obj) == dict:
             return format_dict(obj, **kwargs)
+        elif type(obj) == np.ndarray:
+            return summarize(obj, **kwargs)
         else:
             try:
                 return obj.__repr__(expand=True, full=full)
-            except TypeError:
+            except TypeError:  # keyword error
                 return repr(obj)
     else:  # Abbreviated representation
         if hasattr(obj, "_short_repr"):
             return obj._short_repr()
         elif type(obj) == dict:  # Just print type and memory location
             return object.__repr__(obj)
+        elif type(obj) == np.ndarray:
+            return summarize(obj, **kwargs)
         else:
             return repr(obj)
 
 
-def full_repr(obj, title, **kwargs):
+def full_repr(obj, title, order=[], **kwargs):
     """Get a complete string representation of an object.
 
     Parameters
@@ -147,11 +151,21 @@ def full_repr(obj, title, **kwargs):
         The keyword arguments for printing the objects child attributes,
         forwarded to ``get_repr()``.
     """
-    body = ""
+    body = []
+    for key in order:  # Print select attributes first
+        body.append(
+            f"self.{key} = {get_repr(getattr(obj, key, None), **kwargs)}"
+        )
+
+    # Print all remaining attributes
     try:
         for key, val in sorted(obj.__dict__.items()):
-            body += f"self.{key} = {get_repr(val, **kwargs)}\n"
+            if key not in order:
+                body.append(f"self.{key} = {get_repr(val, **kwargs)}")
     except TypeError:  # Keys cannot be sorted
         for key, val in obj.__dict__.items():
-            body += f"self.{key} = {get_repr(val, **kwargs)}\n"
-    return title + ":\n" + indent(body, "    ")
+            if key not in order:
+                body.append(f"self.{key} = {get_repr(val, **kwargs)}")
+
+    body = ",\n".join(body)
+    return title + ":\n" + indent(body, "    ") + "\n."

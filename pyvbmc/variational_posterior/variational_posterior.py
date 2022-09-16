@@ -1224,11 +1224,11 @@ weights{summarize(self.w, arr_size_thresh)},
 sigma (per-component scale){summarize(self.sigma, arr_size_thresh)},
 lambd (per-dimension scale){summarize(self.lambd, arr_size_thresh)},
 delta (overall scale){summarize(self.delta, arr_size_thresh)},
-self.stats = {format_dict(self.stats, arr_size_thresh=arr_size_thresh)}.""",
+stats = {format_dict(self.stats, arr_size_thresh=arr_size_thresh)}.""",
             "    ",
         )
 
-    def __repr__(self, arr_size_thresh=10, expand=False, full=False):
+    def __repr__(self, arr_size_thresh=10, expand=False):
         """Construct a detailed string summary.
 
         Parameters
@@ -1237,10 +1237,6 @@ self.stats = {format_dict(self.stats, arr_size_thresh=arr_size_thresh)}.""",
             If ``obj`` is an array whose product of dimensions is less than
             ``arr_size_thresh``, print the full array. Otherwise print only the
             shape. Default `10`.
-        full : bool, optional
-            If ``full`` is `False`, print only the relevant object attributes.
-            Otherwise print all attributes. If ``expand`` is also `True`, then the
-            children will follow this behavior. Default `False`.
         expand : bool, optional
             If ``expand`` is `False`, then describe the object's complex child
             attributes by their name and memory location. Otherwise,
@@ -1252,33 +1248,13 @@ self.stats = {format_dict(self.stats, arr_size_thresh=arr_size_thresh)}.""",
         string : str
             The string representation of ``self``.
         """
-        if full:  # Output every class attribute (for debugging)
-            return full_repr(
-                self,
-                "VariationalPosterior",
-                expand=expand,
-                arr_size_thresh=arr_size_thresh,
-            )
-        else:  # Output relevant class attributes in meaningful order
-            return "VariationalPosterior:" + indent(
-                f"""
-self.D = {self.D},
-self.K = {self.K},
-self.mu{summarize(self.mu, arr_size_thresh)},
-self.w{summarize(self.w, arr_size_thresh)},
-self.sigma{summarize(self.sigma, arr_size_thresh)},
-self.lambd{summarize(self.lambd, arr_size_thresh)},
-self.eta{summarize(self.eta, arr_size_thresh)},
-self.optimize_mu = {self.optimize_mu},
-self.optimize_weights = {self.optimize_weights},
-self.optimize_sigma = {self.optimize_sigma},
-self.optimize_lambd = {self.optimize_lambd},
-self.delta{summarize(self.delta, arr_size_thresh)},
-self.bounds{summarize(self.bounds, arr_size_thresh)},
-self.parameter_transformer = {get_repr(getattr(self, "parameter_transformer", None), expand=expand)},
-self.stats = {get_repr(self.stats, arr_size_thresh=arr_size_thresh, expand=expand)}.""",
-                "    ",
-            )
+        return full_repr(
+            self,
+            "VariationalPosterior",
+            order=["D", "K", "mu", "w", "sigma", "lambd", "delta", "stats"],
+            expand=expand,
+            arr_size_thresh=arr_size_thresh,
+        )
 
     def _short_repr(self):
         """Returns abbreviated string representation with memory location.
