@@ -243,17 +243,33 @@ class Options(MutableMapping, dict):
 
     def __str__(self):
         """
-        Returns the options in a format key: value (description).
+        Return the user options in a format key: value (description).
 
         Returns
         -------
         str
             The str to describe an options object.
         """
-        return "".join(
+        return "User Options:\n\t" + "\n\t".join(
             [
-                "{}: {} ({}) \n".format(k, v, str(self.descriptions.get(k)))
-                for (k, v) in self.items()
+                f"{key}: {self[key]} ({self.descriptions.get(key)})"
+                for key in self["useroptions"]
+            ]
+        )
+
+    def __repr__(self):
+        """
+        Return the options in a format key: value (description).
+
+        Returns
+        -------
+        str
+            The str to describe an options object.
+        """
+        return "Options:\n\t" + "\n\t".join(
+            [
+                f"{key}: {value} ({self.descriptions.get(key)})"
+                for (key, value) in self.items()
             ]
         )
 
