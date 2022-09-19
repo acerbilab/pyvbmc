@@ -116,9 +116,12 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
     optim_state = copy.deepcopy(optim_state)
     function_logger = copy.deepcopy(function_logger)
 
+    if options.get("warp_non_linear"):
+        raise NotImplementedError("Non-linear warping is not supported.")
+
     if options.get("warp_rotoscaling"):
-        if options.get("warpnonlinear"):
-            raise NotImplementedError
+        if options.get("warp_non_linear"):
+            raise NotImplementedError("Non-linear warping is not supported.")
         else:
             # Get covariance matrix analytically
             __, vp_cov = vp.moments(origflag=False, covflag=True)
@@ -159,7 +162,7 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
         parameter_transformer.R_mat = U
         parameter_transformer.scale = scale
 
-    # Update Plausible Bounds:
+    # Update shift and scaling and plausible bounds:
     parameter_transformer.mu = np.zeros(vp.D)
     parameter_transformer.delta = np.ones(vp.D)
     Nrnd = 100000
@@ -175,11 +178,9 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
     delta_temp = pub_tran - plb_tran
     plb_tran = plb_tran - delta_temp / 9
     pub_tran = pub_tran + delta_temp / 9
-    plb_tran = np.atleast_2d(plb_tran)
-    pub_tran = np.atleast_2d(pub_tran)
 
-    optim_state["plb_tran"] = plb_tran
-    optim_state["pub_tran"] = pub_tran
+    optim_state["plb_tran"] = plb_tran.reshape((1, vp.D))
+    optim_state["pub_tran"] = pub_tran.reshape((1, vp.D))
 
     # Temperature scaling
     if optim_state.get("temperature"):
