@@ -583,10 +583,10 @@ class VBMC:
                 )
 
         # fprintf('Index of variable restricted to integer values: %s.\n'
-        optim_state["lb_orig"] = self.lower_bounds
-        optim_state["ub_orig"] = self.upper_bounds
-        optim_state["plb_orig"] = self.plausible_lower_bounds
-        optim_state["pub_orig"] = self.plausible_upper_bounds
+        optim_state["lb_orig"] = self.lower_bounds.copy()
+        optim_state["ub_orig"] = self.upper_bounds.copy()
+        optim_state["plb_orig"] = self.plausible_lower_bounds.copy()
+        optim_state["pub_orig"] = self.plausible_upper_bounds.copy()
         eps_orig = (self.upper_bounds - self.lower_bounds) * self.options.get(
             "tol_bound_x"
         )
