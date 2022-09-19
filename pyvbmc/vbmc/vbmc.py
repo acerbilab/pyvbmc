@@ -191,8 +191,6 @@ class VBMC:
             plausible_upper_bounds,
         )
 
-        self.K = self.options.get("k_warmup")
-
         # starting point
         if not np.all(np.isfinite(self.x0)):
             # print('Initial starting point is invalid or not provided.
@@ -214,7 +212,7 @@ class VBMC:
         # Initialize variational posterior
         self.vp = VariationalPosterior(
             D=self.D,
-            K=self.K,
+            K=self.options.get("k_warmup"),
             x0=self.x0,
             parameter_transformer=self.parameter_transformer,
         )
@@ -666,7 +664,7 @@ class VBMC:
         optim_state["last_run_avg"] = np.NaN
 
         # Current number of components for variational posterior
-        optim_state["vp_K"] = self.K
+        optim_state["vp_K"] = self.options.get("k_warmup")
 
         # Number of variational components pruned in last iteration
         optim_state["pruned"] = 0
@@ -957,7 +955,7 @@ class VBMC:
 
                     # Decide number of fast/slow optimizations
                     N_fastopts = math.ceil(
-                        self.options.eval("ns_elbo", {"K": self.K})
+                        self.options.eval("ns_elbo", {"K": self.vp.K})
                     )
                     N_slowopts = self.options.get(
                         "elbo_starts"
@@ -1136,7 +1134,9 @@ class VBMC:
                 )
 
             # Decide number of fast/slow optimizations
-            N_fastopts = math.ceil(self.options.eval("ns_elbo", {"K": self.K}))
+            N_fastopts = math.ceil(
+                self.options.eval("ns_elbo", {"K": self.vp.K})
+            )
 
             if self.optim_state.get("recompute_var_post") or (
                 self.options.get("always_refit_vp")
