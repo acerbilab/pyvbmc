@@ -49,8 +49,8 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
     widths = np.std(gp.X, axis=0, ddof=1)
     max_bnd = 0.5
     diam = np.amax(gp.X, axis=0) - np.amin(gp.X, axis=0)
-    LB = np.amin(gp.X, axis=0) - max_bnd * diam
-    UB = np.amax(gp.X, axis=0) + max_bnd * diam
+    lb_tran = np.amin(gp.X, axis=0) - max_bnd * diam
+    ub_tran = np.amax(gp.X, axis=0) + max_bnd * diam
 
     active_is = {}
     active_is["ln_weights"] = None
@@ -98,12 +98,12 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
                 # Better (e.g. ensemble slice) sampling methods could
                 # later be implemented.
                 sampler = gpr.slice_sample.SliceSampler(
-                    log_p_fun, Xa, widths, LB, UB, sampler_opts
+                    log_p_fun, Xa, widths, lb_tran, ub_tran, sampler_opts
                 )
                 results = sampler.sample(Nmcmc_samples, thin, burn_in)
                 Xa = results["samples"]
                 # Xa = eis_sample_lite(log_p_fun, Xa, Nmcmc_samples, W, widths,
-                # LB, UB, sample_opts)
+                # lb_tran, ub_tran, sample_opts)
                 Xa = Xa[-Na:, :]
                 f_mu, f_s2 = gp.predict(Xa, separate_samples=True)
 
@@ -239,13 +239,15 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
                     a=len(weights), p=weights, replace=False
                 )
                 x0 = active_is_old["X"][index, :]
-                x0 = np.maximum(np.minimum(x0, UB), LB)  # Force inside bounds
+                x0 = np.maximum(
+                    np.minimum(x0, ub_tran), lb_tran
+                )  # Force inside bounds
 
                 # Contrary to MATLAB, we are using simple slice sampling.
                 # Better (e.g. ensemble slice) sampling methods could
                 # later be implemented.
                 sampler = gpr.slice_sample.SliceSampler(
-                    log_p_fun, x0, widths, LB, UB, sampler_opts
+                    log_p_fun, x0, widths, lb_tran, ub_tran, sampler_opts
                 )
                 results = sampler.sample(Nmcmc_samples, thin, burn_in)
                 Xa, log_p = results["samples"], results["f_vals"]

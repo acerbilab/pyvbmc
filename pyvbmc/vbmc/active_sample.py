@@ -94,16 +94,16 @@ def active_sample(
             ys = np.copy(optim_state["cache"]["y_orig"])
 
             if provided_sample_count < sample_count:
-                pub = optim_state.get("pub")
-                plb = optim_state.get("plb")
+                pub_tran = optim_state.get("pub_tran")
+                plb_tran = optim_state.get("plb_tran")
 
                 if options.get("init_design") == "plausible":
                     # Uniform random samples in the plausible box
                     # (in transformed space)
                     random_Xs = (
                         np.random.rand(sample_count - provided_sample_count, D)
-                        * (pub - plb)
-                        + plb
+                        * (pub_tran - plb_tran)
+                        + plb_tran
                     )
 
                 elif options.get("init_design") == "narrow":
@@ -111,8 +111,10 @@ def active_sample(
                     random_Xs = (
                         np.random.rand(sample_count - provided_sample_count, D)
                         - 0.5
-                    ) * 0.1 * (pub - plb) + start_Xs
-                    random_Xs = np.minimum((np.maximum(random_Xs, plb)), pub)
+                    ) * 0.1 * (pub_tran - plb_tran) + start_Xs
+                    random_Xs = np.minimum(
+                        (np.maximum(random_Xs, plb_tran)), pub_tran
+                    )
 
                 else:
                     raise ValueError(
@@ -366,12 +368,12 @@ def active_sample(
                     np.isfinite(optim_state["lb_search"]).all()
                     and np.isfinite(optim_state["ub_search"]).all()
                 ):
-                    lb = np.minimum(x0, optim_state["lb_search"])
-                    ub = np.maximum(x0, optim_state["ub_search"])
+                    lb_search = np.minimum(x0, optim_state["lb_search"])
+                    ub_search = np.maximum(x0, optim_state["ub_search"])
                 else:
                     xrange = gp.X.max(0) - gp.X.min(0)
-                    lb = np.minimum(gp.X, x0) - 0.1 * xrange
-                    ub = np.maximum(gp.X, x0) + 0.1 * xrange
+                    lb_search = np.minimum(gp.X, x0) - 0.1 * xrange
+                    ub_search = np.maximum(gp.X, x0) + 0.1 * xrange
 
                 if acq_eval.acq_info.get("log_flag"):
                     tol_fun = 1e-2
@@ -391,7 +393,7 @@ def active_sample(
                         "verbose": -9,
                         "tolfun": tol_fun,
                         "maxfevals": options["search_max_fun_evals"],
-                        "bounds": (lb.squeeze(), ub.squeeze()),
+                        "bounds": (lb_search.squeeze(), ub_search.squeeze()),
                         "seed": np.nan,
                     }
 
@@ -528,8 +530,8 @@ def active_sample(
                                 function_logger,
                                 iteration_history,
                                 options_update,
-                                optim_state["plb_orig"],
-                                optim_state["pub_orig"],
+                                optim_state["plb_tran"],
+                                optim_state["pub_tran"],
                             )
                             timer.stop_timer("gp_train")
                         else:
@@ -595,26 +597,26 @@ def active_sample(
             # ADD DIFFERENT CHECKS FOR INTEGER VARIABLES!
             idx = np.abs(xnew - optim_state["lb_search"]) < delta_search
             optim_state["lb_search"][idx] = np.maximum(
-                optim_state["lb"][idx],
+                optim_state["lb_tran"][idx],
                 optim_state["lb_search"][idx] - delta_search[idx],
             )
             idx = np.abs(xnew - optim_state["ub_search"]) < delta_search
             optim_state["ub_search"][idx] = np.minimum(
-                optim_state["ub"][idx],
+                optim_state["ub_tran"][idx],
                 optim_state["ub_search"][idx] + delta_search[idx],
             )
 
             # Hard lower/upper bounds on search (unused)
-            prange = optim_state["pub"] - optim_state["plb"]
+            prange = optim_state["pub_tran"] - optim_state["plb_tran"]
             LB_searchmin = np.maximum(
-                optim_state["plb"]
+                optim_state["plb_tran"]
                 - 2 * prange * options["active_search_bound"],
-                optim_state["lb"],
+                optim_state["lb_tran"],
             )
             UB_searchmin = np.minimum(
-                optim_state["pub"]
+                optim_state["pub_tran"]
                 + 2 * prange * options["active_search_bound"],
-                optim_state["ub"],
+                optim_state["ub_tran"],
             )
 
         if active_sample_full_update and sample_count > 1:
@@ -788,8 +790,8 @@ def _get_search_points(
         if N_box > 0:
             X = function_logger.X[function_logger.X_flag]
             X_diam = np.amax(X, axis=0) - np.amin(X, axis=0)
-            plb = optim_state.get("plb")
-            pub = optim_state.get("pub")
+            plb_tran = optim_state.get("plb_tran")
+            pub_tran = optim_state.get("pub_tran")
 
             if np.all(np.isfinite(lb_search)) and np.all(
                 np.isfinite(ub_search)
@@ -797,8 +799,8 @@ def _get_search_points(
                 box_lb = lb_search
                 box_ub = ub_search
             else:
-                box_lb = plb - 3 * (pub - plb)
-                box_ub = pub + 3 * (pub - plb)
+                box_lb = plb_tran - 3 * (pub_tran - plb_tran)
+                box_ub = pub_tran + 3 * (pub_tran - plb_tran)
 
             box_lb = np.maximum(np.amin(X, axis=0) - 0.5 * X_diam, box_lb)
             box_ub = np.minimum(np.amax(X, axis=0) + 0.5 * X_diam, box_ub)

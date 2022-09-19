@@ -137,8 +137,8 @@ def test_parameter_transformer_log_det_abs():
     x = np.array([1.0, -3.0, 8.5])
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)) * -10,
-        upper_bounds=np.ones((1, D)) * 10,
+        lb_orig=np.ones((1, D)) * -10,
+        ub_orig=np.ones((1, D)) * 10,
     )
     u = parameter_transformer(x)
     # MATLAB result:
@@ -168,8 +168,8 @@ def test_parameter_transformer_log_det_abs():
     R = R1 @ R2
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)) * -10,
-        upper_bounds=np.ones((1, D)) * 10,
+        lb_orig=np.ones((1, D)) * -10,
+        ub_orig=np.ones((1, D)) * 10,
         rotation_matrix=R,
         scale=np.array([0.9, 0.7, 2.3]),
     )

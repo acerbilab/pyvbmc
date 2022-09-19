@@ -494,10 +494,10 @@ def test_vbmc_optimstate_bounds():
     eps = vbmc.options.get("tol_bound_x") * 4
     assert np.all(vbmc.optim_state["lb_eps_orig"] == lb + eps)
     assert np.all(vbmc.optim_state["ub_eps_orig"] == ub - eps)
-    assert np.all(vbmc.optim_state["lb"] == -np.inf)
-    assert np.all(vbmc.optim_state["ub"] == np.inf)
-    assert np.all(vbmc.optim_state["plb"] == -0.5)
-    assert np.all(vbmc.optim_state["pub"] == 0.5)
+    assert np.all(vbmc.optim_state["lb_tran"] == -np.inf)
+    assert np.all(vbmc.optim_state["ub_tran"] == np.inf)
+    assert np.all(vbmc.optim_state["plb_tran"] == -0.5)
+    assert np.all(vbmc.optim_state["pub_tran"] == 0.5)
     assert np.all(vbmc.optim_state["lb_search"] == -2.5)
     assert np.all(vbmc.optim_state["ub_search"] == 2.5)
 
