@@ -530,8 +530,8 @@ def active_sample(
                                 function_logger,
                                 iteration_history,
                                 options_update,
-                                optim_state["plb_orig"],
-                                optim_state["pub_orig"],
+                                optim_state["plb_tran"],
+                                optim_state["pub_tran"],
                             )
                             timer.stop_timer("gp_train")
                         else:

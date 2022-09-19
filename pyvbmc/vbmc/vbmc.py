@@ -941,8 +941,8 @@ class VBMC:
                         self.function_logger,
                         self.iteration_history,
                         self.options,
-                        self.plausible_lower_bounds,
-                        self.plausible_upper_bounds,
+                        self.optim_state["plb_tran"],
+                        self.optim_state["pub_tran"],
                     )
                     self.optim_state["sn2_hpd"] = sn2_hpd
 
@@ -1058,8 +1058,8 @@ class VBMC:
                             self.function_logger,
                             self.iteration_history,
                             self.options,
-                            self.plausible_lower_bounds,
-                            self.plausible_upper_bounds,
+                            self.optim_state["plb_tran"],
+                            self.optim_state["pub_tran"],
                         )
                         timer.stop_timer("separate_gp_train")
                         self.optim_state["sn2_hpd"] = sn2_hpd
@@ -1112,8 +1112,8 @@ class VBMC:
                 self.function_logger,
                 self.iteration_history,
                 self.options,
-                self.plausible_lower_bounds,
-                self.plausible_upper_bounds,
+                self.optim_state["plb_tran"],
+                self.optim_state["pub_tran"],
             )
             self.optim_state["sn2_hpd"] = sn2_hpd
 
