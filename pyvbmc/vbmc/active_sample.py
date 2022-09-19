@@ -368,12 +368,12 @@ def active_sample(
                     np.isfinite(optim_state["lb_search"]).all()
                     and np.isfinite(optim_state["ub_search"]).all()
                 ):
-                    lb = np.minimum(x0, optim_state["lb_search"])
-                    ub = np.maximum(x0, optim_state["ub_search"])
+                    lb_search = np.minimum(x0, optim_state["lb_search"])
+                    ub_search = np.maximum(x0, optim_state["ub_search"])
                 else:
                     xrange = gp.X.max(0) - gp.X.min(0)
-                    lb = np.minimum(gp.X, x0) - 0.1 * xrange
-                    ub = np.maximum(gp.X, x0) + 0.1 * xrange
+                    lb_search = np.minimum(gp.X, x0) - 0.1 * xrange
+                    ub_search = np.maximum(gp.X, x0) + 0.1 * xrange
 
                 if acq_eval.acq_info.get("log_flag"):
                     tol_fun = 1e-2
@@ -393,7 +393,7 @@ def active_sample(
                         "verbose": -9,
                         "tolfun": tol_fun,
                         "maxfevals": options["search_max_fun_evals"],
-                        "bounds": (lb.squeeze(), ub.squeeze()),
+                        "bounds": (lb_search.squeeze(), ub_search.squeeze()),
                         "seed": np.nan,
                     }
 
