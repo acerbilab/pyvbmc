@@ -16,8 +16,8 @@ def train_gp(
     function_logger: FunctionLogger,
     iteration_history: IterationHistory,
     options: Options,
-    plb: np.ndarray,
-    pub: np.ndarray,
+    plb_tran: np.ndarray,
+    pub_tran: np.ndarray,
 ):
     """
     Train Gaussian process model.
@@ -36,10 +36,10 @@ def train_gp(
         Iteration history from the VBMC instance we are calling this from.
     options : Options
         Options from the VBMC instance we are calling this from.
-    plb : ndarray, shape (hyp_N,)
-        Plausible lower bounds for hyperparameters.
-    pub : ndarray, shape (hyp_N,)
-        Plausible upper bounds for hyperparameters.
+    plb_tran : ndarray, shape (1, D)
+        Transformed lower plausible bounds, used to set GP hyperparameters.
+    pub_tran : ndarray, shape (1, D)
+        Transformed upper plausible bounds, used to set GP hyperparameters.
 
     Returns
     =======
@@ -99,7 +99,7 @@ def train_gp(
     gp = gpr.GP(D=D, covariance=covariance_f, mean=mean_f, noise=noise_f)
     # Get number of samples and set priors and bounds.
     gp, hyp0, gp_s_N = _gp_hyp(
-        optim_state, options, plb, pub, gp, x_train, y_train
+        optim_state, options, plb_tran, pub_tran, gp, x_train, y_train
     )
     # Initial GP hyperparameters.
     if hyp_dict["hyp"] is None:
@@ -265,8 +265,8 @@ def _cov_identifier_to_covariance_function(identifier):
 def _gp_hyp(
     optim_state: dict,
     options: Options,
-    plb: np.ndarray,
-    pub: np.ndarray,
+    plb_tran: np.ndarray,
+    pub_tran: np.ndarray,
     gp: gpr.GP,
     X: np.ndarray,
     y: np.ndarray,
@@ -280,10 +280,10 @@ def _gp_hyp(
         Optimization state from the VBMC instance we are calling this from.
     options : Options
         Options from the VBMC instance we are calling this from.
-    plb : ndarray, shape (hyp_N,)
-        Plausible lower bounds for the hyperparameters.
-    pub : ndarray, shape (hyp_N,)
-        Plausible upper bounds for the hyperparameters.
+    plb_tran : ndarray, shape (1, D)
+        Transformed lower plausible bounds, used to set GP hyperparameters.
+    pub_tran : ndarray, shape (1, D)
+        Transformed upper plausible bounds, used to set GP hyperparameters.
     gp : GP
         Gaussian process for which we are making the bounds,
         priors and so on.
@@ -355,7 +355,7 @@ def _gp_hyp(
         # Max GP input length scale
         bounds["covariance_log_lengthscale"] = (
             -np.inf,
-            np.log(options["upper_gp_length_factor"] * (pub - plb)),
+            np.log(options["upper_gp_length_factor"] * (pub_tran - plb_tran)),
         )
     # Increase minimum noise.
     bounds["noise_log_scale"] = (np.log(min_noise), np.inf)
@@ -422,7 +422,7 @@ def _gp_hyp(
     priors["covariance_log_lengthscale"] = (
         "student_t",
         (
-            np.log(options["gp_length_prior_mean"] * (pub - plb)),
+            np.log(options["gp_length_prior_mean"] * (pub_tran - plb_tran)),
             options["gp_length_prior_std"],
             3,
         ),
