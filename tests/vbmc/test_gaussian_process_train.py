@@ -71,9 +71,9 @@ def test_get_training_data_no_noise():
 
     # Create dummy data.
     sample_count = 10
-    window = vbmc.optim_state["pub"] - vbmc.optim_state["plb"]
+    window = vbmc.optim_state["pub_tran"] - vbmc.optim_state["plb_tran"]
     rnd_tmp = np.random.rand(sample_count, window.shape[1])
-    Xs = window * rnd_tmp + vbmc.optim_state["plb"]
+    Xs = window * rnd_tmp + vbmc.optim_state["plb_tran"]
     ys = f(Xs)
 
     # Add dummy training data explicitly since function_logger
@@ -117,9 +117,9 @@ def test_get_training_data_noise():
 
     # Create dummy data.
     sample_count = 10
-    window = vbmc.optim_state["pub"] - vbmc.optim_state["plb"]
+    window = vbmc.optim_state["pub_tran"] - vbmc.optim_state["plb_tran"]
     rnd_tmp = np.random.rand(sample_count, window.shape[1])
-    Xs = window * rnd_tmp + vbmc.optim_state["plb"]
+    Xs = window * rnd_tmp + vbmc.optim_state["plb_tran"]
     ys = f(Xs)
 
     # Add dummy training data explicitly since function_logger
@@ -370,9 +370,9 @@ def test_gp_hyp():
 
     # Create dummy data.
     sample_count = 10
-    window = vbmc.optim_state["pub"] - vbmc.optim_state["plb"]
+    window = vbmc.optim_state["pub_tran"] - vbmc.optim_state["plb_tran"]
     rnd_tmp = np.random.rand(sample_count, window.shape[1])
-    Xs = window * rnd_tmp + vbmc.optim_state["plb"]
+    Xs = window * rnd_tmp + vbmc.optim_state["plb_tran"]
     ys = f(Xs)
 
     # Add dummy training data explicitly since function_logger

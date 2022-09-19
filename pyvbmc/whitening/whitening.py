@@ -116,9 +116,12 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
     optim_state = copy.deepcopy(optim_state)
     function_logger = copy.deepcopy(function_logger)
 
+    if options.get("warp_non_linear"):
+        raise NotImplementedError("Non-linear warping is not supported.")
+
     if options.get("warp_rotoscaling"):
-        if options.get("warpnonlinear"):
-            raise NotImplementedError
+        if options.get("warp_non_linear"):
+            raise NotImplementedError("Non-linear warping is not supported.")
         else:
             # Get covariance matrix analytically
             __, vp_cov = vp.moments(origflag=False, covflag=True)
@@ -132,32 +135,34 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
             vp_cov = R_mat @ np.diag(scale) @ vp_cov @ np.diag(scale) @ R_mat.T
             vp_cov = np.diag(delta) @ vp_cov @ np.diag(delta)
 
-    # Remove low-correlation entries
-    if options["warp_roto_corr_thresh"] > 0:
-        vp_corr = vp_cov / np.sqrt(np.outer(np.diag(vp_cov), np.diag(vp_cov)))
-        mask_idx = np.abs(vp_corr) <= options["warp_roto_corr_thresh"]
-        vp_cov[mask_idx] = 0
+        # Remove low-correlation entries
+        if options["warp_roto_corr_thresh"] > 0:
+            vp_corr = vp_cov / np.sqrt(
+                np.outer(np.diag(vp_cov), np.diag(vp_cov))
+            )
+            mask_idx = np.abs(vp_corr) <= options["warp_roto_corr_thresh"]
+            vp_cov[mask_idx] = 0
 
-    # Regularization of covariance matrix towards diagonal
-    if (
-        type(options["warp_cov_reg"]) == float
-        or type(options["warp_cov_reg"]) == int
-    ):
-        w_reg = options["warp_cov_reg"]
-    else:
-        w_reg = options.warp_cov_reg[optim_state["N"]]
-    w_reg = np.max([0, np.min([1, w_reg])])
-    vp_cov = (1 - w_reg) * vp_cov + w_reg * np.diag(np.diag(vp_cov))
+        # Regularization of covariance matrix towards diagonal
+        if (
+            type(options["warp_cov_reg"]) == float
+            or type(options["warp_cov_reg"]) == int
+        ):
+            w_reg = options["warp_cov_reg"]
+        else:
+            w_reg = options.warp_cov_reg[optim_state["N"]]
+        w_reg = np.max([0, np.min([1, w_reg])])
+        vp_cov = (1 - w_reg) * vp_cov + w_reg * np.diag(np.diag(vp_cov))
 
-    # Compute whitening transform (rotoscaling)
-    U, s, __ = np.linalg.svd(vp_cov)
-    if np.linalg.det(U) < 0:
-        U[:, 0] = -U[:, 0]
-    scale = np.sqrt(s + np.finfo(np.float64).eps)
-    parameter_transformer.R_mat = U
-    parameter_transformer.scale = scale
+        # Compute whitening transform (rotoscaling)
+        U, s, __ = np.linalg.svd(vp_cov)
+        if np.linalg.det(U) < 0:
+            U[:, 0] = -U[:, 0]
+        scale = np.sqrt(s + np.finfo(np.float64).eps)
+        parameter_transformer.R_mat = U
+        parameter_transformer.scale = scale
 
-    # Update Plausible Bounds:
+    # Update shift and scaling and plausible bounds:
     parameter_transformer.mu = np.zeros(vp.D)
     parameter_transformer.delta = np.ones(vp.D)
     Nrnd = 100000
@@ -169,15 +174,13 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
     yy = parameter_transformer(xx)
 
     # Quantile-based estimate of plausible bounds
-    [plb, pub] = np.quantile(yy, [0.05, 0.95], axis=0)
-    delta_temp = pub - plb
-    plb = plb - delta_temp / 9
-    pub = pub + delta_temp / 9
-    plb = np.atleast_2d(plb)
-    pub = np.atleast_2d(pub)
+    [plb_tran, pub_tran] = np.quantile(yy, [0.05, 0.95], axis=0)
+    delta_temp = pub_tran - plb_tran
+    plb_tran = plb_tran - delta_temp / 9
+    pub_tran = pub_tran + delta_temp / 9
 
-    optim_state["plb"] = plb
-    optim_state["pub"] = pub
+    optim_state["plb_tran"] = plb_tran.reshape((1, vp.D))
+    optim_state["pub_tran"] = pub_tran.reshape((1, vp.D))
 
     # Temperature scaling
     if optim_state.get("temperature"):

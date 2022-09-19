@@ -193,8 +193,6 @@ class VBMC:
             plausible_upper_bounds,
         )
 
-        self.K = self.options.get("k_warmup")
-
         # starting point
         if not np.all(np.isfinite(self.x0)):
             # print('Initial starting point is invalid or not provided.
@@ -216,7 +214,7 @@ class VBMC:
         # Initialize variational posterior
         self.vp = VariationalPosterior(
             D=self.D,
-            K=self.K,
+            K=self.options.get("k_warmup"),
             x0=self.x0,
             parameter_transformer=self.parameter_transformer,
         )
@@ -585,10 +583,10 @@ class VBMC:
                 )
 
         # fprintf('Index of variable restricted to integer values: %s.\n'
-        optim_state["lb_orig"] = self.lower_bounds
-        optim_state["ub_orig"] = self.upper_bounds
-        optim_state["plb_orig"] = self.plausible_lower_bounds
-        optim_state["pub_orig"] = self.plausible_upper_bounds
+        optim_state["lb_orig"] = self.lower_bounds.copy()
+        optim_state["ub_orig"] = self.upper_bounds.copy()
+        optim_state["plb_orig"] = self.plausible_lower_bounds.copy()
+        optim_state["pub_orig"] = self.plausible_upper_bounds.copy()
         eps_orig = (self.upper_bounds - self.lower_bounds) * self.options.get(
             "tol_bound_x"
         )
@@ -597,15 +595,19 @@ class VBMC:
             optim_state["lb_eps_orig"] = self.lower_bounds + eps_orig
             optim_state["ub_eps_orig"] = self.upper_bounds - eps_orig
 
-        # Transform variables (Transform of lower_bounds and upper bounds can
+        # Transform variables (Transform of lower bounds and upper bounds can
         # create warning but we are aware of this and output is correct)
         with np.errstate(divide="ignore"):
-            optim_state["lb"] = self.parameter_transformer(self.lower_bounds)
-            optim_state["ub"] = self.parameter_transformer(self.upper_bounds)
-        optim_state["plb"] = self.parameter_transformer(
+            optim_state["lb_tran"] = self.parameter_transformer(
+                self.lower_bounds
+            )
+            optim_state["ub_tran"] = self.parameter_transformer(
+                self.upper_bounds
+            )
+        optim_state["plb_tran"] = self.parameter_transformer(
             self.plausible_lower_bounds
         )
-        optim_state["pub"] = self.parameter_transformer(
+        optim_state["pub_tran"] = self.parameter_transformer(
             self.plausible_upper_bounds
         )
 
@@ -668,7 +670,7 @@ class VBMC:
         optim_state["last_run_avg"] = np.NaN
 
         # Current number of components for variational posterior
-        optim_state["vp_K"] = self.K
+        optim_state["vp_K"] = self.options.get("k_warmup")
 
         # Number of variational components pruned in last iteration
         optim_state["pruned"] = 0
@@ -715,7 +717,7 @@ class VBMC:
         optim_state["iter_list"]["fhyp"] = []
 
         optim_state["delta"] = self.options.get("bandwidth") * (
-            optim_state.get("pub") - optim_state.get("plb")
+            optim_state.get("pub_tran") - optim_state.get("plb_tran")
         )
 
         # Deterministic entropy approximation lower/upper factor
@@ -731,16 +733,16 @@ class VBMC:
         optim_state["data_trim_list"] = []
 
         # Expanding search bounds
-        prange = optim_state.get("pub") - optim_state.get("plb")
+        prange = optim_state.get("pub_tran") - optim_state.get("plb_tran")
         optim_state["lb_search"] = np.maximum(
-            optim_state.get("plb")
+            optim_state.get("plb_tran")
             - prange * self.options.get("active_search_bound"),
-            optim_state.get("lb"),
+            optim_state.get("lb_tran"),
         )
         optim_state["ub_search"] = np.minimum(
-            optim_state.get("pub")
+            optim_state.get("pub_tran")
             + prange * self.options.get("active_search_bound"),
-            optim_state.get("ub"),
+            optim_state.get("ub_tran"),
         )
 
         # Initialize Gaussian process settings
@@ -939,8 +941,8 @@ class VBMC:
                         self.function_logger,
                         self.iteration_history,
                         self.options,
-                        self.plausible_lower_bounds,
-                        self.plausible_upper_bounds,
+                        self.optim_state["plb_tran"],
+                        self.optim_state["pub_tran"],
                     )
                     self.optim_state["sn2_hpd"] = sn2_hpd
 
@@ -959,7 +961,7 @@ class VBMC:
 
                     # Decide number of fast/slow optimizations
                     N_fastopts = math.ceil(
-                        self.options.eval("ns_elbo", {"K": self.K})
+                        self.options.eval("ns_elbo", {"K": self.vp.K})
                     )
                     N_slowopts = self.options.get(
                         "elbo_starts"
@@ -1056,8 +1058,8 @@ class VBMC:
                             self.function_logger,
                             self.iteration_history,
                             self.options,
-                            self.plausible_lower_bounds,
-                            self.plausible_upper_bounds,
+                            self.optim_state["plb_tran"],
+                            self.optim_state["pub_tran"],
                         )
                         timer.stop_timer("separate_gp_train")
                         self.optim_state["sn2_hpd"] = sn2_hpd
@@ -1110,8 +1112,8 @@ class VBMC:
                 self.function_logger,
                 self.iteration_history,
                 self.options,
-                self.plausible_lower_bounds,
-                self.plausible_upper_bounds,
+                self.optim_state["plb_tran"],
+                self.optim_state["pub_tran"],
             )
             self.optim_state["sn2_hpd"] = sn2_hpd
 
@@ -1138,7 +1140,9 @@ class VBMC:
                 )
 
             # Decide number of fast/slow optimizations
-            N_fastopts = math.ceil(self.options.eval("ns_elbo", {"K": self.K}))
+            N_fastopts = math.ceil(
+                self.options.eval("ns_elbo", {"K": self.vp.K})
+            )
 
             if self.optim_state.get("recompute_var_post") or (
                 self.options.get("always_refit_vp")
@@ -2134,8 +2138,8 @@ class VBMC:
         """
         output = dict()
         output["function"] = str(self.function_logger.fun)
-        if np.all(np.isinf(self.optim_state["lb"])) and np.all(
-            np.isinf(self.optim_state["ub"])
+        if np.all(np.isinf(self.optim_state["lb_tran"])) and np.all(
+            np.isinf(self.optim_state["ub_tran"])
         ):
             output["problemtype"] = "unconstrained"
         else:

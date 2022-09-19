@@ -5,6 +5,7 @@ import scipy.stats as sps
 from pyvbmc import parameter_transformer
 from pyvbmc.parameter_transformer import ParameterTransformer
 
+bounded_transform_types = [3, 12, 13]  # Update as needed with new types.
 D = 3
 
 
@@ -14,9 +15,7 @@ def test_init_no_lower_bounds():
 
 
 def test_init_lower_bounds():
-    parameter_transformer = ParameterTransformer(
-        D=D, lower_bounds=np.ones((1, D))
-    )
+    parameter_transformer = ParameterTransformer(D=D, lb_orig=np.ones((1, D)))
     assert np.all(parameter_transformer.lb_orig == np.ones(D))
 
 
@@ -26,9 +25,7 @@ def test_init_no_upper_bounds():
 
 
 def test_init_upper_bounds():
-    parameter_transformer = ParameterTransformer(
-        D=D, upper_bounds=np.ones((1, D))
-    )
+    parameter_transformer = ParameterTransformer(D=D, ub_orig=np.ones((1, D)))
     assert np.all(parameter_transformer.ub_orig == np.ones(D))
 
 
@@ -36,16 +33,16 @@ def test_init_type_3():
     # logit (default)
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)),
-        upper_bounds=np.ones((1, D)) * 2,
+        lb_orig=np.ones((1, D)),
+        ub_orig=np.ones((1, D)) * 2,
     )
     assert np.all(parameter_transformer.type == np.ones(D) * 3)
 
     # logit (keyword)
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)),
-        upper_bounds=np.ones((1, D)) * 2,
+        lb_orig=np.ones((1, D)),
+        ub_orig=np.ones((1, D)) * 2,
         transform_type="logit",
     )
     assert np.all(parameter_transformer.type == np.ones(D) * 3)
@@ -53,8 +50,8 @@ def test_init_type_3():
     # logit (number)
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)),
-        upper_bounds=np.ones((1, D)) * 2,
+        lb_orig=np.ones((1, D)),
+        ub_orig=np.ones((1, D)) * 2,
         transform_type=3,
     )
     assert np.all(parameter_transformer.type == np.ones(D) * 3)
@@ -62,8 +59,8 @@ def test_init_type_3():
     # probit
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)),
-        upper_bounds=np.ones((1, D)) * 2,
+        lb_orig=np.ones((1, D)),
+        ub_orig=np.ones((1, D)) * 2,
         transform_type="probit",
     )
     assert np.all(parameter_transformer.type == np.ones(D) * 12)
@@ -71,16 +68,16 @@ def test_init_type_3():
     # probit (alternate name)
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)),
-        upper_bounds=np.ones((1, D)) * 2,
+        lb_orig=np.ones((1, D)),
+        ub_orig=np.ones((1, D)) * 2,
         transform_type="norminv",
     )
 
     # probit (number)
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)),
-        upper_bounds=np.ones((1, D)) * 2,
+        lb_orig=np.ones((1, D)),
+        ub_orig=np.ones((1, D)) * 2,
         transform_type=12,
     )
     assert np.all(parameter_transformer.type == np.ones(D) * 12)
@@ -88,8 +85,8 @@ def test_init_type_3():
     # Student's T
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)),
-        upper_bounds=np.ones((1, D)) * 2,
+        lb_orig=np.ones((1, D)),
+        ub_orig=np.ones((1, D)) * 2,
         transform_type="student4",
     )
     assert np.all(parameter_transformer.type == np.ones(D) * 13)
@@ -97,8 +94,8 @@ def test_init_type_3():
     # Student's T (number)
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)),
-        upper_bounds=np.ones((1, D)) * 2,
+        lb_orig=np.ones((1, D)),
+        ub_orig=np.ones((1, D)) * 2,
         transform_type=13,
     )
     assert np.all(parameter_transformer.type == np.ones(D) * 13)
@@ -107,8 +104,8 @@ def test_init_type_3():
     with pytest.raises(Exception) as e_info:
         parameter_transformer = ParameterTransformer(
             D=D,
-            lower_bounds=np.ones((1, D)),
-            upper_bounds=np.ones((1, D)) * 2,
+            lb_orig=np.ones((1, D)),
+            ub_orig=np.ones((1, D)) * 2,
             transform_type="this_is_not_a_transform_type",
         )
     assert "Unrecognized bounded transform" in e_info.value.args[0]
@@ -117,8 +114,8 @@ def test_init_type_3():
     with pytest.raises(Exception) as e_info:
         parameter_transformer = ParameterTransformer(
             D=D,
-            lower_bounds=np.ones((1, D)),
-            upper_bounds=np.ones((1, D)) * 2,
+            lb_orig=np.ones((1, D)),
+            ub_orig=np.ones((1, D)) * 2,
             transform_type=666,
         )
     assert "Unrecognized bounded transform" in e_info.value.args[0]
@@ -127,8 +124,8 @@ def test_init_type_3():
 def test_init_mixed_bounds():
     parameter_transformer = ParameterTransformer(
         D=4,
-        lower_bounds=np.array([[0.0, -np.inf, -10.0, -np.inf]]),
-        upper_bounds=np.array([[10.0, np.inf, 0.0, np.inf]]),
+        lb_orig=np.array([[0.0, -np.inf, -10.0, -np.inf]]),
+        ub_orig=np.array([[10.0, np.inf, 0.0, np.inf]]),
     )
     assert np.all(
         parameter_transformer.type == np.array([3, 0, 3, 0], dtype=int)
@@ -136,8 +133,8 @@ def test_init_mixed_bounds():
 
     parameter_transformer = ParameterTransformer(
         D=4,
-        lower_bounds=np.array([[0.0, -np.inf, -10.0, -np.inf]]),
-        upper_bounds=np.array([[10.0, np.inf, 0.0, np.inf]]),
+        lb_orig=np.array([[0.0, -np.inf, -10.0, -np.inf]]),
+        ub_orig=np.array([[10.0, np.inf, 0.0, np.inf]]),
         transform_type="probit",
     )
     assert np.all(
@@ -146,43 +143,54 @@ def test_init_mixed_bounds():
 
     parameter_transformer = ParameterTransformer(
         D=4,
-        lower_bounds=np.array([[0.0, -np.inf, -10.0, -np.inf]]),
-        upper_bounds=np.array([[10.0, np.inf, 0.0, np.inf]]),
+        lb_orig=np.array([[0.0, -np.inf, -10.0, -np.inf]]),
+        ub_orig=np.array([[10.0, np.inf, 0.0, np.inf]]),
         transform_type="student4",
     )
     assert np.all(
         parameter_transformer.type == np.array([13, 0, 13, 0], dtype=int)
     )
 
+    for t in bounded_transform_types:
+        parameter_transformer = ParameterTransformer(
+            D=4,
+            lb_orig=np.array([[0.0, -np.inf, -10.0, -np.inf]]),
+            ub_orig=np.array([[10.0, np.inf, 0.0, np.inf]]),
+            transform_type=t,
+        )
+        assert np.all(
+            parameter_transformer.type == np.array([t, 0, t, 0], dtype=int)
+        )
+
 
 def test_init_bounds_check():
     with pytest.raises(ValueError):
         ParameterTransformer(
             D=D,
-            lower_bounds=np.ones((1, D)) * 3,
-            upper_bounds=np.ones((1, D)) * 2,
+            lb_orig=np.ones((1, D)) * 3,
+            ub_orig=np.ones((1, D)) * 2,
         )
     with pytest.raises(ValueError):
         ParameterTransformer(
             D=D,
-            lower_bounds=np.ones((1, D)) * 0,
-            upper_bounds=np.ones((1, D)) * 10,
-            plausible_lower_bounds=np.ones((1, D)) * -1,
+            lb_orig=np.ones((1, D)) * 0,
+            ub_orig=np.ones((1, D)) * 10,
+            plb_orig=np.ones((1, D)) * -1,
         )
     with pytest.raises(ValueError):
         ParameterTransformer(
             D=D,
-            lower_bounds=np.ones((1, D)) * 0,
-            upper_bounds=np.ones((1, D)) * 10,
-            plausible_upper_bounds=np.ones((1, D)) * 11,
+            lb_orig=np.ones((1, D)) * 0,
+            ub_orig=np.ones((1, D)) * 10,
+            pub_orig=np.ones((1, D)) * 11,
         )
     with pytest.raises(ValueError):
         ParameterTransformer(
             D=D,
-            lower_bounds=np.ones((1, D)) * 0,
-            upper_bounds=np.ones((1, D)) * 10,
-            plausible_lower_bounds=np.ones((1, D)) * 100,
-            plausible_upper_bounds=np.ones((1, D)) * -20,
+            lb_orig=np.ones((1, D)) * 0,
+            ub_orig=np.ones((1, D)) * 10,
+            plb_orig=np.ones((1, D)) * 100,
+            pub_orig=np.ones((1, D)) * -20,
         )
 
 
@@ -199,15 +207,15 @@ def test_init_delta_inf_bounds():
 def test_init_type3_mu_all_params():
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)) * -10,
-        upper_bounds=np.ones((1, D)) * 10,
-        plausible_lower_bounds=np.ones((1, D)) * 2,
-        plausible_upper_bounds=np.ones((1, D)) * 4,
+        lb_orig=np.ones((1, D)) * -10,
+        ub_orig=np.ones((1, D)) * 10,
+        plb_orig=np.ones((1, D)) * 2,
+        pub_orig=np.ones((1, D)) * 4,
     )
     parameter_transformer2 = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)) * -10,
-        upper_bounds=np.ones((1, D)) * 10,
+        lb_orig=np.ones((1, D)) * -10,
+        ub_orig=np.ones((1, D)) * 10,
     )
     plb = parameter_transformer2(np.ones((1, D)) * 2)
     pub = parameter_transformer2(np.ones((1, D)) * 4)
@@ -220,15 +228,15 @@ def test_init_type3_mu_all_params():
 def test_init_type3_delta_all_params():
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)) * -10,
-        upper_bounds=np.ones((1, D)) * 10,
-        plausible_lower_bounds=np.ones((1, D)) * 2,
-        plausible_upper_bounds=np.ones((1, D)) * 4,
+        lb_orig=np.ones((1, D)) * -10,
+        ub_orig=np.ones((1, D)) * 10,
+        plb_orig=np.ones((1, D)) * 2,
+        pub_orig=np.ones((1, D)) * 4,
     )
     parameter_transformer2 = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)) * -10,
-        upper_bounds=np.ones((1, D)) * 10,
+        lb_orig=np.ones((1, D)) * -10,
+        ub_orig=np.ones((1, D)) * 10,
     )
     plb = parameter_transformer2(np.ones((1, D)) * 2)
     pub = parameter_transformer2(np.ones((1, D)) * 4)
@@ -242,8 +250,8 @@ def test_direct_transform_type3_within():
     # logit
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)) * -10,
-        upper_bounds=np.ones((1, D)) * 10,
+        lb_orig=np.ones((1, D)) * -10,
+        ub_orig=np.ones((1, D)) * 10,
     )
     X = np.ones((10, D)) * 3
     Y = parameter_transformer(X)
@@ -253,8 +261,8 @@ def test_direct_transform_type3_within():
     # probit
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)) * -10,
-        upper_bounds=np.ones((1, D)) * 10,
+        lb_orig=np.ones((1, D)) * -10,
+        ub_orig=np.ones((1, D)) * 10,
         transform_type="probit",
     )
     X = np.ones((10, D)) * 3
@@ -265,8 +273,8 @@ def test_direct_transform_type3_within():
     # student4
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)) * -10,
-        upper_bounds=np.ones((1, D)) * 10,
+        lb_orig=np.ones((1, D)) * -10,
+        ub_orig=np.ones((1, D)) * 10,
         transform_type="student4",
     )
     X = np.ones((10, D)) * 3
@@ -279,8 +287,8 @@ def test_direct_transform_type3_within_negative():
     # logit
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)) * -10,
-        upper_bounds=np.ones((1, D)) * 10,
+        lb_orig=np.ones((1, D)) * -10,
+        ub_orig=np.ones((1, D)) * 10,
     )
     X = np.ones((10, D)) * -4
     Y = parameter_transformer(X)
@@ -290,8 +298,8 @@ def test_direct_transform_type3_within_negative():
     # probit
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)) * -10,
-        upper_bounds=np.ones((1, D)) * 10,
+        lb_orig=np.ones((1, D)) * -10,
+        ub_orig=np.ones((1, D)) * 10,
         transform_type="probit",
     )
     X = np.ones((10, D)) * -4
@@ -302,8 +310,8 @@ def test_direct_transform_type3_within_negative():
     # student4
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)) * -10,
-        upper_bounds=np.ones((1, D)) * 10,
+        lb_orig=np.ones((1, D)) * -10,
+        ub_orig=np.ones((1, D)) * 10,
         transform_type="student4",
     )
     X = np.ones((10, D)) * -4
@@ -330,8 +338,8 @@ def test_inverse_type3_within():
     # logit
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)) * -10,
-        upper_bounds=np.ones((1, D)) * 10,
+        lb_orig=np.ones((1, D)) * -10,
+        ub_orig=np.ones((1, D)) * 10,
     )
     Y = np.ones((10, D)) * 3
     X = parameter_transformer.inverse(Y)
@@ -341,8 +349,8 @@ def test_inverse_type3_within():
     # probit
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)) * -10,
-        upper_bounds=np.ones((1, D)) * 10,
+        lb_orig=np.ones((1, D)) * -10,
+        ub_orig=np.ones((1, D)) * 10,
         transform_type="probit",
     )
     Y = np.ones((10, D)) * 3
@@ -353,8 +361,8 @@ def test_inverse_type3_within():
     # student4
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)) * -10,
-        upper_bounds=np.ones((1, D)) * 10,
+        lb_orig=np.ones((1, D)) * -10,
+        ub_orig=np.ones((1, D)) * 10,
         transform_type="student4",
     )
     Y = np.ones((10, D)) * 3
@@ -366,8 +374,8 @@ def test_inverse_type3_within():
 def test_inverse_type3_within_negative():
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)) * -10,
-        upper_bounds=np.ones((1, D)) * 10,
+        lb_orig=np.ones((1, D)) * -10,
+        ub_orig=np.ones((1, D)) * 10,
     )
     Y = np.ones((10, D)) * -4
     X = parameter_transformer.inverse(Y)
@@ -377,8 +385,8 @@ def test_inverse_type3_within_negative():
     # probit
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)) * -10,
-        upper_bounds=np.ones((1, D)) * 10,
+        lb_orig=np.ones((1, D)) * -10,
+        ub_orig=np.ones((1, D)) * 10,
         transform_type="probit",
     )
     Y = np.ones((10, D)) * -4
@@ -389,8 +397,8 @@ def test_inverse_type3_within_negative():
     # student4
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)) * -10,
-        upper_bounds=np.ones((1, D)) * 10,
+        lb_orig=np.ones((1, D)) * -10,
+        ub_orig=np.ones((1, D)) * 10,
         transform_type="student4",
     )
     Y = np.ones((10, D)) * -4
@@ -417,8 +425,8 @@ def test_inverse_type3_min_space():
     # logit
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)) * -10,
-        upper_bounds=np.ones((1, D)) * 10,
+        lb_orig=np.ones((1, D)) * -10,
+        ub_orig=np.ones((1, D)) * 10,
     )
     Y = np.ones((10, D)) * -500
     X = parameter_transformer.inverse(Y)
@@ -427,8 +435,8 @@ def test_inverse_type3_min_space():
     for t in [12, 13]:  # probit, student4
         parameter_transformer = ParameterTransformer(
             D=D,
-            lower_bounds=np.ones((1, D)) * -10,
-            upper_bounds=np.ones((1, D)) * 10,
+            lb_orig=np.ones((1, D)) * -10,
+            ub_orig=np.ones((1, D)) * 10,
             transform_type=t,
         )
         Y = np.ones((10, D)) * -500
@@ -440,8 +448,8 @@ def test_inverse_type3_max_space():
     # logit
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)) * -10,
-        upper_bounds=np.ones((1, D)) * 10,
+        lb_orig=np.ones((1, D)) * -10,
+        ub_orig=np.ones((1, D)) * 10,
     )
     Y = np.ones((10, D)) * 3000
     X = parameter_transformer.inverse(Y)
@@ -450,8 +458,8 @@ def test_inverse_type3_max_space():
     for t in [12, 13]:  # probit, student4
         parameter_transformer = ParameterTransformer(
             D=D,
-            lower_bounds=np.ones((1, D)) * -10,
-            upper_bounds=np.ones((1, D)) * 10,
+            lb_orig=np.ones((1, D)) * -10,
+            ub_orig=np.ones((1, D)) * 10,
             transform_type=t,
         )
         Y = np.ones((10, D)) * -500
@@ -462,8 +470,8 @@ def test_inverse_type3_max_space():
 def test_transform_direct_inverse():
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)) * -10,
-        upper_bounds=np.ones((1, D)) * 10,
+        lb_orig=np.ones((1, D)) * -10,
+        ub_orig=np.ones((1, D)) * 10,
     )
     X = np.ones((10, D)) * 0.05
     U = parameter_transformer(X)
@@ -473,8 +481,8 @@ def test_transform_direct_inverse():
     for t in [12, 13]:  # probit, student4
         parameter_transformer = ParameterTransformer(
             D=D,
-            lower_bounds=np.ones((1, D)) * -10,
-            upper_bounds=np.ones((1, D)) * 10,
+            lb_orig=np.ones((1, D)) * -10,
+            ub_orig=np.ones((1, D)) * 10,
             transform_type=t,
         )
         X = np.ones((10, D)) * 0.05
@@ -486,8 +494,8 @@ def test_transform_direct_inverse():
 def test_transform_inverse_direct():
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)) * -10,
-        upper_bounds=np.ones((1, D)) * 10,
+        lb_orig=np.ones((1, D)) * -10,
+        ub_orig=np.ones((1, D)) * 10,
     )
     U = np.ones((10, D)) * 0.2
     X = parameter_transformer.inverse(U)
@@ -497,8 +505,8 @@ def test_transform_inverse_direct():
     for t in [12, 13]:  # probit, student4
         parameter_transformer = ParameterTransformer(
             D=D,
-            lower_bounds=np.ones((1, D)) * -10,
-            upper_bounds=np.ones((1, D)) * 10,
+            lb_orig=np.ones((1, D)) * -10,
+            ub_orig=np.ones((1, D)) * 10,
             transform_type=t,
         )
         U = np.ones((10, D)) * 0.2
@@ -510,8 +518,8 @@ def test_transform_inverse_direct():
 def test_transform_direct_inverse_largeN():
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)) * -10,
-        upper_bounds=np.ones((1, D)) * 10,
+        lb_orig=np.ones((1, D)) * -10,
+        ub_orig=np.ones((1, D)) * 10,
     )
     X = np.ones((10 ^ 6, D)) * 0.4
     U = parameter_transformer(X)
@@ -521,8 +529,8 @@ def test_transform_direct_inverse_largeN():
     for t in [12, 13]:  # probit, student4
         parameter_transformer = ParameterTransformer(
             D=D,
-            lower_bounds=np.ones((1, D)) * -10,
-            upper_bounds=np.ones((1, D)) * 10,
+            lb_orig=np.ones((1, D)) * -10,
+            ub_orig=np.ones((1, D)) * 10,
             transform_type=t,
         )
         X = np.ones((10 ^ 6, D)) * 0.4
@@ -534,8 +542,8 @@ def test_transform_direct_inverse_largeN():
 def test_transform_inverse_direct_largeN():
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)) * -10,
-        upper_bounds=np.ones((1, D)) * 10,
+        lb_orig=np.ones((1, D)) * -10,
+        ub_orig=np.ones((1, D)) * 10,
     )
     U = np.ones((10 ^ 6, D)) * 0.11
     X = parameter_transformer.inverse(U)
@@ -545,8 +553,8 @@ def test_transform_inverse_direct_largeN():
     for t in [12, 13]:  # probit, student4
         parameter_transformer = ParameterTransformer(
             D=D,
-            lower_bounds=np.ones((1, D)) * -10,
-            upper_bounds=np.ones((1, D)) * 10,
+            lb_orig=np.ones((1, D)) * -10,
+            ub_orig=np.ones((1, D)) * 10,
             transform_type=t,
         )
         U = np.ones((10 ^ 6, D)) * 0.11
@@ -558,8 +566,8 @@ def test_transform_inverse_direct_largeN():
 def test_log_abs_det_jacobian_type3_within():
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)) * -10,
-        upper_bounds=np.ones((1, D)) * 10,
+        lb_orig=np.ones((1, D)) * -10,
+        ub_orig=np.ones((1, D)) * 10,
     )
     U = np.ones((10, D)) * 3
     log_j = parameter_transformer.log_abs_det_jacobian(U)
@@ -570,8 +578,8 @@ def test_log_abs_det_jacobian_type3_within():
 def test_log_abs_det_jacobian_type3_within_negative():
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)) * -10,
-        upper_bounds=np.ones((1, D)) * 10,
+        lb_orig=np.ones((1, D)) * -10,
+        ub_orig=np.ones((1, D)) * 10,
     )
     U = np.ones((10, D)) * -4
     log_j = parameter_transformer.log_abs_det_jacobian(U)
@@ -650,9 +658,9 @@ def test_bounded_log_abs_det_jacobian_numerically():
     D = np.random.randint(1, 13)
     LB = -2 * np.ones((1, D))
     UB = 2 * np.ones((1, D))
-    for t in [3, 12, 13]:  # logit, probit, student4
+    for t in bounded_transform_types:  # logit, probit, student4
         parameter_transformer = ParameterTransformer(
-            D=D, lower_bounds=LB, upper_bounds=UB, transform_type=t
+            D=D, lb_orig=LB, ub_orig=UB, transform_type=t
         )
 
         dx = 1e-6
@@ -683,8 +691,8 @@ def test_transform_bounded_and_unbounded():
 
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.array([[0.0, -np.inf]]),
-        upper_bounds=np.array([[10.0, np.inf]]),
+        lb_orig=np.array([[0.0, -np.inf]]),
+        ub_orig=np.array([[10.0, np.inf]]),
     )
     assert np.allclose(
         x, parameter_transformer.inverse(parameter_transformer(x))
@@ -696,10 +704,10 @@ def test_transform_bounded_and_unbounded():
 
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.array([[0.0, -np.inf]]),
-        upper_bounds=np.array([[10.0, np.inf]]),
-        plausible_lower_bounds=np.array([[4.5, -np.inf]]),
-        plausible_upper_bounds=np.array([[5.5, np.inf]]),
+        lb_orig=np.array([[0.0, -np.inf]]),
+        ub_orig=np.array([[10.0, np.inf]]),
+        plb_orig=np.array([[4.5, -np.inf]]),
+        pub_orig=np.array([[5.5, np.inf]]),
         transform_type="probit",
     )
     assert np.allclose(
@@ -712,8 +720,8 @@ def test_transform_bounded_and_unbounded():
 
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.array([[0.0, -np.inf]]),
-        upper_bounds=np.array([[10.0, np.inf]]),
+        lb_orig=np.array([[0.0, -np.inf]]),
+        ub_orig=np.array([[10.0, np.inf]]),
         transform_type="student4",
     )
     assert np.allclose(
@@ -734,22 +742,22 @@ def test_abs_det_jacobian_bounded_and_unbounded():
 
     bounded_transformer = ParameterTransformer(
         D=1,
-        lower_bounds=np.array([[0.0]]),
-        upper_bounds=np.array([[10.0]]),
+        lb_orig=np.array([[0.0]]),
+        ub_orig=np.array([[10.0]]),
     )
     unbounded_transformer = ParameterTransformer(
         D=1,
-        lower_bounds=np.array([[-np.inf]]),
-        upper_bounds=np.array([[np.inf]]),
-        plausible_lower_bounds=np.array([[-0.5]]),
-        plausible_upper_bounds=np.array([[0.5]]),
+        lb_orig=np.array([[-np.inf]]),
+        ub_orig=np.array([[np.inf]]),
+        plb_orig=np.array([[-0.5]]),
+        pub_orig=np.array([[0.5]]),
     )
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.array([[0.0, -np.inf]]),
-        upper_bounds=np.array([[10.0, np.inf]]),
-        plausible_lower_bounds=np.array([[0.0, -0.5]]),
-        plausible_upper_bounds=np.array([[10.0, 0.5]]),
+        lb_orig=np.array([[0.0, -np.inf]]),
+        ub_orig=np.array([[10.0, np.inf]]),
+        plb_orig=np.array([[0.0, -0.5]]),
+        pub_orig=np.array([[10.0, 0.5]]),
     )
 
     j1 = bounded_transformer.log_abs_det_jacobian(x1)
@@ -762,11 +770,11 @@ def test_abs_det_jacobian_bounded_and_unbounded():
 
 def test_boundary_edge_cases():
     D = 4
-    for t in [3, 12, 13]:
+    for t in bounded_transform_types:
         lb = np.full((1, D), 1000.0)
         ub = np.full((1, D), 1001.0)
         parameter_transformer = ParameterTransformer(
-            D=D, lower_bounds=lb, upper_bounds=ub, transform_type=t
+            D=D, lb_orig=lb, ub_orig=ub, transform_type=t
         )
         close_to_lb = np.nextafter(lb, np.inf)
         close_to_ub = np.nextafter(ub, -np.inf)
@@ -795,7 +803,7 @@ def test_boundary_edge_cases():
         lb = np.full((1, D), -1000.0)
         ub = np.full((1, D), 0.0)
         parameter_transformer = ParameterTransformer(
-            D=D, lower_bounds=lb, upper_bounds=ub, transform_type=t
+            D=D, lb_orig=lb, ub_orig=ub, transform_type=t
         )
         close_to_lb = np.nextafter(lb, np.inf)
         close_to_ub = np.nextafter(ub, -np.inf)
@@ -818,3 +826,23 @@ def test_boundary_edge_cases():
             parameter_transformer.inverse(np.full((1, D), big_num))
             == close_to_ub
         )
+
+
+def test_lb_ub_map_to_inf():
+    D = 4
+    lb_orig = -np.random.normal(scale=100, size=(1, D))
+    lb_orig[0, 0], lb_orig[0, 2] = -np.inf, -np.inf  # Mixed bound types
+    ub_orig = lb_orig + np.random.lognormal(sigma=2, size=(1, D))
+    ub_orig[0, 0], ub_orig[0, 2] = np.inf, np.inf  # Mixed bound types
+
+    for t in bounded_transform_types:
+        parameter_transformer = ParameterTransformer(
+            D=D,
+            lb_orig=lb_orig,
+            ub_orig=ub_orig,
+            transform_type=t,
+        )
+        # Hard bounds should map to +- infinity for all variables,
+        # both bounded + unbounded, and all types of bounded transforms:
+        assert np.all(parameter_transformer(lb_orig) == -np.inf)
+        assert np.all(parameter_transformer(ub_orig) == np.inf)
