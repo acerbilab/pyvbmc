@@ -595,7 +595,7 @@ class VBMC:
             optim_state["lb_eps_orig"] = self.lower_bounds + eps_orig
             optim_state["ub_eps_orig"] = self.upper_bounds - eps_orig
 
-        # Transform variables (Transform of lower_bounds and upper bounds can
+        # Transform variables (Transform of lower bounds and upper bounds can
         # create warning but we are aware of this and output is correct)
         with np.errstate(divide="ignore"):
             optim_state["lb_tran"] = self.parameter_transformer(

@@ -5,6 +5,7 @@ import scipy.stats as sps
 from pyvbmc import parameter_transformer
 from pyvbmc.parameter_transformer import ParameterTransformer
 
+bounded_transform_types = [3, 12, 13]  # Update as needed with new types.
 D = 3
 
 
@@ -149,6 +150,17 @@ def test_init_mixed_bounds():
     assert np.all(
         parameter_transformer.type == np.array([13, 0, 13, 0], dtype=int)
     )
+
+    for t in bounded_transform_types:
+        parameter_transformer = ParameterTransformer(
+            D=4,
+            lb_orig=np.array([[0.0, -np.inf, -10.0, -np.inf]]),
+            ub_orig=np.array([[10.0, np.inf, 0.0, np.inf]]),
+            transform_type=t,
+        )
+        assert np.all(
+            parameter_transformer.type == np.array([t, 0, t, 0], dtype=int)
+        )
 
 
 def test_init_bounds_check():
@@ -646,7 +658,7 @@ def test_bounded_log_abs_det_jacobian_numerically():
     D = np.random.randint(1, 13)
     LB = -2 * np.ones((1, D))
     UB = 2 * np.ones((1, D))
-    for t in [3, 12, 13]:  # logit, probit, student4
+    for t in bounded_transform_types:  # logit, probit, student4
         parameter_transformer = ParameterTransformer(
             D=D, lb_orig=LB, ub_orig=UB, transform_type=t
         )
@@ -758,7 +770,7 @@ def test_abs_det_jacobian_bounded_and_unbounded():
 
 def test_boundary_edge_cases():
     D = 4
-    for t in [3, 12, 13]:
+    for t in bounded_transform_types:
         lb = np.full((1, D), 1000.0)
         ub = np.full((1, D), 1001.0)
         parameter_transformer = ParameterTransformer(
@@ -814,3 +826,23 @@ def test_boundary_edge_cases():
             parameter_transformer.inverse(np.full((1, D), big_num))
             == close_to_ub
         )
+
+
+def test_lb_ub_map_to_inf():
+    D = 4
+    lb_orig = -np.random.normal(scale=100, size=(1, D))
+    lb_orig[0, 0], lb_orig[0, 2] = -np.inf, -np.inf  # Mixed bound types
+    ub_orig = lb_orig + np.random.lognormal(sigma=2, size=(1, D))
+    ub_orig[0, 0], ub_orig[0, 2] = np.inf, np.inf  # Mixed bound types
+
+    for t in bounded_transform_types:
+        parameter_transformer = ParameterTransformer(
+            D=D,
+            lb_orig=lb_orig,
+            ub_orig=ub_orig,
+            transform_type=t,
+        )
+        # Hard bounds should map to +- infinity for all variables,
+        # both bounded + unbounded, and all types of bounded transforms:
+        assert np.all(parameter_transformer(lb_orig) == -np.inf)
+        assert np.all(parameter_transformer(ub_orig) == np.inf)
