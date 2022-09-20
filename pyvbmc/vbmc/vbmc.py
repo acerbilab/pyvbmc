@@ -846,6 +846,7 @@ class VBMC:
         self._log_column_headers()
 
         while not is_finished:
+            self._iteration_hook()
             iteration += 1
             # Reset timer:
             timer.reset()
@@ -2295,3 +2296,10 @@ class VBMC:
             logger.addHandler(file_handler)
 
         return logger
+
+    def _iteration_hook(self):
+        """Dummy function, used to test internal states with pytest-mock.
+
+        See ``test_vbmc_optimize.py`` for example usage.
+        """
+        pass

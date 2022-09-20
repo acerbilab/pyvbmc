@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 import scipy as sp
 import scipy.stats
 
@@ -6,7 +7,16 @@ from pyvbmc.acquisition_functions import *
 from pyvbmc.vbmc import VBMC
 
 
-def _test_vbmc_optimize_rosenbrock():
+def _iter_test_function(self):
+    """Run this test at the beginning of each VBMC iteration.
+
+    Runs in place of ``vbmc._iteration_hook()``.
+    """
+    # Check that optim_state is updated correctly:
+    assert self.vp.K == self.optim_state["vp_K"]
+
+
+def test_vbmc_optimize_rosenbrock(mocker):
     D = 2
 
     def llfun(x):
@@ -31,6 +41,7 @@ def _test_vbmc_optimize_rosenbrock():
     pub = prior_mu + 3 * np.sqrt(prior_var)
     x0 = prior_mu.copy()
 
+    mocker.patch("pyvbmc.vbmc.VBMC._iteration_hook", _iter_test_function)
     vbmc = VBMC(llfun, x0, None, None, plb, pub, log_prior=lpriorfun)
     vbmc.optimize()
 
@@ -47,6 +58,7 @@ def run_optim_block(
     options=None,
     noise_flag=False,
     log_prior=None,
+    mocker=None,
 ):
     if options is None:
         options = {}
@@ -56,6 +68,8 @@ def run_optim_block(
     if noise_flag:
         options["specify_target_noise"] = True
 
+    # Then run the real test:
+    mocker.patch("pyvbmc.vbmc.VBMC._iteration_hook", _iter_test_function)
     vbmc = VBMC(
         f, x0, lb, ub, plb, pub, user_options=options, log_prior=log_prior
     )
@@ -68,7 +82,7 @@ def run_optim_block(
     return err_1, err_2
 
 
-def test_vbmc_multivariate_normal():
+def test_vbmc_multivariate_normal(mocker):
     D = 6
     x0 = -np.ones((1, D))
     # Be careful about -2 and -2.0!
@@ -84,14 +98,16 @@ def test_vbmc_multivariate_normal():
         - 0.5 * np.size(x) * np.log(2 * np.pi)
     )
 
-    err_1, err_2 = run_optim_block(f, x0, lb, ub, plb, pub, lnZ, mu_bar)
+    err_1, err_2 = run_optim_block(
+        f, x0, lb, ub, plb, pub, lnZ, mu_bar, mocker=mocker
+    )
 
     assert err_1 < 0.5
     assert err_2 < 0.5
     return err_1, err_2
 
 
-def test_vbmc_multivariate_half_normal():
+def test_vbmc_multivariate_half_normal(mocker):
     D = 2
     x0 = -np.ones((1, D))
     plb = np.full((1, D), -6.0)
@@ -107,14 +123,16 @@ def test_vbmc_multivariate_half_normal():
     )
     print(f(np.array([1.5, np.pi])))
 
-    err_1, err_2 = run_optim_block(f, x0, lb, ub, plb, pub, lnZ, mu_bar)
+    err_1, err_2 = run_optim_block(
+        f, x0, lb, ub, plb, pub, lnZ, mu_bar, mocker=mocker
+    )
 
     assert err_1 < 0.5
     assert err_2 < 0.5
     return err_1, err_2
 
 
-def test_vbmc_correlated_multivariate_normal():
+def test_vbmc_correlated_multivariate_normal(mocker):
     D = 3
     x0 = 0.5 * np.ones((1, D))
     plb = np.full((1, D), -1.0)
@@ -124,13 +142,15 @@ def test_vbmc_correlated_multivariate_normal():
     lnZ = 0.0
     mu_bar = np.reshape(np.linspace(-0.5, 0.5, D), (1, -1))
 
-    err_1, err_2 = run_optim_block(cigar, x0, lb, ub, plb, pub, lnZ, mu_bar)
+    err_1, err_2 = run_optim_block(
+        cigar, x0, lb, ub, plb, pub, lnZ, mu_bar, mocker=mocker
+    )
 
     assert err_1 < 0.5
     assert err_2 < 0.5
 
 
-def test_vbmc_correlated_multivariate_normal_2():
+def test_vbmc_correlated_multivariate_normal_2(mocker):
     D = 3
     x0 = 0.5 * np.ones((1, D))
     plb = np.full((1, D), -1.0)
@@ -140,13 +160,15 @@ def test_vbmc_correlated_multivariate_normal_2():
     lnZ = 0.0
     mu_bar = np.reshape(np.linspace(-0.5, 0.5, D), (1, -1))
 
-    err_1, err_2 = run_optim_block(cigar, x0, lb, ub, plb, pub, lnZ, mu_bar)
+    err_1, err_2 = run_optim_block(
+        cigar, x0, lb, ub, plb, pub, lnZ, mu_bar, mocker=mocker
+    )
 
     assert err_1 < 0.5
     assert err_2 < 0.5
 
 
-def test_vbmc_uniform():
+def test_vbmc_uniform(mocker):
     D = 1
     x0 = 0.5 * np.ones((1, D))
     plb = np.full((1, D), 0.05)
@@ -159,7 +181,7 @@ def test_vbmc_uniform():
 
     options = {"search_optimizer": "Nelder-Mead"}
     err_1, err_2 = run_optim_block(
-        f, x0, lb, ub, plb, pub, lnZ, mu_bar, options
+        f, x0, lb, ub, plb, pub, lnZ, mu_bar, options, mocker=mocker
     )
 
     assert err_1 < 0.5
@@ -167,7 +189,7 @@ def test_vbmc_uniform():
     return err_1, err_2
 
 
-def test_vbmc_multivariate_half_normal_noisy():
+def test_vbmc_multivariate_half_normal_noisy(mocker):
     D = 2
     noise_scale = 0.5
     x0 = -np.ones((1, D))
@@ -190,7 +212,7 @@ def test_vbmc_multivariate_half_normal_noisy():
     }
 
     err_1, err_2 = run_optim_block(
-        f, x0, lb, ub, plb, pub, lnZ, mu_bar, options=options
+        f, x0, lb, ub, plb, pub, lnZ, mu_bar, options=options, mocker=mocker
     )
 
     assert err_1 < 0.5
@@ -455,3 +477,39 @@ def _test_optimize_reproducibility():
 
     for k, v in result.items():
         assert v[0] == v[1]
+
+
+def test_iteration_hook_test(mocker):
+    """Ensure the vbmc._iteration_hook() runs, by catching exception."""
+    D = 2
+
+    def llfun(x):
+        if x.ndim == 2:
+            return -np.sum(
+                (x[0, :-1] ** 2.0 - x[0, 1:]) ** 2.0
+                + (x[0, :-1] - 1) ** 2.0 / 100
+            )
+        else:
+            return -np.sum(
+                (x[:-1] ** 2.0 - x[1:]) ** 2.0 + (x[:-1] - 1) ** 2.0 / 100
+            )
+
+    prior_mu = np.zeros((1, D))
+    prior_var = 3**2 * np.ones((1, D))
+    lpriorfun = lambda x: -0.5 * (
+        np.sum((x - prior_mu) ** 2 / prior_var)
+        + np.log(np.prod(2 * np.pi * prior_var))
+    )
+
+    plb = prior_mu - 3 * np.sqrt(prior_var)
+    pub = prior_mu + 3 * np.sqrt(prior_var)
+    x0 = prior_mu.copy()
+
+    # Check that patch is working:
+    def false(self):
+        assert False
+
+    mocker.patch("pyvbmc.vbmc.VBMC._iteration_hook", false)
+    vbmc = VBMC(llfun, x0, None, None, plb, pub, log_prior=lpriorfun)
+    with pytest.raises(AssertionError):
+        vbmc.optimize()
