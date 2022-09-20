@@ -14,6 +14,11 @@ def _iter_test_function(self):
     """
     # Check that optim_state is updated correctly:
     assert self.vp.K == self.optim_state["vp_K"]
+    assert self.parameter_transformer == self.vp.parameter_transformer
+    assert (
+        self.parameter_transformer
+        == self.function_logger.parameter_transformer
+    )
 
 
 def test_vbmc_optimize_rosenbrock(mocker):

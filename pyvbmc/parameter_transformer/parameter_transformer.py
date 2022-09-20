@@ -396,6 +396,22 @@ class ParameterTransformer:
             else:
                 raise NotImplementedError
 
+    def __eq__(self, other):
+        return (
+            np.all(self.scale == self.scale)
+            and np.all(self.R_mat == other.R_mat)
+            and np.all(self.lb_orig == other.lb_orig)
+            and np.all(self.ub_orig == other.ub_orig)
+            and np.all(self.bounded_types == other.bounded_types)
+            and np.all(
+                self._bounded_transforms.keys()
+                == other._bounded_transforms.keys()
+            )
+            and np.all(self.type == other.type)
+            and np.all(self.mu == other.mu)
+            and np.all(self.delta == other.delta)
+        )
+
 
 def _to_unit_interval(x, lb, ub, safe=True):
     z = (x - lb) / (ub - lb)
