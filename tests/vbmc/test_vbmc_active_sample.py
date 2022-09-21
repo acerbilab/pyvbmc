@@ -35,7 +35,7 @@ def test_active_uncertainty_sampling(mocker):
             100.0 * (x[:, 1:] - x[:, :-1] ** 2) ** 2.0 + (1 - x[:, :-1]) ** 2,
             axis=1,
         )
-        return r
+        return np.log(r)
 
     D = 2
     LB = -np.full((1, D), np.inf)  # Lower bounds
