@@ -532,7 +532,14 @@ class VariationalPosterior:
         if logflag:
             if gradflag:
                 dy = dy / y
-            y = np.log(y)
+            # Avoid log(0):
+            zero_mask = y == 0
+            y[zero_mask] = -np.inf
+            y[~zero_mask] = np.log(y[~zero_mask])
+            # PDF is 0 outside original bounds:
+            y[~mask] = -np.inf
+        else:
+            y[~mask] = 0
 
         # apply jacobian correction
         if origflag:
@@ -551,9 +558,6 @@ class VariationalPosterior:
                         :, np.newaxis
                     ]
                 )
-
-        # pdf is 0 outside the bounds in origspace
-        y[~mask] = 0
 
         if gradflag:
             return y, dy
