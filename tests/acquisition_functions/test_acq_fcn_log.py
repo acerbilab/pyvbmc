@@ -32,7 +32,7 @@ def test__call__(mocker):
 
     mocker.patch(
         "pyvbmc.variational_posterior.VariationalPosterior.pdf",
-        return_value=np.zeros((M, 1)),
+        return_value=np.ones((M, 1)),
     )
 
     optim_state = dict()

@@ -37,14 +37,10 @@ class AcqFcnLog(AbstractAcqFcn):
 
         # Probability density of variational posterior at test points
         realmin = sys.float_info.min
-        log_p = np.ravel(
-            np.maximum(
-                vp.pdf(Xs, origflag=False, logflag=True), np.log(realmin)
-            )
-        )
+        p = np.ravel(np.maximum(vp.pdf(Xs, origflag=False), realmin))
 
         # Log prospective uncertainty search
         z = function_logger.ymax
-        acq = -(np.log(var_tot) + f_bar - z + log_p)
+        acq = -(np.log(var_tot) + f_bar - z + np.log(p))
 
         return acq
