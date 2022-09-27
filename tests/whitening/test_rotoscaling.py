@@ -132,7 +132,7 @@ def test_unscent_warp():
     assert np.all(np.isclose(sigmaw, matlab_result_sigmaw, atol=0.0001))
 
 
-def test_parameter_transformer_log_det_abs():
+def test_parameter_transformer_log_abs_det():
     D = 3
     x = np.array([1.0, -3.0, 8.5])
     parameter_transformer = ParameterTransformer(
