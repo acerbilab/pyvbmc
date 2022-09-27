@@ -77,7 +77,7 @@ def unscent_warp(fun, x, sigma):
     return x_warped_mean, x_warped_sigma, x_warped
 
 
-def warp_input_vbmc(vp, optim_state, function_logger, options):
+def warp_input(vp, optim_state, function_logger, options):
     r"""Compute input warping of variables and update the cached points in
     function_logger accordingly.
 

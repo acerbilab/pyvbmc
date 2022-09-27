@@ -361,7 +361,7 @@ def active_sample(
                         "search_optimizer", "Nelder-Mead", force=True
                     )
 
-                fval_old = acq_fast[idx]
+                f_val_old = acq_fast[idx]
                 x0 = X_acq[0, :]
 
                 if (
@@ -378,7 +378,7 @@ def active_sample(
                 if acq_eval.acq_info.get("log_flag"):
                     tol_fun = 1e-2
                 else:
-                    tol_fun = max(1e-12, abs(fval_old * 1e-3))
+                    tol_fun = max(1e-12, abs(f_val_old * 1e-3))
 
                 if options["search_optimizer"] == "cmaes":
 
@@ -405,18 +405,18 @@ def active_sample(
                         noise_handler=cma.NoiseHandler(np.size(x0)),
                     )
 
-                    xsearch_optim, fval_optim = res[:2]
+                    xsearch_optim, f_val_optim = res[:2]
                 elif options["search_optimizer"] == "Nelder-Mead":
                     from scipy.optimize import minimize
 
                     res = minimize(
                         acq_fun, x0, method="Nelder-Mead", tol=tol_fun
                     )
-                    xsearch_optim, fval_optim = res.x, res.fun
+                    xsearch_optim, f_val_optim = res.x, res.fun
                 else:
                     raise NotImplementedError("Not implemented yet")
 
-                if fval_optim < fval_old:
+                if f_val_optim < f_val_old:
                     X_acq[0, :] = AbstractAcqFcn._real2int(
                         xsearch_optim,
                         parameter_transformer,

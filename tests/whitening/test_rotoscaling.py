@@ -8,7 +8,7 @@ import scipy.stats as st
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc import VBMC
-from pyvbmc.whitening import unscent_warp, warp_gp_and_vp, warp_input_vbmc
+from pyvbmc.whitening import unscent_warp, warp_gp_and_vp, warp_input
 
 D = 2
 
@@ -31,7 +31,7 @@ def test_rotoscaling_rotation_2d():
         np.ones((1, D)) * 10,
     )
     vbmc.vp = vp
-    parameter_transformer, __, __, __ = warp_input_vbmc(
+    parameter_transformer, __, __, __ = warp_input(
         vp, vbmc.optim_state, vbmc.function_logger, vbmc.options
     )
     U = parameter_transformer.R_mat
@@ -181,14 +181,14 @@ def test_parameter_transformer_log_det_abs():
     assert np.isclose(log_abs_det, 3.81289203952045)
 
 
-def test_warp_input_vbmc():
+def test_warp_input():
     D = 2
     angle = 1.309355600770139
     R = np.array(
         [[np.cos(angle), np.sin(angle)], [-np.sin(angle), np.cos(angle)]]
     )
     filepath = os.path.join(
-        os.path.dirname(__file__), "test_warp_input_vbmc_rands.txt"
+        os.path.dirname(__file__), "test_warp_input_rands.txt"
     )
     rands = np.loadtxt(filepath, delimiter=",")
     rands[:, 0] = 10 * rands[:, 0]
@@ -208,9 +208,7 @@ def test_warp_input_vbmc():
         vbmc.optim_state,
         vbmc.function_logger,
         warp_action,
-    ) = warp_input_vbmc(
-        vp, vbmc.optim_state, vbmc.function_logger, vbmc.options
-    )
+    ) = warp_input(vp, vbmc.optim_state, vbmc.function_logger, vbmc.options)
 
     assert np.all(parameter_transformer_warp.lb_orig == [-np.inf, -np.inf])
     assert np.all(parameter_transformer_warp.ub_orig == [np.inf, np.inf])
@@ -243,7 +241,7 @@ def test_warp_gp_and_vp():
         [[np.cos(angle), np.sin(angle)], [-np.sin(angle), np.cos(angle)]]
     )
     filepath = os.path.join(
-        os.path.dirname(__file__), "test_warp_input_vbmc_rands.txt"
+        os.path.dirname(__file__), "test_warp_input_rands.txt"
     )
     rands = np.loadtxt(filepath, delimiter=",")
     rands[:, 0] = 10 * rands[:, 0]
@@ -262,9 +260,7 @@ def test_warp_gp_and_vp():
         vbmc.optim_state,
         vbmc.function_logger,
         warp_action,
-    ) = warp_input_vbmc(
-        vp, vbmc.optim_state, vbmc.function_logger, vbmc.options
-    )
+    ) = warp_input(vp, vbmc.optim_state, vbmc.function_logger, vbmc.options)
 
     filepath = os.path.join(
         os.path.dirname(__file__), "test_warp_gp_and_vp_gp_X.txt"

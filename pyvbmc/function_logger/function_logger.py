@@ -61,8 +61,8 @@ class FunctionLogger:
         # Use 1D array since this is a boolean mask.
         self.X_flag = np.full((cache_size,), False, dtype=bool)
         self.y_max = float("-Inf")
-        self.fun_evaltime = np.full([cache_size, 1], np.nan)
-        self.total_fun_evaltime = 0
+        self.fun_eval_time = np.full([cache_size, 1], np.nan)
+        self.total_fun_eval_time = 0
 
     def __call__(self, x: np.ndarray):
         """
@@ -76,7 +76,7 @@ class FunctionLogger:
 
         Returns
         -------
-        fval : float
+        f_val : float
             The result of the evaluation.
         SD : float
             The (estimated) SD of the returned value.
@@ -115,16 +115,16 @@ class FunctionLogger:
         timer.start_timer("fun_time")
         try:
             if self.noise_flag and self.uncertainty_handling_level == 2:
-                fval_orig, fsd = self.fun(x_orig)
+                f_val_orig, f_sd = self.fun(x_orig)
             else:
-                fval_orig = self.fun(x_orig)
+                f_val_orig = self.fun(x_orig)
                 if self.noise_flag:
-                    fsd = 1
+                    f_sd = 1
                 else:
-                    fsd = None
-            if isinstance(fval_orig, np.ndarray):
-                # fval_orig can only be an array with size 1
-                fval_orig = fval_orig.item()
+                    f_sd = None
+            if isinstance(f_val_orig, np.ndarray):
+                # f_val_orig can only be an array with size 1
+                f_val_orig = f_val_orig.item()
 
         except Exception as err:
             err.args += (
@@ -136,51 +136,51 @@ class FunctionLogger:
             raise
         timer.stop_timer("fun_time")
 
-        # if fval is an array with only one element, extract that element
-        if not np.isscalar(fval_orig) and np.size(fval_orig) == 1:
-            fval_orig = np.array(fval_orig).flat[0]
+        # if f_val is an array with only one element, extract that element
+        if not np.isscalar(f_val_orig) and np.size(f_val_orig) == 1:
+            f_val_orig = np.array(f_val_orig).flat[0]
 
         # Check function value
         if np.any(
-            not np.isscalar(fval_orig)
-            or not np.isfinite(fval_orig)
-            or not np.isreal(fval_orig)
+            not np.isscalar(f_val_orig)
+            or not np.isfinite(f_val_orig)
+            or not np.isreal(f_val_orig)
         ):
             error_message = """FunctionLogger:InvalidFuncValue:
             The returned function value must be a finite real-valued scalar
             (returned value {})"""
-            raise ValueError(error_message.format(str(fval_orig)))
+            raise ValueError(error_message.format(str(f_val_orig)))
 
         # Check returned function SD
         if self.noise_flag and (
-            not np.isscalar(fsd)
-            or not np.isfinite(fsd)
-            or not np.isreal(fsd)
-            or fsd <= 0.0
+            not np.isscalar(f_sd)
+            or not np.isfinite(f_sd)
+            or not np.isreal(f_sd)
+            or f_sd <= 0.0
         ):
             error_message = """FunctionLogger:InvalidNoiseValue
                 The returned estimated SD (second function output)
                 must be a finite, positive real-valued scalar
                 (returned SD: {})"""
-            raise ValueError(error_message.format(str(fsd)))
+            raise ValueError(error_message.format(str(f_sd)))
 
         # record timer stats
         funtime = timer.get_duration("fun_time")
 
         self.func_count += 1
-        fval, idx = self._record(x_orig, x, fval_orig, fsd, funtime)
+        f_val, idx = self._record(x_orig, x, f_val_orig, f_sd, funtime)
 
         # optimstate.N = self.Xn
         # optimstate.N_eff = np.sum(self.nevals[self.X_flag])
         # optimState.totalfunevaltime = optimState.totalfunevaltime + t;
-        return fval, fsd, idx
+        return f_val, f_sd, idx
 
     def add(
         self,
         x: np.ndarray,
-        fval_orig: float,
-        fsd: float = None,
-        fun_evaltime=np.nan,
+        f_val_orig: float,
+        f_sd: float = None,
+        fun_eval_time=np.nan,
     ):
         """
         Add an previously evaluated function sample to the function cache.
@@ -190,18 +190,18 @@ class FunctionLogger:
         x : np.ndarray
             The point at which the function has been evaluated. The shape of x
             should be (1, D) or (D,).
-        fval_orig : float
+        f_val_orig : float
             The result of the evaluation of the function.
-        fsd : float, optional
+        f_sd : float, optional
             The (estimated) SD of the returned value (if heteroskedastic noise
             handling is on) of the evaluation of the function, by default None.
-        fun_evaltime : float
+        fun_eval_time : float
             The duration of the time it took to evaluate the function,
             by default np.nan.
 
         Returns
         -------
-        fval : float
+        f_val : float
             The result of the evaluation.
         SD : float
             The (estimated) SD of the returned value.
@@ -236,38 +236,38 @@ class FunctionLogger:
             x_orig = x
 
         if self.noise_flag:
-            if fsd is None:
-                fsd = 1
+            if f_sd is None:
+                f_sd = 1
         else:
-            fsd = None
+            f_sd = None
 
         # Check function value
         if (
-            not np.isscalar(fval_orig)
-            or not np.isfinite(fval_orig)
-            or not np.isreal(fval_orig)
+            not np.isscalar(f_val_orig)
+            or not np.isfinite(f_val_orig)
+            or not np.isreal(f_val_orig)
         ):
             error_message = """FunctionLogger:InvalidFuncValue:
             The returned function value must be a finite real-valued scalar
             (returned value {})"""
-            raise ValueError(error_message.format(str(fval_orig)))
+            raise ValueError(error_message.format(str(f_val_orig)))
 
         # Check returned function SD
         if self.noise_flag and (
-            not np.isscalar(fsd)
-            or not np.isfinite(fsd)
-            or not np.isreal(fsd)
-            or fsd <= 0.0
+            not np.isscalar(f_sd)
+            or not np.isfinite(f_sd)
+            or not np.isreal(f_sd)
+            or f_sd <= 0.0
         ):
             error_message = """FunctionLogger:InvalidNoiseValue
                 The returned estimated SD (second function output)
                 must be a finite, positive real-valued scalar
                 (returned SD:{})"""
-            raise ValueError(error_message.format(str(fsd)))
+            raise ValueError(error_message.format(str(f_sd)))
 
         self.cache_count += 1
-        fval, idx = self._record(x_orig, x, fval_orig, fsd, fun_evaltime)
-        return fval, fsd, idx
+        f_val, idx = self._record(x_orig, x, f_val_orig, f_sd, fun_eval_time)
+        return f_val, f_sd, idx
 
     def finalize(self):
         """
@@ -283,7 +283,7 @@ class FunctionLogger:
         if self.noise_flag:
             self.S = self.S[: self.Xn + 1]
         self.X_flag = self.X_flag[: self.Xn + 1]
-        self.fun_evaltime = self.fun_evaltime[: self.Xn + 1]
+        self.fun_eval_time = self.fun_eval_time[: self.Xn + 1]
 
     def _expand_arrays(self, resize_amount: int = None):
         """
@@ -317,8 +317,8 @@ class FunctionLogger:
         self.X_flag = np.append(
             self.X_flag, np.full((resize_amount,), False, dtype=bool)
         )
-        self.fun_evaltime = np.append(
-            self.fun_evaltime, np.full([resize_amount, 1], np.nan), axis=0
+        self.fun_eval_time = np.append(
+            self.fun_eval_time, np.full([resize_amount, 1], np.nan), axis=0
         )
         self.nevals = np.append(
             self.nevals, np.full([resize_amount, 1], 0), axis=0
@@ -328,9 +328,9 @@ class FunctionLogger:
         self,
         x_orig: float,
         x: float,
-        fval_orig: float,
-        fsd: float,
-        fun_evaltime: float,
+        f_val_orig: float,
+        f_sd: float,
+        fun_eval_time: float,
     ):
         """
         A private method to save function values to class attributes.
@@ -343,17 +343,17 @@ class FunctionLogger:
         x : float
             The point at which the function has been evaluated
             (in transformed space).
-        fval_orig : float
+        f_val_orig : float
             The result of the evaluation.
-        fsd : float
+        f_sd : float
             The (estimated) SD of the returned value
             (if heteroskedastic noise handling is on).
-        fun_evaltime : float
+        fun_eval_time : float
             The duration of the time it took to evaluate the function.
 
         Returns
         -------
-        fval : float
+        f_val : float
             The result of the evaluation.
         idx : int
             The index of the last updated entry.
@@ -369,47 +369,49 @@ class FunctionLogger:
                 raise ValueError("More than one match for duplicate entry.")
             idx = np.argwhere(duplicate_flag)[0, 0]
             N = self.nevals[idx]
-            if fsd is not None:
+            if f_sd is not None:
                 tau_n = 1 / self.S[idx] ** 2
-                tau_1 = 1 / fsd**2
+                tau_1 = 1 / f_sd**2
                 self.y_orig[idx] = (
-                    tau_n * self.y_orig[idx] + tau_1 * fval_orig
+                    tau_n * self.y_orig[idx] + tau_1 * f_val_orig
                 ) / (tau_n + tau_1)
                 self.S[idx] = 1 / np.sqrt(tau_n + tau_1)
             else:
-                self.y_orig[idx] = (N * self.y_orig[idx] + fval_orig) / (N + 1)
+                self.y_orig[idx] = (N * self.y_orig[idx] + f_val_orig) / (
+                    N + 1
+                )
 
-            fval = self.y_orig[idx]
+            f_val = self.y_orig[idx]
             if self.transform_parameters:
-                fval += self.parameter_transformer.log_abs_det_jacobian(x)
-            self.y[idx] = fval
-            self.fun_evaltime[idx] = (
-                N * self.fun_evaltime[idx] + fun_evaltime
+                f_val += self.parameter_transformer.log_abs_det_jacobian(x)
+            self.y[idx] = f_val
+            self.fun_eval_time[idx] = (
+                N * self.fun_eval_time[idx] + fun_eval_time
             ) / (N + 1)
             self.nevals[idx] += 1
-            return fval, idx
+            return f_val, idx
         else:
             self.Xn += 1
             if self.Xn > self.X_orig.shape[0] - 1:
                 self._expand_arrays()
 
             # record function time
-            if not np.isnan(fun_evaltime):
-                self.fun_evaltime[self.Xn] = fun_evaltime
-                self.total_fun_evaltime += fun_evaltime
+            if not np.isnan(fun_eval_time):
+                self.fun_eval_time[self.Xn] = fun_eval_time
+                self.total_fun_eval_time += fun_eval_time
 
             self.X_orig[self.Xn] = x_orig
             self.X[self.Xn] = x
-            self.y_orig[self.Xn] = fval_orig
-            fval = fval_orig
+            self.y_orig[self.Xn] = f_val_orig
+            f_val = f_val_orig
             if self.transform_parameters:
-                fval += self.parameter_transformer.log_abs_det_jacobian(
+                f_val += self.parameter_transformer.log_abs_det_jacobian(
                     np.reshape(x, (1, x.shape[0]))
                 )[0]
-            self.y[self.Xn] = fval
-            if fsd is not None:
-                self.S[self.Xn] = fsd
+            self.y[self.Xn] = f_val
+            if f_sd is not None:
+                self.S[self.Xn] = f_sd
             self.X_flag[self.Xn] = True
             self.nevals[self.Xn] += 1
             self.ymax = np.nanmax(self.y[self.X_flag])
-            return fval, self.Xn
+            return f_val, self.Xn

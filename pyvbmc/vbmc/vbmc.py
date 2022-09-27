@@ -13,7 +13,7 @@ from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.stats import kl_div_mvn
 from pyvbmc.timer import main_timer as timer
 from pyvbmc.variational_posterior import VariationalPosterior
-from pyvbmc.whitening import warp_gp_and_vp, warp_input_vbmc
+from pyvbmc.whitening import warp_gp_and_vp, warp_input
 
 from .active_sample import active_sample
 from .gaussian_process_train import reupdate_gp, train_gp
@@ -710,8 +710,8 @@ class VBMC:
         # List of points at the end of each iteration
         optim_state["iter_list"] = dict()
         optim_state["iter_list"]["u"] = []
-        optim_state["iter_list"]["fval"] = []
-        optim_state["iter_list"]["fsd"] = []
+        optim_state["iter_list"]["f_val"] = []
+        optim_state["iter_list"]["f_sd"] = []
         optim_state["iter_list"]["fhyp"] = []
 
         optim_state["delta"] = self.options.get("bandwidth") * (
@@ -914,7 +914,7 @@ class VBMC:
                     self.optim_state,
                     self.function_logger,
                     warp_action,
-                ) = warp_input_vbmc(
+                ) = warp_input(
                     vp_tmp,
                     self.optim_state,
                     self.function_logger,
@@ -1197,9 +1197,9 @@ class VBMC:
             )
 
             # Evaluate max LCB of GP prediction on all training inputs
-            fmu, fs2 = gp.predict(gp.X, gp.y, gp.s2, add_noise=False)
+            f_mu, f_s2 = gp.predict(gp.X, gp.y, gp.s2, add_noise=False)
             self.optim_state["lcb_max"] = np.amax(
-                fmu - self.options.get("elcbo_impro_weight") * np.sqrt(fs2)
+                f_mu - self.options.get("elcbo_impro_weight") * np.sqrt(f_s2)
             )
 
             # Compare variational posterior's moments with ground truth

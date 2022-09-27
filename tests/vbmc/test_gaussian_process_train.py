@@ -82,7 +82,7 @@ def test_get_training_data_no_noise():
         vbmc.function_logger.X_flag[sample_idx] = True
         vbmc.function_logger.X[sample_idx] = Xs[sample_idx]
         vbmc.function_logger.y[sample_idx] = ys[sample_idx]
-        vbmc.function_logger.fun_evaltime[sample_idx] = 1e-5
+        vbmc.function_logger.fun_eval_time[sample_idx] = 1e-5
 
     # Then make sure we get that data back.
     X_train, y_train, s2_train, t_train = _get_training_data(
@@ -129,7 +129,7 @@ def test_get_training_data_noise():
         vbmc.function_logger.X[sample_idx] = Xs[sample_idx]
         vbmc.function_logger.y[sample_idx] = ys[sample_idx]
         vbmc.function_logger.S[sample_idx] = 1
-        vbmc.function_logger.fun_evaltime[sample_idx] = 1e-5
+        vbmc.function_logger.fun_eval_time[sample_idx] = 1e-5
 
     # Then make sure we get that data back.
     X_train, y_train, s2_train, t_train = _get_training_data(
@@ -382,7 +382,7 @@ def test_gp_hyp():
         vbmc.function_logger.X[sample_idx] = Xs[sample_idx]
         vbmc.function_logger.y[sample_idx] = ys[sample_idx]
         vbmc.function_logger.S[sample_idx] = 1
-        vbmc.function_logger.fun_evaltime[sample_idx] = 1e-5
+        vbmc.function_logger.fun_eval_time[sample_idx] = 1e-5
 
     vbmc.optim_state["N"] = 10
     vbmc.optim_state["n_eff"] = np.sum(

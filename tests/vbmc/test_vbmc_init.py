@@ -530,8 +530,8 @@ def test_vbmc_optimstate_constants():
 def test_vbmc_optimstate_iter_list():
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
     assert np.all(vbmc.optim_state["iter_list"]["u"] == [])
-    assert np.all(vbmc.optim_state["iter_list"]["fval"] == [])
-    assert np.all(vbmc.optim_state["iter_list"]["fsd"] == [])
+    assert np.all(vbmc.optim_state["iter_list"]["f_val"] == [])
+    assert np.all(vbmc.optim_state["iter_list"]["f_sd"] == [])
     assert np.all(vbmc.optim_state["iter_list"]["fhyp"] == [])
 
 
