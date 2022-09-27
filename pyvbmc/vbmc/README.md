@@ -55,9 +55,9 @@ These notes are used for keeping track of ToDos and porting information.
           - _vp_bound_loss(): [vpbndloss.m](https://github.com/lacerbi/vbmc/blob/master/misc/vpbndloss.m)
           - _soft_bound_loss(): [softbndloss.m](https://github.com/lacerbi/vbmc/blob/master/utils/softbndloss.m)
           - _sieve(): [vpsieve_vbmc.m](https://github.com/lacerbi/vbmc/blob/master/misc/vpsieve_vbmc.m)
-          - _vbinit(): [vbinit_vbmc.m](https://github.com/lacerbi/vbmc/blob/master/misc/vbinit_vbmc.m)
-          - _negelcbo(): [negelcbo_vbmc.m](https://github.com/lacerbi/vbmc/blob/master/misc/negelcbo_vbmc.m)
-          - _gplogjoint(): [gplogjoint.m](https://github.com/lacerbi/vbmc/blob/master/misc/gplogjoint.m)
+          - _vb_init(): [vbinit_vbmc.m](https://github.com/lacerbi/vbmc/blob/master/misc/vbinit_vbmc.m)
+          - _neg_elcbo(): [negelcbo_vbmc.m](https://github.com/lacerbi/vbmc/blob/master/misc/negelcbo_vbmc.m)
+          - _gp_log_joint(): [gplogjoint.m](https://github.com/lacerbi/vbmc/blob/master/misc/gplogjoint.m)
      - Loop termination:
           - _check_warmup_end_conditions(): [vbmc_warmup.m](https://github.com/lacerbi/vbmc/blob/master/private/vbmc_warmup.m)
           - _setup_vbmc_after_warmup(): [vbmc_warmup.m](https://github.com/lacerbi/vbmc/blob/master/private/vbmc_warmup.m)

@@ -16,8 +16,8 @@ from pyvbmc.vbmc.active_importance_sampling import active_importance_sampling
 from pyvbmc.vbmc.gaussian_process_train import reupdate_gp, train_gp
 from pyvbmc.vbmc.iteration_history import IterationHistory
 from pyvbmc.vbmc.variational_optimization import (
-    _gplogjoint,
-    _negelcbo,
+    _gp_log_joint,
+    _neg_elcbo,
     optimize_vp,
 )
 
@@ -329,7 +329,7 @@ def active_sample(
 
             # Re-evaluate variance of the log joint if requested
             if acq_eval.acq_info.get("compute_varlogjoint"):
-                varF = _gplogjoint(vp, gp, 0, 0, 0, 1)[2]
+                varF = _gp_log_joint(vp, gp, 0, 0, 0, 1)[2]
                 optim_state["var_log_joint_samples"] = varF
 
             # Evaluate acquisition function
@@ -636,7 +636,7 @@ def active_sample(
                 NSentFineK = math.ceil(
                     options["ns_ent_fine_active"](vp0.K) / vp0.K
                 )
-                elbo0 = -_negelcbo(
+                elbo0 = -_neg_elcbo(
                     theta0, gp, vp0, 0.0, NSentFineK, False, True
                 )[0]
 
