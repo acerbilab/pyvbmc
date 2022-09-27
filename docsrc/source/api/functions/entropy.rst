@@ -3,7 +3,7 @@ entropy
 ========
 
 kl_div_mvn
-=========
+==========
 
 .. autofunction:: pyvbmc.stats.kl_div_mvn
 
