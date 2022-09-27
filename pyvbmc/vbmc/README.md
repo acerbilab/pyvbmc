@@ -20,7 +20,7 @@ These notes are used for keeping track of ToDos and porting information.
 ## vbmc.py and related functions
 
 ### Porting status
-- in the function _boundscheck: The plausible bounds are set equal to the hard bounds, which is not admissible in VBMC (Fix by Luigi required).
+- in the function _bounds_check: The plausible bounds are set equal to the hard bounds, which is not admissible in VBMC (Fix by Luigi required).
 - The experimental features (listed in [vbmc.m](https://github.com/lacerbi/vbmc/blob/master/vbmc.m)) have not been ported yet. Luigi has to decide on the order of the port for these features.
  - [acqhedge_vbmc.m](https://github.com/lacerbi/vbmc/blob/master/private/acqhedge_vbmc.m) has not been ported yet as it is considered to be experimental
 - The warping in [vbmc.m](https://github.com/lacerbi/vbmc/blob/master/vbmc.m) is part of the 2020 paper and is well tested. We will implement it later as VBMC can run without it.
@@ -34,7 +34,7 @@ These notes are used for keeping track of ToDos and porting information.
 - initialization:
      - parts of the __init__(): [vbmc.m](https://github.com/lacerbi/vbmc/blob/master/vbmc.m)
      - parts of the __init__(): [setupvars_vbmc.m](https://github.com/lacerbi/vbmc/blob/master/misc/setupvars_vbmc.m)
-     - _boundscheck(): [boundscheck_vbmc.m](https://github.com/lacerbi/vbmc/blob/master/misc/boundscheck_vbmc.m)
+     - _bounds_check(): [boundscheck_vbmc.m](https://github.com/lacerbi/vbmc/blob/master/misc/boundscheck_vbmc.m)
 - VBMC loop (optimize(): loop in [vbmc.m](https://github.com/lacerbi/vbmc/blob/master/vbmc.m)):
      - Active Sampling:
           - see: :doc:[../functions/active_sample[
@@ -66,6 +66,6 @@ These notes are used for keeping track of ToDos and porting information.
           - _compute_reliability_index(): [vbmc_termination.m](https://github.com/lacerbi/vbmc/blob/master/private/vbmc_termination.m)
           - _is_gp_sampling_finished(): [vbmc_termination.m](https://github.com/lacerbi/vbmc/blob/master/private/vbmc_termination.m)
 - Finalizing:
-     - finalboost(): [finalboost_vbmc.m](https://github.com/lacerbi/vbmc/blob/master/misc/finalboost_vbmc.m)
+     - final_boost(): [finalboost_vbmc.m](https://github.com/lacerbi/vbmc/blob/master/misc/finalboost_vbmc.m)
      - determine_best_vp(): [best_vbmc.m](https://github.com/lacerbi/vbmc/blob/master/misc/best_vbmc.m)
      - _create_result_dict(): [vbmc_output.m](https://github.com/lacerbi/vbmc/blob/master/private/vbmc_output.m)

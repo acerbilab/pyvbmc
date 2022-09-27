@@ -10,10 +10,10 @@ import numpy as np
 
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
-from pyvbmc.stats import kldiv_mvn
+from pyvbmc.stats import kl_div_mvn
 from pyvbmc.timer import main_timer as timer
 from pyvbmc.variational_posterior import VariationalPosterior
-from pyvbmc.whitening import warp_gpandvp_vbmc, warp_input_vbmc
+from pyvbmc.whitening import warp_gp_and_vp, warp_input_vbmc
 
 from .active_sample import active_sample
 from .gaussian_process_train import reupdate_gp, train_gp
@@ -183,7 +183,7 @@ class VBMC:
             self.upper_bounds,
             self.plausible_lower_bounds,
             self.plausible_upper_bounds,
-        ) = self._boundscheck(
+        ) = self._bounds_check(
             x0,
             lower_bounds,
             upper_bounds,
@@ -284,7 +284,7 @@ class VBMC:
             ]
         )
 
-    def _boundscheck(
+    def _bounds_check(
         self,
         x0: np.ndarray,
         lower_bounds: np.ndarray,
@@ -921,7 +921,7 @@ class VBMC:
                     self.options,
                 )
 
-                self.vp, hyp_dict["hyp"] = warp_gpandvp_vbmc(
+                self.vp, hyp_dict["hyp"] = warp_gp_and_vp(
                     parameter_transformer_warp, self.vp, self
                 )
 
@@ -1188,10 +1188,10 @@ class VBMC:
                 0,
                 0.5
                 * np.sum(
-                    self.vp.kldiv(
+                    self.vp.kl_div(
                         vp2=vp_old,
                         N=Nkl,
-                        gaussflag=self.options.get("kl_gauss"),
+                        gauss_flag=self.options.get("kl_gauss"),
                     )
                 ),
             )
@@ -1211,7 +1211,7 @@ class VBMC:
             ):
                 mubar_orig, sigma_orig = vp_real.moments(1e6, True, True)
 
-                kl = kldiv_mvn(
+                kl = kl_div_mvn(
                     mubar_orig,
                     sigma_orig,
                     self.options.get("true_mean"),
@@ -1222,7 +1222,7 @@ class VBMC:
                 sKL_true = None
 
             # Record moments in transformed space
-            mubar, sigma = self.vp.moments(origflag=False, covflag=True)
+            mubar, sigma = self.vp.moments(orig_flag=False, cov_flag=True)
             if len(self.optim_state.get("run_mean")) == 0 or len(
                 self.optim_state.get("run_cov") == 0
             ):
@@ -1341,7 +1341,7 @@ class VBMC:
                     < self.options.get("warp_tol_reliability")
                 )
             ):
-                Xrnd, _ = self.vp.sample(N=int(2e4), origflag=False)
+                Xrnd, _ = self.vp.sample(N=int(2e4), orig_flag=False)
                 ymu, _ = gp.predict(Xrnd, add_noise=True)
                 ydelta = max(
                     [0, self.function_logger.ymax - np.quantile(ymu, 1e-3)]
@@ -1475,7 +1475,7 @@ class VBMC:
         self.vp, elbo, elbo_sd, idx_best = self.determine_best_vp()
 
         # Last variational optimization with large number of components
-        self.vp, elbo, elbo_sd, changed_flag = self.finalboost(
+        self.vp, elbo, elbo_sd, changed_flag = self.final_boost(
             self.vp, self.iteration_history["gp"][idx_best]
         )
         if changed_flag:
@@ -1484,10 +1484,10 @@ class VBMC:
                 0,
                 0.5
                 * np.sum(
-                    self.vp.kldiv(
+                    self.vp.kl_div(
                         vp2=vp_old,
                         N=Nkl,
-                        gaussflag=self.options.get("kl_gauss"),
+                        gauss_flag=self.options.get("kl_gauss"),
                     )
                 ),
             )
@@ -1917,7 +1917,7 @@ class VBMC:
 
     # Finalizing:
 
-    def finalboost(self, vp: VariationalPosterior, gp: gpr.GP):
+    def final_boost(self, vp: VariationalPosterior, gp: gpr.GP):
         """
         Perform a final boost of variational components.
 

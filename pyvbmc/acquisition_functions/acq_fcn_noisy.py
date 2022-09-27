@@ -33,7 +33,7 @@ class AcqFcnNoisy(AbstractAcqFcn):
 
         # Probability density of variational posterior at test points
         realmin = sys.float_info.min
-        p = np.ravel(np.maximum(vp.pdf(Xs, origflag=False), realmin))
+        p = np.ravel(np.maximum(vp.pdf(Xs, orig_flag=False), realmin))
 
         # Estimate observation noise at test points from nearest neighbor.
         sn2 = super()._estimate_observation_noise(Xs, gp, optim_state)

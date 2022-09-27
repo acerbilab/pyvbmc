@@ -805,7 +805,7 @@ def _sieve(
 
 def _vbinit(
     vp: VariationalPosterior,
-    vbtype: int,
+    vb_type: int,
     opts_N: int,
     K_new: int,
     X_star: np.ndarray,
@@ -818,7 +818,7 @@ def _vbinit(
     ==========
     vp : VariationalPosterior
         Variational posterior to use as base.
-    vbtype : {1, 2, 3}
+    vb_type : {1, 2, 3}
         Type of method to create new starting parameters. Here 1 means
         starting from old variational parameters, 2 means starting from
         highest-posterior density training points, and 3 means starting
@@ -844,15 +844,15 @@ def _vbinit(
     K = vp.K
     N_star = X_star.shape[0]
     add_jitter = True
-    type_vec = vbtype * np.ones((opts_N))
+    type_vec = vb_type * np.ones((opts_N))
     lambd0 = vp.lambd.copy()
     mu0 = vp.mu.copy()
     w0 = vp.w.copy()
 
-    if vbtype == 1:
+    if vb_type == 1:
         # Start from old variational parameters
         sigma0 = vp.sigma.copy()
-    elif vbtype == 2:
+    elif vb_type == 2:
         # Start from highest-posterior density training points
         if vp.optimize_mu:
             order = np.argsort(y_star, axis=None)[::-1]
@@ -881,7 +881,7 @@ def _vbinit(
         if vp.optimize_weights:
             w = w0.copy()
 
-        if vbtype == 1:
+        if vb_type == 1:
             # Start from old variational parameters
 
             # Copy previous parameters verbatim.
@@ -905,7 +905,7 @@ def _vbinit(
                         xi = 0.25 + 0.25 * np.random.rand()
                         w = np.hstack((w, xi * w[0:1, idx : idx + 1]))
                         w[0, idx] *= 1 - xi
-        elif vbtype == 2:
+        elif vb_type == 2:
             # Start from highest-posterior density training points
             if i == 0:
                 add_jitter = False
@@ -914,7 +914,7 @@ def _vbinit(
                 lambd *= np.sqrt(D / np.sum(lambd**2))
             if vp.optimize_weights:
                 w = np.ones((1, K_new)) / K_new
-        elif vbtype == 3:
+        elif vb_type == 3:
             # Start from random provided training points
             if vp.optimize_mu:
                 order = np.random.permutation(N_star)

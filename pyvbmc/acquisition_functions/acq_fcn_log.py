@@ -39,7 +39,7 @@ class AcqFcnLog(AbstractAcqFcn):
         realmin = sys.float_info.min
         log_p = np.ravel(
             np.maximum(
-                vp.pdf(Xs, origflag=False, logflag=True), np.log(realmin)
+                vp.pdf(Xs, orig_flag=False, log_flag=True), np.log(realmin)
             )
         )
 

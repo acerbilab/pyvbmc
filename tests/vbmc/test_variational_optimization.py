@@ -2,7 +2,7 @@ import gpyreg as gpr
 import numpy as np
 from scipy.stats import multivariate_normal, norm
 
-from pyvbmc.stats import kldiv_mvn
+from pyvbmc.stats import kl_div_mvn
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc import Options
 from pyvbmc.vbmc.variational_optimization import (
@@ -273,7 +273,7 @@ def test_vp_optimize_1D_g_mixture():
     # that is 0 for a normalized density
     assert np.abs(vp.stats["elbo"]) < 1e-2 * 5
 
-    # compute kldiv between gaussian mixture and vp
+    # compute kl_div between gaussian mixture and vp
     vp_samples, _ = vp.sample(int(10e6))
     vp_mu = np.mean(vp_samples)
     vp_sigma = np.std(vp_samples)
@@ -287,7 +287,7 @@ def test_vp_optimize_1D_g_mixture():
     mixture_mu = np.mean(mixture_samples)
     mixture_sigma = np.std(mixture_samples)
     assert np.all(
-        np.abs(kldiv_mvn(mixture_mu, mixture_sigma, vp_mu, vp_sigma))
+        np.abs(kl_div_mvn(mixture_mu, mixture_sigma, vp_mu, vp_sigma))
         < 1e-3 * 1.25
     )
 
@@ -335,7 +335,7 @@ def test_vp_optimize_2D_g_mixture():
     # that is 0 for a normalized density
     assert np.abs(vp.stats["elbo"]) < 1e-1
 
-    # compute kldiv between gaussian mixture and vp
+    # compute kl_div between gaussian mixture and vp
     vp_samples, _ = vp.sample(int(10e6))
     vp_mu = np.mean(vp_samples)
     vp_sigma = np.std(vp_samples)
@@ -349,7 +349,7 @@ def test_vp_optimize_2D_g_mixture():
     mixture_mu = np.mean(mixture_samples)
     mixture_sigma = np.std(mixture_samples)
     assert np.all(
-        np.abs(kldiv_mvn(mixture_mu, mixture_sigma, vp_mu, vp_sigma)) < 1e-2
+        np.abs(kl_div_mvn(mixture_mu, mixture_sigma, vp_mu, vp_sigma)) < 1e-2
     )
 
 
@@ -390,7 +390,7 @@ def test_vp_optimize_deterministic_entropy_approximation():
     # that is 0 for a normalized density
     assert np.abs(vp.stats["elbo"]) < 0.25
 
-    # compute kldiv between gaussian mixture and vp
+    # compute kl_div between gaussian mixture and vp
     vp_samples, _ = vp.sample(int(10e6))
     vp_mu = np.mean(vp_samples)
     vp_sigma = np.std(vp_samples)
@@ -404,6 +404,6 @@ def test_vp_optimize_deterministic_entropy_approximation():
     mixture_mu = np.mean(mixture_samples)
     mixture_sigma = np.std(mixture_samples)
     assert np.all(
-        np.abs(kldiv_mvn(mixture_mu, mixture_sigma, vp_mu, vp_sigma))
+        np.abs(kl_div_mvn(mixture_mu, mixture_sigma, vp_mu, vp_sigma))
         < 1e-4 * 1.25
     )

@@ -4,7 +4,7 @@ from scipy.integrate import trapezoid
 from scipy.interpolate import interp1d
 from scipy.stats import norm, uniform
 
-from pyvbmc.stats import kde1d
+from pyvbmc.stats import kde_1d
 
 
 def test_kde_shapes():
@@ -15,7 +15,7 @@ def test_kde_shapes():
             np.random.randn(100, 1) + 55,
         )
     )
-    density, xmesh, bandwidth = kde1d(
+    density, xmesh, bandwidth = kde_1d(
         samples, 2**14, min(samples) - 5, max(samples) + 5
     )
     assert density.shape == (2**14,)
@@ -31,7 +31,7 @@ def test_kde_n_not_power_of_two():
             np.random.randn(100, 1) + 55,
         )
     )
-    density, xmesh, bandwidth = kde1d(
+    density, xmesh, bandwidth = kde_1d(
         samples, 2**14 - 10, min(samples) - 5, max(samples) + 5
     )
     assert density.shape == (2**14,)
@@ -47,7 +47,7 @@ def test_kde_no_bounds():
             np.random.randn(100, 1) + 55,
         )
     )
-    density, xmesh, bandwidth = kde1d(samples, 2**14 - 10)
+    density, xmesh, bandwidth = kde_1d(samples, 2**14 - 10)
     assert density.shape == (2**14,)
     assert xmesh.shape == (2**14,)
     assert bandwidth.shape == (1,)
@@ -62,7 +62,7 @@ def test_kde_n_negative():
         )
     )
     with pytest.raises(ValueError):
-        kde1d(samples, 0)
+        kde_1d(samples, 0)
 
 
 def test_kde_bounds_switched():
@@ -74,7 +74,7 @@ def test_kde_bounds_switched():
         )
     )
     with pytest.raises(ValueError):
-        kde1d(samples, 2**14, max(samples), min(samples))
+        kde_1d(samples, 2**14, max(samples), min(samples))
 
 
 def mtv(xmesh: np.ndarray, yy1: np.ndarray, yy2: np.ndarray):
@@ -107,7 +107,7 @@ def mtv(xmesh: np.ndarray, yy1: np.ndarray, yy2: np.ndarray):
 
 def test_kde_density_valid_input_one_gaussian():
     samples = norm.rvs(loc=0, scale=1, size=int(1e5))
-    density_kde, xmesh, _ = kde1d(samples, 2**14)
+    density_kde, xmesh, _ = kde_1d(samples, 2**14)
     density_gaussian = norm.pdf(xmesh, loc=0, scale=1)
     assert mtv(xmesh, density_kde, density_gaussian) < 0.03
 
@@ -119,7 +119,7 @@ def test_kde_density_valid_input_two_gaussians():
             norm.rvs(loc=10, scale=1, size=int(1e5 * 0.5)),
         )
     )
-    density_kde, xmesh, _ = kde1d(samples, 2**14)
+    density_kde, xmesh, _ = kde_1d(samples, 2**14)
     density_gaussian = 0.5 * (
         norm.pdf(xmesh, loc=0, scale=1) + norm.pdf(xmesh, loc=10, scale=1)
     )
@@ -128,6 +128,6 @@ def test_kde_density_valid_input_two_gaussians():
 
 def test_kde_density_valid_input_uniform():
     samples = uniform.rvs(loc=0, scale=1, size=int(1e5))
-    density_kde, xmesh, _ = kde1d(samples, 2**14)
+    density_kde, xmesh, _ = kde_1d(samples, 2**14)
     density_uniform = uniform.pdf(xmesh, loc=0, scale=1)
     assert mtv(xmesh, density_kde, density_uniform) < 0.03

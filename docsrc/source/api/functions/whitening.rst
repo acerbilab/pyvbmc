@@ -12,7 +12,7 @@ warp_input_vbmc
 
 .. autofunction:: pyvbmc.whitening.warp_input_vbmc
 
-warp_gpandvp_vbmc
+warp_gp_and_vp
 =================
 
-.. autofunction:: pyvbmc.whitening.warp_gpandvp_vbmc
+.. autofunction:: pyvbmc.whitening.warp_gp_and_vp

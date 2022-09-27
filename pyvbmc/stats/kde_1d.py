@@ -31,7 +31,9 @@ def _linear_binning(samples: np.ndarray, grid_points: np.ndarray):
     return counts
 
 
-def _fixed_point(t: float, N: int, irange_squared: np.ndarray, a2: np.ndarray):
+def _fixed_point(
+    t: float, N: int, i_range_squared: np.ndarray, a2: np.ndarray
+):
     """Compute the fixed point according to Botev et al. (2010).
 
     This function implements the function t-zeta*gamma^[l](t). Based on an
@@ -40,16 +42,16 @@ def _fixed_point(t: float, N: int, irange_squared: np.ndarray, a2: np.ndarray):
     Note that the factor of 2.0 in the definition of f is correct. See longer
     discussion here: https://github.com/tommyod/KDEpy/issues/95
     """
-    irange_squared = np.asfarray(irange_squared, dtype=np.float64)
+    i_range_squared = np.asfarray(i_range_squared, dtype=np.float64)
     a2 = np.asfarray(a2, dtype=np.float64)
     ell = 7
     f = (
         2.0
         * np.pi ** (2 * ell)
         * np.sum(
-            np.power(irange_squared, ell)
+            np.power(i_range_squared, ell)
             * a2
-            * np.exp(-irange_squared * np.pi**2.0 * t)
+            * np.exp(-i_range_squared * np.pi**2.0 * t)
         )
     )
 
@@ -67,9 +69,9 @@ def _fixed_point(t: float, N: int, irange_squared: np.ndarray, a2: np.ndarray):
             2.0
             * np.pi ** (2.0 * s)
             * np.sum(
-                np.power(irange_squared, s)
+                np.power(i_range_squared, s)
                 * a2
-                * np.exp(-irange_squared * np.pi**2.0 * time)
+                * np.exp(-i_range_squared * np.pi**2.0 * time)
             )
         )
 
@@ -106,7 +108,7 @@ def _root(function: callable, N: int, args: tuple):
     return x
 
 
-def _scottrule1d(samples: np.ndarray):
+def _scott_rule_1d(samples: np.ndarray):
     """Compute the kernel bandwidth according to Scott's rule for 1D samples.
 
     Parameters
@@ -127,9 +129,9 @@ def _scottrule1d(samples: np.ndarray):
     return sigma * np.power(len(samples), -1.0 / 5.0)
 
 
-def _validate_kde1d_args(n, lower_bound, upper_bound):
+def _validate_kde_1d_args(n, lower_bound, upper_bound):
     """
-    _validate_kde1d_args and raise value exception
+    _validate_kde_1d_args and raise value exception
     """
     if n <= 0:
         raise ValueError("n cannot be <= 0")
@@ -139,7 +141,7 @@ def _validate_kde1d_args(n, lower_bound, upper_bound):
             raise ValueError("lower_bound cannot be > upper_bound")
 
 
-def kde1d(
+def kde_1d(
     samples: np.ndarray,
     n: int = 2**14,
     lower_bound: float = None,
@@ -209,13 +211,13 @@ def kde1d(
         samples = np.concatenate(
             (randn(100, 1), randn(100, 1) * 2 + 35, randn(100, 1) + 55)
         )
-        kde1d(samples, 2 ** 14, min(samples) - 5, max(samples) + 5)
+        kde_1d(samples, 2 ** 14, min(samples) - 5, max(samples) + 5)
 
     """
     samples = samples.ravel()  # make samples a 1D array
 
     # validate values passed to the function
-    _validate_kde1d_args(n, lower_bound, upper_bound)
+    _validate_kde_1d_args(n, lower_bound, upper_bound)
 
     n = int(2 ** np.ceil(np.log2(n)))  # round up to the next power of 2
     if lower_bound is None or upper_bound is None:
@@ -238,13 +240,13 @@ def kde1d(
     a = fftpack.dct(initial_data, type=2)
 
     # Compute the bandwidth
-    irange_squared = np.arange(1, n, dtype=np.float64) ** 2.0
+    i_range_squared = np.arange(1, n, dtype=np.float64) ** 2.0
     a2 = a[1:] ** 2.0 / 4.0
-    t_star = _root(_fixed_point, N, args=(N, irange_squared, a2))
+    t_star = _root(_fixed_point, N, args=(N, i_range_squared, a2))
 
     if t_star is None:
         # Automated bandwidth selection failed, use Scott's rule
-        bandwidth = _scottrule1d(samples)
+        bandwidth = _scott_rule_1d(samples)
         t_star = (bandwidth / delta) ** 2.0
     else:
         bandwidth = np.sqrt(t_star) * delta

@@ -1,3 +1,3 @@
 from .get_hpd import get_hpd
-from .kde1d import kde1d
-from .kldiv_mvn import kldiv_mvn
+from .kde_1d import kde_1d
+from .kl_div_mvn import kl_div_mvn

@@ -7,7 +7,7 @@ from pyvbmc.decorators import handle_0D_1D_input
     patched_kwargs=["mu1", "sigma1", "mu2", "sigma2"],
     patched_argpos=[0, 1, 2, 3],
 )
-def kldiv_mvn(mu1, sigma1, mu2, sigma2):
+def kl_div_mvn(mu1, sigma1, mu2, sigma2):
     """
     Compute the analytical Kullback-Leibler divergence between two multivariate
     normal pdfs.
@@ -25,7 +25,7 @@ def kldiv_mvn(mu1, sigma1, mu2, sigma2):
 
     Returns
     -------
-    kldiv : np.array
+    kl_div : np.array
         The computed Kullback-Leibler divergence.
     """
     D = mu1.size

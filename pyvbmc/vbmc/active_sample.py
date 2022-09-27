@@ -383,7 +383,7 @@ def active_sample(
                 if options["search_optimizer"] == "cmaes":
 
                     if options["search_cmaes_vp_init"]:
-                        _, Sigma = vp.moments(origflag=False, covflag=True)
+                        _, Sigma = vp.moments(orig_flag=False, cov_flag=True)
                     else:
                         X_hpd = get_hpd(gp.X, gp.y, options["hpd_frac"])[0]
                         Sigma = np.cov(X_hpd, rowvar=False, bias=True)
@@ -728,13 +728,13 @@ def _get_search_points(
         )
         if N_heavy > 0:
             heavy_Xs, _ = vp.sample(
-                N=N_heavy, origflag=False, balanceflag=True, df=3
+                N=N_heavy, orig_flag=False, balance_flag=True, df=3
             )
             random_Xs = np.append(random_Xs, heavy_Xs, axis=0)
 
         N_mvn = round(options.get("mvn_search_frac") * N_random_points)
         if N_mvn > 0:
-            mubar, sigmabar = vp.moments(origflag=False, covflag=True)
+            mubar, sigmabar = vp.moments(orig_flag=False, cov_flag=True)
             mvn_Xs = np.random.multivariate_normal(
                 np.ravel(mubar), sigmabar, size=N_mvn
             )
@@ -828,7 +828,7 @@ def _get_search_points(
             N_random_points - N_search_cache - N_heavy - N_mvn - N_box - N_hpd,
         )
         if N_vp > 0:
-            vp_Xs, _ = vp.sample(N=N_vp, origflag=False, balanceflag=True)
+            vp_Xs, _ = vp.sample(N=N_vp, orig_flag=False, balance_flag=True)
             random_Xs = np.append(random_Xs, vp_Xs, axis=0)
 
         search_X = np.append(search_X, random_Xs, axis=0)

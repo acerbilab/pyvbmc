@@ -479,7 +479,7 @@ def test_optimize_result_dict(mocker):
         "pyvbmc.vbmc.vbmc.optimize_vp", return_value=(vbmc.vp, None, None)
     )
     mocker.patch(
-        "pyvbmc.vbmc.VBMC.finalboost", return_value=(vbmc.vp, -2, 1, False)
+        "pyvbmc.vbmc.VBMC.final_boost", return_value=(vbmc.vp, -2, 1, False)
     )
 
     vbmc.iteration_history["stable"] = list()

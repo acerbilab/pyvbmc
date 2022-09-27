@@ -124,7 +124,7 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
             raise NotImplementedError("Non-linear warping is not supported.")
         else:
             # Get covariance matrix analytically
-            __, vp_cov = vp.moments(origflag=False, covflag=True)
+            __, vp_cov = vp.moments(orig_flag=False, cov_flag=True)
             delta = parameter_transformer.delta
             R_mat = parameter_transformer.R_mat
             scale = parameter_transformer.scale
@@ -243,7 +243,7 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
     return parameter_transformer, optim_state, function_logger, warp_action
 
 
-def warp_gpandvp_vbmc(parameter_transformer, vp_old, vbmc):
+def warp_gp_and_vp(parameter_transformer, vp_old, vbmc):
     r"""Update the GP and VP with a given warp transformation.
 
     Applies an updated ParameterTransformer object (with new warping
