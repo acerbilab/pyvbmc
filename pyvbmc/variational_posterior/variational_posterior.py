@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import sys
+from textwrap import indent
 
 import corner
 import gpyreg
@@ -13,6 +14,7 @@ from scipy.optimize import fmin_l_bfgs_b
 from scipy.special import gammaln
 
 from pyvbmc.decorators import handle_0D_1D_input
+from pyvbmc.formatting import format_dict, full_repr, get_repr, summarize
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.stats import kde_1d, kl_div_mvn
 
@@ -1219,3 +1221,55 @@ class VariationalPosterior:
         fig.tight_layout(pad=0.5)
 
         return fig
+
+    def __str__(self, arr_size_thresh=10):
+        """Print a string summary."""
+        return "VariationalPosterior:" + indent(
+            f"""
+dimension = {self.D},
+num. components = {self.K},
+means: {summarize(self.mu, arr_size_thresh)},
+weights: {summarize(self.w, arr_size_thresh)},
+sigma (per-component scale): {summarize(self.sigma, arr_size_thresh)},
+lambda (per-dimension scale): {summarize(self.lambd, arr_size_thresh)},
+stats = {format_dict(self.stats, arr_size_thresh=arr_size_thresh)}""",
+            "    ",
+        )
+
+    def __repr__(self, arr_size_thresh=10, expand=False):
+        """Construct a detailed string summary.
+
+        Parameters
+        ----------
+        arr_size_thresh : float, optional
+            If ``obj`` is an array whose product of dimensions is less than
+            ``arr_size_thresh``, print the full array. Otherwise print only the
+            shape. Default `10`.
+        expand : bool, optional
+            If ``expand`` is `False`, then describe the object's complex child
+            attributes by their name and memory location. Otherwise,
+            recursively expand the child attributes into their own
+            representations. Default `False`.
+
+        Returns
+        -------
+        string : str
+            The string representation of ``self``.
+        """
+        return full_repr(
+            self,
+            "VariationalPosterior",
+            order=["D", "K", "mu", "w", "sigma", "lambd", "stats"],
+            expand=expand,
+            arr_size_thresh=arr_size_thresh,
+        )
+
+    def _short_repr(self):
+        """Returns abbreviated string representation with memory location.
+
+        Returns
+        -------
+        string : str
+            The abbreviated string representation of the VP.
+        """
+        return object.__repr__(self)

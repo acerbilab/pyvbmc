@@ -133,7 +133,8 @@ def test_str():
     default_options_path = "./pyvbmc/vbmc/option_configs/test_options.ini"
     options = Options(default_options_path, {"D": 2})
     one_option_str = "bar: 40 (Bar description)"
-    assert one_option_str in options.__str__()
+    assert one_option_str in options.__repr__()
+    assert "None (use default options)." in options.__str__()
 
 
 def test_del():
