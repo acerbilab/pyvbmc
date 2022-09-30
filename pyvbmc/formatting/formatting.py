@@ -33,17 +33,17 @@ def summarize(
     """
     if not isinstance(obj, np.ndarray):
         # Stringify anything that's not an array.
-        string = f" = {get_repr(obj)}"
+        string = get_repr(obj)
     elif np.prod(obj.shape) < arr_size_thresh:
         # Array is small: print the full (but abbreviated precision) array on
         # one line.
         array_string = np.array2string(
             obj, precision=precision, suppress_small=True, separator=", "
         )
-        string = f" = {array_string}: {type(obj).__name__}"
+        string = f"{array_string} : {type(obj).__name__}"
     else:
         # Array is large: print only the shape of the array.
-        string = f": {obj.shape} {type(obj).__name__}"
+        string = f"{obj.shape} {type(obj).__name__}"
 
     return string
 
@@ -75,13 +75,13 @@ def format_dict(d, **kwargs):
             if (
                 type(key) == str or type(key) == np.str_
             ):  # Enclose string keys in quotes
-                body += repr(key) + ": "
+                body += repr(key)
             else:
-                body += str(key) + ": "
+                body += str(key)
             if type(val) == dict:  # Recursively format nested dictionaries
-                val_string = format_dict(val, **kwargs)
+                val_string = f": {format_dict(val, **kwargs)}"
             else:  # Format possible array values
-                val_string = summarize(val, **kwargs)
+                val_string = f": {summarize(val, **kwargs)}"
             body += val_string + ",\n"
         body = indent(body, "    ")
         string += body

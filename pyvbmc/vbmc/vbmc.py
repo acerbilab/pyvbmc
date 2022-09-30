@@ -2314,11 +2314,11 @@ class VBMC:
         return "VBMC:" + indent(
             f"""
 dimension = {self.D},
-x0{summarize(self.x0)},
-lower bounds{summarize(self.lower_bounds)},
-upper bounds{summarize(self.upper_bounds)},
-plausible lower bounds{summarize(self.plausible_lower_bounds)},
-plausible upper bounds{summarize(self.plausible_upper_bounds)},
+x0: {summarize(self.x0)},
+lower bounds: {summarize(self.lower_bounds)},
+upper bounds: {summarize(self.upper_bounds)},
+plausible lower bounds: {summarize(self.plausible_lower_bounds)},
+plausible upper bounds: {summarize(self.plausible_upper_bounds)},
 log-density = {getattr(self, "log_likelihood", self.log_joint)},
 log-prior = {getattr(self, "log_prior", None)},
 prior sampler = {getattr(self, "sample_prior", None)},

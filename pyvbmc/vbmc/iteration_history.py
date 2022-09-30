@@ -174,10 +174,10 @@ class IterationHistory(MutableMapping, dict):
             The string representation of ``self``.
         """
         if full:  # Output every class attribute (for debugging)
-            return (
-                "IterationHistory:\n"
-                + "self.check_keys = {self.check_keys},\ndict = "
-                + format_dict(self, arr_size_thresh=arr_size_thresh)
+            return "IterationHistory:\n" + indent(
+                "self.check_keys: {self.check_keys},\ndict: "
+                + format_dict(self, arr_size_thresh=arr_size_thresh),
+                "    ",
             )
         else:  # Summary
             return str(self)

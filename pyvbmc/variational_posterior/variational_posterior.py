@@ -1223,10 +1223,10 @@ class VariationalPosterior:
             f"""
 dimension = {self.D},
 num. components = {self.K},
-means{summarize(self.mu, arr_size_thresh)},
-weights{summarize(self.w, arr_size_thresh)},
-sigma (per-component scale){summarize(self.sigma, arr_size_thresh)},
-lambda (per-dimension scale){summarize(self.lambd, arr_size_thresh)},
+means: {summarize(self.mu, arr_size_thresh)},
+weights: {summarize(self.w, arr_size_thresh)},
+sigma (per-component scale): {summarize(self.sigma, arr_size_thresh)},
+lambda (per-dimension scale): {summarize(self.lambd, arr_size_thresh)},
 stats = {format_dict(self.stats, arr_size_thresh=arr_size_thresh)}""",
             "    ",
         )
