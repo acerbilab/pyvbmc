@@ -1,6 +1,8 @@
 import logging
 import time
 
+from pyvbmc.formatting import full_repr
+
 
 class Timer:
     """
@@ -78,3 +80,37 @@ class Timer:
         """
         self._durations = dict()
         self._start_times = dict()
+
+    def __repr__(self, arr_size_thresh=10, expand=True):
+        """Construct a detailed string summary.
+
+        Parameters
+        ----------
+        arr_size_thresh : float, optional
+            If ``obj`` is an array whose product of dimensions is less than
+            ``arr_size_thresh``, print the full array. Otherwise print only the
+            shape. Default `10`.
+        expand : bool, optional
+            If ``expand`` is `False`, then describe any complex child
+            attributes of the object by their name and memory location.
+            Otherwise, recursively expand the child attributes into their own
+            representations. Default `False`.
+
+        Returns
+        -------
+        string : str
+            The string representation of ``self``.
+        """
+        return full_repr(
+            self, "Timer", expand=expand, arr_size_thresh=arr_size_thresh
+        )
+
+    def _short_repr(self):
+        """Returns abbreviated string representation with memory location.
+
+        Returns
+        -------
+        string : str
+            The abbreviated string representation of the VBMC object.
+        """
+        return object.__repr__(self)

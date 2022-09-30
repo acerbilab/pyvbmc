@@ -1,7 +1,10 @@
+from textwrap import indent
+
 import numpy as np
 from scipy.special import erfc, erfcinv
 
 from pyvbmc.decorators import handle_0D_1D_input
+from pyvbmc.formatting import full_repr
 
 
 class ParameterTransformer:
@@ -407,6 +410,71 @@ class ParameterTransformer:
             and np.all(self.mu == other.mu)
             and np.all(self.delta == other.delta)
         )
+
+    def __str__(self):
+        """Print a string summary."""
+        transform_names = {
+            0: "unbounded",
+            3: "logit",
+            12: "norminv",
+            12: "probit",
+            13: "student4",
+        }
+        transforms = [transform_names[number] for number in self.type]
+        return "ParameterTransformer:" + indent(
+            f"""
+dimension = {self.lb_orig.shape[1]},
+lower bounds = {self.lb_orig},
+upper bounds = {self.ub_orig},
+bounded transform type(s) = {transforms}""",
+            "    ",
+        )
+
+    def __repr__(self, arr_size_thresh=10, expand=False):
+        """Construct a detailed string summary.
+
+        Parameters
+        ----------
+        arr_size_thresh : float, optional
+            If ``obj`` is an array whose product of dimensions is less than
+            ``arr_size_thresh``, print the full array. Otherwise print only the
+            shape. Default `10`.
+        expand : bool, optional
+            If ``expand`` is `False`, then describe any complex child
+            attributes of the object by their name and memory location.
+            Otherwise, recursively expand the child attributes into their own
+            representations. Default `False`.
+
+        Returns
+        -------
+        string : str
+            The string representation of ``self``.
+        """
+        return full_repr(
+            self,
+            "ParameterTransformer",
+            order=[
+                "lb_orig",
+                "ub_orig",
+                "type",
+                "mu",
+                "delta",
+                "scale",
+                "R_mat",
+            ],
+            expand=expand,
+            arr_size_thresh=arr_size_thresh,
+        )
+
+    def _short_repr(self):
+        """Returns abbreviated string representation with memory location.
+
+        Returns
+        -------
+        string : str
+            The abbreviated string representation of the ParameterTransformer.
+        """
+        return object.__repr__(self)
 
 
 def _to_unit_interval(x, lb, ub, safe=True):
