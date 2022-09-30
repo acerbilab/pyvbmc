@@ -40,6 +40,8 @@ def summarize(
         array_string = np.array2string(
             obj, precision=precision, suppress_small=True, separator=", "
         )
+        if "\n" in array_string:  # Print multi-line arrays on new line
+            array_string = indent("\n" + array_string, "    ")
         string = f"{array_string} : {type(obj).__name__}"
     else:
         # Array is large: print only the shape of the array.
