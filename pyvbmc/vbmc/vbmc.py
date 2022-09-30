@@ -2304,6 +2304,13 @@ class VBMC:
 
     def __str__(self):
         """Construct a string summary."""
+
+        gp = getattr(getattr(self, "vp", None), "gp", None)
+        if gp is not None:
+            gp_str = f"gpyreg.{gp}"
+        else:
+            gp_str = "None"
+
         return "VBMC:" + indent(
             f"""
 dimension = {self.D},
@@ -2316,7 +2323,7 @@ log-density = {getattr(self, "log_likelihood", self.log_joint)},
 log-prior = {getattr(self, "log_prior", None)},
 prior sampler = {getattr(self, "sample_prior", None)},
 variational posterior = {str(getattr(self, "vp", None))},
-Gaussian process = {str(getattr(self, "gp", None))},
+Gaussian process = {gp_str},
 user options = {str(self.options)}""",
             "    ",
         )
@@ -2356,7 +2363,7 @@ user options = {str(self.options)}""",
                 "sample_prior",
                 "vp",
                 "K",
-                "gp",
+                "vp.gp",
                 "parameter_transformer",
                 "logger",
                 "logging_action",
