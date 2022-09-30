@@ -54,8 +54,8 @@ class FunctionLogger:
         self.y_orig = np.full([cache_size, 1], np.nan)
         self.X = np.full([cache_size, self.D], np.nan)
         self.y = np.full([cache_size, 1], np.nan)
-        self.ymax = np.nan
-        self.nevals = np.full([cache_size, 1], 0)
+        self.y_max = np.nan
+        self.n_evals = np.full([cache_size, 1], 0)
 
         if self.noise_flag:
             self.S = np.full([cache_size, 1], np.nan)
@@ -323,8 +323,8 @@ class FunctionLogger:
         self.fun_eval_time = np.append(
             self.fun_eval_time, np.full([resize_amount, 1], np.nan), axis=0
         )
-        self.nevals = np.append(
-            self.nevals, np.full([resize_amount, 1], 0), axis=0
+        self.n_evals = np.append(
+            self.n_evals, np.full([resize_amount, 1], 0), axis=0
         )
 
     def _record(
@@ -371,7 +371,7 @@ class FunctionLogger:
             if np.sum(duplicate_flag.all(axis=1)) > 1:
                 raise ValueError("More than one match for duplicate entry.")
             idx = np.argwhere(duplicate_flag)[0, 0]
-            N = self.nevals[idx]
+            N = self.n_evals[idx]
             if f_sd is not None:
                 tau_n = 1 / self.S[idx] ** 2
                 tau_1 = 1 / f_sd**2
@@ -391,7 +391,7 @@ class FunctionLogger:
             self.fun_eval_time[idx] = (
                 N * self.fun_eval_time[idx] + fun_eval_time
             ) / (N + 1)
-            self.nevals[idx] += 1
+            self.n_evals[idx] += 1
             return f_val, idx
         else:
             self.Xn += 1
@@ -415,8 +415,8 @@ class FunctionLogger:
             if f_sd is not None:
                 self.S[self.Xn] = f_sd
             self.X_flag[self.Xn] = True
-            self.nevals[self.Xn] += 1
-            self.ymax = np.nanmax(self.y[self.X_flag])
+            self.n_evals[self.Xn] += 1
+            self.y_max = np.nanmax(self.y[self.X_flag])
             return f_val, self.Xn
 
     def __str__(self, arr_size_thresh=10):
