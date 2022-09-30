@@ -49,7 +49,9 @@ def test_iteration_lower_than_0():
 def test_str():
     iteration_history = IterationHistory(["rindex"])
     iteration_history.record("rindex", 0.5, 0)
-    assert "rindex: [0.5]" in iteration_history.__str__()
+    assert "rindex" in iteration_history.__str__()
+    print(iteration_history.__repr__(full=True))
+    assert "'rindex': [0.5]" in iteration_history.__repr__(full=True)
 
 
 def test_len():
