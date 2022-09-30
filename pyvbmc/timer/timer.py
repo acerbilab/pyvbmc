@@ -1,7 +1,7 @@
 import logging
 import time
 
-from pyvbmc.io import full_repr
+from pyvbmc.formatting import full_repr
 
 
 class Timer:

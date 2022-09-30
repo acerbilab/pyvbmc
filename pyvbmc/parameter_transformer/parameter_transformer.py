@@ -4,7 +4,7 @@ import numpy as np
 from scipy.special import erfc, erfcinv
 
 from pyvbmc.decorators import handle_0D_1D_input
-from pyvbmc.io import full_repr
+from pyvbmc.formatting import full_repr
 
 
 class ParameterTransformer:

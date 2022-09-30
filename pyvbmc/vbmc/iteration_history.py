@@ -4,7 +4,7 @@ from textwrap import indent
 
 import numpy as np
 
-from pyvbmc.io import format_dict, full_repr
+from pyvbmc.formatting import format_dict, full_repr
 
 
 class IterationHistory(MutableMapping, dict):

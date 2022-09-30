@@ -10,7 +10,7 @@ from textwrap import indent
 import numpy as np
 
 from pyvbmc.acquisition_functions import *
-from pyvbmc.io import full_repr
+from pyvbmc.formatting import full_repr
 
 
 class Options(MutableMapping, dict):

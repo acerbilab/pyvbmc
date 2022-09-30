@@ -14,7 +14,7 @@ from scipy.optimize import fmin_l_bfgs_b
 from scipy.special import gammaln
 
 from pyvbmc.decorators import handle_0D_1D_input
-from pyvbmc.io import format_dict, full_repr, get_repr, summarize
+from pyvbmc.formatting import format_dict, full_repr, get_repr, summarize
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.stats import kde1d, kldiv_mvn
 

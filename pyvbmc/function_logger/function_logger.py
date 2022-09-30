@@ -2,7 +2,7 @@ from textwrap import indent
 
 import numpy as np
 
-from pyvbmc.io import full_repr
+from pyvbmc.formatting import full_repr
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.timer import Timer
 

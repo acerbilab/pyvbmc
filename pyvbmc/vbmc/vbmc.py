@@ -9,8 +9,8 @@ import gpyreg as gpr
 import matplotlib.pyplot as plt
 import numpy as np
 
+from pyvbmc.formatting import full_repr, get_repr, summarize
 from pyvbmc.function_logger import FunctionLogger
-from pyvbmc.io import full_repr, get_repr, summarize
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.stats import kldiv_mvn
 from pyvbmc.timer import main_timer as timer
