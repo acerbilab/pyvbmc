@@ -1218,12 +1218,11 @@ class VariationalPosterior:
         return "VariationalPosterior:" + indent(
             f"""
 dimension = {self.D},
-num. componenets = {self.K},
+num. components = {self.K},
 means{summarize(self.mu, arr_size_thresh)},
 weights{summarize(self.w, arr_size_thresh)},
 sigma (per-component scale){summarize(self.sigma, arr_size_thresh)},
 lambd (per-dimension scale){summarize(self.lambd, arr_size_thresh)},
-delta (overall scale){summarize(self.delta, arr_size_thresh)},
 stats = {format_dict(self.stats, arr_size_thresh=arr_size_thresh)}.""",
             "    ",
         )
@@ -1251,7 +1250,7 @@ stats = {format_dict(self.stats, arr_size_thresh=arr_size_thresh)}.""",
         return full_repr(
             self,
             "VariationalPosterior",
-            order=["D", "K", "mu", "w", "sigma", "lambd", "delta", "stats"],
+            order=["D", "K", "mu", "w", "sigma", "lambd", "stats"],
             expand=expand,
             arr_size_thresh=arr_size_thresh,
         )
