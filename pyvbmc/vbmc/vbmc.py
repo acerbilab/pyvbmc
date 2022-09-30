@@ -2306,7 +2306,7 @@ class VBMC:
         """Construct a string summary."""
         return "VBMC:" + indent(
             f"""
-Dimension = {self.D},
+dimension = {self.D},
 x0{summarize(self.x0)},
 lower bounds{summarize(self.lower_bounds)},
 upper bounds{summarize(self.upper_bounds)},
@@ -2317,7 +2317,7 @@ log-prior = {getattr(self, "log_prior", None)},
 prior sampler = {getattr(self, "sample_prior", None)},
 variational posterior = {str(getattr(self, "vp", None))},
 Gaussian process = {str(getattr(self, "gp", None))},
-user options = {str(self.options)}.""",
+user options = {str(self.options)}""",
             "    ",
         )
 

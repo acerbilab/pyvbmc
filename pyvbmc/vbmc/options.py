@@ -5,6 +5,7 @@ import configparser
 import copy
 from collections.abc import MutableMapping
 from math import ceil
+from textwrap import indent
 
 import numpy as np
 
@@ -251,11 +252,14 @@ class Options(MutableMapping, dict):
         str
             The str to describe an options object.
         """
-        return "User Options:\n\t" + "\n\t".join(
-            [
-                f"{key}: {self[key]} ({self.descriptions.get(key)})"
-                for key in self["useroptions"]
-            ]
+        return "User Options:" + indent(
+            "\n".join(
+                [
+                    f"{key}: {self[key]} ({self.descriptions.get(key)})"
+                    for key in self["useroptions"]
+                ]
+            ),
+            "    ",
         )
 
     def __repr__(self, full=False, expand=False):
@@ -278,11 +282,14 @@ class Options(MutableMapping, dict):
         if full:  # Output every class attribute (for debugging)
             return full_repr(self, "Options", expand=expand)
         else:  # Output relevant class attributes in meaningful format
-            return "Options:\n\t" + "\n\t".join(
-                [
-                    f"{key}: {value} ({self.descriptions.get(key)})"
-                    for (key, value) in self.items()
-                ]
+            return "Options:\n\t" + indent(
+                "\n".join(
+                    [
+                        f"{key}: {value} ({self.descriptions.get(key)})"
+                        for (key, value) in self.items()
+                    ]
+                ),
+                "    ",
             )
 
     def _short_repr(self):

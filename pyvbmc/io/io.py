@@ -31,26 +31,21 @@ def summarize(
     string : str
         The string summarizing the object/array.
     """
-    string = ""
-    prefix = ""
-
     if not isinstance(obj, np.ndarray):
         # Stringify anything that's not an array.
-        prefix = " = "
-        string = get_repr(obj)
+        string = f" = {get_repr(obj)}"
     elif np.prod(obj.shape) < arr_size_thresh:
-        # Print the full (but abbreviated precision) array on one line.
-        prefix = " = "
+        # Array is small: print the full (but abbreviated precision) array on
+        # one line.
         array_string = np.array2string(
             obj, precision=precision, suppress_small=True, separator=", "
         )
-        string = array_string + f": {type(obj).__name__}"
+        string = f" = {array_string}: {type(obj).__name__}"
     else:
-        # Print the shape of the array.
-        prefix = ": "
-        string = f"{obj.shape} {type(obj).__name__}"
+        # Array is large: print only the shape of the array.
+        string = f": {obj.shape} {type(obj).__name__}"
 
-    return prefix + string
+    return string
 
 
 def format_dict(d, **kwargs):
@@ -127,19 +122,23 @@ def get_repr(obj, expand=False, full=False, **kwargs):
                 return obj.__repr__(expand=True, full=full)
             except TypeError:  # keyword error
                 return repr(obj)
-    else:  # Abbreviated representation
-        if hasattr(obj, "_short_repr"):
+    else:  # Don't expand, only return short representation
+        if hasattr(obj, "_short_repr"):  # Custom short representation
             return obj._short_repr()
-        elif type(obj) == dict:  # Just print type and memory location
+        elif type(obj) == dict:  # Just return type and memory location
             return object.__repr__(obj)
-        elif type(obj) == np.ndarray:
+        elif type(obj) == np.ndarray:  # Summarize numpy arrays
             return summarize(obj, **kwargs)
         else:
-            return repr(obj)
+            return repr(obj)  # If all else fails, return usual __repr__()
 
 
 def full_repr(obj, title, order=[], **kwargs):
     """Get a complete string representation of an object.
+
+    Prints the names and a summary of their values. Attributes listed in
+    ``order`` are printed first, in the order they appear, then all remaining
+    attributes are printed (in sorted order, if possible).
 
     Parameters
     ----------
@@ -147,12 +146,16 @@ def full_repr(obj, title, order=[], **kwargs):
         The object to represent.
     title : string
         The title to print (e.g. class name).
+    order : list, optional
+        The order of selected attributes, to print first. Default ``[]``.
     kwargs : dict, optional
         The keyword arguments for printing the objects child attributes,
         forwarded to ``get_repr()``.
     """
     body = []
-    for key in order:  # Print select attributes first
+
+    # Print select attributes first
+    for key in order:
         body.append(
             f"self.{key} = {get_repr(getattr(obj, key, None), **kwargs)}"
         )
@@ -168,4 +171,4 @@ def full_repr(obj, title, order=[], **kwargs):
                 body.append(f"self.{key} = {get_repr(val, **kwargs)}")
 
     body = ",\n".join(body)
-    return title + ":\n" + indent(body, "    ") + "\n."
+    return title + ":\n" + indent(body, "    ")

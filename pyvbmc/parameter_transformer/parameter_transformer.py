@@ -423,10 +423,10 @@ class ParameterTransformer:
         transforms = [transform_names[number] for number in self.type]
         return "ParameterTransformer:" + indent(
             f"""
-D = {self.lb_orig.shape[1]},
+dimension = {self.lb_orig.shape[1]},
 lower bounds = {self.lb_orig},
 upper bounds = {self.ub_orig},
-transform type(s) = {transforms}.""",
+bounded transform type(s) = {transforms}""",
             "    ",
         )
 

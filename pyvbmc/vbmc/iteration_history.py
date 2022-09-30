@@ -149,7 +149,7 @@ class IterationHistory(MutableMapping, dict):
         """
         return "IterationHistory:\n" + indent(
             f"num. iterations = {len(self)}\nkeys = \n"
-            + indent(",\n".join(key for key in self.keys()) + ".", "    "),
+            + indent(",\n".join(key for key in self.keys()), "    "),
             "    ",
         )
 

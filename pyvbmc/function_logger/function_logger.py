@@ -426,7 +426,7 @@ dimension = {self.D},
 noisy = {self.noise_flag},
 num. evaluations = {self.func_count},
 y max = {self.ymax},
-fun. eval. time = {self.total_fun_evaltime}.""",
+fun. eval. time = {self.total_fun_evaltime}""",
             "    ",
         )
 
