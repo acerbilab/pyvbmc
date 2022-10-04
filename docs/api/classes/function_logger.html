@@ -168,8 +168,8 @@
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../functions/kde1d.html">
-     kde1d
+    <a class="reference internal" href="../functions/kde_1d.html">
+     kde_1d
     </a>
    </li>
    <li class="toctree-l2">
@@ -335,7 +335,7 @@ should be (1, D) or (D,).</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
-<dt><strong>fval</strong><span class="classifier">float</span></dt><dd><p>The result of the evaluation.</p>
+<dt><strong>f_val</strong><span class="classifier">float</span></dt><dd><p>The result of the evaluation.</p>
 </dd>
 <dt><strong>SD</strong><span class="classifier">float</span></dt><dd><p>The (estimated) SD of the returned value.</p>
 </dd>
@@ -359,7 +359,7 @@ is not a finite, positive real-valued scalar.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.function_logger.FunctionLogger.add">
-<span class="sig-name descname"><span class="pre">add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fval_orig</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fsd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fun_evaltime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">nan</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/function_logger/function_logger.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.function_logger.FunctionLogger.add" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_val_orig</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_sd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fun_eval_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">nan</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/function_logger/function_logger.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.function_logger.FunctionLogger.add" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add an previously evaluated function sample to the function cache.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -367,19 +367,19 @@ is not a finite, positive real-valued scalar.</p>
 <dt><strong>x</strong><span class="classifier">np.ndarray</span></dt><dd><p>The point at which the function has been evaluated. The shape of x
 should be (1, D) or (D,).</p>
 </dd>
-<dt><strong>fval_orig</strong><span class="classifier">float</span></dt><dd><p>The result of the evaluation of the function.</p>
+<dt><strong>f_val_orig</strong><span class="classifier">float</span></dt><dd><p>The result of the evaluation of the function.</p>
 </dd>
-<dt><strong>fsd</strong><span class="classifier">float, optional</span></dt><dd><p>The (estimated) SD of the returned value (if heteroskedastic noise
+<dt><strong>f_sd</strong><span class="classifier">float, optional</span></dt><dd><p>The (estimated) SD of the returned value (if heteroskedastic noise
 handling is on) of the evaluation of the function, by default None.</p>
 </dd>
-<dt><strong>fun_evaltime</strong><span class="classifier">float</span></dt><dd><p>The duration of the time it took to evaluate the function,
+<dt><strong>fun_eval_time</strong><span class="classifier">float</span></dt><dd><p>The duration of the time it took to evaluate the function,
 by default np.nan.</p>
 </dd>
 </dl>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
-<dt><strong>fval</strong><span class="classifier">float</span></dt><dd><p>The result of the evaluation.</p>
+<dt><strong>f_val</strong><span class="classifier">float</span></dt><dd><p>The result of the evaluation.</p>
 </dd>
 <dt><strong>SD</strong><span class="classifier">float</span></dt><dd><p>The (estimated) SD of the returned value.</p>
 </dd>

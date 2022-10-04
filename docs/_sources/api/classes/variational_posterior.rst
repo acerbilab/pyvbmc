@@ -15,7 +15,7 @@ VariationalPosterior
 
   There are also methods to compare variational posteriors:
 
-  - ``kldiv``: compute the Kullback-Leibler divergence between two posteriors;
+  - ``kl_div``: compute the Kullback-Leibler divergence between two posteriors;
   - ``mtv``: compute the marginal total variation distance between two posteriors.
 
   See below for the full ``VariationalPosterior`` class methods and interface.
