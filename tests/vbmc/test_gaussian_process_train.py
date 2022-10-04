@@ -386,7 +386,7 @@ def test_gp_hyp():
 
     vbmc.optim_state["N"] = 10
     vbmc.optim_state["n_eff"] = np.sum(
-        vbmc.function_logger.nevals[vbmc.function_logger.X_flag]
+        vbmc.function_logger.n_evals[vbmc.function_logger.X_flag]
     )
     assert not np.isnan(vbmc.optim_state["n_eff"])
 

@@ -788,3 +788,9 @@ def test_init_1D_input():
     assert np.all(vbmc.optim_state["ub_orig"] == ub.reshape((1, D)))
     assert np.all(vbmc.optim_state["plb_orig"] == plb.reshape((1, D)))
     assert np.all(vbmc.optim_state["pub_orig"] == pub.reshape((1, D)))
+
+
+def test__str__and__repr__():
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
+    vbmc.__str__()
+    vbmc.__repr__()

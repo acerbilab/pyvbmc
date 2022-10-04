@@ -709,3 +709,11 @@ def test_plot():
     fig = vp.plot(title=test_title)
     assert fig._suptitle.get_text() == test_title
     assert len(fig.axes) == D * D
+
+
+def test__str__and__repr__():
+    D = 2
+    K = 2
+    vp = VariationalPosterior(D, K)
+    assert "num. components = 2" in vp.__str__()
+    assert "self.K = 2" in vp.__repr__()

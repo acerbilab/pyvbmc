@@ -44,7 +44,7 @@ class AcqFcnLog(AbstractAcqFcn):
         )
 
         # Log prospective uncertainty search
-        z = function_logger.ymax
+        z = function_logger.y_max
         acq = -(np.log(var_tot) + f_bar - z + log_p)
 
         return acq

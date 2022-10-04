@@ -129,12 +129,13 @@ def test_init_with_specify_target_noise():
     assert vbmc1.options["active_sample_gp_update"] == False
 
 
-def test_str():
+def test__str__and__repr__():
     default_options_path = "./pyvbmc/vbmc/option_configs/test_options.ini"
     options = Options(default_options_path, {"D": 2})
     one_option_str = "bar: 40 (Bar description)"
     assert one_option_str in options.__repr__()
     assert "None (use default options)." in options.__str__()
+    options.__repr__()
 
 
 def test_del():

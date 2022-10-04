@@ -1032,7 +1032,7 @@ class VBMC:
             # Careful with Xn, in MATLAB this condition is > 0
             # due to 1-based indexing.
             if self.function_logger.Xn >= 0:
-                self.function_logger.ymax = np.max(
+                self.function_logger.y_max = np.max(
                     self.function_logger.y[self.function_logger.X_flag]
                 )
 
@@ -1097,7 +1097,7 @@ class VBMC:
             # Number of training inputs
             self.optim_state["N"] = self.function_logger.Xn + 1
             self.optim_state["n_eff"] = np.sum(
-                self.function_logger.nevals[self.function_logger.X_flag]
+                self.function_logger.n_evals[self.function_logger.X_flag]
             )
 
             timer.stop_timer("active_sampling")
@@ -1346,7 +1346,7 @@ class VBMC:
                 Xrnd, _ = self.vp.sample(N=int(2e4), orig_flag=False)
                 ymu, _ = gp.predict(Xrnd, add_noise=True)
                 ydelta = max(
-                    [0, self.function_logger.ymax - np.quantile(ymu, 1e-3)]
+                    [0, self.function_logger.y_max - np.quantile(ymu, 1e-3)]
                 )
                 if (
                     ydelta
@@ -1694,9 +1694,9 @@ class VBMC:
             self.logging_action.append("trim data")
 
         # Remove warm-up points from training set unless close to max
-        ymax = max(self.function_logger.y_orig[: self.function_logger.Xn + 1])
+        y_max = max(self.function_logger.y_orig[: self.function_logger.Xn + 1])
         n_keep_min = self.D + 1
-        idx_keep = (ymax - self.function_logger.y_orig) < threshold
+        idx_keep = (y_max - self.function_logger.y_orig) < threshold
         if np.sum(idx_keep) < n_keep_min:
             y_temp = np.copy(self.function_logger.y_orig)
             y_temp[~np.isfinite(y_temp)] = -np.Inf

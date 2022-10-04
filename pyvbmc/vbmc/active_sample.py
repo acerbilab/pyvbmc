@@ -247,7 +247,7 @@ def active_sample(
                 function_logger.Xn + 1
             )  # Number of training inputs
             optim_state["N_eff"] = sum(
-                function_logger.nevals[function_logger.X_flag]
+                function_logger.n_evals[function_logger.X_flag]
             )
             ###
             # if options.ActiveVariationalSamples > 0 % Unused
@@ -277,7 +277,7 @@ def active_sample(
                 if hasattr(function_logger, "S"):
                     s2 = (
                         function_logger.S[function_logger.X_flag] ** 2
-                    ) * function_logger.nevals[function_logger.X_flag]
+                    ) * function_logger.n_evals[function_logger.X_flag]
                 else:
                     s2 = None
 
@@ -579,7 +579,7 @@ def active_sample(
                     timer.start_timer("gp_train")
                     update1 = (
                         (s2new is None)
-                        and function_logger.nevals[idx_new] == 1
+                        and function_logger.n_evals[idx_new] == 1
                     ) and not options["noise_shaping"]
                     if update1:
                         ynew = np.array([[ynew]])  # (1,1)

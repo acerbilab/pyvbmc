@@ -53,3 +53,12 @@ def test_timer_cumulative():
     timer.stop_timer("a")
     a = timer.get_duration("a")
     assert a > 0.19
+
+
+def test__str__and__repr__():
+    timer = Timer()
+    timer.start_timer("foo")
+    sleep(0.1)
+    timer.stop_timer("foo")
+    assert "'foo'" in timer.__str__()
+    assert "'foo'" in timer.__repr__()

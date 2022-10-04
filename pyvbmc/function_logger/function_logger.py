@@ -174,7 +174,7 @@ class FunctionLogger:
         f_val, idx = self._record(x_orig, x, f_val_orig, f_sd, funtime)
 
         # optimstate.N = self.Xn
-        # optimstate.N_eff = np.sum(self.nevals[self.X_flag])
+        # optimstate.N_eff = np.sum(self.n_evals[self.X_flag])
         # optimState.totalfunevaltime = optimState.totalfunevaltime + t;
         return f_val, f_sd, idx
 

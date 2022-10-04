@@ -38,7 +38,7 @@ class AcqFcnNoisy(AbstractAcqFcn):
         # Estimate observation noise at test points from nearest neighbor.
         sn2 = super()._estimate_observation_noise(Xs, gp, optim_state)
 
-        z = function_logger.ymax
+        z = function_logger.y_max
 
         # Prospective uncertainty search corrected for noisy observations
         acq = -var_tot * (1 - sn2 / (var_tot + sn2)) * np.exp(f_bar - z) * p

@@ -123,7 +123,7 @@ def test_call_record_stats():
     assert f_logger.total_fun_eval_time == np.nansum(f_logger.fun_eval_time)
     assert np.all(f_logger.X_orig[9] == x * 9)
     assert f_logger.y_orig[9] == non_noisy_function(x * 9)
-    assert f_logger.ymax == non_noisy_function(x * 9)
+    assert f_logger.y_max == non_noisy_function(x * 9)
     assert np.sum(f_logger.X_flag) == 10
     assert f_logger.Xn == 9
     assert f_logger.cache_count == 0
@@ -139,7 +139,7 @@ def test_add_record_stats():
     assert np.nansum(f_logger.fun_eval_time) == 0
     assert np.all(f_logger.X_orig[9] == x * 9)
     assert f_logger.y_orig[9] == non_noisy_function(x * 9)
-    assert f_logger.ymax == non_noisy_function(x * 9)
+    assert f_logger.y_max == non_noisy_function(x * 9)
     assert np.sum(f_logger.X_flag) == 10
     assert f_logger.Xn == 9
     assert f_logger.func_count == 0
@@ -167,8 +167,8 @@ def test_record_duplicate():
     _, idx = f_logger._record(x, x, 1, None, 1)
     assert idx == 1
     assert f_logger.Xn == 1
-    assert f_logger.nevals[0] == 1
-    assert f_logger.nevals[1] == 2
+    assert f_logger.n_evals[0] == 1
+    assert f_logger.n_evals[1] == 2
     assert np.all(f_logger.X[1] == x)
     assert f_logger.y[1] == 5
     assert f_logger.y_orig[1] == 5
@@ -185,8 +185,8 @@ def test_record_duplicate_f_sd():
     _, idx = f_logger._record(x, x, 1, 3, 1)
     assert idx == 1
     assert f_logger.Xn == 1
-    assert f_logger.nevals[0] == 1
-    assert f_logger.nevals[1] == 2
+    assert f_logger.n_evals[0] == 1
+    assert f_logger.n_evals[1] == 2
     assert np.all(f_logger.X[1] == x)
     assert np.isclose(f_logger.y[1], 5, rtol=1e-12, atol=1e-14)
     assert np.isclose(f_logger.y_orig[1], 5, rtol=1e-12, atol=1e-14)
@@ -203,7 +203,7 @@ def test_finalize():
     assert f_logger.total_fun_eval_time == np.sum(f_logger.fun_eval_time)
     assert np.all(f_logger.X_orig[9] == x * 9)
     assert f_logger.y_orig[9] == non_noisy_function(x * 9)
-    assert f_logger.ymax == non_noisy_function(x * 9)
+    assert f_logger.y_max == non_noisy_function(x * 9)
     assert np.sum(f_logger.X_flag) == 10
     assert f_logger.Xn == 9
     assert f_logger.func_count == 10
@@ -304,3 +304,12 @@ def test_add_invalid_sd_value():
     f_logger = FunctionLogger(noisy_function, 3, True, 2)
     with pytest.raises(ValueError):
         f_logger.add(x, 3, np.inf)
+
+
+def test__str__():
+    x = np.array([3, 4, 5])
+    f_logger = FunctionLogger(non_noisy_function, 3, False, 0)
+    for i in range(10):
+        f_logger(x * i)
+    f_logger.__str__()
+    f_logger.__repr__()

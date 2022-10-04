@@ -36,6 +36,6 @@ class AcqFcn(AbstractAcqFcn):
         p = np.ravel(np.maximum(vp.pdf(Xs, orig_flag=False), realmin))
 
         # Prospective uncertainty search
-        z = function_logger.ymax
+        z = function_logger.y_max
         acq = -var_tot * np.exp(f_bar - z) * p
         return acq

@@ -46,7 +46,7 @@ def test_iteration_lower_than_0():
     assert "The iteration must be >= 0." in execinfo.value.args[0]
 
 
-def test_str():
+def test__str__and__repr__():
     iteration_history = IterationHistory(["rindex"])
     iteration_history.record("rindex", 0.5, 0)
     assert "rindex" in iteration_history.__str__()
