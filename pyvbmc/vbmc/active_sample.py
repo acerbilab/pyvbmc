@@ -16,8 +16,8 @@ from pyvbmc.vbmc.active_importance_sampling import active_importance_sampling
 from pyvbmc.vbmc.gaussian_process_train import reupdate_gp, train_gp
 from pyvbmc.vbmc.iteration_history import IterationHistory
 from pyvbmc.vbmc.variational_optimization import (
-    _gplogjoint,
-    _negelcbo,
+    _gp_log_joint,
+    _neg_elcbo,
     optimize_vp,
 )
 
@@ -94,16 +94,16 @@ def active_sample(
             ys = np.copy(optim_state["cache"]["y_orig"])
 
             if provided_sample_count < sample_count:
-                pub = optim_state.get("pub")
-                plb = optim_state.get("plb")
+                pub_tran = optim_state.get("pub_tran")
+                plb_tran = optim_state.get("plb_tran")
 
                 if options.get("init_design") == "plausible":
                     # Uniform random samples in the plausible box
                     # (in transformed space)
                     random_Xs = (
                         np.random.rand(sample_count - provided_sample_count, D)
-                        * (pub - plb)
-                        + plb
+                        * (pub_tran - plb_tran)
+                        + plb_tran
                     )
 
                 elif options.get("init_design") == "narrow":
@@ -111,8 +111,10 @@ def active_sample(
                     random_Xs = (
                         np.random.rand(sample_count - provided_sample_count, D)
                         - 0.5
-                    ) * 0.1 * (pub - plb) + start_Xs
-                    random_Xs = np.minimum((np.maximum(random_Xs, plb)), pub)
+                    ) * 0.1 * (pub_tran - plb_tran) + start_Xs
+                    random_Xs = np.minimum(
+                        (np.maximum(random_Xs, plb_tran)), pub_tran
+                    )
 
                 else:
                     raise ValueError(
@@ -245,7 +247,7 @@ def active_sample(
                 function_logger.Xn + 1
             )  # Number of training inputs
             optim_state["N_eff"] = sum(
-                function_logger.nevals[function_logger.X_flag]
+                function_logger.n_evals[function_logger.X_flag]
             )
             ###
             # if options.ActiveVariationalSamples > 0 % Unused
@@ -275,7 +277,7 @@ def active_sample(
                 if hasattr(function_logger, "S"):
                     s2 = (
                         function_logger.S[function_logger.X_flag] ** 2
-                    ) * function_logger.nevals[function_logger.X_flag]
+                    ) * function_logger.n_evals[function_logger.X_flag]
                 else:
                     s2 = None
 
@@ -327,7 +329,7 @@ def active_sample(
 
             # Re-evaluate variance of the log joint if requested
             if acq_eval.acq_info.get("compute_varlogjoint"):
-                varF = _gplogjoint(vp, gp, 0, 0, 0, 1)[2]
+                varF = _gp_log_joint(vp, gp, 0, 0, 0, 1)[2]
                 optim_state["var_log_joint_samples"] = varF
 
             # Evaluate acquisition function
@@ -359,29 +361,29 @@ def active_sample(
                         "search_optimizer", "Nelder-Mead", force=True
                     )
 
-                fval_old = acq_fast[idx]
+                f_val_old = acq_fast[idx]
                 x0 = X_acq[0, :]
 
                 if (
                     np.isfinite(optim_state["lb_search"]).all()
                     and np.isfinite(optim_state["ub_search"]).all()
                 ):
-                    lb = np.minimum(x0, optim_state["lb_search"])
-                    ub = np.maximum(x0, optim_state["ub_search"])
+                    lb_search = np.minimum(x0, optim_state["lb_search"])
+                    ub_search = np.maximum(x0, optim_state["ub_search"])
                 else:
                     xrange = gp.X.max(0) - gp.X.min(0)
-                    lb = np.minimum(gp.X, x0) - 0.1 * xrange
-                    ub = np.maximum(gp.X, x0) + 0.1 * xrange
+                    lb_search = np.minimum(gp.X, x0) - 0.1 * xrange
+                    ub_search = np.maximum(gp.X, x0) + 0.1 * xrange
 
                 if acq_eval.acq_info.get("log_flag"):
                     tol_fun = 1e-2
                 else:
-                    tol_fun = max(1e-12, abs(fval_old * 1e-3))
+                    tol_fun = max(1e-12, abs(f_val_old * 1e-3))
 
                 if options["search_optimizer"] == "cmaes":
 
                     if options["search_cmaes_vp_init"]:
-                        _, Sigma = vp.moments(origflag=False, covflag=True)
+                        _, Sigma = vp.moments(orig_flag=False, cov_flag=True)
                     else:
                         X_hpd = get_hpd(gp.X, gp.y, options["hpd_frac"])[0]
                         Sigma = np.cov(X_hpd, rowvar=False, bias=True)
@@ -391,7 +393,7 @@ def active_sample(
                         "verbose": -9,
                         "tolfun": tol_fun,
                         "maxfevals": options["search_max_fun_evals"],
-                        "bounds": (lb.squeeze(), ub.squeeze()),
+                        "bounds": (lb_search.squeeze(), ub_search.squeeze()),
                         "seed": np.nan,
                     }
 
@@ -403,18 +405,18 @@ def active_sample(
                         noise_handler=cma.NoiseHandler(np.size(x0)),
                     )
 
-                    xsearch_optim, fval_optim = res[:2]
+                    xsearch_optim, f_val_optim = res[:2]
                 elif options["search_optimizer"] == "Nelder-Mead":
                     from scipy.optimize import minimize
 
                     res = minimize(
                         acq_fun, x0, method="Nelder-Mead", tol=tol_fun
                     )
-                    xsearch_optim, fval_optim = res.x, res.fun
+                    xsearch_optim, f_val_optim = res.x, res.fun
                 else:
                     raise NotImplementedError("Not implemented yet")
 
-                if fval_optim < fval_old:
+                if f_val_optim < f_val_old:
                     X_acq[0, :] = AbstractAcqFcn._real2int(
                         xsearch_optim,
                         parameter_transformer,
@@ -528,8 +530,8 @@ def active_sample(
                                 function_logger,
                                 iteration_history,
                                 options_update,
-                                optim_state["plb_orig"],
-                                optim_state["pub_orig"],
+                                optim_state["plb_tran"],
+                                optim_state["pub_tran"],
                             )
                             timer.stop_timer("gp_train")
                         else:
@@ -577,7 +579,7 @@ def active_sample(
                     timer.start_timer("gp_train")
                     update1 = (
                         (s2new is None)
-                        and function_logger.nevals[idx_new] == 1
+                        and function_logger.n_evals[idx_new] == 1
                     ) and not options["noise_shaping"]
                     if update1:
                         ynew = np.array([[ynew]])  # (1,1)
@@ -595,26 +597,26 @@ def active_sample(
             # ADD DIFFERENT CHECKS FOR INTEGER VARIABLES!
             idx = np.abs(xnew - optim_state["lb_search"]) < delta_search
             optim_state["lb_search"][idx] = np.maximum(
-                optim_state["lb"][idx],
+                optim_state["lb_tran"][idx],
                 optim_state["lb_search"][idx] - delta_search[idx],
             )
             idx = np.abs(xnew - optim_state["ub_search"]) < delta_search
             optim_state["ub_search"][idx] = np.minimum(
-                optim_state["ub"][idx],
+                optim_state["ub_tran"][idx],
                 optim_state["ub_search"][idx] + delta_search[idx],
             )
 
             # Hard lower/upper bounds on search (unused)
-            prange = optim_state["pub"] - optim_state["plb"]
+            prange = optim_state["pub_tran"] - optim_state["plb_tran"]
             LB_searchmin = np.maximum(
-                optim_state["plb"]
+                optim_state["plb_tran"]
                 - 2 * prange * options["active_search_bound"],
-                optim_state["lb"],
+                optim_state["lb_tran"],
             )
             UB_searchmin = np.minimum(
-                optim_state["pub"]
+                optim_state["pub_tran"]
                 + 2 * prange * options["active_search_bound"],
-                optim_state["ub"],
+                optim_state["ub_tran"],
             )
 
         if active_sample_full_update and sample_count > 1:
@@ -634,7 +636,7 @@ def active_sample(
                 NSentFineK = math.ceil(
                     options["ns_ent_fine_active"](vp0.K) / vp0.K
                 )
-                elbo0 = -_negelcbo(
+                elbo0 = -_neg_elcbo(
                     theta0, gp, vp0, 0.0, NSentFineK, False, True
                 )[0]
 
@@ -726,13 +728,13 @@ def _get_search_points(
         )
         if N_heavy > 0:
             heavy_Xs, _ = vp.sample(
-                N=N_heavy, origflag=False, balanceflag=True, df=3
+                N=N_heavy, orig_flag=False, balance_flag=True, df=3
             )
             random_Xs = np.append(random_Xs, heavy_Xs, axis=0)
 
         N_mvn = round(options.get("mvn_search_frac") * N_random_points)
         if N_mvn > 0:
-            mubar, sigmabar = vp.moments(origflag=False, covflag=True)
+            mubar, sigmabar = vp.moments(orig_flag=False, cov_flag=True)
             mvn_Xs = np.random.multivariate_normal(
                 np.ravel(mubar), sigmabar, size=N_mvn
             )
@@ -788,8 +790,8 @@ def _get_search_points(
         if N_box > 0:
             X = function_logger.X[function_logger.X_flag]
             X_diam = np.amax(X, axis=0) - np.amin(X, axis=0)
-            plb = optim_state.get("plb")
-            pub = optim_state.get("pub")
+            plb_tran = optim_state.get("plb_tran")
+            pub_tran = optim_state.get("pub_tran")
 
             if np.all(np.isfinite(lb_search)) and np.all(
                 np.isfinite(ub_search)
@@ -797,8 +799,8 @@ def _get_search_points(
                 box_lb = lb_search
                 box_ub = ub_search
             else:
-                box_lb = plb - 3 * (pub - plb)
-                box_ub = pub + 3 * (pub - plb)
+                box_lb = plb_tran - 3 * (pub_tran - plb_tran)
+                box_ub = pub_tran + 3 * (pub_tran - plb_tran)
 
             box_lb = np.maximum(np.amin(X, axis=0) - 0.5 * X_diam, box_lb)
             box_ub = np.minimum(np.amax(X, axis=0) + 0.5 * X_diam, box_ub)
@@ -826,7 +828,7 @@ def _get_search_points(
             N_random_points - N_search_cache - N_heavy - N_mvn - N_box - N_hpd,
         )
         if N_vp > 0:
-            vp_Xs, _ = vp.sample(N=N_vp, origflag=False, balanceflag=True)
+            vp_Xs, _ = vp.sample(N=N_vp, orig_flag=False, balance_flag=True)
             random_Xs = np.append(random_Xs, vp_Xs, axis=0)
 
         search_X = np.append(search_X, random_Xs, axis=0)

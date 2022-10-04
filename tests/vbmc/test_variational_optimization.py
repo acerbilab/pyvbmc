@@ -2,12 +2,12 @@ import gpyreg as gpr
 import numpy as np
 from scipy.stats import multivariate_normal, norm
 
-from pyvbmc.stats import kldiv_mvn
+from pyvbmc.stats import kl_div_mvn
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc import Options
 from pyvbmc.vbmc.variational_optimization import (
-    _gplogjoint,
-    _negelcbo,
+    _gp_log_joint,
+    _neg_elcbo,
     _soft_bound_loss,
     _vp_bound_loss,
     optimize_vp,
@@ -111,7 +111,7 @@ def test_update_K():
     assert update_K(optim_state, iteration_history, options) == 2
 
 
-def test_gplogjoint():
+def test_gp_log_joint():
     D = 2
     K = 2
     vp = VariationalPosterior(D, K)
@@ -134,7 +134,7 @@ def test_gplogjoint():
     hyp = np.loadtxt(open("./tests/vbmc/hyp.txt", "rb"), delimiter=",")
     gp.update(X_new=X, y_new=y, hyp=hyp)
 
-    F, dF, varF, dvarF, varss, I_sk, J_sjk = _gplogjoint(
+    F, dF, varF, dvarF, varss, I_sk, J_sjk = _gp_log_joint(
         vp, gp, False, True, True, True, True
     )
 
@@ -144,17 +144,17 @@ def test_gplogjoint():
     assert dvarF is None
     assert np.isclose(varss, 1.031705745662353e-04)
 
-    F, dF, varF, dvarF, varss = _gplogjoint(
+    F, dF, varF, dvarF, varss = _gp_log_joint(
         vp, gp, True, True, True, False, False
     )
     matlab_dF = np.loadtxt(
-        open("./tests/vbmc/dF_gplogjoint.txt", "rb"), delimiter=","
+        open("./tests/vbmc/dF_gp_log_joint.txt", "rb"), delimiter=","
     )
     assert np.allclose(dF, matlab_dF)
     assert np.isclose(F, -0.461812484952867)
 
 
-def test_negelcbo():
+def test_neg_elcbo():
     D = 2
     K = 2
     vp = VariationalPosterior(D, K)
@@ -184,7 +184,7 @@ def test_negelcbo():
     theta_bnd = None  # vp.get_bounds(gp.X, options, K)
     theta = vp.get_parameters()
 
-    F, dF, G, H, varF, dH, varGss, varG, varH, I_sk, J_sjk = _negelcbo(
+    F, dF, G, H, varF, dH, varGss, varG, varH, I_sk, J_sjk = _neg_elcbo(
         theta, gp, vp, 0.0, 0, False, True, theta_bnd, 0.0, True
     )
 
@@ -197,7 +197,7 @@ def test_negelcbo():
     assert np.isclose(varG, 6.598768992700180e-05)
     assert varH == 0.0
 
-    F, dF, G, H, varF = _negelcbo(
+    F, dF, G, H, varF = _neg_elcbo(
         theta, gp, vp, 0.0, 0, True, False, theta_bnd, 0.0, False
     )
     matlab_dF = np.loadtxt(open("./tests/vbmc/dF.txt", "rb"), delimiter=",")
@@ -273,7 +273,7 @@ def test_vp_optimize_1D_g_mixture():
     # that is 0 for a normalized density
     assert np.abs(vp.stats["elbo"]) < 1e-2 * 5
 
-    # compute kldiv between gaussian mixture and vp
+    # compute kl_div between gaussian mixture and vp
     vp_samples, _ = vp.sample(int(10e6))
     vp_mu = np.mean(vp_samples)
     vp_sigma = np.std(vp_samples)
@@ -287,7 +287,7 @@ def test_vp_optimize_1D_g_mixture():
     mixture_mu = np.mean(mixture_samples)
     mixture_sigma = np.std(mixture_samples)
     assert np.all(
-        np.abs(kldiv_mvn(mixture_mu, mixture_sigma, vp_mu, vp_sigma))
+        np.abs(kl_div_mvn(mixture_mu, mixture_sigma, vp_mu, vp_sigma))
         < 1e-3 * 1.25
     )
 
@@ -335,7 +335,7 @@ def test_vp_optimize_2D_g_mixture():
     # that is 0 for a normalized density
     assert np.abs(vp.stats["elbo"]) < 1e-1
 
-    # compute kldiv between gaussian mixture and vp
+    # compute kl_div between gaussian mixture and vp
     vp_samples, _ = vp.sample(int(10e6))
     vp_mu = np.mean(vp_samples)
     vp_sigma = np.std(vp_samples)
@@ -349,7 +349,7 @@ def test_vp_optimize_2D_g_mixture():
     mixture_mu = np.mean(mixture_samples)
     mixture_sigma = np.std(mixture_samples)
     assert np.all(
-        np.abs(kldiv_mvn(mixture_mu, mixture_sigma, vp_mu, vp_sigma)) < 1e-2
+        np.abs(kl_div_mvn(mixture_mu, mixture_sigma, vp_mu, vp_sigma)) < 1e-2
     )
 
 
@@ -390,7 +390,7 @@ def test_vp_optimize_deterministic_entropy_approximation():
     # that is 0 for a normalized density
     assert np.abs(vp.stats["elbo"]) < 0.25
 
-    # compute kldiv between gaussian mixture and vp
+    # compute kl_div between gaussian mixture and vp
     vp_samples, _ = vp.sample(int(10e6))
     vp_mu = np.mean(vp_samples)
     vp_sigma = np.std(vp_samples)
@@ -404,6 +404,6 @@ def test_vp_optimize_deterministic_entropy_approximation():
     mixture_mu = np.mean(mixture_samples)
     mixture_sigma = np.std(mixture_samples)
     assert np.all(
-        np.abs(kldiv_mvn(mixture_mu, mixture_sigma, vp_mu, vp_sigma))
+        np.abs(kl_div_mvn(mixture_mu, mixture_sigma, vp_mu, vp_sigma))
         < 1e-4 * 1.25
     )

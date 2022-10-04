@@ -1,12 +1,28 @@
 import numpy as np
 import scipy as sp
-import scipy.stats
 
 from pyvbmc.acquisition_functions import *
 from pyvbmc.vbmc import VBMC
 
 
-def _test_vbmc_optimize_rosenbrock():
+def wrap_with_test(method, vbmc):
+    def wrapper(*args, **kwargs):
+        """Wraps vbmc._check_termination_conditions.
+
+        To be run at the end of every iteration:
+        """
+        assert vbmc.vp.K == vbmc.optim_state["vp_K"]
+        assert vbmc.parameter_transformer == vbmc.vp.parameter_transformer
+        assert (
+            vbmc.parameter_transformer
+            == vbmc.function_logger.parameter_transformer
+        )
+        return method(*args, **kwargs)
+
+    return wrapper
+
+
+def test_vbmc_optimize_rosenbrock():
     D = 2
 
     def llfun(x):
@@ -32,6 +48,10 @@ def _test_vbmc_optimize_rosenbrock():
     x0 = prior_mu.copy()
 
     vbmc = VBMC(llfun, x0, None, None, plb, pub, log_prior=lpriorfun)
+    # Patch in the modified method:
+    vbmc._check_termination_conditions = wrap_with_test(
+        vbmc._check_termination_conditions, vbmc
+    )
     vbmc.optimize()
 
 
@@ -59,6 +79,10 @@ def run_optim_block(
     vbmc = VBMC(
         f, x0, lb, ub, plb, pub, user_options=options, log_prior=log_prior
     )
+    # Patch in the modified method:
+    vbmc._check_termination_conditions = wrap_with_test(
+        vbmc._check_termination_conditions, vbmc
+    )
     vp, elbo, _, _, _ = vbmc.optimize()
 
     vmu = vp.moments()
@@ -84,7 +108,16 @@ def test_vbmc_multivariate_normal():
         - 0.5 * np.size(x) * np.log(2 * np.pi)
     )
 
-    err_1, err_2 = run_optim_block(f, x0, lb, ub, plb, pub, lnZ, mu_bar)
+    err_1, err_2 = run_optim_block(
+        f,
+        x0,
+        lb,
+        ub,
+        plb,
+        pub,
+        lnZ,
+        mu_bar,
+    )
 
     assert err_1 < 0.5
     assert err_2 < 0.5
@@ -107,7 +140,16 @@ def test_vbmc_multivariate_half_normal():
     )
     print(f(np.array([1.5, np.pi])))
 
-    err_1, err_2 = run_optim_block(f, x0, lb, ub, plb, pub, lnZ, mu_bar)
+    err_1, err_2 = run_optim_block(
+        f,
+        x0,
+        lb,
+        ub,
+        plb,
+        pub,
+        lnZ,
+        mu_bar,
+    )
 
     assert err_1 < 0.5
     assert err_2 < 0.5
@@ -124,7 +166,16 @@ def test_vbmc_correlated_multivariate_normal():
     lnZ = 0.0
     mu_bar = np.reshape(np.linspace(-0.5, 0.5, D), (1, -1))
 
-    err_1, err_2 = run_optim_block(cigar, x0, lb, ub, plb, pub, lnZ, mu_bar)
+    err_1, err_2 = run_optim_block(
+        cigar,
+        x0,
+        lb,
+        ub,
+        plb,
+        pub,
+        lnZ,
+        mu_bar,
+    )
 
     assert err_1 < 0.5
     assert err_2 < 0.5
@@ -140,7 +191,16 @@ def test_vbmc_correlated_multivariate_normal_2():
     lnZ = 0.0
     mu_bar = np.reshape(np.linspace(-0.5, 0.5, D), (1, -1))
 
-    err_1, err_2 = run_optim_block(cigar, x0, lb, ub, plb, pub, lnZ, mu_bar)
+    err_1, err_2 = run_optim_block(
+        cigar,
+        x0,
+        lb,
+        ub,
+        plb,
+        pub,
+        lnZ,
+        mu_bar,
+    )
 
     assert err_1 < 0.5
     assert err_2 < 0.5
@@ -159,7 +219,15 @@ def test_vbmc_uniform():
 
     options = {"search_optimizer": "Nelder-Mead"}
     err_1, err_2 = run_optim_block(
-        f, x0, lb, ub, plb, pub, lnZ, mu_bar, options
+        f,
+        x0,
+        lb,
+        ub,
+        plb,
+        pub,
+        lnZ,
+        mu_bar,
+        options,
     )
 
     assert err_1 < 0.5
@@ -190,7 +258,15 @@ def test_vbmc_multivariate_half_normal_noisy():
     }
 
     err_1, err_2 = run_optim_block(
-        f, x0, lb, ub, plb, pub, lnZ, mu_bar, options=options
+        f,
+        x0,
+        lb,
+        ub,
+        plb,
+        pub,
+        lnZ,
+        mu_bar,
+        options=options,
     )
 
     assert err_1 < 0.5
@@ -403,7 +479,7 @@ def test_optimize_result_dict(mocker):
         "pyvbmc.vbmc.vbmc.optimize_vp", return_value=(vbmc.vp, None, None)
     )
     mocker.patch(
-        "pyvbmc.vbmc.VBMC.finalboost", return_value=(vbmc.vp, -2, 1, False)
+        "pyvbmc.vbmc.VBMC.final_boost", return_value=(vbmc.vp, -2, 1, False)
     )
 
     vbmc.iteration_history["stable"] = list()

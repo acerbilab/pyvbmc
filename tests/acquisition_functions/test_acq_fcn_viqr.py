@@ -141,7 +141,7 @@ def test_simple__call__():
 
     # Test VIQR Acquisition Function Values:
     # Should be close to log(sinh(0.6745 * e)), because tau^2 approx= 0,
-    # so s_pred^2 approx= fs2. -log(2) correction is due to constant factor.
+    # so s_pred^2 approx= f_s2. -log(2) correction is due to constant factor.
     result = acqviqr(
         X_eval[0], gp, vp, function_logger=None, optim_state=optim_state
     ) - np.log(2)

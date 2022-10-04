@@ -5,10 +5,12 @@ import configparser
 import copy
 from collections.abc import MutableMapping
 from math import ceil
+from textwrap import indent
 
 import numpy as np
 
 from pyvbmc.acquisition_functions import *
+from pyvbmc.formatting import full_repr
 
 
 class Options(MutableMapping, dict):
@@ -264,19 +266,65 @@ class Options(MutableMapping, dict):
 
     def __str__(self):
         """
-        Returns the options in a format key: value (description).
+        Return the user options in a format key: value (description).
 
         Returns
         -------
         str
             The str to describe an options object.
         """
-        return "".join(
+        user_options = "\n".join(
             [
-                "{}: {} ({}) \n".format(k, v, str(self.descriptions.get(k)))
-                for (k, v) in self.items()
+                f"{key}: {self[key]} ({self.descriptions.get(key)})"
+                for key in self["useroptions"]
             ]
         )
+        if user_options == "":
+            user_options = (
+                "None (use default options).\n"
+                + "View current defaults with `options` or `repr(options)`."
+            )
+        return "User Options:\n" + indent(user_options, "    ")
+
+    def __repr__(self, full=False, expand=False):
+        """
+        Return the options in a format key: value (description).
+
+        Returns
+        -------
+        string : str
+            The str to describe the Options object.
+        full : bool, optional
+            If ``full`` is `False`, print only the relevant object attributes.
+            Otherwise print all attributes.
+        expand : bool, optional
+            If ``expand`` is `False`, then describe any complex child
+            attributes of the object by their name and memory location.
+            Otherwise, recursively expand the child attributes into their own
+            representations. Default `False`.
+        """
+        if full:  # Output every class attribute (for debugging)
+            return full_repr(self, "Options", expand=expand)
+        else:  # Output relevant class attributes in meaningful format
+            return "Options:\n" + indent(
+                "\n".join(
+                    [
+                        f"{key}: {value} ({self.descriptions.get(key)})"
+                        for (key, value) in self.items()
+                    ]
+                ),
+                "    ",
+            )
+
+    def _short_repr(self):
+        """Returns abbreviated string representation with memory location.
+
+        Returns
+        -------
+        string : str
+            The abbreviated string representation of the Options object.
+        """
+        return object.__repr__(self)
 
 
 def _read_config_file(options_path: str):

@@ -168,8 +168,8 @@
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="kde1d.html">
-     kde1d
+    <a class="reference internal" href="kde_1d.html">
+     kde_1d
     </a>
    </li>
    <li class="toctree-l2">
@@ -285,13 +285,13 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#warp-input-vbmc">
-   warp_input_vbmc
+  <a class="reference internal nav-link" href="#warp-input">
+   warp_input
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#warp-gpandvp-vbmc">
-   warp_gpandvp_vbmc
+  <a class="reference internal nav-link" href="#warp-gp-and-vp">
+   warp_gp_and_vp
   </a>
  </li>
 </ul>
@@ -320,13 +320,13 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#warp-input-vbmc">
-   warp_input_vbmc
+  <a class="reference internal nav-link" href="#warp-input">
+   warp_input
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#warp-gpandvp-vbmc">
-   warp_gpandvp_vbmc
+  <a class="reference internal nav-link" href="#warp-gp-and-vp">
+   warp_gp_and_vp
   </a>
  </li>
 </ul>
@@ -379,11 +379,11 @@ simplex points, at <cite>[1:, :, :]</cite>. Here <cite>U=2*D+1</cite>.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="warp-input-vbmc">
-<h2>warp_input_vbmc<a class="headerlink" href="#warp-input-vbmc" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="warp-input">
+<h2>warp_input<a class="headerlink" href="#warp-input" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
-<dt class="sig sig-object py" id="pyvbmc.whitening.warp_input_vbmc">
-<span class="sig-prename descclassname"><span class="pre">pyvbmc.whitening.</span></span><span class="sig-name descname"><span class="pre">warp_input_vbmc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optim_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">function_logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/whitening/whitening.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.whitening.warp_input_vbmc" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pyvbmc.whitening.warp_input">
+<span class="sig-prename descclassname"><span class="pre">pyvbmc.whitening.</span></span><span class="sig-name descname"><span class="pre">warp_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optim_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">function_logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/whitening/whitening.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.whitening.warp_input" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute input warping of variables and update the cached points in
 function_logger accordingly.</p>
 <p>Currently supports only a whitening transformation: a rotation and
@@ -424,11 +424,11 @@ input warping applied.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="warp-gpandvp-vbmc">
-<h2>warp_gpandvp_vbmc<a class="headerlink" href="#warp-gpandvp-vbmc" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="warp-gp-and-vp">
+<h2>warp_gp_and_vp<a class="headerlink" href="#warp-gp-and-vp" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
-<dt class="sig sig-object py" id="pyvbmc.whitening.warp_gpandvp_vbmc">
-<span class="sig-prename descclassname"><span class="pre">pyvbmc.whitening.</span></span><span class="sig-name descname"><span class="pre">warp_gpandvp_vbmc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_transformer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vp_old</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vbmc</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/whitening/whitening.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.whitening.warp_gpandvp_vbmc" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pyvbmc.whitening.warp_gp_and_vp">
+<span class="sig-prename descclassname"><span class="pre">pyvbmc.whitening.</span></span><span class="sig-name descname"><span class="pre">warp_gp_and_vp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_transformer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vp_old</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vbmc</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/whitening/whitening.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.whitening.warp_gp_and_vp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the GP and VP with a given warp transformation.</p>
 <p>Applies an updated ParameterTransformer object (with new warping
 transformation) to the GP and VP parameters.</p>

@@ -218,13 +218,13 @@ def test__call__regularization(mocker):
     vp = VariationalPosterior(3)
     function_logger = FunctionLogger(lambda x: x, 3, False, 0)
 
-    # no logflag
+    # no log_flag
     acq_fcn.acq_info["log_flag"] = False
     acq = acq_fcn(Xs, create_gp(3), vp, function_logger, optim_state)
     assert acq.shape == (M,)
     assert np.allclose(acq, 0)
 
-    # logflag
+    # log_flag
     acq_fcn.acq_info["log_flag"] = True
     acq = acq_fcn(Xs, create_gp(3), vp, function_logger, optim_state)
     assert acq.shape == (M,)

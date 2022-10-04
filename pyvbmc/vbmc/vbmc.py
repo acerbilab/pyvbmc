@@ -3,17 +3,19 @@ import logging
 import math
 import os
 import sys
+from textwrap import indent
 
 import gpyreg as gpr
 import matplotlib.pyplot as plt
 import numpy as np
 
+from pyvbmc.formatting import full_repr, get_repr, summarize
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
-from pyvbmc.stats import kldiv_mvn
+from pyvbmc.stats import kl_div_mvn
 from pyvbmc.timer import main_timer as timer
 from pyvbmc.variational_posterior import VariationalPosterior
-from pyvbmc.whitening import warp_gpandvp_vbmc, warp_input_vbmc
+from pyvbmc.whitening import warp_gp_and_vp, warp_input
 
 from .active_sample import active_sample
 from .gaussian_process_train import reupdate_gp, train_gp
@@ -183,15 +185,13 @@ class VBMC:
             self.upper_bounds,
             self.plausible_lower_bounds,
             self.plausible_upper_bounds,
-        ) = self._boundscheck(
+        ) = self._bounds_check(
             x0,
             lower_bounds,
             upper_bounds,
             plausible_lower_bounds,
             plausible_upper_bounds,
         )
-
-        self.K = self.options.get("k_warmup")
 
         # starting point
         if not np.all(np.isfinite(self.x0)):
@@ -214,7 +214,7 @@ class VBMC:
         # Initialize variational posterior
         self.vp = VariationalPosterior(
             D=self.D,
-            K=self.K,
+            K=self.options.get("k_warmup"),
             x0=self.x0,
             parameter_transformer=self.parameter_transformer,
         )
@@ -286,7 +286,7 @@ class VBMC:
             ]
         )
 
-    def _boundscheck(
+    def _bounds_check(
         self,
         x0: np.ndarray,
         lower_bounds: np.ndarray,
@@ -583,10 +583,10 @@ class VBMC:
                 )
 
         # fprintf('Index of variable restricted to integer values: %s.\n'
-        optim_state["lb_orig"] = self.lower_bounds
-        optim_state["ub_orig"] = self.upper_bounds
-        optim_state["plb_orig"] = self.plausible_lower_bounds
-        optim_state["pub_orig"] = self.plausible_upper_bounds
+        optim_state["lb_orig"] = self.lower_bounds.copy()
+        optim_state["ub_orig"] = self.upper_bounds.copy()
+        optim_state["plb_orig"] = self.plausible_lower_bounds.copy()
+        optim_state["pub_orig"] = self.plausible_upper_bounds.copy()
         eps_orig = (self.upper_bounds - self.lower_bounds) * self.options.get(
             "tol_bound_x"
         )
@@ -595,15 +595,19 @@ class VBMC:
             optim_state["lb_eps_orig"] = self.lower_bounds + eps_orig
             optim_state["ub_eps_orig"] = self.upper_bounds - eps_orig
 
-        # Transform variables (Transform of lower_bounds and upper bounds can
+        # Transform variables (Transform of lower bounds and upper bounds can
         # create warning but we are aware of this and output is correct)
         with np.errstate(divide="ignore"):
-            optim_state["lb"] = self.parameter_transformer(self.lower_bounds)
-            optim_state["ub"] = self.parameter_transformer(self.upper_bounds)
-        optim_state["plb"] = self.parameter_transformer(
+            optim_state["lb_tran"] = self.parameter_transformer(
+                self.lower_bounds
+            )
+            optim_state["ub_tran"] = self.parameter_transformer(
+                self.upper_bounds
+            )
+        optim_state["plb_tran"] = self.parameter_transformer(
             self.plausible_lower_bounds
         )
-        optim_state["pub"] = self.parameter_transformer(
+        optim_state["pub_tran"] = self.parameter_transformer(
             self.plausible_upper_bounds
         )
 
@@ -666,7 +670,7 @@ class VBMC:
         optim_state["last_run_avg"] = np.NaN
 
         # Current number of components for variational posterior
-        optim_state["vp_K"] = self.K
+        optim_state["vp_K"] = self.options.get("k_warmup")
 
         # Number of variational components pruned in last iteration
         optim_state["pruned"] = 0
@@ -708,12 +712,12 @@ class VBMC:
         # List of points at the end of each iteration
         optim_state["iter_list"] = dict()
         optim_state["iter_list"]["u"] = []
-        optim_state["iter_list"]["fval"] = []
-        optim_state["iter_list"]["fsd"] = []
+        optim_state["iter_list"]["f_val"] = []
+        optim_state["iter_list"]["f_sd"] = []
         optim_state["iter_list"]["fhyp"] = []
 
         optim_state["delta"] = self.options.get("bandwidth") * (
-            optim_state.get("pub") - optim_state.get("plb")
+            optim_state.get("pub_tran") - optim_state.get("plb_tran")
         )
 
         # Deterministic entropy approximation lower/upper factor
@@ -729,16 +733,16 @@ class VBMC:
         optim_state["data_trim_list"] = []
 
         # Expanding search bounds
-        prange = optim_state.get("pub") - optim_state.get("plb")
+        prange = optim_state.get("pub_tran") - optim_state.get("plb_tran")
         optim_state["lb_search"] = np.maximum(
-            optim_state.get("plb")
+            optim_state.get("plb_tran")
             - prange * self.options.get("active_search_bound"),
-            optim_state.get("lb"),
+            optim_state.get("lb_tran"),
         )
         optim_state["ub_search"] = np.minimum(
-            optim_state.get("pub")
+            optim_state.get("pub_tran")
             + prange * self.options.get("active_search_bound"),
-            optim_state.get("ub"),
+            optim_state.get("ub_tran"),
         )
 
         # Initialize Gaussian process settings
@@ -912,14 +916,14 @@ class VBMC:
                     self.optim_state,
                     self.function_logger,
                     warp_action,
-                ) = warp_input_vbmc(
+                ) = warp_input(
                     vp_tmp,
                     self.optim_state,
                     self.function_logger,
                     self.options,
                 )
 
-                self.vp, hyp_dict["hyp"] = warp_gpandvp_vbmc(
+                self.vp, hyp_dict["hyp"] = warp_gp_and_vp(
                     parameter_transformer_warp, self.vp, self
                 )
 
@@ -937,8 +941,8 @@ class VBMC:
                         self.function_logger,
                         self.iteration_history,
                         self.options,
-                        self.plausible_lower_bounds,
-                        self.plausible_upper_bounds,
+                        self.optim_state["plb_tran"],
+                        self.optim_state["pub_tran"],
                     )
                     self.optim_state["sn2_hpd"] = sn2_hpd
 
@@ -957,7 +961,7 @@ class VBMC:
 
                     # Decide number of fast/slow optimizations
                     N_fastopts = math.ceil(
-                        self.options.eval("ns_elbo", {"K": self.K})
+                        self.options.eval("ns_elbo", {"K": self.vp.K})
                     )
                     N_slowopts = self.options.get(
                         "elbo_starts"
@@ -1028,7 +1032,7 @@ class VBMC:
             # Careful with Xn, in MATLAB this condition is > 0
             # due to 1-based indexing.
             if self.function_logger.Xn >= 0:
-                self.function_logger.ymax = np.max(
+                self.function_logger.y_max = np.max(
                     self.function_logger.y[self.function_logger.X_flag]
                 )
 
@@ -1054,8 +1058,8 @@ class VBMC:
                             self.function_logger,
                             self.iteration_history,
                             self.options,
-                            self.plausible_lower_bounds,
-                            self.plausible_upper_bounds,
+                            self.optim_state["plb_tran"],
+                            self.optim_state["pub_tran"],
                         )
                         timer.stop_timer("separate_gp_train")
                         self.optim_state["sn2_hpd"] = sn2_hpd
@@ -1093,7 +1097,7 @@ class VBMC:
             # Number of training inputs
             self.optim_state["N"] = self.function_logger.Xn + 1
             self.optim_state["n_eff"] = np.sum(
-                self.function_logger.nevals[self.function_logger.X_flag]
+                self.function_logger.n_evals[self.function_logger.X_flag]
             )
 
             timer.stop_timer("active_sampling")
@@ -1108,8 +1112,8 @@ class VBMC:
                 self.function_logger,
                 self.iteration_history,
                 self.options,
-                self.plausible_lower_bounds,
-                self.plausible_upper_bounds,
+                self.optim_state["plb_tran"],
+                self.optim_state["pub_tran"],
             )
             self.optim_state["sn2_hpd"] = sn2_hpd
 
@@ -1136,7 +1140,9 @@ class VBMC:
                 )
 
             # Decide number of fast/slow optimizations
-            N_fastopts = math.ceil(self.options.eval("ns_elbo", {"K": self.K}))
+            N_fastopts = math.ceil(
+                self.options.eval("ns_elbo", {"K": self.vp.K})
+            )
 
             if self.optim_state.get("recompute_var_post") or (
                 self.options.get("always_refit_vp")
@@ -1184,18 +1190,18 @@ class VBMC:
                 0,
                 0.5
                 * np.sum(
-                    self.vp.kldiv(
+                    self.vp.kl_div(
                         vp2=vp_old,
                         N=Nkl,
-                        gaussflag=self.options.get("kl_gauss"),
+                        gauss_flag=self.options.get("kl_gauss"),
                     )
                 ),
             )
 
             # Evaluate max LCB of GP prediction on all training inputs
-            fmu, fs2 = gp.predict(gp.X, gp.y, gp.s2, add_noise=False)
+            f_mu, f_s2 = gp.predict(gp.X, gp.y, gp.s2, add_noise=False)
             self.optim_state["lcb_max"] = np.amax(
-                fmu - self.options.get("elcbo_impro_weight") * np.sqrt(fs2)
+                f_mu - self.options.get("elcbo_impro_weight") * np.sqrt(f_s2)
             )
 
             # Compare variational posterior's moments with ground truth
@@ -1207,7 +1213,7 @@ class VBMC:
             ):
                 mubar_orig, sigma_orig = vp_real.moments(1e6, True, True)
 
-                kl = kldiv_mvn(
+                kl = kl_div_mvn(
                     mubar_orig,
                     sigma_orig,
                     self.options.get("true_mean"),
@@ -1218,7 +1224,7 @@ class VBMC:
                 sKL_true = None
 
             # Record moments in transformed space
-            mubar, sigma = self.vp.moments(origflag=False, covflag=True)
+            mubar, sigma = self.vp.moments(orig_flag=False, cov_flag=True)
             if len(self.optim_state.get("run_mean")) == 0 or len(
                 self.optim_state.get("run_cov") == 0
             ):
@@ -1337,10 +1343,10 @@ class VBMC:
                     < self.options.get("warp_tol_reliability")
                 )
             ):
-                Xrnd, _ = self.vp.sample(N=int(2e4), origflag=False)
+                Xrnd, _ = self.vp.sample(N=int(2e4), orig_flag=False)
                 ymu, _ = gp.predict(Xrnd, add_noise=True)
                 ydelta = max(
-                    [0, self.function_logger.ymax - np.quantile(ymu, 1e-3)]
+                    [0, self.function_logger.y_max - np.quantile(ymu, 1e-3)]
                 )
                 if (
                     ydelta
@@ -1471,7 +1477,7 @@ class VBMC:
         self.vp, elbo, elbo_sd, idx_best = self.determine_best_vp()
 
         # Last variational optimization with large number of components
-        self.vp, elbo, elbo_sd, changed_flag = self.finalboost(
+        self.vp, elbo, elbo_sd, changed_flag = self.final_boost(
             self.vp, self.iteration_history["gp"][idx_best]
         )
         if changed_flag:
@@ -1480,10 +1486,10 @@ class VBMC:
                 0,
                 0.5
                 * np.sum(
-                    self.vp.kldiv(
+                    self.vp.kl_div(
                         vp2=vp_old,
                         N=Nkl,
-                        gaussflag=self.options.get("kl_gauss"),
+                        gauss_flag=self.options.get("kl_gauss"),
                     )
                 ),
             )
@@ -1688,9 +1694,9 @@ class VBMC:
             self.logging_action.append("trim data")
 
         # Remove warm-up points from training set unless close to max
-        ymax = max(self.function_logger.y_orig[: self.function_logger.Xn + 1])
+        y_max = max(self.function_logger.y_orig[: self.function_logger.Xn + 1])
         n_keep_min = self.D + 1
-        idx_keep = (ymax - self.function_logger.y_orig) < threshold
+        idx_keep = (y_max - self.function_logger.y_orig) < threshold
         if np.sum(idx_keep) < n_keep_min:
             y_temp = np.copy(self.function_logger.y_orig)
             y_temp[~np.isfinite(y_temp)] = -np.Inf
@@ -1913,7 +1919,7 @@ class VBMC:
 
     # Finalizing:
 
-    def finalboost(self, vp: VariationalPosterior, gp: gpr.GP):
+    def final_boost(self, vp: VariationalPosterior, gp: gpr.GP):
         """
         Perform a final boost of variational components.
 
@@ -2132,8 +2138,8 @@ class VBMC:
         """
         output = dict()
         output["function"] = str(self.function_logger.fun)
-        if np.all(np.isinf(self.optim_state["lb"])) and np.all(
-            np.isinf(self.optim_state["ub"])
+        if np.all(np.isinf(self.optim_state["lb_tran"])) and np.all(
+            np.isinf(self.optim_state["ub_tran"])
         ):
             output["problemtype"] = "unconstrained"
         else:
@@ -2295,3 +2301,85 @@ class VBMC:
             logger.addHandler(file_handler)
 
         return logger
+
+    def __str__(self):
+        """Construct a string summary."""
+
+        gp = getattr(getattr(self, "vp", None), "gp", None)
+        if gp is not None:
+            gp_str = f"gpyreg.{gp}"
+        else:
+            gp_str = "None"
+
+        return "VBMC:" + indent(
+            f"""
+dimension = {self.D},
+x0: {summarize(self.x0)},
+lower bounds: {summarize(self.lower_bounds)},
+upper bounds: {summarize(self.upper_bounds)},
+plausible lower bounds: {summarize(self.plausible_lower_bounds)},
+plausible upper bounds: {summarize(self.plausible_upper_bounds)},
+log-density = {getattr(self, "log_likelihood", self.log_joint)},
+log-prior = {getattr(self, "log_prior", None)},
+prior sampler = {getattr(self, "sample_prior", None)},
+variational posterior = {str(getattr(self, "vp", None))},
+Gaussian process = {gp_str},
+user options = {str(self.options)}""",
+            "    ",
+        )
+
+    def __repr__(self, arr_size_thresh=10, expand=False):
+        """Construct a detailed string summary.
+
+        Parameters
+        ----------
+        arr_size_thresh : float, optional
+            If ``obj`` is an array whose product of dimensions is less than
+            ``arr_size_thresh``, print the full array. Otherwise print only the
+            shape. Default `10`.
+        expand : bool, optional
+            If ``expand`` is `False`, then describe any complex child
+            attributes of the object by their name and memory location.
+            Otherwise, recursively expand the child attributes into their own
+            representations. Default `False`.
+
+        Returns
+        -------
+        string : str
+            The string representation of ``self``.
+        """
+        return full_repr(
+            self,
+            "VBMC",
+            order=[
+                "D",
+                "x0",
+                "lower_bounds",
+                "upper_bounds",
+                "plausible_lower_bounds",
+                "plausible_upper_bounds",
+                "log_joint",
+                "log_prior",
+                "sample_prior",
+                "vp",
+                "K",
+                "vp.gp",
+                "parameter_transformer",
+                "logger",
+                "logging_action",
+                "optim_state",
+                "options",
+            ],
+            expand=expand,
+            arr_size_thresh=arr_size_thresh,
+        )
+
+    def _short_repr(self):
+        """Returns abbreviated string representation with memory location.
+
+        Returns
+        -------
+        string : str
+            The abbreviated string representation of the VBMC object.
+        """
+        return object.__repr__(self)

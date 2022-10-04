@@ -27,7 +27,7 @@ This is the advanced documentation for developers.
    functions/create_vbmc_animation
    functions/decorators
    functions/get_hpd
-   functions/kde1d
+   functions/kde_1d
    functions/entropy
    functions/whitening
 

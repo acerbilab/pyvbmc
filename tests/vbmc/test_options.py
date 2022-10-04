@@ -4,7 +4,7 @@ from math import ceil
 import numpy as np
 import pytest
 
-from pyvbmc.acquisition_functions import AcqFcn, AcqFcnVIQR
+from pyvbmc.acquisition_functions import AcqFcnLog, AcqFcnVIQR
 from pyvbmc.vbmc import VBMC, Options
 
 
@@ -124,16 +124,18 @@ def test_init_with_specify_target_noise():
 
     # Check defaults for non-noisy target:
     assert len(vbmc1.options["search_acq_fcn"]) == 1
-    assert isinstance(vbmc1.options["search_acq_fcn"][0], AcqFcn)
+    assert isinstance(vbmc1.options["search_acq_fcn"][0], AcqFcnLog)
     assert vbmc1.options["active_sample_vp_update"] == False
     assert vbmc1.options["active_sample_gp_update"] == False
 
 
-def test_str():
+def test__str__and__repr__():
     default_options_path = "./pyvbmc/vbmc/option_configs/test_options.ini"
     options = Options(default_options_path, {"D": 2})
     one_option_str = "bar: 40 (Bar description)"
-    assert one_option_str in options.__str__()
+    assert one_option_str in options.__repr__()
+    assert "None (use default options)." in options.__str__()
+    options.__repr__()
 
 
 def test_del():

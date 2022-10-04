@@ -1,7 +1,10 @@
+from textwrap import indent
+
 import numpy as np
 from scipy.special import erfc, erfcinv
 
 from pyvbmc.decorators import handle_0D_1D_input
+from pyvbmc.formatting import full_repr
 
 
 class ParameterTransformer:
@@ -12,19 +15,23 @@ class ParameterTransformer:
     Parameters
     ----------
     D : int
-        The number of dimensions of the spaces.
-    lower_bounds : np.ndarray, optional
-        The lower_bound (LB) of the space. LB and UB define a set of strict
-        lower and upper bounds coordinate vector, by default None.
-    upper_bounds : np.ndarray, optional
-        The upper_bounds (UB) of the space. LB and UB define a set of strict
-        lower and upper bounds coordinate vector, by default None.
-    plausible_lower_bounds : np.ndarray, optional
-        The plausible_lower_bound (PLB) such that LB < PLB < PUB < UB.
-        PLB and PUB represent a "plausible" range, by default None.
-    plausible_upper_bounds : np.ndarray, optional
-        The plausible_upper_bound (PUB) such that LB < PLB < PUB < UB.
-        PLB and PUB represent a "plausible" range, by default None.
+        The dimension of the space.
+    lb_orig : np.ndarray, optional
+        The lower bounds of the space. ``lb_orig`` and ``ub_orig`` define a set
+        of strict lower and upper bounds for each parameter, given in the
+        original space. By default `None`.
+    ub_orig : np.ndarray, optional
+        The upper bounds of the space. ``lb_orig`` and ``ub_orig`` define a set
+        of strict lower and upper bounds for each parameter, given in the
+        original space. By default `None`.
+    plb_orig : np.ndarray, optional
+        The plausible lower bounds such that ``lb_orig < plb_orig < pub_orig <
+        ub_orig``. ``plb_orig`` and ``pub_orig`` represent a "plausible" range
+        for each parameter, given in the original space. By default `None`.
+    pub_orig : np.ndarray, optional
+        The plausible upper bounds such that ``lb_orig < plb_orig < pub_orig <
+        ub_orig``. ``plb_orig`` and ``pub_orig`` represent a "plausible" range
+        for each parameter, given in the original space. By default `None`.
     bounded_transform_type : str, optional
         A string indicating the type of transform for bounded variables: one of
         ["logit", ("norminv" || "probit"), "student4"]. Default "logit".
@@ -33,10 +40,10 @@ class ParameterTransformer:
     def __init__(
         self,
         D: int,
-        lower_bounds: np.ndarray = None,
-        upper_bounds: np.ndarray = None,
-        plausible_lower_bounds: np.ndarray = None,
-        plausible_upper_bounds: np.ndarray = None,
+        lb_orig: np.ndarray = None,
+        ub_orig: np.ndarray = None,
+        plb_orig: np.ndarray = None,
+        pub_orig: np.ndarray = None,
         scale: np.ndarray = None,
         rotation_matrix: np.ndarray = None,
         transform_type="logit",
@@ -45,22 +52,22 @@ class ParameterTransformer:
         self.R_mat = rotation_matrix
 
         # Empty LB and UB are Infs
-        if lower_bounds is None:
-            lower_bounds = np.ones((1, D)) * -np.inf
-        if upper_bounds is None:
-            upper_bounds = np.ones((1, D)) * np.inf
+        if lb_orig is None:
+            lb_orig = np.ones((1, D)) * -np.inf
+        if ub_orig is None:
+            ub_orig = np.ones((1, D)) * np.inf
 
         # Empty plausible bounds equal hard bounds
-        if plausible_lower_bounds is None:
-            plausible_lower_bounds = np.copy(lower_bounds)
-        if plausible_upper_bounds is None:
-            plausible_upper_bounds = np.copy(upper_bounds)
+        if plb_orig is None:
+            plb_orig = np.copy(lb_orig)
+        if pub_orig is None:
+            pub_orig = np.copy(ub_orig)
 
         # Convert scalar inputs to row vectors (I do not think it is necessary)
         if not (
-            np.all(lower_bounds <= plausible_lower_bounds)
-            and np.all(plausible_lower_bounds < plausible_upper_bounds)
-            and np.all(plausible_upper_bounds <= upper_bounds)
+            np.all(lb_orig <= plb_orig)
+            and np.all(plb_orig < pub_orig)
+            and np.all(pub_orig <= ub_orig)
         ):
             raise ValueError(
                 """Variable bounds should be LB <= PLB < PUB <= UB
@@ -68,8 +75,8 @@ class ParameterTransformer:
             )
 
         # Transform to log coordinates
-        self.lb_orig = lower_bounds
-        self.ub_orig = upper_bounds
+        self.lb_orig = lb_orig
+        self.ub_orig = ub_orig
 
         # Select and validate the type of transform:
         transform_types = {
@@ -100,9 +107,9 @@ class ParameterTransformer:
         self.type = np.zeros((D))
         for i in range(D):
             if (
-                np.isfinite(lower_bounds[:, i])
-                and np.isfinite(upper_bounds[:, i])
-                and lower_bounds[:, i] < upper_bounds[:, i]
+                np.isfinite(lb_orig[:, i])
+                and np.isfinite(ub_orig[:, i])
+                and lb_orig[:, i] < ub_orig[:, i]
             ):
                 self.type[i] = bounded_type
 
@@ -112,31 +119,23 @@ class ParameterTransformer:
 
         # Get transformed PLB and ULB
         if not (
-            np.all(plausible_lower_bounds == self.lb_orig)
-            and np.all(plausible_upper_bounds == self.ub_orig)
+            np.all(plb_orig == self.lb_orig)
+            and np.all(pub_orig == self.ub_orig)
         ):
-            plausible_lower_bounds = self.__call__(plausible_lower_bounds)
-            plausible_upper_bounds = self.__call__(plausible_upper_bounds)
+            plb_tran = self.__call__(plb_orig)
+            pub_tran = self.__call__(pub_orig)
 
             # Center in transformed space
             for i in range(D):
-                if np.isfinite(plausible_lower_bounds[:, i]) and np.isfinite(
-                    plausible_upper_bounds[:, i]
-                ):
-                    self.mu[i] = 0.5 * (
-                        plausible_lower_bounds[:, i]
-                        + plausible_upper_bounds[:, i]
-                    )
-                    self.delta[i] = (
-                        plausible_upper_bounds[:, i]
-                        - plausible_lower_bounds[:, i]
-                    )
+                if np.isfinite(plb_tran[:, i]) and np.isfinite(pub_tran[:, i]):
+                    self.mu[i] = 0.5 * (plb_tran[:, i] + pub_tran[:, i])
+                    self.delta[i] = pub_tran[:, i] - plb_tran[:, i]
 
     @handle_0D_1D_input(patched_kwargs=["x"], patched_argpos=[0])
     def __call__(self, x: np.ndarray):
         """
-        Performs direct transform of original variables X into
-        unconstrained variables U.
+        Performs direct transform of original variables ``x`` into
+        unconstrained variables ``u``.
 
         Parameters
         ----------
@@ -175,8 +174,8 @@ class ParameterTransformer:
     @handle_0D_1D_input(patched_kwargs=["u"], patched_argpos=[0])
     def inverse(self, u: np.ndarray):
         """
-        Performs inverse transform of unconstrained variables u
-        into variables x in the original space
+        Performs inverse transform of unconstrained variables ``u`` into
+        variables ``x`` in the original space
 
         Parameters
         ----------
@@ -218,9 +217,9 @@ class ParameterTransformer:
     )
     def log_abs_det_jacobian(self, u: np.ndarray):
         r"""
-        log_abs_det_jacobian returns the log absolute value of the determinant
-        of the Jacobian of the parameter transformation evaluated at U, that is
-        log \|D \du(g^-1(u))\|
+        ``log_abs_det_jacobian(u)`` returns the log absolute value of the
+        determinant of the Jacobian of the parameter transformation evaluated
+        at ``u``, that is :math: `log \|D \du(g^-1(u))\|`.
 
         Parameters
         ----------
@@ -395,6 +394,87 @@ class ParameterTransformer:
 
             else:
                 raise NotImplementedError
+
+    def __eq__(self, other):
+        return (
+            np.all(self.scale == self.scale)
+            and np.all(self.R_mat == other.R_mat)
+            and np.all(self.lb_orig == other.lb_orig)
+            and np.all(self.ub_orig == other.ub_orig)
+            and np.all(self.bounded_types == other.bounded_types)
+            and np.all(
+                self._bounded_transforms.keys()
+                == other._bounded_transforms.keys()
+            )
+            and np.all(self.type == other.type)
+            and np.all(self.mu == other.mu)
+            and np.all(self.delta == other.delta)
+        )
+
+    def __str__(self):
+        """Print a string summary."""
+        transform_names = {
+            0: "unbounded",
+            3: "logit",
+            12: "norminv",
+            12: "probit",
+            13: "student4",
+        }
+        transforms = [transform_names[number] for number in self.type]
+        return "ParameterTransformer:" + indent(
+            f"""
+dimension = {self.lb_orig.shape[1]},
+lower bounds = {self.lb_orig},
+upper bounds = {self.ub_orig},
+bounded transform type(s) = {transforms}""",
+            "    ",
+        )
+
+    def __repr__(self, arr_size_thresh=10, expand=False):
+        """Construct a detailed string summary.
+
+        Parameters
+        ----------
+        arr_size_thresh : float, optional
+            If ``obj`` is an array whose product of dimensions is less than
+            ``arr_size_thresh``, print the full array. Otherwise print only the
+            shape. Default `10`.
+        expand : bool, optional
+            If ``expand`` is `False`, then describe any complex child
+            attributes of the object by their name and memory location.
+            Otherwise, recursively expand the child attributes into their own
+            representations. Default `False`.
+
+        Returns
+        -------
+        string : str
+            The string representation of ``self``.
+        """
+        return full_repr(
+            self,
+            "ParameterTransformer",
+            order=[
+                "lb_orig",
+                "ub_orig",
+                "type",
+                "mu",
+                "delta",
+                "scale",
+                "R_mat",
+            ],
+            expand=expand,
+            arr_size_thresh=arr_size_thresh,
+        )
+
+    def _short_repr(self):
+        """Returns abbreviated string representation with memory location.
+
+        Returns
+        -------
+        string : str
+            The abbreviated string representation of the ParameterTransformer.
+        """
+        return object.__repr__(self)
 
 
 def _to_unit_interval(x, lb, ub, safe=True):

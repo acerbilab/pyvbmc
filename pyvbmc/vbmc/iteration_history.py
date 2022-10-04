@@ -1,7 +1,10 @@
 import copy
 from collections.abc import MutableMapping
+from textwrap import indent
 
 import numpy as np
+
+from pyvbmc.formatting import format_dict, full_repr
 
 
 class IterationHistory(MutableMapping, dict):
@@ -151,12 +154,48 @@ class IterationHistory(MutableMapping, dict):
                 self.record(key, value, iteration)
 
     def __str__(self):
-        """
-        Returns the iteration history in a format key: value.
+        """Construct a string summary.
 
         Returns
         -------
-        str
-            The str to describe an IterationHistory object.
+        string : str
+            The string summarizing the IterationHistory object.
         """
-        return "".join(["{}: {} \n".format(k, v) for (k, v) in self.items()])
+        return "IterationHistory:\n" + indent(
+            f"num. iterations = {len(self)}\nkeys = \n"
+            + indent(",\n".join(key for key in self.keys()), "    "),
+            "    ",
+        )
+
+    def __repr__(self, full=False, arr_size_thresh=10, expand=False):
+        """Construct a detailed string summary.
+
+        Parameters
+        ----------
+        arr_size_thresh : float, optional
+            If ``obj`` is an array whose product of dimensions is less than
+            ``arr_size_thresh``, print the full array. Otherwise print only the
+            shape. Default `10`.
+        full : bool, optional
+            If ``full`` is `False`, print only the relevant object attributes.
+            Otherwise print all attributes.
+        expand : bool, optional
+            Unused.
+
+        Returns
+        -------
+        string : str
+            The string representation of ``self``.
+        """
+        if full:  # Output every class attribute (for debugging)
+            return "IterationHistory:\n" + indent(
+                "self.check_keys: {self.check_keys},\ndict: "
+                + format_dict(self, arr_size_thresh=arr_size_thresh),
+                "    ",
+            )
+        else:  # Summary
+            return str(self)
+
+    def _short_repr(self):
+        """Returns abbreviated string representation with memory location."""
+        return object.__repr__(self)

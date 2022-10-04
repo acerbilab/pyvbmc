@@ -71,9 +71,9 @@ def test_get_training_data_no_noise():
 
     # Create dummy data.
     sample_count = 10
-    window = vbmc.optim_state["pub"] - vbmc.optim_state["plb"]
+    window = vbmc.optim_state["pub_tran"] - vbmc.optim_state["plb_tran"]
     rnd_tmp = np.random.rand(sample_count, window.shape[1])
-    Xs = window * rnd_tmp + vbmc.optim_state["plb"]
+    Xs = window * rnd_tmp + vbmc.optim_state["plb_tran"]
     ys = f(Xs)
 
     # Add dummy training data explicitly since function_logger
@@ -82,7 +82,7 @@ def test_get_training_data_no_noise():
         vbmc.function_logger.X_flag[sample_idx] = True
         vbmc.function_logger.X[sample_idx] = Xs[sample_idx]
         vbmc.function_logger.y[sample_idx] = ys[sample_idx]
-        vbmc.function_logger.fun_evaltime[sample_idx] = 1e-5
+        vbmc.function_logger.fun_eval_time[sample_idx] = 1e-5
 
     # Then make sure we get that data back.
     X_train, y_train, s2_train, t_train = _get_training_data(
@@ -117,9 +117,9 @@ def test_get_training_data_noise():
 
     # Create dummy data.
     sample_count = 10
-    window = vbmc.optim_state["pub"] - vbmc.optim_state["plb"]
+    window = vbmc.optim_state["pub_tran"] - vbmc.optim_state["plb_tran"]
     rnd_tmp = np.random.rand(sample_count, window.shape[1])
-    Xs = window * rnd_tmp + vbmc.optim_state["plb"]
+    Xs = window * rnd_tmp + vbmc.optim_state["plb_tran"]
     ys = f(Xs)
 
     # Add dummy training data explicitly since function_logger
@@ -129,7 +129,7 @@ def test_get_training_data_noise():
         vbmc.function_logger.X[sample_idx] = Xs[sample_idx]
         vbmc.function_logger.y[sample_idx] = ys[sample_idx]
         vbmc.function_logger.S[sample_idx] = 1
-        vbmc.function_logger.fun_evaltime[sample_idx] = 1e-5
+        vbmc.function_logger.fun_eval_time[sample_idx] = 1e-5
 
     # Then make sure we get that data back.
     X_train, y_train, s2_train, t_train = _get_training_data(
@@ -370,9 +370,9 @@ def test_gp_hyp():
 
     # Create dummy data.
     sample_count = 10
-    window = vbmc.optim_state["pub"] - vbmc.optim_state["plb"]
+    window = vbmc.optim_state["pub_tran"] - vbmc.optim_state["plb_tran"]
     rnd_tmp = np.random.rand(sample_count, window.shape[1])
-    Xs = window * rnd_tmp + vbmc.optim_state["plb"]
+    Xs = window * rnd_tmp + vbmc.optim_state["plb_tran"]
     ys = f(Xs)
 
     # Add dummy training data explicitly since function_logger
@@ -382,11 +382,11 @@ def test_gp_hyp():
         vbmc.function_logger.X[sample_idx] = Xs[sample_idx]
         vbmc.function_logger.y[sample_idx] = ys[sample_idx]
         vbmc.function_logger.S[sample_idx] = 1
-        vbmc.function_logger.fun_evaltime[sample_idx] = 1e-5
+        vbmc.function_logger.fun_eval_time[sample_idx] = 1e-5
 
     vbmc.optim_state["N"] = 10
     vbmc.optim_state["n_eff"] = np.sum(
-        vbmc.function_logger.nevals[vbmc.function_logger.X_flag]
+        vbmc.function_logger.n_evals[vbmc.function_logger.X_flag]
     )
     assert not np.isnan(vbmc.optim_state["n_eff"])
 

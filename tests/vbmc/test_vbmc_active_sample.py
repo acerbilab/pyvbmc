@@ -35,7 +35,7 @@ def test_active_uncertainty_sampling(mocker):
             100.0 * (x[:, 1:] - x[:, :-1] ** 2) ** 2.0 + (1 - x[:, :-1]) ** 2,
             axis=1,
         )
-        return r
+        return np.log(r)
 
     D = 2
     LB = -np.full((1, D), np.inf)  # Lower bounds
@@ -61,7 +61,7 @@ def test_active_uncertainty_sampling(mocker):
     )
     optim_state["N"] = function_logger.Xn + 1
     optim_state["n_eff"] = np.sum(
-        function_logger.nevals[function_logger.X_flag]
+        function_logger.n_evals[function_logger.X_flag]
     )
     gp, _, _, hyp_dict = train_gp(
         {},

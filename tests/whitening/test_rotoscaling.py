@@ -8,7 +8,7 @@ import scipy.stats as st
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc import VBMC
-from pyvbmc.whitening import unscent_warp, warp_gpandvp_vbmc, warp_input_vbmc
+from pyvbmc.whitening import unscent_warp, warp_gp_and_vp, warp_input
 
 D = 2
 
@@ -31,7 +31,7 @@ def test_rotoscaling_rotation_2d():
         np.ones((1, D)) * 10,
     )
     vbmc.vp = vp
-    parameter_transformer, __, __, __ = warp_input_vbmc(
+    parameter_transformer, __, __, __ = warp_input(
         vp, vbmc.optim_state, vbmc.function_logger, vbmc.options
     )
     U = parameter_transformer.R_mat
@@ -132,13 +132,13 @@ def test_unscent_warp():
     assert np.all(np.isclose(sigmaw, matlab_result_sigmaw, atol=0.0001))
 
 
-def test_parameter_transformer_log_det_abs():
+def test_parameter_transformer_log_abs_det():
     D = 3
     x = np.array([1.0, -3.0, 8.5])
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)) * -10,
-        upper_bounds=np.ones((1, D)) * 10,
+        lb_orig=np.ones((1, D)) * -10,
+        ub_orig=np.ones((1, D)) * 10,
     )
     u = parameter_transformer(x)
     # MATLAB result:
@@ -168,8 +168,8 @@ def test_parameter_transformer_log_det_abs():
     R = R1 @ R2
     parameter_transformer = ParameterTransformer(
         D=D,
-        lower_bounds=np.ones((1, D)) * -10,
-        upper_bounds=np.ones((1, D)) * 10,
+        lb_orig=np.ones((1, D)) * -10,
+        ub_orig=np.ones((1, D)) * 10,
         rotation_matrix=R,
         scale=np.array([0.9, 0.7, 2.3]),
     )
@@ -181,14 +181,14 @@ def test_parameter_transformer_log_det_abs():
     assert np.isclose(log_abs_det, 3.81289203952045)
 
 
-def test_warp_input_vbmc():
+def test_warp_input():
     D = 2
     angle = 1.309355600770139
     R = np.array(
         [[np.cos(angle), np.sin(angle)], [-np.sin(angle), np.cos(angle)]]
     )
     filepath = os.path.join(
-        os.path.dirname(__file__), "test_warp_input_vbmc_rands.txt"
+        os.path.dirname(__file__), "test_warp_input_rands.txt"
     )
     rands = np.loadtxt(filepath, delimiter=",")
     rands[:, 0] = 10 * rands[:, 0]
@@ -208,9 +208,7 @@ def test_warp_input_vbmc():
         vbmc.optim_state,
         vbmc.function_logger,
         warp_action,
-    ) = warp_input_vbmc(
-        vp, vbmc.optim_state, vbmc.function_logger, vbmc.options
-    )
+    ) = warp_input(vp, vbmc.optim_state, vbmc.function_logger, vbmc.options)
 
     assert np.all(parameter_transformer_warp.lb_orig == [-np.inf, -np.inf])
     assert np.all(parameter_transformer_warp.ub_orig == [np.inf, np.inf])
@@ -236,14 +234,14 @@ def test_warp_input_vbmc():
     )
 
 
-def test_warp_gpandvp_vbmc():
+def test_warp_gp_and_vp():
     D = 2
     angle = 1.309355600770139
     R = np.array(
         [[np.cos(angle), np.sin(angle)], [-np.sin(angle), np.cos(angle)]]
     )
     filepath = os.path.join(
-        os.path.dirname(__file__), "test_warp_input_vbmc_rands.txt"
+        os.path.dirname(__file__), "test_warp_input_rands.txt"
     )
     rands = np.loadtxt(filepath, delimiter=",")
     rands[:, 0] = 10 * rands[:, 0]
@@ -262,20 +260,18 @@ def test_warp_gpandvp_vbmc():
         vbmc.optim_state,
         vbmc.function_logger,
         warp_action,
-    ) = warp_input_vbmc(
-        vp, vbmc.optim_state, vbmc.function_logger, vbmc.options
-    )
+    ) = warp_input(vp, vbmc.optim_state, vbmc.function_logger, vbmc.options)
 
     filepath = os.path.join(
-        os.path.dirname(__file__), "test_warp_gpandvp_vbmc_gp_X.txt"
+        os.path.dirname(__file__), "test_warp_gp_and_vp_gp_X.txt"
     )
     gp_X = np.loadtxt(filepath, delimiter=",")
     filepath = os.path.join(
-        os.path.dirname(__file__), "test_warp_gpandvp_vbmc_gp_y.txt"
+        os.path.dirname(__file__), "test_warp_gp_and_vp_gp_y.txt"
     )
     gp_y = np.loadtxt(filepath, delimiter=",")
     filepath = os.path.join(
-        os.path.dirname(__file__), f"test_warp_gpandvp_vbmc_gp_hyps.txt"
+        os.path.dirname(__file__), f"test_warp_gp_and_vp_gp_hyps.txt"
     )
     gp_posterior_hyps = np.atleast_2d(np.loadtxt(filepath, delimiter=","))
 
@@ -291,32 +287,32 @@ def test_warp_gpandvp_vbmc():
     # for i in range(gp_posterior_hyps.shape[1]):
     #     vp.gp.posteriors[i].hyp = gp_posterior_hyps[:, i]
     vp.gp.update(X_new=gp_X, y_new=gp_y, hyp=gp_posterior_hyps)
-    vp_new, hyps_new = warp_gpandvp_vbmc(parameter_transformer_warp, vp, vbmc)
+    vp_new, hyps_new = warp_gp_and_vp(parameter_transformer_warp, vp, vbmc)
 
     filepath = os.path.join(
-        os.path.dirname(__file__), f"test_warp_gpandvp_vbmc_gp_hyps_new.txt"
+        os.path.dirname(__file__), f"test_warp_gp_and_vp_gp_hyps_new.txt"
     )
     hyps_new_MATLAB = np.atleast_2d(np.loadtxt(filepath, delimiter=","))
     assert np.allclose(hyps_new, hyps_new_MATLAB)
 
     filepath = os.path.join(
-        os.path.dirname(__file__), f"test_warp_gpandvp_vbmc_vp_mu.txt"
+        os.path.dirname(__file__), f"test_warp_gp_and_vp_vp_mu.txt"
     )
     vp_mu_MATLAB = np.atleast_2d(np.loadtxt(filepath, delimiter=","))
     filepath = os.path.join(
-        os.path.dirname(__file__), f"test_warp_gpandvp_vbmc_vp_w.txt"
+        os.path.dirname(__file__), f"test_warp_gp_and_vp_vp_w.txt"
     )
     vp_w_MATLAB = np.atleast_2d(np.loadtxt(filepath, delimiter=","))
     filepath = os.path.join(
-        os.path.dirname(__file__), f"test_warp_gpandvp_vbmc_vp_K.txt"
+        os.path.dirname(__file__), f"test_warp_gp_and_vp_vp_K.txt"
     )
     vp_K_MATLAB = np.atleast_2d(np.loadtxt(filepath, delimiter=","))
     filepath = os.path.join(
-        os.path.dirname(__file__), f"test_warp_gpandvp_vbmc_vp_sigma.txt"
+        os.path.dirname(__file__), f"test_warp_gp_and_vp_vp_sigma.txt"
     )
     vp_sigma_MATLAB = np.atleast_2d(np.loadtxt(filepath, delimiter=","))
     filepath = os.path.join(
-        os.path.dirname(__file__), f"test_warp_gpandvp_vbmc_vp_lambda.txt"
+        os.path.dirname(__file__), f"test_warp_gp_and_vp_vp_lambda.txt"
     )
     vp_lambda_MATLAB = np.atleast_2d(np.loadtxt(filepath, delimiter=",")).T
 

@@ -49,8 +49,8 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
     widths = np.std(gp.X, axis=0, ddof=1)
     max_bnd = 0.5
     diam = np.amax(gp.X, axis=0) - np.amin(gp.X, axis=0)
-    LB = np.amin(gp.X, axis=0) - max_bnd * diam
-    UB = np.amax(gp.X, axis=0) + max_bnd * diam
+    lb_tran = np.amin(gp.X, axis=0) - max_bnd * diam
+    ub_tran = np.amax(gp.X, axis=0) + max_bnd * diam
 
     active_is = {}
     active_is["ln_weights"] = None
@@ -73,7 +73,7 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
                 + "should evaluate to a positive integer."
             )
 
-        Xa, __ = vp.sample(Na, origflag=False)
+        Xa, __ = vp.sample(Na, orig_flag=False)
 
         f_mu, f_s2 = gp.predict(Xa, separate_samples=True)
 
@@ -98,12 +98,12 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
                 # Better (e.g. ensemble slice) sampling methods could
                 # later be implemented.
                 sampler = gpr.slice_sample.SliceSampler(
-                    log_p_fun, Xa, widths, LB, UB, sampler_opts
+                    log_p_fun, Xa, widths, lb_tran, ub_tran, sampler_opts
                 )
                 results = sampler.sample(Nmcmc_samples, thin, burn_in)
                 Xa = results["samples"]
                 # Xa = eis_sample_lite(log_p_fun, Xa, Nmcmc_samples, W, widths,
-                # LB, UB, sample_opts)
+                # lb_tran, ub_tran, sample_opts)
                 Xa = Xa[-Na:, :]
                 f_mu, f_s2 = gp.predict(Xa, separate_samples=True)
 
@@ -137,8 +137,8 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
             vp_is.w = vp_is.w / np.sum(vp_is.w)
 
             # Sample from smoothed posterior
-            Xa_vp, __ = vp_is.sample(Nvp_samples, origflag=False)
-            ln_weights, f_s2a_vp = activesample_proposalpdf(
+            Xa_vp, __ = vp_is.sample(Nvp_samples, orig_flag=False)
+            ln_weights, f_s2a_vp = active_sample_proposal_pdf(
                 Xa_vp, gp, vp_is, w_vp, rect_delta, acq_fcn, vp
             )
             if active_is.get("ln_weights") is None:
@@ -166,7 +166,7 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
             Xa_box = (
                 gp.X[jj, :] + (2 * np.random.rand(jj.size, D) - 1) * rect_delta
             )
-            ln_weights, f_s2a_box = activesample_proposalpdf(
+            ln_weights, f_s2a_box = active_sample_proposal_pdf(
                 Xa_box, gp, vp_is, w_vp, rect_delta, acq_fcn, vp
             )
             if active_is.get("ln_weights") is None:
@@ -239,13 +239,15 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
                     a=len(weights), p=weights, replace=False
                 )
                 x0 = active_is_old["X"][index, :]
-                x0 = np.maximum(np.minimum(x0, UB), LB)  # Force inside bounds
+                x0 = np.maximum(
+                    np.minimum(x0, ub_tran), lb_tran
+                )  # Force inside bounds
 
                 # Contrary to MATLAB, we are using simple slice sampling.
                 # Better (e.g. ensemble slice) sampling methods could
                 # later be implemented.
                 sampler = gpr.slice_sample.SliceSampler(
-                    log_p_fun, x0, widths, LB, UB, sampler_opts
+                    log_p_fun, x0, widths, lb_tran, ub_tran, sampler_opts
                 )
                 results = sampler.sample(Nmcmc_samples, thin, burn_in)
                 Xa, log_p = results["samples"], results["f_vals"]
@@ -312,7 +314,7 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
     return active_is
 
 
-def activesample_proposalpdf(Xa, gp, vp_is, w_vp, rect_delta, acq_fcn, vp):
+def active_sample_proposal_pdf(Xa, gp, vp_is, w_vp, rect_delta, acq_fcn, vp):
     r"""Compute importance weights for proposal pdf.
 
     Parameters
@@ -358,7 +360,7 @@ def activesample_proposalpdf(Xa, gp, vp_is, w_vp, rect_delta, acq_fcn, vp):
     # Mixture of variational posteriors
     if w_vp > 0:
         temp_lpdf[:, 0] = vp_is.pdf(
-            Xa, origflag=False, logflag=True
+            Xa, orig_flag=False, log_flag=True
         ).T + np.log(w_vp)
     else:
         temp_lpdf[:, 0] = -np.inf
@@ -451,7 +453,7 @@ def fess(vp, gp, X=100):
     # If a single number is passed, interpret it as the number of samples
     if np.isscalar(X):
         N = X
-        X = vp.sample(N, origflag=False)
+        X = vp.sample(N, orig_flag=False)
     else:
         N = X.shape[0]
 
@@ -467,7 +469,7 @@ def fess(vp, gp, X=100):
 
     # Compute effective sample size (ESS) with importance sampling
     v_ln_pdf = np.maximum(
-        vp.pdf(X, origflag=False, logflag=True), np.log(sys.float_info.min)
+        vp.pdf(X, orig_flag=False, log_flag=True), np.log(sys.float_info.min)
     ).ravel()
     ln_weights = f_bar - np.atleast_2d(v_ln_pdf)
     weight = np.exp(ln_weights - np.amax(ln_weights))
