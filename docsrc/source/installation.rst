@@ -2,4 +2,4 @@
 Installation
 ************
 
-``pyvbmc`` is not released yet to the public and still work in progress. Stay tuned for updates!
+``pyvbmc`` is not yet officially released to the public and is still work in progress. Stay tuned for updates!

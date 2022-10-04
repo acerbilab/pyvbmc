@@ -10,14 +10,11 @@ VBMC
   bound on the log normalization constant (log marginal likelhood or log model evidence)
   for a provided unnormalized log posterior.
 
-  To perform inference, first initialize a ``VBMC`` object and then run ``optimize()``.
+  To perform inference, first initialize a ``VBMC`` object and then call ``vbmc.optimize()`` on the instance.
 
-  The current version of VBMC only supports noiseless evaluations of the log posterior.
-  We are currently working on implementing VBMC with noisy likelihoods.
+  By default VBMC assumes noiseless evaluations of the log posterior, but noisy likelihoods can also be handled. See :ref:`Example 5: Noisy log-likelihood evaluations` for more details.
 
-  See below for the ``VBMC`` class methods and interface.
-  For now, the only methods of interest for users are the ``VBMC`` constructor and ``optimize()``.
-
+  See below for more details on the ``VBMC`` class methods and interface. The primary entry-points for users are the ``VBMC`` class, which initializes the algorithm, and the :ref:`VariationalPosterior` class, which represents the returned variational solution. The :ref:`Basic options` may also be useful.
 
 .. autoclass:: pyvbmc.vbmc.VBMC
    :members:

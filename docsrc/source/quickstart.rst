@@ -3,7 +3,7 @@ Getting started
 ***************
 
 The best way to get started with ``pyvbmc`` is via the tutorials and worked examples.
-In particular, start with `Example 1: Basic usage <_examples/pyvbmc_example_1.html>`_, and continue from there.
+In particular, start with :ref:`Example 1: Basic usage` and continue from there.
 
 If you are already familiar with approximate inference methods, you can find a summary usage below.
 
@@ -40,6 +40,6 @@ The outputs are:
 - ``elbo``: the estimated lower bound on the log model evidence (log normalization constant);
 - ``elbo_sd``: the standard deviation of the estimate of the ``elbo`` (*not* the error between the ``elbo`` and the true log model evidence, which is generally unknown).
 
-The ``vp`` object can be manipulated in various ways, see the `VariationalPosterior <api/classes/variational_posterior.html>`_ class documentation.
+The ``vp`` object can be manipulated in various ways, see the :ref:`VariationalPosterior` class documentation.
 
-See the examples for more detailed information.
+See the examples for more detailed information. The :ref:`Basic options` may also be useful.
