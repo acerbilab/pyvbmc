@@ -79,7 +79,7 @@ def test_acq_fcn_vs_acq_fcn_log(mocker):
     vp.mu = np.array([[-1.0, -1.0], [1.0, 1.0]])
     vp.sigma = np.ones((1, 2))
     function_logger = FunctionLogger(
-        lambda t: vp.pdf(t, logflag=True), 2, False, 0
+        lambda t: vp.pdf(t, log_flag=True), 2, False, 0
     )
     function_logger(np.ones(2))
 
@@ -109,7 +109,7 @@ def test_acq_fcn_vs_acq_fcn_log(mocker):
             ]
         ]
     )
-    gp.update(X_new=Xs, y_new=vp.pdf(Xs, logflag=True), hyp=hyp)
+    gp.update(X_new=Xs, y_new=vp.pdf(Xs, log_flag=True), hyp=hyp)
 
     acq = acqf(Xs, gp, vp, function_logger, optim_state)
     log_acq = acqf_log(Xs, gp, vp, function_logger, optim_state)

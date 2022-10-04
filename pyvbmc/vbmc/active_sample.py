@@ -16,8 +16,8 @@ from pyvbmc.vbmc.active_importance_sampling import active_importance_sampling
 from pyvbmc.vbmc.gaussian_process_train import reupdate_gp, train_gp
 from pyvbmc.vbmc.iteration_history import IterationHistory
 from pyvbmc.vbmc.variational_optimization import (
-    _gplogjoint,
-    _negelcbo,
+    _gp_log_joint,
+    _neg_elcbo,
     optimize_vp,
 )
 
@@ -247,7 +247,7 @@ def active_sample(
                 function_logger.Xn + 1
             )  # Number of training inputs
             optim_state["N_eff"] = sum(
-                function_logger.nevals[function_logger.X_flag]
+                function_logger.n_evals[function_logger.X_flag]
             )
             ###
             # if options.ActiveVariationalSamples > 0 % Unused
@@ -277,7 +277,7 @@ def active_sample(
                 if hasattr(function_logger, "S"):
                     s2 = (
                         function_logger.S[function_logger.X_flag] ** 2
-                    ) * function_logger.nevals[function_logger.X_flag]
+                    ) * function_logger.n_evals[function_logger.X_flag]
                 else:
                     s2 = None
 
@@ -329,7 +329,7 @@ def active_sample(
 
             # Re-evaluate variance of the log joint if requested
             if acq_eval.acq_info.get("compute_varlogjoint"):
-                varF = _gplogjoint(vp, gp, 0, 0, 0, 1)[2]
+                varF = _gp_log_joint(vp, gp, 0, 0, 0, 1)[2]
                 optim_state["var_log_joint_samples"] = varF
 
             # Evaluate acquisition function
@@ -361,7 +361,7 @@ def active_sample(
                         "search_optimizer", "Nelder-Mead", force=True
                     )
 
-                fval_old = acq_fast[idx]
+                f_val_old = acq_fast[idx]
                 x0 = X_acq[0, :]
 
                 if (
@@ -378,12 +378,12 @@ def active_sample(
                 if acq_eval.acq_info.get("log_flag"):
                     tol_fun = 1e-2
                 else:
-                    tol_fun = max(1e-12, abs(fval_old * 1e-3))
+                    tol_fun = max(1e-12, abs(f_val_old * 1e-3))
 
                 if options["search_optimizer"] == "cmaes":
 
                     if options["search_cmaes_vp_init"]:
-                        _, Sigma = vp.moments(origflag=False, covflag=True)
+                        _, Sigma = vp.moments(orig_flag=False, cov_flag=True)
                     else:
                         X_hpd = get_hpd(gp.X, gp.y, options["hpd_frac"])[0]
                         Sigma = np.cov(X_hpd, rowvar=False, bias=True)
@@ -405,18 +405,18 @@ def active_sample(
                         noise_handler=cma.NoiseHandler(np.size(x0)),
                     )
 
-                    xsearch_optim, fval_optim = res[:2]
+                    xsearch_optim, f_val_optim = res[:2]
                 elif options["search_optimizer"] == "Nelder-Mead":
                     from scipy.optimize import minimize
 
                     res = minimize(
                         acq_fun, x0, method="Nelder-Mead", tol=tol_fun
                     )
-                    xsearch_optim, fval_optim = res.x, res.fun
+                    xsearch_optim, f_val_optim = res.x, res.fun
                 else:
                     raise NotImplementedError("Not implemented yet")
 
-                if fval_optim < fval_old:
+                if f_val_optim < f_val_old:
                     X_acq[0, :] = AbstractAcqFcn._real2int(
                         xsearch_optim,
                         parameter_transformer,
@@ -579,7 +579,7 @@ def active_sample(
                     timer.start_timer("gp_train")
                     update1 = (
                         (s2new is None)
-                        and function_logger.nevals[idx_new] == 1
+                        and function_logger.n_evals[idx_new] == 1
                     ) and not options["noise_shaping"]
                     if update1:
                         ynew = np.array([[ynew]])  # (1,1)
@@ -636,7 +636,7 @@ def active_sample(
                 NSentFineK = math.ceil(
                     options["ns_ent_fine_active"](vp0.K) / vp0.K
                 )
-                elbo0 = -_negelcbo(
+                elbo0 = -_neg_elcbo(
                     theta0, gp, vp0, 0.0, NSentFineK, False, True
                 )[0]
 
@@ -728,13 +728,13 @@ def _get_search_points(
         )
         if N_heavy > 0:
             heavy_Xs, _ = vp.sample(
-                N=N_heavy, origflag=False, balanceflag=True, df=3
+                N=N_heavy, orig_flag=False, balance_flag=True, df=3
             )
             random_Xs = np.append(random_Xs, heavy_Xs, axis=0)
 
         N_mvn = round(options.get("mvn_search_frac") * N_random_points)
         if N_mvn > 0:
-            mubar, sigmabar = vp.moments(origflag=False, covflag=True)
+            mubar, sigmabar = vp.moments(orig_flag=False, cov_flag=True)
             mvn_Xs = np.random.multivariate_normal(
                 np.ravel(mubar), sigmabar, size=N_mvn
             )
@@ -828,7 +828,7 @@ def _get_search_points(
             N_random_points - N_search_cache - N_heavy - N_mvn - N_box - N_hpd,
         )
         if N_vp > 0:
-            vp_Xs, _ = vp.sample(N=N_vp, origflag=False, balanceflag=True)
+            vp_Xs, _ = vp.sample(N=N_vp, orig_flag=False, balance_flag=True)
             random_Xs = np.append(random_Xs, vp_Xs, axis=0)
 
         search_X = np.append(search_X, random_Xs, axis=0)

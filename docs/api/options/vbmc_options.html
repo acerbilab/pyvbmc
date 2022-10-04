@@ -168,8 +168,8 @@
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../functions/kde1d.html">
-     kde1d
+    <a class="reference internal" href="../functions/kde_1d.html">
+     kde_1d
     </a>
    </li>
    <li class="toctree-l2">
@@ -417,7 +417,7 @@ what you are doing.</p>
 <span class="c1"># Automatic nonlinear rescaling of variables</span>
 <span class="n">nonlinear_scaling</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="c1"># Search acquisition fcn(s), from pyvbmc.acquisition_functions. If length is greater than 1, a function is randomly selected for each new point.</span>
-<span class="n">search_acq_fcn</span> <span class="o">=</span> <span class="p">[</span><span class="n">AcqFcn</span><span class="p">()]</span>
+<span class="n">search_acq_fcn</span> <span class="o">=</span> <span class="p">[</span><span class="n">AcqFcnLog</span><span class="p">()]</span>
 <span class="c1"># Samples for fast acquisition fcn eval per new point</span>
 <span class="n">ns_search</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">**</span> <span class="mi">13</span>
 <span class="c1"># Total samples for Monte Carlo approx. of the entropy</span>

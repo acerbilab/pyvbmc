@@ -753,7 +753,7 @@ def _get_training_data(function_logger: FunctionLogger):
 
     # Missing port: noise_shaping
 
-    t_train = function_logger.fun_evaltime[function_logger.X_flag]
+    t_train = function_logger.fun_eval_time[function_logger.X_flag]
 
     return x_train, y_train, s2_train, t_train
 

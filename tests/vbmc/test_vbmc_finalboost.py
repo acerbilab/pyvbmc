@@ -42,7 +42,7 @@ def test_final_boost_lambda_options(mocker):
     mocker.patch(
         "pyvbmc.vbmc.vbmc.optimize_vp", return_value=(vbmc.vp, None, None)
     )
-    vp, elbo, elbo_sd, changedflag = vbmc.finalboost(vbmc.vp, dict())
+    vp, elbo, elbo_sd, changedflag = vbmc.final_boost(vbmc.vp, dict())
     assert changedflag
 
 
@@ -66,7 +66,7 @@ def test_final_boost_fixed_value_options(mocker):
     mocker.patch(
         "pyvbmc.vbmc.vbmc.optimize_vp", return_value=(vbmc.vp, None, None)
     )
-    vp, elbo, elbo_sd, changedflag = vbmc.finalboost(vbmc.vp, dict())
+    vp, elbo, elbo_sd, changedflag = vbmc.final_boost(vbmc.vp, dict())
     assert changedflag
 
 
@@ -90,7 +90,7 @@ def test_final_boost_fixed_value_options_boost_none(mocker):
     mocker.patch(
         "pyvbmc.vbmc.vbmc.optimize_vp", return_value=(vbmc.vp, None, None)
     )
-    vp, elbo, elbo_sd, changedflag = vbmc.finalboost(vbmc.vp, dict())
+    vp, elbo, elbo_sd, changedflag = vbmc.final_boost(vbmc.vp, dict())
     assert changedflag
 
 
@@ -113,5 +113,5 @@ def test_final_boost_no_boost(mocker):
     mocker.patch(
         "pyvbmc.vbmc.vbmc.optimize_vp", return_value=(vbmc.vp, None, None)
     )
-    vp, elbo, elbo_sd, changedflag = vbmc.finalboost(vbmc.vp, dict())
+    vp, elbo, elbo_sd, changedflag = vbmc.final_boost(vbmc.vp, dict())
     assert changedflag == False

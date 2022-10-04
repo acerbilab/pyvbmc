@@ -2,10 +2,10 @@
 entropy
 ========
 
-kldiv_mvn
-=========
+kl_div_mvn
+==========
 
-.. autofunction:: pyvbmc.stats.kldiv_mvn
+.. autofunction:: pyvbmc.stats.kl_div_mvn
 
 entlb_vbmc
 ==========
