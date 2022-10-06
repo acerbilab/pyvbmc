@@ -500,7 +500,7 @@ def _get_gp_training_options(
 
     iteration = optim_state["iter"]
     if iteration > 0:
-        r_index = iteration_history["rindex"][iteration - 1]
+        r_index = iteration_history["r_index"][iteration - 1]
     else:
         r_index = np.inf
 
@@ -601,7 +601,7 @@ def _get_gp_training_options(
         gp_train["burn"] = gp_train["thin"] * 3
         if (
             iteration > 1
-            and iteration_history["rindex"][iteration - 1]
+            and iteration_history["r_index"][iteration - 1]
             < options["gp_retrain_threshold"]
         ):
             gp_train["init_N"] = 0
@@ -614,7 +614,7 @@ def _get_gp_training_options(
                         math.ceil(
                             gp_train["thin"]
                             * np.log(
-                                iteration_history["rindex"][iteration - 1]
+                                iteration_history["r_index"][iteration - 1]
                                 / np.log(options["gp_retrain_threshold"])
                             )
                         ),

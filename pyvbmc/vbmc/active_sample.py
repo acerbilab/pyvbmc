@@ -209,7 +209,7 @@ def active_sample(
                 - options["active_sample_full_update_past_warmup"]
                 <= optim_state["last_warmup"]
             )
-            or iteration_history["rindex"][-1]
+            or iteration_history["r_index"][-1]
             > options["active_sample_full_update_threshold"]
         )
 
