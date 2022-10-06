@@ -80,7 +80,7 @@ def test_update_K():
         "elbo_sd": np.array([0.0081, 0.0043, 0.0009, 0.0011, 0.0012]),
         "warmup": np.array([True, True, True, True, False]),
         "pruned": np.zeros((5,)),
-        "rindex": np.array([np.inf, np.inf, 0.1773, 0.1407, 0.3420]),
+        "r_index": np.array([np.inf, np.inf, 0.1773, 0.1407, 0.3420]),
     }
     assert update_K(optim_state, iteration_history, options) == 2
 
@@ -96,7 +96,7 @@ def test_update_K():
         ),
         "warmup": np.array([True, True, True, True, False, False, False]),
         "pruned": np.zeros((7,)),
-        "rindex": np.array(
+        "r_index": np.array(
             [np.inf, np.inf, 0.1773, 0.1407, 0.3420, 0.1422, 0.1222]
         ),
     }

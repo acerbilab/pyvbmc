@@ -71,7 +71,7 @@ def update_K(
 
         # Bonus components for stable solution (speed up exploration)
         if (
-            iteration_history["rindex"][-1] < 1
+            iteration_history["r_index"][-1] < 1
             and not optim_state["recompute_var_post"]
             and improving_flag
         ):
