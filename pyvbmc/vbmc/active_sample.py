@@ -328,7 +328,7 @@ def active_sample(
                 ] = active_importance_sampling(vp, gp, acq_eval, options)
 
             # Re-evaluate variance of the log joint if requested
-            if acq_eval.acq_info.get("compute_varlogjoint"):
+            if acq_eval.acq_info.get("compute_var_log_joint"):
                 varF = _gp_log_joint(vp, gp, 0, 0, 0, 1)[2]
                 optim_state["var_log_joint_samples"] = varF
 

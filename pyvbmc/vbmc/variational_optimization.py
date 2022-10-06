@@ -376,8 +376,8 @@ def optimize_vp(
     vp.stats = {}
     vp.stats["elbo"] = elbo  # ELBO
     vp.stats["elbo_sd"] = elbo_sd  # Error on the ELBO
-    vp.stats["e_logjoint"] = G  # Expected log joint
-    vp.stats["e_logjoint_sd"] = np.sqrt(varG)  # Error on expected log joint
+    vp.stats["e_log_joint"] = G  # Expected log joint
+    vp.stats["e_log_joint_sd"] = np.sqrt(varG)  # Error on expected log joint
     vp.stats["entropy"] = H  # Entropy
     vp.stats["entropy_sd"] = np.sqrt(varH)  # Error on the entropy
     vp.stats["stable"] = False  # Unstable until proven otherwise
