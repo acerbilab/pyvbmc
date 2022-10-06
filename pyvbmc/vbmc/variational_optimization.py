@@ -305,7 +305,7 @@ def optimize_vp(
     elbo_sd = np.sqrt(elbo_stats["varF"][idx])
     G = elbo_stats["G"][idx]
     H = elbo_stats["H"][idx]
-    varss = elbo_stats["varss"][idx]
+    var_ss = elbo_stats["var_ss"][idx]
     varG = elbo_stats["varG"][idx]
     varH = elbo_stats["varH"][idx]
     I_sk = np.zeros((Ns, K))
@@ -363,7 +363,7 @@ def optimize_vp(
                 elbo_sd = elbo_pruned_sd
                 G = elbo_stats["G"][0]
                 H = elbo_stats["H"][0]
-                varss = elbo_stats["varss"][0]
+                var_ss = elbo_stats["var_ss"][0]
                 varG = elbo_stats["varG"][0]
                 varH = elbo_stats["varH"][0]
                 pruned += 1
@@ -376,15 +376,15 @@ def optimize_vp(
     vp.stats = {}
     vp.stats["elbo"] = elbo  # ELBO
     vp.stats["elbo_sd"] = elbo_sd  # Error on the ELBO
-    vp.stats["elogjoint"] = G  # Expected log joint
-    vp.stats["elogjoint_sd"] = np.sqrt(varG)  # Error on expected log joint
+    vp.stats["e_logjoint"] = G  # Expected log joint
+    vp.stats["e_logjoint_sd"] = np.sqrt(varG)  # Error on expected log joint
     vp.stats["entropy"] = H  # Entropy
     vp.stats["entropy_sd"] = np.sqrt(varH)  # Error on the entropy
     vp.stats["stable"] = False  # Unstable until proven otherwise
     vp.stats["I_sk"] = I_sk  # Expected log joint per component
     vp.stats["J_sjk"] = J_sjk  # Covariance of expected log joint
 
-    return vp, varss, pruned
+    return vp, var_ss, pruned
 
 
 def _initialize_full_elcbo(max_idx: int, D: int, K: int, Ns: int):
@@ -413,7 +413,7 @@ def _initialize_full_elcbo(max_idx: int, D: int, K: int, Ns: int):
     elbo_stats["varF"] = np.full((max_idx,), np.nan)
     elbo_stats["varG"] = np.full((max_idx,), np.nan)
     elbo_stats["varH"] = np.full((max_idx,), np.nan)
-    elbo_stats["varss"] = np.full((max_idx,), np.nan)
+    elbo_stats["var_ss"] = np.full((max_idx,), np.nan)
     elbo_stats["nelcbo"] = np.full((max_idx,), np.inf)
     elbo_stats["theta"] = np.full((max_idx, D), np.nan)
     elbo_stats["I_sk"] = np.full((max_idx, Ns, K), np.nan)
@@ -461,12 +461,12 @@ def _eval_full_elcbo(
     K = vp.K
     ns_ent_fine_K = math.ceil(options.eval("ns_ent_fine", {"K": K}) / K)
 
-    if "skipelbovariance" in options and options["skipelbovariance"]:
+    if "skip_elbo_variance" in options and options["skip_elbo_variance"]:
         compute_var = False
     else:
         compute_var = True
 
-    nelbo, _, G, H, varF, _, varss, varG, varH, I_sk, J_sjk = _neg_elcbo(
+    nelbo, _, G, H, varF, _, var_ss, varG, varH, I_sk, J_sjk = _neg_elcbo(
         theta,
         gp,
         vp,
@@ -486,7 +486,7 @@ def _eval_full_elcbo(
     elbo_stats["varF"][idx] = varF
     elbo_stats["varG"][idx] = varG
     elbo_stats["varH"][idx] = varH
-    elbo_stats["varss"][idx] = varss
+    elbo_stats["var_ss"][idx] = var_ss
     elbo_stats["nelcbo"][idx] = nelcbo
     elbo_stats["theta"][idx, 0 : np.size(theta)] = theta
     elbo_stats["I_sk"][idx, :, 0:K] = I_sk
@@ -1029,7 +1029,7 @@ def _neg_elcbo(
         Variance of NELCBO.
     dH : np.ndarray
         Gradient of entropy term.
-    varGss :
+    varG_ss :
         To be written by Luigi.
     varG :
         Variance of the expected variational log joint
@@ -1101,7 +1101,7 @@ def _neg_elcbo(
             )
 
         if compute_var:
-            G, _, varG, _, varGss, I_sk, J_sjk = _gp_log_joint(
+            G, _, varG, _, varG_ss, I_sk, J_sjk = _gp_log_joint(
                 vp,
                 gp,
                 grad_flags,
@@ -1114,12 +1114,12 @@ def _neg_elcbo(
             G, dG, _, _, _, I_sk, _ = _gp_log_joint(
                 vp, gp, grad_flags, avg_flag, jacobian_flag, 0, True
             )
-            varG = varGss = 0
+            varG = varG_ss = 0
             J_sjk = None
     else:
         if compute_var:
             if compute_grad:
-                G, dG, varG, dvarG, varGss = _gp_log_joint(
+                G, dG, varG, dvarG, varG_ss = _gp_log_joint(
                     vp,
                     gp,
                     grad_flags,
@@ -1128,7 +1128,7 @@ def _neg_elcbo(
                     compute_var,
                 )
             else:
-                G, _, varG, _, varGss = _gp_log_joint(
+                G, _, varG, _, varG_ss = _gp_log_joint(
                     vp,
                     gp,
                     grad_flags,
@@ -1140,7 +1140,7 @@ def _neg_elcbo(
             G, dG, _, _, _ = _gp_log_joint(
                 vp, gp, grad_flags, avg_flag, jacobian_flag, 0
             )
-            varG = varGss = 0
+            varG = varG_ss = 0
 
     # Entropy term
     if Ns > 0:
@@ -1214,7 +1214,7 @@ def _neg_elcbo(
     # Missing port: way to return stuff here is not that good,
     #               though it works currently.
     if separate_K:
-        return F, dF, G, H, varF, dH, varGss, varG, varH, I_sk, J_sjk
+        return F, dF, G, H, varF, dH, varG_ss, varG, varH, I_sk, J_sjk
     return F, dF, G, H, varF
 
 
@@ -1260,7 +1260,7 @@ def _gp_log_joint(
         The variance.
     dvarF : np.ndarray, optional
         The gradient of the variance.
-    varss : float
+    var_ss : float
         To be written by Luigi.
     I_sk : np.ndarray, optional
         To be written by Luigi.
@@ -1554,14 +1554,14 @@ def _gp_log_joint(
         dvarF = None
 
     # Average multiple hyperparameter samples
-    varss = 0
+    var_ss = 0
     if Ns > 1 and avg_flag:
         F_bar = np.sum(F) / Ns
         if compute_var:
             # Estimated variance of the samples
             varFss = np.sum((F - F_bar) ** 2) / (Ns - 1)
             # Variability due to sampling
-            varss = varFss + np.std(varF, ddof=1)
+            var_ss = varFss + np.std(varF, ddof=1)
             varF = np.sum(varF, axis=0) / Ns + varFss
         if compute_vargrad:
             # TODO: compute vargrad is untested
@@ -1580,5 +1580,5 @@ def _gp_log_joint(
             dF = dF[:, 0]
 
     if separate_K:
-        return F, dF, varF, dvarF, varss, I_sk, J_sjk
-    return F, dF, varF, dvarF, varss
+        return F, dF, varF, dvarF, var_ss, I_sk, J_sjk
+    return F, dF, varF, dvarF, var_ss

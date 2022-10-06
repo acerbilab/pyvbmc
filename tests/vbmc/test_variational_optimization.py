@@ -134,7 +134,7 @@ def test_gp_log_joint():
     hyp = np.loadtxt(open("./tests/vbmc/hyp.txt", "rb"), delimiter=",")
     gp.update(X_new=X, y_new=y, hyp=hyp)
 
-    F, dF, varF, dvarF, varss, I_sk, J_sjk = _gp_log_joint(
+    F, dF, varF, dvarF, var_ss, I_sk, J_sjk = _gp_log_joint(
         vp, gp, False, True, True, True, True
     )
 
@@ -142,9 +142,9 @@ def test_gp_log_joint():
     assert dF is None
     assert np.isclose(varF, 6.598768992700180e-05)
     assert dvarF is None
-    assert np.isclose(varss, 1.031705745662353e-04)
+    assert np.isclose(var_ss, 1.031705745662353e-04)
 
-    F, dF, varF, dvarF, varss = _gp_log_joint(
+    F, dF, varF, dvarF, var_ss = _gp_log_joint(
         vp, gp, True, True, True, False, False
     )
     matlab_dF = np.loadtxt(
@@ -184,7 +184,7 @@ def test_neg_elcbo():
     theta_bnd = None  # vp.get_bounds(gp.X, options, K)
     theta = vp.get_parameters()
 
-    F, dF, G, H, varF, dH, varGss, varG, varH, I_sk, J_sjk = _neg_elcbo(
+    F, dF, G, H, varF, dH, varG_ss, varG, varH, I_sk, J_sjk = _neg_elcbo(
         theta, gp, vp, 0.0, 0, False, True, theta_bnd, 0.0, True
     )
 

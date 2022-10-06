@@ -279,7 +279,7 @@ class VBMC:
                 "sKL",
                 "sKL_true",
                 "pruned",
-                "varss",
+                "var_ss",
                 "func_count",
                 "n_eff",
                 "logging_action",
@@ -964,7 +964,7 @@ class VBMC:
                     )  # Full optimizations.
 
                     # Run optimization of variational parameters
-                    self.vp, varss, pruned = optimize_vp(
+                    self.vp, var_ss, pruned = optimize_vp(
                         self.options,
                         self.optim_state,
                         self.vp,
@@ -1153,7 +1153,7 @@ class VBMC:
                 )
                 N_slowopts = 1
             # Run optimization of variational parameters
-            self.vp, varss, pruned = optimize_vp(
+            self.vp, var_ss, pruned = optimize_vp(
                 self.options,
                 self.optim_state,
                 self.vp,
@@ -1253,7 +1253,7 @@ class VBMC:
                 "vp": self.vp,
                 "elbo": elbo,
                 "elbo_sd": elbo_sd,
-                "varss": varss,
+                "var_ss": var_ss,
                 "sKL": sKL,
                 "sKL_true": sKL_true,
                 "gp": gp,
@@ -2004,7 +2004,7 @@ class VBMC:
             self.optim_state["entropy_alpha"] = 0
 
             stable_flag = np.copy(vp.stats["stable"])
-            vp, varss, pruned = optimize_vp(
+            vp, var_ss, pruned = optimize_vp(
                 self.options,
                 self.optim_state,
                 vp,
