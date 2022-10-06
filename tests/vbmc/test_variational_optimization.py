@@ -263,7 +263,6 @@ def test_vp_optimize_1D_g_mixture():
     vp = VariationalPosterior(D=D, K=2)
     optim_state = dict()
     optim_state["warmup"] = True
-    optim_state["delta"] = np.zeros((1, D))
     optim_state["entropy_switch"] = False
 
     options = setup_options(D, {})
@@ -325,7 +324,6 @@ def test_vp_optimize_2D_g_mixture():
     vp = VariationalPosterior(D=D, K=2)
     optim_state = dict()
     optim_state["warmup"] = True
-    optim_state["delta"] = np.zeros((1, D))
     optim_state["entropy_switch"] = False
 
     options = setup_options(D, {})
@@ -380,7 +378,6 @@ def test_vp_optimize_deterministic_entropy_approximation():
     vp = VariationalPosterior(D=D, K=2)
     optim_state = dict()
     optim_state["warmup"] = True
-    optim_state["delta"] = np.zeros((1, D))
     optim_state["entropy_switch"] = True
 
     options = setup_options(D, {})
