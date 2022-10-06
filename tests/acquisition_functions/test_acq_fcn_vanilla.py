@@ -11,7 +11,7 @@ def test_acq_info():
     assert isinstance(acqf.acq_info, dict)
     assert isinstance(acqf.get_info(), dict)
     assert not acqf.acq_info.get("log_flag")
-    assert not acqf.acq_info.get("compute_varlogjoint")
+    assert not acqf.acq_info.get("compute_var_log_joint")
 
     # Test handling of string input for SearchAcqFcn:
     acqf2 = AcqFcnVanilla()
