@@ -716,10 +716,6 @@ class VBMC:
         optim_state["iter_list"]["f_sd"] = []
         optim_state["iter_list"]["fhyp"] = []
 
-        optim_state["delta"] = self.options.get("bandwidth") * (
-            optim_state.get("pub_tran") - optim_state.get("plb_tran")
-        )
-
         # Deterministic entropy approximation lower/upper factor
         optim_state["entropy_alpha"] = self.options.get("det_entropy_alpha")
 
