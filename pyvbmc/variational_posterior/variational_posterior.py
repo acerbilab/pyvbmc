@@ -68,8 +68,6 @@ class VariationalPosterior:
     parameter_transformer : ParameterTransformer
         The parameter transformer implementing transformations to/from
         unbounded space.
-    delta : np.ndarray or None (optional)
-        An additional overall scaling factor, of shape ``(1, D)``. Default ``None``.
     bounds : dict
         A dictionary containing the soft bounds for each variable to be
         optimized.
@@ -133,7 +131,6 @@ class VariationalPosterior:
         else:
             self.parameter_transformer = parameter_transformer
 
-        self.delta = None
         self.bounds = None
         self.stats = None
         self._mode = None

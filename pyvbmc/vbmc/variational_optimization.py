@@ -706,12 +706,6 @@ def _sieve(
 
     ## Set up optimization variables and options.
 
-    # TODO: delta is wrong size, since plb and pub are wrong size
-    #       which are the wrong size since plausible upper and lower
-    #       bounds are wrong size which are the wrong size since?
-    #       everything runs but could maybe be simpler?
-    vp.delta = optim_state["delta"]
-
     # Number of initial starting points
     if init_N is None:
         init_N = math.ceil(options.eval("ns_elbo", {"K": K}))
@@ -1346,11 +1340,6 @@ def _gp_log_joint(
         if compute_var:
             J_sjk = np.zeros((Ns, K, K))
 
-    if vp.delta is None:
-        delta = 0
-    else:
-        delta = vp.delta.copy().T
-
     Xt = np.zeros((K, D, N))
     for k in range(0, K):
         Xt[k, :, :] = np.reshape(mu[:, k], (-1, 1)) - gp.X.T
@@ -1390,9 +1379,7 @@ def _gp_log_joint(
         sn2_eff = 1 / gp.posteriors[s].sW[0] ** 2
 
         for k in range(0, K):
-            tau_k = np.sqrt(
-                sigma[:, k] ** 2 * lambd**2 + ell**2 + delta**2
-            )
+            tau_k = np.sqrt(sigma[:, k] ** 2 * lambd**2 + ell**2)
             lnnf_k = (
                 ln_sf2 + sum_lnell - np.sum(np.log(tau_k), axis=0)
             )  # Covariance normalization factor
@@ -1409,7 +1396,6 @@ def _gp_log_joint(
                         + sigma[:, k] ** 2 * lambd**2
                         - 2 * mu[:, k : k + 1] * xm
                         + xm**2
-                        + delta**2
                     ),
                     axis=0,
                 )
@@ -1463,9 +1449,7 @@ def _gp_log_joint(
                 )
             elif compute_var:
                 for j in range(0, k + 1):
-                    tau_j = np.sqrt(
-                        sigma[:, j] ** 2 * lambd**2 + ell**2 + delta**2
-                    )
+                    tau_j = np.sqrt(sigma[:, j] ** 2 * lambd**2 + ell**2)
                     lnnf_j = ln_sf2 + sum_lnell - np.sum(np.log(tau_j), axis=0)
                     delta_j = (mu[:, j : j + 1] - gp.X.T) / tau_j
                     z_j = np.exp(lnnf_j - 0.5 * np.sum(delta_j**2, axis=0))
@@ -1473,7 +1457,6 @@ def _gp_log_joint(
                     tau_jk = np.sqrt(
                         (sigma[:, j] ** 2 + sigma[:, k] ** 2) * lambd**2
                         + ell**2
-                        + 2 * delta**2
                     )
                     lnnf_jk = ln_sf2 + sum_lnell - np.sum(np.log(tau_jk))
                     delta_jk = (mu[:, j : j + 1] - mu[:, k : k + 1]) / tau_jk

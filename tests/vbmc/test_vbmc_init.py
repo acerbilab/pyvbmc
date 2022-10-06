@@ -621,12 +621,6 @@ def test_vbmc_optimstate_acq_hedge():
     assert "hedge" not in vbmc.optim_state
 
 
-def test_vbmc_optimstate_delta():
-    user_options = {"bandwidth": 1}
-    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
-    assert np.all(vbmc.optim_state["delta"] == 1)
-
-
 def test_vbmc_optimstate_entropy_alpha():
     user_options = {"det_entropy_alpha": False}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
