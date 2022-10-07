@@ -2,9 +2,7 @@
 # PyVBMC: Variational Bayesian Monte Carlo in Python
 ### What is it?
 
-PyVBMC is the port of the [MATLAB VBMC algorithm](https://github.com/lacerbi/vbmc) to Python 3.9 and higher.
-
-VBMC is an approximate inference method designed to fit and evaluate computational models with a limited budget of potentially noisy likelihood evaluations (e.g., for computationally expensive models). Specifically, VBMC simultaneously computes:
+PyVBMC is the port of the [MATLAB VBMC algorithm](https://github.com/lacerbi/vbmc) to Python. VBMC is an approximate inference method designed to fit and evaluate Bayesian models with a limited budget of potentially noisy likelihood evaluations (e.g., for computationally expensive models). Specifically, VBMC simultaneously computes:
 - an approximate posterior distribution of the model parameters;
 - an approximation — technically, an approximate lower bound — of the log model evidence (also known as log marginal likelihood or log Bayes factor), a metric used for [Bayesian model selection](https://en.wikipedia.org/wiki/Bayes_factor).
 
@@ -36,10 +34,10 @@ PyVBMC is not yet available on `pip`/`conda-forge`, but can be installed in a fe
    git clone https://github.com/lacerbi/gpyreg
    ```
    (PyVBMC depends on [`gpyreg`](https://github.com/lacerbi/gpyreg), which is a package for lightweight Gaussian process regression in Python.)
-2. (Optional) Create a new environment in `conda` and activate it:
+2. (Optional) Create a new environment in `conda` and activate it (we recommend using Python 3.9 or newer, but older versions *might* work):
    ```console
-   conda create --name pyvbmc python=3.9
-   conda activate pyvbmc-dev
+   conda create --name pyvbmc-env python=3.9
+   conda activate pyvbmc-env
    ```
 3. Install the repos:
    ```console
@@ -89,10 +87,10 @@ For practical recommendations, such as how to set `LB` and `UB` and the plausibl
 
 ## Troubleshooting and contact
 
-PyVBMC is under active development. The original VBMC algorithm has been extensively tested in several benchmarks and published papers, and the benchmarks have been replicated using PyVBMC. But as with any approximate inference technique, you should double-check your results. See the FAQ for more information on [diagnostics](https://github.com/lacerbi/vbmc/wiki#troubleshooting).
+PyVBMC is under active development. The original VBMC algorithm has been extensively tested in several benchmarks and published papers, and the benchmarks have been replicated using PyVBMC. But as with any approximate inference technique, you should double-check your results. See the [examples](https://lacerbi.github.io/pyvbmc/index.html#examples) for descriptions of the convergence diagnostics and suggestions on validating PyVBMC's results with multiple runs.
 
 If you have trouble doing something with PyVBMC, spot bugs or strange behavior, or you simply have some questions, please feel free to:
-- open an issue on GitHub, or,
+- [open an issue](https://github.com/lacerbi/pyvbmc/issues/new) on GitHub, or,
 - contact me at <luigi.acerbi@helsinki.fi>, putting 'PyVBMC' in the subject of the email.
 
 ## References and citation
@@ -106,7 +104,7 @@ Please cite both references if you use PyVBMC in your work (the 2018 paper intro
 
 Besides formal citations, you can demonstrate your appreciation for PyVBMC in the following ways:
 
-- *Star* the VBMC repository on GitHub;
+- *Star :star:* the VBMC repository on GitHub;
 - [Follow me on Twitter](https://twitter.com/AcerbiLuigi) for updates about VBMC/PyVBMC and other projects I am involved with;
 - Tell me about your model-fitting problem and your experience with PyVBMC (positive or negative) at <luigi.acerbi@helsinki.fi> (putting  'PyVBMC' in the subject of the email).
 
