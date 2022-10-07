@@ -95,7 +95,13 @@ html_static_path = ["css/custom.css"]
 todo_include_todos = True
 
 # do not execute sphinx notebooks
-jupyter_execute_notebooks = "off"
+nb_execution_mode = "off"
 
 # download notebooks as .ipynb and not as .ipynb.txt
 html_sourcelink_suffix = ""
+
+suppress_warnings = [
+    f"autosectionlabel._examples/{filename.split('.')[0]}"
+    for filename in os.listdir("../../examples")
+    if os.path.isfile(os.path.join("../../examples", filename))
+]  # Avoid duplicate label warnings for Jupyter notebooks.
