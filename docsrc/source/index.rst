@@ -62,8 +62,9 @@ Documentation
 
    installation
    quickstart
-   api/classes/variational_posterior
    api/classes/vbmc
+   api/classes/variational_posterior
+   api/options/vbmc_options
    api/advanced_docs
 
 Examples
