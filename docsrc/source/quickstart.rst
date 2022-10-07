@@ -2,7 +2,7 @@
 Getting started
 ***************
 
-The best way to get started with ``pyvbmc`` is via the tutorials and worked examples.
+The best way to get started with PyVBMC is via the tutorials and worked examples.
 In particular, start with :ref:`Example 1: Basic usage` and continue from there.
 
 If you are already familiar with approximate inference methods, you can find a summary usage below.
@@ -10,14 +10,14 @@ If you are already familiar with approximate inference methods, you can find a s
 Summary usage
 =============
 
-The typical usage pipeline of ``pyvbmc`` follows four steps:
+The typical usage pipeline of PyVBMC follows four steps:
 
 1. Define the model, which defines a target log density (i.e., an unnormalized log posterior density);
 2. Setup the parameters (parameter bounds, starting point);
 3. Initialize and run the inference;
 4. Examine and visualize the results.
 
-``pyvbmc`` is not concerned with how you define your model in step 1, as long as you can provide an (unnormalized) target log density.
+PyVBMC is not concerned with how you define your model in step 1, as long as you can provide an (unnormalized) target log density.
 Running the inference in step 3 only involves a couple of lines of code:
 
 .. code-block:: python
