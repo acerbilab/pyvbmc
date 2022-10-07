@@ -110,17 +110,17 @@ def warp_input(vp, optim_state, function_logger, options):
     Raises
     ------
     NotImplementedError
-        If `vbmc.options["warpnonlinear"]` is set other than False.
+        If `vbmc.options["warp_nonlinear"]` is set other than False.
     """
     parameter_transformer = copy.deepcopy(vp.parameter_transformer)
     optim_state = copy.deepcopy(optim_state)
     function_logger = copy.deepcopy(function_logger)
 
-    if options.get("warp_non_linear"):
+    if options.get("warp_nonlinear"):
         raise NotImplementedError("Non-linear warping is not supported.")
 
     if options.get("warp_rotoscaling"):
-        if options.get("warp_non_linear"):
+        if options.get("warp_nonlinear"):
             raise NotImplementedError("Non-linear warping is not supported.")
         else:
             # Get covariance matrix analytically
@@ -235,7 +235,7 @@ def warp_input(vp, optim_state, function_logger, options):
     optim_state["last_run_avg"] = np.nan
 
     # Warp action for output display
-    if options.get("warpnonlinear"):
+    if options.get("warp_nonlinear"):
         warp_action = "warp"
     else:
         warp_action = "rotoscale"

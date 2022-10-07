@@ -114,7 +114,7 @@ def test_vbmc_check_termination_conditions_stability(mocker):
     vbmc.function_logger.func_count = 9
     vbmc.optim_state["entropy_switch"] = False
     vbmc.optim_state["iter"] = 98
-    vbmc.iteration_history["rindex"] = np.ones(100) * 0.5
+    vbmc.iteration_history["r_index"] = np.ones(100) * 0.5
 
     mocker.patch(
         "pyvbmc.vbmc.VBMC._compute_reliability_index",
@@ -159,7 +159,7 @@ def test_vbmc_is_finished_stability_entropy_switch(mocker):
     vbmc.function_logger.func_count = 9
     vbmc.optim_state["entropy_switch"] = True
     vbmc.optim_state["iter"] = 98
-    vbmc.iteration_history["rindex"] = np.ones(100) * 0.5
+    vbmc.iteration_history["r_index"] = np.ones(100) * 0.5
     mocker.patch(
         "pyvbmc.vbmc.VBMC._compute_reliability_index",
         return_value=(0.5, 0.005),
@@ -171,8 +171,8 @@ def test_vbmc_is_finished_stability_entropy_switch(mocker):
 def test_vbmc_compute_reliability_index_less_than_2_iter():
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
     vbmc.optim_state["iter"] = 1
-    rindex, ELCBO_improvement = vbmc._compute_reliability_index(6)
-    assert rindex == np.Inf
+    r_index, ELCBO_improvement = vbmc._compute_reliability_index(6)
+    assert r_index == np.Inf
     assert np.isnan(ELCBO_improvement)
 
 
@@ -185,8 +185,8 @@ def test_vbmc_compute_reliability_index():
     vbmc.iteration_history["elbo_sd"] = np.ones(50)
     vbmc.iteration_history["sKL"] = np.ones(50)
     vbmc.iteration_history["func_count"] = np.arange(50) * 10
-    rindex, ELCBO_improvement = vbmc._compute_reliability_index(6)
-    assert rindex == np.mean([10, 1, 1 / 0.03])
+    r_index, ELCBO_improvement = vbmc._compute_reliability_index(6)
+    assert r_index == np.mean([10, 1, 1 / 0.03])
     assert np.isclose(ELCBO_improvement, 1)
 
 
@@ -313,7 +313,7 @@ def test_setup_vbmc_after_warmup_no_false_alarm_still_keep_points():
     vbmc.iteration_history["elbo"] = np.ones(101)
     vbmc.iteration_history["elbo_sd"] = np.ones(101) * 1e-4
     vbmc.iteration_history["func_count"] = np.ones(101)
-    vbmc.iteration_history["rindex"] = np.ones(101) * 1e-4
+    vbmc.iteration_history["r_index"] = np.ones(101) * 1e-4
     assert vbmc._check_warmup_end_conditions()
     for i in range(3):
         vbmc.function_logger.add(np.ones((3)) * i, 3000 * i)
@@ -349,7 +349,7 @@ def test_setup_vbmc_after_warmup_false_alarm():
     vbmc.iteration_history["elbo"] = np.ones(101)
     vbmc.iteration_history["elbo_sd"] = np.ones(101) * 1e-4
     vbmc.iteration_history["func_count"] = np.ones(101)
-    vbmc.iteration_history["rindex"] = np.ones(101) * 2
+    vbmc.iteration_history["r_index"] = np.ones(101) * 2
     assert vbmc._check_warmup_end_conditions()
     for i in range(6):
         vbmc.function_logger.add(np.ones((3)) * i, 3000 * i)
@@ -387,7 +387,7 @@ def test_setup_vbmc_after_warmup_false_alarm_no_warmup_keep_threshold_false_alar
     vbmc.iteration_history["elbo"] = np.ones(101)
     vbmc.iteration_history["elbo_sd"] = np.ones(101) * 1e-4
     vbmc.iteration_history["func_count"] = np.ones(101)
-    vbmc.iteration_history["rindex"] = np.ones(101) * 2
+    vbmc.iteration_history["r_index"] = np.ones(101) * 2
     assert vbmc._check_warmup_end_conditions()
     for i in range(6):
         vbmc.function_logger.add(np.ones((3)) * i, 3000 * i)
