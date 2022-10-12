@@ -837,7 +837,6 @@ def _vb_init(
     D = vp.D
     K = vp.K
     N_star = X_star.shape[0]
-    add_jitter = True
     type_vec = vb_type * np.ones((opts_N))
     lambd0 = vp.lambd.copy()
     mu0 = vp.mu.copy()
@@ -869,6 +868,7 @@ def _vb_init(
 
     vp0_list = []
     for i in range(0, opts_N):
+        add_jitter = True
         mu = mu0.copy()
         sigma = sigma0.copy()
         lambd = lambd0.copy()
