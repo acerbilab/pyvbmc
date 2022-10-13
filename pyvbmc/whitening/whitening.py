@@ -77,7 +77,7 @@ def unscent_warp(fun, x, sigma):
     return x_warped_mean, x_warped_sigma, x_warped
 
 
-def warp_input_vbmc(vp, optim_state, function_logger, options):
+def warp_input(vp, optim_state, function_logger, options):
     r"""Compute input warping of variables and update the cached points in
     function_logger accordingly.
 
@@ -110,21 +110,21 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
     Raises
     ------
     NotImplementedError
-        If `vbmc.options["warpnonlinear"]` is set other than False.
+        If `vbmc.options["warp_nonlinear"]` is set other than False.
     """
     parameter_transformer = copy.deepcopy(vp.parameter_transformer)
     optim_state = copy.deepcopy(optim_state)
     function_logger = copy.deepcopy(function_logger)
 
-    if options.get("warp_non_linear"):
+    if options.get("warp_nonlinear"):
         raise NotImplementedError("Non-linear warping is not supported.")
 
     if options.get("warp_rotoscaling"):
-        if options.get("warp_non_linear"):
+        if options.get("warp_nonlinear"):
             raise NotImplementedError("Non-linear warping is not supported.")
         else:
             # Get covariance matrix analytically
-            __, vp_cov = vp.moments(origflag=False, covflag=True)
+            __, vp_cov = vp.moments(orig_flag=False, cov_flag=True)
             delta = parameter_transformer.delta
             R_mat = parameter_transformer.R_mat
             scale = parameter_transformer.scale
@@ -235,7 +235,7 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
     optim_state["last_run_avg"] = np.nan
 
     # Warp action for output display
-    if options.get("warpnonlinear"):
+    if options.get("warp_nonlinear"):
         warp_action = "warp"
     else:
         warp_action = "rotoscale"
@@ -243,7 +243,7 @@ def warp_input_vbmc(vp, optim_state, function_logger, options):
     return parameter_transformer, optim_state, function_logger, warp_action
 
 
-def warp_gpandvp_vbmc(parameter_transformer, vp_old, vbmc):
+def warp_gp_and_vp(parameter_transformer, vp_old, vbmc):
     r"""Update the GP and VP with a given warp transformation.
 
     Applies an updated ParameterTransformer object (with new warping

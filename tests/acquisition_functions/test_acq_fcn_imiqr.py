@@ -141,7 +141,7 @@ def test_simple__call__():
 
     # Test IMIQR Acquisition Function Values:
     # Should be close to log(2 * sinh(0.6745 * e)), because tau^2 approx= 0,
-    # so s_pred^2 approx= fs2.
+    # so s_pred^2 approx= f_s2.
 
     result = acqimiqr(
         X_eval[0], gp, vp, function_logger=None, optim_state=optim_state

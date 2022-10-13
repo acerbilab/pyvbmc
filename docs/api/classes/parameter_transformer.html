@@ -168,8 +168,8 @@
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../functions/kde1d.html">
-     kde1d
+    <a class="reference internal" href="../functions/kde_1d.html">
+     kde_1d
     </a>
    </li>
    <li class="toctree-l2">
@@ -296,25 +296,29 @@
 <h1>ParameterTransformer<a class="headerlink" href="#parametertransformer" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.parameter_transformer.ParameterTransformer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.parameter_transformer.</span></span><span class="sig-name descname"><span class="pre">ParameterTransformer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plausible_lower_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plausible_upper_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'logit'</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/parameter_transformer/parameter_transformer.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.parameter_transformer.ParameterTransformer" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.parameter_transformer.</span></span><span class="sig-name descname"><span class="pre">ParameterTransformer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lb_orig</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ub_orig</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plb_orig</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pub_orig</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'logit'</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/parameter_transformer/parameter_transformer.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.parameter_transformer.ParameterTransformer" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class used to enable transforming of variables from unconstrained to
 constrained space and vice versa.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>D</strong><span class="classifier">int</span></dt><dd><p>The number of dimensions of the spaces.</p>
+<dt><strong>D</strong><span class="classifier">int</span></dt><dd><p>The dimension of the space.</p>
 </dd>
-<dt><strong>lower_bounds</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>The lower_bound (LB) of the space. LB and UB define a set of strict
-lower and upper bounds coordinate vector, by default None.</p>
+<dt><strong>lb_orig</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>The lower bounds of the space. <code class="docutils literal notranslate"><span class="pre">lb_orig</span></code> and <code class="docutils literal notranslate"><span class="pre">ub_orig</span></code> define a set
+of strict lower and upper bounds for each parameter, given in the
+original space. By default <cite>None</cite>.</p>
 </dd>
-<dt><strong>upper_bounds</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>The upper_bounds (UB) of the space. LB and UB define a set of strict
-lower and upper bounds coordinate vector, by default None.</p>
+<dt><strong>ub_orig</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>The upper bounds of the space. <code class="docutils literal notranslate"><span class="pre">lb_orig</span></code> and <code class="docutils literal notranslate"><span class="pre">ub_orig</span></code> define a set
+of strict lower and upper bounds for each parameter, given in the
+original space. By default <cite>None</cite>.</p>
 </dd>
-<dt><strong>plausible_lower_bounds</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>The plausible_lower_bound (PLB) such that LB &lt; PLB &lt; PUB &lt; UB.
-PLB and PUB represent a “plausible” range, by default None.</p>
+<dt><strong>plb_orig</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>The plausible lower bounds such that <code class="docutils literal notranslate"><span class="pre">lb_orig</span> <span class="pre">&lt;</span> <span class="pre">plb_orig</span> <span class="pre">&lt;</span> <span class="pre">pub_orig</span> <span class="pre">&lt;</span>
+<span class="pre">ub_orig</span></code>. <code class="docutils literal notranslate"><span class="pre">plb_orig</span></code> and <code class="docutils literal notranslate"><span class="pre">pub_orig</span></code> represent a “plausible” range
+for each parameter, given in the original space. By default <cite>None</cite>.</p>
 </dd>
-<dt><strong>plausible_upper_bounds</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>The plausible_upper_bound (PUB) such that LB &lt; PLB &lt; PUB &lt; UB.
-PLB and PUB represent a “plausible” range, by default None.</p>
+<dt><strong>pub_orig</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>The plausible upper bounds such that <code class="docutils literal notranslate"><span class="pre">lb_orig</span> <span class="pre">&lt;</span> <span class="pre">plb_orig</span> <span class="pre">&lt;</span> <span class="pre">pub_orig</span> <span class="pre">&lt;</span>
+<span class="pre">ub_orig</span></code>. <code class="docutils literal notranslate"><span class="pre">plb_orig</span></code> and <code class="docutils literal notranslate"><span class="pre">pub_orig</span></code> represent a “plausible” range
+for each parameter, given in the original space. By default <cite>None</cite>.</p>
 </dd>
 <dt><strong>bounded_transform_type</strong><span class="classifier">str, optional</span></dt><dd><p>A string indicating the type of transform for bounded variables: one of
 [“logit”, (“norminv” || “probit”), “student4”]. Default “logit”.</p>
@@ -325,8 +329,8 @@ PLB and PUB represent a “plausible” range, by default None.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.parameter_transformer.ParameterTransformer.__call__">
 <span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/parameter_transformer/parameter_transformer.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.parameter_transformer.ParameterTransformer.__call__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Performs direct transform of original variables X into
-unconstrained variables U.</p>
+<dd><p>Performs direct transform of original variables <code class="docutils literal notranslate"><span class="pre">x</span></code> into
+unconstrained variables <code class="docutils literal notranslate"><span class="pre">u</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
@@ -347,8 +351,8 @@ and D is the number of dimensions</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.parameter_transformer.ParameterTransformer.inverse">
 <span class="sig-name descname"><span class="pre">inverse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/parameter_transformer/parameter_transformer.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.parameter_transformer.ParameterTransformer.inverse" title="Permalink to this definition">¶</a></dt>
-<dd><p>Performs inverse transform of unconstrained variables u
-into variables x in the original space</p>
+<dd><p>Performs inverse transform of unconstrained variables <code class="docutils literal notranslate"><span class="pre">u</span></code> into
+variables <code class="docutils literal notranslate"><span class="pre">x</span></code> in the original space</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
@@ -368,9 +372,9 @@ into variables x in the original space</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.parameter_transformer.ParameterTransformer.log_abs_det_jacobian">
 <span class="sig-name descname"><span class="pre">log_abs_det_jacobian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/lacerbi/pyvbmc/tree/main/pyvbmc/parameter_transformer/parameter_transformer.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.parameter_transformer.ParameterTransformer.log_abs_det_jacobian" title="Permalink to this definition">¶</a></dt>
-<dd><p>log_abs_det_jacobian returns the log absolute value of the determinant
-of the Jacobian of the parameter transformation evaluated at U, that is
-log |D du(g^-1(u))|</p>
+<dd><p><code class="docutils literal notranslate"><span class="pre">log_abs_det_jacobian(u)</span></code> returns the log absolute value of the
+determinant of the Jacobian of the parameter transformation evaluated
+at <code class="docutils literal notranslate"><span class="pre">u</span></code>, that is :math: <cite>log |D du(g^-1(u))|</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">

@@ -71,7 +71,7 @@ def update_K(
 
         # Bonus components for stable solution (speed up exploration)
         if (
-            iteration_history["rindex"][-1] < 1
+            iteration_history["r_index"][-1] < 1
             and not optim_state["recompute_var_post"]
             and improving_flag
         ):
@@ -199,8 +199,8 @@ def optimize_vp(
             # Fast optimization via deterministic entropy approximation
 
             # Objective function
-            def vbtrain_fun(theta_):
-                res = _negelcbo(
+            def vb_train_fun(theta_):
+                res = _neg_elcbo(
                     theta_,
                     gp,
                     vp0,
@@ -215,7 +215,7 @@ def optimize_vp(
                 return res[0]
 
             res = sp.optimize.minimize(
-                vbtrain_fun,
+                vb_train_fun,
                 theta0,
                 jac=compute_grad,
                 tol=options["det_entropy_tol_opt"],
@@ -231,8 +231,8 @@ def optimize_vp(
                 theta_opt = res.x
         else:
             # Objective function, should only return value and gradient.
-            def vbtrain_mc_fun(theta_):
-                res = _negelcbo(
+            def vb_train_mc_fun(theta_):
+                res = _neg_elcbo(
                     theta_,
                     gp,
                     vp0,
@@ -265,7 +265,7 @@ def optimize_vp(
                 max_iter = min(10000, options["max_iter_stochastic"])
 
                 theta_opt, _, theta_lst, f_val_lst, _ = minimize_adam(
-                    vbtrain_mc_fun,
+                    vb_train_mc_fun,
                     theta_opt,
                     tol_fun=options["tol_fun_stochastic"],
                     max_iter=max_iter,
@@ -305,7 +305,7 @@ def optimize_vp(
     elbo_sd = np.sqrt(elbo_stats["varF"][idx])
     G = elbo_stats["G"][idx]
     H = elbo_stats["H"][idx]
-    varss = elbo_stats["varss"][idx]
+    var_ss = elbo_stats["var_ss"][idx]
     varG = elbo_stats["varG"][idx]
     varH = elbo_stats["varH"][idx]
     I_sk = np.zeros((Ns, K))
@@ -363,7 +363,7 @@ def optimize_vp(
                 elbo_sd = elbo_pruned_sd
                 G = elbo_stats["G"][0]
                 H = elbo_stats["H"][0]
-                varss = elbo_stats["varss"][0]
+                var_ss = elbo_stats["var_ss"][0]
                 varG = elbo_stats["varG"][0]
                 varH = elbo_stats["varH"][0]
                 pruned += 1
@@ -376,15 +376,15 @@ def optimize_vp(
     vp.stats = {}
     vp.stats["elbo"] = elbo  # ELBO
     vp.stats["elbo_sd"] = elbo_sd  # Error on the ELBO
-    vp.stats["elogjoint"] = G  # Expected log joint
-    vp.stats["elogjoint_sd"] = np.sqrt(varG)  # Error on expected log joint
+    vp.stats["e_log_joint"] = G  # Expected log joint
+    vp.stats["e_log_joint_sd"] = np.sqrt(varG)  # Error on expected log joint
     vp.stats["entropy"] = H  # Entropy
     vp.stats["entropy_sd"] = np.sqrt(varH)  # Error on the entropy
     vp.stats["stable"] = False  # Unstable until proven otherwise
     vp.stats["I_sk"] = I_sk  # Expected log joint per component
     vp.stats["J_sjk"] = J_sjk  # Covariance of expected log joint
 
-    return vp, varss, pruned
+    return vp, var_ss, pruned
 
 
 def _initialize_full_elcbo(max_idx: int, D: int, K: int, Ns: int):
@@ -413,7 +413,7 @@ def _initialize_full_elcbo(max_idx: int, D: int, K: int, Ns: int):
     elbo_stats["varF"] = np.full((max_idx,), np.nan)
     elbo_stats["varG"] = np.full((max_idx,), np.nan)
     elbo_stats["varH"] = np.full((max_idx,), np.nan)
-    elbo_stats["varss"] = np.full((max_idx,), np.nan)
+    elbo_stats["var_ss"] = np.full((max_idx,), np.nan)
     elbo_stats["nelcbo"] = np.full((max_idx,), np.inf)
     elbo_stats["theta"] = np.full((max_idx, D), np.nan)
     elbo_stats["I_sk"] = np.full((max_idx, Ns, K), np.nan)
@@ -461,12 +461,12 @@ def _eval_full_elcbo(
     K = vp.K
     ns_ent_fine_K = math.ceil(options.eval("ns_ent_fine", {"K": K}) / K)
 
-    if "skipelbovariance" in options and options["skipelbovariance"]:
+    if "skip_elbo_variance" in options and options["skip_elbo_variance"]:
         compute_var = False
     else:
         compute_var = True
 
-    nelbo, _, G, H, varF, _, varss, varG, varH, I_sk, J_sjk = _negelcbo(
+    nelbo, _, G, H, varF, _, var_ss, varG, varH, I_sk, J_sjk = _neg_elcbo(
         theta,
         gp,
         vp,
@@ -486,7 +486,7 @@ def _eval_full_elcbo(
     elbo_stats["varF"][idx] = varF
     elbo_stats["varG"][idx] = varG
     elbo_stats["varH"][idx] = varH
-    elbo_stats["varss"][idx] = varss
+    elbo_stats["var_ss"][idx] = var_ss
     elbo_stats["nelcbo"][idx] = nelcbo
     elbo_stats["theta"][idx, 0 : np.size(theta)] = theta
     elbo_stats["I_sk"][idx, :, 0:K] = I_sk
@@ -706,12 +706,6 @@ def _sieve(
 
     ## Set up optimization variables and options.
 
-    # TODO: delta is wrong size, since plb and pub are wrong size
-    #       which are the wrong size since plausible upper and lower
-    #       bounds are wrong size which are the wrong size since?
-    #       everything runs but could maybe be simpler?
-    vp.delta = optim_state["delta"]
-
     # Number of initial starting points
     if init_N is None:
         init_N = math.ceil(options.eval("ns_elbo", {"K": K}))
@@ -747,16 +741,16 @@ def _sieve(
 
         # Generate a bunch of random candidate variational parameters.
         if best_N == 1:
-            vp0_vec, vp0_type = _vbinit(vp, 1, init_N, K, X_star, y_star)
+            vp0_vec, vp0_type = _vb_init(vp, 1, init_N, K, X_star, y_star)
         else:
             # Fix random seed here if trying to reproduce MATLAB numbers
-            vp0_vec1, vp0_type1 = _vbinit(
+            vp0_vec1, vp0_type1 = _vb_init(
                 vp, 1, math.ceil(init_N / 3), K, X_star, y_star
             )
-            vp0_vec2, vp0_type2 = _vbinit(
+            vp0_vec2, vp0_type2 = _vb_init(
                 vp, 2, math.ceil(init_N / 3), K, X_star, y_star
             )
-            vp0_vec3, vp0_type3 = _vbinit(
+            vp0_vec3, vp0_type3 = _vb_init(
                 vp, 3, init_N - 2 * math.ceil(init_N / 3), K, X_star, y_star
             )
             vp0_vec = np.concatenate([vp0_vec1, vp0_vec2, vp0_vec3])
@@ -767,7 +761,7 @@ def _sieve(
         # Quickly estimate ELCBO at each candidate variational posterior.
         for i, vp0 in enumerate(vp0_vec):
             theta = vp0.get_parameters()
-            nelbo_tmp, _, _, _, varF_tmp = _negelcbo(
+            nelbo_tmp, _, _, _, varF_tmp = _neg_elcbo(
                 theta,
                 gp,
                 vp0,
@@ -803,9 +797,9 @@ def _sieve(
     )
 
 
-def _vbinit(
+def _vb_init(
     vp: VariationalPosterior,
-    vbtype: int,
+    vb_type: int,
     opts_N: int,
     K_new: int,
     X_star: np.ndarray,
@@ -818,7 +812,7 @@ def _vbinit(
     ==========
     vp : VariationalPosterior
         Variational posterior to use as base.
-    vbtype : {1, 2, 3}
+    vb_type : {1, 2, 3}
         Type of method to create new starting parameters. Here 1 means
         starting from old variational parameters, 2 means starting from
         highest-posterior density training points, and 3 means starting
@@ -843,16 +837,15 @@ def _vbinit(
     D = vp.D
     K = vp.K
     N_star = X_star.shape[0]
-    add_jitter = True
-    type_vec = vbtype * np.ones((opts_N))
+    type_vec = vb_type * np.ones((opts_N))
     lambd0 = vp.lambd.copy()
     mu0 = vp.mu.copy()
     w0 = vp.w.copy()
 
-    if vbtype == 1:
+    if vb_type == 1:
         # Start from old variational parameters
         sigma0 = vp.sigma.copy()
-    elif vbtype == 2:
+    elif vb_type == 2:
         # Start from highest-posterior density training points
         if vp.optimize_mu:
             order = np.argsort(y_star, axis=None)[::-1]
@@ -875,13 +868,14 @@ def _vbinit(
 
     vp0_list = []
     for i in range(0, opts_N):
+        add_jitter = True
         mu = mu0.copy()
         sigma = sigma0.copy()
         lambd = lambd0.copy()
         if vp.optimize_weights:
             w = w0.copy()
 
-        if vbtype == 1:
+        if vb_type == 1:
             # Start from old variational parameters
 
             # Copy previous parameters verbatim.
@@ -905,7 +899,7 @@ def _vbinit(
                         xi = 0.25 + 0.25 * np.random.rand()
                         w = np.hstack((w, xi * w[0:1, idx : idx + 1]))
                         w[0, idx] *= 1 - xi
-        elif vbtype == 2:
+        elif vb_type == 2:
             # Start from highest-posterior density training points
             if i == 0:
                 add_jitter = False
@@ -914,7 +908,7 @@ def _vbinit(
                 lambd *= np.sqrt(D / np.sum(lambd**2))
             if vp.optimize_weights:
                 w = np.ones((1, K_new)) / K_new
-        elif vbtype == 3:
+        elif vb_type == 3:
             # Start from random provided training points
             if vp.optimize_mu:
                 order = np.random.permutation(N_star)
@@ -981,7 +975,7 @@ def _vbinit(
     return np.array(vp0_list), type_vec
 
 
-def _negelcbo(
+def _neg_elcbo(
     theta: np.ndarray,
     gp: gpr.GP,
     vp: VariationalPosterior,
@@ -1035,7 +1029,7 @@ def _negelcbo(
         Variance of NELCBO.
     dH : np.ndarray
         Gradient of entropy term.
-    varGss :
+    varG_ss :
         To be written by Luigi.
     varG :
         Variance of the expected variational log joint
@@ -1107,7 +1101,7 @@ def _negelcbo(
             )
 
         if compute_var:
-            G, _, varG, _, varGss, I_sk, J_sjk = _gplogjoint(
+            G, _, varG, _, varG_ss, I_sk, J_sjk = _gp_log_joint(
                 vp,
                 gp,
                 grad_flags,
@@ -1117,15 +1111,15 @@ def _negelcbo(
                 True,
             )
         else:
-            G, dG, _, _, _, I_sk, _ = _gplogjoint(
+            G, dG, _, _, _, I_sk, _ = _gp_log_joint(
                 vp, gp, grad_flags, avg_flag, jacobian_flag, 0, True
             )
-            varG = varGss = 0
+            varG = varG_ss = 0
             J_sjk = None
     else:
         if compute_var:
             if compute_grad:
-                G, dG, varG, dvarG, varGss = _gplogjoint(
+                G, dG, varG, dvarG, varG_ss = _gp_log_joint(
                     vp,
                     gp,
                     grad_flags,
@@ -1134,7 +1128,7 @@ def _negelcbo(
                     compute_var,
                 )
             else:
-                G, _, varG, _, varGss = _gplogjoint(
+                G, _, varG, _, varG_ss = _gp_log_joint(
                     vp,
                     gp,
                     grad_flags,
@@ -1143,10 +1137,10 @@ def _negelcbo(
                     compute_var,
                 )
         else:
-            G, dG, _, _, _ = _gplogjoint(
+            G, dG, _, _, _ = _gp_log_joint(
                 vp, gp, grad_flags, avg_flag, jacobian_flag, 0
             )
-            varG = varGss = 0
+            varG = varG_ss = 0
 
     # Entropy term
     if Ns > 0:
@@ -1220,11 +1214,11 @@ def _negelcbo(
     # Missing port: way to return stuff here is not that good,
     #               though it works currently.
     if separate_K:
-        return F, dF, G, H, varF, dH, varGss, varG, varH, I_sk, J_sjk
+        return F, dF, G, H, varF, dH, varG_ss, varG, varH, I_sk, J_sjk
     return F, dF, G, H, varF
 
 
-def _gplogjoint(
+def _gp_log_joint(
     vp: VariationalPosterior,
     gp: gpr.GP,
     grad_flags,
@@ -1266,7 +1260,7 @@ def _gplogjoint(
         The variance.
     dvarF : np.ndarray, optional
         The gradient of the variance.
-    varss : float
+    var_ss : float
         To be written by Luigi.
     I_sk : np.ndarray, optional
         To be written by Luigi.
@@ -1305,7 +1299,7 @@ def _gplogjoint(
 
     # TODO: once we get more mean function add a check here
     # if all(gp.meanfun ~= [0,1,4,6,8,10,12,14,16,18,20,22])
-    #     error('gplogjoint:UnsupportedMeanFun', ...
+    #     error('gp_log_joint:UnsupportedMeanFun', ...
     #     'Log joint computation currently only supports zero, constant,
     #     negative quadratic, negative quadratic (fixed/isotropic),
     #     negative quadratic-only, or squared exponential mean functions.');
@@ -1346,11 +1340,6 @@ def _gplogjoint(
         if compute_var:
             J_sjk = np.zeros((Ns, K, K))
 
-    if vp.delta is None:
-        delta = 0
-    else:
-        delta = vp.delta.copy().T
-
     Xt = np.zeros((K, D, N))
     for k in range(0, K):
         Xt[k, :, :] = np.reshape(mu[:, k], (-1, 1)) - gp.X.T
@@ -1390,9 +1379,7 @@ def _gplogjoint(
         sn2_eff = 1 / gp.posteriors[s].sW[0] ** 2
 
         for k in range(0, K):
-            tau_k = np.sqrt(
-                sigma[:, k] ** 2 * lambd**2 + ell**2 + delta**2
-            )
+            tau_k = np.sqrt(sigma[:, k] ** 2 * lambd**2 + ell**2)
             lnnf_k = (
                 ln_sf2 + sum_lnell - np.sum(np.log(tau_k), axis=0)
             )  # Covariance normalization factor
@@ -1409,7 +1396,6 @@ def _gplogjoint(
                         + sigma[:, k] ** 2 * lambd**2
                         - 2 * mu[:, k : k + 1] * xm
                         + xm**2
-                        + delta**2
                     ),
                     axis=0,
                 )
@@ -1463,9 +1449,7 @@ def _gplogjoint(
                 )
             elif compute_var:
                 for j in range(0, k + 1):
-                    tau_j = np.sqrt(
-                        sigma[:, j] ** 2 * lambd**2 + ell**2 + delta**2
-                    )
+                    tau_j = np.sqrt(sigma[:, j] ** 2 * lambd**2 + ell**2)
                     lnnf_j = ln_sf2 + sum_lnell - np.sum(np.log(tau_j), axis=0)
                     delta_j = (mu[:, j : j + 1] - gp.X.T) / tau_j
                     z_j = np.exp(lnnf_j - 0.5 * np.sum(delta_j**2, axis=0))
@@ -1473,7 +1457,6 @@ def _gplogjoint(
                     tau_jk = np.sqrt(
                         (sigma[:, j] ** 2 + sigma[:, k] ** 2) * lambd**2
                         + ell**2
-                        + 2 * delta**2
                     )
                     lnnf_jk = ln_sf2 + sum_lnell - np.sum(np.log(tau_jk))
                     delta_jk = (mu[:, j : j + 1] - mu[:, k : k + 1]) / tau_jk
@@ -1571,14 +1554,14 @@ def _gplogjoint(
         dvarF = None
 
     # Average multiple hyperparameter samples
-    varss = 0
+    var_ss = 0
     if Ns > 1 and avg_flag:
         F_bar = np.sum(F) / Ns
         if compute_var:
             # Estimated variance of the samples
             varFss = np.sum((F - F_bar) ** 2) / (Ns - 1)
             # Variability due to sampling
-            varss = varFss + np.std(varF, ddof=1)
+            var_ss = varFss + np.std(varF, ddof=1)
             varF = np.sum(varF, axis=0) / Ns + varFss
         if compute_vargrad:
             # TODO: compute vargrad is untested
@@ -1597,5 +1580,5 @@ def _gplogjoint(
             dF = dF[:, 0]
 
     if separate_K:
-        return F, dF, varF, dvarF, varss, I_sk, J_sjk
-    return F, dF, varF, dvarF, varss
+        return F, dF, varF, dvarF, var_ss, I_sk, J_sjk
+    return F, dF, varF, dvarF, var_ss

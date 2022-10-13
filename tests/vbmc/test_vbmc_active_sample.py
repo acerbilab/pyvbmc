@@ -61,7 +61,7 @@ def test_active_uncertainty_sampling(mocker):
     )
     optim_state["N"] = function_logger.Xn + 1
     optim_state["n_eff"] = np.sum(
-        function_logger.nevals[function_logger.X_flag]
+        function_logger.n_evals[function_logger.X_flag]
     )
     gp, _, _, hyp_dict = train_gp(
         {},

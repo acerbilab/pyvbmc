@@ -16,7 +16,7 @@ class AbstractAcqFcn(ABC):
 
     def __init__(self):
         self.acq_info = dict()
-        self.acq_info["compute_varlogjoint"] = False
+        self.acq_info["compute_var_log_joint"] = False
         # Whether the function value is in log space
         self.acq_info["log_flag"] = False
 
@@ -75,21 +75,8 @@ class AbstractAcqFcn(ABC):
 
         # Compute GP posterior predictive mean and variance
 
-        if (
-            hasattr(vp, "delta")
-            and vp.delta is not None
-            and np.any(vp.delta > 0)
-        ):
-            # Quadrature mean and variance for each hyperparameter sample
-            f_mu, f_s2 = gp.quad(
-                mu=Xs,
-                sigma=vp.delta.T,
-                compute_var=True,
-                separate_samples=True,
-            )
-        else:
-            # GP mean and variance for each hyperparameter sample
-            f_mu, f_s2 = gp.predict(x_star=Xs, separate_samples=True)
+        # GP mean and variance for each hyperparameter sample
+        f_mu, f_s2 = gp.predict(x_star=Xs, separate_samples=True)
 
         # Compute total variance
         Ns = f_mu.shape[1]

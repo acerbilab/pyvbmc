@@ -29,7 +29,7 @@ def test_acq_info():
     assert isinstance(acq_fcn.acq_info, dict)
     assert isinstance(acq_fcn.get_info(), dict)
     assert not acq_fcn.acq_info.get("log_flag")
-    assert not acq_fcn.acq_info.get("compute_varlogjoint")
+    assert not acq_fcn.acq_info.get("compute_var_log_joint")
 
 
 def create_gp(D=3):
@@ -129,53 +129,6 @@ def test__call_constraints(mocker):
     assert np.all(acq == np.inf)
 
 
-def test__call_quad(mocker):
-    """
-    Quadrature mean and variance for each hyperparameter sample by
-    assigning vp.delta = np.ones(1, 2)
-    """
-
-    class BasicAcqClass(AbstractAcqFcn):
-        def _compute_acquisition_function(
-            self,
-            Xs,
-            vp,
-            gp,
-            function_logger,
-            optim_state,
-            f_mu,
-            f_s2,
-            f_bar,
-            var_tot,
-        ):
-            return np.ones(Xs.shape[0])
-
-    M = 1
-
-    Xs = np.ones((M, 3))
-
-    mocker.patch(
-        "gpyreg.GP.quad",
-        return_value=(np.ones((M, 1)), np.zeros((M, 1))),
-    )
-
-    acq_fcn = BasicAcqClass()
-    optim_state = dict()
-    optim_state["integer_vars"] = None
-    optim_state["variance_regularized_acq_fcn"] = False
-    # no constraints for test
-    optim_state["lb_eps_orig"] = -np.inf
-    optim_state["ub_eps_orig"] = np.inf
-    vp = VariationalPosterior(3)
-    # assign delta for test
-    vp.delta = np.ones((1, 2))
-    function_logger = FunctionLogger(lambda x: x, 3, False, 0)
-    acq = acq_fcn(Xs, create_gp(3), vp, function_logger, optim_state)
-
-    assert acq.shape == (M,)
-    assert np.all(acq == 1)
-
-
 def test__call__regularization(mocker):
     """
     Test regularization (penalize points where GP uncertainty is below
@@ -218,13 +171,13 @@ def test__call__regularization(mocker):
     vp = VariationalPosterior(3)
     function_logger = FunctionLogger(lambda x: x, 3, False, 0)
 
-    # no logflag
+    # no log_flag
     acq_fcn.acq_info["log_flag"] = False
     acq = acq_fcn(Xs, create_gp(3), vp, function_logger, optim_state)
     assert acq.shape == (M,)
     assert np.allclose(acq, 0)
 
-    # logflag
+    # log_flag
     acq_fcn.acq_info["log_flag"] = True
     acq = acq_fcn(Xs, create_gp(3), vp, function_logger, optim_state)
     assert acq.shape == (M,)

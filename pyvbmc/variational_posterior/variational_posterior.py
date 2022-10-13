@@ -16,7 +16,7 @@ from scipy.special import gammaln
 from pyvbmc.decorators import handle_0D_1D_input
 from pyvbmc.formatting import format_dict, full_repr, get_repr, summarize
 from pyvbmc.parameter_transformer import ParameterTransformer
-from pyvbmc.stats import kde1d, kldiv_mvn
+from pyvbmc.stats import kde_1d, kl_div_mvn
 
 
 class VariationalPosterior:
@@ -68,8 +68,6 @@ class VariationalPosterior:
     parameter_transformer : ParameterTransformer
         The parameter transformer implementing transformations to/from
         unbounded space.
-    delta : np.ndarray or None (optional)
-        An additional overall scaling factor, of shape ``(1, D)``. Default ``None``.
     bounds : dict
         A dictionary containing the soft bounds for each variable to be
         optimized.
@@ -133,7 +131,6 @@ class VariationalPosterior:
         else:
             self.parameter_transformer = parameter_transformer
 
-        self.delta = None
         self.bounds = None
         self.stats = None
         self._mode = None
@@ -242,8 +239,8 @@ class VariationalPosterior:
     def sample(
         self,
         N: int,
-        origflag: bool = True,
-        balanceflag: bool = False,
+        orig_flag: bool = True,
+        balance_flag: bool = False,
         df: float = np.inf,
     ):
         """
@@ -253,13 +250,13 @@ class VariationalPosterior:
         ----------
         N : int
             Number of samples to draw.
-        origflag : bool, optional
-            If `origflag` is ``True``, the random vectors are returned
+        orig_flag : bool, optional
+            If `orig_flag` is ``True``, the random vectors are returned
             in the original parameter space. If ``False``, they are returned in
             the transformed, unconstrained space used internally by VBMC.
             By default ``True``.
-        balanceflag : bool, optional
-            If `balanceflag` is ``True``, the generating process is balanced
+        balance_flag : bool, optional
+            If `balance_flag` is ``True``, the generating process is balanced
             such that the random samples come from each mixture component
             exactly proportionally (or as close as possible) to the variational
             mixture weights. If ``False``, the generating mixture component for
@@ -294,7 +291,7 @@ class VariationalPosterior:
             lambd_row = self.lambd.reshape(1, -1)
 
             if self.K > 1:
-                if balanceflag:
+                if balance_flag:
                     # exact split of samples according to mixture weights
                     repeats = np.floor(self.w * N).astype("int")
                     i = np.repeat(range(self.K), repeats.ravel())
@@ -359,7 +356,7 @@ class VariationalPosterior:
                         * self.sigma
                     )
                 i = np.zeros(N)
-            if origflag:
+            if orig_flag:
                 x = self.parameter_transformer.inverse(x)
         return x, i
 
@@ -367,10 +364,10 @@ class VariationalPosterior:
     def pdf(
         self,
         x: np.ndarray,
-        origflag: bool = True,
-        logflag: bool = False,
-        transflag: bool = False,
-        gradflag: bool = False,
+        orig_flag: bool = True,
+        log_flag: bool = False,
+        trans_flag: bool = False,
+        grad_flag: bool = False,
         df: float = np.inf,
     ):
         """
@@ -385,19 +382,19 @@ class VariationalPosterior:
             `x` is a matrix of inputs to evaluate the pdf at.
             The rows of the `N`-by-`D` matrix `x` correspond to observations or
             points, and columns correspond to variables or coordinates.
-        origflag : bool, optional
+        orig_flag : bool, optional
             Controls if the value of the posterior density should be evaluated
-            in the original parameter space for `origflag` is ``True``, or in the
-            transformed space if `origflag` is ``False``, by default ``True``.
-        logflag : bool, optional
-            If `logflag` is ``True`` return the logarithm of the pdf,
+            in the original parameter space for `orig_flag` is ``True``, or in the
+            transformed space if `orig_flag` is ``False``, by default ``True``.
+        log_flag : bool, optional
+            If `log_flag` is ``True`` return the logarithm of the pdf,
             by default ``False``.
-        transflag : bool, optional
+        trans_flag : bool, optional
             Specifies if `x` is already specified in transformed space.
-            `transflag` = ``True`` assumes that `x` is already specified in
+            `trans_flag` = ``True`` assumes that `x` is already specified in
             tranformed space. Otherwise, `x` is specified in the original
             parameter space. By default ``False``.
-        gradflag : bool, optional
+        grad_flag : bool, optional
             If ``True`` the gradient of the pdf is returned as a second output,
             by default ``False``.
         df : float, optional
@@ -413,23 +410,23 @@ class VariationalPosterior:
             The probability density of the variational posterior
             evaluated at each row of `x`.
         gradient: np.ndarray
-            If `gradflag` is ``True``, the function returns the gradient as well.
+            If `grad_flag` is ``True``, the function returns the gradient as well.
 
         Raises
         ------
         NotImplementedError
-            Raised if `df` is non-zero and finite and `gradflag` = ``True``
+            Raised if `df` is non-zero and finite and `grad_flag` = ``True``
             (Gradient of heavy-tailed pdf not supported yet).
         NotImplementedError
-            Raised if `origflag` = ``True`` and `logflag` = ``True`` and
-            `gradflag` = ``True`` (Gradient computation in original space not
+            Raised if `orig_flag` = ``True`` and `log_flag` = ``True`` and
+            `grad_flag` = ``True`` (Gradient computation in original space not
             supported yet).
         """
         x = x.copy()
         N, D = x.shape
 
         # compute pdf only for points inside bounds in origspace
-        if origflag:
+        if orig_flag:
             mask = np.logical_and(
                 np.all(x > self.parameter_transformer.lb_orig, axis=1),
                 np.all(x < self.parameter_transformer.ub_orig, axis=1),
@@ -438,12 +435,12 @@ class VariationalPosterior:
             mask = np.full(N, True)
 
         # Convert points to transformed space
-        if origflag and not transflag:
+        if orig_flag and not trans_flag:
             x[mask] = self.parameter_transformer(x[mask])
         lamd_row = self.lambd.reshape(1, -1)
 
         y = np.zeros((N, 1))
-        if gradflag:
+        if grad_flag:
             dy = np.zeros((N, D))
 
         if not np.isfinite(df) or df == 0:
@@ -464,7 +461,7 @@ class VariationalPosterior:
                     * np.exp(-0.5 * d2)[:, np.newaxis]
                 )
                 y += nn
-                if gradflag:
+                if grad_flag:
                     dy -= (
                         nn
                         * (x - self.mu.T[k])
@@ -498,7 +495,7 @@ class VariationalPosterior:
                         * (1 + d2 / df) ** (-(df + D) / 2)
                     )[:, np.newaxis]
                     y += nn
-                    if gradflag:
+                    if grad_flag:
                         raise NotImplementedError(
                             "Gradient of heavy-tailed pdf not supported yet."
                         )
@@ -526,13 +523,13 @@ class VariationalPosterior:
                         )[:, np.newaxis]
                     )
                     y += nn
-                    if gradflag:
+                    if grad_flag:
                         raise NotImplementedError(
                             "Gradient of heavy-tailed pdf not supported yet."
                         )
 
-        if logflag:
-            if gradflag:
+        if log_flag:
+            if grad_flag:
                 dy = dy / y
             # Avoid log(0):
             zero_mask = y == 0
@@ -544,12 +541,12 @@ class VariationalPosterior:
             y[~mask] = 0
 
         # apply jacobian correction
-        if origflag:
-            if logflag:
+        if orig_flag:
+            if log_flag:
                 y[mask] -= self.parameter_transformer.log_abs_det_jacobian(
                     x[mask]
                 )[:, np.newaxis]
-                if gradflag:
+                if grad_flag:
                     raise NotImplementedError(
                         """vbmc_pdf:NoOriginalGrad: Gradient computation
                          in original space not supported yet."""
@@ -561,12 +558,12 @@ class VariationalPosterior:
                     ]
                 )
 
-        if gradflag:
+        if grad_flag:
             return y, dy
         else:
             return y
 
-    def get_parameters(self, rawflag=True):
+    def get_parameters(self, raw_flag=True):
         """
         Get variational posterior parameters as single array.
 
@@ -575,7 +572,7 @@ class VariationalPosterior:
 
         Parameters
         ----------
-        rawflag : bool, optional
+        raw_flag : bool, optional
             Specifies whether the sigma and lambda parameters are
             returned as raw (unconstrained) or not, by default ``True``.
 
@@ -618,12 +615,12 @@ class VariationalPosterior:
                 (constrained_parameters, self.w.ravel())
             )
 
-        if rawflag:
+        if raw_flag:
             return np.concatenate((theta, np.log(constrained_parameters)))
         else:
             return np.concatenate((theta, constrained_parameters))
 
-    def set_parameters(self, theta: np.ndarray, rawflag=True):
+    def set_parameters(self, theta: np.ndarray, raw_flag=True):
         """
         Set variational posterior parameters from a single array.
 
@@ -634,7 +631,7 @@ class VariationalPosterior:
         ----------
         theta : np.ndarray
             The array with the parameters that should be assigned.
-        rawflag : bool, optional
+        raw_flag : bool, optional
             Specifies whether the sigma and lambda parameters are
             passed as raw (unconstrained) or not, by default ``True``.
 
@@ -642,14 +639,14 @@ class VariationalPosterior:
         ------
         ValueError
             Raised if sigma, lambda and weights are not positive
-            and rawflag = ``False``.
+            and raw_flag = ``False``.
         """
 
         # Make sure we don't get issues with references.
         theta = theta.copy()
 
-        # check if sigma, lambda and weights are positive when rawflag = False
-        if not rawflag:
+        # check if sigma, lambda and weights are positive when raw_flag = False
+        if not raw_flag:
             check_idx = 0
             if self.optimize_weights:
                 check_idx -= self.K
@@ -660,7 +657,7 @@ class VariationalPosterior:
             if np.any(theta[-check_idx:] < 0.0):
                 raise ValueError(
                     """sigma, lambda and weights must be positive
-                    when rawflag = False"""
+                    when raw_flag = False"""
                 )
 
         if self.optimize_mu:
@@ -672,21 +669,21 @@ class VariationalPosterior:
             start_idx = 0
 
         if self.optimize_sigma:
-            if rawflag:
+            if raw_flag:
                 self.sigma = np.exp(theta[start_idx : start_idx + self.K])
             else:
                 self.sigma = theta[start_idx : start_idx + self.K]
             start_idx += self.K
 
         if self.optimize_lambd:
-            if rawflag:
+            if raw_flag:
                 self.lambd = np.exp(theta[start_idx : start_idx + self.D]).T
             else:
                 self.lambd = theta[start_idx : start_idx + self.D].T
 
         if self.optimize_weights:
             eta = theta[-self.K :]
-            if rawflag:
+            if raw_flag:
                 eta = eta - np.amax(eta)
                 self.w = np.exp(eta.T)[:, np.newaxis]
             else:
@@ -704,7 +701,7 @@ class VariationalPosterior:
         # remove mode
         self._mode = None
 
-    def moments(self, N: int = int(1e6), origflag=True, covflag=False):
+    def moments(self, N: int = int(1e6), orig_flag=True, cov_flag=False):
         """
         Compute mean and covariance matrix of variational posterior.
 
@@ -716,10 +713,10 @@ class VariationalPosterior:
         ----------
         N : int, optional
             Number of samples used to estimate the moments, by default ``int(1e6)``.
-        origflag : bool, optional
+        orig_flag : bool, optional
             If ``True``, compute moments in the original parameter space,
             otherwise in the transformed VBMC space. By default ``True``.
-        covflag : bool, optional
+        cov_flag : bool, optional
             If ``True``, return the covariance matrix as a second return value,
             by default ``False``.
 
@@ -728,17 +725,17 @@ class VariationalPosterior:
         mean: np.ndarray
             The mean of the variational posterior.
         cov: np.ndarray
-            If `covflag` is ``True``, returns the covariance matrix as well.
+            If `cov_flag` is ``True``, returns the covariance matrix as well.
         """
-        if origflag:
-            x, _ = self.sample(int(N), origflag=True, balanceflag=True)
+        if orig_flag:
+            x, _ = self.sample(int(N), orig_flag=True, balance_flag=True)
             mubar = np.mean(x, axis=0)
-            if covflag:
+            if cov_flag:
                 cov = np.cov(x.T)
         else:
             mubar = np.sum(self.w * self.mu, axis=1)
 
-            if covflag:
+            if cov_flag:
                 cov = (
                     np.sum(self.w * self.sigma**2)
                     * np.eye(len(self.lambd))
@@ -748,27 +745,27 @@ class VariationalPosterior:
                     cov += self.w[:, k] * (
                         (self.mu[:, k] - mubar)[:, np.newaxis]
                     ).dot((self.mu[:, k] - mubar)[:, np.newaxis].T)
-        if covflag:
+        if cov_flag:
             return mubar.reshape(1, -1), cov
         else:
             return mubar.reshape(1, -1)
 
     def mode(
         self,
-        nmax: int = 20,
-        origflag=True,
+        n_max: int = 20,
+        orig_flag=True,
     ):
         """
         Find the mode of the variational posterior.
 
         Parameters
         ----------
-        nmax : int, optional
+        n_max : int, optional
             Maximum number of optimization runs to find the mode.
-            If `nmax` < `self.K`, the starting points for the optimization are
+            If `n_max` < `self.K`, the starting points for the optimization are
             chosen as the centers of the components with the highest values of
-            the pdf at those points. By default `nmax` = 20.
-        origflag : bool, optional
+            the pdf at those points. By default `n_max` = 20.
+        orig_flag : bool, optional
             If ``True`` find the mode of the variational posterior in the
             original parameter space, otherwise in the transformed parameter
             space. By default ``True``.
@@ -786,25 +783,27 @@ class VariationalPosterior:
         locations (even after applying the appropriate transformations).
         """
 
-        def nlnpdf(x0, origflag=origflag):
-            if origflag:
-                y = self.pdf(x0, origflag=True, logflag=True, gradflag=False)
+        def neg_log_pdf(x0, orig_flag=orig_flag):
+            if orig_flag:
+                y = self.pdf(
+                    x0, orig_flag=True, log_flag=True, grad_flag=False
+                )
                 return -y
             else:
                 y, dy = self.pdf(
-                    x0, origflag=False, logflag=True, gradflag=True
+                    x0, orig_flag=False, log_flag=True, grad_flag=True
                 )
                 return -y, -dy
 
-        if origflag and self._mode is not None:
+        if orig_flag and self._mode is not None:
             return self._mode
         else:
             x0_mat = self.mu.T
 
-            if nmax < self.K:
+            if n_max < self.K:
                 # First, evaluate pdf at all modes
-                y0_vec = -1 * self.pdf(x0_mat, origflag=True, logflag=True)
-                # Start from first NMAX solutions
+                y0_vec = -1 * self.pdf(x0_mat, orig_flag=True, log_flag=True)
+                # Start from first N_MAX solutions
                 y0_idx = np.argsort(y0_vec)[:-1]
                 x0_mat = x0_mat[y0_idx]
 
@@ -814,10 +813,10 @@ class VariationalPosterior:
             for k in range(x0_mat.shape[1]):
                 x0 = x0_mat[k]
 
-                if origflag:
+                if orig_flag:
                     x0 = self.parameter_transformer.inverse(x0)
 
-                if origflag:
+                if orig_flag:
                     bounds = np.asarray(
                         [
                             np.concatenate(
@@ -835,16 +834,19 @@ class VariationalPosterior:
                         np.maximum(x0, self.parameter_transformer.lb_orig),
                     )
                     x_min[k], ff[k], _ = fmin_l_bfgs_b(
-                        func=nlnpdf, x0=x0, bounds=bounds, approx_grad=True
+                        func=neg_log_pdf,
+                        x0=x0,
+                        bounds=bounds,
+                        approx_grad=True,
                     )
                 else:
-                    x_min[k], ff[k], _ = fmin_l_bfgs_b(func=nlnpdf, x0=x0)
+                    x_min[k], ff[k], _ = fmin_l_bfgs_b(func=neg_log_pdf, x0=x0)
 
             # Get mode and store it
             idx_min = np.argmin(ff)
             x = x_min[idx_min]
 
-            if origflag:
+            if orig_flag:
                 self._mode = x
 
             return x
@@ -927,11 +929,11 @@ class VariationalPosterior:
         # Compute marginal total variation
         for d in range(self.D):
 
-            yy1, x1mesh, _ = kde1d(xx1[:, d], nkde, lb1[:, d], ub1[:, d])
+            yy1, x1mesh, _ = kde_1d(xx1[:, d], nkde, lb1[:, d], ub1[:, d])
             # Ensure normalization
             yy1 = yy1 / (trapezoid(yy1) * (x1mesh[1] - x1mesh[0]))
 
-            yy2, x2mesh, _ = kde1d(xx2[:, d], nkde, lb2[:, d], ub2[:, d])
+            yy2, x2mesh, _ = kde_1d(xx2[:, d], nkde, lb2[:, d], ub2[:, d])
             # Ensure normalization
             yy2 = yy2 / (trapezoid(yy2) * (x2mesh[1] - x2mesh[0]))
 
@@ -961,12 +963,12 @@ class VariationalPosterior:
                 )
         return mtv
 
-    def kldiv(
+    def kl_div(
         self,
         vp2: VariationalPosterior = None,
         samples: np.ndarray = None,
         N: int = int(1e5),
-        gaussflag: bool = False,
+        gauss_flag: bool = False,
     ):
         """
         Kullback-Leibler divergence between two variational posteriors.
@@ -986,7 +988,7 @@ class VariationalPosterior:
         N : int, optional
             The number of random samples to estimate the KL divergence,
             by default ``int(1e5)``.
-        gaussflag : bool, optional
+        gauss_flag : bool, optional
             If ``True``, returns a "Gaussianized" KL-divergence, that is the KL
             divergence between two multivariate normal distributions with the
             same moments as the variational posteriors given as inputs.
@@ -994,7 +996,7 @@ class VariationalPosterior:
 
         Returns
         -------
-        kldiv: np.ndarray
+        kl_div: np.ndarray
             A two-element vector containing the forward and reverse
             Kullback-Leibler divergence between the two posteriors.
 
@@ -1003,7 +1005,7 @@ class VariationalPosterior:
         ValueError
             Raised if neither `vp2` nor `samples` are specified.
         ValueError
-            Raised if `vp2` is not provided but `gaussflag` = ``False``.
+            Raised if `vp2` is not provided but `gauss_flag` = ``False``.
 
         Notes
         -----
@@ -1016,12 +1018,12 @@ class VariationalPosterior:
         if samples is None and vp2 is None:
             raise ValueError("Either vp2 or samples have to be not None")
 
-        if not gaussflag and vp2 is None:
+        if not gauss_flag and vp2 is None:
             raise ValueError(
                 "Unless the KL divergence is gaussianized, VP2 is required."
             )
 
-        if gaussflag:
+        if gauss_flag:
             if N == 0:
                 raise ValueError(
                     """Analytical moments are available
@@ -1035,7 +1037,7 @@ class VariationalPosterior:
                     q2mu = np.mean(samples)
                     q2sigma = np.cov(samples.T)
 
-            kls = kldiv_mvn(q1mu, q1sigma, q2mu, q2sigma)
+            kls = kl_div_mvn(q1mu, q1sigma, q2mu, q2sigma)
         else:
             minp = sys.float_info.min
 

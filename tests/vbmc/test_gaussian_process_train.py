@@ -82,7 +82,7 @@ def test_get_training_data_no_noise():
         vbmc.function_logger.X_flag[sample_idx] = True
         vbmc.function_logger.X[sample_idx] = Xs[sample_idx]
         vbmc.function_logger.y[sample_idx] = ys[sample_idx]
-        vbmc.function_logger.fun_evaltime[sample_idx] = 1e-5
+        vbmc.function_logger.fun_eval_time[sample_idx] = 1e-5
 
     # Then make sure we get that data back.
     X_train, y_train, s2_train, t_train = _get_training_data(
@@ -129,7 +129,7 @@ def test_get_training_data_noise():
         vbmc.function_logger.X[sample_idx] = Xs[sample_idx]
         vbmc.function_logger.y[sample_idx] = ys[sample_idx]
         vbmc.function_logger.S[sample_idx] = 1
-        vbmc.function_logger.fun_evaltime[sample_idx] = 1e-5
+        vbmc.function_logger.fun_eval_time[sample_idx] = 1e-5
 
     # Then make sure we get that data back.
     X_train, y_train, s2_train, t_train = _get_training_data(
@@ -238,7 +238,7 @@ def test_get_gp_training_options_samplers():
     hyp_dict_none = {"run_cov": None}
     vbmc.optim_state["n_eff"] = 10
     vbmc.optim_state["iter"] = 1
-    vbmc.iteration_history.record("rindex", 5, 0)
+    vbmc.iteration_history.record("r_index", 5, 0)
 
     res1 = _get_gp_training_options(
         vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 8
@@ -277,8 +277,8 @@ def test_get_gp_training_options_samplers():
     )
     assert res6["sampler"] == "covsample"
 
-    # Test too large rindex for covsample
-    vbmc.iteration_history.record("rindex", 50, 0)
+    # Test too large r_index for covsample
+    vbmc.iteration_history.record("r_index", 50, 0)
     res7 = _get_gp_training_options(
         vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 8
     )
@@ -328,7 +328,7 @@ def test_get_gp_training_options_opts_N():
 
     vbmc.optim_state["n_eff"] = 10
     vbmc.optim_state["iter"] = 2
-    vbmc.iteration_history.record("rindex", 5, 1)
+    vbmc.iteration_history.record("r_index", 5, 1)
     vbmc.options.__setitem__("weighted_hyp_cov", False, force=True)
     hyp_dict = {"run_cov": np.eye(3)}
     hyp_dict_none = {"run_cov": None}
@@ -382,11 +382,11 @@ def test_gp_hyp():
         vbmc.function_logger.X[sample_idx] = Xs[sample_idx]
         vbmc.function_logger.y[sample_idx] = ys[sample_idx]
         vbmc.function_logger.S[sample_idx] = 1
-        vbmc.function_logger.fun_evaltime[sample_idx] = 1e-5
+        vbmc.function_logger.fun_eval_time[sample_idx] = 1e-5
 
     vbmc.optim_state["N"] = 10
     vbmc.optim_state["n_eff"] = np.sum(
-        vbmc.function_logger.nevals[vbmc.function_logger.X_flag]
+        vbmc.function_logger.n_evals[vbmc.function_logger.X_flag]
     )
     assert not np.isnan(vbmc.optim_state["n_eff"])
 

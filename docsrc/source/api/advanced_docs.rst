@@ -28,7 +28,8 @@ This is the advanced documentation for developers.
    functions/decorators
    functions/entropy
    functions/get_hpd
-   functions/kde1d
+   functions/kde_1d
+   functions/entropy
    functions/whitening
 
 .. toctree::

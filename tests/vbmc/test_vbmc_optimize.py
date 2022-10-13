@@ -479,29 +479,29 @@ def test_optimize_result_dict(mocker):
         "pyvbmc.vbmc.vbmc.optimize_vp", return_value=(vbmc.vp, None, None)
     )
     mocker.patch(
-        "pyvbmc.vbmc.VBMC.finalboost", return_value=(vbmc.vp, -2, 1, False)
+        "pyvbmc.vbmc.VBMC.final_boost", return_value=(vbmc.vp, -2, 1, False)
     )
 
     vbmc.iteration_history["stable"] = list()
     vbmc.iteration_history["stable"].append(False)
-    vbmc.iteration_history["rindex"] = list()
-    vbmc.iteration_history["rindex"].append(2)
+    vbmc.iteration_history["r_index"] = list()
+    vbmc.iteration_history["r_index"].append(2)
     vbmc.vp.stats = dict()
     vbmc.vp.stats["entropy"] = 1
     vbmc.vp.stats["elbo"] = -2
     vbmc.vp.stats["elbo_sd"] = 0
     _, _, _, _, result_dict = vbmc.optimize()
     assert "function" in result_dict
-    assert result_dict["problemtype"] == "unconstrained"
+    assert result_dict["problem_type"] == "unconstrained"
     assert "iterations" in result_dict
-    assert "funccount" in result_dict
-    assert "bestiter" in result_dict
-    assert "trainsetsize" in result_dict
+    assert "func_count" in result_dict
+    assert "best_iter" in result_dict
+    assert "train_set_size" in result_dict
     assert "components" in result_dict
-    assert result_dict["rindex"] == 2
-    assert result_dict["convergencestatus"] == "no"
+    assert result_dict["r_index"] == 2
+    assert result_dict["convergence_status"] == "no"
     assert np.isnan(result_dict["overhead"])
-    assert "rngstate" in result_dict
+    assert "rng_state" in result_dict
     assert result_dict["algorithm"] == "Variational Bayesian Monte Carlo"
     assert "version" in result_dict
     assert result_dict["message"] == "test message"

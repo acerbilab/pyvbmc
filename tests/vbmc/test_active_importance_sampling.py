@@ -10,7 +10,7 @@ from pyvbmc.acquisition_functions import AcqFcnIMIQR, AcqFcnVIQR
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc.active_importance_sampling import (
     active_importance_sampling,
-    activesample_proposalpdf,
+    active_sample_proposal_pdf,
     fess,
 )
 from pyvbmc.vbmc.options import Options
@@ -176,7 +176,7 @@ def test_fess():
     assert np.isclose(fess_gp, MATLAB["fess_gp"])
 
 
-def test_activesample_proposalpdf():
+def test_active_sample_proposal_pdf():
     D = 3
     K = 2
     vp = VariationalPosterior(D=D, K=K)
@@ -236,10 +236,10 @@ def test_activesample_proposalpdf():
     )
     MATLAB = scipy.io.loadmat(filepath)
 
-    ln_weights_viqr, f_s2_viqr = activesample_proposalpdf(
+    ln_weights_viqr, f_s2_viqr = active_sample_proposal_pdf(
         Xa, gp, vp, w_vp, rect_delta, AcqFcnVIQR(), vp
     )
-    ln_weights_imiqr, f_s2_imiqr = activesample_proposalpdf(
+    ln_weights_imiqr, f_s2_imiqr = active_sample_proposal_pdf(
         Xa, gp, vp, w_vp, rect_delta, AcqFcnIMIQR(), vp
     )
     Ns_gp = hyp.shape[0]
@@ -316,7 +316,7 @@ def test_acq_log_f():
     y_viqr = viqr.is_log_full(Xa, gp=gp, vp=vp)
     # Add VP density to i.s. weights:
     y_viqr += np.maximum(
-        vp.pdf(Xa, origflag=False, logflag=True), np.log(float_info.min)
+        vp.pdf(Xa, orig_flag=False, log_flag=True), np.log(float_info.min)
     )
     y_imiqr = AcqFcnIMIQR().is_log_full(Xa, gp=gp, vp=vp)
 

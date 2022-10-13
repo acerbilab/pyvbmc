@@ -12,10 +12,10 @@ import numpy as np
 from pyvbmc.formatting import full_repr, get_repr, summarize
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
-from pyvbmc.stats import kldiv_mvn
+from pyvbmc.stats import kl_div_mvn
 from pyvbmc.timer import main_timer as timer
 from pyvbmc.variational_posterior import VariationalPosterior
-from pyvbmc.whitening import warp_gpandvp_vbmc, warp_input_vbmc
+from pyvbmc.whitening import warp_gp_and_vp, warp_input
 
 from .active_sample import active_sample
 from .gaussian_process_train import reupdate_gp, train_gp
@@ -185,7 +185,7 @@ class VBMC:
             self.upper_bounds,
             self.plausible_lower_bounds,
             self.plausible_upper_bounds,
-        ) = self._boundscheck(
+        ) = self._bounds_check(
             x0,
             lower_bounds,
             upper_bounds,
@@ -261,7 +261,7 @@ class VBMC:
 
         self.iteration_history = IterationHistory(
             [
-                "rindex",
+                "r_index",
                 "elcbo_impro",
                 "stable",
                 "elbo",
@@ -279,14 +279,14 @@ class VBMC:
                 "sKL",
                 "sKL_true",
                 "pruned",
-                "varss",
+                "var_ss",
                 "func_count",
                 "n_eff",
                 "logging_action",
             ]
         )
 
-    def _boundscheck(
+    def _bounds_check(
         self,
         x0: np.ndarray,
         lower_bounds: np.ndarray,
@@ -712,13 +712,9 @@ class VBMC:
         # List of points at the end of each iteration
         optim_state["iter_list"] = dict()
         optim_state["iter_list"]["u"] = []
-        optim_state["iter_list"]["fval"] = []
-        optim_state["iter_list"]["fsd"] = []
+        optim_state["iter_list"]["f_val"] = []
+        optim_state["iter_list"]["f_sd"] = []
         optim_state["iter_list"]["fhyp"] = []
-
-        optim_state["delta"] = self.options.get("bandwidth") * (
-            optim_state.get("pub_tran") - optim_state.get("plb_tran")
-        )
 
         # Deterministic entropy approximation lower/upper factor
         optim_state["entropy_alpha"] = self.options.get("det_entropy_alpha")
@@ -885,14 +881,14 @@ class VBMC:
             doWarping = (
                 (
                     self.options.get("warp_rotoscaling")
-                    or self.options.get("warpnonlinear")
+                    or self.options.get("warp_nonlinear")
                 )
                 and (iteration > 0)
                 and (not self.optim_state["warmup"])
                 and (iteration - self.optim_state["last_warping"] > WarpDelay)
                 and (self.vp.K >= self.options["warp_min_k"])
                 and (
-                    self.iteration_history["rindex"][iteration - 1]
+                    self.iteration_history["r_index"][iteration - 1]
                     < self.options["warp_tol_reliability"]
                 )
                 and (self.vp.D > 1)
@@ -916,14 +912,14 @@ class VBMC:
                     self.optim_state,
                     self.function_logger,
                     warp_action,
-                ) = warp_input_vbmc(
+                ) = warp_input(
                     vp_tmp,
                     self.optim_state,
                     self.function_logger,
                     self.options,
                 )
 
-                self.vp, hyp_dict["hyp"] = warp_gpandvp_vbmc(
+                self.vp, hyp_dict["hyp"] = warp_gp_and_vp(
                     parameter_transformer_warp, self.vp, self
                 )
 
@@ -968,7 +964,7 @@ class VBMC:
                     )  # Full optimizations.
 
                     # Run optimization of variational parameters
-                    self.vp, varss, pruned = optimize_vp(
+                    self.vp, var_ss, pruned = optimize_vp(
                         self.options,
                         self.optim_state,
                         self.vp,
@@ -1032,7 +1028,7 @@ class VBMC:
             # Careful with Xn, in MATLAB this condition is > 0
             # due to 1-based indexing.
             if self.function_logger.Xn >= 0:
-                self.function_logger.ymax = np.max(
+                self.function_logger.y_max = np.max(
                     self.function_logger.y[self.function_logger.X_flag]
                 )
 
@@ -1097,7 +1093,7 @@ class VBMC:
             # Number of training inputs
             self.optim_state["N"] = self.function_logger.Xn + 1
             self.optim_state["n_eff"] = np.sum(
-                self.function_logger.nevals[self.function_logger.X_flag]
+                self.function_logger.n_evals[self.function_logger.X_flag]
             )
 
             timer.stop_timer("active_sampling")
@@ -1157,7 +1153,7 @@ class VBMC:
                 )
                 N_slowopts = 1
             # Run optimization of variational parameters
-            self.vp, varss, pruned = optimize_vp(
+            self.vp, var_ss, pruned = optimize_vp(
                 self.options,
                 self.optim_state,
                 self.vp,
@@ -1190,18 +1186,18 @@ class VBMC:
                 0,
                 0.5
                 * np.sum(
-                    self.vp.kldiv(
+                    self.vp.kl_div(
                         vp2=vp_old,
                         N=Nkl,
-                        gaussflag=self.options.get("kl_gauss"),
+                        gauss_flag=self.options.get("kl_gauss"),
                     )
                 ),
             )
 
             # Evaluate max LCB of GP prediction on all training inputs
-            fmu, fs2 = gp.predict(gp.X, gp.y, gp.s2, add_noise=False)
+            f_mu, f_s2 = gp.predict(gp.X, gp.y, gp.s2, add_noise=False)
             self.optim_state["lcb_max"] = np.amax(
-                fmu - self.options.get("elcbo_impro_weight") * np.sqrt(fs2)
+                f_mu - self.options.get("elcbo_impro_weight") * np.sqrt(f_s2)
             )
 
             # Compare variational posterior's moments with ground truth
@@ -1213,7 +1209,7 @@ class VBMC:
             ):
                 mubar_orig, sigma_orig = vp_real.moments(1e6, True, True)
 
-                kl = kldiv_mvn(
+                kl = kl_div_mvn(
                     mubar_orig,
                     sigma_orig,
                     self.options.get("true_mean"),
@@ -1224,7 +1220,7 @@ class VBMC:
                 sKL_true = None
 
             # Record moments in transformed space
-            mubar, sigma = self.vp.moments(origflag=False, covflag=True)
+            mubar, sigma = self.vp.moments(orig_flag=False, cov_flag=True)
             if len(self.optim_state.get("run_mean")) == 0 or len(
                 self.optim_state.get("run_cov") == 0
             ):
@@ -1257,7 +1253,7 @@ class VBMC:
                 "vp": self.vp,
                 "elbo": elbo,
                 "elbo_sd": elbo_sd,
-                "varss": varss,
+                "var_ss": var_ss,
                 "sKL": sKL,
                 "sKL_true": sKL_true,
                 "gp": gp,
@@ -1343,10 +1339,10 @@ class VBMC:
                     < self.options.get("warp_tol_reliability")
                 )
             ):
-                Xrnd, _ = self.vp.sample(N=int(2e4), origflag=False)
+                Xrnd, _ = self.vp.sample(N=int(2e4), orig_flag=False)
                 ymu, _ = gp.predict(Xrnd, add_noise=True)
                 ydelta = max(
-                    [0, self.function_logger.ymax - np.quantile(ymu, 1e-3)]
+                    [0, self.function_logger.y_max - np.quantile(ymu, 1e-3)]
                 )
                 if (
                     ydelta
@@ -1477,7 +1473,7 @@ class VBMC:
         self.vp, elbo, elbo_sd, idx_best = self.determine_best_vp()
 
         # Last variational optimization with large number of components
-        self.vp, elbo, elbo_sd, changed_flag = self.finalboost(
+        self.vp, elbo, elbo_sd, changed_flag = self.final_boost(
             self.vp, self.iteration_history["gp"][idx_best]
         )
         if changed_flag:
@@ -1486,10 +1482,10 @@ class VBMC:
                 0,
                 0.5
                 * np.sum(
-                    self.vp.kldiv(
+                    self.vp.kl_div(
                         vp2=vp_old,
                         N=Nkl,
-                        gaussflag=self.options.get("kl_gauss"),
+                        gauss_flag=self.options.get("kl_gauss"),
                     )
                 ),
             )
@@ -1510,7 +1506,7 @@ class VBMC:
                         elbo_sd,
                         sKL,
                         self.vp.K,
-                        self.iteration_history.get("rindex")[idx_best],
+                        self.iteration_history.get("r_index")[idx_best],
                         "finalize",
                     )
                 )
@@ -1523,7 +1519,7 @@ class VBMC:
                         elbo_sd,
                         sKL,
                         self.vp.K,
-                        self.iteration_history.get("rindex")[idx_best],
+                        self.iteration_history.get("r_index")[idx_best],
                         "finalize",
                     )
                 )
@@ -1660,7 +1656,7 @@ class VBMC:
         """
         iteration = self.optim_state.get("iter")
         if (
-            self.iteration_history.get("rindex")[iteration]
+            self.iteration_history.get("r_index")[iteration]
             < self.options.get("stop_warmup_reliability")
             or len(self.optim_state.get("data_trim_list")) >= 1
         ):
@@ -1694,9 +1690,9 @@ class VBMC:
             self.logging_action.append("trim data")
 
         # Remove warm-up points from training set unless close to max
-        ymax = max(self.function_logger.y_orig[: self.function_logger.Xn + 1])
+        y_max = max(self.function_logger.y_orig[: self.function_logger.Xn + 1])
         n_keep_min = self.D + 1
-        idx_keep = (ymax - self.function_logger.y_orig) < threshold
+        idx_keep = (y_max - self.function_logger.y_orig) < threshold
         if np.sum(idx_keep) < n_keep_min:
             y_temp = np.copy(self.function_logger.y_orig)
             y_temp[~np.isfinite(y_temp)] = -np.Inf
@@ -1760,27 +1756,27 @@ class VBMC:
                 )
             )
 
-        rindex, ELCBO_improvement = self._compute_reliability_index(
+        r_index, ELCBO_improvement = self._compute_reliability_index(
             tol_stable_iters
         )
 
         # Store reliability index
-        self.iteration_history.record("rindex", rindex, iteration)
+        self.iteration_history.record("r_index", r_index, iteration)
         self.iteration_history.record(
             "elcbo_impro", ELCBO_improvement, iteration
         )
-        self.optim_state["R"] = rindex
+        self.optim_state["R"] = r_index
 
         # Check stability termination condition
         stableflag = False
         if (
             iteration + 1 >= tol_stable_iters
-            and rindex < 1
+            and r_index < 1
             and ELCBO_improvement < self.options.get("tol_improvement")
         ):
             # Count how many good iters in the recent past (excluding current)
             stable_count = np.sum(
-                self.iteration_history.get("rindex")[
+                self.iteration_history.get("r_index")[
                     iteration - tol_stable_iters + 1 : iteration
                 ]
                 < 1
@@ -1833,9 +1829,9 @@ class VBMC:
         iteration_idx = self.optim_state.get("iter")
         # Was < 3 in MATLAB due to different indexing.
         if self.optim_state.get("iter") < 2:
-            rindex = np.Inf
+            r_index = np.Inf
             ELCBO_improvement = np.NaN
-            return rindex, ELCBO_improvement
+            return r_index, ELCBO_improvement
 
         sn = np.sqrt(self.optim_state.get("sn2_hpd"))
         tol_sn = np.sqrt(sn / self.options.get("tol_sd")) * self.options.get(
@@ -1846,18 +1842,18 @@ class VBMC:
             self.options.get("tol_sd") * 10,
         )
 
-        rindex_vec = np.full((3), np.NaN)
-        rindex_vec[0] = (
+        r_index_vec = np.full((3), np.NaN)
+        r_index_vec[0] = (
             np.abs(
                 self.iteration_history.get("elbo")[iteration_idx]
                 - self.iteration_history.get("elbo")[iteration_idx - 1]
             )
             / tol_sd
         )
-        rindex_vec[1] = (
+        r_index_vec[1] = (
             self.iteration_history.get("elbo_sd")[iteration_idx] / tol_sd
         )
-        rindex_vec[2] = self.iteration_history.get("sKL")[
+        r_index_vec[2] = self.iteration_history.get("sKL")[
             iteration_idx
         ] / self.options.get("tol_skl")
 
@@ -1882,7 +1878,7 @@ class VBMC:
         ELCBO_improvement = np.polyfit(
             list(map(float, xx)), list(map(float, yy)), 1
         )[0]
-        return np.mean(rindex_vec), ELCBO_improvement
+        return np.mean(r_index_vec), ELCBO_improvement
 
     def _is_gp_sampling_finished(self):
         """
@@ -1919,7 +1915,7 @@ class VBMC:
 
     # Finalizing:
 
-    def finalboost(self, vp: VariationalPosterior, gp: gpr.GP):
+    def final_boost(self, vp: VariationalPosterior, gp: gpr.GP):
         """
         Perform a final boost of variational components.
 
@@ -2008,7 +2004,7 @@ class VBMC:
             self.optim_state["entropy_alpha"] = 0
 
             stable_flag = np.copy(vp.stats["stable"])
-            vp, varss, pruned = optimize_vp(
+            vp, var_ss, pruned = optimize_vp(
                 self.options,
                 self.optim_state,
                 vp,
@@ -2089,7 +2085,7 @@ class VBMC:
                 rank[order, 1] = np.arange(1, max_idx + 2)
 
                 # Rank by reliability index
-                order = self.iteration_history.get("rindex")[
+                order = self.iteration_history.get("r_index")[
                     : max_idx + 1
                 ].argsort()
                 rank[order, 2] = np.arange(1, max_idx + 2)
@@ -2141,25 +2137,25 @@ class VBMC:
         if np.all(np.isinf(self.optim_state["lb_tran"])) and np.all(
             np.isinf(self.optim_state["ub_tran"])
         ):
-            output["problemtype"] = "unconstrained"
+            output["problem_type"] = "unconstrained"
         else:
-            output["problemtype"] = "boundconstraints"
+            output["problem_type"] = "bounded"
 
         output["iterations"] = self.optim_state["iter"]
-        output["funccount"] = self.function_logger.func_count
-        output["bestiter"] = idx_best
-        output["trainsetsize"] = self.iteration_history["n_eff"][idx_best]
+        output["func_count"] = self.function_logger.func_count
+        output["best_iter"] = idx_best
+        output["train_set_size"] = self.iteration_history["n_eff"][idx_best]
         output["components"] = self.vp.K
-        output["rindex"] = self.iteration_history["rindex"][idx_best]
+        output["r_index"] = self.iteration_history["r_index"][idx_best]
         if self.iteration_history["stable"][idx_best]:
-            output["convergencestatus"] = "probable"
+            output["convergence_status"] = "probable"
         else:
-            output["convergencestatus"] = "no"
+            output["convergence_status"] = "no"
 
         output["overhead"] = np.NaN
-        output["rngstate"] = "rng"
+        output["rng_state"] = "rng"
         output["algorithm"] = "Variational Bayesian Monte Carlo"
-        output["version"] = "0.0.1"
+        output["version"] = "0.1.0"
         output["message"] = termination_message
 
         output["elbo"] = self.vp.stats["elbo"]

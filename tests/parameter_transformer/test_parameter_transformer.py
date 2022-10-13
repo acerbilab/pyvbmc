@@ -846,3 +846,22 @@ def test_lb_ub_map_to_inf():
         # both bounded + unbounded, and all types of bounded transforms:
         assert np.all(parameter_transformer(lb_orig) == -np.inf)
         assert np.all(parameter_transformer(ub_orig) == np.inf)
+
+
+def test__str__and__repr__():
+    D = 4
+    bounded_names = {
+        0: "unbounded",
+        3: "logit",
+        12: "probit",
+        13: "student4",
+    }
+    for t in bounded_transform_types:
+        lb = np.array([[-1.0, -np.inf, -1.0, -np.inf]])
+        ub = np.array([[1.0, np.inf, 1.0, np.inf]])
+        parameter_transformer = ParameterTransformer(
+            D=D, lb_orig=lb, ub_orig=ub, transform_type=t
+        )
+        string = parameter_transformer.__str__()
+        assert bounded_names[t] in string
+        parameter_transformer.__repr__()

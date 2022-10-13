@@ -10,7 +10,7 @@ These notes are used for keeping track of ToDos and porting information.
 ### Matlab references
 -  Everything in: [gethpd_vbmc.m](https://github.com/lacerbi/vbmc/blob/master/misc/gethpd_vbmc.m)
 
-## kldiv_mvn
+## kl_div_mvn
 
 ### Matlab references
 -  Everything in: [mvnkl.m](https://github.com/lacerbi/vbmc/blob/master/shared/mvnkl.m)
