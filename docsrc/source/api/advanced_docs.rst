@@ -29,7 +29,6 @@ This is the advanced documentation for developers.
    functions/entropy
    functions/get_hpd
    functions/kde_1d
-   functions/entropy
    functions/whitening
 
 .. toctree::
