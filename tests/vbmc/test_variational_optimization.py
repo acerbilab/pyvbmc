@@ -134,24 +134,24 @@ def test_gp_log_joint():
     hyp = np.loadtxt(open("./tests/vbmc/hyp.txt", "rb"), delimiter=",")
     gp.update(X_new=X, y_new=y, hyp=hyp)
 
-    F, dF, varF, dvarF, var_ss, I_sk, J_sjk = _gp_log_joint(
+    G, dG, varG, dvarG, var_ss, I_sk, J_sjk = _gp_log_joint(
         vp, gp, False, True, True, True, True
     )
 
-    assert np.isclose(F, -0.461812484952867)
-    assert dF is None
-    assert np.isclose(varF, 6.598768992700180e-05)
-    assert dvarF is None
+    assert np.isclose(G, -0.461812484952867)
+    assert dG is None
+    assert np.isclose(varG, 6.598768992700180e-05)
+    assert dvarG is None
     assert np.isclose(var_ss, 1.031705745662353e-04)
 
-    F, dF, varF, dvarF, var_ss = _gp_log_joint(
+    G, dG, varG, dvarG, var_ss = _gp_log_joint(
         vp, gp, True, True, True, False, False
     )
-    matlab_dF = np.loadtxt(
-        open("./tests/vbmc/dF_gp_log_joint.txt", "rb"), delimiter=","
+    matlab_dG = np.loadtxt(
+        open("./tests/vbmc/dG_gp_log_joint.txt", "rb"), delimiter=","
     )
-    assert np.allclose(dF, matlab_dF)
-    assert np.isclose(F, -0.461812484952867)
+    assert np.allclose(dG, matlab_dG)
+    assert np.isclose(G, -0.461812484952867)
 
 
 def test_neg_elcbo():

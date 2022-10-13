@@ -1264,20 +1264,20 @@ def _gp_log_joint(
 
     Returns
     =======
-    F : object
+    G : object
         The expected variational log joint probability.
-    dF : np.ndarray
+    dG : np.ndarray
         The gradient.
-    varF : np.ndarray, optional
+    varG : np.ndarray, optional
         The variance.
-    dvarF : np.ndarray, optional
+    dvarG : np.ndarray, optional
         The gradient of the variance.
     var_ss : float
         Variance for each GP hyperparameter sample.
     I_sk : np.ndarray, optional
-        The contribution to ``F`` per GP hyperparameter sample.
+        The contribution to ``G`` per GP hyperparameter sample.
     J_sjk : np.ndarray, optional
-        The contribution to ``varF`` per GP hyperparameter sample.
+        The contribution to ``varG`` per GP hyperparameter sample.
 
     Raises
     ------
@@ -1322,7 +1322,7 @@ def _gp_log_joint(
         gp.mean, gpr.mean_functions.NegativeQuadratic
     )
 
-    F = np.zeros((Ns,))
+    G = np.zeros((Ns,))
     # Check which gradients are computed
     if grad_flags[0]:
         mu_grad = np.zeros((D, K, Ns))
@@ -1333,7 +1333,7 @@ def _gp_log_joint(
     if grad_flags[3]:
         w_grad = np.zeros((K, Ns))
     if compute_var:
-        varF = np.zeros((Ns,))
+        varG = np.zeros((Ns,))
     # Compute gradient of variance?
     if compute_vargrad:
         # TODO: compute vargrad is untested
@@ -1412,7 +1412,7 @@ def _gp_log_joint(
                     axis=0,
                 )
                 I_k += nu_k
-            F[s] += w[k] * I_k
+            G[s] += w[k] * I_k
 
             if separate_K:
                 I_sk[s, k] = I_k
@@ -1494,20 +1494,20 @@ def _gp_log_joint(
 
                     # Off-diagonal elements are symmetric (count twice)
                     if j == k:
-                        varF[s] += w[k] ** 2 * np.maximum(np.spacing(1), J_jk)
+                        varG[s] += w[k] ** 2 * np.maximum(np.spacing(1), J_jk)
                         if separate_K:
                             J_sjk[s, k, k] = J_jk
                     else:
-                        varF[s] += 2 * w[j] * w[k] * J_jk
+                        varG[s] += 2 * w[j] * w[k] * J_jk
                         if separate_K:
                             J_sjk[s, j, k] = J_jk
                             J_sjk[s, k, j] = J_jk
 
     # Correct for numerical error
     if compute_var:
-        varF = np.maximum(varF, np.spacing(1))
+        varG = np.maximum(varG, np.spacing(1))
     else:
-        varF = None
+        varG = None
 
     if np.any(grad_flags):
         grad_list = []
@@ -1535,9 +1535,9 @@ def _gp_log_joint(
             w_grad = np.dot(J_w, w_grad)
             grad_list.append(w_grad)
 
-        dF = np.concatenate(grad_list, axis=0)
+        dG = np.concatenate(grad_list, axis=0)
     else:
-        dF = None
+        dG = None
 
     if compute_vargrad:
         # TODO: compute vargrad is untested
@@ -1561,36 +1561,36 @@ def _gp_log_joint(
             w_vargrad = np.dot(J_w, w_vargrad)
             vargrad_list.append(w_vargrad)
 
-        dvarF = np.concatenate(grad_list, axis=0)
+        dvarG = np.concatenate(grad_list, axis=0)
     else:
-        dvarF = None
+        dvarG = None
 
     # Average multiple hyperparameter samples
     var_ss = 0
     if Ns > 1 and avg_flag:
-        F_bar = np.sum(F) / Ns
+        G_bar = np.sum(G) / Ns
         if compute_var:
             # Estimated variance of the samples
-            varFss = np.sum((F - F_bar) ** 2) / (Ns - 1)
+            varG_ss = np.sum((G - G_bar) ** 2) / (Ns - 1)
             # Variability due to sampling
-            var_ss = varFss + np.std(varF, ddof=1)
-            varF = np.sum(varF, axis=0) / Ns + varFss
+            var_ss = varG_ss + np.std(varG, ddof=1)
+            varG = np.sum(varG, axis=0) / Ns + varG_ss
         if compute_vargrad:
             # TODO: compute vargrad is untested
-            dvv = 2 * np.sum(F * dF, axis=1) / (Ns - 1) - 2 * F_bar * np.sum(
-                dF, axis=1
+            dvv = 2 * np.sum(G * dG, axis=1) / (Ns - 1) - 2 * G_bar * np.sum(
+                dG, axis=1
             ) / (Ns - 1)
-            dvarF = np.sum(dvarF, axis=1) / Ns + dvv
-        F = F_bar
+            dvarG = np.sum(dvarG, axis=1) / Ns + dvv
+        G = G_bar
         if np.any(grad_flags):
-            dF = np.sum(dF, axis=1) / Ns
+            dG = np.sum(dG, axis=1) / Ns
 
     # Drop extra dims if Ns == 1
     if Ns == 1:
-        F = F[0]
+        G = G[0]
         if np.any(grad_flags):
-            dF = dF[:, 0]
+            dG = dG[:, 0]
 
     if separate_K:
-        return F, dF, varF, dvarF, var_ss, I_sk, J_sjk
-    return F, dF, varF, dvarF, var_ss
+        return G, dG, varG, dvarG, var_ss, I_sk, J_sjk
+    return G, dG, varG, dvarG, var_ss
