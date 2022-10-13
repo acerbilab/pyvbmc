@@ -34,7 +34,7 @@ PyVBMC is not yet available on `pip`/`conda-forge`, but can be installed in a fe
    git clone https://github.com/lacerbi/gpyreg
    ```
    (PyVBMC depends on [`gpyreg`](https://github.com/lacerbi/gpyreg), which is a package for lightweight Gaussian process regression in Python.)
-2. (Optional) Create a new environment in `conda` and activate it (we recommend using Python 3.9 or newer, but older versions *might* work):
+2. (Optional) Create a new environment in `conda` and activate it. We recommend using Python 3.9 or newer, but older versions *might* work:
    ```console
    conda create --name pyvbmc-env python=3.9
    conda activate pyvbmc-env
@@ -105,8 +105,8 @@ Please cite both references if you use PyVBMC in your work (the 2018 paper intro
 Besides formal citations, you can demonstrate your appreciation for PyVBMC in the following ways:
 
 - *Star :star:* the VBMC repository on GitHub;
-- [Follow me on Twitter](https://twitter.com/AcerbiLuigi) for updates about VBMC/PyVBMC and other projects I am involved with;
-- Tell me about your model-fitting problem and your experience with PyVBMC (positive or negative) at <luigi.acerbi@helsinki.fi> (putting  'PyVBMC' in the subject of the email).
+- [Follow Luigi Acerbi on Twitter](https://twitter.com/AcerbiLuigi) for updates about VBMC/PyVBMC and other projects I am involved with;
+- Tell us about your model-fitting problem and your experience with PyVBMC (positive or negative) at <luigi.acerbi@helsinki.fi> (putting  'PyVBMC' in the subject of the email).
 
 You may also want to check out [Bayesian Adaptive Direct Search](https://github.com/lacerbi/bads) (BADS), our method for fast Bayesian optimization. Currently available only in MATLAB, but a Python version is in development.
 
