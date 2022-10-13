@@ -120,7 +120,8 @@ def optimize_vp(
     vp : VariationalPosterior
         The optimized variational posterior.
     var_ss : int
-        To be written by Luigi.
+        Estimated variance of the ELBO, due to variance of the expected
+        log-joint, for each GP hyperparameter sample.
     pruned : int
         Number of pruned components.
     """
@@ -450,7 +451,8 @@ def _eval_full_elcbo(
     options : Options
         Options from the VBMC instance we are calling from.
     entropy_alpha : float, defaults to 0.0
-        To be written by Luigi
+        (currently unused) Parameter for lower/upper deterministic entropy
+        interpolation.
 
     Returns
     =======
@@ -677,7 +679,15 @@ def _sieve(
     init_N : int, optional
         Number of initial starting points.
     best_N : int, defaults to 1
-        To be written by Luigi.
+        Specifies the design pattern for new starting parameters. ``best_N==1``
+        means use the old variational parameters as a starting point for new
+        candidate VP's. Any other value will use an even mix of:
+
+        - the old variational parameters,
+        - the highest posterior density training points, and
+        - random starting points
+
+        for new candidate VP's.
     K : int, optional
         Number of mixture components. If not given defaults to the number
         of mixture components the given VP has.
@@ -1011,7 +1021,8 @@ def _neg_elcbo(
     theta_bnd : dict, optional
         Soft bounds for theta.
     entropy_alpha : float, defaults to 0.0
-        To be written by Luigi.
+        (currently unused) Parameter for lower/upper deterministic entropy
+        interpolation.
     separate_K : bool, defaults to False
         Whether to return expected log joint per component.
 
@@ -1030,16 +1041,17 @@ def _neg_elcbo(
     dH : np.ndarray
         Gradient of entropy term.
     varG_ss :
-        To be written by Luigi.
+        Variance of the expected variational log joint, for each GP
+        hyperparameter sample.
     varG :
         Variance of the expected variational log joint
         probability.
     varH : float
         Variance of entropy term.
     I_sk : np.ndarray
-        To be written by Luigi.
+        The contribution to ``G`` per GP hyperparameter sample.
     J_sjk : np.ndarray
-        To be written by Luigi.
+        The contribution to ``varG`` per GP hyperparameter sample.
     """
     if not np.isfinite(beta):
         beta = 0
@@ -1261,11 +1273,11 @@ def _gp_log_joint(
     dvarF : np.ndarray, optional
         The gradient of the variance.
     var_ss : float
-        To be written by Luigi.
+        Variance for each GP hyperparameter sample.
     I_sk : np.ndarray, optional
-        To be written by Luigi.
+        The contribution to ``F`` per GP hyperparameter sample.
     J_sjk : np.ndarray, optional
-        To be written by Luigi.
+        The contribution to ``varF`` per GP hyperparameter sample.
 
     Raises
     ------
