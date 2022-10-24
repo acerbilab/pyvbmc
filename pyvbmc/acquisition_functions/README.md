@@ -12,3 +12,5 @@ These notes are used for keeping track of ToDos and porting information.
 - AcqFcnLog: [acqflog_vbmc.m](https://github.com/lacerbi/vbmc/blob/master/acq/acqflog_vbmc.m)
 - AcqFcnNoisy: [acqfsn2_vbmc.m](https://github.com/lacerbi/vbmc/blob/master/acq/acqfsn2_vbmc.m)
 - AcqFcnVanila: [acqus_vbmc.m](https://github.com/lacerbi/vbmc/blob/master/acq/acqus_vbmc.m)
+- AcqFcnVIQR: [acqviqr_vbmc.m](https://github.com/lacerbi/vbmc/blob/master/acq/acqviqr_vbmc.m)
+- AcqFcnIMIQR: [acqimiqr_vbmc.m](https://github.com/lacerbi/vbmc/blob/master/acq/acqimiqr_vbmc.m)
