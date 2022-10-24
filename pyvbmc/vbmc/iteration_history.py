@@ -60,6 +60,20 @@ class IterationHistory(MutableMapping, dict):
     def __delitem__(self, key):
         return dict.__delitem__(self, key)
 
+    def __getstate__(self):
+        return (self.check_keys, dict(self))
+
+    def __setstate__(self, state):
+        self.check_keys, data = state
+        self.update(data)
+
+    def __reduce__(self):
+        return (
+            self.__class__,
+            (list(dict(self).keys()),),
+            self.__getstate__(),
+        )
+
     def record(self, key: str, value: object, iteration: int):
         """
         Store a value for a key in a given iteration.

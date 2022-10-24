@@ -1,3 +1,4 @@
+from copy import deepcopy
 from textwrap import indent
 
 import numpy as np
@@ -418,6 +419,21 @@ class FunctionLogger:
             self.n_evals[self.Xn] += 1
             self.y_max = np.nanmax(self.y[self.X_flag])
             return f_val, self.Xn
+
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+
+        # Avoid infinite recursion in deepcopy
+        memo[id(self)] = result
+        # Copy class properties:
+        for k, v in self.__dict__.items():
+            if k == "fun":  # Avoid deepcopy of log-joint function
+                # (interferes with benchmark logging)
+                setattr(result, k, v)
+            else:
+                setattr(result, k, deepcopy(v, memo))
+        return result
 
     def __str__(self, arr_size_thresh=10):
         """Print a string summary."""

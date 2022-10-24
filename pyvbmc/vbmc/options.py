@@ -51,6 +51,10 @@ class Options(MutableMapping, dict):
         self.descriptions = dict()
         self["useroptions"] = set()
 
+        self.default_options_path = default_options_path
+        self.evaluation_parameters = evaluation_parameters
+        self.user_options = user_options
+
         # load options from file
         self.load_options_file(default_options_path, evaluation_parameters)
 
@@ -194,6 +198,23 @@ class Options(MutableMapping, dict):
 
     def __delitem__(self, key):
         return dict.__delitem__(self, key)
+
+    def __getstate__(self):
+        return dict(self)
+
+    def __setstate__(self, state):
+        self.update(state)
+
+    def __reduce__(self):
+        return (
+            self.__class__,
+            (
+                self.default_options_path,
+                self.evaluation_parameters,
+                self.user_options,
+            ),
+            self.__getstate__(),
+        )
 
     def __copy__(self):
         cls = self.__class__
