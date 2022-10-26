@@ -269,7 +269,7 @@ class VBMC:
         )
 
         self.x0 = self.parameter_transformer(self.x0)
-
+        self.random_state = np.random.get_state()
         self.iteration_history = IterationHistory(
             [
                 "r_index",
@@ -294,6 +294,10 @@ class VBMC:
                 "func_count",
                 "n_eff",
                 "logging_action",
+                # For resuming optimization from a specific iteration, mostly
+                # useful for debugging
+                "function_logger",
+                "random_state",
             ]
         )
 
@@ -1270,6 +1274,7 @@ class VBMC:
                 "func_count": self.function_logger.func_count,
                 "lcb_max": self.optim_state["lcb_max"],
                 "n_eff": self.optim_state["n_eff"],
+                "function_logger": self.function_logger,
             }
 
             # Record all useful stats
@@ -1474,6 +1479,12 @@ class VBMC:
                     title=title,
                 )
                 plt.show()
+
+            self.random_state = np.random.get_state()
+            self.iteration_history.record_iteration(
+                {"random_state": self.random_state},
+                self.iteration,
+            )
 
         # Pick "best" variational solution to return
         self.vp, elbo, elbo_sd, idx_best = self.determine_best_vp()
