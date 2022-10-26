@@ -28,7 +28,7 @@ Conversely, if your model can be written analytically, you should exploit the po
 
 PyVBMC is not yet available on `pip`/`conda-forge`, but can be installed in a few steps:
 
-1. Clone the `pyvbmc` and `gpyreg` GitHub repos locally:
+1. Clone the PyVBMC and `gpyreg` GitHub repos locally:
    ```console
    git clone https://github.com/lacerbi/pyvbmc
    git clone https://github.com/lacerbi/gpyreg
@@ -52,7 +52,7 @@ PyVBMC is not yet available on `pip`/`conda-forge`, but can be installed in a fe
    ```
 
 ## Quick start
-The typical usage pipeline of pyvbmc follows four steps:
+A typical PyVBMC workflow follows four steps:
 
 1. Define the model, which defines a target log density (i.e., an unnormalized log posterior density);
 2. Setup the parameters (parameter bounds, starting point);

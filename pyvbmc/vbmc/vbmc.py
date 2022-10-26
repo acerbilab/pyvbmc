@@ -110,7 +110,7 @@ class VBMC:
     Examples
     --------
     For `VBMC` usage examples, please look up the Jupyter notebook tutorials
-    in the pyvbmc documentation:
+    in the PyVBMC documentation:
     https://lacerbi.github.io/pyvbmc/_examples/pyvbmc_example_1.html
     """
 
@@ -824,7 +824,7 @@ class VBMC:
             A dictionary with additional information about the VBMC run.
         """
         is_finished = False
-        # the iterations of pyvbmc start at 0
+        # the iterations of PyVBMC start at 0
         iteration = -1
         gp = None
         hyp_dict = {}
