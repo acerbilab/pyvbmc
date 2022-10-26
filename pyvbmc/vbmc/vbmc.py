@@ -931,7 +931,7 @@ class VBMC:
                 )
 
                 self.vp, self.hyp_dict["hyp"] = warp_gp_and_vp(
-                    parameter_transformer_warp, self.vp, self
+                    parameter_transformer_warp, self.gp, self.vp, self
                 )
 
                 self.logging_action.append(warp_action)

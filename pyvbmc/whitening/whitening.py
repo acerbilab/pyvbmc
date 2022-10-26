@@ -243,7 +243,7 @@ def warp_input(vp, optim_state, function_logger, options):
     return parameter_transformer, optim_state, function_logger, warp_action
 
 
-def warp_gp_and_vp(parameter_transformer, vp_old, vbmc):
+def warp_gp_and_vp(parameter_transformer, gp_old, vp_old, vbmc):
     r"""Update the GP and VP with a given warp transformation.
 
     Applies an updated ParameterTransformer object (with new warping
@@ -254,6 +254,8 @@ def warp_gp_and_vp(parameter_transformer, vp_old, vbmc):
     parameter_transformer : ParameterTransformer
         The new (warped) transformation between input coordinates and inference
         coordinates.
+    gp_old : gpr.GP
+        The current Gaussian process.
     vp_old : VariationalPosterior
         The current variational posterior.
     vbmc : VBMC
@@ -281,40 +283,38 @@ def warp_gp_and_vp(parameter_transformer, vp_old, vbmc):
         T = 1
 
     # Get the number of GP hyperparameters, for indexing:
-    Ncov = vp_old.gp.covariance.hyperparameter_count(vbmc.D)
-    Nnoise = vp_old.gp.noise.hyperparameter_count()
-    Nmean = vp_old.gp.mean.hyperparameter_count(vbmc.D)
+    Ncov = gp_old.covariance.hyperparameter_count(vbmc.D)
+    Nnoise = gp_old.noise.hyperparameter_count()
+    Nmean = gp_old.mean.hyperparameter_count(vbmc.D)
     # MATLAB: if ~isempty(gp_old.outwarpfun); Noutwarp = gp_old.Noutwarp;
     #         else; Noutwarp = 0; end
     # (Not used, see gaussian_process.py)
 
-    Ns_gp = len(vp_old.gp.posteriors)
+    Ns_gp = len(gp_old.posteriors)
     hyp_warped = np.zeros([Ncov + Nnoise + Nmean, Ns_gp])
 
     for s in range(Ns_gp):
-        hyp = vp_old.gp.posteriors[s].hyp.copy()
+        hyp = gp_old.posteriors[s].hyp.copy()
         hyp_warped[:, s] = hyp.copy()
 
         # UpdateGP input length scales
         ell = np.exp(hyp[0 : vbmc.D]).T
-        (__, ell_new, __) = unscent_warp(warpfun, vp_old.gp.X, ell)
+        (__, ell_new, __) = unscent_warp(warpfun, gp_old.X, ell)
         hyp_warped[0 : vbmc.D, s] = np.mean(np.log(ell_new), axis=0)
 
         # We assume relatively no change to GP output and noise scales
-        if isinstance(vp_old.gp.mean, gpr.mean_functions.ConstantMean):
+        if isinstance(gp_old.mean, gpr.mean_functions.ConstantMean):
             # Warp constant mean
             m0 = hyp[Ncov + Nnoise]
             dy_old = vp_old.parameter_transformer.log_abs_det_jacobian(
-                vp_old.gp.X
+                gp_old.X
             )
-            dy = parameter_transformer.log_abs_det_jacobian(
-                warpfun(vp_old.gp.X)
-            )
+            dy = parameter_transformer.log_abs_det_jacobian(warpfun(gp_old.X))
             m0w = m0 + (np.mean(dy, axis=0) - np.mean(dy_old, axis=0)) / T
 
             hyp_warped[Ncov + Nnoise, s] = m0w
 
-        elif isinstance(vp_old.gp.mean, gpr.mean_functions.NegativeQuadratic):
+        elif isinstance(gp_old.mean, gpr.mean_functions.NegativeQuadratic):
             # Warp quadratic mean
             m0 = hyp[Ncov + Nnoise]
             xm = hyp[Ncov + Nnoise + 1 : Ncov + Nnoise + vbmc.D + 1].T

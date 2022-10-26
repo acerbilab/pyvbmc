@@ -287,7 +287,9 @@ def test_warp_gp_and_vp():
     # for i in range(gp_posterior_hyps.shape[1]):
     #     vp.gp.posteriors[i].hyp = gp_posterior_hyps[:, i]
     vp.gp.update(X_new=gp_X, y_new=gp_y, hyp=gp_posterior_hyps)
-    vp_new, hyps_new = warp_gp_and_vp(parameter_transformer_warp, vp, vbmc)
+    vp_new, hyps_new = warp_gp_and_vp(
+        parameter_transformer_warp, vp.gp, vp, vbmc
+    )
 
     filepath = os.path.join(
         os.path.dirname(__file__), f"test_warp_gp_and_vp_gp_hyps_new.txt"
