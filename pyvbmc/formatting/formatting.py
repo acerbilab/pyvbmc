@@ -158,7 +158,7 @@ def full_repr(object, title, order=[], **kwargs):
 
     # Print select attributes first
     for key in order:
-        if "." in key:  # Handle request to print e.g. 'vp.gp'
+        if "." in key:  # Handle request to print e.g. 'vp.K'
             sub_object = object
             for subkey in key.split("."):
                 sub_object = getattr(sub_object, subkey, None)

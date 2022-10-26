@@ -1246,9 +1246,6 @@ class VBMC:
             # timer.totalruntime = NaN;   # Update at the end of iteration
             # timer
 
-            # store current gp in vp
-            self.vp.gp = self.gp
-
             iteration_values = {
                 "iter": self.iteration,
                 "optim_state": self.optim_state,
@@ -1439,9 +1436,9 @@ class VBMC:
             # Plot iteration
             if self.options.get("plot"):
                 if self.iteration > 0:
-                    previous_gp = self.iteration_history["vp"][
+                    previous_gp = self.iteration_history["gp"][
                         self.iteration - 1
-                    ].gp
+                    ]
                     # find points that are new in this iteration
                     # (hacky cause numpy only has 1D set diff)
                     # future fix: active sampling should return the set of
@@ -1449,7 +1446,7 @@ class VBMC:
                     highlight_data = np.array(
                         [
                             i
-                            for i, x in enumerate(self.vp.gp.X)
+                            for i, x in enumerate(self.gp.X)
                             if tuple(x) not in set(map(tuple, previous_gp.X))
                         ]
                     )
@@ -2361,7 +2358,7 @@ user options = {str(self.options)}""",
                 "sample_prior",
                 "vp",
                 "K",
-                "vp.gp",
+                "gp",
                 "parameter_transformer",
                 "logger",
                 "logging_action",
