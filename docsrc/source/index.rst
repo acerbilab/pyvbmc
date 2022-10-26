@@ -71,6 +71,14 @@ Examples
 
    _examples/*
 
+Contributing
+############
+.. toctree::
+   :maxdepth: 1
+   :titlesonly:
+
+   development
+
 References
 ###############
 
