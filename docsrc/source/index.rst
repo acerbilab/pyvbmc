@@ -1,12 +1,11 @@
 ******
 PyVBMC
 ******
-PyVBMC is a numerical Python 3.x implementation of Variational Bayesian Monte Carlo (VBMC).
 
-
+PyVBMC is a Python 3 implementation of the original `MATLAB algorithm <https://github.com/lacerbi/vbmc>`_ for Variational Bayesian Monte Carlo (VBMC).
 
 What is it?
-########################
+###########
 
   Can we perform Bayesian inference with expensive, black-box models?
 
@@ -38,7 +37,7 @@ Extensive benchmarks on both artificial test problems and a large number of real
 
 
 Should I use PyVBMC?
-------------------------
+--------------------
 
 PyVBMC is effective when:
 
@@ -49,10 +48,6 @@ PyVBMC is effective when:
 - the log-likelihood can be evaluated *exactly* (e.g., analytically or numerically, but without noise in the evaluation itself).
 
 Conversely, if your model can be written in closed form and is fast to evaluate, you should exploit the powerful machinery of probabilistic programming frameworks such as `Stan <https://mc-stan.org/>`_ or `PyMC3 <https://docs.pymc.io/>`_.
-
-
-.. note::
-    This project is work in progress. The current Python port implements VBMC with *exact* evaluations of the likelihood (Acerbi, 2018). We are currently planning to extend PyVBMC to support *noisy* likelihood evaluations, such as those arising from simulator-based models (Acerbi, 2020).
 
 Documentation
 #############
@@ -112,7 +107,7 @@ BibTeX
   volume = {33},
   year = {2020}
   }
-  @InProceedings{pmlr-v96-acerbi19a,
+  @inproceedings{pmlr-v96-acerbi19a,
     title = 	 {An Exploration of Acquisition and Mean Functions
   in Variational Bayesian Monte Carlo},
     author =       {Acerbi, Luigi},
