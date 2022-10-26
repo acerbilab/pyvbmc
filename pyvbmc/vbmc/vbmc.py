@@ -222,6 +222,10 @@ class VBMC:
             self.vp.optimize_mu = self.options.get("variable_means")
             self.vp.optimize_weights = self.options.get("variable_weights")
 
+        self.gp = None
+        self.hyp_dict = {}
+        self.iteration = -1
+        self.is_finished = False
         self.optim_state = self._init_optim_state()
 
         # Initialize log-joint
@@ -823,12 +827,6 @@ class VBMC:
         results_dict : dict
             A dictionary with additional information about the VBMC run.
         """
-        is_finished = False
-        # the iterations of pyvbmc start at 0
-        iteration = -1
-        gp = None
-        hyp_dict = {}
-        success_flag = True
         # Initialize main logger with potentially new options:
         self.logger = self._init_logger()
         # set up strings for logging of the iteration
@@ -846,18 +844,17 @@ class VBMC:
             )
 
         self._log_column_headers()
-
-        while not is_finished:
-            iteration += 1
+        while not self.is_finished:
+            self.iteration += 1
             # Reset timer:
             timer.reset()
-            self.optim_state["iter"] = iteration
+            self.optim_state["iter"] = self.iteration
             self.optim_state["redo_roto_scaling"] = False
             vp_old = copy.deepcopy(self.vp)
 
             self.logging_action = []
 
-            if iteration == 0 and self.optim_state["warmup"]:
+            if self.iteration == 0 and self.optim_state["warmup"]:
                 self.logging_action.append("start warm-up")
 
             # Switch to stochastic entropy towards the end if still
@@ -883,12 +880,15 @@ class VBMC:
                     self.options.get("warp_rotoscaling")
                     or self.options.get("warp_nonlinear")
                 )
-                and (iteration > 0)
+                and (self.iteration > 0)
                 and (not self.optim_state["warmup"])
-                and (iteration - self.optim_state["last_warping"] > WarpDelay)
+                and (
+                    self.iteration - self.optim_state["last_warping"]
+                    > WarpDelay
+                )
                 and (self.vp.K >= self.options["warp_min_k"])
                 and (
-                    self.iteration_history["r_index"][iteration - 1]
+                    self.iteration_history["r_index"][self.iteration - 1]
                     < self.options["warp_tol_reliability"]
                 )
                 and (self.vp.D > 1)
@@ -901,11 +901,11 @@ class VBMC:
                 # Store variables in case warp needs to be undone:
                 # (vp_old copied above)
                 optim_state_old = copy.deepcopy(self.optim_state)
-                gp_old = copy.deepcopy(gp)
+                gp_old = copy.deepcopy(self.gp)
                 function_logger_old = copy.deepcopy(self.function_logger)
                 elbo_old = elbo
                 elbo_sd_old = elbo_sd
-                hyp_dict_old = copy.deepcopy(hyp_dict)
+                hyp_dict_old = copy.deepcopy(self.hyp_dict)
                 # Compute and apply whitening transform:
                 (
                     parameter_transformer_warp,
@@ -919,7 +919,7 @@ class VBMC:
                     self.options,
                 )
 
-                self.vp, hyp_dict["hyp"] = warp_gp_and_vp(
+                self.vp, self.hyp_dict["hyp"] = warp_gp_and_vp(
                     parameter_transformer_warp, self.vp, self
                 )
 
@@ -931,8 +931,8 @@ class VBMC:
 
                     timer.start_timer("gp_train")
 
-                    gp, Ns_gp, sn2_hpd, hyp_dict = train_gp(
-                        hyp_dict,
+                    self.gp, Ns_gp, sn2_hpd, self.hyp_dict = train_gp(
+                        self.hyp_dict,
                         self.optim_state,
                         self.function_logger,
                         self.iteration_history,
@@ -949,7 +949,7 @@ class VBMC:
 
                     if not self.vp.optimize_mu:
                         # Variational components fixed to training inputs
-                        self.vp.mu = gp.X.T
+                        self.vp.mu = self.gp.X.T
                         Knew = self.vp.mu.shape[1]
                     else:
                         # Update number of variational mixture components
@@ -968,7 +968,7 @@ class VBMC:
                         self.options,
                         self.optim_state,
                         self.vp,
-                        gp,
+                        self.gp,
                         N_fastopts,
                         N_slowopts,
                         Knew,
@@ -1001,10 +1001,10 @@ class VBMC:
                     ):
                         # Undo input warping:
                         self.vp = vp_old
-                        gp = gp_old
+                        self.gp = gp_old
                         self.optim_state = optim_state_old
                         self.function_logger = function_logger_old
-                        hyp_dict = hyp_dict_old
+                        self.hyp_dict = hyp_dict_old
 
                         # Still keep track of failed warping (failed warp counts twice)
                         self.optim_state["warping_count"] += 2
@@ -1020,7 +1020,7 @@ class VBMC:
                 self.parameter_transformer
             )
 
-            if iteration == 0:
+            if self.iteration == 0:
                 new_funevals = self.options.get("fun_eval_start")
             else:
                 new_funevals = self.options.get("fun_evals_per_iter")
@@ -1036,7 +1036,7 @@ class VBMC:
                 self.optim_state["skip_active_sampling"] = False
             else:
                 if (
-                    gp is not None
+                    self.gp is not None
                     and self.options.get("separate_search_gp")
                     and not self.options.get("varactivesample")
                 ):
@@ -1044,12 +1044,12 @@ class VBMC:
                     # Since we are doing iterations from 0 onwards
                     # instead of from 1 onwards, this should be checking
                     # oddness, not evenness.
-                    if iteration % 2 == 1:
+                    if self.iteration % 2 == 1:
                         meantemp = self.optim_state.get("gp_mean_fun")
                         self.optim_state["gp_mean_fun"] = "const"
                         timer.start_timer("separate_gp_train")
-                        gp_search, Ns_gp, sn2_hpd, hyp_dict = train_gp(
-                            hyp_dict,
+                        gp_search, Ns_gp, sn2_hpd, self.hyp_dict = train_gp(
+                            self.hyp_dict,
                             self.optim_state,
                             self.function_logger,
                             self.iteration_history,
@@ -1061,9 +1061,9 @@ class VBMC:
                         self.optim_state["sn2_hpd"] = sn2_hpd
                         self.optim_state["gp_mean_fun"] = meantemp
                     else:
-                        gp_search = gp
+                        gp_search = self.gp
                 else:
-                    gp_search = gp
+                    gp_search = self.gp
 
                 # Perform active sampling
                 if self.options.get("varactivesample"):
@@ -1073,12 +1073,12 @@ class VBMC:
                     # funwrapper,vp,vp_old,gp_search,options)
                     sys.exit("Function currently not supported")
                 else:
-                    self.optim_state["hyp_dict"] = hyp_dict
+                    self.optim_state["hyp_dict"] = self.hyp_dict
                     (
                         self.function_logger,
                         self.optim_state,
                         self.vp,
-                        gp,
+                        self.gp,
                     ) = active_sample(
                         gp_search,
                         new_funevals,
@@ -1088,7 +1088,7 @@ class VBMC:
                         self.vp,
                         self.options,
                     )
-                    hyp_dict = self.optim_state["hyp_dict"]
+                    self.hyp_dict = self.optim_state["hyp_dict"]
 
             # Number of training inputs
             self.optim_state["N"] = self.function_logger.Xn + 1
@@ -1102,8 +1102,8 @@ class VBMC:
 
             timer.start_timer("gp_train")
 
-            gp, Ns_gp, sn2_hpd, hyp_dict = train_gp(
-                hyp_dict,
+            self.gp, Ns_gp, sn2_hpd, self.hyp_dict = train_gp(
+                self.hyp_dict,
                 self.optim_state,
                 self.function_logger,
                 self.iteration_history,
@@ -1127,7 +1127,7 @@ class VBMC:
 
             if not self.vp.optimize_mu:
                 # Variational components fixed to training inputs
-                self.vp.mu = gp.X.T.copy()
+                self.vp.mu = self.gp.X.T.copy()
                 Knew = self.vp.mu.shape[1]
             else:
                 # Update number of variational mixture components
@@ -1157,7 +1157,7 @@ class VBMC:
                 self.options,
                 self.optim_state,
                 self.vp,
-                gp,
+                self.gp,
                 N_fastopts,
                 N_slowopts,
                 Knew,
@@ -1195,7 +1195,9 @@ class VBMC:
             )
 
             # Evaluate max LCB of GP prediction on all training inputs
-            f_mu, f_s2 = gp.predict(gp.X, gp.y, gp.s2, add_noise=False)
+            f_mu, f_s2 = self.gp.predict(
+                self.gp.X, self.gp.y, self.gp.s2, add_noise=False
+            )
             self.optim_state["lcb_max"] = np.amax(
                 f_mu - self.options.get("elcbo_impro_weight") * np.sqrt(f_s2)
             )
@@ -1245,10 +1247,10 @@ class VBMC:
             # timer
 
             # store current gp in vp
-            self.vp.gp = gp
+            self.vp.gp = self.gp
 
             iteration_values = {
-                "iter": iteration,
+                "iter": self.iteration,
                 "optim_state": self.optim_state,
                 "vp": self.vp,
                 "elbo": elbo,
@@ -1256,8 +1258,8 @@ class VBMC:
                 "var_ss": var_ss,
                 "sKL": sKL,
                 "sKL_true": sKL_true,
-                "gp": gp,
-                "gp_hyp_full": gp.get_hyperparameters(as_array=True),
+                "gp": self.gp,
+                "gp_hyp_full": self.gp.get_hyperparameters(as_array=True),
                 "Ns_gp": Ns_gp,
                 "pruned": pruned,
                 "timer": timer,
@@ -1269,7 +1271,7 @@ class VBMC:
             # Record all useful stats
             self.iteration_history.record_iteration(
                 iteration_values,
-                iteration,
+                self.iteration,
             )
 
             # Check warmup
@@ -1285,18 +1287,18 @@ class VBMC:
 
             # Check termination conditions
             (
-                is_finished,
+                self.is_finished,
                 termination_message,
                 success_flag,
             ) = self._check_termination_conditions()
 
             # Save stability
             self.vp.stats["stable"] = self.iteration_history["stable"][
-                iteration
+                self.iteration
             ]
 
             # Check if we are still warming-up
-            if self.optim_state.get("warmup") and iteration > 0:
+            if self.optim_state.get("warmup") and self.iteration > 0:
                 if self.options.get("recompute_lcb_max"):
                     self.optim_state[
                         "lcb_max_vec"
@@ -1305,7 +1307,7 @@ class VBMC:
                 if trim_flag:
                     self._setup_vbmc_after_warmup()
                     # Re-update GP after trimming
-                    gp = reupdate_gp(self.function_logger, gp)
+                    self.gp = reupdate_gp(self.function_logger, self.gp)
                 if not self.optim_state.get("warmup"):
                     self.vp.optimize_mu = self.options.get("variable_means")
                     self.vp.optimize_weights = self.options.get(
@@ -1316,7 +1318,7 @@ class VBMC:
                     # options = options_main
                     # Reset GP hyperparameter covariance
                     # hypstruct.runcov = []
-                    hyp_dict["runcov"] = None
+                    self.hyp_dict["runcov"] = None
                     # Reset VP repository (not used in python)
                     self.optim_state["vp_repo"] = []
 
@@ -1327,7 +1329,7 @@ class VBMC:
             # Needs to be below the above block since warmup value can change
             # in _check_warmup_end_conditions
             self.iteration_history.record(
-                "warmup", self.optim_state.get("warmup"), iteration
+                "warmup", self.optim_state.get("warmup"), self.iteration
             )
 
             # Check and update fitness shaping / output warping threshold
@@ -1340,7 +1342,7 @@ class VBMC:
                 )
             ):
                 Xrnd, _ = self.vp.sample(N=int(2e4), orig_flag=False)
-                ymu, _ = gp.predict(Xrnd, add_noise=True)
+                ymu, _ = self.gp.predict(Xrnd, add_noise=True)
                 ydelta = max(
                     [0, self.function_logger.y_max - np.quantile(ymu, 1e-3)]
                 )
@@ -1359,7 +1361,7 @@ class VBMC:
             # Stopped GP sampling this iteration?
             if (
                 Ns_gp == self.options["stable_gp_samples"]
-                and self.iteration_history["Ns_gp"][max(0, iteration - 1)]
+                and self.iteration_history["Ns_gp"][max(0, self.iteration - 1)]
                 > self.options["stable_gp_samples"]
             ):
                 if Ns_gp == 0:
@@ -1371,12 +1373,12 @@ class VBMC:
                 # Default behavior, try to guess based on plotting options:
                 reprint_headers = (
                     self.options.get("plot")
-                    and iteration > 0
+                    and self.iteration > 0
                     and "inline" in plt.get_backend()
                 )
             elif self.options["print_iteration_header"]:
                 # Re-print every iteration after 0th
-                reprint_headers = iteration > 0
+                reprint_headers = self.iteration > 0
             else:
                 # Never re-print headers
                 reprint_headers = False
@@ -1387,7 +1389,7 @@ class VBMC:
             if self.optim_state["cache_active"]:
                 self.logger.info(
                     display_format.format(
-                        iteration,
+                        self.iteration,
                         self.function_logger.func_count,
                         self.function_logger.cache_count,
                         elbo,
@@ -1406,7 +1408,7 @@ class VBMC:
                 ):
                     self.logger.info(
                         display_format.format(
-                            iteration,
+                            self.iteration,
                             self.function_logger.func_count,
                             self.optim_state["N"],
                             elbo,
@@ -1420,7 +1422,7 @@ class VBMC:
                 else:
                     self.logger.info(
                         display_format.format(
-                            iteration,
+                            self.iteration,
                             self.function_logger.func_count,
                             elbo,
                             elbo_sd,
@@ -1431,14 +1433,14 @@ class VBMC:
                         )
                     )
             self.iteration_history.record(
-                "logging_action", self.logging_action, iteration
+                "logging_action", self.logging_action, self.iteration
             )
 
             # Plot iteration
             if self.options.get("plot"):
-                if iteration > 0:
+                if self.iteration > 0:
                     previous_gp = self.iteration_history["vp"][
-                        iteration - 1
+                        self.iteration - 1
                     ].gp
                     # find points that are new in this iteration
                     # (hacky cause numpy only has 1D set diff)
@@ -1456,10 +1458,10 @@ class VBMC:
 
                 if len(self.logging_action) > 0:
                     title = "VBMC iteration {} ({})".format(
-                        iteration, ", ".join(self.logging_action)
+                        self.iteration, ", ".join(self.logging_action)
                     )
                 else:
-                    title = "VBMC iteration {}".format(iteration)
+                    title = "VBMC iteration {}".format(self.iteration)
 
                 self.vp.plot(
                     plot_data=True,
@@ -1530,7 +1532,7 @@ class VBMC:
                 plot_data=True,
                 highlight_data=None,
                 plot_vp_centres=True,
-                title="VBMC final ({} iterations)".format(iteration),
+                title="VBMC final ({} iterations)".format(self.iteration),
             )
             plt.show()
 
