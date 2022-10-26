@@ -914,8 +914,8 @@ class VBMC:
                 optim_state_old = copy.deepcopy(self.optim_state)
                 gp_old = copy.deepcopy(self.gp)
                 function_logger_old = copy.deepcopy(self.function_logger)
-                elbo_old = elbo
-                elbo_sd_old = elbo_sd
+                elbo_old = self.iteration_history["elbo"][-1]
+                elbo_sd_old = self.iteration_history["elbo_sd"][-1]
                 hyp_dict_old = copy.deepcopy(self.hyp_dict)
                 # Compute and apply whitening transform:
                 (
@@ -1495,17 +1495,20 @@ class VBMC:
         )
         if changed_flag:
             # Recompute symmetrized KL-divergence
-            sKL = max(
-                0,
-                0.5
-                * np.sum(
-                    self.vp.kl_div(
-                        vp2=vp_old,
-                        N=Nkl,
-                        gauss_flag=self.options.get("kl_gauss"),
-                    )
-                ),
-            )
+            if "vp_old" in locals():
+                sKL = max(
+                    0,
+                    0.5
+                    * np.sum(
+                        self.vp.kl_div(
+                            vp2=vp_old,
+                            N=Nkl,
+                            gauss_flag=self.options.get("kl_gauss"),
+                        )
+                    ),
+                )
+            else:
+                sKL = -1  # sKL is undefined
 
             if self.options.get("plot"):
                 self._log_column_headers()
@@ -2385,6 +2388,7 @@ user options = {str(self.options)}""",
             ],
             expand=expand,
             arr_size_thresh=arr_size_thresh,
+            exclude=["random_state"],
         )
 
     def _short_repr(self):
