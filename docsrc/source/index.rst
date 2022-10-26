@@ -131,7 +131,7 @@ BibTeX
 License and source
 ------------------
 
-PyVBMC is licensed under `BSD3 <https://opensource.org/licenses/BSD-3-Clause>`_.
+PyVBMC is released under the terms of the `BSD 3-Clause License <https://github.com/lacerbi/pyvbmc/blob/main/LICENSE>`_.
 The Python source code is on `GitHub <https://github.com/lacerbi/pyvbmc>`_.
 You may also want to check out the original `MATLAB toolbox <https://github.com/lacerbi/vbmc>`_.
 

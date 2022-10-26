@@ -162,4 +162,4 @@ PyVBMC was developed from the original MATLAB toolbox by [members](https://www.h
 
 ### License
 
-VBMC is released under the terms of the [GNU General Public License v3.0](https://github.com/lacerbi/vbmc/blob/master/LICENSE.txt).
+PyVBMC is released under the terms of the [BSD 3-Clause License](https://github.com/lacerbi/pyvbmc/blob/main/LICENSE).
