@@ -222,10 +222,17 @@ class VBMC:
             self.vp.optimize_mu = self.options.get("variable_means")
             self.vp.optimize_weights = self.options.get("variable_weights")
 
+        # The underlying Gaussian process which corresponds to current vp
         self.gp = None
-        self.hyp_dict = {}
+        self.hyp_dict = (
+            {}
+        )  # For storing auxilary info related to gp hyperparameters
+
+        # Optimization of vbmc starts from iteration 0
         self.iteration = -1
+        # Whether the optimization has finished
         self.is_finished = False
+
         self.optim_state = self._init_optim_state()
 
         # Initialize log-joint
