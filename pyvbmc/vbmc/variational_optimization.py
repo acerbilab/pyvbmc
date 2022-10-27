@@ -1049,9 +1049,11 @@ def _neg_elcbo(
     varH : float
         Variance of entropy term.
     I_sk : np.ndarray
-        The contribution to ``G`` per GP hyperparameter sample.
+        The contribution to ``G`` per GP hyperparameter sample and per VP
+        component.
     J_sjk : np.ndarray
-        The contribution to ``varG`` per GP hyperparameter sample.
+        The contribution to ``varG`` per GP hyperparameter sample and per pair
+        of VP components.
     """
     if not np.isfinite(beta):
         beta = 0
@@ -1274,10 +1276,12 @@ def _gp_log_joint(
         The gradient of the variance.
     var_ss : float
         Variance for each GP hyperparameter sample.
-    I_sk : np.ndarray, optional
-        The contribution to ``G`` per GP hyperparameter sample.
-    J_sjk : np.ndarray, optional
-        The contribution to ``varG`` per GP hyperparameter sample.
+    I_sk : np.ndarray
+        The contribution to ``G`` per GP hyperparameter sample and per VP
+        component.
+    J_sjk : np.ndarray
+        The contribution to ``varG`` per GP hyperparameter sample and per pair
+        of VP components.
 
     Raises
     ------
