@@ -125,6 +125,7 @@ You may also want to check out [Bayesian Adaptive Direct Search](https://github.
   pages={8222--8232},
   year={2018}
 }
+
 @article{acerbi2020variational,
   title={{V}ariational {B}ayesian {M}onte {C}arlo with noisy likelihoods},
   author={Acerbi, Luigi},
@@ -133,6 +134,7 @@ You may also want to check out [Bayesian Adaptive Direct Search](https://github.
   pages={8211--8222},
   year={2020}
 }
+
 @article{acerbi2019exploration,
   title={An Exploration of Acquisition and Mean Functions in {V}ariational {B}ayesian {M}onte {C}arlo},
   author={Acerbi, Luigi},
