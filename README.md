@@ -133,16 +133,13 @@ You may also want to check out [Bayesian Adaptive Direct Search](https://github.
   pages={8211--8222},
   year={2020}
 }
-@InProceedings{acerbi2019exploration,
+@article{acerbi2019exploration,
   title={An Exploration of Acquisition and Mean Functions in {V}ariational {B}ayesian {M}onte {C}arlo},
   author={Acerbi, Luigi},
-  booktitle={Proceedings of The 1st Symposium on Advances in Approximate Bayesian Inference},
-  pages={1--10},
-  year={2019},
-  editor={Ruiz, Francisco and Zhang, Cheng and Liang, Dawen and Bui, Thang},
+  journal={PMLR},
   volume={96},
-  series={Proceedings of Machine Learning Research},
-  publisher={PMLR},
+  pages={1--10},
+  year={2019}
 }
 ```
 
