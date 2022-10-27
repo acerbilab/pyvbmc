@@ -126,9 +126,6 @@ class VBMC:
         log_prior: callable = None,
         sample_prior: callable = None,
     ):
-        # set up root logger (only changes stuff if not initialized yet)
-        logging.basicConfig(stream=sys.stdout, format="%(message)s")
-
         # Initialize variables and algorithm structures
         if x0 is None:
             if (
@@ -1256,10 +1253,8 @@ class VBMC:
             timer.stop_timer("finalize")
             # timer.totalruntime = NaN;   # Update at the end of iteration
             # timer
-
             iteration_values = {
                 "iter": self.iteration,
-                "optim_state": self.optim_state,
                 "vp": self.vp,
                 "elbo": elbo,
                 "elbo_sd": elbo_sd,
@@ -1276,13 +1271,11 @@ class VBMC:
                 "n_eff": self.optim_state["n_eff"],
                 "function_logger": self.function_logger,
             }
-
             # Record all useful stats
             self.iteration_history.record_iteration(
                 iteration_values,
                 self.iteration,
             )
-
             # Check warmup
             if (
                 self.optim_state.get("iter") > 1
@@ -1480,6 +1473,12 @@ class VBMC:
                 )
                 plt.show()
 
+            # Record optim_state
+            self.iteration_history.record_iteration(
+                {"optim_state": self.optim_state},
+                self.iteration,
+            )
+            # Record random state
             self.random_state = np.random.get_state()
             self.iteration_history.record_iteration(
                 {"random_state": self.random_state},
@@ -2255,6 +2254,8 @@ class VBMC:
         logger : logging.Logger
             The main logging interface.
         """
+        # set up root logger (only changes stuff if not initialized yet)
+        logging.basicConfig(stream=sys.stdout, format="%(message)s")
         # set up VBMC logger
         logger = logging.getLogger("VBMC" + substring)
         logger.setLevel(logging.INFO)
