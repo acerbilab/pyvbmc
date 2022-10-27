@@ -563,6 +563,7 @@ def test_vbmc_resume_optimization():
     x0 = prior_mu.copy()
 
     # First run for 8 iterations:
+    np.random.seed(seed)
     options = {"max_iter": 8}
     vbmc_1 = VBMC(
         llfun,
@@ -577,11 +578,12 @@ def test_vbmc_resume_optimization():
     vbmc_1._check_termination_conditions = wrap_with_test(
         vbmc_1._check_termination_conditions, vbmc_1
     )
-    np.random.seed(seed)
+    np.random.seed(seed + 1)
     vp_1, elbo_1, elbo_sd_1, success_flag_1, info_1 = vbmc_1.optimize()
 
     # Then run for 4, save, load, run for 4 more:
-    options = {"max_iter": 4}
+    options = {"max_iter": 4, "do_final_boost": False}
+    np.random.seed(seed)
     vbmc_2 = VBMC(
         llfun,
         x0,
@@ -595,7 +597,7 @@ def test_vbmc_resume_optimization():
     vbmc_2._check_termination_conditions = wrap_with_test(
         vbmc_2._check_termination_conditions, vbmc_2
     )
-    np.random.seed(seed)
+    np.random.seed(seed + 1)
     vbmc_2.optimize()
 
     base_path = Path(__file__).parent
@@ -605,10 +607,9 @@ def test_vbmc_resume_optimization():
     with open(file_path, "rb") as f:
         vbmc_2 = dill.load(f)
     vbmc_2.options.__setitem__("max_iter", 8, force=True)
+    vbmc_2.options.__setitem__("do_final_boost", True, force=True)
     vp_2, elbo_2, elbo_sd_2, success_flag_2, info_2 = vbmc_2.optimize()
 
-    # Results should be similar
-    # (but unfortunately not exactly the same, even with identical seed).
     assert success_flag_1 == success_flag_2
-    assert np.isclose(elbo_1, elbo_2, rtol=0.05, atol=0.01)
-    assert np.isclose(elbo_sd_1, elbo_sd_2, rtol=0.05, atol=0.01)
+    assert elbo_1 == elbo_1
+    assert elbo_sd_1 == elbo_sd_2
