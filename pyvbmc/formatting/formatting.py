@@ -135,7 +135,7 @@ def get_repr(obj, expand=False, full=False, **kwargs):
             return repr(obj)  # If all else fails, return usual __repr__()
 
 
-def full_repr(object, title, order=[], **kwargs):
+def full_repr(object, title, order=None, exclude=None, **kwargs):
     """Get a complete string representation of an object.
 
     Prints the names and a summary of their values. Attributes listed in
@@ -155,10 +155,13 @@ def full_repr(object, title, order=[], **kwargs):
         forwarded to ``get_repr()``.
     """
     body = []
-
+    if order is None:
+        order = []
+    if exclude is None:
+        exclude = []
     # Print select attributes first
     for key in order:
-        if "." in key:  # Handle request to print e.g. 'vp.gp'
+        if "." in key:  # Handle request to print e.g. 'vp.K'
             sub_object = object
             for subkey in key.split("."):
                 sub_object = getattr(sub_object, subkey, None)
@@ -169,11 +172,11 @@ def full_repr(object, title, order=[], **kwargs):
     # Print all remaining attributes
     try:
         for key, val in sorted(object.__dict__.items()):
-            if key not in order:
+            if key not in order and key not in exclude:
                 body.append(f"self.{key} = {get_repr(val, **kwargs)}")
     except TypeError:  # Keys cannot be sorted
         for key, val in object.__dict__.items():
-            if key not in order:
+            if key not in order and key not in exclude:
                 body.append(f"self.{key} = {get_repr(val, **kwargs)}")
 
     body = ",\n".join(body)
