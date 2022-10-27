@@ -2004,27 +2004,24 @@ class VBMC:
             )
             n_slow_opts = 1
 
+            options = copy.deepcopy(self.options)
             # No pruning of components
-            self.options.__setitem__("tol_weight", 0, force=True)
+            options.__setitem__("tol_weight", 0, force=True)
 
             # End warmup
             self.optim_state["warmup"] = False
-            vp.optimize_mu = self.options.get("variable_means")
-            vp.optimize_weights = self.options.get("variable_weights")
+            vp.optimize_mu = options.get("variable_means")
+            vp.optimize_weights = options.get("variable_weights")
 
-            self.options.__setitem__("ns_ent", n_sent_boost, force=True)
-            self.options.__setitem__(
-                "ns_ent_fast", n_sent_fast_boost, force=True
-            )
-            self.options.__setitem__(
-                "ns_ent_fine", n_sent_fine_boost, force=True
-            )
-            self.options.__setitem__("max_iter_stochastic", np.Inf, force=True)
+            options.__setitem__("ns_ent", n_sent_boost, force=True)
+            options.__setitem__("ns_ent_fast", n_sent_fast_boost, force=True)
+            options.__setitem__("ns_ent_fine", n_sent_fine_boost, force=True)
+            options.__setitem__("max_iter_stochastic", np.Inf, force=True)
             self.optim_state["entropy_alpha"] = 0
 
             stable_flag = np.copy(vp.stats["stable"])
             vp, var_ss, pruned = optimize_vp(
-                self.options,
+                options,
                 self.optim_state,
                 vp,
                 gp,
