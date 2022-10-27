@@ -61,6 +61,7 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+tests/vbmc/vbmc_test.pkl
 
 # Translations
 *.mo

@@ -1,3 +1,6 @@
+from pathlib import Path
+
+import dill
 import numpy as np
 import scipy as sp
 
@@ -531,3 +534,81 @@ def _test_optimize_reproducibility():
 
     for k, v in result.items():
         assert v[0] == v[1]
+
+
+def test_vbmc_resume_optimization():
+    D = 2
+    seed = np.random.randint(0, 100)
+
+    def llfun(x):  # Rosenbrock, as before
+        if x.ndim == 2:
+            return -np.sum(
+                (x[0, :-1] ** 2.0 - x[0, 1:]) ** 2.0
+                + (x[0, :-1] - 1) ** 2.0 / 100
+            )
+        else:
+            return -np.sum(
+                (x[:-1] ** 2.0 - x[1:]) ** 2.0 + (x[:-1] - 1) ** 2.0 / 100
+            )
+
+    prior_mu = np.zeros((1, D))
+    prior_var = 3**2 * np.ones((1, D))
+    lpriorfun = lambda x: -0.5 * (
+        np.sum((x - prior_mu) ** 2 / prior_var)
+        + np.log(np.prod(2 * np.pi * prior_var))
+    )
+
+    plb = prior_mu - 3 * np.sqrt(prior_var)
+    pub = prior_mu + 3 * np.sqrt(prior_var)
+    x0 = prior_mu.copy()
+
+    # First run for 8 iterations:
+    options = {"max_iter": 8}
+    vbmc_1 = VBMC(
+        llfun,
+        x0,
+        None,
+        None,
+        plb,
+        pub,
+        log_prior=lpriorfun,
+        user_options=options,
+    )
+    vbmc_1._check_termination_conditions = wrap_with_test(
+        vbmc_1._check_termination_conditions, vbmc_1
+    )
+    np.random.seed(seed)
+    vp_1, elbo_1, elbo_sd_1, success_flag_1, info_1 = vbmc_1.optimize()
+
+    # Then run for 4, save, load, run for 4 more:
+    options = {"max_iter": 4}
+    vbmc_2 = VBMC(
+        llfun,
+        x0,
+        None,
+        None,
+        plb,
+        pub,
+        log_prior=lpriorfun,
+        user_options=options,
+    )
+    vbmc_2._check_termination_conditions = wrap_with_test(
+        vbmc_2._check_termination_conditions, vbmc_2
+    )
+    np.random.seed(seed)
+    vbmc_2.optimize()
+
+    base_path = Path(__file__).parent
+    file_path = base_path.joinpath("vbmc_test.pkl")
+    with open(file_path, "wb") as f:
+        dill.dump(vbmc_2, f)
+    with open(file_path, "rb") as f:
+        vbmc_2 = dill.load(f)
+    vbmc_2.options.__setitem__("max_iter", 8, force=True)
+    vp_2, elbo_2, elbo_sd_2, success_flag_2, info_2 = vbmc_2.optimize()
+
+    # Results should be similar
+    # (but unfortunately not exactly the same, even with identical seed).
+    assert success_flag_1 == success_flag_2
+    assert np.isclose(elbo_1, elbo_2, rtol=0.05, atol=0.01)
+    assert np.isclose(elbo_sd_1, elbo_sd_2, rtol=0.05, atol=0.01)
