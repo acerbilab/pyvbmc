@@ -67,17 +67,17 @@ vbmc = VBMC(target, x0, LB, UB, PLB, PUB)
 vp, elbo, elbo_sd, _, _ = vbmc.optimize()
 ```
 with input arguments:
-- `target`: the target (unnormalized) log density — often an unnormalized log posterior. target takes as input a parameter vector and returns the log density at the point;
+- `target`: the target (unnormalized) log density — often an unnormalized log posterior. `target` is a callable that should take as input a parameter vector and return the log density at the point;
 - `x0`: an array representing the starting point of the inference in parameter space;
-- `LB` and `UB`: an array of hard lower and upper bounds constraining the parameters (possibly infinite);
-- `PLB` and `PUB`: an array of plausible lower and upper bounds: that is, a box that ideally brackets a high density region of the target.
+- `LB` and `UB`: arrays of hard lower (resp. upper) bounds constraining the parameters (possibly `-/+np.inf` for unbounded parameters);
+- `PLB` and `PUB`: arrays of plausible lower (resp. upper) bounds: that is, a box that ideally brackets a high posterior density region of the target.
 
 The outputs are:
-- `vp`: a VariationalPosterior object which approximates the true target density;
+- `vp`: a `VariationalPosterior` object which approximates the true target density;
 - `elbo`: the estimated lower bound on the log model evidence (log normalization constant);
-- `elbo_sd`: the standard deviation of the estimate of the ELBO (not the error between the ELBO and the true log model evidence, which is generally unknown).
+- `elbo_sd`: the standard deviation of the estimate of the ELBO (*not* the error between the ELBO and the true log model evidence, which is generally unknown).
 
-The vp object can be manipulated in various ways, see the [`VariationalPosterior` class documentation](https://lacerbi.github.io/pyvbmc/api/classes/variational_posterior.html).
+The `vp` object can be manipulated in various ways. For example, we can draw samples from `vp` with the `vp.sample()` method, or evaluate its density at a point with `vp.pdf()` (or log-density with `vp.log_pdf()`). See the [`VariationalPosterior` class documentation](https://lacerbi.github.io/pyvbmc/api/classes/variational_posterior.html) for details.
 
 ## Next steps
 
@@ -91,7 +91,7 @@ PyVBMC is under active development. The original VBMC algorithm has been extensi
 
 If you have trouble doing something with PyVBMC, spot bugs or strange behavior, or you simply have some questions, please feel free to:
 - [open an issue](https://github.com/lacerbi/pyvbmc/issues/new) on GitHub, or,
-- contact me at <luigi.acerbi@helsinki.fi>, putting 'PyVBMC' in the subject of the email.
+- contact the project lead at <luigi.acerbi@helsinki.fi>, putting 'PyVBMC' in the subject of the email.
 
 ## References and citation
 
@@ -105,10 +105,10 @@ Please cite both references if you use PyVBMC in your work (the 2018 paper intro
 Besides formal citations, you can demonstrate your appreciation for PyVBMC in the following ways:
 
 - *Star :star:* the VBMC repository on GitHub;
-- [Follow Luigi Acerbi on Twitter](https://twitter.com/AcerbiLuigi) for updates about VBMC/PyVBMC and other projects I am involved with;
+- [Follow Luigi Acerbi on Twitter](https://twitter.com/AcerbiLuigi) for updates about VBMC/PyVBMC and other projects;
 - Tell us about your model-fitting problem and your experience with PyVBMC (positive or negative) at <luigi.acerbi@helsinki.fi> (putting  'PyVBMC' in the subject of the email).
 
-You may also want to check out [Bayesian Adaptive Direct Search](https://github.com/lacerbi/bads) (BADS), our method for fast Bayesian optimization. Currently available only in MATLAB, but a Python version is in development.
+You may also want to check out [Bayesian Adaptive Direct Search](https://github.com/lacerbi/bads) (BADS), our method for fast Bayesian optimization. Currently available only in MATLAB, but a Python version will be released soon.
 
 ### Additional references
 
@@ -117,48 +117,38 @@ You may also want to check out [Bayesian Adaptive Direct Search](https://github.
 ### BibTeX
 
 ```BibTeX
-@inproceedings{NEURIPS2018_747c1bcc,
- author = {Acerbi, Luigi},
- booktitle = {Advances in Neural Information Processing Systems},
- editor = {S. Bengio and H. Wallach and H. Larochelle and K. Grauman and N. Cesa-Bianchi and R. Garnett},
- pages = {},
- publisher = {Curran Associates, Inc.},
- title = {Variational Bayesian Monte Carlo},
- url = {https://proceedings.neurips.cc/paper/2018/file/747c1bcceb6109a4ef936bc70cfe67de-Paper.pdf},
- volume = {31},
- year = {2018}
+@article{acerbi2018variational,
+  title={{V}ariational {B}ayesian {M}onte {C}arlo},
+  author={Acerbi, Luigi},
+  journal={Advances in Neural Information Processing Systems},
+  volume={31},
+  pages={8222--8232},
+  year={2018}
 }
-@inproceedings{NEURIPS2020_5d409541,
- author = {Acerbi, Luigi},
- booktitle = {Advances in Neural Information Processing Systems},
- editor = {H. Larochelle and M. Ranzato and R. Hadsell and M.F. Balcan and H. Lin},
- pages = {8211--8222},
- publisher = {Curran Associates, Inc.},
- title = {Variational Bayesian Monte Carlo with Noisy Likelihoods},
- url = {https://proceedings.neurips.cc/paper/2020/file/5d40954183d62a82257835477ccad3d2-Paper.pdf},
- volume = {33},
- year = {2020}
+@article{acerbi2020variational,
+  title={{V}ariational {B}ayesian {M}onte {C}arlo with noisy likelihoods},
+  author={Acerbi, Luigi},
+  journal={Advances in Neural Information Processing Systems},
+  volume={33},
+  pages={8211--8222},
+  year={2020}
 }
-@InProceedings{pmlr-v96-acerbi19a,
-  title = 	 {An Exploration of Acquisition and Mean Functions
- in Variational Bayesian Monte Carlo},
-  author =       {Acerbi, Luigi},
-  booktitle = 	 {Proceedings of The 1st Symposium on Advances in Approximate Bayesian Inference},
-  pages = 	 {1--10},
-  year = 	 {2019},
-  editor = 	 {Ruiz, Francisco and Zhang, Cheng and Liang, Dawen and Bui, Thang},
-  volume = 	 {96},
-  series = 	 {Proceedings of Machine Learning Research},
-  month = 	 {02 Dec},
-  publisher =    {PMLR},
-  pdf = 	 {http://proceedings.mlr.press/v96/acerbi19a/acerbi19a.pdf},
-  url = 	 {https://proceedings.mlr.press/v96/acerbi19a.html}
+@InProceedings{acerbi2019exploration,
+  title={An Exploration of Acquisition and Mean Functions in {V}ariational {B}ayesian {M}onte {C}arlo},
+  author={Acerbi, Luigi},
+  booktitle={Proceedings of The 1st Symposium on Advances in Approximate Bayesian Inference},
+  pages={1--10},
+  year={2019},
+  editor={Ruiz, Francisco and Zhang, Cheng and Liang, Dawen and Bui, Thang},
+  volume={96},
+  series={Proceedings of Machine Learning Research},
+  publisher={PMLR},
 }
 ```
 
 ### Acknowledgments
 
-PyVBMC was developed from the original MATLAB toolbox by [members](https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence/people) (past and current) of the [Machine and Human Intelligence Lab](https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence/) at the University of Helsinki. The ongoing Python port is being supported by the Academy of Finland Flagship programme: [Finnish Centre for Artificial Intelligence (FCAI)](https://fcai.fi/).
+PyVBMC was developed from the original MATLAB toolbox by [members](https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence/people) (past and current) of the [Machine and Human Intelligence Lab](https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence/) at the University of Helsinki. The ongoing Python port is being supported by the Academy of Finland Flagship programme: [Finnish Centre for Artificial Intelligence FCAI](https://fcai.fi/).
 
 ### License
 
