@@ -854,6 +854,11 @@ class VBMC:
                 + " of the log-joint."
             )
 
+        if self.is_finished:
+            self.logger.warning("Continuing optimization from previous state.")
+            self.is_finished = False
+            self.vp = self.iteration_history["vp"][-1]
+            self.optim_state = self.iteration_history["optim_state"][-1]
         self._log_column_headers()
         while not self.is_finished:
             self.iteration += 1
