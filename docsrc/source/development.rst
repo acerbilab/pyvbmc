@@ -1,5 +1,5 @@
 ********************************************
-Instructions for Developers and Contributors
+Instructions for developers and contributors
 ********************************************
 
 PyVBMC is the port of the MATLAB VBMC algorithm to Python 3.x (development has targeted version 3.9 and up).
@@ -64,7 +64,7 @@ There are add-ons to generate docstring blueprints using IDE's.
 - In PyVBMC, the ``VariationalPosterior`` class can be taken as an example of (mostly) correct docstring structure, see `here <https://github.com/lacerbi/pyvbmc/blob/main/pyvbmc/variational_posterior/variational_posterior.py>`__.
   - In particular, see how the single quotes and double quotes are used; the math notation is used; full stops are added at the end of each sentence, etc.
 
-Code Documentation
+Code documentation
 ------------------
 
 The documentation is currently hosted on `github.io <https://lacerbi.github.io/pyvbmc/>`_. We build the PyVBMC documentation using `Sphinx <https://www.sphinx-doc.org/en/master/usage/quickstart.html>`_. The source code of the documentation is in the `docsrc folder <https://github.com/lacerbi/pyvbmc/tree/main/docsrc>`_ and the build version is in the `docs folder <https://github.com/lacerbi/pyvbmc/tree/main/docs>`_.
