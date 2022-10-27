@@ -126,6 +126,9 @@ class VBMC:
         log_prior: callable = None,
         sample_prior: callable = None,
     ):
+        # set up root logger (only changes stuff if not initialized yet)
+        logging.basicConfig(stream=sys.stdout, format="%(message)s")
+
         # Initialize variables and algorithm structures
         if x0 is None:
             if (
@@ -1473,15 +1476,13 @@ class VBMC:
                 )
                 plt.show()
 
-            # Record optim_state
-            self.iteration_history.record_iteration(
-                {"optim_state": self.optim_state},
-                self.iteration,
-            )
-            # Record random state
+            # Record optim_state and random state
             self.random_state = np.random.get_state()
             self.iteration_history.record_iteration(
-                {"random_state": self.random_state},
+                {
+                    "optim_state": self.optim_state,
+                    "random_state": self.random_state,
+                },
                 self.iteration,
             )
 
@@ -2251,8 +2252,6 @@ class VBMC:
         logger : logging.Logger
             The main logging interface.
         """
-        # set up root logger (only changes stuff if not initialized yet)
-        logging.basicConfig(stream=sys.stdout, format="%(message)s")
         # set up VBMC logger
         logger = logging.getLogger("VBMC" + substring)
         logger.setLevel(logging.INFO)
