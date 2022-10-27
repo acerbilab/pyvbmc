@@ -79,10 +79,10 @@ The outputs are:
 
 The `vp` object can be manipulated in various ways. For example, we can draw samples from `vp` with the `vp.sample()` method, or evaluate its density at a point with `vp.pdf()` (or log-density with `vp.log_pdf()`). See the [`VariationalPosterior` class documentation](https://lacerbi.github.io/pyvbmc/api/classes/variational_posterior.html) for details.
 
-### PyVBMC with noisy likelihoods
+### PyVBMC with noisy targets
 
-The quick start example above works for deterministic (noiseless) evaluations of the target log-joint. Py(VBMC) also supports *noisy* evaluations of the target.
-Noisy evaluations of the log-likelihood often arise from simulation-based models, for which a direct expression of the (log) likelihood is not available.
+The quick start example above works for deterministic (noiseless) evaluations of the target log-density. Py(VBMC) also supports *noisy* evaluations of the target.
+Noisy evaluations often arise from simulation-based models, for which a direct expression of the (log) likelihood is not available.
 
 For information on how to run PyVBMC on a noisy target, see [this example notebook](https://github.com/lacerbi/pyvbmc/blob/main/examples/pyvbmc_example_5.ipynb) and the [VBMC FAQ](https://github.com/lacerbi/vbmc/wiki#noisy-target-function) (for MATLAB, but most concepts still apply).
 
