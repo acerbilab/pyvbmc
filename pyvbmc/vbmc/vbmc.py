@@ -43,7 +43,7 @@ class VBMC:
         the target log-joint, that is, the unnormalized log-posterior density
         at ``x``. If ``log_prior`` is not ``None``, ``log_density`` should
         return the unnormalized log-likelihood. In either case, if
-        ``self.options["specifytargetnoise"]`` is true, ``log_density`` should
+        ``options["specifytargetnoise"]`` is true, ``log_density`` should
         return a tuple where the first element is the noisy log-density, and
         the second is an estimate of the standard deviation of the noise.
     x0 : np.ndarray, optional
