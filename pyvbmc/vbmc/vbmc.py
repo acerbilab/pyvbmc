@@ -1495,10 +1495,13 @@ class VBMC:
         # Pick "best" variational solution to return
         self.vp, elbo, elbo_sd, idx_best = self.determine_best_vp()
 
-        # Last variational optimization with large number of components
-        self.vp, elbo, elbo_sd, changed_flag = self.final_boost(
-            self.vp, self.iteration_history["gp"][idx_best]
-        )
+        if self.options.get("do_final_boost"):
+            # Last variational optimization with large number of components
+            self.vp, elbo, elbo_sd, changed_flag = self.final_boost(
+                self.vp, self.iteration_history["gp"][idx_best]
+            )
+        else:
+            changed_flag = False
         if changed_flag:
             # Recompute symmetrized KL-divergence
             if "vp_old" in locals():
