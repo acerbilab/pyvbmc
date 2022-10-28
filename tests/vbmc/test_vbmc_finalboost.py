@@ -11,7 +11,7 @@ def create_vbmc(
     upper_bounds: float,
     plausible_lower_bounds: float,
     plausible_upper_bounds: float,
-    user_options: dict = None,
+    options: dict = None,
 ):
     fun = lambda x: np.sum(x + 2)
     lb = np.ones((1, D)) * lower_bounds
@@ -19,11 +19,11 @@ def create_vbmc(
     x0_array = np.ones((2, D)) * x0
     plb = np.ones((1, D)) * plausible_lower_bounds
     pub = np.ones((1, D)) * plausible_upper_bounds
-    return VBMC(fun, x0_array, lb, ub, plb, pub, user_options)
+    return VBMC(fun, x0_array, lb, ub, plb, pub, options)
 
 
 def test_final_boost_lambda_options(mocker):
-    user_options = {
+    options = {
         "min_final_components": 50,
         "ns_ent": lambda K: 100 * K ** (2 / 3),
         "ns_ent_fast": lambda K: 0,
@@ -33,7 +33,7 @@ def test_final_boost_lambda_options(mocker):
         "ns_ent_fine_boost": lambda K: 2**12 * K,
         "ns_elbo": lambda K: 50 * K,
     }
-    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
     vbmc.iteration_history["gp"] = np.arange(30)
     vbmc.vp.stats = dict()
     vbmc.vp.stats["elbo"] = -3
@@ -47,7 +47,7 @@ def test_final_boost_lambda_options(mocker):
 
 
 def test_final_boost_fixed_value_options(mocker):
-    user_options = {
+    options = {
         "min_final_components": 50,
         "ns_ent": 1300,
         "ns_ent_fast": 0,
@@ -57,7 +57,7 @@ def test_final_boost_fixed_value_options(mocker):
         "ns_ent_fine_boost": 204800,
         "ns_elbo": 2500,
     }
-    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
     vbmc.iteration_history["gp"] = np.arange(30)
     vbmc.vp.stats = dict()
     vbmc.vp.stats["elbo"] = -3
@@ -71,7 +71,7 @@ def test_final_boost_fixed_value_options(mocker):
 
 
 def test_final_boost_fixed_value_options_boost_none(mocker):
-    user_options = {
+    options = {
         "min_final_components": 50,
         "ns_ent": 1300,
         "ns_ent_fast": 0,
@@ -81,7 +81,7 @@ def test_final_boost_fixed_value_options_boost_none(mocker):
         "ns_ent_fine_boost": [],
         "ns_elbo": 2500,
     }
-    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
     vbmc.iteration_history["gp"] = np.arange(30)
     vbmc.vp.stats = dict()
     vbmc.vp.stats["elbo"] = -3
@@ -95,7 +95,7 @@ def test_final_boost_fixed_value_options_boost_none(mocker):
 
 
 def test_final_boost_no_boost(mocker):
-    user_options = {
+    options = {
         "min_final_components": 1,
         "ns_ent": 1300,
         "ns_ent_fast": 0,
@@ -104,7 +104,7 @@ def test_final_boost_no_boost(mocker):
         "ns_ent_fast_boost": [],
         "ns_ent_fine_boost": [],
     }
-    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, user_options)
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
     vbmc.iteration_history["gp"] = np.arange(30)
     vbmc.vp.stats = dict()
     vbmc.vp.stats["elbo"] = -3

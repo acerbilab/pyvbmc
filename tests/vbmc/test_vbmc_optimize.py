@@ -79,9 +79,7 @@ def run_optim_block(
     if noise_flag:
         options["specify_target_noise"] = True
 
-    vbmc = VBMC(
-        f, x0, lb, ub, plb, pub, user_options=options, log_prior=log_prior
-    )
+    vbmc = VBMC(f, x0, lb, ub, plb, pub, options=options, log_prior=log_prior)
     # Patch in the modified method:
     vbmc._check_termination_conditions = wrap_with_test(
         vbmc._check_termination_conditions, vbmc
@@ -472,7 +470,7 @@ def test_optimize_result_dict(mocker):
         np.full((1, D), np.inf),
         np.ones((1, D)) * -10,
         np.ones((1, D)) * 10,
-        user_options={"max_iter": 1},
+        options={"max_iter": 1},
     )
     mocker.patch(
         "pyvbmc.vbmc.VBMC._check_termination_conditions",
@@ -572,7 +570,7 @@ def test_vbmc_resume_optimization():
         plb,
         pub,
         log_prior=lpriorfun,
-        user_options=options,
+        options=options,
     )
     vbmc_1._check_termination_conditions = wrap_with_test(
         vbmc_1._check_termination_conditions, vbmc_1
@@ -590,7 +588,7 @@ def test_vbmc_resume_optimization():
         plb,
         pub,
         log_prior=lpriorfun,
-        user_options=options,
+        options=options,
     )
     vbmc_2._check_termination_conditions = wrap_with_test(
         vbmc_2._check_termination_conditions, vbmc_2

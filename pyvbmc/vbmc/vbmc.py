@@ -43,7 +43,7 @@ class VBMC:
         the target log-joint, that is, the unnormalized log-posterior density
         at ``x``. If ``log_prior`` is not ``None``, ``log_density`` should
         return the unnormalized log-likelihood. In either case, if
-        ``user_options["specifytargetnoise"]`` is true, ``log_density`` should
+        ``self.options["specifytargetnoise"]`` is true, ``log_density`` should
         return a tuple where the first element is the noisy log-density, and
         the second is an estimate of the standard deviation of the noise.
     x0 : np.ndarray, optional
@@ -71,9 +71,9 @@ class VBMC:
         for a Gaussian prior) works well in many cases (but note that
         additional information might afford a better guess). Both are
         by default ``None``.
-    user_options : dict, optional
+    options : dict, optional
         Additional options can be passed as a dict. Please refer to the
-        VBMC options page for the default options. If no ``user_options`` are
+        VBMC options page for the default options. If no ``options`` are
         passed, the default options are used.
     log_prior : callable, optional
         An optional separate log-prior function, which should accept a single
@@ -122,7 +122,7 @@ class VBMC:
         upper_bounds: np.ndarray = None,
         plausible_lower_bounds: np.ndarray = None,
         plausible_upper_bounds: np.ndarray = None,
-        user_options: dict = None,
+        options: dict = None,
         log_prior: callable = None,
         sample_prior: callable = None,
     ):
@@ -149,6 +149,7 @@ class VBMC:
         # load basic and advanced options and validate the names
         pyvbmc_path = os.path.dirname(os.path.realpath(__file__))
         basic_path = pyvbmc_path + "/option_configs/basic_vbmc_options.ini"
+        user_options = options
         self.options = Options(
             basic_path,
             evaluation_parameters={"D": self.D},

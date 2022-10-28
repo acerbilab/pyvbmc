@@ -101,9 +101,9 @@ def test_get_training_data_noise():
     x0 = np.ones((2, D)) * 3
     plb = np.ones((1, D)) * -1
     pub = np.ones((1, D)) * 1
-    user_options = {"specify_target_noise": True}
+    options = {"specify_target_noise": True}
 
-    vbmc = VBMC(f, x0, None, None, plb, pub, user_options)
+    vbmc = VBMC(f, x0, None, None, plb, pub, options)
 
     # Make sure we get nothing out before data has not been added.
     X_train, y_train, s2_train, t_train = _get_training_data(
@@ -231,8 +231,8 @@ def test_get_gp_training_options_samplers():
     plb = np.ones((1, D)) * 2
     pub = np.ones((1, D)) * 4
     f = lambda x: np.sum(x + 2)
-    user_options = {"weighted_hyp_cov": False}
-    vbmc = VBMC(f, x0, lb, ub, plb, pub, user_options)
+    options = {"weighted_hyp_cov": False}
+    vbmc = VBMC(f, x0, lb, ub, plb, pub, options)
 
     hyp_dict = {"run_cov": np.eye(3)}
     hyp_dict_none = {"run_cov": None}
@@ -365,8 +365,8 @@ def test_gp_hyp():
     plb = np.ones((1, D)) * -1
     pub = np.ones((1, D)) * 1
 
-    user_options = {"specify_target_noise": True}
-    vbmc = VBMC(f, x0, None, None, plb, pub, user_options)
+    options = {"specify_target_noise": True}
+    vbmc = VBMC(f, x0, None, None, plb, pub, options)
 
     # Create dummy data.
     sample_count = 10
