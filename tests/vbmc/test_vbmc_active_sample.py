@@ -18,14 +18,14 @@ def create_vbmc(
     upper_bounds: float,
     plausible_lower_bounds: float,
     plausible_upper_bounds: float,
-    user_options: dict = None,
+    options: dict = None,
 ):
     lb = np.ones((1, D)) * lower_bounds
     ub = np.ones((1, D)) * upper_bounds
     x0_array = np.ones((2, D)) * x0
     plb = np.ones((1, D)) * plausible_lower_bounds
     pub = np.ones((1, D)) * plausible_upper_bounds
-    return VBMC(fun, x0_array, lb, ub, plb, pub, user_options)
+    return VBMC(fun, x0_array, lb, ub, plb, pub, options)
 
 
 def test_active_uncertainty_sampling(mocker):
@@ -43,11 +43,11 @@ def test_active_uncertainty_sampling(mocker):
     PLB = np.array([[-3.0, -3.0]])  # Plausible lower bounds
     PUB = np.array([[3.0, 3.0]])  # Plausible upper bounds
     x0 = np.zeros((1, D))
-    user_options = {
+    options = {
         "active_sample_vp_update": True,
         "active_sample_gp_update": True,
     }
-    vbmc = VBMC(fun, x0, LB, UB, PLB, PUB, user_options)
+    vbmc = VBMC(fun, x0, LB, UB, PLB, PUB, options)
     mocker.patch("pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", rosen)
     N_init = 10
     function_logger, optim_state, _, _ = active_sample(
@@ -172,8 +172,8 @@ def test_active_sample_initial_sample_plausible(mocker):
     Test initial sample with provided_sample_count < sample_count and
     init_design is plausible.
     """
-    user_options = {"init_design": "plausible"}
-    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
+    options = {"init_design": "plausible"}
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, options)
     provided_sample_count = 10
     sample_count = provided_sample_count + 102
     X_orig = np.linspace((1, 11, 21), (10, 20, 30), provided_sample_count)
@@ -232,8 +232,8 @@ def test_active_sample_initial_sample_narrow(mocker):
     Test initial sample with provided_sample_count < sample_count and
     init_design is plausible.
     """
-    user_options = {"init_design": "narrow"}
-    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
+    options = {"init_design": "narrow"}
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, options)
     provided_sample_count = 10
     sample_count = provided_sample_count + 102
     X_orig = np.linspace((0, 0, 0), (10, 10, 10), provided_sample_count)
@@ -295,8 +295,8 @@ def test_active_sample_initial_sample_unknown_initial_design():
     Test initial sample with provided_sample_count < sample_count and
     init_design is unknown.
     """
-    user_options = {"init_design": "unknown"}
-    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
+    options = {"init_design": "unknown"}
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, options)
     sample_count = 10
 
     with pytest.raises(ValueError) as execinfo:
@@ -317,8 +317,8 @@ def test_active_sample_logger():
     Test logging levels for various options.
     """
     # iter which is INFO
-    user_options = {"display": "iter"}
-    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
+    options = {"display": "iter"}
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, options)
     active_sample(
         gp=None,
         sample_count=1,
@@ -331,8 +331,8 @@ def test_active_sample_logger():
     assert logging.getLogger("ActiveSample").getEffectiveLevel() == 20
 
     # off which is WARN
-    user_options = {"display": "off"}
-    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
+    options = {"display": "off"}
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, options)
     active_sample(
         gp=None,
         sample_count=1,
@@ -344,8 +344,8 @@ def test_active_sample_logger():
     )
 
     # full which is DEBUG
-    user_options = {"display": "full"}
-    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
+    options = {"display": "full"}
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, options)
     active_sample(
         gp=None,
         sample_count=1,
@@ -358,8 +358,8 @@ def test_active_sample_logger():
     assert logging.getLogger("ActiveSample").getEffectiveLevel() == 10
 
     # anything else is also INFO
-    user_options = {"display": "strange_option"}
-    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
+    options = {"display": "strange_option"}
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, options)
     active_sample(
         gp=None,
         sample_count=1,
@@ -423,8 +423,8 @@ def test_get_search_points_all_cache():
     """
     Take all points from cache.
     """
-    user_options = {"cache_frac": 1}
-    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
+    options = {"cache_frac": 1}
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, options)
     number_of_points = 2
     x_orig = np.linspace((0, 0, 0), (10, 10, 10), number_of_points)
     vbmc.optim_state["cache"]["x_orig"] = np.copy(x_orig)
@@ -450,7 +450,7 @@ def test_get_search_points_all_search_cache():
     """
     Take all points from search cache.
     """
-    user_options = {
+    options = {
         "cache_frac": 1,
         "search_cache_frac": 1,
         "heavy_tail_search_frac": 0,
@@ -458,7 +458,7 @@ def test_get_search_points_all_search_cache():
         "box_search_frac": 0,
         "hpd_search_frac": 0,
     }
-    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, options)
     number_of_points = 2
     X = np.linspace((0, 0, 0), (10, 10, 10), number_of_points)
     vbmc.optim_state["cache"]["x_orig"] = np.zeros(0)
@@ -484,7 +484,7 @@ def test_get_search_points_search_bounds():
     """
     Ensure that search bounds constrain the search points.
     """
-    user_options = {
+    options = {
         "cache_frac": 1,
         "search_cache_frac": 0,
         "heavy_tail_search_frac": 0,
@@ -492,7 +492,7 @@ def test_get_search_points_search_bounds():
         "box_search_frac": 0,
         "hpd_search_frac": 0,
     }
-    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, options)
     number_of_points = 2
     X = np.linspace((0, 0, 0), (10, 10, 10), number_of_points)
     vbmc.optim_state["cache"]["x_orig"] = np.copy(X)
@@ -518,7 +518,7 @@ def test_get_search_points_all_heavytailsearch():
     """
     Take all points from heavytail search.
     """
-    user_options = {
+    options = {
         "cache_frac": 1,
         "search_cache_frac": 0,
         "heavy_tail_search_frac": 1,
@@ -526,7 +526,7 @@ def test_get_search_points_all_heavytailsearch():
         "box_search_frac": 0,
         "hpd_search_frac": 0,
     }
-    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, options)
     number_of_points = 2
     X = np.linspace((0, 0, 0), (10, 10, 10), number_of_points)
     vbmc.optim_state["cache"]["x_orig"] = np.zeros(0)
@@ -550,7 +550,7 @@ def test_get_search_points_all_mvn():
     """
     Take all points from mvn.
     """
-    user_options = {
+    options = {
         "cache_frac": 1,
         "search_cache_frac": 0,
         "heavy_tail_search_frac": 0,
@@ -558,7 +558,7 @@ def test_get_search_points_all_mvn():
         "box_search_frac": 0,
         "hpd_search_frac": 0,
     }
-    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, options)
     number_of_points = 2
     X = np.linspace((0, 0, 0), (10, 10, 10), number_of_points)
     vbmc.optim_state["cache"]["x_orig"] = np.zeros(0)
@@ -582,7 +582,7 @@ def test_get_search_points_all_mvn_vp_sample():
     """
     Take all points from mvn vp sample.
     """
-    user_options = {
+    options = {
         "cache_frac": 1,
         "search_cache_frac": 0,
         "heavy_tail_search_frac": 0,
@@ -590,7 +590,7 @@ def test_get_search_points_all_mvn_vp_sample():
         "box_search_frac": 0,
         "hpd_search_frac": 0,
     }
-    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, options)
     number_of_points = 2
     X = np.linspace((0, 0, 0), (10, 10, 10), number_of_points)
     vbmc.optim_state["cache"]["x_orig"] = np.zeros(0)
@@ -614,7 +614,7 @@ def test_get_search_points_all_box_search(mocker):
     """
     Take all points from box search.
     """
-    user_options = {
+    options = {
         "cache_frac": 1,
         "search_cache_frac": 0,
         "heavy_tail_search_frac": 0,
@@ -622,7 +622,7 @@ def test_get_search_points_all_box_search(mocker):
         "box_search_frac": 1,
         "hpd_search_frac": 0,
     }
-    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, options)
     number_of_points = 2
     X = np.linspace((0, 0, 0), (10, 10, 10), number_of_points)
     vbmc.optim_state["cache"]["x_orig"] = np.zeros(0)
@@ -681,7 +681,7 @@ def test_get_search_points_all_hpd_search(mocker):
     """
     Take all points from hpd search.
     """
-    user_options = {
+    options = {
         "cache_frac": 1,
         "search_cache_frac": 0,
         "heavy_tail_search_frac": 0,
@@ -690,7 +690,7 @@ def test_get_search_points_all_hpd_search(mocker):
         "hpd_search_frac": 1,
         "hpd_frac": 0.8,
     }
-    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, options)
     number_of_points = 2
     X = np.linspace((0, 0, 0), (10, 10, 10), number_of_points)
     vbmc.optim_state["cache"]["x_orig"] = np.zeros(0)
@@ -726,7 +726,7 @@ def test_get_search_points_all_hpd_search_empty_get_hpd(mocker):
     Take all points from hpd search when when get_hpd returns an empty array.
     """
 
-    user_options = {
+    options = {
         "cache_frac": 1,
         "search_cache_frac": 0,
         "heavy_tail_search_frac": 0,
@@ -736,7 +736,7 @@ def test_get_search_points_all_hpd_search_empty_get_hpd(mocker):
         "hpd_frac": 0,
     }
 
-    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, options)
     number_of_points = 2
     X = np.linspace((0, 0, 0), (10, 10, 10), number_of_points)
     vbmc.optim_state["cache"]["x_orig"] = np.zeros(0)
@@ -772,7 +772,7 @@ def test_get_search_points_more_points_randomly_than_requested():
     Test that ValueError is raised when options lead to more points sampled than
     requested.
     """
-    user_options = {
+    options = {
         "cache_frac": 0,
         "search_cache_frac": 0,
         "heavy_tail_search_frac": 1,
@@ -780,7 +780,7 @@ def test_get_search_points_more_points_randomly_than_requested():
         "box_search_frac": 1,
         "hpd_search_frac": 1,
     }
-    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, user_options)
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, options)
     number_of_points = 100
     vbmc.optim_state["cache"]["x_orig"] = np.zeros(0)
 
