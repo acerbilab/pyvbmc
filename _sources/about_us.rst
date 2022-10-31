@@ -32,4 +32,4 @@ Developers who have made important contributions in the past, but are no longer 
 Join the team
 --------------
 
-We will add soon more info on how to join the the development team and contribute to PyVBMC.
+If you are interested in contributing to PyVBMC please see the :doc:`instructions for developers and contributors <development>` for general development guidelines. We welcome pull requests, bug reports, feature requests, etc. For other opportunities to work with us please see the homepage for the `Machine and Human Intelligence Lab <https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence>`_, or contact the lab's Principal Investigator at luigi.acerbi@helsinki.fi.

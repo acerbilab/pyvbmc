@@ -471,7 +471,7 @@
 <h1>Instructions for developers and contributors<a class="headerlink" href="#instructions-for-developers-and-contributors" title="Permalink to this headline">¶</a></h1>
 <p>PyVBMC is the port of the MATLAB VBMC algorithm to Python 3.x (development has targeted version 3.9 and up).</p>
 <p>The reference code is the <a class="reference external" href="https://github.com/acerbilab/vbmc">MATLAB toolbox</a>.</p>
-<p>The documentation is available at: <a class="reference external" href="https://lacerbi.github.io/pyvbmc/">https://lacerbi.github.io/pyvbmc/</a></p>
+<p>The documentation is available at: <a class="reference external" href="https://acerbilab.github.io/pyvbmc/">https://acerbilab.github.io/pyvbmc/</a></p>
 <div class="section" id="how-to-install-and-run-the-package-temporary">
 <h2>How to install and run the package (temporary)<a class="headerlink" href="#how-to-install-and-run-the-package-temporary" title="Permalink to this headline">¶</a></h2>
 <p>PyVBMC is not yet available on <code class="docutils literal notranslate"><span class="pre">pip</span></code> / <code class="docutils literal notranslate"><span class="pre">conda-forge</span></code>. The suggested manual installation instructions can be found on the <a class="reference internal" href="installation.html#installation"><span class="std std-ref">Installation</span></a> page.</p>
@@ -522,30 +522,31 @@ There are add-ons to generate docstring blueprints using IDE’s.</p>
 </div>
 <div class="section" id="code-documentation">
 <h3>Code documentation<a class="headerlink" href="#code-documentation" title="Permalink to this headline">¶</a></h3>
-<p>The documentation is currently hosted on <a class="reference internal" href="index.html"><span class="doc">github.io</span></a>. We build the PyVBMC documentation using <a class="reference external" href="https://www.sphinx-doc.org/en/master/usage/quickstart.html">Sphinx</a>. The source code of the documentation is in the <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/docsrc">docsrc folder</a> and the build version is in the <a class="reference external" href="https://github.com/acerbilab/pyvbmc/tree/main/docs">docs folder</a>.
-From there new documentation can be compiled using the following commands:</p>
+<p>The documentation is currently hosted on <a class="reference internal" href="index.html"><span class="doc">github.io</span></a>. We build the PyVBMC documentation using <a class="reference external" href="https://www.sphinx-doc.org/en/master/usage/quickstart.html">Sphinx</a>. The source code of the documentation is in the <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/docsrc">docsrc folder</a> and the build version is in the <a class="reference external" href="https://github.com/acerbilab/pyvbmc/tree/gh-pages">gh-pages</a> branch. When the documentation is re-built, it should be pushed to the <code class="docutils literal notranslate"><span class="pre">gh-pages</span></code> instead of committing it on the <code class="docutils literal notranslate"><span class="pre">main</span></code> branch.</p>
+<p>To setup an existing PyVBMC repository for building documentation, please follow the steps below:</p>
 <ol class="arabic">
-<li><p>Merge main branch into feature branch (bring the branch up to date with whatever changes were done in main):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="n">main</span>
-<span class="n">git</span> <span class="n">pull</span>
-<span class="n">git</span> <span class="n">checkout</span> <span class="o">&lt;</span><span class="n">feature_branch</span><span class="o">&gt;</span>
-<span class="n">git</span> <span class="n">merge</span> <span class="n">master</span>
+<li><p>One-time setup:
+- Remove the <code class="docutils literal notranslate"><span class="pre">docs/</span></code> folder from the root of your existing PyVBMC repo, if it is present.
+- From the root of the PyVBMC repo, run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>  git clone -b gh-pages --single-branch https://github.com/acerbilab/pyvbmc docs
+
+This will clone *only* the ``gh-pages`` branch inside ``docs/``, so that changes to the docs can now be pushed directly to ``gh-pages`` from within ``docs/``.
 </pre></div>
 </div>
 </li>
-<li><p>Make sure that everything works, e.g. by running tests.</p></li>
-<li><p>Render new documentation:</p>
+<li><p>From the <code class="docutils literal notranslate"><span class="pre">main</span></code> branch render new documentation:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">/</span><span class="n">docsrc</span> <span class="p">(</span><span class="n">navigate</span> <span class="n">to</span> <span class="n">documentation</span> <span class="n">source</span> <span class="n">folder</span><span class="p">)</span>
 <span class="n">make</span> <span class="n">github</span>  <span class="p">(</span><span class="n">this</span> <span class="n">builds</span> <span class="n">the</span> <span class="n">doc</span> <span class="ow">and</span> <span class="n">copies</span> <span class="n">the</span> <span class="n">build</span> <span class="n">version</span> <span class="n">to</span> <span class="o">./</span><span class="n">docs</span><span class="p">)</span>
 </pre></div>
 </div>
-</li>
-</ol>
 <p>(If you are using Windows, run <code class="docutils literal notranslate"><span class="pre">.\make.bat</span> <span class="pre">github</span></code> with <code class="docutils literal notranslate"><span class="pre">cmd</span></code> instead.)</p>
-<ol class="arabic simple" start="4">
-<li><p>Commit the new documentation.</p></li>
-<li><p>Create a new pull request.</p></li>
-<li><p>When the pull request is merged, <a class="reference external" href="https://lacerbi.github.io/pyvbmc/">github.io</a> detects changes and rebuilds the documentation.</p></li>
+</li>
+<li><p>Change into the <code class="docutils literal notranslate"><span class="pre">docs/</span></code> directory:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">../</span><span class="n">docs</span>
+</pre></div>
+</div>
+</li>
+<li><p>Commit the new documentation and push. <a class="reference external" href="https://acerbilab.github.io/pyvbmc/">github.io</a> will detect the changes and rebuild the website (possibly after a few minutes). Only documentation that was built from the <code class="docutils literal notranslate"><span class="pre">main</span></code> branch should be committed to <code class="docutils literal notranslate"><span class="pre">gh-pages</span></code>.</p></li>
 </ol>
 <p>If it seems that the documentation does not update correctly (e.g., items not appearing in the sidebar or table of content), try deleting the <code class="docutils literal notranslate"><span class="pre">./docs</span></code> folder and the cached folder <code class="docutils literal notranslate"><span class="pre">./docsrc/_build</span></code> before compiling the documentation. There is a command for that:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">clean</span>
