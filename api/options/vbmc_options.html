@@ -1,0 +1,784 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VBMC options &#8212; PyVBMC</title>
+    
+  <link href="../../_static/css/theme.css" rel="stylesheet">
+  <link href="../../_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-book-theme.css?digest=84ace793992934648b4de8eed757e5a2" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.css" />
+    
+  <link rel="preload" as="script" href="../../_static/js/index.be7d3bbb2ef33a8344ce.js">
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../_static/sphinx-book-theme.9d8b4a8b9bb19db25eeaddc40d639ba2.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Advanced documentation" href="../advanced_docs.html" />
+    <link rel="prev" title="VariationalPosterior" href="../classes/variational_posterior.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<!-- Checkboxes to toggle the left sidebar -->
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
+<label class="overlay" for="__navigation">
+    <div class="visually-hidden">Toggle navigation sidebar</div>
+</label>
+<div class="col-12 col-md-3 bd-sidebar site-navigation " id="site-navigation">
+    
+        <div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="../../index.html">
+      
+      
+      
+      <h1 class="site-logo" id="site-title">PyVBMC</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        <ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../installation.html">
+   Installation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../quickstart.html">
+   Getting started
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../classes/vbmc.html">
+   VBMC
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../classes/variational_posterior.html">
+   VariationalPosterior
+  </a>
+ </li>
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   VBMC options
+  </a>
+ </li>
+ <li class="toctree-l1 current active has-children">
+  <a class="reference internal" href="../advanced_docs.html">
+   Advanced documentation
+  </a>
+  <input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="current">
+   <li class="toctree-l2">
+    <a class="reference internal" href="../classes/acquisition_functions.html">
+     Acquisition Functions
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../classes/function_logger.html">
+     FunctionLogger
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../classes/iteration_history.html">
+     IterationHistory
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../classes/options.html">
+     Options
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../classes/parameter_transformer.html">
+     ParameterTransformer
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../classes/timer.html">
+     Timer
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../classes/variational_posterior.html">
+     VariationalPosterior
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../classes/vbmc.html">
+     VBMC
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../functions/active_sample.html">
+     active_sample
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../functions/create_vbmc_animation.html">
+     create_vbmc_animation
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../functions/decorators.html">
+     decorators
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../functions/entropy.html">
+     entropy
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../functions/get_hpd.html">
+     get_hpd
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../functions/kde_1d.html">
+     kde_1d
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../functions/whitening.html">
+     whitening
+    </a>
+   </li>
+   <li class="toctree-l2 current active">
+    <a class="current reference internal" href="#">
+     VBMC options
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../_examples/pyvbmc_example_1_basic_usage.html">
+   PyVBMC Example 1: Basic usage
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../_examples/pyvbmc_example_2_inputs_outputs.html">
+   PyVBMC Example 2: Understanding the inputs and the output trace
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../_examples/pyvbmc_example_3_diagnostics_and_saving.html">
+   PyVBMC Example 3: Output diagnostics and saving results
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../_examples/pyvbmc_example_4_validation.html">
+   PyVBMC Example 4: Multiple runs as validation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../_examples/pyvbmc_example_5_noisy_likelihoods.html">
+   PyVBMC Example 5: Noisy log-likelihood evaluations
+  </a>
+ </li>
+</ul>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../development.html">
+   Instructions for developers and contributors
+  </a>
+ </li>
+</ul>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../about_us.html">
+   About us
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav> <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Theme by the <a href="https://ebp.jupyterbook.org">Executable Book Project</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<!-- This is an invisible pixel that we watch to see if we've scrolled. -->
+<div class="sbt-scroll-pixel-helper"></div>
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            <div class="topbar-left">
+                
+                <label class="nav-toggle-button" for="__navigation">
+                    <div class="visually-hidden">Toggle navigation</div>
+                    <i class="fas fa-bars"></i>
+                </label>
+                
+            </div>
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="../../_sources/api/options/vbmc_options.rst"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.rst</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+                onclick="printPdf(this)" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show noprint">
+            
+            <div class="tocsection onthispage pt-5 pb-3">
+                <i class="fas fa-list"></i> Contents
+            </div>
+            <nav id="bd-toc-nav" aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#basic-options">
+   Basic options
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#advanced-options">
+   Advanced Options
+  </a>
+ </li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1>VBMC options</h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                        <div>
+                            <h2> Contents </h2>
+                        </div>
+                        <nav aria-label="Page">
+                            <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#basic-options">
+   Basic options
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#advanced-options">
+   Advanced Options
+  </a>
+ </li>
+</ul>
+
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            
+              <div>
+                
+  <div class="section" id="vbmc-options">
+<h1>VBMC options<a class="headerlink" href="#vbmc-options" title="Permalink to this headline">¶</a></h1>
+<dl class="simple">
+<dt>The options can be divided into two types of options:</dt><dd><ul class="simple">
+<li><p><strong>Basic default options:</strong> We expect that these options are changed by many users.</p></li>
+<li><p><strong>Advanced options:</strong> These options are for advanced users of VBMC. Do not modify them unless you <em>know</em> what you are doing.</p></li>
+</ul>
+</dd>
+</dl>
+<p>You can find the default options for both groups below.</p>
+<div class="section" id="basic-options">
+<h2>Basic options<a class="headerlink" href="#basic-options" title="Permalink to this headline">¶</a></h2>
+<p>We expect that these options are changed by many users.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">BasicOptions</span><span class="p">]</span>
+<span class="c1"># Level of display (&quot;iter&quot;, &quot;notify&quot;, &quot;final&quot;, or &quot;off&quot;)</span>
+<span class="n">display</span> <span class="o">=</span> <span class="s2">&quot;iter&quot;</span>
+<span class="c1"># Plot marginals of variational posterior at each iteration</span>
+<span class="n">plot</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="c1"># Max number of iterations</span>
+<span class="n">max_iter</span> <span class="o">=</span> <span class="mi">50</span><span class="o">*</span><span class="p">(</span><span class="mi">2</span><span class="o">+</span><span class="n">D</span><span class="p">)</span>
+<span class="c1"># Max number of target fcn evals</span>
+<span class="n">max_fun_evals</span> <span class="o">=</span> <span class="mi">50</span><span class="o">*</span><span class="p">(</span><span class="mi">2</span><span class="o">+</span><span class="n">D</span><span class="p">)</span>
+<span class="c1"># Number of target fcn evals per iteration</span>
+<span class="n">fun_evals_per_iter</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="c1"># Required stable fcn evals for termination</span>
+<span class="n">tol_stable_count</span> <span class="o">=</span> <span class="mi">60</span>
+<span class="c1"># Max number of target fcn evals on retry (0 = no retry)</span>
+<span class="n">retry_max_fun_evals</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="c1"># Number of variational components to refine posterior at termination</span>
+<span class="n">min_final_components</span> <span class="o">=</span> <span class="mi">50</span>
+<span class="c1"># Target log joint function returns noise estimate (SD) as second output</span>
+<span class="n">specify_target_noise</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="c1"># Name of file to write logs to (if None, no log file will be written)</span>
+<span class="n">log_file_name</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="c1"># Logging level for log file, one of (&quot;iter&quot;, &quot;notify&quot;, &quot;final&quot;, or &quot;off&quot;), or a level from logging module (e.g. logging.DEBUG)</span>
+<span class="n">log_file_level</span> <span class="o">=</span> <span class="s2">&quot;iter&quot;</span>
+<span class="c1"># Logging write mode, one of (&quot;w&quot;, &quot;w+&quot;, or &quot;a&quot;)</span>
+<span class="n">log_file_mode</span> <span class="o">=</span> <span class="s2">&quot;a&quot;</span>
+<span class="c1"># Whether to re-print column headers for optimization statistics at each iteration. If None, PyVBMC tries to guess based on plotting options.</span>
+<span class="n">print_iteration_header</span> <span class="o">=</span> <span class="kc">None</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="advanced-options">
+<h2>Advanced Options<a class="headerlink" href="#advanced-options" title="Permalink to this headline">¶</a></h2>
+<p>These options are for advanced users of VBMC. Do not modify them unless you know
+what you are doing.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">AdvancedOptions</span><span class="p">]</span>
+<span class="c1"># Explicit noise handling (0: none; 1: unknown noise level; 2: user-provided noise)</span>
+<span class="n">uncertainty_handling</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="c1"># Array with indices of integer variables</span>
+<span class="n">integer_vars</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="c1"># Base observation noise magnitude (standard deviation)</span>
+<span class="n">noise_size</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="c1"># Max number of consecutive repeated measurements for noisy inputs</span>
+<span class="n">max_repeated_observations</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="c1"># Multiplicative discount True acquisition fcn to repeat measurement at the same location</span>
+<span class="n">repeated_acq_discount</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="c1"># Number of initial target fcn evals</span>
+<span class="n">fun_eval_start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="c1"># Base step size for stochastic gradient descent</span>
+<span class="n">sgd_step_size</span> <span class="o">=</span> <span class="mf">0.005</span>
+<span class="c1"># Skip active sampling the first iteration after warmup</span>
+<span class="n">skip_active_sampling_after_warmup</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="c1"># Use ranking criterion to pick best non-converged solution</span>
+<span class="n">rank_criterion</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="c1"># Required stable iterations to switch entropy approximation</span>
+<span class="n">tol_stable_entropy_iters</span> <span class="o">=</span> <span class="mi">6</span>
+<span class="c1"># Use variable component means for variational posterior</span>
+<span class="n">variable_means</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="c1"># Use variable mixture weight for variational posterior</span>
+<span class="n">variable_weights</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="c1"># Penalty multiplier for small mixture weights</span>
+<span class="n">weight_penalty</span> <span class="o">=</span> <span class="mf">0.1</span>
+<span class="c1"># Run in diagnostics mode get additional info</span>
+<span class="n">diagnostics</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="c1"># Output function</span>
+<span class="n">output_fcn</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="c1"># Fraction of allowed exceptions when computing iteration stability</span>
+<span class="n">tol_stable_excpt_frac</span> <span class="o">=</span> <span class="mf">0.2</span>
+<span class="c1"># Evaluated fcn values at X0</span>
+<span class="n">f_vals</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="c1"># Use Optimization Toolbox (if empty determine at runtime)</span>
+<span class="n">optim_toolbox</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="c1"># Weighted proposal fcn for uncertainty search</span>
+<span class="n">proposal_fcn</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="c1"># Automatic nonlinear rescaling of variables</span>
+<span class="n">nonlinear_scaling</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="c1"># Search acquisition fcn(s), from pyvbmc.acquisition_functions. If length is greater than 1, a function is randomly selected for each new point.</span>
+<span class="n">search_acq_fcn</span> <span class="o">=</span> <span class="p">[</span><span class="n">AcqFcnLog</span><span class="p">()]</span>
+<span class="c1"># Samples for fast acquisition fcn eval per new point</span>
+<span class="n">ns_search</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">**</span> <span class="mi">13</span>
+<span class="c1"># Total samples for Monte Carlo approx. of the entropy</span>
+<span class="n">ns_ent</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">K</span> <span class="p">:</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">K</span> <span class="o">**</span> <span class="p">(</span><span class="mi">2</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span>
+<span class="c1"># Total samples for preliminary Monte Carlo approx. of the entropy</span>
+<span class="n">ns_ent_fast</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="c1"># Total samples for refined Monte Carlo approx. of the entropy</span>
+<span class="n">ns_ent_fine</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">K</span> <span class="p">:</span> <span class="mi">2</span> <span class="o">**</span> <span class="mi">12</span> <span class="o">*</span> <span class="n">K</span>
+<span class="c1"># Whether to do a final boost</span>
+<span class="n">do_final_boost</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="c1"># Total samples for Monte Carlo approx. of the entropy (final boost)</span>
+<span class="n">ns_ent_boost</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">K</span> <span class="p">:</span> <span class="mi">200</span> <span class="o">*</span> <span class="n">K</span> <span class="o">**</span> <span class="p">(</span><span class="mi">2</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span>
+<span class="c1"># Total samples for preliminary Monte Carlo approx. of the entropy (final boost)</span>
+<span class="n">ns_ent_fast_boost</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="c1"># Total samples for refined Monte Carlo approx. of the entropy (final boost)</span>
+<span class="n">ns_ent_fine_boost</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="c1"># Total samples for Monte Carlo approx. of the entropy (active sampling)</span>
+<span class="n">ns_ent_active</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">K</span> <span class="p">:</span> <span class="mi">20</span> <span class="o">*</span> <span class="n">K</span> <span class="o">**</span> <span class="p">(</span><span class="mi">2</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span>
+<span class="c1"># Total samples for preliminary Monte Carlo approx. of the entropy (active sampling)</span>
+<span class="n">ns_ent_fast_active</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="c1"># Total samples for refined Monte Carlo approx. of the entropy (active sampling)</span>
+<span class="n">ns_ent_fine_active</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">K</span> <span class="p">:</span> <span class="mi">200</span> <span class="o">*</span> <span class="n">K</span>
+<span class="c1"># Samples for fast approximation of the ELBO</span>
+<span class="n">ns_elbo</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">K</span> <span class="p">:</span> <span class="mi">50</span> <span class="o">*</span> <span class="n">K</span>
+<span class="c1"># Multiplier to samples for fast approx. of ELBO for incremental iterations</span>
+<span class="n">ns_elbo_incr</span> <span class="o">=</span> <span class="mf">0.1</span>
+<span class="c1"># Starting points to refine optimization of the ELBO</span>
+<span class="n">elbo_starts</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="c1"># Max GP hyperparameter samples (decreases with training points)</span>
+<span class="n">ns_gp_max</span> <span class="o">=</span> <span class="mi">80</span>
+<span class="c1"># Max GP hyperparameter samples during warmup</span>
+<span class="n">ns_gp_max_warmup</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="c1"># Max GP hyperparameter samples during main algorithm</span>
+<span class="n">ns_gp_max_main</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">Inf</span>
+<span class="c1"># Fcn evals without improvement before stopping warmup</span>
+<span class="n">warmup_no_impro_threshold</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">+</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">D</span>
+<span class="c1"># Also check for max fcn value improvement before stopping warmup</span>
+<span class="n">warmup_check_max</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="c1"># Force stable GP hyperparameter sampling (reduce samples or start optimizing)</span>
+<span class="n">stable_gp_sampling</span> <span class="o">=</span> <span class="mi">200</span> <span class="o">+</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">D</span>
+<span class="c1"># Force stable GP hyperparameter sampling after reaching this number of components</span>
+<span class="n">stable_gp_vp_k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">Inf</span>
+<span class="c1"># Number of GP samples when GP is stable (0 = optimize)</span>
+<span class="n">stable_gp_samples</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="c1"># Thinning for GP hyperparameter sampling</span>
+<span class="n">gp_sample_thin</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="c1"># Initial design points for GP hyperparameter training</span>
+<span class="n">gp_train_n_init</span> <span class="o">=</span> <span class="mi">1024</span>
+<span class="c1"># Final design points for GP hyperparameter training</span>
+<span class="n">gp_train_n_init_final</span> <span class="o">=</span> <span class="mi">64</span>
+<span class="c1"># Initial design method for GP hyperparameter training</span>
+<span class="n">gp_train_init_method</span> <span class="o">=</span> <span class="s2">&quot;rand&quot;</span>
+<span class="c1"># Tolerance for optimization of GP hyperparameters</span>
+<span class="n">gp_tol_opt</span> <span class="o">=</span> <span class="mf">1e-5</span>
+<span class="c1"># Tolerance for optimization of GP hyperparameters preliminary to MCMC</span>
+<span class="n">gp_tol_opt_mcmc</span> <span class="o">=</span> <span class="mf">1e-2</span>
+<span class="c1"># Tolerance for optimization of GP hyperparameters during active sampling</span>
+<span class="n">gp_tol_opt_active</span> <span class="o">=</span> <span class="mf">1e-4</span>
+<span class="c1"># Tolerance for optimization of GP hyperparameters preliminary to MCMC during active sampling</span>
+<span class="n">gp_tol_opt_mcmc_active</span> <span class="o">=</span> <span class="mf">1e-2</span>
+<span class="c1"># Threshold True GP variance used by regulatized acquisition fcns</span>
+<span class="n">tol_gp_var</span> <span class="o">=</span> <span class="mf">1e-4</span>
+<span class="c1"># Threshold True GP variance used to stabilize sampling</span>
+<span class="n">tol_gp_var_mcmc</span> <span class="o">=</span> <span class="mf">1e-4</span>
+<span class="c1"># GP mean function</span>
+<span class="n">gp_mean_fun</span> <span class="o">=</span> <span class="s2">&quot;negquad&quot;</span>
+<span class="c1"># GP integrated mean function</span>
+<span class="n">gp_int_mean_fun</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="c1"># Max variational components as a function of training points</span>
+<span class="n">k_fun_max</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">N</span> <span class="p">:</span> <span class="n">N</span> <span class="o">**</span> <span class="p">(</span><span class="mi">2</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span>
+<span class="c1"># Variational components during warmup</span>
+<span class="n">k_warmup</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="c1"># Added variational components for stable solution</span>
+<span class="n">adaptive_k</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="c1"># High Posterior Density region (fraction of training inputs)</span>
+<span class="n">hpd_frac</span> <span class="o">=</span> <span class="mf">0.8</span>
+<span class="c1"># Uncertainty weight True ELCBO for computing lower bound improvement</span>
+<span class="n">elcbo_impro_weight</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="c1"># Minimum fractional length scale</span>
+<span class="n">tol_length</span> <span class="o">=</span> <span class="mf">1e-6</span>
+<span class="c1"># Size of cache for storing fcn evaluations</span>
+<span class="n">cache_size</span> <span class="o">=</span> <span class="mi">500</span>
+<span class="c1"># Fraction of search points from starting cache (if nonempty)</span>
+<span class="n">cache_frac</span> <span class="o">=</span> <span class="mf">0.5</span>
+<span class="c1"># Stochastic optimizer for varational parameters</span>
+<span class="n">stochastic_optimizer</span> <span class="o">=</span> <span class="s2">&quot;adam&quot;</span>
+<span class="c1"># Stopping threshold for stochastic optimization</span>
+<span class="n">tol_fun_stochastic</span> <span class="o">=</span> <span class="mf">1e-3</span>
+<span class="c1"># Max iterations for stochastic optimization</span>
+<span class="n">max_iter_stochastic</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">+</span> <span class="n">D</span><span class="p">)</span>
+<span class="c1"># Set stochastic optimization stepsize via GP hyperparameters</span>
+<span class="n">gp_stochastic_step_size</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="c1"># Tolerance True ELBO uncertainty for stopping (if variational posterior is stable)</span>
+<span class="n">tol_sd</span> <span class="o">=</span> <span class="mf">0.1</span>
+<span class="c1"># Stopping threshold True change of variational posterior per training point</span>
+<span class="n">tol_skl</span> <span class="o">=</span> <span class="mf">0.01</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
+<span class="c1"># Number of stable fcn evals for stopping warmup</span>
+<span class="n">tol_stable_warmup</span> <span class="o">=</span> <span class="mi">15</span>
+<span class="c1"># MCMC sampler for variational posteriors</span>
+<span class="n">variational_sampler</span> <span class="o">=</span> <span class="s2">&quot;malasample&quot;</span>
+<span class="c1"># Required ELCBO improvement per fcn eval before termination</span>
+<span class="n">tol_improvement</span> <span class="o">=</span> <span class="mf">0.01</span>
+<span class="c1"># Use Gaussian approximation for symmetrized KL-divergence b\w iters</span>
+<span class="n">kl_gauss</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="c1"># True mean of the target density (for debugging)</span>
+<span class="n">true_mean</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="c1"># True covariance of the target density (for debugging)</span>
+<span class="n">true_cov</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="c1"># Min number of fcn evals</span>
+<span class="n">min_fun_evals</span> <span class="o">=</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">D</span>
+<span class="c1"># Min number of iterations</span>
+<span class="n">min_iter</span> <span class="o">=</span> <span class="n">D</span>
+<span class="c1"># Fraction of search points from heavy-tailed variational posterior</span>
+<span class="n">heavy_tail_search_frac</span> <span class="o">=</span> <span class="mf">0.25</span>
+<span class="c1"># Fraction of search points from multivariate normal</span>
+<span class="n">mvn_search_frac</span> <span class="o">=</span> <span class="mf">0.25</span>
+<span class="c1"># Fraction of search points from multivariate normal fitted to HPD points</span>
+<span class="n">hpd_search_frac</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="c1"># Fraction of search points from uniform random box based True training inputs</span>
+<span class="n">box_search_frac</span> <span class="o">=</span> <span class="mf">0.25</span>
+<span class="c1"># Fraction of search points from previous iterations</span>
+<span class="n">search_cache_frac</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="c1"># Always fully refit variational posterior</span>
+<span class="n">always_refit_vp</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="c1"># Perform warm-up stage</span>
+<span class="n">warmup</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="c1"># Special OPTIONS struct for warmup stage</span>
+<span class="n">warmup_options</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="c1"># Stop warm-up when ELCBO increase below threshold (per fcn eval)</span>
+<span class="n">stop_warmup_thresh</span> <span class="o">=</span> <span class="mf">0.2</span>
+<span class="c1"># Max log-likelihood difference for points kept after warmup</span>
+<span class="n">warmup_keep_threshold</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">D</span>
+<span class="c1"># Max log-likelihood difference for points kept after a false-alarm warmup stop</span>
+<span class="n">warmup_keep_threshold_false_alarm</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="p">(</span><span class="n">D</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+<span class="c1"># Reliability index required to stop warmup</span>
+<span class="n">stop_warmup_reliability</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="c1"># Optimization method for active sampling</span>
+<span class="n">search_optimizer</span> <span class="o">=</span> <span class="s2">&quot;cmaes&quot;</span>
+<span class="c1"># Initialize CMA-ES search SIGMA from variational posterior</span>
+<span class="n">search_cmaes_vp_init</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="c1"># Take bestever solution from CMA-ES search</span>
+<span class="n">search_cmaes_best</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="c1"># Max number of acquisition fcn evaluations during search</span>
+<span class="n">search_max_fun_evals</span> <span class="o">=</span> <span class="mi">500</span> <span class="o">*</span> <span class="p">(</span><span class="n">D</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+<span class="c1"># Weight of previous trials (per trial) for running avg of variational posterior moments</span>
+<span class="n">moments_run_weight</span> <span class="o">=</span> <span class="mf">0.9</span>
+<span class="c1"># Upper threshold True reliability index for full retraining of GP hyperparameters</span>
+<span class="n">gp_retrain_threshold</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="c1"># Compute full ELCBO also at best midpoint</span>
+<span class="n">elcbo_midpoint</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="c1"># Multiplier to widths from previous posterior for GP sampling (Inf = do not use previous widths)</span>
+<span class="n">gp_sample_widths</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="c1"># Weight of previous trials (per trial) for running avg of GP hyperparameter covariance</span>
+<span class="n">hyp_run_weight</span> <span class="o">=</span> <span class="mf">0.9</span>
+<span class="c1"># Use weighted hyperparameter posterior covariance</span>
+<span class="n">weighted_hyp_cov</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="c1"># Minimum weight for weighted hyperparameter posterior covariance</span>
+<span class="n">tol_cov_weight</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="c1"># MCMC sampler for GP hyperparameters</span>
+<span class="n">gp_hyp_sampler</span> <span class="o">=</span> <span class="s2">&quot;slicesample&quot;</span>
+<span class="c1"># Switch to covariance sampling below this threshold of stability index</span>
+<span class="n">cov_sample_thresh</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="c1"># Optimality tolerance for optimization of deterministic entropy</span>
+<span class="n">det_entropy_tol_opt</span> <span class="o">=</span> <span class="mf">1e-3</span>
+<span class="c1"># Switch from deterministic entropy to stochastic entropy when reaching stability</span>
+<span class="n">entropy_switch</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="c1"># Force switch to stochastic entropy at this fraction of total fcn evals</span>
+<span class="n">entropy_force_switch</span> <span class="o">=</span> <span class="mf">0.8</span>
+<span class="c1"># Alpha value for lower/upper deterministic entropy interpolation</span>
+<span class="n">det_entropy_alpha</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="c1"># Randomize deterministic entropy alpha during active sample updates</span>
+<span class="n">update_random_alpha</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="c1"># Online adaptation of alpha value for lower/upper deterministic entropy interpolation</span>
+<span class="n">adaptive_entropy_alpha</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="c1"># Start with deterministic entropy only with this number of vars or more</span>
+<span class="n">det_entropy_min_d</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="c1"># Fractional tolerance for constraint violation of variational parameters</span>
+<span class="n">tol_con_loss</span> <span class="o">=</span> <span class="mf">0.01</span>
+<span class="c1"># SD multiplier of ELCBO for computing best variational solution</span>
+<span class="n">best_safe_sd</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="c1"># When computing best solution lacking stability go back up to this fraction of iterations</span>
+<span class="n">best_frac_back</span> <span class="o">=</span> <span class="mf">0.25</span>
+<span class="c1"># Threshold mixture component weight for pruning</span>
+<span class="n">tol_weight</span> <span class="o">=</span> <span class="mf">1e-2</span>
+<span class="c1"># Multiplier to threshold for pruning mixture weights</span>
+<span class="n">pruning_threshold_multiplier</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">K</span> <span class="p">:</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">K</span><span class="p">)</span>
+<span class="c1"># Annealing for hyperprior width of GP negative quadratic mean</span>
+<span class="n">annealed_gp_mean</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">N</span><span class="p">,</span><span class="n">NMAX</span><span class="p">:</span> <span class="mi">0</span>
+<span class="c1"># Strict hyperprior for GP negative quadratic mean</span>
+<span class="n">constrained_gp_mean</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="c1"># Empirical Bayes prior over some GP hyperparameters</span>
+<span class="n">empirical_gp_prior</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="c1"># Minimum GP observation noise</span>
+<span class="n">tol_gp_noise</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1e-5</span><span class="p">)</span>
+<span class="c1"># Prior mean over GP input length scale (in plausible units)</span>
+<span class="n">gp_length_prior_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">D</span> <span class="o">/</span> <span class="mi">6</span><span class="p">)</span>
+<span class="c1"># Prior std over GP input length scale (in plausible units)</span>
+<span class="n">gp_length_prior_std</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">1e3</span><span class="p">)</span>
+<span class="c1"># Upper bound True GP input lengths based True plausible box (0 = ignore)</span>
+<span class="n">upper_gp_length_factor</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="c1"># Initial samples (plausible is uniform in the plausible box)</span>
+<span class="n">init_design</span> <span class="o">=</span> <span class="s2">&quot;plausible&quot;</span>
+<span class="c1"># Stricter upper bound True GP negative quadratic mean function</span>
+<span class="n">gp_quadratic_mean_bound</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="c1"># Heuristic output warping (fitness shaping)</span>
+<span class="n">fitness_shaping</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="c1"># Output warping starting threshold</span>
+<span class="n">out_warp_thresh_base</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">D</span>
+<span class="c1"># Output warping threshold multiplier when failed sub-threshold check</span>
+<span class="n">out_warp_thresh_mult</span> <span class="o">=</span> <span class="mf">1.25</span>
+<span class="c1"># Output warping base threshold tolerance (fraction of current threshold)</span>
+<span class="n">out_warp_thresh_tol</span> <span class="o">=</span> <span class="mf">0.8</span>
+<span class="c1"># Temperature for posterior tempering (allowed values T = 1234)</span>
+<span class="n">temperature</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="c1"># Use separate GP with constant mean for active search</span>
+<span class="n">separate_search_gp</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="c1"># Discount observations from extremely low-density regions</span>
+<span class="n">noise_shaping</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="c1"># Threshold from max observed value to start discounting</span>
+<span class="n">noise_shaping_threshold</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">D</span>
+<span class="c1"># Proportionality factor of added noise wrt distance from threshold</span>
+<span class="n">noise_shaping_factor</span> <span class="o">=</span> <span class="mf">0.05</span>
+<span class="c1"># Hedge True multiple acquisition functions</span>
+<span class="n">acq_hedge</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="c1"># Past iterations window to judge acquisition fcn improvement</span>
+<span class="n">acq_hedge_iter_window</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="c1"># Portfolio value decay per function evaluation</span>
+<span class="n">acq_hedge_decay</span> <span class="o">=</span> <span class="mf">0.9</span>
+<span class="c1"># MCMC variational steps before each active sampling</span>
+<span class="n">active_variational_samples</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="c1"># Apply lower bound True variational components scale during variational sampling</span>
+<span class="n">scale_lower_bound</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="c1"># Perform variational optimization after each active sample</span>
+<span class="n">active_sample_vp_update</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="c1"># Perform GP training after each active sample</span>
+<span class="n">active_sample_gp_update</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="c1"># # iters past warmup to continue update after each active sample</span>
+<span class="n">active_sample_full_update_past_warmup</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="c1"># Perform full update during active sampling if stability above threshold</span>
+<span class="n">active_sample_full_update_threshold</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="c1"># Use previous variational posteriors to initialize optimization</span>
+<span class="n">variational_init_repo</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="c1"># Extra variational components sampled from GP profile</span>
+<span class="n">sample_extra_vp_means</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="c1"># Uncertainty weight True ELCBO during active sampling</span>
+<span class="n">optimistic_variational_bound</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="c1"># # importance samples from smoothed variational posterior</span>
+<span class="n">active_importance_sampling_vp_samples</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="c1"># # importance samples from box-uniform centered True training inputs</span>
+<span class="n">active_importance_sampling_box_samples</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="c1"># # importance samples through MCMC</span>
+<span class="n">active_importance_sampling_mcmc_samples</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="c1"># Thinning for importance sampling MCMC</span>
+<span class="n">active_importance_sampling_mcmc_thin</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="c1"># fractional ESS threhsold to update GP and VP</span>
+<span class="n">active_sample_fess_thresh</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="c1"># % fractional ESS threhsold to do MCMC while active importance sampling</span>
+<span class="n">active_importance_sampling_fess_thresh</span> <span class="o">=</span> <span class="mf">0.9</span>
+<span class="c1"># Active search bound multiplier</span>
+<span class="n">active_search_bound</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="c1"># Try integrating GP mean function</span>
+<span class="n">integrate_gp_mean</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="c1"># Tolerance True closeness to bound constraints (fraction of total range)</span>
+<span class="n">tol_bound_x</span> <span class="o">=</span> <span class="mf">1e-5</span>
+<span class="c1"># Recompute LCB max for each iteration based True current GP estimate</span>
+<span class="n">recompute_lcb_max</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="c1"># Input transform for bounded variables</span>
+<span class="n">bounded_transform</span> <span class="o">=</span> <span class="s2">&quot;logit&quot;</span>
+<span class="c1"># Use double GP</span>
+<span class="n">double_gp</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="c1"># Warp every this number of iterations</span>
+<span class="n">warp_every_iters</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="c1"># Increase delay between warpings</span>
+<span class="n">incremental_warp_delay</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="c1"># Threshold True reliability index to perform warp</span>
+<span class="n">warp_tol_reliability</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="c1"># Rotate and scale input</span>
+<span class="n">warp_rotoscaling</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="c1"># Regularization weight towards diagonal covariance matrix for N training inputs</span>
+<span class="n">warp_cov_reg</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="c1"># Threshold True correlation matrix for roto-scaling</span>
+<span class="n">warp_roto_corr_thresh</span> <span class="o">=</span> <span class="mf">0.05</span>
+<span class="c1"># Min number of variational components to perform warp</span>
+<span class="n">warp_min_k</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="c1"># Immediately undo warp if not improving ELBO</span>
+<span class="n">warp_undo_check</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="c1"># Improvement of ELBO required to keep a warp proposal</span>
+<span class="n">warp_tol_improvement</span> <span class="o">=</span> <span class="mf">0.1</span>
+<span class="c1"># Multiplier tolerance of ELBO SD after warp proposal</span>
+<span class="n">warp_tol_sd_multiplier</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="c1"># Base tolerance True ELBO SD after warp proposal</span>
+<span class="n">warp_tol_sd_base</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+              </div>
+              
+            
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'> 
+    <a class='left-prev' id="prev-link" href="../classes/variational_posterior.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">VariationalPosterior</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="../advanced_docs.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Advanced documentation</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+            
+        </div>
+    </div>
+    <footer class="footer">
+  <p>
+    
+        &copy; Copyright 2022, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).<br/>
+  </p>
+</footer>
+</main>
+
+
+      </div>
+    </div>
+  
+  <script src="../../_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+
+  </body>
+</html>

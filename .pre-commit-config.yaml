@@ -1,0 +1,23 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.1.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^docs/
+      - id: end-of-file-fixer
+        exclude_types: [json, binary]
+        exclude: ^docs/
+  - repo: https://github.com/PyCQA/isort
+    rev: "5.10.1"
+    hooks:
+      - id: isort
+        additional_dependencies: [toml]
+        exclude: docs/tutorials
+  - repo: https://github.com/psf/black
+    rev: "22.3.0"
+    hooks:
+      - id: black-jupyter
+  - repo: https://github.com/hadialqattan/pycln
+    rev: "v1.2.5"
+    hooks:
+      - id: pycln
