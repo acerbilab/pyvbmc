@@ -43,7 +43,7 @@ rmdir /q /s source\_examples
 goto end
 
 :clean
-rmdir /q /s ..\docs
+del /q /s ..\docs\*
 rmdir /q /s %BUILDDIR%
 
 :end
