@@ -97,7 +97,7 @@ For practical recommendations, such as how to set `LB` and `UB` and the plausibl
 PyVBMC is under active development. The original VBMC algorithm has been extensively tested in several benchmarks and published papers, and the benchmarks have been replicated using PyVBMC. But as with any approximate inference technique, you should double-check your results. See the [examples](examples) for descriptions of the convergence diagnostics and suggestions on validating PyVBMC's results with multiple runs.
 
 If you have trouble doing something with PyVBMC, spot bugs or strange behavior, or you simply have some questions, please feel free to:
-- [open an issue](issues/new) on GitHub, or,
+- [open an issue](https://github.com/lacerbi/pyvbmc/issues/new) on GitHub, or,
 - contact the project lead at <luigi.acerbi@helsinki.fi>, putting 'PyVBMC' in the subject of the email.
 
 ## References and citation
