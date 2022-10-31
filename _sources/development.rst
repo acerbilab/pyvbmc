@@ -72,12 +72,13 @@ The documentation is currently hosted on :doc:`github.io <index>`. We build the 
 To setup an existing PyVBMC repository for building documentation, please follow the steps below:
 
 1. One-time setup:
-   - Remove the ``docs/`` folder from the root of your existing PyVBMC repo, if it is present.
-   - From the root of the PyVBMC repo, run::
+
+   a. Remove the ``docs/`` folder from the root of your existing PyVBMC repo, if it is present.
+   b. From the root of the PyVBMC repo, run::
 
        git clone -b gh-pages --single-branch https://github.com/acerbilab/pyvbmc docs
 
-     This will clone *only* the ``gh-pages`` branch inside ``docs/``, so that changes to the docs can now be pushed directly to ``gh-pages`` from within ``docs/``.
+      This will clone *only* the ``gh-pages`` branch inside ``docs/``, so that changes to the docs can now be pushed directly to ``gh-pages`` from within ``docs/``.
 2. From the ``main`` branch render new documentation::
 
     cd /docsrc (navigate to documentation source folder)
