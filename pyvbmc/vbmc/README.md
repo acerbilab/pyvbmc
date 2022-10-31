@@ -36,7 +36,7 @@ These notes are used for keeping track of ToDos and porting information.
      - _bounds_check(): [boundscheck_vbmc.m](https://github.com/acerbilab/vbmc/blob/master/misc/boundscheck_vbmc.m)
 - VBMC loop (optimize(): loop in [vbmc.m](https://github.com/acerbilab/vbmc/blob/master/vbmc.m)):
      - Active Sampling:
-          - see: :doc:[../functions/active_sample[
+          - see: :doc:[../functions/active_sample]
           - _reupdate_gp(): [gpreupdate.m](https://github.com/acerbilab/vbmc/blob/master/misc/gpreupdate.m) (Wait for gpyreg progress)
      - Gaussian Process training:
           - train_gp(): [gptrain_vbmc.m](https://github.com/acerbilab/vbmc/blob/master/misc/gptrain_vbmc.m)
