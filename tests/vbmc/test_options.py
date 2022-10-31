@@ -85,7 +85,7 @@ def test_init_from_existing_options_without_other_options():
 def test_init_with_specify_target_noise():
     """Turning on specify_target_noise should adjust defaults."""
     D = 1
-    user_options = {
+    options = {
         "specify_target_noise": True,
         "active_sample_gp_update": "foo",  # But don't touch user options!
     }
@@ -104,7 +104,7 @@ def test_init_with_specify_target_noise():
         np.ones((1, D)),
         -0.5 * np.ones((1, D)),
         0.5 * np.ones((1, D)),
-        user_options=user_options,
+        options=options,
     )
 
     # Check that default options are changed:

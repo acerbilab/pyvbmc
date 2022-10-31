@@ -10,7 +10,7 @@ def create_vbmc(
     upper_bounds: float,
     plausible_lower_bounds: float,
     plausible_upper_bounds: float,
-    user_options: dict = None,
+    options: dict = None,
 ):
     fun = lambda x: np.sum(x + 2)
     lb = np.ones((1, D)) * lower_bounds
@@ -18,7 +18,7 @@ def create_vbmc(
     x0_array = np.ones((2, D)) * x0
     plb = np.ones((1, D)) * plausible_lower_bounds
     pub = np.ones((1, D)) * plausible_upper_bounds
-    return VBMC(fun, x0_array, lb, ub, plb, pub, user_options)
+    return VBMC(fun, x0_array, lb, ub, plb, pub, options)
 
 
 def test_determine_best_vp_last_stable():

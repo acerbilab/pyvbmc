@@ -1,3 +1,6 @@
+from pathlib import Path
+
+import dill
 import numpy as np
 import scipy as sp
 
@@ -76,9 +79,7 @@ def run_optim_block(
     if noise_flag:
         options["specify_target_noise"] = True
 
-    vbmc = VBMC(
-        f, x0, lb, ub, plb, pub, user_options=options, log_prior=log_prior
-    )
+    vbmc = VBMC(f, x0, lb, ub, plb, pub, options=options, log_prior=log_prior)
     # Patch in the modified method:
     vbmc._check_termination_conditions = wrap_with_test(
         vbmc._check_termination_conditions, vbmc
@@ -469,7 +470,7 @@ def test_optimize_result_dict(mocker):
         np.full((1, D), np.inf),
         np.ones((1, D)) * -10,
         np.ones((1, D)) * 10,
-        user_options={"max_iter": 1},
+        options={"max_iter": 1},
     )
     mocker.patch(
         "pyvbmc.vbmc.VBMC._check_termination_conditions",
@@ -531,3 +532,82 @@ def _test_optimize_reproducibility():
 
     for k, v in result.items():
         assert v[0] == v[1]
+
+
+def test_vbmc_resume_optimization():
+    D = 2
+    seed = np.random.randint(0, 100)
+
+    def llfun(x):  # Rosenbrock, as before
+        if x.ndim == 2:
+            return -np.sum(
+                (x[0, :-1] ** 2.0 - x[0, 1:]) ** 2.0
+                + (x[0, :-1] - 1) ** 2.0 / 100
+            )
+        else:
+            return -np.sum(
+                (x[:-1] ** 2.0 - x[1:]) ** 2.0 + (x[:-1] - 1) ** 2.0 / 100
+            )
+
+    prior_mu = np.zeros((1, D))
+    prior_var = 3**2 * np.ones((1, D))
+    lpriorfun = lambda x: -0.5 * (
+        np.sum((x - prior_mu) ** 2 / prior_var)
+        + np.log(np.prod(2 * np.pi * prior_var))
+    )
+
+    plb = prior_mu - 3 * np.sqrt(prior_var)
+    pub = prior_mu + 3 * np.sqrt(prior_var)
+    x0 = prior_mu.copy()
+
+    # First run for 8 iterations:
+    np.random.seed(seed)
+    options = {"max_iter": 8}
+    vbmc_1 = VBMC(
+        llfun,
+        x0,
+        None,
+        None,
+        plb,
+        pub,
+        log_prior=lpriorfun,
+        options=options,
+    )
+    vbmc_1._check_termination_conditions = wrap_with_test(
+        vbmc_1._check_termination_conditions, vbmc_1
+    )
+    np.random.seed(seed + 1)
+    vp_1, elbo_1, elbo_sd_1, success_flag_1, info_1 = vbmc_1.optimize()
+
+    # Then run for 4, save, load, run for 4 more:
+    options = {"max_iter": 4, "do_final_boost": False}
+    np.random.seed(seed)
+    vbmc_2 = VBMC(
+        llfun,
+        x0,
+        None,
+        None,
+        plb,
+        pub,
+        log_prior=lpriorfun,
+        options=options,
+    )
+    vbmc_2._check_termination_conditions = wrap_with_test(
+        vbmc_2._check_termination_conditions, vbmc_2
+    )
+    np.random.seed(seed + 1)
+    vbmc_2.optimize()
+
+    base_path = Path(__file__).parent
+    file_path = base_path.joinpath("vbmc_test.pkl")
+    with open(file_path, "wb") as f:
+        dill.dump(vbmc_2, f)
+    with open(file_path, "rb") as f:
+        vbmc_2 = dill.load(f)
+    vbmc_2.options.__setitem__("max_iter", 8, force=True)
+    vbmc_2.options.__setitem__("do_final_boost", True, force=True)
+    vp_2, elbo_2, elbo_sd_2, success_flag_2, info_2 = vbmc_2.optimize()
+
+    assert success_flag_1 == success_flag_2
+    assert elbo_1 == elbo_1
+    assert elbo_sd_1 == elbo_sd_2
