@@ -4,7 +4,7 @@ VariationalPosterior
 
 .. note::
 
-  The main output of a ``pyvbmc`` run is a ``VariationalPosterior`` object ``vp``.
+  The main output of a PyVBMC run is a ``VariationalPosterior`` object ``vp``.
 
   The variational posterior can be queried and manipulated via several methods, such as:
 

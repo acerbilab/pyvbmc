@@ -36,6 +36,8 @@ extensions = [
     "sphinx.ext.coverage",
     "sphinx.ext.linkcode",
     "myst_nb",
+    "sphinx.ext.autosectionlabel",
+    "sphinx.ext.extlinks",
 ]
 numpydoc_show_class_members = False
 
@@ -64,8 +66,14 @@ def linkcode_resolve(domain, info):
 
     # to get rid of the local path, quiet hacky, but works
     filename = filename[filename.index("pyvbmc") + 7 :]
-    return "https://github.com/lacerbi/pyvbmc/tree/main/%s" % filename
+    return "https://github.com/acerbilab/pyvbmc/tree/main/%s" % filename
 
+
+# Define shorthand for external links:
+extlinks = {
+    "labrepos": ("https://github.com/acerbilab/%s", None),
+    "mainbranch": ("https://github.com/acerbilab/pyvbmc/blob/main/%s", None),
+}
 
 coverage_show_missing_items = True
 
@@ -93,8 +101,14 @@ html_static_path = ["css/custom.css"]
 
 todo_include_todos = True
 
-# do not execute sphinx notebooks
+# do not execute jupyter notebooks when building docs
 jupyter_execute_notebooks = "off"
 
 # download notebooks as .ipynb and not as .ipynb.txt
 html_sourcelink_suffix = ""
+
+suppress_warnings = [
+    f"autosectionlabel._examples/{filename.split('.')[0]}"
+    for filename in os.listdir("../../examples")
+    if os.path.isfile(os.path.join("../../examples", filename))
+]  # Avoid duplicate label warnings for Jupyter notebooks.

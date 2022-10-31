@@ -9,7 +9,6 @@ import numpy as np
 from pyvbmc.acquisition_functions import *
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.stats import get_hpd
-from pyvbmc.timer import Timer
 from pyvbmc.timer import main_timer as timer
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc.active_importance_sampling import active_importance_sampling

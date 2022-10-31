@@ -1,19 +1,18 @@
 ******
 PyVBMC
 ******
-``pyvbmc`` is a numerical Python 3.x implementation of Variational Bayesian Monte Carlo (VBMC).
 
-
+PyVBMC is a Python 3 implementation of the original :labrepos:`MATLAB algorithm <vbmc>` for Variational Bayesian Monte Carlo (VBMC).
 
 What is it?
-########################
+###########
 
   Can we perform Bayesian inference with expensive, black-box models?
 
 VBMC is an approximate Bayesian inference method designed to fit computational models with a limited budget of potentially noisy likelihood evaluations, useful for computationally expensive models or for quick inference and model evaluation `(Acerbi, 2018; 2020) <#references>`_.
-``pyvbmc`` works with *black-box* models in that it only needs to evaluate an unnormalized target log density (e.g., an unnormalized target log posterior).
+PyVBMC works with *black-box* models in that it only needs to evaluate an unnormalized target log density (e.g., an unnormalized target log posterior).
 
-``pyvbmc`` simultaneously computes:
+PyVBMC simultaneously computes:
 
 - an approximate posterior distribution of the model parameters;
 
@@ -23,10 +22,10 @@ VBMC is an approximate Bayesian inference method designed to fit computational m
 Example run
 -----------
 
-The figure below shows an example ``pyvbmc`` run on a "banana" target density.
+The figure below shows an example PyVBMC run on a "banana" target density.
 The corner plot shows the approximate posterior across iterations (contour plot and histograms of the marginals).
 The dots represent evaluations of the target density (*blue*: previously sampled points, *green*: points sampled in the current iteration).
-``pyvbmc`` converges to an excellent approximation of the true posterior with a few dozens evaluations of the target density.
+PyVBMC converges to an excellent approximation of the true posterior with a few dozens evaluations of the target density.
 
 .. image:: _static/vbmc_animation.gif
     :width: 400px
@@ -37,10 +36,10 @@ The dots represent evaluations of the target density (*blue*: previously sampled
 Extensive benchmarks on both artificial test problems and a large number of real model-fitting problems from computational and cognitive neuroscience show that VBMC generally — and often vastly — outperforms alternative methods for sample-efficient Bayesian inference. VBMC runs with virtually no tuning and it is very easy to set up for your problem.
 
 
-Should I use ``pyvbmc``?
-------------------------
+Should I use PyVBMC?
+--------------------
 
-``pyvbmc`` is effective when:
+PyVBMC is effective when:
 
 - the model log-likelihood function is a black-box (e.g., the gradient is unavailable);
 - the likelihood is at least moderately expensive to compute (say, half a second or more per evaluation);
@@ -50,10 +49,6 @@ Should I use ``pyvbmc``?
 
 Conversely, if your model can be written in closed form and is fast to evaluate, you should exploit the powerful machinery of probabilistic programming frameworks such as `Stan <https://mc-stan.org/>`_ or `PyMC3 <https://docs.pymc.io/>`_.
 
-
-.. note::
-    This project is work in progress. The current Python port implements VBMC with *exact* evaluations of the likelihood (Acerbi, 2018). We are currently planning to extend ``pyvbmc`` to support *noisy* likelihood evaluations, such as those arising from simulator-based models (Acerbi, 2020).
-
 Documentation
 #############
 .. toctree::
@@ -62,8 +57,9 @@ Documentation
 
    installation
    quickstart
-   api/classes/variational_posterior
    api/classes/vbmc
+   api/classes/variational_posterior
+   api/options/vbmc_options
    api/advanced_docs
 
 Examples
@@ -75,6 +71,14 @@ Examples
 
    _examples/*
 
+Contributing
+############
+.. toctree::
+   :maxdepth: 1
+   :titlesonly:
+
+   development
+
 References
 ###############
 
@@ -83,19 +87,61 @@ References
 
 You can cite VBMC in your work with something along the lines of
 
-    We estimated approximate posterior distibutions and approximate lower bounds to the model evidence of our models using Variational Bayesian Monte Carlo (VBMC; Acerbi, 2018, 2020) via the ``pyvbmc`` software. VBMC combines variational inference and active-sampling Bayesian quadrature to perform approximate Bayesian inference in a sample-efficient manner.
+    We estimated approximate posterior distibutions and approximate lower bounds to the model evidence of our models using Variational Bayesian Monte Carlo (VBMC; Acerbi, 2018, 2020) via the PyVBMC software. VBMC combines variational inference and active-sampling Bayesian quadrature to perform approximate Bayesian inference in a sample-efficient manner.
+
+BibTeX
+------
+::
+
+  @inproceedings{NEURIPS2018_747c1bcc,
+  author = {Acerbi, Luigi},
+  booktitle = {Advances in Neural Information Processing Systems},
+  editor = {S. Bengio and H. Wallach and H. Larochelle and K. Grauman and N. Cesa-Bianchi and R. Garnett},
+  pages = {},
+  publisher = {Curran Associates, Inc.},
+  title = {Variational Bayesian Monte Carlo},
+  url = {https://proceedings.neurips.cc/paper/2018/file/747c1bcceb6109a4ef936bc70cfe67de-Paper.pdf},
+  volume = {31},
+  year = {2018}
+  }
+  @inproceedings{NEURIPS2020_5d409541,
+  author = {Acerbi, Luigi},
+  booktitle = {Advances in Neural Information Processing Systems},
+  editor = {H. Larochelle and M. Ranzato and R. Hadsell and M.F. Balcan and H. Lin},
+  pages = {8211--8222},
+  publisher = {Curran Associates, Inc.},
+  title = {Variational Bayesian Monte Carlo with Noisy Likelihoods},
+  url = {https://proceedings.neurips.cc/paper/2020/file/5d40954183d62a82257835477ccad3d2-Paper.pdf},
+  volume = {33},
+  year = {2020}
+  }
+  @inproceedings{pmlr-v96-acerbi19a,
+    title = 	 {An Exploration of Acquisition and Mean Functions
+  in Variational Bayesian Monte Carlo},
+    author =       {Acerbi, Luigi},
+    booktitle = 	 {Proceedings of The 1st Symposium on Advances in Approximate Bayesian Inference},
+    pages = 	 {1--10},
+    year = 	 {2019},
+    editor = 	 {Ruiz, Francisco and Zhang, Cheng and Liang, Dawen and Bui, Thang},
+    volume = 	 {96},
+    series = 	 {Proceedings of Machine Learning Research},
+    month = 	 {02 Dec},
+    publisher =    {PMLR},
+    pdf = 	 {http://proceedings.mlr.press/v96/acerbi19a/acerbi19a.pdf},
+    url = 	 {https://proceedings.mlr.press/v96/acerbi19a.html}
+  }
 
 License and source
 ------------------
 
-``pyvbmc`` is licensed under `BSD3 <https://opensource.org/licenses/BSD-3-Clause>`_.
-The Python source code is on `GitHub <https://github.com/lacerbi/pyvbmc>`_.
-You may also want to check out the original `MATLAB toolbox <https://github.com/lacerbi/vbmc>`_.
+PyVBMC is released under the terms of the :mainbranch:`BSD 3-Clause License <LICENSE>`.
+The Python source code is on :labrepos:`GitHub <pyvbmc>`.
+You may also want to check out the original :labrepos:`MATLAB toolbox <vbmc>`.
 
 
 Acknowledgments
 ###############
-Work on the ``pyvbmc`` package was funded by the `Finnish Center for Artificial Intelligence FCAI <https://fcai.fi/>`_.
+Work on the PyVBMC package was funded by the `Finnish Center for Artificial Intelligence FCAI <https://fcai.fi/>`_.
 
 .. toctree::
    :maxdepth: 1

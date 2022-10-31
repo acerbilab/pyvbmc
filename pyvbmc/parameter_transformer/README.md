@@ -6,4 +6,4 @@ These notes are used for keeping track of ToDos and porting information.
 - Rotating and rescaling has been implemented.
 
 ## Matlab references
--  Everything in: [warpvars_vbmc.m](https://github.com/lacerbi/vbmc/blob/master/shared/warpvars_vbmc.m)
+-  Everything in: [warpvars_vbmc.m](https://github.com/acerbilab/vbmc/blob/master/shared/warpvars_vbmc.m)

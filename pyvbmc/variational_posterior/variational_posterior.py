@@ -21,7 +21,7 @@ from pyvbmc.stats import kde_1d, kl_div_mvn
 
 class VariationalPosterior:
     """
-    The variational posterior class used in ``pyvbmc``.
+    The variational posterior class used in PyVBMC.
 
     The variational posterior represents the approximate posterior as returned
     by the Variational Bayesian Monte Carlo (VBMC) algorithm.
