@@ -6,7 +6,7 @@ PyVBMC is the port of the MATLAB VBMC algorithm to Python 3.x (development has t
 
 The reference code is the :labrepos:`MATLAB toolbox <vbmc>`.
 
-The documentation is available at: https://lacerbi.github.io/pyvbmc/
+The documentation is available at: https://acerbilab.github.io/pyvbmc/
 
 How to install and run the package (temporary)
 ##############################################
@@ -75,7 +75,7 @@ To setup an existing PyVBMC repository for building documentation, please follow
    - Remove the ``docs/`` folder from the root of your existing PyVBMC repo, if it is present.
    - From the root of the PyVBMC repo, run::
 
-       git clone -b gh-pages --single-branch ssh://git@github.com/lacerbi/pyvbmc.git docs
+       git clone -b gh-pages --single-branch https://github.com/acerbilab/pyvbmc docs
 
      This will clone *only* the ``gh-pages`` branch inside ``docs/``, so that changes to the docs can now be pushed directly to ``gh-pages`` from within ``docs/``.
 2. From the ``main`` branch render new documentation::
@@ -88,7 +88,7 @@ To setup an existing PyVBMC repository for building documentation, please follow
 
      cd ../docs
 
-4. Commit the new documentation and push. `github.io <https://lacerbi.github.io/pyvbmc/>`_ will detect the changes and rebuild the website (possibly after a few minutes). Only documentation that was built from the ``main`` branch should be committed to ``gh-pages``.
+4. Commit the new documentation and push. `github.io <https://acerbilab.github.io/pyvbmc/>`_ will detect the changes and rebuild the website (possibly after a few minutes). Only documentation that was built from the ``main`` branch should be committed to ``gh-pages``.
 
 If it seems that the documentation does not update correctly (e.g., items not appearing in the sidebar or table of content), try deleting the ``./docs`` folder and the cached folder ``./docsrc/_build`` before compiling the documentation. There is a command for that::
 

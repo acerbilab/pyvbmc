@@ -111,7 +111,7 @@ class VBMC:
     --------
     For `VBMC` usage examples, please look up the Jupyter notebook tutorials
     in the PyVBMC documentation:
-    https://lacerbi.github.io/pyvbmc/_examples/pyvbmc_example_1.html
+    https://acerbilab.github.io/pyvbmc/_examples/pyvbmc_example_1.html
     """
 
     def __init__(

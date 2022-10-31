@@ -10,7 +10,7 @@ Extensive benchmarks on both artificial test problems and a large number of real
 
 ### Documentation
 
-The full documentation is available at: https://lacerbi.github.io/pyvbmc/
+The full documentation is available at: https://acerbilab.github.io/pyvbmc/
 
 ### When should I use PyVBMC?
 
@@ -77,7 +77,7 @@ The outputs are:
 - `elbo`: the estimated lower bound on the log model evidence (log normalization constant);
 - `elbo_sd`: the standard deviation of the estimate of the ELBO (*not* the error between the ELBO and the true log model evidence, which is generally unknown).
 
-The `vp` object can be manipulated in various ways. For example, we can draw samples from `vp` with the `vp.sample()` method, or evaluate its density at a point with `vp.pdf()` (or log-density with `vp.log_pdf()`). See the [`VariationalPosterior` class documentation](https://lacerbi.github.io/pyvbmc/api/classes/variational_posterior.html) for details.
+The `vp` object can be manipulated in various ways. For example, we can draw samples from `vp` with the `vp.sample()` method, or evaluate its density at a point with `vp.pdf()` (or log-density with `vp.log_pdf()`). See the [`VariationalPosterior` class documentation](https://acerbilab.github.io/pyvbmc/api/classes/variational_posterior.html) for details.
 
 ### PyVBMC with noisy targets
 
@@ -88,7 +88,7 @@ For information on how to run PyVBMC on a noisy target, see [this example notebo
 
 ## Next steps
 
-Once installed, example Jupyter notebooks can be found in the `pyvbmc/examples` directory. They can also be [viewed statically](https://lacerbi.github.io/pyvbmc/index.html#examples) on the [main documentation pages](https://lacerbi.github.io/pyvbmc/index.html). These examples will walk you through the basic usage of PyVBMC as well as some if its more advanced features.
+Once installed, example Jupyter notebooks can be found in the `pyvbmc/examples` directory. They can also be [viewed statically](https://acerbilab.github.io/pyvbmc/index.html#examples) on the [main documentation pages](https://acerbilab.github.io/pyvbmc/index.html). These examples will walk you through the basic usage of PyVBMC as well as some if its more advanced features.
 
 For practical recommendations, such as how to set `LB` and `UB` and the plausible bounds, check out the FAQ on the [VBMC wiki](https://github.com/acerbilab/vbmc/wiki). The wiki was written with the MATLAB toolbox in mind, but the general advice applies to the Python version as well.
 
@@ -97,7 +97,7 @@ For practical recommendations, such as how to set `LB` and `UB` and the plausibl
 PyVBMC is under active development. The original VBMC algorithm has been extensively tested in several benchmarks and published papers, and the benchmarks have been replicated using PyVBMC. But as with any approximate inference technique, you should double-check your results. See the [examples](examples) for descriptions of the convergence diagnostics and suggestions on validating PyVBMC's results with multiple runs.
 
 If you have trouble doing something with PyVBMC, spot bugs or strange behavior, or you simply have some questions, please feel free to:
-- [open an issue](https://github.com/lacerbi/pyvbmc/issues/new) on GitHub, or,
+- [open an issue](https://github.com/acerbilab/pyvbmc/issues/new) on GitHub, or,
 - contact the project lead at <luigi.acerbi@helsinki.fi>, putting 'PyVBMC' in the subject of the email.
 
 ## References and citation
