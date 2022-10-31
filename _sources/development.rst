@@ -74,7 +74,7 @@ To setup an existing PyVBMC repository for building documentation, please follow
 1. One-time setup:
 
    a. Remove the ``docs/`` folder from the root of your existing PyVBMC repo, if it is present.
-   b. From the root of the PyVBMC repo, run::
+   b. From the root of the PyVBMC repo, run ::
 
        git clone -b gh-pages --single-branch https://github.com/acerbilab/pyvbmc docs
 
