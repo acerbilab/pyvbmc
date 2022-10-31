@@ -67,27 +67,28 @@ There are add-ons to generate docstring blueprints using IDE's.
 Code documentation
 ------------------
 
-The documentation is currently hosted on :doc:`github.io <index>`. We build the PyVBMC documentation using `Sphinx <https://www.sphinx-doc.org/en/master/usage/quickstart.html>`_. The source code of the documentation is in the :mainbranch:`docsrc folder <docsrc>` and the build version is in the :labrepos:`docs folder <pyvbmc/tree/main/docs>`.
-From there new documentation can be compiled using the following commands:
+The documentation is currently hosted on :doc:`github.io <index>`. We build the PyVBMC documentation using `Sphinx <https://www.sphinx-doc.org/en/master/usage/quickstart.html>`_. The source code of the documentation is in the :mainbranch:`docsrc folder <docsrc>` and the build version is in the :labrepos:`gh-pages <pyvbmc/tree/gh-pages>` branch. When the documentation is re-built, it should be pushed to the ``gh-pages`` instead of committing it on the ``main`` branch.
 
-1. Merge main branch into feature branch (bring the branch up to date with whatever changes were done in main)::
+To setup an existing PyVBMC repository for building documentation, please follow the steps below:
 
-    git checkout main
-    git pull
-    git checkout <feature_branch>
-    git merge master
+1. One-time setup:
+   - Remove the ``docs/`` folder from the root of your existing PyVBMC repo, if it is present.
+   - From the root of the PyVBMC repo, run::
 
-2. Make sure that everything works, e.g. by running tests.
-3. Render new documentation::
+       git clone -b gh-pages --single-branch ssh://git@github.com/lacerbi/pyvbmc.git docs
+
+     This will clone *only* the ``gh-pages`` branch inside ``docs/``, so that changes to the docs can now be pushed directly to ``gh-pages`` from within ``docs/``.
+2. From the ``main`` branch render new documentation::
 
     cd /docsrc (navigate to documentation source folder)
     make github  (this builds the doc and copies the build version to ./docs)
 
-(If you are using Windows, run ``.\make.bat github`` with ``cmd`` instead.)
+   (If you are using Windows, run ``.\make.bat github`` with ``cmd`` instead.)
+3. Change into the ``docs/`` directory::
 
-4. Commit the new documentation.
-5. Create a new pull request.
-6. When the pull request is merged, `github.io <https://lacerbi.github.io/pyvbmc/>`_ detects changes and rebuilds the documentation.
+     cd ../docs
+
+4. Commit the new documentation and push. `github.io <https://lacerbi.github.io/pyvbmc/>`_ will detect the changes and rebuild the website (possibly after a few minutes). Only documentation that was built from the ``main`` branch should be committed to ``gh-pages``.
 
 If it seems that the documentation does not update correctly (e.g., items not appearing in the sidebar or table of content), try deleting the ``./docs`` folder and the cached folder ``./docsrc/_build`` before compiling the documentation. There is a command for that::
 
