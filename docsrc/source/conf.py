@@ -37,6 +37,7 @@ extensions = [
     "sphinx.ext.linkcode",
     "myst_nb",
     "sphinx.ext.autosectionlabel",
+    "sphinx.ext.extlinks",
 ]
 numpydoc_show_class_members = False
 
@@ -65,8 +66,14 @@ def linkcode_resolve(domain, info):
 
     # to get rid of the local path, quiet hacky, but works
     filename = filename[filename.index("pyvbmc") + 7 :]
-    return "https://github.com/lacerbi/pyvbmc/tree/main/%s" % filename
+    return "https://github.com/acerbilab/pyvbmc/tree/main/%s" % filename
 
+
+# Define shorthand for external links:
+extlinks = {
+    "labrepos": ("https://github.com/acerbilab/%s", None),
+    "mainbranch": ("https://github.com/acerbilab/pyvbmc/blob/main/%s", None),
+}
 
 coverage_show_missing_items = True
 

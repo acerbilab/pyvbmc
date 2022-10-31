@@ -12,7 +12,7 @@ VBMC
 
   To perform inference, first initialize a ``VBMC`` object and then call ``vbmc.optimize()`` on the instance.
 
-  By default VBMC assumes noiseless evaluations of the log posterior, but noisy likelihoods can also be handled. See :ref:`Example 5: Noisy log-likelihood evaluations` for more details.
+  By default VBMC assumes noiseless evaluations of the log posterior, but noisy likelihoods can also be handled. See :ref:`PyVBMC Example 5: Noisy log-likelihood evaluations` for more details.
 
   See below for more details on the ``VBMC`` class methods and interface. The primary entry-points for users are the ``VBMC`` class, which initializes the algorithm, and the :ref:`VariationalPosterior` class, which represents the returned variational solution. The :ref:`Basic options` may also be useful.
 

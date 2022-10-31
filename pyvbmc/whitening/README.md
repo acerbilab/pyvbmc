@@ -7,6 +7,6 @@ These notes are used for keeping track of ToDos and porting information.
 
 ## Matlab references
 - Corresponding MATLAB functions:
-    - [unscent_warp.m](https://github.com/lacerbi/vbmc/blob/master/utils/unscent_warp.m)
-    - [warp_input_vbmc.m](https://github.com/lacerbi/vbmc/blob/master/misc/warp_input_vbmc.m)
-    - [warp_gpandvp_vbmc.m](https://github.com/lacerbi/vbmc/blob/master/misc/warp_gpandvp_vbmc.m)
+    - [unscent_warp.m](https://github.com/acerbilab/vbmc/blob/master/utils/unscent_warp.m)
+    - [warp_input_vbmc.m](https://github.com/acerbilab/vbmc/blob/master/misc/warp_input_vbmc.m)
+    - [warp_gpandvp_vbmc.m](https://github.com/acerbilab/vbmc/blob/master/misc/warp_gpandvp_vbmc.m)

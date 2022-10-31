@@ -2,7 +2,7 @@
 # PyVBMC: Variational Bayesian Monte Carlo in Python
 ### What is it?
 
-PyVBMC is the port of the [MATLAB VBMC algorithm](https://github.com/lacerbi/vbmc) to Python. VBMC is an approximate inference method designed to fit and evaluate Bayesian models with a limited budget of potentially noisy likelihood evaluations (e.g., for computationally expensive models). Specifically, VBMC simultaneously computes:
+PyVBMC is the port of the [MATLAB VBMC algorithm](https://github.com/acerbilab/vbmc) to Python. VBMC is an approximate inference method designed to fit and evaluate Bayesian models with a limited budget of potentially noisy likelihood evaluations (e.g., for computationally expensive models). Specifically, VBMC simultaneously computes:
 - an approximate posterior distribution of the model parameters;
 - an approximation — technically, an approximate lower bound — of the log model evidence (also known as log marginal likelihood or log Bayes factor), a metric used for [Bayesian model selection](https://en.wikipedia.org/wiki/Bayes_factor).
 
@@ -19,8 +19,8 @@ PyVBMC is effective when:
 - the model log-likelihood function is a black-box (e.g., the gradient is unavailable);
 - the likelihood is at least moderately expensive to compute (say, half a second or more per evaluation);
 - the model has up to `D = 10` continuous parameters (maybe a few more, but no more than `D = 20`);
-- the target posterior distribution is continuous and reasonably smooth (see [here](https://github.com/lacerbi/vbmc/wiki#general));
-- optionally, log-likelihood evaluations may be noisy (e.g., estimated [via simulation](https://github.com/lacerbi/ibs)).
+- the target posterior distribution is continuous and reasonably smooth (see [here](https://github.com/acerbilab/vbmc/wiki#general));
+- optionally, log-likelihood evaluations may be noisy (e.g., estimated [via simulation](https://github.com/acerbilab/ibs)).
 
 Conversely, if your model can be written analytically, you should exploit the powerful machinery of probabilistic programming frameworks such as [Stan](http://mc-stan.org/) or [PyMC3](https://docs.pymc.io/).
 
@@ -30,10 +30,10 @@ PyVBMC is not yet available on `pip`/`conda-forge`, but can be installed in a fe
 
 1. Clone the PyVBMC and `gpyreg` GitHub repos locally:
    ```console
-   git clone https://github.com/lacerbi/pyvbmc
-   git clone https://github.com/lacerbi/gpyreg
+   git clone https://github.com/acerbilab/pyvbmc
+   git clone https://github.com/acerbilab/gpyreg
    ```
-   (PyVBMC depends on [`gpyreg`](https://github.com/lacerbi/gpyreg), which is a package for lightweight Gaussian process regression in Python.)
+   (PyVBMC depends on [`gpyreg`](https://github.com/acerbilab/gpyreg), which is a package for lightweight Gaussian process regression in Python.)
 2. (Optional) Create a new environment in `conda` and activate it. We recommend using Python 3.9 or newer, but older versions *might* work:
    ```console
    conda create --name pyvbmc-env python=3.9
@@ -84,20 +84,20 @@ The `vp` object can be manipulated in various ways. For example, we can draw sam
 The quick start example above works for deterministic (noiseless) evaluations of the target log-density. Py(VBMC) also supports *noisy* evaluations of the target.
 Noisy evaluations often arise from simulation-based models, for which a direct expression of the (log) likelihood is not available.
 
-For information on how to run PyVBMC on a noisy target, see [this example notebook](https://github.com/lacerbi/pyvbmc/blob/main/examples/pyvbmc_example_5.ipynb) and the [VBMC FAQ](https://github.com/lacerbi/vbmc/wiki#noisy-target-function) (for MATLAB, but most concepts still apply).
+For information on how to run PyVBMC on a noisy target, see [this example notebook](examples/pyvbmc_example_5_noisy_likelihoods.ipynb) and the [VBMC FAQ](https://github.com/acerbilab/vbmc/wiki#noisy-target-function) (for MATLAB, but most concepts still apply).
 
 ## Next steps
 
 Once installed, example Jupyter notebooks can be found in the `pyvbmc/examples` directory. They can also be [viewed statically](https://lacerbi.github.io/pyvbmc/index.html#examples) on the [main documentation pages](https://lacerbi.github.io/pyvbmc/index.html). These examples will walk you through the basic usage of PyVBMC as well as some if its more advanced features.
 
-For practical recommendations, such as how to set `LB` and `UB` and the plausible bounds, check out the FAQ on the [VBMC wiki](https://github.com/lacerbi/vbmc/wiki). The wiki was written with the MATLAB toolbox in mind, but the general advice applies to the Python version as well.
+For practical recommendations, such as how to set `LB` and `UB` and the plausible bounds, check out the FAQ on the [VBMC wiki](https://github.com/acerbilab/vbmc/wiki). The wiki was written with the MATLAB toolbox in mind, but the general advice applies to the Python version as well.
 
 ## Troubleshooting and contact
 
-PyVBMC is under active development. The original VBMC algorithm has been extensively tested in several benchmarks and published papers, and the benchmarks have been replicated using PyVBMC. But as with any approximate inference technique, you should double-check your results. See the [examples](https://lacerbi.github.io/pyvbmc/index.html#examples) for descriptions of the convergence diagnostics and suggestions on validating PyVBMC's results with multiple runs.
+PyVBMC is under active development. The original VBMC algorithm has been extensively tested in several benchmarks and published papers, and the benchmarks have been replicated using PyVBMC. But as with any approximate inference technique, you should double-check your results. See the [examples](examples) for descriptions of the convergence diagnostics and suggestions on validating PyVBMC's results with multiple runs.
 
 If you have trouble doing something with PyVBMC, spot bugs or strange behavior, or you simply have some questions, please feel free to:
-- [open an issue](https://github.com/lacerbi/pyvbmc/issues/new) on GitHub, or,
+- [open an issue](issues/new) on GitHub, or,
 - contact the project lead at <luigi.acerbi@helsinki.fi>, putting 'PyVBMC' in the subject of the email.
 
 ## References and citation
@@ -115,7 +115,7 @@ Besides formal citations, you can demonstrate your appreciation for PyVBMC in th
 - [Follow Luigi Acerbi on Twitter](https://twitter.com/AcerbiLuigi) for updates about VBMC/PyVBMC and other projects;
 - Tell us about your model-fitting problem and your experience with PyVBMC (positive or negative) at <luigi.acerbi@helsinki.fi> (putting  'PyVBMC' in the subject of the email).
 
-You may also want to check out [Bayesian Adaptive Direct Search](https://github.com/lacerbi/bads) (BADS), our method for fast Bayesian optimization. Currently available only in MATLAB, but a Python version will be released soon.
+You may also want to check out [Bayesian Adaptive Direct Search](https://github.com/acerbilab/bads) (BADS), our method for fast Bayesian optimization. Currently available only in MATLAB, but a Python version will be released soon.
 
 ### Additional references
 
@@ -158,4 +158,4 @@ PyVBMC was developed from the original MATLAB toolbox by [members](https://www.h
 
 ### License
 
-PyVBMC is released under the terms of the [BSD 3-Clause License](https://github.com/lacerbi/pyvbmc/blob/main/LICENSE).
+PyVBMC is released under the terms of the [BSD 3-Clause License](LICENSE).

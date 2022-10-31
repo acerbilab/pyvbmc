@@ -4,7 +4,7 @@ Instructions for developers and contributors
 
 PyVBMC is the port of the MATLAB VBMC algorithm to Python 3.x (development has targeted version 3.9 and up).
 
-The reference code is the `MATLAB toolbox <https://github.com/lacerbi/vbmc>`_.
+The reference code is the :labrepos:`MATLAB toolbox <vbmc>`.
 
 The documentation is available at: https://lacerbi.github.io/pyvbmc/
 
@@ -61,13 +61,13 @@ The docstrings are generated following the `NumPy format <https://numpydoc.readt
 There are add-ons to generate docstring blueprints using IDE's.
 
 - See an example for a correct docstring from NumPy `here <https://numpydoc.readthedocs.io/en/latest/example.html>`__.
-- In PyVBMC, the ``VariationalPosterior`` class can be taken as an example of (mostly) correct docstring structure, see `here <https://github.com/lacerbi/pyvbmc/blob/main/pyvbmc/variational_posterior/variational_posterior.py>`__.
+- In PyVBMC, the ``VariationalPosterior`` class can be taken as an example of (mostly) correct docstring structure, see :mainbranch:`here <variational_posterior/variational_posterior.py>`.
   - In particular, see how the single quotes and double quotes are used; the math notation is used; full stops are added at the end of each sentence, etc.
 
 Code documentation
 ------------------
 
-The documentation is currently hosted on `github.io <https://lacerbi.github.io/pyvbmc/>`_. We build the PyVBMC documentation using `Sphinx <https://www.sphinx-doc.org/en/master/usage/quickstart.html>`_. The source code of the documentation is in the `docsrc folder <https://github.com/lacerbi/pyvbmc/tree/main/docsrc>`_ and the build version is in the `docs folder <https://github.com/lacerbi/pyvbmc/tree/main/docs>`_.
+The documentation is currently hosted on :doc:`github.io <index>`. We build the PyVBMC documentation using `Sphinx <https://www.sphinx-doc.org/en/master/usage/quickstart.html>`_. The source code of the documentation is in the :mainbranch:`docsrc folder <docsrc>` and the build version is in the :labrepos:`docs folder <pyvbmc/tree/main/docs>`.
 From there new documentation can be compiled using the following commands:
 
 1. Merge main branch into feature branch (bring the branch up to date with whatever changes were done in main)::
@@ -107,11 +107,11 @@ The ``.rst`` file contains the text in `reStructuredText format <https://en.wiki
 Refer to existing documentation for an overview of the file structure. So far the documentation includes the following:
 
 - Status of the port (what is missing?);
-- Reference to the respective file of the original `MATLAB <https://github.com/lacerbi/vbmc>`_ implementation;
+- Reference to the respective file of the original :labrepos:`MATLAB <vbmc>` implementation;
 - Known issues (if something is currently suboptimal in PyVBMC);
 - The documentation of the Python code (generated from the docstrings).
 
-For each new file, a link needs to be added manually to the `index page <https://github.com/lacerbi/pyvbmc/blob/main/docsrc/source/index.rst>`_.
+For each new file, a link needs to be added manually to the :mainbranch:`index page <docsrc/source/index.rst>`.
 Please keep the documentation up to date. (Sphinx logs possible issues when compiling the documentation.)
 
 Exceptions
@@ -157,6 +157,6 @@ A few comments about testing:
 - Please try to keep the total runtime of the tests minimal for the task at hand.
 - As a good practice, please rerun all tests before major commits and pull requests (might take a while, but it is worth it to avoid surprises).
 - A nice way of proceeding is 'test first': write a test first, make it fail, write the code until the test is passed.
-- Many methods are tested against test cases produced with the original `MATLAB implementation <https://github.com/lacerbi/vbmc>`_.
+- Many methods are tested against test cases produced with the original :labrepos:`MATLAB implementation <vbmc>`.
 - The ``pytest-mock`` library is very useful for testing. It allows you to replace parts of your system under test with mock objects and make assertions about how they have been used. (Perhaps we should switch to ``unittest.mock`` in the future, which is part of the Python standard library.)
 - We should look into automating tests with GitHub actions.

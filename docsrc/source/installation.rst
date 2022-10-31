@@ -9,7 +9,7 @@ PyVBMC is not yet available on ``pip`` / ``conda-forge``, but can be installed i
       git clone https://github.com/lacerbi/pyvbmc
       git clone https://github.com/lacerbi/gpyreg
 
-   (PyVBMC depends on `gpyreg <https://github.com/lacerbi/gpyreg>`_, which is a package for lightweight Gaussian process regression in Python.)
+   (PyVBMC depends on :labrepos:`gpyreg <gpyreg>`, which is a package for lightweight Gaussian process regression in Python.)
 2. (Optional) Create a new environment in ``conda`` and activate it. We recommend using Python 3.9 or newer, but older versions *might* work::
 
       conda create --name pyvbmc-env python=3.9

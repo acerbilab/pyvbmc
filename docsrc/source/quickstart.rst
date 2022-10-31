@@ -3,7 +3,7 @@ Getting started
 ***************
 
 The best way to get started with PyVBMC is via the tutorials and worked examples.
-In particular, start with :ref:`Example 1: Basic usage` and continue from there.
+In particular, start with :ref:`PyVBMC Example 1: Basic usage` and continue from there.
 
 If you are already familiar with approximate inference methods, you can find a summary usage below.
 

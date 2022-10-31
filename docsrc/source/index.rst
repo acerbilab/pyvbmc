@@ -2,7 +2,7 @@
 PyVBMC
 ******
 
-PyVBMC is a Python 3 implementation of the original `MATLAB algorithm <https://github.com/lacerbi/vbmc>`_ for Variational Bayesian Monte Carlo (VBMC).
+PyVBMC is a Python 3 implementation of the original :labrepos:`MATLAB algorithm <vbmc>` for Variational Bayesian Monte Carlo (VBMC).
 
 What is it?
 ###########
@@ -134,9 +134,9 @@ BibTeX
 License and source
 ------------------
 
-PyVBMC is released under the terms of the `BSD 3-Clause License <https://github.com/lacerbi/pyvbmc/blob/main/LICENSE>`_.
-The Python source code is on `GitHub <https://github.com/lacerbi/pyvbmc>`_.
-You may also want to check out the original `MATLAB toolbox <https://github.com/lacerbi/vbmc>`_.
+PyVBMC is released under the terms of the :mainbranch:`BSD 3-Clause License <LICENSE>`.
+The Python source code is on :labrepos:`GitHub <pyvbmc>`.
+You may also want to check out the original :labrepos:`MATLAB toolbox <vbmc>`.
 
 
 Acknowledgments
