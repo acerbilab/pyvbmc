@@ -84,7 +84,8 @@ def run_optim_block(
     vbmc._check_termination_conditions = wrap_with_test(
         vbmc._check_termination_conditions, vbmc
     )
-    vp, elbo, _, _, _ = vbmc.optimize()
+    vp, results = vbmc.optimize()
+    elbo = results["elbo"]
 
     vmu = vp.moments()
     err_1 = np.sqrt(np.mean((vmu - mu_bar) ** 2))
@@ -458,7 +459,7 @@ def mvnlogpdf(x, mu, sigma):
     return y
 
 
-def test_optimize_result_dict(mocker):
+def test_optimize_results(mocker):
     """
     Test that result dict is being recorded correctly.
     """
@@ -491,23 +492,23 @@ def test_optimize_result_dict(mocker):
     vbmc.vp.stats["entropy"] = 1
     vbmc.vp.stats["elbo"] = -2
     vbmc.vp.stats["elbo_sd"] = 0
-    _, _, _, _, result_dict = vbmc.optimize()
-    assert "function" in result_dict
-    assert result_dict["problem_type"] == "unconstrained"
-    assert "iterations" in result_dict
-    assert "func_count" in result_dict
-    assert "best_iter" in result_dict
-    assert "train_set_size" in result_dict
-    assert "components" in result_dict
-    assert result_dict["r_index"] == 2
-    assert result_dict["convergence_status"] == "no"
-    assert np.isnan(result_dict["overhead"])
-    assert "rng_state" in result_dict
-    assert result_dict["algorithm"] == "Variational Bayesian Monte Carlo"
-    assert "version" in result_dict
-    assert result_dict["message"] == "test message"
-    assert "elbo" in result_dict
-    assert "elbo_sd" in result_dict
+    __, results = vbmc.optimize()
+    assert "function" in results
+    assert results["problem_type"] == "unconstrained"
+    assert "iterations" in results
+    assert "func_count" in results
+    assert "best_iter" in results
+    assert "train_set_size" in results
+    assert "components" in results
+    assert results["r_index"] == 2
+    assert results["convergence_status"] == "no"
+    assert np.isnan(results["overhead"])
+    assert "rng_state" in results
+    assert results["algorithm"] == "Variational Bayesian Monte Carlo"
+    assert "version" in results
+    assert results["message"] == "test message"
+    assert "elbo" in results
+    assert "elbo_sd" in results
 
 
 def _test_optimize_reproducibility():
@@ -577,7 +578,10 @@ def test_vbmc_resume_optimization():
         vbmc_1._check_termination_conditions, vbmc_1
     )
     np.random.seed(seed + 1)
-    vp_1, elbo_1, elbo_sd_1, success_flag_1, info_1 = vbmc_1.optimize()
+    vp_1, results_1 = vbmc_1.optimize()
+    elbo_1 = results_1["elbo"]
+    elbo_sd_1 = results_1["elbo_sd"]
+    success_flag_1 = results_1["success_flag"]
 
     # Then run for 4, save, load, run for 4 more:
     options = {"max_iter": 4, "do_final_boost": False}
@@ -606,7 +610,10 @@ def test_vbmc_resume_optimization():
         vbmc_2 = dill.load(f)
     vbmc_2.options.__setitem__("max_iter", 8, force=True)
     vbmc_2.options.__setitem__("do_final_boost", True, force=True)
-    vp_2, elbo_2, elbo_sd_2, success_flag_2, info_2 = vbmc_2.optimize()
+    vp_2, results_2 = vbmc_2.optimize()
+    elbo_2 = results_2["elbo"]
+    elbo_sd_2 = results_2["elbo_sd"]
+    success_flag_2 = results_2["success_flag"]
 
     assert success_flag_1 == success_flag_2
     assert elbo_1 == elbo_1
