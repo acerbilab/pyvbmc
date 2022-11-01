@@ -400,7 +400,7 @@
   <div class="tex2jax_ignore mathjax_ignore section" id="pyvbmc-example-3-output-diagnostics-and-saving-results">
 <h1>PyVBMC Example 3: Output diagnostics and saving results<a class="headerlink" href="#pyvbmc-example-3-output-diagnostics-and-saving-results" title="Permalink to this headline">¶</a></h1>
 <p>In this notebook, we demonstrate extended usage of PyVBMC. We will take a brief look at PyVBMC’s diagnostic output, and show you how to save the results of optimization to disk.</p>
-<p>This notebook is Part 3 of a series of notebooks in which we present various example usages for VBMC with the PyVBMC package.</p>
+<p>This notebook is Part 3 of a series of notebooks in which we present various example usages for VBMC with the PyVBMC package. The code used in this example is available as a script <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/examples/pyvbmc_example_3_full_code.py">here</a>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -497,22 +497,22 @@
     <span class="n">UB</span><span class="p">,</span>
     <span class="n">PLB</span><span class="p">,</span>
     <span class="n">PUB</span><span class="p">,</span>
-    <span class="n">user_options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
+    <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
     <span class="n">log_prior</span><span class="o">=</span><span class="n">log_prior</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="c1"># vbmc = VBMC(</span>
 <span class="c1">#     log_joint,</span>
-<span class="c1">#     x0, LB, UB, PLB, PUB, user_options=options,</span>
+<span class="c1">#     x0, LB, UB, PLB, PUB, options=options,</span>
 <span class="c1"># )</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:root:Reshaping x0 to row vector.
-WARNING:root:Reshaping lower bounds to (1, 4).
-WARNING:root:Reshaping upper bounds to (1, 4).
-WARNING:root:Reshaping plausible lower bounds to (1, 4).
-WARNING:root:Reshaping plausible upper bounds to (1, 4).
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Reshaping x0 to row vector.
+Reshaping lower bounds to (1, 4).
+Reshaping upper bounds to (1, 4).
+Reshaping plausible lower bounds to (1, 4).
+Reshaping plausible upper bounds to (1, 4).
 </pre></div>
 </div>
 </div>
@@ -524,24 +524,24 @@ WARNING:root:Reshaping plausible upper bounds to (1, 4).
 <p>Now we run PyVBMC with a very small budget of 40 function evaluations:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vp</span><span class="p">,</span> <span class="n">elbo</span><span class="p">,</span> <span class="n">elbo_sd</span><span class="p">,</span> <span class="n">success_flag</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vp</span><span class="p">,</span> <span class="n">results</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:VBMC:Beginning variational optimization assuming EXACT observations of the log-joint.
-INFO:VBMC: Iteration  f-count    Mean[ELBO]    Std[ELBO]    sKL-iter[q]   K[q]  Convergence  Action
-INFO:VBMC:     0         10          -3.72         2.61    319790.86        2        inf     start warm-up
-INFO:VBMC:     1         15          -3.96         1.53        12.50        2        inf     
-INFO:VBMC:     2         20          -4.11         2.33         0.37        2       14.5     
-INFO:VBMC:     3         25          -4.83         1.20        12.01        2        206     
-INFO:VBMC:     4         30          -4.29         0.89         4.10        2         73     
-INFO:VBMC:     5         35          -5.91         1.54         8.47        2        152     
-INFO:VBMC:     6         40          -2.24         2.92         4.45        2       96.1     
-INFO:VBMC:   inf         40          -4.81         2.33         1.07       50        152     finalize
-WARNING:VBMC:Inference terminated: reached maximum number of function evaluations options.max_fun_evals.
-WARNING:VBMC:Estimated ELBO: -4.807 +/-2.330.
-WARNING:VBMC:Caution: Returned variational solution may have not converged.
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Beginning variational optimization assuming EXACT observations of the log-joint.
+ Iteration  f-count    Mean[ELBO]    Std[ELBO]    sKL-iter[q]   K[q]  Convergence  Action
+     0         10          -4.28         2.15    275005.97        2        inf     start warm-up
+     1         15          -3.02         2.60         4.41        2        inf     
+     2         20          -4.39         1.24         8.14        2        144     
+     3         25          -4.65         0.62         3.26        2       57.3     
+     4         30          -4.79         0.71         1.12        2       21.6     
+     5         35          -5.00         0.23         1.33        2       23.7     
+     6         40          -4.82         0.13         0.05        2       1.89     
+   inf         40          -4.58         0.15         0.14       50       1.89     finalize
+Inference terminated: reached maximum number of function evaluations options.max_fun_evals.
+Estimated ELBO: -4.581 +/-0.152.
+Caution: Returned variational solution may have not converged.
 </pre></div>
 </div>
 </div>
@@ -549,7 +549,7 @@ WARNING:VBMC:Caution: Returned variational solution may have not converged.
 <p>PyVBMC is warning us that convergence is doubtful. We can look at the output for more information and diagnostics.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">success_flag</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;success_flag&quot;</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -562,28 +562,29 @@ WARNING:VBMC:Caution: Returned variational solution may have not converged.
 <p><code class="docutils literal notranslate"><span class="pre">False</span></code> means that PyVBMC has not converged to a stable solution within the given number of function evaluations.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">format_dict</span><span class="p">(</span><span class="n">info</span><span class="p">))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">format_dict</span><span class="p">(</span><span class="n">results</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{
-    &#39;function&#39;: &#39;&lt;function VBMC.__init__.&lt;locals&gt;.log_joint at 0x108ffd940&gt;&#39;,
+    &#39;function&#39;: &#39;&lt;function VBMC.__init__.&lt;locals&gt;.log_joint at 0x7f824704ed30&gt;&#39;,
     &#39;problem_type&#39;: &#39;unconstrained&#39;,
     &#39;iterations&#39;: 6,
     &#39;func_count&#39;: 40,
-    &#39;best_iter&#39;: 5,
-    &#39;train_set_size&#39;: 35,
+    &#39;best_iter&#39;: 6,
+    &#39;train_set_size&#39;: 40,
     &#39;components&#39;: 50,
-    &#39;r_index&#39;: 151.75094234172184,
+    &#39;r_index&#39;: 1.8901718949158166,
     &#39;convergence_status&#39;: &#39;no&#39;,
     &#39;overhead&#39;: nan,
     &#39;rng_state&#39;: &#39;rng&#39;,
     &#39;algorithm&#39;: &#39;Variational Bayesian Monte Carlo&#39;,
     &#39;version&#39;: &#39;0.1.0&#39;,
     &#39;message&#39;: &#39;Inference terminated: reached maximum number of function evaluations options.max_fun_evals.&#39;,
-    &#39;elbo&#39;: -4.8065010675165105,
-    &#39;elbo_sd&#39;: 2.329618254554614,
+    &#39;elbo&#39;: -4.580586512183974,
+    &#39;elbo_sd&#39;: 0.15249730360797745,
+    &#39;success_flag&#39;: False,
 }
 </pre></div>
 </div>
@@ -656,62 +657,58 @@ Our diagnostics tell us that this run has not converged, suggesting to increase 
 <span class="n">vbmc</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">is_initialized</span> <span class="o">=</span> <span class="kc">True</span>
 
 <span class="n">vbmc</span><span class="o">.</span><span class="n">is_finished</span> <span class="o">=</span> <span class="kc">False</span>
-<span class="n">vp</span><span class="p">,</span> <span class="n">elbo</span><span class="p">,</span> <span class="n">elbo_sd</span><span class="p">,</span> <span class="n">success_flag</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
+<span class="n">vp</span><span class="p">,</span> <span class="n">results</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:VBMC:Beginning variational optimization assuming EXACT observations of the log-joint.
-INFO:VBMC.stream_only: Iteration  f-count    Mean[ELBO]    Std[ELBO]    sKL-iter[q]   K[q]  Convergence  Action
-INFO:VBMC:     6         40          -0.50         4.37         7.81        2        163     
-INFO:VBMC:     7         45          -4.84         0.10        11.94        2        214     
-INFO:VBMC:     8         50          -4.71         0.04         0.07        2       1.71     
-INFO:VBMC:     9         55          -4.66         0.02         0.04        2       0.88     
-INFO:VBMC:    10         60          -4.62         0.01         0.02        2      0.501     end warm-up
-INFO:VBMC:    11         65          -4.58         0.02         0.05        2       1.02     
-INFO:VBMC:    12         70          -4.57         0.01         0.02        2      0.379     
-INFO:VBMC:    13         75          -4.50         0.01         0.04        5      0.908     
-INFO:VBMC:    14         80          -4.37         0.00         0.07        8       1.54     rotoscale, undo rotoscale
-INFO:VBMC:    15         85          -4.28         0.00         0.07        9        1.4     
-INFO:VBMC:    16         90          -4.28         0.00         0.01       10      0.135     
-INFO:VBMC:    17         95          -4.26         0.00         0.00       13     0.0765     
-INFO:VBMC:    18        100          -4.23         0.00         0.00       16      0.164     
-INFO:VBMC:    19        105          -4.21         0.00         0.00       19      0.135     
-INFO:VBMC:    20        110          -4.19         0.00         0.00       22     0.0919     
-INFO:VBMC:    21        115          -4.19         0.00         0.00       22      0.038     
-INFO:VBMC:    22        120          -4.18         0.00         0.00       21     0.0737     
-INFO:VBMC:    23        125          -4.18         0.00         0.00       21     0.0313     stable
-INFO:VBMC:   inf        125          -4.12         0.00         0.01       50     0.0313     finalize
-WARNING:VBMC:Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.
-WARNING:VBMC:Estimated ELBO: -4.118 +/-0.001.
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Beginning variational optimization assuming EXACT observations of the log-joint.
+ Iteration  f-count    Mean[ELBO]    Std[ELBO]    sKL-iter[q]   K[q]  Convergence  Action
+     6         40          -4.72         0.12         0.09        2       2.78     
+     7         45          -4.70         0.05         0.01        2      0.465     
+     8         50          -4.66         0.05         0.05        2       1.09     end warm-up
+     9         55          -4.64         0.02         0.01        2      0.306     
+    10         60          -4.56         0.01         0.01        2      0.399     
+    11         65          -4.55         0.01         0.04        5      0.731     
+    12         70          -4.40         0.01         0.06        8       1.48     rotoscale, undo rotoscale
+    13         75          -4.33         0.01         0.01        9      0.476     
+    14         80          -4.30         0.00         0.00       12      0.172     
+    15         85          -4.25         0.00         0.01       15      0.285     
+    16         90          -4.22         0.00         0.00       18      0.183     
+    17         95          -4.21         0.00         0.01       19      0.117     
+    18        100          -4.21         0.00         0.00       19     0.0738     stable
+   inf        100          -4.15         0.00         0.01       50     0.0738     finalize
+Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.
+Estimated ELBO: -4.145 +/-0.002.
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">format_dict</span><span class="p">(</span><span class="n">info</span><span class="p">))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">format_dict</span><span class="p">(</span><span class="n">results</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{
-    &#39;function&#39;: &#39;&lt;function VBMC.__init__.&lt;locals&gt;.log_joint at 0x165361b80&gt;&#39;,
+    &#39;function&#39;: &#39;&lt;function VBMC.__init__.&lt;locals&gt;.log_joint at 0x7f824704e700&gt;&#39;,
     &#39;problem_type&#39;: &#39;unconstrained&#39;,
-    &#39;iterations&#39;: 23,
-    &#39;func_count&#39;: 125,
-    &#39;best_iter&#39;: 23,
-    &#39;train_set_size&#39;: 122,
+    &#39;iterations&#39;: 18,
+    &#39;func_count&#39;: 100,
+    &#39;best_iter&#39;: 18,
+    &#39;train_set_size&#39;: 99,
     &#39;components&#39;: 50,
-    &#39;r_index&#39;: 0.031330287656699755,
+    &#39;r_index&#39;: 0.07375842196832269,
     &#39;convergence_status&#39;: &#39;probable&#39;,
     &#39;overhead&#39;: nan,
     &#39;rng_state&#39;: &#39;rng&#39;,
     &#39;algorithm&#39;: &#39;Variational Bayesian Monte Carlo&#39;,
     &#39;version&#39;: &#39;0.1.0&#39;,
     &#39;message&#39;: &#39;Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.&#39;,
-    &#39;elbo&#39;: -4.117721331713407,
-    &#39;elbo_sd&#39;: 0.0011513438533648059,
+    &#39;elbo&#39;: -4.145182203012939,
+    &#39;elbo_sd&#39;: 0.002220654574979916,
+    &#39;success_flag&#39;: True,
 }
 </pre></div>
 </div>
@@ -736,12 +733,12 @@ WARNING:VBMC:Estimated ELBO: -4.118 +/-0.001.
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[[-0.38232762 -0.57451283 -0.01202702  1.00881978]
- [-0.13825953  0.58691027  0.97214509  2.10049461]
- [-0.25420183 -0.55995149 -0.9688158  -1.25871633]
- [-0.68187614  0.04510994 -0.05127354 -0.08940267]
- [-1.33565096 -1.99922658  0.30049789  0.76330246]]
-[ 5  6 14  4 24]
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[[-0.09373324 -0.20273329 -0.37971214 -0.92123077]
+ [ 0.37903486  0.60764692  0.78428635  1.76909208]
+ [-0.35520708 -0.21939562  0.06508829 -0.08745725]
+ [-1.16850346 -0.30246786 -1.02857926 -0.29353836]
+ [-1.55871302 -0.47776638 -0.89148552 -1.31746064]]
+[24 23 34  1  1]
 </pre></div>
 </div>
 </div>

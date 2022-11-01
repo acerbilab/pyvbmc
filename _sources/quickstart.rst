@@ -25,7 +25,7 @@ Running the inference in step 3 only involves a couple of lines of code:
   from pyvbmc.vbmc import VBMC
   # ...
   vbmc = VBMC(target, x0, LB, UB, PLB, PUB)
-  vp, elbo, elbo_sd, _, _ = vbmc.optimize()
+  vp, results = vbmc.optimize()
 
 with input arguments:
 
@@ -37,8 +37,9 @@ with input arguments:
 The outputs are:
 
 - ``vp``: a ``VariationalPosterior`` object which approximates the true target density;
-- ``elbo``: the estimated lower bound on the log model evidence (log normalization constant);
-- ``elbo_sd``: the standard deviation of the estimate of the ``elbo`` (*not* the error between the ``elbo`` and the true log model evidence, which is generally unknown).
+- ``results``: a ``dict`` with additional information. Important keys are:
+  - ``"elbo"``: the estimated lower bound on the log model evidence (log normalization constant);
+  - ``"elbo_sd"``: the standard deviation of the estimate of the ELBO (*not* the error between the ELBO and the true log model evidence, which is generally unknown).
 
 The ``vp`` object can be manipulated in various ways, see the :ref:`VariationalPosterior` class documentation.
 

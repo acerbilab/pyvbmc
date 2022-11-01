@@ -529,6 +529,64 @@ KL(<cite>vp2</cite> || <cite>vp1</cite>).</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="pyvbmc.variational_posterior.VariationalPosterior.log_pdf">
+<span class="sig-name descname"><span class="pre">log_pdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/acerbilab/pyvbmc/tree/main/pyvbmc/variational_posterior/variational_posterior.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.variational_posterior.VariationalPosterior.log_pdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>log-probability density function of the variational posterior.</p>
+<p>Compute the log density of the variational posterior at one or multiple
+input points. The parameters are the same as for <code class="docutils literal notranslate"><span class="pre">vp.pdf()</span></code> with
+<code class="docutils literal notranslate"><span class="pre">log_flag=True</span></code>. These parameters are described again here for
+reference.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">np.ndarray</span></dt><dd><p><cite>x</cite> is a matrix of inputs to evaluate the log-pdf at. The rows of
+the <cite>N</cite>-by-<cite>D</cite> matrix <cite>x</cite> correspond to observations or points, and
+columns correspond to variables or coordinates.</p>
+</dd>
+<dt><strong>orig_flag</strong><span class="classifier">bool, optional</span></dt><dd><p>Controls if the value of the posterior log-density should be
+evaluated in the original parameter space for <cite>orig_flag</cite> is
+<code class="docutils literal notranslate"><span class="pre">True</span></code>, or in the transformed space if <cite>orig_flag</cite> is <code class="docutils literal notranslate"><span class="pre">False</span></code>,
+by default <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+</dd>
+<dt><strong>trans_flag</strong><span class="classifier">bool, optional</span></dt><dd><p>Specifies if <cite>x</cite> is already specified in transformed space.
+<cite>trans_flag</cite> = <code class="docutils literal notranslate"><span class="pre">True</span></code> assumes that <cite>x</cite> is already specified in
+tranformed space. Otherwise, <cite>x</cite> is specified in the original
+parameter space. By default <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+</dd>
+<dt><strong>grad_flag</strong><span class="classifier">bool, optional</span></dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">True</span></code> the gradient of the log-pdf is returned as a second
+output, by default <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+</dd>
+<dt><strong>df</strong><span class="classifier">float, optional</span></dt><dd><p>Compute the log-pdf of a heavy-tailed version of the variational
+posterior, in which the multivariate normal components have been
+replaced by multivariate <cite>t</cite>-distributions with <cite>df</cite> degrees of
+freedom. The default is <cite>df</cite> = <code class="docutils literal notranslate"><span class="pre">np.inf</span></code>, limit in which the
+<cite>t</cite>-distribution becomes a multivariate normal.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>log_pdf: np.ndarray</dt><dd><p>The probability density of the variational posterior
+evaluated at each row of <cite>x</cite>.</p>
+</dd>
+<dt>gradient: np.ndarray</dt><dd><p>If <cite>grad_flag</cite> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, the function returns the gradient as well.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>NotImplementedError</dt><dd><p>Raised if <cite>df</cite> is non-zero and finite and <cite>grad_flag</cite> = <code class="docutils literal notranslate"><span class="pre">True</span></code>
+(Gradient of heavy-tailed pdf not supported yet).</p>
+</dd>
+<dt>NotImplementedError</dt><dd><p>Raised if <cite>orig_flag</cite> = <code class="docutils literal notranslate"><span class="pre">True</span></code> and <cite>grad_flag</cite> = <code class="docutils literal notranslate"><span class="pre">True</span></code>
+(gradient computation in original space not supported yet).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.variational_posterior.VariationalPosterior.mode">
 <span class="sig-name descname"><span class="pre">mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orig_flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/acerbilab/pyvbmc/tree/main/pyvbmc/variational_posterior/variational_posterior.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.variational_posterior.VariationalPosterior.mode" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find the mode of the variational posterior.</p>
@@ -683,8 +741,8 @@ evaluated at each row of <cite>x</cite>.</p>
 (Gradient of heavy-tailed pdf not supported yet).</p>
 </dd>
 <dt>NotImplementedError</dt><dd><p>Raised if <cite>orig_flag</cite> = <code class="docutils literal notranslate"><span class="pre">True</span></code> and <cite>log_flag</cite> = <code class="docutils literal notranslate"><span class="pre">True</span></code> and
-<cite>grad_flag</cite> = <code class="docutils literal notranslate"><span class="pre">True</span></code> (Gradient computation in original space not
-supported yet).</p>
+<cite>grad_flag</cite> = <code class="docutils literal notranslate"><span class="pre">True</span></code> (gradient computation of the log-pdf in the
+original space is not supported yet).</p>
 </dd>
 </dl>
 </dd>

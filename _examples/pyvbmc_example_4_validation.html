@@ -324,11 +324,6 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#example-4-full-code">
-   Example 4: full code
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#acknowledgments">
    Acknowledgments
   </a>
@@ -369,11 +364,6 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#example-4-full-code">
-   Example 4: full code
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#acknowledgments">
    Acknowledgments
   </a>
@@ -390,7 +380,7 @@
   <div class="tex2jax_ignore mathjax_ignore section" id="pyvbmc-example-4-multiple-runs-as-validation">
 <h1>PyVBMC Example 4: Multiple runs as validation<a class="headerlink" href="#pyvbmc-example-4-multiple-runs-as-validation" title="Permalink to this headline">¶</a></h1>
 <p>Here we explore running PyVBMC multiple times in order to validate the results: if the final variational posteriors obtained from several different initial points are consistent, we can be more confident that the results are correct.</p>
-<p>This notebook is Part 4 of a series of notebooks in which we present various example usages for VBMC with the PyVBMC package.</p>
+<p>This notebook is Part 4 of a series of notebooks in which we present various example usages for VBMC with the PyVBMC package. The code used in this example is available as a script <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/examples/pyvbmc_example_4_full_code.py">here</a>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -477,16 +467,16 @@
         <span class="n">UB</span><span class="p">,</span>
         <span class="n">PLB</span><span class="p">,</span>
         <span class="n">PUB</span><span class="p">,</span>
-        <span class="n">user_options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
+        <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">vp</span><span class="p">,</span> <span class="n">elbo</span><span class="p">,</span> <span class="n">elbo_sd</span><span class="p">,</span> <span class="n">success_flag</span><span class="p">,</span> <span class="n">result_dict</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
+    <span class="n">vp</span><span class="p">,</span> <span class="n">results</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
 
     <span class="c1"># Record the results:</span>
     <span class="n">vps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vp</span><span class="p">)</span>
-    <span class="n">elbos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">elbo</span><span class="p">)</span>
-    <span class="n">elbo_sds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">elbo_sd</span><span class="p">)</span>
-    <span class="n">success_flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">success_flag</span><span class="p">)</span>
-    <span class="n">result_dicts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result_dict</span><span class="p">)</span>
+    <span class="n">elbos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;elbo&quot;</span><span class="p">])</span>
+    <span class="n">elbo_sds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;elbo_sd&quot;</span><span class="p">])</span>
+    <span class="n">success_flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;success_flag&quot;</span><span class="p">])</span>
+    <span class="n">result_dicts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -495,69 +485,63 @@
 Reshaping x0 to row vector.
 Beginning variational optimization assuming EXACT observations of the log-joint.
  Iteration  f-count    Mean[ELBO]    Std[ELBO]    sKL-iter[q]   K[q]  Convergence  Action
-     0         10          -1.79         1.06     57003.37        2        inf     start warm-up
-     1         15          -1.84         0.06         0.65        2        inf     
-     2         20          -1.81         0.00         0.09        2       2.33     
-     3         25          -1.81         0.00         0.00        2     0.0355     
-     4         30          -1.84         0.00         0.00        2      0.158     end warm-up
-     5         35          -1.81         0.00         0.00        2      0.185     
-     6         40          -1.81         0.00         0.00        2      0.041     
-     7         45          -1.64         0.00         0.06        5        1.9     
-     8         50          -1.62         0.00         0.01        6      0.222     rotoscale, undo rotoscale
-     9         55          -1.59         0.00         0.01        9      0.244     
-    10         60          -1.55         0.00         0.01       12      0.394     
-    11         65          -1.54         0.00         0.00       15     0.0544     
-    12         70          -1.54         0.00         0.00       16     0.0236     
-    13         75          -1.55         0.00         0.00       14     0.0289     stable
-   inf         75          -1.53         0.00         0.00       50     0.0289     finalize
+     0         10          -1.79         1.16     64743.17        2        inf     start warm-up
+     1         15          -1.83         0.03         0.87        2        inf     
+     2         20          -1.79         0.01         0.07        2       1.73     
+     3         25          -1.80         0.00         0.01        2      0.136     
+     4         30          -1.84         0.00         0.01        2      0.318     end warm-up
+     5         35          -1.78         0.00         0.01        2      0.398     
+     6         40          -1.81         0.00         0.00        2       0.11     
+     7         45          -1.72         0.00         0.02        5       0.82     
+     8         50          -1.62         0.00         0.01        8      0.528     rotoscale, undo rotoscale
+     9         55          -1.57         0.00         0.03       11      0.762     
+    10         60          -1.56         0.00         0.01       13      0.338     
+    11         65          -1.55         0.00         0.00       13     0.0586     
+    12         70          -1.54         0.00         0.00       14     0.0714     stable
+   inf         70          -1.53         0.00         0.00       50     0.0714     finalize
 Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.
-Estimated ELBO: -1.527 +/-0.000.
+Estimated ELBO: -1.535 +/-0.000.
 PyVBMC run 1 of 3
 Reshaping x0 to row vector.
 Beginning variational optimization assuming EXACT observations of the log-joint.
  Iteration  f-count    Mean[ELBO]    Std[ELBO]    sKL-iter[q]   K[q]  Convergence  Action
-     0         10          -0.97         0.80     60421.09        2        inf     start warm-up
-     1         15          -1.88         0.38         0.42        2        inf     
-     2         20          -1.83         0.09         0.51        2       12.6     
-     3         25          -1.81         0.00         0.04        2      0.984     
-     4         30          -1.79         0.00         0.00        2      0.127     end warm-up
-     5         35          -1.80         0.00         0.00        2     0.0361     
-     6         40          -1.80         0.00         0.00        2     0.0944     
-     7         45          -1.71         0.00         0.04        5       1.18     
-     8         50          -1.67         0.00         0.01        6      0.227     rotoscale, undo rotoscale
-     9         55          -1.65         0.00         0.01        9      0.301     
-    10         60          -1.62         0.00         0.01       12      0.203     
-    11         65          -1.61         0.00         0.01       14      0.178     
-    12         70          -1.58         0.00         0.00       14      0.112     
-    13         75          -1.55         0.00         0.01       14      0.385     stable
-   inf         75          -1.53         0.00         0.02       50      0.385     finalize
+     0         10          -0.05         1.20     50590.76        2        inf     start warm-up
+     1         15          -1.87         0.03         0.80        2        inf     
+     2         20          -1.82         0.00         0.07        2       1.94     
+     3         25          -1.81         0.00         0.00        2     0.0887     
+     4         30          -1.80         0.00         0.00        2     0.0611     end warm-up
+     5         35          -1.80         0.00         0.00        2       0.05     
+     6         40          -1.82         0.00         0.01        2      0.215     
+     7         45          -1.61         0.00         0.08        5       2.64     
+     8         50          -1.61         0.00         0.01        6      0.136     rotoscale, undo rotoscale
+     9         55          -1.58         0.00         0.00        9      0.138     
+    10         60          -1.57         0.00         0.00       12     0.0397     
+    11         65          -1.57         0.00         0.00       15     0.0239     
+    12         70          -1.57         0.00         0.00       16     0.0182     
+    13         75          -1.56         0.00         0.00       16     0.0448     stable
+   inf         75          -1.53         0.00         0.00       50     0.0448     finalize
 Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.
-Estimated ELBO: -1.527 +/-0.001.
+Estimated ELBO: -1.533 +/-0.001.
 PyVBMC run 2 of 3
 Reshaping x0 to row vector.
 Beginning variational optimization assuming EXACT observations of the log-joint.
  Iteration  f-count    Mean[ELBO]    Std[ELBO]    sKL-iter[q]   K[q]  Convergence  Action
-     0         10          -1.36         1.10     56296.06        2        inf     start warm-up
-     1         15          -1.80         0.10         0.36        2        inf     
-     2         20          -1.80         0.00         0.06        2       1.47     
-     3         25          -1.82         0.00         0.01        2       0.24     
-     4         30          -1.81         0.00         0.00        2      0.088     end warm-up
-     5         35          -1.78         0.00         0.13        2       3.05     
-     6         40          -1.77         0.00         0.00        2      0.148     
-     7         45          -1.64         0.00         0.09        5        2.5     
-     8         50          -1.63         0.00         0.00        6      0.063     rotoscale, undo rotoscale
-     9         55          -1.55         0.00         0.03        9          1     
-    10         60          -1.55         0.00         0.00       10      0.052     
-    11         65          -1.55         0.00         0.00       12     0.0085     
-    12         70          -1.54         0.00         0.00       12     0.0414     
-    13         75          -1.55         0.00         0.00       11     0.0776     
-    14         80          -1.54         0.00         0.00       10     0.0524     
-    15         85          -1.54         0.00         0.00       10     0.0137     
-    16         90          -1.54         0.00         0.00       11     0.0239     
-    17         95          -1.53         0.00         0.00       10      0.047     stable
-   inf         95          -1.53         0.00         0.00       50      0.047     finalize
+     0         10          -0.26         0.09    116464.47        2        inf     start warm-up
+     1         15          -0.27         0.20         0.04        2        inf     
+     2         20          -1.87         0.01         4.52        2        112     
+     3         25          -1.84         0.00         0.01        2      0.291     
+     4         30          -1.85         0.00         0.00        2     0.0809     end warm-up
+     5         35          -1.84         0.00         0.00        2     0.0792     
+     6         40          -1.84         0.00         0.00        2     0.0604     
+     7         45          -1.74         0.00         0.01        5       0.69     
+     8         50          -1.67         0.00         0.02        8      0.624     rotoscale, undo rotoscale
+     9         55          -1.60         0.00         0.03       11      0.832     
+    10         60          -1.57         0.00         0.00       14      0.203     
+    11         65          -1.56         0.00         0.00       16      0.103     
+    12         70          -1.55         0.00         0.00       16     0.0481     stable
+   inf         70          -1.53         0.00         0.00       50     0.0481     finalize
 Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.
-Estimated ELBO: -1.525 +/-0.000.
+Estimated ELBO: -1.528 +/-0.001.
 </pre></div>
 </div>
 </div>
@@ -570,7 +554,7 @@ Estimated ELBO: -1.525 +/-0.000.
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[-1.5266615089493838, -1.5266716056530365, -1.525455555758563]
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[-1.5346877840499462, -1.5325190530590693, -1.5279343296662957]
 </pre></div>
 </div>
 </div>
@@ -597,9 +581,9 @@ Estimated ELBO: -1.525 +/-0.000.
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[[-0.          0.00834495  0.0042796 ]
- [ 0.0077242  -0.          0.01210863]
- [ 0.00665952  0.0172008  -0.        ]]
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[[0.         0.00897685 0.00952384]
+ [0.01093828 0.         0.00640547]
+ [0.01219925 0.00604674 0.        ]]
 </pre></div>
 </div>
 </div>
@@ -671,153 +655,6 @@ Estimated ELBO: -1.525 +/-0.000.
 <h2>3. Conclusions<a class="headerlink" href="#conclusions" title="Permalink to this headline">¶</a></h2>
 <p>In this notebook, we have shown you some techniques to validate the results of PyVBMC by comparing statitics across multiple runs.</p>
 <p>In the next notebook, we will demonstrate using PyVBMC with models in which the likelihood function is noisy, or can only be estimated up to some noise.</p>
-</div>
-<div class="section" id="example-4-full-code">
-<h2>Example 4: full code<a class="headerlink" href="#example-4-full-code" title="Permalink to this headline">¶</a></h2>
-<p>The following cell includes in a single place all the code used in Example 4, without the extra fluff.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">assert</span> <span class="kc">False</span>  <span class="c1"># skip this cell</span>
-
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">scipy.stats</span> <span class="k">as</span> <span class="nn">scs</span>
-<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">minimize</span>
-<span class="kn">from</span> <span class="nn">pyvbmc.vbmc</span> <span class="kn">import</span> <span class="n">VBMC</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">dill</span>
-
-
-<span class="n">D</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># We&#39;ll use a 2-D problem for a quicker demonstration</span>
-<span class="n">prior_mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
-<span class="n">prior_var</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
-
-
-<span class="k">def</span> <span class="nf">log_prior</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Multivariate normal prior on theta.&quot;&quot;&quot;</span>
-    <span class="n">cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">prior_var</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">scs</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span><span class="n">prior_mu</span><span class="p">,</span> <span class="n">cov</span><span class="p">)</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
-
-
-<span class="c1"># log-likelihood (Rosenbrock)</span>
-<span class="k">def</span> <span class="nf">log_likelihood</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;D-dimensional Rosenbrock&#39;s banana function.&quot;&quot;&quot;</span>
-    <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
-
-    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">theta</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">theta</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:]</span>
-    <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="mi">100</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-
-
-<span class="c1"># Full model:</span>
-<span class="k">def</span> <span class="nf">log_joint</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">D</span><span class="p">)):</span>
-    <span class="sd">&quot;&quot;&quot;log-density of the joint distribution.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">log_likelihood</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">+</span> <span class="n">log_prior</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
-
-
-<span class="n">LB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>  <span class="c1"># Lower bounds</span>
-<span class="n">UB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>  <span class="c1"># Upper bounds</span>
-<span class="n">PLB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="n">prior_mu</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">prior_var</span><span class="p">))</span>  <span class="c1"># Plausible lower bounds</span>
-<span class="n">PUB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="n">prior_mu</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">prior_var</span><span class="p">))</span>  <span class="c1"># Plausible upper bounds</span>
-<span class="n">options</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;max_fun_evals&quot;</span><span class="p">:</span> <span class="mi">50</span> <span class="o">*</span> <span class="n">D</span>  <span class="c1"># Slightly reduced from 50 * (D + 2), for speed</span>
-<span class="p">}</span>
-
-
-<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
-<span class="n">n_runs</span> <span class="o">=</span> <span class="mi">3</span>
-<span class="n">vps</span><span class="p">,</span> <span class="n">elbos</span><span class="p">,</span> <span class="n">elbo_sds</span><span class="p">,</span> <span class="n">success_flags</span><span class="p">,</span> <span class="n">result_dicts</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_runs</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PyVBMC run </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="n">n_runs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-    <span class="c1"># Determine initial point x0:</span>
-    <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">x0</span> <span class="o">=</span> <span class="n">prior_mu</span>  <span class="c1"># First run, start from prior mean</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">PLB</span><span class="p">,</span> <span class="n">PUB</span><span class="p">)</span>  <span class="c1"># Other runs, randomize</span>
-    <span class="c1"># Preliminary maximum a posteriori (MAP) estimation:</span>
-    <span class="n">x0</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span>
-        <span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="o">-</span><span class="n">log_joint</span><span class="p">(</span><span class="n">t</span><span class="p">),</span>
-        <span class="n">x0</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span>  <span class="c1"># minimize expects 1-D input for initial point x0</span>
-        <span class="n">bounds</span><span class="o">=</span><span class="p">[(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)],</span>
-    <span class="p">)</span><span class="o">.</span><span class="n">x</span>
-
-    <span class="c1"># Run PyVBMC:</span>
-    <span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span>
-        <span class="n">log_joint</span><span class="p">,</span>
-        <span class="n">x0</span><span class="p">,</span>
-        <span class="n">LB</span><span class="p">,</span>
-        <span class="n">UB</span><span class="p">,</span>
-        <span class="n">PLB</span><span class="p">,</span>
-        <span class="n">PUB</span><span class="p">,</span>
-        <span class="n">user_options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="n">vp</span><span class="p">,</span> <span class="n">elbo</span><span class="p">,</span> <span class="n">elbo_sd</span><span class="p">,</span> <span class="n">success_flag</span><span class="p">,</span> <span class="n">result_dict</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
-
-    <span class="c1"># Record the results:</span>
-    <span class="n">vps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vp</span><span class="p">)</span>
-    <span class="n">elbos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">elbo</span><span class="p">)</span>
-    <span class="n">elbo_sds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">elbo_sd</span><span class="p">)</span>
-    <span class="n">success_flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">success_flag</span><span class="p">)</span>
-    <span class="n">result_dicts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result_dict</span><span class="p">)</span>
-
-
-<span class="nb">print</span><span class="p">(</span><span class="n">elbos</span><span class="p">)</span>
-
-
-<span class="n">kl_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_runs</span><span class="p">,</span> <span class="n">n_runs</span><span class="p">))</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_runs</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">n_runs</span><span class="p">):</span>
-        <span class="c1"># The `kldiv` method computes the divergence in both directions:</span>
-        <span class="n">kl_ij</span><span class="p">,</span> <span class="n">kl_ji</span> <span class="o">=</span> <span class="n">vps</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">kl_div</span><span class="p">(</span><span class="n">vp2</span><span class="o">=</span><span class="n">vps</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
-        <span class="n">kl_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">kl_ij</span>
-        <span class="n">kl_matrix</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">kl_ji</span>
-
-
-<span class="nb">print</span><span class="p">(</span><span class="n">kl_matrix</span><span class="p">)</span>
-
-
-<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">vp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vps</span><span class="p">):</span>
-    <span class="n">samples</span><span class="p">,</span> <span class="n">__</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
-        <span class="n">samples</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span>
-        <span class="n">samples</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span>
-        <span class="n">alpha</span><span class="o">=</span><span class="mi">1</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">vps</span><span class="p">),</span>
-        <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
-        <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;VP </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-    <span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;Variational Posterior Samples&quot;&quot;&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;x0&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;x1&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-
-
-<span class="nb">print</span><span class="p">(</span><span class="n">success_flags</span><span class="p">)</span>
-
-
-<span class="n">beta_lcb</span> <span class="o">=</span> <span class="mf">3.0</span>  <span class="c1"># Standard confidence parameter (in standard deviations)</span>
-<span class="c1"># beta_lcb = 5.0  # This is more conservative</span>
-<span class="n">elcbos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">elbos</span><span class="p">)</span> <span class="o">-</span> <span class="n">beta_lcb</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">elbo_sds</span><span class="p">)</span>
-<span class="n">idx_best</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">elcbos</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">idx_best</span><span class="p">)</span>
-
-
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;noise_free_vp.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-    <span class="n">dill</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">vps</span><span class="p">[</span><span class="n">idx_best</span><span class="p">],</span> <span class="n">f</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
-<span class="ne">AssertionError</span><span class="g g-Whitespace">                            </span>Traceback (most recent call last)
-<span class="n">Cell</span> <span class="n">In</span> <span class="p">[</span><span class="mi">11</span><span class="p">],</span> <span class="n">line</span> <span class="mi">1</span>
-<span class="ne">----&gt; </span><span class="mi">1</span> <span class="k">assert</span> <span class="kc">False</span>  <span class="c1"># skip this cell</span>
-<span class="g g-Whitespace">      </span><span class="mi">3</span> <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="g g-Whitespace">      </span><span class="mi">4</span> <span class="kn">import</span> <span class="nn">scipy.stats</span> <span class="k">as</span> <span class="nn">scs</span>
-
-<span class="ne">AssertionError</span>: 
-</pre></div>
-</div>
-</div>
-</div>
 </div>
 <div class="section" id="acknowledgments">
 <h2>Acknowledgments<a class="headerlink" href="#acknowledgments" title="Permalink to this headline">¶</a></h2>

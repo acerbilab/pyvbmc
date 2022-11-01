@@ -500,18 +500,7 @@ unnormalized log posterior.</p>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>vp</strong><span class="classifier">VariationalPosterior</span></dt><dd><p>The <code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code> computed by VBMC.</p>
 </dd>
-<dt><strong>elbo</strong><span class="classifier">float</span></dt><dd><p>An estimate of the ELBO for the returned <cite>vp</cite>.</p>
-</dd>
-<dt><strong>elbo_sd</strong><span class="classifier">float</span></dt><dd><p>The standard deviation of the estimate of the ELBO. Note that this
-standard deviation is <em>not</em> representative of the error between the
-<cite>elbo</cite> and the true log marginal likelihood.</p>
-</dd>
-<dt><strong>success_flag</strong><span class="classifier">bool</span></dt><dd><p><cite>success_flag</cite> is <code class="docutils literal notranslate"><span class="pre">True</span></code> if the inference reached stability within
-the provided budget of function evaluations, suggesting convergence.
-If <code class="docutils literal notranslate"><span class="pre">False</span></code>, the returned solution has not stabilized and should
-not be trusted.</p>
-</dd>
-<dt><strong>results_dict</strong><span class="classifier">dict</span></dt><dd><p>A dictionary with additional information about the VBMC run.</p>
+<dt><strong>results</strong><span class="classifier">dict</span></dt><dd><p>A dictionary with additional information about the VBMC run.</p>
 </dd>
 </dl>
 </dd>

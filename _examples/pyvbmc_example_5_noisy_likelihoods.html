@@ -330,11 +330,6 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#example-5-full-code">
-   Example 5: full code
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#acknowledgments">
    Acknowledgments
   </a>
@@ -381,11 +376,6 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#example-5-full-code">
-   Example 5: full code
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#acknowledgments">
    Acknowledgments
   </a>
@@ -402,7 +392,7 @@
   <div class="tex2jax_ignore mathjax_ignore section" id="pyvbmc-example-5-noisy-log-likelihood-evaluations">
 <h1>PyVBMC Example 5: Noisy log-likelihood evaluations<a class="headerlink" href="#pyvbmc-example-5-noisy-log-likelihood-evaluations" title="Permalink to this headline">¶</a></h1>
 <p>In this notebook, we demonstrate running PyVBMC with noisy evaluations of the log-likelihood. Here we emulate a noisy scenario by adding random Gaussian noise to the log-likelihood. In practice, noisy evaluations often emerge from estimation techniques for simulation-based models, such as <a class="reference external" href="https://github.com/acerbilab/ibs">Inverse Binomial Sampling (IBS)</a>. However the noise estimate is obtained, it is allowed to be (and in practice, often is) <em>heteroskedastic</em>: that is, the amount of noise in the estimate may vary across parameter space.</p>
-<p>This notebook is Part 5 of a series of notebooks in which we present various example usages for VBMC with the PyVBMC package.</p>
+<p>This notebook is Part 5 of a series of notebooks in which we present various example usages for VBMC with the PyVBMC package. The code used in this example is available as a script <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/examples/pyvbmc_example_5_full_code.py">here</a>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -491,7 +481,7 @@
     <span class="n">UB</span><span class="p">,</span>
     <span class="n">PLB</span><span class="p">,</span>
     <span class="n">PUB</span><span class="p">,</span>
-    <span class="n">user_options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
+    <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -500,40 +490,41 @@
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
-<span class="n">vp</span><span class="p">,</span> <span class="n">elbo</span><span class="p">,</span> <span class="n">elbo_sd</span><span class="p">,</span> <span class="n">success_flag</span><span class="p">,</span> <span class="n">results_dict</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
+<span class="n">vp</span><span class="p">,</span> <span class="n">results</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Beginning variational optimization assuming NOISY observations of the log-joint
  Iteration  f-count    Mean[ELBO]    Std[ELBO]    sKL-iter[q]   K[q]  Convergence  Action
-     0         10          -1.27         0.74    208292.09        2        inf     start warm-up
-     1         15          -0.48         0.93         0.27        2        inf     
-     2         20          -0.77         0.43         0.06        2       2.02     
-     3         25          -1.08         0.25         1.17        2         28     
-     4         30          -1.75         0.34         2.07        2       49.8     
-     5         35          -1.68         0.35         0.03        2       1.21     
-     6         40          -1.84         0.27         0.03        2      0.996     end warm-up
-     7         45          -1.85         0.25         0.01        2      0.403     
-     8         50          -1.85         0.25         0.02        2      0.608     
-     9         55          -1.80         0.24         0.05        5       1.53     
-    10         60          -1.76         0.22         0.00        6      0.329     rotoscale, undo rotoscale
-    11         65          -1.73         0.21         0.01        9      0.511     
-    12         70          -1.73         0.20         0.00       11      0.285     
-    13         75          -1.76         0.19         0.01       11      0.393     
-    14         80          -1.69         0.19         0.01       12      0.508     
-    15         85          -1.67         0.19         0.01       13      0.326     
-    16         90          -1.76         0.18         0.03       14       1.01     
-    17         95          -1.72         0.18         0.01       13      0.437     
-    18        100          -1.71         0.18         0.01       13      0.341     
-    19        105          -1.75         0.18         0.01       13       0.45     
-    20        110          -1.75         0.18         0.01       13      0.368     
-    21        115          -1.71         0.19         0.02       12      0.639     rotoscale, undo rotoscale
-    22        120          -1.77         0.17         0.05       11       1.38     
-    23        125          -1.80         0.17         0.01       11      0.451     stable
-   inf        125          -1.79         0.17         0.01       50      0.451     finalize
+     0         10          -1.28         0.75    230442.67        2        inf     start warm-up
+     1         15          -1.74         0.44         0.04        2        inf     
+     2         20          -2.85         0.56         2.77        2       66.6     
+     3         25          -3.00         0.44         0.14        2        3.8     
+     4         30          -2.80         0.38         0.27        2       6.74     end warm-up
+     5         35          -2.94         0.33         0.34        2       8.44     
+     6         40          -2.54         0.28         0.14        2       4.01     
+     7         45          -2.54         0.25         0.02        3      0.814     
+     8         50          -2.29         0.24         0.05        6       1.55     
+     9         50          -1.90         1.02         0.97        7       24.2     rotoscale
+    10         55          -2.05         0.24         0.44        7       10.8     
+    11         60          -1.98         0.23         0.01        8      0.619     
+    12         65          -1.91         0.22         0.00       11      0.302     
+    13         70          -1.70         0.20         0.01       14      0.651     
+    14         75          -1.64         0.19         0.00       17      0.338     
+    15         80          -1.63         0.18         0.00       18      0.194     rotoscale, undo rotoscale
+    16         85          -1.67         0.17         0.01       18      0.346     
+    17         90          -1.63         0.17         0.00       18      0.228     
+    18         95          -1.58         0.16         0.01       19      0.408     
+    19        100          -1.59         0.16         0.00       20      0.198     
+    20        105          -1.62         0.16         0.00       20      0.212     
+    21        110          -1.65         0.15         0.00       20      0.266     
+    22        115          -1.61         0.15         0.00       19      0.226     
+    23        120          -1.60         0.15         0.00       19      0.174     
+    24        125          -1.56         0.14         0.00       20      0.195     stable
+   inf        125          -1.56         0.14         0.00       50      0.195     finalize
 Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.
-Estimated ELBO: -1.790 +/-0.166.
+Estimated ELBO: -1.562 +/-0.141.
 </pre></div>
 </div>
 </div>
@@ -549,7 +540,7 @@ Estimated ELBO: -1.790 +/-0.166.
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[0.10610655 0.07202276]
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[0.05989518 0.08126687]
 </pre></div>
 </div>
 </div>
@@ -579,107 +570,6 @@ Estimated ELBO: -1.790 +/-0.166.
 <div class="section" id="conclusions">
 <h2>3. Conclusions<a class="headerlink" href="#conclusions" title="Permalink to this headline">¶</a></h2>
 <p>In this notebook, we have illustrated how to use PyVBMC on a model with a noisy likelihood. Even in the presence of significant noise, PyVBMC can find a good variational solution in relatively few function evaluations.</p>
-</div>
-<div class="section" id="example-5-full-code">
-<h2>Example 5: full code<a class="headerlink" href="#example-5-full-code" title="Permalink to this headline">¶</a></h2>
-<p>The following cell includes in a single place all the code used in Example 5, without the extra fluff.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">assert</span> <span class="kc">False</span>  <span class="c1"># skip this cell</span>
-
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">scipy.stats</span> <span class="k">as</span> <span class="nn">scs</span>
-<span class="kn">from</span> <span class="nn">pyvbmc.vbmc</span> <span class="kn">import</span> <span class="n">VBMC</span>
-<span class="kn">import</span> <span class="nn">dill</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-
-
-<span class="n">D</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># We&#39;ll use a 2-D problem, again for speed</span>
-<span class="n">prior_mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
-<span class="n">prior_var</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
-<span class="n">LB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>  <span class="c1"># Lower bounds</span>
-<span class="n">UB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>  <span class="c1"># Upper bounds</span>
-<span class="n">PLB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="n">prior_mu</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">prior_var</span><span class="p">))</span>  <span class="c1"># Plausible lower bounds</span>
-<span class="n">PUB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="n">prior_mu</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">prior_var</span><span class="p">))</span>  <span class="c1"># Plausible upper</span>
-
-
-<span class="k">def</span> <span class="nf">log_prior</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Multivariate normal prior on theta, same as before.&quot;&quot;&quot;</span>
-    <span class="n">cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">prior_var</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">scs</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span><span class="n">prior_mu</span><span class="p">,</span> <span class="n">cov</span><span class="p">)</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
-
-
-<span class="c1"># log-likelihood (Rosenbrock)</span>
-<span class="k">def</span> <span class="nf">log_likelihood</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;D-dimensional Rosenbrock&#39;s banana function.&quot;&quot;&quot;</span>
-    <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
-    <span class="n">n</span><span class="p">,</span> <span class="n">D</span> <span class="o">=</span> <span class="n">theta</span><span class="o">.</span><span class="n">shape</span>
-
-    <span class="c1"># Standard deviation of synthetic noise:</span>
-    <span class="n">noise_sd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
-
-    <span class="c1"># Rosenbrock likelihood:</span>
-    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">theta</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">theta</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:]</span>
-    <span class="n">base_density</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="mi">100</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-
-    <span class="n">noisy_estimate</span> <span class="o">=</span> <span class="n">base_density</span> <span class="o">+</span> <span class="n">noise_sd</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">noisy_estimate</span><span class="p">,</span> <span class="n">noise_sd</span>
-
-
-<span class="c1"># Full model:</span>
-<span class="k">def</span> <span class="nf">log_joint</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">D</span><span class="p">)):</span>
-    <span class="sd">&quot;&quot;&quot;log-density of the joint distribution.&quot;&quot;&quot;</span>
-    <span class="n">log_p</span> <span class="o">=</span> <span class="n">log_prior</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
-    <span class="n">log_l</span><span class="p">,</span> <span class="n">noise_est</span> <span class="o">=</span> <span class="n">log_likelihood</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
-    <span class="c1"># For the joint, we have to add log densities and carry-through the noise estimate.</span>
-    <span class="k">return</span> <span class="n">log_p</span> <span class="o">+</span> <span class="n">log_l</span><span class="p">,</span> <span class="n">noise_est</span>
-
-
-<span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">))</span>  <span class="c1"># Initial point</span>
-
-
-<span class="n">options</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;specify_target_noise&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
-<span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span>
-    <span class="n">log_joint</span><span class="p">,</span>
-    <span class="n">x0</span><span class="p">,</span>
-    <span class="n">LB</span><span class="p">,</span>
-    <span class="n">UB</span><span class="p">,</span>
-    <span class="n">PLB</span><span class="p">,</span>
-    <span class="n">PUB</span><span class="p">,</span>
-    <span class="n">user_options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
-<span class="p">)</span>
-
-
-<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
-<span class="n">vp</span><span class="p">,</span> <span class="n">elbo</span><span class="p">,</span> <span class="n">elbo_sd</span><span class="p">,</span> <span class="n">success_flag</span><span class="p">,</span> <span class="n">results_dict</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
-
-
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;noise_free_vp.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-    <span class="n">noise_free_vp</span> <span class="o">=</span> <span class="n">dill</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-<span class="c1"># KL divergence between this VP and the noise-free VP:</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">vbmc</span><span class="o">.</span><span class="n">vp</span><span class="o">.</span><span class="n">kl_div</span><span class="p">(</span><span class="n">vp2</span><span class="o">=</span><span class="n">noise_free_vp</span><span class="p">))</span>
-
-
-<span class="n">vp</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Noisy VP&quot;</span><span class="p">)</span>
-
-
-<span class="n">noise_free_vp</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Noise-Free VP&quot;</span><span class="p">);</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
-<span class="ne">AssertionError</span><span class="g g-Whitespace">                            </span>Traceback (most recent call last)
-<span class="n">Cell</span> <span class="n">In</span> <span class="p">[</span><span class="mi">10</span><span class="p">],</span> <span class="n">line</span> <span class="mi">1</span>
-<span class="ne">----&gt; </span><span class="mi">1</span> <span class="k">assert</span> <span class="kc">False</span>  <span class="c1"># skip this cell</span>
-<span class="g g-Whitespace">      </span><span class="mi">3</span> <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="g g-Whitespace">      </span><span class="mi">4</span> <span class="kn">import</span> <span class="nn">scipy.stats</span> <span class="k">as</span> <span class="nn">scs</span>
-
-<span class="ne">AssertionError</span>: 
-</pre></div>
-</div>
-</div>
-</div>
 </div>
 <div class="section" id="acknowledgments">
 <h2>Acknowledgments<a class="headerlink" href="#acknowledgments" title="Permalink to this headline">¶</a></h2>

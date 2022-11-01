@@ -93,42 +93,31 @@ BibTeX
 ------
 ::
 
-  @inproceedings{NEURIPS2018_747c1bcc,
-  author = {Acerbi, Luigi},
-  booktitle = {Advances in Neural Information Processing Systems},
-  editor = {S. Bengio and H. Wallach and H. Larochelle and K. Grauman and N. Cesa-Bianchi and R. Garnett},
-  pages = {},
-  publisher = {Curran Associates, Inc.},
-  title = {Variational Bayesian Monte Carlo},
-  url = {https://proceedings.neurips.cc/paper/2018/file/747c1bcceb6109a4ef936bc70cfe67de-Paper.pdf},
-  volume = {31},
-  year = {2018}
+  @article{acerbi2018variational,
+    title={{V}ariational {B}ayesian {M}onte {C}arlo},
+    author={Acerbi, Luigi},
+    journal={Advances in Neural Information Processing Systems},
+    volume={31},
+    pages={8222--8232},
+    year={2018}
   }
-  @inproceedings{NEURIPS2020_5d409541,
-  author = {Acerbi, Luigi},
-  booktitle = {Advances in Neural Information Processing Systems},
-  editor = {H. Larochelle and M. Ranzato and R. Hadsell and M.F. Balcan and H. Lin},
-  pages = {8211--8222},
-  publisher = {Curran Associates, Inc.},
-  title = {Variational Bayesian Monte Carlo with Noisy Likelihoods},
-  url = {https://proceedings.neurips.cc/paper/2020/file/5d40954183d62a82257835477ccad3d2-Paper.pdf},
-  volume = {33},
-  year = {2020}
+
+  @article{acerbi2020variational,
+    title={{V}ariational {B}ayesian {M}onte {C}arlo with noisy likelihoods},
+    author={Acerbi, Luigi},
+    journal={Advances in Neural Information Processing Systems},
+    volume={33},
+    pages={8211--8222},
+    year={2020}
   }
-  @inproceedings{pmlr-v96-acerbi19a,
-    title = 	 {An Exploration of Acquisition and Mean Functions
-  in Variational Bayesian Monte Carlo},
-    author =       {Acerbi, Luigi},
-    booktitle = 	 {Proceedings of The 1st Symposium on Advances in Approximate Bayesian Inference},
-    pages = 	 {1--10},
-    year = 	 {2019},
-    editor = 	 {Ruiz, Francisco and Zhang, Cheng and Liang, Dawen and Bui, Thang},
-    volume = 	 {96},
-    series = 	 {Proceedings of Machine Learning Research},
-    month = 	 {02 Dec},
-    publisher =    {PMLR},
-    pdf = 	 {http://proceedings.mlr.press/v96/acerbi19a/acerbi19a.pdf},
-    url = 	 {https://proceedings.mlr.press/v96/acerbi19a.html}
+
+  @article{acerbi2019exploration,
+    title={An Exploration of Acquisition and Mean Functions in {V}ariational {B}ayesian {M}onte {C}arlo},
+    author={Acerbi, Luigi},
+    journal={PMLR},
+    volume={96},
+    pages={1--10},
+    year={2019}
   }
 
 License and source
