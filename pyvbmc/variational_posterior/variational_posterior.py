@@ -419,8 +419,8 @@ class VariationalPosterior:
             (Gradient of heavy-tailed pdf not supported yet).
         NotImplementedError
             Raised if `orig_flag` = ``True`` and `log_flag` = ``True`` and
-            `grad_flag` = ``True`` (Gradient computation in original space not
-            supported yet).
+            `grad_flag` = ``True`` (gradient computation of the log-pdf in the
+            original space is not supported yet).
         """
         x = x.copy()
         N, D = x.shape
@@ -562,6 +562,65 @@ class VariationalPosterior:
             return y, dy
         else:
             return y
+
+    @handle_0D_1D_input(patched_kwargs=["x"], patched_argpos=[0])
+    def log_pdf(
+        self,
+        *args,
+        **kwargs,
+    ):
+        """
+        log-probability density function of the variational posterior.
+
+        Compute the log density of the variational posterior at one or multiple
+        input points. The parameters are the same as for ``vp.pdf()`` with
+        ``log_flag=True``. These parameters are described again here for
+        reference.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            `x` is a matrix of inputs to evaluate the log-pdf at. The rows of
+            the `N`-by-`D` matrix `x` correspond to observations or points, and
+            columns correspond to variables or coordinates.
+        orig_flag : bool, optional
+            Controls if the value of the posterior log-density should be
+            evaluated in the original parameter space for `orig_flag` is
+            ``True``, or in the transformed space if `orig_flag` is ``False``,
+            by default ``True``.
+        trans_flag : bool, optional
+            Specifies if `x` is already specified in transformed space.
+            `trans_flag` = ``True`` assumes that `x` is already specified in
+            tranformed space. Otherwise, `x` is specified in the original
+            parameter space. By default ``False``.
+        grad_flag : bool, optional
+            If ``True`` the gradient of the log-pdf is returned as a second
+            output, by default ``False``.
+        df : float, optional
+            Compute the log-pdf of a heavy-tailed version of the variational
+            posterior, in which the multivariate normal components have been
+            replaced by multivariate `t`-distributions with `df` degrees of
+            freedom. The default is `df` = ``np.inf``, limit in which the
+            `t`-distribution becomes a multivariate normal.
+
+        Returns
+        -------
+        log_pdf: np.ndarray
+            The probability density of the variational posterior
+            evaluated at each row of `x`.
+        gradient: np.ndarray
+            If `grad_flag` is ``True``, the function returns the gradient as well.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised if `df` is non-zero and finite and `grad_flag` = ``True``
+            (Gradient of heavy-tailed pdf not supported yet).
+        NotImplementedError
+            Raised if `orig_flag` = ``True`` and `grad_flag` = ``True``
+            (gradient computation in original space not supported yet).
+        """
+        return self.pdf(*args, **kwargs, log_flag=True)
 
     def get_parameters(self, raw_flag=True):
         """

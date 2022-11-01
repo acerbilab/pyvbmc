@@ -116,6 +116,17 @@ def test_pdf_default_no_orig_flag():
             y, 0.002396970183585 * np.ones((N, 1)), rtol=1e-12, atol=1e-14
         )
     )
+    log_y = vp.log_pdf(x, orig_flag=False)
+    assert log_y.shape == (N, 1)
+    assert np.isscalar(log_y[0, 0])
+    assert np.all(
+        np.isclose(
+            log_y,
+            np.log(0.002396970183585) * np.ones((N, 1)),
+            rtol=1e-12,
+            atol=1e-14,
+        )
+    )
 
 
 def test_pdf_grad_default_no_orig_flag():
@@ -139,6 +150,27 @@ def test_pdf_grad_default_no_orig_flag():
             dy, 9.58788073433898 * np.ones((N, 3)), rtol=1e-12, atol=1e-14
         )
     )
+    log_y, dlog_y = vp.log_pdf(x, orig_flag=False, grad_flag=True)
+    assert log_y.shape == (N, 1)
+    assert np.isscalar(log_y[0, 0])
+    assert np.all(
+        np.isclose(
+            log_y,
+            np.log(0.002396970183585) * np.ones((N, 1)),
+            rtol=1e-12,
+            atol=1e-14,
+        )
+    )
+    assert dlog_y.shape == x.shape
+    assert np.isscalar(dlog_y[0, 0])
+    assert np.all(
+        np.isclose(
+            dlog_y * y,
+            9.58788073433898 * np.ones((N, 3)),
+            rtol=1e-12,
+            atol=1e-14,
+        )
+    )
 
 
 def test_pdf_grad_log_flag_no_orig_flag():
@@ -147,27 +179,30 @@ def test_pdf_grad_log_flag_no_orig_flag():
     vp = VariationalPosterior(D, 2, np.array([[5]]))
     vp.mu = np.ones((3, 2)) * 5
     x = np.ones((N, D)) * 4.996
-    y, dy = vp.pdf(x, orig_flag=False, log_flag=True, grad_flag=True)
-    assert y.shape == (N, 1)
-    assert np.isscalar(y[0, 0])
+    log_y, dlog_y = vp.pdf(x, orig_flag=False, log_flag=True, grad_flag=True)
+    assert log_y.shape == (N, 1)
+    assert np.isscalar(log_y[0, 0])
     assert np.all(
         np.isclose(
-            y,
+            log_y,
             np.log(0.002396970183585 * np.ones((N, 1))),
             rtol=1e-12,
             atol=1e-14,
         )
     )
-    assert dy.shape == x.shape
-    assert np.isscalar(dy[0, 0])
+    assert dlog_y.shape == x.shape
+    assert np.isscalar(dlog_y[0, 0])
     assert np.all(
         np.isclose(
-            dy,
-            9.58788073433898 * np.ones((N, 3)) / np.exp(y),
+            dlog_y,
+            9.58788073433898 * np.ones((N, 3)) / np.exp(log_y),
             rtol=1e-12,
             atol=1e-14,
         )
     )
+    log_y_2, dlog_y_2 = vp.log_pdf(x, orig_flag=False, grad_flag=True)
+    assert np.all(log_y_2 == log_y)
+    assert np.all(dlog_y_2 == dlog_y)
 
 
 def test_pdf_grad_orig_flag():
@@ -191,6 +226,9 @@ def test_pdf_grad_orig_flag():
             dy, 9.58788073433898 * np.ones((N, 3)), rtol=1e-12, atol=1e-14
         )
     )
+    with pytest.raises(NotImplementedError) as err:
+        log_y, dlog_y = vp.log_pdf(x, grad_flag=True)
+        assert "vbmc_pdf:NoOriginalGrad" in err
 
 
 def test_pdf_df_real_positive():
@@ -204,6 +242,17 @@ def test_pdf_df_real_positive():
     assert np.isscalar(y[0, 0])
     assert np.all(np.isclose(y[:10], 0.01378581338784, rtol=1e-12, atol=1e-14))
     assert np.all(np.isclose(y[10:], 743.0216137262, rtol=1e-12, atol=1e-14))
+    log_y = vp.log_pdf(x, orig_flag=False, df=10)
+    assert log_y.shape == (N, 1)
+    assert np.isscalar(log_y[0, 0])
+    assert np.all(
+        np.isclose(
+            log_y[:10], np.log(0.01378581338784), rtol=1e-12, atol=1e-14
+        )
+    )
+    assert np.all(
+        np.isclose(log_y[10:], np.log(743.0216137262), rtol=1e-12, atol=1e-14)
+    )
 
 
 def test_pdf_df_real_negative():
@@ -217,6 +266,15 @@ def test_pdf_df_real_negative():
     assert np.isscalar(y[0, 0])
     assert np.all(np.isclose(y[:10], 362.1287964795, rtol=1e-12, atol=1e-14))
     assert np.all(np.isclose(y[10:], 0.914743278670, rtol=1e-12, atol=1e-14))
+    log_y = vp.log_pdf(x, orig_flag=False, df=-2)
+    assert log_y.shape == (N, 1)
+    assert np.isscalar(log_y[0, 0])
+    assert np.all(
+        np.isclose(log_y[:10], np.log(362.1287964795), rtol=1e-11, atol=1e-13)
+    )
+    assert np.all(
+        np.isclose(log_y[10:], np.log(0.914743278670), rtol=1e-11, atol=1e-13)
+    )
 
 
 def test_pdf_heavy_tailed_pdf_gradient():
@@ -226,12 +284,18 @@ def test_pdf_heavy_tailed_pdf_gradient():
         vp.pdf(x, df=300, grad_flag=True)
     with pytest.raises(NotImplementedError):
         vp.pdf(x, df=-300, grad_flag=True)
+    with pytest.raises(NotImplementedError):
+        vp.log_pdf(x, df=300, grad_flag=True)
+    with pytest.raises(NotImplementedError):
+        vp.log_pdf(x, df=-300, grad_flag=True)
 
 
 def test_pdf_orig_flag_gradient():
     vp = VariationalPosterior(3, 2, np.array([[5]]))
     with pytest.raises(NotImplementedError):
         vp.pdf(vp.mu.T, orig_flag=True, log_flag=True, grad_flag=True)
+    with pytest.raises(NotImplementedError):
+        vp.log_pdf(vp.mu.T, orig_flag=True, grad_flag=True)
 
 
 def test_pdf_outside_bounds():
@@ -253,6 +317,31 @@ def test_pdf_outside_bounds():
     # inside should be more than 0
     assert vp.pdf(lb + 0.5, orig_flag=True) > 0
     assert vp.pdf(ub - 0.5, orig_flag=True) > 0
+
+    # outside or on bounds should be -inf
+    assert vp.log_pdf(lb, orig_flag=True) == -np.inf
+    assert vp.log_pdf(lb - 1e-3, orig_flag=True) == -np.inf
+    assert vp.log_pdf(ub, orig_flag=True) == -np.inf
+    assert vp.log_pdf(ub + 1e-3, orig_flag=True) == -np.inf
+
+    # inside should be finite
+    assert np.all(np.isfinite(vp.log_pdf(lb + 0.5, orig_flag=True)))
+    assert np.all(np.isfinite(vp.log_pdf(ub - 0.5, orig_flag=True)))
+
+
+def test_pdf_duplicate_log_flag():
+    D = 2
+    lb = np.ones((1, D)) * -3
+    ub = np.ones((1, D)) * 3
+    x0 = np.array([[2, 2], [-2, -2]])
+    parameter_transformer = ParameterTransformer(D, lb, ub)
+
+    vp = VariationalPosterior(D, 2, x0, parameter_transformer)
+    vp.sigma = np.ones((1, 2))
+
+    with pytest.raises(TypeError) as err:
+        y = vp.log_pdf(lb + 0.5, log_flag=True)
+        assert "got multiple values for keyword argument 'log_flag'" in err
 
 
 def test_set_parameters_raw():

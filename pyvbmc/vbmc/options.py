@@ -182,7 +182,7 @@ class Options(MutableMapping, dict):
         # Prevent user from attempting to modify options after initialization
         if self.is_initialized and not force:
             raise AttributeError(
-                "Warning: Cannot set options after initialization. Please re-initialize with `user_options = {...}`"
+                "Warning: Cannot set options after initialization. Please re-initialize with `options = {...}`"
             )
         else:
             dict.__setitem__(self, key, val)

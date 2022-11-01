@@ -64,7 +64,7 @@ PyVBMC is not concerned with how you define your model in step 1, as long as you
 from pyvbmc.vbmc import VBMC
 # ... define your model/target density here
 vbmc = VBMC(target, x0, LB, UB, PLB, PUB)
-vp, elbo, elbo_sd, _, _ = vbmc.optimize()
+vp, results = vbmc.optimize()
 ```
 with input arguments:
 - `target`: the target (unnormalized) log density — often an unnormalized log posterior. `target` is a callable that should take as input a parameter vector and return the log density at the point;
@@ -74,8 +74,9 @@ with input arguments:
 
 The outputs are:
 - `vp`: a `VariationalPosterior` object which approximates the true target density;
-- `elbo`: the estimated lower bound on the log model evidence (log normalization constant);
-- `elbo_sd`: the standard deviation of the estimate of the ELBO (*not* the error between the ELBO and the true log model evidence, which is generally unknown).
+- `results`: a `dict` containing additional information. Important keys are:
+  - `"elbo"`: the estimated lower bound on the log model evidence (log normalization constant);
+  - `"elbo_sd"`: the standard deviation of the estimate of the ELBO (*not* the error between the ELBO and the true log model evidence, which is generally unknown).
 
 The `vp` object can be manipulated in various ways. For example, we can draw samples from `vp` with the `vp.sample()` method, or evaluate its density at a point with `vp.pdf()` (or log-density with `vp.log_pdf()`). See the [`VariationalPosterior` class documentation](https://acerbilab.github.io/pyvbmc/api/classes/variational_posterior.html) for details.
 
@@ -91,6 +92,24 @@ For information on how to run PyVBMC on a noisy target, see [this example notebo
 Once installed, example Jupyter notebooks can be found in the `pyvbmc/examples` directory. They can also be [viewed statically](https://acerbilab.github.io/pyvbmc/index.html#examples) on the [main documentation pages](https://acerbilab.github.io/pyvbmc/index.html). These examples will walk you through the basic usage of PyVBMC as well as some if its more advanced features.
 
 For practical recommendations, such as how to set `LB` and `UB` and the plausible bounds, check out the FAQ on the [VBMC wiki](https://github.com/acerbilab/vbmc/wiki). The wiki was written with the MATLAB toolbox in mind, but the general advice applies to the Python version as well.
+
+## How does it work?
+
+VBMC/PyVBMC combine two machine learning techniques in a novel way:
+- [variational inference](https://en.wikipedia.org/wiki/Variational_Bayesian_methods), a method to perform approximate Bayesian inference;
+- [Bayesian quadrature](https://en.wikipedia.org/wiki/Bayesian_quadrature), a technique to estimate the value of expensive integrals.
+
+PyVBMC iteratively builds an approximation of the true, expensive target posterior via a [Gaussian process](https://distill.pub/2019/visual-exploration-gaussian-processes/) (GP), and it matches a variational distribution — an expressive mixture of Gaussians — to the GP.
+
+This matching process entails optimization of the *evidence lower bound* (ELBO), that is a lower bound on the log marginal likelihood (LML), also known as log model evidence. Crucially, we estimate the ELBO via Bayesian quadrature, which is fast and does not require further evaluation of the true target posterior.
+
+In each iteration, PyVBMC uses *active sampling* to select which points to evaluate next in order to explore the posterior landscape and reduce uncertainty in the approximation.
+
+![VBMC demo](./docsrc/source/_static/vbmc_animation.gif)
+
+In the figure above, we show an example PyVBMC run on a [Rosenbrock "banana" function](https://en.wikipedia.org/wiki/Rosenbrock_function). The bottom-left panel shows PyVBMC at work: in grayscale are samples from the variational posterior (drawn as small points) and the corresponding estimated density (drawn as contours). The solid orange circles are the active sampling points chosen at each iteration, and the hollow blue circles are the previously sampled points. The topmost and rightnmost panels show histograms of the marginal densities along the $x_1$ and $x_2$ dimensions, respectively. PyVBMC converges to an excellent approximation of the true posterior with a few dozens evaluations of the target density.
+
+See the VBMC papers [[1,2](#references-and-citation)] for more details.
 
 ## Troubleshooting and contact
 
