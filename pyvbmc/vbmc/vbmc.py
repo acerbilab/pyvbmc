@@ -824,18 +824,7 @@ class VBMC:
         -------
         vp : VariationalPosterior
             The ``VariationalPosterior`` computed by VBMC.
-        elbo : float
-            An estimate of the ELBO for the returned `vp`.
-        elbo_sd : float
-            The standard deviation of the estimate of the ELBO. Note that this
-            standard deviation is *not* representative of the error between the
-            `elbo` and the true log marginal likelihood.
-        success_flag : bool
-           `success_flag` is ``True`` if the inference reached stability within
-           the provided budget of function evaluations, suggesting convergence.
-           If ``False``, the returned solution has not stabilized and should
-           not be trusted.
-        results_dict : dict
+        results : dict
             A dictionary with additional information about the VBMC run.
         """
         # Initialize main logger with potentially new options:
@@ -1581,17 +1570,11 @@ class VBMC:
                 + " not converged."
             )
 
-        result_dict = self._create_result_dict(idx_best, termination_message)
-
-        return (
-            copy.deepcopy(self.vp),
-            self.vp.stats["elbo"],
-            self.vp.stats["elbo_sd"],
-            success_flag,
-            result_dict,
+        results = self._create_result_dict(
+            idx_best, termination_message, success_flag
         )
 
-    # Loop termination:
+        return copy.deepcopy(self.vp), results
 
     def _check_warmup_end_conditions(self):
         """
@@ -2153,7 +2136,9 @@ class VBMC:
         vp.stats["stable"] = self.iteration_history.get("stable")[idx_best]
         return vp, elbo, elbo_sd, idx_best
 
-    def _create_result_dict(self, idx_best: int, termination_message: str):
+    def _create_result_dict(
+        self, idx_best: int, termination_message: str, success_flag: bool
+    ):
         """
         Private method to create the result dict.
         """
@@ -2185,6 +2170,7 @@ class VBMC:
 
         output["elbo"] = self.vp.stats["elbo"]
         output["elbo_sd"] = self.vp.stats["elbo_sd"]
+        output["success_flag"] = success_flag
 
         return output
 
