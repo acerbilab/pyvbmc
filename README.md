@@ -64,7 +64,7 @@ PyVBMC is not concerned with how you define your model in step 1, as long as you
 from pyvbmc.vbmc import VBMC
 # ... define your model/target density here
 vbmc = VBMC(target, x0, LB, UB, PLB, PUB)
-vp, elbo, elbo_sd, _, _ = vbmc.optimize()
+vp, results = vbmc.optimize()
 ```
 with input arguments:
 - `target`: the target (unnormalized) log density — often an unnormalized log posterior. `target` is a callable that should take as input a parameter vector and return the log density at the point;
@@ -74,8 +74,9 @@ with input arguments:
 
 The outputs are:
 - `vp`: a `VariationalPosterior` object which approximates the true target density;
-- `elbo`: the estimated lower bound on the log model evidence (log normalization constant);
-- `elbo_sd`: the standard deviation of the estimate of the ELBO (*not* the error between the ELBO and the true log model evidence, which is generally unknown).
+- `results`: a `dict` containing additional information. Important keys are:
+  - `"elbo"`: the estimated lower bound on the log model evidence (log normalization constant);
+  - `"elbo_sd"`: the standard deviation of the estimate of the ELBO (*not* the error between the ELBO and the true log model evidence, which is generally unknown).
 
 The `vp` object can be manipulated in various ways. For example, we can draw samples from `vp` with the `vp.sample()` method, or evaluate its density at a point with `vp.pdf()` (or log-density with `vp.log_pdf()`). See the [`VariationalPosterior` class documentation](https://acerbilab.github.io/pyvbmc/api/classes/variational_posterior.html) for details.
 
