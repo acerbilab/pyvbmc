@@ -149,11 +149,10 @@ class VBMC:
         # load basic and advanced options and validate the names
         pyvbmc_path = os.path.dirname(os.path.realpath(__file__))
         basic_path = pyvbmc_path + "/option_configs/basic_vbmc_options.ini"
-        user_options = options
         self.options = Options(
             basic_path,
             evaluation_parameters={"D": self.D},
-            user_options=user_options,
+            user_options=options,
         )
 
         advanced_path = (
