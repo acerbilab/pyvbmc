@@ -1,0 +1,900 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pyvbmc.function_logger.function_logger &#8212; PyVBMC</title>
+    
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../../_static/styles/sphinx-book-theme.css?digest=5115cc725059bd94278eecd172e13a965bf8f5a9" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="canonical" href="https://acerbilab.github.io/pyvbmc/_modules/pyvbmc/function_logger/function_logger.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
+<!-- Checkboxes to toggle the left sidebar -->
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
+<label class="overlay overlay-navbar" for="__navigation">
+    <div class="visually-hidden">Toggle navigation sidebar</div>
+</label>
+<!-- Checkboxes to toggle the in-page toc -->
+<input type="checkbox" class="sidebar-toggle" name="__page-toc" id="__page-toc" aria-label="Toggle in-page Table of Contents">
+<label class="overlay overlay-pagetoc" for="__page-toc">
+    <div class="visually-hidden">Toggle in-page Table of Contents</div>
+</label>
+<!-- Headers at the top -->
+<div class="announcement header-item noprint"></div>
+<div class="header header-item noprint"></div>
+
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<!-- Sidebar -->
+<div class="bd-sidebar noprint" id="site-navigation">
+    <div class="bd-sidebar__content">
+        <div class="bd-sidebar__top"><div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="../../../index.html">
+      
+      
+      
+      <h1 class="site-logo" id="site-title">PyVBMC</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="../../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../installation.html">
+   Installation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../quickstart.html">
+   Getting started
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../api/classes/vbmc.html">
+   VBMC
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../api/classes/variational_posterior.html">
+   VariationalPosterior
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../api/options/vbmc_options.html">
+   VBMC options
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../../api/advanced_docs.html">
+   Advanced documentation
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../api/classes/acquisition_functions.html">
+     Acquisition Functions
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../api/classes/function_logger.html">
+     FunctionLogger
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../api/classes/iteration_history.html">
+     IterationHistory
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../api/classes/options.html">
+     Options
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../api/classes/parameter_transformer.html">
+     ParameterTransformer
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../api/classes/timer.html">
+     Timer
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../api/classes/variational_posterior.html">
+     VariationalPosterior
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../api/classes/vbmc.html">
+     VBMC
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../api/functions/active_sample.html">
+     active_sample
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../api/functions/create_vbmc_animation.html">
+     create_vbmc_animation
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../api/functions/decorators.html">
+     decorators
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../api/functions/entropy.html">
+     entropy
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../api/functions/get_hpd.html">
+     get_hpd
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../api/functions/kde_1d.html">
+     kde_1d
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../api/functions/whitening.html">
+     whitening
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../api/options/vbmc_options.html">
+     VBMC options
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_1_basic_usage.html">
+   PyVBMC Example 1: Basic usage
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_2_inputs_outputs.html">
+   PyVBMC Example 2: Understanding the inputs and the output trace
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_3.html">
+   Example 3: Extended usage and output diagnostics
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_3_diagnostics_and_saving.html">
+   PyVBMC Example 3: Output diagnostics and saving results
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_4_validation.html">
+   PyVBMC Example 4: Multiple runs as validation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_5_noisy_likelihoods.html">
+   PyVBMC Example 5: Noisy log-likelihood evaluations
+  </a>
+ </li>
+</ul>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../development.html">
+   Instructions for developers and contributors
+  </a>
+ </li>
+</ul>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../about_us.html">
+   About us
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav></div>
+        <div class="bd-sidebar__bottom">
+             <!-- To handle the deprecated key -->
+            
+            <div class="navbar_extra_footer">
+            Theme by the <a href="https://ebp.jupyterbook.org">Executable Book Project</a>
+            </div>
+            
+        </div>
+    </div>
+    <div id="rtd-footer-container"></div>
+</div>
+
+
+          
+
+
+          
+<!-- A tiny helper pixel to detect if we've scrolled -->
+<div class="sbt-scroll-pixel-helper"></div>
+<!-- Main content -->
+<div class="col py-0 content-container">
+    
+    <div class="header-article row sticky-top noprint">
+        
+
+
+
+<div class="col py-1 d-flex header-article-main">
+    <div class="header-article__left">
+        
+        <label for="__navigation"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="right"
+title="Toggle navigation"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-bars"></i>
+  </span>
+
+</label>
+
+        
+    </div>
+    <div class="header-article__right">
+<button onclick="toggleFullScreen()"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="bottom"
+title="Fullscreen mode"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+<div class="menu-dropdown menu-dropdown-repository-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Source repositories">
+      <i class="fab fa-github"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="https://github.com/acerbilab/pyvbmc"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Source repository"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="headerbtn__text-container">repository</span>
+</a>
+
+      </li>
+      
+      <li>
+        <a href="https://github.com/acerbilab/pyvbmc/issues/new?title=Issue%20on%20page%20%2F_modules/pyvbmc/function_logger/function_logger.html&body=Your%20issue%20content%20here."
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Open an issue"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="headerbtn__text-container">open issue</span>
+</a>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+    </div>
+</div>
+
+<!-- Table of contents -->
+<div class="col-md-3 bd-toc show noprint">
+</div>
+    </div>
+    <div class="article row">
+        <div class="col pl-md-3 pl-lg-5 content-container">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1></h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                    </div>
+                </div>
+            </div>
+            <main id="main-content" role="main">
+                
+              <div>
+                
+  <h1>Source code for pyvbmc.function_logger.function_logger</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">textwrap</span> <span class="kn">import</span> <span class="n">indent</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">pyvbmc.formatting</span> <span class="kn">import</span> <span class="n">full_repr</span>
+<span class="kn">from</span> <span class="nn">pyvbmc.parameter_transformer</span> <span class="kn">import</span> <span class="n">ParameterTransformer</span>
+<span class="kn">from</span> <span class="nn">pyvbmc.timer</span> <span class="kn">import</span> <span class="n">Timer</span>
+
+
+<div class="viewcode-block" id="FunctionLogger"><a class="viewcode-back" href="../../../api/classes/function_logger.html#pyvbmc.function_logger.FunctionLogger">[docs]</a><span class="k">class</span> <span class="nc">FunctionLogger</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class that evaluates a function and caches its values.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    fun : callable</span>
+<span class="sd">        The function to be logged.</span>
+<span class="sd">        `fun` must take a vector input and return a scalar value and,</span>
+<span class="sd">        optionally, the (estimated) SD of the returned value (if the</span>
+<span class="sd">        function fun is stochastic).</span>
+<span class="sd">    D : int</span>
+<span class="sd">        The number of dimensions that the function takes as input.</span>
+<span class="sd">    noise_flag : bool</span>
+<span class="sd">        Whether the function fun is stochastic or not.</span>
+<span class="sd">    uncertainty_handling_level : {0, 1, 2}</span>
+<span class="sd">        The uncertainty handling level which can be one of</span>
+<span class="sd">        (0: none; 1: unknown noise level; 2: user-provided noise).</span>
+<span class="sd">    cache_size : int, optional</span>
+<span class="sd">        The initial size of caching table (default 500).</span>
+<span class="sd">    parameter_transformer : ParameterTransformer, optional</span>
+<span class="sd">        A ParameterTransformer is required to transform the parameters</span>
+<span class="sd">        between constrained and unconstrained space, by default None.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">fun</span><span class="p">,</span>
+        <span class="n">D</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">noise_flag</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="n">uncertainty_handling_level</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">cache_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">500</span><span class="p">,</span>
+        <span class="n">parameter_transformer</span><span class="p">:</span> <span class="n">ParameterTransformer</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fun</span> <span class="o">=</span> <span class="n">fun</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">D</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">noise_flag</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">noise_flag</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uncertainty_handling_level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">uncertainty_handling_level</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transform_parameters</span> <span class="o">=</span> <span class="n">parameter_transformer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameter_transformer</span> <span class="o">=</span> <span class="n">parameter_transformer</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">func_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cache_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">X_orig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">([</span><span class="n">cache_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y_orig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">([</span><span class="n">cache_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">([</span><span class="n">cache_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">([</span><span class="n">cache_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_evals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">([</span><span class="n">cache_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">noise_flag</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">([</span><span class="n">cache_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">Xn</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>  <span class="c1"># Last filled entry</span>
+        <span class="c1"># Use 1D array since this is a boolean mask.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">X_flag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">cache_size</span><span class="p">,),</span> <span class="kc">False</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y_max</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;-Inf&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fun_eval_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">([</span><span class="n">cache_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total_fun_eval_time</span> <span class="o">=</span> <span class="mi">0</span>
+
+<div class="viewcode-block" id="FunctionLogger.__call__"><a class="viewcode-back" href="../../../api/classes/function_logger.html#pyvbmc.function_logger.FunctionLogger.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Evaluates the function FUN at x and caches values.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : np.ndarray</span>
+<span class="sd">            The point at which the function will be evaluated. The shape of x</span>
+<span class="sd">            should be (1, D) or (D,).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        f_val : float</span>
+<span class="sd">            The result of the evaluation.</span>
+<span class="sd">        SD : float</span>
+<span class="sd">            The (estimated) SD of the returned value.</span>
+<span class="sd">        idx : int</span>
+<span class="sd">            The index of the last updated entry.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If the input cannot be coerced to 1-D.</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            Raise if the function value is not a finite real-valued scalar.</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            Raise if the (estimated) SD (second function output)</span>
+<span class="sd">            is not a finite, positive real-valued scalar.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">timer</span> <span class="o">=</span> <span class="n">Timer</span><span class="p">()</span>
+        <span class="n">x_shape_orig</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Input should be one-dimensional but has shape </span><span class="si">{</span><span class="n">x_shape_orig</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+        <span class="c1"># Convert back to original space</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform_parameters</span><span class="p">:</span>
+            <span class="n">x_orig</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameter_transformer</span><span class="o">.</span><span class="n">inverse</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">x_orig</span> <span class="o">=</span> <span class="n">x</span>
+
+        <span class="n">timer</span><span class="o">.</span><span class="n">start_timer</span><span class="p">(</span><span class="s2">&quot;fun_time&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">noise_flag</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">uncertainty_handling_level</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">f_val_orig</span><span class="p">,</span> <span class="n">f_sd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fun</span><span class="p">(</span><span class="n">x_orig</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">f_val_orig</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fun</span><span class="p">(</span><span class="n">x_orig</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">noise_flag</span><span class="p">:</span>
+                    <span class="n">f_sd</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">f_sd</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">f_val_orig</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                <span class="c1"># f_val_orig can only be an array with size 1</span>
+                <span class="n">f_val_orig</span> <span class="o">=</span> <span class="n">f_val_orig</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">err</span><span class="o">.</span><span class="n">args</span> <span class="o">+=</span> <span class="p">(</span>
+                <span class="s2">&quot;FunctionLogger:FuncError &quot;</span>
+                <span class="o">+</span> <span class="s2">&quot;Error in executing the logged function&quot;</span>
+                <span class="o">+</span> <span class="s2">&quot;with input: &quot;</span>
+                <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">x_orig</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="k">raise</span>
+        <span class="n">timer</span><span class="o">.</span><span class="n">stop_timer</span><span class="p">(</span><span class="s2">&quot;fun_time&quot;</span><span class="p">)</span>
+
+        <span class="c1"># if f_val is an array with only one element, extract that element</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">f_val_orig</span><span class="p">)</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">f_val_orig</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">f_val_orig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">f_val_orig</span><span class="p">)</span><span class="o">.</span><span class="n">flat</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Check function value</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span>
+            <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">f_val_orig</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">f_val_orig</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isreal</span><span class="p">(</span><span class="n">f_val_orig</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="n">error_message</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;FunctionLogger:InvalidFuncValue:</span>
+<span class="s2">            The returned function value must be a finite real-valued scalar</span>
+<span class="s2">            (returned value </span><span class="si">{}</span><span class="s2">)&quot;&quot;&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">error_message</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">f_val_orig</span><span class="p">)))</span>
+
+        <span class="c1"># Check returned function SD</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">noise_flag</span> <span class="ow">and</span> <span class="p">(</span>
+            <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">f_sd</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">f_sd</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isreal</span><span class="p">(</span><span class="n">f_sd</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="n">f_sd</span> <span class="o">&lt;=</span> <span class="mf">0.0</span>
+        <span class="p">):</span>
+            <span class="n">error_message</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;FunctionLogger:InvalidNoiseValue</span>
+<span class="s2">                The returned estimated SD (second function output)</span>
+<span class="s2">                must be a finite, positive real-valued scalar</span>
+<span class="s2">                (returned SD: </span><span class="si">{}</span><span class="s2">)&quot;&quot;&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">error_message</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">f_sd</span><span class="p">)))</span>
+
+        <span class="c1"># record timer stats</span>
+        <span class="n">funtime</span> <span class="o">=</span> <span class="n">timer</span><span class="o">.</span><span class="n">get_duration</span><span class="p">(</span><span class="s2">&quot;fun_time&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">func_count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">f_val</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_record</span><span class="p">(</span><span class="n">x_orig</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">f_val_orig</span><span class="p">,</span> <span class="n">f_sd</span><span class="p">,</span> <span class="n">funtime</span><span class="p">)</span>
+
+        <span class="c1"># optimstate.N = self.Xn</span>
+        <span class="c1"># optimstate.N_eff = np.sum(self.n_evals[self.X_flag])</span>
+        <span class="c1"># optimState.totalfunevaltime = optimState.totalfunevaltime + t;</span>
+        <span class="k">return</span> <span class="n">f_val</span><span class="p">,</span> <span class="n">f_sd</span><span class="p">,</span> <span class="n">idx</span></div>
+
+<div class="viewcode-block" id="FunctionLogger.add"><a class="viewcode-back" href="../../../api/classes/function_logger.html#pyvbmc.function_logger.FunctionLogger.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">f_val_orig</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">f_sd</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">fun_eval_time</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add an previously evaluated function sample to the function cache.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : np.ndarray</span>
+<span class="sd">            The point at which the function has been evaluated. The shape of x</span>
+<span class="sd">            should be (1, D) or (D,).</span>
+<span class="sd">        f_val_orig : float</span>
+<span class="sd">            The result of the evaluation of the function.</span>
+<span class="sd">        f_sd : float, optional</span>
+<span class="sd">            The (estimated) SD of the returned value (if heteroskedastic noise</span>
+<span class="sd">            handling is on) of the evaluation of the function, by default None.</span>
+<span class="sd">        fun_eval_time : float</span>
+<span class="sd">            The duration of the time it took to evaluate the function,</span>
+<span class="sd">            by default np.nan.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        f_val : float</span>
+<span class="sd">            The result of the evaluation.</span>
+<span class="sd">        SD : float</span>
+<span class="sd">            The (estimated) SD of the returned value.</span>
+<span class="sd">        idx : int</span>
+<span class="sd">            The index of the last updated entry.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If the input cannot be coerced to 1-D.</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            Raise if the function value is not a finite real-valued scalar.</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            Raise if the (estimated) SD (second function output)</span>
+<span class="sd">            is not a finite, positive real-valued scalar.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x_shape_orig</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Input should be one-dimensional but has shape </span><span class="si">{</span><span class="n">x_shape_orig</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+        <span class="c1"># Convert back to original space</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform_parameters</span><span class="p">:</span>
+            <span class="n">x_orig</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameter_transformer</span><span class="o">.</span><span class="n">inverse</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">x_orig</span> <span class="o">=</span> <span class="n">x</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">noise_flag</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">f_sd</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">f_sd</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">f_sd</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Check function value</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">f_val_orig</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">f_val_orig</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isreal</span><span class="p">(</span><span class="n">f_val_orig</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="n">error_message</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;FunctionLogger:InvalidFuncValue:</span>
+<span class="s2">            The returned function value must be a finite real-valued scalar</span>
+<span class="s2">            (returned value </span><span class="si">{}</span><span class="s2">)&quot;&quot;&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">error_message</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">f_val_orig</span><span class="p">)))</span>
+
+        <span class="c1"># Check returned function SD</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">noise_flag</span> <span class="ow">and</span> <span class="p">(</span>
+            <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">f_sd</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">f_sd</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isreal</span><span class="p">(</span><span class="n">f_sd</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="n">f_sd</span> <span class="o">&lt;=</span> <span class="mf">0.0</span>
+        <span class="p">):</span>
+            <span class="n">error_message</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;FunctionLogger:InvalidNoiseValue</span>
+<span class="s2">                The returned estimated SD (second function output)</span>
+<span class="s2">                must be a finite, positive real-valued scalar</span>
+<span class="s2">                (returned SD:</span><span class="si">{}</span><span class="s2">)&quot;&quot;&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">error_message</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">f_sd</span><span class="p">)))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cache_count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">f_val</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_record</span><span class="p">(</span><span class="n">x_orig</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">f_val_orig</span><span class="p">,</span> <span class="n">f_sd</span><span class="p">,</span> <span class="n">fun_eval_time</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">f_val</span><span class="p">,</span> <span class="n">f_sd</span><span class="p">,</span> <span class="n">idx</span></div>
+
+<div class="viewcode-block" id="FunctionLogger.finalize"><a class="viewcode-back" href="../../../api/classes/function_logger.html#pyvbmc.function_logger.FunctionLogger.finalize">[docs]</a>    <span class="k">def</span> <span class="nf">finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove unused caching entries.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">X_orig</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">X_orig</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">Xn</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y_orig</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_orig</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">Xn</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># in the original matlab version X and Y get deleted</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">Xn</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">Xn</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">noise_flag</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">S</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">Xn</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">X_flag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">X_flag</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">Xn</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fun_eval_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fun_eval_time</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">Xn</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span></div>
+
+    <span class="k">def</span> <span class="nf">_expand_arrays</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resize_amount</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A private function to extend the rows of the object attribute arrays.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        resize_amount : int, optional</span>
+<span class="sd">            The number of additional rows, by default expand current table</span>
+<span class="sd">            by 50%.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">resize_amount</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">resize_amount</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Xn</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="mi">1</span><span class="p">)))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">X_orig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">X_orig</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">([</span><span class="n">resize_amount</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y_orig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">y_orig</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">([</span><span class="n">resize_amount</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">([</span><span class="n">resize_amount</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">([</span><span class="n">resize_amount</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">noise_flag</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">([</span><span class="n">resize_amount</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">X_flag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">X_flag</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">resize_amount</span><span class="p">,),</span> <span class="kc">False</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fun_eval_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fun_eval_time</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">([</span><span class="n">resize_amount</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_evals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n_evals</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">([</span><span class="n">resize_amount</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_record</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">x_orig</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">f_val_orig</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">f_sd</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">fun_eval_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A private method to save function values to class attributes.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x_orig : float</span>
+<span class="sd">            The point at which the function has been evaluated</span>
+<span class="sd">            (in original space).</span>
+<span class="sd">        x : float</span>
+<span class="sd">            The point at which the function has been evaluated</span>
+<span class="sd">            (in transformed space).</span>
+<span class="sd">        f_val_orig : float</span>
+<span class="sd">            The result of the evaluation.</span>
+<span class="sd">        f_sd : float</span>
+<span class="sd">            The (estimated) SD of the returned value</span>
+<span class="sd">            (if heteroskedastic noise handling is on).</span>
+<span class="sd">        fun_eval_time : float</span>
+<span class="sd">            The duration of the time it took to evaluate the function.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        f_val : float</span>
+<span class="sd">            The result of the evaluation.</span>
+<span class="sd">        idx : int</span>
+<span class="sd">            The index of the last updated entry.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            Raise if there is more than one match for a duplicate entry.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">duplicate_flag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">==</span> <span class="n">x</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">duplicate_flag</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">duplicate_flag</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;More than one match for duplicate entry.&quot;</span><span class="p">)</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">duplicate_flag</span><span class="p">)[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="n">N</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_evals</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">f_sd</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">tau_n</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span>
+                <span class="n">tau_1</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">f_sd</span><span class="o">**</span><span class="mi">2</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">y_orig</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">tau_n</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_orig</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">+</span> <span class="n">tau_1</span> <span class="o">*</span> <span class="n">f_val_orig</span>
+                <span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">tau_n</span> <span class="o">+</span> <span class="n">tau_1</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">tau_n</span> <span class="o">+</span> <span class="n">tau_1</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">y_orig</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">N</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_orig</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">+</span> <span class="n">f_val_orig</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span>
+                    <span class="n">N</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="p">)</span>
+
+            <span class="n">f_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_orig</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform_parameters</span><span class="p">:</span>
+                <span class="n">f_val</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameter_transformer</span><span class="o">.</span><span class="n">log_abs_det_jacobian</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">f_val</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fun_eval_time</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">N</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fun_eval_time</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">+</span> <span class="n">fun_eval_time</span>
+            <span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">N</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n_evals</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">return</span> <span class="n">f_val</span><span class="p">,</span> <span class="n">idx</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Xn</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">Xn</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">X_orig</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_expand_arrays</span><span class="p">()</span>
+
+            <span class="c1"># record function time</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">fun_eval_time</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fun_eval_time</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">Xn</span><span class="p">]</span> <span class="o">=</span> <span class="n">fun_eval_time</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">total_fun_eval_time</span> <span class="o">+=</span> <span class="n">fun_eval_time</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">X_orig</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">Xn</span><span class="p">]</span> <span class="o">=</span> <span class="n">x_orig</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">Xn</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">y_orig</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">Xn</span><span class="p">]</span> <span class="o">=</span> <span class="n">f_val_orig</span>
+            <span class="n">f_val</span> <span class="o">=</span> <span class="n">f_val_orig</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform_parameters</span><span class="p">:</span>
+                <span class="n">f_val</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameter_transformer</span><span class="o">.</span><span class="n">log_abs_det_jacobian</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+                <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">Xn</span><span class="p">]</span> <span class="o">=</span> <span class="n">f_val</span>
+            <span class="k">if</span> <span class="n">f_sd</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">Xn</span><span class="p">]</span> <span class="o">=</span> <span class="n">f_sd</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">X_flag</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">Xn</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n_evals</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">Xn</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">y_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">X_flag</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">f_val</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Xn</span>
+
+    <span class="k">def</span> <span class="nf">__deepcopy__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">memo</span><span class="p">):</span>
+        <span class="bp">cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+
+        <span class="c1"># Avoid infinite recursion in deepcopy</span>
+        <span class="n">memo</span><span class="p">[</span><span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">)]</span> <span class="o">=</span> <span class="n">result</span>
+        <span class="c1"># Copy class properties:</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s2">&quot;fun&quot;</span><span class="p">:</span>  <span class="c1"># Avoid deepcopy of log-joint function</span>
+                <span class="c1"># (interferes with benchmark logging)</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">memo</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr_size_thresh</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Print a string summary.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;FunctionLogger:&quot;</span> <span class="o">+</span> <span class="n">indent</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">function = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">fun</span><span class="si">}</span><span class="s2">,</span>
+<span class="s2">dimension = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="si">}</span><span class="s2">,</span>
+<span class="s2">noisy = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">noise_flag</span><span class="si">}</span><span class="s2">,</span>
+<span class="s2">num. evaluations = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">func_count</span><span class="si">}</span><span class="s2">,</span>
+<span class="s2">y max = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">y_max</span><span class="si">}</span><span class="s2">,</span>
+<span class="s2">fun. eval. time = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">total_fun_eval_time</span><span class="si">}</span><span class="s2">&quot;&quot;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;    &quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr_size_thresh</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Construct a detailed string summary.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        arr_size_thresh : float, optional</span>
+<span class="sd">            If ``obj`` is an array whose product of dimensions is less than</span>
+<span class="sd">            ``arr_size_thresh``, print the full array. Otherwise print only the</span>
+<span class="sd">            shape. Default `10`.</span>
+<span class="sd">        expand : bool, optional</span>
+<span class="sd">            If ``expand`` is `False`, then describe any complex child</span>
+<span class="sd">            attributes of the object by their name and memory location.</span>
+<span class="sd">            Otherwise, recursively expand the child attributes into their own</span>
+<span class="sd">            representations. Default `False`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        string : str</span>
+<span class="sd">            The string representation of ``self``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">full_repr</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="s2">&quot;FunctionLogger&quot;</span><span class="p">,</span>
+            <span class="n">expand</span><span class="o">=</span><span class="n">expand</span><span class="p">,</span>
+            <span class="n">arr_size_thresh</span><span class="o">=</span><span class="n">arr_size_thresh</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_short_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns abbreviated string representation with memory location.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        string : str</span>
+<span class="sd">            The abbreviated string representation of the FunctionLogger.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+</pre></div>
+
+              </div>
+              
+            </main>
+            <footer class="footer-article noprint">
+                
+    <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+        </div>
+    </div>
+    <div class="footer-content row">
+        <footer class="col footer"><p>
+  
+      &copy; Copyright 2022, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).<br/>
+</p>
+        </footer>
+    </div>
+    
+</div>
+
+
+      </div>
+    </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+
+
+  </body>
+</html>

@@ -1,0 +1,1744 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pyvbmc.variational_posterior.variational_posterior &#8212; PyVBMC</title>
+    
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../../_static/styles/sphinx-book-theme.css?digest=5115cc725059bd94278eecd172e13a965bf8f5a9" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="canonical" href="https://acerbilab.github.io/pyvbmc/_modules/pyvbmc/variational_posterior/variational_posterior.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
+<!-- Checkboxes to toggle the left sidebar -->
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
+<label class="overlay overlay-navbar" for="__navigation">
+    <div class="visually-hidden">Toggle navigation sidebar</div>
+</label>
+<!-- Checkboxes to toggle the in-page toc -->
+<input type="checkbox" class="sidebar-toggle" name="__page-toc" id="__page-toc" aria-label="Toggle in-page Table of Contents">
+<label class="overlay overlay-pagetoc" for="__page-toc">
+    <div class="visually-hidden">Toggle in-page Table of Contents</div>
+</label>
+<!-- Headers at the top -->
+<div class="announcement header-item noprint"></div>
+<div class="header header-item noprint"></div>
+
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<!-- Sidebar -->
+<div class="bd-sidebar noprint" id="site-navigation">
+    <div class="bd-sidebar__content">
+        <div class="bd-sidebar__top"><div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="../../../index.html">
+      
+      
+      
+      <h1 class="site-logo" id="site-title">PyVBMC</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="../../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../installation.html">
+   Installation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../quickstart.html">
+   Getting started
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../api/classes/vbmc.html">
+   VBMC
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../api/classes/variational_posterior.html">
+   VariationalPosterior
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../api/options/vbmc_options.html">
+   VBMC options
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../../api/advanced_docs.html">
+   Advanced documentation
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../api/classes/acquisition_functions.html">
+     Acquisition Functions
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../api/classes/function_logger.html">
+     FunctionLogger
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../api/classes/iteration_history.html">
+     IterationHistory
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../api/classes/options.html">
+     Options
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../api/classes/parameter_transformer.html">
+     ParameterTransformer
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../api/classes/timer.html">
+     Timer
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../api/classes/variational_posterior.html">
+     VariationalPosterior
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../api/classes/vbmc.html">
+     VBMC
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../api/functions/active_sample.html">
+     active_sample
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../api/functions/create_vbmc_animation.html">
+     create_vbmc_animation
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../api/functions/decorators.html">
+     decorators
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../api/functions/entropy.html">
+     entropy
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../api/functions/get_hpd.html">
+     get_hpd
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../api/functions/kde_1d.html">
+     kde_1d
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../api/functions/whitening.html">
+     whitening
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../api/options/vbmc_options.html">
+     VBMC options
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_1_basic_usage.html">
+   PyVBMC Example 1: Basic usage
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_2_inputs_outputs.html">
+   PyVBMC Example 2: Understanding the inputs and the output trace
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_3.html">
+   Example 3: Extended usage and output diagnostics
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_3_diagnostics_and_saving.html">
+   PyVBMC Example 3: Output diagnostics and saving results
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_4_validation.html">
+   PyVBMC Example 4: Multiple runs as validation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_5_noisy_likelihoods.html">
+   PyVBMC Example 5: Noisy log-likelihood evaluations
+  </a>
+ </li>
+</ul>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../development.html">
+   Instructions for developers and contributors
+  </a>
+ </li>
+</ul>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../about_us.html">
+   About us
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav></div>
+        <div class="bd-sidebar__bottom">
+             <!-- To handle the deprecated key -->
+            
+            <div class="navbar_extra_footer">
+            Theme by the <a href="https://ebp.jupyterbook.org">Executable Book Project</a>
+            </div>
+            
+        </div>
+    </div>
+    <div id="rtd-footer-container"></div>
+</div>
+
+
+          
+
+
+          
+<!-- A tiny helper pixel to detect if we've scrolled -->
+<div class="sbt-scroll-pixel-helper"></div>
+<!-- Main content -->
+<div class="col py-0 content-container">
+    
+    <div class="header-article row sticky-top noprint">
+        
+
+
+
+<div class="col py-1 d-flex header-article-main">
+    <div class="header-article__left">
+        
+        <label for="__navigation"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="right"
+title="Toggle navigation"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-bars"></i>
+  </span>
+
+</label>
+
+        
+    </div>
+    <div class="header-article__right">
+<button onclick="toggleFullScreen()"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="bottom"
+title="Fullscreen mode"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+<div class="menu-dropdown menu-dropdown-repository-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Source repositories">
+      <i class="fab fa-github"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="https://github.com/acerbilab/pyvbmc"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Source repository"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="headerbtn__text-container">repository</span>
+</a>
+
+      </li>
+      
+      <li>
+        <a href="https://github.com/acerbilab/pyvbmc/issues/new?title=Issue%20on%20page%20%2F_modules/pyvbmc/variational_posterior/variational_posterior.html&body=Your%20issue%20content%20here."
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Open an issue"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="headerbtn__text-container">open issue</span>
+</a>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+    </div>
+</div>
+
+<!-- Table of contents -->
+<div class="col-md-3 bd-toc show noprint">
+</div>
+    </div>
+    <div class="article row">
+        <div class="col pl-md-3 pl-lg-5 content-container">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1></h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                    </div>
+                </div>
+            </div>
+            <main id="main-content" role="main">
+                
+              <div>
+                
+  <h1>Source code for pyvbmc.variational_posterior.variational_posterior</h1><div class="highlight"><pre>
+<span></span><span class="c1"># for annotating VP as input of itself in mtv</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">textwrap</span> <span class="kn">import</span> <span class="n">indent</span>
+
+<span class="kn">import</span> <span class="nn">corner</span>
+<span class="kn">import</span> <span class="nn">gpyreg</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.integrate</span> <span class="kn">import</span> <span class="n">trapezoid</span>
+<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">interp1d</span>
+<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">fmin_l_bfgs_b</span><span class="p">,</span> <span class="n">minimize</span>
+<span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">gammaln</span>
+
+<span class="kn">from</span> <span class="nn">pyvbmc.decorators</span> <span class="kn">import</span> <span class="n">handle_0D_1D_input</span>
+<span class="kn">from</span> <span class="nn">pyvbmc.formatting</span> <span class="kn">import</span> <span class="n">format_dict</span><span class="p">,</span> <span class="n">full_repr</span><span class="p">,</span> <span class="n">get_repr</span><span class="p">,</span> <span class="n">summarize</span>
+<span class="kn">from</span> <span class="nn">pyvbmc.parameter_transformer</span> <span class="kn">import</span> <span class="n">ParameterTransformer</span>
+<span class="kn">from</span> <span class="nn">pyvbmc.stats</span> <span class="kn">import</span> <span class="n">kde_1d</span><span class="p">,</span> <span class="n">kl_div_mvn</span>
+
+
+<div class="viewcode-block" id="VariationalPosterior"><a class="viewcode-back" href="../../../api/classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior">[docs]</a><span class="k">class</span> <span class="nc">VariationalPosterior</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The variational posterior class used in PyVBMC.</span>
+
+<span class="sd">    The variational posterior represents the approximate posterior as returned</span>
+<span class="sd">    by the Variational Bayesian Monte Carlo (VBMC) algorithm.</span>
+
+<span class="sd">    In VBMC, the variational posterior is a weighted mixture of multivariate</span>
+<span class="sd">    normal distributions (see Notes below for details).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    D : int</span>
+<span class="sd">        The number of dimensions (i.e., parameters) of the posterior.</span>
+<span class="sd">    K : int, optional</span>
+<span class="sd">        The number of mixture components, default 2.</span>
+<span class="sd">    x0 : np.ndarray, optional</span>
+<span class="sd">        The starting vector for the mixture components means. It can be a</span>
+<span class="sd">        single array or multiple rows (up to `K`); missing rows are</span>
+<span class="sd">        duplicated by making copies of `x0`, default ``np.zeros``.</span>
+<span class="sd">    parameter_transformer : ParameterTransformer, optional</span>
+<span class="sd">        The ``ParameterTransformer`` object specifying the transformation of</span>
+<span class="sd">        the input space that leads to the current representation used by the</span>
+<span class="sd">        variational posterior, by default uses an identity transform.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    w : np.ndarray</span>
+<span class="sd">        The weights of the VP mixture components, shape ``(1, K)``.</span>
+<span class="sd">    eta : np.ndarray</span>
+<span class="sd">        The unbounded (softmax) parametrization of the VP mixture components,</span>
+<span class="sd">        shape ``(1, K)``.</span>
+<span class="sd">    mu : np.ndarray</span>
+<span class="sd">        The means of the VP mixture components, shape ``(D, K)``.</span>
+<span class="sd">    sigma : np.ndarray</span>
+<span class="sd">        The per-component scale of the VP mixture components. Shape ``(1, K)``.</span>
+<span class="sd">    lambd : np.ndarray</span>
+<span class="sd">        The per-dimension scale of the VP mixture components. Shape ``(D, 1)``.</span>
+<span class="sd">    optimize_weights : bool</span>
+<span class="sd">        Whether to optimize the weights.</span>
+<span class="sd">    optimize_mu : bool</span>
+<span class="sd">        Whether to optimize the means.</span>
+<span class="sd">    optimize_sigma : bool</span>
+<span class="sd">        Whether to optimize ``sigma``.</span>
+<span class="sd">    optimize_lambd : bool</span>
+<span class="sd">        Whether to optimize ``lambd``.</span>
+<span class="sd">    parameter_transformer : ParameterTransformer</span>
+<span class="sd">        The parameter transformer implementing transformations to/from</span>
+<span class="sd">        unbounded space.</span>
+<span class="sd">    bounds : dict</span>
+<span class="sd">        A dictionary containing the soft bounds for each variable to be</span>
+<span class="sd">        optimized.</span>
+<span class="sd">    stats : dict</span>
+<span class="sd">        A dictionary of statistics and other relevant info computed during</span>
+<span class="sd">        optimization.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    In VBMC, the variational posterior is defined as a mixture of multivariate</span>
+<span class="sd">    normal distributions as follows:</span>
+
+<span class="sd">    .. math:: q({\\theta}) = \sum_{k = 1}^K w_k N(\\theta, \mu_k, \sigma^2_k \Lambda)</span>
+
+<span class="sd">    where :math:`w_k` are the mixture weights, :math:`\mu_k` the component means,</span>
+<span class="sd">    :math:`\sigma_k` scaling factors, and :math:`\Lambda` is a diagonal matrix</span>
+<span class="sd">    common to all components with elements :math:`\lambda^2_d` on the diagonal,</span>
+<span class="sd">    for :math:`1 \le d \le D`.</span>
+
+<span class="sd">    Note that :math:`q({\\theta})` is defined in an unconstrained space.</span>
+<span class="sd">    Constrained variables in the posterior are mapped to a trasformed,</span>
+<span class="sd">    unconstrained space via a nonlinear mapping (represented by a</span>
+<span class="sd">    ``ParameterTransformer`` object). The transformation is handled</span>
+<span class="sd">    automatically.</span>
+
+<span class="sd">    In practice, you would almost never create a new ``VariationalPosterior``</span>
+<span class="sd">    object, simply use the variational posteriors returned by ``VBMC``.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">D</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">K</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">parameter_transformer</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">D</span> <span class="o">=</span> <span class="n">D</span>  <span class="c1"># number of dimensions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">K</span> <span class="o">=</span> <span class="n">K</span>  <span class="c1"># number of components</span>
+
+        <span class="k">if</span> <span class="n">x0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">D</span><span class="p">,</span> <span class="n">K</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">x0</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="n">D</span><span class="p">:</span>
+            <span class="n">x0</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># reshape to vertical array</span>
+            <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>  <span class="c1"># copy vector</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">x0</span> <span class="o">=</span> <span class="n">x0</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">K</span> <span class="o">/</span> <span class="n">x0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])))</span>
+            <span class="n">x0</span> <span class="o">=</span> <span class="n">x0</span><span class="p">[:,</span> <span class="mi">0</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">K</span><span class="p">))</span> <span class="o">/</span> <span class="n">K</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">K</span><span class="p">))</span> <span class="o">/</span> <span class="n">K</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="n">x0</span> <span class="o">+</span> <span class="mf">1e-6</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">=</span> <span class="mf">1e-3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">K</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lambd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+        <span class="c1"># By default, optimize all variational parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimize_weights</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimize_mu</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimize_sigma</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimize_lambd</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="n">parameter_transformer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parameter_transformer</span> <span class="o">=</span> <span class="n">ParameterTransformer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parameter_transformer</span> <span class="o">=</span> <span class="n">parameter_transformer</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stats</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mode</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="VariationalPosterior.get_bounds"><a class="viewcode-back" href="../../../api/classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior.get_bounds">[docs]</a>    <span class="k">def</span> <span class="nf">get_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">K</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute soft bounds for variational posterior parameters.</span>
+
+<span class="sd">        These bounds are used during the variational optimization in ``VBMC``.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : ndarray, shape (N, D)</span>
+<span class="sd">            Training inputs.</span>
+<span class="sd">        options : Options</span>
+<span class="sd">            Program options.</span>
+<span class="sd">        K : int, optional</span>
+<span class="sd">            The number of mixture components. By default we use the</span>
+<span class="sd">            number provided at class instantiation.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        theta_bnd : dict</span>
+<span class="sd">            A dictionary of soft bounds with the following elements:</span>
+<span class="sd">                **lb** : np.ndarray</span>
+<span class="sd">                    Lower bounds.</span>
+<span class="sd">                **ub** : np.ndarray</span>
+<span class="sd">                    Upper bounds.</span>
+<span class="sd">                **tol_con** : float</span>
+<span class="sd">                    Fractional tolerance for constraint violation of</span>
+<span class="sd">                    variational parameters.</span>
+<span class="sd">                **weight_threshold** : float, optional</span>
+<span class="sd">                     Threshold below which weights are penalized.</span>
+<span class="sd">                **weight_penalty** : float, optional</span>
+<span class="sd">                     The penalty for weight below the threshold.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">K</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">K</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">K</span>
+
+        <span class="c1"># Soft-bound loss is computed on MU and SCALE (which is SIGMA times</span>
+        <span class="c1"># LAMBDA)</span>
+
+        <span class="c1"># Start with reversed bounds (see below)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;mu_lb&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">,),</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">),</span>
+                <span class="s2">&quot;mu_ub&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">,),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">),</span>
+                <span class="s2">&quot;lnscale_lb&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">,),</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">),</span>
+                <span class="s2">&quot;lnscale_ub&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">,),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">),</span>
+            <span class="p">}</span>
+
+        <span class="c1"># Set bounds for mean parameters of variational components</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="s2">&quot;mu_lb&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="s2">&quot;mu_lb&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="s2">&quot;mu_ub&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="s2">&quot;mu_ub&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Set bounds for log scale parameters of variational components.</span>
+        <span class="n">ln_range</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="s2">&quot;lnscale_lb&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="s2">&quot;lnscale_lb&quot;</span><span class="p">],</span> <span class="n">ln_range</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;tol_length&quot;</span><span class="p">])</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="s2">&quot;lnscale_ub&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="s2">&quot;lnscale_ub&quot;</span><span class="p">],</span> <span class="n">ln_range</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Set bounds for log weight parameters of variation components.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimize_weights</span><span class="p">:</span>
+            <span class="c1"># prevent warning to be printed when doing final boost</span>
+            <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;tol_weight&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="s2">&quot;eta_lb&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="s2">&quot;eta_lb&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;tol_weight&quot;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="s2">&quot;eta_ub&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">lb_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">ub_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimize_mu</span><span class="p">:</span>
+            <span class="n">lb_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="s2">&quot;mu_lb&quot;</span><span class="p">],</span> <span class="p">(</span><span class="n">K</span><span class="p">,)))</span>
+            <span class="n">ub_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="s2">&quot;mu_ub&quot;</span><span class="p">],</span> <span class="p">(</span><span class="n">K</span><span class="p">,)))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimize_sigma</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimize_lambd</span><span class="p">:</span>
+            <span class="n">lb_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="s2">&quot;lnscale_lb&quot;</span><span class="p">],</span> <span class="p">(</span><span class="n">K</span><span class="p">,)))</span>
+            <span class="n">ub_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="s2">&quot;lnscale_ub&quot;</span><span class="p">],</span> <span class="p">(</span><span class="n">K</span><span class="p">,)))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimize_weights</span><span class="p">:</span>
+            <span class="n">lb_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="s2">&quot;eta_lb&quot;</span><span class="p">],</span> <span class="p">(</span><span class="n">K</span><span class="p">,)))</span>
+            <span class="n">ub_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="s2">&quot;eta_ub&quot;</span><span class="p">],</span> <span class="p">(</span><span class="n">K</span><span class="p">,)))</span>
+
+        <span class="n">theta_bnd</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;lb&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">lb_list</span><span class="p">),</span>
+            <span class="s2">&quot;ub&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">ub_list</span><span class="p">),</span>
+        <span class="p">}</span>
+
+        <span class="n">theta_bnd</span><span class="p">[</span><span class="s2">&quot;tol_con&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;tol_con_loss&quot;</span><span class="p">]</span>
+
+        <span class="c1"># Weight below a certain threshold are penalized.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimize_weights</span><span class="p">:</span>
+            <span class="n">theta_bnd</span><span class="p">[</span><span class="s2">&quot;weight_threshold&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
+                <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">K</span><span class="p">),</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;tol_weight&quot;</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">theta_bnd</span><span class="p">[</span><span class="s2">&quot;weight_penalty&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;weight_penalty&quot;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">theta_bnd</span></div>
+
+<div class="viewcode-block" id="VariationalPosterior.sample"><a class="viewcode-back" href="../../../api/classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior.sample">[docs]</a>    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">N</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">orig_flag</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">balance_flag</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">df</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Draw random samples from the variational posterior.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        N : int</span>
+<span class="sd">            Number of samples to draw.</span>
+<span class="sd">        orig_flag : bool, optional</span>
+<span class="sd">            If `orig_flag` is ``True``, the random vectors are returned</span>
+<span class="sd">            in the original parameter space. If ``False``, they are returned in</span>
+<span class="sd">            the transformed, unconstrained space used internally by VBMC.</span>
+<span class="sd">            By default ``True``.</span>
+<span class="sd">        balance_flag : bool, optional</span>
+<span class="sd">            If `balance_flag` is ``True``, the generating process is balanced</span>
+<span class="sd">            such that the random samples come from each mixture component</span>
+<span class="sd">            exactly proportionally (or as close as possible) to the variational</span>
+<span class="sd">            mixture weights. If ``False``, the generating mixture component for</span>
+<span class="sd">            each sample is determined randomly, according to the mixture weights.</span>
+<span class="sd">            By default ``False``.</span>
+<span class="sd">        df : float, optional</span>
+<span class="sd">            Generate the samples from a heavy-tailed version of the variational</span>
+<span class="sd">            posterior, in which the multivariate normal components have been</span>
+<span class="sd">            replaced by multivariate `t`-distributions with `df` degrees of</span>
+<span class="sd">            freedom. The default is ``np.inf``, limit in which the</span>
+<span class="sd">            `t`-distribution becomes a multivariate normal.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        X : np.ndarray</span>
+<span class="sd">            `X` is an `N`-by-`D` matrix of random vectors drawn from the</span>
+<span class="sd">            variational posterior.</span>
+<span class="sd">        I : np.ndarray</span>
+<span class="sd">            `I` is an `N`-by-1 array such that the `i`-th element of `I`</span>
+<span class="sd">            indicates the index of the variational mixture component from which</span>
+<span class="sd">            the `i`-th row of X has been generated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># missing to sample from gp</span>
+        <span class="n">gp_sample</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">N</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">))</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">i</span>
+        <span class="k">elif</span> <span class="n">gp_sample</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lambd_row</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambd</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">K</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">balance_flag</span><span class="p">:</span>
+                    <span class="c1"># exact split of samples according to mixture weights</span>
+                    <span class="n">repeats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">*</span> <span class="n">N</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;int&quot;</span><span class="p">)</span>
+                    <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">),</span> <span class="n">repeats</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+
+                    <span class="c1"># compute remainder samples (with correct weights) if needed</span>
+                    <span class="k">if</span> <span class="n">N</span> <span class="o">&gt;</span> <span class="n">i</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                        <span class="n">w_extra</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">*</span> <span class="n">N</span> <span class="o">-</span> <span class="n">repeats</span>
+                        <span class="n">repeats_extra</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">w_extra</span><span class="p">))</span>
+                        <span class="n">w_extra</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">*</span> <span class="p">(</span><span class="n">repeats_extra</span> <span class="o">-</span> <span class="nb">sum</span><span class="p">(</span><span class="n">w_extra</span><span class="p">))</span>
+                        <span class="n">w_extra</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">w_extra</span><span class="p">)</span>
+                        <span class="n">i_extra</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
+                            <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">),</span>
+                            <span class="n">size</span><span class="o">=</span><span class="n">repeats_extra</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;int&quot;</span><span class="p">),</span>
+                            <span class="n">p</span><span class="o">=</span><span class="n">w_extra</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span>
+                        <span class="p">)</span>
+                        <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i_extra</span><span class="p">)</span>
+
+                    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                    <span class="n">i</span> <span class="o">=</span> <span class="n">i</span><span class="p">[:</span><span class="n">N</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
+                        <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="n">N</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+                    <span class="p">)</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">df</span><span class="p">)</span> <span class="ow">or</span> <span class="n">df</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">x</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                        <span class="o">+</span> <span class="n">lambd_row</span>
+                        <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">)</span>
+                        <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">t</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">df</span>
+                        <span class="o">/</span> <span class="mi">2</span>
+                        <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">gamma</span><span class="p">(</span><span class="n">df</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">df</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span>
+                    <span class="p">)</span>
+                    <span class="n">x</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                        <span class="o">+</span> <span class="n">lambd_row</span>
+                        <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">)</span>
+                        <span class="o">*</span> <span class="n">t</span>
+                        <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+                    <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">df</span><span class="p">)</span> <span class="ow">or</span> <span class="n">df</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">x</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">T</span>
+                        <span class="o">+</span> <span class="n">lambd_row</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">t</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">df</span>
+                        <span class="o">/</span> <span class="mi">2</span>
+                        <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">gamma</span><span class="p">(</span><span class="n">df</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">df</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span>
+                    <span class="p">)</span>
+                    <span class="n">x</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">T</span>
+                        <span class="o">+</span> <span class="n">lambd_row</span>
+                        <span class="o">*</span> <span class="n">t</span>
+                        <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">)</span>
+                        <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span>
+                    <span class="p">)</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">orig_flag</span><span class="p">:</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameter_transformer</span><span class="o">.</span><span class="n">inverse</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">i</span></div>
+
+<div class="viewcode-block" id="VariationalPosterior.pdf"><a class="viewcode-back" href="../../../api/classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior.pdf">[docs]</a>    <span class="nd">@handle_0D_1D_input</span><span class="p">(</span><span class="n">patched_kwargs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">],</span> <span class="n">patched_argpos</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">def</span> <span class="nf">pdf</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">orig_flag</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">log_flag</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">grad_flag</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">df</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Probability density function of the variational posterior.</span>
+
+<span class="sd">        Compute the probability density function (pdf) of the variational</span>
+<span class="sd">        posterior at one or multiple input points.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : np.ndarray</span>
+<span class="sd">            `x` is a matrix of inputs to evaluate the pdf at.</span>
+<span class="sd">            The rows of the `N`-by-`D` matrix `x` correspond to observations or</span>
+<span class="sd">            points, and columns correspond to variables or coordinates. `x` is</span>
+<span class="sd">            assumed to be in the orignial space by default.</span>
+<span class="sd">        orig_flag : bool, optional</span>
+<span class="sd">            Controls if the value of the posterior density should be evaluated</span>
+<span class="sd">            in the original parameter space for `orig_flag` is ``True``, or in</span>
+<span class="sd">            the transformed space if `orig_flag` is ``False``, by default</span>
+<span class="sd">            ``True``. Accordingly, `x` should be in the original space if</span>
+<span class="sd">            `orig_flag` is ``True`` and be in the transformed space if</span>
+<span class="sd">            `orig_flag` is `False`.</span>
+<span class="sd">        log_flag : bool, optional</span>
+<span class="sd">            If `log_flag` is ``True`` return the logarithm of the pdf,</span>
+<span class="sd">            by default ``False``.</span>
+<span class="sd">        grad_flag : bool, optional</span>
+<span class="sd">            If ``True`` the gradient of the pdf is returned as a second output,</span>
+<span class="sd">            by default ``False``.</span>
+<span class="sd">        df : float, optional</span>
+<span class="sd">            Compute the pdf of a heavy-tailed version of the variational</span>
+<span class="sd">            posterior, in which the multivariate normal components</span>
+<span class="sd">            have been replaced by multivariate `t`-distributions with</span>
+<span class="sd">            `df` degrees of freedom. The default is `df` = ``np.inf``, limit in</span>
+<span class="sd">            which the `t`-distribution becomes a multivariate normal.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pdf: np.ndarray</span>
+<span class="sd">            The probability density of the variational posterior</span>
+<span class="sd">            evaluated at each row of `x`.</span>
+<span class="sd">        gradient: np.ndarray</span>
+<span class="sd">            If `grad_flag` is ``True``, the function returns the gradient as well.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        NotImplementedError</span>
+<span class="sd">            Raised if `df` is non-zero and finite and `grad_flag` = ``True``</span>
+<span class="sd">            (Gradient of heavy-tailed pdf not supported yet).</span>
+<span class="sd">        NotImplementedError</span>
+<span class="sd">            Raised if `orig_flag` = ``True`` and `log_flag` = ``True`` and</span>
+<span class="sd">            `grad_flag` = ``True`` (gradient computation of the log-pdf in the</span>
+<span class="sd">            original space is not supported yet).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">N</span><span class="p">,</span> <span class="n">D</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span>
+
+        <span class="c1"># compute pdf only for points inside bounds in origspace</span>
+        <span class="k">if</span> <span class="n">orig_flag</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameter_transformer</span><span class="o">.</span><span class="n">lb_orig</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameter_transformer</span><span class="o">.</span><span class="n">ub_orig</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Convert points to transformed space</span>
+        <span class="k">if</span> <span class="n">orig_flag</span><span class="p">:</span>
+            <span class="n">x</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameter_transformer</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span>
+        <span class="n">lamd_row</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambd</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">grad_flag</span><span class="p">:</span>
+            <span class="n">dy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">D</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">df</span><span class="p">)</span> <span class="ow">or</span> <span class="n">df</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># compute pdf of variational posterior</span>
+
+            <span class="c1"># common normalization factor</span>
+            <span class="n">nf</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="n">D</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">lamd_row</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">):</span>
+                <span class="n">d2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+                    <span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">lamd_row</span><span class="p">)))</span>
+                    <span class="o">**</span> <span class="mi">2</span><span class="p">,</span>
+                    <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">nn</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">nf</span>
+                    <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span>
+                    <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span> <span class="o">**</span> <span class="n">D</span>
+                    <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">d2</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+                <span class="p">)</span>
+                <span class="n">y</span> <span class="o">+=</span> <span class="n">nn</span>
+                <span class="k">if</span> <span class="n">grad_flag</span><span class="p">:</span>
+                    <span class="n">dy</span> <span class="o">-=</span> <span class="p">(</span>
+                        <span class="n">nn</span>
+                        <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+                        <span class="o">/</span> <span class="p">((</span><span class="n">lamd_row</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+                    <span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Compute pdf of heavy-tailed variant of variational posterior</span>
+
+            <span class="k">if</span> <span class="n">df</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># (This uses a multivariate t-distribution which is not the same</span>
+                <span class="c1"># thing as the product of D univariate t-distributions)</span>
+
+                <span class="c1"># common normalization factor</span>
+                <span class="n">nf</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">gammaln</span><span class="p">((</span><span class="n">df</span> <span class="o">+</span> <span class="n">D</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="n">gammaln</span><span class="p">(</span><span class="n">df</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span>
+                    <span class="o">/</span> <span class="p">(</span><span class="n">df</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="n">D</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+                    <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lambd</span><span class="p">)</span>
+                <span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">):</span>
+                    <span class="n">d2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+                        <span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">lamd_row</span><span class="p">)))</span>
+                        <span class="o">**</span> <span class="mi">2</span><span class="p">,</span>
+                        <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="n">nn</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">nf</span>
+                        <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span>
+                        <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span> <span class="o">**</span> <span class="n">D</span>
+                        <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">d2</span> <span class="o">/</span> <span class="n">df</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">df</span> <span class="o">+</span> <span class="n">D</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+                    <span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+                    <span class="n">y</span> <span class="o">+=</span> <span class="n">nn</span>
+                    <span class="k">if</span> <span class="n">grad_flag</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                            <span class="s2">&quot;Gradient of heavy-tailed pdf not supported yet.&quot;</span>
+                        <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># (This uses a product of D univariate t-distributions)</span>
+
+                <span class="n">df_abs</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+                <span class="c1"># Common normalization factor</span>
+                <span class="n">nf</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">gammaln</span><span class="p">((</span><span class="n">df_abs</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="n">gammaln</span><span class="p">(</span><span class="n">df_abs</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span>
+                    <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">df_abs</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+                <span class="p">)</span> <span class="o">**</span> <span class="n">D</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lambd</span><span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">):</span>
+                    <span class="n">d2</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">lamd_row</span><span class="p">))</span>
+                    <span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+                    <span class="n">nn</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">nf</span>
+                        <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span>
+                        <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span> <span class="o">**</span> <span class="n">D</span>
+                        <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span>
+                            <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">d2</span> <span class="o">/</span> <span class="n">df_abs</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">df_abs</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span>
+                        <span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+                    <span class="p">)</span>
+                    <span class="n">y</span> <span class="o">+=</span> <span class="n">nn</span>
+                    <span class="k">if</span> <span class="n">grad_flag</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                            <span class="s2">&quot;Gradient of heavy-tailed pdf not supported yet.&quot;</span>
+                        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">log_flag</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">grad_flag</span><span class="p">:</span>
+                <span class="n">dy</span> <span class="o">=</span> <span class="n">dy</span> <span class="o">/</span> <span class="n">y</span>
+            <span class="c1"># Avoid log(0):</span>
+            <span class="n">zero_mask</span> <span class="o">=</span> <span class="n">y</span> <span class="o">==</span> <span class="mi">0</span>
+            <span class="n">y</span><span class="p">[</span><span class="n">zero_mask</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+            <span class="n">y</span><span class="p">[</span><span class="o">~</span><span class="n">zero_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="o">~</span><span class="n">zero_mask</span><span class="p">])</span>
+            <span class="c1"># PDF is 0 outside original bounds:</span>
+            <span class="n">y</span><span class="p">[</span><span class="o">~</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">y</span><span class="p">[</span><span class="o">~</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># apply jacobian correction</span>
+        <span class="k">if</span> <span class="n">orig_flag</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">log_flag</span><span class="p">:</span>
+                <span class="n">y</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameter_transformer</span><span class="o">.</span><span class="n">log_abs_det_jacobian</span><span class="p">(</span>
+                    <span class="n">x</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+                <span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">grad_flag</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                        <span class="sd">&quot;&quot;&quot;vbmc_pdf:NoOriginalGrad: Gradient computation</span>
+<span class="sd">                         in original space not supported yet.&quot;&quot;&quot;</span>
+                    <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">y</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">parameter_transformer</span><span class="o">.</span><span class="n">log_abs_det_jacobian</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">mask</span><span class="p">])[</span>
+                        <span class="p">:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span>
+                    <span class="p">]</span>
+                <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">grad_flag</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">y</span><span class="p">,</span> <span class="n">dy</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">y</span></div>
+
+<div class="viewcode-block" id="VariationalPosterior.log_pdf"><a class="viewcode-back" href="../../../api/classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior.log_pdf">[docs]</a>    <span class="nd">@handle_0D_1D_input</span><span class="p">(</span><span class="n">patched_kwargs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">],</span> <span class="n">patched_argpos</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">def</span> <span class="nf">log_pdf</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        log-probability density function of the variational posterior.</span>
+
+<span class="sd">        Compute the log density of the variational posterior at one or multiple</span>
+<span class="sd">        input points. The parameters are the same as for ``vp.pdf()`` with</span>
+<span class="sd">        ``log_flag=True``. These parameters are described again here for</span>
+<span class="sd">        reference.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : np.ndarray</span>
+<span class="sd">            `x` is a matrix of inputs to evaluate the pdf at.</span>
+<span class="sd">            The rows of the `N`-by-`D` matrix `x` correspond to observations or</span>
+<span class="sd">            points, and columns correspond to variables or coordinates. `x` is</span>
+<span class="sd">            assumed to be in the orignial space by default.</span>
+<span class="sd">        orig_flag : bool, optional</span>
+<span class="sd">            Controls if the value of the posterior density should be evaluated</span>
+<span class="sd">            in the original parameter space for `orig_flag` is ``True``, or in</span>
+<span class="sd">            the transformed space if `orig_flag` is ``False``, by default</span>
+<span class="sd">            ``True``. Accordingly, `x` should be in the original space if</span>
+<span class="sd">            `orig_flag` is ``True`` and be in the transformed space if</span>
+<span class="sd">            `orig_flag` is `False`.</span>
+<span class="sd">        grad_flag : bool, optional</span>
+<span class="sd">            If ``True`` the gradient of the log-pdf is returned as a second</span>
+<span class="sd">            output, by default ``False``.</span>
+<span class="sd">        df : float, optional</span>
+<span class="sd">            Compute the log-pdf of a heavy-tailed version of the variational</span>
+<span class="sd">            posterior, in which the multivariate normal components have been</span>
+<span class="sd">            replaced by multivariate `t`-distributions with `df` degrees of</span>
+<span class="sd">            freedom. The default is `df` = ``np.inf``, limit in which the</span>
+<span class="sd">            `t`-distribution becomes a multivariate normal.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        log_pdf: np.ndarray</span>
+<span class="sd">            The probability density of the variational posterior</span>
+<span class="sd">            evaluated at each row of `x`.</span>
+<span class="sd">        gradient: np.ndarray</span>
+<span class="sd">            If `grad_flag` is ``True``, the function returns the gradient as well.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        NotImplementedError</span>
+<span class="sd">            Raised if `df` is non-zero and finite and `grad_flag` = ``True``</span>
+<span class="sd">            (Gradient of heavy-tailed pdf not supported yet).</span>
+<span class="sd">        NotImplementedError</span>
+<span class="sd">            Raised if `orig_flag` = ``True`` and `grad_flag` = ``True``</span>
+<span class="sd">            (gradient computation in original space not supported yet).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">log_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VariationalPosterior.get_parameters"><a class="viewcode-back" href="../../../api/classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior.get_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">get_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raw_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get variational posterior parameters as single array.</span>
+
+<span class="sd">        Return all the active ``VariationalPosterior`` parameters</span>
+<span class="sd">        flattened as a 1D (numpy) array, possibly transformed.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        raw_flag : bool, optional</span>
+<span class="sd">            Specifies whether the sigma and lambda parameters are</span>
+<span class="sd">            returned as raw (unconstrained) or not, by default ``True``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        theta : np.ndarray</span>
+<span class="sd">            The variational posterior parameters flattenend as a 1D array.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">nl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lambd</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">lambd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambd</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">nl</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">nl</span>
+
+        <span class="c1"># Ensure that weights are normalized</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimize_weights</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="p">)</span>
+
+        <span class="c1"># remove mode (at least this is done in Matlab)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimize_mu</span><span class="p">:</span>
+            <span class="n">theta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">())</span>
+
+        <span class="n">constrained_parameters</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimize_sigma</span><span class="p">:</span>
+            <span class="n">constrained_parameters</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">constrained_parameters</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimize_lambd</span><span class="p">:</span>
+            <span class="n">constrained_parameters</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">constrained_parameters</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambd</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimize_weights</span><span class="p">:</span>
+            <span class="n">constrained_parameters</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">constrained_parameters</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">raw_flag</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">theta</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">constrained_parameters</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">theta</span><span class="p">,</span> <span class="n">constrained_parameters</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="VariationalPosterior.set_parameters"><a class="viewcode-back" href="../../../api/classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior.set_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">set_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">raw_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set variational posterior parameters from a single array.</span>
+
+<span class="sd">        Takes as input a ``numpy`` array and assigns it to the</span>
+<span class="sd">        variational posterior parameters.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        theta : np.ndarray</span>
+<span class="sd">            The array with the parameters that should be assigned.</span>
+<span class="sd">        raw_flag : bool, optional</span>
+<span class="sd">            Specifies whether the sigma and lambda parameters are</span>
+<span class="sd">            passed as raw (unconstrained) or not, by default ``True``.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            Raised if sigma, lambda and weights are not positive</span>
+<span class="sd">            and raw_flag = ``False``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Make sure we don&#39;t get issues with references.</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="n">theta</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="c1"># check if sigma, lambda and weights are positive when raw_flag = False</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">raw_flag</span><span class="p">:</span>
+            <span class="n">check_idx</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimize_weights</span><span class="p">:</span>
+                <span class="n">check_idx</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">K</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimize_lambd</span><span class="p">:</span>
+                <span class="n">check_idx</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimize_sigma</span><span class="p">:</span>
+                <span class="n">check_idx</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">K</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="o">-</span><span class="n">check_idx</span><span class="p">:]</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sd">&quot;&quot;&quot;sigma, lambda and weights must be positive</span>
+<span class="sd">                    when raw_flag = False&quot;&quot;&quot;</span>
+                <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimize_mu</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                <span class="n">theta</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">],</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span>
+            <span class="p">)</span>
+            <span class="n">start_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">K</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">start_idx</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimize_sigma</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">raw_flag</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="n">start_idx</span> <span class="p">:</span> <span class="n">start_idx</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">=</span> <span class="n">theta</span><span class="p">[</span><span class="n">start_idx</span> <span class="p">:</span> <span class="n">start_idx</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">]</span>
+            <span class="n">start_idx</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">K</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimize_lambd</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">raw_flag</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">lambd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="n">start_idx</span> <span class="p">:</span> <span class="n">start_idx</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">lambd</span> <span class="o">=</span> <span class="n">theta</span><span class="p">[</span><span class="n">start_idx</span> <span class="p">:</span> <span class="n">start_idx</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimize_weights</span><span class="p">:</span>
+            <span class="n">eta</span> <span class="o">=</span> <span class="n">theta</span><span class="p">[</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">K</span> <span class="p">:]</span>
+            <span class="k">if</span> <span class="n">raw_flag</span><span class="p">:</span>
+                <span class="n">eta</span> <span class="o">=</span> <span class="n">eta</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">eta</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">eta</span><span class="o">.</span><span class="n">T</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="n">eta</span><span class="o">.</span><span class="n">T</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+
+        <span class="n">nl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lambd</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">lambd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambd</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">nl</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">nl</span>
+
+        <span class="c1"># Ensure that weights are normalized</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimize_weights</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="p">)</span>
+
+        <span class="c1"># remove mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mode</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="VariationalPosterior.moments"><a class="viewcode-back" href="../../../api/classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior.moments">[docs]</a>    <span class="k">def</span> <span class="nf">moments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">N</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1e6</span><span class="p">),</span> <span class="n">orig_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cov_flag</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute mean and covariance matrix of variational posterior.</span>
+
+<span class="sd">        In the original space, the moments are estimated via Monte Carlo</span>
+<span class="sd">        sampling. If requested in the transformed (unconstrained) space used</span>
+<span class="sd">        internally by VBMC, the moments can be computed analytically.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        N : int, optional</span>
+<span class="sd">            Number of samples used to estimate the moments, by default ``int(1e6)``.</span>
+<span class="sd">        orig_flag : bool, optional</span>
+<span class="sd">            If ``True``, compute moments in the original parameter space,</span>
+<span class="sd">            otherwise in the transformed VBMC space. By default ``True``.</span>
+<span class="sd">        cov_flag : bool, optional</span>
+<span class="sd">            If ``True``, return the covariance matrix as a second return value,</span>
+<span class="sd">            by default ``False``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        mean: np.ndarray</span>
+<span class="sd">            The mean of the variational posterior.</span>
+<span class="sd">        cov: np.ndarray</span>
+<span class="sd">            If `cov_flag` is ``True``, returns the covariance matrix as well.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">orig_flag</span><span class="p">:</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">N</span><span class="p">),</span> <span class="n">orig_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">balance_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">mubar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">cov_flag</span><span class="p">:</span>
+                <span class="n">cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mubar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">cov_flag</span><span class="p">:</span>
+                <span class="n">cov</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+                    <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lambd</span><span class="p">))</span>
+                    <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambd</span><span class="o">**</span><span class="mi">2</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">):</span>
+                    <span class="n">cov</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span>
+                        <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span> <span class="o">-</span> <span class="n">mubar</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+                    <span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span> <span class="o">-</span> <span class="n">mubar</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cov_flag</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">mubar</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">cov</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">mubar</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VariationalPosterior.mode"><a class="viewcode-back" href="../../../api/classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior.mode">[docs]</a>    <span class="k">def</span> <span class="nf">mode</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">orig_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">n_max</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Find the mode of the variational posterior.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        orig_flag : bool, optional</span>
+<span class="sd">            If ``True`` find the mode of the variational posterior in the</span>
+<span class="sd">            original parameter space, otherwise in the transformed parameter</span>
+<span class="sd">            space. By default ``True``.</span>
+<span class="sd">        n_max : int, optional</span>
+<span class="sd">            Maximum number of optimization runs to find the mode.</span>
+<span class="sd">            If `n_max` &lt; `self.K`, the starting points for the optimization are</span>
+<span class="sd">            chosen as the centers of the components with the highest values of</span>
+<span class="sd">            the pdf at those points. By default `n_max` = 50.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        mode: np.ndarray</span>
+<span class="sd">            The mode of the variational posterior.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        The mode is not invariant to nonlinear reparameterizations of</span>
+<span class="sd">        the input space, so the mode in the original space and the mode in the</span>
+<span class="sd">        transformed (unconstrained) space will generally be in different</span>
+<span class="sd">        locations (even after applying the appropriate transformations).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">neg_log_pdf</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">orig_flag</span><span class="o">=</span><span class="n">orig_flag</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">orig_flag</span><span class="p">:</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span>
+                    <span class="n">x0</span><span class="p">,</span> <span class="n">orig_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">log_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">grad_flag</span><span class="o">=</span><span class="kc">False</span>
+                <span class="p">)</span>
+                <span class="k">return</span> <span class="o">-</span><span class="n">y</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">y</span><span class="p">,</span> <span class="n">dy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span>
+                    <span class="n">x0</span><span class="p">,</span> <span class="n">orig_flag</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">log_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">grad_flag</span><span class="o">=</span><span class="kc">True</span>
+                <span class="p">)</span>
+                <span class="k">return</span> <span class="o">-</span><span class="n">y</span><span class="p">,</span> <span class="o">-</span><span class="n">dy</span>
+
+        <span class="k">if</span> <span class="n">orig_flag</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mode</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mode</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">x0_mat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">T</span>
+            <span class="k">if</span> <span class="n">n_max</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">:</span>
+                <span class="n">x0_jitter</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n_max</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">)),</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="p">)[:</span> <span class="n">n_max</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">]</span>
+                <span class="n">x0_jitter</span> <span class="o">=</span> <span class="n">x0_jitter</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span>
+                    <span class="o">*</span><span class="n">x0_jitter</span><span class="o">.</span><span class="n">shape</span>
+                <span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">moments</span><span class="p">(</span><span class="n">orig_flag</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cov_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="p">)</span>
+                <span class="n">x0_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">x0_mat</span><span class="p">,</span> <span class="n">x0_jitter</span><span class="p">])</span>
+
+            <span class="k">if</span> <span class="n">orig_flag</span><span class="p">:</span>
+                <span class="n">x0_mat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameter_transformer</span><span class="o">.</span><span class="n">inverse</span><span class="p">(</span><span class="n">x0_mat</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">n_max</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">:</span>
+                <span class="c1"># First, evaluate pdf at all modes</span>
+                <span class="n">y0_vec</span> <span class="o">=</span> <span class="n">neg_log_pdf</span><span class="p">(</span><span class="n">x0_mat</span><span class="p">,</span> <span class="n">orig_flag</span><span class="o">=</span><span class="n">orig_flag</span><span class="p">)</span>
+                <span class="c1"># Start from first N_MAX solutions</span>
+                <span class="n">y0_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">y0_vec</span><span class="o">.</span><span class="n">squeeze</span><span class="p">())[:</span><span class="n">n_max</span><span class="p">]</span>
+                <span class="n">x0_mat</span> <span class="o">=</span> <span class="n">x0_mat</span><span class="p">[</span><span class="n">y0_idx</span><span class="p">]</span>
+
+            <span class="n">x_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">x0_mat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">))</span>
+            <span class="n">ff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">x0_mat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">x0_mat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="n">x0</span> <span class="o">=</span> <span class="n">x0_mat</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+
+                <span class="n">bounds</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="n">orig_flag</span><span class="p">:</span>
+                    <span class="n">bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+                        <span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">parameter_transformer</span><span class="o">.</span><span class="n">lb_orig</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">),</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">parameter_transformer</span><span class="o">.</span><span class="n">ub_orig</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">),</span>
+                        <span class="p">),</span>
+                        <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">parameter_transformer</span><span class="o">.</span><span class="n">ub_orig</span><span class="p">,</span>
+                        <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameter_transformer</span><span class="o">.</span><span class="n">lb_orig</span><span class="p">),</span>
+                    <span class="p">)</span>
+                    <span class="n">x0</span> <span class="o">=</span> <span class="n">x0</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+
+                <span class="n">res</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">fun</span><span class="o">=</span><span class="n">neg_log_pdf</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">x0</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">)</span>
+                <span class="n">x_min</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">x</span>
+                <span class="n">ff</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">fun</span>
+
+            <span class="c1"># Get mode and store it</span>
+            <span class="n">idx_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">ff</span><span class="p">)</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x_min</span><span class="p">[</span><span class="n">idx_min</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">orig_flag</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_mode</span> <span class="o">=</span> <span class="n">x</span>
+
+            <span class="k">return</span> <span class="n">x</span></div>
+
+<div class="viewcode-block" id="VariationalPosterior.mtv"><a class="viewcode-back" href="../../../api/classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior.mtv">[docs]</a>    <span class="k">def</span> <span class="nf">mtv</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">vp2</span><span class="p">:</span> <span class="n">VariationalPosterior</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">samples</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">N</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1e5</span><span class="p">),</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Marginal total variation distances between two variational posteriors.</span>
+
+<span class="sd">        Compute the total variation distance between the variational</span>
+<span class="sd">        posterior and a second posterior, separately for each dimension (hence</span>
+<span class="sd">        &quot;marginal&quot; total variation distance, MTV). The second posterior can be</span>
+<span class="sd">        specified either as a ``VariationalPosterior`` or as a set of samples.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        vp2 : VariationalPosterior, optional</span>
+<span class="sd">            The other ``VariationalPosterior``, by default ``None``.</span>
+<span class="sd">        samples : np.ndarray, optional</span>
+<span class="sd">            An `N`-by-`D` matrix of samples from the other variational</span>
+<span class="sd">            posterior, by default ``None``.</span>
+<span class="sd">        N : int, optional</span>
+<span class="sd">            The number of random draws to estimate the MTV, by default ``int(1e5)``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        mtv: np.ndarray</span>
+<span class="sd">            A `D`-element vector whose elements are the total variation distance</span>
+<span class="sd">            between the marginal distributions of `vp` and `vp1` or `samples`,</span>
+<span class="sd">            for each coordinate dimension.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            Raised if neither `vp2` nor `samples` are specified.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        The total variation distance between two densities `p1` and `p2` is:</span>
+
+<span class="sd">        .. math:: TV(p1, p2) = \\frac{1}{2} \int | p1(x) - p2(x) | dx.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">vp2</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">samples</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Either vp2 or samples have to be not None&quot;</span><span class="p">)</span>
+
+        <span class="n">xx1</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">vp2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">xx2</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">vp2</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="n">lb2</span> <span class="o">=</span> <span class="n">vp2</span><span class="o">.</span><span class="n">parameter_transformer</span><span class="o">.</span><span class="n">lb_orig</span>
+            <span class="n">ub2</span> <span class="o">=</span> <span class="n">vp2</span><span class="o">.</span><span class="n">parameter_transformer</span><span class="o">.</span><span class="n">ub_orig</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">xx2</span> <span class="o">=</span> <span class="n">samples</span>
+            <span class="n">lb2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">xx2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+            <span class="n">ub2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">xx2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+
+        <span class="n">nkde</span> <span class="o">=</span> <span class="mi">2</span><span class="o">**</span><span class="mi">13</span>
+        <span class="n">mtv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">))</span>
+        <span class="c1"># Set bounds for kernel density estimate</span>
+        <span class="n">lb1_xx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">xx1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">ub1_xx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">xx1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">range1</span> <span class="o">=</span> <span class="n">ub1_xx</span> <span class="o">-</span> <span class="n">lb1_xx</span>
+        <span class="n">lb1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span>
+            <span class="n">lb1_xx</span> <span class="o">-</span> <span class="n">range1</span> <span class="o">/</span> <span class="mi">10</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameter_transformer</span><span class="o">.</span><span class="n">lb_orig</span>
+        <span class="p">)</span>
+        <span class="n">ub1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span>
+            <span class="n">ub1_xx</span> <span class="o">+</span> <span class="n">range1</span> <span class="o">/</span> <span class="mi">10</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameter_transformer</span><span class="o">.</span><span class="n">ub_orig</span>
+        <span class="p">)</span>
+
+        <span class="n">lb2_xx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">xx2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">ub2_xx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">xx2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">range2</span> <span class="o">=</span> <span class="n">ub2_xx</span> <span class="o">-</span> <span class="n">lb2_xx</span>
+        <span class="n">lb2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">lb2_xx</span> <span class="o">-</span> <span class="n">range2</span> <span class="o">/</span> <span class="mi">10</span><span class="p">,</span> <span class="n">lb2</span><span class="p">)</span>
+        <span class="n">ub2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">ub2_xx</span> <span class="o">+</span> <span class="n">range2</span> <span class="o">/</span> <span class="mi">10</span><span class="p">,</span> <span class="n">ub2</span><span class="p">)</span>
+
+        <span class="c1"># Compute marginal total variation</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">):</span>
+
+            <span class="n">yy1</span><span class="p">,</span> <span class="n">x1mesh</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">kde_1d</span><span class="p">(</span><span class="n">xx1</span><span class="p">[:,</span> <span class="n">d</span><span class="p">],</span> <span class="n">nkde</span><span class="p">,</span> <span class="n">lb1</span><span class="p">[:,</span> <span class="n">d</span><span class="p">],</span> <span class="n">ub1</span><span class="p">[:,</span> <span class="n">d</span><span class="p">])</span>
+            <span class="c1"># Ensure normalization</span>
+            <span class="n">yy1</span> <span class="o">=</span> <span class="n">yy1</span> <span class="o">/</span> <span class="p">(</span><span class="n">trapezoid</span><span class="p">(</span><span class="n">yy1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">x1mesh</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x1mesh</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+
+            <span class="n">yy2</span><span class="p">,</span> <span class="n">x2mesh</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">kde_1d</span><span class="p">(</span><span class="n">xx2</span><span class="p">[:,</span> <span class="n">d</span><span class="p">],</span> <span class="n">nkde</span><span class="p">,</span> <span class="n">lb2</span><span class="p">[:,</span> <span class="n">d</span><span class="p">],</span> <span class="n">ub2</span><span class="p">[:,</span> <span class="n">d</span><span class="p">])</span>
+            <span class="c1"># Ensure normalization</span>
+            <span class="n">yy2</span> <span class="o">=</span> <span class="n">yy2</span> <span class="o">/</span> <span class="p">(</span><span class="n">trapezoid</span><span class="p">(</span><span class="n">yy2</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">x2mesh</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x2mesh</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+
+            <span class="n">f</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span>
+                <span class="n">interp1d</span><span class="p">(</span>
+                    <span class="n">x1mesh</span><span class="p">,</span>
+                    <span class="n">yy1</span><span class="p">,</span>
+                    <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;cubic&quot;</span><span class="p">,</span>
+                    <span class="n">fill_value</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">]),</span>
+                    <span class="n">bounds_error</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+                <span class="o">-</span> <span class="n">interp1d</span><span class="p">(</span>
+                    <span class="n">x2mesh</span><span class="p">,</span>
+                    <span class="n">yy2</span><span class="p">,</span>
+                    <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;cubic&quot;</span><span class="p">,</span>
+                    <span class="n">fill_value</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">]),</span>
+                    <span class="n">bounds_error</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">bb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x1mesh</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x1mesh</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">x2mesh</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x2mesh</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+                <span class="n">xx_range</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">bb</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">bb</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="n">num</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="mf">1e5</span><span class="p">))</span>
+                <span class="n">mtv</span><span class="p">[:,</span> <span class="n">d</span><span class="p">]</span> <span class="o">=</span> <span class="n">mtv</span><span class="p">[:,</span> <span class="n">d</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">trapezoid</span><span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="n">xx_range</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span>
+                    <span class="n">xx_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">xx_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="p">)</span>
+        <span class="k">return</span> <span class="n">mtv</span></div>
+
+<div class="viewcode-block" id="VariationalPosterior.kl_div"><a class="viewcode-back" href="../../../api/classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior.kl_div">[docs]</a>    <span class="k">def</span> <span class="nf">kl_div</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">vp2</span><span class="p">:</span> <span class="n">VariationalPosterior</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">samples</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">N</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1e5</span><span class="p">),</span>
+        <span class="n">gauss_flag</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Kullback-Leibler divergence between two variational posteriors.</span>
+
+<span class="sd">        Compute the forward and reverse Kullback-Leibler (KL) divergence between</span>
+<span class="sd">        two posteriors. The other variational posterior can be specified as</span>
+<span class="sd">        `vp2` (an instance of the class ``VariationalPosterior``) or with</span>
+<span class="sd">        `samples`. One of the two must be specified.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        vp2 : VariationalPosterior, optional</span>
+<span class="sd">            The other ``VariationalPosterior``, by default None.</span>
+<span class="sd">        samples : np.ndarray, optional</span>
+<span class="sd">            An `N`-by-`D` matrix of samples from the other variational</span>
+<span class="sd">            posterior, by default ``None``.</span>
+<span class="sd">        N : int, optional</span>
+<span class="sd">            The number of random samples to estimate the KL divergence,</span>
+<span class="sd">            by default ``int(1e5)``.</span>
+<span class="sd">        gauss_flag : bool, optional</span>
+<span class="sd">            If ``True``, returns a &quot;Gaussianized&quot; KL-divergence, that is the KL</span>
+<span class="sd">            divergence between two multivariate normal distributions with the</span>
+<span class="sd">            same moments as the variational posteriors given as inputs.</span>
+<span class="sd">            By default ``False``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        kl_div: np.ndarray</span>
+<span class="sd">            A two-element vector containing the forward and reverse</span>
+<span class="sd">            Kullback-Leibler divergence between the two posteriors.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            Raised if neither `vp2` nor `samples` are specified.</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            Raised if `vp2` is not provided but `gauss_flag` = ``False``.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        Since the KL divergence is not symmetric, the method returns both the</span>
+<span class="sd">        forward and the reverse KL divergence, that is KL(`vp1` || `vp2`) and</span>
+<span class="sd">        KL(`vp2` || `vp1`).</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">samples</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">vp2</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Either vp2 or samples have to be not None&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">gauss_flag</span> <span class="ow">and</span> <span class="n">vp2</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Unless the KL divergence is gaussianized, VP2 is required.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">gauss_flag</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">N</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sd">&quot;&quot;&quot;Analytical moments are available</span>
+<span class="sd">                    only for the transformed space.&quot;&quot;&quot;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">q1mu</span><span class="p">,</span> <span class="n">q1sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">moments</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">vp2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">q2mu</span><span class="p">,</span> <span class="n">q2sigma</span> <span class="o">=</span> <span class="n">vp2</span><span class="o">.</span><span class="n">moments</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">q2mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
+                    <span class="n">q2sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">samples</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
+            <span class="n">kls</span> <span class="o">=</span> <span class="n">kl_div_mvn</span><span class="p">(</span><span class="n">q1mu</span><span class="p">,</span> <span class="n">q1sigma</span><span class="p">,</span> <span class="n">q2mu</span><span class="p">,</span> <span class="n">q2sigma</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">minp</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">float_info</span><span class="o">.</span><span class="n">min</span>
+
+            <span class="n">xx1</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="n">q1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">xx1</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="n">q2</span> <span class="o">=</span> <span class="n">vp2</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">xx1</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="n">q1</span><span class="p">[</span><span class="n">q1</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">q1</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">1.0</span>
+            <span class="n">q2</span><span class="p">[</span><span class="n">q2</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">q2</span><span class="p">)]</span> <span class="o">=</span> <span class="n">minp</span>
+            <span class="n">kl1</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">q2</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">q1</span><span class="p">))</span>
+
+            <span class="n">xx2</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">vp2</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="n">q1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">xx2</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="n">q2</span> <span class="o">=</span> <span class="n">vp2</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">xx2</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="n">q1</span><span class="p">[</span><span class="n">q1</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">q1</span><span class="p">)]</span> <span class="o">=</span> <span class="n">minp</span>
+            <span class="n">q2</span><span class="p">[</span><span class="n">q2</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">q2</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">1.0</span>
+            <span class="n">kl2</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">q1</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">q2</span><span class="p">))</span>
+            <span class="n">kls</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">kl1</span><span class="p">,</span> <span class="n">kl2</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+        <span class="c1"># Correct for numerical errors</span>
+        <span class="n">kls</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">kls</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">kls</span></div>
+
+<div class="viewcode-block" id="VariationalPosterior.plot"><a class="viewcode-back" href="../../../api/classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1e5</span><span class="p">),</span>
+        <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">plot_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">highlight_data</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">plot_vp_centres</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">plot_style</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plot the variational posterior.</span>
+
+<span class="sd">        `plot` displays the variational posterior as a cornerplot showing the</span>
+<span class="sd">        1D and 2D marginals, estimated from samples. It uses the  `corner</span>
+<span class="sd">        &lt;https://corner.readthedocs.io/en/latest/index.html&gt;`_ package.</span>
+
+
+<span class="sd">        `plot` also optionally displays the centres of the variational mixture</span>
+<span class="sd">        components and the datapoints of the underlying Gaussian process (GP)</span>
+<span class="sd">        used by ``VBMC``. The plot can be enhanced by custom styles and specific</span>
+<span class="sd">        datapoints of the GP can be highlighted.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n_samples : int, optional</span>
+<span class="sd">            The number of posterior samples used to create the plot, by default</span>
+<span class="sd">            ``int(1e5)``.</span>
+<span class="sd">        title : str, optional</span>
+<span class="sd">            The title of the plot, by default ``None``.</span>
+<span class="sd">        plot_data : bool, optional</span>
+<span class="sd">            Whether to plot the datapoints of the GP, by default ``False``.</span>
+<span class="sd">        highlight_data : list, optional</span>
+<span class="sd">            Indices of the GP datapoints that should be plotted in a different</span>
+<span class="sd">            way than the other datapoints, by default ``None``.</span>
+<span class="sd">        plot_vp_centres : bool, optional</span>
+<span class="sd">            Whether to plot the centres of the `vp` components, by default ``False``.</span>
+<span class="sd">        plot_style : dict, optional</span>
+<span class="sd">            A dictionary of plot styling options. The possible options are:</span>
+<span class="sd">                **corner** : dict, optional</span>
+<span class="sd">                    Styling options directly passed to the corner function.</span>
+<span class="sd">                    By default: ``{&quot;fig&quot;: plt.figure(figsize=(8, 8)),</span>
+<span class="sd">                    &quot;labels&quot;: labels}``. See the documentation of `corner</span>
+<span class="sd">                    &lt;https://corner.readthedocs.io/en/latest/index.html&gt;`_.</span>
+<span class="sd">                **data** : dict, optional</span>
+<span class="sd">                    Styling options used to plot the GP data.</span>
+<span class="sd">                    By default: ``{&quot;s&quot;:15, &quot;color&quot;:&#39;blue&#39;, &quot;facecolors&quot;: &quot;none&quot;}``.</span>
+<span class="sd">                **highlight_data** : dict, optional</span>
+<span class="sd">                    Styling options used to plot the highlighted GP data.</span>
+<span class="sd">                    By default: ``{&quot;s&quot;:15, &quot;color&quot;:&quot;orange&quot;}``.</span>
+<span class="sd">                **vp_centre** : dict, optional</span>
+<span class="sd">                    Styling options used to plot the `vp` centres.</span>
+<span class="sd">                    By default: ``{&quot;marker&quot;:&quot;x&quot;, &quot;color&quot;:&quot;red&quot;}``.</span>
+
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        fig : matplotlib.figure.Figure</span>
+<span class="sd">            The resulting ``matplotlib`` figure of the plot.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># generate samples</span>
+        <span class="n">Xs</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
+
+        <span class="c1"># cornerplot with samples of vp</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;$x_</span><span class="si">{}</span><span class="s2">$&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">)]</span>
+        <span class="n">corner_style</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">({</span><span class="s2">&quot;fig&quot;</span><span class="p">:</span> <span class="n">fig</span><span class="p">,</span> <span class="s2">&quot;labels&quot;</span><span class="p">:</span> <span class="n">labels</span><span class="p">})</span>
+
+        <span class="k">if</span> <span class="n">plot_style</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">plot_style</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="s2">&quot;corner&quot;</span> <span class="ow">in</span> <span class="n">plot_style</span><span class="p">:</span>
+            <span class="n">corner_style</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">plot_style</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;corner&quot;</span><span class="p">))</span>
+
+        <span class="c1"># suppress warnings for small datasets with quiet=True</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">corner</span><span class="o">.</span><span class="n">corner</span><span class="p">(</span><span class="n">Xs</span><span class="p">,</span> <span class="n">quiet</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">corner_style</span><span class="p">)</span>
+
+        <span class="c1"># style of the gp data</span>
+        <span class="n">data_style</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">({</span><span class="s2">&quot;s&quot;</span><span class="p">:</span> <span class="mi">15</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="s2">&quot;facecolors&quot;</span><span class="p">:</span> <span class="s2">&quot;none&quot;</span><span class="p">})</span>
+
+        <span class="k">if</span> <span class="s2">&quot;data&quot;</span> <span class="ow">in</span> <span class="n">plot_style</span><span class="p">:</span>
+            <span class="n">data_style</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">plot_style</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">))</span>
+
+        <span class="n">highlighted_data_style</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;s&quot;</span><span class="p">:</span> <span class="mi">15</span><span class="p">,</span>
+                <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;orange&quot;</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;highlight_data&quot;</span> <span class="ow">in</span> <span class="n">plot_style</span><span class="p">:</span>
+            <span class="n">highlighted_data_style</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">plot_style</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;highlight_data&quot;</span><span class="p">))</span>
+
+        <span class="n">axes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">fig</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">))</span>
+
+        <span class="c1"># plot gp data</span>
+        <span class="k">if</span> <span class="n">plot_data</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;gp&quot;</span><span class="p">):</span>
+
+            <span class="c1"># highlight nothing when argument is None</span>
+            <span class="k">if</span> <span class="n">highlight_data</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">highlight_data</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">highlight_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="kc">False</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">X</span><span class="p">))</span>
+                <span class="n">normal_data</span> <span class="o">=</span> <span class="o">~</span><span class="n">highlight_data</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">normal_data</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">X</span><span class="p">))</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">highlight_data</span>
+                <span class="p">]</span>
+
+            <span class="n">orig_X_norm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameter_transformer</span><span class="o">.</span><span class="n">inverse</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">X</span><span class="p">[</span><span class="n">normal_data</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">orig_X_highlight</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameter_transformer</span><span class="o">.</span><span class="n">inverse</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">gp</span><span class="o">.</span><span class="n">X</span><span class="p">[</span><span class="n">highlight_data</span><span class="p">]</span>
+            <span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">r</span> <span class="o">&gt;</span> <span class="n">c</span><span class="p">:</span>
+                        <span class="n">axes</span><span class="p">[</span><span class="n">r</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+                            <span class="n">orig_X_norm</span><span class="p">[:,</span> <span class="n">c</span><span class="p">],</span> <span class="n">orig_X_norm</span><span class="p">[:,</span> <span class="n">r</span><span class="p">],</span> <span class="o">**</span><span class="n">data_style</span>
+                        <span class="p">)</span>
+                        <span class="n">axes</span><span class="p">[</span><span class="n">r</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+                            <span class="n">orig_X_highlight</span><span class="p">[:,</span> <span class="n">c</span><span class="p">],</span>
+                            <span class="n">orig_X_highlight</span><span class="p">[:,</span> <span class="n">r</span><span class="p">],</span>
+                            <span class="o">**</span><span class="n">highlighted_data_style</span><span class="p">,</span>
+                        <span class="p">)</span>
+                        <span class="c1"># Rescale to capture new GP training points:</span>
+                        <span class="c1"># axes[r, c].autoscale()</span>
+
+        <span class="c1"># style of the vp centres</span>
+        <span class="n">vp_centre_style</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;marker&quot;</span><span class="p">:</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;red&quot;</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;vp_centre&quot;</span> <span class="ow">in</span> <span class="n">plot_style</span><span class="p">:</span>
+            <span class="n">vp_centre_style</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">plot_style</span><span class="p">[</span><span class="s2">&quot;vp_centre&quot;</span><span class="p">])</span>
+
+        <span class="c1"># plot centres of vp components</span>
+        <span class="k">if</span> <span class="n">plot_vp_centres</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">r</span> <span class="o">&gt;</span> <span class="n">c</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameter_transformer</span><span class="o">.</span><span class="n">inverse</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">T</span>
+                        <span class="p">):</span>
+                            <span class="n">axes</span><span class="p">[</span><span class="n">r</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                                <span class="n">component</span><span class="p">[</span><span class="n">c</span><span class="p">],</span> <span class="n">component</span><span class="p">[</span><span class="n">r</span><span class="p">],</span> <span class="o">**</span><span class="n">vp_centre_style</span>
+                            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">title</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+
+        <span class="c1"># adjust spacing between subplots</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">(</span><span class="n">pad</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">fig</span></div>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr_size_thresh</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Print a string summary.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;VariationalPosterior:&quot;</span> <span class="o">+</span> <span class="n">indent</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">dimension = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="si">}</span><span class="s2">,</span>
+<span class="s2">num. components = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="si">}</span><span class="s2">,</span>
+<span class="s2">means: </span><span class="si">{</span><span class="n">summarize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">arr_size_thresh</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span>
+<span class="s2">weights: </span><span class="si">{</span><span class="n">summarize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="p">,</span> <span class="n">arr_size_thresh</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span>
+<span class="s2">sigma (per-component scale): </span><span class="si">{</span><span class="n">summarize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="p">,</span> <span class="n">arr_size_thresh</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span>
+<span class="s2">lambda (per-dimension scale): </span><span class="si">{</span><span class="n">summarize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lambd</span><span class="p">,</span> <span class="n">arr_size_thresh</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span>
+<span class="s2">stats = </span><span class="si">{</span><span class="n">format_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">,</span> <span class="n">arr_size_thresh</span><span class="o">=</span><span class="n">arr_size_thresh</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;&quot;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;    &quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr_size_thresh</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Construct a detailed string summary.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        arr_size_thresh : float, optional</span>
+<span class="sd">            If ``obj`` is an array whose product of dimensions is less than</span>
+<span class="sd">            ``arr_size_thresh``, print the full array. Otherwise print only the</span>
+<span class="sd">            shape. Default `10`.</span>
+<span class="sd">        expand : bool, optional</span>
+<span class="sd">            If ``expand`` is `False`, then describe the object&#39;s complex child</span>
+<span class="sd">            attributes by their name and memory location. Otherwise,</span>
+<span class="sd">            recursively expand the child attributes into their own</span>
+<span class="sd">            representations. Default `False`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        string : str</span>
+<span class="sd">            The string representation of ``self``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">full_repr</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="s2">&quot;VariationalPosterior&quot;</span><span class="p">,</span>
+            <span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;D&quot;</span><span class="p">,</span> <span class="s2">&quot;K&quot;</span><span class="p">,</span> <span class="s2">&quot;mu&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="s2">&quot;sigma&quot;</span><span class="p">,</span> <span class="s2">&quot;lambd&quot;</span><span class="p">,</span> <span class="s2">&quot;stats&quot;</span><span class="p">],</span>
+            <span class="n">expand</span><span class="o">=</span><span class="n">expand</span><span class="p">,</span>
+            <span class="n">arr_size_thresh</span><span class="o">=</span><span class="n">arr_size_thresh</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_short_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns abbreviated string representation with memory location.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        string : str</span>
+<span class="sd">            The abbreviated string representation of the VP.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+</pre></div>
+
+              </div>
+              
+            </main>
+            <footer class="footer-article noprint">
+                
+    <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+        </div>
+    </div>
+    <div class="footer-content row">
+        <footer class="col footer"><p>
+  
+      &copy; Copyright 2022, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).<br/>
+</p>
+        </footer>
+    </div>
+    
+</div>
+
+
+      </div>
+    </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+
+
+  </body>
+</html>
