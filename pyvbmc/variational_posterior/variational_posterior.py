@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import trapezoid
 from scipy.interpolate import interp1d
-from scipy.optimize import fmin_l_bfgs_b
+from scipy.optimize import minimize
 from scipy.special import gammaln
 
 from pyvbmc.decorators import handle_0D_1D_input
@@ -807,23 +807,23 @@ class VariationalPosterior:
 
     def mode(
         self,
-        n_max: int = 20,
         orig_flag=True,
+        n_max: int = 50,
     ):
         """
         Find the mode of the variational posterior.
 
         Parameters
         ----------
-        n_max : int, optional
-            Maximum number of optimization runs to find the mode.
-            If `n_max` < `self.K`, the starting points for the optimization are
-            chosen as the centers of the components with the highest values of
-            the pdf at those points. By default `n_max` = 20.
         orig_flag : bool, optional
             If ``True`` find the mode of the variational posterior in the
             original parameter space, otherwise in the transformed parameter
             space. By default ``True``.
+        n_max : int, optional
+            Maximum number of optimization runs to find the mode.
+            If `n_max` < `self.K`, the starting points for the optimization are
+            chosen as the centers of the components with the highest values of
+            the pdf at those points. By default `n_max` = 50.
 
         Returns
         -------
@@ -854,48 +854,53 @@ class VariationalPosterior:
             return self._mode
         else:
             x0_mat = self.mu.T
+            if n_max > self.K:
+                x0_jitter = np.tile(
+                    self.mu.T, (int(np.ceil(n_max // self.K)), 1)
+                )[: n_max - self.K]
+                x0_jitter = x0_jitter + np.random.randn(
+                    *x0_jitter.shape
+                ) * np.sqrt(
+                    np.diag(self.moments(orig_flag=False, cov_flag=True)[1])
+                )
+                x0_mat = np.concatenate([x0_mat, x0_jitter])
+
+            if orig_flag:
+                x0_mat = self.parameter_transformer.inverse(x0_mat)
 
             if n_max < self.K:
                 # First, evaluate pdf at all modes
-                y0_vec = -1 * self.pdf(x0_mat, orig_flag=True, log_flag=True)
+                y0_vec = neg_log_pdf(x0_mat, orig_flag=orig_flag)
                 # Start from first N_MAX solutions
-                y0_idx = np.argsort(y0_vec)[:-1]
+                y0_idx = np.argsort(y0_vec.squeeze())[:n_max]
                 x0_mat = x0_mat[y0_idx]
 
             x_min = np.zeros((x0_mat.shape[0], self.D))
             ff = np.full((x0_mat.shape[0], 1), np.inf)
 
-            for k in range(x0_mat.shape[1]):
+            for k in range(x0_mat.shape[0]):
                 x0 = x0_mat[k]
 
+                bounds = None
                 if orig_flag:
-                    x0 = self.parameter_transformer.inverse(x0)
-
-                if orig_flag:
-                    bounds = np.asarray(
-                        [
-                            np.concatenate(
-                                (
-                                    self.parameter_transformer.lb_orig[:, k],
-                                    self.parameter_transformer.ub_orig[:, k],
-                                ),
-                                axis=None,
-                            )
-                        ]
-                        * x0.size
+                    bounds = np.stack(
+                        (
+                            self.parameter_transformer.lb_orig.squeeze()
+                            + np.sqrt(np.finfo(float).eps),
+                            self.parameter_transformer.ub_orig.squeeze()
+                            - np.sqrt(np.finfo(float).eps),
+                        ),
+                        axis=1,
                     )
                     x0 = np.minimum(
                         self.parameter_transformer.ub_orig,
                         np.maximum(x0, self.parameter_transformer.lb_orig),
                     )
-                    x_min[k], ff[k], _ = fmin_l_bfgs_b(
-                        func=neg_log_pdf,
-                        x0=x0,
-                        bounds=bounds,
-                        approx_grad=True,
-                    )
-                else:
-                    x_min[k], ff[k], _ = fmin_l_bfgs_b(func=neg_log_pdf, x0=x0)
+                    x0 = x0.squeeze()
+
+                res = minimize(fun=neg_log_pdf, x0=x0, bounds=bounds)
+                x_min[k] = res.x
+                ff[k] = res.fun
 
             # Get mode and store it
             idx_min = np.argmin(ff)
