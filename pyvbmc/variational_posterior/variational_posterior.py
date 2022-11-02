@@ -366,7 +366,6 @@ class VariationalPosterior:
         x: np.ndarray,
         orig_flag: bool = True,
         log_flag: bool = False,
-        trans_flag: bool = False,
         grad_flag: bool = False,
         df: float = np.inf,
     ):
@@ -381,19 +380,18 @@ class VariationalPosterior:
         x : np.ndarray
             `x` is a matrix of inputs to evaluate the pdf at.
             The rows of the `N`-by-`D` matrix `x` correspond to observations or
-            points, and columns correspond to variables or coordinates.
+            points, and columns correspond to variables or coordinates. `x` is
+            assumed to be in the orignial space by default.
         orig_flag : bool, optional
             Controls if the value of the posterior density should be evaluated
-            in the original parameter space for `orig_flag` is ``True``, or in the
-            transformed space if `orig_flag` is ``False``, by default ``True``.
+            in the original parameter space for `orig_flag` is ``True``, or in
+            the transformed space if `orig_flag` is ``False``, by default
+            ``True``. Accordingly, `x` should be in the original space if
+            `orig_flag` is ``True`` and be in the transformed space if
+            `orig_flag` is `False`.
         log_flag : bool, optional
             If `log_flag` is ``True`` return the logarithm of the pdf,
             by default ``False``.
-        trans_flag : bool, optional
-            Specifies if `x` is already specified in transformed space.
-            `trans_flag` = ``True`` assumes that `x` is already specified in
-            tranformed space. Otherwise, `x` is specified in the original
-            parameter space. By default ``False``.
         grad_flag : bool, optional
             If ``True`` the gradient of the pdf is returned as a second output,
             by default ``False``.
@@ -435,7 +433,7 @@ class VariationalPosterior:
             mask = np.full(N, True)
 
         # Convert points to transformed space
-        if orig_flag and not trans_flag:
+        if orig_flag:
             x[mask] = self.parameter_transformer(x[mask])
         lamd_row = self.lambd.reshape(1, -1)
 
@@ -580,19 +578,17 @@ class VariationalPosterior:
         Parameters
         ----------
         x : np.ndarray
-            `x` is a matrix of inputs to evaluate the log-pdf at. The rows of
-            the `N`-by-`D` matrix `x` correspond to observations or points, and
-            columns correspond to variables or coordinates.
+            `x` is a matrix of inputs to evaluate the pdf at.
+            The rows of the `N`-by-`D` matrix `x` correspond to observations or
+            points, and columns correspond to variables or coordinates. `x` is
+            assumed to be in the orignial space by default.
         orig_flag : bool, optional
-            Controls if the value of the posterior log-density should be
-            evaluated in the original parameter space for `orig_flag` is
-            ``True``, or in the transformed space if `orig_flag` is ``False``,
-            by default ``True``.
-        trans_flag : bool, optional
-            Specifies if `x` is already specified in transformed space.
-            `trans_flag` = ``True`` assumes that `x` is already specified in
-            tranformed space. Otherwise, `x` is specified in the original
-            parameter space. By default ``False``.
+            Controls if the value of the posterior density should be evaluated
+            in the original parameter space for `orig_flag` is ``True``, or in
+            the transformed space if `orig_flag` is ``False``, by default
+            ``True``. Accordingly, `x` should be in the original space if
+            `orig_flag` is ``True`` and be in the transformed space if
+            `orig_flag` is `False`.
         grad_flag : bool, optional
             If ``True`` the gradient of the log-pdf is returned as a second
             output, by default ``False``.
