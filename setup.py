@@ -10,7 +10,6 @@ setup(
         "scipy",
         "matplotlib",
         "pytest",
-        "sphinx",
         "numpydoc",
         "cma",
         "corner",
