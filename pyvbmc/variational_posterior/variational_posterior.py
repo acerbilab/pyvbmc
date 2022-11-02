@@ -381,7 +381,7 @@ class VariationalPosterior:
             `x` is a matrix of inputs to evaluate the pdf at.
             The rows of the `N`-by-`D` matrix `x` correspond to observations or
             points, and columns correspond to variables or coordinates. `x` is
-            assumed to be in the orignial space by default.
+            assumed to be in the original space by default.
         orig_flag : bool, optional
             Controls if the value of the posterior density should be evaluated
             in the original parameter space for `orig_flag` is ``True``, or in
@@ -821,7 +821,7 @@ class VariationalPosterior:
             space. By default ``True``.
         n_max : int, optional
             Maximum number of optimization runs to find the mode.
-            If `n_max` < `self.K`, the starting points for the optimization are
+            If `n_max` <= `self.K`, the starting points for the optimization are
             chosen as the centers of the components with the highest values of
             the pdf at those points. By default `n_max` = 50.
 
@@ -868,7 +868,7 @@ class VariationalPosterior:
             if orig_flag:
                 x0_mat = self.parameter_transformer.inverse(x0_mat)
 
-            if n_max < self.K:
+            if n_max <= self.K:
                 # First, evaluate pdf at all modes
                 y0_vec = neg_log_pdf(x0_mat, orig_flag=orig_flag)
                 # Start from first N_MAX solutions
