@@ -821,7 +821,10 @@ class VariationalPosterior:
             original parameter space, otherwise in the transformed parameter
             space. By default ``True``.
         n_opts : int, optional
-            Maximum number of optimization runs from different starting points to find the mode. By default `n_opts` is the square root of the number of mixture components K, that is :math:`\text{n_opts} = \lceil \sqrt{K} \rceil`.
+            Maximum number of optimization runs from different starting points
+            to find the mode. By default `n_opts` is the square root of the
+            number of mixture components K, that is
+            :math:`n\_opts = \\lceil \sqrt{K} \\rceil`.
         Returns
         -------
         mode: np.ndarray
