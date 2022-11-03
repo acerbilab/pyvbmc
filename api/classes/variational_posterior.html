@@ -661,7 +661,7 @@ reference.</p>
 <dt><strong>x</strong><span class="classifier">np.ndarray</span></dt><dd><p><cite>x</cite> is a matrix of inputs to evaluate the pdf at.
 The rows of the <cite>N</cite>-by-<cite>D</cite> matrix <cite>x</cite> correspond to observations or
 points, and columns correspond to variables or coordinates. <cite>x</cite> is
-assumed to be in the orignial space by default.</p>
+assumed to be in the original space by default.</p>
 </dd>
 <dt><strong>orig_flag</strong><span class="classifier">bool, optional</span></dt><dd><p>Controls if the value of the posterior density should be evaluated
 in the original parameter space for <cite>orig_flag</cite> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, or in
@@ -705,7 +705,7 @@ evaluated at each row of <cite>x</cite>.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.variational_posterior.VariationalPosterior.mode">
-<span class="sig-name descname"><span class="pre">mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">orig_flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/variational_posterior/variational_posterior.html#VariationalPosterior.mode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.variational_posterior.VariationalPosterior.mode" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">orig_flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_opts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/variational_posterior/variational_posterior.html#VariationalPosterior.mode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.variational_posterior.VariationalPosterior.mode" title="Permalink to this definition">#</a></dt>
 <dd><p>Find the mode of the variational posterior.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -714,21 +714,25 @@ evaluated at each row of <cite>x</cite>.</p>
 original parameter space, otherwise in the transformed parameter
 space. By default <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
 </dd>
-<dt><strong>n_max</strong><span class="classifier">int, optional</span></dt><dd><p>Maximum number of optimization runs to find the mode.
-If <cite>n_max</cite> &lt; <cite>self.K</cite>, the starting points for the optimization are
-chosen as the centers of the components with the highest values of
-the pdf at those points. By default <cite>n_max</cite> = 50.</p>
+<dt><strong>n_opts</strong><span class="classifier">int, optional</span></dt><dd><p>Maximum number of optimization runs from different starting points
+to find the mode. By default <cite>n_opts</cite> is the square root of the
+number of mixture components K, that is
+<span class="math notranslate nohighlight">\(n\_opts = \lceil \sqrt{K} \rceil\)</span>.</p>
 </dd>
-</dl>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><dl class="simple">
-<dt>mode: np.ndarray</dt><dd><p>The mode of the variational posterior.</p>
+<dt><strong>Returns</strong></dt><dd></dd>
+<dt><strong>——-</strong></dt><dd></dd>
+<dt><strong>mode: np.ndarray</strong></dt><dd><p>The mode of the variational posterior.</p>
 </dd>
 </dl>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
+<p>Mode estimation (e.g., for the purpose of maximum-a-posteriori
+estimation) is not recommended with VBMC, since due to the underlying
+representation (mixture of Gaussians) the mode of the variational
+posterior is a brittle and potentially unreliable estimator of the
+mode of the target posterior, especially if it lies close to the
+boundaries of the space.</p>
 <p>The mode is not invariant to nonlinear reparameterizations of
 the input space, so the mode in the original space and the mode in the
 transformed (unconstrained) space will generally be in different
@@ -819,7 +823,7 @@ posterior at one or multiple input points.</p>
 <dt><strong>x</strong><span class="classifier">np.ndarray</span></dt><dd><p><cite>x</cite> is a matrix of inputs to evaluate the pdf at.
 The rows of the <cite>N</cite>-by-<cite>D</cite> matrix <cite>x</cite> correspond to observations or
 points, and columns correspond to variables or coordinates. <cite>x</cite> is
-assumed to be in the orignial space by default.</p>
+assumed to be in the original space by default.</p>
 </dd>
 <dt><strong>orig_flag</strong><span class="classifier">bool, optional</span></dt><dd><p>Controls if the value of the posterior density should be evaluated
 in the original parameter space for <cite>orig_flag</cite> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, or in
