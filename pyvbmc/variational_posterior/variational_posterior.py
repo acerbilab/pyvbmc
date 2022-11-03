@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import sys
 from textwrap import indent
+from typing import Optional
 
 import corner
 import gpyreg
@@ -10,7 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import trapezoid
 from scipy.interpolate import interp1d
-from scipy.optimize import fmin_l_bfgs_b
+from scipy.optimize import minimize
 from scipy.special import gammaln
 
 from pyvbmc.decorators import handle_0D_1D_input
@@ -366,7 +367,6 @@ class VariationalPosterior:
         x: np.ndarray,
         orig_flag: bool = True,
         log_flag: bool = False,
-        trans_flag: bool = False,
         grad_flag: bool = False,
         df: float = np.inf,
     ):
@@ -381,19 +381,18 @@ class VariationalPosterior:
         x : np.ndarray
             `x` is a matrix of inputs to evaluate the pdf at.
             The rows of the `N`-by-`D` matrix `x` correspond to observations or
-            points, and columns correspond to variables or coordinates.
+            points, and columns correspond to variables or coordinates. `x` is
+            assumed to be in the original space by default.
         orig_flag : bool, optional
             Controls if the value of the posterior density should be evaluated
-            in the original parameter space for `orig_flag` is ``True``, or in the
-            transformed space if `orig_flag` is ``False``, by default ``True``.
+            in the original parameter space for `orig_flag` is ``True``, or in
+            the transformed space if `orig_flag` is ``False``, by default
+            ``True``. Accordingly, `x` should be in the original space if
+            `orig_flag` is ``True`` and be in the transformed space if
+            `orig_flag` is `False`.
         log_flag : bool, optional
             If `log_flag` is ``True`` return the logarithm of the pdf,
             by default ``False``.
-        trans_flag : bool, optional
-            Specifies if `x` is already specified in transformed space.
-            `trans_flag` = ``True`` assumes that `x` is already specified in
-            tranformed space. Otherwise, `x` is specified in the original
-            parameter space. By default ``False``.
         grad_flag : bool, optional
             If ``True`` the gradient of the pdf is returned as a second output,
             by default ``False``.
@@ -435,7 +434,7 @@ class VariationalPosterior:
             mask = np.full(N, True)
 
         # Convert points to transformed space
-        if orig_flag and not trans_flag:
+        if orig_flag:
             x[mask] = self.parameter_transformer(x[mask])
         lamd_row = self.lambd.reshape(1, -1)
 
@@ -580,19 +579,17 @@ class VariationalPosterior:
         Parameters
         ----------
         x : np.ndarray
-            `x` is a matrix of inputs to evaluate the log-pdf at. The rows of
-            the `N`-by-`D` matrix `x` correspond to observations or points, and
-            columns correspond to variables or coordinates.
+            `x` is a matrix of inputs to evaluate the pdf at.
+            The rows of the `N`-by-`D` matrix `x` correspond to observations or
+            points, and columns correspond to variables or coordinates. `x` is
+            assumed to be in the original space by default.
         orig_flag : bool, optional
-            Controls if the value of the posterior log-density should be
-            evaluated in the original parameter space for `orig_flag` is
-            ``True``, or in the transformed space if `orig_flag` is ``False``,
-            by default ``True``.
-        trans_flag : bool, optional
-            Specifies if `x` is already specified in transformed space.
-            `trans_flag` = ``True`` assumes that `x` is already specified in
-            tranformed space. Otherwise, `x` is specified in the original
-            parameter space. By default ``False``.
+            Controls if the value of the posterior density should be evaluated
+            in the original parameter space for `orig_flag` is ``True``, or in
+            the transformed space if `orig_flag` is ``False``, by default
+            ``True``. Accordingly, `x` should be in the original space if
+            `orig_flag` is ``True`` and be in the transformed space if
+            `orig_flag` is `False`.
         grad_flag : bool, optional
             If ``True`` the gradient of the log-pdf is returned as a second
             output, by default ``False``.
@@ -811,24 +808,23 @@ class VariationalPosterior:
 
     def mode(
         self,
-        n_max: int = 20,
         orig_flag=True,
+        n_opts: Optional[int] = None,
     ):
         """
         Find the mode of the variational posterior.
 
         Parameters
         ----------
-        n_max : int, optional
-            Maximum number of optimization runs to find the mode.
-            If `n_max` < `self.K`, the starting points for the optimization are
-            chosen as the centers of the components with the highest values of
-            the pdf at those points. By default `n_max` = 20.
         orig_flag : bool, optional
             If ``True`` find the mode of the variational posterior in the
             original parameter space, otherwise in the transformed parameter
             space. By default ``True``.
-
+        n_opts : int, optional
+            Maximum number of optimization runs from different starting points
+            to find the mode. By default `n_opts` is the square root of the
+            number of mixture components K, that is
+            :math:`n\_opts = \\lceil \sqrt{K} \\rceil`.
         Returns
         -------
         mode: np.ndarray
@@ -836,11 +832,20 @@ class VariationalPosterior:
 
         Notes
         -----
+        Mode estimation (e.g., for the purpose of maximum-a-posteriori
+        estimation) is not recommended with VBMC, since due to the underlying
+        representation (mixture of Gaussians) the mode of the variational
+        posterior is a brittle and potentially unreliable estimator of the
+        mode of the target posterior, especially if it lies close to the
+        boundaries of the space.
+
         The mode is not invariant to nonlinear reparameterizations of
         the input space, so the mode in the original space and the mode in the
         transformed (unconstrained) space will generally be in different
         locations (even after applying the appropriate transformations).
         """
+        if orig_flag and self._mode is not None:
+            return self._mode
 
         def neg_log_pdf(x0, orig_flag=orig_flag):
             if orig_flag:
@@ -854,61 +859,58 @@ class VariationalPosterior:
                 )
                 return -y, -dy
 
-        if orig_flag and self._mode is not None:
-            return self._mode
-        else:
-            x0_mat = self.mu.T
+        if n_opts is None:
+            n_opts = int(np.ceil(np.sqrt(self.K)))
+        n_samples = int(1e5)  # Samples for choosing starting points
 
-            if n_max < self.K:
-                # First, evaluate pdf at all modes
-                y0_vec = -1 * self.pdf(x0_mat, orig_flag=True, log_flag=True)
-                # Start from first N_MAX solutions
-                y0_idx = np.argsort(y0_vec)[:-1]
-                x0_mat = x0_mat[y0_idx]
+        x_min = np.zeros((n_opts, self.D))
+        ff = np.full((n_opts, 1), np.inf)
 
-            x_min = np.zeros((x0_mat.shape[0], self.D))
-            ff = np.full((x0_mat.shape[0], 1), np.inf)
+        for k in range(n_opts):
+            # Random initial set of points to choose starting point
+            x0_mat, _ = self.sample(n_samples, orig_flag)
 
-            for k in range(x0_mat.shape[1]):
-                x0 = x0_mat[k]
-
+            # Add centers of components to initial set for first optimization
+            if k == 0:
+                x0_mu = self.mu.T
                 if orig_flag:
-                    x0 = self.parameter_transformer.inverse(x0)
+                    x0_mu = self.parameter_transformer.inverse(x0_mu)
+                x0_mat = np.concatenate([x0_mat, x0_mu])
 
-                if orig_flag:
-                    bounds = np.asarray(
-                        [
-                            np.concatenate(
-                                (
-                                    self.parameter_transformer.lb_orig[:, k],
-                                    self.parameter_transformer.ub_orig[:, k],
-                                ),
-                                axis=None,
-                            )
-                        ]
-                        * x0.size
-                    )
-                    x0 = np.minimum(
-                        self.parameter_transformer.ub_orig,
-                        np.maximum(x0, self.parameter_transformer.lb_orig),
-                    )
-                    x_min[k], ff[k], _ = fmin_l_bfgs_b(
-                        func=neg_log_pdf,
-                        x0=x0,
-                        bounds=bounds,
-                        approx_grad=True,
-                    )
-                else:
-                    x_min[k], ff[k], _ = fmin_l_bfgs_b(func=neg_log_pdf, x0=x0)
+            # Evaluate pdf at all points and start optimization from best
+            y0_vec = neg_log_pdf(x0_mat)
+            idx = np.argmin(y0_vec.squeeze())
+            x0 = x0_mat[idx]
 
-            # Get mode and store it
-            idx_min = np.argmin(ff)
-            x = x_min[idx_min]
-
+            bounds = None
             if orig_flag:
-                self._mode = x
+                bounds = np.stack(
+                    (
+                        self.parameter_transformer.lb_orig.squeeze()
+                        + np.sqrt(np.finfo(float).eps),
+                        self.parameter_transformer.ub_orig.squeeze()
+                        - np.sqrt(np.finfo(float).eps),
+                    ),
+                    axis=1,
+                )
+                x0 = np.minimum(
+                    self.parameter_transformer.ub_orig,
+                    np.maximum(x0, self.parameter_transformer.lb_orig),
+                )
+                x0 = x0.squeeze()
 
-            return x
+            res = minimize(fun=neg_log_pdf, x0=x0, bounds=bounds)
+            x_min[k] = res.x
+            ff[k] = res.fun
+
+        # Get mode and store it
+        idx_min = np.argmin(ff.squeeze())
+        x = x_min[idx_min]
+
+        if orig_flag:
+            self._mode = x
+
+        return x
 
     def mtv(
         self,

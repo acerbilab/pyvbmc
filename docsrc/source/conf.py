@@ -6,12 +6,9 @@
 
 # -- Path setup --------------------------------------------------------------
 
-import inspect
-
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#
 import os
 import sys
 
@@ -34,40 +31,27 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.todo",
     "sphinx.ext.coverage",
-    "sphinx.ext.linkcode",
+    "sphinx.ext.viewcode",
     "myst_nb",
     "sphinx.ext.autosectionlabel",
     "sphinx.ext.extlinks",
 ]
-numpydoc_show_class_members = False
 
+numpydoc_show_class_members = False
+myst_enable_extensions = [
+    "amsmath",
+    "colon_fence",
+    "deflist",
+    "dollarmath",
+    "html_image",
+]
+myst_url_schemes = ("http", "https", "mailto")
 autodoc_default_options = {
     "members": "var1, var2",
     "special-members": "__call__",
     "undoc-members": True,
     "exclude-members": "__weakref__",
 }
-
-
-def linkcode_resolve(domain, info):
-    """
-    Used for sphinx.ext.linkcode.
-    Modified from the basic example from the extension.
-    """
-    if domain != "py" or not info["module"]:
-        return None
-
-    obj = sys.modules[info["module"]]
-    for part in info["fullname"].split("."):
-        obj = getattr(obj, part)
-
-    # unwrap to get rid of decorators.
-    filename = inspect.getsourcefile(inspect.unwrap(obj))
-
-    # to get rid of the local path, quiet hacky, but works
-    filename = filename[filename.index("pyvbmc") + 7 :]
-    return "https://github.com/acerbilab/pyvbmc/tree/main/%s" % filename
-
 
 # Define shorthand for external links:
 extlinks = {
@@ -98,11 +82,29 @@ html_title = "PyVBMC"
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["css/custom.css"]
+html_show_sourcelink = False
+html_theme_options = {
+    "repository_url": "https://github.com/acerbilab/pyvbmc",
+    "repository_branch": "main",
+    "launch_buttons": {
+        "binderhub_url": "https://mybinder.org",
+        "notebook_interface": "jupyterlab",
+        "colab_url": "https://colab.research.google.com/",
+    },
+    "use_edit_page_button": True,
+    "use_issues_button": True,
+    "use_repository_button": True,
+    "use_download_button": True,
+}
+html_baseurl = "https://acerbilab.github.io/pyvbmc/"
+html_js_files = [
+    "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"
+]
 
 todo_include_todos = True
 
 # do not execute jupyter notebooks when building docs
-jupyter_execute_notebooks = "off"
+nb_execution_mode = "off"
 
 # download notebooks as .ipynb and not as .ipynb.txt
 html_sourcelink_suffix = ""
