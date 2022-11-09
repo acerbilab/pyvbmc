@@ -1,3 +1,42 @@
+# pyproject.toml
+
+[project]
+name = "PyVBMC"
+version = "0.1.0"
+description = "Variational Bayesian Monte Carlo in Python."
+readme = "README.md"
+license = { file = "LICENSE" }
+dependencies = [
+    "cma",
+    "corner",
+    "dill",
+    "gpyreg",
+    "imageio",
+    "matplotlib",
+    "numpy",
+    "pytest",
+    "pytest-mock",
+    "pytest-rerunfailures",
+    "scipy",
+]
+requires-python = ">=3.9"
+
+[tool.setuptools]
+packages = ["pyvbmc"]
+
+[project.optional-dependencies]
+dev = [
+    "myst_nb>=0.17.1",
+    "numpydoc>=1.2.1",
+    "pylint",
+    "pytest-cov",
+    "sphinx>=4.5.0",
+    "sphinx-book-theme>=0.3.3",
+]
+jupyter = [
+    "plotly",
+]
+
 [tool.black]
 line-length = 79
 
