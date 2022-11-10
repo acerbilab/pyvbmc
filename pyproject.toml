@@ -2,7 +2,7 @@
 
 [project]
 name = "PyVBMC"
-version = "0.1.0"
+dynamic = ["version"]  # use git tags for version, via setuptools_scm
 description = "Variational Bayesian Monte Carlo in Python."
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -39,6 +39,12 @@ jupyter = [
     "plotly >= 5.11.0",
 ]
 
+[build-system]
+requires = [
+    "setuptools >= 45",
+    "setuptools_scm[toml] >= 6.2",
+]
+
 [tool.black]
 line-length = 79
 
@@ -53,3 +59,5 @@ profile = "black"
 
 [tool.pycln]
 all = true
+
+[tool.setuptools_scm]
