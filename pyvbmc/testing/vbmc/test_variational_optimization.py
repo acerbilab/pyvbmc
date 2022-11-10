@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import gpyreg as gpr
 import numpy as np
 from scipy.stats import multivariate_normal, norm
@@ -19,11 +21,15 @@ def setup_options(D: int, user_options: dict = None):
     if user_options is None:
         user_options = {}
 
-    basic_path = "./pyvbmc/vbmc/option_configs/basic_vbmc_options.ini"
+    basic_path = Path(__file__).parent.parent.parent.joinpath(
+        "vbmc", "option_configs", "basic_vbmc_options.ini"
+    )
     options = Options(
         basic_path, evaluation_parameters={"D": D}, user_options=user_options
     )
-    advanced_path = "./pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini"
+    advanced_path = Path(__file__).parent.parent.parent.joinpath(
+        "vbmc", "option_configs", "advanced_vbmc_options.ini"
+    )
     options.load_options_file(advanced_path, evaluation_parameters={"D": D})
     return options
 
@@ -115,9 +121,8 @@ def test_gp_log_joint():
     D = 2
     K = 2
     vp = VariationalPosterior(D, K)
-    vp.mu = np.loadtxt(
-        open("./tests/variational_posterior/mu.txt", "rb"), delimiter=","
-    )
+    base_path = Path(__file__).parent
+    vp.mu = np.loadtxt(open(base_path.joinpath("mu.txt"), "rb"), delimiter=",")
     vp.eta = vp.eta.flatten()
     vp.lambd = vp.lambd.flatten()
 
@@ -127,11 +132,11 @@ def test_gp_log_joint():
         mean=gpr.mean_functions.NegativeQuadratic(),
         noise=gpr.noise_functions.GaussianNoise(constant_add=True),
     )
-    X = np.loadtxt(open("./tests/vbmc/X.txt", "rb"), delimiter=",")
-    y = np.loadtxt(open("./tests/vbmc/y.txt", "rb"), delimiter=",").reshape(
-        (-1, 1)
-    )
-    hyp = np.loadtxt(open("./tests/vbmc/hyp.txt", "rb"), delimiter=",")
+    X = np.loadtxt(open(base_path.joinpath("X.txt"), "rb"), delimiter=",")
+    y = np.loadtxt(
+        open(base_path.joinpath("y.txt"), "rb"), delimiter=","
+    ).reshape((-1, 1))
+    hyp = np.loadtxt(open(base_path.joinpath("hyp.txt"), "rb"), delimiter=",")
     gp.update(X_new=X, y_new=y, hyp=hyp)
 
     G, dG, varG, dvarG, var_ss, I_sk, J_sjk = _gp_log_joint(
@@ -148,7 +153,7 @@ def test_gp_log_joint():
         vp, gp, True, True, True, False, False
     )
     matlab_dG = np.loadtxt(
-        open("./tests/vbmc/dG_gp_log_joint.txt", "rb"), delimiter=","
+        open(base_path.joinpath("dG_gp_log_joint.txt"), "rb"), delimiter=","
     )
     assert np.allclose(dG, matlab_dG)
     assert np.isclose(G, -0.461812484952867)
@@ -158,9 +163,8 @@ def test_neg_elcbo():
     D = 2
     K = 2
     vp = VariationalPosterior(D, K)
-    vp.mu = np.loadtxt(
-        open("./tests/variational_posterior/mu.txt", "rb"), delimiter=","
-    )
+    base_path = Path(__file__).parent
+    vp.mu = np.loadtxt(open(base_path.joinpath("mu.txt"), "rb"), delimiter=",")
 
     gp = gpr.GP(
         D=D,
@@ -168,11 +172,11 @@ def test_neg_elcbo():
         mean=gpr.mean_functions.NegativeQuadratic(),
         noise=gpr.noise_functions.GaussianNoise(constant_add=True),
     )
-    X = np.loadtxt(open("./tests/vbmc/X.txt", "rb"), delimiter=",")
-    y = np.loadtxt(open("./tests/vbmc/y.txt", "rb"), delimiter=",").reshape(
-        (-1, 1)
-    )
-    hyp = np.loadtxt(open("./tests/vbmc/hyp.txt", "rb"), delimiter=",")
+    X = np.loadtxt(open(base_path.joinpath("X.txt"), "rb"), delimiter=",")
+    y = np.loadtxt(
+        open(base_path.joinpath("y.txt"), "rb"), delimiter=","
+    ).reshape((-1, 1))
+    hyp = np.loadtxt(open(base_path.joinpath("hyp.txt"), "rb"), delimiter=",")
     gp.update(X_new=X, y_new=y, hyp=hyp)
 
     options = {
@@ -200,7 +204,9 @@ def test_neg_elcbo():
     F, dF, G, H, varF = _neg_elcbo(
         theta, gp, vp, 0.0, 0, True, False, theta_bnd, 0.0, False
     )
-    matlab_dF = np.loadtxt(open("./tests/vbmc/dF.txt", "rb"), delimiter=",")
+    matlab_dF = np.loadtxt(
+        open(base_path.joinpath("dF.txt"), "rb"), delimiter=","
+    )
 
     assert np.allclose(dF, matlab_dF)
 
@@ -209,9 +215,8 @@ def test_vp_bound_loss():
     D = 2
     K = 2
     vp = VariationalPosterior(D, K)
-    vp.mu = np.loadtxt(
-        open("./tests/variational_posterior/mu.txt", "rb"), delimiter=","
-    )
+    base_path = Path(__file__).parent
+    vp.mu = np.loadtxt(open(base_path.joinpath("mu.txt"), "rb"), delimiter=",")
 
     options = {
         "tol_con_loss": 0.01,
@@ -219,7 +224,7 @@ def test_vp_bound_loss():
         "weight_penalty": 0.1,
         "tol_length": 1e-6,
     }
-    X = np.loadtxt(open("./tests/vbmc/X.txt", "rb"), delimiter=",")
+    X = np.loadtxt(open(base_path.joinpath("X.txt"), "rb"), delimiter=",")
     theta = vp.get_parameters()
     theta_bnd = vp.get_bounds(X, options, K)
 

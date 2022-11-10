@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import numpy as np
 from scipy.io import loadmat
 
@@ -140,7 +142,8 @@ def test_entmc_vbmc_matlab():
     # with MATLAB version, i.e. entmc_vbmc.py need to be modified a
     # bit: epsilon[: Ns // 2, :] = randn2(D, Ns // 2).transpose()
     exact = False
-    mat = loadmat("./tests/entropy/entropy-test.mat")
+    path = Path(__file__).parent.joinpath("entropy-test.mat")
+    mat = loadmat(path)
     D = mat["D"].item()
     K = mat["K"].item()
     Ns = mat["Ns"].item()

@@ -80,7 +80,6 @@ def test_active_importance_sampling():
             os.path.dirname(os.path.realpath(__file__)),
             "..",
             "..",
-            "pyvbmc",
             "vbmc",
         )
     )
@@ -305,6 +304,7 @@ def test_acq_log_f():
 
     dirpath = os.path.dirname(os.path.realpath(__file__))
     filepath = os.path.join(dirpath, "compare_MATLAB", "log_isbasefun.mat")
+    print(filepath)
     MATLAB = scipy.io.loadmat(filepath)
 
     viqr = AcqFcnVIQR()

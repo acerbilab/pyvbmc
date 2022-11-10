@@ -5,6 +5,7 @@ import configparser
 import copy
 from collections.abc import MutableMapping
 from math import ceil
+from pathlib import Path
 from textwrap import indent
 
 import numpy as np
@@ -335,6 +336,9 @@ def _read_config_file(options_path: str):
     Note that strings starting with # in the .ini file act as description to
     the option in the following line.
     """
+    path = Path(options_path)
+    if not path.exists():
+        raise ValueError(f"{path.resolve()} does not exist.")
     conf = configparser.ConfigParser(comment_prefixes="", allow_no_value=True)
     # do not lower() both values as well as descriptions
     conf.optionxform = str

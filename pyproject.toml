@@ -22,9 +22,10 @@ dependencies = [
 requires-python = ">=3.9"
 
 [tool.setuptools]
-packages = [
-    "pyvbmc",
-]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+namespaces = false
 
 [project.optional-dependencies]
 dev = [
@@ -34,6 +35,7 @@ dev = [
     "pytest-cov >= 4.0.0",
     "sphinx >= 4.5.0",
     "sphinx-book-theme>=0.3.3",
+    "build >= 0.9.0",
 ]
 jupyter = [
     "plotly >= 5.11.0",
@@ -44,6 +46,7 @@ requires = [
     "setuptools >= 45",
     "setuptools_scm[toml] >= 6.2",
 ]
+build-backend = "setuptools.build_meta"
 
 [tool.black]
 line-length = 79

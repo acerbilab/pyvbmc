@@ -1,31 +1,31 @@
 import os
 
 import gpyreg as gpr
+import matplotlib.pyplot as plt
 import numpy as np
 import scipy.stats as sps
 
-from pyvbmc.acquisition_functions import AcqFcnVIQR, string_to_acq
+from pyvbmc.acquisition_functions import AcqFcnIMIQR, string_to_acq
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc import active_importance_sampling
 from pyvbmc.vbmc.options import Options
 
 
 def test_acq_info():
-    acqf = AcqFcnVIQR()
+    acqf = AcqFcnIMIQR()
     assert acqf.acq_info["importance_sampling"]
     assert not acqf.acq_info["importance_sampling_vp"]
-    assert acqf.acq_info["variational_importance_sampling"]
     assert acqf.acq_info["log_flag"]
     assert np.isclose(sps.norm.cdf(acqf.u), 0.75)
 
     # Test handling of string input for SearchAcqFcn:
-    acqf2 = string_to_acq("AcqFcnVIQR")
-    acqf3 = string_to_acq("AcqFcnVIQR()")
+    acqf2 = string_to_acq("AcqFcnIMIQR")
+    acqf3 = string_to_acq("AcqFcnIMIQR()")
     assert acqf.u == acqf2.u == acqf3.u
 
-    acqf4 = AcqFcnVIQR(quantile=0.666)
-    acqf5 = string_to_acq("AcqFcnVIQR(quantile=0.666)")
-    acqf6 = string_to_acq("AcqFcnVIQR(0.666)")
+    acqf4 = AcqFcnIMIQR(quantile=0.666)
+    acqf5 = string_to_acq("AcqFcnIMIQR(quantile=0.666)")
+    acqf6 = string_to_acq("AcqFcnIMIQR(0.666)")
     assert acqf4.u == acqf5.u == acqf6.u
     assert np.isclose(sps.norm.cdf(acqf4.u), 0.666)
 
@@ -90,7 +90,7 @@ def test_simple__call__():
 
     ## Setup acquisition function and necessary preliminaries:
 
-    acqviqr = AcqFcnVIQR()
+    acqimiqr = AcqFcnIMIQR()
     optim_state = {
         "lb_eps_orig": -np.inf,
         "ub_eps_orig": np.inf,
@@ -118,7 +118,6 @@ def test_simple__call__():
             os.path.dirname(os.path.realpath(__file__)),
             "..",
             "..",
-            "pyvbmc",
             "vbmc",
         )
     )
@@ -136,21 +135,20 @@ def test_simple__call__():
     vbmc_options.validate_option_names([basic_path, advanced_path])
 
     optim_state["active_importance_sampling"] = active_importance_sampling(
-        vp, gp, acqviqr, vbmc_options
+        vp, gp, acqimiqr, vbmc_options
     )
 
-    # Test VIQR Acquisition Function Values:
-    # Should be close to log(sinh(0.6745 * e)), because tau^2 approx= 0,
-    # so s_pred^2 approx= f_s2. -log(2) correction is due to constant factor.
-    result = acqviqr(
+    # Test IMIQR Acquisition Function Values:
+    # Should be close to log(2 * sinh(0.6745 * e)), because tau^2 approx= 0,
+    # so s_pred^2 approx= f_s2.
+
+    result = acqimiqr(
         X_eval[0], gp, vp, function_logger=None, optim_state=optim_state
-    ) - np.log(2)
-    # Re-normalize:
-    result += -np.log(optim_state["active_importance_sampling"]["X"].shape[0])
+    )
     u = sps.norm.ppf(0.75)
     # print(result)
     # print(np.log(np.sinh(u * np.exp(1))))
-    assert np.isclose(np.log(np.sinh(u * np.exp(1))), result, atol=1e-4)
+    assert np.isclose(np.log(2 * np.sinh(u * np.exp(1))), result, atol=1e-4)
 
 
 def test_complex__call__():
@@ -210,7 +208,7 @@ def test_complex__call__():
     gp.update(X_new=X, y_new=y, s2_new=s2, hyp=hyp)
     # gp.plot(lb=np.array([-5.0, -5.0]), ub=np.array([5.0, 5.0]))
 
-    ## Setup grid approximation of VIQR/IMIQR:
+    ## Setup grid approximation of IMIQR:
 
     def s_xsi_new(theta, theta_new):
         __, cov = gp.predict_full(np.vstack([theta, theta_new]))
@@ -231,10 +229,10 @@ def test_complex__call__():
     vp.mu = np.zeros((D, 1))
     vp.sigma = np.ones((1, 1))  # VP is standard normal
 
-    def viqr_integrand(theta, theta_new):
+    def imiqr_integrand(theta, theta_new):
         return 2 * vp.pdf(theta) * np.sinh(u * s_xsi_new(theta, theta_new))
 
-    M = 60
+    M = 40
     t1 = t2 = np.linspace(-30, 30, M)
     T1, T2 = np.meshgrid(t1, t2)
     thetas = np.vstack([T1.ravel(), T2.ravel()]).T
@@ -244,14 +242,14 @@ def test_complex__call__():
     X_eval = np.arange(-5, N_eval * D - 5).reshape(N_eval, D)
     X_eval = np.tile(np.linspace(-5, 5, N_eval).reshape((N_eval, 1)), (1, 2))
 
-    # VIQR (IMIQR) values by grid approximationL
-    viqrs = np.zeros((N_eval, M**2))
+    # IMIQR values by grid approximation:
+    imiqrs = np.zeros((N_eval, M**2))
     for i in range(N_eval):
         x = X_eval[i, :]
         v_int = np.array(
-            [viqr_integrand(theta, np.atleast_2d(x)) for theta in thetas]
+            [imiqr_integrand(theta, np.atleast_2d(x)) for theta in thetas]
         )
-        viqrs[i, :] = v_int.reshape((M**2,))
+        imiqrs[i, :] = v_int.reshape((M**2,))
     # Rough approximation for missing tails of grid:
     corrections = np.array(
         [
@@ -260,14 +258,14 @@ def test_complex__call__():
         ]
     )
     correction = np.sum(corrections * (60 / M) ** 2)
-    viqr_grid = (
-        np.sum(viqrs * (60 / M) ** 2, axis=1)  # Grid approx. of expectation
+    imiqr_grid = (
+        np.sum(imiqrs * (60 / M) ** 2, axis=1)  # Grid approx. of expectation
         / correction
     )
 
     ## Setup acquisition function and necessary preliminaries:
 
-    acqviqr = AcqFcnVIQR()
+    acqimiqr = AcqFcnIMIQR()
     optim_state = {
         "lb_eps_orig": -np.inf,
         "ub_eps_orig": np.inf,
@@ -295,7 +293,6 @@ def test_complex__call__():
             os.path.dirname(os.path.realpath(__file__)),
             "..",
             "..",
-            "pyvbmc",
             "vbmc",
         )
     )
@@ -313,20 +310,13 @@ def test_complex__call__():
     vbmc_options.validate_option_names([basic_path, advanced_path])
 
     optim_state["active_importance_sampling"] = active_importance_sampling(
-        vp, gp, acqviqr, vbmc_options
+        vp, gp, acqimiqr, vbmc_options
     )
 
-    # VIQR Acquisition Function Values:
-    log_result = acqviqr(
-        X_eval, gp, vp, function_logger=None, optim_state=optim_state
-    )
-    # Re-normalize:
-    log_result += -np.log(
-        optim_state["active_importance_sampling"]["X"].shape[0]
-    )
-    result = np.exp(log_result).reshape((N_eval,))
+    # IMIQR Acquisition Function Values:
+    result = np.exp(
+        acqimiqr(X_eval, gp, vp, function_logger=None, optim_state=optim_state)
+    ).reshape((N_eval,))
+    # print(imiqr_grid)
     # print(result)
-    # print(viqr_grid)
-    assert np.allclose(viqr_grid, result, rtol=0.03)
-    bias = np.mean(result - viqr_grid)
-    assert np.allclose(viqr_grid + bias, result, rtol=0.01)
+    assert np.allclose(imiqr_grid, result, rtol=0.05)
