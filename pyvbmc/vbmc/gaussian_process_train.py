@@ -386,6 +386,10 @@ def _gp_hyp(
             cov_bounds_info["LB"][:D],
             np.nan,
         )
+        # These bounds are wider since cov_bounds_info is based on the
+        # high-posterior-density region as opposed to the full data
+        # (a smaller set leads to smaller, hence wider, lower bounds)
+
     # Set priors over hyperparameters (might want to double-check this)
     priors = gp.get_priors()
 
