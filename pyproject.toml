@@ -10,10 +10,11 @@ dependencies = [
     "cma >= 3.1.0",
     "corner >= 2.2.1",
     "dill >= 0.3.5.1",
-    "gpyreg",
+    "gpyreg >= 0.1.0",
     "imageio >= 2.13.5",
     "matplotlib >= 3.5.1",
     "numpy >= 1.22.1",
+    "plotly >= 5.11.0",
     "pytest >= 6.2.5",
     "pytest-mock >= 3.6.1",
     "pytest-rerunfailures >= 10.2",
@@ -36,9 +37,6 @@ dev = [
     "sphinx >= 4.3.2",
     "sphinx-book-theme>=0.2.0",
     "build >= 0.9.0",
-]
-jupyter = [
-    "plotly >= 5.11.0",
 ]
 
 [build-system]
