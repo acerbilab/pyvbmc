@@ -879,6 +879,8 @@ class VariationalPosterior:
 
             # Evaluate pdf at all points and start optimization from best
             y0_vec = neg_log_pdf(x0_mat)
+            if not orig_flag:  # drop gradient -dy
+                y0_vec = y0_vec[0]
             idx = np.argmin(y0_vec.squeeze())
             x0 = x0_mat[idx]
 
@@ -899,7 +901,10 @@ class VariationalPosterior:
                 )
                 x0 = x0.squeeze()
 
-            res = minimize(fun=neg_log_pdf, x0=x0, bounds=bounds)
+            # fun provides gradient (jac=True) when orig_flag is False:
+            res = minimize(
+                fun=neg_log_pdf, x0=x0, bounds=bounds, jac=not orig_flag
+            )
             x_min[k] = res.x
             ff[k] = res.fun
 
