@@ -376,6 +376,20 @@ def _gp_hyp(
     else:
         raise TypeError("The mean function is not supported by gpyreg.")
 
+    # Set lower bounds for GP's outputscale and lengthscale
+    if isinstance(gp.covariance, gpr.covariance_functions.SquaredExponential):
+        bounds["covariance_log_outputscale"] = (
+            cov_bounds_info["LB"][D],
+            np.nan,
+        )
+        bounds["covariance_log_lengthscale"] = (
+            cov_bounds_info["LB"][:D],
+            np.nan,
+        )
+        # These bounds are wider since cov_bounds_info is based on the
+        # high-posterior-density region as opposed to the full data
+        # (a smaller set leads to smaller, hence wider, lower bounds)
+
     # Set priors over hyperparameters (might want to double-check this)
     priors = gp.get_priors()
 
