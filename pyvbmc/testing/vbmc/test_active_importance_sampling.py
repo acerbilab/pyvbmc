@@ -236,10 +236,10 @@ def test_active_sample_proposal_pdf():
     MATLAB = scipy.io.loadmat(filepath)
 
     ln_weights_viqr, f_s2_viqr = active_sample_proposal_pdf(
-        Xa, gp, vp, w_vp, rect_delta, AcqFcnVIQR(), vp
+        Xa, gp, vp, w_vp, rect_delta, AcqFcnVIQR()
     )
     ln_weights_imiqr, f_s2_imiqr = active_sample_proposal_pdf(
-        Xa, gp, vp, w_vp, rect_delta, AcqFcnIMIQR(), vp
+        Xa, gp, vp, w_vp, rect_delta, AcqFcnIMIQR()
     )
     Ns_gp = hyp.shape[0]
     assert ln_weights_viqr.shape == ln_weights_imiqr.shape == (D, Ns_gp)

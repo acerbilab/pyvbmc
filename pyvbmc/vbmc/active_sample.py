@@ -6,7 +6,7 @@ import cma
 import gpyreg as gpr
 import numpy as np
 
-from pyvbmc.acquisition_functions import *
+from pyvbmc.acquisition_functions import AbstractAcqFcn
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.stats import get_hpd
 from pyvbmc.timer import main_timer as timer
@@ -144,7 +144,7 @@ def active_sample(
             ys = np.copy(optim_state["cache"]["y_orig"][:sample_count])
             idx_remove = np.full(provided_sample_count, True)
             logger.info(
-                "More than sample_count = %s initial points have been "
+                "More than sample_count=%s initial points have been "
                 "provided, using only the first %s points.",
                 sample_count,
                 sample_count,

@@ -49,7 +49,7 @@ class Options(MutableMapping, dict):
         # (completed in self.validate_option_names)
         self.is_initialized = False
         super().__init__()
-        self.descriptions = dict()
+        self.descriptions = {}
         self["useroptions"] = set()
 
         self.default_options_path = default_options_path
@@ -344,7 +344,7 @@ def _read_config_file(options_path: str):
     conf.optionxform = str
     conf.read(options_path)
 
-    option_list = list()
+    option_list = []
     description = ""
     for section in conf.sections():
         for (key, value) in conf.items(section):

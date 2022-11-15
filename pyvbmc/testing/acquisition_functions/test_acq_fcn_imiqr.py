@@ -5,7 +5,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.stats as sps
 
-from pyvbmc.acquisition_functions import AcqFcnIMIQR, string_to_acq
+from pyvbmc.acquisition_functions import AcqFcnIMIQR
+from pyvbmc.acquisition_functions.utilities import string_to_acq
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc import active_importance_sampling
 from pyvbmc.vbmc.options import Options

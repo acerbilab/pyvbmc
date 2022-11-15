@@ -88,10 +88,10 @@ class ParameterTransformer:
         if type(transform_type) == str:
             try:
                 bounded_type = transform_types[transform_type]
-            except KeyError:
+            except KeyError as exc:
                 raise ValueError(
                     f"Unrecognized bounded transform {transform_type}."
-                )
+                ) from exc
         else:
             if transform_type not in transform_types.values():
                 raise ValueError(
@@ -416,8 +416,7 @@ class ParameterTransformer:
         transform_names = {
             0: "unbounded",
             3: "logit",
-            12: "norminv",
-            12: "probit",
+            12: "norminv (probit)",
             13: "student4",
         }
         transforms = [transform_names[number] for number in self.type]

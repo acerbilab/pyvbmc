@@ -13,7 +13,7 @@ def string_to_acq(string):
     acq_fcn = parts[0]
     args_string = parts[2]
     args = []
-    kwargs = dict()
+    kwargs = {}
     for arg in args_string.split(","):
         arg = arg.rstrip().split("=")
         if len(arg) == 1 and arg != [""]:

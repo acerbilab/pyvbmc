@@ -6,7 +6,6 @@ from textwrap import indent
 from typing import Optional
 
 import corner
-import gpyreg
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import trapezoid
@@ -15,7 +14,7 @@ from scipy.optimize import minimize
 from scipy.special import gammaln
 
 from pyvbmc.decorators import handle_0D_1D_input
-from pyvbmc.formatting import format_dict, full_repr, get_repr, summarize
+from pyvbmc.formatting import format_dict, full_repr, summarize
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.stats import kde_1d, kl_div_mvn
 
@@ -652,9 +651,9 @@ class VariationalPosterior:
         if self.optimize_mu:
             theta = self.mu.ravel(order="F")
         else:
-            theta = np.array(list())
+            theta = np.array([])
 
-        constrained_parameters = np.array(list())
+        constrained_parameters = np.array([])
 
         if self.optimize_sigma:
             constrained_parameters = np.concatenate(
@@ -1195,7 +1194,7 @@ class VariationalPosterior:
         corner_style = dict({"fig": fig, "labels": labels})
 
         if plot_style is None:
-            plot_style = dict()
+            plot_style = {}
 
         if "corner" in plot_style:
             corner_style.update(plot_style.get("corner"))

@@ -9,7 +9,7 @@ import gpyreg as gpr
 import matplotlib.pyplot as plt
 import numpy as np
 
-from pyvbmc.formatting import full_repr, get_repr, summarize
+from pyvbmc.formatting import full_repr, summarize
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.stats import kl_div_mvn
@@ -143,7 +143,7 @@ class VBMC:
                 x0 = np.full((plausible_lower_bounds.shape), np.NaN)
 
         if x0.ndim == 1:
-            logging.warning(f"Reshaping x0 to row vector.")
+            logging.warning("Reshaping x0 to row vector.")
             x0 = x0.reshape((1, -1))
         self.D = x0.shape[1]
         # load basic and advanced options and validate the names
@@ -319,7 +319,7 @@ class VBMC:
             if N0 > 1:
                 self.logger.warning(
                     "PLB and/or PUB not specified. Estimating"
-                    + "plausible bounds from starting set X0..."
+                    "plausible bounds from starting set X0..."
                 )
                 width = x0.max(0) - x0.min(0)
                 if plausible_lower_bounds is None:
@@ -339,14 +339,14 @@ class VBMC:
                     plausible_upper_bounds[idx] = upper_bounds[idx]
                     self.logger.warning(
                         "vbmc:pbInitFailed: Some plausible bounds could not be "
-                        + "determined from starting set. Using hard upper/lower"
-                        + " bounds for those instead."
+                        "determined from starting set. Using hard upper/lower"
+                        " bounds for those instead."
                     )
             else:
                 self.logger.warning(
                     "vbmc:pbUnspecified: Plausible lower/upper bounds PLB and"
                     "/or PUB not specified and X0 is not a valid starting set. "
-                    + "Using hard upper/lower bounds instead."
+                    "Using hard upper/lower bounds instead."
                 )
                 if plausible_lower_bounds is None:
                     plausible_lower_bounds = np.copy(lower_bounds)
@@ -360,24 +360,24 @@ class VBMC:
         plausible_upper_bounds = np.atleast_1d(plausible_upper_bounds)
         try:
             if lower_bounds.shape != (1, D):
-                logging.warning(f"Reshaping lower bounds to {(1, D)}.")
+                logging.warning("Reshaping lower bounds to (1, %d).", D)
                 lower_bounds = lower_bounds.reshape((1, D))
             if upper_bounds.shape != (1, D):
-                logging.warning(f"Reshaping upper bounds to {(1, D)}.")
+                logging.warning("Reshaping upper bounds to (1, %d).", D)
                 upper_bounds = upper_bounds.reshape((1, D))
             if plausible_lower_bounds.shape != (1, D):
                 logging.warning(
-                    f"Reshaping plausible lower bounds to {(1, D)}."
+                    "Reshaping plausible lower bounds to (1, %d).", D
                 )
                 plausible_lower_bounds = plausible_lower_bounds.reshape((1, D))
             if plausible_upper_bounds.shape != (1, D):
                 logging.warning(
-                    f"Reshaping plausible upper bounds to {(1, D)}."
+                    "Reshaping plausible upper bounds to (1, %d).", D
                 )
                 plausible_upper_bounds = plausible_upper_bounds.reshape((1, D))
         except ValueError as exc:
             raise ValueError(
-                f"Bounds must match problem dimension D={D}."
+                "Bounds must match problem dimension D=%d.", D
             ) from exc
 
         # check that plausible bounds are finite
@@ -477,8 +477,8 @@ class VBMC:
         if np.any(x0 < LB_eff) or np.any(x0 > UB_eff):
             self.logger.warning(
                 "vbmc:InitialPointsTooClosePB: The starting points X0 are on "
-                + "or numerically too close to the hard bounds LB and UB. "
-                + "Moving the initial points more inside..."
+                "or numerically too close to the hard bounds LB and UB. "
+                "Moving the initial points more inside..."
             )
             x0 = np.maximum((np.minimum(x0, UB_eff)), LB_eff)
 
@@ -500,8 +500,8 @@ class VBMC:
         ):
             self.logger.warning(
                 "vbmc:TooCloseBounds: For each variable, hard "
-                + "and plausible bounds should not be too close. "
-                + "Moving plausible bounds."
+                "and plausible bounds should not be too close. "
+                "Moving plausible bounds."
             )
             plausible_lower_bounds = np.maximum(plausible_lower_bounds, LB_eff)
             plausible_upper_bounds = np.minimum(plausible_upper_bounds, UB_eff)
@@ -513,8 +513,8 @@ class VBMC:
         ):
             self.logger.warning(
                 "vbmc:InitialPointsOutsidePB. The starting points X0"
-                + " are not inside the provided plausible bounds PLB and "
-                + "PUB. Expanding the plausible bounds..."
+                " are not inside the provided plausible bounds PLB and "
+                "PUB. Expanding the plausible bounds..."
             )
             plausible_lower_bounds = np.minimum(
                 plausible_lower_bounds, x0.min(0)
@@ -570,8 +570,8 @@ class VBMC:
             self.options.f_vals are not the same."""
             )
 
-        optim_state = dict()
-        optim_state["cache"] = dict()
+        optim_state = {}
+        optim_state["cache"] = {}
         optim_state["cache"]["x_orig"] = self.x0
         optim_state["cache"]["y_orig"] = y_orig
 
@@ -725,7 +725,7 @@ class VBMC:
             optim_state["hedge"] = []
 
         # List of points at the end of each iteration
-        optim_state["iter_list"] = dict()
+        optim_state["iter_list"] = {}
         optim_state["iter_list"]["u"] = []
         optim_state["iter_list"]["f_val"] = []
         optim_state["iter_list"]["f_sd"] = []
@@ -835,12 +835,12 @@ class VBMC:
         if self.optim_state["uncertainty_handling_level"] > 0:
             self.logger.info(
                 "Beginning variational optimization assuming NOISY observations"
-                + " of the log-joint"
+                " of the log-joint"
             )
         else:
             self.logger.info(
                 "Beginning variational optimization assuming EXACT observations"
-                + " of the log-joint."
+                " of the log-joint."
             )
 
         if self.is_finished:
@@ -1567,7 +1567,7 @@ class VBMC:
         if not success_flag:
             self.logger.warning(
                 "Caution: Returned variational solution may have"
-                + " not converged."
+                " not converged."
             )
 
         results = self._create_result_dict(
@@ -1581,7 +1581,6 @@ class VBMC:
         Private method to check the warmup end conditions.
         """
         iteration = self.optim_state.get("iter")
-        exit_flag = 0
 
         # First requirement for stopping, no constant improvement of metric
         stable_count_flag = False
@@ -1735,7 +1734,6 @@ class VBMC:
         is_finished_flag = False
         termination_message = ""
         success_flag = True
-        output_dict = dict()
 
         # Maximum number of new function evaluations
         if self.function_logger.func_count >= self.options.get(
@@ -2012,7 +2010,7 @@ class VBMC:
             self.optim_state["entropy_alpha"] = 0
 
             stable_flag = np.copy(vp.stats["stable"])
-            vp, var_ss, pruned = optimize_vp(
+            vp, __, __ = optimize_vp(
                 options,
                 self.optim_state,
                 vp,
@@ -2142,7 +2140,7 @@ class VBMC:
         """
         Private method to create the result dict.
         """
-        output = dict()
+        output = {}
         output["function"] = str(self.function_logger.fun)
         if np.all(np.isinf(self.optim_state["lb_tran"])) and np.all(
             np.isinf(self.optim_state["ub_tran"])
@@ -2188,7 +2186,7 @@ class VBMC:
         if self.optim_state["cache_active"]:
             logger.info(
                 " Iteration f-count/f-cache    Mean[ELBO]     Std[ELBO]     "
-                + "sKL-iter[q]   K[q]  Convergence    Action"
+                "sKL-iter[q]   K[q]  Convergence    Action"
             )
         else:
             if (
@@ -2197,12 +2195,12 @@ class VBMC:
             ):
                 logger.info(
                     " Iteration   f-count (x-count)   Mean[ELBO]     Std[ELBO]"
-                    + "     sKL-iter[q]   K[q]  Convergence  Action"
+                    "     sKL-iter[q]   K[q]  Convergence  Action"
                 )
             else:
                 logger.info(
                     " Iteration  f-count    Mean[ELBO]    Std[ELBO]    "
-                    + "sKL-iter[q]   K[q]  Convergence  Action"
+                    "sKL-iter[q]   K[q]  Convergence  Action"
                 )
 
     def _setup_logging_display_format(self):
