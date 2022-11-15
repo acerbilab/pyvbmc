@@ -4,7 +4,7 @@ from math import ceil
 
 import gpyreg as gpr
 import numpy as np
-from scipy.linalg.basic import solve_triangular
+from scipy.linalg import solve_triangular
 
 
 def active_importance_sampling(vp, gp, acq_fcn, options):

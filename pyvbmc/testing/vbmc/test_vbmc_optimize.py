@@ -91,8 +91,6 @@ def run_optim_block(
     err_1 = np.sqrt(np.mean((vmu - mu_bar) ** 2))
     err_2 = np.abs(elbo - ln_Z)
 
-    return err_1, err_2
-
 
 def test_vbmc_multivariate_normal():
     D = 6
@@ -123,7 +121,6 @@ def test_vbmc_multivariate_normal():
 
     assert err_1 < 0.5
     assert err_2 < 0.5
-    return err_1, err_2
 
 
 def test_vbmc_multivariate_half_normal():
@@ -155,7 +152,6 @@ def test_vbmc_multivariate_half_normal():
 
     assert err_1 < 0.5
     assert err_2 < 0.5
-    return err_1, err_2
 
 
 def test_vbmc_correlated_multivariate_normal():
@@ -234,7 +230,6 @@ def test_vbmc_uniform():
 
     assert err_1 < 0.5
     assert err_2 < 0.5
-    return err_1, err_2
 
 
 def test_vbmc_multivariate_half_normal_noisy():
@@ -273,7 +268,6 @@ def test_vbmc_multivariate_half_normal_noisy():
 
     assert err_1 < 0.5
     assert err_2 < 0.5
-    return err_1, err_2
 
 
 def noisy_cigar(x, noise_scale=0.4):
