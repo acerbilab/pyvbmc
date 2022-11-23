@@ -94,7 +94,7 @@ def run_optim_block(
     return err_1, err_2
 
 
-def test_vbmc_multivariate_normal():
+def test_vbmc_multivariate_normal(return_results=False):
     D = 6
     x0 = -np.ones((1, D))
     # Be careful about -2 and -2.0!
@@ -123,10 +123,11 @@ def test_vbmc_multivariate_normal():
 
     assert err_1 < 0.5
     assert err_2 < 0.5
-    return err_1, err_2
+    if return_results:
+        return err_1, err_2
 
 
-def test_vbmc_multivariate_half_normal():
+def test_vbmc_multivariate_half_normal(return_results=False):
     D = 2
     x0 = -np.ones((1, D))
     plb = np.full((1, D), -6.0)
@@ -155,10 +156,11 @@ def test_vbmc_multivariate_half_normal():
 
     assert err_1 < 0.5
     assert err_2 < 0.5
-    return err_1, err_2
+    if return_results:
+        return err_1, err_2
 
 
-def test_vbmc_correlated_multivariate_normal():
+def test_vbmc_correlated_multivariate_normal(return_results=False):
     D = 3
     x0 = 0.5 * np.ones((1, D))
     plb = np.full((1, D), -1.0)
@@ -181,9 +183,11 @@ def test_vbmc_correlated_multivariate_normal():
 
     assert err_1 < 0.5
     assert err_2 < 0.5
+    if return_results:
+        return err_1, err_2
 
 
-def test_vbmc_correlated_multivariate_normal_2():
+def test_vbmc_correlated_multivariate_normal_2(return_results=False):
     D = 3
     x0 = 0.5 * np.ones((1, D))
     plb = np.full((1, D), -1.0)
@@ -206,9 +210,11 @@ def test_vbmc_correlated_multivariate_normal_2():
 
     assert err_1 < 0.5
     assert err_2 < 0.5
+    if return_results:
+        return err_1, err_2
 
 
-def test_vbmc_uniform():
+def test_vbmc_uniform(return_results=False):
     D = 1
     x0 = 0.5 * np.ones((1, D))
     plb = np.full((1, D), 0.05)
@@ -234,10 +240,11 @@ def test_vbmc_uniform():
 
     assert err_1 < 0.5
     assert err_2 < 0.5
-    return err_1, err_2
+    if return_results:
+        return err_1, err_2
 
 
-def test_vbmc_multivariate_half_normal_noisy():
+def test_vbmc_multivariate_half_normal_noisy(return_results=False):
     D = 2
     noise_scale = 0.5
     x0 = -np.ones((1, D))
@@ -273,7 +280,8 @@ def test_vbmc_multivariate_half_normal_noisy():
 
     assert err_1 < 0.5
     assert err_2 < 0.5
-    return err_1, err_2
+    if return_results:
+        return err_1, err_2
 
 
 def noisy_cigar(x, noise_scale=0.4):
@@ -516,7 +524,7 @@ def _test_optimize_reproducibility():
     result = {"err_1": [], "err_2": []}
     for i in range(2):
         np.random.seed(42)
-        err_1, err_2 = test_vbmc_uniform()
+        err_1, err_2 = test_vbmc_uniform(return_results=True)
         result["err_1"].append(err_1)
         result["err_2"].append(err_2)
 
@@ -527,7 +535,7 @@ def _test_optimize_reproducibility():
     result = {"err_1": [], "err_2": []}
     for i in range(2):
         np.random.seed(42)
-        err_1, err_2 = test_vbmc_multivariate_half_normal()
+        err_1, err_2 = test_vbmc_multivariate_half_normal(return_results=True)
         result["err_1"].append(err_1)
         result["err_2"].append(err_2)
 

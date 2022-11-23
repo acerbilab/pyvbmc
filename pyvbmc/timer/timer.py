@@ -13,8 +13,8 @@ class Timer:
         """
         Initialize a new timer.
         """
-        self._start_times = dict()
-        self._durations = dict()
+        self._start_times = {}
+        self._durations = {}
 
     def start_timer(self, name: str):
         """
@@ -50,7 +50,7 @@ class Timer:
             self._start_times.pop(name)
         else:
             logging.getLogger("timer").warning(
-                f"Timer start not found for key '{name}'."
+                "Timer start not found for key '%s'.", name
             )
 
     def get_duration(self, name: str):
@@ -67,19 +67,19 @@ class Timer:
         duration : float
             The duration of the timer or None when the timer is not existing.
         """
-        time = self._durations.get(name)
-        if time is None:
+        time_ = self._durations.get(name)
+        if time_ is None:
             logging.getLogger("timer").warning(
-                f"Timer duration not found for key '{name}'."
+                "Timer duration not found for key '%s'.", name
             )
-        return time
+        return time_
 
     def reset(self):
         """
         Reset the timer be emptying the durations and start times.
         """
-        self._durations = dict()
-        self._start_times = dict()
+        self._durations = {}
+        self._start_times = {}
 
     def __repr__(self, arr_size_thresh=10, expand=True):
         """Construct a detailed string summary.

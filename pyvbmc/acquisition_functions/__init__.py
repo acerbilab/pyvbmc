@@ -6,4 +6,3 @@ from .acq_fcn_log import AcqFcnLog
 from .acq_fcn_noisy import AcqFcnNoisy
 from .acq_fcn_vanilla import AcqFcnVanilla
 from .acq_fcn_viqr import AcqFcnVIQR
-from .utilities import string_to_acq

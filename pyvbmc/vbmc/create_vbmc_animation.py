@@ -23,7 +23,7 @@ def create_vbmc_animation(vbmc: VBMC, path: str):
         (vbmc.vp.D, vbmc.vp.D)
     )
 
-    images = list()
+    images = []
     for i in range(0, len(vbmc.iteration_history["iter"]) + 1):
 
         if i >= len(vbmc.iteration_history["iter"]):

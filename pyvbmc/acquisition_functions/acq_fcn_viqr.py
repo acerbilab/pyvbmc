@@ -18,7 +18,7 @@ class AcqFcnVIQR(AbstractAcqFcn):
     """
 
     def __init__(self, quantile=0.75):
-        self.acq_info = dict()
+        self.acq_info = {}
         self.acq_info["log_flag"] = True
         self.acq_info["importance_sampling"] = True
         self.acq_info["importance_sampling_vp"] = False

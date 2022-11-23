@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import numpy as np
 from scipy.io import loadmat
 
@@ -97,7 +99,8 @@ def test_entlb_vbmc_overlapping_mixture():
 
 
 def test_entlb_vbmc_matlab():
-    mat = loadmat("./tests/entropy/entropy-test.mat")
+    path = Path(__file__).parent.joinpath("entropy-test.mat")
+    mat = loadmat(path)
     D = mat["D"].item()
     K = mat["K"].item()
     vp = VariationalPosterior(D, K)

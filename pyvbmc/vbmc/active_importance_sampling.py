@@ -4,7 +4,7 @@ from math import ceil
 
 import gpyreg as gpr
 import numpy as np
-from scipy.linalg.basic import solve_triangular
+from scipy.linalg import solve_triangular
 
 
 def active_importance_sampling(vp, gp, acq_fcn, options):
@@ -90,7 +90,7 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
                 )
                 thin = 1
                 burn_in = 0
-                sampler_opts, __, __ = get_mcmc_opts()
+                sampler_opts, __, __ = get_mcmc_opts(Nmcmc_samples)
                 # W = Na  # walkers, not applicable for simple slice sampling.
 
                 # Perform a single MCMC step for all samples.
@@ -139,7 +139,7 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
             # Sample from smoothed posterior
             Xa_vp, __ = vp_is.sample(Nvp_samples, orig_flag=False)
             ln_weights, f_s2a_vp = active_sample_proposal_pdf(
-                Xa_vp, gp, vp_is, w_vp, rect_delta, acq_fcn, vp
+                Xa_vp, gp, vp_is, w_vp, rect_delta, acq_fcn
             )
             if active_is.get("ln_weights") is None:
                 active_is["ln_weights"] = ln_weights.T
@@ -167,7 +167,7 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
                 gp.X[jj, :] + (2 * np.random.rand(jj.size, D) - 1) * rect_delta
             )
             ln_weights, f_s2a_box = active_sample_proposal_pdf(
-                Xa_box, gp, vp_is, w_vp, rect_delta, acq_fcn, vp
+                Xa_box, gp, vp_is, w_vp, rect_delta, acq_fcn
             )
             if active_is.get("ln_weights") is None:
                 active_is["ln_weights"] = ln_weights.T
@@ -314,7 +314,7 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
     return active_is
 
 
-def active_sample_proposal_pdf(Xa, gp, vp_is, w_vp, rect_delta, acq_fcn, vp):
+def active_sample_proposal_pdf(Xa, gp, vp_is, w_vp, rect_delta, acq_fcn):
     r"""Compute importance weights for proposal pdf.
 
     Parameters

@@ -1,7 +1,8 @@
 import gpyreg as gpr
 import numpy as np
 
-from pyvbmc.acquisition_functions import AcqFcn, AcqFcnLog, string_to_acq
+from pyvbmc.acquisition_functions import AcqFcn, AcqFcnLog
+from pyvbmc.acquisition_functions.utilities import string_to_acq
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.variational_posterior import VariationalPosterior
 

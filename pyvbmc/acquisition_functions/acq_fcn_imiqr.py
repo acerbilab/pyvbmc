@@ -1,6 +1,6 @@
 import gpyreg as gpr
 import numpy as np
-from scipy.linalg.basic import solve_triangular
+from scipy.linalg import solve_triangular
 from scipy.stats import norm
 
 from pyvbmc.function_logger import FunctionLogger
@@ -18,7 +18,7 @@ class AcqFcnIMIQR(AbstractAcqFcn):
     """
 
     def __init__(self, quantile=0.75):
-        self.acq_info = dict()
+        self.acq_info = {}
         self.acq_info["log_flag"] = True
         self.acq_info["importance_sampling"] = True
         self.acq_info["importance_sampling_vp"] = False
@@ -162,7 +162,6 @@ class AcqFcnIMIQR(AbstractAcqFcn):
             # logsumexp
             ln_max = np.amax(zz, axis=1)
             ln_max[ln_max == -np.inf] = 0.0  # Avoid -inf + inf
-            __, n_samples = zz.shape
             acq[:, s] = (
                 np.log(np.sum(np.exp(zz - ln_max.reshape(-1, 1)), axis=1))
                 + ln_max

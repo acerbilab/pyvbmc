@@ -396,7 +396,7 @@ def test_active_sample_initial_sample_more_provided(caplog):
         options=vbmc.options,
     )
 
-    logger_message = "More than sample_count = 90 initial points have been "
+    logger_message = "More than sample_count=90 initial points have been "
     logger_message += "provided, using only the first 90 points."
     assert caplog.record_tuples == [
         ("ActiveSample", logging.INFO, logger_message)

@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import numpy as np
 import pytest
 from scipy.io import loadmat
@@ -7,7 +9,8 @@ from pyvbmc.variational_posterior import VariationalPosterior
 
 
 def get_matlab_vp():
-    mat = loadmat("./tests/variational_posterior/vp-test.mat")
+    path = Path(__file__).parent.joinpath("vp-test.mat")
+    mat = loadmat(path)
     vp = VariationalPosterior(2, 2, np.array([[5]]))
     vp.D = mat["D"][0, 0]
     vp.K = mat["K"][0, 0]
@@ -540,9 +543,10 @@ def test_moments_no_orig_flag_2():
     vp.w = vp.w / np.sum(vp.w)
 
     mubar, sigma = vp.moments(N=1e6, cov_flag=True, orig_flag=False)
-    matlab = loadmat(
-        "./tests/variational_posterior/test_moments_no_orig_flag_2_MATLAB.mat"
+    path = Path(__file__).parent.joinpath(
+        "test_moments_no_orig_flag_2_MATLAB.mat"
     )
+    matlab = loadmat(path)
 
     assert mubar.shape == (1, 6)
     assert sigma.shape == (6, 6)
@@ -762,22 +766,20 @@ def test_soft_bounds_2():
         "weight_penalty": 0.1,
         "tol_length": 1e-6,
     }
-    X = np.loadtxt(
-        open("./tests/variational_posterior/X.txt", "rb"), delimiter=","
-    )
-    vp.mu = np.loadtxt(
-        open("./tests/variational_posterior/mu.txt", "rb"), delimiter=","
-    )
+    base_path = Path(__file__).parent
+    X = np.loadtxt(open(base_path.joinpath("X.txt"), "rb"), delimiter=",")
+    path = Path(__file__).parent.joinpath("mu.txt")
+    vp.mu = np.loadtxt(open(base_path.joinpath("mu.txt"), "rb"), delimiter=",")
 
     theta_bnd = vp.get_bounds(X, options)
 
     bnd_lb = np.loadtxt(
-        open("./tests/variational_posterior/bnd_lb.txt", "rb"), delimiter=","
+        open(base_path.joinpath("bnd_lb.txt"), "rb"), delimiter=","
     )
     assert np.allclose(theta_bnd["lb"], bnd_lb)
 
     bnd_ub = np.loadtxt(
-        open("./tests/variational_posterior/bnd_ub.txt", "rb"), delimiter=","
+        open(base_path.joinpath("bnd_ub.txt"), "rb"), delimiter=","
     )
     assert np.allclose(theta_bnd["ub"], bnd_ub)
 

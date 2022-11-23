@@ -74,9 +74,7 @@ def format_dict(d, **kwargs):
         string = "{\n"
         body = ""
         for key, val in d.items():
-            if (
-                type(key) == str or type(key) == np.str_
-            ):  # Enclose string keys in quotes
+            if isinstance(key, str):  # Enclose string keys in quotes
                 body += repr(key)
             else:
                 body += str(key)
@@ -135,7 +133,7 @@ def get_repr(obj, expand=False, full=False, **kwargs):
             return repr(obj)  # If all else fails, return usual __repr__()
 
 
-def full_repr(object, title, order=None, exclude=None, **kwargs):
+def full_repr(obj, title, order=None, exclude=None, **kwargs):
     """Get a complete string representation of an object.
 
     Prints the names and a summary of their values. Attributes listed in
@@ -144,7 +142,7 @@ def full_repr(object, title, order=None, exclude=None, **kwargs):
 
     Parameters
     ----------
-    object : any
+    obj : any
         The object to represent.
     title : string
         The title to print (e.g. class name).
@@ -162,20 +160,20 @@ def full_repr(object, title, order=None, exclude=None, **kwargs):
     # Print select attributes first
     for key in order:
         if "." in key:  # Handle request to print e.g. 'vp.K'
-            sub_object = object
+            sub_obj = obj
             for subkey in key.split("."):
-                sub_object = getattr(sub_object, subkey, None)
+                sub_obj = getattr(sub_obj, subkey, None)
         else:  # Just get the attribute
-            sub_object = getattr(object, key, None)
-        body.append(f"self.{key} = {get_repr(sub_object, **kwargs)}")
+            sub_obj = getattr(obj, key, None)
+        body.append(f"self.{key} = {get_repr(sub_obj, **kwargs)}")
 
     # Print all remaining attributes
     try:
-        for key, val in sorted(object.__dict__.items()):
+        for key, val in sorted(obj.__dict__.items()):
             if key not in order and key not in exclude:
                 body.append(f"self.{key} = {get_repr(val, **kwargs)}")
     except TypeError:  # Keys cannot be sorted
-        for key, val in object.__dict__.items():
+        for key, val in obj.__dict__.items():
             if key not in order and key not in exclude:
                 body.append(f"self.{key} = {get_repr(val, **kwargs)}")
 
