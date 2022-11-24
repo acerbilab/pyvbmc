@@ -1,6 +1,8 @@
 import numpy as np
 import scipy.stats as scs
-from pyvbmc.vbmc import VBMC
+from pyvbmc import VBMC
+
+np.random.seed(42)
 
 
 D = 2  # still in 2-D
@@ -79,12 +81,13 @@ xx = np.vstack(
 yy = vp.pdf(xx)  # Compute PDF values on specified points
 
 
+# You may need to run "jupyter labextension install jupyterlab-plotly" for plotly
 # Plot approximate posterior pdf (this interactive plot does not work in higher D)
 import plotly.graph_objects as go
 
 fig = go.Figure(
     data=[
-        go.Surface(z=yy.reshape(x1.size, x2.size), x=x1, y=x2, showscale=False)
+        go.Surface(z=yy.reshape(x1.size, x2.size), x=xa, y=xb, showscale=False)
     ]
 )
 fig.update_layout(
@@ -111,11 +114,19 @@ fig.add_trace(
 )
 
 # Find and plot approximate posterior mode
-# post_mode = vp.mode()
-# fig.add_trace(go.Scatter3d(x=[post_mode[0]], y=[post_mode[1]], z=vp.pdf(post_mode), name="Approximate posterior mode", marker_symbol="x"))
+post_mode = vp.mode()
+fig.add_trace(
+    go.Scatter3d(
+        x=[post_mode[0]],
+        y=[post_mode[1]],
+        z=vp.pdf(post_mode),
+        name="Approximate posterior mode",
+        marker_symbol="x",
+    )
+)
 
 
-# Display posterior also as a non-interactive static image
-from IPython.display import Image
+# # Display posterior also as a non-interactive static image
+# from IPython.display import Image
 
-Image(fig.to_image(format="png"))
+# Image(fig.to_image(format="png"))

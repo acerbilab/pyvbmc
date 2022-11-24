@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.stats as scs
 from scipy.optimize import minimize
-from pyvbmc.vbmc import VBMC
+from pyvbmc import VBMC
 from pyvbmc.formatting import format_dict
 import dill
 
@@ -60,7 +60,14 @@ options = {
 # We can specify either the log-joint, or the log-likelihood and log-prior.
 # In other words, the following lines are equivalent:
 vbmc = VBMC(
-    log_likelihood, x0, LB, UB, PLB, PUB, options=options, log_prior=log_prior,
+    log_likelihood,
+    x0,
+    LB,
+    UB,
+    PLB,
+    PUB,
+    options=options,
+    log_prior=log_prior,
 )
 # vbmc = VBMC(
 #     log_joint,

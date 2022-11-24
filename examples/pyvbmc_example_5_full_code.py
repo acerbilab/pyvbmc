@@ -1,6 +1,6 @@
 import numpy as np
 import scipy.stats as scs
-from pyvbmc.vbmc import VBMC
+from pyvbmc import VBMC
 import dill
 import matplotlib.pyplot as plt
 
@@ -50,7 +50,15 @@ x0 = np.zeros((1, D))  # Initial point
 
 
 options = {"specify_target_noise": True}
-vbmc = VBMC(log_joint, x0, LB, UB, PLB, PUB, options=options,)
+vbmc = VBMC(
+    log_joint,
+    x0,
+    LB,
+    UB,
+    PLB,
+    PUB,
+    options=options,
+)
 
 
 np.random.seed(42)

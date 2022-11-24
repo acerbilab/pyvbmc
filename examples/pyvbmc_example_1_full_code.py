@@ -1,6 +1,6 @@
 import numpy as np
 import scipy.stats as scs
-from pyvbmc.vbmc import VBMC
+from pyvbmc import VBMC
 
 
 D = 2  # We consider a 2-D problem

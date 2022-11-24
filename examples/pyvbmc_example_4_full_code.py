@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.stats as scs
 from scipy.optimize import minimize
-from pyvbmc.vbmc import VBMC
+from pyvbmc import VBMC
 import matplotlib.pyplot as plt
 import dill
 
@@ -60,7 +60,15 @@ for i in range(n_runs):
     ).x
 
     # Run PyVBMC:
-    vbmc = VBMC(log_joint, x0, LB, UB, PLB, PUB, options=options,)
+    vbmc = VBMC(
+        log_joint,
+        x0,
+        LB,
+        UB,
+        PLB,
+        PUB,
+        options=options,
+    )
     vp, results = vbmc.optimize()
 
     # Record the results:
