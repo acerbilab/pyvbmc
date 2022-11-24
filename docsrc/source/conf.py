@@ -45,7 +45,7 @@ myst_enable_extensions = [
     "dollarmath",
     "html_image",
 ]
-myst_url_schemes = ("http", "https", "mailto")
+myst_url_schemes = ["http", "https", "mailto"]
 autodoc_default_options = {
     "members": "var1, var2",
     "special-members": "__call__",
