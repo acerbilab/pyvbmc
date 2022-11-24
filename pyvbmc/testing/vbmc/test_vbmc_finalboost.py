@@ -1,7 +1,7 @@
 import numpy as np
 
+from pyvbmc import VBMC
 from pyvbmc.variational_posterior import VariationalPosterior
-from pyvbmc.vbmc import VBMC
 
 
 def create_vbmc(

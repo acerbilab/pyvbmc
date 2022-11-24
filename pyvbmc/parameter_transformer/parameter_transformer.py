@@ -272,7 +272,7 @@ class ParameterTransformer:
         for t in self.bounded_types:
             self._bounded_transforms[t] = {}
             if t == 3:
-                # logit: default transform
+                # logit
 
                 def bounded_transform(x, mask):
                     return _center(
@@ -313,11 +313,11 @@ class ParameterTransformer:
                 self._bounded_transforms[t]["jacobian"] = bounded_jacobian
 
             elif t == 12:
-                # norminv: normal CDF (probit) transform
+                # probit: inverse normal CDF (probit) transform (default)
 
                 def bounded_transform(x, mask):
                     return _center(
-                        _norminv(
+                        _probit(
                             _to_unit_interval(
                                 x[:, mask],
                                 self.lb_orig[:, mask],
@@ -332,7 +332,7 @@ class ParameterTransformer:
 
                 def bounded_inverse(u, mask):
                     return _from_unit_interval(
-                        _inverse_norminv(
+                        _inverse_probit(
                             _uncenter(
                                 u[:, mask], self.mu[mask], self.delta[mask]
                             )
@@ -416,7 +416,7 @@ class ParameterTransformer:
         transform_names = {
             0: "unbounded",
             3: "logit",
-            12: "norminv (probit)",
+            12: "probit (norminv)",
             13: "student4",
         }
         transforms = [transform_names[number] for number in self.type]
@@ -518,11 +518,11 @@ def _inverse_logit(u):
     return 1 / (1 + np.exp(-u))
 
 
-def _norminv(z):
+def _probit(z):
     return -np.sqrt(2) * erfcinv(2 * z)
 
 
-def _inverse_norminv(u):
+def _inverse_probit(u):
     return 0.5 * erfc(-u / np.sqrt(2))
 
 

@@ -5,8 +5,9 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from pyvbmc import VBMC
 from pyvbmc.acquisition_functions import AcqFcnLog, AcqFcnVIQR
-from pyvbmc.vbmc import VBMC, Options
+from pyvbmc.vbmc import Options
 
 options_path = Path(__file__).parent.parent.parent.joinpath(
     "vbmc", "option_configs"

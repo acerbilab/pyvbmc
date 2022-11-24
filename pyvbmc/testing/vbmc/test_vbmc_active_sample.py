@@ -3,8 +3,9 @@ import logging
 import numpy as np
 import pytest
 
+from pyvbmc import VBMC
 from pyvbmc.stats import get_hpd
-from pyvbmc.vbmc import VBMC, active_sample
+from pyvbmc.vbmc import active_sample
 from pyvbmc.vbmc.active_sample import _get_search_points
 from pyvbmc.vbmc.gaussian_process_train import train_gp
 

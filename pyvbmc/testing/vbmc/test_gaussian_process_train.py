@@ -3,8 +3,8 @@ import numpy as np
 import pytest
 from scipy.stats import norm
 
+from pyvbmc import VBMC
 from pyvbmc.variational_posterior import VariationalPosterior
-from pyvbmc.vbmc import VBMC
 from pyvbmc.vbmc.gaussian_process_train import (
     _cov_identifier_to_covariance_function,
     _estimate_noise,
