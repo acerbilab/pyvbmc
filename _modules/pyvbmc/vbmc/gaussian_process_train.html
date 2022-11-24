@@ -21,7 +21,8 @@
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" href="../../../_static/styles/sphinx-book-theme.css?digest=5115cc725059bd94278eecd172e13a965bf8f5a9" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css" />
     
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
@@ -30,8 +31,13 @@
     <script src="../../../_static/jquery.js"></script>
     <script src="../../../_static/underscore.js"></script>
     <script src="../../../_static/doctools.js"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../../_static/togglebutton.js"></script>
     <script src="../../../_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
     <link rel="canonical" href="https://acerbilab.github.io/pyvbmc/_modules/pyvbmc/vbmc/gaussian_process_train.html" />
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
@@ -751,6 +757,20 @@ title="Open an issue"
             <span class="n">bounds</span><span class="p">[</span><span class="s2">&quot;mean_const&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">hpd_y</span><span class="p">)</span> <span class="o">+</span> <span class="n">delta_y</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;The mean function is not supported by gpyreg.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Set lower bounds for GP&#39;s outputscale and lengthscale</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gp</span><span class="o">.</span><span class="n">covariance</span><span class="p">,</span> <span class="n">gpr</span><span class="o">.</span><span class="n">covariance_functions</span><span class="o">.</span><span class="n">SquaredExponential</span><span class="p">):</span>
+        <span class="n">bounds</span><span class="p">[</span><span class="s2">&quot;covariance_log_outputscale&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">cov_bounds_info</span><span class="p">[</span><span class="s2">&quot;LB&quot;</span><span class="p">][</span><span class="n">D</span><span class="p">],</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">bounds</span><span class="p">[</span><span class="s2">&quot;covariance_log_lengthscale&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">cov_bounds_info</span><span class="p">[</span><span class="s2">&quot;LB&quot;</span><span class="p">][:</span><span class="n">D</span><span class="p">],</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># These bounds are wider since cov_bounds_info is based on the</span>
+        <span class="c1"># high-posterior-density region as opposed to the full data</span>
+        <span class="c1"># (a smaller set leads to smaller, hence wider, lower bounds)</span>
 
     <span class="c1"># Set priors over hyperparameters (might want to double-check this)</span>
     <span class="n">priors</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">get_priors</span><span class="p">()</span>

@@ -21,7 +21,8 @@
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" href="../../../_static/styles/sphinx-book-theme.css?digest=5115cc725059bd94278eecd172e13a965bf8f5a9" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css" />
     
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
@@ -30,8 +31,13 @@
     <script src="../../../_static/jquery.js"></script>
     <script src="../../../_static/underscore.js"></script>
     <script src="../../../_static/doctools.js"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../../_static/togglebutton.js"></script>
     <script src="../../../_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
     <link rel="canonical" href="https://acerbilab.github.io/pyvbmc/_modules/pyvbmc/vbmc/vbmc.html" />
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
@@ -385,7 +391,7 @@ title="Open an issue"
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">pyvbmc.formatting</span> <span class="kn">import</span> <span class="n">full_repr</span><span class="p">,</span> <span class="n">get_repr</span><span class="p">,</span> <span class="n">summarize</span>
+<span class="kn">from</span> <span class="nn">pyvbmc.formatting</span> <span class="kn">import</span> <span class="n">full_repr</span><span class="p">,</span> <span class="n">summarize</span>
 <span class="kn">from</span> <span class="nn">pyvbmc.function_logger</span> <span class="kn">import</span> <span class="n">FunctionLogger</span>
 <span class="kn">from</span> <span class="nn">pyvbmc.parameter_transformer</span> <span class="kn">import</span> <span class="n">ParameterTransformer</span>
 <span class="kn">from</span> <span class="nn">pyvbmc.stats</span> <span class="kn">import</span> <span class="n">kl_div_mvn</span>
@@ -519,7 +525,7 @@ title="Open an issue"
                 <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">plausible_lower_bounds</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">NaN</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">x0</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reshaping x0 to row vector.&quot;</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Reshaping x0 to row vector.&quot;</span><span class="p">)</span>
             <span class="n">x0</span> <span class="o">=</span> <span class="n">x0</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">D</span> <span class="o">=</span> <span class="n">x0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="c1"># load basic and advanced options and validate the names</span>
@@ -695,7 +701,7 @@ title="Open an issue"
             <span class="k">if</span> <span class="n">N0</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
                     <span class="s2">&quot;PLB and/or PUB not specified. Estimating&quot;</span>
-                    <span class="o">+</span> <span class="s2">&quot;plausible bounds from starting set X0...&quot;</span>
+                    <span class="s2">&quot;plausible bounds from starting set X0...&quot;</span>
                 <span class="p">)</span>
                 <span class="n">width</span> <span class="o">=</span> <span class="n">x0</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="n">x0</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">plausible_lower_bounds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -715,14 +721,14 @@ title="Open an issue"
                     <span class="n">plausible_upper_bounds</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">upper_bounds</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
                         <span class="s2">&quot;vbmc:pbInitFailed: Some plausible bounds could not be &quot;</span>
-                        <span class="o">+</span> <span class="s2">&quot;determined from starting set. Using hard upper/lower&quot;</span>
-                        <span class="o">+</span> <span class="s2">&quot; bounds for those instead.&quot;</span>
+                        <span class="s2">&quot;determined from starting set. Using hard upper/lower&quot;</span>
+                        <span class="s2">&quot; bounds for those instead.&quot;</span>
                     <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
                     <span class="s2">&quot;vbmc:pbUnspecified: Plausible lower/upper bounds PLB and&quot;</span>
                     <span class="s2">&quot;/or PUB not specified and X0 is not a valid starting set. &quot;</span>
-                    <span class="o">+</span> <span class="s2">&quot;Using hard upper/lower bounds instead.&quot;</span>
+                    <span class="s2">&quot;Using hard upper/lower bounds instead.&quot;</span>
                 <span class="p">)</span>
                 <span class="k">if</span> <span class="n">plausible_lower_bounds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">plausible_lower_bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">lower_bounds</span><span class="p">)</span>
@@ -736,24 +742,24 @@ title="Open an issue"
         <span class="n">plausible_upper_bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">plausible_upper_bounds</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">lower_bounds</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">):</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reshaping lower bounds to </span><span class="si">{</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Reshaping lower bounds to (1, </span><span class="si">%d</span><span class="s2">).&quot;</span><span class="p">,</span> <span class="n">D</span><span class="p">)</span>
                 <span class="n">lower_bounds</span> <span class="o">=</span> <span class="n">lower_bounds</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">))</span>
             <span class="k">if</span> <span class="n">upper_bounds</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">):</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reshaping upper bounds to </span><span class="si">{</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Reshaping upper bounds to (1, </span><span class="si">%d</span><span class="s2">).&quot;</span><span class="p">,</span> <span class="n">D</span><span class="p">)</span>
                 <span class="n">upper_bounds</span> <span class="o">=</span> <span class="n">upper_bounds</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">))</span>
             <span class="k">if</span> <span class="n">plausible_lower_bounds</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">):</span>
                 <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Reshaping plausible lower bounds to </span><span class="si">{</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span>
+                    <span class="s2">&quot;Reshaping plausible lower bounds to (1, </span><span class="si">%d</span><span class="s2">).&quot;</span><span class="p">,</span> <span class="n">D</span>
                 <span class="p">)</span>
                 <span class="n">plausible_lower_bounds</span> <span class="o">=</span> <span class="n">plausible_lower_bounds</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">))</span>
             <span class="k">if</span> <span class="n">plausible_upper_bounds</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">):</span>
                 <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Reshaping plausible upper bounds to </span><span class="si">{</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span>
+                    <span class="s2">&quot;Reshaping plausible upper bounds to (1, </span><span class="si">%d</span><span class="s2">).&quot;</span><span class="p">,</span> <span class="n">D</span>
                 <span class="p">)</span>
                 <span class="n">plausible_upper_bounds</span> <span class="o">=</span> <span class="n">plausible_upper_bounds</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">))</span>
         <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Bounds must match problem dimension D=</span><span class="si">{</span><span class="n">D</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="s2">&quot;Bounds must match problem dimension D=</span><span class="si">%d</span><span class="s2">.&quot;</span><span class="p">,</span> <span class="n">D</span>
             <span class="p">)</span> <span class="kn">from</span> <span class="nn">exc</span>
 
         <span class="c1"># check that plausible bounds are finite</span>
@@ -853,8 +859,8 @@ title="Open an issue"
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">x0</span> <span class="o">&lt;</span> <span class="n">LB_eff</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">x0</span> <span class="o">&gt;</span> <span class="n">UB_eff</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
                 <span class="s2">&quot;vbmc:InitialPointsTooClosePB: The starting points X0 are on &quot;</span>
-                <span class="o">+</span> <span class="s2">&quot;or numerically too close to the hard bounds LB and UB. &quot;</span>
-                <span class="o">+</span> <span class="s2">&quot;Moving the initial points more inside...&quot;</span>
+                <span class="s2">&quot;or numerically too close to the hard bounds LB and UB. &quot;</span>
+                <span class="s2">&quot;Moving the initial points more inside...&quot;</span>
             <span class="p">)</span>
             <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">UB_eff</span><span class="p">)),</span> <span class="n">LB_eff</span><span class="p">)</span>
 
@@ -876,8 +882,8 @@ title="Open an issue"
         <span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
                 <span class="s2">&quot;vbmc:TooCloseBounds: For each variable, hard &quot;</span>
-                <span class="o">+</span> <span class="s2">&quot;and plausible bounds should not be too close. &quot;</span>
-                <span class="o">+</span> <span class="s2">&quot;Moving plausible bounds.&quot;</span>
+                <span class="s2">&quot;and plausible bounds should not be too close. &quot;</span>
+                <span class="s2">&quot;Moving plausible bounds.&quot;</span>
             <span class="p">)</span>
             <span class="n">plausible_lower_bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">plausible_lower_bounds</span><span class="p">,</span> <span class="n">LB_eff</span><span class="p">)</span>
             <span class="n">plausible_upper_bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">plausible_upper_bounds</span><span class="p">,</span> <span class="n">UB_eff</span><span class="p">)</span>
@@ -889,8 +895,8 @@ title="Open an issue"
         <span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
                 <span class="s2">&quot;vbmc:InitialPointsOutsidePB. The starting points X0&quot;</span>
-                <span class="o">+</span> <span class="s2">&quot; are not inside the provided plausible bounds PLB and &quot;</span>
-                <span class="o">+</span> <span class="s2">&quot;PUB. Expanding the plausible bounds...&quot;</span>
+                <span class="s2">&quot; are not inside the provided plausible bounds PLB and &quot;</span>
+                <span class="s2">&quot;PUB. Expanding the plausible bounds...&quot;</span>
             <span class="p">)</span>
             <span class="n">plausible_lower_bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span>
                 <span class="n">plausible_lower_bounds</span><span class="p">,</span> <span class="n">x0</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
@@ -946,8 +952,8 @@ title="Open an issue"
 <span class="sd">            self.options.f_vals are not the same.&quot;&quot;&quot;</span>
             <span class="p">)</span>
 
-        <span class="n">optim_state</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-        <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;cache&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">optim_state</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;cache&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;cache&quot;</span><span class="p">][</span><span class="s2">&quot;x_orig&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x0</span>
         <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;cache&quot;</span><span class="p">][</span><span class="s2">&quot;y_orig&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">y_orig</span>
 
@@ -1101,7 +1107,7 @@ title="Open an issue"
             <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;hedge&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="c1"># List of points at the end of each iteration</span>
-        <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;iter_list&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;iter_list&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;iter_list&quot;</span><span class="p">][</span><span class="s2">&quot;u&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;iter_list&quot;</span><span class="p">][</span><span class="s2">&quot;f_val&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;iter_list&quot;</span><span class="p">][</span><span class="s2">&quot;f_sd&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1211,12 +1217,12 @@ title="Open an issue"
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;uncertainty_handling_level&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
                 <span class="s2">&quot;Beginning variational optimization assuming NOISY observations&quot;</span>
-                <span class="o">+</span> <span class="s2">&quot; of the log-joint&quot;</span>
+                <span class="s2">&quot; of the log-joint&quot;</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
                 <span class="s2">&quot;Beginning variational optimization assuming EXACT observations&quot;</span>
-                <span class="o">+</span> <span class="s2">&quot; of the log-joint.&quot;</span>
+                <span class="s2">&quot; of the log-joint.&quot;</span>
             <span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_finished</span><span class="p">:</span>
@@ -1943,7 +1949,7 @@ title="Open an issue"
         <span class="k">if</span> <span class="ow">not</span> <span class="n">success_flag</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
                 <span class="s2">&quot;Caution: Returned variational solution may have&quot;</span>
-                <span class="o">+</span> <span class="s2">&quot; not converged.&quot;</span>
+                <span class="s2">&quot; not converged.&quot;</span>
             <span class="p">)</span>
 
         <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_result_dict</span><span class="p">(</span>
@@ -1957,7 +1963,6 @@ title="Open an issue"
 <span class="sd">        Private method to check the warmup end conditions.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">iteration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optim_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;iter&quot;</span><span class="p">)</span>
-        <span class="n">exit_flag</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="c1"># First requirement for stopping, no constant improvement of metric</span>
         <span class="n">stable_count_flag</span> <span class="o">=</span> <span class="kc">False</span>
@@ -2111,7 +2116,6 @@ title="Open an issue"
         <span class="n">is_finished_flag</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">termination_message</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="n">success_flag</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="n">output_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
         <span class="c1"># Maximum number of new function evaluations</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">function_logger</span><span class="o">.</span><span class="n">func_count</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
@@ -2388,7 +2392,7 @@ title="Open an issue"
             <span class="bp">self</span><span class="o">.</span><span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;entropy_alpha&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 
             <span class="n">stable_flag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;stable&quot;</span><span class="p">])</span>
-            <span class="n">vp</span><span class="p">,</span> <span class="n">var_ss</span><span class="p">,</span> <span class="n">pruned</span> <span class="o">=</span> <span class="n">optimize_vp</span><span class="p">(</span>
+            <span class="n">vp</span><span class="p">,</span> <span class="n">__</span><span class="p">,</span> <span class="n">__</span> <span class="o">=</span> <span class="n">optimize_vp</span><span class="p">(</span>
                 <span class="n">options</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">optim_state</span><span class="p">,</span>
                 <span class="n">vp</span><span class="p">,</span>
@@ -2518,7 +2522,7 @@ title="Open an issue"
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Private method to create the result dict.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">output</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">output</span><span class="p">[</span><span class="s2">&quot;function&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">function_logger</span><span class="o">.</span><span class="n">fun</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;lb_tran&quot;</span><span class="p">]))</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span>
             <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;ub_tran&quot;</span><span class="p">])</span>
@@ -2564,7 +2568,7 @@ title="Open an issue"
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;cache_active&quot;</span><span class="p">]:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
                 <span class="s2">&quot; Iteration f-count/f-cache    Mean[ELBO]     Std[ELBO]     &quot;</span>
-                <span class="o">+</span> <span class="s2">&quot;sKL-iter[q]   K[q]  Convergence    Action&quot;</span>
+                <span class="s2">&quot;sKL-iter[q]   K[q]  Convergence    Action&quot;</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="p">(</span>
@@ -2573,12 +2577,12 @@ title="Open an issue"
             <span class="p">):</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
                     <span class="s2">&quot; Iteration   f-count (x-count)   Mean[ELBO]     Std[ELBO]&quot;</span>
-                    <span class="o">+</span> <span class="s2">&quot;     sKL-iter[q]   K[q]  Convergence  Action&quot;</span>
+                    <span class="s2">&quot;     sKL-iter[q]   K[q]  Convergence  Action&quot;</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
                     <span class="s2">&quot; Iteration  f-count    Mean[ELBO]    Std[ELBO]    &quot;</span>
-                    <span class="o">+</span> <span class="s2">&quot;sKL-iter[q]   K[q]  Convergence  Action&quot;</span>
+                    <span class="s2">&quot;sKL-iter[q]   K[q]  Convergence  Action&quot;</span>
                 <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_setup_logging_display_format</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>

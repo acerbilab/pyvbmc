@@ -4,7 +4,8 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Getting started &#8212; PyVBMC</title>
     
   <!-- Loaded before other Sphinx assets -->
@@ -21,7 +22,8 @@
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=5115cc725059bd94278eecd172e13a965bf8f5a9" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
     
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
@@ -30,8 +32,13 @@
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js"></script>
     <script src="_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
     <link rel="canonical" href="https://acerbilab.github.io/pyvbmc/quickstart.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -475,12 +482,12 @@ title="Print to PDF"
                 
               <div>
                 
-  <div class="section" id="getting-started">
+  <section id="getting-started">
 <h1>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">#</a></h1>
 <p>The best way to get started with PyVBMC is via the tutorials and worked examples.
 In particular, start with <a class="reference internal" href="_examples/pyvbmc_example_1_basic_usage.html#pyvbmc-example-1-basic-usage"><span class="std std-ref">PyVBMC Example 1: Basic usage</span></a> and continue from there.</p>
 <p>If you are already familiar with approximate inference methods, you can find a summary usage below.</p>
-<div class="section" id="summary-usage">
+<section id="summary-usage">
 <h2>Summary usage<a class="headerlink" href="#summary-usage" title="Permalink to this headline">#</a></h2>
 <p>The typical usage pipeline of PyVBMC follows four steps:</p>
 <ol class="arabic simple">
@@ -491,7 +498,7 @@ In particular, start with <a class="reference internal" href="_examples/pyvbmc_e
 </ol>
 <p>PyVBMC is not concerned with how you define your model in step 1, as long as you can provide an (unnormalized) target log density.
 Running the inference in step 3 only involves a couple of lines of code:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyvbmc.vbmc</span> <span class="kn">import</span> <span class="n">VBMC</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyvbmc</span> <span class="kn">import</span> <span class="n">VBMC</span>
 <span class="c1"># ...</span>
 <span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">LB</span><span class="p">,</span> <span class="n">UB</span><span class="p">,</span> <span class="n">PLB</span><span class="p">,</span> <span class="n">PUB</span><span class="p">)</span>
 <span class="n">vp</span><span class="p">,</span> <span class="n">results</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
@@ -513,8 +520,8 @@ Running the inference in step 3 only involves a couple of lines of code:</p>
 </ul>
 <p>The <code class="docutils literal notranslate"><span class="pre">vp</span></code> object can be manipulated in various ways, see the <a class="reference internal" href="api/classes/variational_posterior.html#variationalposterior"><span class="std std-ref">VariationalPosterior</span></a> class documentation.</p>
 <p>See the examples for more detailed information. The <a class="reference internal" href="api/options/vbmc_options.html#basic-options"><span class="std std-ref">Basic options</span></a> may also be useful.</p>
-</div>
-</div>
+</section>
+</section>
 
 
               </div>

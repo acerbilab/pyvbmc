@@ -4,7 +4,8 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>PyVBMC &#8212; PyVBMC</title>
     
   <!-- Loaded before other Sphinx assets -->
@@ -21,7 +22,8 @@
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=5115cc725059bd94278eecd172e13a965bf8f5a9" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
     
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
@@ -30,8 +32,13 @@
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js"></script>
     <script src="_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
     <link rel="canonical" href="https://acerbilab.github.io/pyvbmc/index.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -486,7 +493,7 @@ title="Print to PDF"
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#acknowledgments">
-   Acknowledgments
+   Acknowledgments:
   </a>
  </li>
 </ul>
@@ -559,7 +566,7 @@ title="Print to PDF"
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#acknowledgments">
-   Acknowledgments
+   Acknowledgments:
   </a>
  </li>
 </ul>
@@ -572,10 +579,10 @@ title="Print to PDF"
                 
               <div>
                 
-  <div class="section" id="pyvbmc">
+  <section id="pyvbmc">
 <h1>PyVBMC<a class="headerlink" href="#pyvbmc" title="Permalink to this headline">#</a></h1>
 <p>PyVBMC is a Python 3 implementation of the original <a class="reference external" href="https://github.com/acerbilab/vbmc">MATLAB algorithm</a> for Variational Bayesian Monte Carlo (VBMC).</p>
-<div class="section" id="what-is-it">
+<section id="what-is-it">
 <h2>What is it?<a class="headerlink" href="#what-is-it" title="Permalink to this headline">#</a></h2>
 <blockquote>
 <div><p>Can we perform Bayesian inference with expensive, black-box models?</p>
@@ -587,7 +594,7 @@ PyVBMC works with <em>black-box</em> models in that it only needs to evaluate an
 <li><p>an approximate posterior distribution of the model parameters;</p></li>
 <li><p>an approximation — technically, an approximate lower bound — of the log model evidence (also known as log marginal likelihood or log Bayes factor), a metric used for Bayesian model selection.</p></li>
 </ul>
-<div class="section" id="example-run">
+<section id="example-run">
 <h3>Example run<a class="headerlink" href="#example-run" title="Permalink to this headline">#</a></h3>
 <p>The figure below shows an example PyVBMC run on a “banana” target density.
 The corner plot shows the approximate posterior across iterations (contour plot and histograms of the marginals).
@@ -595,8 +602,8 @@ The dots represent evaluations of the target density (<em>blue</em>: previously 
 PyVBMC converges to an excellent approximation of the true posterior with a few dozens evaluations of the target density.</p>
 <a class="reference internal image-reference" href="_images/vbmc_animation.gif"><img alt="Animation of PyVBMC" class="align-center" src="_images/vbmc_animation.gif" style="width: 400px; height: 400px;" /></a>
 <p>Extensive benchmarks on both artificial test problems and a large number of real model-fitting problems from computational and cognitive neuroscience show that VBMC generally — and often vastly — outperforms alternative methods for sample-efficient Bayesian inference. VBMC runs with virtually no tuning and it is very easy to set up for your problem.</p>
-</div>
-<div class="section" id="should-i-use-pyvbmc">
+</section>
+<section id="should-i-use-pyvbmc">
 <h3>Should I use PyVBMC?<a class="headerlink" href="#should-i-use-pyvbmc" title="Permalink to this headline">#</a></h3>
 <p>PyVBMC is effective when:</p>
 <ul class="simple">
@@ -607,9 +614,9 @@ PyVBMC converges to an excellent approximation of the true posterior with a few 
 <li><p>the log-likelihood can be evaluated <em>exactly</em> (e.g., analytically or numerically, but without noise in the evaluation itself).</p></li>
 </ul>
 <p>Conversely, if your model can be written in closed form and is fast to evaluate, you should exploit the powerful machinery of probabilistic programming frameworks such as <a class="reference external" href="https://mc-stan.org/">Stan</a> or <a class="reference external" href="https://docs.pymc.io/">PyMC3</a>.</p>
-</div>
-</div>
-<div class="section" id="documentation">
+</section>
+</section>
+<section id="documentation">
 <h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">#</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
@@ -621,8 +628,8 @@ PyVBMC converges to an excellent approximation of the true posterior with a few 
 <li class="toctree-l1"><a class="reference internal" href="api/advanced_docs.html">Advanced documentation</a></li>
 </ul>
 </div>
-</div>
-<div class="section" id="examples">
+</section>
+<section id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">#</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
@@ -633,16 +640,16 @@ PyVBMC converges to an excellent approximation of the true posterior with a few 
 <li class="toctree-l1"><a class="reference internal" href="_examples/pyvbmc_example_5_noisy_likelihoods.html">PyVBMC Example 5: Noisy log-likelihood evaluations</a></li>
 </ul>
 </div>
-</div>
-<div class="section" id="contributing">
+</section>
+<section id="contributing">
 <h2>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">#</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="development.html">Instructions for developers and contributors</a></li>
 </ul>
 </div>
-</div>
-<div class="section" id="references">
+</section>
+<section id="references">
 <h2>References<a class="headerlink" href="#references" title="Permalink to this headline">#</a></h2>
 <ol class="arabic simple">
 <li><p>Acerbi, L. (2018). Variational Bayesian Monte Carlo. In <em>Advances in Neural Information Processing Systems 31</em>: 8222-8232. (<a class="reference external" href="https://arxiv.org/abs/1810.05558">paper + supplement on arXiv</a>, <a class="reference external" href="https://papers.nips.cc/paper/2018/hash/747c1bcceb6109a4ef936bc70cfe67de-Abstract.html">NeurIPS Proceedings</a>)</p></li>
@@ -652,7 +659,7 @@ PyVBMC converges to an excellent approximation of the true posterior with a few 
 <blockquote>
 <div><p>We estimated approximate posterior distibutions and approximate lower bounds to the model evidence of our models using Variational Bayesian Monte Carlo (VBMC; Acerbi, 2018, 2020) via the PyVBMC software. VBMC combines variational inference and active-sampling Bayesian quadrature to perform approximate Bayesian inference in a sample-efficient manner.</p>
 </div></blockquote>
-<div class="section" id="bibtex">
+<section id="bibtex">
 <h3>BibTeX<a class="headerlink" href="#bibtex" title="Permalink to this headline">#</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@article</span><span class="p">{</span><span class="n">acerbi2018variational</span><span class="p">,</span>
   <span class="n">title</span><span class="o">=</span><span class="p">{{</span><span class="n">V</span><span class="p">}</span><span class="n">ariational</span> <span class="p">{</span><span class="n">B</span><span class="p">}</span><span class="n">ayesian</span> <span class="p">{</span><span class="n">M</span><span class="p">}</span><span class="n">onte</span> <span class="p">{</span><span class="n">C</span><span class="p">}</span><span class="n">arlo</span><span class="p">},</span>
@@ -682,21 +689,21 @@ PyVBMC converges to an excellent approximation of the true posterior with a few 
 <span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="license-and-source">
+</section>
+<section id="license-and-source">
 <h3>License and source<a class="headerlink" href="#license-and-source" title="Permalink to this headline">#</a></h3>
 <p>PyVBMC is released under the terms of the <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/LICENSE">BSD 3-Clause License</a>.
 The Python source code is on <a class="reference external" href="https://github.com/acerbilab/pyvbmc">GitHub</a>.
 You may also want to check out the original <a class="reference external" href="https://github.com/acerbilab/vbmc">MATLAB toolbox</a>.</p>
-</div>
-</div>
-<div class="section" id="acknowledgments">
-<h2>Acknowledgments<a class="headerlink" href="#acknowledgments" title="Permalink to this headline">#</a></h2>
+</section>
+</section>
+<section id="acknowledgments">
+<h2>Acknowledgments:<a class="headerlink" href="#acknowledgments" title="Permalink to this headline">#</a></h2>
 <p>Work on the PyVBMC package was funded by the <a class="reference external" href="https://fcai.fi/">Finnish Center for Artificial Intelligence FCAI</a>.</p>
 <div class="toctree-wrapper compound">
 </div>
-</div>
-</div>
+</section>
+</section>
 
 
               </div>

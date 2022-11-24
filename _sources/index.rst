@@ -128,8 +128,8 @@ The Python source code is on :labrepos:`GitHub <pyvbmc>`.
 You may also want to check out the original :labrepos:`MATLAB toolbox <vbmc>`.
 
 
-Acknowledgments
-###############
+Acknowledgments:
+################
 Work on the PyVBMC package was funded by the `Finnish Center for Artificial Intelligence FCAI <https://fcai.fi/>`_.
 
 .. toctree::

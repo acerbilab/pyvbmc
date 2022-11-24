@@ -21,7 +21,8 @@
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" href="../../../_static/styles/sphinx-book-theme.css?digest=5115cc725059bd94278eecd172e13a965bf8f5a9" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css" />
     
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
@@ -30,8 +31,13 @@
     <script src="../../../_static/jquery.js"></script>
     <script src="../../../_static/underscore.js"></script>
     <script src="../../../_static/doctools.js"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../../_static/togglebutton.js"></script>
     <script src="../../../_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
     <link rel="canonical" href="https://acerbilab.github.io/pyvbmc/_modules/pyvbmc/parameter_transformer/parameter_transformer.html" />
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
@@ -464,10 +470,10 @@ title="Open an issue"
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">transform_type</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">bounded_type</span> <span class="o">=</span> <span class="n">transform_types</span><span class="p">[</span><span class="n">transform_type</span><span class="p">]</span>
-            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;Unrecognized bounded transform </span><span class="si">{</span><span class="n">transform_type</span><span class="si">}</span><span class="s2">.&quot;</span>
-                <span class="p">)</span>
+                <span class="p">)</span> <span class="kn">from</span> <span class="nn">exc</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">transform_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">transform_types</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
@@ -648,7 +654,7 @@ title="Open an issue"
         <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounded_types</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="k">if</span> <span class="n">t</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-                <span class="c1"># logit: default transform</span>
+                <span class="c1"># logit</span>
 
                 <span class="k">def</span> <span class="nf">bounded_transform</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
                     <span class="k">return</span> <span class="n">_center</span><span class="p">(</span>
@@ -689,11 +695,11 @@ title="Open an issue"
                 <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">&quot;jacobian&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounded_jacobian</span>
 
             <span class="k">elif</span> <span class="n">t</span> <span class="o">==</span> <span class="mi">12</span><span class="p">:</span>
-                <span class="c1"># norminv: normal CDF (probit) transform</span>
+                <span class="c1"># probit: inverse normal CDF (probit) transform (default)</span>
 
                 <span class="k">def</span> <span class="nf">bounded_transform</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
                     <span class="k">return</span> <span class="n">_center</span><span class="p">(</span>
-                        <span class="n">_norminv</span><span class="p">(</span>
+                        <span class="n">_probit</span><span class="p">(</span>
                             <span class="n">_to_unit_interval</span><span class="p">(</span>
                                 <span class="n">x</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">],</span>
                                 <span class="bp">self</span><span class="o">.</span><span class="n">lb_orig</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">],</span>
@@ -708,7 +714,7 @@ title="Open an issue"
 
                 <span class="k">def</span> <span class="nf">bounded_inverse</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
                     <span class="k">return</span> <span class="n">_from_unit_interval</span><span class="p">(</span>
-                        <span class="n">_inverse_norminv</span><span class="p">(</span>
+                        <span class="n">_inverse_probit</span><span class="p">(</span>
                             <span class="n">_uncenter</span><span class="p">(</span>
                                 <span class="n">u</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
                             <span class="p">)</span>
@@ -792,8 +798,7 @@ title="Open an issue"
         <span class="n">transform_names</span> <span class="o">=</span> <span class="p">{</span>
             <span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;unbounded&quot;</span><span class="p">,</span>
             <span class="mi">3</span><span class="p">:</span> <span class="s2">&quot;logit&quot;</span><span class="p">,</span>
-            <span class="mi">12</span><span class="p">:</span> <span class="s2">&quot;norminv&quot;</span><span class="p">,</span>
-            <span class="mi">12</span><span class="p">:</span> <span class="s2">&quot;probit&quot;</span><span class="p">,</span>
+            <span class="mi">12</span><span class="p">:</span> <span class="s2">&quot;probit (norminv)&quot;</span><span class="p">,</span>
             <span class="mi">13</span><span class="p">:</span> <span class="s2">&quot;student4&quot;</span><span class="p">,</span>
         <span class="p">}</span>
         <span class="n">transforms</span> <span class="o">=</span> <span class="p">[</span><span class="n">transform_names</span><span class="p">[</span><span class="n">number</span><span class="p">]</span> <span class="k">for</span> <span class="n">number</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">]</span>
@@ -895,11 +900,11 @@ title="Open an issue"
     <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">u</span><span class="p">))</span>
 
 
-<span class="k">def</span> <span class="nf">_norminv</span><span class="p">(</span><span class="n">z</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_probit</span><span class="p">(</span><span class="n">z</span><span class="p">):</span>
     <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">erfcinv</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">z</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_inverse_norminv</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_inverse_probit</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
     <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">erfc</span><span class="p">(</span><span class="o">-</span><span class="n">u</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
 
 

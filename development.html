@@ -4,7 +4,8 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Instructions for developers and contributors &#8212; PyVBMC</title>
     
   <!-- Loaded before other Sphinx assets -->
@@ -21,7 +22,8 @@
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=5115cc725059bd94278eecd172e13a965bf8f5a9" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
     
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
@@ -30,8 +32,13 @@
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js"></script>
     <script src="_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
     <link rel="canonical" href="https://acerbilab.github.io/pyvbmc/development.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -597,18 +604,18 @@ title="Print to PDF"
                 
               <div>
                 
-  <div class="section" id="instructions-for-developers-and-contributors">
+  <section id="instructions-for-developers-and-contributors">
 <h1>Instructions for developers and contributors<a class="headerlink" href="#instructions-for-developers-and-contributors" title="Permalink to this headline">#</a></h1>
 <p>PyVBMC is the port of the MATLAB VBMC algorithm to Python 3.x (development has targeted version 3.9 and up).</p>
 <p>The reference code is the <a class="reference external" href="https://github.com/acerbilab/vbmc">MATLAB toolbox</a>.</p>
 <p>The documentation is available at: <a class="reference external" href="https://acerbilab.github.io/pyvbmc/">https://acerbilab.github.io/pyvbmc/</a></p>
-<div class="section" id="how-to-install-and-run-the-package-temporary">
+<section id="how-to-install-and-run-the-package-temporary">
 <h2>How to install and run the package (temporary)<a class="headerlink" href="#how-to-install-and-run-the-package-temporary" title="Permalink to this headline">#</a></h2>
 <p>PyVBMC is not yet available on <code class="docutils literal notranslate"><span class="pre">pip</span></code> / <code class="docutils literal notranslate"><span class="pre">conda-forge</span></code>. The suggested manual installation instructions can be found on the <a class="reference internal" href="installation.html#installation"><span class="std std-ref">Installation</span></a> page.</p>
 <p>We are using the dependencies listed in <code class="docutils literal notranslate"><span class="pre">requirements.txt</span></code>. Please list all used dependencies there.
 For convenience, we also have a temporary installer in <code class="docutils literal notranslate"><span class="pre">setup.py</span></code>. Also list the used dependencies there.</p>
 <p>The necessary packages can be installed with <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/">conda</a> or <a class="reference external" href="https://pypi.org/project/pip/">pip</a>.</p>
-<div class="section" id="alternative-installation-commands">
+<section id="alternative-installation-commands">
 <h3>Alternative installation commands<a class="headerlink" href="#alternative-installation-commands" title="Permalink to this headline">#</a></h3>
 <p>These are alternative ways to install the required dependencies:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">--</span><span class="n">file</span> <span class="n">environment</span><span class="o">.</span><span class="n">yml</span>
@@ -619,9 +626,9 @@ For convenience, we also have a temporary installer in <code class="docutils lit
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">environment.yml</span></code> seems not to work properly in some setups (e.g., Windows), which is something to be investigated.</p>
-</div>
-</div>
-<div class="section" id="coding-conventions">
+</section>
+</section>
+<section id="coding-conventions">
 <h2>Coding conventions<a class="headerlink" href="#coding-conventions" title="Permalink to this headline">#</a></h2>
 <p>We try to follow common conventions whenever possible. Some useful reading:</p>
 <ul class="simple">
@@ -629,7 +636,7 @@ For convenience, we also have a temporary installer in <code class="docutils lit
 <li><p><a class="reference external" href="https://docs.python-guide.org/writing/style/">Code style in The Hitchhiker’s Guide to Python</a></p></li>
 </ul>
 <p>These basic rules should be followed to ensure coherence and to make it easy for third parties to contribute. In the following, we list more detailed conventions. Please read carefully if you are contributing to PyVBMC.</p>
-<div class="section" id="code-formatting">
+<section id="code-formatting">
 <h3>Code formatting<a class="headerlink" href="#code-formatting" title="Permalink to this headline">#</a></h3>
 <p>The code is formatted using <a class="reference external" href="https://pypi.org/project/black/">Black</a> with a line length of 79, with the help of pre-commit hooks. To install and use:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">pre</span><span class="o">-</span><span class="n">commit</span>
@@ -639,8 +646,8 @@ For convenience, we also have a temporary installer in <code class="docutils lit
 </div>
 <p>After installation, when you try to commit the staged files, git will automatically check the files and modify them for meeting the requirements of the hooks in <code class="docutils literal notranslate"><span class="pre">.pre-commit-config.yaml</span></code>. The settings of the hooks are specified in <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>. You need to restage the file if it gets modified by the hooks.</p>
 <p>If you want, you can also check with Pylint for more detailed errors and warnings (although Pylint seems to raise many false positives).</p>
-</div>
-<div class="section" id="docstrings">
+</section>
+<section id="docstrings">
 <h3>Docstrings<a class="headerlink" href="#docstrings" title="Permalink to this headline">#</a></h3>
 <p>The docstrings are generated following the <a class="reference external" href="https://numpydoc.readthedocs.io/en/latest/format.html">NumPy format</a>.
 There are add-ons to generate docstring blueprints using IDE’s.</p>
@@ -649,8 +656,8 @@ There are add-ons to generate docstring blueprints using IDE’s.</p>
 <li><p>In PyVBMC, the <code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code> class can be taken as an example of (mostly) correct docstring structure, see <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/variational_posterior/variational_posterior.py">here</a>.
 - In particular, see how the single quotes and double quotes are used; the math notation is used; full stops are added at the end of each sentence, etc.</p></li>
 </ul>
-</div>
-<div class="section" id="code-documentation">
+</section>
+<section id="code-documentation">
 <h3>Code documentation<a class="headerlink" href="#code-documentation" title="Permalink to this headline">#</a></h3>
 <p>The documentation is currently hosted on <a class="reference internal" href="index.html"><span class="doc">github.io</span></a>. We build the PyVBMC documentation using <a class="reference external" href="https://www.sphinx-doc.org/en/master/usage/quickstart.html">Sphinx</a>. The source code of the documentation is in the <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/docsrc">docsrc folder</a> and the build version is in the <a class="reference external" href="https://github.com/acerbilab/pyvbmc/tree/gh-pages">gh-pages</a> branch. When the documentation is re-built, it should be pushed to the <code class="docutils literal notranslate"><span class="pre">gh-pages</span></code> instead of committing it on the <code class="docutils literal notranslate"><span class="pre">main</span></code> branch.</p>
 <p>To setup an existing PyVBMC repository for building documentation, please follow the steps below:</p>
@@ -685,7 +692,7 @@ There are add-ons to generate docstring blueprints using IDE’s.</p>
 </pre></div>
 </div>
 <p>(If you are using Windows, run <code class="docutils literal notranslate"><span class="pre">.\make.bat</span> <span class="pre">clean</span></code> with <code class="docutils literal notranslate"><span class="pre">cmd</span></code> instead.)</p>
-<div class="section" id="general-structure">
+<section id="general-structure">
 <h4>General structure<a class="headerlink" href="#general-structure" title="Permalink to this headline">#</a></h4>
 <p>For each new class, function, etc. a <code class="docutils literal notranslate"><span class="pre">.rst</span></code> file needs to be created in an appropriate folder. The folder names are arbitrary, for now we have <code class="docutils literal notranslate"><span class="pre">functions</span></code>, <code class="docutils literal notranslate"><span class="pre">classes</span></code>, etc.
 The <code class="docutils literal notranslate"><span class="pre">.rst</span></code> file contains the text in <a class="reference external" href="https://en.wikipedia.org/wiki/ReStructuredText">reStructuredText format</a>, a lightweight markup language with special commands that tell Sphynx where to compile the documentation, for example:</p>
@@ -702,14 +709,14 @@ The <code class="docutils literal notranslate"><span class="pre">.rst</span></co
 </ul>
 <p>For each new file, a link needs to be added manually to the <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/docsrc/source/index.rst">index page</a>.
 Please keep the documentation up to date. (Sphinx logs possible issues when compiling the documentation.)</p>
-</div>
-</div>
-<div class="section" id="exceptions">
+</section>
+</section>
+<section id="exceptions">
 <h3>Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this headline">#</a></h3>
 <p>Currently, the aim is to use the standard Python exceptions whenever it is sensible.
 Here is a list of those <a class="reference external" href="https://docs.python.org/3/library/exceptions.html">exceptions</a>.</p>
-</div>
-<div class="section" id="git-commits">
+</section>
+<section id="git-commits">
 <h3><code class="docutils literal notranslate"><span class="pre">git</span></code> commits<a class="headerlink" href="#git-commits" title="Permalink to this headline">#</a></h3>
 <p>Commits follow the <a class="reference external" href="https://www.conventionalcommits.org/en/v1.0.0/">conventional commits</a> style. This makes it easier to collaborate on the project. A cheat sheet is can be found <a class="reference external" href="https://cheatography.com/albelop/cheat-sheets/conventional-commits/">here</a></p>
 <p>Please do not submit pull requests with unfinished code or code which does not pass all tests. Work on feature branches whenever possible and sensible. All PR’s must be approved by another developer before being merged to the main branch. <a class="reference external" href="https://martinfowler.com/bliki/FeatureBranch.html">Read this</a></p>
@@ -720,12 +727,12 @@ Here is a list of those <a class="reference external" href="https://docs.python.
 </pre></div>
 </div>
 <p>If you switch to an existing branch using <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">checkout</span></code>, remember to <code class="docutils literal notranslate"><span class="pre">pull</span></code> before making any change as it is not done automatically.</p>
-</div>
-<div class="section" id="modules-and-code-organization">
+</section>
+<section id="modules-and-code-organization">
 <h3>Modules and code organization<a class="headerlink" href="#modules-and-code-organization" title="Permalink to this headline">#</a></h3>
 <p>We have decided against general util/misc modules for now. This means that general-purpose functions should be included in a fitting existing module or in their own module. This approach encourages us to keep functions general and coherent to their scope. Furthermore, it improves readability for new collaborators. See some reading about that <a class="reference external" href="https://breadcrumbscollector.tech/stop-naming-your-python-modules-utils/">here</a>.</p>
-</div>
-<div class="section" id="testing">
+</section>
+<section id="testing">
 <h3>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">#</a></h3>
 <p>The testing is done using <code class="docutils literal notranslate"><span class="pre">pytest</span></code> with unit tests for each class in the respective folder.
 Tests can be run with:</p>
@@ -745,9 +752,9 @@ Tests can be run with:</p>
 <li><p>The <code class="docutils literal notranslate"><span class="pre">pytest-mock</span></code> library is very useful for testing. It allows you to replace parts of your system under test with mock objects and make assertions about how they have been used. (Perhaps we should switch to <code class="docutils literal notranslate"><span class="pre">unittest.mock</span></code> in the future, which is part of the Python standard library.)</p></li>
 <li><p>We should look into automating tests with GitHub actions.</p></li>
 </ul>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
               </div>

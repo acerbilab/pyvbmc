@@ -4,7 +4,8 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>PyVBMC Example 1: Basic usage &#8212; PyVBMC</title>
     
   <!-- Loaded before other Sphinx assets -->
@@ -21,7 +22,8 @@
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=5115cc725059bd94278eecd172e13a965bf8f5a9" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
     
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
@@ -30,8 +32,13 @@
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="canonical" href="https://acerbilab.github.io/pyvbmc/_examples/pyvbmc_example_1_basic_usage.html" />
@@ -598,7 +605,7 @@ title="Print to PDF"
                 
               <div>
                 
-  <div class="tex2jax_ignore mathjax_ignore section" id="pyvbmc-example-1-basic-usage">
+  <section class="tex2jax_ignore mathjax_ignore" id="pyvbmc-example-1-basic-usage">
 <h1>PyVBMC Example 1: Basic usage<a class="headerlink" href="#pyvbmc-example-1-basic-usage" title="Permalink to this headline">#</a></h1>
 <p>In this introductory example, we will show a simple usage of Variational Bayesian Monte Carlo (VBMC) to perform Bayesian inference on a synthetic target.</p>
 <p>This notebook is Part 1 of a series of notebooks in which we present various example usages for VBMC with the PyVBMC package. The code used in this example is available as a script <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/examples/pyvbmc_example_1_full_code.py">here</a>.</p>
@@ -606,12 +613,12 @@ title="Print to PDF"
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">scipy.stats</span> <span class="k">as</span> <span class="nn">scs</span>
-<span class="kn">from</span> <span class="nn">pyvbmc.vbmc</span> <span class="kn">import</span> <span class="n">VBMC</span>
+<span class="kn">from</span> <span class="nn">pyvbmc</span> <span class="kn">import</span> <span class="n">VBMC</span>
 </pre></div>
 </div>
 </div>
 </div>
-<div class="section" id="what-is-the-goal-of-py-vbmc">
+<section id="what-is-the-goal-of-py-vbmc">
 <h2>0. What is the goal of (Py)VBMC?<a class="headerlink" href="#what-is-the-goal-of-py-vbmc" title="Permalink to this headline">#</a></h2>
 <p>VBMC is an algorithm to efficiently perform Bayesian inference, and PyVBMC is its Python implementation. We recall that the goal of Bayesian inference is to obtain the <em>posterior distribution</em> <span class="math notranslate nohighlight">\(p(\mathbf{x}|\mathcal{D})\)</span>  for a vector of model parameters <span class="math notranslate nohighlight">\(\textbf{x}\)</span> and data set <span class="math notranslate nohighlight">\(\mathcal{D}\)</span>. The calculation involves <a class="reference external" href="https://en.wikipedia.org/wiki/Bayes%27_theorem">Bayes’ theorem</a>:</p>
 <div class="math notranslate nohighlight">
@@ -626,8 +633,8 @@ p(\mathbf{x}|\mathcal{D}) = \frac{p(\mathcal{D}|\mathbf{x}) p(\mathbf{x})}{p(\ma
 </ul>
 <p>all using as few target evaluations as possible.
 In the following, we see how to set up and run PyVBMC on a toy example.</p>
-</div>
-<div class="section" id="model-definition-log-likelihood-log-prior-and-log-joint">
+</section>
+<section id="model-definition-log-likelihood-log-prior-and-log-joint">
 <h2>1. Model definition: log-likelihood, log-prior, and log-joint<a class="headerlink" href="#model-definition-log-likelihood-log-prior-and-log-joint" title="Permalink to this headline">#</a></h2>
 <p>Normally, the log-likelihood function <span class="math notranslate nohighlight">\(\log p(\mathcal{D}|\mathbf{x})\)</span> depends on the model under consideration, where <span class="math notranslate nohighlight">\(\mathcal{D}\)</span> is the data and <span class="math notranslate nohighlight">\(\mathbf{x}\)</span> is a vector of <span class="math notranslate nohighlight">\(D\)</span> model parameters.
 For this example, we set as toy log-likelihood for our model a broad <a class="reference external" href="https://en.wikipedia.org/wiki/Rosenbrock_function">Rosenbrock’s banana function</a> in <span class="math notranslate nohighlight">\(D = 2\)</span>.</p>
@@ -682,8 +689,8 @@ For this example, we set as toy log-likelihood for our model a broad <a class="r
 </div>
 </div>
 </div>
-</div>
-<div class="section" id="parameter-setup-bounds-and-starting-point">
+</section>
+<section id="parameter-setup-bounds-and-starting-point">
 <h2>2. Parameter setup: bounds and starting point<a class="headerlink" href="#parameter-setup-bounds-and-starting-point" title="Permalink to this headline">#</a></h2>
 <p>We assume an unconstrained domain for the model parameters, that is <span class="math notranslate nohighlight">\(\mathbf{x} \in \mathbb{R}^D\)</span>, specifying <code class="docutils literal notranslate"><span class="pre">-inf</span></code> and <code class="docutils literal notranslate"><span class="pre">inf</span></code> for the lower and upper bounds, respectively.</p>
 <div class="cell docutils container">
@@ -719,8 +726,8 @@ For this example, we set as toy log-likelihood for our model a broad <a class="r
 </div>
 </div>
 </div>
-</div>
-<div class="section" id="initialize-and-run-inference">
+</section>
+<section id="initialize-and-run-inference">
 <h2>3. Initialize and run inference<a class="headerlink" href="#initialize-and-run-inference" title="Permalink to this headline">#</a></h2>
 <p>We now initialize the <code class="docutils literal notranslate"><span class="pre">vbmc</span></code> object which takes care of the inference. For now, we use default options.</p>
 <div class="cell docutils container">
@@ -781,16 +788,16 @@ The obtained ELBO_SD is: 0.000
 </div>
 </div>
 </div>
-<div class="section" id="remarks">
+<section id="remarks">
 <h3>Remarks:<a class="headerlink" href="#remarks" title="Permalink to this headline">#</a></h3>
 <ul class="simple">
 <li><p>The ELBO is a <em>lower bound</em> on the true log model evidence <span class="math notranslate nohighlight">\(\log p(\mathcal{D})\)</span>. The better the approximation of the posterior, the closer the ELBO is to the true log model evidence.</p></li>
 <li><p>PyVBMC does not aim for high numerical precision of the ELBO (e.g., beyond the 1st or 2nd decimal place). In most realistic model-fitting problems, a higher resolution is not necessary.</p></li>
 <li><p>The reported standard deviation of the ELBO, <code class="docutils literal notranslate"><span class="pre">elbo_sd</span></code>, is a measure of the uncertainty on the ELBO as estimated via Bayesian quadrature (the approximation technique used by PyVBMC). <code class="docutils literal notranslate"><span class="pre">elbo_sd</span></code> is <strong>not</strong> a measure of the difference between the ELBO and the true log model evidence, which is generally unknown.</p></li>
 </ul>
-</div>
-</div>
-<div class="section" id="examine-and-visualize-results">
+</section>
+</section>
+<section id="examine-and-visualize-results">
 <h2>4. Examine and visualize results<a class="headerlink" href="#examine-and-visualize-results" title="Permalink to this headline">#</a></h2>
 <p>We now examine the obtained variational posterior. We can easily draw hundreds of thousands of random samples from the variational posterior to compute summary statistics of interests.</p>
 <p>For reporting uncertainty on model parameter estimates, you could use posterior mean +/- SD, or the median and interquartile range of the samples (the latter is better for a posterior that deviates substantially from Gaussian).</p>
@@ -830,18 +837,18 @@ The approximate posterior covariance matrix is:
 </div>
 <p>The figure represents the multidimensional variational posterior <code class="docutils literal notranslate"><span class="pre">vp</span></code> via one- and two-dimensional marginal plots for each variable and pairs of variables.</p>
 <p>Here, the bottom-left panel represents the two-dimensional joint distribution of <span class="math notranslate nohighlight">\(x_1\)</span> and <span class="math notranslate nohighlight">\(x_2\)</span>, whereas the two panels on the diagonal represent the one-dimensional marginal distributions of <span class="math notranslate nohighlight">\(x_1\)</span> and <span class="math notranslate nohighlight">\(x_2\)</span>, respectively. Note that PyVBMC has managed to approximate very well the highly non-Gaussian shape of the target density.</p>
-</div>
-<div class="section" id="conclusions">
+</section>
+<section id="conclusions">
 <h2>5. Conclusions<a class="headerlink" href="#conclusions" title="Permalink to this headline">#</a></h2>
 <p>In this notebook, we have seen how to set up and run Bayesian inference with PyVBMC with a fairly minimal example.</p>
 <p>An important step which is not considered in this example is a thorough validation of the results and diagnostics, which will be discussed in a later notebook.</p>
 <p>The next notebook will look more in detail at the output trace and plots of PyVBMC, which is a good starting point to check how inference is proceeding.</p>
-</div>
-<div class="section" id="acknowledgments">
+</section>
+<section id="acknowledgments">
 <h2>Acknowledgments<a class="headerlink" href="#acknowledgments" title="Permalink to this headline">#</a></h2>
 <p>Work on the PyVBMC package was funded by the <a class="reference external" href="https://fcai.fi/">Finnish Center for Artificial Intelligence FCAI</a>.</p>
-</div>
-</div>
+</section>
+</section>
 
 
               </div>

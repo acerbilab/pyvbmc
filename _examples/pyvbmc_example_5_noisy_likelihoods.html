@@ -4,7 +4,8 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>PyVBMC Example 5: Noisy log-likelihood evaluations &#8212; PyVBMC</title>
     
   <!-- Loaded before other Sphinx assets -->
@@ -21,7 +22,8 @@
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=5115cc725059bd94278eecd172e13a965bf8f5a9" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
     
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
@@ -30,8 +32,13 @@
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="canonical" href="https://acerbilab.github.io/pyvbmc/_examples/pyvbmc_example_5_noisy_likelihoods.html" />
@@ -566,7 +573,7 @@ title="Print to PDF"
                 
               <div>
                 
-  <div class="tex2jax_ignore mathjax_ignore section" id="pyvbmc-example-5-noisy-log-likelihood-evaluations">
+  <section class="tex2jax_ignore mathjax_ignore" id="pyvbmc-example-5-noisy-log-likelihood-evaluations">
 <h1>PyVBMC Example 5: Noisy log-likelihood evaluations<a class="headerlink" href="#pyvbmc-example-5-noisy-log-likelihood-evaluations" title="Permalink to this headline">#</a></h1>
 <p>In this notebook, we demonstrate running PyVBMC with noisy evaluations of the log-likelihood. Here we emulate a noisy scenario by adding random Gaussian noise to the log-likelihood. In practice, noisy evaluations often emerge from estimation techniques for simulation-based models, such as <a class="reference external" href="https://github.com/acerbilab/ibs">Inverse Binomial Sampling (IBS)</a>. However the noise estimate is obtained, it is allowed to be (and in practice, often is) <em>heteroskedastic</em>: that is, the amount of noise in the estimate may vary across parameter space.</p>
 <p>This notebook is Part 5 of a series of notebooks in which we present various example usages for VBMC with the PyVBMC package. The code used in this example is available as a script <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/examples/pyvbmc_example_5_full_code.py">here</a>.</p>
@@ -574,14 +581,14 @@ title="Print to PDF"
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">scipy.stats</span> <span class="k">as</span> <span class="nn">scs</span>
-<span class="kn">from</span> <span class="nn">pyvbmc.vbmc</span> <span class="kn">import</span> <span class="n">VBMC</span>
+<span class="kn">from</span> <span class="nn">pyvbmc</span> <span class="kn">import</span> <span class="n">VBMC</span>
 <span class="kn">import</span> <span class="nn">dill</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 </pre></div>
 </div>
 </div>
 </div>
-<div class="section" id="model-definition-log-prior-noisy-log-likelihood-and-log-joint">
+<section id="model-definition-log-prior-noisy-log-likelihood-and-log-joint">
 <h2>1. Model definition: log-prior, noisy log-likelihood and log-joint<a class="headerlink" href="#model-definition-log-prior-noisy-log-likelihood-and-log-joint" title="Permalink to this headline">#</a></h2>
 <p>We use the same toy target function as in Example 1, a broad <a class="reference external" href="https://en.wikipedia.org/wiki/Rosenbrock_function">Rosenbrock’s banana function</a> in <span class="math notranslate nohighlight">\(D = 2\)</span>. But this time, we add random heteroskedastic Gaussian noise to the function evaluations.</p>
 <div class="cell docutils container">
@@ -644,8 +651,8 @@ title="Print to PDF"
 </div>
 </div>
 <p>We omit optimizing <code class="docutils literal notranslate"><span class="pre">x0</span></code> to find a good starting point, as previously suggested, because naive optimization would fail badly for a noisy objective anyway. For noisy optimization, consider using <a class="reference external" href="https://github.com/acerbilab/bads">BADS</a> or its Python port PyBADS — coming soon!</p>
-</div>
-<div class="section" id="setting-up-a-noisy-vbmc-instance">
+</section>
+<section id="setting-up-a-noisy-vbmc-instance">
 <h2>2. Setting up a noisy <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> instance<a class="headerlink" href="#setting-up-a-noisy-vbmc-instance" title="Permalink to this headline">#</a></h2>
 <p>As a final step, we have to tell PyVBMC that we are working with a noisy likelihood, by turning on the <code class="docutils literal notranslate"><span class="pre">specify_target_noise</span></code> option. Otherwise PyVBMC will throw an <code class="docutils literal notranslate"><span class="pre">InvalidFuncValue</span></code> error, indicating that the target function is returning unexpected values.</p>
 <div class="cell docutils container">
@@ -743,16 +750,16 @@ Estimated ELBO: -1.562 +/-0.141.
 <img alt="../_images/bad5bc33ab6c4d4e81ce7bd485c64a11a3996281c1b5212255b0be784f0b836d.png" src="../_images/bad5bc33ab6c4d4e81ce7bd485c64a11a3996281c1b5212255b0be784f0b836d.png" />
 </div>
 </div>
-</div>
-<div class="section" id="conclusions">
+</section>
+<section id="conclusions">
 <h2>3. Conclusions<a class="headerlink" href="#conclusions" title="Permalink to this headline">#</a></h2>
 <p>In this notebook, we have illustrated how to use PyVBMC on a model with a noisy likelihood. Even in the presence of significant noise, PyVBMC can find a good variational solution in relatively few function evaluations.</p>
-</div>
-<div class="section" id="acknowledgments">
+</section>
+<section id="acknowledgments">
 <h2>Acknowledgments<a class="headerlink" href="#acknowledgments" title="Permalink to this headline">#</a></h2>
 <p>Work on the PyVBMC package was funded by the <a class="reference external" href="https://fcai.fi/">Finnish Center for Artificial Intelligence FCAI</a>.</p>
-</div>
-</div>
+</section>
+</section>
 
 
               </div>
