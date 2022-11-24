@@ -61,7 +61,7 @@ A typical PyVBMC workflow follows four steps:
 
 PyVBMC is not concerned with how you define your model in step 1, as long as you can provide an (unnormalized) target log density. Running the inference in step 3 only involves a couple of lines of code:
 ```python
-from pyvbmc.vbmc import VBMC
+from pyvbmc import VBMC
 # ... define your model/target density here
 vbmc = VBMC(target, x0, LB, UB, PLB, PUB)
 vp, results = vbmc.optimize()

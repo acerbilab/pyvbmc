@@ -22,7 +22,7 @@ Running the inference in step 3 only involves a couple of lines of code:
 
 .. code-block:: python
 
-  from pyvbmc.vbmc import VBMC
+  from pyvbmc import VBMC
   # ...
   vbmc = VBMC(target, x0, LB, UB, PLB, PUB)
   vp, results = vbmc.optimize()
