@@ -13,12 +13,10 @@ repos:
       - id: isort
         additional_dependencies: [toml]
         exclude: docs/tutorials
-        exclude: examples/*.py
   - repo: https://github.com/psf/black
     rev: "22.3.0"
     hooks:
       - id: black-jupyter
-        exclude: examples/*.py
   - repo: https://github.com/hadialqattan/pycln
     rev: "v1.2.5"
     hooks:

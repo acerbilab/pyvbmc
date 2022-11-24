@@ -1,9 +1,9 @@
-import numpy as np
-import scipy.stats as scs
-from pyvbmc import VBMC
 import dill
 import matplotlib.pyplot as plt
+import numpy as np
+import scipy.stats as scs
 
+from pyvbmc import VBMC
 
 D = 2  # We'll use a 2-D problem, again for speed
 prior_mu = np.zeros(D)
@@ -31,7 +31,7 @@ def log_likelihood(theta):
 
     # Rosenbrock likelihood:
     x, y = theta[:, :-1], theta[:, 1:]
-    base_density = -np.sum((x ** 2 - y) ** 2 + (x - 1) ** 2 / 100, axis=1)
+    base_density = -np.sum((x**2 - y) ** 2 + (x - 1) ** 2 / 100, axis=1)
 
     noisy_estimate = base_density + noise_sd * np.random.normal(size=(n, 1))
     return noisy_estimate, noise_sd
@@ -65,7 +65,7 @@ np.random.seed(42)
 vp, results = vbmc.optimize()
 
 
-with open("noise_free_vp.pkl", "rb") as f:
+with open("../noise_free_vp.pkl", "rb") as f:
     noise_free_vp = dill.load(f)
 # KL divergence between this VP and the noise-free VP:
 print(vbmc.vp.kl_div(vp2=noise_free_vp))

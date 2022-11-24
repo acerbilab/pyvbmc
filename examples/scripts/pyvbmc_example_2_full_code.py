@@ -1,5 +1,6 @@
 import numpy as np
 import scipy.stats as scs
+
 from pyvbmc import VBMC
 
 np.random.seed(42)
@@ -13,7 +14,7 @@ def log_likelihood(theta):
     theta = np.atleast_2d(theta)
 
     x, y = theta[:, :-1], theta[:, 1:]
-    return -np.sum((x ** 2 - y) ** 2 + (x - 1) ** 2 / 100, axis=1)
+    return -np.sum((x**2 - y) ** 2 + (x - 1) ** 2 / 100, axis=1)
 
 
 prior_tau = 3 * np.ones((1, D))  # Length scale of the exponential prior

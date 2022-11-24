@@ -1,10 +1,10 @@
+import dill
 import numpy as np
 import scipy.stats as scs
 from scipy.optimize import minimize
+
 from pyvbmc import VBMC
 from pyvbmc.formatting import format_dict
-import dill
-
 
 D = 4  # A four-dimensional problem
 prior_mu = np.zeros(D)
@@ -24,7 +24,7 @@ def log_likelihood(theta, data=np.ones(D)):
     theta = theta + data
 
     x, y = theta[:, :-1], theta[:, 1:]
-    return -np.sum((x ** 2 - y) ** 2 + (x - 1) ** 2 / 100, axis=1)
+    return -np.sum((x**2 - y) ** 2 + (x - 1) ** 2 / 100, axis=1)
 
 
 def log_joint(theta, data=np.ones(D)):
@@ -84,10 +84,10 @@ print(results["success_flag"])
 print(format_dict(results))
 
 
-with open("vbmc_test_save.pkl", "wb") as f:
+with open("../vbmc_test_save.pkl", "wb") as f:
     dill.dump(vbmc, f)
 
-with open("vbmc_test_save.pkl", "rb") as f:
+with open("../vbmc_test_save.pkl", "rb") as f:
     vbmc = dill.load(f)
 
 
@@ -131,10 +131,10 @@ vp, results = vbmc.optimize()
 print(format_dict(results))
 
 
-with open("vbmc_test_save.pkl", "wb") as f:
+with open("../vbmc_test_save.pkl", "wb") as f:
     dill.dump(vbmc, f)
 
-with open("vbmc_test_save.pkl", "rb") as f:
+with open("../vbmc_test_save.pkl", "rb") as f:
     vbmc = dill.load(f)
 
 samples, components = vbmc.vp.sample(5)

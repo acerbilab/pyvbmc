@@ -1,10 +1,10 @@
+import dill
+import matplotlib.pyplot as plt
 import numpy as np
 import scipy.stats as scs
 from scipy.optimize import minimize
-from pyvbmc import VBMC
-import matplotlib.pyplot as plt
-import dill
 
+from pyvbmc import VBMC
 
 D = 2  # We'll use a 2-D problem for a quicker demonstration
 prior_mu = np.zeros(D)
@@ -23,7 +23,7 @@ def log_likelihood(theta):
     theta = np.atleast_2d(theta)
 
     x, y = theta[:, :-1], theta[:, 1:]
-    return -np.sum((x ** 2 - y) ** 2 + (x - 1) ** 2 / 100, axis=1)
+    return -np.sum((x**2 - y) ** 2 + (x - 1) ** 2 / 100, axis=1)
 
 
 # Full model:
@@ -119,5 +119,5 @@ idx_best = np.argmax(elcbos)
 print(idx_best)
 
 
-with open("noise_free_vp.pkl", "wb") as f:
+with open("../noise_free_vp.pkl", "wb") as f:
     dill.dump(vps[idx_best], f)

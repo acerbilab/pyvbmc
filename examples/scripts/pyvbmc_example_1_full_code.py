@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.stats as scs
-from pyvbmc import VBMC
 
+from pyvbmc import VBMC
 
 D = 2  # We consider a 2-D problem
 
@@ -11,7 +11,7 @@ def log_likelihood(theta):
     theta = np.atleast_2d(theta)
 
     x, y = theta[:, :-1], theta[:, 1:]
-    return -np.sum((x ** 2 - y) ** 2 + (x - 1) ** 2 / 100, axis=1)
+    return -np.sum((x**2 - y) ** 2 + (x - 1) ** 2 / 100, axis=1)
 
 
 # In general, `log_likelihood` would depend on the data and *your* particular model
