@@ -28,18 +28,18 @@ Conversely, if your model can be written analytically, you should exploit the po
 
 PyVBMC is not yet available on `pip`/`conda-forge`, but can be installed in a few steps:
 
-1. Clone the PyVBMC and `gpyreg` GitHub repos locally:
+1. Clone the PyVBMC and GPyReg GitHub repos locally:
    ```console
    git clone https://github.com/acerbilab/pyvbmc
    git clone https://github.com/acerbilab/gpyreg
    ```
-   (PyVBMC depends on [`gpyreg`](https://github.com/acerbilab/gpyreg), which is a package for lightweight Gaussian process regression in Python.)
+   (PyVBMC depends on [GPyReg](https://github.com/acerbilab/gpyreg), which is a package for lightweight Gaussian process regression in Python.)
 2. (Optional) Create a new environment in `conda` and activate it. We recommend using Python 3.9 or newer, but older versions *might* work:
    ```console
    conda create --name pyvbmc-env python=3.9
    conda activate pyvbmc-env
    ```
-3. Install the repos:
+3. Install the packages:
    ```console
    cd ./gpyreg
    pip install -e .
@@ -116,8 +116,9 @@ See the VBMC papers [[1,2](#references-and-citation)] for more details.
 PyVBMC is under active development. The original VBMC algorithm has been extensively tested in several benchmarks and published papers, and the benchmarks have been replicated using PyVBMC. But as with any approximate inference technique, you should double-check your results. See the [examples](examples) for descriptions of the convergence diagnostics and suggestions on validating PyVBMC's results with multiple runs.
 
 If you have trouble doing something with PyVBMC, spot bugs or strange behavior, or you simply have some questions, please feel free to:
-- [open an issue](https://github.com/acerbilab/pyvbmc/issues/new) on GitHub, or,
-- contact the project lead at <luigi.acerbi@helsinki.fi>, putting 'PyVBMC' in the subject of the email.
+- Post in the lab's [Discussions forum](https://github.com/orgs/acerbilab/discussions) with questions or comments about PyVBMC, your problems & applications;
+- [Open an issue](https://github.com/acerbilab/pyvbmc/issues/new) on GitHub;
+- Contact the project lead at <luigi.acerbi@helsinki.fi>, putting 'PyVBMC' in the subject of the email.
 
 ## References and citation
 
@@ -131,6 +132,7 @@ Please cite both references if you use PyVBMC in your work (the 2018 paper intro
 Besides formal citations, you can demonstrate your appreciation for PyVBMC in the following ways:
 
 - *Star :star:* the VBMC repository on GitHub;
+- [Subscribe](http://eepurl.com/idcvc9) to the lab's newsletter for news and updates (new features, bug fixes, new releases, etc.);
 - [Follow Luigi Acerbi on Twitter](https://twitter.com/AcerbiLuigi) for updates about VBMC/PyVBMC and other projects;
 - Tell us about your model-fitting problem and your experience with PyVBMC (positive or negative) at <luigi.acerbi@helsinki.fi> (putting  'PyVBMC' in the subject of the email).
 
@@ -171,10 +173,10 @@ You may also want to check out [Bayesian Adaptive Direct Search](https://github.
 }
 ```
 
-### Acknowledgments
-
-PyVBMC was developed from the original MATLAB toolbox by [members](https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence/people) (past and current) of the [Machine and Human Intelligence Lab](https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence/) at the University of Helsinki. The ongoing Python port is being supported by the Academy of Finland Flagship programme: [Finnish Centre for Artificial Intelligence FCAI](https://fcai.fi/).
-
 ### License
 
 PyVBMC is released under the terms of the [BSD 3-Clause License](LICENSE).
+
+### Acknowledgments
+
+PyVBMC was developed from the original MATLAB toolbox by [members](https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence/people) (past and current) of the [Machine and Human Intelligence Lab](https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence/) at the University of Helsinki. The ongoing Python port is being supported by the Academy of Finland Flagship programme: [Finnish Centre for Artificial Intelligence (FCAI)](https://fcai.fi/).
