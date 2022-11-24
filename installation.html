@@ -80,9 +80,12 @@
         <div class="bd-sidebar__top"><div class="navbar-brand-box">
     <a class="navbar-brand text-wrap" href="index.html">
       
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
       
       
-      <h1 class="site-logo" id="site-title">PyVBMC</h1>
+      <img src="_static/logo.svg" class="logo" alt="logo">
+      
       
     </a>
 </div><form class="bd-search d-flex align-items-center" action="search.html" method="get">
@@ -462,7 +465,7 @@ title="Print to PDF"
 </pre></div>
 </div>
 </li>
-<li><p>Install the repos:</p>
+<li><p>Install the packages:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">./</span><span class="n">gpyreg</span>
 <span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="o">.</span>
 <span class="n">cd</span> <span class="o">../</span><span class="n">pyvbmc</span>

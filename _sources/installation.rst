@@ -15,7 +15,7 @@ PyVBMC is not yet available on ``pip`` / ``conda-forge``, but can be installed i
       conda create --name pyvbmc-env python=3.9
       conda activate pyvbmc-env
 
-3. Install the repos::
+3. Install the packages::
 
       cd ./gpyreg
       pip install -e .
