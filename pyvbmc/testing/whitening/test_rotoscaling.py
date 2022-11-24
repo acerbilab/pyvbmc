@@ -5,9 +5,9 @@ import numpy as np
 import pytest
 import scipy.stats as st
 
+from pyvbmc import VBMC
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.variational_posterior import VariationalPosterior
-from pyvbmc.vbmc import VBMC
 from pyvbmc.whitening import unscent_warp, warp_gp_and_vp, warp_input
 
 D = 2

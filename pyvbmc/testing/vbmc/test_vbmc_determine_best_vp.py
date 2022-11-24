@@ -1,6 +1,6 @@
 import numpy as np
 
-from pyvbmc.vbmc import VBMC
+from pyvbmc import VBMC
 
 
 def create_vbmc(

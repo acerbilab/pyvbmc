@@ -4,8 +4,8 @@ import dill
 import numpy as np
 import scipy as sp
 
+from pyvbmc import VBMC
 from pyvbmc.acquisition_functions import *
-from pyvbmc.vbmc import VBMC
 
 
 def wrap_with_test(method, vbmc):
