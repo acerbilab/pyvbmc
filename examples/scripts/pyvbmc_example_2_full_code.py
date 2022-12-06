@@ -115,6 +115,10 @@ fig.add_trace(
 )
 
 # Find and plot approximate posterior mode
+# NB: We do not particularly recommend to use the posterior mode as parameter
+# estimate (also known as maximum-a-posterior or MAP estimate), because it
+# tends to be more brittle (especially in the PyVBMC approximation) than the
+# posterior mean.
 post_mode = vp.mode()
 fig.add_trace(
     go.Scatter3d(
