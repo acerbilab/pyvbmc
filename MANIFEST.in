@@ -2,3 +2,4 @@ include pyvbmc/testing/variational_posterior/*.txt
 include pyvbmc/testing/variational_posterior/*.mat
 include pyvbmc/testing/vbmc/*.txt
 include pyvbmc/testing/vbmc/compare_MATLAB/*
+prune docsrc

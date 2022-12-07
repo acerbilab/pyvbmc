@@ -24,9 +24,13 @@ requires-python = ">=3.9"
 
 [tool.setuptools]
 include-package-data = true
+# Include examples in binary/wheel distribution:
+packages = ["pyvbmc", "pyvbmc.examples"]
+package-dir = {"pyvbmc.examples" = "examples"}
 
-[tool.setuptools.packages.find]
-namespaces = false
+[tool.setuptools.package-data]
+# Make sure to include example Notebooks:
+"pyvbmc.examples" = ["*.ipynb"]
 
 [project.optional-dependencies]
 dev = [
