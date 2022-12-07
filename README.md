@@ -26,30 +26,28 @@ Conversely, if your model can be written analytically, you should exploit the po
 
 ## Installation
 
-PyVBMC is not yet available on `pip`/`conda-forge`, but can be installed in a few steps:
+PyVBMC is available via `pip` (and soon, `conda-forge`).
 
-1. Clone the PyVBMC and GPyReg GitHub repos locally:
-   ```console
-   git clone https://github.com/acerbilab/pyvbmc
-   git clone https://github.com/acerbilab/gpyreg
-   ```
-   (PyVBMC depends on [GPyReg](https://github.com/acerbilab/gpyreg), which is a package for lightweight Gaussian process regression in Python.)
-2. (Optional) Create a new environment in `conda` and activate it. We recommend using Python 3.9 or newer, but older versions *might* work:
-   ```console
-   conda create --name pyvbmc-env python=3.9
-   conda activate pyvbmc-env
-   ```
-3. Install the packages:
-   ```console
-   cd ./gpyreg
-   pip install -e .
-   cd ../pyvbmc
-   pip install -e .
-   ```
-4. Install `jupyter` to view the examples (you can skip this step if you're working from a `conda` environment which already has `jupyter`):
+1. Install with:
+    ```console
+    python -m pip install pyvbmc
+    ```
+    or:
+    ```console
+    conda install --channel=conda-forge pyvbmc
+    ```
+    PyVBMC requires Python version 3.9 or newer.
+2. (Optional): Install Jupyter to view the example Notebooks. You can skip this step if you're working from a Conda environment which already has Jupyter, but be aware that if the wrong `jupyter` executable is found on your path then import errors may arise.
    ```console
    conda install jupyter
    ```
+   The example notebooks can be accessed by running
+   ```console
+   python -m pyvbmc
+   ```
+
+If you wish to install directly from latest source code, please see the [instructions for developers and contributors](https://acerbilab.github.io/pyvbmc/development.html#installation-instructions-for-developers).
+
 
 ## Quick start
 A typical PyVBMC workflow follows four steps:
