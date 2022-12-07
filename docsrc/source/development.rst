@@ -8,28 +8,36 @@ The reference code is the :labrepos:`MATLAB toolbox <vbmc>`.
 
 The documentation is available at: https://acerbilab.github.io/pyvbmc/
 
-How to install and run the package (temporary)
-##############################################
+Installation instructions for developers
+########################################
 
-PyVBMC is not yet available on ``pip`` / ``conda-forge``. The suggested manual installation instructions can be found on the :ref:`Installation` page.
+Release versions of PyVBMC are available via ``pip`` (and soon, ``conda-forge``), but developers will need to work with the latest source code. They should follow these steps to install:
 
-We are using the dependencies listed in ``requirements.txt``. Please list all used dependencies there.
-For convenience, we also have a temporary installer in ``setup.py``. Also list the used dependencies there.
+1. (Optional, but recommended for development): Create a new environment in Conda and activate it. Requires Python 3.9 or newer::
+
+     conda create --name pyvbmc-env python=3.9
+     conda activate pyvbmc-env
+
+2. Clone the PyVBMC and GPyReg GitHub repos locally::
+
+     git clone https://github.com/acerbilab/pyvbmc
+     git clone https://github.com/acerbilab/gpyreg
+
+   (PyVBMC depends on :labrepos:`GPyReg <gpyreg>`, which is a package for lightweight Gaussian process regression in Python.)
+3. Install the packages and their optional development dependencies::
+
+     cd ./gpyreg
+     pip install -e '.[dev]'
+     cd ../pyvbmc
+     pip install -e '.[dev]'
+
+4. Install Jupyter to view the examples You can skip this step if you're working from a Conda environment which already has Jupyter, but be aware that if the wrong ``jupyter`` executable is found on your path then import errors may arise. ::
+
+     conda install jupyter
+
+We are using the dependencies listed in ``pyproject.toml``. Please list all used dependencies there. Dependencies are separated into basic dependencies, and optional development dependencies included under ``dev``.
 
 The necessary packages can be installed with `conda <https://docs.conda.io/projects/conda/en/latest/user-guide/install/>`_ or `pip <https://pypi.org/project/pip/>`_.
-
-Alternative installation commands
----------------------------------
-
-These are alternative ways to install the required dependencies::
-
-    conda env create --file environment.yml
-
-or::
-
-    pip install -i requirements.txt
-
-The ``environment.yml`` seems not to work properly in some setups (e.g., Windows), which is something to be investigated.
 
 Coding conventions
 ##################
