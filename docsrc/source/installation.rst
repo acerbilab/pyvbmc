@@ -2,7 +2,7 @@
 Installation
 ************
 
-PyVBMC is available via ``pip`` (and soon, ``conda-forge``).
+PyVBMC is available via ``pip`` and ``conda-forge``.
 
 1. Install with::
 

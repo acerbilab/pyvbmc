@@ -2,7 +2,7 @@
 # PyVBMC: Variational Bayesian Monte Carlo in Python
 ### What is it?
 
-PyVBMC is the port of the [MATLAB VBMC algorithm](https://github.com/acerbilab/vbmc) to Python. VBMC is an approximate inference method designed to fit and evaluate Bayesian models with a limited budget of potentially noisy likelihood evaluations (e.g., for computationally expensive models). Specifically, VBMC simultaneously computes:
+PyVBMC is a Python implementation of the Variational Bayesian Monte Carlo (VBMC) algorithm for posterior and model inference, originally implemented [in MATLAB](https://github.com/acerbilab/vbmc). VBMC is an approximate inference method designed to fit and evaluate Bayesian models with a limited budget of potentially noisy likelihood evaluations (e.g., for computationally expensive models). Specifically, VBMC simultaneously computes:
 - an approximate posterior distribution of the model parameters;
 - an approximation — technically, an approximate lower bound — of the log model evidence (also known as log marginal likelihood or log Bayes factor), a metric used for [Bayesian model selection](https://en.wikipedia.org/wiki/Bayes_factor).
 
@@ -22,11 +22,11 @@ PyVBMC is effective when:
 - the target posterior distribution is continuous and reasonably smooth (see [here](https://github.com/acerbilab/vbmc/wiki#general));
 - optionally, log-likelihood evaluations may be noisy (e.g., estimated [via simulation](https://github.com/acerbilab/ibs)).
 
-Conversely, if your model can be written analytically, you should exploit the powerful machinery of probabilistic programming frameworks such as [Stan](http://mc-stan.org/) or [PyMC3](https://docs.pymc.io/).
+Conversely, if your model can be written analytically, you should exploit the powerful machinery of probabilistic programming frameworks such as [Stan](http://mc-stan.org/) or [PyMC](https://docs.pymc.io/).
 
 ## Installation
 
-PyVBMC is available via `pip` (and soon, `conda-forge`).
+PyVBMC is available via `pip` and `conda-forge`.
 
 1. Install with:
     ```console
