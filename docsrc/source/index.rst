@@ -2,7 +2,7 @@
 PyVBMC
 ******
 
-PyVBMC is a Python 3 implementation of the original :labrepos:`MATLAB algorithm <vbmc>` for Variational Bayesian Monte Carlo (VBMC).
+PyVBMC is a Python implementation of the Variational Bayesian Monte Carlo (VBMC) algorithm for posterior and model inference, originally implemented :labrepos:`in MATLAB`.
 
 What is it?
 ###########
@@ -47,7 +47,7 @@ PyVBMC is effective when:
 - the target posterior density is continuous and reasonably smooth;
 - the log-likelihood can be evaluated *exactly* (e.g., analytically or numerically, but without noise in the evaluation itself).
 
-Conversely, if your model can be written in closed form and is fast to evaluate, you should exploit the powerful machinery of probabilistic programming frameworks such as `Stan <https://mc-stan.org/>`_ or `PyMC3 <https://docs.pymc.io/>`_.
+Conversely, if your model can be written in closed form and is fast to evaluate, you should exploit the powerful machinery of probabilistic programming frameworks such as `Stan <https://mc-stan.org/>`_ or `PyMC <https://docs.pymc.io/>`_.
 
 Documentation
 #############
