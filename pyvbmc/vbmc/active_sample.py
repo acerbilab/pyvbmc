@@ -152,10 +152,10 @@ def active_sample(
 
         # Remove points from starting cache
         optim_state["cache"]["x_orig"] = np.delete(
-            optim_state["cache"]["x_orig"], idx_remove, 0
+            optim_state["cache"]["x_orig"], np.where(idx_remove), 0
         )
         optim_state["cache"]["y_orig"] = np.delete(
-            optim_state["cache"]["y_orig"], idx_remove, 0
+            optim_state["cache"]["y_orig"], np.where(idx_remove), 0
         )
 
         Xs = parameter_transformer(Xs)
