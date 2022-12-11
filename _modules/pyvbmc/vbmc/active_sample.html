@@ -531,10 +531,10 @@ title="Open an issue"
 
         <span class="c1"># Remove points from starting cache</span>
         <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;cache&quot;</span><span class="p">][</span><span class="s2">&quot;x_orig&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span>
-            <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;cache&quot;</span><span class="p">][</span><span class="s2">&quot;x_orig&quot;</span><span class="p">],</span> <span class="n">idx_remove</span><span class="p">,</span> <span class="mi">0</span>
+            <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;cache&quot;</span><span class="p">][</span><span class="s2">&quot;x_orig&quot;</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">idx_remove</span><span class="p">),</span> <span class="mi">0</span>
         <span class="p">)</span>
         <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;cache&quot;</span><span class="p">][</span><span class="s2">&quot;y_orig&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span>
-            <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;cache&quot;</span><span class="p">][</span><span class="s2">&quot;y_orig&quot;</span><span class="p">],</span> <span class="n">idx_remove</span><span class="p">,</span> <span class="mi">0</span>
+            <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;cache&quot;</span><span class="p">][</span><span class="s2">&quot;y_orig&quot;</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">idx_remove</span><span class="p">),</span> <span class="mi">0</span>
         <span class="p">)</span>
 
         <span class="n">Xs</span> <span class="o">=</span> <span class="n">parameter_transformer</span><span class="p">(</span><span class="n">Xs</span><span class="p">)</span>
