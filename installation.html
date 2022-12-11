@@ -22,8 +22,7 @@
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=5115cc725059bd94278eecd172e13a965bf8f5a9" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.css" />
-    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
@@ -32,13 +31,8 @@
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script>let toggleHintShow = 'Click to show';</script>
-    <script>let toggleHintHide = 'Click to hide';</script>
-    <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="_static/togglebutton.js"></script>
     <script src="_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
     <link rel="canonical" href="https://acerbilab.github.io/pyvbmc/installation.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -450,35 +444,29 @@ title="Print to PDF"
                 
   <section id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">#</a></h1>
-<p>PyVBMC is not yet available on <code class="docutils literal notranslate"><span class="pre">pip</span></code> / <code class="docutils literal notranslate"><span class="pre">conda-forge</span></code>, but can be installed in a few steps:</p>
+<p>PyVBMC is available via <code class="docutils literal notranslate"><span class="pre">pip</span></code> and <code class="docutils literal notranslate"><span class="pre">conda-forge</span></code>.</p>
 <ol class="arabic">
-<li><p>Clone the PyVBMC and GPyReg GitHub repos locally:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">acerbilab</span><span class="o">/</span><span class="n">pyvbmc</span>
-<span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">acerbilab</span><span class="o">/</span><span class="n">gpyreg</span>
+<li><p>Install with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">pyvbmc</span>
 </pre></div>
 </div>
-<p>(PyVBMC depends on <a class="reference external" href="https://github.com/acerbilab/gpyreg">GPyReg</a>, which is a package for lightweight Gaussian process regression in Python.)</p>
-</li>
-<li><p>(Optional) Create a new environment in <code class="docutils literal notranslate"><span class="pre">conda</span></code> and activate it. We recommend using Python 3.9 or newer, but older versions <em>might</em> work:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">--</span><span class="n">name</span> <span class="n">pyvbmc</span><span class="o">-</span><span class="n">env</span> <span class="n">python</span><span class="o">=</span><span class="mf">3.9</span>
-<span class="n">conda</span> <span class="n">activate</span> <span class="n">pyvbmc</span><span class="o">-</span><span class="n">env</span>
+<p>or:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">--</span><span class="n">channel</span><span class="o">=</span><span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="n">pyvbmc</span>
 </pre></div>
 </div>
+<p>PyVBMC requires Python version 3.9 or newer.</p>
 </li>
-<li><p>Install the packages:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">./</span><span class="n">gpyreg</span>
-<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="o">.</span>
-<span class="n">cd</span> <span class="o">../</span><span class="n">pyvbmc</span>
-<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="o">.</span>
-</pre></div>
-</div>
-</li>
-<li><p>Install <code class="docutils literal notranslate"><span class="pre">jupyter</span></code> to view the examples (you can skip this step if you’re working from a <code class="docutils literal notranslate"><span class="pre">conda</span></code> environment which already has <code class="docutils literal notranslate"><span class="pre">jupyter</span></code>):</p>
+<li><p>(Optional): Install Jupyter to view the examples. You can skip this step if you’re working from a Conda environment which already has Jupyter, but be aware that if the wrong <code class="docutils literal notranslate"><span class="pre">jupyter</span></code> executable is found on your path then import errors may arise.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">jupyter</span>
+</pre></div>
+</div>
+<p>The example notebooks can be accessed by running</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pyvbmc</span>
 </pre></div>
 </div>
 </li>
 </ol>
+<p>If you wish to install directly from latest source code, please see the <a class="reference internal" href="development.html#installation-instructions-for-developers"><span class="std std-ref">Installation instructions for developers</span></a>.</p>
 </section>
 
 

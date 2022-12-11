@@ -22,8 +22,7 @@
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=5115cc725059bd94278eecd172e13a965bf8f5a9" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.css" />
-    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
@@ -32,13 +31,8 @@
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script>let toggleHintShow = 'Click to show';</script>
-    <script>let toggleHintHide = 'Click to hide';</script>
-    <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="_static/togglebutton.js"></script>
     <script src="_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
     <link rel="canonical" href="https://acerbilab.github.io/pyvbmc/development.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -447,16 +441,9 @@ title="Print to PDF"
     <nav id="bd-toc-nav" aria-label="Page">
         <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#how-to-install-and-run-the-package-temporary">
-   How to install and run the package (temporary)
+  <a class="reference internal nav-link" href="#installation-instructions-for-developers">
+   Installation instructions for developers
   </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#alternative-installation-commands">
-     Alternative installation commands
-    </a>
-   </li>
-  </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#coding-conventions">
@@ -532,16 +519,9 @@ title="Print to PDF"
                         <nav aria-label="Page">
                             <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#how-to-install-and-run-the-package-temporary">
-   How to install and run the package (temporary)
+  <a class="reference internal nav-link" href="#installation-instructions-for-developers">
+   Installation instructions for developers
   </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#alternative-installation-commands">
-     Alternative installation commands
-    </a>
-   </li>
-  </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#coding-conventions">
@@ -612,24 +592,39 @@ title="Print to PDF"
 <p>PyVBMC is the port of the MATLAB VBMC algorithm to Python 3.x (development has targeted version 3.9 and up).</p>
 <p>The reference code is the <a class="reference external" href="https://github.com/acerbilab/vbmc">MATLAB toolbox</a>.</p>
 <p>The documentation is available at: <a class="reference external" href="https://acerbilab.github.io/pyvbmc/">https://acerbilab.github.io/pyvbmc/</a></p>
-<section id="how-to-install-and-run-the-package-temporary">
-<h2>How to install and run the package (temporary)<a class="headerlink" href="#how-to-install-and-run-the-package-temporary" title="Permalink to this headline">#</a></h2>
-<p>PyVBMC is not yet available on <code class="docutils literal notranslate"><span class="pre">pip</span></code> / <code class="docutils literal notranslate"><span class="pre">conda-forge</span></code>. The suggested manual installation instructions can be found on the <a class="reference internal" href="installation.html#installation"><span class="std std-ref">Installation</span></a> page.</p>
-<p>We are using the dependencies listed in <code class="docutils literal notranslate"><span class="pre">requirements.txt</span></code>. Please list all used dependencies there.
-For convenience, we also have a temporary installer in <code class="docutils literal notranslate"><span class="pre">setup.py</span></code>. Also list the used dependencies there.</p>
+<section id="installation-instructions-for-developers">
+<h2>Installation instructions for developers<a class="headerlink" href="#installation-instructions-for-developers" title="Permalink to this headline">#</a></h2>
+<p>Release versions of PyVBMC are available via <code class="docutils literal notranslate"><span class="pre">pip</span></code> (and soon, <code class="docutils literal notranslate"><span class="pre">conda-forge</span></code>), but developers will need to work with the latest source code. They should follow these steps to install:</p>
+<ol class="arabic">
+<li><p>(Optional, but recommended for development): Create a new environment in Conda and activate it. Requires Python 3.9 or newer:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">--</span><span class="n">name</span> <span class="n">pyvbmc</span><span class="o">-</span><span class="n">env</span> <span class="n">python</span><span class="o">=</span><span class="mf">3.9</span>
+<span class="n">conda</span> <span class="n">activate</span> <span class="n">pyvbmc</span><span class="o">-</span><span class="n">env</span>
+</pre></div>
+</div>
+</li>
+<li><p>Clone the PyVBMC and GPyReg GitHub repos locally:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">acerbilab</span><span class="o">/</span><span class="n">pyvbmc</span>
+<span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">acerbilab</span><span class="o">/</span><span class="n">gpyreg</span>
+</pre></div>
+</div>
+<p>(PyVBMC depends on <a class="reference external" href="https://github.com/acerbilab/gpyreg">GPyReg</a>, which is a package for lightweight Gaussian process regression in Python.)</p>
+</li>
+<li><p>Install the packages and their optional development dependencies:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">./</span><span class="n">gpyreg</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="s1">&#39;.[dev]&#39;</span>
+<span class="n">cd</span> <span class="o">../</span><span class="n">pyvbmc</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="s1">&#39;.[dev]&#39;</span>
+</pre></div>
+</div>
+</li>
+<li><p>Install Jupyter to view the examples You can skip this step if you’re working from a Conda environment which already has Jupyter, but be aware that if the wrong <code class="docutils literal notranslate"><span class="pre">jupyter</span></code> executable is found on your path then import errors may arise.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">jupyter</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<p>We are using the dependencies listed in <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>. Please list all used dependencies there. Dependencies are separated into basic dependencies, and optional development dependencies included under <code class="docutils literal notranslate"><span class="pre">dev</span></code>.</p>
 <p>The necessary packages can be installed with <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/">conda</a> or <a class="reference external" href="https://pypi.org/project/pip/">pip</a>.</p>
-<section id="alternative-installation-commands">
-<h3>Alternative installation commands<a class="headerlink" href="#alternative-installation-commands" title="Permalink to this headline">#</a></h3>
-<p>These are alternative ways to install the required dependencies:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">--</span><span class="n">file</span> <span class="n">environment</span><span class="o">.</span><span class="n">yml</span>
-</pre></div>
-</div>
-<p>or:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">i</span> <span class="n">requirements</span><span class="o">.</span><span class="n">txt</span>
-</pre></div>
-</div>
-<p>The <code class="docutils literal notranslate"><span class="pre">environment.yml</span></code> seems not to work properly in some setups (e.g., Windows), which is something to be investigated.</p>
-</section>
 </section>
 <section id="coding-conventions">
 <h2>Coding conventions<a class="headerlink" href="#coding-conventions" title="Permalink to this headline">#</a></h2>
