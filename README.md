@@ -41,7 +41,11 @@ PyVBMC is available via `pip` and `conda-forge`.
    ```console
    conda install jupyter
    ```
-   The example notebooks can be accessed by running
+   If you are running Python 3.11 and get an `UnsatisfiableError` you may need to install Jupyter from `conda-forge`:
+   ```console
+   conda install --channel=conda-forge jupyter
+   ```
+   The example notebooks can then be accessed by running
    ```console
    python -m pyvbmc
    ```
