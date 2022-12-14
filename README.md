@@ -1,5 +1,13 @@
 ![PyVBMC](./logo.svg)
 # PyVBMC: Variational Bayesian Monte Carlo in Python
+![Version](https://img.shields.io/badge/dynamic/json?label=python&query=info.requires_python&url=https%3A%2F%2Fpypi.org%2Fpypi%2Fpyvbmc%2Fjson)
+[![Conda](https://img.shields.io/conda/v/conda-forge/pyvbmc)](https://anaconda.org/conda-forge/pyvbmc)
+[![PyPI](https://img.shields.io/pypi/v/pyvbmc)](https://pypi.org/project/pyvbmc/)
+<br />
+[![Discussion](https://img.shields.io/badge/-discussion-blue?logo=github)](https://github.com/orgs/acerbilab/discussions)
+[![build](https://github.com/acerbilab/pyvbmc/actions/workflows/build.yml/badge.svg)](https://github.com/acerbilab/pyvbmc/actions/workflows/build.yml)
+[![tests](https://github.com/acerbilab/pyvbmc/actions/workflows/tests.yml/badge.svg)](https://github.com/acerbilab/pyvbmc/actions/workflows/tests.yml)
+[![docs](https://github.com/acerbilab/pyvbmc/actions/workflows/docs.yml/badge.svg)](https://github.com/acerbilab/pyvbmc/actions/workflows/docs.yml)
 ### What is it?
 
 PyVBMC is a Python implementation of the Variational Bayesian Monte Carlo (VBMC) algorithm for posterior and model inference, originally implemented [in MATLAB](https://github.com/acerbilab/vbmc). VBMC is an approximate inference method designed to fit and evaluate Bayesian models with a limited budget of potentially noisy likelihood evaluations (e.g., for computationally expensive models). Specifically, VBMC simultaneously computes:
