@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    uses: Bobby-Huggins/pyvbmc-test/.github/workflows/build.yml@main
+    uses: acerbilab/pyvbmc/.github/workflows/build.yml@main
   upload_to_pypi:
     needs: [build]
     runs-on: ubuntu-latest
