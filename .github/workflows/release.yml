@@ -1,0 +1,25 @@
+name: publish-release
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: Bobby-Huggins/pyvbmc-test/.github/workflows/build.yml@main
+  upload_to_pypi:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download built package
+        uses: actions/download-artifact@v3
+        with:
+          name: artifact
+          path: dist
+
+      - name: Upload to PyPI
+        uses: pypa/gh-action-pypi-publish@v1.6.4
+        with:
+          password: ${{ secrets.pypi_password }}
+          repository_url: https://test.pypi.org/legacy/
