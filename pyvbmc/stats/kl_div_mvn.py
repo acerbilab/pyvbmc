@@ -34,6 +34,9 @@ def kl_div_mvn(mu1, sigma1, mu2, sigma2):
     dmu = mu2 - mu1
     detq1 = np.linalg.det(sigma1)
     detq2 = np.linalg.det(sigma2)
+    if (detq1 == 0 or detq2 == 0):
+        # KL divergence is infinite
+        return np.concatenate((np.inf, np.inf), axis=None)
     lndet = np.log(detq2 / detq1)
     a, _, _, _ = np.linalg.lstsq(sigma2, sigma1, rcond=None)
     b, _, _, _ = np.linalg.lstsq(sigma2, dmu, rcond=None)
