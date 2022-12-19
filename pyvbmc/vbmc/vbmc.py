@@ -1185,7 +1185,7 @@ class VBMC:
             timer.start_timer("finalize")
 
             # Compute symmetrized KL-divergence between old and new posteriors
-            Nkl = 1e5
+            Nkl = int(1e5)
 
             sKL = max(
                 0,
