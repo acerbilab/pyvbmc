@@ -336,7 +336,7 @@ def test_vp_optimize_2D_g_mixture():
 
     # ELBO should be equal to the log normalization constant of the distribution
     # that is 0 for a normalized density
-    assert np.abs(vp.stats["elbo"]) < 1e-1
+    assert np.abs(vp.stats["elbo"]) < 0.3
 
     # compute kl_div between gaussian mixture and vp
     vp_samples, _ = vp.sample(int(10e6))
