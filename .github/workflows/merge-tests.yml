@@ -32,10 +32,10 @@ jobs:
           while IFS= read -r file
           do
             echo $file
-            if [[ $file != pyvbmc/* ]]; then
+            if [[ ($file != pyvbmc/*) && ($file != pyproject.toml) && ($file != setup.py) ]]; then
               :
             else
-              echo "Change in source directory found, running tests."
+              echo "Change in source files found, running tests."
               echo "run_job=true" >> $GITHUB_OUTPUT
               changes=true
               break

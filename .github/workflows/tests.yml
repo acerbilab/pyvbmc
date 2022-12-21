@@ -4,7 +4,8 @@ name: tests
 on:
   workflow_dispatch:
   schedule:
-    - cron:  '23 00 * * 0'
+    # Run on the 13th and 28th of each month, at 00:23 UTC:
+    - cron:  '23 00 13,28 * *'
 
 jobs:
   tests:
