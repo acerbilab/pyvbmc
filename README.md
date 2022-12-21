@@ -5,9 +5,9 @@
 [![PyPI](https://img.shields.io/pypi/v/pyvbmc)](https://pypi.org/project/pyvbmc/)
 <br />
 [![Discussion](https://img.shields.io/badge/-discussion-blue?logo=github)](https://github.com/orgs/acerbilab/discussions)
-[![build](https://github.com/acerbilab/pyvbmc/actions/workflows/build.yml/badge.svg)](https://github.com/acerbilab/pyvbmc/actions/workflows/build.yml)
-[![tests](https://github.com/acerbilab/pyvbmc/actions/workflows/tests.yml/badge.svg)](https://github.com/acerbilab/pyvbmc/actions/workflows/tests.yml)
-[![docs](https://github.com/acerbilab/pyvbmc/actions/workflows/docs.yml/badge.svg)](https://github.com/acerbilab/pyvbmc/actions/workflows/docs.yml)
+[![tests](https://img.shields.io/github/actions/workflow/status/bobby-huggins/pyvbmc-test/tests.yml?branch=main&label=tests)](https://github.com/bobby-huggins/pyvbmc-test/actions/workflows/tests.yml)
+[![docs](https://img.shields.io/github/actions/workflow/status/bobby-huggins/pyvbmc-test/build.yml?branch=main&label=docs)](https://github.com/bobby-huggins/pyvbmc-test/actions/workflows/docs.yml)
+[![build](https://img.shields.io/github/actions/workflow/status/bobby-huggins/pyvbmc-test/docs.yml?branch=main&label=build)](https://github.com/bobby-huggins/pyvbmc-test/actions/workflows/build.yml)
 ### What is it?
 
 PyVBMC is a Python implementation of the Variational Bayesian Monte Carlo (VBMC) algorithm for posterior and model inference, originally implemented [in MATLAB](https://github.com/acerbilab/vbmc). VBMC is an approximate inference method designed to fit and evaluate Bayesian models with a limited budget of potentially noisy likelihood evaluations (e.g., for computationally expensive models). Specifically, VBMC simultaneously computes:
