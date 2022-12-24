@@ -107,6 +107,9 @@ def optimize_vp(
         Optimization state from the VBMC instance we are calling this from.
     vp : VariationalPosterior
         The variational posterior we want to optimize.
+    gp : gpyreg.GaussianProcess
+        The Gaussian process surrogate of the log-posterior, against which to
+        optimize the VP.
     fast_opts_N : int
         Number of fast optimizations.
     slow_opts_N : int
