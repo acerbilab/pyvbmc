@@ -25,7 +25,7 @@ github:
 
 clean:
 	@rm -rf ../docs/*
-	@rm -r _build
+	@rm -rf _build
 
 .PHONY: help Makefile
 

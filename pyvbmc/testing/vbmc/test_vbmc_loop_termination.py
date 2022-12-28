@@ -31,13 +31,14 @@ def test_vbmc_check_termination_conditions_max_fun_evals(mocker):
         "tol_stable_count": 60,
         "fun_evals_per_iter": 5,
     }
-    mocker.patch(
-        "pyvbmc.vbmc.VBMC._compute_reliability_index",
-        return_value=(np.Inf, np.NaN),
-    )
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
     vbmc.function_logger.func_count = 10
     vbmc.optim_state["iter"] = 10
+    mocker.patch.object(
+        vbmc,
+        "_compute_reliability_index",
+        return_value=(np.Inf, np.NaN),
+    )
     terminated, _, _ = vbmc._check_termination_conditions()
     assert terminated
     vbmc.function_logger.func_count = 9
@@ -46,10 +47,6 @@ def test_vbmc_check_termination_conditions_max_fun_evals(mocker):
 
 
 def test_vbmc_check_termination_conditions_max_iter(mocker):
-    mocker.patch(
-        "pyvbmc.vbmc.VBMC._compute_reliability_index",
-        return_value=(np.Inf, np.NaN),
-    )
     options = {
         "max_fun_evals": 10,
         "min_fun_evals": 5,
@@ -60,6 +57,11 @@ def test_vbmc_check_termination_conditions_max_iter(mocker):
     vbmc.function_logger.func_count = 9
     vbmc.optim_state["entropy_switch"] = True
     vbmc.optim_state["iter"] = 99
+    mocker.patch.object(
+        vbmc,
+        "_compute_reliability_index",
+        return_value=(np.Inf, np.NaN),
+    )
     terminated, _, _ = vbmc._check_termination_conditions()
     assert terminated
     vbmc.optim_state["iter"] = 98
@@ -74,14 +76,15 @@ def test_vbmc_check_termination_conditions_prevent_early_termination(mocker):
         "min_iter": 101,
         "max_iter": 100,
     }
-    mocker.patch(
-        "pyvbmc.vbmc.VBMC._compute_reliability_index",
-        return_value=(np.Inf, np.NaN),
-    )
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
     vbmc.function_logger.func_count = 9
     vbmc.optim_state["iter"] = 100
     vbmc.optim_state["entropy_switch"] = True
+    mocker.patch.object(
+        vbmc,
+        "_compute_reliability_index",
+        return_value=(np.Inf, np.NaN),
+    )
     terminated, _, _ = vbmc._check_termination_conditions()
     assert not terminated
 
@@ -95,6 +98,11 @@ def test_vbmc_check_termination_conditions_prevent_early_termination(mocker):
     vbmc.function_logger.func_count = 9
     vbmc.optim_state["iter"] = 100
     vbmc.optim_state["entropy_switch"] = True
+    mocker.patch.object(
+        vbmc,
+        "_compute_reliability_index",
+        return_value=(np.Inf, np.NaN),
+    )
     terminated, _, _ = vbmc._check_termination_conditions()
     assert not terminated
 
@@ -116,29 +124,33 @@ def test_vbmc_check_termination_conditions_stability(mocker):
     vbmc.optim_state["iter"] = 98
     vbmc.iteration_history["r_index"] = np.ones(100) * 0.5
 
-    mocker.patch(
-        "pyvbmc.vbmc.VBMC._compute_reliability_index",
+    mocker.patch.object(
+        vbmc,
+        "_compute_reliability_index",
         return_value=(0.5, 0.005),
     )
     terminated, _, _ = vbmc._check_termination_conditions()
     assert terminated
-    mocker.patch(
-        "pyvbmc.vbmc.VBMC._compute_reliability_index",
+    mocker.patch.object(
+        vbmc,
+        "_compute_reliability_index",
         return_value=(1, 0.005),
     )
     terminated, _, _ = vbmc._check_termination_conditions()
     assert not terminated
 
-    mocker.patch(
-        "pyvbmc.vbmc.VBMC._compute_reliability_index",
+    mocker.patch.object(
+        vbmc,
+        "_compute_reliability_index",
         return_value=(0.5, 0.1),
     )
     terminated, _, _ = vbmc._check_termination_conditions()
     assert not terminated
 
     vbmc.optim_state["iter"] = 9
-    mocker.patch(
-        "pyvbmc.vbmc.VBMC._compute_reliability_index",
+    mocker.patch.object(
+        vbmc,
+        "_compute_reliability_index",
         return_value=(1, 0.005),
     )
     terminated, _, _ = vbmc._check_termination_conditions()
@@ -160,8 +172,9 @@ def test_vbmc_is_finished_stability_entropy_switch(mocker):
     vbmc.optim_state["entropy_switch"] = True
     vbmc.optim_state["iter"] = 98
     vbmc.iteration_history["r_index"] = np.ones(100) * 0.5
-    mocker.patch(
-        "pyvbmc.vbmc.VBMC._compute_reliability_index",
+    mocker.patch.object(
+        vbmc,
+        "_compute_reliability_index",
         return_value=(0.5, 0.005),
     )
     terminated, _, _ = vbmc._check_termination_conditions()

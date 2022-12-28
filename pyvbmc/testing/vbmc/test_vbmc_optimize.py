@@ -481,15 +481,16 @@ def test_optimize_results(mocker):
         np.ones((1, D)) * 10,
         options={"max_iter": 1},
     )
-    mocker.patch(
-        "pyvbmc.vbmc.VBMC._check_termination_conditions",
+    mocker.patch.object(
+        vbmc,
+        "_check_termination_conditions",
         return_value=(True, "test message", True),
     )
     mocker.patch(
         "pyvbmc.vbmc.vbmc.optimize_vp", return_value=(vbmc.vp, None, None)
     )
-    mocker.patch(
-        "pyvbmc.vbmc.VBMC.final_boost", return_value=(vbmc.vp, -2, 1, False)
+    mocker.patch.object(
+        vbmc, "final_boost", return_value=(vbmc.vp, -2, 1, False)
     )
 
     vbmc.iteration_history["stable"] = list()
