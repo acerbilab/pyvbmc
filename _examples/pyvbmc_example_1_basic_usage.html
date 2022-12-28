@@ -608,9 +608,9 @@ title="Print to PDF"
 <p>This notebook is Part 1 of a series of notebooks in which we present various example usages for VBMC with the PyVBMC package. The code used in this example is available as a script <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/examples/pyvbmc_example_1_full_code.py">here</a>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">scipy.stats</span> <span class="k">as</span> <span class="nn">scs</span>
-<span class="kn">from</span> <span class="nn">pyvbmc</span> <span class="kn">import</span> <span class="n">VBMC</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>import numpy as np
+import scipy.stats as scs
+from pyvbmc import VBMC
 </pre></div>
 </div>
 </div>
@@ -637,18 +637,18 @@ In the following, we see how to set up and run PyVBMC on a toy example.</p>
 For this example, we set as toy log-likelihood for our model a broad <a class="reference external" href="https://en.wikipedia.org/wiki/Rosenbrock_function">Rosenbrock’s banana function</a> in <span class="math notranslate nohighlight">\(D = 2\)</span>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">D</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># We consider a 2-D problem</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>D = 2  # We consider a 2-D problem
 
 
-<span class="k">def</span> <span class="nf">log_likelihood</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;D-dimensional Rosenbrock&#39;s banana function.&quot;&quot;&quot;</span>
-    <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+def log_likelihood(theta):
+    &quot;&quot;&quot;D-dimensional Rosenbrock&#39;s banana function.&quot;&quot;&quot;
+    theta = np.atleast_2d(theta)
 
-    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">theta</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">theta</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:]</span>
-    <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="mi">100</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    x, y = theta[:, :-1], theta[:, 1:]
+    return -np.sum((x**2 - y) ** 2 + (x - 1) ** 2 / 100, axis=1)
 
 
-<span class="c1"># In general, `log_likelihood` would depend on the data and *your* particular model</span>
+# In general, `log_likelihood` would depend on the data and *your* particular model
 </pre></div>
 </div>
 </div>
@@ -661,13 +661,13 @@ For this example, we set as toy log-likelihood for our model a broad <a class="r
 \]</div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">prior_mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">))</span>
-<span class="n">prior_std</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>prior_mu = np.zeros((1, D))
+prior_std = 3 * np.ones((1, D))
 
 
-<span class="k">def</span> <span class="nf">log_prior</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Independent normal prior.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">scs</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">prior_mu</span><span class="p">,</span> <span class="n">prior_std</span><span class="p">))</span>
+def log_prior(x):
+    &quot;&quot;&quot;Independent normal prior.&quot;&quot;&quot;
+    return np.sum(scs.norm.logpdf(x, prior_mu, prior_std))
 </pre></div>
 </div>
 </div>
@@ -679,9 +679,9 @@ For this example, we set as toy log-likelihood for our model a broad <a class="r
 \]</div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">log_joint</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;log-density of the joint distribution.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">log_likelihood</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">log_prior</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>def log_joint(x):
+    &quot;&quot;&quot;log-density of the joint distribution.&quot;&quot;&quot;
+    return log_likelihood(x) + log_prior(x)
 </pre></div>
 </div>
 </div>
@@ -692,8 +692,8 @@ For this example, we set as toy log-likelihood for our model a broad <a class="r
 <p>We assume an unconstrained domain for the model parameters, that is <span class="math notranslate nohighlight">\(\mathbf{x} \in \mathbb{R}^D\)</span>, specifying <code class="docutils literal notranslate"><span class="pre">-inf</span></code> and <code class="docutils literal notranslate"><span class="pre">inf</span></code> for the lower and upper bounds, respectively.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">LB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>  <span class="c1"># Lower bounds</span>
-<span class="n">UB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>  <span class="c1"># Upper bounds</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>LB = np.full((1, D), -np.inf)  # Lower bounds
+UB = np.full((1, D), np.inf)  # Upper bounds
 </pre></div>
 </div>
 </div>
@@ -702,12 +702,12 @@ For this example, we set as toy log-likelihood for our model a broad <a class="r
 <p>Not knowing better, we use mean +/- 1 SD of the prior (that is, the top ~68% prior credible interval) to set the plausible bounds.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">PLB</span> <span class="o">=</span> <span class="n">prior_mu</span> <span class="o">-</span> <span class="n">prior_std</span>  <span class="c1"># Plausible lower bounds</span>
-<span class="n">PUB</span> <span class="o">=</span> <span class="n">prior_mu</span> <span class="o">+</span> <span class="n">prior_std</span>  <span class="c1"># Plausible upper bounds</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>PLB = prior_mu - prior_std  # Plausible lower bounds
+PUB = prior_mu + prior_std  # Plausible upper bounds
 
-<span class="c1"># Alternatively, you could set the plausible bounds using the quantiles:</span>
-<span class="c1"># PLB = scs.norm.ppf(0.1587, prior_mu, prior_std)</span>
-<span class="c1"># PUB = scs.norm.ppf(0.8413, prior_mu, prior_std)</span>
+# Alternatively, you could set the plausible bounds using the quantiles:
+# PLB = scs.norm.ppf(0.1587, prior_mu, prior_std)
+# PUB = scs.norm.ppf(0.8413, prior_mu, prior_std)
 </pre></div>
 </div>
 </div>
@@ -715,10 +715,10 @@ For this example, we set as toy log-likelihood for our model a broad <a class="r
 <p>As a starting point <span class="math notranslate nohighlight">\(\mathbf{x}_0\)</span> for the algorithm, we use the mean of the prior:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">prior_mu</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>x0 = np.copy(prior_mu)
 
-<span class="c1"># Alternatively, we could use a random sample from inside the plausible box:</span>
-<span class="c1"># x0 = PLB + np.random.uniform(size=(1,D))*(PUB - PLB)</span>
+# Alternatively, we could use a random sample from inside the plausible box:
+# x0 = PLB + np.random.uniform(size=(1,D))*(PUB - PLB)
 </pre></div>
 </div>
 </div>
@@ -729,7 +729,7 @@ For this example, we set as toy log-likelihood for our model a broad <a class="r
 <p>We now initialize the <code class="docutils literal notranslate"><span class="pre">vbmc</span></code> object which takes care of the inference. For now, we use default options.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span><span class="n">log_joint</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">LB</span><span class="p">,</span> <span class="n">UB</span><span class="p">,</span> <span class="n">PLB</span><span class="p">,</span> <span class="n">PUB</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>vbmc = VBMC(log_joint, x0, LB, UB, PLB, PUB)
 </pre></div>
 </div>
 </div>
@@ -738,7 +738,7 @@ For this example, we set as toy log-likelihood for our model a broad <a class="r
 <p>The algorithm returns the variational posterior <code class="docutils literal notranslate"><span class="pre">vp</span></code> and a <code class="docutils literal notranslate"><span class="pre">results</span></code> dictionary containing additional information about the optimization, which we will analyze in more detail in a subsequent notebook.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vp</span><span class="p">,</span> <span class="n">results</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>vp, results = vbmc.optimize()
 </pre></div>
 </div>
 </div>
@@ -769,11 +769,11 @@ Estimated ELBO: -2.289 +/-0.000.
 <p>Two especially relevant statistics are the lower bound on the log model evidence (<code class="docutils literal notranslate"><span class="pre">results[&quot;elbo&quot;]</span></code>), and its uncertainty (<code class="docutils literal notranslate"><span class="pre">results[&quot;elbo_sd&quot;]</span></code>):</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">lml_true</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.272</span>  <span class="c1"># ground truth, which we know for this toy scenario</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>lml_true = -2.272  # ground truth, which we know for this toy scenario
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The true log model evidence is:&quot;</span><span class="p">,</span> <span class="n">lml_true</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The obtained ELBO is:&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;elbo&quot;</span><span class="p">],</span> <span class="s2">&quot;.3f&quot;</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The obtained ELBO_SD is:&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;elbo_sd&quot;</span><span class="p">],</span> <span class="s2">&quot;.3f&quot;</span><span class="p">))</span>
+print(&quot;The true log model evidence is:&quot;, lml_true)
+print(&quot;The obtained ELBO is:&quot;, format(results[&quot;elbo&quot;], &quot;.3f&quot;))
+print(&quot;The obtained ELBO_SD is:&quot;, format(results[&quot;elbo_sd&quot;], &quot;.3f&quot;))
 </pre></div>
 </div>
 </div>
@@ -800,15 +800,15 @@ The obtained ELBO_SD is: 0.000
 <p>For reporting uncertainty on model parameter estimates, you could use posterior mean +/- SD, or the median and interquartile range of the samples (the latter is better for a posterior that deviates substantially from Gaussian).</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># First, generate a large number of samples from the variational posterior:</span>
-<span class="n">n_samples</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">3e5</span><span class="p">)</span>
-<span class="n">Xs</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># First, generate a large number of samples from the variational posterior:
+n_samples = int(3e5)
+Xs, _ = vp.sample(n_samples)
 
-<span class="c1"># Easily compute statistics such as moments, credible intervals, etc.</span>
-<span class="n">post_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">Xs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># Posterior mean</span>
-<span class="n">post_cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">Xs</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>  <span class="c1"># Posterior covariance matrix</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The approximate posterior mean is:&quot;</span><span class="p">,</span> <span class="n">post_mean</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The approximate posterior covariance matrix is:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">post_cov</span><span class="p">)</span>
+# Easily compute statistics such as moments, credible intervals, etc.
+post_mean = np.mean(Xs, axis=0)  # Posterior mean
+post_cov = np.cov(Xs.T)  # Posterior covariance matrix
+print(&quot;The approximate posterior mean is:&quot;, post_mean)
+print(&quot;The approximate posterior covariance matrix is:\n&quot;, post_cov)
 </pre></div>
 </div>
 </div>
@@ -824,7 +824,7 @@ The approximate posterior covariance matrix is:
 <p>Finally, we visualize the obtained variational approximation <code class="docutils literal notranslate"><span class="pre">vp</span></code> via the <code class="docutils literal notranslate"><span class="pre">vp.plot()</span></code> function, which is based on the beautiful <code class="docutils literal notranslate"><span class="pre">corner.py</span></code> module (see <a class="reference external" href="https://corner.readthedocs.io/en/latest/">here</a>).</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vp</span><span class="o">.</span><span class="n">plot</span><span class="p">();</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>vp.plot();
 </pre></div>
 </div>
 </div>

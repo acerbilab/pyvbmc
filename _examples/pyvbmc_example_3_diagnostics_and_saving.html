@@ -584,12 +584,12 @@ title="Print to PDF"
 <p>This notebook is Part 3 of a series of notebooks in which we present various example usages for VBMC with the PyVBMC package. The code used in this example is available as a script <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/examples/pyvbmc_example_3_full_code.py">here</a>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">scipy.stats</span> <span class="k">as</span> <span class="nn">scs</span>
-<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">minimize</span>
-<span class="kn">from</span> <span class="nn">pyvbmc</span> <span class="kn">import</span> <span class="n">VBMC</span>
-<span class="kn">from</span> <span class="nn">pyvbmc.formatting</span> <span class="kn">import</span> <span class="n">format_dict</span>
-<span class="kn">import</span> <span class="nn">dill</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>import numpy as np
+import scipy.stats as scs
+from scipy.optimize import minimize
+from pyvbmc import VBMC
+from pyvbmc.formatting import format_dict
+import dill
 </pre></div>
 </div>
 </div>
@@ -600,15 +600,15 @@ title="Print to PDF"
 <p>We use a higher-dimensional analogue of the same toy target function in Example 1, a broad <a class="reference external" href="https://en.wikipedia.org/wiki/Rosenbrock_function">Rosenbrock’s banana function</a> in <span class="math notranslate nohighlight">\(D = 4\)</span>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">D</span> <span class="o">=</span> <span class="mi">4</span>  <span class="c1"># A four-dimensional problem</span>
-<span class="n">prior_mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
-<span class="n">prior_var</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>D = 4  # A four-dimensional problem
+prior_mu = np.zeros(D)
+prior_var = 3 * np.ones(D)
 
 
-<span class="k">def</span> <span class="nf">log_prior</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Multivariate normal prior on theta.&quot;&quot;&quot;</span>
-    <span class="n">cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">prior_var</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">scs</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span><span class="n">prior_mu</span><span class="p">,</span> <span class="n">cov</span><span class="p">)</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+def log_prior(theta):
+    &quot;&quot;&quot;Multivariate normal prior on theta.&quot;&quot;&quot;
+    cov = np.diag(prior_var)
+    return scs.multivariate_normal(prior_mu, cov).logpdf(theta)
 </pre></div>
 </div>
 </div>
@@ -616,29 +616,29 @@ title="Print to PDF"
 <p>The likelihood function of your model will in general depend on the observed data. This data can be fixed as a global variable, as we did directly above for <code class="docutils literal notranslate"><span class="pre">prior_mu</span></code> and <code class="docutils literal notranslate"><span class="pre">prior_var</span></code>. It can also be defined by a default second argument: to PyVBMC there is no difference so long as the function can be called with only a single argument (the parameters <code class="docutils literal notranslate"><span class="pre">theta</span></code>):</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">log_likelihood</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">D</span><span class="p">)):</span>
-    <span class="sd">&quot;&quot;&quot;D-dimensional Rosenbrock&#39;s banana function.&quot;&quot;&quot;</span>
-    <span class="c1"># In this simple demo the data just translates the parameters:</span>
-    <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
-    <span class="n">theta</span> <span class="o">=</span> <span class="n">theta</span> <span class="o">+</span> <span class="n">data</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>def log_likelihood(theta, data=np.ones(D)):
+    &quot;&quot;&quot;D-dimensional Rosenbrock&#39;s banana function.&quot;&quot;&quot;
+    # In this simple demo the data just translates the parameters:
+    theta = np.atleast_2d(theta)
+    theta = theta + data
 
-    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">theta</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">theta</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:]</span>
-    <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="mi">100</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    x, y = theta[:, :-1], theta[:, 1:]
+    return -np.sum((x**2 - y) ** 2 + (x - 1) ** 2 / 100, axis=1)
 
 
-<span class="k">def</span> <span class="nf">log_joint</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">D</span><span class="p">)):</span>
-    <span class="sd">&quot;&quot;&quot;log-density of the joint distribution.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">log_likelihood</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span> <span class="o">+</span> <span class="n">log_prior</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+def log_joint(theta, data=np.ones(D)):
+    &quot;&quot;&quot;log-density of the joint distribution.&quot;&quot;&quot;
+    return log_likelihood(theta, data) + log_prior(theta)
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">LB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>  <span class="c1"># Lower bounds</span>
-<span class="n">UB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>  <span class="c1"># Upper bounds</span>
-<span class="n">PLB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">prior_mu</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">prior_var</span><span class="p">))</span>  <span class="c1"># Plausible lower bounds</span>
-<span class="n">PUB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">prior_mu</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">prior_var</span><span class="p">))</span>  <span class="c1"># Plausible upper bounds</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>LB = np.full(D, -np.inf)  # Lower bounds
+UB = np.full(D, np.inf)  # Upper bounds
+PLB = np.full(D, prior_mu - np.sqrt(prior_var))  # Plausible lower bounds
+PUB = np.full(D, prior_mu + np.sqrt(prior_var))  # Plausible upper bounds
 </pre></div>
 </div>
 </div>
@@ -646,45 +646,45 @@ title="Print to PDF"
 <p>In a typical inference scenario, we recommend starting from a “good” point (i.e. one near the mode). We can run a  quick preliminary optimization, though a more extensive optimization would not harm.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">41</span><span class="p">)</span>
-<span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">PLB</span><span class="p">,</span> <span class="n">PUB</span><span class="p">)</span>  <span class="c1"># Random point inside plausible box</span>
-<span class="n">x0</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span>
-    <span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="o">-</span><span class="n">log_joint</span><span class="p">(</span><span class="n">t</span><span class="p">),</span>
-    <span class="n">x0</span><span class="p">,</span>
-    <span class="n">bounds</span><span class="o">=</span><span class="p">[</span>
-        <span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">),</span>
-        <span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">),</span>
-        <span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">),</span>
-        <span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">),</span>
-    <span class="p">],</span>
-<span class="p">)</span><span class="o">.</span><span class="n">x</span>
-<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>np.random.seed(41)
+x0 = np.random.uniform(PLB, PUB)  # Random point inside plausible box
+x0 = minimize(
+    lambda t: -log_joint(t),
+    x0,
+    bounds=[
+        (-np.inf, np.inf),
+        (-np.inf, np.inf),
+        (-np.inf, np.inf),
+        (-np.inf, np.inf),
+    ],
+).x
+np.random.seed(42)
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Limit number of function evaluations</span>
-<span class="n">options</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;max_fun_evals&quot;</span><span class="p">:</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">D</span><span class="p">,</span>
-<span class="p">}</span>
-<span class="c1"># We can specify either the log-joint, or the log-likelihood and log-prior.</span>
-<span class="c1"># In other words, the following lines are equivalent:</span>
-<span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span>
-    <span class="n">log_likelihood</span><span class="p">,</span>
-    <span class="n">x0</span><span class="p">,</span>
-    <span class="n">LB</span><span class="p">,</span>
-    <span class="n">UB</span><span class="p">,</span>
-    <span class="n">PLB</span><span class="p">,</span>
-    <span class="n">PUB</span><span class="p">,</span>
-    <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
-    <span class="n">log_prior</span><span class="o">=</span><span class="n">log_prior</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="c1"># vbmc = VBMC(</span>
-<span class="c1">#     log_joint,</span>
-<span class="c1">#     x0, LB, UB, PLB, PUB, options=options,</span>
-<span class="c1"># )</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Limit number of function evaluations
+options = {
+    &quot;max_fun_evals&quot;: 10 * D,
+}
+# We can specify either the log-joint, or the log-likelihood and log-prior.
+# In other words, the following lines are equivalent:
+vbmc = VBMC(
+    log_likelihood,
+    x0,
+    LB,
+    UB,
+    PLB,
+    PUB,
+    options=options,
+    log_prior=log_prior,
+)
+# vbmc = VBMC(
+#     log_joint,
+#     x0, LB, UB, PLB, PUB, options=options,
+# )
 </pre></div>
 </div>
 </div>
@@ -705,7 +705,7 @@ Reshaping plausible upper bounds to (1, 4).
 <p>Now we run PyVBMC with a very small budget of 40 function evaluations:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vp</span><span class="p">,</span> <span class="n">results</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>vp, results = vbmc.optimize()
 </pre></div>
 </div>
 </div>
@@ -730,7 +730,7 @@ Caution: Returned variational solution may have not converged.
 <p>PyVBMC is warning us that convergence is doubtful. We can look at the output for more information and diagnostics.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;success_flag&quot;</span><span class="p">])</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>print(results[&quot;success_flag&quot;])
 </pre></div>
 </div>
 </div>
@@ -743,7 +743,7 @@ Caution: Returned variational solution may have not converged.
 <p><code class="docutils literal notranslate"><span class="pre">False</span></code> means that PyVBMC has not converged to a stable solution within the given number of function evaluations.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">format_dict</span><span class="p">(</span><span class="n">results</span><span class="p">))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>print(format_dict(results))
 </pre></div>
 </div>
 </div>
@@ -784,11 +784,11 @@ Our diagnostics tell us that this run has not converged, suggesting to increase 
 <p>We can also save the <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> instance to disk and reload it later, in order to check the results and convergence diagnostics, sample from the posterior, or resume the optimization from checkpoint etc. If you are only interested in the final (best) variational solution, as opposed to the full iteration history of the optimization, then you may wish to pickle only the final <code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code> instead.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;vbmc_test_save.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-    <span class="n">dill</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">vbmc</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>with open(&quot;vbmc_test_save.pkl&quot;, &quot;wb&quot;) as f:
+    dill.dump(vbmc, f)
 
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;vbmc_test_save.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-    <span class="n">vbmc</span> <span class="o">=</span> <span class="n">dill</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+with open(&quot;vbmc_test_save.pkl&quot;, &quot;rb&quot;) as f:
+    vbmc = dill.load(f)
 </pre></div>
 </div>
 </div>
@@ -799,28 +799,28 @@ Our diagnostics tell us that this run has not converged, suggesting to increase 
 <p>Now we could resume the optimization process of PyVBMC by increasing maximum number of function evaluations. This default is <span class="math notranslate nohighlight">\(50(d+2)\)</span>, where <span class="math notranslate nohighlight">\(d\)</span> is the dimension of the parameter space (though this example will not use the full budget):</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">iteration</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">vbmc</span><span class="o">.</span><span class="n">iteration</span>
-<span class="p">)</span>  <span class="c1"># continue from specified iteration, here it&#39;s the last iteration</span>
-<span class="k">assert</span> <span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">iteration</span> <span class="o">&lt;=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">iteration</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>iteration = (
+    vbmc.iteration
+)  # continue from specified iteration, here it&#39;s the last iteration
+assert 1 &lt;= iteration &lt;= vbmc.iteration
 
-<span class="c1">## Set states for VBMC right before the specified iteration</span>
-<span class="n">vbmc</span><span class="o">.</span><span class="n">gp</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">iteration_history</span><span class="p">[</span><span class="s2">&quot;gp&quot;</span><span class="p">][</span><span class="n">iteration</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-<span class="n">vbmc</span><span class="o">.</span><span class="n">vp</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">iteration_history</span><span class="p">[</span><span class="s2">&quot;vp&quot;</span><span class="p">][</span><span class="n">iteration</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-<span class="n">vbmc</span><span class="o">.</span><span class="n">function_logger</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">iteration_history</span><span class="p">[</span><span class="s2">&quot;function_logger&quot;</span><span class="p">][</span><span class="n">iteration</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-<span class="n">vbmc</span><span class="o">.</span><span class="n">optim_state</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">iteration_history</span><span class="p">[</span><span class="s2">&quot;optim_state&quot;</span><span class="p">][</span><span class="n">iteration</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-<span class="n">vbmc</span><span class="o">.</span><span class="n">hyp_dict</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;hyp_dict&quot;</span><span class="p">]</span>
-<span class="n">vbmc</span><span class="o">.</span><span class="n">iteration</span> <span class="o">=</span> <span class="n">iteration</span> <span class="o">-</span> <span class="mi">1</span>
+## Set states for VBMC right before the specified iteration
+vbmc.gp = vbmc.iteration_history[&quot;gp&quot;][iteration - 1]
+vbmc.vp = vbmc.iteration_history[&quot;vp&quot;][iteration - 1]
+vbmc.function_logger = vbmc.iteration_history[&quot;function_logger&quot;][iteration - 1]
+vbmc.optim_state = vbmc.iteration_history[&quot;optim_state&quot;][iteration - 1]
+vbmc.hyp_dict = vbmc.optim_state[&quot;hyp_dict&quot;]
+vbmc.iteration = iteration - 1
 
-<span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">iteration_history</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">vbmc</span><span class="o">.</span><span class="n">iteration_history</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">iteration_history</span><span class="p">[</span><span class="n">k</span><span class="p">][:</span><span class="n">iteration</span><span class="p">]</span>
-    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
-        <span class="k">pass</span>
-<span class="c1"># (Optionally) Set random state for reproducibility, note that it can only</span>
-<span class="c1"># reproduce exactly the same optimization process when VBMC&#39;s options are not updated</span>
-<span class="n">random_state</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">iteration_history</span><span class="p">[</span><span class="s2">&quot;random_state&quot;</span><span class="p">][</span><span class="n">iteration</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">set_state</span><span class="p">(</span><span class="n">random_state</span><span class="p">)</span>
+for k, v in vbmc.iteration_history.items():
+    try:
+        vbmc.iteration_history[k] = vbmc.iteration_history[k][:iteration]
+    except TypeError:
+        pass
+# (Optionally) Set random state for reproducibility, note that it can only
+# reproduce exactly the same optimization process when VBMC&#39;s options are not updated
+random_state = vbmc.iteration_history[&quot;random_state&quot;][iteration - 1]
+np.random.set_state(random_state)
 </pre></div>
 </div>
 </div>
@@ -828,17 +828,17 @@ Our diagnostics tell us that this run has not converged, suggesting to increase 
 <p>We need to update the options. Here we increase <code class="docutils literal notranslate"><span class="pre">max_fun_evals</span></code> and resume the optimization process.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">options</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;max_fun_evals&quot;</span><span class="p">:</span> <span class="mi">50</span> <span class="o">*</span> <span class="p">(</span><span class="n">D</span> <span class="o">+</span> <span class="mi">2</span><span class="p">),</span>
-<span class="p">}</span>
-<span class="n">vbmc</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">is_initialized</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="kc">False</span>  <span class="c1"># Temporarily set to False for updating options</span>
-<span class="p">)</span>
-<span class="n">vbmc</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
-<span class="n">vbmc</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">is_initialized</span> <span class="o">=</span> <span class="kc">True</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>options = {
+    &quot;max_fun_evals&quot;: 50 * (D + 2),
+}
+vbmc.options.is_initialized = (
+    False  # Temporarily set to False for updating options
+)
+vbmc.options.update(options)
+vbmc.options.is_initialized = True
 
-<span class="n">vbmc</span><span class="o">.</span><span class="n">is_finished</span> <span class="o">=</span> <span class="kc">False</span>
-<span class="n">vp</span><span class="p">,</span> <span class="n">results</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
+vbmc.is_finished = False
+vp, results = vbmc.optimize()
 </pre></div>
 </div>
 </div>
@@ -867,7 +867,7 @@ Estimated ELBO: -4.145 +/-0.002.
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">format_dict</span><span class="p">(</span><span class="n">results</span><span class="p">))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>print(format_dict(results))
 </pre></div>
 </div>
 </div>
@@ -898,18 +898,18 @@ Estimated ELBO: -4.145 +/-0.002.
 <p>With the default budget of function evaluations, we can see that the <code class="docutils literal notranslate"><span class="pre">convergence_status</span></code> is ‘probable’ and the <code class="docutils literal notranslate"><span class="pre">r_index</span></code> is much less than 1, suggesting convergence has been acheived. We can save the result to file and load it at anytime for verification etc.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;vbmc_test_save.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-    <span class="n">dill</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">vbmc</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>with open(&quot;vbmc_test_save.pkl&quot;, &quot;wb&quot;) as f:
+    dill.dump(vbmc, f)
 
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;vbmc_test_save.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-    <span class="n">vbmc</span> <span class="o">=</span> <span class="n">dill</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+with open(&quot;vbmc_test_save.pkl&quot;, &quot;rb&quot;) as f:
+    vbmc = dill.load(f)
 
-<span class="n">samples</span><span class="p">,</span> <span class="n">components</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">vp</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
-<span class="c1"># `samples` are samples drawn from the variational posterior.</span>
-<span class="c1"># `components` are the index of the mixture components each</span>
-<span class="c1">#  sample was drawn from.</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">components</span><span class="p">)</span>
+samples, components = vbmc.vp.sample(5)
+# `samples` are samples drawn from the variational posterior.
+# `components` are the index of the mixture components each
+#  sample was drawn from.
+print(samples)
+print(components)
 </pre></div>
 </div>
 </div>
