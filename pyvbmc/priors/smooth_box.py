@@ -1,0 +1,140 @@
+import numpy as np
+
+from pyvbmc.priors import Prior, tile_inputs
+
+
+class SmoothBox(Prior):
+    """Multivariate smooth-box prior.
+
+    For each dimension `i`, the univariate smooth-box pdf is defined as a
+    uniform distribution between pivots ``a[i]``, ``b[i]`` with Gaussian tails
+    that fall starting from `p(a[i])` to the left (resp., `p(b[i])` to the
+    right) with standard deviation ``sigma[i]``.
+
+    Attributes
+    ----------
+    D : int
+        The dimension of the prior distribution.
+    a : np.ndarray
+        The lower pivot(s), shape `(1, D)`.
+    b : np.ndarray
+        The upper pivot(s), shape `(1, D)`.
+    sigma : np.ndarray
+        The standard deviation of the Gaussian tails, shape `(1, D)`.
+    """
+
+    def __init__(self, a, b, sigma):
+        """Initialize a multivariate smooth-box prior.
+
+        Parameters
+        ----------
+        a : np.ndarray | float
+            The lower pivot(s), shape `(D,)` where `D` is the dimension
+            (parameters of type ``float`` will be tiled to this shape).
+        b : np.ndarray | float
+            The upper pivot(s), shape `(D,)` where `D` is the dimension
+            (parameters of type ``float`` will be tiled to this shape).
+        sigma : np.ndarray
+            The standard deviation of the Gaussian tails, shape `(D,)` where
+            `D` is the dimension (parameters of type ``float`` will be tiled to
+            this shape).
+
+        Raises
+        ------
+        ValueError
+            If ``sigma[i] <= 0`` or if ``a[i] >= b[i]``, for any `i`.
+        """
+        if np.any(sigma <= 0.0):
+            raise ValueError(
+                f"All elements of `sigma`={sigma} should be positive."
+            )
+        if np.any(a >= b):
+            raise ValueError(
+                f"All elements of `a`={a} should be strictly less than `b`={b}."
+            )
+
+        self.a, self.b, self.sigma = tile_inputs(a, b, sigma)
+        self.D = self.a.shape[1]
+
+    def _logpdf(self, x):
+        """Compute the log-pdf of the multivariate smooth-box prior.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            The array of input point(s), of dimension ``(D,)`` or ``(n,D)``, where
+            ``D`` is the distribution dimension.
+
+        Returns
+        -------
+        logpdf : np.ndarray
+            The log-density of the prior at the input point(s), of dimension
+            ``(n,1)``.
+        """
+        logpdf = np.full_like(x, -np.inf)
+        log_norm_factor = -np.log(np.sqrt(2 * np.pi) / self.sigma) - np.log1p(
+            (self.b - self.a) / (np.sqrt(2 * np.pi) * self.sigma)
+        )
+
+        for d in range(D):
+            mask = x[:, d] < self.a[d]
+            logpdf[mask, d] = (
+                log_norm_factor[d]
+                - 0.5 * ((x[mask, d] - self.a[d]) / self.sigma[d]) ** 2
+            )
+
+            mask = (x[:, d] >= self.a[:, d]) & (x[:, d] <= self.b[:, d])
+            logpdf[mask, d] = log_norm_factor[d]
+
+            mask = x[:, d] > self.b[:, d]
+            logpdf[mask, d] = (
+                log_norm_factor[d]
+                - 0.5 * ((x[mask, d] - self.b[d]) / self.sigma[d]) ** 2
+            )
+
+        return np.sum(logpdf, axis=1, keepdims=True)
+
+    def sample(self, n):
+        """Sample random variables from the smooth-box distribution.
+
+        Parameters
+        ----------
+        n : int
+            The number of points to sample.
+
+        Returns
+        -------
+        rvs : np.ndarray
+            The samples points, of shape ``(n, D)``, where ``D`` is the dimension.
+        """
+        rvs = np.zeros(n, self.D)
+        norm_factor = 1 + 1 / np.sqrt(2 * np.pi) * (
+            (self.b - self.a) / self.sigma
+        )
+
+        for d in range(self.D):
+            # Draw component (left/right tails or plateau)
+            u = np.random.uniform(0.0, norm_factor[d], size=n)
+
+            # Left Gaussian tails
+            mask = u < 0.5
+            if np.any(mask):
+                z1 = np.abs(
+                    np.random.normal(0.0, self.sigma[d], size=np.sum(mask))
+                )
+                rvs[mask, d] = self.a[d] - z1
+
+            # Right Gaussian tails
+            mask = (u >= 0.5) & (u < 1.0)
+            if np.any(mask):
+                z1 = np.abs(
+                    np.random.normal(0.0, self.sigma[d], size=np.sum(mask))
+                )
+                rvs[mask, d] = self.b[d] + z1
+
+            # Plateau
+            mask = u >= 1.0
+            if np.any(mask):
+                rvs[mask, d] = np.random.uniform(
+                    self.a[d], self.b[d], size=np.sum(mask)
+                )
