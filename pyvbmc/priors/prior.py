@@ -7,6 +7,23 @@ class Prior(ABC):
     """Abstract base class for PyVBMC prior distributions."""
 
     def logpdf(self, x, keepdims=True):
+        """Compute the log-pdf of the distribution.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            The array of input point(s), of dimension `(D,)` or `(n, D)`, where
+            `d` is the distribution dimension.
+        keepdims : bool
+            Whether to keep the input dimensions and return an array of shape
+            `(1, D)`, or discard them and return an array of shape `(D,)`.
+
+        Returns
+        -------
+        logpdf : np.ndarray
+            The log-density of the prior at the input point(s), of dimension
+            `(n, 1)` or `(n,)` (depending on ``keepdims``).
+        """
         x_orig_shape = x.shape
         x = np.atleast_2d(x)
         n, D = x.shape
@@ -26,22 +43,33 @@ class Prior(ABC):
         parameters
         ----------
         x : np.ndarray
-            The array of input point(s), of dimension ``(D,)`` or ``(n,D)``, where
-            ``d`` is the distribution dimension.
+            The array of input point(s), of dimension `(D,)` or `(n, D)`, where
+            `d` is the distribution dimension.
         keepdims : bool
-            Keep the dimensions as-is and return a ``(n,1)`` vector of
-            densities if ``true`` (default), otherwise return vector of shape
-            ``(n,)``.
+            Whether to keep the input dimensions and return an array of shape
+            `(1, D)`, or discard them and return an array of shape `(D,)`.
 
         returns
         -------
         pdf : np.ndarray
-            The density of the prior at the input point(s), of dimension
-            ``(n,1)``.
+            The density of the prior at the input point(s), of dimension `(n,
+            1)` or `(n,)` (depending on ``keepdims``).
         """
         return np.exp(self.logpdf(x, keepdims=keepdims))
 
     def _support(self):
+        """Returns the support of the distribution.
+
+        Used to test that the distribution integrates to one, so it is also
+        acceptable to return a box which bounds the support of the
+        distribution.
+
+        Returns
+        -------
+        lb, ub : tuple(np.ndarray, np.ndarray)
+            A tuple of lower and upper bounds of the support, such that
+            [``lb[i]``, ``ub[i]``] bounds the support of the `i`th marginal.
+        """
         return np.full(self.D, -np.inf), np.full(self.D, np.inf)
 
     @abstractmethod
@@ -53,17 +81,20 @@ class Prior(ABC):
     def _logpdf(self, x):
         """Compute the log-pdf of the distribution.
 
+        This private method is wrapped by ``self.logpdf()``, which handles
+        input validation and output shape.
+
         Parameters
         ----------
         x : np.ndarray
-            The array of input point(s), of dimension ``(D,)`` or ``(n,D)``, where
-            ``d`` is the distribution dimension.
+            The array of input point(s), of dimension `(D,)` or `(n, D)`, where
+            `d` is the distribution dimension.
 
         Returns
         -------
         logpdf : np.ndarray
             The log-density of the prior at the input point(s), of dimension
-            ``(n,1)``.
+            `(n, 1)`.
         """
         pass
 
@@ -79,13 +110,14 @@ class Prior(ABC):
         Returns
         -------
         rvs : np.ndarray
-            The samples points, of shape ``(n, D)``, where ``D`` is the dimension.
+            The samples points, of shape `(n, D)`, where `D` is the dimension.
         """
         pass
 
     @classmethod
     @abstractmethod
     def _generic(cls, D=1):
+        """Return a generic instance of the class (used for tests)."""
         return cls(D=D)
 
 
@@ -105,7 +137,8 @@ def tile_inputs(*args, size=None):
     Raises
     ------
     ValueError
-        If the non-scalar arguments do not have the same shape, or if they do not agree with `size`.
+        If the non-scalar arguments do not have the same shape, or if they do
+        not agree with `size`.
     """
     if type(size) == int:
         size = (size,)

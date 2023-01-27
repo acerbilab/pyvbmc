@@ -49,14 +49,14 @@ class UniformBox(Prior):
         Parameters
         ----------
         x : np.ndarray
-            The array of input point(s), of dimension ``(D,)`` or ``(n,D)``, where
-            ``D`` is the distribution dimension.
+            The array of input point(s), of dimension `(D,)` or `(n,D)`, where
+            `D` is the distribution dimension.
 
         Returns
         -------
         logpdf : np.ndarray
             The log-density of the prior at the input point(s), of dimension
-            ``(n,1)``.
+            `(n, 1)`.
         """
         n, D = x.shape
         log_norm_factor = np.sum(np.log(self.b - self.a))
@@ -78,16 +78,29 @@ class UniformBox(Prior):
         Returns
         -------
         rvs : np.ndarray
-            The samples points, of shape ``(n, D)``, where ``D`` is the dimension.
+            The samples points, of shape `(n, D)`, where `D` is the dimension.
         """
         return np.random.uniform(self.a, self.b, size=(n, self.D))
 
     @classmethod
     def _generic(cls, D=1):
+        """Return a generic instance of the class (used for tests)."""
         return UniformBox(
             np.zeros(D),
             np.ones(D),
         )
 
     def _support(self):
+        """Returns the support of the distribution.
+
+        Used to test that the distribution integrates to one, so it is also
+        acceptable to return a box which bounds the support of the
+        distribution.
+
+        Returns
+        -------
+        lb, ub : tuple(np.ndarray, np.ndarray)
+            A tuple of lower and upper bounds of the support, such that
+            [``lb[i]``, ``ub[i]``] bounds the support of the `i`th marginal.
+        """
         return self.a, self.b
