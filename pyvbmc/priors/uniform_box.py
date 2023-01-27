@@ -19,7 +19,7 @@ class UniformBox(Prior):
         The upper bound(s), shape `(1, D)`.
     """
 
-    def __init__(self, a, b, sigma, D=None):
+    def __init__(self, a, b, D=None):
         """Initialize a multivariate uniform-box prior.
 
         Parameters
@@ -36,13 +36,12 @@ class UniformBox(Prior):
         ValueError
             If ``a[i] >= b[i]``, for any `i`.
         """
-        if np.any(a >= b):
-            raise ValueError(
-                f"All elements of `a`={a} should be strictly less than `b`={b}."
-            )
-
         self.a, self.b = tile_inputs(a, b, size=D)
-        self.D = self.a.shape[1]
+        if np.any(self.a >= self.b):
+            raise ValueError(
+                f"All elements of a={a} should be strictly less than b={b}."
+            )
+        self.D = self.a.size
 
     def _logpdf(self, x):
         """Compute the log-pdf of the multivariate uniform-box prior.
@@ -82,3 +81,13 @@ class UniformBox(Prior):
             The samples points, of shape ``(n, D)``, where ``D`` is the dimension.
         """
         return np.random.uniform(self.a, self.b, size=(n, self.D))
+
+    @classmethod
+    def _generic(cls, D=1):
+        return UniformBox(
+            np.zeros(D),
+            np.ones(D),
+        )
+
+    def _support(self):
+        return self.a, self.b

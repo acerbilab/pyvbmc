@@ -6,10 +6,10 @@ from pyvbmc.priors import Prior, tile_inputs
 class Trapezoid(Prior):
     """Multivariate trapezoid prior.
 
-    A prior distribution represented by a trapezoidal density with external
-    bounds ``a`` and ``b`` and internal points ``u`` and ``v``. Each marginal
-    distribution has a trapezoidal density which is uniform between ``u[i]``
-    and ``v[i]`` and falls of linearly to ``a[i]`` and ``b[i]``::
+    A prior distribution represented by a density with external bounds ``a``
+    and ``b`` and internal points ``u`` and ``v``. Each marginal distribution
+    has a trapezoidal density which is uniform between ``u[i]`` and ``v[i]``
+    and falls of linearly to zero at ``a[i]`` and ``b[i]``::
 
                 |      ________
                 |     /|      |\
@@ -61,13 +61,14 @@ class Trapezoid(Prior):
         ValueError
             If the order ``a[i] < u[i] < v[i] < b[i]`` is not respected, for any `i`.
         """
-        if np.any((a >= u) | (u >= v) | (v >= b)):
+        self.a, self.u, self.v, self.b = tile_inputs(a, u, v, b, size=D)
+        if np.any(
+            (self.a >= self.u) | (self.u >= self.v) | (self.v >= self.b)
+        ):
             raise ValueError(
                 "Bounds and pivots should respect the order a < u < v < b."
             )
-
-        self.a, self.b = tile_inputs(a, b, size=D)
-        self.D = self.a.shape[1]
+        self.D = self.a.size
 
     def _logpdf(self, x):
         """Compute the log-pdf of the multivariate trapezoid prior.
@@ -86,31 +87,28 @@ class Trapezoid(Prior):
         """
         n, D = x.shape
         logpdf = np.full_like(x, -np.inf)
-        log_norm_factor = (
-            np.log(0.5)
-            + np.log(self.b - self.a + self.v - self.u)
-            + np.log(self.u - self.a)
+        log_norm_factor = np.log(0.5) + np.log(
+            self.b - self.a + self.v - self.u
         )
 
         for d in range(D):
             # Left tail
             mask = (x[:, d] >= self.a[d]) & (x[:, d] < self.u[d])
             logpdf[mask, d] = (
-                np.log(x[mask, d] - self.a[d]) - log_norm_factor[d]
+                np.log(x[mask, d] - self.a[d])
+                - np.log(self.u[d] - self.a[d])
+                - log_norm_factor[d]
             )
 
             # Plateau
             mask = (x[:, d] >= self.u[d]) & (x[:, d] < self.v[d])
-            logpdf[mask, d] = (
-                np.log(self.u[d] - self.a[d]) - log_norm_factor[d]
-            )
+            logpdf[mask, d] = -log_norm_factor[d]
 
             # Right tail
             mask = (x[:, d] >= self.v[d]) & (x[:, d] < self.b[d])
             logpdf[mask, d] = (
                 np.log(self.b[d] - x[mask, d])
                 - np.log(self.b[d] - self.v[d])
-                + np.log(self.u[d] - self.a[d])
                 - log_norm_factor[d]
             )
 
@@ -145,11 +143,11 @@ class Trapezoid(Prior):
             # Rejection sampling
             while n1 > 0:
                 # Uniform sampling in the bounding box
-                r1[mask] = np.random.uniform(self.a, self.b, size=n1)
+                r1[mask] = np.random.uniform(self.a[d], self.b[d], size=n1)
 
                 # Rejection sampling
-                z1 = np.random.uniform(0.0, y_max[mask], size=(n1, 1))
-                y1 = one_d_dist.pdf(r1[mask])
+                z1 = np.random.uniform(0.0, y_max, size=n1)
+                y1 = one_d_dist.pdf(r1[mask].reshape(-1, 1), keepdims=False)
 
                 mask_new = np.full(n, False)
                 mask_new[mask] = z1 > y1  # Resample these points
@@ -161,3 +159,15 @@ class Trapezoid(Prior):
             rvs[:, d] = r1
 
         return rvs
+
+    @classmethod
+    def _generic(cls, D=1):
+        return Trapezoid(
+            np.zeros(D),
+            np.full((D,), 0.25),
+            np.full((D,), 0.75),
+            np.ones(D),
+        )
+
+    def _support(self):
+        return self.a, self.b

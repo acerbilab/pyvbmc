@@ -23,7 +23,7 @@ class SmoothBox(Prior):
         The standard deviation of the Gaussian tails, shape `(1, D)`.
     """
 
-    def __init__(self, a, b, sigma):
+    def __init__(self, a, b, sigma, D=None):
         """Initialize a multivariate smooth-box prior.
 
         Parameters
@@ -44,17 +44,16 @@ class SmoothBox(Prior):
         ValueError
             If ``sigma[i] <= 0`` or if ``a[i] >= b[i]``, for any `i`.
         """
-        if np.any(sigma <= 0.0):
+        self.a, self.b, self.sigma = tile_inputs(a, b, sigma, size=D)
+        if np.any(self.sigma <= 0.0):
             raise ValueError(
-                f"All elements of `sigma`={sigma} should be positive."
+                f"All elements of sigma={sigma} should be positive."
             )
-        if np.any(a >= b):
+        if np.any(self.a >= self.b):
             raise ValueError(
-                f"All elements of `a`={a} should be strictly less than `b`={b}."
+                f"All elements of a={a} should be strictly less than b={b}."
             )
-
-        self.a, self.b, self.sigma = tile_inputs(a, b, sigma)
-        self.D = self.a.shape[1]
+        self.D = self.a.size
 
     def _logpdf(self, x):
         """Compute the log-pdf of the multivariate smooth-box prior.
@@ -72,21 +71,21 @@ class SmoothBox(Prior):
             ``(n,1)``.
         """
         logpdf = np.full_like(x, -np.inf)
-        log_norm_factor = -np.log(np.sqrt(2 * np.pi) / self.sigma) - np.log1p(
+        log_norm_factor = -np.log(np.sqrt(2 * np.pi) * self.sigma) - np.log1p(
             (self.b - self.a) / (np.sqrt(2 * np.pi) * self.sigma)
         )
 
-        for d in range(D):
+        for d in range(self.D):
             mask = x[:, d] < self.a[d]
             logpdf[mask, d] = (
                 log_norm_factor[d]
                 - 0.5 * ((x[mask, d] - self.a[d]) / self.sigma[d]) ** 2
             )
 
-            mask = (x[:, d] >= self.a[:, d]) & (x[:, d] <= self.b[:, d])
+            mask = (x[:, d] >= self.a[d]) & (x[:, d] <= self.b[d])
             logpdf[mask, d] = log_norm_factor[d]
 
-            mask = x[:, d] > self.b[:, d]
+            mask = x[:, d] > self.b[d]
             logpdf[mask, d] = (
                 log_norm_factor[d]
                 - 0.5 * ((x[mask, d] - self.b[d]) / self.sigma[d]) ** 2
@@ -107,7 +106,7 @@ class SmoothBox(Prior):
         rvs : np.ndarray
             The samples points, of shape ``(n, D)``, where ``D`` is the dimension.
         """
-        rvs = np.zeros(n, self.D)
+        rvs = np.zeros((n, self.D))
         norm_factor = 1 + 1 / np.sqrt(2 * np.pi) * (
             (self.b - self.a) / self.sigma
         )
@@ -138,3 +137,19 @@ class SmoothBox(Prior):
                 rvs[mask, d] = np.random.uniform(
                     self.a[d], self.b[d], size=np.sum(mask)
                 )
+
+        return rvs
+
+    @classmethod
+    def _generic(cls, D=1):
+        return SmoothBox(
+            np.zeros(D),
+            np.ones(D),
+            np.ones(D),
+        )
+
+    def _support(self):
+        return (
+            np.full_like(self.a, -np.inf),
+            np.full_like(self.b, np.inf),
+        )
