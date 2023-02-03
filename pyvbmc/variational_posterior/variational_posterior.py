@@ -1325,13 +1325,3 @@ stats = {format_dict(self.stats, arr_size_thresh=arr_size_thresh)}""",
             expand=expand,
             arr_size_thresh=arr_size_thresh,
         )
-
-    def _short_repr(self):
-        """Returns abbreviated string representation with memory location.
-
-        Returns
-        -------
-        string : str
-            The abbreviated string representation of the VP.
-        """
-        return object.__repr__(self)

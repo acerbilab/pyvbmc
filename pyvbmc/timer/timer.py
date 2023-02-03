@@ -104,13 +104,3 @@ class Timer:
         return full_repr(
             self, "Timer", expand=expand, arr_size_thresh=arr_size_thresh
         )
-
-    def _short_repr(self):
-        """Returns abbreviated string representation with memory location.
-
-        Returns
-        -------
-        string : str
-            The abbreviated string representation of the VBMC object.
-        """
-        return object.__repr__(self)

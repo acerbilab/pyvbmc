@@ -2412,13 +2412,3 @@ user options = {str(self.options)}""",
             arr_size_thresh=arr_size_thresh,
             exclude=["random_state"],
         )
-
-    def _short_repr(self):
-        """Returns abbreviated string representation with memory location.
-
-        Returns
-        -------
-        string : str
-            The abbreviated string representation of the VBMC object.
-        """
-        return object.__repr__(self)

@@ -465,16 +465,6 @@ bounded transform type(s) = {transforms}""",
             arr_size_thresh=arr_size_thresh,
         )
 
-    def _short_repr(self):
-        """Returns abbreviated string representation with memory location.
-
-        Returns
-        -------
-        string : str
-            The abbreviated string representation of the ParameterTransformer.
-        """
-        return object.__repr__(self)
-
 
 def _to_unit_interval(x, lb, ub, safe=True):
     z = (x - lb) / (ub - lb)

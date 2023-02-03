@@ -474,13 +474,3 @@ fun. eval. time = {self.total_fun_eval_time}""",
             expand=expand,
             arr_size_thresh=arr_size_thresh,
         )
-
-    def _short_repr(self):
-        """Returns abbreviated string representation with memory location.
-
-        Returns
-        -------
-        string : str
-            The abbreviated string representation of the FunctionLogger.
-        """
-        return object.__repr__(self)
