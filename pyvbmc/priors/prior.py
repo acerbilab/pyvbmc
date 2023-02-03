@@ -6,7 +6,7 @@ import numpy as np
 class Prior(ABC):
     """Abstract base class for PyVBMC prior distributions."""
 
-    def logpdf(self, x, keepdims=True):
+    def log_pdf(self, x, keepdims=True):
         """Compute the log-pdf of the distribution.
 
         Parameters
@@ -20,7 +20,7 @@ class Prior(ABC):
 
         Returns
         -------
-        logpdf : np.ndarray
+        log_pdf : np.ndarray
             The log-density of the prior at the input point(s), of dimension
             `(n, 1)` or `(n,)` (depending on ``keepdims``).
         """
@@ -31,11 +31,11 @@ class Prior(ABC):
             raise ValueError(
                 f"Shape of x should have shape ({self.D},) or (n, {self.D}) but has shape {x_orig_shape}."
             )
-        logpdf = self._logpdf(x)
+        log_pdf = self._log_pdf(x)
         if keepdims:
-            return logpdf
+            return log_pdf
         else:
-            return logpdf.ravel()
+            return log_pdf.ravel()
 
     def pdf(self, x, keepdims=True):
         """Compute the pdf of the distribution.
@@ -55,7 +55,7 @@ class Prior(ABC):
             The density of the prior at the input point(s), of dimension `(n,
             1)` or `(n,)` (depending on ``keepdims``).
         """
-        return np.exp(self.logpdf(x, keepdims=keepdims))
+        return np.exp(self.log_pdf(x, keepdims=keepdims))
 
     def _support(self):
         """Returns the support of the distribution.
@@ -78,10 +78,10 @@ class Prior(ABC):
         self.D = 1
 
     @abstractmethod
-    def _logpdf(self, x):
+    def _log_pdf(self, x):
         """Compute the log-pdf of the distribution.
 
-        This private method is wrapped by ``self.logpdf()``, which handles
+        This private method is wrapped by ``self.log_pdf()``, which handles
         input validation and output shape.
 
         Parameters
@@ -92,7 +92,7 @@ class Prior(ABC):
 
         Returns
         -------
-        logpdf : np.ndarray
+        log_pdf : np.ndarray
             The log-density of the prior at the input point(s), of dimension
             `(n, 1)`.
         """

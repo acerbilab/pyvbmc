@@ -43,7 +43,7 @@ class UniformBox(Prior):
             )
         self.D = self.a.size
 
-    def _logpdf(self, x):
+    def _log_pdf(self, x):
         """Compute the log-pdf of the multivariate uniform-box prior.
 
         Parameters
@@ -54,18 +54,18 @@ class UniformBox(Prior):
 
         Returns
         -------
-        logpdf : np.ndarray
+        log_pdf : np.ndarray
             The log-density of the prior at the input point(s), of dimension
             `(n, 1)`.
         """
         n, D = x.shape
         log_norm_factor = np.sum(np.log(self.b - self.a))
-        logpdf = np.full((n, 1), -log_norm_factor)
+        log_pdf = np.full((n, 1), -log_norm_factor)
 
         mask = np.any((x < self.a) | (x > self.b), axis=1)
-        logpdf[mask] = -np.inf
+        log_pdf[mask] = -np.inf
 
-        return logpdf
+        return log_pdf
 
     def sample(self, n):
         """Sample random variables from the uniform-box distribution.

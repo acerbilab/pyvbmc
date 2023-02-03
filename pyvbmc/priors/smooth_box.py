@@ -55,7 +55,7 @@ class SmoothBox(Prior):
             )
         self.D = self.a.size
 
-    def _logpdf(self, x):
+    def _log_pdf(self, x):
         """Compute the log-pdf of the multivariate smooth-box prior.
 
         Parameters
@@ -66,32 +66,32 @@ class SmoothBox(Prior):
 
         Returns
         -------
-        logpdf : np.ndarray
+        log_pdf : np.ndarray
             The log-density of the prior at the input point(s), of dimension
             `(n, 1)`.
         """
-        logpdf = np.full_like(x, -np.inf)
+        log_pdf = np.full_like(x, -np.inf)
         log_norm_factor = -np.log(np.sqrt(2 * np.pi) * self.sigma) - np.log1p(
             (self.b - self.a) / (np.sqrt(2 * np.pi) * self.sigma)
         )
 
         for d in range(self.D):
             mask = x[:, d] < self.a[d]
-            logpdf[mask, d] = (
+            log_pdf[mask, d] = (
                 log_norm_factor[d]
                 - 0.5 * ((x[mask, d] - self.a[d]) / self.sigma[d]) ** 2
             )
 
             mask = (x[:, d] >= self.a[d]) & (x[:, d] <= self.b[d])
-            logpdf[mask, d] = log_norm_factor[d]
+            log_pdf[mask, d] = log_norm_factor[d]
 
             mask = x[:, d] > self.b[d]
-            logpdf[mask, d] = (
+            log_pdf[mask, d] = (
                 log_norm_factor[d]
                 - 0.5 * ((x[mask, d] - self.b[d]) / self.sigma[d]) ** 2
             )
 
-        return np.sum(logpdf, axis=1, keepdims=True)
+        return np.sum(log_pdf, axis=1, keepdims=True)
 
     def sample(self, n):
         """Sample random variables from the smooth-box distribution.

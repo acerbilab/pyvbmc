@@ -72,7 +72,7 @@ class SplineTrapezoid(Prior):
             )
         self.D = self.a.size
 
-    def _logpdf(self, x):
+    def _log_pdf(self, x):
         """Compute the log-pdf of the multivariate trapezoid prior.
 
         Parameters
@@ -83,12 +83,12 @@ class SplineTrapezoid(Prior):
 
         Returns
         -------
-        logpdf : np.ndarray
+        log_pdf : np.ndarray
             The log-density of the prior at the input point(s), of dimension
             `(n, 1)`.
         """
         n, D = x.shape
-        logpdf = np.full_like(x, -np.inf)
+        log_pdf = np.full_like(x, -np.inf)
         # a b c d
         # a u v b
         # norm_factor = u - v + 0.5 * (b - v + u - a)
@@ -100,23 +100,23 @@ class SplineTrapezoid(Prior):
             # Left tail
             mask = (x[:, d] >= self.a[d]) & (x[:, d] < self.u[d])
             z = (x[mask, d] - self.a[d]) / (self.u[d] - self.a[d])
-            logpdf[mask, d] = (
+            log_pdf[mask, d] = (
                 np.log(-2 * z**3 + 3 * z**2) - log_norm_factor[d]
             )
 
             # Plateau
             mask = (x[:, d] >= self.u[d]) & (x[:, d] < self.v[d])
-            logpdf[mask, d] = -log_norm_factor[d]
+            log_pdf[mask, d] = -log_norm_factor[d]
 
             # Right tail
             mask = (x[:, d] >= self.v[d]) & (x[:, d] < self.b[d])
             z = 1 - (x[mask, d] - self.v[d]) / (self.b[d] - self.v[d])
-            logpdf[mask, d] = (
+            log_pdf[mask, d] = (
                 np.log(-2 * z**3 + 3 * z**2) - log_norm_factor[d]
             )
         np.seterr(**old_settings)
 
-        return np.sum(logpdf, axis=1, keepdims=True)
+        return np.sum(log_pdf, axis=1, keepdims=True)
 
     def sample(self, n):
         """Sample random variables from the trapezoid distribution.

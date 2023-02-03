@@ -70,7 +70,7 @@ class Trapezoid(Prior):
             )
         self.D = self.a.size
 
-    def _logpdf(self, x):
+    def _log_pdf(self, x):
         """Compute the log-pdf of the multivariate trapezoid prior.
 
         Parameters
@@ -81,12 +81,12 @@ class Trapezoid(Prior):
 
         Returns
         -------
-        logpdf : np.ndarray
+        log_pdf : np.ndarray
             The log-density of the prior at the input point(s), of dimension
             `(n, 1)`.
         """
         n, D = x.shape
-        logpdf = np.full_like(x, -np.inf)
+        log_pdf = np.full_like(x, -np.inf)
         log_norm_factor = np.log(0.5) + np.log(
             self.b - self.a + self.v - self.u
         )
@@ -94,7 +94,7 @@ class Trapezoid(Prior):
         for d in range(D):
             # Left tail
             mask = (x[:, d] >= self.a[d]) & (x[:, d] < self.u[d])
-            logpdf[mask, d] = (
+            log_pdf[mask, d] = (
                 np.log(x[mask, d] - self.a[d])
                 - np.log(self.u[d] - self.a[d])
                 - log_norm_factor[d]
@@ -102,17 +102,17 @@ class Trapezoid(Prior):
 
             # Plateau
             mask = (x[:, d] >= self.u[d]) & (x[:, d] < self.v[d])
-            logpdf[mask, d] = -log_norm_factor[d]
+            log_pdf[mask, d] = -log_norm_factor[d]
 
             # Right tail
             mask = (x[:, d] >= self.v[d]) & (x[:, d] < self.b[d])
-            logpdf[mask, d] = (
+            log_pdf[mask, d] = (
                 np.log(self.b[d] - x[mask, d])
                 - np.log(self.b[d] - self.v[d])
                 - log_norm_factor[d]
             )
 
-        return np.sum(logpdf, axis=1, keepdims=True)
+        return np.sum(log_pdf, axis=1, keepdims=True)
 
     def sample(self, n):
         """Sample random variables from the trapezoid distribution.
