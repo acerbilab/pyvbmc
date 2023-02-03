@@ -12,6 +12,7 @@ import numpy as np
 from pyvbmc.formatting import full_repr, summarize
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
+from pyvbmc.priors import Prior
 from pyvbmc.stats import kl_div_mvn
 from pyvbmc.timer import main_timer as timer
 from pyvbmc.variational_posterior import VariationalPosterior
@@ -125,6 +126,7 @@ class VBMC:
         options: dict = None,
         log_prior: callable = None,
         sample_prior: callable = None,
+        prior: Prior = None,
     ):
         # set up root logger (only changes stuff if not initialized yet)
         logging.basicConfig(stream=sys.stdout, format="%(message)s")
@@ -236,26 +238,57 @@ class VBMC:
         self.optim_state = self._init_optim_state()
 
         # Initialize log-joint
-        self.sample_prior = sample_prior
-        if callable(log_prior):
-            self.log_prior = log_prior
-            self.log_likelihood = log_density
+        if (prior is not None) or (log_prior is not None):
+            # Initialize from pyvbmc.priors.Prior
+            if prior is not None:
+                if not isinstance(prior, Prior):
+                    raise TypeError(
+                        "Optional keyword `prior` should be a subclass of `pyvbmc.priors.Prior`."
+                    )
+                if (log_prior is not None) and (log_prior != prior.log_pdf):
+                    raise ValueError(
+                        "If `prior` is provided then `log_prior` should be None or `prior.log_pdf`."
+                    )
+                if (sample_prior is not None) and (
+                    sample_prior != prior.sample
+                ):
+                    raise ValueError(
+                        "If `prior` is provided then `sample_prior` should be None or `prior.sample`."
+                    )
+                self.prior = prior
+                self.log_prior = self.prior.log_pdf
+                self.sample_prior = self.prior.sample
+                self.log_likelihood = log_density
+            # Initialize from function
+            elif log_prior is not None:
+                if not callable(log_prior):
+                    raise TypeError(
+                        "Optional keyword `log_prior` must be callable."
+                    )
+                self.log_prior = log_prior
+                self.log_likelihood = log_density
+            # Combine log-prior and log-likelihood:
             if self.optim_state["uncertainty_handling_level"] == 2:
 
                 def log_joint(theta):
-                    log_likelihood, noise_est = log_density(theta)
-                    return log_likelihood + log_prior(theta), noise_est
+                    log_likelihood, noise_est = self.log_likelihood(theta)
+                    return log_likelihood + self.log_prior(theta), noise_est
 
             else:
 
                 def log_joint(theta):
-                    return log_density(theta) + log_prior(theta)
+                    return self.log_likelihood(theta) + self.log_prior(theta)
 
-        elif log_prior is None:
-            log_joint = log_density
         else:
-            raise TypeError("`prior` must be a callable or `None`.")
+            log_joint = log_density
         self.log_joint = log_joint
+        # Add `sample_prior` if not already added from `prior`
+        if sample_prior is not None and prior is None:
+            if not callable(sample_prior):
+                raise TypeError(
+                    "Optional keyword `sample_prior` must be callable."
+                )
+            self.sample_prior = sample_prior
 
         self.function_logger = FunctionLogger(
             fun=log_joint,
