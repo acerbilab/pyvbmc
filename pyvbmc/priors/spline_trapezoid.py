@@ -1,5 +1,8 @@
+from textwrap import indent
+
 import numpy as np
 
+from pyvbmc.formatting import full_repr
 from pyvbmc.priors import Prior, tile_inputs
 
 
@@ -190,3 +193,49 @@ class SplineTrapezoid(Prior):
             [``lb[i]``, ``ub[i]``] bounds the support of the `i`th marginal.
         """
         return self.a, self.b
+
+    def __str__(self):
+        """Print a string summary."""
+        return "SplineTrapezoid prior:" + indent(
+            f"""
+dimension = {self.D},
+lower bounds = {self.a},
+lower pivots = {self.u},
+upper pivots = {self.v},
+upper bounds = {self.b}""",
+            "    ",
+        )
+
+    def __repr__(self, arr_size_thresh=10, expand=False):
+        """Construct a detailed string summary.
+
+        Parameters
+        ----------
+        arr_size_thresh : float, optional
+            If ``obj`` is an array whose product of dimensions is less than
+            ``arr_size_thresh``, print the full array. Otherwise print only the
+            shape. Default `10`.
+        expand : bool, optional
+            If ``expand`` is `False`, then describe any complex child
+            attributes of the object by their name and memory location.
+            Otherwise, recursively expand the child attributes into their own
+            representations. Default `False`.
+
+        Returns
+        -------
+        string : str
+            The string representation of ``self``.
+        """
+        return full_repr(
+            self,
+            "SplineTrapezoid",
+            order=[
+                "D",
+                "a",
+                "u",
+                "v",
+                "b",
+            ],
+            expand=expand,
+            arr_size_thresh=arr_size_thresh,
+        )
