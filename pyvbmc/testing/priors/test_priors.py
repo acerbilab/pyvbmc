@@ -53,3 +53,19 @@ def test_sample():
 
         lb, ub = prior._support()
         assert np.all(samples > lb) and np.all(samples < ub)
+
+
+def test__str__and__repr__():
+    D = 4
+    for prior in classes:
+        new_prior = prior._generic(D)
+        string = new_prior.__str__()
+        assert f"{prior.__name__} prior:" in string
+        assert f"dimension = {D}" in string
+        assert f"lower bounds = {new_prior.a}" in string
+        assert f"upper bounds = {new_prior.b}" in string
+
+        repr_ = new_prior.__repr__()
+        assert f"self.D = {D}" in repr_
+        assert f"self.a = [" in repr_
+        assert f"self.b = [" in repr_
