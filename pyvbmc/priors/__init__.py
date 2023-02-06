@@ -1,5 +1,6 @@
 # __init__.py
 from .prior import Prior, tile_inputs
+from .scipy import SciPy
 from .smooth_box import SmoothBox
 from .spline_trapezoid import SplineTrapezoid
 from .trapezoid import Trapezoid
