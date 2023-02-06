@@ -33,3 +33,25 @@ def test_trapezoid_random_pdf():
     assert np.allclose(const_ps, max_pdf)
     # pdf outside support should be zero
     assert np.all(prior.pdf(points[outside]) == 0)
+
+
+def test_trapezoid_error_handling():
+    D = 3
+    a = np.zeros(D)
+    u = np.zeros(D) + 0.25
+    u[1] = 0.9
+    v = np.zeros(D) + 0.75
+    b = np.ones(D)
+    with pytest.raises(ValueError) as err:
+        prior = Trapezoid(a, u, v, b)
+    assert (
+        "Bounds and pivots should respect the order a < u < v < b."
+        in err.value.args[0]
+    )
+    u = np.zeros(D + 1) + 0.25
+    with pytest.raises(ValueError) as err:
+        prior = Trapezoid(a, u, v, b)
+    assert (
+        f"All inputs should have the same shape, but found inputs with shapes ({D},) and ({D+1},)."
+        in err.value.args[0]
+    )

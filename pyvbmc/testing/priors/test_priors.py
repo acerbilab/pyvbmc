@@ -4,13 +4,14 @@ from scipy.integrate import nquad
 
 from pyvbmc.priors import (
     Prior,
+    SciPy,
     SmoothBox,
     SplineTrapezoid,
     Trapezoid,
     UniformBox,
 )
 
-classes = [UniformBox, Trapezoid, SmoothBox, SplineTrapezoid]
+classes = [UniformBox, Trapezoid, SmoothBox, SplineTrapezoid, SciPy]
 
 
 def integrate(prior, epsabs=1.49e-08):
@@ -39,8 +40,8 @@ def test_unit_integral_1d():
 def test_unit_integral_2d():
     for cls in classes:
         prior = cls._generic(D=2)
-        integral = integrate(prior, epsabs=0.01)
-        assert np.isclose(integral, 1.0, atol=0.001)
+        integral = integrate(prior)
+        assert np.isclose(integral, 1.0)
 
 
 def test_sample():

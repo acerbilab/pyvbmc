@@ -29,3 +29,21 @@ def test_uniform_box_random_pdf():
     assert np.allclose(inside_ps, 1 / volume)
     # pdf outside support should be zero
     assert np.all(prior.pdf(points[~inside]) == 0)
+
+
+def test_uniform_box_error_handling():
+    D = 3
+    a = np.array([0.0, 0.5, 0.0])
+    b = np.array([1.0, 0.5, 1.0])
+    with pytest.raises(ValueError) as err:
+        prior = UniformBox(a, b)
+    assert (
+        f"All elements of a={a} should be strictly less than b={b}."
+        in err.value.args[0]
+    )
+    with pytest.raises(ValueError) as err:
+        prior = UniformBox(np.zeros(D + 1), b)
+    assert (
+        f"All inputs should have the same shape, but found inputs with shapes ({D+1},) and ({D},)."
+        in err.value.args[0]
+    )

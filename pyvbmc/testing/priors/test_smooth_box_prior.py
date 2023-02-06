@@ -43,3 +43,28 @@ def test_smooth_box_like_mv_normal():
     mv_normal = multivariate_normal(np.zeros(D), np.diag(sigma**2))
     points = mv_normal.rvs(10000).reshape(-1, D)
     assert np.allclose(prior.pdf(points).ravel(), mv_normal.pdf(points))
+
+
+def test_smooth_box_error_handling():
+    D = 3
+    a = np.array([0.0, 0.5, 0.0])
+    b = np.array([1.0, 0.5, 1.0])
+    sigma = np.array([1.0, 0.0, 1.0])
+    with pytest.raises(ValueError) as err:
+        prior = SmoothBox(a, b, sigma)
+    assert (
+        f"All elements of sigma={sigma} should be positive."
+        in err.value.args[0]
+    )
+    with pytest.raises(ValueError) as err:
+        prior = SmoothBox(a, b, np.ones(D))
+    assert (
+        f"All elements of a={a} should be strictly less than b={b}."
+        in err.value.args[0]
+    )
+    with pytest.raises(ValueError) as err:
+        prior = SmoothBox(np.zeros(D + 1), b, np.ones(D))
+    assert (
+        f"All inputs should have the same shape, but found inputs with shapes ({D+1},) and ({D},)."
+        in err.value.args[0]
+    )
