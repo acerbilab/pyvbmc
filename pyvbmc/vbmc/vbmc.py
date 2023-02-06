@@ -12,7 +12,7 @@ import numpy as np
 from pyvbmc.formatting import full_repr, summarize
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
-from pyvbmc.priors import Prior
+from pyvbmc.priors import Prior, SciPy
 from pyvbmc.stats import kl_div_mvn
 from pyvbmc.timer import main_timer as timer
 from pyvbmc.variational_posterior import VariationalPosterior
@@ -237,61 +237,16 @@ class VBMC:
 
         self.optim_state = self._init_optim_state()
 
-        # Initialize log-joint
-        if (prior is not None) or (log_prior is not None):
-            # Initialize from pyvbmc.priors.Prior
-            if prior is not None:
-                if not isinstance(prior, Prior):
-                    raise TypeError(
-                        "Optional keyword `prior` should be a subclass of `pyvbmc.priors.Prior`."
-                    )
-                if (log_prior is not None) and (log_prior != prior.log_pdf):
-                    raise ValueError(
-                        "If `prior` is provided then `log_prior` should be None or `prior.log_pdf`."
-                    )
-                if (sample_prior is not None) and (
-                    sample_prior != prior.sample
-                ):
-                    raise ValueError(
-                        "If `prior` is provided then `sample_prior` should be None or `prior.sample`."
-                    )
-                self.prior = prior
-                self.log_prior = self.prior.log_pdf
-                self.sample_prior = self.prior.sample
-                self.log_likelihood = log_density
-            # Initialize from function
-            elif log_prior is not None:
-                if not callable(log_prior):
-                    raise TypeError(
-                        "Optional keyword `log_prior` must be callable."
-                    )
-                self.log_prior = log_prior
-                self.log_likelihood = log_density
-            # Combine log-prior and log-likelihood:
-            if self.optim_state["uncertainty_handling_level"] == 2:
-
-                def log_joint(theta):
-                    log_likelihood, noise_est = self.log_likelihood(theta)
-                    return log_likelihood + self.log_prior(theta), noise_est
-
-            else:
-
-                def log_joint(theta):
-                    return self.log_likelihood(theta) + self.log_prior(theta)
-
-        else:
-            log_joint = log_density
-        self.log_joint = log_joint
-        # Add `sample_prior` if not already added from `prior`
-        if sample_prior is not None and prior is None:
-            if not callable(sample_prior):
-                raise TypeError(
-                    "Optional keyword `sample_prior` must be callable."
-                )
-            self.sample_prior = sample_prior
+        (
+            self.log_joint,
+            self.log_likelihood,
+            self.log_prior,
+            self.sample_prior,
+            self.prior,
+        ) = self._init_log_joint(log_density, log_prior, sample_prior, prior)
 
         self.function_logger = FunctionLogger(
-            fun=log_joint,
+            fun=self.log_joint,
             D=self.D,
             noise_flag=self.optim_state.get("uncertainty_handling_level") > 0,
             uncertainty_handling_level=self.optim_state.get(
@@ -2339,6 +2294,65 @@ class VBMC:
             logger.addHandler(file_handler)
 
         return logger
+
+    def _init_log_joint(self, log_density, log_prior, sample_prior, prior):
+        # Initialize log-joint
+        log_likelihood = None
+        if prior is not None or log_prior is not None:
+            if prior is not None:
+                # Initialize from Prior object or scipy.stats distribution
+                if isinstance(prior, Prior):
+                    pass
+                else:
+                    try:
+                        prior = SciPy(prior)
+                    except TypeError as err:
+                        raise TypeError(
+                            f"Optional keyword `prior` should be a subclass of `pyvbmc.priors.Prior`, or an appropriate `scipy.stats` distribution. ({err})"
+                        ) from err
+                if log_prior is not None and log_prior != prior.log_pdf:
+                    raise ValueError(
+                        "If `prior` is provided then `log_prior` should be `None` or `prior.log_pdf`."
+                    )
+                if sample_prior is not None and sample_prior != prior.sample:
+                    raise ValueError(
+                        "If `prior` is provided then `sample_prior` should be `None` or `prior.sample`."
+                    )
+                if prior.D != self.D:
+                    raise ValueError(
+                        f"Dimension of `prior` ({prior.D}) does not match provided dimension ({self.D})."
+                    )
+                log_prior = prior.log_pdf
+                sample_prior = prior.sample
+            else:
+                # Initialize from function
+                if not callable(log_prior):
+                    raise TypeError(
+                        "Optional keyword `log_prior` must be callable."
+                    )
+                log_prior = log_prior
+            log_likelihood = log_density
+            # Combine log-prior and log-likelihood:
+            if self.optim_state["uncertainty_handling_level"] == 2:
+
+                def log_joint(theta):
+                    ll, noise_est = log_likelihood(theta)
+                    return ll + log_prior(theta), noise_est
+
+            else:
+
+                def log_joint(theta):
+                    return log_likelihood(theta) + log_prior(theta)
+
+        else:
+            log_joint = log_density
+        if sample_prior is not None and prior is None:
+            # Check that `sample_prior` is same as `prior.sample`
+            if not callable(sample_prior):
+                raise TypeError(
+                    "Optional keyword `sample_prior` must be callable."
+                )
+        return log_joint, log_likelihood, log_prior, sample_prior, prior
 
     def __str__(self):
         """Construct a string summary."""
