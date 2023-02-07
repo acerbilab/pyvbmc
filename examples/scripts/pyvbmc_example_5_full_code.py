@@ -59,7 +59,7 @@ ax2.plot(x, prior.log_pdf(x))
 ax2.set_ylim(-20, 0)
 ax2.set_xlabel("x0")
 ax2.set_ylabel("prior log-pdf")
-plt.suptitle("Trapezoidal prior")
+plt.suptitle("Smoothed trapezoidal prior")
 fig.tight_layout()
 
 
@@ -67,7 +67,6 @@ lb = -np.inf
 ub = np.inf
 plb = -2
 pub = 2
-
 # We recommend setting sigma as a fraction of the plausible range.
 # For example sigma set to 4/10 of the plausible range assigns ~50%
 # (marginal) probability to the plateau of the distribution.
@@ -76,10 +75,10 @@ pub = 2
 # might cause issues.
 p_range = pub - plb
 sigma = 0.4 * p_range
-x = np.linspace(plb - 2 * p_range, pub + 2 * p_range, 1000)
 
 prior = SmoothBox(plb, pub, sigma)
 
+x = np.linspace(plb - 2 * p_range, pub + 2 * p_range, 1000)
 fig, (ax1, ax2) = plt.subplots(1, 2, sharex=True)
 ax1.plot(x, prior.pdf(x))
 ax1.set_xlim(x[0], x[-1])
