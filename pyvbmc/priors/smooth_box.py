@@ -26,7 +26,7 @@ class SmoothBox(Prior):
         The standard deviation of the Gaussian tails, shape `(1, D)`.
     """
 
-    def __init__(self, a, b, sigma, D=None):
+    def __init__(self, a, b, sigma=1, D=None):
         """Initialize a multivariate smooth-box prior.
 
         Parameters

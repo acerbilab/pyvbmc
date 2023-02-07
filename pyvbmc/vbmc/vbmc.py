@@ -3,6 +3,7 @@ import logging
 import math
 import os
 import sys
+from collections.abc import Iterable
 from textwrap import indent
 
 import gpyreg as gpr
@@ -12,7 +13,7 @@ import numpy as np
 from pyvbmc.formatting import full_repr, summarize
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
-from pyvbmc.priors import Prior, SciPy
+from pyvbmc.priors import Prior, SciPy, convert_to_prior
 from pyvbmc.stats import kl_div_mvn
 from pyvbmc.timer import main_timer as timer
 from pyvbmc.variational_posterior import VariationalPosterior
@@ -76,10 +77,12 @@ class VBMC:
         Additional options can be passed as a dict. Please refer to the
         VBMC options page for the default options. If no ``options`` are
         passed, the default options are used.
-    log_prior : callable, optional
-        An optional separate log-prior function, which should accept a single
-        argument `x` and return the log-density of the prior at `x`. If
-        ``log_prior`` is not ``None``, the argument ``log_density`` is assumed
+    prior : callable or pyvbmc.priors.Prior or scipy.stats distribution, optional
+        An optional separate prior. It can be a function, which should accept a
+        single argument `x` and return the log-density of the prior at `x`. It
+        can also be a PyVBMC `Prior` object, or an appropriate `scipy.stats`
+        distribution (see the documentation on priors for more details). If
+        ``prior`` is not `None`, the argument ``log_density`` is assumed
         to represent the log-likelihood (otherwise it is assumed to represent
         the log-joint).
     sample_prior : callable, optional
@@ -124,9 +127,8 @@ class VBMC:
         plausible_lower_bounds: np.ndarray = None,
         plausible_upper_bounds: np.ndarray = None,
         options: dict = None,
-        log_prior: callable = None,
-        sample_prior: callable = None,
         prior: Prior = None,
+        sample_prior: callable = None,
     ):
         # set up root logger (only changes stuff if not initialized yet)
         logging.basicConfig(stream=sys.stdout, format="%(message)s")
@@ -240,10 +242,9 @@ class VBMC:
         (
             self.log_joint,
             self.log_likelihood,
-            self.log_prior,
-            self.sample_prior,
             self.prior,
-        ) = self._init_log_joint(log_density, log_prior, sample_prior, prior)
+            self.sample_prior,
+        ) = self._init_log_joint(log_density, prior, sample_prior)
 
         self.function_logger = FunctionLogger(
             fun=self.log_joint,
@@ -2295,42 +2296,17 @@ class VBMC:
 
         return logger
 
-    def _init_log_joint(self, log_density, log_prior, sample_prior, prior):
+    def _init_log_joint(self, log_density, prior, sample_prior):
         # Initialize log-joint
         log_likelihood = None
-        if prior is not None or log_prior is not None:
-            if prior is not None:
-                # Initialize from Prior object or scipy.stats distribution
-                if isinstance(prior, Prior):
-                    pass
-                else:
-                    try:
-                        prior = SciPy(prior)
-                    except TypeError as err:
-                        raise TypeError(
-                            f"Optional keyword `prior` should be a subclass of `pyvbmc.priors.Prior`, or an appropriate `scipy.stats` distribution. ({err})"
-                        ) from err
-                if log_prior is not None and log_prior != prior.log_pdf:
-                    raise ValueError(
-                        "If `prior` is provided then `log_prior` should be `None` or `prior.log_pdf`."
-                    )
-                if sample_prior is not None and sample_prior != prior.sample:
-                    raise ValueError(
-                        "If `prior` is provided then `sample_prior` should be `None` or `prior.sample`."
-                    )
-                if prior.D != self.D:
-                    raise ValueError(
-                        f"Dimension of `prior` ({prior.D}) does not match dimension of model ({self.D})."
-                    )
-                log_prior = prior.log_pdf
-                sample_prior = prior.sample
-            else:
-                # Initialize from function
-                if not callable(log_prior):
-                    raise TypeError(
-                        "Optional keyword `log_prior` must be callable."
-                    )
-                log_prior = log_prior
+        if prior is not None:
+            prior = convert_to_prior(prior, sample_prior, self.D)
+            if prior.D != self.D:
+                raise ValueError(
+                    f"Dimension of `prior` ({prior.D}) does not match dimension of model ({self.D})."
+                )
+            log_prior = prior.log_pdf
+            sample_prior = prior.sample
             log_likelihood = log_density
             # Combine log-prior and log-likelihood:
             if self.optim_state["uncertainty_handling_level"] == 2:
@@ -2346,13 +2322,7 @@ class VBMC:
 
         else:
             log_joint = log_density
-        if sample_prior is not None and prior is None:
-            # Check that `sample_prior` is same as `prior.sample`
-            if not callable(sample_prior):
-                raise TypeError(
-                    "Optional keyword `sample_prior` must be callable."
-                )
-        return log_joint, log_likelihood, log_prior, sample_prior, prior
+        return log_joint, log_likelihood, prior, sample_prior
 
     def __str__(self):
         """Construct a string summary."""

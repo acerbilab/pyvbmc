@@ -42,11 +42,11 @@ class Prior(ABC):
     def pdf(self, x, keepdims=True):
         """Compute the pdf of the distribution.
 
-        parameters
+        Parameters
         ----------
         x : np.ndarray
             The array of input point(s), of dimension `(D,)` or `(n, D)`, where
-            `d` is the distribution dimension.
+            `D` is the distribution dimension.
         keepdims : bool
             Whether to keep the input dimensions and return an array of shape
             `(1, D)`, or discard them and return an array of shape `(D,)`.
@@ -59,7 +59,7 @@ class Prior(ABC):
         """
         return np.exp(self.log_pdf(x, keepdims=keepdims))
 
-    def _support(self):
+    def support(self):
         """Returns the support of the distribution.
 
         Used to test that the distribution integrates to one, so it is also
@@ -70,9 +70,12 @@ class Prior(ABC):
         -------
         lb, ub : tuple(np.ndarray, np.ndarray)
             A tuple of lower and upper bounds of the support, such that
-            [``lb[i]``, ``ub[i]``] bounds the support of the `i`th marginal.
+            [``lb[i]``, ``ub[i]``] bounds the support of the ``i``\ th marginal.
         """
-        return np.full(self.D, -np.inf), np.full(self.D, np.inf)
+        if hasattr(self, "_support"):
+            return self._support()
+        else:
+            return np.full(self.D, -np.inf), np.full(self.D, np.inf)
 
     @abstractmethod
     def __init__(self):

@@ -1,4 +1,3 @@
-from collections.abc import Iterable
 from textwrap import indent
 
 import numpy as np
@@ -22,9 +21,8 @@ class SciPy(Prior):
         The dimension of the prior distribution.
     distribution : scipy.stats._multivariate.multivariate_normal_frozen\
             or scipy.stats._multivariate.multivariate_t_frozen\
-            or scipy.stats._distn_infrastructure.rv_continuous_frozen\
-            or [scipy.stats._distn_infrastructure.rv_continuous_frozen]
-        The underlying `scipy.stats` distribution(s).
+            or scipy.stats._distn_infrastructure.rv_continuous_frozen
+        The underlying `scipy.stats` distributions.
     """
 
     def __init__(self, distribution):
@@ -35,20 +33,15 @@ class SciPy(Prior):
         distribution : scipy.stats.multivariate_normal\
                 or scipy.stats.multivariate_t\
                 or scipy.stats.rv_continuous\
-                or [scipy.stats.rv_continuous]
-            The underlying `scipy.stats` distribution(s). Should be a
-        multivariate normal distribution, a multivariate t distribution, a
-        univariate continuous distribution (for 1-D models), or a list
-        (iterable) of univariate continuous distributiosn. In this last case,
-        the prior will be treated as an independent product of these univariate
-        distributions.
+            The underlying `scipy.stats` distributions. Should be a
+            multivariate normal distribution, a multivariate t distribution, or
+            a univariate continuous distribution (for 1-D models).
 
         Raises
         ------
         TypeError
             If the provided distribution is not of the appropriate type.
         """
-        self._product = False
         if isinstance(distribution, multivariate_normal_frozen) or isinstance(
             distribution, multivariate_t_frozen
         ):
@@ -58,23 +51,11 @@ class SciPy(Prior):
             self.b = np.full(self.D, np.inf)
         elif isinstance(distribution, rv_continuous_frozen):
             self.D = 1
-            self.a = np.full(self.D, -np.inf)
-            self.b = np.full(self.D, np.inf)
-        elif isinstance(distribution, Iterable):
-            self._product = True
-            self.D = len(distribution)
-            self.a = np.full(self.D, -np.inf)
-            self.b = np.full(self.D, np.inf)
-            for (d, dist) in enumerate(distribution):
-                if not isinstance(dist, rv_continuous_frozen):
-                    raise TypeError(
-                        f'Each element of ``Prior`` should be a "frozen" continuous univariate distribution, but an element has type {type(dist)}'
-                    )
-                self.a[d] = dist.a
-                self.b[d] = dist.b
+            self.a = np.atleast_1d(distribution.a)
+            self.b = np.atleast_1d(distribution.b)
         else:
             raise TypeError(
-                f'A SciPy prior should be initialized from a "frozen" multivariate normal or multivariate t distribution, or an iterable of univariate scipy distributions, but got `distribution` of type {type(distribution)}.'
+                f'A SciPy prior should be initialized from a "frozen" multivariate normal, multivariate t, or univariate SciPy distribution, but got `distribution` of type {type(distribution)}.'
             )
         self.distribution = distribution
 
@@ -94,13 +75,7 @@ class SciPy(Prior):
             `(n, 1)`.
         """
         n, D = x.shape
-        if self._product:
-            log_pdf = np.zeros((n, D))
-            for (d, dist) in enumerate(self.distribution):
-                log_pdf[:, d] = dist.logpdf(x[:, d])
-            log_pdf = np.sum(log_pdf, axis=1, keepdims=True)
-        else:
-            log_pdf = self.distribution.logpdf(x).reshape((n, 1))
+        log_pdf = self.distribution.logpdf(x).reshape((n, 1))
         return log_pdf
 
     def sample(self, n):
@@ -116,12 +91,7 @@ class SciPy(Prior):
         rvs : np.ndarray
             The samples points, of shape `(n, D)`, where `D` is the dimension.
         """
-        if self._product:
-            rvs = np.zeros((n, self.D))
-            for (d, dist) in enumerate(self.distribution):
-                rvs[:, d] = dist.rvs(n)
-        else:
-            rvs = self.distribution.rvs(n).reshape((n, self.D))
+        rvs = self.distribution.rvs(n).reshape((n, self.D))
         return rvs
 
     @classmethod
@@ -138,9 +108,9 @@ class SciPy(Prior):
 
         Returns
         -------
-        lb, ub : tuple(np.ndarray, np.ndarray)
+        a, b : tuple(np.ndarray, np.ndarray)
             A tuple of lower and upper bounds of the support, such that
-            [``lb[i]``, ``ub[i]``] bounds the support of the `i`th marginal.
+            [``a[i]``, ``b[i]``] bounds the support of the `i`th marginal.
         """
         return self.a, self.b
 
@@ -177,7 +147,7 @@ distribution(s) = {self.distribution}""",
         """
         return full_repr(
             self,
-            "UniformBox",
+            "SciPy",
             order=[
                 "D",
                 "a",
