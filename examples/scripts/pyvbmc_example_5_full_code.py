@@ -114,7 +114,7 @@ def log_likelihood(theta):
 x0 = np.ones((1, D))
 np.random.seed(42)
 vbmc = VBMC(log_likelihood, x0, lb, ub, plb, pub, prior=prior)
-# vbmc = VBMC(log_likelihood, x0, lb, ub, plb, pub, log_prior=prior.log_pdf)  # equivalently
+# vbmc = VBMC(log_likelihood, x0, lb, ub, plb, pub, prior=prior.log_pdf)  # equivalently
 # vbmc = VBMC(lambda x: log_likelihood(x) + prior.log_pdf(x), x0, lb, ub, plb, pub)  # equivalently
 vp, results = vbmc.optimize()
 vp.plot()

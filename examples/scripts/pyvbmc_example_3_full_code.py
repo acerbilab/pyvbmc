@@ -67,7 +67,7 @@ vbmc = VBMC(
     PLB,
     PUB,
     options=options,
-    log_prior=log_prior,
+    prior=log_prior,
 )
 # vbmc = VBMC(
 #     log_joint,
