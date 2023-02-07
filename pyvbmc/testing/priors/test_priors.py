@@ -6,12 +6,12 @@ from pyvbmc.priors import (
     Prior,
     SciPy,
     SmoothBox,
-    SplineTrapezoid,
-    Trapezoid,
+    SplineTrapezoidal,
+    Trapezoidal,
     UniformBox,
 )
 
-classes = [UniformBox, Trapezoid, SmoothBox, SplineTrapezoid, SciPy]
+classes = [UniformBox, Trapezoidal, SmoothBox, SplineTrapezoidal, SciPy]
 
 
 def integrate(prior, epsabs=1.49e-08):

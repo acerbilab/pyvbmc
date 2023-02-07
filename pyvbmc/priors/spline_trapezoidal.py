@@ -6,19 +6,21 @@ from pyvbmc.formatting import full_repr
 from pyvbmc.priors import Prior, tile_inputs
 
 
-class Trapezoid(Prior):
-    """Multivariate trapezoid prior.
+class SplineTrapezoidal(Prior):
+    """Multivariate spline-trapezoidal prior.
 
     A prior distribution represented by a density with external bounds ``a``
     and ``b`` and internal points ``u`` and ``v``. Each marginal distribution
-    has a trapezoidal density which is uniform between ``u[i]`` and ``v[i]``
-    and falls of linearly to zero at ``a[i]`` and ``b[i]``::
+    has a spline-trapezoidalal density which is uniform between ``u[i]`` and
+    ``v[i]`` and falls of as a cubic spline to zero ``a[i]`` and ``b[i]``, such
+    that the pdf is continuous and its derivatives at ``a[i]``, ``u[i]``,
+    ``v[i]``, and ``b[i]`` are zero (so the derivatives are also continuous)::
 
-                |      ________
-                |     /|      |\
-        p(X(i)) |    / |      | \
-                |   /  |      |  \
-                |__/___|______|___\__
+                |      __________
+                |     / |      | \
+        p(X(i)) |    |  |      |  |
+                |    |  |      |  |
+                |___/___|______|___\__
                   a[i] u[i]  v[i] b[i]
                           X(i)
 
@@ -39,7 +41,7 @@ class Trapezoid(Prior):
     """
 
     def __init__(self, a, u, v, b, D=None):
-        """Initialize a multivariate trapezoid prior.
+        """Initialize a multivariate trapezoidal prior.
 
         Parameters
         ----------
@@ -64,7 +66,9 @@ class Trapezoid(Prior):
         ValueError
             If the order ``a[i] < u[i] < v[i] < b[i]`` is not respected, for any `i`.
         """
-        self.a, self.u, self.v, self.b = tile_inputs(a, u, v, b, size=D)
+        self.a, self.u, self.v, self.b = tile_inputs(
+            a, u, v, b, size=D, squeeze=True
+        )
         if np.any(
             (self.a >= self.u) | (self.u >= self.v) | (self.v >= self.b)
         ):
@@ -74,7 +78,7 @@ class Trapezoid(Prior):
         self.D = self.a.size
 
     def _log_pdf(self, x):
-        """Compute the log-pdf of the multivariate trapezoid prior.
+        """Compute the log-pdf of the multivariate trapezoidal prior.
 
         Parameters
         ----------
@@ -90,17 +94,19 @@ class Trapezoid(Prior):
         """
         n, D = x.shape
         log_pdf = np.full_like(x, -np.inf)
-        log_norm_factor = np.log(0.5) + np.log(
-            self.b - self.a + self.v - self.u
-        )
+        # a b c d
+        # a u v b
+        # norm_factor = u - v + 0.5 * (b - v + u - a)
+        log_norm_factor = np.log(0.5 * (self.v - self.u + self.b - self.a))
 
+        # ignore log(0) warnings here
+        old_settings = np.seterr(divide="ignore")
         for d in range(D):
             # Left tail
             mask = (x[:, d] >= self.a[d]) & (x[:, d] < self.u[d])
+            z = (x[mask, d] - self.a[d]) / (self.u[d] - self.a[d])
             log_pdf[mask, d] = (
-                np.log(x[mask, d] - self.a[d])
-                - np.log(self.u[d] - self.a[d])
-                - log_norm_factor[d]
+                np.log(-2 * z**3 + 3 * z**2) - log_norm_factor[d]
             )
 
             # Plateau
@@ -109,16 +115,16 @@ class Trapezoid(Prior):
 
             # Right tail
             mask = (x[:, d] >= self.v[d]) & (x[:, d] < self.b[d])
+            z = 1 - (x[mask, d] - self.v[d]) / (self.b[d] - self.v[d])
             log_pdf[mask, d] = (
-                np.log(self.b[d] - x[mask, d])
-                - np.log(self.b[d] - self.v[d])
-                - log_norm_factor[d]
+                np.log(-2 * z**3 + 3 * z**2) - log_norm_factor[d]
             )
+        np.seterr(**old_settings)
 
         return np.sum(log_pdf, axis=1, keepdims=True)
 
     def sample(self, n):
-        """Sample random variables from the trapezoid distribution.
+        """Sample random variables from the trapezoidal distribution.
 
         Parameters
         ----------
@@ -134,7 +140,9 @@ class Trapezoid(Prior):
 
         # Sample one dimension at a time
         for d in range(self.D):
-            one_d_dist = Trapezoid(self.a[d], self.u[d], self.v[d], self.b[d])
+            one_d_dist = SplineTrapezoidal(
+                self.a[d], self.u[d], self.v[d], self.b[d]
+            )
             # Compute maximum of one-dimensional pdf
             x0 = 0.5 * (self.u[d] + self.v[d])
             y_max = one_d_dist.pdf(x0, keepdims=False)
@@ -166,7 +174,7 @@ class Trapezoid(Prior):
     @classmethod
     def _generic(cls, D=1):
         """Return a generic instance of the class (used for tests)."""
-        return Trapezoid(
+        return SplineTrapezoidal(
             np.zeros(D),
             np.full((D,), 0.25),
             np.full((D,), 0.75),
@@ -190,7 +198,7 @@ class Trapezoid(Prior):
 
     def __str__(self):
         """Print a string summary."""
-        return "Trapezoid prior:" + indent(
+        return "SplineTrapezoidal prior:" + indent(
             f"""
 dimension = {self.D},
 lower bounds = {self.a},
@@ -222,7 +230,7 @@ upper bounds = {self.b}""",
         """
         return full_repr(
             self,
-            "Trapezoid",
+            "SplineTrapezoidal",
             order=[
                 "D",
                 "a",

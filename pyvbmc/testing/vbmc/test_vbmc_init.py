@@ -9,12 +9,12 @@ from pyvbmc import VBMC
 from pyvbmc.priors import (
     SciPy,
     SmoothBox,
-    SplineTrapezoid,
-    Trapezoid,
+    SplineTrapezoidal,
+    Trapezoidal,
     UniformBox,
 )
 
-priors = [UniformBox, Trapezoid, SplineTrapezoid, SmoothBox, SciPy]
+priors = [UniformBox, Trapezoidal, SplineTrapezoidal, SmoothBox, SciPy]
 from scipy.stats import lognorm, multivariate_normal, multivariate_t, norm
 
 from pyvbmc.variational_posterior import VariationalPosterior
