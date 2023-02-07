@@ -16,11 +16,12 @@ class SplineTrapezoidal(Prior):
     that the pdf is continuous and its derivatives at ``a[i]``, ``u[i]``,
     ``v[i]``, and ``b[i]`` are zero (so the derivatives are also continuous)::
 
-                |      __________
-                |     / |      | \
-        p(X(i)) |    |  |      |  |
-                |    |  |      |  |
-                |___/___|______|___\__
+                 ______________________
+                |      __________      |
+                |     / |      | \     |
+        p(X(i)) |    |  |      |  |    |
+                |    |  |      |  |    |
+                |___/___|______|___\___|
                   a[i] u[i]  v[i] b[i]
                           X(i)
 

@@ -13,6 +13,7 @@ class Trapezoidal(Prior):
     and ``b`` and internal points ``u`` and ``v``. Each marginal distribution
     has a trapezoidal density which is uniform between ``u[i]`` and ``v[i]``
     and falls of linearly to zero at ``a[i]`` and ``b[i]``::
+
                  ______________________
                 |       ________       |
                 |      /|      |\      |

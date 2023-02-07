@@ -20,13 +20,11 @@ class SciPy(Prior):
     ----------
     D : int
         The dimension of the prior distribution.
-    distribution : scipy.stats._multivariate.multivariate_normal_frozen
-                 | scipy.stats._multivariate.multivariate_t_frozen
-                 | scipy.stats._distn_infrastructure.rv_continuous_frozen
-                 | [scipy.stats._distn_infrastructure.rv_continuous_frozen]
-        The underlying `scipy.stats` distribution(s). If ``distribution`` is
-        iterable, the prior will is treated as an independent product of these
-        univariate distributions.
+    distribution : scipy.stats._multivariate.multivariate_normal_frozen\
+            or scipy.stats._multivariate.multivariate_t_frozen\
+            or scipy.stats._distn_infrastructure.rv_continuous_frozen\
+            or [scipy.stats._distn_infrastructure.rv_continuous_frozen]
+        The underlying `scipy.stats` distribution(s).
     """
 
     def __init__(self, distribution):
@@ -34,13 +32,16 @@ class SciPy(Prior):
 
         Parameters
         ----------
-        distribution : scipy.stats.multivariate_normal
-                                         | scipy.stats.multivariate_t
-                     | scipy.stats.rv_continuous
-                     | [scipy.stats.rv_continuous]
-            The underlying `scipy.stats` distribution(s). If ``distribution``
-            is iterable, the prior will be interpreted as an independent
-            product of these univariate distributions.
+        distribution : scipy.stats.multivariate_normal\
+                or scipy.stats.multivariate_t\
+                or scipy.stats.rv_continuous\
+                or [scipy.stats.rv_continuous]
+            The underlying `scipy.stats` distribution(s). Should be a
+        multivariate normal distribution, a multivariate t distribution, a
+        univariate continuous distribution (for 1-D models), or a list
+        (iterable) of univariate continuous distributiosn. In this last case,
+        the prior will be treated as an independent product of these univariate
+        distributions.
 
         Raises
         ------
