@@ -961,7 +961,7 @@ def test_vbmc_init_error_handling():
                 prior=SciPy(multivariate_normal(np.zeros(D + 1))),
             )
         assert (
-            f"Dimension of `prior` ({D+1}) does not match provided dimension ({D})."
+            f"Dimension of `prior` ({D+1}) does not match dimension of model ({D})."
             in err.value.args[0]
         )
         with pytest.raises(ValueError) as err:
@@ -975,7 +975,7 @@ def test_vbmc_init_error_handling():
                 prior=[norm() for __ in range(D + 1)],
             )
         assert (
-            f"Dimension of `prior` ({D+1}) does not match provided dimension ({D})."
+            f"Dimension of `prior` ({D+1}) does not match dimension of model ({D})."
             in err.value.args[0]
         )
 

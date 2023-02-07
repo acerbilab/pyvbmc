@@ -27,9 +27,11 @@ class Prior(ABC):
         x_orig_shape = x.shape
         x = np.atleast_2d(x)
         n, D = x.shape
-        if D != self.D:
+        if self.D == 1 and n == 1:
+            x = x.T
+        elif D != self.D:
             raise ValueError(
-                f"Shape of x should have shape ({self.D},) or (n, {self.D}) but has shape {x_orig_shape}."
+                f"x should have shape ({self.D},) or (n, {self.D}) but has shape {x_orig_shape}."
             )
         log_pdf = self._log_pdf(x)
         if keepdims:
@@ -121,7 +123,7 @@ class Prior(ABC):
         return cls(D=D)
 
 
-def tile_inputs(*args, size=None):
+def tile_inputs(*args, size=None, squeeze=False):
     """Tile scalar inputs to have the same dimension as array inputs.
 
     If all inputs are given as scalars, returned arrays will have shape `size`
@@ -133,6 +135,8 @@ def tile_inputs(*args, size=None):
         The inputs to tile.
     size : Union[int, tuple], optional
         The desired size/shape of the output, default `(1,)`.
+    squeeze : bool
+        If `True`, then drop 1-d axes from inputs. Default `False`.
 
     Raises
     ------
@@ -148,28 +152,29 @@ def tile_inputs(*args, size=None):
     args = list(args)
     for i, arg in enumerate(args):
         if not (np.isscalar(arg)):
-            arg = args[i] = np.array(arg)
+            if squeeze:
+                arg = args[i] = np.atleast_1d(np.squeeze(np.array(arg)))
+            else:
+                arg = args[i] = np.array(arg)
             if shape is None:
                 shape = arg.shape
             elif arg.shape != shape:
                 raise ValueError(
                     f"All inputs should have the same shape, but found inputs with shapes {shape} and {arg.shape}."
                 )
-    # Check that size agrees with input shape
-    if size is not None and shape is not None and shape != size:
-        raise ValueError(
-            f"Requested shape {size} but some arguments have shape {shape}."
-        )
-    if shape is None:
-        # Default to shape (1,)
-        if size is None:
-            shape = (1,)
-        # Or use provided size
+
+    if size is None:
+        if shape is None:
+            # Default to shape (1,)
+            size = (1,)
         else:
-            shape = size
+            # Or use inferred shape
+            size = shape
 
     for i, arg in enumerate(args):
         if np.isscalar(arg):
-            args[i] = np.full(shape, arg)
+            args[i] = np.full(size, arg)
+        else:
+            args[i] = args[i].reshape(size)
 
     return args

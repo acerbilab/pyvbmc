@@ -47,7 +47,9 @@ class SmoothBox(Prior):
         ValueError
             If ``sigma[i] <= 0`` or if ``a[i] >= b[i]``, for any `i`.
         """
-        self.a, self.b, self.sigma = tile_inputs(a, b, sigma, size=D)
+        self.a, self.b, self.sigma = tile_inputs(
+            a, b, sigma, size=D, squeeze=True
+        )
         if np.any(self.sigma <= 0.0):
             raise ValueError(
                 f"All elements of sigma={sigma} should be positive."

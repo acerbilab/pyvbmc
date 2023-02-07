@@ -2320,7 +2320,7 @@ class VBMC:
                     )
                 if prior.D != self.D:
                     raise ValueError(
-                        f"Dimension of `prior` ({prior.D}) does not match provided dimension ({self.D})."
+                        f"Dimension of `prior` ({prior.D}) does not match dimension of model ({self.D})."
                     )
                 log_prior = prior.log_pdf
                 sample_prior = prior.sample

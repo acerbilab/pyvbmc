@@ -57,8 +57,10 @@ def test_tile_inputs_wrong_size():
     a, b, c = random.sample([a, b, c], 3)
     with pytest.raises(ValueError) as e:
         x, y, z = tile_inputs(a, b, c, size=(n + 1,))
-    assert "Requested shape" in e.value.args[0]
-    assert "but some arguments have shape" in e.value.args[0]
+    assert (
+        f"cannot reshape array of size {n} into shape ({n+1},)"
+        in e.value.args[0]
+    )
 
 
 def test_tile_inputs_implicit_size_mismatch():

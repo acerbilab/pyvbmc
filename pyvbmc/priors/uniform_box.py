@@ -39,7 +39,7 @@ class UniformBox(Prior):
         ValueError
             If ``a[i] >= b[i]``, for any `i`.
         """
-        self.a, self.b = tile_inputs(a, b, size=D)
+        self.a, self.b = tile_inputs(a, b, size=D, squeeze=True)
         if np.any(self.a >= self.b):
             raise ValueError(
                 f"All elements of a={a} should be strictly less than b={b}."
