@@ -4,7 +4,7 @@
 VPATH = $(realpath $(CURDIR)/..)
 
 # Jupyter Notebook numbers:
-EXAMPLES = 1 2 3 4 5
+EXAMPLES = 1 2 3 4 5 6
 
 all:
 	@for i in $(EXAMPLES); do\
