@@ -7,6 +7,7 @@ import scipy.stats
 
 from pyvbmc import VBMC
 from pyvbmc.priors import (
+    Product,
     SciPy,
     SmoothBox,
     SplineTrapezoidal,
@@ -671,7 +672,7 @@ def test_vbmc_init_log_joint():
     assert vbmc.log_joint is log_joint
     assert vbmc.function_logger.fun is log_joint
     assert vbmc.sample_prior is sample_prior
-    assert vbmc.log_prior is None
+    assert vbmc.prior is None
     assert vbmc.log_likelihood is None
 
     def log_lklhd(x):
@@ -687,14 +688,14 @@ def test_vbmc_init_log_joint():
         ub,
         plb,
         pub,
-        log_prior=log_prior,
+        prior=log_prior,
         sample_prior=sample_prior,
     )
     x = np.random.normal()
     np.isclose(vbmc.log_joint(x), log_joint(x))
     np.isclose(vbmc.function_logger.fun(x), log_joint(x))
     assert vbmc.sample_prior is sample_prior
-    assert vbmc.log_prior is log_prior
+    assert vbmc.prior.log_pdf is log_prior
     assert vbmc.log_likelihood is log_lklhd
 
 
@@ -713,7 +714,7 @@ def test_vbmc_init_log_joint_noisy():
     vbmc = VBMC(log_joint, x0_array, lb, ub, plb, pub, options=options)
     assert vbmc.log_joint is log_joint
     assert vbmc.function_logger.fun is log_joint
-    assert vbmc.log_prior is None
+    assert vbmc.prior is None
     assert vbmc.log_likelihood is None
 
     def log_lklhd(x):
@@ -729,13 +730,13 @@ def test_vbmc_init_log_joint_noisy():
         ub,
         plb,
         pub,
-        log_prior=log_prior,
+        prior=log_prior,
         options=options,
     )
     x = 5.6
     np.isclose(vbmc.log_joint(x), log_joint(x))
     np.isclose(vbmc.function_logger.fun(x), log_joint(x))
-    assert vbmc.log_prior is log_prior
+    assert vbmc.prior.log_pdf is log_prior
     assert vbmc.log_likelihood is log_lklhd
 
 
@@ -757,8 +758,7 @@ def test_vbmc_init_log_joint_prior():
         vbmc = VBMC(
             log_likelihood, x0_array, lb, ub, plb, pub, prior=new_prior
         )
-        assert vbmc.log_prior == vbmc.prior.log_pdf
-        assert vbmc.sample_prior == vbmc.prior.sample
+        assert vbmc.prior == new_prior
         x = new_prior.sample(1)
         assert vbmc.log_joint(x) == log_likelihood(x) + new_prior.log_pdf(x)
         # Init with prior and matching log_prior, sample_prior:
@@ -769,12 +769,9 @@ def test_vbmc_init_log_joint_prior():
             ub,
             plb,
             pub,
-            log_prior=new_prior.log_pdf,
-            sample_prior=new_prior.sample,
             prior=new_prior,
         )
-        assert vbmc.log_prior == vbmc.prior.log_pdf
-        assert vbmc.sample_prior == vbmc.prior.sample
+        assert vbmc.prior == new_prior
         x = new_prior.sample(1)
         np.isclose(vbmc.log_joint(x), log_likelihood(x) + new_prior.log_pdf(x))
     scipy_priors = [
@@ -793,8 +790,12 @@ def test_vbmc_init_log_joint_prior():
             pub,
             prior=prior,
         )
-        assert vbmc.log_prior == vbmc.prior.log_pdf
-        assert vbmc.sample_prior == vbmc.prior.sample
+        if isinstance(vbmc.prior, SciPy):
+            assert vbmc.prior.distribution == prior
+        else:
+            assert isinstance(vbmc.prior, Product)
+            for (m, marginal) in enumerate(vbmc.prior.marginals):
+                assert marginal.distribution is prior[m]
         x = vbmc.prior.sample(1)
         np.isclose(
             vbmc.log_joint(x), log_likelihood(x) + vbmc.prior.log_pdf(x)
@@ -827,8 +828,7 @@ def test_vbmc_init_log_joint_noisy_prior():
             prior=new_prior,
             options=options,
         )
-        assert vbmc.log_prior == vbmc.prior.log_pdf
-        assert vbmc.sample_prior == vbmc.prior.sample
+        assert vbmc.prior == new_prior
         x = new_prior.sample(1)
         np.isclose(
             vbmc.log_joint(x)[0], log_likelihood(x)[0] + new_prior.log_pdf(x)
@@ -842,13 +842,11 @@ def test_vbmc_init_log_joint_noisy_prior():
             ub,
             plb,
             pub,
-            log_prior=new_prior.log_pdf,
             sample_prior=new_prior.sample,
             prior=new_prior,
             options=options,
         )
-        assert vbmc.log_prior == vbmc.prior.log_pdf
-        assert vbmc.sample_prior == vbmc.prior.sample
+        assert vbmc.prior == new_prior
         x = new_prior.sample(1)
         np.isclose(
             vbmc.log_joint(x)[0], log_likelihood(x)[0] + new_prior.log_pdf(x)
@@ -871,8 +869,12 @@ def test_vbmc_init_log_joint_noisy_prior():
             prior=prior,
             options=options,
         )
-        assert vbmc.log_prior == vbmc.prior.log_pdf
-        assert vbmc.sample_prior == vbmc.prior.sample
+        if isinstance(vbmc.prior, SciPy):
+            assert vbmc.prior.distribution == prior
+        else:
+            assert isinstance(vbmc.prior, Product)
+            for (m, marginal) in enumerate(vbmc.prior.marginals):
+                assert marginal.distribution is prior[m]
         x = vbmc.prior.sample(1)
         np.isclose(
             vbmc.log_joint(x)[0], log_likelihood(x)[0] + vbmc.prior.log_pdf(x)
@@ -898,9 +900,9 @@ def test_vbmc_init_error_handling():
         return np.random.normal(size=(n, D))
 
     for prior in priors:
+        new_prior = prior._generic(D)
         # Init with prior which is not a pyvbmc.priors.Prior:
         with pytest.raises(TypeError) as err:
-            new_prior = prior._generic(D)
             vbmc = VBMC(
                 log_likelihood,
                 x0_array,
@@ -908,32 +910,17 @@ def test_vbmc_init_error_handling():
                 ub,
                 plb,
                 pub,
-                prior=log_prior,
+                prior=1.0,
             )
         assert (
-            "Optional keyword `prior` should be a subclass of `pyvbmc.priors.Prior`, or an appropriate `scipy.stats` distribution."
+            "Optional keyword `prior` should be a subclass of `pyvbmc.priors.Prior`, an appropriate `scipy.stats` distribution, a list of these, or a function."
             in err.value.args[0]
         )
         assert (
-            "(A SciPy prior should be initialized from a \"frozen\" multivariate normal or multivariate t distribution, or an iterable of univariate scipy distributions, but got `distribution` of type <class 'function'>.)"
+            "(A SciPy prior should be initialized from a \"frozen\" multivariate normal, multivariate t, or univariate SciPy distribution, but got `distribution` of type <class 'float'>.)"
             in err.value.args[0]
         )
         # Init with prior and mismatched log_prior / sample_prior
-        with pytest.raises(ValueError) as err:
-            vbmc = VBMC(
-                log_likelihood,
-                x0_array,
-                lb,
-                ub,
-                plb,
-                pub,
-                log_prior=log_prior,
-                prior=new_prior,
-            )
-        assert (
-            "If `prior` is provided then `log_prior` should be `None` or `prior.log_pdf`."
-            in err.value.args[0]
-        )
         with pytest.raises(ValueError) as err:
             vbmc = VBMC(
                 log_likelihood,

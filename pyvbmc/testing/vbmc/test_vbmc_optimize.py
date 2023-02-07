@@ -50,7 +50,7 @@ def test_vbmc_optimize_rosenbrock():
     pub = prior_mu + 3 * np.sqrt(prior_var)
     x0 = prior_mu.copy()
 
-    vbmc = VBMC(llfun, x0, None, None, plb, pub, log_prior=lpriorfun)
+    vbmc = VBMC(llfun, x0, None, None, plb, pub, prior=lpriorfun)
     # Patch in the modified method:
     vbmc._check_termination_conditions = wrap_with_test(
         vbmc._check_termination_conditions, vbmc
@@ -69,7 +69,7 @@ def run_optim_block(
     mu_bar,
     options=None,
     noise_flag=False,
-    log_prior=None,
+    prior=None,
 ):
     if options is None:
         options = {}
@@ -79,7 +79,7 @@ def run_optim_block(
     if noise_flag:
         options["specify_target_noise"] = True
 
-    vbmc = VBMC(f, x0, lb, ub, plb, pub, options=options, log_prior=log_prior)
+    vbmc = VBMC(f, x0, lb, ub, plb, pub, options=options, prior=prior)
     # Patch in the modified method:
     vbmc._check_termination_conditions = wrap_with_test(
         vbmc._check_termination_conditions, vbmc
@@ -580,7 +580,7 @@ def test_vbmc_resume_optimization():
         None,
         plb,
         pub,
-        log_prior=lpriorfun,
+        prior=lpriorfun,
         options=options,
     )
     vbmc_1._check_termination_conditions = wrap_with_test(
@@ -602,7 +602,7 @@ def test_vbmc_resume_optimization():
         None,
         plb,
         pub,
-        log_prior=lpriorfun,
+        prior=lpriorfun,
         options=options,
     )
     vbmc_2._check_termination_conditions = wrap_with_test(
