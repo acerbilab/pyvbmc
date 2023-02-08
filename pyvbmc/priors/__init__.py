@@ -1,5 +1,6 @@
 # __init__.py
-from .prior import Prior, tile_inputs
+from .tile_inputs import tile_inputs  # isort:skip
+from .prior import Prior
 from .scipy import SciPy
 from .smooth_box import SmoothBox
 from .spline_trapezoidal import SplineTrapezoidal
@@ -8,4 +9,4 @@ from .uniform_box import UniformBox
 from .user_function import UserFunction
 
 from .product import Product  # isort:skip
-from .convert import convert_to_prior  # isort:skip
+from .convert_to_prior import convert_to_prior  # isort:skip
