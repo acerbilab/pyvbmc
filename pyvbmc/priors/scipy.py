@@ -157,3 +157,25 @@ distribution(s) = {self.distribution}""",
             expand=expand,
             arr_size_thresh=arr_size_thresh,
         )
+
+
+def is_valid_scipy_dist(obj):
+    """Assess whether ``obj`` is a valid SciPy distribution for a PyVBMC prior.
+
+    A valid SciPy distribution is a frozen multivariate normal, multivariate t,
+    or continuous univariate distribution.
+
+    Parameters
+    ----------
+    obj : any
+        The object to type-check.
+
+    Returns
+    -------
+    is_valid : bool
+    """
+    return (
+        isinstance(obj, multivariate_normal_frozen)
+        or isinstance(obj, multivariate_t_frozen)
+        or isinstance(obj, rv_continuous_frozen)
+    )

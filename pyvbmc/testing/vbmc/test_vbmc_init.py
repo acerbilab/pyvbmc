@@ -671,8 +671,8 @@ def test_vbmc_init_log_joint():
     x = np.random.normal()
     assert vbmc.log_joint is log_joint
     assert vbmc.function_logger.fun is log_joint
-    assert vbmc.sample_prior is sample_prior
-    assert vbmc.prior is None
+    assert vbmc.prior.sample is sample_prior
+    assert vbmc.prior.log_pdf is None
     assert vbmc.log_likelihood is None
 
     def log_lklhd(x):
@@ -694,7 +694,7 @@ def test_vbmc_init_log_joint():
     x = np.random.normal()
     np.isclose(vbmc.log_joint(x), log_joint(x))
     np.isclose(vbmc.function_logger.fun(x), log_joint(x))
-    assert vbmc.sample_prior is sample_prior
+    assert vbmc.prior.sample is sample_prior
     assert vbmc.prior.log_pdf is log_prior
     assert vbmc.log_likelihood is log_lklhd
 
@@ -914,10 +914,6 @@ def test_vbmc_init_error_handling():
             )
         assert (
             "Optional keyword `prior` should be a subclass of `pyvbmc.priors.Prior`, an appropriate `scipy.stats` distribution, a list of these, or a function."
-            in err.value.args[0]
-        )
-        assert (
-            "(A SciPy prior should be initialized from a \"frozen\" multivariate normal, multivariate t, or univariate SciPy distribution, but got `distribution` of type <class 'float'>.)"
             in err.value.args[0]
         )
         # Init with prior and mismatched log_prior / sample_prior

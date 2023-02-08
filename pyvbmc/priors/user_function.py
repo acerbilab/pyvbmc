@@ -25,7 +25,7 @@ class UserFunction(Prior):
 
         Parameters
         ----------
-        log_prior : callable
+        log_prior : callable, optional
             The user-provided function. Should take a one-dimensional array as
             a single argument, and return the log-density of the prior
             evaluated at that point.
@@ -37,7 +37,7 @@ class UserFunction(Prior):
             Specified dimension of the prior (optional).
         """
         self.D = D
-        if not callable(log_prior):
+        if (log_prior is not None) and (not callable(log_prior)):
             raise TypeError("`log_prior` must be callable.")
         self.log_pdf = log_prior
         if (sample_prior is not None) and (not callable(sample_prior)):

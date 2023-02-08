@@ -5,7 +5,6 @@ import numpy as np
 from scipy.stats._distn_infrastructure import (
     rv_continuous_frozen as scipy_univariate,
 )
-from scipy.stats._multivariate import multi_rv_frozen as scipy_multivariate
 
 from pyvbmc.formatting import full_repr
 from pyvbmc.priors import (
@@ -15,6 +14,7 @@ from pyvbmc.priors import (
     SplineTrapezoidal,
     Trapezoidal,
     UniformBox,
+    is_valid_scipy_dist,
 )
 
 
@@ -55,9 +55,7 @@ class Product(Prior):
         self.b = np.full(self.D, np.inf)
         self.marginals = []
         for (m, marginal) in enumerate(marginals):
-            if isinstance(marginal, scipy_multivariate) or isinstance(
-                marginal, scipy_univariate
-            ):
+            if is_valid_scipy_dist(marginal):
                 marginal = SciPy(marginal)
             elif not isinstance(marginal, Prior):
                 raise TypeError(

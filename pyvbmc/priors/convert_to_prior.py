@@ -1,4 +1,10 @@
-from pyvbmc.priors import Prior, Product, SciPy, UserFunction
+from pyvbmc.priors import (
+    Prior,
+    Product,
+    SciPy,
+    UserFunction,
+    is_valid_scipy_dist,
+)
 
 
 def convert_to_prior(prior, sample_prior=None, D=None):
@@ -26,20 +32,23 @@ def convert_to_prior(prior, sample_prior=None, D=None):
     D : int, optional
         The dimension of the prior distribution. Optional, used only if
         ``prior`` is a function.
+
+    Returns
+    -------
+    prior : PyVBMC.priors.Prior
     """
     if isinstance(prior, list):
         prior = Product(prior)
-    elif callable(prior):
-        prior = UserFunction(prior, sample_prior, D)
     elif isinstance(prior, Prior):
         pass
+    elif is_valid_scipy_dist(prior):
+        prior = SciPy(prior)
+    elif callable(prior) or callable(sample_prior):
+        prior = UserFunction(prior, sample_prior, D)
     else:
-        try:
-            prior = SciPy(prior)
-        except TypeError as err:
-            raise TypeError(
-                f"Optional keyword `prior` should be a subclass of `pyvbmc.priors.Prior`, an appropriate `scipy.stats` distribution, a list of these, or a function. ({err})"
-            ) from err
+        raise TypeError(
+            f"Optional keyword `prior` should be a subclass of `pyvbmc.priors.Prior`, an appropriate `scipy.stats` distribution, a list of these, or a function."
+        )
     if sample_prior is not None and sample_prior != prior.sample:
         raise ValueError(
             "If `prior` is provided then `sample_prior` should be `None` or `prior.sample`."

@@ -100,3 +100,5 @@ Utility functions
 .. autofunction:: pyvbmc.priors.convert_to_prior
 
 .. autofunction:: pyvbmc.priors.tile_inputs
+
+.. autofunction:: pyvbmc.priors.is_valid_scipy_dist
