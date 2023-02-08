@@ -3,7 +3,7 @@ Priors
 ======
 
 .. note::
-  By default, PyVBMC assumes that the first argument to ``VBMC`` is a function which returns the log-joint (i.e., the sum log-likelihood and log-prior). However, you may instead pass a function which returns the log-likelihood as a first argument, and supply the prior separately. Using the keyword ``log_prior``, you may pass a function (of a single argument) which returns the log-density of the prior given a point::
+  By default, PyVBMC assumes that the first argument to ``VBMC`` is a function which returns the log-joint (i.e., the sum of log-likelihood and log-prior). However, you may instead pass a function which returns the log-likelihood as a first argument, and supply the prior separately. Using the keyword ``log_prior``, you may pass a function (of a single argument) which returns the log-density of the prior given a point::
 
     vbmc = VBMC(log_likelihood, x0, lb, ub, plb, pub, log_prior=log_prior_function)
 
