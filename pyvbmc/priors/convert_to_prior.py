@@ -7,17 +7,14 @@ from pyvbmc.priors import (
 )
 
 
-def convert_to_prior(prior, sample_prior=None, D=None):
+def convert_to_prior(prior=None, log_prior=None, sample_prior=None, D=None):
     """Convert an object to a pyvbmc Prior instance.
 
     Parameters
     ----------
-    prior
+    prior, optional
         The object to convert to a PyVBMC ``Prior``. May be one of:
 
-        #. a function of a single argument which returns the log-density of the
-           prior given a point, and will be converted to a ``UserFunction``
-           prior,
         #. a ``PyVBMC`` prior, which will remain unchanged,
         #. a frozen SciPy multivariate normal, multivariate t, or
            one-dimensional continuous distribution, which will be converted to
@@ -25,13 +22,20 @@ def convert_to_prior(prior, sample_prior=None, D=None):
         #. a list of one-dimensional continuous SciPy distributions and/or
            PyVBMC ``Prior`` objects, which will be treated as independent
            marginals of a ``Product`` prior.
+        #. `None`, in which case `log_prior` (and optionally `sample_prior`)
+           are used to build a user-defined `Prior`.
 
     sample_prior : callable, optional
-        A function of a single argument `n` which returns `n` samples from
-        the prior distribution. Optional, used only if ``prior`` is a function.
+        A function of a single argument `x` which returns the log-density of
+        the prior at `x`. Optional, should agree with `prior.log_pdf` if both
+        are provided.
+    sample_prior : callable, optional
+        A function of a single argument `n` which returns `n` samples from the
+        prior distribution. Optional, should agree with `prior.sample` if both
+        are provided.
     D : int, optional
-        The dimension of the prior distribution. Optional, used only if
-        ``prior`` is a function.
+        The dimension of the prior distribution. Optional, used only for
+        user-defined priors.
 
     Returns
     -------
@@ -43,71 +47,22 @@ def convert_to_prior(prior, sample_prior=None, D=None):
         pass
     elif is_valid_scipy_dist(prior):
         prior = SciPy(prior)
-    elif callable(prior) or callable(sample_prior):
-        prior = UserFunction(prior, sample_prior, D)
+    elif prior is None and (callable(log_prior) or callable(sample_prior)):
+        prior = UserFunction(log_prior, sample_prior, D)
+    elif callable(prior):
+        raise TypeError(
+            f"Optional keyword `prior` should be a subclass of `pyvbmc.priors.Prior`, an appropriate `scipy.stats` distribution, or a list of these, not a function. Perhaps you meant to use `log_prior` or `sample_prior`?"
+        )
     else:
         raise TypeError(
-            f"Optional keyword `prior` should be a subclass of `pyvbmc.priors.Prior`, an appropriate `scipy.stats` distribution, a list of these, or a function."
+            f"Optional keyword `prior` should be a subclass of `pyvbmc.priors.Prior`, an appropriate `scipy.stats` distribution, or a list of these. Optional keyword `log_prior` should be a function."
         )
-    if sample_prior is not None and sample_prior != prior.sample:
+    if (sample_prior) is not None and (sample_prior != prior.sample):
         raise ValueError(
             "If `prior` is provided then `sample_prior` should be `None` or `prior.sample`."
         )
+    if (log_prior is not None) and (log_prior != prior.log_pdf):
+        raise ValueError(
+            "If `prior` is provided then `log_prior` should be `None` or `prior.log_pdf`."
+        )
     return prior
-
-
-def tile_inputs(*args, size=None, squeeze=False):
-    """Tile scalar inputs to have the same dimension as array inputs.
-
-    If all inputs are given as scalars, returned arrays will have shape `size`
-    if `size` is a tuple, or shape `(size,)` if `size` is an integer.
-
-    Parameters
-    ----------
-    *args : [Union[float, np.ndarray]]
-        The inputs to tile.
-    size : Union[int, tuple], optional
-        The desired size/shape of the output, default `(1,)`.
-    squeeze : bool
-        If `True`, then drop 1-d axes from inputs. Default `False`.
-
-    Raises
-    ------
-    ValueError
-        If the non-scalar arguments do not have the same shape, or if they do
-        not agree with `size`.
-    """
-    if type(size) == int:
-        size = (size,)
-    shape = None
-
-    # Check that all non-scalar inputs have the same shape
-    args = list(args)
-    for i, arg in enumerate(args):
-        if not (np.isscalar(arg)):
-            if squeeze:
-                arg = args[i] = np.atleast_1d(np.squeeze(np.array(arg)))
-            else:
-                arg = args[i] = np.array(arg)
-            if shape is None:
-                shape = arg.shape
-            elif arg.shape != shape:
-                raise ValueError(
-                    f"All inputs should have the same shape, but found inputs with shapes {shape} and {arg.shape}."
-                )
-
-    if size is None:
-        if shape is None:
-            # Default to shape (1,)
-            size = (1,)
-        else:
-            # Or use inferred shape
-            size = shape
-
-    for i, arg in enumerate(args):
-        if np.isscalar(arg):
-            args[i] = np.full(size, arg)
-        else:
-            args[i] = args[i].reshape(size)
-
-    return args

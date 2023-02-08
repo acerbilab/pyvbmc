@@ -69,21 +69,21 @@ def test_convert_to_prior():
         assert marginal.D == 1
 
     prior_in = lambda x: np.sum(x)
-    prior_out = convert_to_prior(prior_in)
+    prior_out = convert_to_prior(log_prior=prior_in)
     assert isinstance(prior_out, UserFunction)
     assert prior_out.log_pdf is prior_in
     assert prior_out.sample is None
     assert prior_out.D is None
 
     sample_prior = lambda n: np.random.normal(size=n)
-    prior_out = convert_to_prior(prior_in, sample_prior)
+    prior_out = convert_to_prior(log_prior=prior_in, sample_prior=sample_prior)
     assert isinstance(prior_out, UserFunction)
     assert prior_out.log_pdf is prior_in
     assert prior_out.sample is sample_prior
     assert prior_out.D is None
 
     D = np.random.randint(1, 4)
-    prior_out = convert_to_prior(prior_in, sample_prior, D=D)
+    prior_out = convert_to_prior(None, prior_in, sample_prior, D=D)
     assert isinstance(prior_out, UserFunction)
     assert prior_out.log_pdf is prior_in
     assert prior_out.sample is sample_prior
@@ -100,9 +100,16 @@ def test_convert_to_prior_error_handling():
     )
 
     prior_in = UniformBox._generic()
+    log_prior = lambda x: np.sum(x)
+    with raises(ValueError) as err:
+        prior_out = convert_to_prior(prior_in, log_prior)
+    assert (
+        "If `prior` is provided then `log_prior` should be `None` or `prior.log_pdf`."
+        in err.value.args[0]
+    )
     sample_prior = lambda n: np.random.normal(size=n)
     with raises(ValueError) as err:
-        prior_out = convert_to_prior(prior_in, sample_prior)
+        prior_out = convert_to_prior(prior_in, sample_prior=sample_prior)
     assert (
         "If `prior` is provided then `sample_prior` should be `None` or `prior.sample`."
         in err.value.args[0]

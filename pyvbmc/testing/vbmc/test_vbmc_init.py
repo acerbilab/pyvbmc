@@ -688,7 +688,7 @@ def test_vbmc_init_log_joint():
         ub,
         plb,
         pub,
-        prior=log_prior,
+        log_prior=log_prior,
         sample_prior=sample_prior,
     )
     x = np.random.normal()
@@ -730,7 +730,7 @@ def test_vbmc_init_log_joint_noisy():
         ub,
         plb,
         pub,
-        prior=log_prior,
+        log_prior=log_prior,
         options=options,
     )
     x = 5.6
@@ -913,7 +913,7 @@ def test_vbmc_init_error_handling():
                 prior=1.0,
             )
         assert (
-            "Optional keyword `prior` should be a subclass of `pyvbmc.priors.Prior`, an appropriate `scipy.stats` distribution, a list of these, or a function."
+            "Optional keyword `prior` should be a subclass of `pyvbmc.priors.Prior`, an appropriate `scipy.stats` distribution, or a list of these."
             in err.value.args[0]
         )
         # Init with prior and mismatched log_prior / sample_prior

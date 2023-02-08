@@ -51,7 +51,7 @@ def test_vbmc_optimize_rosenbrock():
     pub = prior_mu + 3 * np.sqrt(prior_var)
     x0 = prior_mu.copy()
 
-    vbmc = VBMC(llfun, x0, None, None, plb, pub, prior=lpriorfun)
+    vbmc = VBMC(llfun, x0, None, None, plb, pub, log_prior=lpriorfun)
     # Patch in the modified method:
     vbmc._check_termination_conditions = wrap_with_test(
         vbmc._check_termination_conditions, vbmc
@@ -582,7 +582,7 @@ def test_vbmc_resume_optimization():
         None,
         plb,
         pub,
-        prior=lpriorfun,
+        log_prior=lpriorfun,
         options=options,
     )
     vbmc_1._check_termination_conditions = wrap_with_test(
@@ -604,7 +604,7 @@ def test_vbmc_resume_optimization():
         None,
         plb,
         pub,
-        prior=lpriorfun,
+        log_prior=lpriorfun,
         options=options,
     )
     vbmc_2._check_termination_conditions = wrap_with_test(

@@ -3,18 +3,23 @@ Priors
 ======
 
 .. note::
-  By default, PyVBMC assumes that the first argument to ``VBMC`` is a function which returns the log-joint (i.e., the sum log-likelihood and log-prior). However, you may instead pass a function which returns the log-likelihood as a first argument, and supply the prior separately::
+  By default, PyVBMC assumes that the first argument to ``VBMC`` is a function which returns the log-joint (i.e., the sum log-likelihood and log-prior). However, you may instead pass a function which returns the log-likelihood as a first argument, and supply the prior separately. Using the keyword ``log_prior``, you may pass a function (of a single argument) which returns the log-density of the prior given a point::
 
-    vbmc = VBMC(log_likelihood, x0, lb, ub, plb, pub, prior=prior)
+    vbmc = VBMC(log_likelihood, x0, lb, ub, plb, pub, log_prior=log_prior_function)
 
-  In this case, ``log_likelihood`` should be a function which returns the log-likelihood of your model given a point, and ``prior`` should be one of:
+  Alternatively, using the keyword ``prior``, you may pass one of the following:
 
-  #. a function of a single argument which returns the log-density of the prior given a point,
   #. a PyVBMC prior (one of the classes detailed here),
   #. an appropriate continuous ``scipy.stats`` distribution, or
   #. a list of one-dimensional PyVBMC priors and/or continuous ``scipy.stats`` distributions, which are treated as independent priors for each parameter :math:`\theta_{i}`.
 
-  For more details on (2), see the documentation below as well as :ref:`PyVBMC Example 5: Prior distributions`. For more details on (1), (3), and (4), see the documentation on :ref:`\`\`UserFunction\`\` priors`, :ref:`\`\`SciPy\`\` priors`, and :ref:`\`\`Product\`\` priors` below (``prior`` keyword arguments of these types will be converted to instances of these classes).
+  ::
+
+    vbmc = VBMC(log_likelihood, x0, lb, ub, plb, pub, prior=UniformBox(0, 1, D=2))
+    vbmc = VBMC(log_likelihood, x0, lb, ub, plb, pub, prior=scipy.stats.multivariate_normal(mu, cov))
+    vbmc = VBMC(log_likelihood, x0, lb, ub, plb, pub, prior=[UniformBox(0, 1), scipy.stats.norm()])
+
+  For more details on (1), see the documentation below as well as :ref:`PyVBMC Example 5: Prior distributions`. For more details on (3), (4), and using a function as a ``log_prior``, see the documentation on :ref:`\`\`SciPy\`\` priors`, :ref:`\`\`Product\`\` priors`, and :ref:`\`\`UserFunction\`\` priors` below. (keyword arguments of these types will be converted to instances of these classes).
 
 ``Prior`` base class
 ====================
