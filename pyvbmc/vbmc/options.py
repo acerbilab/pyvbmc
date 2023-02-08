@@ -317,16 +317,6 @@ class Options(MutableMapping, dict):
                 "    ",
             )
 
-    def _short_repr(self):
-        """Returns abbreviated string representation with memory location.
-
-        Returns
-        -------
-        string : str
-            The abbreviated string representation of the Options object.
-        """
-        return object.__repr__(self)
-
 
 def _read_config_file(options_path: str):
     """

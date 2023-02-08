@@ -231,7 +231,7 @@ def test_pdf_grad_orig_flag():
     )
     with pytest.raises(NotImplementedError) as err:
         log_y, dlog_y = vp.log_pdf(x, grad_flag=True)
-        assert "vbmc_pdf:NoOriginalGrad" in err
+    assert "vbmc_pdf:NoOriginalGrad" in err.value.args[0]
 
 
 def test_pdf_df_real_positive():
@@ -344,7 +344,10 @@ def test_pdf_duplicate_log_flag():
 
     with pytest.raises(TypeError) as err:
         y = vp.log_pdf(lb + 0.5, log_flag=True)
-        assert "got multiple values for keyword argument 'log_flag'" in err
+    assert (
+        "got multiple values for keyword argument 'log_flag'"
+        in err.value.args[0]
+    )
 
 
 def test_set_parameters_raw():

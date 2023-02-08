@@ -195,7 +195,3 @@ class IterationHistory(MutableMapping, dict):
             )
         else:  # Summary
             return str(self)
-
-    def _short_repr(self):
-        """Returns abbreviated string representation with memory location."""
-        return object.__repr__(self)

@@ -1,77 +1,120 @@
-import dill
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.stats as scs
 
 from pyvbmc import VBMC
+from pyvbmc.priors import SmoothBox, SplineTrapezoidal, Trapezoidal, UniformBox
 
-D = 2  # We'll use a 2-D problem, again for speed
-prior_mu = np.zeros(D)
-prior_var = 3 * np.ones(D)
-LB = np.full((1, D), -np.inf)  # Lower bounds
-UB = np.full((1, D), np.inf)  # Upper bounds
-PLB = np.full((1, D), prior_mu - np.sqrt(prior_var))  # Plausible lower bounds
-PUB = np.full((1, D), prior_mu + np.sqrt(prior_var))  # Plausible upper
+plt.rcParams["figure.figsize"] = [8, 4]
 
 
-def log_prior(theta):
-    """Multivariate normal prior on theta, same as before."""
-    cov = np.diag(prior_var)
-    return scs.multivariate_normal(prior_mu, cov).logpdf(theta)
+lb = -3
+ub = 3
+plb = -2
+pub = 2
+x = np.linspace(lb - 1, ub + 1, 1000)
+
+prior = UniformBox(lb, ub)
+
+fig, (ax1, ax2) = plt.subplots(1, 2, sharex=True)
+ax1.plot(x, prior.pdf(x))
+ax1.set_xlim(-4, 4)
+ax1.set_ylim(0, 0.25)
+ax1.set_xlabel("x0")
+ax1.set_ylabel("prior pdf")
+ax2.plot(x, prior.log_pdf(x))
+ax2.set_ylim(-20, 0)
+ax2.set_xlabel("x0")
+ax2.set_ylabel("prior log-pdf")
+plt.suptitle("Uniform prior")
+fig.tight_layout()
+# (Note that the log-pdf is not plotted where it takes values of -infinity.)
 
 
-# log-likelihood (Rosenbrock)
+prior = Trapezoidal(lb, plb, pub, ub)
+
+fig, (ax1, ax2) = plt.subplots(1, 2, sharex=True)
+ax1.plot(x, prior.pdf(x))
+ax1.set_xlim(-4, 4)
+ax1.set_ylim(0, 0.25)
+ax1.set_xlabel("x0")
+ax1.set_ylabel("prior pdf")
+ax2.plot(x, prior.log_pdf(x))
+ax2.set_ylim(-20, 0)
+ax2.set_xlabel("x0")
+ax2.set_ylabel("prior log-pdf")
+plt.suptitle("Trapezoidal prior")
+fig.tight_layout()
+
+
+prior = SplineTrapezoidal(lb, plb, pub, ub)
+
+fig, (ax1, ax2) = plt.subplots(1, 2, sharex=True)
+ax1.plot(x, prior.pdf(x))
+ax1.set_xlim(-4, 4)
+ax1.set_ylim(0, 0.25)
+ax1.set_xlabel("x0")
+ax1.set_ylabel("prior pdf")
+ax2.plot(x, prior.log_pdf(x))
+ax2.set_ylim(-20, 0)
+ax2.set_xlabel("x0")
+ax2.set_ylabel("prior log-pdf")
+plt.suptitle("Smoothed trapezoidal prior")
+fig.tight_layout()
+
+
+lb = -np.inf
+ub = np.inf
+plb = -2
+pub = 2
+# We recommend setting sigma as a fraction of the plausible range.
+# For example sigma set to 4/10 of the plausible range assigns ~50%
+# (marginal) probability to the plateau of the distribution.
+# Also similar fractions (e.g., half of the range) would be reasonable.
+# Do not set sigma too small with respect to the plausible range, as it
+# might cause issues.
+p_range = pub - plb
+sigma = 0.4 * p_range
+
+prior = SmoothBox(plb, pub, sigma)
+
+x = np.linspace(plb - 2 * p_range, pub + 2 * p_range, 1000)
+fig, (ax1, ax2) = plt.subplots(1, 2, sharex=True)
+ax1.plot(x, prior.pdf(x))
+ax1.set_xlim(x[0], x[-1])
+ax1.set_ylim(0, 0.25)
+ax1.set_xlabel("x0")
+ax1.set_ylabel("prior pdf")
+ax2.plot(x, prior.log_pdf(x))
+ax2.set_ylim(-20, 0)
+ax2.set_xlabel("x0")
+ax2.set_ylabel("prior log-pdf")
+plt.suptitle("Smoothed box prior (unbounded parameters)")
+fig.tight_layout()
+
+
+D = 2  # Still in 2-D
+lb = np.zeros((1, D))
+ub = 10 * np.ones((1, D))
+plb = 0.1 * np.ones((1, D))
+pub = 3 * np.ones((1, D))
+
+# Define the prior log-likelihood
+prior = SplineTrapezoidal(lb, plb, pub, ub)
+
+
 def log_likelihood(theta):
     """D-dimensional Rosenbrock's banana function."""
     theta = np.atleast_2d(theta)
-    n, D = theta.shape
 
-    # Standard deviation of synthetic noise:
-    noise_sd = np.sqrt(1.0 + 0.5 * np.linalg.norm(theta) ** 2)
-
-    # Rosenbrock likelihood:
     x, y = theta[:, :-1], theta[:, 1:]
-    base_density = -np.sum((x**2 - y) ** 2 + (x - 1) ** 2 / 100, axis=1)
-
-    noisy_estimate = base_density + noise_sd * np.random.normal(size=(n, 1))
-    return noisy_estimate, noise_sd
+    return -np.sum((x**2 - y) ** 2 + (x - 1) ** 2 / 100, axis=1)
 
 
-# Full model:
-def log_joint(theta, data=np.ones(D)):
-    """log-density of the joint distribution."""
-    log_p = log_prior(theta)
-    log_l, noise_est = log_likelihood(theta)
-    # For the joint, we have to add log densities and carry-through the noise estimate.
-    return log_p + log_l, noise_est
-
-
-x0 = np.zeros((1, D))  # Initial point
-
-
-options = {"specify_target_noise": True}
-vbmc = VBMC(
-    log_joint,
-    x0,
-    LB,
-    UB,
-    PLB,
-    PUB,
-    options=options,
-)
-
-
+x0 = np.ones((1, D))
 np.random.seed(42)
+vbmc = VBMC(log_likelihood, x0, lb, ub, plb, pub, prior=prior)
+# vbmc = VBMC(log_likelihood, x0, lb, ub, plb, pub, log_prior=prior.log_pdf)  # equivalently
+# vbmc = VBMC(lambda x: log_likelihood(x) + prior.log_pdf(x), x0, lb, ub, plb, pub)  # equivalently
 vp, results = vbmc.optimize()
-
-
-with open("../noise_free_vp.pkl", "rb") as f:
-    noise_free_vp = dill.load(f)
-# KL divergence between this VP and the noise-free VP:
-print(vbmc.vp.kl_div(vp2=noise_free_vp))
-
-
-vp.plot(title="Noisy VP")
-
-
-noise_free_vp.plot(title="Noise-Free VP")
+vp.plot()

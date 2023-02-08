@@ -3,6 +3,7 @@ import logging
 import math
 import os
 import sys
+from collections.abc import Iterable
 from textwrap import indent
 
 import gpyreg as gpr
@@ -12,6 +13,7 @@ import numpy as np
 from pyvbmc.formatting import full_repr, summarize
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
+from pyvbmc.priors import Prior, SciPy, convert_to_prior
 from pyvbmc.stats import kl_div_mvn
 from pyvbmc.timer import main_timer as timer
 from pyvbmc.variational_posterior import VariationalPosterior
@@ -70,16 +72,23 @@ class VBMC:
         the topmost ~68% percentile range of the prior (e.g, mean +/- 1 SD
         for a Gaussian prior) works well in many cases (but note that
         additional information might afford a better guess). Both are
-        by default ``None``.
+        by default `None`.
     options : dict, optional
         Additional options can be passed as a dict. Please refer to the
         VBMC options page for the default options. If no ``options`` are
         passed, the default options are used.
+    prior, optional
+        An optional separate prior. It can be a ``pyvbmc.priors.Prior``
+        subclass, an appropriate ``scipy.stats`` distribution, or a list of
+        one-dimensional PyVBMC ``Prior`` and/or one-dimenional continuous
+        ``scipy.stats`` distributions. (see the documentation on priors for
+        more details). If ``prior`` is not `None`, the argument ``log_density``
+        is assumed to represent the log-likelihood (otherwise it is assumed to
+        represent the log-joint).
     log_prior : callable, optional
         An optional separate log-prior function, which should accept a single
         argument `x` and return the log-density of the prior at `x`. If
         ``log_prior`` is not ``None``, the argument ``log_density`` is assumed
-        to represent the log-likelihood (otherwise it is assumed to represent
         the log-joint).
     sample_prior : callable, optional
         An optional function which accepts a single argument `n` and returns an
@@ -123,6 +132,7 @@ class VBMC:
         plausible_lower_bounds: np.ndarray = None,
         plausible_upper_bounds: np.ndarray = None,
         options: dict = None,
+        prior: Prior = None,
         log_prior: callable = None,
         sample_prior: callable = None,
     ):
@@ -235,30 +245,14 @@ class VBMC:
 
         self.optim_state = self._init_optim_state()
 
-        # Initialize log-joint
-        self.sample_prior = sample_prior
-        if callable(log_prior):
-            self.log_prior = log_prior
-            self.log_likelihood = log_density
-            if self.optim_state["uncertainty_handling_level"] == 2:
-
-                def log_joint(theta):
-                    log_likelihood, noise_est = log_density(theta)
-                    return log_likelihood + log_prior(theta), noise_est
-
-            else:
-
-                def log_joint(theta):
-                    return log_density(theta) + log_prior(theta)
-
-        elif log_prior is None:
-            log_joint = log_density
-        else:
-            raise TypeError("`prior` must be a callable or `None`.")
-        self.log_joint = log_joint
+        (
+            self.log_joint,
+            self.log_likelihood,
+            self.prior,
+        ) = self._init_log_joint(log_density, prior, log_prior, sample_prior)
 
         self.function_logger = FunctionLogger(
-            fun=log_joint,
+            fun=self.log_joint,
             D=self.D,
             noise_flag=self.optim_state.get("uncertainty_handling_level") > 0,
             uncertainty_handling_level=self.optim_state.get(
@@ -2307,6 +2301,39 @@ class VBMC:
 
         return logger
 
+    def _init_log_joint(self, log_density, prior, log_prior, sample_prior):
+        # Initialize log-joint
+        log_likelihood = None
+        if (
+            prior is not None
+            or log_prior is not None
+            or sample_prior is not None
+        ):
+            prior = convert_to_prior(prior, log_prior, sample_prior, self.D)
+            if prior.D != self.D:
+                raise ValueError(
+                    f"Dimension of `prior` ({prior.D}) does not match dimension of model ({self.D})."
+                )
+        if prior is not None and prior.log_pdf is not None:
+            # Combine log-prior and log-likelihood:
+            log_prior = prior.log_pdf
+            log_likelihood = log_density
+            if self.optim_state["uncertainty_handling_level"] == 2:
+
+                def log_joint(theta):
+                    ll, noise_est = log_likelihood(theta)
+                    return ll + log_prior(theta), noise_est
+
+            else:
+
+                def log_joint(theta):
+                    return log_likelihood(theta) + log_prior(theta)
+
+        else:
+            # Otherwise just use provided log-joint
+            log_joint = log_density
+        return log_joint, log_likelihood, prior
+
     def __str__(self):
         """Construct a string summary."""
 
@@ -2379,13 +2406,3 @@ user options = {str(self.options)}""",
             arr_size_thresh=arr_size_thresh,
             exclude=["random_state"],
         )
-
-    def _short_repr(self):
-        """Returns abbreviated string representation with memory location.
-
-        Returns
-        -------
-        string : str
-            The abbreviated string representation of the VBMC object.
-        """
-        return object.__repr__(self)

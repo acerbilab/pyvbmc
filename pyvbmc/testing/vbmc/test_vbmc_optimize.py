@@ -6,6 +6,7 @@ import scipy as sp
 
 from pyvbmc import VBMC
 from pyvbmc.acquisition_functions import *
+from pyvbmc.priors import UniformBox
 
 
 def wrap_with_test(method, vbmc):
@@ -69,7 +70,7 @@ def run_optim_block(
     mu_bar,
     options=None,
     noise_flag=False,
-    log_prior=None,
+    prior=None,
 ):
     if options is None:
         options = {}
@@ -79,7 +80,7 @@ def run_optim_block(
     if noise_flag:
         options["specify_target_noise"] = True
 
-    vbmc = VBMC(f, x0, lb, ub, plb, pub, options=options, log_prior=log_prior)
+    vbmc = VBMC(f, x0, lb, ub, plb, pub, options=options, prior=prior)
     # Patch in the modified method:
     vbmc._check_termination_conditions = wrap_with_test(
         vbmc._check_termination_conditions, vbmc
@@ -236,6 +237,7 @@ def test_vbmc_uniform(return_results=False):
         lnZ,
         mu_bar,
         options,
+        prior=UniformBox(0, 1, D=D),  # just for testing prior
     )
 
     assert err_1 < 0.5

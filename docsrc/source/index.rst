@@ -60,6 +60,7 @@ Documentation
    api/classes/vbmc
    api/classes/variational_posterior
    api/options/vbmc_options
+   api/classes/priors
    api/advanced_docs
 
 Examples
