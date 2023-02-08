@@ -80,7 +80,7 @@ class VBMC:
     prior : callable or pyvbmc.priors.Prior or scipy.stats distribution, optional
         An optional separate prior. It can be a function, which should accept a
         single argument `x` and return the log-density of the prior at `x`. It
-        can also be a PyVBMC `Prior` object, or an appropriate `scipy.stats`
+        can also be a PyVBMC ``Prior`` object, or an appropriate ``scipy.stats``
         distribution (see the documentation on priors for more details). If
         ``prior`` is not `None`, the argument ``log_density`` is assumed
         to represent the log-likelihood (otherwise it is assumed to represent
