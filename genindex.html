@@ -110,6 +110,11 @@
    VBMC options
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="api/classes/priors.html">
+   Priors
+  </a>
+ </li>
  <li class="toctree-l1 has-children">
   <a class="reference internal" href="api/advanced_docs.html">
    Advanced documentation
@@ -225,8 +230,13 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="_examples/pyvbmc_example_5_noisy_likelihoods.html">
-   PyVBMC Example 5: Noisy log-likelihood evaluations
+  <a class="reference internal" href="_examples/pyvbmc_example_5_prior_distributions.html">
+   PyVBMC Example 5: Prior distributions
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="_examples/pyvbmc_example_6_noisy_likelihoods.html">
+   PyVBMC Example 6: Noisy log-likelihood evaluations
   </a>
  </li>
 </ul>
@@ -413,6 +423,22 @@ title="Open an issue"
         <li><a href="api/classes/parameter_transformer.html#pyvbmc.parameter_transformer.ParameterTransformer.__call__">(pyvbmc.parameter_transformer.ParameterTransformer method)</a>
 </li>
       </ul></li>
+      <li><a href="api/classes/priors.html#pyvbmc.priors.Product.__init__">__init__() (pyvbmc.priors.Product method)</a>
+
+      <ul>
+        <li><a href="api/classes/priors.html#pyvbmc.priors.SciPy.__init__">(pyvbmc.priors.SciPy method)</a>
+</li>
+        <li><a href="api/classes/priors.html#pyvbmc.priors.SmoothBox.__init__">(pyvbmc.priors.SmoothBox method)</a>
+</li>
+        <li><a href="api/classes/priors.html#pyvbmc.priors.SplineTrapezoidal.__init__">(pyvbmc.priors.SplineTrapezoidal method)</a>
+</li>
+        <li><a href="api/classes/priors.html#pyvbmc.priors.Trapezoidal.__init__">(pyvbmc.priors.Trapezoidal method)</a>
+</li>
+        <li><a href="api/classes/priors.html#pyvbmc.priors.UniformBox.__init__">(pyvbmc.priors.UniformBox method)</a>
+</li>
+        <li><a href="api/classes/priors.html#pyvbmc.priors.UserFunction.__init__">(pyvbmc.priors.UserFunction method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -444,6 +470,10 @@ title="Open an issue"
 
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/classes/priors.html#pyvbmc.priors.convert_to_prior">convert_to_prior() (in module pyvbmc.priors)</a>
+</li>
+  </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/functions/create_vbmc_animation.html#pyvbmc.vbmc.create_vbmc_animation">create_vbmc_animation() (in module pyvbmc.vbmc)</a>
 </li>
@@ -525,20 +555,22 @@ title="Open an issue"
         <li><a href="api/classes/acquisition_functions.html#pyvbmc.acquisition_functions.AcqFcnVIQR.is_log_added">(pyvbmc.acquisition_functions.AcqFcnVIQR method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/classes/acquisition_functions.html#pyvbmc.acquisition_functions.AcqFcnIMIQR.is_log_base">is_log_base() (pyvbmc.acquisition_functions.AcqFcnIMIQR method)</a>
 
       <ul>
         <li><a href="api/classes/acquisition_functions.html#pyvbmc.acquisition_functions.AcqFcnVIQR.is_log_base">(pyvbmc.acquisition_functions.AcqFcnVIQR method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/classes/acquisition_functions.html#pyvbmc.acquisition_functions.AcqFcnIMIQR.is_log_full">is_log_full() (pyvbmc.acquisition_functions.AcqFcnIMIQR method)</a>
 
       <ul>
         <li><a href="api/classes/acquisition_functions.html#pyvbmc.acquisition_functions.AcqFcnVIQR.is_log_full">(pyvbmc.acquisition_functions.AcqFcnVIQR method)</a>
 </li>
       </ul></li>
+      <li><a href="api/classes/priors.html#pyvbmc.priors.is_valid_scipy_dist">is_valid_scipy_dist() (in module pyvbmc.priors)</a>
+</li>
       <li><a href="api/classes/iteration_history.html#pyvbmc.vbmc.IterationHistory">IterationHistory (class in pyvbmc.vbmc)</a>
 </li>
   </ul></td>
@@ -563,12 +595,16 @@ title="Open an issue"
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/classes/options.html#pyvbmc.vbmc.Options.load_options_file">load_options_file() (pyvbmc.vbmc.Options method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/classes/parameter_transformer.html#pyvbmc.parameter_transformer.ParameterTransformer.log_abs_det_jacobian">log_abs_det_jacobian() (pyvbmc.parameter_transformer.ParameterTransformer method)</a>
 </li>
-      <li><a href="api/classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior.log_pdf">log_pdf() (pyvbmc.variational_posterior.VariationalPosterior method)</a>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/classes/priors.html#pyvbmc.priors.Prior.log_pdf">log_pdf() (pyvbmc.priors.Prior method)</a>
+
+      <ul>
+        <li><a href="api/classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior.log_pdf">(pyvbmc.variational_posterior.VariationalPosterior method)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -612,11 +648,19 @@ title="Open an issue"
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/classes/parameter_transformer.html#pyvbmc.parameter_transformer.ParameterTransformer">ParameterTransformer (class in pyvbmc.parameter_transformer)</a>
 </li>
-      <li><a href="api/classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior.pdf">pdf() (pyvbmc.variational_posterior.VariationalPosterior method)</a>
+      <li><a href="api/classes/priors.html#pyvbmc.priors.Prior.pdf">pdf() (pyvbmc.priors.Prior method)</a>
+
+      <ul>
+        <li><a href="api/classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior.pdf">(pyvbmc.variational_posterior.VariationalPosterior method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior.plot">plot() (pyvbmc.variational_posterior.VariationalPosterior method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior.plot">plot() (pyvbmc.variational_posterior.VariationalPosterior method)</a>
+      <li><a href="api/classes/priors.html#pyvbmc.priors.Prior">Prior (class in pyvbmc.priors)</a>
+</li>
+      <li><a href="api/classes/priors.html#pyvbmc.priors.Product">Product (class in pyvbmc.priors)</a>
 </li>
       <li>
     pyvbmc.acquisition_functions
@@ -645,15 +689,27 @@ title="Open an issue"
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior.sample">sample() (pyvbmc.variational_posterior.VariationalPosterior method)</a>
+      <li><a href="api/classes/priors.html#pyvbmc.priors.Prior.sample">sample() (pyvbmc.priors.Prior method)</a>
+
+      <ul>
+        <li><a href="api/classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior.sample">(pyvbmc.variational_posterior.VariationalPosterior method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/classes/priors.html#pyvbmc.priors.SciPy">SciPy (class in pyvbmc.priors)</a>
 </li>
       <li><a href="api/classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior.set_parameters">set_parameters() (pyvbmc.variational_posterior.VariationalPosterior method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/classes/priors.html#pyvbmc.priors.SmoothBox">SmoothBox (class in pyvbmc.priors)</a>
+</li>
+      <li><a href="api/classes/priors.html#pyvbmc.priors.SplineTrapezoidal">SplineTrapezoidal (class in pyvbmc.priors)</a>
+</li>
       <li><a href="api/classes/timer.html#pyvbmc.timer.Timer.start_timer">start_timer() (pyvbmc.timer.Timer method)</a>
 </li>
       <li><a href="api/classes/timer.html#pyvbmc.timer.Timer.stop_timer">stop_timer() (pyvbmc.timer.Timer method)</a>
+</li>
+      <li><a href="api/classes/priors.html#pyvbmc.priors.Prior.support">support() (pyvbmc.priors.Prior method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -661,11 +717,15 @@ title="Open an issue"
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/classes/priors.html#pyvbmc.priors.tile_inputs">tile_inputs() (in module pyvbmc.priors)</a>
+</li>
       <li><a href="api/classes/timer.html#pyvbmc.timer.Timer">Timer (class in pyvbmc.timer)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/classes/vbmc.html#pyvbmc.vbmc.train_gp">train_gp() (in module pyvbmc.vbmc)</a>
+</li>
+      <li><a href="api/classes/priors.html#pyvbmc.priors.Trapezoidal">Trapezoidal (class in pyvbmc.priors)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -673,6 +733,8 @@ title="Open an issue"
 <h2 id="U">U</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/classes/priors.html#pyvbmc.priors.UniformBox">UniformBox (class in pyvbmc.priors)</a>
+</li>
       <li><a href="api/functions/whitening.html#pyvbmc.whitening.unscent_warp">unscent_warp() (in module pyvbmc.whitening)</a>
 </li>
   </ul></td>
@@ -680,6 +742,8 @@ title="Open an issue"
       <li><a href="api/classes/options.html#pyvbmc.vbmc.Options.update_defaults">update_defaults() (pyvbmc.vbmc.Options method)</a>
 </li>
       <li><a href="api/classes/vbmc.html#pyvbmc.vbmc.update_K">update_K() (in module pyvbmc.vbmc)</a>
+</li>
+      <li><a href="api/classes/priors.html#pyvbmc.priors.UserFunction">UserFunction (class in pyvbmc.priors)</a>
 </li>
   </ul></td>
 </tr></table>

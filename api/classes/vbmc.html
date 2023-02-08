@@ -113,6 +113,11 @@
    VBMC options
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="priors.html">
+   Priors
+  </a>
+ </li>
  <li class="toctree-l1 current active has-children">
   <a class="reference internal" href="../advanced_docs.html">
    Advanced documentation
@@ -228,8 +233,13 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../../_examples/pyvbmc_example_5_noisy_likelihoods.html">
-   PyVBMC Example 5: Noisy log-likelihood evaluations
+  <a class="reference internal" href="../../_examples/pyvbmc_example_5_prior_distributions.html">
+   PyVBMC Example 5: Prior distributions
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../_examples/pyvbmc_example_6_noisy_likelihoods.html">
+   PyVBMC Example 6: Noisy log-likelihood evaluations
   </a>
  </li>
 </ul>
@@ -451,12 +461,12 @@ title="Print to PDF"
 bound on the log normalization constant (log marginal likelhood or log model evidence)
 for a provided unnormalized log posterior.</p>
 <p>To perform inference, first initialize a <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> object and then call <code class="docutils literal notranslate"><span class="pre">vbmc.optimize()</span></code> on the instance.</p>
-<p>By default VBMC assumes noiseless evaluations of the log posterior, but noisy likelihoods can also be handled. See <a class="reference internal" href="../../_examples/pyvbmc_example_5_noisy_likelihoods.html#pyvbmc-example-5-noisy-log-likelihood-evaluations"><span class="std std-ref">PyVBMC Example 5: Noisy log-likelihood evaluations</span></a> for more details.</p>
+<p>By default VBMC assumes noiseless evaluations of the log posterior, but noisy likelihoods can also be handled. See <a class="reference internal" href="../../_examples/pyvbmc_example_6_noisy_likelihoods.html#pyvbmc-example-6-noisy-log-likelihood-evaluations"><span class="std std-ref">PyVBMC Example 6: Noisy log-likelihood evaluations</span></a> for more details.</p>
 <p>See below for more details on the <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> class methods and interface. The primary entry-points for users are the <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> class, which initializes the algorithm, and the <a class="reference internal" href="variational_posterior.html#variationalposterior"><span class="std std-ref">VariationalPosterior</span></a> class, which represents the returned variational solution. The <a class="reference internal" href="../options/vbmc_options.html#basic-options"><span class="std std-ref">Basic options</span></a> may also be useful.</p>
 </div>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.vbmc.VBMC">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.vbmc.</span></span><span class="sig-name descname"><span class="pre">VBMC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_density</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plausible_lower_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plausible_upper_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_prior</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">callable</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_prior</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">callable</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/vbmc/vbmc.html#VBMC"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.VBMC" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.vbmc.</span></span><span class="sig-name descname"><span class="pre">VBMC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_density</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plausible_lower_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plausible_upper_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prior</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="priors.html#pyvbmc.priors.Prior" title="pyvbmc.priors.prior.Prior"><span class="pre">pyvbmc.priors.prior.Prior</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_prior</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">callable</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_prior</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">callable</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/vbmc/vbmc.html#VBMC"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.vbmc.VBMC" title="Permalink to this definition">#</a></dt>
 <dd><p>Posterior and model inference via Variational Bayesian Monte Carlo (VBMC).</p>
 <p>VBMC computes a variational approximation of the full posterior and a lower
 bound on the normalization constant (marginal likelhood or model evidence)
@@ -498,16 +508,23 @@ algorithm. When in doubt, we found that setting <cite>PLB</cite> and <cite>PUB</
 the topmost ~68% percentile range of the prior (e.g, mean +/- 1 SD
 for a Gaussian prior) works well in many cases (but note that
 additional information might afford a better guess). Both are
-by default <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+by default <cite>None</cite>.</p>
 </dd>
 <dt><strong>options</strong><span class="classifier">dict, optional</span></dt><dd><p>Additional options can be passed as a dict. Please refer to the
 VBMC options page for the default options. If no <code class="docutils literal notranslate"><span class="pre">options</span></code> are
 passed, the default options are used.</p>
 </dd>
+<dt><strong>prior, optional</strong></dt><dd><p>An optional separate prior. It can be a <code class="docutils literal notranslate"><span class="pre">pyvbmc.priors.Prior</span></code>
+subclass, an appropriate <code class="docutils literal notranslate"><span class="pre">scipy.stats</span></code> distribution, or a list of
+one-dimensional PyVBMC <code class="docutils literal notranslate"><span class="pre">Prior</span></code> and/or one-dimenional continuous
+<code class="docutils literal notranslate"><span class="pre">scipy.stats</span></code> distributions. (see the documentation on priors for
+more details). If <code class="docutils literal notranslate"><span class="pre">prior</span></code> is not <cite>None</cite>, the argument <code class="docutils literal notranslate"><span class="pre">log_density</span></code>
+is assumed to represent the log-likelihood (otherwise it is assumed to
+represent the log-joint).</p>
+</dd>
 <dt><strong>log_prior</strong><span class="classifier">callable, optional</span></dt><dd><p>An optional separate log-prior function, which should accept a single
 argument <cite>x</cite> and return the log-density of the prior at <cite>x</cite>. If
 <code class="docutils literal notranslate"><span class="pre">log_prior</span></code> is not <code class="docutils literal notranslate"><span class="pre">None</span></code>, the argument <code class="docutils literal notranslate"><span class="pre">log_density</span></code> is assumed
-to represent the log-likelihood (otherwise it is assumed to represent
 the log-joint).</p>
 </dd>
 <dt><strong>sample_prior</strong><span class="classifier">callable, optional</span></dt><dd><p>An optional function which accepts a single argument <cite>n</cite> and returns an

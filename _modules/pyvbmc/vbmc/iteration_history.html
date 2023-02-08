@@ -110,6 +110,11 @@
    VBMC options
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../api/classes/priors.html">
+   Priors
+  </a>
+ </li>
  <li class="toctree-l1 has-children">
   <a class="reference internal" href="../../../api/advanced_docs.html">
    Advanced documentation
@@ -225,8 +230,13 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../../../_examples/pyvbmc_example_5_noisy_likelihoods.html">
-   PyVBMC Example 5: Noisy log-likelihood evaluations
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_5_prior_distributions.html">
+   PyVBMC Example 5: Prior distributions
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_6_noisy_likelihoods.html">
+   PyVBMC Example 6: Noisy log-likelihood evaluations
   </a>
  </li>
 </ul>
@@ -387,7 +397,7 @@ title="Open an issue"
 
 
 <div class="viewcode-block" id="IterationHistory"><a class="viewcode-back" href="../../../api/classes/iteration_history.html#pyvbmc.vbmc.IterationHistory">[docs]</a><span class="k">class</span> <span class="nc">IterationHistory</span><span class="p">(</span><span class="n">MutableMapping</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This class is responsible for the VBMC iteration history.</span>
 
 <span class="sd">    Parameters</span>
@@ -404,7 +414,7 @@ title="Open an issue"
         <span class="bp">self</span><span class="o">.</span><span class="n">check_keys</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">object</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the value of a given key to the given value.</span>
 
 <span class="sd">        Parameters</span>
@@ -421,7 +431,7 @@ title="Open an issue"
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_keys</span> <span class="ow">and</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sd">&quot;&quot;&quot;The key has not been specified</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;The key has not been specified</span>
 <span class="sd">                on initialization of the object&quot;&quot;&quot;</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -454,7 +464,7 @@ title="Open an issue"
         <span class="p">)</span>
 
 <div class="viewcode-block" id="IterationHistory.record"><a class="viewcode-back" href="../../../api/classes/iteration_history.html#pyvbmc.vbmc.IterationHistory.record">[docs]</a>    <span class="k">def</span> <span class="nf">record</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">iteration</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Store a value for a key in a given iteration.</span>
 
 <span class="sd">        Parameters</span>
@@ -478,7 +488,7 @@ title="Open an issue"
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The iteration must be &gt;= 0.&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sd">&quot;&quot;&quot;The key has not been specified</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;The key has not been specified</span>
 <span class="sd">                on initialization of the object&quot;&quot;&quot;</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -489,7 +499,7 @@ title="Open an issue"
             <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="n">iteration</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_expand_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">resize_amount</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A private method to expand the array for a given key by a resize_amount.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
@@ -501,7 +511,7 @@ title="Open an issue"
         <span class="n">key_value</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
         <span class="n">iteration</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Convenience method to record multiple key-values for a given iteration.</span>
 
 <span class="sd">        Parameters</span>
@@ -526,14 +536,14 @@ title="Open an issue"
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">key_value</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sd">&quot;&quot;&quot;The key has not been specified</span>
+<span class="w">                    </span><span class="sd">&quot;&quot;&quot;The key has not been specified</span>
 <span class="sd">                on initialization of the object&quot;&quot;&quot;</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">iteration</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct a string summary.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a string summary.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -547,7 +557,7 @@ title="Open an issue"
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">full</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">arr_size_thresh</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct a detailed string summary.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a detailed string summary.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -573,11 +583,7 @@ title="Open an issue"
                 <span class="s2">&quot;    &quot;</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>  <span class="c1"># Summary</span>
-            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_short_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Returns abbreviated string representation with memory location.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 </pre></div>
 
               </div>

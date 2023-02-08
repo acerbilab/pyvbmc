@@ -110,6 +110,11 @@
    VBMC options
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../api/classes/priors.html">
+   Priors
+  </a>
+ </li>
  <li class="toctree-l1 has-children">
   <a class="reference internal" href="../../../api/advanced_docs.html">
    Advanced documentation
@@ -225,8 +230,13 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../../../_examples/pyvbmc_example_5_noisy_likelihoods.html">
-   PyVBMC Example 5: Noisy log-likelihood evaluations
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_5_prior_distributions.html">
+   PyVBMC Example 5: Prior distributions
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_6_noisy_likelihoods.html">
+   PyVBMC Example 6: Noisy log-likelihood evaluations
   </a>
  </li>
 </ul>
@@ -389,7 +399,7 @@ title="Open an issue"
 
 
 <div class="viewcode-block" id="AcqFcnNoisy"><a class="viewcode-back" href="../../../api/classes/acquisition_functions.html#pyvbmc.acquisition_functions.AcqFcnNoisy">[docs]</a><span class="k">class</span> <span class="nc">AcqFcnNoisy</span><span class="p">(</span><span class="n">AbstractAcqFcn</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Acquisition function for noisy prospective uncertainty search.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -405,7 +415,7 @@ title="Open an issue"
         <span class="n">f_bar</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">var_tot</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the value of the acquisition function.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Xs is in *transformed* coordinates</span>

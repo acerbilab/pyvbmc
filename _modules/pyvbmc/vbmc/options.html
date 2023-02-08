@@ -110,6 +110,11 @@
    VBMC options
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../api/classes/priors.html">
+   Priors
+  </a>
+ </li>
  <li class="toctree-l1 has-children">
   <a class="reference internal" href="../../../api/advanced_docs.html">
    Advanced documentation
@@ -225,8 +230,13 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../../../_examples/pyvbmc_example_5_noisy_likelihoods.html">
-   PyVBMC Example 5: Noisy log-likelihood evaluations
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_5_prior_distributions.html">
+   PyVBMC Example 5: Prior distributions
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_6_noisy_likelihoods.html">
+   PyVBMC Example 6: Noisy log-likelihood evaluations
   </a>
  </li>
 </ul>
@@ -394,7 +404,7 @@ title="Open an issue"
 
 
 <div class="viewcode-block" id="Options"><a class="viewcode-back" href="../../../api/classes/options.html#pyvbmc.vbmc.Options">[docs]</a><span class="k">class</span> <span class="nc">Options</span><span class="p">(</span><span class="n">MutableMapping</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This class is responsible for Options.</span>
 
 <span class="sd">    Parameters</span>
@@ -420,7 +430,7 @@ title="Open an issue"
         <span class="n">evaluation_parameters</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">user_options</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialize the options using default options and specified options from</span>
 <span class="sd">        the user.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -444,7 +454,7 @@ title="Open an issue"
             <span class="bp">self</span><span class="p">[</span><span class="s2">&quot;useroptions&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">user_options</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 
 <div class="viewcode-block" id="Options.update_defaults"><a class="viewcode-back" href="../../../api/classes/options.html#pyvbmc.vbmc.Options.update_defaults">[docs]</a>    <span class="k">def</span> <span class="nf">update_defaults</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Change defaults as needed based on values of other options.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Change defaults as needed based on values of other options.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;specify_target_noise&quot;</span><span class="p">):</span>
             <span class="n">updates</span> <span class="o">=</span> <span class="p">{</span>
                 <span class="s2">&quot;max_fun_evals&quot;</span><span class="p">:</span> <span class="n">ceil</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s2">&quot;max_fun_evals&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1.5</span><span class="p">),</span>
@@ -464,7 +474,7 @@ title="Open an issue"
         <span class="n">evaluation_parameters</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">other</span><span class="p">:</span> <span class="n">Options</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialize an options instance using default options and another options</span>
 <span class="sd">        instance.</span>
 
@@ -498,7 +508,7 @@ title="Open an issue"
 <div class="viewcode-block" id="Options.load_options_file"><a class="viewcode-back" href="../../../api/classes/options.html#pyvbmc.vbmc.Options.load_options_file">[docs]</a>    <span class="k">def</span> <span class="nf">load_options_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">options_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">evaluation_parameters</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Load options from an ini file and evaluate them using the specified</span>
 <span class="sd">        ``evaluation_parameters``.</span>
 
@@ -524,7 +534,7 @@ title="Open an issue"
                 <span class="bp">self</span><span class="o">.</span><span class="n">descriptions</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">description</span></div>
 
 <div class="viewcode-block" id="Options.validate_option_names"><a class="viewcode-back" href="../../../api/classes/options.html#pyvbmc.vbmc.Options.validate_option_names">[docs]</a>    <span class="k">def</span> <span class="nf">validate_option_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options_paths</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check that ini files specified by the list of ``options_paths`` contain</span>
 <span class="sd">        the option names from this options object at least once.</span>
 
@@ -621,7 +631,7 @@ title="Open an issue"
         <span class="k">return</span> <span class="n">result</span>
 
 <div class="viewcode-block" id="Options.eval"><a class="viewcode-back" href="../../../api/classes/options.html#pyvbmc.vbmc.Options.eval">[docs]</a>    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">evaluation_parameters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Evaluate an option using `evaluation_parameters` if it is a callable,</span>
 <span class="sd">        otherwise return the value of the option.</span>
 
@@ -645,7 +655,7 @@ title="Open an issue"
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the user options in a format key: value (description).</span>
 
 <span class="sd">        Returns</span>
@@ -667,7 +677,7 @@ title="Open an issue"
         <span class="k">return</span> <span class="s2">&quot;User Options:</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">indent</span><span class="p">(</span><span class="n">user_options</span><span class="p">,</span> <span class="s2">&quot;    &quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">full</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the options in a format key: value (description).</span>
 
 <span class="sd">        Returns</span>
@@ -694,21 +704,11 @@ title="Open an issue"
                     <span class="p">]</span>
                 <span class="p">),</span>
                 <span class="s2">&quot;    &quot;</span><span class="p">,</span>
-            <span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_short_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Returns abbreviated string representation with memory location.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        string : str</span>
-<span class="sd">            The abbreviated string representation of the Options object.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+            <span class="p">)</span></div>
 
 
 <span class="k">def</span> <span class="nf">_read_config_file</span><span class="p">(</span><span class="n">options_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Private helper method to read a config file and return the options as a</span>
 <span class="sd">    list of tuples (key, value, description).</span>
 

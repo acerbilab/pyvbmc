@@ -110,6 +110,11 @@
    VBMC options
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../api/classes/priors.html">
+   Priors
+  </a>
+ </li>
  <li class="toctree-l1 has-children">
   <a class="reference internal" href="../../../api/advanced_docs.html">
    Advanced documentation
@@ -225,8 +230,13 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../../../_examples/pyvbmc_example_5_noisy_likelihoods.html">
-   PyVBMC Example 5: Noisy log-likelihood evaluations
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_5_prior_distributions.html">
+   PyVBMC Example 5: Prior distributions
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_6_noisy_likelihoods.html">
+   PyVBMC Example 6: Noisy log-likelihood evaluations
   </a>
  </li>
 </ul>
@@ -389,7 +399,7 @@ title="Open an issue"
 
 
 <div class="viewcode-block" id="AcqFcnVIQR"><a class="viewcode-back" href="../../../api/classes/acquisition_functions.html#pyvbmc.acquisition_functions.AcqFcnVIQR">[docs]</a><span class="k">class</span> <span class="nc">AcqFcnVIQR</span><span class="p">(</span><span class="n">AbstractAcqFcn</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Variational Interquantile Range (VIQR) acquisition function.</span>
 
 <span class="sd">    Approximates the Integrated Median Interquantile Range (IMIQR) by simple</span>
@@ -418,7 +428,7 @@ title="Open an issue"
         <span class="n">f_bar</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">var_tot</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the value of the acquisition function.</span>
 
 <span class="sd">        Parameters</span>
@@ -539,7 +549,7 @@ title="Open an issue"
         <span class="k">return</span> <span class="n">acq</span>
 
 <div class="viewcode-block" id="AcqFcnVIQR.is_log_base"><a class="viewcode-back" href="../../../api/classes/acquisition_functions.html#pyvbmc.acquisition_functions.AcqFcnVIQR.is_log_base">[docs]</a>    <span class="k">def</span> <span class="nf">is_log_base</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Importance sampling proposal log density, base part.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Importance sampling proposal log density, base part.</span>
 
 <span class="sd">        The base density of the importance sampling proposal distribution, used</span>
 <span class="sd">        for computing i.s. weights (in addition to the full proposal density).</span>
@@ -565,7 +575,7 @@ title="Open an issue"
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">f_s2</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="AcqFcnVIQR.is_log_added"><a class="viewcode-back" href="../../../api/classes/acquisition_functions.html#pyvbmc.acquisition_functions.AcqFcnVIQR.is_log_added">[docs]</a>    <span class="k">def</span> <span class="nf">is_log_added</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Importance sampling proposal log density, added part.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Importance sampling proposal log density, added part.</span>
 
 <span class="sd">        The added term in the importance sampling proposal log density: The</span>
 <span class="sd">        full proposal log density is ``is_log_full = is_log_base +</span>
@@ -588,7 +598,7 @@ title="Open an issue"
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">u</span> <span class="o">*</span> <span class="n">f_s</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">u</span> <span class="o">*</span> <span class="n">f_s</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="AcqFcnVIQR.is_log_full"><a class="viewcode-back" href="../../../api/classes/acquisition_functions.html#pyvbmc.acquisition_functions.AcqFcnVIQR.is_log_full">[docs]</a>    <span class="k">def</span> <span class="nf">is_log_full</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Importance sampling full proposal log density.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Importance sampling full proposal log density.</span>
 
 <span class="sd">        The full proposal log density, used for MCMC sampling: ``is_log_full =</span>
 <span class="sd">        is_log_base + is_log_added``.</span>

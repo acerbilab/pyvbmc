@@ -110,6 +110,11 @@
    VBMC options
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../api/classes/priors.html">
+   Priors
+  </a>
+ </li>
  <li class="toctree-l1 has-children">
   <a class="reference internal" href="../../../api/advanced_docs.html">
    Advanced documentation
@@ -225,8 +230,13 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../../../_examples/pyvbmc_example_5_noisy_likelihoods.html">
-   PyVBMC Example 5: Noisy log-likelihood evaluations
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_5_prior_distributions.html">
+   PyVBMC Example 5: Prior distributions
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_6_noisy_likelihoods.html">
+   PyVBMC Example 6: Noisy log-likelihood evaluations
   </a>
  </li>
 </ul>
@@ -398,7 +408,7 @@ title="Open an issue"
 <div class="viewcode-block" id="update_K"><a class="viewcode-back" href="../../../api/classes/vbmc.html#pyvbmc.vbmc.update_K">[docs]</a><span class="k">def</span> <span class="nf">update_K</span><span class="p">(</span>
     <span class="n">optim_state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">iteration_history</span><span class="p">:</span> <span class="n">IterationHistory</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">Options</span>
 <span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Update number of variational mixture components.</span>
 
 <span class="sd">    Parameters</span>
@@ -475,7 +485,7 @@ title="Open an issue"
     <span class="n">slow_opts_N</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">K</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Optimize variational posterior.</span>
 
 <span class="sd">    Parameters</span>
@@ -551,7 +561,7 @@ title="Open an issue"
     <span class="k">else</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">ns_ent_K</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sd">&quot;&quot;&quot;Gradients must be available when ns_ent_K is &gt; 0.&quot;&quot;&quot;</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;Gradients must be available when ns_ent_K is &gt; 0.&quot;&quot;&quot;</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">compute_grad</span> <span class="o">=</span> <span class="kc">False</span>
@@ -771,7 +781,7 @@ title="Open an issue"
 
 
 <span class="k">def</span> <span class="nf">_initialize_full_elcbo</span><span class="p">(</span><span class="n">max_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">D</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">K</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">Ns</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Initialize a dictionary for keeping track of full ELCBO output.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize a dictionary for keeping track of full ELCBO output.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ==========</span>
@@ -814,7 +824,7 @@ title="Open an issue"
     <span class="n">options</span><span class="p">:</span> <span class="n">Options</span><span class="p">,</span>
     <span class="n">entropy_alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Evaluate full ELCBO and store the results in a dictionary.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Evaluate full ELCBO and store the results in a dictionary.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ==========</span>
@@ -886,7 +896,7 @@ title="Open an issue"
     <span class="n">tol_con</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-3</span><span class="p">,</span>
     <span class="n">compute_grad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Variational parameter loss function for soft optimization bounds.</span>
 
 <span class="sd">    Parameters</span>
@@ -992,7 +1002,7 @@ title="Open an issue"
     <span class="n">tol_con</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-3</span><span class="p">,</span>
     <span class="n">compute_grad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Loss function for soft bounds for function minimization.</span>
 
 <span class="sd">    Parameters</span>
@@ -1045,7 +1055,7 @@ title="Open an issue"
     <span class="n">best_N</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="n">K</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Preliminary &#39;sieve&#39; method for fitting variational posterior.</span>
 
 <span class="sd">    Parameters</span>
@@ -1197,7 +1207,7 @@ title="Open an issue"
     <span class="n">X_star</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">y_star</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generate array of random starting parameters for variational posterior.</span>
 
 <span class="sd">    Parameters</span>
@@ -1379,7 +1389,7 @@ title="Open an issue"
     <span class="n">_entropy_alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="n">separate_K</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Negative evidence lower confidence bound objective.</span>
 
 <span class="sd">    Parameters</span>
@@ -1623,7 +1633,7 @@ title="Open an issue"
     <span class="n">compute_var</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">separate_K</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Expected variational log joint probability via GP approximation.</span>
 
 <span class="sd">    Parameters</span>

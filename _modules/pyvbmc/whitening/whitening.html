@@ -110,6 +110,11 @@
    VBMC options
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../api/classes/priors.html">
+   Priors
+  </a>
+ </li>
  <li class="toctree-l1 has-children">
   <a class="reference internal" href="../../../api/advanced_docs.html">
    Advanced documentation
@@ -225,8 +230,13 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../../../_examples/pyvbmc_example_5_noisy_likelihoods.html">
-   PyVBMC Example 5: Noisy log-likelihood evaluations
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_5_prior_distributions.html">
+   PyVBMC Example 5: Prior distributions
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_6_noisy_likelihoods.html">
+   PyVBMC Example 6: Noisy log-likelihood evaluations
   </a>
  </li>
 </ul>
@@ -384,7 +394,7 @@ title="Open an issue"
 
 
 <div class="viewcode-block" id="unscent_warp"><a class="viewcode-back" href="../../../api/functions/whitening.html#pyvbmc.whitening.unscent_warp">[docs]</a><span class="k">def</span> <span class="nf">unscent_warp</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">sigma</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute the unscented transform of the warping function `fun`.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute the unscented transform of the warping function `fun`.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -457,7 +467,7 @@ title="Open an issue"
 
 
 <div class="viewcode-block" id="warp_input"><a class="viewcode-back" href="../../../api/functions/whitening.html#pyvbmc.whitening.warp_input">[docs]</a><span class="k">def</span> <span class="nf">warp_input</span><span class="p">(</span><span class="n">vp</span><span class="p">,</span> <span class="n">optim_state</span><span class="p">,</span> <span class="n">function_logger</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute input warping of variables and update the cached points in</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute input warping of variables and update the cached points in</span>
 <span class="sd">    function_logger accordingly.</span>
 
 <span class="sd">    Currently supports only a whitening transformation: a rotation and</span>
@@ -623,7 +633,7 @@ title="Open an issue"
 
 
 <div class="viewcode-block" id="warp_gp_and_vp"><a class="viewcode-back" href="../../../api/functions/whitening.html#pyvbmc.whitening.warp_gp_and_vp">[docs]</a><span class="k">def</span> <span class="nf">warp_gp_and_vp</span><span class="p">(</span><span class="n">parameter_transformer</span><span class="p">,</span> <span class="n">gp_old</span><span class="p">,</span> <span class="n">vp_old</span><span class="p">,</span> <span class="n">vbmc</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Update the GP and VP with a given warp transformation.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Update the GP and VP with a given warp transformation.</span>
 
 <span class="sd">    Applies an updated ParameterTransformer object (with new warping</span>
 <span class="sd">    transformation) to the GP and VP parameters.</span>

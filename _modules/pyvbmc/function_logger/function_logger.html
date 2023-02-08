@@ -110,6 +110,11 @@
    VBMC options
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../api/classes/priors.html">
+   Priors
+  </a>
+ </li>
  <li class="toctree-l1 has-children">
   <a class="reference internal" href="../../../api/advanced_docs.html">
    Advanced documentation
@@ -225,8 +230,13 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../../../_examples/pyvbmc_example_5_noisy_likelihoods.html">
-   PyVBMC Example 5: Noisy log-likelihood evaluations
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_5_prior_distributions.html">
+   PyVBMC Example 5: Prior distributions
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_6_noisy_likelihoods.html">
+   PyVBMC Example 6: Noisy log-likelihood evaluations
   </a>
  </li>
 </ul>
@@ -388,7 +398,7 @@ title="Open an issue"
 
 
 <div class="viewcode-block" id="FunctionLogger"><a class="viewcode-back" href="../../../api/classes/function_logger.html#pyvbmc.function_logger.FunctionLogger">[docs]</a><span class="k">class</span> <span class="nc">FunctionLogger</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Class that evaluates a function and caches its values.</span>
 
 <span class="sd">    Parameters</span>
@@ -448,7 +458,7 @@ title="Open an issue"
         <span class="bp">self</span><span class="o">.</span><span class="n">total_fun_eval_time</span> <span class="o">=</span> <span class="mi">0</span>
 
 <div class="viewcode-block" id="FunctionLogger.__call__"><a class="viewcode-back" href="../../../api/classes/function_logger.html#pyvbmc.function_logger.FunctionLogger.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Evaluates the function FUN at x and caches values.</span>
 
 <span class="sd">        Parameters</span>
@@ -565,7 +575,7 @@ title="Open an issue"
         <span class="n">f_sd</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">fun_eval_time</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Add an previously evaluated function sample to the function cache.</span>
 
 <span class="sd">        Parameters</span>
@@ -653,7 +663,7 @@ title="Open an issue"
         <span class="k">return</span> <span class="n">f_val</span><span class="p">,</span> <span class="n">f_sd</span><span class="p">,</span> <span class="n">idx</span></div>
 
 <div class="viewcode-block" id="FunctionLogger.finalize"><a class="viewcode-back" href="../../../api/classes/function_logger.html#pyvbmc.function_logger.FunctionLogger.finalize">[docs]</a>    <span class="k">def</span> <span class="nf">finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Remove unused caching entries.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">X_orig</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">X_orig</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">Xn</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
@@ -669,7 +679,7 @@ title="Open an issue"
         <span class="bp">self</span><span class="o">.</span><span class="n">fun_eval_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fun_eval_time</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">Xn</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span></div>
 
     <span class="k">def</span> <span class="nf">_expand_arrays</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resize_amount</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A private function to extend the rows of the object attribute arrays.</span>
 
 <span class="sd">        Parameters</span>
@@ -715,7 +725,7 @@ title="Open an issue"
         <span class="n">f_sd</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">fun_eval_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A private method to save function values to class attributes.</span>
 
 <span class="sd">        Parameters</span>
@@ -815,7 +825,7 @@ title="Open an issue"
         <span class="k">return</span> <span class="n">result</span>
 
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr_size_thresh</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Print a string summary.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Print a string summary.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="s2">&quot;FunctionLogger:&quot;</span> <span class="o">+</span> <span class="n">indent</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">function = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">fun</span><span class="si">}</span><span class="s2">,</span>
@@ -828,7 +838,7 @@ title="Open an issue"
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr_size_thresh</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct a detailed string summary.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a detailed string summary.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -852,17 +862,7 @@ title="Open an issue"
             <span class="s2">&quot;FunctionLogger&quot;</span><span class="p">,</span>
             <span class="n">expand</span><span class="o">=</span><span class="n">expand</span><span class="p">,</span>
             <span class="n">arr_size_thresh</span><span class="o">=</span><span class="n">arr_size_thresh</span><span class="p">,</span>
-        <span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_short_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Returns abbreviated string representation with memory location.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        string : str</span>
-<span class="sd">            The abbreviated string representation of the FunctionLogger.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+        <span class="p">)</span></div>
 </pre></div>
 
               </div>

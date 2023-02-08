@@ -38,7 +38,7 @@
     <link rel="canonical" href="https://acerbilab.github.io/pyvbmc/_examples/pyvbmc_example_4_validation.html" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="PyVBMC Example 5: Noisy log-likelihood evaluations" href="pyvbmc_example_5_noisy_likelihoods.html" />
+    <link rel="next" title="PyVBMC Example 5: Prior distributions" href="pyvbmc_example_5_prior_distributions.html" />
     <link rel="prev" title="PyVBMC Example 3: Output diagnostics and saving results" href="pyvbmc_example_3_diagnostics_and_saving.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="None">
@@ -113,6 +113,11 @@
  <li class="toctree-l1">
   <a class="reference internal" href="../api/options/vbmc_options.html">
    VBMC options
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../api/classes/priors.html">
+   Priors
   </a>
  </li>
  <li class="toctree-l1 has-children">
@@ -230,8 +235,13 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="pyvbmc_example_5_noisy_likelihoods.html">
-   PyVBMC Example 5: Noisy log-likelihood evaluations
+  <a class="reference internal" href="pyvbmc_example_5_prior_distributions.html">
+   PyVBMC Example 5: Prior distributions
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="pyvbmc_example_6_noisy_likelihoods.html">
+   PyVBMC Example 6: Noisy log-likelihood evaluations
   </a>
  </li>
 </ul>
@@ -561,15 +571,15 @@ title="Print to PDF"
   <section class="tex2jax_ignore mathjax_ignore" id="pyvbmc-example-4-multiple-runs-as-validation">
 <h1>PyVBMC Example 4: Multiple runs as validation<a class="headerlink" href="#pyvbmc-example-4-multiple-runs-as-validation" title="Permalink to this headline">#</a></h1>
 <p>Here we explore running PyVBMC multiple times in order to validate the results: if the final variational posteriors obtained from several different initial points are consistent, we can be more confident that the results are correct.</p>
-<p>This notebook is Part 4 of a series of notebooks in which we present various example usages for VBMC with the PyVBMC package. The code used in this example is available as a script <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/examples/pyvbmc_example_4_full_code.py">here</a>.</p>
+<p>This notebook is Part 4 of a series of notebooks in which we present various example usages for VBMC with the PyVBMC package. The code used in this example is available as a script <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/examples/scripts/pyvbmc_example_4_full_code.py">here</a>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>import numpy as np
-import scipy.stats as scs
-from scipy.optimize import minimize
-from pyvbmc import VBMC
-import matplotlib.pyplot as plt
-import dill
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy.stats</span> <span class="k">as</span> <span class="nn">scs</span>
+<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">minimize</span>
+<span class="kn">from</span> <span class="nn">pyvbmc</span> <span class="kn">import</span> <span class="n">VBMC</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">dill</span>
 </pre></div>
 </div>
 </div>
@@ -579,39 +589,39 @@ import dill
 <p>We use the same toy target function as in Example 1, a broad <a class="reference external" href="https://en.wikipedia.org/wiki/Rosenbrock_function">Rosenbrock’s banana function</a> in <span class="math notranslate nohighlight">\(D = 2\)</span>, with unbounded parameters:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>D = 2  # We&#39;ll use a 2-D problem for a quicker demonstration
-prior_mu = np.zeros(D)
-prior_var = 3 * np.ones(D)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">D</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># We&#39;ll use a 2-D problem for a quicker demonstration</span>
+<span class="n">prior_mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
+<span class="n">prior_var</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
 
 
-def log_prior(theta):
-    &quot;&quot;&quot;Multivariate normal prior on theta.&quot;&quot;&quot;
-    cov = np.diag(prior_var)
-    return scs.multivariate_normal(prior_mu, cov).logpdf(theta)
+<span class="k">def</span> <span class="nf">log_prior</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Multivariate normal prior on theta.&quot;&quot;&quot;</span>
+    <span class="n">cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">prior_var</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">scs</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span><span class="n">prior_mu</span><span class="p">,</span> <span class="n">cov</span><span class="p">)</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
 
 
-# log-likelihood (Rosenbrock)
-def log_likelihood(theta):
-    &quot;&quot;&quot;D-dimensional Rosenbrock&#39;s banana function.&quot;&quot;&quot;
-    theta = np.atleast_2d(theta)
+<span class="c1"># log-likelihood (Rosenbrock)</span>
+<span class="k">def</span> <span class="nf">log_likelihood</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;D-dimensional Rosenbrock&#39;s banana function.&quot;&quot;&quot;</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
 
-    x, y = theta[:, :-1], theta[:, 1:]
-    return -np.sum((x**2 - y) ** 2 + (x - 1) ** 2 / 100, axis=1)
-
-
-# Full model:
-def log_joint(theta, data=np.ones(D)):
-    &quot;&quot;&quot;log-density of the joint distribution.&quot;&quot;&quot;
-    return log_likelihood(theta) + log_prior(theta)
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">theta</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">theta</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:]</span>
+    <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="mi">100</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
 
-LB = np.full((1, D), -np.inf)  # Lower bounds
-UB = np.full((1, D), np.inf)  # Upper bounds
-PLB = np.full((1, D), prior_mu - np.sqrt(prior_var))  # Plausible lower bounds
-PUB = np.full((1, D), prior_mu + np.sqrt(prior_var))  # Plausible upper bounds
-options = {
-    &quot;max_fun_evals&quot;: 50 * D  # Slightly reduced from 50 * (D + 2), for speed
-}
+<span class="c1"># Full model:</span>
+<span class="k">def</span> <span class="nf">log_joint</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">D</span><span class="p">)):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;log-density of the joint distribution.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">log_likelihood</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">+</span> <span class="n">log_prior</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+
+
+<span class="n">LB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>  <span class="c1"># Lower bounds</span>
+<span class="n">UB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>  <span class="c1"># Upper bounds</span>
+<span class="n">PLB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="n">prior_mu</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">prior_var</span><span class="p">))</span>  <span class="c1"># Plausible lower bounds</span>
+<span class="n">PUB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="n">prior_mu</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">prior_var</span><span class="p">))</span>  <span class="c1"># Plausible upper bounds</span>
+<span class="n">options</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;max_fun_evals&quot;</span><span class="p">:</span> <span class="mi">50</span> <span class="o">*</span> <span class="n">D</span>  <span class="c1"># Slightly reduced from 50 * (D + 2), for speed</span>
+<span class="p">}</span>
 </pre></div>
 </div>
 </div>
@@ -622,42 +632,42 @@ options = {
 <p>For validation, we recommend running PyVBMC 3-4 times from different initial points:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>np.random.seed(42)
-n_runs = 3
-vps, elbos, elbo_sds, success_flags, result_dicts = [], [], [], [], []
-for i in range(n_runs):
-    print(f&quot;PyVBMC run {i} of {n_runs}&quot;)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">n_runs</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">vps</span><span class="p">,</span> <span class="n">elbos</span><span class="p">,</span> <span class="n">elbo_sds</span><span class="p">,</span> <span class="n">success_flags</span><span class="p">,</span> <span class="n">result_dicts</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_runs</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PyVBMC run </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="n">n_runs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    # Determine initial point x0:
-    if i == 0:
-        x0 = prior_mu  # First run, start from prior mean
-    else:
-        x0 = np.random.uniform(PLB, PUB)  # Other runs, randomize
-    # Preliminary maximum a posteriori (MAP) estimation:
-    x0 = minimize(
-        lambda t: -log_joint(t),
-        x0.ravel(),  # minimize expects 1-D input for initial point x0
-        bounds=[(-np.inf, np.inf), (-np.inf, np.inf)],
-    ).x
+    <span class="c1"># Determine initial point x0:</span>
+    <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">x0</span> <span class="o">=</span> <span class="n">prior_mu</span>  <span class="c1"># First run, start from prior mean</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">PLB</span><span class="p">,</span> <span class="n">PUB</span><span class="p">)</span>  <span class="c1"># Other runs, randomize</span>
+    <span class="c1"># Preliminary maximum a posteriori (MAP) estimation:</span>
+    <span class="n">x0</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span>
+        <span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="o">-</span><span class="n">log_joint</span><span class="p">(</span><span class="n">t</span><span class="p">),</span>
+        <span class="n">x0</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span>  <span class="c1"># minimize expects 1-D input for initial point x0</span>
+        <span class="n">bounds</span><span class="o">=</span><span class="p">[(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)],</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">x</span>
 
-    # Run PyVBMC:
-    vbmc = VBMC(
-        log_joint,
-        x0,
-        LB,
-        UB,
-        PLB,
-        PUB,
-        options=options,
-    )
-    vp, results = vbmc.optimize()
+    <span class="c1"># Run PyVBMC:</span>
+    <span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span>
+        <span class="n">log_joint</span><span class="p">,</span>
+        <span class="n">x0</span><span class="p">,</span>
+        <span class="n">LB</span><span class="p">,</span>
+        <span class="n">UB</span><span class="p">,</span>
+        <span class="n">PLB</span><span class="p">,</span>
+        <span class="n">PUB</span><span class="p">,</span>
+        <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">vp</span><span class="p">,</span> <span class="n">results</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
 
-    # Record the results:
-    vps.append(vp)
-    elbos.append(results[&quot;elbo&quot;])
-    elbo_sds.append(results[&quot;elbo_sd&quot;])
-    success_flags.append(results[&quot;success_flag&quot;])
-    result_dicts.append(results)
+    <span class="c1"># Record the results:</span>
+    <span class="n">vps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vp</span><span class="p">)</span>
+    <span class="n">elbos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;elbo&quot;</span><span class="p">])</span>
+    <span class="n">elbo_sds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;elbo_sd&quot;</span><span class="p">])</span>
+    <span class="n">success_flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;success_flag&quot;</span><span class="p">])</span>
+    <span class="n">result_dicts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -730,7 +740,7 @@ Estimated ELBO: -1.528 +/-0.001.
 <p>We now perform some diagnostic checks on the variational solution. First, we check that the ELBO’s from different runs are close to each other (i.e. with a difference much smaller than 1):</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>print(elbos)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">elbos</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -743,13 +753,13 @@ Estimated ELBO: -1.528 +/-0.001.
 <p>Then, we check that the variational posteriors from distinct runs are similar. As a measure of similarity, we compute the Kullback-Leibler divergence between each pair:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>kl_matrix = np.zeros((n_runs, n_runs))
-for i in range(n_runs):
-    for j in range(i, n_runs):
-        # The `kldiv` method computes the divergence in both directions:
-        kl_ij, kl_ji = vps[i].kl_div(vp2=vps[j])
-        kl_matrix[i, j] = kl_ij
-        kl_matrix[j, i] = kl_ji
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">kl_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_runs</span><span class="p">,</span> <span class="n">n_runs</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_runs</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">n_runs</span><span class="p">):</span>
+        <span class="c1"># The `kldiv` method computes the divergence in both directions:</span>
+        <span class="n">kl_ij</span><span class="p">,</span> <span class="n">kl_ji</span> <span class="o">=</span> <span class="n">vps</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">kl_div</span><span class="p">(</span><span class="n">vp2</span><span class="o">=</span><span class="n">vps</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+        <span class="n">kl_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">kl_ij</span>
+        <span class="n">kl_matrix</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">kl_ji</span>
 </pre></div>
 </div>
 </div>
@@ -757,7 +767,7 @@ for i in range(n_runs):
 <p>Note that the KL divergence is asymmetric, so we have an asymmetric matrix:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>print(kl_matrix)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">kl_matrix</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -772,19 +782,19 @@ for i in range(n_runs):
 <p>Ideally, we want all KL divergence matrix entries to be much smaller than 1. For a qualitative validation, we recommend a visual inspection of the posteriors:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>for i, vp in enumerate(vps):
-    samples, __ = vp.sample(1000)
-    plt.scatter(
-        samples[:, 0],
-        samples[:, 1],
-        alpha=1 / len(vps),
-        marker=&quot;.&quot;,
-        label=f&quot;VP {i}&quot;,
-    )
-plt.title(&quot;&quot;&quot;Variational Posterior Samples&quot;&quot;&quot;)
-plt.xlabel(&quot;x0&quot;)
-plt.ylabel(&quot;x1&quot;)
-plt.legend();
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">vp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vps</span><span class="p">):</span>
+    <span class="n">samples</span><span class="p">,</span> <span class="n">__</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+        <span class="n">samples</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span>
+        <span class="n">samples</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span>
+        <span class="n">alpha</span><span class="o">=</span><span class="mi">1</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">vps</span><span class="p">),</span>
+        <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;VP </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;Variational Posterior Samples&quot;&quot;&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;x0&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;x1&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">();</span>
 </pre></div>
 </div>
 </div>
@@ -795,7 +805,7 @@ plt.legend();
 <p>We can also check that convergence was acheived in all runs, according to PyVBMC (we want <code class="docutils literal notranslate"><span class="pre">success_flag</span> <span class="pre">=</span> <span class="pre">True</span></code> for each run):</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>print(success_flags)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">success_flags</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -808,11 +818,11 @@ plt.legend();
 <p>Finally, we can pick the variational solution with highest ELCBO (the lower confidence bound on the ELBO).</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>beta_lcb = 3.0  # Standard confidence parameter (in standard deviations)
-# beta_lcb = 5.0  # This is more conservative
-elcbos = np.array(elbos) - beta_lcb * np.array(elbo_sds)
-idx_best = np.argmax(elcbos)
-print(idx_best)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">beta_lcb</span> <span class="o">=</span> <span class="mf">3.0</span>  <span class="c1"># Standard confidence parameter (in standard deviations)</span>
+<span class="c1"># beta_lcb = 5.0  # This is more conservative</span>
+<span class="n">elcbos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">elbos</span><span class="p">)</span> <span class="o">-</span> <span class="n">beta_lcb</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">elbo_sds</span><span class="p">)</span>
+<span class="n">idx_best</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">elcbos</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">idx_best</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -825,8 +835,8 @@ print(idx_best)
 <p>We’ll save this best posterior to a file, so we can compare it against our results in the next notebook:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>with open(&quot;noise_free_vp.pkl&quot;, &quot;wb&quot;) as f:
-    dill.dump(vps[idx_best], f)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;noise_free_vp.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">dill</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">vps</span><span class="p">[</span><span class="n">idx_best</span><span class="p">],</span> <span class="n">f</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -858,10 +868,10 @@ print(idx_best)
             <p class="prev-next-title">PyVBMC Example 3: Output diagnostics and saving results</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="pyvbmc_example_5_noisy_likelihoods.html" title="next page">
+    <a class='right-next' id="next-link" href="pyvbmc_example_5_prior_distributions.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">PyVBMC Example 5: Noisy log-likelihood evaluations</p>
+        <p class="prev-next-title">PyVBMC Example 5: Prior distributions</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>

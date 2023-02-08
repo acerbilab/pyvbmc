@@ -110,6 +110,11 @@
    VBMC options
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../api/classes/priors.html">
+   Priors
+  </a>
+ </li>
  <li class="toctree-l1 has-children">
   <a class="reference internal" href="../../../api/advanced_docs.html">
    Advanced documentation
@@ -225,8 +230,13 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../../../_examples/pyvbmc_example_5_noisy_likelihoods.html">
-   PyVBMC Example 5: Noisy log-likelihood evaluations
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_5_prior_distributions.html">
+   PyVBMC Example 5: Prior distributions
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_6_noisy_likelihoods.html">
+   PyVBMC Example 6: Noisy log-likelihood evaluations
   </a>
  </li>
 </ul>
@@ -389,7 +399,7 @@ title="Open an issue"
 
 
 <div class="viewcode-block" id="AbstractAcqFcn"><a class="viewcode-back" href="../../../api/classes/acquisition_functions.html#pyvbmc.acquisition_functions.AbstractAcqFcn">[docs]</a><span class="k">class</span> <span class="nc">AbstractAcqFcn</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Abstract acquisition function for VBMC.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -400,7 +410,7 @@ title="Open an issue"
         <span class="bp">self</span><span class="o">.</span><span class="n">acq_info</span><span class="p">[</span><span class="s2">&quot;log_flag&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
 
 <div class="viewcode-block" id="AbstractAcqFcn.get_info"><a class="viewcode-back" href="../../../api/classes/acquisition_functions.html#pyvbmc.acquisition_functions.AbstractAcqFcn.get_info">[docs]</a>    <span class="k">def</span> <span class="nf">get_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return a dict with information about the acquisition function.</span>
 
 <span class="sd">        Returns</span>
@@ -418,7 +428,7 @@ title="Open an issue"
         <span class="n">function_logger</span><span class="p">:</span> <span class="n">FunctionLogger</span><span class="p">,</span>
         <span class="n">optim_state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the acquisition function for the given inputs.</span>
 
 <span class="sd">        Parameters</span>
@@ -538,7 +548,7 @@ title="Open an issue"
         <span class="n">f_bar</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">var_tot</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Abstract method that must be implemented in each subclass. It computes</span>
 <span class="sd">        the value of the acquisition function.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -549,7 +559,7 @@ title="Open an issue"
         <span class="n">parameter_transformer</span><span class="p">:</span> <span class="n">ParameterTransformer</span><span class="p">,</span>
         <span class="n">integer_vars</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Convert to integer-valued representation.</span>
 
 <span class="sd">        Parameters</span>
@@ -572,7 +582,7 @@ title="Open an issue"
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_sq_dist</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute matrix of all pairwise squared distances between two sets</span>
 <span class="sd">        of vectors, stored in the columns of the two matrices `a` and `b`.</span>
 
@@ -603,7 +613,7 @@ title="Open an issue"
     <span class="k">def</span> <span class="nf">_estimate_observation_noise</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">Xs</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">gp</span><span class="p">:</span> <span class="n">gpr</span><span class="o">.</span><span class="n">GP</span><span class="p">,</span> <span class="n">optim_state</span><span class="p">:</span> <span class="nb">dict</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Estimate observation noise at test points from nearest neighbor.</span>
 
 <span class="sd">        Parameters</span>

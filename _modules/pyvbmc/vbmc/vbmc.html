@@ -110,6 +110,11 @@
    VBMC options
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../api/classes/priors.html">
+   Priors
+  </a>
+ </li>
  <li class="toctree-l1 has-children">
   <a class="reference internal" href="../../../api/advanced_docs.html">
    Advanced documentation
@@ -225,8 +230,13 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../../../_examples/pyvbmc_example_5_noisy_likelihoods.html">
-   PyVBMC Example 5: Noisy log-likelihood evaluations
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_5_prior_distributions.html">
+   PyVBMC Example 5: Prior distributions
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_6_noisy_likelihoods.html">
+   PyVBMC Example 6: Noisy log-likelihood evaluations
   </a>
  </li>
 </ul>
@@ -382,6 +392,7 @@ title="Open an issue"
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Iterable</span>
 <span class="kn">from</span> <span class="nn">textwrap</span> <span class="kn">import</span> <span class="n">indent</span>
 
 <span class="kn">import</span> <span class="nn">gpyreg</span> <span class="k">as</span> <span class="nn">gpr</span>
@@ -391,6 +402,7 @@ title="Open an issue"
 <span class="kn">from</span> <span class="nn">pyvbmc.formatting</span> <span class="kn">import</span> <span class="n">full_repr</span><span class="p">,</span> <span class="n">summarize</span>
 <span class="kn">from</span> <span class="nn">pyvbmc.function_logger</span> <span class="kn">import</span> <span class="n">FunctionLogger</span>
 <span class="kn">from</span> <span class="nn">pyvbmc.parameter_transformer</span> <span class="kn">import</span> <span class="n">ParameterTransformer</span>
+<span class="kn">from</span> <span class="nn">pyvbmc.priors</span> <span class="kn">import</span> <span class="n">Prior</span><span class="p">,</span> <span class="n">SciPy</span><span class="p">,</span> <span class="n">convert_to_prior</span>
 <span class="kn">from</span> <span class="nn">pyvbmc.stats</span> <span class="kn">import</span> <span class="n">kl_div_mvn</span>
 <span class="kn">from</span> <span class="nn">pyvbmc.timer</span> <span class="kn">import</span> <span class="n">main_timer</span> <span class="k">as</span> <span class="n">timer</span>
 <span class="kn">from</span> <span class="nn">pyvbmc.variational_posterior</span> <span class="kn">import</span> <span class="n">VariationalPosterior</span>
@@ -404,7 +416,7 @@ title="Open an issue"
 
 
 <div class="viewcode-block" id="VBMC"><a class="viewcode-back" href="../../../api/classes/vbmc.html#pyvbmc.vbmc.VBMC">[docs]</a><span class="k">class</span> <span class="nc">VBMC</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Posterior and model inference via Variational Bayesian Monte Carlo (VBMC).</span>
 
 <span class="sd">    VBMC computes a variational approximation of the full posterior and a lower</span>
@@ -449,16 +461,23 @@ title="Open an issue"
 <span class="sd">        the topmost ~68% percentile range of the prior (e.g, mean +/- 1 SD</span>
 <span class="sd">        for a Gaussian prior) works well in many cases (but note that</span>
 <span class="sd">        additional information might afford a better guess). Both are</span>
-<span class="sd">        by default ``None``.</span>
+<span class="sd">        by default `None`.</span>
 <span class="sd">    options : dict, optional</span>
 <span class="sd">        Additional options can be passed as a dict. Please refer to the</span>
 <span class="sd">        VBMC options page for the default options. If no ``options`` are</span>
 <span class="sd">        passed, the default options are used.</span>
+<span class="sd">    prior, optional</span>
+<span class="sd">        An optional separate prior. It can be a ``pyvbmc.priors.Prior``</span>
+<span class="sd">        subclass, an appropriate ``scipy.stats`` distribution, or a list of</span>
+<span class="sd">        one-dimensional PyVBMC ``Prior`` and/or one-dimenional continuous</span>
+<span class="sd">        ``scipy.stats`` distributions. (see the documentation on priors for</span>
+<span class="sd">        more details). If ``prior`` is not `None`, the argument ``log_density``</span>
+<span class="sd">        is assumed to represent the log-likelihood (otherwise it is assumed to</span>
+<span class="sd">        represent the log-joint).</span>
 <span class="sd">    log_prior : callable, optional</span>
 <span class="sd">        An optional separate log-prior function, which should accept a single</span>
 <span class="sd">        argument `x` and return the log-density of the prior at `x`. If</span>
 <span class="sd">        ``log_prior`` is not ``None``, the argument ``log_density`` is assumed</span>
-<span class="sd">        to represent the log-likelihood (otherwise it is assumed to represent</span>
 <span class="sd">        the log-joint).</span>
 <span class="sd">    sample_prior : callable, optional</span>
 <span class="sd">        An optional function which accepts a single argument `n` and returns an</span>
@@ -502,6 +521,7 @@ title="Open an issue"
         <span class="n">plausible_lower_bounds</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">plausible_upper_bounds</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">options</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">prior</span><span class="p">:</span> <span class="n">Prior</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">log_prior</span><span class="p">:</span> <span class="n">callable</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">sample_prior</span><span class="p">:</span> <span class="n">callable</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
@@ -515,7 +535,7 @@ title="Open an issue"
                 <span class="ow">or</span> <span class="n">plausible_upper_bounds</span> <span class="ow">is</span> <span class="kc">None</span>
             <span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sd">&quot;&quot;&quot;vbmc:UnknownDims If no starting point is</span>
+<span class="w">                    </span><span class="sd">&quot;&quot;&quot;vbmc:UnknownDims If no starting point is</span>
 <span class="sd">                 provided, PLB and PUB need to be specified.&quot;&quot;&quot;</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
@@ -614,30 +634,14 @@ title="Open an issue"
 
         <span class="bp">self</span><span class="o">.</span><span class="n">optim_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_optim_state</span><span class="p">()</span>
 
-        <span class="c1"># Initialize log-joint</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sample_prior</span> <span class="o">=</span> <span class="n">sample_prior</span>
-        <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">log_prior</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">log_prior</span> <span class="o">=</span> <span class="n">log_prior</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">log_likelihood</span> <span class="o">=</span> <span class="n">log_density</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;uncertainty_handling_level&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-
-                <span class="k">def</span> <span class="nf">log_joint</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
-                    <span class="n">log_likelihood</span><span class="p">,</span> <span class="n">noise_est</span> <span class="o">=</span> <span class="n">log_density</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
-                    <span class="k">return</span> <span class="n">log_likelihood</span> <span class="o">+</span> <span class="n">log_prior</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="n">noise_est</span>
-
-            <span class="k">else</span><span class="p">:</span>
-
-                <span class="k">def</span> <span class="nf">log_joint</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
-                    <span class="k">return</span> <span class="n">log_density</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">+</span> <span class="n">log_prior</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
-
-        <span class="k">elif</span> <span class="n">log_prior</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">log_joint</span> <span class="o">=</span> <span class="n">log_density</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;`prior` must be a callable or `None`.&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">log_joint</span> <span class="o">=</span> <span class="n">log_joint</span>
+        <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_joint</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_likelihood</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_log_joint</span><span class="p">(</span><span class="n">log_density</span><span class="p">,</span> <span class="n">prior</span><span class="p">,</span> <span class="n">log_prior</span><span class="p">,</span> <span class="n">sample_prior</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">function_logger</span> <span class="o">=</span> <span class="n">FunctionLogger</span><span class="p">(</span>
-            <span class="n">fun</span><span class="o">=</span><span class="n">log_joint</span><span class="p">,</span>
+            <span class="n">fun</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log_joint</span><span class="p">,</span>
             <span class="n">D</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">,</span>
             <span class="n">noise_flag</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">optim_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;uncertainty_handling_level&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span>
             <span class="n">uncertainty_handling_level</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">optim_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
@@ -688,7 +692,7 @@ title="Open an issue"
         <span class="n">plausible_lower_bounds</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">plausible_upper_bounds</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Private function to do the initial check of the VBMC bounds.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -776,7 +780,7 @@ title="Open an issue"
             <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">invert</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isreal</span><span class="p">(</span><span class="n">plausible_upper_bounds</span><span class="p">)))</span>
         <span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sd">&quot;&quot;&quot;All input vectors (x0, lower_bounds, upper_bounds,</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;All input vectors (x0, lower_bounds, upper_bounds,</span>
 <span class="sd">                 plausible_lower_bounds, plausible_upper_bounds), if specified,</span>
 <span class="sd">                 need to be real valued.&quot;&quot;&quot;</span>
             <span class="p">)</span>
@@ -811,21 +815,21 @@ title="Open an issue"
         <span class="p">)</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">fixidx</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sd">&quot;&quot;&quot;vbmc:FixedVariables VBMC does not support fixed</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;vbmc:FixedVariables VBMC does not support fixed</span>
 <span class="sd">            variables. Lower and upper bounds should be different.&quot;&quot;&quot;</span>
             <span class="p">)</span>
 
         <span class="c1"># Test that plausible bounds are different</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">plausible_lower_bounds</span> <span class="o">==</span> <span class="n">plausible_upper_bounds</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sd">&quot;&quot;&quot;vbmc:MatchingPB:For all variables,</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;vbmc:MatchingPB:For all variables,</span>
 <span class="sd">            plausible lower and upper bounds need to be distinct.&quot;&quot;&quot;</span>
             <span class="p">)</span>
 
         <span class="c1"># Check that all X0 are inside the bounds</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">x0</span> <span class="o">&lt;</span> <span class="n">lower_bounds</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">x0</span> <span class="o">&gt;</span> <span class="n">upper_bounds</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sd">&quot;&quot;&quot;vbmc:InitialPointsNotInsideBounds: The starting</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;vbmc:InitialPointsNotInsideBounds: The starting</span>
 <span class="sd">            points X0 are not inside the provided hard bounds LB and UB.&quot;&quot;&quot;</span>
             <span class="p">)</span>
 
@@ -848,7 +852,7 @@ title="Open an issue"
 
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">LB_eff</span> <span class="o">&gt;=</span> <span class="n">UB_eff</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sd">&quot;&quot;&quot;vbmc:StrictBoundsTooClose: Hard bounds LB and UB</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;vbmc:StrictBoundsTooClose: Hard bounds LB and UB</span>
 <span class="sd">                are numerically too close. Make them more separate.&quot;&quot;&quot;</span>
             <span class="p">)</span>
 
@@ -869,7 +873,7 @@ title="Open an issue"
         <span class="p">)</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">invert</span><span class="p">(</span><span class="n">ordidx</span><span class="p">)):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sd">&quot;&quot;&quot;vbmc:StrictBounds: For each variable, hard and</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;vbmc:StrictBounds: For each variable, hard and</span>
 <span class="sd">            plausible bounds should respect the ordering LB &lt; PLB &lt; PUB &lt; UB.&quot;&quot;&quot;</span>
             <span class="p">)</span>
 
@@ -910,7 +914,7 @@ title="Open an issue"
         <span class="p">)</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">invert</span><span class="p">(</span><span class="n">ordidx</span><span class="p">)):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sd">&quot;&quot;&quot;vbmc:StrictBounds: For each variable, hard and</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;vbmc:StrictBounds: For each variable, hard and</span>
 <span class="sd">            plausible bounds should respect the ordering LB &lt; PLB &lt; PUB &lt; UB.&quot;&quot;&quot;</span>
             <span class="p">)</span>
 
@@ -921,7 +925,7 @@ title="Open an issue"
             <span class="o">|</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">lower_bounds</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">upper_bounds</span><span class="p">))</span>
         <span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sd">&quot;&quot;&quot;vbmc:HalfBounds: Each variable needs to be unbounded or</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;vbmc:HalfBounds: Each variable needs to be unbounded or</span>
 <span class="sd">            bounded. Variables bounded only below/above are not supported.&quot;&quot;&quot;</span>
             <span class="p">)</span>
 
@@ -934,7 +938,7 @@ title="Open an issue"
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_init_optim_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A private function to init the optim_state dict that contains</span>
 <span class="sd">        information about VBMC variables.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -944,7 +948,7 @@ title="Open an issue"
             <span class="n">y_orig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">x0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x0</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_orig</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sd">&quot;&quot;&quot;vbmc:MismatchedStartingInputs The number of</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;vbmc:MismatchedStartingInputs The number of</span>
 <span class="sd">            points in X0 and of their function values as specified in</span>
 <span class="sd">            self.options.f_vals are not the same.&quot;&quot;&quot;</span>
             <span class="p">)</span>
@@ -971,7 +975,7 @@ title="Open an issue"
                 <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">upper_bounds</span><span class="p">[:,</span> <span class="n">integeridx</span><span class="p">]</span> <span class="o">%</span> <span class="mi">1</span> <span class="o">!=</span> <span class="mf">0.5</span><span class="p">)</span>
             <span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sd">&quot;&quot;&quot;Hard bounds of integer variables need to be</span>
+<span class="w">                    </span><span class="sd">&quot;&quot;&quot;Hard bounds of integer variables need to be</span>
 <span class="sd">                 set at +/- 0.5 points from their boundary values (e.g., -0.5</span>
 <span class="sd">                 nd 10.5 for a variable that takes values from 0 to 10)&quot;&quot;&quot;</span>
                 <span class="p">)</span>
@@ -1173,7 +1177,7 @@ title="Open an issue"
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;gp_mean_fun&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">valid_gp_mean_funs</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sd">&quot;&quot;&quot;vbmc:UnknownGPmean:Unknown/unsupported GP mean</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;vbmc:UnknownGPmean:Unknown/unsupported GP mean</span>
 <span class="sd">            function. Supported mean functions are zero, const,</span>
 <span class="sd">            egquad, and se&quot;&quot;&quot;</span>
             <span class="p">)</span>
@@ -1191,7 +1195,7 @@ title="Open an issue"
         <span class="k">return</span> <span class="n">optim_state</span>
 
 <div class="viewcode-block" id="VBMC.optimize"><a class="viewcode-back" href="../../../api/classes/vbmc.html#pyvbmc.vbmc.VBMC.optimize">[docs]</a>    <span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Run inference on an initialized ``VBMC`` object.</span>
 
 <span class="sd">        VBMC computes a variational approximation of the full posterior and the</span>
@@ -1956,7 +1960,7 @@ title="Open an issue"
         <span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vp</span><span class="p">),</span> <span class="n">results</span></div>
 
     <span class="k">def</span> <span class="nf">_check_warmup_end_conditions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Private method to check the warmup end conditions.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">iteration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optim_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;iter&quot;</span><span class="p">)</span>
@@ -2038,7 +2042,7 @@ title="Open an issue"
         <span class="k">return</span> <span class="n">stop_warmup</span>
 
     <span class="k">def</span> <span class="nf">_setup_vbmc_after_warmup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Private method to setup multiple vbmc settings after a the warmup has</span>
 <span class="sd">        been determined to be ended. The method whether the warmup ending was</span>
 <span class="sd">        a false alarm and then only prunes.</span>
@@ -2104,7 +2108,7 @@ title="Open an issue"
         <span class="bp">self</span><span class="o">.</span><span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;recompute_var_post&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="k">def</span> <span class="nf">_check_termination_conditions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Private method to determine the status of termination conditions.</span>
 
 <span class="sd">        It also saves the reliability index, ELCBO improvement and stableflag</span>
@@ -2211,7 +2215,7 @@ title="Open an issue"
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_compute_reliability_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tol_stable_iters</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Private function to compute the reliability index.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">iteration_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optim_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;iter&quot;</span><span class="p">)</span>
@@ -2269,7 +2273,7 @@ title="Open an issue"
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">r_index_vec</span><span class="p">),</span> <span class="n">ELCBO_improvement</span>
 
     <span class="k">def</span> <span class="nf">_is_gp_sampling_finished</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Private function to check if the MCMC sampling of the Gaussian Process</span>
 <span class="sd">        is finished.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -2295,7 +2299,7 @@ title="Open an issue"
         <span class="k">return</span> <span class="n">finished_flag</span>
 
     <span class="k">def</span> <span class="nf">_recompute_lcb_max</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        RECOMPUTE_LCB_MAX Recompute moving LCB maximum based on current GP.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># ToDo: Recompute_lcb_max needs to be implemented.</span>
@@ -2304,7 +2308,7 @@ title="Open an issue"
     <span class="c1"># Finalizing:</span>
 
 <div class="viewcode-block" id="VBMC.final_boost"><a class="viewcode-back" href="../../../api/classes/vbmc.html#pyvbmc.vbmc.VBMC.final_boost">[docs]</a>    <span class="k">def</span> <span class="nf">final_boost</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vp</span><span class="p">:</span> <span class="n">VariationalPosterior</span><span class="p">,</span> <span class="n">gp</span><span class="p">:</span> <span class="n">gpr</span><span class="o">.</span><span class="n">GP</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Perform a final boost of variational components.</span>
 
 <span class="sd">        Parameters</span>
@@ -2412,7 +2416,7 @@ title="Open an issue"
         <span class="n">frac_back</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.25</span><span class="p">,</span>
         <span class="n">rank_criterion_flag</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the best VariationalPosterior found during the optimization of</span>
 <span class="sd">        VBMC as well as its ELBO, ELBO_SD and the index of the iteration.</span>
 
@@ -2516,7 +2520,7 @@ title="Open an issue"
     <span class="k">def</span> <span class="nf">_create_result_dict</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">idx_best</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">termination_message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">success_flag</span><span class="p">:</span> <span class="nb">bool</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Private method to create the result dict.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">output</span> <span class="o">=</span> <span class="p">{}</span>
@@ -2552,7 +2556,7 @@ title="Open an issue"
         <span class="k">return</span> <span class="n">output</span>
 
     <span class="k">def</span> <span class="nf">_log_column_headers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Private method to log column headers for the iteration log.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># We only want to log the column headers once when writing to a file,</span>
@@ -2583,7 +2587,7 @@ title="Open an issue"
                 <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_setup_logging_display_format</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Private method to set up the display format for logging the iterations.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;cache_active&quot;</span><span class="p">]:</span>
@@ -2608,7 +2612,7 @@ title="Open an issue"
         <span class="k">return</span> <span class="n">display_format</span>
 
     <span class="k">def</span> <span class="nf">_init_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">substring</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Private method to initialize the logging object.</span>
 
 <span class="sd">        Parameters</span>
@@ -2686,8 +2690,41 @@ title="Open an issue"
 
         <span class="k">return</span> <span class="n">logger</span>
 
+    <span class="k">def</span> <span class="nf">_init_log_joint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_density</span><span class="p">,</span> <span class="n">prior</span><span class="p">,</span> <span class="n">log_prior</span><span class="p">,</span> <span class="n">sample_prior</span><span class="p">):</span>
+        <span class="c1"># Initialize log-joint</span>
+        <span class="n">log_likelihood</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">prior</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="ow">or</span> <span class="n">log_prior</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="ow">or</span> <span class="n">sample_prior</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="p">):</span>
+            <span class="n">prior</span> <span class="o">=</span> <span class="n">convert_to_prior</span><span class="p">(</span><span class="n">prior</span><span class="p">,</span> <span class="n">log_prior</span><span class="p">,</span> <span class="n">sample_prior</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">prior</span><span class="o">.</span><span class="n">D</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Dimension of `prior` (</span><span class="si">{</span><span class="n">prior</span><span class="o">.</span><span class="n">D</span><span class="si">}</span><span class="s2">) does not match dimension of model (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="si">}</span><span class="s2">).&quot;</span>
+                <span class="p">)</span>
+        <span class="k">if</span> <span class="n">prior</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">prior</span><span class="o">.</span><span class="n">log_pdf</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Combine log-prior and log-likelihood:</span>
+            <span class="n">log_prior</span> <span class="o">=</span> <span class="n">prior</span><span class="o">.</span><span class="n">log_pdf</span>
+            <span class="n">log_likelihood</span> <span class="o">=</span> <span class="n">log_density</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;uncertainty_handling_level&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+
+                <span class="k">def</span> <span class="nf">log_joint</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+                    <span class="n">ll</span><span class="p">,</span> <span class="n">noise_est</span> <span class="o">=</span> <span class="n">log_likelihood</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">ll</span> <span class="o">+</span> <span class="n">log_prior</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="n">noise_est</span>
+
+            <span class="k">else</span><span class="p">:</span>
+
+                <span class="k">def</span> <span class="nf">log_joint</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="n">log_likelihood</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">+</span> <span class="n">log_prior</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Otherwise just use provided log-joint</span>
+            <span class="n">log_joint</span> <span class="o">=</span> <span class="n">log_density</span>
+        <span class="k">return</span> <span class="n">log_joint</span><span class="p">,</span> <span class="n">log_likelihood</span><span class="p">,</span> <span class="n">prior</span>
+
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct a string summary.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a string summary.&quot;&quot;&quot;</span>
 
         <span class="n">gp</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;vp&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="s2">&quot;gp&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">gp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -2703,17 +2740,17 @@ title="Open an issue"
 <span class="s2">upper bounds: </span><span class="si">{</span><span class="n">summarize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">upper_bounds</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span>
 <span class="s2">plausible lower bounds: </span><span class="si">{</span><span class="n">summarize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plausible_lower_bounds</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span>
 <span class="s2">plausible upper bounds: </span><span class="si">{</span><span class="n">summarize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plausible_upper_bounds</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span>
-<span class="s2">log-density = </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;log_likelihood&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_joint</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span>
-<span class="s2">log-prior = </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;log_prior&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span>
-<span class="s2">prior sampler = </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;sample_prior&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span>
-<span class="s2">variational posterior = </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;vp&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span><span class="si">}</span><span class="s2">,</span>
+<span class="s2">log-density = </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;log_likelihood&quot;</span><span class="p">,</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">log_joint</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span>
+<span class="s2">log-prior = </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;log_prior&quot;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span>
+<span class="s2">prior sampler = </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;sample_prior&quot;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span>
+<span class="s2">variational posterior = </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;vp&quot;</span><span class="p">,</span><span class="w"> </span><span class="kc">None</span><span class="p">))</span><span class="si">}</span><span class="s2">,</span>
 <span class="s2">Gaussian process = </span><span class="si">{</span><span class="n">gp_str</span><span class="si">}</span><span class="s2">,</span>
 <span class="s2">user options = </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;&quot;&quot;</span><span class="p">,</span>
             <span class="s2">&quot;    &quot;</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr_size_thresh</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct a detailed string summary.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a detailed string summary.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -2757,17 +2794,7 @@ title="Open an issue"
             <span class="n">expand</span><span class="o">=</span><span class="n">expand</span><span class="p">,</span>
             <span class="n">arr_size_thresh</span><span class="o">=</span><span class="n">arr_size_thresh</span><span class="p">,</span>
             <span class="n">exclude</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;random_state&quot;</span><span class="p">],</span>
-        <span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_short_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Returns abbreviated string representation with memory location.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        string : str</span>
-<span class="sd">            The abbreviated string representation of the VBMC object.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+        <span class="p">)</span></div>
 </pre></div>
 
               </div>

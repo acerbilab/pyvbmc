@@ -110,6 +110,11 @@
    VBMC options
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../api/classes/priors.html">
+   Priors
+  </a>
+ </li>
  <li class="toctree-l1 has-children">
   <a class="reference internal" href="../../../api/advanced_docs.html">
    Advanced documentation
@@ -225,8 +230,13 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../../../_examples/pyvbmc_example_5_noisy_likelihoods.html">
-   PyVBMC Example 5: Noisy log-likelihood evaluations
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_5_prior_distributions.html">
+   PyVBMC Example 5: Prior distributions
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_6_noisy_likelihoods.html">
+   PyVBMC Example 6: Noisy log-likelihood evaluations
   </a>
  </li>
 </ul>
@@ -383,7 +393,7 @@ title="Open an issue"
 
 
 <span class="k">def</span> <span class="nf">_linear_binning</span><span class="p">(</span><span class="n">samples</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">grid_points</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Fast computation of histogram counts using a linearly spaced grid.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fast computation of histogram counts using a linearly spaced grid.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -413,7 +423,7 @@ title="Open an issue"
 <span class="k">def</span> <span class="nf">_fixed_point</span><span class="p">(</span>
     <span class="n">t</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">N</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">i_range_squared</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">a2</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
 <span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Compute the fixed point according to Botev et al. (2010).</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the fixed point according to Botev et al. (2010).</span>
 
 <span class="sd">    This function implements the function t-zeta*gamma^[l](t). Based on an</span>
 <span class="sd">    implementation by Daniel B. Smith:</span>
@@ -460,7 +470,7 @@ title="Open an issue"
 
 
 <span class="k">def</span> <span class="nf">_root</span><span class="p">(</span><span class="n">function</span><span class="p">:</span> <span class="n">callable</span><span class="p">,</span> <span class="n">N</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Try to find the smallest root whenever there is more than one.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Try to find the smallest root whenever there is more than one.</span>
 
 <span class="sd">    Root finding algorithm based on the MATLAB code by Botev et al. (2010).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -488,7 +498,7 @@ title="Open an issue"
 
 
 <span class="k">def</span> <span class="nf">_scott_rule_1d</span><span class="p">(</span><span class="n">samples</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Compute the kernel bandwidth according to Scott&#39;s rule for 1D samples.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the kernel bandwidth according to Scott&#39;s rule for 1D samples.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -509,7 +519,7 @@ title="Open an issue"
 
 
 <span class="k">def</span> <span class="nf">_validate_kde_1d_args</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">lower_bound</span><span class="p">,</span> <span class="n">upper_bound</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    _validate_kde_1d_args and raise value exception</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
@@ -526,7 +536,7 @@ title="Open an issue"
     <span class="n">lower_bound</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">upper_bound</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reliable and extremely fast kernel density estimator for 1D data.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reliable and extremely fast kernel density estimator for 1D data.</span>
 
 <span class="sd">    One-dimensional kernel density estimator based on fast Fourier transform.</span>
 <span class="sd">    A Gaussian kernel is assumed and the bandwidth is chosen automatically</span>

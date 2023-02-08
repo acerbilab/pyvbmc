@@ -110,6 +110,11 @@
    VBMC options
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../api/classes/priors.html">
+   Priors
+  </a>
+ </li>
  <li class="toctree-l1 has-children">
   <a class="reference internal" href="../../../api/advanced_docs.html">
    Advanced documentation
@@ -225,8 +230,13 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../../../_examples/pyvbmc_example_5_noisy_likelihoods.html">
-   PyVBMC Example 5: Noisy log-likelihood evaluations
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_5_prior_distributions.html">
+   PyVBMC Example 5: Prior distributions
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_6_noisy_likelihoods.html">
+   PyVBMC Example 6: Noisy log-likelihood evaluations
   </a>
  </li>
 </ul>
@@ -398,7 +408,7 @@ title="Open an issue"
     <span class="n">plb_tran</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">pub_tran</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Train Gaussian process model.</span>
 
 <span class="sd">    Parameters</span>
@@ -577,7 +587,7 @@ title="Open an issue"
 
 
 <span class="k">def</span> <span class="nf">_meanfun_name_to_mean_function</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Transforms a mean function name to an instance of that mean function.</span>
 
 <span class="sd">    Parameters</span>
@@ -608,7 +618,7 @@ title="Open an issue"
 
 
 <span class="k">def</span> <span class="nf">_cov_identifier_to_covariance_function</span><span class="p">(</span><span class="n">identifier</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Transforms a covariance function identifer to an instance of the</span>
 <span class="sd">    corresponding covariance function.</span>
 
@@ -650,7 +660,7 @@ title="Open an issue"
     <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Define bounds, priors and samples for GP hyperparameters.</span>
 
 <span class="sd">    Parameters</span>
@@ -863,7 +873,7 @@ title="Open an issue"
     <span class="n">hyp_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="n">gp_s_N</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get options for training GP hyperparameters.</span>
 
 <span class="sd">    Parameters</span>
@@ -1038,7 +1048,7 @@ title="Open an issue"
     <span class="n">options</span><span class="p">:</span> <span class="n">Options</span><span class="p">,</span>
     <span class="n">hyp_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get hyperparameter posterior covariance.</span>
 
 <span class="sd">    Parameters</span>
@@ -1116,7 +1126,7 @@ title="Open an issue"
 
 
 <span class="k">def</span> <span class="nf">_get_training_data</span><span class="p">(</span><span class="n">function_logger</span><span class="p">:</span> <span class="n">FunctionLogger</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get training data for building GP surrogate.</span>
 
 <span class="sd">    Parameters</span>
@@ -1152,7 +1162,7 @@ title="Open an issue"
 
 
 <span class="k">def</span> <span class="nf">_estimate_noise</span><span class="p">(</span><span class="n">gp</span><span class="p">:</span> <span class="n">gpr</span><span class="o">.</span><span class="n">GP</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Estimate GP observation noise at high posterior density.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Estimate GP observation noise at high posterior density.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ==========</span>
@@ -1194,7 +1204,7 @@ title="Open an issue"
 
 
 <span class="k">def</span> <span class="nf">reupdate_gp</span><span class="p">(</span><span class="n">function_logger</span><span class="p">:</span> <span class="n">FunctionLogger</span><span class="p">,</span> <span class="n">gp</span><span class="p">:</span> <span class="n">gpr</span><span class="o">.</span><span class="n">GP</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Quick posterior reupdate of Gaussian process.</span>
 
 <span class="sd">    Parameters</span>

@@ -110,6 +110,11 @@
    VBMC options
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../api/classes/priors.html">
+   Priors
+  </a>
+ </li>
  <li class="toctree-l1 has-children">
   <a class="reference internal" href="../../../api/advanced_docs.html">
    Advanced documentation
@@ -225,8 +230,13 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../../../_examples/pyvbmc_example_5_noisy_likelihoods.html">
-   PyVBMC Example 5: Noisy log-likelihood evaluations
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_5_prior_distributions.html">
+   PyVBMC Example 5: Prior distributions
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_6_noisy_likelihoods.html">
+   PyVBMC Example 6: Noisy log-likelihood evaluations
   </a>
  </li>
 </ul>
@@ -399,7 +409,7 @@ title="Open an issue"
 
 
 <div class="viewcode-block" id="VariationalPosterior"><a class="viewcode-back" href="../../../api/classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior">[docs]</a><span class="k">class</span> <span class="nc">VariationalPosterior</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The variational posterior class used in PyVBMC.</span>
 
 <span class="sd">    The variational posterior represents the approximate posterior as returned</span>
@@ -515,7 +525,7 @@ title="Open an issue"
         <span class="bp">self</span><span class="o">.</span><span class="n">_mode</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="VariationalPosterior.get_bounds"><a class="viewcode-back" href="../../../api/classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior.get_bounds">[docs]</a>    <span class="k">def</span> <span class="nf">get_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">K</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute soft bounds for variational posterior parameters.</span>
 
 <span class="sd">        These bounds are used during the variational optimization in ``VBMC``.</span>
@@ -622,7 +632,7 @@ title="Open an issue"
         <span class="n">balance_flag</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">df</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Draw random samples from the variational posterior.</span>
 
 <span class="sd">        Parameters</span>
@@ -748,7 +758,7 @@ title="Open an issue"
         <span class="n">grad_flag</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">df</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Probability density function of the variational posterior.</span>
 
 <span class="sd">        Compute the probability density function (pdf) of the variational</span>
@@ -925,7 +935,7 @@ title="Open an issue"
                 <span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
                 <span class="k">if</span> <span class="n">grad_flag</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-                        <span class="sd">&quot;&quot;&quot;vbmc_pdf:NoOriginalGrad: Gradient computation</span>
+<span class="w">                        </span><span class="sd">&quot;&quot;&quot;vbmc_pdf:NoOriginalGrad: Gradient computation</span>
 <span class="sd">                         in original space not supported yet.&quot;&quot;&quot;</span>
                     <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
@@ -946,7 +956,7 @@ title="Open an issue"
         <span class="o">*</span><span class="n">args</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        log-probability density function of the variational posterior.</span>
 
 <span class="sd">        Compute the log density of the variational posterior at one or multiple</span>
@@ -998,7 +1008,7 @@ title="Open an issue"
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">log_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="VariationalPosterior.get_parameters"><a class="viewcode-back" href="../../../api/classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior.get_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">get_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raw_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get variational posterior parameters as single array.</span>
 
 <span class="sd">        Return all the active ``VariationalPosterior`` parameters</span>
@@ -1055,7 +1065,7 @@ title="Open an issue"
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">theta</span><span class="p">,</span> <span class="n">constrained_parameters</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="VariationalPosterior.set_parameters"><a class="viewcode-back" href="../../../api/classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior.set_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">set_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">raw_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set variational posterior parameters from a single array.</span>
 
 <span class="sd">        Takes as input a ``numpy`` array and assigns it to the</span>
@@ -1090,7 +1100,7 @@ title="Open an issue"
                 <span class="n">check_idx</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">K</span>
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="o">-</span><span class="n">check_idx</span><span class="p">:]</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sd">&quot;&quot;&quot;sigma, lambda and weights must be positive</span>
+<span class="w">                    </span><span class="sd">&quot;&quot;&quot;sigma, lambda and weights must be positive</span>
 <span class="sd">                    when raw_flag = False&quot;&quot;&quot;</span>
                 <span class="p">)</span>
 
@@ -1136,7 +1146,7 @@ title="Open an issue"
         <span class="bp">self</span><span class="o">.</span><span class="n">_mode</span> <span class="o">=</span> <span class="kc">None</span></div>
 
 <div class="viewcode-block" id="VariationalPosterior.moments"><a class="viewcode-back" href="../../../api/classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior.moments">[docs]</a>    <span class="k">def</span> <span class="nf">moments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">N</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1e6</span><span class="p">),</span> <span class="n">orig_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cov_flag</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute mean and covariance matrix of variational posterior.</span>
 
 <span class="sd">        In the original space, the moments are estimated via Monte Carlo</span>
@@ -1189,7 +1199,7 @@ title="Open an issue"
         <span class="n">orig_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">n_opts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Find the mode of the variational posterior.</span>
 
 <span class="sd">        Parameters</span>
@@ -1301,7 +1311,7 @@ title="Open an issue"
         <span class="n">samples</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">N</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1e5</span><span class="p">),</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Marginal total variation distances between two variational posteriors.</span>
 
 <span class="sd">        Compute the total variation distance between the variational</span>
@@ -1414,7 +1424,7 @@ title="Open an issue"
         <span class="n">N</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1e5</span><span class="p">),</span>
         <span class="n">gauss_flag</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Kullback-Leibler divergence between two variational posteriors.</span>
 
 <span class="sd">        Compute the forward and reverse Kullback-Leibler (KL) divergence between</span>
@@ -1470,7 +1480,7 @@ title="Open an issue"
         <span class="k">if</span> <span class="n">gauss_flag</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">N</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sd">&quot;&quot;&quot;Analytical moments are available</span>
+<span class="w">                    </span><span class="sd">&quot;&quot;&quot;Analytical moments are available</span>
 <span class="sd">                    only for the transformed space.&quot;&quot;&quot;</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
@@ -1513,7 +1523,7 @@ title="Open an issue"
         <span class="n">plot_vp_centres</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">plot_style</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot the variational posterior.</span>
 
 <span class="sd">        `plot` displays the variational posterior as a cornerplot showing the</span>
@@ -1664,21 +1674,21 @@ title="Open an issue"
         <span class="k">return</span> <span class="n">fig</span></div>
 
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr_size_thresh</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Print a string summary.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Print a string summary.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="s2">&quot;VariationalPosterior:&quot;</span> <span class="o">+</span> <span class="n">indent</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">dimension = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="si">}</span><span class="s2">,</span>
 <span class="s2">num. components = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="si">}</span><span class="s2">,</span>
-<span class="s2">means: </span><span class="si">{</span><span class="n">summarize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">arr_size_thresh</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span>
-<span class="s2">weights: </span><span class="si">{</span><span class="n">summarize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="p">,</span> <span class="n">arr_size_thresh</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span>
-<span class="s2">sigma (per-component scale): </span><span class="si">{</span><span class="n">summarize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="p">,</span> <span class="n">arr_size_thresh</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span>
-<span class="s2">lambda (per-dimension scale): </span><span class="si">{</span><span class="n">summarize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lambd</span><span class="p">,</span> <span class="n">arr_size_thresh</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span>
-<span class="s2">stats = </span><span class="si">{</span><span class="n">format_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">,</span> <span class="n">arr_size_thresh</span><span class="o">=</span><span class="n">arr_size_thresh</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="s2">means: </span><span class="si">{</span><span class="n">summarize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span><span class="w"> </span><span class="n">arr_size_thresh</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span>
+<span class="s2">weights: </span><span class="si">{</span><span class="n">summarize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="p">,</span><span class="w"> </span><span class="n">arr_size_thresh</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span>
+<span class="s2">sigma (per-component scale): </span><span class="si">{</span><span class="n">summarize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="p">,</span><span class="w"> </span><span class="n">arr_size_thresh</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span>
+<span class="s2">lambda (per-dimension scale): </span><span class="si">{</span><span class="n">summarize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lambd</span><span class="p">,</span><span class="w"> </span><span class="n">arr_size_thresh</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span>
+<span class="s2">stats = </span><span class="si">{</span><span class="n">format_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">,</span><span class="w"> </span><span class="n">arr_size_thresh</span><span class="o">=</span><span class="n">arr_size_thresh</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;&quot;&quot;</span><span class="p">,</span>
             <span class="s2">&quot;    &quot;</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr_size_thresh</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct a detailed string summary.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a detailed string summary.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1703,17 +1713,7 @@ title="Open an issue"
             <span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;D&quot;</span><span class="p">,</span> <span class="s2">&quot;K&quot;</span><span class="p">,</span> <span class="s2">&quot;mu&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="s2">&quot;sigma&quot;</span><span class="p">,</span> <span class="s2">&quot;lambd&quot;</span><span class="p">,</span> <span class="s2">&quot;stats&quot;</span><span class="p">],</span>
             <span class="n">expand</span><span class="o">=</span><span class="n">expand</span><span class="p">,</span>
             <span class="n">arr_size_thresh</span><span class="o">=</span><span class="n">arr_size_thresh</span><span class="p">,</span>
-        <span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_short_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Returns abbreviated string representation with memory location.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        string : str</span>
-<span class="sd">            The abbreviated string representation of the VP.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+        <span class="p">)</span></div>
 </pre></div>
 
               </div>

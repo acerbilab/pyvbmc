@@ -110,6 +110,11 @@
    VBMC options
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../api/classes/priors.html">
+   Priors
+  </a>
+ </li>
  <li class="toctree-l1 has-children">
   <a class="reference internal" href="../../../api/advanced_docs.html">
    Advanced documentation
@@ -225,8 +230,13 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../../../_examples/pyvbmc_example_5_noisy_likelihoods.html">
-   PyVBMC Example 5: Noisy log-likelihood evaluations
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_5_prior_distributions.html">
+   PyVBMC Example 5: Prior distributions
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../_examples/pyvbmc_example_6_noisy_likelihoods.html">
+   PyVBMC Example 6: Noisy log-likelihood evaluations
   </a>
  </li>
 </ul>
@@ -387,7 +397,7 @@ title="Open an issue"
 
 
 <div class="viewcode-block" id="ParameterTransformer"><a class="viewcode-back" href="../../../api/classes/parameter_transformer.html#pyvbmc.parameter_transformer.ParameterTransformer">[docs]</a><span class="k">class</span> <span class="nc">ParameterTransformer</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A class used to enable transforming of variables from unconstrained to</span>
 <span class="sd">    constrained space and vice versa.</span>
 
@@ -449,7 +459,7 @@ title="Open an issue"
             <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">pub_orig</span> <span class="o">&lt;=</span> <span class="n">ub_orig</span><span class="p">)</span>
         <span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sd">&quot;&quot;&quot;Variable bounds should be LB &lt;= PLB &lt; PUB &lt;= UB</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;Variable bounds should be LB &lt;= PLB &lt; PUB &lt;= UB</span>
 <span class="sd">                for all variables.&quot;&quot;&quot;</span>
             <span class="p">)</span>
 
@@ -512,7 +522,7 @@ title="Open an issue"
 
 <div class="viewcode-block" id="ParameterTransformer.__call__"><a class="viewcode-back" href="../../../api/classes/parameter_transformer.html#pyvbmc.parameter_transformer.ParameterTransformer.__call__">[docs]</a>    <span class="nd">@handle_0D_1D_input</span><span class="p">(</span><span class="n">patched_kwargs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">],</span> <span class="n">patched_argpos</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Performs direct transform of original variables ``x`` into</span>
 <span class="sd">        unconstrained variables ``u``.</span>
 
@@ -552,7 +562,7 @@ title="Open an issue"
 
 <div class="viewcode-block" id="ParameterTransformer.inverse"><a class="viewcode-back" href="../../../api/classes/parameter_transformer.html#pyvbmc.parameter_transformer.ParameterTransformer.inverse">[docs]</a>    <span class="nd">@handle_0D_1D_input</span><span class="p">(</span><span class="n">patched_kwargs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;u&quot;</span><span class="p">],</span> <span class="n">patched_argpos</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="k">def</span> <span class="nf">inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Performs inverse transform of unconstrained variables ``u`` into</span>
 <span class="sd">        variables ``x`` in the original space</span>
 
@@ -595,7 +605,7 @@ title="Open an issue"
         <span class="n">patched_kwargs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;u&quot;</span><span class="p">],</span> <span class="n">patched_argpos</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">return_scalar</span><span class="o">=</span><span class="kc">True</span>
     <span class="p">)</span>
     <span class="k">def</span> <span class="nf">log_abs_det_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        ``log_abs_det_jacobian(u)`` returns the log absolute value of the</span>
 <span class="sd">        determinant of the Jacobian of the parameter transformation evaluated</span>
 <span class="sd">        at ``u``, that is :math: `log \|D \du(g^-1(u))\|`.</span>
@@ -641,7 +651,7 @@ title="Open an issue"
         <span class="k">return</span> <span class="n">p</span></div>
 
     <span class="k">def</span> <span class="nf">_set_bounded_transforms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Initialize functions for bounded transform(s) by type.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Initialize functions for bounded transform(s) by type.</span>
 
 <span class="sd">        Stores the resulting callables in a dictionary</span>
 <span class="sd">        ``self._bounded_transforms[t][case]``, where ``t`` is the integer name</span>
@@ -791,7 +801,7 @@ title="Open an issue"
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Print a string summary.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Print a string summary.&quot;&quot;&quot;</span>
         <span class="n">transform_names</span> <span class="o">=</span> <span class="p">{</span>
             <span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;unbounded&quot;</span><span class="p">,</span>
             <span class="mi">3</span><span class="p">:</span> <span class="s2">&quot;logit&quot;</span><span class="p">,</span>
@@ -809,7 +819,7 @@ title="Open an issue"
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr_size_thresh</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct a detailed string summary.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a detailed string summary.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -842,17 +852,7 @@ title="Open an issue"
             <span class="p">],</span>
             <span class="n">expand</span><span class="o">=</span><span class="n">expand</span><span class="p">,</span>
             <span class="n">arr_size_thresh</span><span class="o">=</span><span class="n">arr_size_thresh</span><span class="p">,</span>
-        <span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_short_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Returns abbreviated string representation with memory location.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        string : str</span>
-<span class="sd">            The abbreviated string representation of the ParameterTransformer.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+        <span class="p">)</span></div>
 
 
 <span class="k">def</span> <span class="nf">_to_unit_interval</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">lb</span><span class="p">,</span> <span class="n">ub</span><span class="p">,</span> <span class="n">safe</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
