@@ -6,6 +6,7 @@ import scipy as sp
 
 from pyvbmc import VBMC
 from pyvbmc.acquisition_functions import *
+from pyvbmc.priors import UniformBox
 
 
 def wrap_with_test(method, vbmc):
@@ -236,6 +237,7 @@ def test_vbmc_uniform(return_results=False):
         lnZ,
         mu_bar,
         options,
+        prior=UniformBox(0, 1, D=D),  # just for testing prior
     )
 
     assert err_1 < 0.5
