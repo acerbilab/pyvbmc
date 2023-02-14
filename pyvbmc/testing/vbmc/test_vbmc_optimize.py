@@ -486,7 +486,7 @@ def test_optimize_results(mocker):
     mocker.patch.object(
         vbmc,
         "_check_termination_conditions",
-        return_value=(True, "test message", True),
+        return_value=(True, "test message"),
     )
     mocker.patch(
         "pyvbmc.vbmc.vbmc.optimize_vp", return_value=(vbmc.vp, None, None)

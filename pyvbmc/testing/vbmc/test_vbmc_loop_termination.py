@@ -39,10 +39,10 @@ def test_vbmc_check_termination_conditions_max_fun_evals(mocker):
         "_compute_reliability_index",
         return_value=(np.Inf, np.NaN),
     )
-    terminated, _, _ = vbmc._check_termination_conditions()
+    terminated, __ = vbmc._check_termination_conditions()
     assert terminated
     vbmc.function_logger.func_count = 9
-    terminated, _, _ = vbmc._check_termination_conditions()
+    terminated, __ = vbmc._check_termination_conditions()
     assert not terminated
 
 
@@ -62,10 +62,10 @@ def test_vbmc_check_termination_conditions_max_iter(mocker):
         "_compute_reliability_index",
         return_value=(np.Inf, np.NaN),
     )
-    terminated, _, _ = vbmc._check_termination_conditions()
+    terminated, __ = vbmc._check_termination_conditions()
     assert terminated
     vbmc.optim_state["iter"] = 98
-    terminated, _, _ = vbmc._check_termination_conditions()
+    terminated, __ = vbmc._check_termination_conditions()
     assert not terminated
 
 
@@ -85,7 +85,7 @@ def test_vbmc_check_termination_conditions_prevent_early_termination(mocker):
         "_compute_reliability_index",
         return_value=(np.Inf, np.NaN),
     )
-    terminated, _, _ = vbmc._check_termination_conditions()
+    terminated, __ = vbmc._check_termination_conditions()
     assert not terminated
 
     options = {
@@ -103,7 +103,7 @@ def test_vbmc_check_termination_conditions_prevent_early_termination(mocker):
         "_compute_reliability_index",
         return_value=(np.Inf, np.NaN),
     )
-    terminated, _, _ = vbmc._check_termination_conditions()
+    terminated, __ = vbmc._check_termination_conditions()
     assert not terminated
 
 
@@ -129,14 +129,14 @@ def test_vbmc_check_termination_conditions_stability(mocker):
         "_compute_reliability_index",
         return_value=(0.5, 0.005),
     )
-    terminated, _, _ = vbmc._check_termination_conditions()
+    terminated, __ = vbmc._check_termination_conditions()
     assert terminated
     mocker.patch.object(
         vbmc,
         "_compute_reliability_index",
         return_value=(1, 0.005),
     )
-    terminated, _, _ = vbmc._check_termination_conditions()
+    terminated, __ = vbmc._check_termination_conditions()
     assert not terminated
 
     mocker.patch.object(
@@ -144,7 +144,7 @@ def test_vbmc_check_termination_conditions_stability(mocker):
         "_compute_reliability_index",
         return_value=(0.5, 0.1),
     )
-    terminated, _, _ = vbmc._check_termination_conditions()
+    terminated, __ = vbmc._check_termination_conditions()
     assert not terminated
 
     vbmc.optim_state["iter"] = 9
@@ -153,7 +153,7 @@ def test_vbmc_check_termination_conditions_stability(mocker):
         "_compute_reliability_index",
         return_value=(1, 0.005),
     )
-    terminated, _, _ = vbmc._check_termination_conditions()
+    terminated, __ = vbmc._check_termination_conditions()
     assert not terminated
 
 
@@ -177,7 +177,7 @@ def test_vbmc_is_finished_stability_entropy_switch(mocker):
         "_compute_reliability_index",
         return_value=(0.5, 0.005),
     )
-    terminated, _, _ = vbmc._check_termination_conditions()
+    terminated, __ = vbmc._check_termination_conditions()
     assert not terminated
 
 
