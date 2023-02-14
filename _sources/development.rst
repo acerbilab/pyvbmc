@@ -27,9 +27,9 @@ Release versions of PyVBMC are available via ``pip`` (and soon, ``conda-forge``)
 3. Install the packages and their optional development dependencies::
 
      cd ./gpyreg
-     pip install -e '.[dev]'
+     pip install -e ".[dev]"
      cd ../pyvbmc
-     pip install -e '.[dev]'
+     pip install -e ".[dev]"
 
 4. Install Jupyter to view the examples You can skip this step if you're working from a Conda environment which already has Jupyter, but be aware that if the wrong ``jupyter`` executable is found on your path then import errors may arise. ::
 
@@ -166,7 +166,7 @@ A few comments about testing:
 - Testing is mandatory!
 - Please try to keep the total runtime of the tests minimal for the task at hand.
 - As a good practice, please rerun all tests before major commits and pull requests (might take a while, but it is worth it to avoid surprises).
-- A nice way of proceeding is 'test first': write a test first, make it fail, write the code until the test is passed.
+- A nice way of proceeding is "test first": write a test first, make it fail, write the code until the test is passed.
 - Many methods are tested against test cases produced with the original :labrepos:`MATLAB implementation <vbmc>`.
 - The ``pytest-mock`` library is very useful for testing. It allows you to replace parts of your system under test with mock objects and make assertions about how they have been used. (Perhaps we should switch to ``unittest.mock`` in the future, which is part of the Python standard library.)
 - We should look into automating tests with GitHub actions.

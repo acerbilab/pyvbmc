@@ -49,28 +49,16 @@ PyVBMC is effective when:
 
 Conversely, if your model can be written in closed form and is fast to evaluate, you should exploit the powerful machinery of probabilistic programming frameworks such as `Stan <https://mc-stan.org/>`_ or `PyMC <https://docs.pymc.io/>`_.
 
-Documentation
-#############
+How-to
+######
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :titlesonly:
 
    installation
    quickstart
-   api/classes/vbmc
-   api/classes/variational_posterior
-   api/options/vbmc_options
-   api/classes/priors
-   api/advanced_docs
-
-Examples
-########
-.. toctree::
-   :maxdepth: 1
-   :titlesonly:
-   :glob:
-
-   _examples/*
+   examples
+   documentation
 
 Contributing
 ############

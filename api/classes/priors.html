@@ -33,8 +33,6 @@
     <script src="../../_static/doctools.js"></script>
     <script src="../../_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="canonical" href="https://acerbilab.github.io/pyvbmc/api/classes/priors.html" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -100,29 +98,9 @@
    Getting started
   </a>
  </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="vbmc.html">
-   VBMC
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="variational_posterior.html">
-   VariationalPosterior
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../options/vbmc_options.html">
-   VBMC options
-  </a>
- </li>
- <li class="toctree-l1 current active">
-  <a class="current reference internal" href="#">
-   Priors
-  </a>
- </li>
  <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../advanced_docs.html">
-   Advanced documentation
+  <a class="reference internal" href="../../examples.html">
+   Examples
   </a>
   <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
   <label for="toctree-checkbox-1">
@@ -131,78 +109,63 @@
   </label>
   <ul>
    <li class="toctree-l2">
-    <a class="reference internal" href="acquisition_functions.html">
-     Acquisition Functions
+    <a class="reference internal" href="../../_examples/pyvbmc_example_1_basic_usage.html">
+     PyVBMC Example 1: Basic usage
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="function_logger.html">
-     FunctionLogger
+    <a class="reference internal" href="../../_examples/pyvbmc_example_2_inputs_outputs.html">
+     PyVBMC Example 2: Understanding the inputs and the output trace
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="iteration_history.html">
-     IterationHistory
+    <a class="reference internal" href="../../_examples/pyvbmc_example_3_diagnostics_and_saving.html">
+     PyVBMC Example 3: Output diagnostics and saving results
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="options.html">
-     Options
+    <a class="reference internal" href="../../_examples/pyvbmc_example_4_validation.html">
+     PyVBMC Example 4: Multiple runs as validation
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="parameter_transformer.html">
-     ParameterTransformer
+    <a class="reference internal" href="../../_examples/pyvbmc_example_5_prior_distributions.html">
+     PyVBMC Example 5: Prior distributions
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="timer.html">
-     Timer
+    <a class="reference internal" href="../../_examples/pyvbmc_example_6_noisy_likelihoods.html">
+     PyVBMC Example 6: Noisy log-likelihood evaluations
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 current active has-children">
+  <a class="reference internal" href="../../documentation.html">
+   Documentation
+  </a>
+  <input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <label for="toctree-checkbox-2">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="current">
+   <li class="toctree-l2">
+    <a class="reference internal" href="vbmc.html">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       VBMC
+      </span>
+     </code>
     </a>
    </li>
    <li class="toctree-l2">
     <a class="reference internal" href="variational_posterior.html">
-     VariationalPosterior
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="vbmc.html">
-     VBMC
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../functions/active_sample.html">
-     active_sample
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../functions/create_vbmc_animation.html">
-     create_vbmc_animation
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../functions/decorators.html">
-     decorators
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../functions/entropy.html">
-     entropy
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../functions/get_hpd.html">
-     get_hpd
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../functions/kde_1d.html">
-     kde_1d
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../functions/whitening.html">
-     whitening
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       VariationalPosterior
+      </span>
+     </code>
     </a>
    </li>
    <li class="toctree-l2">
@@ -210,39 +173,180 @@
      VBMC options
     </a>
    </li>
+   <li class="toctree-l2 current active">
+    <a class="current reference internal" href="#">
+     Priors
+    </a>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../advanced_docs.html">
+     Advanced documentation
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+    <label for="toctree-checkbox-3">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="classes.html">
+       Classes
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+      <label for="toctree-checkbox-4">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="acquisition_functions.html">
+         Acquisition Functions
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="function_logger.html">
+         <code class="docutils literal notranslate">
+          <span class="pre">
+           FunctionLogger
+          </span>
+         </code>
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="iteration_history.html">
+         <code class="docutils literal notranslate">
+          <span class="pre">
+           IterationHistory
+          </span>
+         </code>
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="options.html">
+         <code class="docutils literal notranslate">
+          <span class="pre">
+           Options
+          </span>
+         </code>
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="parameter_transformer.html">
+         <code class="docutils literal notranslate">
+          <span class="pre">
+           ParameterTransformer
+          </span>
+         </code>
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="timer.html">
+         <code class="docutils literal notranslate">
+          <span class="pre">
+           Timer
+          </span>
+         </code>
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="variational_posterior.html">
+         <code class="docutils literal notranslate">
+          <span class="pre">
+           VariationalPosterior
+          </span>
+         </code>
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="vbmc.html">
+         <code class="docutils literal notranslate">
+          <span class="pre">
+           VBMC
+          </span>
+         </code>
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../functions/functions.html">
+       Functions
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+      <label for="toctree-checkbox-5">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../functions/active_sample.html">
+         <code class="docutils literal notranslate">
+          <span class="pre">
+           active_sample
+          </span>
+         </code>
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../functions/create_vbmc_animation.html">
+         <code class="docutils literal notranslate">
+          <span class="pre">
+           create_vbmc_animation
+          </span>
+         </code>
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../functions/decorators.html">
+         <code class="docutils literal notranslate">
+          <span class="pre">
+           decorators
+          </span>
+         </code>
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../functions/entropy.html">
+         Entropy
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../functions/get_hpd.html">
+         <code class="docutils literal notranslate">
+          <span class="pre">
+           get_hpd
+          </span>
+         </code>
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../functions/kde_1d.html">
+         <code class="docutils literal notranslate">
+          <span class="pre">
+           kde_1d
+          </span>
+         </code>
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../functions/whitening.html">
+         <code class="docutils literal notranslate">
+          <span class="pre">
+           whitening
+          </span>
+         </code>
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../options/vbmc_options.html">
+       VBMC options
+      </a>
+     </li>
+    </ul>
+   </li>
   </ul>
- </li>
-</ul>
-<ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../../_examples/pyvbmc_example_1_basic_usage.html">
-   PyVBMC Example 1: Basic usage
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../_examples/pyvbmc_example_2_inputs_outputs.html">
-   PyVBMC Example 2: Understanding the inputs and the output trace
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../_examples/pyvbmc_example_3_diagnostics_and_saving.html">
-   PyVBMC Example 3: Output diagnostics and saving results
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../_examples/pyvbmc_example_4_validation.html">
-   PyVBMC Example 4: Multiple runs as validation
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../_examples/pyvbmc_example_5_prior_distributions.html">
-   PyVBMC Example 5: Prior distributions
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../_examples/pyvbmc_example_6_noisy_likelihoods.html">
-   PyVBMC Example 6: Noisy log-likelihood evaluations
-  </a>
  </li>
 </ul>
 <ul class="nav bd-sidenav">
@@ -695,16 +799,16 @@ title="Print to PDF"
 </div>
 <p>Alternatively, using the keyword <code class="docutils literal notranslate"><span class="pre">prior</span></code>, you may pass one of the following:</p>
 <ol class="arabic simple">
-<li><p>a PyVBMC prior (one of the classes detailed here),</p></li>
-<li><p>an appropriate continuous <code class="docutils literal notranslate"><span class="pre">scipy.stats</span></code> distribution, or</p></li>
-<li><p>a list of one-dimensional PyVBMC priors and/or continuous <code class="docutils literal notranslate"><span class="pre">scipy.stats</span></code> distributions, which are treated as independent priors for each parameter <span class="math notranslate nohighlight">\(\theta_{i}\)</span>.</p></li>
+<li><p>a PyVBMC prior imported from <code class="docutils literal notranslate"><span class="pre">pyvbmc.priors</span></code> that matches the dimension of the model,</p></li>
+<li><p>an appropriate continuous <code class="docutils literal notranslate"><span class="pre">scipy.stats</span></code> distribution that matches the dimension of the model, or</p></li>
+<li><p>a list of univariate (i.e., one-dimensional) PyVBMC priors and/or continuous <code class="docutils literal notranslate"><span class="pre">scipy.stats</span></code> distributions, which are treated as independent priors for each parameter $theta_{i}$. In this case the length of the list should equal the dimension of the model.</p></li>
 </ol>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span><span class="n">log_likelihood</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">lb</span><span class="p">,</span> <span class="n">ub</span><span class="p">,</span> <span class="n">plb</span><span class="p">,</span> <span class="n">pub</span><span class="p">,</span> <span class="n">prior</span><span class="o">=</span><span class="n">UniformBox</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
 <span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span><span class="n">log_likelihood</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">lb</span><span class="p">,</span> <span class="n">ub</span><span class="p">,</span> <span class="n">plb</span><span class="p">,</span> <span class="n">pub</span><span class="p">,</span> <span class="n">prior</span><span class="o">=</span><span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">cov</span><span class="p">))</span>
 <span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span><span class="n">log_likelihood</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">lb</span><span class="p">,</span> <span class="n">ub</span><span class="p">,</span> <span class="n">plb</span><span class="p">,</span> <span class="n">pub</span><span class="p">,</span> <span class="n">prior</span><span class="o">=</span><span class="p">[</span><span class="n">UniformBox</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="p">()])</span>
 </pre></div>
 </div>
-<p>For more details on (1), see the documentation below as well as <a class="reference internal" href="../../_examples/pyvbmc_example_5_prior_distributions.html#pyvbmc-example-5-prior-distributions"><span class="std std-ref">PyVBMC Example 5: Prior distributions</span></a>. For more details on (3), (4), and using a function as a <code class="docutils literal notranslate"><span class="pre">log_prior</span></code>, see the documentation on <a class="reference internal" href="#scipy-priors"><span class="std std-ref">SciPy priors</span></a>, <a class="reference internal" href="#product-priors"><span class="std std-ref">Product priors</span></a>, and <a class="reference internal" href="#userfunction-priors"><span class="std std-ref">UserFunction priors</span></a> below. (keyword arguments of these types will be converted to instances of these classes).</p>
+<p>For more details on (1), see the documentation below as well as <a class="reference internal" href="../../_examples/pyvbmc_example_5_prior_distributions.html#pyvbmc-example-5-prior-distributions"><span class="std std-ref">PyVBMC Example 5: Prior distributions</span></a>. For more details on (2), (3), and using a function as a <code class="docutils literal notranslate"><span class="pre">log_prior</span></code>, see the documentation on <a class="reference internal" href="#scipy-priors"><span class="std std-ref">SciPy priors</span></a>, <a class="reference internal" href="#product-priors"><span class="std std-ref">Product priors</span></a>, and <a class="reference internal" href="#userfunction-priors"><span class="std std-ref">UserFunction priors</span></a> below. (keyword arguments of these types will be converted to instances of these classes).</p>
 </div>
 <section id="prior-base-class">
 <h2><code class="docutils literal notranslate"><span class="pre">Prior</span></code> base class<a class="headerlink" href="#prior-base-class" title="Permalink to this headline">#</a></h2>
@@ -1008,12 +1112,12 @@ that the pdf is continuous and its derivatives at <code class="docutils literal 
 <h3><code class="docutils literal notranslate"><span class="pre">SmoothBox</span></code><a class="headerlink" href="#smoothbox" title="Permalink to this headline">#</a></h3>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.priors.SmoothBox">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.priors.</span></span><span class="sig-name descname"><span class="pre">SmoothBox</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/smooth_box.html#SmoothBox"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.SmoothBox" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.priors.</span></span><span class="sig-name descname"><span class="pre">SmoothBox</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/smooth_box.html#SmoothBox"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.SmoothBox" title="Permalink to this definition">#</a></dt>
 <dd><p>Multivariate smooth-box prior.</p>
 <p>For each dimension <cite>i</cite>, the univariate smooth-box pdf is defined as a
 uniform distribution between pivots <code class="docutils literal notranslate"><span class="pre">a[i]</span></code>, <code class="docutils literal notranslate"><span class="pre">b[i]</span></code> with Gaussian tails
 that fall starting from <cite>p(a[i])</cite> to the left (resp., <cite>p(b[i])</cite> to the
-right) with standard deviation <code class="docutils literal notranslate"><span class="pre">sigma[i]</span></code>.</p>
+right) with standard deviation <code class="docutils literal notranslate"><span class="pre">scale[i]</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Attributes</dt>
 <dd class="field-odd"><dl class="simple">
@@ -1023,14 +1127,14 @@ right) with standard deviation <code class="docutils literal notranslate"><span 
 </dd>
 <dt><strong>b</strong><span class="classifier">np.ndarray</span></dt><dd><p>The upper pivot(s), shape <cite>(1, D)</cite>.</p>
 </dd>
-<dt><strong>sigma</strong><span class="classifier">np.ndarray</span></dt><dd><p>The standard deviation of the Gaussian tails, shape <cite>(1, D)</cite>.</p>
+<dt><strong>scale</strong><span class="classifier">np.ndarray</span></dt><dd><p>The standard deviation of the Gaussian tails, shape <cite>(1, D)</cite>.</p>
 </dd>
 </dl>
 </dd>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.priors.SmoothBox.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/smooth_box.html#SmoothBox.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.SmoothBox.__init__" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/smooth_box.html#SmoothBox.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.SmoothBox.__init__" title="Permalink to this definition">#</a></dt>
 <dd><p>Initialize a multivariate smooth-box prior.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1041,7 +1145,7 @@ right) with standard deviation <code class="docutils literal notranslate"><span 
 <dt><strong>b</strong><span class="classifier">np.ndarray | float</span></dt><dd><p>The upper pivot(s), shape <cite>(D,)</cite> where <cite>D</cite> is the dimension
 (parameters of type <code class="docutils literal notranslate"><span class="pre">float</span></code> will be tiled to this shape).</p>
 </dd>
-<dt><strong>sigma</strong><span class="classifier">np.ndarray</span></dt><dd><p>The standard deviation of the Gaussian tails, shape <cite>(D,)</cite> where
+<dt><strong>scale</strong><span class="classifier">np.ndarray</span></dt><dd><p>The standard deviation of the Gaussian tails, shape <cite>(D,)</cite> where
 <cite>D</cite> is the dimension (parameters of type <code class="docutils literal notranslate"><span class="pre">float</span></code> will be tiled to
 this shape).</p>
 </dd>
@@ -1049,7 +1153,7 @@ this shape).</p>
 </dd>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><dl class="simple">
-<dt>ValueError</dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">sigma[i]</span> <span class="pre">&lt;=</span> <span class="pre">0</span></code> or if <code class="docutils literal notranslate"><span class="pre">a[i]</span> <span class="pre">&gt;=</span> <span class="pre">b[i]</span></code>, for any <cite>i</cite>.</p>
+<dt>ValueError</dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">scale[i]</span> <span class="pre">&lt;=</span> <span class="pre">0</span></code> or if <code class="docutils literal notranslate"><span class="pre">a[i]</span> <span class="pre">&gt;=</span> <span class="pre">b[i]</span></code>, for any <cite>i</cite>.</p>
 </dd>
 </dl>
 </dd>

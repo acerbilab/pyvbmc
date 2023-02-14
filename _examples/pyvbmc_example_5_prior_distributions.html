@@ -89,7 +89,7 @@
   <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
 </form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item active">
-        <ul class="nav bd-sidenav">
+        <ul class="current nav bd-sidenav">
  <li class="toctree-l1">
   <a class="reference internal" href="../installation.html">
    Installation
@@ -100,109 +100,74 @@
    Getting started
   </a>
  </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../api/classes/vbmc.html">
-   VBMC
+ <li class="toctree-l1 current active has-children">
+  <a class="reference internal" href="../examples.html">
+   Examples
   </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../api/classes/variational_posterior.html">
-   VariationalPosterior
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../api/options/vbmc_options.html">
-   VBMC options
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../api/classes/priors.html">
-   Priors
-  </a>
+  <input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="current">
+   <li class="toctree-l2">
+    <a class="reference internal" href="pyvbmc_example_1_basic_usage.html">
+     PyVBMC Example 1: Basic usage
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="pyvbmc_example_2_inputs_outputs.html">
+     PyVBMC Example 2: Understanding the inputs and the output trace
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="pyvbmc_example_3_diagnostics_and_saving.html">
+     PyVBMC Example 3: Output diagnostics and saving results
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="pyvbmc_example_4_validation.html">
+     PyVBMC Example 4: Multiple runs as validation
+    </a>
+   </li>
+   <li class="toctree-l2 current active">
+    <a class="current reference internal" href="#">
+     PyVBMC Example 5: Prior distributions
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="pyvbmc_example_6_noisy_likelihoods.html">
+     PyVBMC Example 6: Noisy log-likelihood evaluations
+    </a>
+   </li>
+  </ul>
  </li>
  <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../api/advanced_docs.html">
-   Advanced documentation
+  <a class="reference internal" href="../documentation.html">
+   Documentation
   </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
-  <label for="toctree-checkbox-1">
+  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <label for="toctree-checkbox-2">
    <i class="fas fa-chevron-down">
    </i>
   </label>
   <ul>
    <li class="toctree-l2">
-    <a class="reference internal" href="../api/classes/acquisition_functions.html">
-     Acquisition Functions
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../api/classes/function_logger.html">
-     FunctionLogger
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../api/classes/iteration_history.html">
-     IterationHistory
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../api/classes/options.html">
-     Options
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../api/classes/parameter_transformer.html">
-     ParameterTransformer
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../api/classes/timer.html">
-     Timer
+    <a class="reference internal" href="../api/classes/vbmc.html">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       VBMC
+      </span>
+     </code>
     </a>
    </li>
    <li class="toctree-l2">
     <a class="reference internal" href="../api/classes/variational_posterior.html">
-     VariationalPosterior
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../api/classes/vbmc.html">
-     VBMC
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../api/functions/active_sample.html">
-     active_sample
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../api/functions/create_vbmc_animation.html">
-     create_vbmc_animation
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../api/functions/decorators.html">
-     decorators
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../api/functions/entropy.html">
-     entropy
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../api/functions/get_hpd.html">
-     get_hpd
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../api/functions/kde_1d.html">
-     kde_1d
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../api/functions/whitening.html">
-     whitening
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       VariationalPosterior
+      </span>
+     </code>
     </a>
    </li>
    <li class="toctree-l2">
@@ -210,39 +175,180 @@
      VBMC options
     </a>
    </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../api/classes/priors.html">
+     Priors
+    </a>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../api/advanced_docs.html">
+     Advanced documentation
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+    <label for="toctree-checkbox-3">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../api/classes/classes.html">
+       Classes
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+      <label for="toctree-checkbox-4">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../api/classes/acquisition_functions.html">
+         Acquisition Functions
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../api/classes/function_logger.html">
+         <code class="docutils literal notranslate">
+          <span class="pre">
+           FunctionLogger
+          </span>
+         </code>
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../api/classes/iteration_history.html">
+         <code class="docutils literal notranslate">
+          <span class="pre">
+           IterationHistory
+          </span>
+         </code>
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../api/classes/options.html">
+         <code class="docutils literal notranslate">
+          <span class="pre">
+           Options
+          </span>
+         </code>
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../api/classes/parameter_transformer.html">
+         <code class="docutils literal notranslate">
+          <span class="pre">
+           ParameterTransformer
+          </span>
+         </code>
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../api/classes/timer.html">
+         <code class="docutils literal notranslate">
+          <span class="pre">
+           Timer
+          </span>
+         </code>
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../api/classes/variational_posterior.html">
+         <code class="docutils literal notranslate">
+          <span class="pre">
+           VariationalPosterior
+          </span>
+         </code>
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../api/classes/vbmc.html">
+         <code class="docutils literal notranslate">
+          <span class="pre">
+           VBMC
+          </span>
+         </code>
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../api/functions/functions.html">
+       Functions
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+      <label for="toctree-checkbox-5">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../api/functions/active_sample.html">
+         <code class="docutils literal notranslate">
+          <span class="pre">
+           active_sample
+          </span>
+         </code>
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../api/functions/create_vbmc_animation.html">
+         <code class="docutils literal notranslate">
+          <span class="pre">
+           create_vbmc_animation
+          </span>
+         </code>
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../api/functions/decorators.html">
+         <code class="docutils literal notranslate">
+          <span class="pre">
+           decorators
+          </span>
+         </code>
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../api/functions/entropy.html">
+         Entropy
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../api/functions/get_hpd.html">
+         <code class="docutils literal notranslate">
+          <span class="pre">
+           get_hpd
+          </span>
+         </code>
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../api/functions/kde_1d.html">
+         <code class="docutils literal notranslate">
+          <span class="pre">
+           kde_1d
+          </span>
+         </code>
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../api/functions/whitening.html">
+         <code class="docutils literal notranslate">
+          <span class="pre">
+           whitening
+          </span>
+         </code>
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../api/options/vbmc_options.html">
+       VBMC options
+      </a>
+     </li>
+    </ul>
+   </li>
   </ul>
- </li>
-</ul>
-<ul class="current nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="pyvbmc_example_1_basic_usage.html">
-   PyVBMC Example 1: Basic usage
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="pyvbmc_example_2_inputs_outputs.html">
-   PyVBMC Example 2: Understanding the inputs and the output trace
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="pyvbmc_example_3_diagnostics_and_saving.html">
-   PyVBMC Example 3: Output diagnostics and saving results
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="pyvbmc_example_4_validation.html">
-   PyVBMC Example 4: Multiple runs as validation
-  </a>
- </li>
- <li class="toctree-l1 current active">
-  <a class="current reference internal" href="#">
-   PyVBMC Example 5: Prior distributions
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="pyvbmc_example_6_noisy_likelihoods.html">
-   PyVBMC Example 6: Noisy log-likelihood evaluations
-  </a>
  </li>
 </ul>
 <ul class="nav bd-sidenav">
@@ -513,16 +619,76 @@ title="Print to PDF"
   <a class="reference internal nav-link" href="#bounded-parameters">
    2. Bounded parameters
   </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#uniform-box-prior-uniformbox">
+     Uniform-box prior (
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       UniformBox
+      </span>
+     </code>
+     )
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#trapezoidal-prior-trapezoidal">
+     Trapezoidal prior (
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Trapezoidal
+      </span>
+     </code>
+     )
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#spline-smoothed-trapezoidal-prior-splinetrapezoidal">
+     Spline-smoothed trapezoidal prior (
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       SplineTrapezoidal
+      </span>
+     </code>
+     )
+    </a>
+   </li>
+  </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#unbounded-parameters">
    3. Unbounded parameters
   </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#smooth-box-prior-smoothbox">
+     Smooth-box prior (
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       SmoothBox
+      </span>
+     </code>
+     )
+    </a>
+   </li>
+  </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#using-a-prior-with-pyvbmc">
    4. Using a prior with PyVBMC
   </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#bounded-example">
+     Bounded example
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#unbounded-example">
+     Unbounded example
+    </a>
+   </li>
+  </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#acknowledgments">
@@ -562,16 +728,76 @@ title="Print to PDF"
   <a class="reference internal nav-link" href="#bounded-parameters">
    2. Bounded parameters
   </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#uniform-box-prior-uniformbox">
+     Uniform-box prior (
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       UniformBox
+      </span>
+     </code>
+     )
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#trapezoidal-prior-trapezoidal">
+     Trapezoidal prior (
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Trapezoidal
+      </span>
+     </code>
+     )
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#spline-smoothed-trapezoidal-prior-splinetrapezoidal">
+     Spline-smoothed trapezoidal prior (
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       SplineTrapezoidal
+      </span>
+     </code>
+     )
+    </a>
+   </li>
+  </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#unbounded-parameters">
    3. Unbounded parameters
   </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#smooth-box-prior-smoothbox">
+     Smooth-box prior (
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       SmoothBox
+      </span>
+     </code>
+     )
+    </a>
+   </li>
+  </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#using-a-prior-with-pyvbmc">
    4. Using a prior with PyVBMC
   </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#bounded-example">
+     Bounded example
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#unbounded-example">
+     Unbounded example
+    </a>
+   </li>
+  </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#acknowledgments">
@@ -591,7 +817,7 @@ title="Print to PDF"
   <section class="tex2jax_ignore mathjax_ignore" id="pyvbmc-example-5-prior-distributions">
 <h1>PyVBMC Example 5: Prior distributions<a class="headerlink" href="#pyvbmc-example-5-prior-distributions" title="Permalink to this headline">#</a></h1>
 <p>In this notebook, we discuss some considerations for using a prior distribution with PyVBMC, and demonstrate some convenient built-in priors.</p>
-<p>This notebook is Part 5 of a series of notebooks in which we present various example usages for VBMC with the PyVBMC package. The code used in this example is available as a script <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/examples/scripts/pyvbmc_example_6_full_code.py">here</a>.</p>
+<p>This notebook is Part 5 of a series of notebooks in which we present various example usages for VBMC with the PyVBMC package. The code used in this example is available as a script <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/examples/scripts/pyvbmc_example_5_full_code.py">here</a>.</p>
 <section id="preliminaries">
 <h2>0. Preliminaries<a class="headerlink" href="#preliminaries" title="Permalink to this headline">#</a></h2>
 <p>In Bayesian inference – and in PyVBMC – you <em>need</em> a <a class="reference external" href="https://en.wikipedia.org/wiki/Prior_probability">prior over parameters</a>, <span class="math notranslate nohighlight">\(p(\theta)\)</span>. The prior should be a proper probability density function (pdf), i.e. a normalized distribution. A common choice is an independent or factorized prior:</p>
@@ -601,26 +827,22 @@ title="Print to PDF"
 </section>
 <section id="specifying-a-prior-with-pyvbmc">
 <h2>1. Specifying a prior with PyVBMC<a class="headerlink" href="#specifying-a-prior-with-pyvbmc" title="Permalink to this headline">#</a></h2>
-<p>By default, as in the previous notebooks, PyVBMC assumes that the first argument to <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> is a function which returns the log-joint (i.e., the sum log-likelihood and log-prior). However, you may instead pass a function which returns the log-likelihood as a first argument, and supply the prior separately. Using the keyword <code class="docutils literal notranslate"><span class="pre">log_prior</span></code>, you may pass a function (of a single argument) which returns the log-density of the prior given a point:</p>
+<p>By default, as in the previous notebooks, PyVBMC assumes that the first argument to <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> is a function which returns the log-joint (i.e., the sum of log-likelihood and log-prior). However, you may instead pass a function which returns the log-likelihood as a first argument, and supply the prior separately. Using the keyword <code class="docutils literal notranslate"><span class="pre">log_prior</span></code>, you may pass a function (of a single argument) which returns the log-density of the prior given a point:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span><span class="n">log_likelihood</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">lb</span><span class="p">,</span> <span class="n">ub</span><span class="p">,</span> <span class="n">plb</span><span class="p">,</span> <span class="n">pub</span><span class="p">,</span> <span class="n">log_prior</span><span class="o">=</span><span class="n">log_prior_function</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Alternatively, using the keyword <code class="docutils literal notranslate"><span class="pre">prior</span></code>, you may pass one of the following:</p>
 <ol class="arabic simple">
-<li><p>a PyVBMC prior,</p></li>
-<li><p>an appropriate continuous <code class="docutils literal notranslate"><span class="pre">scipy.stats</span></code> distribution, or</p></li>
-<li><p>a list of one-dimensional PyVBMC priors and/or continuous <code class="docutils literal notranslate"><span class="pre">scipy.stats</span></code> distributions, which are treated as independent priors for each parameter <span class="math notranslate nohighlight">\(\theta_{i}\)</span>.</p></li>
+<li><p>a PyVBMC prior imported from <code class="docutils literal notranslate"><span class="pre">pyvbmc.priors</span></code> that matches the dimension of the model,</p></li>
+<li><p>an appropriate continuous <code class="docutils literal notranslate"><span class="pre">scipy.stats</span></code> distribution that matches the dimension of the model, or</p></li>
+<li><p>a list of univariate (i.e., one-dimensional) PyVBMC priors and/or continuous <code class="docutils literal notranslate"><span class="pre">scipy.stats</span></code> distributions, which are treated as independent priors for each parameter <span class="math notranslate nohighlight">\(\theta_{i}\)</span>. In this case the length of the list should equal the dimension of the model.</p></li>
 </ol>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span><span class="n">log_likelihood</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">lb</span><span class="p">,</span> <span class="n">ub</span><span class="p">,</span> <span class="n">plb</span><span class="p">,</span> <span class="n">pub</span><span class="p">,</span> <span class="n">prior</span><span class="o">=</span><span class="n">UniformBox</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
 <span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span><span class="n">log_likelihood</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">lb</span><span class="p">,</span> <span class="n">ub</span><span class="p">,</span> <span class="n">plb</span><span class="p">,</span> <span class="n">pub</span><span class="p">,</span> <span class="n">prior</span><span class="o">=</span><span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">cov</span><span class="p">))</span>
 <span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span><span class="n">log_likelihood</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">lb</span><span class="p">,</span> <span class="n">ub</span><span class="p">,</span> <span class="n">plb</span><span class="p">,</span> <span class="n">pub</span><span class="p">,</span> <span class="n">prior</span><span class="o">=</span><span class="p">[</span><span class="n">UniformBox</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="p">()])</span>
 </pre></div>
 </div>
-<p>Below we detail the built-in PyVBMC priors (1) for various use-cases. See the <a class="reference external" href="https://acerbilab.github.io/pyvbmc/api/classes/priors.html">relevant documentation</a> for details on other types of priors.</p>
-</section>
-<section id="bounded-parameters">
-<h2>2. Bounded parameters<a class="headerlink" href="#bounded-parameters" title="Permalink to this headline">#</a></h2>
-<p>The first simple choice is a non-informative uniformly flat prior between the hard bounds. This is implemented by the <code class="docutils literal notranslate"><span class="pre">UniformBox</span></code> prior. We plot the pdf of the prior for a one-dimensional problem (the pdf to the left and the log-pdf to the right).</p>
+<p>Below we detail the built-in PyVBMC priors (1) for various use-cases. See the <a class="reference external" href="https://acerbilab.github.io/pyvbmc/api/classes/priors.html">relevant documentation</a> for details on other types of priors, and the <a href="#using-a-prior">examples below</a> for some usage cases.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -629,11 +851,18 @@ title="Print to PDF"
 <span class="kn">from</span> <span class="nn">pyvbmc.priors</span> <span class="kn">import</span> <span class="n">UniformBox</span><span class="p">,</span> <span class="n">Trapezoidal</span><span class="p">,</span> <span class="n">SplineTrapezoidal</span><span class="p">,</span> <span class="n">SmoothBox</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
-<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s2">&quot;figure.figsize&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
+<span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
+</section>
+<section id="bounded-parameters">
+<h2>2. Bounded parameters<a class="headerlink" href="#bounded-parameters" title="Permalink to this headline">#</a></h2>
+<p>PyVBMC implements several priors for bounded parameters. All the priors listed below apply both to the univariate and to the multivariate case, with the assumption of independent/factorized priors mentioned above.</p>
+<section id="uniform-box-prior-uniformbox">
+<h3>Uniform-box prior (<code class="docutils literal notranslate"><span class="pre">UniformBox</span></code>)<a class="headerlink" href="#uniform-box-prior-uniformbox" title="Permalink to this headline">#</a></h3>
+<p>For bounded parameters, the first simple choice is a non-informative uniformly flat prior between the hard bounds. This is implemented by the <code class="docutils literal notranslate"><span class="pre">UniformBox</span></code> multivariate prior. Below, we plot the pdf of the prior for a one-dimensional problem (the pdf to the left and the log-pdf to the right).</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">lb</span> <span class="o">=</span> <span class="o">-</span><span class="mi">3</span>
@@ -644,7 +873,7 @@ title="Print to PDF"
 
 <span class="n">prior</span> <span class="o">=</span> <span class="n">UniformBox</span><span class="p">(</span><span class="n">lb</span><span class="p">,</span> <span class="n">ub</span><span class="p">)</span>
 
-<span class="n">fig</span><span class="p">,</span> <span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">fig</span><span class="p">,</span> <span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">prior</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">)</span>
@@ -654,22 +883,25 @@ title="Print to PDF"
 <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 <span class="n">ax2</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;x0&quot;</span><span class="p">)</span>
 <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;prior log-pdf&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">&quot;Uniform prior&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">&quot;Uniform-box prior&quot;</span><span class="p">)</span>
 <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 <span class="c1"># (Note that the log-pdf is not plotted where it takes values of -infinity.)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/01a53a2bd12ecae412737f591bfb978d739cd87fdf5e9f36d952d665a6811d63.png" src="../_images/01a53a2bd12ecae412737f591bfb978d739cd87fdf5e9f36d952d665a6811d63.png" />
+<img alt="../_images/fbf2dbb8d86d5fa74b8e76e12f4faf1fb8be95c249f3868b9bc4ab40865a338c.png" src="../_images/fbf2dbb8d86d5fa74b8e76e12f4faf1fb8be95c249f3868b9bc4ab40865a338c.png" />
 </div>
 </div>
-<p>Alternatively, for each parameter we can define the prior to be flat within a range, where a reasonable choice is the “plausible” range, and then falls to zero towards the hard bounds. This is a trapezoidal or “tent” prior, implemented by the <code class="docutils literal notranslate"><span class="pre">Trapezoidal</span></code> prior.</p>
+</section>
+<section id="trapezoidal-prior-trapezoidal">
+<h3>Trapezoidal prior (<code class="docutils literal notranslate"><span class="pre">Trapezoidal</span></code>)<a class="headerlink" href="#trapezoidal-prior-trapezoidal" title="Permalink to this headline">#</a></h3>
+<p>Alternatively, for each parameter we can define the prior to be flat within a range, where a reasonable choice is the “plausible” range, and then falls to zero towards the hard bounds. This is a trapezoidal or “tent” prior, implemented by the <code class="docutils literal notranslate"><span class="pre">Trapezoidal</span></code> prior shown below.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">prior</span> <span class="o">=</span> <span class="n">Trapezoidal</span><span class="p">(</span><span class="n">lb</span><span class="p">,</span> <span class="n">plb</span><span class="p">,</span> <span class="n">pub</span><span class="p">,</span> <span class="n">ub</span><span class="p">)</span>
 
-<span class="n">fig</span><span class="p">,</span> <span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">fig</span><span class="p">,</span> <span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">prior</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">)</span>
@@ -688,12 +920,15 @@ title="Print to PDF"
 <img alt="../_images/9ccb4a6f41579c49b93a6331b1ce0848ad271cec1de234e6b5759292dfa665ea.png" src="../_images/9ccb4a6f41579c49b93a6331b1ce0848ad271cec1de234e6b5759292dfa665ea.png" />
 </div>
 </div>
+</section>
+<section id="spline-smoothed-trapezoidal-prior-splinetrapezoidal">
+<h3>Spline-smoothed trapezoidal prior (<code class="docutils literal notranslate"><span class="pre">SplineTrapezoidal</span></code>)<a class="headerlink" href="#spline-smoothed-trapezoidal-prior-splinetrapezoidal" title="Permalink to this headline">#</a></h3>
 <p>Finally, we can use a <em>smoothed</em> trapezoidal prior with soft transitions at the edges obtained using cubic splines. This prior is better behaved numerically as it is continuous with continuous derivatives (i.e., no sharp edges), so we recommend it over the simple trapezoidal prior. The spline-smoothed trapezoidal prior is implemented by the <code class="docutils literal notranslate"><span class="pre">SplineTrapezoidal</span></code> class.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">prior</span> <span class="o">=</span> <span class="n">SplineTrapezoidal</span><span class="p">(</span><span class="n">lb</span><span class="p">,</span> <span class="n">plb</span><span class="p">,</span> <span class="n">pub</span><span class="p">,</span> <span class="n">ub</span><span class="p">)</span>
 
-<span class="n">fig</span><span class="p">,</span> <span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">fig</span><span class="p">,</span> <span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">prior</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">)</span>
@@ -713,28 +948,33 @@ title="Print to PDF"
 </div>
 </div>
 </section>
+</section>
 <section id="unbounded-parameters">
 <h2>3. Unbounded parameters<a class="headerlink" href="#unbounded-parameters" title="Permalink to this headline">#</a></h2>
-<p>If your variables are <em>unbounded</em>, you could use standard priors such as the normal distribution or a Student’s t distribution with 3-7 degrees of freedom. As an alternative to these common choices, we also provide a smoothbox distribution which is uniform within an interval (typically, the plausible range) and then falls with Gaussian tails with scale(s) <code class="docutils literal notranslate"><span class="pre">sigma</span></code> outside the interval. The smoothbox prior is implemented by the <code class="docutils literal notranslate"><span class="pre">SmoothBox</span></code> class.</p>
+<p>If your variables are <em>unbounded</em>, remember that PyVBMC supports <code class="docutils literal notranslate"><span class="pre">scipy.stats</span></code> univariate and multivariate distributions, so you  could use standard priors such as a multivariate normal distribution or a multivariate Student’s t distribution with 3-7 degrees of freedom.
+See for example <a class="reference external" href="https://github.com/stan-dev/stan/wiki/Prior-Choice-Recommendations">this page on the Stan wiki</a> for a broader discussion on prior choice.</p>
+<section id="smooth-box-prior-smoothbox">
+<h3>Smooth-box prior (<code class="docutils literal notranslate"><span class="pre">SmoothBox</span></code>)<a class="headerlink" href="#smooth-box-prior-smoothbox" title="Permalink to this headline">#</a></h3>
+<p>As an alternative to these common choices, we also provide a smooth-box distribution which is uniform within an interval (typically, the plausible range) and then falls with Gaussian tails with standard deviation(s) equal to <code class="docutils literal notranslate"><span class="pre">scale</span></code> outside the interval. The smoothbox prior is implemented by the <code class="docutils literal notranslate"><span class="pre">SmoothBox</span></code> class.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">lb</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
 <span class="n">ub</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
 <span class="n">plb</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span>
 <span class="n">pub</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="c1"># We recommend setting sigma as a fraction of the plausible range.</span>
-<span class="c1"># For example sigma set to 4/10 of the plausible range assigns ~50%</span>
+<span class="c1"># We recommend setting the scale as a fraction of the plausible range.</span>
+<span class="c1"># For example `scale` set to 4/10 of the plausible range assigns ~50%</span>
 <span class="c1"># (marginal) probability to the plateau of the distribution.</span>
 <span class="c1"># Also similar fractions (e.g., half of the range) would be reasonable.</span>
-<span class="c1"># Do not set sigma too small with respect to the plausible range, as it</span>
+<span class="c1"># Do not set `scale` too small with respect to the plausible range, as it</span>
 <span class="c1"># might cause issues.</span>
 <span class="n">p_range</span> <span class="o">=</span> <span class="n">pub</span> <span class="o">-</span> <span class="n">plb</span>
-<span class="n">sigma</span> <span class="o">=</span> <span class="mf">0.4</span> <span class="o">*</span> <span class="n">p_range</span>
+<span class="n">scale</span> <span class="o">=</span> <span class="mf">0.4</span> <span class="o">*</span> <span class="n">p_range</span>
 
-<span class="n">prior</span> <span class="o">=</span> <span class="n">SmoothBox</span><span class="p">(</span><span class="n">plb</span><span class="p">,</span> <span class="n">pub</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
+<span class="n">prior</span> <span class="o">=</span> <span class="n">SmoothBox</span><span class="p">(</span><span class="n">plb</span><span class="p">,</span> <span class="n">pub</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
 
 <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">plb</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">p_range</span><span class="p">,</span> <span class="n">pub</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">p_range</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
-<span class="n">fig</span><span class="p">,</span> <span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">fig</span><span class="p">,</span> <span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">prior</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">)</span>
@@ -744,19 +984,24 @@ title="Print to PDF"
 <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 <span class="n">ax2</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;x0&quot;</span><span class="p">)</span>
 <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;prior log-pdf&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">&quot;Smoothed box prior (unbounded parameters)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">&quot;Smooth-box prior (unbounded parameters)&quot;</span><span class="p">)</span>
 <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/0748d7ba463a3c7f034257fbf2a069485485dddc81e0bea4cde8f442b092b9a8.png" src="../_images/0748d7ba463a3c7f034257fbf2a069485485dddc81e0bea4cde8f442b092b9a8.png" />
+<img alt="../_images/cacd257b0f97f94bf59ad06a4260d2e69cd5afb2427f9ff95263697a79241218.png" src="../_images/cacd257b0f97f94bf59ad06a4260d2e69cd5afb2427f9ff95263697a79241218.png" />
 </div>
 </div>
 </section>
+</section>
 <section id="using-a-prior-with-pyvbmc">
 <h2>4. Using a prior with PyVBMC<a class="headerlink" href="#using-a-prior-with-pyvbmc" title="Permalink to this headline">#</a></h2>
-<p>To conclude, we rerun inference on a bounded problem, using one of the priors (smoothed trapezoidal) introduced in this section. See code for details.</p>
+<p><a id="using-a-prior"></a></p>
+<p>To conclude, we run inference on a couple of problems using some of the priors introduced in this notebook.</p>
+<section id="bounded-example">
+<h3>Bounded example<a class="headerlink" href="#bounded-example" title="Permalink to this headline">#</a></h3>
+<p>In this example, we use the spline-smoothed trapezoidal prior (<code class="docutils literal notranslate"><span class="pre">SplineTrapezoidal</span></code>) introduced in this notebook. The code below shows several equivalent ways in which the prior can be set in PyVBMC (see the comments in the code below for details).</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">D</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># Still in 2-D</span>
@@ -765,7 +1010,7 @@ title="Print to PDF"
 <span class="n">plb</span> <span class="o">=</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">))</span>
 <span class="n">pub</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">))</span>
 
-<span class="c1"># Define the prior log-likelihood</span>
+<span class="c1"># Define the prior and the log-likelihood</span>
 <span class="n">prior</span> <span class="o">=</span> <span class="n">SplineTrapezoidal</span><span class="p">(</span><span class="n">lb</span><span class="p">,</span> <span class="n">plb</span><span class="p">,</span> <span class="n">pub</span><span class="p">,</span> <span class="n">ub</span><span class="p">)</span>
 
 
@@ -783,7 +1028,7 @@ title="Print to PDF"
 <span class="c1"># vbmc = VBMC(log_likelihood, x0, lb, ub, plb, pub, log_prior=prior.log_pdf)  # equivalently</span>
 <span class="c1"># vbmc = VBMC(lambda x: log_likelihood(x) + prior.log_pdf(x), x0, lb, ub, plb, pub)  # equivalently</span>
 <span class="n">vp</span><span class="p">,</span> <span class="n">results</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
-<span class="n">vp</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+<span class="n">vp</span><span class="o">.</span><span class="n">plot</span><span class="p">();</span>
 </pre></div>
 </div>
 </div>
@@ -812,9 +1057,61 @@ Estimated ELBO: -2.424 +/-0.002.
 </pre></div>
 </div>
 <img alt="../_images/a3826dae8e1e05ffdbd33e4a2c7e9600414f51228859ee90e3f7c4a7babb10ba.png" src="../_images/a3826dae8e1e05ffdbd33e4a2c7e9600414f51228859ee90e3f7c4a7babb10ba.png" />
-<img alt="../_images/a3826dae8e1e05ffdbd33e4a2c7e9600414f51228859ee90e3f7c4a7babb10ba.png" src="../_images/a3826dae8e1e05ffdbd33e4a2c7e9600414f51228859ee90e3f7c4a7babb10ba.png" />
 </div>
 </div>
+</section>
+<section id="unbounded-example">
+<h3>Unbounded example<a class="headerlink" href="#unbounded-example" title="Permalink to this headline">#</a></h3>
+<p>We run now another example with an unbounded prior. In this case, we apply a multivariate normal prior with zero mean and diagonal covariance, with variance <span class="math notranslate nohighlight">\(\sigma^2 = 9\)</span> in each dimension (we chose <span class="math notranslate nohighlight">\(\sigma\)</span> equal to half the plausible range).
+Note that this is equivalent to setting a normal distribution separately for each variable. The code below shows a couple of equivalent ways in which the prior could be initialized in PyVBMC using <code class="docutils literal notranslate"><span class="pre">scipy.stats</span></code> distributions.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">D</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># Still in 2-D</span>
+<span class="n">lb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+<span class="n">ub</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+<span class="n">plb</span> <span class="o">=</span> <span class="o">-</span><span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">))</span>
+<span class="n">pub</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">))</span>
+
+<span class="c1"># Define the prior as a multivariate normal (scipy.stats distribution)</span>
+<span class="n">scale</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">pub</span> <span class="o">-</span> <span class="n">plb</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+<span class="n">prior</span> <span class="o">=</span> <span class="n">scs</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">D</span><span class="p">),</span> <span class="n">cov</span><span class="o">=</span><span class="n">scale</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+<span class="c1"># prior = [scs.norm(scale=scale[0]),scs.norm(scale=scale[1])] # equivalently</span>
+
+<span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">))</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span><span class="n">log_likelihood</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">lb</span><span class="p">,</span> <span class="n">ub</span><span class="p">,</span> <span class="n">plb</span><span class="p">,</span> <span class="n">pub</span><span class="p">,</span> <span class="n">prior</span><span class="o">=</span><span class="n">prior</span><span class="p">)</span>
+<span class="n">vp</span><span class="p">,</span> <span class="n">results</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
+<span class="n">vp</span><span class="o">.</span><span class="n">plot</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Beginning variational optimization assuming EXACT observations of the log-joint.
+ Iteration  f-count    Mean[ELBO]    Std[ELBO]    sKL-iter[q]   K[q]  Convergence  Action
+     0         10          -3.17         0.83      5094.29        2        inf     start warm-up
+     1         15          -2.90         0.08         0.24        2        inf     
+     2         20          -2.81         0.00         0.09        2       2.52     
+     3         25          -2.82         0.00         0.01        2       0.28     
+     4         30          -2.80         0.00         0.01        2      0.224     end warm-up
+     5         35          -2.77         0.00         0.01        2      0.211     
+     6         40          -2.79         0.00         0.00        2      0.161     
+     7         45          -2.58         0.00         0.17        5       4.77     
+     8         50          -2.49         0.00         0.05        6       1.42     
+     9         55          -2.43         0.00         0.02        7      0.778     rotoscale, undo rotoscale
+    10         60          -2.38         0.00         0.03       10       0.87     
+    11         65          -2.36         0.00         0.00       13      0.144     
+    12         70          -2.32         0.00         0.00       16      0.165     
+    13         75          -2.32         0.00         0.01       18      0.183     
+    14         80          -2.31         0.00         0.00       18     0.0557     stable
+   inf         80          -2.28         0.00         0.00       50     0.0557     finalize
+Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.
+Estimated ELBO: -2.280 +/-0.001.
+</pre></div>
+</div>
+<img alt="../_images/6558ff741326069b34f160bb5cde30e0d1127d10e9213b1da90c601805c9e8c8.png" src="../_images/6558ff741326069b34f160bb5cde30e0d1127d10e9213b1da90c601805c9e8c8.png" />
+</div>
+</div>
+</section>
 </section>
 <section id="acknowledgments">
 <h2>Acknowledgments<a class="headerlink" href="#acknowledgments" title="Permalink to this headline">#</a></h2>

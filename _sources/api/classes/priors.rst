@@ -9,9 +9,9 @@ Priors
 
   Alternatively, using the keyword ``prior``, you may pass one of the following:
 
-  #. a PyVBMC prior (one of the classes detailed here),
-  #. an appropriate continuous ``scipy.stats`` distribution, or
-  #. a list of one-dimensional PyVBMC priors and/or continuous ``scipy.stats`` distributions, which are treated as independent priors for each parameter :math:`\theta_{i}`.
+  #. a PyVBMC prior imported from ``pyvbmc.priors`` that matches the dimension of the model,
+  #. an appropriate continuous ``scipy.stats`` distribution that matches the dimension of the model, or
+  #. a list of univariate (i.e., one-dimensional) PyVBMC priors and/or continuous ``scipy.stats`` distributions, which are treated as independent priors for each parameter $\theta_{i}$. In this case the length of the list should equal the dimension of the model.
 
   ::
 
@@ -19,7 +19,7 @@ Priors
     vbmc = VBMC(log_likelihood, x0, lb, ub, plb, pub, prior=scipy.stats.multivariate_normal(mu, cov))
     vbmc = VBMC(log_likelihood, x0, lb, ub, plb, pub, prior=[UniformBox(0, 1), scipy.stats.norm()])
 
-  For more details on (1), see the documentation below as well as :ref:`PyVBMC Example 5: Prior distributions`. For more details on (3), (4), and using a function as a ``log_prior``, see the documentation on :ref:`\`\`SciPy\`\` priors`, :ref:`\`\`Product\`\` priors`, and :ref:`\`\`UserFunction\`\` priors` below. (keyword arguments of these types will be converted to instances of these classes).
+  For more details on (1), see the documentation below as well as :ref:`PyVBMC Example 5: Prior distributions`. For more details on (2), (3), and using a function as a ``log_prior``, see the documentation on :ref:`\`\`SciPy\`\` priors`, :ref:`\`\`Product\`\` priors`, and :ref:`\`\`UserFunction\`\` priors` below. (keyword arguments of these types will be converted to instances of these classes).
 
 ``Prior`` base class
 ====================
