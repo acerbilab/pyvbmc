@@ -41,6 +41,6 @@ The outputs are:
   - ``"elbo"``: the estimated lower bound on the log model evidence (log normalization constant);
   - ``"elbo_sd"``: the standard deviation of the estimate of the ELBO (*not* the error between the ELBO and the true log model evidence, which is generally unknown).
 
-The ``vp`` object can be manipulated in various ways, see the :ref:`VariationalPosterior` class documentation.
+The ``vp`` object can be manipulated in various ways, see the :ref:`\`\`VariationalPosterior\`\`` class documentation.
 
 See the examples for more detailed information. The :ref:`Basic options` may also be useful.

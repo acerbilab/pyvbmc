@@ -1,6 +1,6 @@
-====
-VBMC
-====
+========
+``VBMC``
+========
 
 .. note::
 
@@ -14,7 +14,7 @@ VBMC
 
   By default VBMC assumes noiseless evaluations of the log posterior, but noisy likelihoods can also be handled. See :ref:`PyVBMC Example 6: Noisy log-likelihood evaluations` for more details.
 
-  See below for more details on the ``VBMC`` class methods and interface. The primary entry-points for users are the ``VBMC`` class, which initializes the algorithm, and the :ref:`VariationalPosterior` class, which represents the returned variational solution. The :ref:`Basic options` may also be useful.
+  See below for more details on the ``VBMC`` class methods and interface. The primary entry-points for users are the ``VBMC`` class, which initializes the algorithm, and the :ref:`\`\`VariationalPosterior\`\`` class, which represents the returned variational solution. The :ref:`Basic options` may also be useful.
 
 .. autoclass:: pyvbmc.vbmc.VBMC
    :members:
