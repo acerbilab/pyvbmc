@@ -1,5 +1,5 @@
-=============
-active_sample
-=============
+=================
+``active_sample``
+=================
 
 .. autofunction:: pyvbmc.vbmc.active_sample

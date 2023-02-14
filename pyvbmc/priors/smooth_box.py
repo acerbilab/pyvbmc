@@ -12,7 +12,7 @@ class SmoothBox(Prior):
     For each dimension `i`, the univariate smooth-box pdf is defined as a
     uniform distribution between pivots ``a[i]``, ``b[i]`` with Gaussian tails
     that fall starting from `p(a[i])` to the left (resp., `p(b[i])` to the
-    right) with standard deviation ``sigma[i]``.
+    right) with standard deviation ``scale[i]``.
 
     Attributes
     ----------
@@ -22,11 +22,11 @@ class SmoothBox(Prior):
         The lower pivot(s), shape `(1, D)`.
     b : np.ndarray
         The upper pivot(s), shape `(1, D)`.
-    sigma : np.ndarray
+    scale : np.ndarray
         The standard deviation of the Gaussian tails, shape `(1, D)`.
     """
 
-    def __init__(self, a, b, sigma=1, D=None):
+    def __init__(self, a, b, scale=1, D=None):
         """Initialize a multivariate smooth-box prior.
 
         Parameters
@@ -37,7 +37,7 @@ class SmoothBox(Prior):
         b : np.ndarray | float
             The upper pivot(s), shape `(D,)` where `D` is the dimension
             (parameters of type ``float`` will be tiled to this shape).
-        sigma : np.ndarray
+        scale : np.ndarray
             The standard deviation of the Gaussian tails, shape `(D,)` where
             `D` is the dimension (parameters of type ``float`` will be tiled to
             this shape).
@@ -45,14 +45,14 @@ class SmoothBox(Prior):
         Raises
         ------
         ValueError
-            If ``sigma[i] <= 0`` or if ``a[i] >= b[i]``, for any `i`.
+            If ``scale[i] <= 0`` or if ``a[i] >= b[i]``, for any `i`.
         """
-        self.a, self.b, self.sigma = tile_inputs(
-            a, b, sigma, size=D, squeeze=True
+        self.a, self.b, self.scale = tile_inputs(
+            a, b, scale, size=D, squeeze=True
         )
-        if np.any(self.sigma <= 0.0):
+        if np.any(self.scale <= 0.0):
             raise ValueError(
-                f"All elements of sigma={sigma} should be positive."
+                f"All elements of scale={scale} should be positive."
             )
         if np.any(self.a >= self.b):
             raise ValueError(
@@ -76,15 +76,15 @@ class SmoothBox(Prior):
             `(n, 1)`.
         """
         log_pdf = np.full_like(x, -np.inf)
-        log_norm_factor = -np.log(np.sqrt(2 * np.pi) * self.sigma) - np.log1p(
-            (self.b - self.a) / (np.sqrt(2 * np.pi) * self.sigma)
+        log_norm_factor = -np.log(np.sqrt(2 * np.pi) * self.scale) - np.log1p(
+            (self.b - self.a) / (np.sqrt(2 * np.pi) * self.scale)
         )
 
         for d in range(self.D):
             mask = x[:, d] < self.a[d]
             log_pdf[mask, d] = (
                 log_norm_factor[d]
-                - 0.5 * ((x[mask, d] - self.a[d]) / self.sigma[d]) ** 2
+                - 0.5 * ((x[mask, d] - self.a[d]) / self.scale[d]) ** 2
             )
 
             mask = (x[:, d] >= self.a[d]) & (x[:, d] <= self.b[d])
@@ -93,7 +93,7 @@ class SmoothBox(Prior):
             mask = x[:, d] > self.b[d]
             log_pdf[mask, d] = (
                 log_norm_factor[d]
-                - 0.5 * ((x[mask, d] - self.b[d]) / self.sigma[d]) ** 2
+                - 0.5 * ((x[mask, d] - self.b[d]) / self.scale[d]) ** 2
             )
 
         return np.sum(log_pdf, axis=1, keepdims=True)
@@ -113,7 +113,7 @@ class SmoothBox(Prior):
         """
         rvs = np.zeros((n, self.D))
         norm_factor = 1 + 1 / np.sqrt(2 * np.pi) * (
-            (self.b - self.a) / self.sigma
+            (self.b - self.a) / self.scale
         )
 
         for d in range(self.D):
@@ -124,7 +124,7 @@ class SmoothBox(Prior):
             mask = u < 0.5
             if np.any(mask):
                 z1 = np.abs(
-                    np.random.normal(0.0, self.sigma[d], size=np.sum(mask))
+                    np.random.normal(0.0, self.scale[d], size=np.sum(mask))
                 )
                 rvs[mask, d] = self.a[d] - z1
 
@@ -132,7 +132,7 @@ class SmoothBox(Prior):
             mask = (u >= 0.5) & (u < 1.0)
             if np.any(mask):
                 z1 = np.abs(
-                    np.random.normal(0.0, self.sigma[d], size=np.sum(mask))
+                    np.random.normal(0.0, self.scale[d], size=np.sum(mask))
                 )
                 rvs[mask, d] = self.b[d] + z1
 
@@ -179,7 +179,7 @@ class SmoothBox(Prior):
 dimension = {self.D},
 lower bounds = {self.a},
 upper bounds = {self.b}
-sigma (widths of tails) = {self.sigma}""",
+scale (widths of tails) = {self.scale}""",
             "    ",
         )
 
@@ -210,7 +210,7 @@ sigma (widths of tails) = {self.sigma}""",
                 "D",
                 "a",
                 "b",
-                "sigma",
+                "scale",
             ],
             expand=expand,
             arr_size_thresh=arr_size_thresh,

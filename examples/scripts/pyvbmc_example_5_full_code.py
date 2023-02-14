@@ -26,7 +26,7 @@ ax2.plot(x, prior.log_pdf(x))
 ax2.set_ylim(-20, 0)
 ax2.set_xlabel("x0")
 ax2.set_ylabel("prior log-pdf")
-plt.suptitle("Uniform prior")
+plt.suptitle("Uniform-box prior")
 fig.tight_layout()
 # (Note that the log-pdf is not plotted where it takes values of -infinity.)
 
@@ -67,16 +67,16 @@ lb = -np.inf
 ub = np.inf
 plb = -2
 pub = 2
-# We recommend setting sigma as a fraction of the plausible range.
-# For example sigma set to 4/10 of the plausible range assigns ~50%
+# We recommend setting the scale as a fraction of the plausible range.
+# For example `scale` set to 4/10 of the plausible range assigns ~50%
 # (marginal) probability to the plateau of the distribution.
 # Also similar fractions (e.g., half of the range) would be reasonable.
-# Do not set sigma too small with respect to the plausible range, as it
+# Do not set `scale` too small with respect to the plausible range, as it
 # might cause issues.
 p_range = pub - plb
-sigma = 0.4 * p_range
+scale = 0.4 * p_range
 
-prior = SmoothBox(plb, pub, sigma)
+prior = SmoothBox(plb, pub, scale)
 
 x = np.linspace(plb - 2 * p_range, pub + 2 * p_range, 1000)
 fig, (ax1, ax2) = plt.subplots(1, 2, sharex=True)
@@ -89,7 +89,7 @@ ax2.plot(x, prior.log_pdf(x))
 ax2.set_ylim(-20, 0)
 ax2.set_xlabel("x0")
 ax2.set_ylabel("prior log-pdf")
-plt.suptitle("Smoothed box prior (unbounded parameters)")
+plt.suptitle("Smooth-box prior (unbounded parameters)")
 fig.tight_layout()
 
 
@@ -99,7 +99,7 @@ ub = 10 * np.ones((1, D))
 plb = 0.1 * np.ones((1, D))
 pub = 3 * np.ones((1, D))
 
-# Define the prior log-likelihood
+# Define the prior and the log-likelihood
 prior = SplineTrapezoidal(lb, plb, pub, ub)
 
 
@@ -116,5 +116,23 @@ np.random.seed(42)
 vbmc = VBMC(log_likelihood, x0, lb, ub, plb, pub, prior=prior)
 # vbmc = VBMC(log_likelihood, x0, lb, ub, plb, pub, log_prior=prior.log_pdf)  # equivalently
 # vbmc = VBMC(lambda x: log_likelihood(x) + prior.log_pdf(x), x0, lb, ub, plb, pub)  # equivalently
+vp, results = vbmc.optimize()
+vp.plot()
+
+
+D = 2  # Still in 2-D
+lb = np.full((1, D), -np.inf)
+ub = np.full((1, D), np.inf)
+plb = -3 * np.ones((1, D))
+pub = 3 * np.ones((1, D))
+
+# Define the prior as a multivariate normal (scipy.stats distribution)
+scale = 0.5 * (pub - plb).flatten()
+prior = scs.multivariate_normal(mean=np.zeros(D), cov=scale**2)
+# prior = [scs.norm(scale=scale[0]),scs.norm(scale=scale[1])] # equivalently
+
+x0 = np.zeros((1, D))
+np.random.seed(42)
+vbmc = VBMC(log_likelihood, x0, lb, ub, plb, pub, prior=prior)
 vp, results = vbmc.optimize()
 vp.plot()
