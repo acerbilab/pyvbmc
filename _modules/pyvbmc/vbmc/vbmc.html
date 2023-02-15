@@ -1777,7 +1777,6 @@ title="Open an issue"
             <span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">is_finished</span><span class="p">,</span>
                 <span class="n">termination_message</span><span class="p">,</span>
-                <span class="n">success_flag</span><span class="p">,</span>
             <span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_termination_conditions</span><span class="p">()</span>
 
             <span class="c1"># Save stability</span>
@@ -2040,13 +2039,11 @@ title="Open an issue"
             <span class="p">)</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
-        <span class="c1"># Set exit_flag based on stability (check other things in the future)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">success_flag</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">vp</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;stable&quot;</span><span class="p">]:</span>
-                <span class="n">success_flag</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="c1"># Set exit_flag based on stability</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">vp</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;stable&quot;</span><span class="p">]:</span>
+            <span class="n">success_flag</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">vp</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;stable&quot;</span><span class="p">]:</span>
-                <span class="n">success_flag</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">success_flag</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="c1"># Print final message</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">termination_message</span><span class="p">)</span>
@@ -2222,7 +2219,6 @@ title="Open an issue"
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">is_finished_flag</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">termination_message</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-        <span class="n">success_flag</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="c1"># Maximum number of new function evaluations</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">function_logger</span><span class="o">.</span><span class="n">func_count</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
@@ -2295,15 +2291,20 @@ title="Open an issue"
                     <span class="bp">self</span><span class="o">.</span><span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;entropy_switch&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">logging_action</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;entropy switch&quot;</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">is_finished_flag</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="c1"># Allow termination only if distant from last warping</span>
+                    <span class="k">if</span> <span class="p">(</span>
+                        <span class="n">iteration</span>
+                        <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">optim_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;last_successful_warping&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                        <span class="o">&gt;=</span> <span class="n">tol_stable_iters</span> <span class="o">/</span> <span class="mi">3</span>
+                    <span class="p">):</span>
+                        <span class="n">is_finished_flag</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="n">termination_message</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="s2">&quot;Inference terminated: variational &quot;</span>
+                            <span class="o">+</span> <span class="s2">&quot;solution stable for options.tol_stable_count &quot;</span>
+                            <span class="o">+</span> <span class="s2">&quot;fcn evaluations.&quot;</span>
+                        <span class="p">)</span>
                     <span class="n">stableflag</span> <span class="o">=</span> <span class="kc">True</span>
-                    <span class="n">success_flag</span> <span class="o">=</span> <span class="kc">False</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">logging_action</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;stable&quot;</span><span class="p">)</span>
-                    <span class="n">termination_message</span> <span class="o">=</span> <span class="p">(</span>
-                        <span class="s2">&quot;Inference terminated: variational &quot;</span>
-                        <span class="o">+</span> <span class="s2">&quot;solution stable for options.tol_stable_count &quot;</span>
-                        <span class="o">+</span> <span class="s2">&quot;fcn evaluations.&quot;</span>
-                    <span class="p">)</span>
 
         <span class="c1"># Store stability flag</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">iteration_history</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="s2">&quot;stable&quot;</span><span class="p">,</span> <span class="n">stableflag</span><span class="p">,</span> <span class="n">iteration</span><span class="p">)</span>
@@ -2317,7 +2318,6 @@ title="Open an issue"
         <span class="k">return</span> <span class="p">(</span>
             <span class="n">is_finished_flag</span><span class="p">,</span>
             <span class="n">termination_message</span><span class="p">,</span>
-            <span class="n">success_flag</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_compute_reliability_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tol_stable_iters</span><span class="p">):</span>
