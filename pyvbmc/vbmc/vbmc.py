@@ -1282,7 +1282,6 @@ class VBMC:
             (
                 self.is_finished,
                 termination_message,
-                success_flag,
             ) = self._check_termination_conditions()
 
             # Save stability
@@ -1545,13 +1544,11 @@ class VBMC:
             )
             plt.show()
 
-        # Set exit_flag based on stability (check other things in the future)
-        if not success_flag:
-            if self.vp.stats["stable"]:
-                success_flag = True
+        # Set exit_flag based on stability
+        if self.vp.stats["stable"]:
+            success_flag = True
         else:
-            if not self.vp.stats["stable"]:
-                success_flag = False
+            success_flag = False
 
         # Print final message
         self.logger.warning(termination_message)
@@ -1727,7 +1724,6 @@ class VBMC:
         """
         is_finished_flag = False
         termination_message = ""
-        success_flag = True
 
         # Maximum number of new function evaluations
         if self.function_logger.func_count >= self.options.get(
@@ -1800,15 +1796,20 @@ class VBMC:
                     self.optim_state["entropy_switch"] = False
                     self.logging_action.append("entropy switch")
                 else:
-                    is_finished_flag = True
+                    # Allow termination only if distant from last warping
+                    if (
+                        iteration
+                        - self.optim_state.get("last_successful_warping", 0)
+                        >= tol_stable_iters / 3
+                    ):
+                        is_finished_flag = True
+                        termination_message = (
+                            "Inference terminated: variational "
+                            + "solution stable for options.tol_stable_count "
+                            + "fcn evaluations."
+                        )
                     stableflag = True
-                    success_flag = False
                     self.logging_action.append("stable")
-                    termination_message = (
-                        "Inference terminated: variational "
-                        + "solution stable for options.tol_stable_count "
-                        + "fcn evaluations."
-                    )
 
         # Store stability flag
         self.iteration_history.record("stable", stableflag, iteration)
@@ -1822,7 +1823,6 @@ class VBMC:
         return (
             is_finished_flag,
             termination_message,
-            success_flag,
         )
 
     def _compute_reliability_index(self, tol_stable_iters):
