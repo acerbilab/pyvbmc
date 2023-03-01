@@ -2,10 +2,12 @@
 from __future__ import annotations
 
 import sys
+from pathlib import Path
 from textwrap import indent
 from typing import Optional
 
 import corner
+import dill
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import trapezoid
@@ -1283,6 +1285,64 @@ class VariationalPosterior:
         fig.tight_layout(pad=0.5)
 
         return fig
+
+    def save(self, file, overwrite=False):
+        """Save the VP to a file.
+
+        Parameters
+        ----------
+        file : path-like
+            The file name or path to write to. Default file extension `.pkl`
+            will be added if no extension is specified.
+        overwrite : bool
+            Whether to allow overwriting existing files. Default `False`.
+
+        Raises
+        ------
+        FileExistsError
+            If the file already exists and ``overwrite`` is `False`.
+        OSError
+            If the file cannot be opened for other reasons (e.g., the directory
+            is not found, the disk is full, etc.).
+        """
+        filepath = Path(file)
+        if filepath.suffix == "":
+            filepath = filepath.with_suffix(".pkl")
+
+        if overwrite:
+            mode = "wb"
+        else:
+            mode = "xb"
+        with open(filepath, mode=mode) as f:
+            dill.dump(self, f, recurse=True)
+
+    @classmethod
+    def load(cls, file):
+        """Load a VP from a file.
+
+        Parameters
+        ----------
+        file : path-like
+            The file name or path to write to.
+
+        Returns
+        -------
+        vp : VariationalPosterior
+            The loaded VP instance.
+
+        Raises
+        ------
+        OSError
+            If the file cannot be found, or cannot be opened for other reasons.
+        """
+        filepath = Path(file)
+        if filepath.suffix == "":
+            filepath = filepath.with_suffix(".pkl")
+
+        with open(filepath, mode="rb") as f:
+            vp = dill.load(f)
+
+        return vp
 
     def __str__(self, arr_size_thresh=10):
         """Print a string summary."""

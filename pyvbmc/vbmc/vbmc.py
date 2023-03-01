@@ -4,8 +4,10 @@ import math
 import os
 import sys
 from collections.abc import Iterable
+from pathlib import Path
 from textwrap import indent
 
+import dill
 import gpyreg as gpr
 import matplotlib.pyplot as plt
 import numpy as np
@@ -2128,6 +2130,117 @@ class VBMC:
         vp.stats["stable"] = self.iteration_history.get("stable")[idx_best]
         return vp, elbo, elbo_sd, idx_best
 
+    def save(self, file, overwrite=False):
+        """Save the VBMC instance to a file.
+
+        Parameters
+        ----------
+        file : path-like
+            The file name or path to write to. Default file extension `.pkl`
+            will be added if no extension is specified.
+        overwrite : bool
+            Whether to allow overwriting existing files. Default `False`.
+
+        Raises
+        ------
+        FileExistsError
+            If the file already exists and ``overwrite`` is `False`.
+        OSError
+            If the file cannot be opened for other reasons (e.g., the directory
+            is not found, the disk is full, etc.).
+        """
+        filepath = Path(file)
+        if filepath.suffix == "":
+            filepath = filepath.with_suffix(".pkl")
+
+        if overwrite:
+            mode = "wb"
+        else:
+            mode = "xb"
+        with open(filepath, mode=mode) as f:
+            dill.dump(self, f, recurse=True)
+
+    @classmethod
+    def load(
+        cls, file, new_options=None, iteration=None, set_random_state=False
+    ):
+        """Load a VBMC instance from a file.
+
+        Parameters
+        ----------
+        file : path-like
+            The file name or path to write to.
+        new_options : dict or None
+            A dictionary of options to change when loading the stored VBMC
+            instance. Useful, for example, to continue a previous run with a
+            larger budget of function evaluations and/or iterations. See the
+            documentation on PyVBMC's options for more details.
+        iteration : int or None
+            The iteration at which to initialize the stored VBMC instance.
+            Default is `None`, meaning initialize to the last recorded iteration.
+        set_random_state : bool
+            Whether to set the global random state to the stored random state
+            of the VBMC object, for reprodicibility. Default `False`.
+
+        Returns
+        -------
+        vbmc : VBMC
+            The loaded VBMC instance, initialized at the specified iteration.
+
+        Raises
+        ------
+        ValueError
+            If the specified ``iteration`` is less than zero or larger than the
+            last stored iteration.
+        OSError
+            If the file cannot be found, or cannot be opened for other reasons.
+        """
+        filepath = Path(file)
+        if filepath.suffix == "":
+            filepath = filepath.with_suffix(".pkl")
+
+        with open(filepath, mode="rb") as f:
+            vbmc = dill.load(f)
+
+        # Set/check iteration
+        if iteration is None:
+            iteration = vbmc.iteration
+        else:
+            if not (0 <= iteration <= vbmc.iteration):
+                raise ValueError(
+                    f"Specified iteration ({iteration}) should be >= 0 and <= last stored iteration ({vbmc.iteration})."
+                )
+
+        # Set states for VBMC right before the specified iteration
+        if hasattr(vbmc, "iteration_history"):
+            # Handle instances saved before running vbmc.optimize()
+            for attr in ["gp", "vp", "function_logger", "optim_state"]:
+                if vbmc.iteration_history[attr] is not None:
+                    setattr(
+                        vbmc, attr, vbmc.iteration_history[attr][iteration]
+                    )
+            if vbmc.optim_state.get("hyp_dict") is not None:
+                vbmc.hyp_dict = vbmc.optim_state["hyp_dict"]
+            vbmc.iteration = iteration
+            for k, v in vbmc.iteration_history.items():
+                if v is not None:
+                    vbmc.iteration_history[k] = vbmc.iteration_history[k][
+                        : (iteration + 1)
+                    ]
+
+        # Update with new options (e.g. higher number of max iterations)
+        if new_options is not None:
+            vbmc.options.is_initialized = False
+            vbmc.options.update(new_options)
+            vbmc.options.is_initialized = True
+
+        # Optionally set random state for reproducibility
+        if set_random_state:
+            random_state = vbmc.iteration_history["random_state"][iteration]
+            np.random.set_state(random_state)
+
+        return vbmc
+
     def _create_result_dict(
         self, idx_best: int, termination_message: str, success_flag: bool
     ):
@@ -2346,7 +2459,7 @@ class VBMC:
         return "VBMC:" + indent(
             f"""
 dimension = {self.D},
-x0: {summarize(self.x0)},
+x0: {summarize(self.parameter_transformer.inverse(self.x0))},
 lower bounds: {summarize(self.lower_bounds)},
 upper bounds: {summarize(self.upper_bounds)},
 plausible lower bounds: {summarize(self.plausible_lower_bounds)},
