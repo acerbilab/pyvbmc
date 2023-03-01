@@ -1,9 +1,8 @@
-import dill
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.stats as scs
 
-from pyvbmc import VBMC
+from pyvbmc import VBMC, VariationalPosterior
 
 D = 2  # We'll use a 2-D problem, again for speed
 prior_mu = np.zeros(D)
@@ -65,8 +64,7 @@ np.random.seed(42)
 vp, results = vbmc.optimize()
 
 
-with open("../noise_free_vp.pkl", "rb") as f:
-    noise_free_vp = dill.load(f)
+noise_free_vp = VariationalPosterior.load("noise_free_vp.pkl")
 # KL divergence between this VP and the noise-free VP:
 print(vbmc.vp.kl_div(vp2=noise_free_vp))
 

@@ -5,7 +5,7 @@ import scipy.stats as scs
 from pyvbmc import VBMC
 from pyvbmc.priors import SmoothBox, SplineTrapezoidal, Trapezoidal, UniformBox
 
-plt.rcParams["figure.figsize"] = [8, 4]
+figsize = (8, 4)
 
 
 lb = -3
@@ -16,7 +16,7 @@ x = np.linspace(lb - 1, ub + 1, 1000)
 
 prior = UniformBox(lb, ub)
 
-fig, (ax1, ax2) = plt.subplots(1, 2, sharex=True)
+fig, (ax1, ax2) = plt.subplots(1, 2, sharex=True, figsize=figsize)
 ax1.plot(x, prior.pdf(x))
 ax1.set_xlim(-4, 4)
 ax1.set_ylim(0, 0.25)
@@ -33,7 +33,7 @@ fig.tight_layout()
 
 prior = Trapezoidal(lb, plb, pub, ub)
 
-fig, (ax1, ax2) = plt.subplots(1, 2, sharex=True)
+fig, (ax1, ax2) = plt.subplots(1, 2, sharex=True, figsize=figsize)
 ax1.plot(x, prior.pdf(x))
 ax1.set_xlim(-4, 4)
 ax1.set_ylim(0, 0.25)
@@ -49,7 +49,7 @@ fig.tight_layout()
 
 prior = SplineTrapezoidal(lb, plb, pub, ub)
 
-fig, (ax1, ax2) = plt.subplots(1, 2, sharex=True)
+fig, (ax1, ax2) = plt.subplots(1, 2, sharex=True, figsize=figsize)
 ax1.plot(x, prior.pdf(x))
 ax1.set_xlim(-4, 4)
 ax1.set_ylim(0, 0.25)
@@ -79,7 +79,7 @@ scale = 0.4 * p_range
 prior = SmoothBox(plb, pub, scale)
 
 x = np.linspace(plb - 2 * p_range, pub + 2 * p_range, 1000)
-fig, (ax1, ax2) = plt.subplots(1, 2, sharex=True)
+fig, (ax1, ax2) = plt.subplots(1, 2, sharex=True, figsize=figsize)
 ax1.plot(x, prior.pdf(x))
 ax1.set_xlim(x[0], x[-1])
 ax1.set_ylim(0, 0.25)

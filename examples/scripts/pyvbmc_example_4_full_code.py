@@ -1,4 +1,3 @@
-import dill
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.stats as scs
@@ -119,5 +118,4 @@ idx_best = np.argmax(elcbos)
 print(idx_best)
 
 
-with open("../noise_free_vp.pkl", "wb") as f:
-    dill.dump(vps[idx_best], f)
+vps[idx_best].save("noise_free_vp.pkl", overwrite=True)
