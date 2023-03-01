@@ -1,5 +1,7 @@
 include pyvbmc/testing/variational_posterior/*.txt
 include pyvbmc/testing/variational_posterior/*.mat
+include pyvbmc/testing/variational_posterior/*.pkl
 include pyvbmc/testing/vbmc/*.txt
 include pyvbmc/testing/vbmc/compare_MATLAB/*
+include pyvbmc/testing/vbmc/*.pkl
 prune docsrc
