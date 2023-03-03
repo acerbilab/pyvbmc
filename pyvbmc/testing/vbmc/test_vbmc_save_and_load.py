@@ -2,8 +2,8 @@ from pathlib import Path
 
 import dill
 import numpy as np
+import pytest
 import scipy.stats as scs
-from pytest import raises
 
 from pyvbmc import VBMC
 from pyvbmc.priors import SciPy
@@ -64,6 +64,7 @@ def test_vbmc_load_dynamic():
     assert np.all(vbmc.log_joint(data["x_random"]) == data["y_random"])
 
 
+# @pytest.mark.skip(reason="Cannot reliably unpickle callables with different versions of dependencies.")
 def test_vbmc_load_static():
     """Test loading VBMC object which has already been optimized."""
     D = 4
@@ -166,13 +167,13 @@ def test_vbmc_load_static():
 
 def test_vbmc_save_load_error_handling():
     vbmc = VBMC.load(base_path.joinpath("test_vbmc_save_static"))
-    with raises(FileExistsError) as err:
+    with pytest.raises(FileExistsError) as err:
         vbmc.save(base_path.joinpath("test_vbmc_save_static"))
-    with raises(OSError) as err:
+    with pytest.raises(OSError) as err:
         vbmc.save("/this/path/does/not/exist.pkl")
-    with raises(OSError) as err:
+    with pytest.raises(OSError) as err:
         vbmc = VBMC.load("/this/path/does/not/exist.pkl")
-    with raises(ValueError) as err:
+    with pytest.raises(ValueError) as err:
         vbmc = VBMC.load(
             base_path.joinpath("test_vbmc_save_static"), iteration=10
         )
@@ -180,7 +181,7 @@ def test_vbmc_save_load_error_handling():
         "Specified iteration (10) should be >= 0 and <= last stored iteration (6)."
         in err.value.args[0]
     )
-    with raises(ValueError) as err:
+    with pytest.raises(ValueError) as err:
         vbmc = VBMC.load(
             base_path.joinpath("test_vbmc_save_static"), iteration=-1
         )

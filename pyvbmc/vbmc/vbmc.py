@@ -180,7 +180,7 @@ class VBMC:
         )
         self.options.update_defaults()
         if options_path is not None:
-            # Update with use-specified config file
+            # Update with user-specified config file
             self.options.load_options_file(
                 options_path,
                 evaluation_parameters={"D": self.D},
@@ -2174,7 +2174,7 @@ class VBMC:
         else:
             mode = "xb"
         with open(filepath, mode=mode) as f:
-            dill.dump(self, f, recurse=True)
+            dill.dump(self, f, recurse=False)
 
     @classmethod
     def load(
