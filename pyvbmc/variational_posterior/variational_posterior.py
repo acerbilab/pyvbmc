@@ -1135,6 +1135,7 @@ class VariationalPosterior:
         highlight_data: list = None,
         plot_vp_centres: bool = False,
         plot_style: dict = None,
+        gp: GaussianProcess = None,
     ):
         """
         Plot the variational posterior.
@@ -1179,7 +1180,8 @@ class VariationalPosterior:
                 **vp_centre** : dict, optional
                     Styling options used to plot the `vp` centres.
                     By default: ``{"marker":"x", "color":"red"}``.
-
+        gp : gpyreg.GaussianProcess, optional
+            The GP to use for plotting actively sampled points.
 
         Returns
         -------
@@ -1223,22 +1225,20 @@ class VariationalPosterior:
         axes = np.array(fig.axes).reshape((self.D, self.D))
 
         # plot gp data
-        if plot_data and hasattr(self, "gp"):
+        if plot_data and gp is not None:
 
             # highlight nothing when argument is None
             if highlight_data is None or highlight_data.size == 0:
-                highlight_data = np.array([False] * len(self.gp.X))
+                highlight_data = np.array([False] * len(gp.X))
                 normal_data = ~highlight_data
             else:
                 normal_data = [
-                    i for i in range(len(self.gp.X)) if i not in highlight_data
+                    i for i in range(len(gp.X)) if i not in highlight_data
                 ]
 
-            orig_X_norm = self.parameter_transformer.inverse(
-                self.gp.X[normal_data]
-            )
+            orig_X_norm = self.parameter_transformer.inverse(gp.X[normal_data])
             orig_X_highlight = self.parameter_transformer.inverse(
-                self.gp.X[highlight_data]
+                gp.X[highlight_data]
             )
 
             for r in range(1, self.D):
