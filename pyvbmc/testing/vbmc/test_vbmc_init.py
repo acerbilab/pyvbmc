@@ -1,4 +1,5 @@
 import sys
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -1005,6 +1006,90 @@ def test_init_1D_input():
     assert np.all(vbmc.optim_state["ub_orig"] == ub.reshape((1, D)))
     assert np.all(vbmc.optim_state["plb_orig"] == plb.reshape((1, D)))
     assert np.all(vbmc.optim_state["pub_orig"] == pub.reshape((1, D)))
+
+
+def test_init_options_path():
+    D = 2
+    lb = np.full((D,), -10)
+    ub = np.full((D,), 10)
+    x0_array = np.full((D,), 0)
+    plb = np.full((D,), -5)
+    pub = np.full((D,), 5)
+
+    def log_joint(x):
+        return x**2 + x + 1, 1.0
+
+    # default options:
+    vbmc = VBMC(log_joint, x0_array, lb, ub, plb, pub)
+    assert "foo" not in vbmc.options
+    assert "bar" not in vbmc.options
+    assert "fooD" not in vbmc.options
+    assert "foo2" not in vbmc.options
+    assert "bar2" not in vbmc.options
+    assert "fooD2" not in vbmc.options
+    assert vbmc.options["sgd_step_size"] == 0.005
+
+    # relative path (string), and override with dict option
+    relpath = "option_configs/test_options.ini"
+    options = {"bar": 666}
+    vbmc = VBMC(
+        log_joint,
+        x0_array,
+        lb,
+        ub,
+        plb,
+        pub,
+        options=options,
+        options_path=relpath,
+    )
+    assert vbmc.options["foo"] == "iter"
+    assert vbmc.options["bar"] == 666
+    assert vbmc.options["fooD"] == 4
+    assert "foo2" not in vbmc.options
+    assert "bar2" not in vbmc.options
+    assert "fooD2" not in vbmc.options
+    assert vbmc.options["sgd_step_size"] == 0.005
+
+    # absolute path (string)
+    abspath = str(
+        Path(__file__)
+        .parent.parent.parent.joinpath("vbmc/option_configs/test_options2.ini")
+        .resolve()
+    )
+    vbmc = VBMC(log_joint, x0_array, lb, ub, plb, pub, options_path=abspath)
+    assert "foo" not in vbmc.options
+    assert "bar" not in vbmc.options
+    assert "fooD" not in vbmc.options
+    assert vbmc.options["foo2"] == "iter2"
+    assert vbmc.options["bar2"] == 80
+    assert vbmc.options["fooD2"] == 200
+    assert vbmc.options["sgd_step_size"] == 0.005
+
+    # relative path (Path)
+    relpath = Path("option_configs/test_options.ini")
+    vbmc = VBMC(log_joint, x0_array, lb, ub, plb, pub, options_path=relpath)
+    assert vbmc.options["foo"] == "iter"
+    assert vbmc.options["bar"] == 40
+    assert vbmc.options["fooD"] == 4
+    assert "foo2" not in vbmc.options
+    assert "bar2" not in vbmc.options
+    assert "fooD2" not in vbmc.options
+    assert vbmc.options["sgd_step_size"] == 0.005
+
+    # absolute path (Path)
+    abspath = (
+        Path(__file__)
+        .parent.parent.parent.joinpath("vbmc/option_configs/test_options2.ini")
+        .resolve()
+    )
+    vbmc = VBMC(log_joint, x0_array, lb, ub, plb, pub, options_path=abspath)
+    assert "foo" not in vbmc.options
+    assert "bar" not in vbmc.options
+    assert "fooD" not in vbmc.options
+    assert vbmc.options["foo2"] == "iter2"
+    assert vbmc.options["bar2"] == 80
+    assert vbmc.options["fooD2"] == 200
+    assert vbmc.options["sgd_step_size"] == 0.005
 
 
 def test__str__and__repr__():

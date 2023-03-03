@@ -79,6 +79,11 @@ class VBMC:
         Additional options can be passed as a dict. Please refer to the
         VBMC options page for the default options. If no ``options`` are
         passed, the default options are used.
+    options_path : pathlike, optional
+        Additional options can also be specified by a `.ini` file. The
+        ``options`` `dict` keyword takes precedence over options set in the
+        `.ini` file. ``options_path`` should be either absolute or relative to
+        the `pyvbmc/vbmc/` directory.
     prior, optional
         An optional separate prior. It can be a ``pyvbmc.priors.Prior``
         subclass, an appropriate ``scipy.stats`` distribution, or a list of
@@ -134,6 +139,7 @@ class VBMC:
         plausible_lower_bounds: np.ndarray = None,
         plausible_upper_bounds: np.ndarray = None,
         options: dict = None,
+        options_path: os.PathLike = None,
         prior: Prior = None,
         log_prior: callable = None,
         sample_prior: callable = None,
@@ -159,20 +165,23 @@ class VBMC:
             x0 = x0.reshape((1, -1))
         self.D = x0.shape[1]
         # load basic and advanced options and validate the names
-        basic_path = "option_configs/basic_vbmc_options.ini"
+        if options_path is None:
+            options_path = "option_configs/basic_vbmc_options.ini"
         self.options = Options(
-            basic_path,
+            options_path,
             evaluation_parameters={"D": self.D},
             user_options=options,
         )
 
-        advanced_path = "option_configs/advanced_vbmc_options.ini"
+        advanced_options_path = "option_configs/advanced_vbmc_options.ini"
         self.options.load_options_file(
-            advanced_path,
+            advanced_options_path,
             evaluation_parameters={"D": self.D},
         )
         self.options.update_defaults()
-        self.options.validate_option_names([basic_path, advanced_path])
+        self.options.validate_option_names(
+            [options_path, advanced_options_path]
+        )
 
         # Create an initial logger for initialization messages:
         self.logger = self._init_logger("_init")
