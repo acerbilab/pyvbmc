@@ -136,15 +136,10 @@ class Options(MutableMapping, dict):
         evaluation_parameters : dict, optional
             Parameters used to evaluate the options.
         """
-
-        # evaluation_parameters
-        for key, val in evaluation_parameters.items():
-            exec(key + "=val")
-
         options_list = _read_config_file(options_path)
         for (key, value, description) in options_list:
             if key not in self.get("useroptions") and key != "useroptions":
-                self[key] = eval(value)
+                self[key] = eval(value, globals(), evaluation_parameters)
                 self.descriptions[key] = description
 
     def validate_option_names(self, options_paths: list):

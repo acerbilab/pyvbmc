@@ -6,6 +6,7 @@ import sys
 from collections.abc import Iterable
 from pathlib import Path
 from textwrap import indent
+from typing import Union
 
 import dill
 import gpyreg as gpr
@@ -139,7 +140,7 @@ class VBMC:
         plausible_lower_bounds: np.ndarray = None,
         plausible_upper_bounds: np.ndarray = None,
         options: dict = None,
-        options_path: os.PathLike = None,
+        options_path: Union[os.PathLike, None] = None,
         prior: Prior = None,
         log_prior: callable = None,
         sample_prior: callable = None,
@@ -165,10 +166,9 @@ class VBMC:
             x0 = x0.reshape((1, -1))
         self.D = x0.shape[1]
         # load basic and advanced options and validate the names
-        if options_path is None:
-            options_path = "option_configs/basic_vbmc_options.ini"
+        basic_options_path = "option_configs/basic_vbmc_options.ini"
         self.options = Options(
-            options_path,
+            basic_options_path,
             evaluation_parameters={"D": self.D},
             user_options=options,
         )
@@ -179,9 +179,19 @@ class VBMC:
             evaluation_parameters={"D": self.D},
         )
         self.options.update_defaults()
-        self.options.validate_option_names(
-            [options_path, advanced_options_path]
-        )
+        if options_path is not None:
+            # Update with use-specified config file
+            self.options.load_options_file(
+                options_path,
+                evaluation_parameters={"D": self.D},
+            )
+            self.options.validate_option_names(
+                [basic_options_path, advanced_options_path, options_path]
+            )
+        else:
+            self.options.validate_option_names(
+                [basic_options_path, advanced_options_path]
+            )
 
         # Create an initial logger for initialization messages:
         self.logger = self._init_logger("_init")
@@ -2382,8 +2392,10 @@ class VBMC:
         # Avoid duplicating a handler for the same log file
         # (remove duplicates, re-add below)
         for handler in logger.handlers:
-            if handler.baseFilename == os.path.abspath(
-                self.options.get("log_file_name")
+            log_file_name = self.options.get("log_file_name")
+            if (
+                log_file_name is not None
+                and handler.baseFilename == os.path.abspath(log_file_name)
             ):
                 logger.removeHandler(handler)
 

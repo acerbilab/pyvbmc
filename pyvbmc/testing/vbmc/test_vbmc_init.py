@@ -1021,75 +1021,50 @@ def test_init_options_path():
 
     # default options:
     vbmc = VBMC(log_joint, x0_array, lb, ub, plb, pub)
+    # Keys from test configs should not be here:
     assert "foo" not in vbmc.options
     assert "bar" not in vbmc.options
     assert "fooD" not in vbmc.options
-    assert "foo2" not in vbmc.options
-    assert "bar2" not in vbmc.options
-    assert "fooD2" not in vbmc.options
+    # Keys from basic config
+    assert vbmc.options["specify_target_noise"] == False
+    assert vbmc.options["log_file_name"] is None
+    # Keys from advanced config
     assert vbmc.options["sgd_step_size"] == 0.005
+    assert vbmc.options["uncertainty_handling"] == []
 
-    # relative path (string), and override with dict option
-    relpath = "option_configs/test_options.ini"
+    # relative path (string)
     options = {"bar": 666}
-    vbmc = VBMC(
-        log_joint,
-        x0_array,
-        lb,
-        ub,
-        plb,
-        pub,
-        options=options,
-        options_path=relpath,
-    )
-    assert vbmc.options["foo"] == "iter"
-    assert vbmc.options["bar"] == 666
-    assert vbmc.options["fooD"] == 4
-    assert "foo2" not in vbmc.options
-    assert "bar2" not in vbmc.options
-    assert "fooD2" not in vbmc.options
-    assert vbmc.options["sgd_step_size"] == 0.005
-
-    # absolute path (string)
-    abspath = str(
-        Path(__file__)
-        .parent.parent.parent.joinpath("vbmc/option_configs/test_options2.ini")
-        .resolve()
-    )
-    vbmc = VBMC(log_joint, x0_array, lb, ub, plb, pub, options_path=abspath)
-    assert "foo" not in vbmc.options
-    assert "bar" not in vbmc.options
-    assert "fooD" not in vbmc.options
-    assert vbmc.options["foo2"] == "iter2"
-    assert vbmc.options["bar2"] == 80
-    assert vbmc.options["fooD2"] == 200
-    assert vbmc.options["sgd_step_size"] == 0.005
-
-    # relative path (Path)
-    relpath = Path("option_configs/test_options.ini")
-    vbmc = VBMC(log_joint, x0_array, lb, ub, plb, pub, options_path=relpath)
-    assert vbmc.options["foo"] == "iter"
-    assert vbmc.options["bar"] == 40
-    assert vbmc.options["fooD"] == 4
-    assert "foo2" not in vbmc.options
-    assert "bar2" not in vbmc.options
-    assert "fooD2" not in vbmc.options
-    assert vbmc.options["sgd_step_size"] == 0.005
-
-    # absolute path (Path)
     abspath = (
         Path(__file__)
-        .parent.parent.parent.joinpath("vbmc/option_configs/test_options2.ini")
+        .parent.parent.parent.joinpath("vbmc/option_configs/test_options.ini")
         .resolve()
     )
-    vbmc = VBMC(log_joint, x0_array, lb, ub, plb, pub, options_path=abspath)
-    assert "foo" not in vbmc.options
-    assert "bar" not in vbmc.options
-    assert "fooD" not in vbmc.options
-    assert vbmc.options["foo2"] == "iter2"
-    assert vbmc.options["bar2"] == 80
-    assert vbmc.options["fooD2"] == 200
-    assert vbmc.options["sgd_step_size"] == 0.005
+    for path in [
+        Path("option_configs/test_options.ini"),  # relative Path
+        "option_configs/test_options.ini",  # relative Path (string)
+        abspath,  # absolute Path
+        str(abspath),  # absolute Path (string)
+    ]:
+        vbmc = VBMC(
+            log_joint,
+            x0_array,
+            lb,
+            ub,
+            plb,
+            pub,
+            options=options,
+            options_path=path,
+        )
+        # Keys from test config
+        assert vbmc.options["foo"] == "iter"
+        assert vbmc.options["fooD"] == 4
+        assert vbmc.options["bar"] == 666  # overridden by `options`
+        # Keys from basic config
+        assert vbmc.options["specify_target_noise"] == False  # same as before
+        assert vbmc.options["tol_stable_count"] == 42  # overridden
+        # Keys from advanced config
+        assert vbmc.options["sgd_step_size"] == 0.005  # same as before
+        assert vbmc.options["uncertainty_handling"] == "zip"  # overridden
 
 
 def test__str__and__repr__():
