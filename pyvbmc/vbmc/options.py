@@ -21,7 +21,8 @@ class Options(MutableMapping, dict):
     Parameters
     ----------
     default_options_path : str
-        The path to default options that can be overwritten by the user.
+        The path to the default options. May be absolute or relative to this
+        directory.
     evaluation_parameters : dict
         Parameters used to evaluate the options.
     user_options : dict
@@ -95,7 +96,8 @@ class Options(MutableMapping, dict):
         Parameters
         ----------
         default_options_path : str
-            The path to default options that can be overwritten by the user.
+            The path to the default options. May be absolute or relative to
+            this directory.
         evaluation_parameters : dict
             Parameters used to evaluate the options.
         other : Options
@@ -129,7 +131,8 @@ class Options(MutableMapping, dict):
         Parameters
         ----------
         options_path : str
-            The path to an options ini file that should be loaded.
+            The path to an ``options.ini`` file that should be loaded. May be
+            absolute or relative to this directory.
         evaluation_parameters : dict, optional
             Parameters used to evaluate the options.
         """
@@ -181,7 +184,11 @@ class Options(MutableMapping, dict):
 
     def __setitem__(self, key, val, force=False):
         # Prevent user from attempting to modify options after initialization
-        if self.is_initialized and not force:
+        if (
+            hasattr(self, "is_initialized")
+            and self.is_initialized
+            and not force
+        ):
             raise AttributeError(
                 "Warning: Cannot set options after initialization. Please re-initialize with `options = {...}`"
             )
@@ -199,23 +206,6 @@ class Options(MutableMapping, dict):
 
     def __delitem__(self, key):
         return dict.__delitem__(self, key)
-
-    def __getstate__(self):
-        return dict(self)
-
-    def __setstate__(self, state):
-        self.update(state)
-
-    def __reduce__(self):
-        return (
-            self.__class__,
-            (
-                self.default_options_path,
-                self.evaluation_parameters,
-                self.user_options,
-            ),
-            self.__getstate__(),
-        )
 
     def __copy__(self):
         cls = self.__class__
@@ -327,12 +317,15 @@ def _read_config_file(options_path: str):
     the option in the following line.
     """
     path = Path(options_path)
+    if not path.is_absolute():
+        path = Path(__file__).parent.joinpath(path)
+
     if not path.exists():
         raise ValueError(f"{path.resolve()} does not exist.")
     conf = configparser.ConfigParser(comment_prefixes="", allow_no_value=True)
     # do not lower() both values as well as descriptions
     conf.optionxform = str
-    conf.read(options_path)
+    conf.read(path)
 
     option_list = []
     description = ""

@@ -159,17 +159,14 @@ class VBMC:
             x0 = x0.reshape((1, -1))
         self.D = x0.shape[1]
         # load basic and advanced options and validate the names
-        pyvbmc_path = os.path.dirname(os.path.realpath(__file__))
-        basic_path = pyvbmc_path + "/option_configs/basic_vbmc_options.ini"
+        basic_path = "option_configs/basic_vbmc_options.ini"
         self.options = Options(
             basic_path,
             evaluation_parameters={"D": self.D},
             user_options=options,
         )
 
-        advanced_path = (
-            pyvbmc_path + "/option_configs/advanced_vbmc_options.ini"
-        )
+        advanced_path = "option_configs/advanced_vbmc_options.ini"
         self.options.load_options_file(
             advanced_path,
             evaluation_parameters={"D": self.D},
