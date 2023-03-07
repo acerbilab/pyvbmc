@@ -151,6 +151,7 @@ def test_vp_load_static():
         x_random,
         vp.parameter_transformer.inverse(vp.parameter_transformer(x_random)),
     )
+    samples, components = vp.sample(100)
 
 
 def test_vp_save_load_error_handling():

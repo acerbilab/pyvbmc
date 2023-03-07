@@ -2174,7 +2174,7 @@ class VBMC:
         else:
             mode = "xb"
         with open(filepath, mode=mode) as f:
-            dill.dump(self, f, recurse=False)
+            dill.dump(self, f, recurse=True)
 
     @classmethod
     def load(
