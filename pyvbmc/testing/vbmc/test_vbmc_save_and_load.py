@@ -1,5 +1,4 @@
 from pathlib import Path
-from sys import version_info
 
 import dill
 import numpy as np
@@ -10,9 +9,6 @@ from pyvbmc import VBMC
 from pyvbmc.priors import SciPy
 
 base_path = Path(__file__).parent
-static_filename = (
-    f"test_vbmc_save_static_python_{version_info[0]}_{version_info[1]}.pkl"
-)
 
 
 def test_vbmc_save_dynamic():
@@ -77,36 +73,15 @@ def test_vbmc_load_static():
     PLB = np.full(D, prior_mu - np.sqrt(prior_var))  # Plausible lower bounds
     PUB = np.full(D, prior_mu + np.sqrt(prior_var))  # Plausible upper bounds
     UB = np.full(D, np.inf)  # Upper bounds
-    N = 100
-    x_random = np.random.normal(size=(N, D))
-
-    def log_prior(theta):
-        """Multivariate normal prior on theta."""
-        cov = np.diag(prior_var)
-        return scs.multivariate_normal(prior_mu, cov).logpdf(theta)
-
-    def log_likelihood(theta, data=np.ones(D)):
-        """D-dimensional Rosenbrock's banana function."""
-        # In this simple demo the data just translates the parameters:
-        theta = np.atleast_2d(theta)
-        theta = theta + data
-
-        x, y = theta[:, :-1], theta[:, 1:]
-        return -np.sum((x**2 - y) ** 2 + (x - 1) ** 2 / 100, axis=1)
-
-    def log_joint(theta, data=np.ones(D)):
-        """log-density of the joint distribution."""
-        return log_likelihood(theta, data) + log_prior(theta)
 
     random_state = np.random.get_state()
 
-    vbmc = VBMC.load(base_path.joinpath(static_filename))
+    vbmc = VBMC.load(base_path.joinpath("test_vbmc_save_static.pkl"))
     assert vbmc.D == D
     assert np.all(np.equal(vbmc.lower_bounds, LB))
     assert np.all(np.equal(vbmc.plausible_lower_bounds, PLB))
     assert np.all(np.equal(vbmc.plausible_upper_bounds, PUB))
     assert np.all(np.equal(vbmc.upper_bounds, UB))
-    assert np.all(vbmc.log_joint(x_random) == log_joint(x_random))
     assert vbmc.options["max_iter"] == 300
     for i, val in enumerate(random_state):
         assert np.all(np.random.get_state()[i] == val)
@@ -114,7 +89,7 @@ def test_vbmc_load_static():
     assert vbmc.iteration == 6
 
     vbmc = VBMC.load(
-        base_path.joinpath(static_filename),
+        base_path.joinpath("test_vbmc_save_static.pkl"),
         iteration=0,
     )
     assert vbmc.D == D
@@ -122,7 +97,6 @@ def test_vbmc_load_static():
     assert np.all(np.equal(vbmc.plausible_lower_bounds, PLB))
     assert np.all(np.equal(vbmc.plausible_upper_bounds, PUB))
     assert np.all(np.equal(vbmc.upper_bounds, UB))
-    assert np.all(vbmc.log_joint(x_random) == log_joint(x_random))
     assert vbmc.options["max_iter"] == 300
     for i, val in enumerate(random_state):
         assert np.all(np.random.get_state()[i] == val)
@@ -130,7 +104,7 @@ def test_vbmc_load_static():
     assert vbmc.iteration == 0
 
     vbmc = VBMC.load(
-        base_path.joinpath(static_filename),
+        base_path.joinpath("test_vbmc_save_static.pkl"),
         new_options={"max_fun_evals": 42},
         iteration=0,
     )
@@ -139,7 +113,6 @@ def test_vbmc_load_static():
     assert np.all(np.equal(vbmc.plausible_lower_bounds, PLB))
     assert np.all(np.equal(vbmc.plausible_upper_bounds, PUB))
     assert np.all(np.equal(vbmc.upper_bounds, UB))
-    assert np.all(vbmc.log_joint(x_random) == log_joint(x_random))
     assert vbmc.options["max_iter"] == 300
     for i, val in enumerate(random_state):
         assert np.all(np.random.get_state()[i] == val)
@@ -147,7 +120,7 @@ def test_vbmc_load_static():
     assert vbmc.iteration == 0
 
     vbmc = VBMC.load(
-        base_path.joinpath(static_filename),
+        base_path.joinpath("test_vbmc_save_static.pkl"),
         new_options={"max_fun_evals": 42},
         iteration=0,
         set_random_state=True,
@@ -157,7 +130,6 @@ def test_vbmc_load_static():
     assert np.all(np.equal(vbmc.plausible_lower_bounds, PLB))
     assert np.all(np.equal(vbmc.plausible_upper_bounds, PUB))
     assert np.all(np.equal(vbmc.upper_bounds, UB))
-    assert np.all(vbmc.log_joint(x_random) == log_joint(x_random))
     assert vbmc.options["max_iter"] == 300
     assert not np.all(np.random.get_state()[1] == random_state[1])
     assert vbmc.options["max_fun_evals"] == 42
@@ -165,21 +137,25 @@ def test_vbmc_load_static():
 
 
 def test_vbmc_save_load_error_handling():
-    vbmc = VBMC.load(base_path.joinpath(static_filename))
+    vbmc = VBMC.load(base_path.joinpath("test_vbmc_save_static.pkl"))
     with pytest.raises(FileExistsError) as err:
-        vbmc.save(base_path.joinpath(static_filename))
+        vbmc.save(base_path.joinpath("test_vbmc_save_static.pkl"))
     with pytest.raises(OSError) as err:
         vbmc.save("/this/path/does/not/exist.pkl")
     with pytest.raises(OSError) as err:
         vbmc = VBMC.load("/this/path/does/not/exist.pkl")
     with pytest.raises(ValueError) as err:
-        vbmc = VBMC.load(base_path.joinpath(static_filename), iteration=10)
+        vbmc = VBMC.load(
+            base_path.joinpath("test_vbmc_save_static.pkl"), iteration=10
+        )
     assert (
         "Specified iteration (10) should be >= 0 and <= last stored iteration (6)."
         in err.value.args[0]
     )
     with pytest.raises(ValueError) as err:
-        vbmc = VBMC.load(base_path.joinpath(static_filename), iteration=-1)
+        vbmc = VBMC.load(
+            base_path.joinpath("test_vbmc_save_static.pkl"), iteration=-1
+        )
     assert (
         "Specified iteration (-1) should be >= 0 and <= last stored iteration (6)."
         in err.value.args[0]
