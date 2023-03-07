@@ -115,6 +115,8 @@ def create_vbmc_animation(
     else:
         imageio.mimsave(path, images, duration=0.5)
 
+    return fig
+
 
 def _fig_to_img(fig):
     """

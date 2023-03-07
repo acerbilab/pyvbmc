@@ -2149,6 +2149,14 @@ class VBMC:
     def save(self, file, overwrite=False):
         """Save the VBMC instance to a file.
 
+        .. note::
+
+          Complex attributes of a VBMC instance (such as the stored
+          ``log_joint`` callable) may not behave correctly if they have been
+          saved and loaded by different minor versions of Python, due to
+          differing dependency versions. Basic (static) data should remain
+          legible across versions.
+
         Parameters
         ----------
         file : path-like
@@ -2181,6 +2189,14 @@ class VBMC:
         cls, file, new_options=None, iteration=None, set_random_state=False
     ):
         """Load a VBMC instance from a file.
+
+        .. note::
+
+          Complex attributes of a VBMC instance (such as the stored
+          ``log_joint`` callable) may not behave correctly if they have been
+          saved and loaded by different minor versions of Python, due to
+          differing dependency versions. Basic (static) data should remain
+          legible across versions.
 
         Parameters
         ----------
