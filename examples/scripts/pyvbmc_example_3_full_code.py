@@ -1,4 +1,3 @@
-import dill
 import numpy as np
 import scipy.stats as scs
 from scipy.optimize import minimize
@@ -84,58 +83,32 @@ print(results["success_flag"])
 print(format_dict(results))
 
 
-with open("../vbmc_test_save.pkl", "wb") as f:
-    dill.dump(vbmc, f)
-
-with open("../vbmc_test_save.pkl", "rb") as f:
-    vbmc = dill.load(f)
-
-
-iteration = (
-    vbmc.iteration
-)  # continue from specified iteration, here it's the last iteration
-assert 1 <= iteration <= vbmc.iteration
-
-## Set states for VBMC right before the specified iteration
-vbmc.gp = vbmc.iteration_history["gp"][iteration - 1]
-vbmc.vp = vbmc.iteration_history["vp"][iteration - 1]
-vbmc.function_logger = vbmc.iteration_history["function_logger"][iteration - 1]
-vbmc.optim_state = vbmc.iteration_history["optim_state"][iteration - 1]
-vbmc.hyp_dict = vbmc.optim_state["hyp_dict"]
-vbmc.iteration = iteration - 1
-
-for k, v in vbmc.iteration_history.items():
-    try:
-        vbmc.iteration_history[k] = vbmc.iteration_history[k][:iteration]
-    except TypeError:
-        pass
-# (Optionally) Set random state for reproducibility, note that it can only
-# reproduce exactly the same optimization process when VBMC's options are not updated
-random_state = vbmc.iteration_history["random_state"][iteration - 1]
-np.random.set_state(random_state)
+# Here we specify `overwrite=True`, since we don't care about overwriting our
+# test file. By default, `overwrite=False` and PyVBMC will raise an error if
+# the file already exists.
+vbmc.save("vbmc_test_save.pkl", overwrite=True)
+# We could also save just the final variational posterior:
+# vbmc.vp.save("vp_test_save.pkl")
 
 
-options = {
+new_options = {
     "max_fun_evals": 50 * (D + 2),
 }
-vbmc.options.is_initialized = (
-    False  # Temporarily set to False for updating options
+vbmc = VBMC.load(
+    "vbmc_test_save.pkl",
+    new_options=new_options,
+    iteration=None,  # the default: start from the last stored iteration.
+    set_random_state=False,  # the default: don't modify the random state
+    # (can be set to True for reproducibility).
 )
-vbmc.options.update(options)
-vbmc.options.is_initialized = True
-
-vbmc.is_finished = False
 vp, results = vbmc.optimize()
 
 
 print(format_dict(results))
 
 
-with open("../vbmc_test_save.pkl", "wb") as f:
-    dill.dump(vbmc, f)
-
-with open("../vbmc_test_save.pkl", "rb") as f:
-    vbmc = dill.load(f)
+vbmc.save("vbmc_test_save.pkl", overwrite=True)
+vbmc = VBMC.load("vbmc_test_save.pkl")
 
 samples, components = vbmc.vp.sample(5)
 # `samples` are samples drawn from the variational posterior.

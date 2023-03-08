@@ -4,8 +4,11 @@ import math
 import os
 import sys
 from collections.abc import Iterable
+from pathlib import Path
 from textwrap import indent
+from typing import Union
 
+import dill
 import gpyreg as gpr
 import matplotlib.pyplot as plt
 import numpy as np
@@ -77,6 +80,11 @@ class VBMC:
         Additional options can be passed as a dict. Please refer to the
         VBMC options page for the default options. If no ``options`` are
         passed, the default options are used.
+    options_path : pathlike, optional
+        Additional options can also be specified by a `.ini` file. The
+        ``options`` `dict` keyword takes precedence over options set in the
+        `.ini` file. ``options_path`` should be either absolute or relative to
+        the `pyvbmc/vbmc/` directory.
     prior, optional
         An optional separate prior. It can be a ``pyvbmc.priors.Prior``
         subclass, an appropriate ``scipy.stats`` distribution, or a list of
@@ -132,6 +140,7 @@ class VBMC:
         plausible_lower_bounds: np.ndarray = None,
         plausible_upper_bounds: np.ndarray = None,
         options: dict = None,
+        options_path: Union[os.PathLike, None] = None,
         prior: Prior = None,
         log_prior: callable = None,
         sample_prior: callable = None,
@@ -157,23 +166,32 @@ class VBMC:
             x0 = x0.reshape((1, -1))
         self.D = x0.shape[1]
         # load basic and advanced options and validate the names
-        pyvbmc_path = os.path.dirname(os.path.realpath(__file__))
-        basic_path = pyvbmc_path + "/option_configs/basic_vbmc_options.ini"
+        basic_options_path = "option_configs/basic_vbmc_options.ini"
         self.options = Options(
-            basic_path,
+            basic_options_path,
             evaluation_parameters={"D": self.D},
             user_options=options,
         )
 
-        advanced_path = (
-            pyvbmc_path + "/option_configs/advanced_vbmc_options.ini"
-        )
+        advanced_options_path = "option_configs/advanced_vbmc_options.ini"
         self.options.load_options_file(
-            advanced_path,
+            advanced_options_path,
             evaluation_parameters={"D": self.D},
         )
         self.options.update_defaults()
-        self.options.validate_option_names([basic_path, advanced_path])
+        if options_path is not None:
+            # Update with user-specified config file
+            self.options.load_options_file(
+                options_path,
+                evaluation_parameters={"D": self.D},
+            )
+            self.options.validate_option_names(
+                [basic_options_path, advanced_options_path, options_path]
+            )
+        else:
+            self.options.validate_option_names(
+                [basic_options_path, advanced_options_path]
+            )
 
         # Create an initial logger for initialization messages:
         self.logger = self._init_logger("_init")
@@ -2128,6 +2146,133 @@ class VBMC:
         vp.stats["stable"] = self.iteration_history.get("stable")[idx_best]
         return vp, elbo, elbo_sd, idx_best
 
+    def save(self, file, overwrite=False):
+        """Save the VBMC instance to a file.
+
+        .. note::
+
+          Complex attributes of a VBMC instance (such as the stored
+          ``log_joint`` callable) may not behave correctly if they have been
+          saved and loaded by different minor versions of Python, due to
+          differing dependency versions. Basic (static) data should remain
+          legible across versions.
+
+        Parameters
+        ----------
+        file : path-like
+            The file name or path to write to. Default file extension `.pkl`
+            will be added if no extension is specified.
+        overwrite : bool
+            Whether to allow overwriting existing files. Default `False`.
+
+        Raises
+        ------
+        FileExistsError
+            If the file already exists and ``overwrite`` is `False`.
+        OSError
+            If the file cannot be opened for other reasons (e.g., the directory
+            is not found, the disk is full, etc.).
+        """
+        filepath = Path(file)
+        if filepath.suffix == "":
+            filepath = filepath.with_suffix(".pkl")
+
+        if overwrite:
+            mode = "wb"
+        else:
+            mode = "xb"
+        with open(filepath, mode=mode) as f:
+            dill.dump(self, f, recurse=True)
+
+    @classmethod
+    def load(
+        cls, file, new_options=None, iteration=None, set_random_state=False
+    ):
+        """Load a VBMC instance from a file.
+
+        .. note::
+
+          Complex attributes of a VBMC instance (such as the stored
+          ``log_joint`` callable) may not behave correctly if they have been
+          saved and loaded by different minor versions of Python, due to
+          differing dependency versions. Basic (static) data should remain
+          legible across versions.
+
+        Parameters
+        ----------
+        file : path-like
+            The file name or path to write to.
+        new_options : dict or None
+            A dictionary of options to change when loading the stored VBMC
+            instance. Useful, for example, to continue a previous run with a
+            larger budget of function evaluations and/or iterations. See the
+            documentation on PyVBMC's options for more details.
+        iteration : int or None
+            The iteration at which to initialize the stored VBMC instance.
+            Default is `None`, meaning initialize to the last recorded iteration.
+        set_random_state : bool
+            Whether to set the global random state to the stored random state
+            of the VBMC object, for reprodicibility. Default `False`.
+
+        Returns
+        -------
+        vbmc : VBMC
+            The loaded VBMC instance, initialized at the specified iteration.
+
+        Raises
+        ------
+        ValueError
+            If the specified ``iteration`` is less than zero or larger than the
+            last stored iteration.
+        OSError
+            If the file cannot be found, or cannot be opened for other reasons.
+        """
+        filepath = Path(file)
+        if filepath.suffix == "":
+            filepath = filepath.with_suffix(".pkl")
+
+        with open(filepath, mode="rb") as f:
+            vbmc = dill.load(f)
+
+        # Set/check iteration
+        if iteration is None:
+            iteration = vbmc.iteration
+        else:
+            if not (0 <= iteration <= vbmc.iteration):
+                raise ValueError(
+                    f"Specified iteration ({iteration}) should be >= 0 and <= last stored iteration ({vbmc.iteration})."
+                )
+
+        # Set states for VBMC right before the specified iteration
+        if hasattr(vbmc, "iteration_history"):
+            # Handle instances saved before running vbmc.optimize()
+            for attr in ["gp", "vp", "function_logger", "optim_state"]:
+                if vbmc.iteration_history[attr] is not None:
+                    setattr(
+                        vbmc, attr, vbmc.iteration_history[attr][iteration]
+                    )
+            if vbmc.optim_state.get("hyp_dict") is not None:
+                vbmc.hyp_dict = vbmc.optim_state["hyp_dict"]
+            vbmc.iteration = iteration
+            for k, v in vbmc.iteration_history.items():
+                if v is not None:
+                    vbmc.iteration_history[k] = vbmc.iteration_history[k][
+                        : (iteration + 1)
+                    ]
+
+        # Update with new options (e.g. higher number of max iterations)
+        if new_options is not None:
+            vbmc.options.is_initialized = False
+            vbmc.options.update(new_options)
+            vbmc.options.is_initialized = True
+
+        # Optionally set random state for reproducibility
+        if set_random_state:
+            random_state = vbmc.iteration_history["random_state"][iteration]
+            np.random.set_state(random_state)
+
+        return vbmc
+
     def _create_result_dict(
         self, idx_best: int, termination_message: str, success_flag: bool
     ):
@@ -2263,8 +2408,10 @@ class VBMC:
         # Avoid duplicating a handler for the same log file
         # (remove duplicates, re-add below)
         for handler in logger.handlers:
-            if handler.baseFilename == os.path.abspath(
-                self.options.get("log_file_name")
+            log_file_name = self.options.get("log_file_name")
+            if (
+                log_file_name is not None
+                and handler.baseFilename == os.path.abspath(log_file_name)
             ):
                 logger.removeHandler(handler)
 
@@ -2346,7 +2493,7 @@ class VBMC:
         return "VBMC:" + indent(
             f"""
 dimension = {self.D},
-x0: {summarize(self.x0)},
+x0: {summarize(self.parameter_transformer.inverse(self.x0))},
 lower bounds: {summarize(self.lower_bounds)},
 upper bounds: {summarize(self.upper_bounds)},
 plausible lower bounds: {summarize(self.plausible_lower_bounds)},

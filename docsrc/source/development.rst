@@ -75,35 +75,28 @@ There are add-ons to generate docstring blueprints using IDE's.
 Code documentation
 ------------------
 
-The documentation is currently hosted on :doc:`github.io <index>`. We build the PyVBMC documentation using `Sphinx <https://www.sphinx-doc.org/en/master/usage/quickstart.html>`_. The source code of the documentation is in the :mainbranch:`docsrc folder <docsrc>` and the build version is in the :labrepos:`gh-pages <pyvbmc/tree/gh-pages>` branch. When the documentation is re-built, it should be pushed to the ``gh-pages`` instead of committing it on the ``main`` branch.
+The documentation is currently hosted on :doc:`github.io <index>`. We build the PyVBMC documentation using `Sphinx <https://www.sphinx-doc.org/en/master/usage/quickstart.html>`_. The source code of the documentation is in the :mainbranch:`docsrc folder <docsrc>` and the build version is in the :labrepos:`gh-pages <pyvbmc/tree/gh-pages>` branch.
 
-To setup an existing PyVBMC repository for building documentation, please follow the steps below:
+GitHub workflows automatically build and update the documentation whenever a commit is merged into the ``main`` branch, but it is sometimes useful to first do this locally in order to confirm that everything builds and renders correctly. This is especially advisable if you have made significant changes to the docs. To do so:
 
-1. One-time setup:
+1. From your working branch, render new documentation::
 
-   a. Remove the ``docs/`` folder from the root of your existing PyVBMC repo, if it is present.
-   b. From the root of the PyVBMC repo, run::
-
-       git clone -b gh-pages --single-branch https://github.com/acerbilab/pyvbmc docs
-
-      This will clone *only* the ``gh-pages`` branch inside ``docs/``, so that changes to the docs can now be pushed directly to ``gh-pages`` from within ``docs/``.
-2. From the ``main`` branch render new documentation::
-
-    cd /docsrc (navigate to documentation source folder)
-    make github  (this builds the doc and copies the build version to ./docs)
+     cd /docsrc  # navigate to documentation source folder
+     make github  # build the docs and copy them to ./docs
 
    (If you are using Windows, run ``.\make.bat github`` with ``cmd`` instead.)
-3. Change into the ``docs/`` directory::
 
-     cd ../docs
+2. Preview the website locally with your browser of choice::
 
-4. Commit the new documentation and push. `github.io <https://acerbilab.github.io/pyvbmc/>`_ will detect the changes and rebuild the website (possibly after a few minutes). Only documentation that was built from the ``main`` branch should be committed to ``gh-pages``.
+     firefox ../docs/index.html
 
-If it seems that the documentation does not update correctly (e.g., items not appearing in the sidebar or table of content), try deleting the ``./docs`` folder and the cached folder ``./docsrc/_build`` before compiling the documentation. There is a command for that::
+   If it seems that the documentation does not update correctly (e.g., items not appearing in the sidebar or table of content), try deleting the ``./docs`` folder and the cached folder ``./docsrc/_build`` before compiling the documentation. There is a command for that::
 
-    make clean
+     make clean
 
-(If you are using Windows, run ``.\make.bat clean`` with ``cmd`` instead.)
+   (If you are using Windows, run ``.\make.bat clean`` with ``cmd`` instead.)
+
+If any changes have been made the the Jupyter Notebook examples, it is advisable to check that the :mainbranch:`examples <examples>` render correctly on GitHub (make sure to view them from your working branch).
 
 General structure
 .................

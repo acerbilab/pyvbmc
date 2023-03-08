@@ -22,4 +22,15 @@
 
 
 .. autoclass:: pyvbmc.variational_posterior.VariationalPosterior
+   :exclude-members: kl_div, log_pdf, load, moments, mtv, pdf, plot, sample, save
    :members:
+
+   .. autofunction:: pyvbmc.VariationalPosterior.kl_div
+   .. autofunction:: pyvbmc.VariationalPosterior.log_pdf
+   .. autofunction:: pyvbmc.VariationalPosterior.load
+   .. autofunction:: pyvbmc.VariationalPosterior.moments
+   .. autofunction:: pyvbmc.VariationalPosterior.mtv
+   .. autofunction:: pyvbmc.VariationalPosterior.pdf
+   .. autofunction:: pyvbmc.VariationalPosterior.plot
+   .. autofunction:: pyvbmc.VariationalPosterior.sample
+   .. autofunction:: pyvbmc.VariationalPosterior.save

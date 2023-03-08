@@ -1,4 +1,5 @@
 import sys
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -1005,6 +1006,65 @@ def test_init_1D_input():
     assert np.all(vbmc.optim_state["ub_orig"] == ub.reshape((1, D)))
     assert np.all(vbmc.optim_state["plb_orig"] == plb.reshape((1, D)))
     assert np.all(vbmc.optim_state["pub_orig"] == pub.reshape((1, D)))
+
+
+def test_init_options_path():
+    D = 2
+    lb = np.full((D,), -10)
+    ub = np.full((D,), 10)
+    x0_array = np.full((D,), 0)
+    plb = np.full((D,), -5)
+    pub = np.full((D,), 5)
+
+    def log_joint(x):
+        return x**2 + x + 1, 1.0
+
+    # default options:
+    vbmc = VBMC(log_joint, x0_array, lb, ub, plb, pub)
+    # Keys from test configs should not be here:
+    assert "foo" not in vbmc.options
+    assert "bar" not in vbmc.options
+    assert "fooD" not in vbmc.options
+    # Keys from basic config
+    assert vbmc.options["specify_target_noise"] == False
+    assert vbmc.options["log_file_name"] is None
+    # Keys from advanced config
+    assert vbmc.options["sgd_step_size"] == 0.005
+    assert vbmc.options["uncertainty_handling"] == []
+
+    # relative path (string)
+    options = {"bar": 666}
+    abspath = (
+        Path(__file__)
+        .parent.parent.parent.joinpath("vbmc/option_configs/test_options.ini")
+        .resolve()
+    )
+    for path in [
+        Path("option_configs/test_options.ini"),  # relative Path
+        "option_configs/test_options.ini",  # relative Path (string)
+        abspath,  # absolute Path
+        str(abspath),  # absolute Path (string)
+    ]:
+        vbmc = VBMC(
+            log_joint,
+            x0_array,
+            lb,
+            ub,
+            plb,
+            pub,
+            options=options,
+            options_path=path,
+        )
+        # Keys from test config
+        assert vbmc.options["foo"] == "iter"
+        assert vbmc.options["fooD"] == 4
+        assert vbmc.options["bar"] == 666  # overridden by `options`
+        # Keys from basic config
+        assert vbmc.options["specify_target_noise"] == False  # same as before
+        assert vbmc.options["tol_stable_count"] == 42  # overridden
+        # Keys from advanced config
+        assert vbmc.options["sgd_step_size"] == 0.005  # same as before
+        assert vbmc.options["uncertainty_handling"] == "zip"  # overridden
 
 
 def test__str__and__repr__():

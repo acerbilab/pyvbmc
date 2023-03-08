@@ -2,10 +2,12 @@
 from __future__ import annotations
 
 import sys
+from pathlib import Path
 from textwrap import indent
 from typing import Optional
 
 import corner
+import dill
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import trapezoid
@@ -1133,6 +1135,7 @@ class VariationalPosterior:
         highlight_data: list = None,
         plot_vp_centres: bool = False,
         plot_style: dict = None,
+        gp: GaussianProcess = None,
     ):
         """
         Plot the variational posterior.
@@ -1177,7 +1180,8 @@ class VariationalPosterior:
                 **vp_centre** : dict, optional
                     Styling options used to plot the `vp` centres.
                     By default: ``{"marker":"x", "color":"red"}``.
-
+        gp : gpyreg.GaussianProcess, optional
+            The GP to use for plotting actively sampled points.
 
         Returns
         -------
@@ -1221,22 +1225,20 @@ class VariationalPosterior:
         axes = np.array(fig.axes).reshape((self.D, self.D))
 
         # plot gp data
-        if plot_data and hasattr(self, "gp"):
+        if plot_data and gp is not None:
 
             # highlight nothing when argument is None
             if highlight_data is None or highlight_data.size == 0:
-                highlight_data = np.array([False] * len(self.gp.X))
+                highlight_data = np.array([False] * len(gp.X))
                 normal_data = ~highlight_data
             else:
                 normal_data = [
-                    i for i in range(len(self.gp.X)) if i not in highlight_data
+                    i for i in range(len(gp.X)) if i not in highlight_data
                 ]
 
-            orig_X_norm = self.parameter_transformer.inverse(
-                self.gp.X[normal_data]
-            )
+            orig_X_norm = self.parameter_transformer.inverse(gp.X[normal_data])
             orig_X_highlight = self.parameter_transformer.inverse(
-                self.gp.X[highlight_data]
+                gp.X[highlight_data]
             )
 
             for r in range(1, self.D):
@@ -1283,6 +1285,64 @@ class VariationalPosterior:
         fig.tight_layout(pad=0.5)
 
         return fig
+
+    def save(self, file, overwrite=False):
+        """Save the VP to a file.
+
+        Parameters
+        ----------
+        file : path-like
+            The file name or path to write to. Default file extension `.pkl`
+            will be added if no extension is specified.
+        overwrite : bool
+            Whether to allow overwriting existing files. Default `False`.
+
+        Raises
+        ------
+        FileExistsError
+            If the file already exists and ``overwrite`` is `False`.
+        OSError
+            If the file cannot be opened for other reasons (e.g., the directory
+            is not found, the disk is full, etc.).
+        """
+        filepath = Path(file)
+        if filepath.suffix == "":
+            filepath = filepath.with_suffix(".pkl")
+
+        if overwrite:
+            mode = "wb"
+        else:
+            mode = "xb"
+        with open(filepath, mode=mode) as f:
+            dill.dump(self, f, recurse=True)
+
+    @classmethod
+    def load(cls, file):
+        """Load a VP from a file.
+
+        Parameters
+        ----------
+        file : path-like
+            The file name or path to write to.
+
+        Returns
+        -------
+        vp : VariationalPosterior
+            The loaded VP instance.
+
+        Raises
+        ------
+        OSError
+            If the file cannot be found, or cannot be opened for other reasons.
+        """
+        filepath = Path(file)
+        if filepath.suffix == "":
+            filepath = filepath.with_suffix(".pkl")
+
+        with open(filepath, mode="rb") as f:
+            vp = dill.load(f)
+
+        return vp
 
     def __str__(self, arr_size_thresh=10):
         """Print a string summary."""
