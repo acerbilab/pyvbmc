@@ -1,701 +1,468 @@
 
+
 <!DOCTYPE html>
 
-<html>
+
+<html lang="en" >
+
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>PyVBMC Example 3: Output diagnostics and saving results &#8212; PyVBMC</title>
-    
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+  <link href="../_static/styles/theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
 
-    
-  <link rel="stylesheet"
-    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
-  <link rel="preload" as="font" type="font/woff2" crossorigin
-    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
-  <link rel="preload" as="font" type="font/woff2" crossorigin
-    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+  
+  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=5115cc725059bd94278eecd172e13a965bf8f5a9" type="text/css" />
+    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
-    
+  
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d" />
 
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
-    <script src="../_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_examples/pyvbmc_example_3_diagnostics_and_saving';</script>
     <link rel="canonical" href="https://acerbilab.github.io/pyvbmc/_examples/pyvbmc_example_3_diagnostics_and_saving.html" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="PyVBMC Example 4: Multiple runs as validation" href="pyvbmc_example_4_validation.html" />
     <link rel="prev" title="PyVBMC Example 2: Understanding the inputs and the output trace" href="pyvbmc_example_2_inputs_outputs.html" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="docsearch:language" content="None">
-    
-
-    <!-- Google Analytics -->
-    
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
   </head>
-  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
-<!-- Checkboxes to toggle the left sidebar -->
-<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
-<label class="overlay overlay-navbar" for="__navigation">
-    <div class="visually-hidden">Toggle navigation sidebar</div>
-</label>
-<!-- Checkboxes to toggle the in-page toc -->
-<input type="checkbox" class="sidebar-toggle" name="__page-toc" id="__page-toc" aria-label="Toggle in-page Table of Contents">
-<label class="overlay overlay-pagetoc" for="__page-toc">
-    <div class="visually-hidden">Toggle in-page Table of Contents</div>
-</label>
-<!-- Headers at the top -->
-<div class="announcement header-item noprint"></div>
-<div class="header header-item noprint"></div>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
 
-    
-    <div class="container-fluid" id="banner"></div>
-
-    
-
-    <div class="container-xl">
-      <div class="row">
-          
-<!-- Sidebar -->
-<div class="bd-sidebar noprint" id="site-navigation">
-    <div class="bd-sidebar__content">
-        <div class="bd-sidebar__top"><div class="navbar-brand-box">
-    <a class="navbar-brand text-wrap" href="../index.html">
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
       
-        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+      <div class="bd-sidebar-primary bd-sidebar">
         
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+    
+    
       
-      
-      <img src="../_static/logo.svg" class="logo" alt="logo">
-      
-      
-    </a>
-</div><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
-  <i class="icon fas fa-search"></i>
-  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
-</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
-    <div class="bd-toc-item active">
+    
+    
+    <img src="../_static/logo.svg" class="logo__image only-light" alt="Logo image"/>
+    <script>document.write(`<img src="../_static/logo.svg" class="logo__image only-dark" alt="Logo image"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
         <ul class="current nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../installation.html">
-   Installation
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../quickstart.html">
-   Getting started
-  </a>
- </li>
- <li class="toctree-l1 current active has-children">
-  <a class="reference internal" href="../examples.html">
-   Examples
-  </a>
-  <input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
-  <label for="toctree-checkbox-1">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul class="current">
-   <li class="toctree-l2">
-    <a class="reference internal" href="pyvbmc_example_1_basic_usage.html">
-     PyVBMC Example 1: Basic usage
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="pyvbmc_example_2_inputs_outputs.html">
-     PyVBMC Example 2: Understanding the inputs and the output trace
-    </a>
-   </li>
-   <li class="toctree-l2 current active">
-    <a class="current reference internal" href="#">
-     PyVBMC Example 3: Output diagnostics and saving results
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="pyvbmc_example_4_validation.html">
-     PyVBMC Example 4: Multiple runs as validation
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="pyvbmc_example_5_prior_distributions.html">
-     PyVBMC Example 5: Prior distributions
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="pyvbmc_example_6_noisy_likelihoods.html">
-     PyVBMC Example 6: Noisy log-likelihood evaluations
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../documentation.html">
-   Documentation
-  </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
-  <label for="toctree-checkbox-2">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../api/classes/vbmc.html">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       VBMC
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../api/classes/variational_posterior.html">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       VariationalPosterior
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../api/options/vbmc_options.html">
-     VBMC options
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../api/classes/priors.html">
-     Priors
-    </a>
-   </li>
-   <li class="toctree-l2 has-children">
-    <a class="reference internal" href="../api/advanced_docs.html">
-     Advanced documentation
-    </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
-    <label for="toctree-checkbox-3">
-     <i class="fas fa-chevron-down">
-     </i>
-    </label>
-    <ul>
-     <li class="toctree-l3 has-children">
-      <a class="reference internal" href="../api/classes/classes.html">
-       Classes
-      </a>
-      <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
-      <label for="toctree-checkbox-4">
-       <i class="fas fa-chevron-down">
-       </i>
-      </label>
-      <ul>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../api/classes/acquisition_functions.html">
-         Acquisition Functions
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../api/classes/function_logger.html">
-         <code class="docutils literal notranslate">
-          <span class="pre">
-           FunctionLogger
-          </span>
-         </code>
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../api/classes/iteration_history.html">
-         <code class="docutils literal notranslate">
-          <span class="pre">
-           IterationHistory
-          </span>
-         </code>
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../api/classes/options.html">
-         <code class="docutils literal notranslate">
-          <span class="pre">
-           Options
-          </span>
-         </code>
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../api/classes/parameter_transformer.html">
-         <code class="docutils literal notranslate">
-          <span class="pre">
-           ParameterTransformer
-          </span>
-         </code>
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../api/classes/timer.html">
-         <code class="docutils literal notranslate">
-          <span class="pre">
-           Timer
-          </span>
-         </code>
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../api/classes/variational_posterior.html">
-         <code class="docutils literal notranslate">
-          <span class="pre">
-           VariationalPosterior
-          </span>
-         </code>
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../api/classes/vbmc.html">
-         <code class="docutils literal notranslate">
-          <span class="pre">
-           VBMC
-          </span>
-         </code>
-        </a>
-       </li>
-      </ul>
-     </li>
-     <li class="toctree-l3 has-children">
-      <a class="reference internal" href="../api/functions/functions.html">
-       Functions
-      </a>
-      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
-      <label for="toctree-checkbox-5">
-       <i class="fas fa-chevron-down">
-       </i>
-      </label>
-      <ul>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../api/functions/active_sample.html">
-         <code class="docutils literal notranslate">
-          <span class="pre">
-           active_sample
-          </span>
-         </code>
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../api/functions/create_vbmc_animation.html">
-         <code class="docutils literal notranslate">
-          <span class="pre">
-           create_vbmc_animation
-          </span>
-         </code>
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../api/functions/decorators.html">
-         <code class="docutils literal notranslate">
-          <span class="pre">
-           decorators
-          </span>
-         </code>
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../api/functions/entropy.html">
-         Entropy
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../api/functions/get_hpd.html">
-         <code class="docutils literal notranslate">
-          <span class="pre">
-           get_hpd
-          </span>
-         </code>
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../api/functions/kde_1d.html">
-         <code class="docutils literal notranslate">
-          <span class="pre">
-           kde_1d
-          </span>
-         </code>
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../api/functions/whitening.html">
-         <code class="docutils literal notranslate">
-          <span class="pre">
-           whitening
-          </span>
-         </code>
-        </a>
-       </li>
-      </ul>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../api/options/vbmc_options.html">
-       VBMC options
-      </a>
-     </li>
-    </ul>
-   </li>
-  </ul>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Getting started</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../examples.html">Examples</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="pyvbmc_example_1_basic_usage.html">PyVBMC Example 1: Basic usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvbmc_example_2_inputs_outputs.html">PyVBMC Example 2: Understanding the inputs and the output trace</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">PyVBMC Example 3: Output diagnostics and saving results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvbmc_example_4_validation.html">PyVBMC Example 4: Multiple runs as validation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvbmc_example_5_prior_distributions.html">PyVBMC Example 5: Prior distributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvbmc_example_6_noisy_likelihoods.html">PyVBMC Example 6: Noisy log-likelihood evaluations</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../documentation.html">Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../api/classes/vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/options/vbmc_options.html">VBMC options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/classes/priors.html">Priors</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api/advanced_docs.html">Advanced documentation</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api/classes/classes.html">Classes</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/classes/acquisition_functions.html">Acquisition Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/classes/function_logger.html"><code class="docutils literal notranslate"><span class="pre">FunctionLogger</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/classes/iteration_history.html"><code class="docutils literal notranslate"><span class="pre">IterationHistory</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/classes/options.html"><code class="docutils literal notranslate"><span class="pre">Options</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/classes/parameter_transformer.html"><code class="docutils literal notranslate"><span class="pre">ParameterTransformer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/classes/timer.html"><code class="docutils literal notranslate"><span class="pre">Timer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/classes/variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/classes/vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api/functions/functions.html">Functions</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/functions/active_sample.html"><code class="docutils literal notranslate"><span class="pre">active_sample</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/functions/create_vbmc_animation.html"><code class="docutils literal notranslate"><span class="pre">create_vbmc_animation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/functions/decorators.html"><code class="docutils literal notranslate"><span class="pre">decorators</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/functions/entropy.html">Entropy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/functions/get_hpd.html"><code class="docutils literal notranslate"><span class="pre">get_hpd</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/functions/kde_1d.html"><code class="docutils literal notranslate"><span class="pre">kde_1d</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/functions/whitening.html"><code class="docutils literal notranslate"><span class="pre">whitening</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/options/vbmc_options.html">VBMC options</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../development.html">
-   Instructions for developers and contributors
-  </a>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="../development.html">Instructions for developers and contributors</a></li>
 </ul>
 <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../about_us.html">
-   About us
-  </a>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="../about_us.html">About us</a></li>
 </ul>
 
     </div>
 </nav></div>
-        <div class="bd-sidebar__bottom">
-             <!-- To handle the deprecated key -->
-            
-            <div class="navbar_extra_footer">
-            Theme by the <a href="https://ebp.jupyterbook.org">Executable Book Project</a>
-            </div>
-            
-        </div>
     </div>
-    <div id="rtd-footer-container"></div>
-</div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
 
 
-          
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
 
-
-          
-<!-- A tiny helper pixel to detect if we've scrolled -->
 <div class="sbt-scroll-pixel-helper"></div>
-<!-- Main content -->
-<div class="col py-0 content-container">
-    
-    <div class="header-article row sticky-top noprint">
-        
 
-
-
-<div class="col py-1 d-flex header-article-main">
-    <div class="header-article__left">
-        
-        <label for="__navigation"
-  class="headerbtn"
-  data-toggle="tooltip"
-data-placement="right"
-title="Toggle navigation"
->
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
   
-
-<span class="headerbtn__icon-container">
-  <i class="fas fa-bars"></i>
-  </span>
-
-</label>
-
-        
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
     </div>
-    <div class="header-article__right">
-<div class="menu-dropdown menu-dropdown-launch-buttons">
-  <button class="headerbtn menu-dropdown__trigger"
-      aria-label="Launch interactive content">
-      <i class="fas fa-rocket"></i>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-launch-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Launch interactive content">
+    <i class="fas fa-rocket"></i>
   </button>
-  <div class="menu-dropdown__content">
-    <ul>
-      <li>
-        <a href="https://mybinder.org/v2/gh/acerbilab/pyvbmc/main?urlpath=lab/tree/_examples/pyvbmc_example_3_diagnostics_and_saving.ipynb"
-   class="headerbtn"
-   data-toggle="tooltip"
-data-placement="left"
-title="Launch on Binder"
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://mybinder.org/v2/gh/acerbilab/pyvbmc/main?urlpath=lab/tree/_examples/pyvbmc_example_3_diagnostics_and_saving.ipynb" target="_blank"
+   class="btn btn-sm dropdown-item"
+   title="Launch onBinder"
+   data-bs-placement="left" data-bs-toggle="tooltip"
 >
   
 
-<span class="headerbtn__icon-container">
+<span class="btn__icon-container">
   
     <img src="../_static/images/logo_binder.svg">
   </span>
-<span class="headerbtn__text-container">Binder</span>
+<span class="btn__text-container">Binder</span>
 </a>
-
-      </li>
+</li>
       
-      <li>
-        <a href="https://colab.research.google.com/github/acerbilab/pyvbmc/blob/main/_examples/pyvbmc_example_3_diagnostics_and_saving.ipynb"
-   class="headerbtn"
-   data-toggle="tooltip"
-data-placement="left"
-title="Launch on Colab"
+      
+      
+      
+      <li><a href="https://colab.research.google.com/github/acerbilab/pyvbmc/blob/main/_examples/pyvbmc_example_3_diagnostics_and_saving.ipynb" target="_blank"
+   class="btn btn-sm dropdown-item"
+   title="Launch onColab"
+   data-bs-placement="left" data-bs-toggle="tooltip"
 >
   
 
-<span class="headerbtn__icon-container">
+<span class="btn__icon-container">
   
     <img src="../_static/images/logo_colab.png">
   </span>
-<span class="headerbtn__text-container">Colab</span>
+<span class="btn__text-container">Colab</span>
 </a>
-
-      </li>
+</li>
       
-    </ul>
-  </div>
+  </ul>
 </div>
 
-<button onclick="toggleFullScreen()"
-  class="headerbtn"
-  data-toggle="tooltip"
-data-placement="bottom"
-title="Fullscreen mode"
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/acerbilab/pyvbmc" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
 >
   
 
-<span class="headerbtn__icon-container">
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/acerbilab/pyvbmc/edit/main/_examples/pyvbmc_example_3_diagnostics_and_saving.ipynb" target="_blank"
+   class="btn btn-sm btn-source-edit-button dropdown-item"
+   title="Suggest edit"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-pencil-alt"></i>
+  </span>
+<span class="btn__text-container">Suggest edit</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/acerbilab/pyvbmc/issues/new?title=Issue%20on%20page%20%2F_examples/pyvbmc_example_3_diagnostics_and_saving.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/_examples/pyvbmc_example_3_diagnostics_and_saving.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
   <i class="fas fa-expand"></i>
   </span>
 
 </button>
 
-<div class="menu-dropdown menu-dropdown-repository-buttons">
-  <button class="headerbtn menu-dropdown__trigger"
-      aria-label="Source repositories">
-      <i class="fab fa-github"></i>
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
   </button>
-  <div class="menu-dropdown__content">
-    <ul>
-      <li>
-        <a href="https://github.com/acerbilab/pyvbmc"
-   class="headerbtn"
-   data-toggle="tooltip"
-data-placement="left"
-title="Source repository"
->
-  
+`);
+</script>
 
-<span class="headerbtn__icon-container">
-  <i class="fab fa-github"></i>
-  </span>
-<span class="headerbtn__text-container">repository</span>
-</a>
-
-      </li>
-      
-      <li>
-        <a href="https://github.com/acerbilab/pyvbmc/issues/new?title=Issue%20on%20page%20%2F_examples/pyvbmc_example_3_diagnostics_and_saving.html&body=Your%20issue%20content%20here."
-   class="headerbtn"
-   data-toggle="tooltip"
-data-placement="left"
-title="Open an issue"
->
-  
-
-<span class="headerbtn__icon-container">
-  <i class="fas fa-lightbulb"></i>
-  </span>
-<span class="headerbtn__text-container">open issue</span>
-</a>
-
-      </li>
-      
-      <li>
-        <a href="https://github.com/acerbilab/pyvbmc/edit/main/_examples/pyvbmc_example_3_diagnostics_and_saving.ipynb"
-   class="headerbtn"
-   data-toggle="tooltip"
-data-placement="left"
-title="Edit this page"
->
-  
-
-<span class="headerbtn__icon-container">
-  <i class="fas fa-pencil-alt"></i>
-  </span>
-<span class="headerbtn__text-container">suggest edit</span>
-</a>
-
-      </li>
-      
-    </ul>
-  </div>
-</div>
-
-<div class="menu-dropdown menu-dropdown-download-buttons">
-  <button class="headerbtn menu-dropdown__trigger"
-      aria-label="Download this page">
-      <i class="fas fa-download"></i>
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
   </button>
-  <div class="menu-dropdown__content">
-    <ul>
-      <li>
-        <a href="../_sources/_examples/pyvbmc_example_3_diagnostics_and_saving.ipynb"
-   class="headerbtn"
-   data-toggle="tooltip"
-data-placement="left"
-title="Download source file"
->
-  
-
-<span class="headerbtn__icon-container">
-  <i class="fas fa-file"></i>
-  </span>
-<span class="headerbtn__text-container">.ipynb</span>
-</a>
-
-      </li>
-      
-      <li>
-        
-<button onclick="printPdf(this)"
-  class="headerbtn"
-  data-toggle="tooltip"
-data-placement="left"
-title="Print to PDF"
->
-  
-
-<span class="headerbtn__icon-container">
-  <i class="fas fa-file-pdf"></i>
-  </span>
-<span class="headerbtn__text-container">.pdf</span>
-</button>
-
-      </li>
-      
-    </ul>
-  </div>
-</div>
-<label for="__page-toc"
-  class="headerbtn headerbtn-page-toc"
-  
->
-  
-
-<span class="headerbtn__icon-container">
-  <i class="fas fa-list"></i>
-  </span>
-
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
 </label>
-
+</div></div>
+      
     </div>
+  
 </div>
-
-<!-- Table of contents -->
-<div class="col-md-3 bd-toc show noprint">
-    <div class="tocsection onthispage pt-5 pb-3">
-        <i class="fas fa-list"></i> Contents
-    </div>
-    <nav id="bd-toc-nav" aria-label="Page">
-        <ul class="visible nav section-nav flex-column">
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#model-definition-and-setup">
-   1. Model definition and setup
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#running-the-model-and-checking-convergence-diagnostics">
-   2. Running the model and checking convergence diagnostics
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#saving-results">
-   3. Saving results
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#resume-the-optimization-process">
-   4. Resume the optimization process
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#conclusions">
-   5. Conclusions
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#acknowledgments">
-   Acknowledgments
-  </a>
- </li>
-</ul>
-
-    </nav>
 </div>
-    </div>
-    <div class="article row">
-        <div class="col pl-md-3 pl-lg-5 content-container">
-            <!-- Table of contents that is only displayed when printing the page -->
-            <div id="jb-print-docs-body" class="onlyprint">
-                <h1>PyVBMC Example 3: Output diagnostics and saving results</h1>
-                <!-- Table of contents -->
-                <div id="print-main-content">
-                    <div id="jb-print-toc">
-                        
-                        <div>
-                            <h2> Contents </h2>
-                        </div>
-                        <nav aria-label="Page">
-                            <ul class="visible nav section-nav flex-column">
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#model-definition-and-setup">
-   1. Model definition and setup
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#running-the-model-and-checking-convergence-diagnostics">
-   2. Running the model and checking convergence diagnostics
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#saving-results">
-   3. Saving results
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#resume-the-optimization-process">
-   4. Resume the optimization process
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#conclusions">
-   5. Conclusions
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#acknowledgments">
-   Acknowledgments
-  </a>
- </li>
-</ul>
+              
+              
 
-                        </nav>
-                    </div>
-                </div>
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>PyVBMC Example 3: Output diagnostics and saving results</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
             </div>
-            <main id="main-content" role="main">
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-definition-and-setup">1. Model definition and setup</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#running-the-model-and-checking-convergence-diagnostics">2. Running the model and checking convergence diagnostics</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#saving-results">3. Saving results</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-results-and-resuming-the-optimization-process">4.  Loading results and resuming the optimization process</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conclusions">5. Conclusions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#acknowledgments">Acknowledgments</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
                 
-              <div>
-                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
   <section class="tex2jax_ignore mathjax_ignore" id="pyvbmc-example-3-output-diagnostics-and-saving-results">
-<h1>PyVBMC Example 3: Output diagnostics and saving results<a class="headerlink" href="#pyvbmc-example-3-output-diagnostics-and-saving-results" title="Permalink to this headline">#</a></h1>
+<h1>PyVBMC Example 3: Output diagnostics and saving results<a class="headerlink" href="#pyvbmc-example-3-output-diagnostics-and-saving-results" title="Permalink to this heading">#</a></h1>
 <p>In this notebook, we demonstrate extended usage of PyVBMC. We will take a brief look at PyVBMC’s diagnostic output, and show you how to save the results of optimization to disk.</p>
 <p>This notebook is Part 3 of a series of notebooks in which we present various example usages for VBMC with the PyVBMC package. The code used in this example is available as a script <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/examples/scripts/pyvbmc_example_3_full_code.py">here</a>.</p>
 <div class="cell docutils container">
@@ -705,13 +472,12 @@ title="Print to PDF"
 <span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">minimize</span>
 <span class="kn">from</span> <span class="nn">pyvbmc</span> <span class="kn">import</span> <span class="n">VBMC</span>
 <span class="kn">from</span> <span class="nn">pyvbmc.formatting</span> <span class="kn">import</span> <span class="n">format_dict</span>
-<span class="kn">import</span> <span class="nn">dill</span>
 </pre></div>
 </div>
 </div>
 </div>
 <section id="model-definition-and-setup">
-<h2>1. Model definition and setup<a class="headerlink" href="#model-definition-and-setup" title="Permalink to this headline">#</a></h2>
+<h2>1. Model definition and setup<a class="headerlink" href="#model-definition-and-setup" title="Permalink to this heading">#</a></h2>
 <p>For demonstration purposes, we will run PyVBMC with a restricted budget of function evaluations, insufficient to achieve convergence. Then we will inspect the output diagnostics, and resume optimization.</p>
 <p>We use a higher-dimensional analogue of the same toy target function in Example 1, a broad <a class="reference external" href="https://en.wikipedia.org/wiki/Rosenbrock_function">Rosenbrock’s banana function</a> in <span class="math notranslate nohighlight">\(D = 4\)</span>.</p>
 <div class="cell docutils container">
@@ -817,7 +583,7 @@ Reshaping plausible upper bounds to (1, 4).
 <p>(PyVBMC expects the bounds to be <code class="docutils literal notranslate"><span class="pre">(1,</span> <span class="pre">D)</span></code> row vectors, and the initial point(s) to be of shape <code class="docutils literal notranslate"><span class="pre">(n,</span> <span class="pre">D)</span></code>, but it will accept and re-shape vectors of shape <code class="docutils literal notranslate"><span class="pre">(D,)</span></code> as well.)</p>
 </section>
 <section id="running-the-model-and-checking-convergence-diagnostics">
-<h2>2. Running the model and checking convergence diagnostics<a class="headerlink" href="#running-the-model-and-checking-convergence-diagnostics" title="Permalink to this headline">#</a></h2>
+<h2>2. Running the model and checking convergence diagnostics<a class="headerlink" href="#running-the-model-and-checking-convergence-diagnostics" title="Permalink to this heading">#</a></h2>
 <p>Now we run PyVBMC with a very small budget of 40 function evaluations:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -865,7 +631,7 @@ Caution: Returned variational solution may have not converged.
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{
-    &#39;function&#39;: &#39;&lt;function VBMC._init_log_joint.&lt;locals&gt;.log_joint at 0x7f71a5e22310&gt;&#39;,
+    &#39;function&#39;: &#39;&lt;function VBMC._init_log_joint.&lt;locals&gt;.log_joint at 0x7f00ea0d79d0&gt;&#39;,
     &#39;problem_type&#39;: &#39;unconstrained&#39;,
     &#39;iterations&#39;: 6,
     &#39;func_count&#39;: 40,
@@ -896,91 +662,66 @@ Our diagnostics tell us that this run has not converged, suggesting to increase 
 <p>Note that convergence to a solution does not mean that it is a <em>good</em> solution. You should always check the returned variational posteriors, and ideally should compare across multiple runs of PyVBMC.</p>
 </section>
 <section id="saving-results">
-<h2>3. Saving results<a class="headerlink" href="#saving-results" title="Permalink to this headline">#</a></h2>
-<p>We can also save the <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> instance to disk and reload it later, in order to check the results and convergence diagnostics, sample from the posterior, or resume the optimization from checkpoint etc. If you are only interested in the final (best) variational solution, as opposed to the full iteration history of the optimization, then you may wish to pickle only the final <code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code> instead.</p>
-<div class="cell docutils container">
+<h2>3. Saving results<a class="headerlink" href="#saving-results" title="Permalink to this heading">#</a></h2>
+<p>We can also save the <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> instance to disk and reload it later, in order to check the results and convergence diagnostics, sample from the posterior, or resume the optimization from checkpoint etc. If you are only interested in the final (best) variational solution, as opposed to the full iteration history of the optimization, then you may wish to save only the final <code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code> instead.</p>
+<div class="alert alert-block alert-info"><b>Note:</b> Some complex attributes of the <code style="background:LightBlue">VBMC</code> instance — such as the stored function(s) representing the log joint density — may not behave as expected when saved and loaded by different Python minor versions (e.g. <code style="background:LightBlue">3.9</code> and <code style="background:LightBlue">3.10</code>), due to differing dependencies. The instance should still load, and its static data will remain, but if you plan to resume optimization as shown here, then we suggest you use the same version of Python to save and load the <code style="background:LightBlue">VBMC</code> instance.</div><div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;vbmc_test_save.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-    <span class="n">dill</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">vbmc</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
-
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;vbmc_test_save.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-    <span class="n">vbmc</span> <span class="o">=</span> <span class="n">dill</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Here we specify `overwrite=True`, since we don&#39;t care about overwriting our</span>
+<span class="c1"># test file. By default, `overwrite=False` and PyVBMC will raise an error if</span>
+<span class="c1"># the file already exists.</span>
+<span class="n">vbmc</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;vbmc_test_save.pkl&quot;</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1"># We could also save just the final variational posterior:</span>
+<span class="c1"># vbmc.vp.save(&quot;vp_test_save.pkl&quot;)</span>
 </pre></div>
 </div>
 </div>
 </div>
 </section>
-<section id="resume-the-optimization-process">
-<h2>4. Resume the optimization process<a class="headerlink" href="#resume-the-optimization-process" title="Permalink to this headline">#</a></h2>
-<p>Now we could resume the optimization process of PyVBMC by increasing maximum number of function evaluations. This default is <span class="math notranslate nohighlight">\(50(d+2)\)</span>, where <span class="math notranslate nohighlight">\(d\)</span> is the dimension of the parameter space (though this example will not use the full budget):</p>
+<section id="loading-results-and-resuming-the-optimization-process">
+<h2>4.  Loading results and resuming the optimization process<a class="headerlink" href="#loading-results-and-resuming-the-optimization-process" title="Permalink to this heading">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">VBMC.load(file)</span></code> class method will load a previously-saved <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> instance from the specified <code class="docutils literal notranslate"><span class="pre">file</span></code>. We can load the instance saved above and resume the optimization process, increasing maximum number of function evaluations. The default budget is <span class="math notranslate nohighlight">\(50(d+2)\)</span> evaluations, where <span class="math notranslate nohighlight">\(d\)</span> is the dimension of the parameter space (though this example will not require the full budget). We can change this or other options by passing the <code class="docutils literal notranslate"><span class="pre">new_options</span></code> keyword to <code class="docutils literal notranslate"><span class="pre">VBMC.load(...)</span></code>. Here we increase <code class="docutils literal notranslate"><span class="pre">max_fun_evals</span></code> and resume the optimization process:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">iteration</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">vbmc</span><span class="o">.</span><span class="n">iteration</span>
-<span class="p">)</span>  <span class="c1"># continue from specified iteration, here it&#39;s the last iteration</span>
-<span class="k">assert</span> <span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">iteration</span> <span class="o">&lt;=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">iteration</span>
-
-<span class="c1">## Set states for VBMC right before the specified iteration</span>
-<span class="n">vbmc</span><span class="o">.</span><span class="n">gp</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">iteration_history</span><span class="p">[</span><span class="s2">&quot;gp&quot;</span><span class="p">][</span><span class="n">iteration</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-<span class="n">vbmc</span><span class="o">.</span><span class="n">vp</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">iteration_history</span><span class="p">[</span><span class="s2">&quot;vp&quot;</span><span class="p">][</span><span class="n">iteration</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-<span class="n">vbmc</span><span class="o">.</span><span class="n">function_logger</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">iteration_history</span><span class="p">[</span><span class="s2">&quot;function_logger&quot;</span><span class="p">][</span><span class="n">iteration</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-<span class="n">vbmc</span><span class="o">.</span><span class="n">optim_state</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">iteration_history</span><span class="p">[</span><span class="s2">&quot;optim_state&quot;</span><span class="p">][</span><span class="n">iteration</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-<span class="n">vbmc</span><span class="o">.</span><span class="n">hyp_dict</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;hyp_dict&quot;</span><span class="p">]</span>
-<span class="n">vbmc</span><span class="o">.</span><span class="n">iteration</span> <span class="o">=</span> <span class="n">iteration</span> <span class="o">-</span> <span class="mi">1</span>
-
-<span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">iteration_history</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">vbmc</span><span class="o">.</span><span class="n">iteration_history</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">iteration_history</span><span class="p">[</span><span class="n">k</span><span class="p">][:</span><span class="n">iteration</span><span class="p">]</span>
-    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
-        <span class="k">pass</span>
-<span class="c1"># (Optionally) Set random state for reproducibility, note that it can only</span>
-<span class="c1"># reproduce exactly the same optimization process when VBMC&#39;s options are not updated</span>
-<span class="n">random_state</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">iteration_history</span><span class="p">[</span><span class="s2">&quot;random_state&quot;</span><span class="p">][</span><span class="n">iteration</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">set_state</span><span class="p">(</span><span class="n">random_state</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>We need to update the options. Here we increase <code class="docutils literal notranslate"><span class="pre">max_fun_evals</span></code> and resume the optimization process.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">options</span> <span class="o">=</span> <span class="p">{</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">new_options</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;max_fun_evals&quot;</span><span class="p">:</span> <span class="mi">50</span> <span class="o">*</span> <span class="p">(</span><span class="n">D</span> <span class="o">+</span> <span class="mi">2</span><span class="p">),</span>
 <span class="p">}</span>
-<span class="n">vbmc</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">is_initialized</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="kc">False</span>  <span class="c1"># Temporarily set to False for updating options</span>
+<span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
+    <span class="s2">&quot;vbmc_test_save.pkl&quot;</span><span class="p">,</span>
+    <span class="n">new_options</span><span class="o">=</span><span class="n">new_options</span><span class="p">,</span>
+    <span class="n">iteration</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># the default: start from the last stored iteration.</span>
+    <span class="n">set_random_state</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>  <span class="c1"># the default: don&#39;t modify the random state</span>
+    <span class="c1"># (can be set to True for reproducibility).</span>
 <span class="p">)</span>
-<span class="n">vbmc</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
-<span class="n">vbmc</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">is_initialized</span> <span class="o">=</span> <span class="kc">True</span>
-
-<span class="n">vbmc</span><span class="o">.</span><span class="n">is_finished</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="n">vp</span><span class="p">,</span> <span class="n">results</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Beginning variational optimization assuming EXACT observations of the log-joint.
+Continuing optimization from previous state.
  Iteration  f-count    Mean[ELBO]    Std[ELBO]    sKL-iter[q]   K[q]  Convergence  Action
-     6         40           7.20        10.74        24.78        2        484     
-     7         45           6.46        33.89        19.32        2        437     
-     8         50          -5.04         0.20        15.45        2        296     end warm-up
-     9         55          -4.83         0.13         0.30        2       6.17     
-    10         60          -4.78         0.15         0.11        2       2.52     
-    11         65          -4.76         0.06         0.03        3      0.738     
-    12         70          -4.55         0.03         0.08        6       2.09     
-    13         75          -4.38         0.02         0.05        7        1.4     rotoscale, undo rotoscale
-    14         80          -4.33         0.02         0.02        8      0.495     
-    15         85          -4.33         0.01         0.00       11     0.0926     
-    16         90          -4.24         0.00         0.01       14       0.45     
-    17         95          -4.22         0.00         0.01       17      0.171     
-    18        100          -4.19         0.00         0.00       20      0.134     
-    19        105          -4.18         0.00         0.00       20       0.11     
-    20        110          -4.16         0.00         0.00       20     0.0831     
-    21        115          -4.17         0.00         0.00       21      0.052     
-    22        120          -4.17         0.00         0.00       21     0.0417     stable
-   inf        120          -4.12         0.00         0.01       50     0.0417     finalize
+     7         45          -4.84         1.80         4.46        2        108     
+     8         50          -4.87         0.33         7.65        2        129     end warm-up
+     9         55          73.00        57.41        89.44        2   1.75e+03     
+    10         60          -9.39         4.61        20.33        2        629     
+    11         65          -4.70         0.12         2.32        3       54.7     
+    12         70          -4.53         0.02         0.12        4       2.58     
+    13         75          -4.42         0.01         0.04        5       1.13     
+    14         75          -4.12         0.22         0.19        6       4.82     rotoscale
+    15         80          -4.51         0.07         0.05        6       2.45     
+    16         85          -4.42         0.02         0.02        6      0.667     
+    17         90          -4.39         0.01         0.01        6      0.382     
+    18         95          -4.38         0.01         0.01        9      0.142     
+    19        100          -4.30         0.01         0.01       12      0.451     
+    20        105          -4.25         0.01         0.01       15      0.297     rotoscale, undo rotoscale
+    21        110          -4.21         0.00         0.01       18      0.271     
+    22        115          -4.17         0.00         0.00       21      0.158     
+    23        120          -4.19         0.00         0.00       23     0.0931     
+    24        125          -4.18         0.00         0.00       23     0.0491     
+    25        130          -4.17         0.00         0.00       24     0.0325     stable
+   inf        130          -4.15         0.00         0.00       50     0.0325     finalize
 Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.
-Estimated ELBO: -4.120 +/-0.001.
+Estimated ELBO: -4.149 +/-0.001.
 </pre></div>
 </div>
 </div>
@@ -993,36 +734,33 @@ Estimated ELBO: -4.120 +/-0.001.
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{
-    &#39;function&#39;: &#39;&lt;function VBMC._init_log_joint.&lt;locals&gt;.log_joint at 0x7f72742bdd30&gt;&#39;,
+    &#39;function&#39;: &#39;&lt;function VBMC._init_log_joint.&lt;locals&gt;.log_joint at 0x7f00ea1301f0&gt;&#39;,
     &#39;problem_type&#39;: &#39;unconstrained&#39;,
-    &#39;iterations&#39;: 22,
-    &#39;func_count&#39;: 120,
-    &#39;best_iter&#39;: 22,
-    &#39;train_set_size&#39;: 109,
+    &#39;iterations&#39;: 25,
+    &#39;func_count&#39;: 130,
+    &#39;best_iter&#39;: 25,
+    &#39;train_set_size&#39;: 121,
     &#39;components&#39;: 50,
-    &#39;r_index&#39;: 0.04169208813992187,
+    &#39;r_index&#39;: 0.03246322965421961,
     &#39;convergence_status&#39;: &#39;probable&#39;,
     &#39;overhead&#39;: nan,
     &#39;rng_state&#39;: &#39;rng&#39;,
     &#39;algorithm&#39;: &#39;Variational Bayesian Monte Carlo&#39;,
     &#39;version&#39;: &#39;0.1.0&#39;,
     &#39;message&#39;: &#39;Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.&#39;,
-    &#39;elbo&#39;: -4.120462284107793,
-    &#39;elbo_sd&#39;: 0.0010921561633801678,
+    &#39;elbo&#39;: -4.149058408953476,
+    &#39;elbo_sd&#39;: 0.001492050324205448,
     &#39;success_flag&#39;: True,
 }
 </pre></div>
 </div>
 </div>
 </div>
-<p>With the default budget of function evaluations, we can see that the <code class="docutils literal notranslate"><span class="pre">convergence_status</span></code> is ‘probable’ and the <code class="docutils literal notranslate"><span class="pre">r_index</span></code> is much less than 1, suggesting convergence has been acheived. We can save the result to file and load it at anytime for verification etc.</p>
+<p>With the default budget of function evaluations, we can see that the <code class="docutils literal notranslate"><span class="pre">convergence_status</span></code> is ‘probable’ and the <code class="docutils literal notranslate"><span class="pre">r_index</span></code> is much less than 1, suggesting convergence has been acheived. We can save the result to file and load it later, e.g. to perform futher validation or to sample from the variational posterior.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;vbmc_test_save.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-    <span class="n">dill</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">vbmc</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
-
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;vbmc_test_save.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-    <span class="n">vbmc</span> <span class="o">=</span> <span class="n">dill</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vbmc</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;vbmc_test_save.pkl&quot;</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;vbmc_test_save.pkl&quot;</span><span class="p">)</span>
 
 <span class="n">samples</span><span class="p">,</span> <span class="n">components</span> <span class="o">=</span> <span class="n">vbmc</span><span class="o">.</span><span class="n">vp</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
 <span class="c1"># `samples` are samples drawn from the variational posterior.</span>
@@ -1034,71 +772,123 @@ Estimated ELBO: -4.120 +/-0.001.
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[[ 0.30357784 -0.71234015 -0.14057001  0.13733947]
- [ 0.14928481 -0.15568686 -1.29421702 -1.07481781]
- [-0.22150987 -0.33957301 -0.45837818 -0.76437516]
- [-0.6109269  -0.95114658 -0.39232582 -0.19468583]
- [ 0.49805563  0.14956331  0.28175578  1.27601866]]
-[ 2 48  2  8 32]
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[[-1.82750929 -0.25320367  0.51048786  1.41698176]
+ [-2.38874097  0.03977422 -0.35191954  0.32260624]
+ [-1.26096266 -0.58007695 -1.03945047 -0.0098995 ]
+ [-1.88089158 -0.59198002 -0.72811124 -1.00054502]
+ [-0.60285619 -0.07388834 -1.15702975 -0.25769202]]
+[ 3 14 20  4  8]
 </pre></div>
 </div>
 </div>
 </div>
 </section>
 <section id="conclusions">
-<h2>5. Conclusions<a class="headerlink" href="#conclusions" title="Permalink to this headline">#</a></h2>
+<h2>5. Conclusions<a class="headerlink" href="#conclusions" title="Permalink to this heading">#</a></h2>
 <p>In this notebook, we have given a brief overview of PyVBMC’s output diagnostics, and shown how to save and load results and resume optimization from a specific iteration.</p>
 <p>In the next notebook, we will illustrate running PyVBMC multiple times in order to validate the results.</p>
 </section>
 <section id="acknowledgments">
-<h2>Acknowledgments<a class="headerlink" href="#acknowledgments" title="Permalink to this headline">#</a></h2>
+<h2>Acknowledgments<a class="headerlink" href="#acknowledgments" title="Permalink to this heading">#</a></h2>
 <p>Work on the PyVBMC package was funded by the <a class="reference external" href="https://fcai.fi/">Finnish Center for Artificial Intelligence FCAI</a>.</p>
 </section>
 </section>
 
 
-              </div>
+                </article>
               
-            </main>
-            <footer class="footer-article noprint">
-                
-    <!-- Previous / next buttons -->
-<div class='prev-next-area'>
-    <a class='left-prev' id="prev-link" href="pyvbmc_example_2_inputs_outputs.html" title="previous page">
-        <i class="fas fa-angle-left"></i>
-        <div class="prev-next-info">
-            <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">PyVBMC Example 2: Understanding the inputs and the output trace</p>
-        </div>
+
+              
+              
+                <footer class="bd-footer-article">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="pyvbmc_example_2_inputs_outputs.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">PyVBMC Example 2: Understanding the inputs and the output trace</p>
+      </div>
     </a>
-    <a class='right-next' id="next-link" href="pyvbmc_example_4_validation.html" title="next page">
-    <div class="prev-next-info">
+    <a class="right-next"
+       href="pyvbmc_example_4_validation.html"
+       title="next page">
+      <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
         <p class="prev-next-title">PyVBMC Example 4: Multiple runs as validation</p>
-    </div>
-    <i class="fas fa-angle-right"></i>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
     </a>
 </div>
-            </footer>
-        </div>
-    </div>
-    <div class="footer-content row">
-        <footer class="col footer"><p>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-definition-and-setup">1. Model definition and setup</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#running-the-model-and-checking-convergence-diagnostics">2. Running the model and checking convergence diagnostics</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#saving-results">3. Saving results</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-results-and-resuming-the-optimization-process">4.  Loading results and resuming the optimization process</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conclusions">5. Conclusions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#acknowledgments">Acknowledgments</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            <div class="bd-footer-content__inner">
+<div class="bd-footer-content__inner container">
   
-      &copy; Copyright 2022, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).<br/>
-</p>
-        </footer>
-    </div>
+  <div class="footer-item">
     
-</div>
+  </div>
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2022, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).
+      <br/>
+    
+  </p>
 
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div></div>
+          </footer>
+        
 
-      </div>
+      </main>
     </div>
+  </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+  <script src="../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d"></script>
 
-
+  <footer class="bd-footer">
+  </footer>
   </body>
 </html>

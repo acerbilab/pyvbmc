@@ -1,796 +1,485 @@
 
+
 <!DOCTYPE html>
 
-<html>
+
+<html lang="en" >
+
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>Priors &#8212; PyVBMC</title>
-    
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+  <link href="../../_static/styles/theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
 
-    
-  <link rel="stylesheet"
-    href="../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
-  <link rel="preload" as="font" type="font/woff2" crossorigin
-    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
-  <link rel="preload" as="font" type="font/woff2" crossorigin
-    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=5115cc725059bd94278eecd172e13a965bf8f5a9" type="text/css" />
+    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
-    
+  
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d" />
 
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api/classes/priors';</script>
     <link rel="canonical" href="https://acerbilab.github.io/pyvbmc/api/classes/priors.html" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Advanced documentation" href="../advanced_docs.html" />
     <link rel="prev" title="VBMC options" href="../options/vbmc_options.html" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="docsearch:language" content="None">
-    
-
-    <!-- Google Analytics -->
-    
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
   </head>
-  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
-<!-- Checkboxes to toggle the left sidebar -->
-<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
-<label class="overlay overlay-navbar" for="__navigation">
-    <div class="visually-hidden">Toggle navigation sidebar</div>
-</label>
-<!-- Checkboxes to toggle the in-page toc -->
-<input type="checkbox" class="sidebar-toggle" name="__page-toc" id="__page-toc" aria-label="Toggle in-page Table of Contents">
-<label class="overlay overlay-pagetoc" for="__page-toc">
-    <div class="visually-hidden">Toggle in-page Table of Contents</div>
-</label>
-<!-- Headers at the top -->
-<div class="announcement header-item noprint"></div>
-<div class="header header-item noprint"></div>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
 
-    
-    <div class="container-fluid" id="banner"></div>
-
-    
-
-    <div class="container-xl">
-      <div class="row">
-          
-<!-- Sidebar -->
-<div class="bd-sidebar noprint" id="site-navigation">
-    <div class="bd-sidebar__content">
-        <div class="bd-sidebar__top"><div class="navbar-brand-box">
-    <a class="navbar-brand text-wrap" href="../../index.html">
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
       
-        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+      <div class="bd-sidebar-primary bd-sidebar">
         
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+    
+    
       
-      
-      <img src="../../_static/logo.svg" class="logo" alt="logo">
-      
-      
-    </a>
-</div><form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
-  <i class="icon fas fa-search"></i>
-  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
-</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
-    <div class="bd-toc-item active">
+    
+    
+    <img src="../../_static/logo.svg" class="logo__image only-light" alt="Logo image"/>
+    <script>document.write(`<img src="../../_static/logo.svg" class="logo__image only-dark" alt="Logo image"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
         <ul class="current nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../../installation.html">
-   Installation
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../quickstart.html">
-   Getting started
-  </a>
- </li>
- <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../../examples.html">
-   Examples
-  </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
-  <label for="toctree-checkbox-1">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../_examples/pyvbmc_example_1_basic_usage.html">
-     PyVBMC Example 1: Basic usage
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../_examples/pyvbmc_example_2_inputs_outputs.html">
-     PyVBMC Example 2: Understanding the inputs and the output trace
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../_examples/pyvbmc_example_3_diagnostics_and_saving.html">
-     PyVBMC Example 3: Output diagnostics and saving results
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../_examples/pyvbmc_example_4_validation.html">
-     PyVBMC Example 4: Multiple runs as validation
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../_examples/pyvbmc_example_5_prior_distributions.html">
-     PyVBMC Example 5: Prior distributions
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../_examples/pyvbmc_example_6_noisy_likelihoods.html">
-     PyVBMC Example 6: Noisy log-likelihood evaluations
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toctree-l1 current active has-children">
-  <a class="reference internal" href="../../documentation.html">
-   Documentation
-  </a>
-  <input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
-  <label for="toctree-checkbox-2">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul class="current">
-   <li class="toctree-l2">
-    <a class="reference internal" href="vbmc.html">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       VBMC
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="variational_posterior.html">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       VariationalPosterior
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../options/vbmc_options.html">
-     VBMC options
-    </a>
-   </li>
-   <li class="toctree-l2 current active">
-    <a class="current reference internal" href="#">
-     Priors
-    </a>
-   </li>
-   <li class="toctree-l2 has-children">
-    <a class="reference internal" href="../advanced_docs.html">
-     Advanced documentation
-    </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
-    <label for="toctree-checkbox-3">
-     <i class="fas fa-chevron-down">
-     </i>
-    </label>
-    <ul>
-     <li class="toctree-l3 has-children">
-      <a class="reference internal" href="classes.html">
-       Classes
-      </a>
-      <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
-      <label for="toctree-checkbox-4">
-       <i class="fas fa-chevron-down">
-       </i>
-      </label>
-      <ul>
-       <li class="toctree-l4">
-        <a class="reference internal" href="acquisition_functions.html">
-         Acquisition Functions
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="function_logger.html">
-         <code class="docutils literal notranslate">
-          <span class="pre">
-           FunctionLogger
-          </span>
-         </code>
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="iteration_history.html">
-         <code class="docutils literal notranslate">
-          <span class="pre">
-           IterationHistory
-          </span>
-         </code>
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="options.html">
-         <code class="docutils literal notranslate">
-          <span class="pre">
-           Options
-          </span>
-         </code>
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="parameter_transformer.html">
-         <code class="docutils literal notranslate">
-          <span class="pre">
-           ParameterTransformer
-          </span>
-         </code>
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="timer.html">
-         <code class="docutils literal notranslate">
-          <span class="pre">
-           Timer
-          </span>
-         </code>
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="variational_posterior.html">
-         <code class="docutils literal notranslate">
-          <span class="pre">
-           VariationalPosterior
-          </span>
-         </code>
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="vbmc.html">
-         <code class="docutils literal notranslate">
-          <span class="pre">
-           VBMC
-          </span>
-         </code>
-        </a>
-       </li>
-      </ul>
-     </li>
-     <li class="toctree-l3 has-children">
-      <a class="reference internal" href="../functions/functions.html">
-       Functions
-      </a>
-      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
-      <label for="toctree-checkbox-5">
-       <i class="fas fa-chevron-down">
-       </i>
-      </label>
-      <ul>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../functions/active_sample.html">
-         <code class="docutils literal notranslate">
-          <span class="pre">
-           active_sample
-          </span>
-         </code>
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../functions/create_vbmc_animation.html">
-         <code class="docutils literal notranslate">
-          <span class="pre">
-           create_vbmc_animation
-          </span>
-         </code>
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../functions/decorators.html">
-         <code class="docutils literal notranslate">
-          <span class="pre">
-           decorators
-          </span>
-         </code>
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../functions/entropy.html">
-         Entropy
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../functions/get_hpd.html">
-         <code class="docutils literal notranslate">
-          <span class="pre">
-           get_hpd
-          </span>
-         </code>
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../functions/kde_1d.html">
-         <code class="docutils literal notranslate">
-          <span class="pre">
-           kde_1d
-          </span>
-         </code>
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../functions/whitening.html">
-         <code class="docutils literal notranslate">
-          <span class="pre">
-           whitening
-          </span>
-         </code>
-        </a>
-       </li>
-      </ul>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../options/vbmc_options.html">
-       VBMC options
-      </a>
-     </li>
-    </ul>
-   </li>
-  </ul>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Getting started</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../examples.html">Examples</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_1_basic_usage.html">PyVBMC Example 1: Basic usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_2_inputs_outputs.html">PyVBMC Example 2: Understanding the inputs and the output trace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_3_diagnostics_and_saving.html">PyVBMC Example 3: Output diagnostics and saving results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_4_validation.html">PyVBMC Example 4: Multiple runs as validation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_5_prior_distributions.html">PyVBMC Example 5: Prior distributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/pyvbmc_example_6_noisy_likelihoods.html">PyVBMC Example 6: Noisy log-likelihood evaluations</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../../documentation.html">Documentation</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../options/vbmc_options.html">VBMC options</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Priors</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../advanced_docs.html">Advanced documentation</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="classes.html">Classes</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="acquisition_functions.html">Acquisition Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_logger.html"><code class="docutils literal notranslate"><span class="pre">FunctionLogger</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="iteration_history.html"><code class="docutils literal notranslate"><span class="pre">IterationHistory</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="options.html"><code class="docutils literal notranslate"><span class="pre">Options</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="parameter_transformer.html"><code class="docutils literal notranslate"><span class="pre">ParameterTransformer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="timer.html"><code class="docutils literal notranslate"><span class="pre">Timer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="variational_posterior.html"><code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vbmc.html"><code class="docutils literal notranslate"><span class="pre">VBMC</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../functions/functions.html">Functions</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../functions/active_sample.html"><code class="docutils literal notranslate"><span class="pre">active_sample</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../functions/create_vbmc_animation.html"><code class="docutils literal notranslate"><span class="pre">create_vbmc_animation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../functions/decorators.html"><code class="docutils literal notranslate"><span class="pre">decorators</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../functions/entropy.html">Entropy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../functions/get_hpd.html"><code class="docutils literal notranslate"><span class="pre">get_hpd</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../functions/kde_1d.html"><code class="docutils literal notranslate"><span class="pre">kde_1d</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../functions/whitening.html"><code class="docutils literal notranslate"><span class="pre">whitening</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../options/vbmc_options.html">VBMC options</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../../development.html">
-   Instructions for developers and contributors
-  </a>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="../../development.html">Instructions for developers and contributors</a></li>
 </ul>
 <ul class="nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../../about_us.html">
-   About us
-  </a>
- </li>
+<li class="toctree-l1"><a class="reference internal" href="../../about_us.html">About us</a></li>
 </ul>
 
     </div>
 </nav></div>
-        <div class="bd-sidebar__bottom">
-             <!-- To handle the deprecated key -->
-            
-            <div class="navbar_extra_footer">
-            Theme by the <a href="https://ebp.jupyterbook.org">Executable Book Project</a>
-            </div>
-            
-        </div>
     </div>
-    <div id="rtd-footer-container"></div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/acerbilab/pyvbmc" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/acerbilab/pyvbmc/edit/main/api/classes/priors.rst" target="_blank"
+   class="btn btn-sm btn-source-edit-button dropdown-item"
+   title="Suggest edit"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-pencil-alt"></i>
+  </span>
+<span class="btn__text-container">Suggest edit</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/acerbilab/pyvbmc/issues/new?title=Issue%20on%20page%20%2Fapi/classes/priors.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
 </div>
 
 
-          
-
-
-          
-<!-- A tiny helper pixel to detect if we've scrolled -->
-<div class="sbt-scroll-pixel-helper"></div>
-<!-- Main content -->
-<div class="col py-0 content-container">
-    
-    <div class="header-article row sticky-top noprint">
-        
 
 
 
-<div class="col py-1 d-flex header-article-main">
-    <div class="header-article__left">
-        
-        <label for="__navigation"
-  class="headerbtn"
-  data-toggle="tooltip"
-data-placement="right"
-title="Toggle navigation"
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/api/classes/priors.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
 >
   
 
-<span class="headerbtn__icon-container">
-  <i class="fas fa-bars"></i>
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
   </span>
-
-</label>
-
-        
-    </div>
-    <div class="header-article__right">
-<button onclick="toggleFullScreen()"
-  class="headerbtn"
-  data-toggle="tooltip"
-data-placement="bottom"
-title="Fullscreen mode"
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
 >
   
 
-<span class="headerbtn__icon-container">
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
   <i class="fas fa-expand"></i>
   </span>
 
 </button>
 
-<div class="menu-dropdown menu-dropdown-repository-buttons">
-  <button class="headerbtn menu-dropdown__trigger"
-      aria-label="Source repositories">
-      <i class="fab fa-github"></i>
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
   </button>
-  <div class="menu-dropdown__content">
-    <ul>
-      <li>
-        <a href="https://github.com/acerbilab/pyvbmc"
-   class="headerbtn"
-   data-toggle="tooltip"
-data-placement="left"
-title="Source repository"
->
-  
+`);
+</script>
 
-<span class="headerbtn__icon-container">
-  <i class="fab fa-github"></i>
-  </span>
-<span class="headerbtn__text-container">repository</span>
-</a>
-
-      </li>
-      
-      <li>
-        <a href="https://github.com/acerbilab/pyvbmc/issues/new?title=Issue%20on%20page%20%2Fapi/classes/priors.html&body=Your%20issue%20content%20here."
-   class="headerbtn"
-   data-toggle="tooltip"
-data-placement="left"
-title="Open an issue"
->
-  
-
-<span class="headerbtn__icon-container">
-  <i class="fas fa-lightbulb"></i>
-  </span>
-<span class="headerbtn__text-container">open issue</span>
-</a>
-
-      </li>
-      
-      <li>
-        <a href="https://github.com/acerbilab/pyvbmc/edit/main/api/classes/priors.rst"
-   class="headerbtn"
-   data-toggle="tooltip"
-data-placement="left"
-title="Edit this page"
->
-  
-
-<span class="headerbtn__icon-container">
-  <i class="fas fa-pencil-alt"></i>
-  </span>
-<span class="headerbtn__text-container">suggest edit</span>
-</a>
-
-      </li>
-      
-    </ul>
-  </div>
-</div>
-
-<div class="menu-dropdown menu-dropdown-download-buttons">
-  <button class="headerbtn menu-dropdown__trigger"
-      aria-label="Download this page">
-      <i class="fas fa-download"></i>
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
   </button>
-  <div class="menu-dropdown__content">
-    <ul>
-      <li>
-        <a href="../../_sources/api/classes/priors.rst"
-   class="headerbtn"
-   data-toggle="tooltip"
-data-placement="left"
-title="Download source file"
->
-  
-
-<span class="headerbtn__icon-container">
-  <i class="fas fa-file"></i>
-  </span>
-<span class="headerbtn__text-container">.rst</span>
-</a>
-
-      </li>
-      
-      <li>
-        
-<button onclick="printPdf(this)"
-  class="headerbtn"
-  data-toggle="tooltip"
-data-placement="left"
-title="Print to PDF"
->
-  
-
-<span class="headerbtn__icon-container">
-  <i class="fas fa-file-pdf"></i>
-  </span>
-<span class="headerbtn__text-container">.pdf</span>
-</button>
-
-      </li>
-      
-    </ul>
-  </div>
-</div>
-<label for="__page-toc"
-  class="headerbtn headerbtn-page-toc"
-  
->
-  
-
-<span class="headerbtn__icon-container">
-  <i class="fas fa-list"></i>
-  </span>
-
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
 </label>
-
+</div></div>
+      
     </div>
+  
 </div>
-
-<!-- Table of contents -->
-<div class="col-md-3 bd-toc show noprint">
-    <div class="tocsection onthispage pt-5 pb-3">
-        <i class="fas fa-list"></i> Contents
-    </div>
-    <nav id="bd-toc-nav" aria-label="Page">
-        <ul class="visible nav section-nav flex-column">
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#prior-base-class">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     Prior
-    </span>
-   </code>
-   base class
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#bounded-priors">
-   Bounded priors
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#uniformbox">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       UniformBox
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#trapezoidal">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       Trapezoidal
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#splinetrapezoidal">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       SplineTrapezoidal
-      </span>
-     </code>
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#unbounded-priors">
-   Unbounded priors
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#smoothbox">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       SmoothBox
-      </span>
-     </code>
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#other-priors-and-functions">
-   Other priors and functions
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#product-priors">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       Product
-      </span>
-     </code>
-     priors
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#scipy-priors">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       SciPy
-      </span>
-     </code>
-     priors
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#userfunction-priors">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       UserFunction
-      </span>
-     </code>
-     priors
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#utility-functions">
-     Utility functions
-    </a>
-   </li>
-  </ul>
- </li>
-</ul>
-
-    </nav>
 </div>
-    </div>
-    <div class="article row">
-        <div class="col pl-md-3 pl-lg-5 content-container">
-            <!-- Table of contents that is only displayed when printing the page -->
-            <div id="jb-print-docs-body" class="onlyprint">
-                <h1>Priors</h1>
-                <!-- Table of contents -->
-                <div id="print-main-content">
-                    <div id="jb-print-toc">
-                        
-                        <div>
-                            <h2> Contents </h2>
-                        </div>
-                        <nav aria-label="Page">
-                            <ul class="visible nav section-nav flex-column">
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#prior-base-class">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     Prior
-    </span>
-   </code>
-   base class
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#bounded-priors">
-   Bounded priors
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#uniformbox">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       UniformBox
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#trapezoidal">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       Trapezoidal
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#splinetrapezoidal">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       SplineTrapezoidal
-      </span>
-     </code>
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#unbounded-priors">
-   Unbounded priors
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#smoothbox">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       SmoothBox
-      </span>
-     </code>
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#other-priors-and-functions">
-   Other priors and functions
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#product-priors">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       Product
-      </span>
-     </code>
-     priors
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#scipy-priors">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       SciPy
-      </span>
-     </code>
-     priors
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#userfunction-priors">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       UserFunction
-      </span>
-     </code>
-     priors
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#utility-functions">
-     Utility functions
-    </a>
-   </li>
-  </ul>
- </li>
-</ul>
+              
+              
 
-                        </nav>
-                    </div>
-                </div>
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Priors</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
             </div>
-            <main id="main-content" role="main">
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prior-base-class"><code class="docutils literal notranslate"><span class="pre">Prior</span></code> base class</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.Prior"><code class="docutils literal notranslate"><span class="pre">Prior</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.Prior.log_pdf"><code class="docutils literal notranslate"><span class="pre">Prior.log_pdf()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.Prior.pdf"><code class="docutils literal notranslate"><span class="pre">Prior.pdf()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.Prior.sample"><code class="docutils literal notranslate"><span class="pre">Prior.sample()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.Prior.support"><code class="docutils literal notranslate"><span class="pre">Prior.support()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bounded-priors">Bounded priors</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#uniformbox"><code class="docutils literal notranslate"><span class="pre">UniformBox</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.UniformBox"><code class="docutils literal notranslate"><span class="pre">UniformBox</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.UniformBox.__init__"><code class="docutils literal notranslate"><span class="pre">UniformBox.__init__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#trapezoidal"><code class="docutils literal notranslate"><span class="pre">Trapezoidal</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.Trapezoidal"><code class="docutils literal notranslate"><span class="pre">Trapezoidal</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.Trapezoidal.__init__"><code class="docutils literal notranslate"><span class="pre">Trapezoidal.__init__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#splinetrapezoidal"><code class="docutils literal notranslate"><span class="pre">SplineTrapezoidal</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.SplineTrapezoidal"><code class="docutils literal notranslate"><span class="pre">SplineTrapezoidal</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.SplineTrapezoidal.__init__"><code class="docutils literal notranslate"><span class="pre">SplineTrapezoidal.__init__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#unbounded-priors">Unbounded priors</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#smoothbox"><code class="docutils literal notranslate"><span class="pre">SmoothBox</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.SmoothBox"><code class="docutils literal notranslate"><span class="pre">SmoothBox</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.SmoothBox.__init__"><code class="docutils literal notranslate"><span class="pre">SmoothBox.__init__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#other-priors-and-functions">Other priors and functions</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#product-priors"><code class="docutils literal notranslate"><span class="pre">Product</span></code> priors</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.Product"><code class="docutils literal notranslate"><span class="pre">Product</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.Product.__init__"><code class="docutils literal notranslate"><span class="pre">Product.__init__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#scipy-priors"><code class="docutils literal notranslate"><span class="pre">SciPy</span></code> priors</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.SciPy"><code class="docutils literal notranslate"><span class="pre">SciPy</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.SciPy.__init__"><code class="docutils literal notranslate"><span class="pre">SciPy.__init__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#userfunction-priors"><code class="docutils literal notranslate"><span class="pre">UserFunction</span></code> priors</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.UserFunction"><code class="docutils literal notranslate"><span class="pre">UserFunction</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.UserFunction.__init__"><code class="docutils literal notranslate"><span class="pre">UserFunction.__init__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#utility-functions">Utility functions</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.convert_to_prior"><code class="docutils literal notranslate"><span class="pre">convert_to_prior()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.tile_inputs"><code class="docutils literal notranslate"><span class="pre">tile_inputs()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.is_valid_scipy_dist"><code class="docutils literal notranslate"><span class="pre">is_valid_scipy_dist()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
                 
-              <div>
-                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
   <section id="priors">
-<h1>Priors<a class="headerlink" href="#priors" title="Permalink to this headline">#</a></h1>
+<h1>Priors<a class="headerlink" href="#priors" title="Permalink to this heading">#</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>By default, PyVBMC assumes that the first argument to <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> is a function which returns the log-joint (i.e., the sum of log-likelihood and log-prior). However, you may instead pass a function which returns the log-likelihood as a first argument, and supply the prior separately. Using the keyword <code class="docutils literal notranslate"><span class="pre">log_prior</span></code>, you may pass a function (of a single argument) which returns the log-density of the prior given a point:</p>
@@ -811,7 +500,7 @@ title="Print to PDF"
 <p>For more details on (1), see the documentation below as well as <a class="reference internal" href="../../_examples/pyvbmc_example_5_prior_distributions.html#pyvbmc-example-5-prior-distributions"><span class="std std-ref">PyVBMC Example 5: Prior distributions</span></a>. For more details on (2), (3), and using a function as a <code class="docutils literal notranslate"><span class="pre">log_prior</span></code>, see the documentation on <a class="reference internal" href="#scipy-priors"><span class="std std-ref">SciPy priors</span></a>, <a class="reference internal" href="#product-priors"><span class="std std-ref">Product priors</span></a>, and <a class="reference internal" href="#userfunction-priors"><span class="std std-ref">UserFunction priors</span></a> below. (keyword arguments of these types will be converted to instances of these classes).</p>
 </div>
 <section id="prior-base-class">
-<h2><code class="docutils literal notranslate"><span class="pre">Prior</span></code> base class<a class="headerlink" href="#prior-base-class" title="Permalink to this headline">#</a></h2>
+<h2><code class="docutils literal notranslate"><span class="pre">Prior</span></code> base class<a class="headerlink" href="#prior-base-class" title="Permalink to this heading">#</a></h2>
 <p>These methods are common to all of the subclasses that follow.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.priors.Prior">
@@ -822,7 +511,7 @@ title="Print to PDF"
 <span class="sig-name descname"><span class="pre">log_pdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keepdims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/prior.html#Prior.log_pdf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.Prior.log_pdf" title="Permalink to this definition">#</a></dt>
 <dd><p>Compute the log-pdf of the distribution.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>x</strong><span class="classifier">np.ndarray</span></dt><dd><p>The array of input point(s), of dimension <cite>(D,)</cite> or <cite>(n, D)</cite>, where
 <cite>d</cite> is the distribution dimension.</p>
@@ -832,7 +521,7 @@ title="Print to PDF"
 </dd>
 </dl>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><dl class="simple">
 <dt><strong>log_pdf</strong><span class="classifier">np.ndarray</span></dt><dd><p>The log-density of the prior at the input point(s), of dimension
 <cite>(n, 1)</cite> or <cite>(n,)</cite> (depending on <code class="docutils literal notranslate"><span class="pre">keepdims</span></code>).</p>
@@ -847,7 +536,7 @@ title="Print to PDF"
 <span class="sig-name descname"><span class="pre">pdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keepdims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/prior.html#Prior.pdf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.Prior.pdf" title="Permalink to this definition">#</a></dt>
 <dd><p>Compute the pdf of the distribution.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>x</strong><span class="classifier">np.ndarray</span></dt><dd><p>The array of input point(s), of dimension <cite>(D,)</cite> or <cite>(n, D)</cite>, where
 <cite>D</cite> is the distribution dimension.</p>
@@ -857,7 +546,7 @@ title="Print to PDF"
 </dd>
 </dl>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><dl class="simple">
 <dt><strong>pdf</strong><span class="classifier">np.ndarray</span></dt><dd><p>The density of the prior at the input point(s), of dimension <cite>(n,
 1)</cite> or <cite>(n,)</cite> (depending on <code class="docutils literal notranslate"><span class="pre">keepdims</span></code>).</p>
@@ -872,13 +561,13 @@ title="Print to PDF"
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/prior.html#Prior.sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.Prior.sample" title="Permalink to this definition">#</a></dt>
 <dd><p>Sample random variables from the distribution.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>n</strong><span class="classifier">int</span></dt><dd><p>The number of points to sample.</p>
 </dd>
 </dl>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><dl class="simple">
 <dt><strong>rvs</strong><span class="classifier">np.ndarray</span></dt><dd><p>The samples points, of shape <cite>(n, D)</cite>, where <cite>D</cite> is the dimension.</p>
 </dd>
@@ -895,7 +584,7 @@ title="Print to PDF"
 acceptable to return a box which bounds the support of the
 distribution.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>lb, ub</strong><span class="classifier">tuple(np.ndarray, np.ndarray)</span></dt><dd><p>A tuple of lower and upper bounds of the support, such that
 [<code class="docutils literal notranslate"><span class="pre">lb[i]</span></code>, <code class="docutils literal notranslate"><span class="pre">ub[i]</span></code>] bounds the support of the <code class="docutils literal notranslate"><span class="pre">i</span></code>th marginal.</p>
@@ -909,9 +598,9 @@ distribution.</p>
 
 </section>
 <section id="bounded-priors">
-<h2>Bounded priors<a class="headerlink" href="#bounded-priors" title="Permalink to this headline">#</a></h2>
+<h2>Bounded priors<a class="headerlink" href="#bounded-priors" title="Permalink to this heading">#</a></h2>
 <section id="uniformbox">
-<h3><code class="docutils literal notranslate"><span class="pre">UniformBox</span></code><a class="headerlink" href="#uniformbox" title="Permalink to this headline">#</a></h3>
+<h3><code class="docutils literal notranslate"><span class="pre">UniformBox</span></code><a class="headerlink" href="#uniformbox" title="Permalink to this heading">#</a></h3>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.priors.UniformBox">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.priors.</span></span><span class="sig-name descname"><span class="pre">UniformBox</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/uniform_box.html#UniformBox"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.UniformBox" title="Permalink to this definition">#</a></dt>
@@ -919,7 +608,7 @@ distribution.</p>
 <p>A prior distribution represented by box of uniform dimension, with lower
 bound(s) <code class="docutils literal notranslate"><span class="pre">a</span></code> and upper bound(s) <code class="docutils literal notranslate"><span class="pre">b</span></code>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Attributes</dt>
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>D</strong><span class="classifier">int</span></dt><dd><p>The dimension of the prior distribution.</p>
 </dd>
@@ -935,7 +624,7 @@ bound(s) <code class="docutils literal notranslate"><span class="pre">a</span></
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/uniform_box.html#UniformBox.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.UniformBox.__init__" title="Permalink to this definition">#</a></dt>
 <dd><p>Initialize a multivariate uniform-box prior.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>a</strong><span class="classifier">np.ndarray | float</span></dt><dd><p>The lower bound(s), shape <cite>(D,)</cite> where <cite>D</cite> is the dimension
 (parameters of type <code class="docutils literal notranslate"><span class="pre">float</span></code> will be tiled to this shape).</p>
@@ -945,7 +634,7 @@ bound(s) <code class="docutils literal notranslate"><span class="pre">a</span></
 </dd>
 </dl>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><dl class="simple">
 <dt>ValueError</dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">a[i]</span> <span class="pre">&gt;=</span> <span class="pre">b[i]</span></code>, for any <cite>i</cite>.</p>
 </dd>
@@ -958,7 +647,7 @@ bound(s) <code class="docutils literal notranslate"><span class="pre">a</span></
 
 </section>
 <section id="trapezoidal">
-<h3><code class="docutils literal notranslate"><span class="pre">Trapezoidal</span></code><a class="headerlink" href="#trapezoidal" title="Permalink to this headline">#</a></h3>
+<h3><code class="docutils literal notranslate"><span class="pre">Trapezoidal</span></code><a class="headerlink" href="#trapezoidal" title="Permalink to this heading">#</a></h3>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.priors.Trapezoidal">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.priors.</span></span><span class="sig-name descname"><span class="pre">Trapezoidal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/trapezoidal.html#Trapezoidal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.Trapezoidal" title="Permalink to this definition">#</a></dt>
@@ -979,7 +668,7 @@ and falls of linearly to zero at <code class="docutils literal notranslate"><spa
 </div>
 <p>The overall density is a product of these marginals.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Attributes</dt>
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>D</strong><span class="classifier">int</span></dt><dd><p>The dimension of the prior distribution.</p>
 </dd>
@@ -999,7 +688,7 @@ and falls of linearly to zero at <code class="docutils literal notranslate"><spa
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/trapezoidal.html#Trapezoidal.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.Trapezoidal.__init__" title="Permalink to this definition">#</a></dt>
 <dd><p>Initialize a multivariate trapezoidal prior.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>a</strong><span class="classifier">np.ndarray | float</span></dt><dd><p>The lower bound(s), shape <cite>(D,)</cite> where <cite>D</cite> is the dimension
 (parameters of type <code class="docutils literal notranslate"><span class="pre">float</span></code> will be tiled to this shape).</p>
@@ -1018,7 +707,7 @@ and falls of linearly to zero at <code class="docutils literal notranslate"><spa
 </dd>
 </dl>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><dl class="simple">
 <dt>ValueError</dt><dd><p>If the order <code class="docutils literal notranslate"><span class="pre">a[i]</span> <span class="pre">&lt;</span> <span class="pre">u[i]</span> <span class="pre">&lt;</span> <span class="pre">v[i]</span> <span class="pre">&lt;</span> <span class="pre">b[i]</span></code> is not respected, for any <cite>i</cite>.</p>
 </dd>
@@ -1031,7 +720,7 @@ and falls of linearly to zero at <code class="docutils literal notranslate"><spa
 
 </section>
 <section id="splinetrapezoidal">
-<h3><code class="docutils literal notranslate"><span class="pre">SplineTrapezoidal</span></code><a class="headerlink" href="#splinetrapezoidal" title="Permalink to this headline">#</a></h3>
+<h3><code class="docutils literal notranslate"><span class="pre">SplineTrapezoidal</span></code><a class="headerlink" href="#splinetrapezoidal" title="Permalink to this heading">#</a></h3>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.priors.SplineTrapezoidal">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.priors.</span></span><span class="sig-name descname"><span class="pre">SplineTrapezoidal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/spline_trapezoidal.html#SplineTrapezoidal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.SplineTrapezoidal" title="Permalink to this definition">#</a></dt>
@@ -1054,7 +743,7 @@ that the pdf is continuous and its derivatives at <code class="docutils literal 
 </div>
 <p>The overall density is a product of these marginals.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Attributes</dt>
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>D</strong><span class="classifier">int</span></dt><dd><p>The dimension of the prior distribution.</p>
 </dd>
@@ -1074,7 +763,7 @@ that the pdf is continuous and its derivatives at <code class="docutils literal 
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/spline_trapezoidal.html#SplineTrapezoidal.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.SplineTrapezoidal.__init__" title="Permalink to this definition">#</a></dt>
 <dd><p>Initialize a multivariate trapezoidal prior.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>a</strong><span class="classifier">np.ndarray | float</span></dt><dd><p>The lower bound(s), shape <cite>(D,)</cite> where <cite>D</cite> is the dimension
 (parameters of type <code class="docutils literal notranslate"><span class="pre">float</span></code> will be tiled to this shape).</p>
@@ -1093,7 +782,7 @@ that the pdf is continuous and its derivatives at <code class="docutils literal 
 </dd>
 </dl>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><dl class="simple">
 <dt>ValueError</dt><dd><p>If the order <code class="docutils literal notranslate"><span class="pre">a[i]</span> <span class="pre">&lt;</span> <span class="pre">u[i]</span> <span class="pre">&lt;</span> <span class="pre">v[i]</span> <span class="pre">&lt;</span> <span class="pre">b[i]</span></code> is not respected, for any <cite>i</cite>.</p>
 </dd>
@@ -1107,9 +796,9 @@ that the pdf is continuous and its derivatives at <code class="docutils literal 
 </section>
 </section>
 <section id="unbounded-priors">
-<h2>Unbounded priors<a class="headerlink" href="#unbounded-priors" title="Permalink to this headline">#</a></h2>
+<h2>Unbounded priors<a class="headerlink" href="#unbounded-priors" title="Permalink to this heading">#</a></h2>
 <section id="smoothbox">
-<h3><code class="docutils literal notranslate"><span class="pre">SmoothBox</span></code><a class="headerlink" href="#smoothbox" title="Permalink to this headline">#</a></h3>
+<h3><code class="docutils literal notranslate"><span class="pre">SmoothBox</span></code><a class="headerlink" href="#smoothbox" title="Permalink to this heading">#</a></h3>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.priors.SmoothBox">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.priors.</span></span><span class="sig-name descname"><span class="pre">SmoothBox</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/smooth_box.html#SmoothBox"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.SmoothBox" title="Permalink to this definition">#</a></dt>
@@ -1119,7 +808,7 @@ uniform distribution between pivots <code class="docutils literal notranslate"><
 that fall starting from <cite>p(a[i])</cite> to the left (resp., <cite>p(b[i])</cite> to the
 right) with standard deviation <code class="docutils literal notranslate"><span class="pre">scale[i]</span></code>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Attributes</dt>
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>D</strong><span class="classifier">int</span></dt><dd><p>The dimension of the prior distribution.</p>
 </dd>
@@ -1137,7 +826,7 @@ right) with standard deviation <code class="docutils literal notranslate"><span 
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/smooth_box.html#SmoothBox.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.SmoothBox.__init__" title="Permalink to this definition">#</a></dt>
 <dd><p>Initialize a multivariate smooth-box prior.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>a</strong><span class="classifier">np.ndarray | float</span></dt><dd><p>The lower pivot(s), shape <cite>(D,)</cite> where <cite>D</cite> is the dimension
 (parameters of type <code class="docutils literal notranslate"><span class="pre">float</span></code> will be tiled to this shape).</p>
@@ -1151,7 +840,7 @@ this shape).</p>
 </dd>
 </dl>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><dl class="simple">
 <dt>ValueError</dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">scale[i]</span> <span class="pre">&lt;=</span> <span class="pre">0</span></code> or if <code class="docutils literal notranslate"><span class="pre">a[i]</span> <span class="pre">&gt;=</span> <span class="pre">b[i]</span></code>, for any <cite>i</cite>.</p>
 </dd>
@@ -1165,16 +854,16 @@ this shape).</p>
 </section>
 </section>
 <section id="other-priors-and-functions">
-<h2>Other priors and functions<a class="headerlink" href="#other-priors-and-functions" title="Permalink to this headline">#</a></h2>
+<h2>Other priors and functions<a class="headerlink" href="#other-priors-and-functions" title="Permalink to this heading">#</a></h2>
 <section id="product-priors">
-<h3><code class="docutils literal notranslate"><span class="pre">Product</span></code> priors<a class="headerlink" href="#product-priors" title="Permalink to this headline">#</a></h3>
+<h3><code class="docutils literal notranslate"><span class="pre">Product</span></code> priors<a class="headerlink" href="#product-priors" title="Permalink to this heading">#</a></h3>
 <p>When a user passes a list of <code class="docutils literal notranslate"><span class="pre">Prior</span></code> instances or <code class="docutils literal notranslate"><span class="pre">scipy.stats</span></code> distributions, they are converted to a <code class="docutils literal notranslate"><span class="pre">Product</span></code> prior with a corresponding marginal distributions for each item in the list.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.priors.Product">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.priors.</span></span><span class="sig-name descname"><span class="pre">Product</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">marginals</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/product.html#Product"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.Product" title="Permalink to this definition">#</a></dt>
 <dd><p>A prior which is an product of independent univariate priors.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Attributes</dt>
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>D</strong><span class="classifier">int</span></dt><dd><p>The dimension of the product distribution.</p>
 </dd>
@@ -1188,14 +877,14 @@ this shape).</p>
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">marginals</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/product.html#Product.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.Product.__init__" title="Permalink to this definition">#</a></dt>
 <dd><p>Initialize a <cite>Product</cite> prior from a list of marginal priors.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>marginals</strong><span class="classifier">list of pyvbmc.priors.Prior</span></dt><dd><p>The underlying marginal prior distribution(s). Each must have
 dimension 1.</p>
 </dd>
 </dl>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><dl class="simple">
 <dt>TypeError</dt><dd><p>If the provided marginals are not a list, or if they are not all
 PyVBMC priors or appropriate SciPy distributions.</p>
@@ -1211,14 +900,14 @@ PyVBMC priors or appropriate SciPy distributions.</p>
 
 </section>
 <section id="scipy-priors">
-<h3><code class="docutils literal notranslate"><span class="pre">SciPy</span></code> priors<a class="headerlink" href="#scipy-priors" title="Permalink to this headline">#</a></h3>
+<h3><code class="docutils literal notranslate"><span class="pre">SciPy</span></code> priors<a class="headerlink" href="#scipy-priors" title="Permalink to this heading">#</a></h3>
 <p>To standardize the interface, when a user provides a <code class="docutils literal notranslate"><span class="pre">scipy.stats</span></code> distribution as a prior, it is wrapped in a <code class="docutils literal notranslate"><span class="pre">SciPy</span></code> prior distribution</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.priors.SciPy">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.priors.</span></span><span class="sig-name descname"><span class="pre">SciPy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distribution</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/scipy.html#SciPy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.SciPy" title="Permalink to this definition">#</a></dt>
 <dd><p>Wrapper class for <cite>scipy.stats</cite> distributions.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Attributes</dt>
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>D</strong><span class="classifier">int</span></dt><dd><p>The dimension of the prior distribution.</p>
 </dd>
@@ -1232,14 +921,14 @@ PyVBMC priors or appropriate SciPy distributions.</p>
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distribution</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/scipy.html#SciPy.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.SciPy.__init__" title="Permalink to this definition">#</a></dt>
 <dd><p>Initialize <cite>pyvbmc.priors.Prior</cite> from <cite>scipy.stats</cite> distribution(s).</p>
 <dl class="field-list">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl>
 <dt><strong>distribution</strong><span class="classifier">scipy.stats.multivariate_normal                or scipy.stats.multivariate_t                or scipy.stats.rv_continuous            The underlying <cite>scipy.stats</cite> distributions. Should be a</span></dt><dd><p>multivariate normal distribution, a multivariate t distribution, or
 a univariate continuous distribution (for 1-D models).</p>
 </dd>
 </dl>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><dl class="simple">
 <dt>TypeError</dt><dd><p>If the provided distribution is not of the appropriate type.</p>
 </dd>
@@ -1252,14 +941,14 @@ a univariate continuous distribution (for 1-D models).</p>
 
 </section>
 <section id="userfunction-priors">
-<h3><code class="docutils literal notranslate"><span class="pre">UserFunction</span></code> priors<a class="headerlink" href="#userfunction-priors" title="Permalink to this headline">#</a></h3>
+<h3><code class="docutils literal notranslate"><span class="pre">UserFunction</span></code> priors<a class="headerlink" href="#userfunction-priors" title="Permalink to this heading">#</a></h3>
 <p>To standardize the interface, when a user provides a function as a log-prior it is wrapped in a <code class="docutils literal notranslate"><span class="pre">UserPrior</span></code> class.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.priors.UserFunction">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.priors.</span></span><span class="sig-name descname"><span class="pre">UserFunction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_prior</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_prior</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/user_function.html#UserFunction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.UserFunction" title="Permalink to this definition">#</a></dt>
 <dd><p>Lightweight wrapper for user-defined priors.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Attributes</dt>
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">log_pdf</span></code><span class="classifier">callable</span></dt><dd><p>Compute the log-pdf of the distribution.</p>
 </dd>
@@ -1275,7 +964,7 @@ a univariate continuous distribution (for 1-D models).</p>
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_prior</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_prior</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/user_function.html#UserFunction.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.UserFunction.__init__" title="Permalink to this definition">#</a></dt>
 <dd><p>Initialize a user-specified prior from a function.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>log_prior</strong><span class="classifier">callable, optional</span></dt><dd><p>The user-provided function. Should take a one-dimensional array as
 a single argument, and return the log-density of the prior
@@ -1296,13 +985,13 @@ samples from the prior distribution as an <cite>(n, D)</cite> array.</p>
 
 </section>
 <section id="utility-functions">
-<h3>Utility functions<a class="headerlink" href="#utility-functions" title="Permalink to this headline">#</a></h3>
+<h3>Utility functions<a class="headerlink" href="#utility-functions" title="Permalink to this heading">#</a></h3>
 <dl class="py function">
 <dt class="sig sig-object py" id="pyvbmc.priors.convert_to_prior">
 <span class="sig-prename descclassname"><span class="pre">pyvbmc.priors.</span></span><span class="sig-name descname"><span class="pre">convert_to_prior</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prior</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_prior</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_prior</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/convert_to_prior.html#convert_to_prior"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.convert_to_prior" title="Permalink to this definition">#</a></dt>
 <dd><p>Convert an object to a pyvbmc Prior instance.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>prior, optional</strong></dt><dd><p>The object to convert to a PyVBMC <code class="docutils literal notranslate"><span class="pre">Prior</span></code>. May be one of:</p>
 <ol class="arabic simple">
@@ -1330,7 +1019,7 @@ user-defined priors.</p>
 </dd>
 </dl>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><dl class="simple">
 <dt><strong>prior</strong><span class="classifier">PyVBMC.priors.Prior</span></dt><dd></dd>
 </dl>
@@ -1345,7 +1034,7 @@ user-defined priors.</p>
 <p>If all inputs are given as scalars, returned arrays will have shape <cite>size</cite>
 if <cite>size</cite> is a tuple, or shape <cite>(size,)</cite> if <cite>size</cite> is an integer.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>*args</strong><span class="classifier">[Union[float, np.ndarray]]</span></dt><dd><p>The inputs to tile.</p>
 </dd>
@@ -1355,7 +1044,7 @@ if <cite>size</cite> is a tuple, or shape <cite>(size,)</cite> if <cite>size</ci
 </dd>
 </dl>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><dl class="simple">
 <dt>ValueError</dt><dd><p>If the non-scalar arguments do not have the same shape, or if they do
 not agree with <cite>size</cite>.</p>
@@ -1372,13 +1061,13 @@ not agree with <cite>size</cite>.</p>
 <p>A valid SciPy distribution is a frozen multivariate normal, multivariate t,
 or continuous univariate distribution.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>obj</strong><span class="classifier">any</span></dt><dd><p>The object to type-check.</p>
 </dd>
 </dl>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><dl class="simple">
 <dt><strong>is_valid</strong><span class="classifier">bool</span></dt><dd></dd>
 </dl>
@@ -1391,48 +1080,168 @@ or continuous univariate distribution.</p>
 </section>
 
 
-              </div>
+                </article>
               
-            </main>
-            <footer class="footer-article noprint">
-                
-    <!-- Previous / next buttons -->
-<div class='prev-next-area'>
-    <a class='left-prev' id="prev-link" href="../options/vbmc_options.html" title="previous page">
-        <i class="fas fa-angle-left"></i>
-        <div class="prev-next-info">
-            <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">VBMC options</p>
-        </div>
+
+              
+              
+                <footer class="bd-footer-article">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../options/vbmc_options.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">VBMC options</p>
+      </div>
     </a>
-    <a class='right-next' id="next-link" href="../advanced_docs.html" title="next page">
-    <div class="prev-next-info">
+    <a class="right-next"
+       href="../advanced_docs.html"
+       title="next page">
+      <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
         <p class="prev-next-title">Advanced documentation</p>
-    </div>
-    <i class="fas fa-angle-right"></i>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
     </a>
 </div>
-            </footer>
-        </div>
-    </div>
-    <div class="footer-content row">
-        <footer class="col footer"><p>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prior-base-class"><code class="docutils literal notranslate"><span class="pre">Prior</span></code> base class</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.Prior"><code class="docutils literal notranslate"><span class="pre">Prior</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.Prior.log_pdf"><code class="docutils literal notranslate"><span class="pre">Prior.log_pdf()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.Prior.pdf"><code class="docutils literal notranslate"><span class="pre">Prior.pdf()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.Prior.sample"><code class="docutils literal notranslate"><span class="pre">Prior.sample()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.Prior.support"><code class="docutils literal notranslate"><span class="pre">Prior.support()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bounded-priors">Bounded priors</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#uniformbox"><code class="docutils literal notranslate"><span class="pre">UniformBox</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.UniformBox"><code class="docutils literal notranslate"><span class="pre">UniformBox</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.UniformBox.__init__"><code class="docutils literal notranslate"><span class="pre">UniformBox.__init__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#trapezoidal"><code class="docutils literal notranslate"><span class="pre">Trapezoidal</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.Trapezoidal"><code class="docutils literal notranslate"><span class="pre">Trapezoidal</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.Trapezoidal.__init__"><code class="docutils literal notranslate"><span class="pre">Trapezoidal.__init__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#splinetrapezoidal"><code class="docutils literal notranslate"><span class="pre">SplineTrapezoidal</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.SplineTrapezoidal"><code class="docutils literal notranslate"><span class="pre">SplineTrapezoidal</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.SplineTrapezoidal.__init__"><code class="docutils literal notranslate"><span class="pre">SplineTrapezoidal.__init__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#unbounded-priors">Unbounded priors</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#smoothbox"><code class="docutils literal notranslate"><span class="pre">SmoothBox</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.SmoothBox"><code class="docutils literal notranslate"><span class="pre">SmoothBox</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.SmoothBox.__init__"><code class="docutils literal notranslate"><span class="pre">SmoothBox.__init__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#other-priors-and-functions">Other priors and functions</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#product-priors"><code class="docutils literal notranslate"><span class="pre">Product</span></code> priors</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.Product"><code class="docutils literal notranslate"><span class="pre">Product</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.Product.__init__"><code class="docutils literal notranslate"><span class="pre">Product.__init__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#scipy-priors"><code class="docutils literal notranslate"><span class="pre">SciPy</span></code> priors</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.SciPy"><code class="docutils literal notranslate"><span class="pre">SciPy</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.SciPy.__init__"><code class="docutils literal notranslate"><span class="pre">SciPy.__init__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#userfunction-priors"><code class="docutils literal notranslate"><span class="pre">UserFunction</span></code> priors</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.UserFunction"><code class="docutils literal notranslate"><span class="pre">UserFunction</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.UserFunction.__init__"><code class="docutils literal notranslate"><span class="pre">UserFunction.__init__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#utility-functions">Utility functions</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.convert_to_prior"><code class="docutils literal notranslate"><span class="pre">convert_to_prior()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.tile_inputs"><code class="docutils literal notranslate"><span class="pre">tile_inputs()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvbmc.priors.is_valid_scipy_dist"><code class="docutils literal notranslate"><span class="pre">is_valid_scipy_dist()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            <div class="bd-footer-content__inner">
+<div class="bd-footer-content__inner container">
   
-      &copy; Copyright 2022, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).<br/>
-</p>
-        </footer>
-    </div>
+  <div class="footer-item">
     
-</div>
+  </div>
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2022, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).
+      <br/>
+    
+  </p>
 
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div></div>
+          </footer>
+        
 
-      </div>
+      </main>
     </div>
+  </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+  <script src="../../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d"></script>
 
-
+  <footer class="bd-footer">
+  </footer>
   </body>
 </html>

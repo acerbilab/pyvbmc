@@ -1,3 +1,5 @@
+:tocdepth: 2
+
 ========
 ``VBMC``
 ========
@@ -16,8 +18,17 @@
 
   See below for more details on the ``VBMC`` class methods and interface. The primary entry-points for users are the ``VBMC`` class, which initializes the algorithm, and the :ref:`\`\`VariationalPosterior\`\`` class, which represents the returned variational solution. The :ref:`Basic options` may also be useful.
 
-.. autoclass:: pyvbmc.vbmc.VBMC
+.. autoclass:: pyvbmc.VBMC
+   :exclude-members: optimize, save, load
    :members:
+
+   .. autofunction:: pyvbmc.VBMC.optimize
+   .. autofunction:: pyvbmc.VBMC.save
+   .. autofunction:: pyvbmc.VBMC.load
+
+Additional functions
+--------------------
+
+.. autofunction:: pyvbmc.vbmc.optimize_vp
 .. autofunction:: pyvbmc.vbmc.train_gp
 .. autofunction:: pyvbmc.vbmc.update_K
-.. autofunction:: pyvbmc.vbmc.optimize_vp
