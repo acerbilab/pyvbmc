@@ -1,4 +1,5 @@
-![PyVBMC](./logo.svg)
+![PyVBMC](https://user-images.githubusercontent.com/70731267/225583733-6cc22c33-a198-4868-90be-3818206d1398.svg)
+
 # PyVBMC: Variational Bayesian Monte Carlo in Python
 ![Version](https://img.shields.io/badge/dynamic/json?label=python&query=info.requires_python&url=https%3A%2F%2Fpypi.org%2Fpypi%2Fpyvbmc%2Fjson)
 [![Conda](https://img.shields.io/conda/v/conda-forge/pyvbmc)](https://anaconda.org/conda-forge/pyvbmc)
@@ -117,7 +118,7 @@ This matching process entails optimization of the *evidence lower bound* (ELBO),
 
 In each iteration, PyVBMC uses *active sampling* to select which points to evaluate next in order to explore the posterior landscape and reduce uncertainty in the approximation.
 
-![VBMC demo](./docsrc/source/_static/vbmc_animation.gif)
+![VBMC Demo](https://user-images.githubusercontent.com/70731267/225584285-5b90f78f-2ed9-4844-b0fa-ad5d4ab29923.gif)
 
 In the figure above, we show an example PyVBMC run on a [Rosenbrock "banana" function](https://en.wikipedia.org/wiki/Rosenbrock_function). The bottom-left panel shows PyVBMC at work: in grayscale are samples from the variational posterior (drawn as small points) and the corresponding estimated density (drawn as contours). The solid orange circles are the active sampling points chosen at each iteration, and the hollow blue circles are the previously sampled points. The topmost and rightnmost panels show histograms of the marginal densities along the $x_1$ and $x_2$ dimensions, respectively. PyVBMC converges to an excellent approximation of the true posterior with a few dozens evaluations of the target density.
 
