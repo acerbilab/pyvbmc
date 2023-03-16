@@ -22,4 +22,3 @@ jobs:
         uses: pypa/gh-action-pypi-publish@v1.6.4
         with:
           password: ${{ secrets.pypi_password }}
-          repository_url: https://test.pypi.org/legacy/
