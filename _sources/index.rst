@@ -73,17 +73,27 @@ Contributing
 References
 ###############
 
-1. Acerbi, L. (2018). Variational Bayesian Monte Carlo. In *Advances in Neural Information Processing Systems 31*: 8222-8232. (`paper + supplement on arXiv <https://arxiv.org/abs/1810.05558>`__, `NeurIPS Proceedings <https://papers.nips.cc/paper/2018/hash/747c1bcceb6109a4ef936bc70cfe67de-Abstract.html>`__)
-2. Acerbi, L. (2020). Variational Bayesian Monte Carlo with Noisy Likelihoods. In *Advances in Neural Information Processing Systems 33*: 8211-8222 (`paper + supplement on arXiv <https://arxiv.org/abs/2006.08655>`__, `NeurIPS Proceedings <https://papers.nips.cc/paper/2020/hash/5d40954183d62a82257835477ccad3d2-Abstract.html>`__).
+1. Huggins, B., Li, C., Tobaben, M., Aarnos, M., & Acerbi, L. (2023). *PyVBMC: Efficient Bayesian inference in Python*. arXiv. https://arxiv.org/abs/2303.09519
+2. Acerbi, L. (2018). Variational Bayesian Monte Carlo. In *Advances in Neural Information Processing Systems 31*: 8222-8232. (`paper + supplement on arXiv <https://arxiv.org/abs/1810.05558>`__, `NeurIPS Proceedings <https://papers.nips.cc/paper/2018/hash/747c1bcceb6109a4ef936bc70cfe67de-Abstract.html>`__)
+3. Acerbi, L. (2020). Variational Bayesian Monte Carlo with Noisy Likelihoods. In *Advances in Neural Information Processing Systems 33*: 8211-8222 (`paper + supplement on arXiv <https://arxiv.org/abs/2006.08655>`__, `NeurIPS Proceedings <https://papers.nips.cc/paper/2020/hash/5d40954183d62a82257835477ccad3d2-Abstract.html>`__).
 
-You can cite VBMC in your work with something along the lines of
+You can cite PyVBMC in your work with something along the lines of
 
-    We estimated approximate posterior distibutions and approximate lower bounds to the model evidence of our models using Variational Bayesian Monte Carlo (VBMC; Acerbi, 2018, 2020) via the PyVBMC software. VBMC combines variational inference and active-sampling Bayesian quadrature to perform approximate Bayesian inference in a sample-efficient manner.
+    We estimated approximate posterior distibutions and approximate lower bounds to the model evidence of our models using Variational Bayesian Monte Carlo (VBMC; Acerbi, 2018, 2020) via the PyVBMC software (Huggins et al., 2023). PyVBMC combines variational inference and active-sampling Bayesian quadrature to perform approximate Bayesian inference in a sample-efficient manner.
 
 BibTeX
 ------
 ::
 
+  @article{huggins2023pyvbmc,
+    title = {PyVBMC: Efficient Bayesian inference in Python},
+    author = {Huggins, Bobby and Li, Chengkun and Tobaben, Marlon and Aarnos, Mikko J. and Acerbi, Luigi},
+    publisher = {preprint},
+    journal = {{arXiv}},
+    url = {https://arxiv.org/abs/2303.09519},
+    doi = {10.48550/ARXIV.2303.09519},
+    year = {2023},
+  }
   @article{acerbi2018variational,
     title={{V}ariational {B}ayesian {M}onte {C}arlo},
     author={Acerbi, Luigi},
