@@ -4,6 +4,7 @@ import math
 import os
 import sys
 from collections.abc import Iterable
+from datetime import datetime
 from pathlib import Path
 from textwrap import indent
 from typing import Union
@@ -306,6 +307,7 @@ class VBMC:
                 "func_count",
                 "n_eff",
                 "logging_action",
+                "wall_time",
                 # For resuming optimization from a specific iteration, mostly
                 # useful for debugging
                 "function_logger",
@@ -839,6 +841,7 @@ class VBMC:
         results : dict
             A dictionary with additional information about the VBMC run.
         """
+        self.initial_wall_time = datetime.now()
         # Initialize main logger with potentially new options:
         self.logger = self._init_logger()
         # set up strings for logging of the iteration
@@ -1487,6 +1490,7 @@ class VBMC:
                 {
                     "optim_state": self.optim_state,
                     "random_state": self.random_state,
+                    "wall_time": datetime.now(),
                 },
                 self.iteration,
             )
@@ -1583,6 +1587,7 @@ class VBMC:
             idx_best, termination_message, success_flag
         )
 
+        self.final_wall_time = datetime.now()
         return copy.deepcopy(self.vp), results
 
     def _check_warmup_end_conditions(self):
