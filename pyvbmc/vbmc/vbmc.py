@@ -1490,7 +1490,9 @@ class VBMC:
                 {
                     "optim_state": self.optim_state,
                     "random_state": self.random_state,
-                    "wall_time": datetime.now(),
+                    "wall_time": (
+                        datetime.now() - self.initial_wall_time
+                    ).total_seconds(),
                 },
                 self.iteration,
             )
@@ -1587,7 +1589,9 @@ class VBMC:
             idx_best, termination_message, success_flag
         )
 
-        self.final_wall_time = datetime.now()
+        self.final_wall_time = (
+            datetime.now() - self.initial_wall_time
+        ).total_seconds()
         return copy.deepcopy(self.vp), results
 
     def _check_warmup_end_conditions(self):
