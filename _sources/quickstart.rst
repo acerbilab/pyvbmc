@@ -29,7 +29,7 @@ Running the inference in step 3 only involves a couple of lines of code:
 
 with input arguments:
 
-- ``target``: the target (unnormalized) log density — often an unnormalized log posterior. ``target`` takes as input a parameter vector and returns the log density at the point;
+- ``target``: the target (unnormalized) log density — often an unnormalized log posterior. ``target`` takes as input a parameter vector and returns the log density at the point. The returned log density must return a *finite* real value, i.e. non `NaN` or `-inf`. See the :labrepos:`VBMC FAQ <vbmc/wiki#how-do-i-prevent-vbmc-from-evaluating-certain-inputs-or-regions-of-input-space>` for more details;
 - ``x0``: the starting point of the inference in parameter space;
 - ``LB`` and ``UB``: hard lower and upper bounds for the parameters (can be ``-inf`` and ``inf``, or bounded);
 - ``PLB`` and ``PUB``: *plausible* lower and upper bounds, that is a box that ideally brackets a region of high density of the target.

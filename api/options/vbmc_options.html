@@ -19,12 +19,12 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
-<link href="../../_static/styles/bootstrap.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
 
   
-  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
   <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
@@ -34,8 +34,8 @@
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d" />
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
 
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
@@ -432,8 +432,6 @@ document.write(`
 <span class="n">fun_evals_per_iter</span> <span class="o">=</span> <span class="mi">5</span>
 <span class="c1"># Required stable fcn evals for termination</span>
 <span class="n">tol_stable_count</span> <span class="o">=</span> <span class="mi">60</span>
-<span class="c1"># Max number of target fcn evals on retry (0 = no retry)</span>
-<span class="n">retry_max_fun_evals</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="c1"># Number of variational components to refine posterior at termination</span>
 <span class="n">min_final_components</span> <span class="o">=</span> <span class="mi">50</span>
 <span class="c1"># Target log joint function returns noise estimate (SD) as second output</span>
@@ -462,8 +460,6 @@ what you are doing.</p>
 <span class="n">noise_size</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="c1"># Max number of consecutive repeated measurements for noisy inputs</span>
 <span class="n">max_repeated_observations</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="c1"># Multiplicative discount True acquisition fcn to repeat measurement at the same location</span>
-<span class="n">repeated_acq_discount</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="c1"># Number of initial target fcn evals</span>
 <span class="n">fun_eval_start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
 <span class="c1"># Base step size for stochastic gradient descent</span>
@@ -488,8 +484,6 @@ what you are doing.</p>
 <span class="n">tol_stable_excpt_frac</span> <span class="o">=</span> <span class="mf">0.2</span>
 <span class="c1"># Evaluated fcn values at X0</span>
 <span class="n">f_vals</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="c1"># Use Optimization Toolbox (if empty determine at runtime)</span>
-<span class="n">optim_toolbox</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="c1"># Weighted proposal fcn for uncertainty search</span>
 <span class="n">proposal_fcn</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="c1"># Automatic nonlinear rescaling of variables</span>
@@ -800,7 +794,10 @@ what you are doing.</p>
               
               
                 <footer class="bd-footer-article">
-                  <!-- Previous / next buttons -->
+                  
+<div class="footer-article-items footer-article__inner">
+  
+    <div class="footer-article-item"><!-- Previous / next buttons -->
 <div class="prev-next-area">
     <a class="left-prev"
        href="../classes/variational_posterior.html"
@@ -820,7 +817,10 @@ what you are doing.</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
+</div></div>
+  
 </div>
+
                 </footer>
               
             </div>
@@ -845,7 +845,7 @@ what you are doing.</p>
             
           </div>
           <footer class="bd-footer-content">
-            <div class="bd-footer-content__inner">
+            
 <div class="bd-footer-content__inner container">
   
   <div class="footer-item">
@@ -871,7 +871,7 @@ what you are doing.</p>
     
   </div>
   
-</div></div>
+</div>
           </footer>
         
 
@@ -880,8 +880,8 @@ what you are doing.</p>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d"></script>
-<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d"></script>
+  <script src="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
 
   <footer class="bd-footer">
   </footer>
