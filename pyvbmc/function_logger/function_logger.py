@@ -145,7 +145,7 @@ class FunctionLogger:
             f_val_orig = np.array(f_val_orig).flat[0]
 
         # Check function value
-        if np.any(
+        if (
             not np.isscalar(f_val_orig)
             or not np.isfinite(f_val_orig)
             or not np.isreal(f_val_orig)

@@ -7,6 +7,7 @@ import gpyreg as gpr
 import numpy as np
 
 from pyvbmc.acquisition_functions import AbstractAcqFcn
+from pyvbmc.acquisition_functions.utilities import string_to_acq
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.stats import get_hpd
 from pyvbmc.timer import main_timer as timer
@@ -271,7 +272,6 @@ def active_sample(
             noise_N = gp.noise.hyperparameter_count()
 
             for s in range(Ns_gp):
-
                 hyp_noise = gp.posteriors[s].hyp[cov_N : cov_N + noise_N]
                 if hasattr(function_logger, "S"):
                     s2 = (
@@ -380,7 +380,6 @@ def active_sample(
                     tol_fun = max(1e-12, abs(f_val_old * 1e-3))
 
                 if options["search_optimizer"] == "cmaes":
-
                     if options["search_cmaes_vp_init"]:
                         _, Sigma = vp.moments(orig_flag=False, cov_flag=True)
                     else:
