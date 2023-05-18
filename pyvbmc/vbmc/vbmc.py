@@ -48,7 +48,7 @@ class VBMC:
         the target log-joint, that is, the unnormalized log-posterior density
         at ``x``. If ``log_prior`` is not ``None``, ``log_density`` should
         return the unnormalized log-likelihood. In either case, if
-        ``options["specifytargetnoise"]`` is true, ``log_density`` should
+        ``options["specify_target_noise"]`` is true, ``log_density`` should
         return a tuple where the first element is the noisy log-density, and
         the second is an estimate of the standard deviation of the noise.
     x0 : np.ndarray, optional
@@ -110,11 +110,6 @@ class VBMC:
         `plausible_upper_bounds`) are specified.
     ValueError
         When various checks for the bounds (LB, UB, PLB, PUB) of VBMC fail.
-
-    Notes
-    -----
-    The current version of ``VBMC`` only supports noiseless evaluations of the
-    log posterior [1]_. Noisy evaluations as in [2]_ are not implemented yet.
 
     References
     ----------
