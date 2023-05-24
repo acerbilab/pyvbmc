@@ -53,7 +53,7 @@ Standard methods for Bayesian inference over arbitrary statistical and computati
 
 ## Method
 
-PyVBMC achieves practical sample-efficiency in a unique manner by simultaneously building two approximations of the true, expensive target posterior distribution:
+PyVBMC achieves practical sample efficiency in a unique manner by simultaneously building two approximations of the true, expensive target posterior distribution:
 
 - A Gaussian process (GP) surrogate of the target (unnormalized) log posterior density.
 - A variational approximation — an expressive mixture of Gaussian distributions with an arbitrary number of components — fit to the GP surrogate.
@@ -65,7 +65,13 @@ The uncertainty-aware GP surrogate is built iteratively via active sampling, sel
 At the same time, in each iteration of PyVBMC a variational approximation is fit to the current GP surrogate by optimizing a lower bound to the log model evidence (ELBO). This second approximation thus provides an estimate of the normalization constant of the posterior, useful for Bayesian model selection, and yields a tractable distribution (a very flexible mixture of Gaussians) we can easily compute with and draw samples from.
 Crucially, obtaining this variational approximation is inexpensive because the ELBO and its gradients can be efficiently estimated via Bayesian quadrature [@ohagan_bayesian_1991; @ghahramani_bayesian_2002], without relying on additional evaluations of the true target posterior.
 
-The variational approximation is a unique feature of the VBMC algorithm that makes it particularly efficient and robust, as both the current ELBO and the variational posterior are used throughout all steps of the algorithm. For example: as diagnostics for convergence and stability of the solution; to obtain a better representation of the target by rotating the axes via *variational whitening*; to estimate complex integrated acquisition functions for active sampling with noisy targets. All of these algorithmic steps would be cumbersome if not unfeasible without an easy, tractable representation of the posterior at each iteration. Notably, the GP itself is not tractable as its normalization constant is unknown and we cannot directly draw posterior samples from the surrogate log density: this is where the variational posterior approximation steps in.
+The variational approximation is a unique feature of the VBMC algorithm that makes it particularly efficient and robust, as both the current ELBO and the variational posterior are used throughout all steps of the algorithm, for example:
+
+  - as diagnostics for convergence and stability of the solution;
+  - to obtain a better representation of the target by rotating the axes via *variational whitening*;
+  - to estimate complex integrated acquisition functions for active sampling with noisy targets.
+
+All of these algorithmic steps would be cumbersome if not infeasible without an easy, tractable representation of the posterior at each iteration. Notably, the GP itself is not tractable as its normalization constant is unknown and we cannot directly draw posterior samples from the surrogate log density: this is where the variational posterior approximation steps in.
 
 In practice, PyVBMC returns the final variational posterior as an object that can be easily manipulated by the user, and an estimate of the ELBO and of its uncertainty. Importantly, several diagnostics are automatically applied to detect lack of convergence of the method.
 
