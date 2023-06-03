@@ -37,22 +37,22 @@ Release versions of PyVBMC are available via ``pip`` and ``conda-forge``, but de
 
 We are using the dependencies listed in ``pyproject.toml``. Please list all used dependencies there. Dependencies are separated into basic dependencies, and optional development dependencies included under ``dev``.
 
-The necessary packages can be installed with `conda <https://docs.conda.io/projects/conda/en/latest/user-guide/install/>`_ or `pip <https://pypi.org/project/pip/>`_.
+The necessary packages can be installed with `conda <https://docs.conda.io/projects/conda/en/latest/user-guide/install/>`__ or `pip <https://pypi.org/project/pip/>`__.
 
 Coding conventions
 ##################
 
 We try to follow common conventions whenever possible. Some useful reading:
 
-- `PEP 8 -- Style Guide for Python Code <https://www.python.org/dev/peps/pep-0008/>`_
-- `Code style in The Hitchhiker's Guide to Python <https://docs.python-guide.org/writing/style/>`_
+- `PEP 8 -- Style Guide for Python Code <https://www.python.org/dev/peps/pep-0008/>`__
+- `Code style in The Hitchhiker's Guide to Python <https://docs.python-guide.org/writing/style/>`__
 
 These basic rules should be followed to ensure coherence and to make it easy for third parties to contribute. In the following, we list more detailed conventions. Please read carefully if you are contributing to PyVBMC.
 
 Code formatting
 ---------------
 
-The code is formatted using `Black <https://pypi.org/project/black/>`_ with a line length of 79, with the help of pre-commit hooks. To install and use::
+The code is formatted using `Black <https://pypi.org/project/black/>`__ with a line length of 79, with the help of pre-commit hooks. To install and use::
 
     pip install pre-commit
     pre-commit install
@@ -60,22 +60,22 @@ The code is formatted using `Black <https://pypi.org/project/black/>`_ with a li
 
 After installation, when you try to commit the staged files, git will automatically check the files and modify them for meeting the requirements of the hooks in ``.pre-commit-config.yaml``. The settings of the hooks are specified in ``pyproject.toml``. You need to restage the file if it gets modified by the hooks.
 
-If you want, you can also check with `ruff <https://beta.ruff.rs/docs/>` or `Pylint <https://www.pylint.org/>` for more detailed errors, warnings, and suggestions.
+If you want, you can also check with `ruff <https://beta.ruff.rs/docs/>`__ or `Pylint <https://www.pylint.org/>`__ for more detailed errors, warnings, and suggestions.
 
 Docstrings
 ----------
 
-The docstrings are generated following the `NumPy format <https://numpydoc.readthedocs.io/en/latest/format.html>`_.
+The docstrings are generated following the `NumPy format <https://numpydoc.readthedocs.io/en/latest/format.html>`__.
 There are add-ons to generate docstring blueprints using IDEs.
 
 - See an example for a correct docstring from NumPy `here <https://numpydoc.readthedocs.io/en/latest/example.html>`__.
 - In PyVBMC, the ``VariationalPosterior`` class can be taken as an example of (mostly) correct docstring structure, see :mainbranch:`here <variational_posterior/variational_posterior.py>`.
-  - In particular, see how the single quotes and double quotes are used; the math notation is used; full stops are added at the end of each sentence, etc.
+- In particular, see how the single quotes and double quotes are used; the math notation is used; full stops are added at the end of each sentence, etc.
 
 Code documentation
 ------------------
 
-The documentation is currently hosted on :doc:`github.io <index>`. We build the PyVBMC documentation using `Sphinx <https://www.sphinx-doc.org/en/master/usage/quickstart.html>`_. The source code of the documentation is in the :mainbranch:`docsrc folder <docsrc>` and the build version is in the :labrepos:`gh-pages <pyvbmc/tree/gh-pages>` branch.
+The documentation is currently hosted on :doc:`github.io <index>`. We build the PyVBMC documentation using `Sphinx <https://www.sphinx-doc.org/en/master/usage/quickstart.html>`__. The source code of the documentation is in the :mainbranch:`docsrc folder <docsrc>` and the build version is in the :labrepos:`gh-pages <pyvbmc/tree/gh-pages>` branch.
 
 GitHub workflows automatically build and update the documentation whenever a commit is merged into the ``main`` branch, but it is sometimes useful to first do this locally in order to confirm that everything builds and renders correctly. This is especially advisable if you have made significant changes to the docs. To do so:
 
@@ -102,7 +102,7 @@ General structure
 .................
 
 For each new class, function, etc. a ``.rst`` file needs to be created in an appropriate folder. The folder names are arbitrary, for now we have ``functions``, ``classes``, etc.
-The ``.rst`` file contains the text in `reStructuredText format <https://en.wikipedia.org/wiki/ReStructuredText>`_, a lightweight markup language with special commands that tell Sphynx where to compile the documentation, for example::
+The ``.rst`` file contains the text in `reStructuredText format <https://en.wikipedia.org/wiki/ReStructuredText>`__, a lightweight markup language with special commands that tell Sphynx where to compile the documentation, for example::
 
     .. autoclass:: pyvbmc.vbmc.VBMC
       :members:
@@ -120,14 +120,14 @@ Please keep the documentation up to date. (Sphinx logs possible issues when comp
 Exceptions
 ----------
 
-Please use standard Python exceptions whenever it is sensible. Here is a list of those `exceptions <https://docs.python.org/3/library/exceptions.html>`_.
+Please use standard Python exceptions whenever it is sensible. Here is a list of those `exceptions <https://docs.python.org/3/library/exceptions.html>`__.
 
 ``git`` commits
 ---------------
 
-Commits follow the `conventional commits <https://www.conventionalcommits.org/en/v1.0.0/>`_ style. This makes it easier to collaborate on the project. A cheat sheet is can be found `here <https://cheatography.com/albelop/cheat-sheets/conventional-commits/>`__
+Commits follow the `conventional commits <https://www.conventionalcommits.org/en/v1.0.0/>`__ style. This makes it easier to collaborate on the project. A cheat sheet is can be found `here <https://cheatography.com/albelop/cheat-sheets/conventional-commits/>`__.
 
-Please do not submit pull requests with unfinished code or code which does not pass all tests. Work on feature branches whenever possible and sensible. All PRs must be approved by another developer before being merged to the main branch. `Read this <https://martinfowler.com/bliki/FeatureBranch.html>`_ ::
+Please do not submit pull requests with unfinished code or code which does not pass all tests. Work on feature branches whenever possible and sensible. All PRs must be approved by another developer before being merged to the main branch. `Read this <https://martinfowler.com/bliki/FeatureBranch.html>`__ ::
 
     git checkout -b <new-feature>
     [... do stuff and commit ...]
