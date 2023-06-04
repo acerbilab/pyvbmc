@@ -425,13 +425,13 @@ document.write(`
 <p>The documentation is available at: <a class="reference external" href="https://acerbilab.github.io/pyvbmc/">https://acerbilab.github.io/pyvbmc/</a></p>
 <section id="installation-instructions-for-developers">
 <h2>Installation instructions for developers<a class="headerlink" href="#installation-instructions-for-developers" title="Permalink to this heading">#</a></h2>
-<p>Release versions of PyVBMC are available via <code class="docutils literal notranslate"><span class="pre">pip</span></code> (and soon, <code class="docutils literal notranslate"><span class="pre">conda-forge</span></code>), but developers will need to work with the latest source code. They should follow these steps to install:</p>
+<p>Release versions of PyVBMC are available via <code class="docutils literal notranslate"><span class="pre">pip</span></code> and <code class="docutils literal notranslate"><span class="pre">conda-forge</span></code>, but developers will need to work with the latest source code. They should follow these steps to install:</p>
 <ol class="arabic">
-<li><p>(Optional, but recommended for development): Create a new environment in Conda and activate it. Requires Python 3.9 or newer:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">--</span><span class="n">name</span> <span class="n">pyvbmc</span><span class="o">-</span><span class="n">env</span> <span class="n">python</span><span class="o">=</span><span class="mf">3.9</span>
-<span class="n">conda</span> <span class="n">activate</span> <span class="n">pyvbmc</span><span class="o">-</span><span class="n">env</span>
-</pre></div>
-</div>
+<li><p>(Optional, but recommended for development): Create a new environment in Conda and activate it.</p>
+<blockquote>
+<div><p>conda create –name pyvbmc-env
+conda activate pyvbmc-env</p>
+</div></blockquote>
 </li>
 <li><p>Clone the PyVBMC and GPyReg GitHub repos locally:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">acerbilab</span><span class="o">/</span><span class="n">pyvbmc</span>
@@ -474,16 +474,16 @@ document.write(`
 </pre></div>
 </div>
 <p>After installation, when you try to commit the staged files, git will automatically check the files and modify them for meeting the requirements of the hooks in <code class="docutils literal notranslate"><span class="pre">.pre-commit-config.yaml</span></code>. The settings of the hooks are specified in <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>. You need to restage the file if it gets modified by the hooks.</p>
-<p>If you want, you can also check with Pylint for more detailed errors and warnings (although Pylint seems to raise many false positives).</p>
+<p>If you want, you can also check with <a class="reference external" href="https://beta.ruff.rs/docs/">ruff</a> or <a class="reference external" href="https://www.pylint.org/">Pylint</a> for more detailed errors, warnings, and suggestions.</p>
 </section>
 <section id="docstrings">
 <h3>Docstrings<a class="headerlink" href="#docstrings" title="Permalink to this heading">#</a></h3>
 <p>The docstrings are generated following the <a class="reference external" href="https://numpydoc.readthedocs.io/en/latest/format.html">NumPy format</a>.
-There are add-ons to generate docstring blueprints using IDE’s.</p>
+There are add-ons to generate docstring blueprints using IDEs.</p>
 <ul class="simple">
 <li><p>See an example for a correct docstring from NumPy <a class="reference external" href="https://numpydoc.readthedocs.io/en/latest/example.html">here</a>.</p></li>
-<li><p>In PyVBMC, the <code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code> class can be taken as an example of (mostly) correct docstring structure, see <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/variational_posterior/variational_posterior.py">here</a>.
-- In particular, see how the single quotes and double quotes are used; the math notation is used; full stops are added at the end of each sentence, etc.</p></li>
+<li><p>In PyVBMC, the <code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code> class can be taken as an example of (mostly) correct docstring structure, see <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/variational_posterior/variational_posterior.py">here</a>.</p></li>
+<li><p>In particular, see how the single quotes and double quotes are used; the math notation is used; full stops are added at the end of each sentence, etc.</p></li>
 </ul>
 </section>
 <section id="code-documentation">
@@ -531,13 +531,12 @@ Please keep the documentation up to date. (Sphinx logs possible issues when comp
 </section>
 <section id="exceptions">
 <h3>Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this heading">#</a></h3>
-<p>Currently, the aim is to use the standard Python exceptions whenever it is sensible.
-Here is a list of those <a class="reference external" href="https://docs.python.org/3/library/exceptions.html">exceptions</a>.</p>
+<p>Please use standard Python exceptions whenever it is sensible. Here is a list of those <a class="reference external" href="https://docs.python.org/3/library/exceptions.html">exceptions</a>.</p>
 </section>
 <section id="git-commits">
 <h3><code class="docutils literal notranslate"><span class="pre">git</span></code> commits<a class="headerlink" href="#git-commits" title="Permalink to this heading">#</a></h3>
-<p>Commits follow the <a class="reference external" href="https://www.conventionalcommits.org/en/v1.0.0/">conventional commits</a> style. This makes it easier to collaborate on the project. A cheat sheet is can be found <a class="reference external" href="https://cheatography.com/albelop/cheat-sheets/conventional-commits/">here</a></p>
-<p>Please do not submit pull requests with unfinished code or code which does not pass all tests. Work on feature branches whenever possible and sensible. All PR’s must be approved by another developer before being merged to the main branch. <a class="reference external" href="https://martinfowler.com/bliki/FeatureBranch.html">Read this</a></p>
+<p>Commits follow the <a class="reference external" href="https://www.conventionalcommits.org/en/v1.0.0/">conventional commits</a> style. This makes it easier to collaborate on the project. A cheat sheet is can be found <a class="reference external" href="https://cheatography.com/albelop/cheat-sheets/conventional-commits/">here</a>.</p>
+<p>Please do not submit pull requests with unfinished code or code which does not pass all tests. Work on feature branches whenever possible and sensible. All PRs must be approved by another developer before being merged to the main branch. <a class="reference external" href="https://martinfowler.com/bliki/FeatureBranch.html">Read this</a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="o">-</span><span class="n">b</span> <span class="o">&lt;</span><span class="n">new</span><span class="o">-</span><span class="n">feature</span><span class="o">&gt;</span>
 <span class="p">[</span><span class="o">...</span> <span class="n">do</span> <span class="n">stuff</span> <span class="ow">and</span> <span class="n">commit</span> <span class="o">...</span><span class="p">]</span>
 <span class="n">git</span> <span class="n">push</span> <span class="o">-</span><span class="n">u</span> <span class="n">origin</span> <span class="o">&lt;</span><span class="n">new</span><span class="o">-</span><span class="n">feature</span><span class="o">&gt;</span>
@@ -548,7 +547,7 @@ Here is a list of those <a class="reference external" href="https://docs.python.
 </section>
 <section id="modules-and-code-organization">
 <h3>Modules and code organization<a class="headerlink" href="#modules-and-code-organization" title="Permalink to this heading">#</a></h3>
-<p>We have decided against general util/misc modules for now. This means that general-purpose functions should be included in a fitting existing module or in their own module. This approach encourages us to keep functions general and coherent to their scope. Furthermore, it improves readability for new collaborators. See some reading about that <a class="reference external" href="https://breadcrumbscollector.tech/stop-naming-your-python-modules-utils/">here</a>.</p>
+<p>We have decided against general util/misc modules. This means that general-purpose functions should be included in a fitting existing module or in their own module. This approach encourages us to keep functions general and coherent to their scope. Furthermore, it improves readability for new collaborators. See some reading about that <a class="reference external" href="https://breadcrumbscollector.tech/stop-naming-your-python-modules-utils/">here</a>.</p>
 </section>
 <section id="testing">
 <h3>Testing<a class="headerlink" href="#testing" title="Permalink to this heading">#</a></h3>
@@ -562,13 +561,12 @@ Tests can be run with:</p>
 <p>The final command creates an html folder with a full report on coverage – double-check it from time to time. Some tests are stochastic and occasionally fail: Tests can be automatically rerun by specifying e.g. <code class="docutils literal notranslate"><span class="pre">--reruns</span> <span class="pre">3</span></code>.</p>
 <p>A few comments about testing:</p>
 <ul class="simple">
-<li><p>Testing is mandatory!</p></li>
+<li><p>Testing is mandatory! The full suite of tests is automatically run before any pull request can be merged into <code class="docutils literal notranslate"><span class="pre">main</span></code>. The tests run on Windows, Linux, and macOS. Automatic tests are skipped for PRs which do not change the source code or tests (e.g., changes to the documentation only).</p></li>
+<li><p>Still, as a good practice, please rerun all tests before major commits and pull requests. This might take a while, but it is worth it to avoid surprises.</p></li>
 <li><p>Please try to keep the total runtime of the tests minimal for the task at hand.</p></li>
-<li><p>As a good practice, please rerun all tests before major commits and pull requests (might take a while, but it is worth it to avoid surprises).</p></li>
 <li><p>A nice way of proceeding is “test first”: write a test first, make it fail, write the code until the test is passed.</p></li>
 <li><p>Many methods are tested against test cases produced with the original <a class="reference external" href="https://github.com/acerbilab/vbmc">MATLAB implementation</a>.</p></li>
 <li><p>The <code class="docutils literal notranslate"><span class="pre">pytest-mock</span></code> library is very useful for testing. It allows you to replace parts of your system under test with mock objects and make assertions about how they have been used. (Perhaps we should switch to <code class="docutils literal notranslate"><span class="pre">unittest.mock</span></code> in the future, which is part of the Python standard library.)</p></li>
-<li><p>We should look into automating tests with GitHub actions.</p></li>
 </ul>
 </section>
 </section>
