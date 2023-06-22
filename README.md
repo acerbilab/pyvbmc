@@ -159,7 +159,7 @@ You may also want to check out [Bayesian Adaptive Direct Search in Python (PyBAD
 ### BibTeX
 
 ```BibTeX
-  @article{huggins2023pyvbmc,
+@article{huggins2023pyvbmc,
     title = {PyVBMC: Efficient Bayesian inference in Python},
     author = {Bobby Huggins and Chengkun Li and Marlon Tobaben and Mikko J. Aarnos and Luigi Acerbi},
     publisher = {The Open Journal},
