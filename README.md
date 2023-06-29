@@ -6,7 +6,7 @@
 [![PyPI](https://img.shields.io/pypi/v/pyvbmc)](https://pypi.org/project/pyvbmc/)
 <br />
 [![Discussion](https://img.shields.io/badge/-discussion-blue?logo=github)](https://github.com/orgs/acerbilab/discussions)
-[![tests](https://img.shields.io/github/actions/workflow/status/acerbilab/pyvbmc/tests.yml?branch=main&label=tests)](https://github.com/acerbilab/pyvbmc/actions/workflows/tests.yml)
+<!-- [![tests](https://img.shields.io/github/actions/workflow/status/acerbilab/pyvbmc/tests.yml?branch=main&label=tests)](https://github.com/acerbilab/pyvbmc/actions/workflows/tests.yml) -->
 [![docs](https://img.shields.io/github/actions/workflow/status/acerbilab/pyvbmc/build.yml?branch=main&label=docs)](https://github.com/acerbilab/pyvbmc/actions/workflows/docs.yml)
 [![build](https://img.shields.io/github/actions/workflow/status/acerbilab/pyvbmc/docs.yml?branch=main&label=build)](https://github.com/acerbilab/pyvbmc/actions/workflows/build.yml)
 ### What is it?
