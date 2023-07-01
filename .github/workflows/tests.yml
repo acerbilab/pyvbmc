@@ -11,11 +11,14 @@ jobs:
   tests:
     strategy:
       matrix:
-        os: [ubuntu-18.04, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ["3.9", "3.10", "3.11"]
     runs-on: ${{ matrix.os }}
 
     steps:
+      - name: Collect Workflow Telemetry
+        uses: runforesight/workflow-telemetry-action@v1
+
       - name: Checkout PyVBMC
         uses: actions/checkout@v3
         with:
