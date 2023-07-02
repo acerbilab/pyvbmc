@@ -956,9 +956,9 @@ class VariationalPosterior:
 
         Notes
         -----
-        The total variation distance between two densities `p1` and `p2` is:
+        The total variation distance between two densities :math:`p_1` and :math:`p_2` is:
 
-        .. math:: TV(p1, p2) = \frac{1}{2} \int | p1(x) - p2(x) | dx.
+        .. math:: TV(p_1, p_2) = \frac{1}{2} \int | p_1(x) - p_2(x) | dx.
 
         """
         if vp2 is None and samples is None:
