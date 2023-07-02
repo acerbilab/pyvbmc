@@ -84,6 +84,7 @@ You can cite PyVBMC in your work with something along the lines of
 BibTeX
 ------
 ::
+
   @article{huggins2023pyvbmc,
     title = {PyVBMC: Efficient Bayesian inference in Python},
     author = {Bobby Huggins and Chengkun Li and Marlon Tobaben and Mikko J. Aarnos and Luigi Acerbi},
