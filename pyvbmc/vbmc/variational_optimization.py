@@ -1404,7 +1404,7 @@ def _gp_log_joint(
             )  # Covariance normalization factor
             delta_k = Xt[k, :, :] / tau_k
             z_k = np.exp(lnnf_k - 0.5 * np.sum(delta_k**2, axis=0))
-            I_k = np.dot(z_k, alpha) + m0
+            I_k = np.dot(z_k, alpha).item() + m0
 
             if quadratic_meanfun:
                 nu_k = (
@@ -1441,7 +1441,7 @@ def _gp_log_joint(
                     * sigma[:, k]
                     * z_k
                 )
-                sigma_grad[k, s] = w[k] * np.dot(dz_dsigma, alpha)
+                sigma_grad[k, s] = w[k] * np.dot(dz_dsigma, alpha).item()
                 if quadratic_meanfun:
                     sigma_grad[k, s] -= (
                         w[k]
