@@ -1407,16 +1407,19 @@ def _gp_log_joint(
             I_k = np.dot(z_k, alpha) + m0
 
             if quadratic_meanfun:
-                nu_k = -0.5 * np.sum(
-                    1
-                    / omega**2
-                    * (
-                        mu[:, k : k + 1] ** 2
-                        + sigma[:, k] ** 2 * lambd**2
-                        - 2 * mu[:, k : k + 1] * xm
-                        + xm**2
-                    ),
-                    axis=0,
+                nu_k = (
+                    -0.5
+                    * np.sum(
+                        1
+                        / omega**2
+                        * (
+                            mu[:, k : k + 1] ** 2
+                            + sigma[:, k] ** 2 * lambd**2
+                            - 2 * mu[:, k : k + 1] * xm
+                            + xm**2
+                        ),
+                        axis=0,
+                    ).item()
                 )
                 I_k += nu_k
             G[s] += w[k] * I_k
@@ -1442,8 +1445,8 @@ def _gp_log_joint(
                 if quadratic_meanfun:
                     sigma_grad[k, s] -= (
                         w[k]
-                        * sigma[:, k]
-                        * np.sum(1 / omega**2 * lambd**2, axis=0)
+                        * sigma[0, k]
+                        * np.sum(1 / omega**2 * lambd**2, axis=0).item()
                     )
 
             if grad_flags[2]:
@@ -1481,7 +1484,7 @@ def _gp_log_joint(
                     delta_jk = (mu[:, j : j + 1] - mu[:, k : k + 1]) / tau_jk
 
                     J_jk = np.exp(
-                        lnnf_jk - 0.5 * np.sum(delta_jk**2, axis=0)
+                        lnnf_jk - 0.5 * np.sum(delta_jk**2, axis=0).item()
                     )
                     if L_chol:
                         J_jk -= np.dot(

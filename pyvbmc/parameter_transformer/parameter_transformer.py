@@ -127,9 +127,9 @@ class ParameterTransformer:
 
             # Center in transformed space
             for i in range(D):
-                if np.isfinite(plb_tran[:, i]) and np.isfinite(pub_tran[:, i]):
-                    self.mu[i] = 0.5 * (plb_tran[:, i] + pub_tran[:, i])
-                    self.delta[i] = pub_tran[:, i] - plb_tran[:, i]
+                if np.isfinite(plb_tran[0, i]) and np.isfinite(pub_tran[0, i]):
+                    self.mu[i] = 0.5 * (plb_tran[0, i] + pub_tran[0, i])
+                    self.delta[i] = pub_tran[0, i] - plb_tran[0, i]
 
     @handle_0D_1D_input(patched_kwargs=["x"], patched_argpos=[0])
     def __call__(self, x: np.ndarray):
