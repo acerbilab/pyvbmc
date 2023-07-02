@@ -22,7 +22,7 @@ from pyvbmc.stats import kde_1d, kl_div_mvn
 
 
 class VariationalPosterior:
-    """
+    r"""
     The variational posterior class used in PyVBMC.
 
     The variational posterior represents the approximate posterior as returned
@@ -82,14 +82,14 @@ class VariationalPosterior:
     In VBMC, the variational posterior is defined as a mixture of multivariate
     normal distributions as follows:
 
-    .. math:: q({\\theta}) = \sum_{k = 1}^K w_k N(\\theta, \mu_k, \sigma^2_k \Lambda)
+    .. math:: q({\theta}) = \sum_{k = 1}^K w_k N(\theta, \mu_k, \sigma^2_k \Lambda)
 
     where :math:`w_k` are the mixture weights, :math:`\mu_k` the component means,
     :math:`\sigma_k` scaling factors, and :math:`\Lambda` is a diagonal matrix
     common to all components with elements :math:`\lambda^2_d` on the diagonal,
     for :math:`1 \le d \le D`.
 
-    Note that :math:`q({\\theta})` is defined in an unconstrained space.
+    Note that :math:`q({\theta})` is defined in an unconstrained space.
     Constrained variables in the posterior are mapped to a trasformed,
     unconstrained space via a nonlinear mapping (represented by a
     ``ParameterTransformer`` object). The transformation is handled
@@ -812,7 +812,7 @@ class VariationalPosterior:
         orig_flag=True,
         n_opts: Optional[int] = None,
     ):
-        """
+        r"""
         Find the mode of the variational posterior.
 
         Parameters
@@ -825,7 +825,7 @@ class VariationalPosterior:
             Maximum number of optimization runs from different starting points
             to find the mode. By default `n_opts` is the square root of the
             number of mixture components K, that is
-            :math:`n\_opts = \\lceil \sqrt{K} \\rceil`.
+            :math:`n\_opts = \lceil \sqrt{K} \rceil`.
         Returns
         -------
         mode: np.ndarray
@@ -924,7 +924,7 @@ class VariationalPosterior:
         samples: np.ndarray = None,
         N: int = int(1e5),
     ):
-        """
+        r"""
         Marginal total variation distances between two variational posteriors.
 
         Compute the total variation distance between the variational
@@ -958,7 +958,7 @@ class VariationalPosterior:
         -----
         The total variation distance between two densities `p1` and `p2` is:
 
-        .. math:: TV(p1, p2) = \\frac{1}{2} \int | p1(x) - p2(x) | dx.
+        .. math:: TV(p1, p2) = \frac{1}{2} \int | p1(x) - p2(x) | dx.
 
         """
         if vp2 is None and samples is None:
@@ -995,7 +995,6 @@ class VariationalPosterior:
 
         # Compute marginal total variation
         for d in range(self.D):
-
             yy1, x1mesh, _ = kde_1d(xx1[:, d], nkde, lb1[:, d], ub1[:, d])
             # Ensure normalization
             yy1 = yy1 / (trapezoid(yy1) * (x1mesh[1] - x1mesh[0]))
@@ -1226,7 +1225,6 @@ class VariationalPosterior:
 
         # plot gp data
         if plot_data and gp is not None:
-
             # highlight nothing when argument is None
             if highlight_data is None or highlight_data.size == 0:
                 highlight_data = np.array([False] * len(gp.X))
