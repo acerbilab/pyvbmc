@@ -114,8 +114,8 @@ class VBMC:
     References
     ----------
     .. [1] Huggins, B., Li, C., Tobaben, M., Aarnos, M., & Acerbi, L. (2023).
-       "PyVBMC: Efficient Bayesian inference in Python". In The Journal of Open
-       Source Software.
+       "PyVBMC: Efficient Bayesian inference in Python". Journal of Open
+       Source Software 8(86), 5428, https://doi.org/10.21105/joss.05428.
     .. [2] Acerbi, L. (2018). "Variational Bayesian Monte Carlo". In Advances
        in Neural Information Processing Systems 31 (NeurIPS 2018), pp. 8213-8223.
     .. [3] Acerbi, L. (2020). "Variational Bayesian Monte Carlo with Noisy
