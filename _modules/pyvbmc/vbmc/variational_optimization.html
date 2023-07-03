@@ -1734,19 +1734,22 @@ document.write(`
             <span class="p">)</span>  <span class="c1"># Covariance normalization factor</span>
             <span class="n">delta_k</span> <span class="o">=</span> <span class="n">Xt</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">/</span> <span class="n">tau_k</span>
             <span class="n">z_k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">lnnf_k</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">delta_k</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
-            <span class="n">I_k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">z_k</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">+</span> <span class="n">m0</span>
+            <span class="n">I_k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">z_k</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">+</span> <span class="n">m0</span>
 
             <span class="k">if</span> <span class="n">quadratic_meanfun</span><span class="p">:</span>
-                <span class="n">nu_k</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
-                    <span class="mi">1</span>
-                    <span class="o">/</span> <span class="n">omega</span><span class="o">**</span><span class="mi">2</span>
-                    <span class="o">*</span> <span class="p">(</span>
-                        <span class="n">mu</span><span class="p">[:,</span> <span class="n">k</span> <span class="p">:</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span>
-                        <span class="o">+</span> <span class="n">sigma</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">lambd</span><span class="o">**</span><span class="mi">2</span>
-                        <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">mu</span><span class="p">[:,</span> <span class="n">k</span> <span class="p">:</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">xm</span>
-                        <span class="o">+</span> <span class="n">xm</span><span class="o">**</span><span class="mi">2</span>
-                    <span class="p">),</span>
-                    <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">nu_k</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="o">-</span><span class="mf">0.5</span>
+                    <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+                        <span class="mi">1</span>
+                        <span class="o">/</span> <span class="n">omega</span><span class="o">**</span><span class="mi">2</span>
+                        <span class="o">*</span> <span class="p">(</span>
+                            <span class="n">mu</span><span class="p">[:,</span> <span class="n">k</span> <span class="p">:</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span>
+                            <span class="o">+</span> <span class="n">sigma</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">lambd</span><span class="o">**</span><span class="mi">2</span>
+                            <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">mu</span><span class="p">[:,</span> <span class="n">k</span> <span class="p">:</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">xm</span>
+                            <span class="o">+</span> <span class="n">xm</span><span class="o">**</span><span class="mi">2</span>
+                        <span class="p">),</span>
+                        <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                    <span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
                 <span class="p">)</span>
                 <span class="n">I_k</span> <span class="o">+=</span> <span class="n">nu_k</span>
             <span class="n">G</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">+=</span> <span class="n">w</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="n">I_k</span>
@@ -1768,12 +1771,12 @@ document.write(`
                     <span class="o">*</span> <span class="n">sigma</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span>
                     <span class="o">*</span> <span class="n">z_k</span>
                 <span class="p">)</span>
-                <span class="n">sigma_grad</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">w</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dz_dsigma</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span>
+                <span class="n">sigma_grad</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">w</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dz_dsigma</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
                 <span class="k">if</span> <span class="n">quadratic_meanfun</span><span class="p">:</span>
                     <span class="n">sigma_grad</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">s</span><span class="p">]</span> <span class="o">-=</span> <span class="p">(</span>
                         <span class="n">w</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
-                        <span class="o">*</span> <span class="n">sigma</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span>
-                        <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">omega</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">lambd</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                        <span class="o">*</span> <span class="n">sigma</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span>
+                        <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">omega</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">lambd</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
                     <span class="p">)</span>
 
             <span class="k">if</span> <span class="n">grad_flags</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span>
@@ -1811,7 +1814,7 @@ document.write(`
                     <span class="n">delta_jk</span> <span class="o">=</span> <span class="p">(</span><span class="n">mu</span><span class="p">[:,</span> <span class="n">j</span> <span class="p">:</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">mu</span><span class="p">[:,</span> <span class="n">k</span> <span class="p">:</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">tau_jk</span>
 
                     <span class="n">J_jk</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span>
-                        <span class="n">lnnf_jk</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">delta_jk</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                        <span class="n">lnnf_jk</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">delta_jk</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
                     <span class="p">)</span>
                     <span class="k">if</span> <span class="n">L_chol</span><span class="p">:</span>
                         <span class="n">J_jk</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span>

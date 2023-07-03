@@ -73,7 +73,7 @@ Contributing
 References
 ###############
 
-1. Huggins, B., Li, C., Tobaben, M., Aarnos, M., & Acerbi, L. (2023). *PyVBMC: Efficient Bayesian inference in Python*. arXiv. https://arxiv.org/abs/2303.09519
+1. Huggins, B., Li, C., Tobaben, M., Aarnos, M., & Acerbi, L. (2023). `PyVBMC: Efficient Bayesian inference in Python <https://joss.theoj.org/papers/10.21105/joss.05428>`__. *Journal of Open Source Software* 8(86), 5428, https://doi.org/10.21105/joss.05428.
 2. Acerbi, L. (2018). Variational Bayesian Monte Carlo. In *Advances in Neural Information Processing Systems 31*: 8222-8232. (`paper + supplement on arXiv <https://arxiv.org/abs/1810.05558>`__, `NeurIPS Proceedings <https://papers.nips.cc/paper/2018/hash/747c1bcceb6109a4ef936bc70cfe67de-Abstract.html>`__)
 3. Acerbi, L. (2020). Variational Bayesian Monte Carlo with Noisy Likelihoods. In *Advances in Neural Information Processing Systems 33*: 8211-8222 (`paper + supplement on arXiv <https://arxiv.org/abs/2006.08655>`__, `NeurIPS Proceedings <https://papers.nips.cc/paper/2020/hash/5d40954183d62a82257835477ccad3d2-Abstract.html>`__).
 
@@ -87,13 +87,17 @@ BibTeX
 
   @article{huggins2023pyvbmc,
     title = {PyVBMC: Efficient Bayesian inference in Python},
-    author = {Huggins, Bobby and Li, Chengkun and Tobaben, Marlon and Aarnos, Mikko J. and Acerbi, Luigi},
-    publisher = {preprint},
-    journal = {{arXiv}},
-    url = {https://arxiv.org/abs/2303.09519},
-    doi = {10.48550/ARXIV.2303.09519},
+    author = {Bobby Huggins and Chengkun Li and Marlon Tobaben and Mikko J. Aarnos and Luigi Acerbi},
+    publisher = {The Open Journal},
+    journal = {Journal of Open Source Software},
+    url = {https://doi.org/10.21105/joss.05428},
+    doi = {10.21105/joss.05428},
     year = {2023},
+    volume = {8},
+    number = {86},
+    pages = {5428}
   }
+
   @article{acerbi2018variational,
     title={{V}ariational {B}ayesian {M}onte {C}arlo},
     author={Acerbi, Luigi},

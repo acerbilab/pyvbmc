@@ -352,7 +352,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="VariationalPosterior"><a class="viewcode-back" href="../../../api/classes/variational_posterior.html#pyvbmc.variational_posterior.VariationalPosterior">[docs]</a><span class="k">class</span> <span class="nc">VariationalPosterior</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The variational posterior class used in PyVBMC.</span>
 
 <span class="sd">    The variational posterior represents the approximate posterior as returned</span>
@@ -412,14 +412,14 @@ document.write(`
 <span class="sd">    In VBMC, the variational posterior is defined as a mixture of multivariate</span>
 <span class="sd">    normal distributions as follows:</span>
 
-<span class="sd">    .. math:: q({\\theta}) = \sum_{k = 1}^K w_k N(\\theta, \mu_k, \sigma^2_k \Lambda)</span>
+<span class="sd">    .. math:: q({\theta}) = \sum_{k = 1}^K w_k N(\theta, \mu_k, \sigma^2_k \Lambda)</span>
 
 <span class="sd">    where :math:`w_k` are the mixture weights, :math:`\mu_k` the component means,</span>
 <span class="sd">    :math:`\sigma_k` scaling factors, and :math:`\Lambda` is a diagonal matrix</span>
 <span class="sd">    common to all components with elements :math:`\lambda^2_d` on the diagonal,</span>
 <span class="sd">    for :math:`1 \le d \le D`.</span>
 
-<span class="sd">    Note that :math:`q({\\theta})` is defined in an unconstrained space.</span>
+<span class="sd">    Note that :math:`q({\theta})` is defined in an unconstrained space.</span>
 <span class="sd">    Constrained variables in the posterior are mapped to a trasformed,</span>
 <span class="sd">    unconstrained space via a nonlinear mapping (represented by a</span>
 <span class="sd">    ``ParameterTransformer`` object). The transformation is handled</span>
@@ -1142,7 +1142,7 @@ document.write(`
         <span class="n">orig_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">n_opts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Find the mode of the variational posterior.</span>
 
 <span class="sd">        Parameters</span>
@@ -1155,7 +1155,7 @@ document.write(`
 <span class="sd">            Maximum number of optimization runs from different starting points</span>
 <span class="sd">            to find the mode. By default `n_opts` is the square root of the</span>
 <span class="sd">            number of mixture components K, that is</span>
-<span class="sd">            :math:`n\_opts = \\lceil \sqrt{K} \\rceil`.</span>
+<span class="sd">            :math:`n\_opts = \lceil \sqrt{K} \rceil`.</span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        mode: np.ndarray</span>
@@ -1254,7 +1254,7 @@ document.write(`
         <span class="n">samples</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">N</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1e5</span><span class="p">),</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Marginal total variation distances between two variational posteriors.</span>
 
 <span class="sd">        Compute the total variation distance between the variational</span>
@@ -1286,9 +1286,9 @@ document.write(`
 
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
-<span class="sd">        The total variation distance between two densities `p1` and `p2` is:</span>
+<span class="sd">        The total variation distance between two densities :math:`p_1` and :math:`p_2` is:</span>
 
-<span class="sd">        .. math:: TV(p1, p2) = \\frac{1}{2} \int | p1(x) - p2(x) | dx.</span>
+<span class="sd">        .. math:: TV(p_1, p_2) = \frac{1}{2} \int | p_1(x) - p_2(x) | dx.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">vp2</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">samples</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1325,7 +1325,6 @@ document.write(`
 
         <span class="c1"># Compute marginal total variation</span>
         <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">):</span>
-
             <span class="n">yy1</span><span class="p">,</span> <span class="n">x1mesh</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">kde_1d</span><span class="p">(</span><span class="n">xx1</span><span class="p">[:,</span> <span class="n">d</span><span class="p">],</span> <span class="n">nkde</span><span class="p">,</span> <span class="n">lb1</span><span class="p">[:,</span> <span class="n">d</span><span class="p">],</span> <span class="n">ub1</span><span class="p">[:,</span> <span class="n">d</span><span class="p">])</span>
             <span class="c1"># Ensure normalization</span>
             <span class="n">yy1</span> <span class="o">=</span> <span class="n">yy1</span> <span class="o">/</span> <span class="p">(</span><span class="n">trapezoid</span><span class="p">(</span><span class="n">yy1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">x1mesh</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x1mesh</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
@@ -1556,7 +1555,6 @@ document.write(`
 
         <span class="c1"># plot gp data</span>
         <span class="k">if</span> <span class="n">plot_data</span> <span class="ow">and</span> <span class="n">gp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-
             <span class="c1"># highlight nothing when argument is None</span>
             <span class="k">if</span> <span class="n">highlight_data</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">highlight_data</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">highlight_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="kc">False</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">gp</span><span class="o">.</span><span class="n">X</span><span class="p">))</span>
