@@ -127,9 +127,9 @@ class ParameterTransformer:
 
             # Center in transformed space
             for i in range(D):
-                if np.isfinite(plb_tran[:, i]) and np.isfinite(pub_tran[:, i]):
-                    self.mu[i] = 0.5 * (plb_tran[:, i] + pub_tran[:, i])
-                    self.delta[i] = pub_tran[:, i] - plb_tran[:, i]
+                if np.isfinite(plb_tran[0, i]) and np.isfinite(pub_tran[0, i]):
+                    self.mu[i] = 0.5 * (plb_tran[0, i] + pub_tran[0, i])
+                    self.delta[i] = pub_tran[0, i] - plb_tran[0, i]
 
     @handle_0D_1D_input(patched_kwargs=["x"], patched_argpos=[0])
     def __call__(self, x: np.ndarray):
@@ -496,7 +496,7 @@ def _uncenter(v, mu, delta):
 
 def _logit(z):
     # prevent divide by zero
-    u = np.zeros(z.shape)
+    u = np.zeros_like(z)
     u[z == 0] = -np.inf
     u[z == 1] = np.inf
 
@@ -505,7 +505,12 @@ def _logit(z):
 
 
 def _inverse_logit(u):
-    return 1 / (1 + np.exp(-u))
+    # prevent overflow
+    z = np.zeros_like(u)
+    mask = -u > np.log(np.finfo(np.float64).max)
+    z[mask] = 0.0
+    z[~mask] = 1 / (1 + np.exp(-u[~mask]))
+    return z
 
 
 def _probit(z):
@@ -518,7 +523,11 @@ def _inverse_probit(u):
 
 def _student4(z):
     aa = np.sqrt(4 * z * (1 - z))
-    q = np.cos(np.arccos(aa) / 3) / aa
+    # prevent divide by zero
+    mask = aa == 0.0
+    q = np.zeros_like(z)
+    q[mask] = np.inf
+    q[~mask] = np.cos(np.arccos(aa[~mask]) / 3) / aa[~mask]
     return np.sign(z - 0.5) * (2 * np.sqrt(q - 1))
 
 

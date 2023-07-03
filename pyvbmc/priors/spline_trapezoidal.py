@@ -7,7 +7,7 @@ from pyvbmc.priors import Prior, tile_inputs
 
 
 class SplineTrapezoidal(Prior):
-    """Multivariate spline-trapezoidal prior.
+    r"""Multivariate spline-trapezoidal prior.
 
     A prior distribution represented by a density with external bounds ``a``
     and ``b`` and internal points ``u`` and ``v``. Each marginal distribution

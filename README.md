@@ -15,7 +15,7 @@ PyVBMC is a Python implementation of the Variational Bayesian Monte Carlo (VBMC)
 - an approximate posterior distribution of the model parameters;
 - an approximation — technically, an approximate lower bound — of the log model evidence (also known as log marginal likelihood or log Bayes factor), a metric used for [Bayesian model selection](https://en.wikipedia.org/wiki/Bayes_factor).
 
-Extensive benchmarks on both artificial test problems and a large number of real model-fitting problems from computational and cognitive neuroscience show that VBMC generally — and often vastly — outperforms alternative methods for sample-efficient Bayesian inference [[1,2](#references-and-citation)].
+Extensive benchmarks on both artificial test problems and a large number of real model-fitting problems from computational and cognitive neuroscience show that VBMC generally — and often vastly — outperforms alternative methods for sample-efficient Bayesian inference [[2,3](#references-and-citation)].
 
 ### Documentation
 
@@ -122,7 +122,7 @@ In each iteration, PyVBMC uses *active sampling* to select which points to evalu
 
 In the figure above, we show an example PyVBMC run on a [Rosenbrock "banana" function](https://en.wikipedia.org/wiki/Rosenbrock_function). The bottom-left panel shows PyVBMC at work: in grayscale are samples from the variational posterior (drawn as small points) and the corresponding estimated density (drawn as contours). The solid orange circles are the active sampling points chosen at each iteration, and the hollow blue circles are the previously sampled points. The topmost and rightnmost panels show histograms of the marginal densities along the $x_1$ and $x_2$ dimensions, respectively. PyVBMC converges to an excellent approximation of the true posterior with a few dozens evaluations of the target density.
 
-See the VBMC papers [[1,2](#references-and-citation)] for more details.
+See the VBMC papers [[1-3](#references-and-citation)] for more details.
 
 ## Troubleshooting and contact
 
@@ -135,7 +135,7 @@ If you have trouble doing something with PyVBMC, spot bugs or strange behavior, 
 
 ## References and citation
 
-1. Huggins, B., Li, C., Tobaben, M., Aarnos, M., & Acerbi, L. (2023). *PyVBMC: Efficient Bayesian inference in Python*. arXiv. https://arxiv.org/abs/2303.09519
+1. Huggins, B., Li, C., Tobaben, M., Aarnos, M., & Acerbi, L. (2023). [PyVBMC: Efficient Bayesian inference in Python](https://joss.theoj.org/papers/10.21105/joss.05428). *Journal of Open Source Software* 8(86), 5428, https://doi.org/10.21105/joss.05428.
 2. Acerbi, L. (2018). Variational Bayesian Monte Carlo. In *Advances in Neural Information Processing Systems 31*: 8222-8232. ([paper + supplement on arXiv](https://arxiv.org/abs/1810.05558), [NeurIPS Proceedings](https://papers.nips.cc/paper/8043-variational-bayesian-monte-carlo))
 3. Acerbi, L. (2020). Variational Bayesian Monte Carlo with Noisy Likelihoods. In *Advances in Neural Information Processing Systems 33*: 8211-8222 ([paper + supplement on arXiv](https://arxiv.org/abs/2006.08655), [NeurIPS Proceedings](https://papers.nips.cc/paper/2020/hash/5d40954183d62a82257835477ccad3d2-Abstract.html)).
 
@@ -160,14 +160,18 @@ You may also want to check out [Bayesian Adaptive Direct Search in Python (PyBAD
 
 ```BibTeX
 @article{huggins2023pyvbmc,
-  title = {PyVBMC: Efficient Bayesian inference in Python},
-  author = {Huggins, Bobby and Li, Chengkun and Tobaben, Marlon and Aarnos, Mikko J. and Acerbi, Luigi},
-  publisher = {preprint},
-  journal = {{arXiv}},
-  url = {https://arxiv.org/abs/2303.09519},
-  doi = {10.48550/ARXIV.2303.09519},
-  year = {2023},
-}
+    title = {PyVBMC: Efficient Bayesian inference in Python},
+    author = {Bobby Huggins and Chengkun Li and Marlon Tobaben and Mikko J. Aarnos and Luigi Acerbi},
+    publisher = {The Open Journal},
+    journal = {Journal of Open Source Software},
+    url = {https://doi.org/10.21105/joss.05428},
+    doi = {10.21105/joss.05428},
+    year = {2023},
+    volume = {8},
+    number = {86},
+    pages = {5428}
+  }
+
 @article{acerbi2018variational,
   title={{V}ariational {B}ayesian {M}onte {C}arlo},
   author={Acerbi, Luigi},

@@ -1,0 +1,55 @@
+cff-version: "1.2.0"
+authors:
+- family-names: Huggins
+  given-names: Bobby
+  orcid: "https://orcid.org/0009-0006-3475-5964"
+- family-names: Li
+  given-names: Chengkun
+  orcid: "https://orcid.org/0000-0001-5848-910X"
+- family-names: Tobaben
+  given-names: Marlon
+  orcid: "https://orcid.org/0000-0002-9778-0853"
+- family-names: Aarnos
+  given-names: Mikko J.
+- family-names: Acerbi
+  given-names: Luigi
+  orcid: "https://orcid.org/0000-0001-7471-7336"
+contact:
+- family-names: Huggins
+  given-names: Bobby
+  orcid: "https://orcid.org/0009-0006-3475-5964"
+- family-names: Acerbi
+  given-names: Luigi
+  orcid: "https://orcid.org/0000-0001-7471-7336"
+doi: 10.5281/zenodo.7966315
+message: If you use this software, please cite our article in the
+  Journal of Open Source Software.
+preferred-citation:
+  authors:
+  - family-names: Huggins
+    given-names: Bobby
+    orcid: "https://orcid.org/0009-0006-3475-5964"
+  - family-names: Li
+    given-names: Chengkun
+    orcid: "https://orcid.org/0000-0001-5848-910X"
+  - family-names: Tobaben
+    given-names: Marlon
+    orcid: "https://orcid.org/0000-0002-9778-0853"
+  - family-names: Aarnos
+    given-names: Mikko J.
+  - family-names: Acerbi
+    given-names: Luigi
+    orcid: "https://orcid.org/0000-0001-7471-7336"
+  date-published: 2023-06-21
+  doi: 10.21105/joss.05428
+  issn: 2475-9066
+  issue: 86
+  journal: Journal of Open Source Software
+  publisher:
+    name: Open Journals
+  start: 5428
+  title: "PyVBMC: Efficient Bayesian inference in Python"
+  type: article
+  url: "https://joss.theoj.org/papers/10.21105/joss.05428"
+  volume: 8
+title: "PyVBMC: Efficient Bayesian inference in Python"

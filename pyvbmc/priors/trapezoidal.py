@@ -7,7 +7,7 @@ from pyvbmc.priors import Prior, tile_inputs
 
 
 class Trapezoidal(Prior):
-    """Multivariate trapezoidal prior.
+    r"""Multivariate trapezoidal prior.
 
     A prior distribution represented by a density with external bounds ``a``
     and ``b`` and internal points ``u`` and ``v``. Each marginal distribution
