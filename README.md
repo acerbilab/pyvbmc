@@ -167,7 +167,9 @@ You may also want to check out [Bayesian Adaptive Direct Search in Python (PyBAD
     url = {https://doi.org/10.21105/joss.05428},
     doi = {10.21105/joss.05428},
     year = {2023},
-    volume = {8}, number = {86}, pages = {5428}
+    volume = {8},
+    number = {86},
+    pages = {5428}
   }
 
 @article{acerbi2018variational,
