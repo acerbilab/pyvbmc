@@ -370,7 +370,7 @@ def active_sample_proposal_pdf(Xa, gp, vp_is, w_vp, rect_delta, acq_fcn):
 
     # Mixture of box-uniforms
     if w_vp < 1:
-        VV = np.product(2 * rect_delta)
+        VV = np.prod(2 * rect_delta)
 
         for i in range(N):
             mask = np.all(np.abs(Xa[:] - gp.X[i, :]) < rect_delta, axis=1)

@@ -70,7 +70,7 @@ def test_product_mixed_distribution_type():
             norm(m),
             lognorm(s),
             UniformBox(0, 1),
-            SmoothBox(0, np.finfo(np.float64).eps),
+            SmoothBox(0.0, np.finfo(np.float64).eps),
             SciPy(beta(a, b)),
         ]
     )

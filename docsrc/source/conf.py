@@ -96,6 +96,7 @@ html_theme_options = {
     "use_repository_button": True,
     "use_download_button": True,
     "logo": {"alt-text": "PyVBMC"},
+    "path_to_docs": "docsrc/source",
 }
 html_logo = "../../logo.svg"
 html_baseurl = "https://acerbilab.github.io/pyvbmc/"
