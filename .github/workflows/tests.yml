@@ -48,4 +48,4 @@ jobs:
       - name: Run tests
         run: |
           cd ./pyvbmc
-          python -m pytest --reruns=5 -x -vv
+          python -m pytest --reruns=5 -x -vv --full-trace
