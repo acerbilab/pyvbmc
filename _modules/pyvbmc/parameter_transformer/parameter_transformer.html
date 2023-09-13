@@ -478,7 +478,7 @@ document.write(`
 <span class="sd">        u : np.ndarray</span>
 <span class="sd">            The variables transformed to unconstrained variables.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
         <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
         <span class="c1"># Unbounded scalars (possibly center and rescale)</span>
@@ -490,7 +490,9 @@ document.write(`
         <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounded_types</span><span class="p">:</span>
             <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">t</span>
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">mask</span><span class="p">):</span>
-                <span class="n">u</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">&quot;direct&quot;</span><span class="p">](</span><span class="n">x</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+                <span class="n">u</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">&quot;direct&quot;</span><span class="p">](</span>
+                    <span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">mask</span>
+                <span class="p">)</span>
 
         <span class="c1"># Rotoscale whitening:</span>
         <span class="c1"># Rotate and rescale points in transformed space.</span>
@@ -517,7 +519,7 @@ document.write(`
 <span class="sd">        x : np.ndarray</span>
 <span class="sd">            The original variables which result of the transformation.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
+        <span class="n">u</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
 
         <span class="c1"># Rotoscale whitening:</span>
@@ -538,7 +540,9 @@ document.write(`
         <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounded_types</span><span class="p">:</span>
             <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">t</span>
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">mask</span><span class="p">):</span>
-                <span class="n">xNew</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">&quot;inverse&quot;</span><span class="p">](</span><span class="n">x</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+                <span class="n">xNew</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">&quot;inverse&quot;</span><span class="p">](</span>
+                    <span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">mask</span>
+                <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">xNew</span></div>
 
@@ -562,6 +566,7 @@ document.write(`
 <span class="sd">        p : np.ndarray</span>
 <span class="sd">            The log absolute determinant of the Jacobian.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
         <span class="n">u_c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
 
         <span class="c1"># Rotoscale whitening:</span>
@@ -582,7 +587,9 @@ document.write(`
         <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounded_types</span><span class="p">:</span>
             <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">t</span>
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">mask</span><span class="p">):</span>
-                <span class="n">p</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">&quot;jacobian&quot;</span><span class="p">](</span><span class="n">u_c</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+                <span class="n">p</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">&quot;jacobian&quot;</span><span class="p">](</span>
+                    <span class="bp">self</span><span class="p">,</span> <span class="n">u_c</span><span class="p">,</span> <span class="n">mask</span>
+                <span class="p">)</span>
 
         <span class="c1"># Whitening/rotoscaling density correction:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -604,7 +611,7 @@ document.write(`
             <span class="k">if</span> <span class="n">t</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
                 <span class="c1"># logit</span>
 
-                <span class="k">def</span> <span class="nf">bounded_transform</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+                <span class="k">def</span> <span class="nf">bounded_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
                     <span class="k">return</span> <span class="n">_center</span><span class="p">(</span>
                         <span class="n">_logit</span><span class="p">(</span>
                             <span class="n">_to_unit_interval</span><span class="p">(</span>
@@ -619,7 +626,7 @@ document.write(`
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">&quot;direct&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounded_transform</span>
 
-                <span class="k">def</span> <span class="nf">bounded_inverse</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+                <span class="k">def</span> <span class="nf">bounded_inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
                     <span class="k">return</span> <span class="n">_from_unit_interval</span><span class="p">(</span>
                         <span class="n">_inverse_logit</span><span class="p">(</span>
                             <span class="n">_uncenter</span><span class="p">(</span>
@@ -632,7 +639,7 @@ document.write(`
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">&quot;inverse&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounded_inverse</span>
 
-                <span class="k">def</span> <span class="nf">bounded_jacobian</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+                <span class="k">def</span> <span class="nf">bounded_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
                     <span class="n">j1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ub_orig</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">lb_orig</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">])</span>
                     <span class="n">y</span> <span class="o">=</span> <span class="n">_uncenter</span><span class="p">(</span><span class="n">u</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span>
                     <span class="n">z</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">y</span><span class="p">))</span>
@@ -645,7 +652,7 @@ document.write(`
             <span class="k">elif</span> <span class="n">t</span> <span class="o">==</span> <span class="mi">12</span><span class="p">:</span>
                 <span class="c1"># probit: inverse normal CDF (probit) transform (default)</span>
 
-                <span class="k">def</span> <span class="nf">bounded_transform</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+                <span class="k">def</span> <span class="nf">bounded_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
                     <span class="k">return</span> <span class="n">_center</span><span class="p">(</span>
                         <span class="n">_probit</span><span class="p">(</span>
                             <span class="n">_to_unit_interval</span><span class="p">(</span>
@@ -660,7 +667,7 @@ document.write(`
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">&quot;direct&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounded_transform</span>
 
-                <span class="k">def</span> <span class="nf">bounded_inverse</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+                <span class="k">def</span> <span class="nf">bounded_inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
                     <span class="k">return</span> <span class="n">_from_unit_interval</span><span class="p">(</span>
                         <span class="n">_inverse_probit</span><span class="p">(</span>
                             <span class="n">_uncenter</span><span class="p">(</span>
@@ -673,7 +680,7 @@ document.write(`
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">&quot;inverse&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounded_inverse</span>
 
-                <span class="k">def</span> <span class="nf">bounded_jacobian</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+                <span class="k">def</span> <span class="nf">bounded_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
                     <span class="n">j1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ub_orig</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">lb_orig</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">])</span>
                     <span class="n">y</span> <span class="o">=</span> <span class="n">_uncenter</span><span class="p">(</span><span class="n">u</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span>
                     <span class="n">j2</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">y</span><span class="o">**</span><span class="mi">2</span>
@@ -685,7 +692,7 @@ document.write(`
             <span class="k">elif</span> <span class="n">t</span> <span class="o">==</span> <span class="mi">13</span><span class="p">:</span>
                 <span class="c1"># student4: Student&#39;s T with nu=4 CDF transform</span>
 
-                <span class="k">def</span> <span class="nf">bounded_transform</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+                <span class="k">def</span> <span class="nf">bounded_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
                     <span class="k">return</span> <span class="n">_center</span><span class="p">(</span>
                         <span class="n">_student4</span><span class="p">(</span>
                             <span class="n">_to_unit_interval</span><span class="p">(</span>
@@ -700,7 +707,7 @@ document.write(`
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">&quot;direct&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounded_transform</span>
 
-                <span class="k">def</span> <span class="nf">bounded_inverse</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+                <span class="k">def</span> <span class="nf">bounded_inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
                     <span class="k">return</span> <span class="n">_from_unit_interval</span><span class="p">(</span>
                         <span class="n">_inverse_student4</span><span class="p">(</span>
                             <span class="n">_uncenter</span><span class="p">(</span>
@@ -713,7 +720,7 @@ document.write(`
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">&quot;inverse&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounded_inverse</span>
 
-                <span class="k">def</span> <span class="nf">bounded_jacobian</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+                <span class="k">def</span> <span class="nf">bounded_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
                     <span class="n">j1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ub_orig</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">lb_orig</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">])</span>
                     <span class="n">y</span> <span class="o">=</span> <span class="n">_uncenter</span><span class="p">(</span><span class="n">u</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span>
                     <span class="n">j2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">3</span> <span class="o">/</span> <span class="mi">8</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="mi">5</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">y</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="mi">4</span><span class="p">)</span>
