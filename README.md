@@ -98,7 +98,7 @@ The `vp` object can be manipulated in various ways. For example, we can draw sam
 The quick start example above works for deterministic (noiseless) evaluations of the target log-density. Py(VBMC) also supports *noisy* evaluations of the target.
 Noisy evaluations often arise from simulation-based models, for which a direct expression of the (log) likelihood is not available.
 
-For information on how to run PyVBMC on a noisy target, see [this example notebook](examples/pyvbmc_example_5_noisy_likelihoods.ipynb) and the [VBMC FAQ](https://github.com/acerbilab/vbmc/wiki#noisy-target-function) (for MATLAB, but most concepts still apply).
+For information on how to run PyVBMC on a noisy target, see [this example notebook](examples/pyvbmc_example_6_noisy_likelihoods.ipynb) and the [VBMC FAQ](https://github.com/acerbilab/vbmc/wiki#noisy-target-function) (for MATLAB, but most concepts still apply).
 
 ## Next steps
 
