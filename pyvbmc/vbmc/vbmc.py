@@ -4,6 +4,7 @@ import math
 import os
 import sys
 from collections.abc import Iterable
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from textwrap import indent
 from typing import Union
@@ -2300,7 +2301,15 @@ class VBMC:
         output["overhead"] = np.NaN
         output["rng_state"] = "rng"
         output["algorithm"] = "Variational Bayesian Monte Carlo"
-        output["version"] = "0.1.0"
+        try:
+            __version__ = version("pyvbmc")
+        except PackageNotFoundError:
+            # package is not installed
+            __version__ = None
+            logger = logging.getLogger("VBMC")
+            logger.warning("Cannot read version number from package metadata.")
+
+        output["version"] = __version__
         output["message"] = termination_message
 
         output["elbo"] = self.vp.stats["elbo"]
