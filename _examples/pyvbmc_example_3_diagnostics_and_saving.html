@@ -1,13 +1,12 @@
 
-
 <!DOCTYPE html>
 
 
-<html lang="en" >
+<html lang="en" data-content_root="../" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>PyVBMC Example 3: Output diagnostics and saving results &#8212; PyVBMC</title>
   
@@ -19,35 +18,33 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
-<link href="../_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
 
   
-  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+  <link href="../_static/vendor/fontawesome/6.5.1/css/all.min.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=384b581d" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
+  <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
-    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../_static/doctools.js"></script>
-    <script src="../_static/sphinx_highlight.js"></script>
-    <script src="../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_examples/pyvbmc_example_3_diagnostics_and_saving';</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="canonical" href="https://acerbilab.github.io/pyvbmc/_examples/pyvbmc_example_3_diagnostics_and_saving.html" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -62,7 +59,15 @@
 
   
   
-  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <a id="pst-skip-link" class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
   
   <input type="checkbox"
           class="sidebar-toggle"
@@ -97,11 +102,14 @@
 </form></div>
   </div>
   
-    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
-    </nav>
+    <header class="bd-header navbar navbar-expand-lg bd-navbar">
+    </header>
   
+
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
+      
+      
       
       <div class="bd-sidebar-primary bd-sidebar">
         
@@ -116,9 +124,11 @@
   
     <div class="sidebar-primary-items__start sidebar-primary__section">
         <div class="sidebar-primary-item">
+
   
 
 <a class="navbar-brand logo" href="../index.html">
+  
   
   
   
@@ -128,12 +138,23 @@
       
     
     
-    <img src="../_static/logo.svg" class="logo__image only-light" alt="Logo image"/>
-    <script>document.write(`<img src="../_static/logo.svg" class="logo__image only-dark" alt="Logo image"/>`);</script>
+    <img src="../_static/logo.svg" class="logo__image only-light" alt="PyVBMC - Home"/>
+    <script>document.write(`<img src="../_static/logo.svg" class="logo__image only-dark" alt="PyVBMC - Home"/>`);</script>
   
   
 </a></div>
-        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
@@ -404,20 +425,22 @@
 </button>
 
 
+
 <script>
 document.write(`
-  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
-    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
-    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
   </button>
 `);
 </script>
 
+
 <script>
 document.write(`
   <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
   </button>
 `);
 </script>
@@ -459,10 +482,10 @@ document.write(`
               
                 
 <div id="searchbox"></div>
-                <article class="bd-article" role="main">
+                <article class="bd-article">
                   
   <section class="tex2jax_ignore mathjax_ignore" id="pyvbmc-example-3-output-diagnostics-and-saving-results">
-<h1>PyVBMC Example 3: Output diagnostics and saving results<a class="headerlink" href="#pyvbmc-example-3-output-diagnostics-and-saving-results" title="Permalink to this heading">#</a></h1>
+<h1>PyVBMC Example 3: Output diagnostics and saving results<a class="headerlink" href="#pyvbmc-example-3-output-diagnostics-and-saving-results" title="Link to this heading">#</a></h1>
 <p>In this notebook, we demonstrate extended usage of PyVBMC. We will take a brief look at PyVBMC’s diagnostic output, and show you how to save the results of optimization to disk.</p>
 <p>This notebook is Part 3 of a series of notebooks in which we present various example usages for VBMC with the PyVBMC package. The code used in this example is available as a script <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/examples/scripts/pyvbmc_example_3_full_code.py">here</a>.</p>
 <div class="cell docutils container">
@@ -477,7 +500,7 @@ document.write(`
 </div>
 </div>
 <section id="model-definition-and-setup">
-<h2>1. Model definition and setup<a class="headerlink" href="#model-definition-and-setup" title="Permalink to this heading">#</a></h2>
+<h2>1. Model definition and setup<a class="headerlink" href="#model-definition-and-setup" title="Link to this heading">#</a></h2>
 <p>For demonstration purposes, we will run PyVBMC with a restricted budget of function evaluations, insufficient to achieve convergence. Then we will inspect the output diagnostics, and resume optimization.</p>
 <p>We use a higher-dimensional analogue of the same toy target function in Example 1, a broad <a class="reference external" href="https://en.wikipedia.org/wiki/Rosenbrock_function">Rosenbrock’s banana function</a> in <span class="math notranslate nohighlight">\(D = 4\)</span>.</p>
 <div class="cell docutils container">
@@ -583,7 +606,7 @@ Reshaping plausible upper bounds to (1, 4).
 <p>(PyVBMC expects the bounds to be <code class="docutils literal notranslate"><span class="pre">(1,</span> <span class="pre">D)</span></code> row vectors, and the initial point(s) to be of shape <code class="docutils literal notranslate"><span class="pre">(n,</span> <span class="pre">D)</span></code>, but it will accept and re-shape vectors of shape <code class="docutils literal notranslate"><span class="pre">(D,)</span></code> as well.)</p>
 </section>
 <section id="running-the-model-and-checking-convergence-diagnostics">
-<h2>2. Running the model and checking convergence diagnostics<a class="headerlink" href="#running-the-model-and-checking-convergence-diagnostics" title="Permalink to this heading">#</a></h2>
+<h2>2. Running the model and checking convergence diagnostics<a class="headerlink" href="#running-the-model-and-checking-convergence-diagnostics" title="Link to this heading">#</a></h2>
 <p>Now we run PyVBMC with a very small budget of 40 function evaluations:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -662,7 +685,7 @@ Our diagnostics tell us that this run has not converged, suggesting to increase 
 <p>Note that convergence to a solution does not mean that it is a <em>good</em> solution. You should always check the returned variational posteriors, and ideally should compare across multiple runs of PyVBMC.</p>
 </section>
 <section id="saving-results">
-<h2>3. Saving results<a class="headerlink" href="#saving-results" title="Permalink to this heading">#</a></h2>
+<h2>3. Saving results<a class="headerlink" href="#saving-results" title="Link to this heading">#</a></h2>
 <p>We can also save the <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> instance to disk and reload it later, in order to check the results and convergence diagnostics, sample from the posterior, or resume the optimization from checkpoint etc. If you are only interested in the final (best) variational solution, as opposed to the full iteration history of the optimization, then you may wish to save only the final <code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code> instead.</p>
 <div class="alert alert-block alert-info"><b>Note:</b> Some complex attributes of the <code style="background:LightBlue">VBMC</code> instance — such as the stored function(s) representing the log joint density — may not behave as expected when saved and loaded by different Python minor versions (e.g. <code style="background:LightBlue">3.9</code> and <code style="background:LightBlue">3.10</code>), due to differing dependencies. The instance should still load, and its static data will remain, but if you plan to resume optimization as shown here, then we suggest you use the same version of Python to save and load the <code style="background:LightBlue">VBMC</code> instance.</div><div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -678,7 +701,7 @@ Our diagnostics tell us that this run has not converged, suggesting to increase 
 </div>
 </section>
 <section id="loading-results-and-resuming-the-optimization-process">
-<h2>4.  Loading results and resuming the optimization process<a class="headerlink" href="#loading-results-and-resuming-the-optimization-process" title="Permalink to this heading">#</a></h2>
+<h2>4.  Loading results and resuming the optimization process<a class="headerlink" href="#loading-results-and-resuming-the-optimization-process" title="Link to this heading">#</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">VBMC.load(file)</span></code> class method will load a previously-saved <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> instance from the specified <code class="docutils literal notranslate"><span class="pre">file</span></code>. We can load the instance saved above and resume the optimization process, increasing maximum number of function evaluations. The default budget is <span class="math notranslate nohighlight">\(50(d+2)\)</span> evaluations, where <span class="math notranslate nohighlight">\(d\)</span> is the dimension of the parameter space (though this example will not require the full budget). We can change this or other options by passing the <code class="docutils literal notranslate"><span class="pre">new_options</span></code> keyword to <code class="docutils literal notranslate"><span class="pre">VBMC.load(...)</span></code>. Here we increase <code class="docutils literal notranslate"><span class="pre">max_fun_evals</span></code> and resume the optimization process:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -784,12 +807,12 @@ Estimated ELBO: -4.149 +/-0.001.
 </div>
 </section>
 <section id="conclusions">
-<h2>5. Conclusions<a class="headerlink" href="#conclusions" title="Permalink to this heading">#</a></h2>
+<h2>5. Conclusions<a class="headerlink" href="#conclusions" title="Link to this heading">#</a></h2>
 <p>In this notebook, we have given a brief overview of PyVBMC’s output diagnostics, and shown how to save and load results and resume optimization from a specific iteration.</p>
 <p>In the next notebook, we will illustrate running PyVBMC multiple times in order to validate the results.</p>
 </section>
 <section id="acknowledgments">
-<h2>Acknowledgments<a class="headerlink" href="#acknowledgments" title="Permalink to this heading">#</a></h2>
+<h2>Acknowledgments<a class="headerlink" href="#acknowledgments" title="Link to this heading">#</a></h2>
 <p>Work on the PyVBMC package was funded by the <a class="reference external" href="https://fcai.fi/">Finnish Center for Artificial Intelligence FCAI</a>.</p>
 </section>
 </section>
@@ -800,11 +823,10 @@ Estimated ELBO: -4.149 +/-0.001.
 
               
               
-                <footer class="bd-footer-article">
+              
+              
+                <footer class="prev-next-footer">
                   
-<div class="footer-article-items footer-article__inner">
-  
-    <div class="footer-article-item"><!-- Previous / next buttons -->
 <div class="prev-next-area">
     <a class="left-prev"
        href="pyvbmc_example_2_inputs_outputs.html"
@@ -824,10 +846,7 @@ Estimated ELBO: -4.149 +/-0.001.
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
-</div></div>
-  
 </div>
-
                 </footer>
               
             </div>
@@ -835,6 +854,7 @@ Estimated ELBO: -4.149 +/-0.001.
             
               
                 <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
 
   <div class="sidebar-secondary-item">
   <div class="page-toc tocsection onthispage">
@@ -865,6 +885,7 @@ Estimated ELBO: -4.149 +/-0.001.
   
   <div class="footer-item">
     
+
   <p class="copyright">
     
       © Copyright 2022, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).
@@ -891,8 +912,8 @@ Estimated ELBO: -4.149 +/-0.001.
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
-<script src="../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+  <script src="../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae"></script>
 
   <footer class="bd-footer">
   </footer>

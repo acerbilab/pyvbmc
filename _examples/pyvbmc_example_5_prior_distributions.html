@@ -1,13 +1,12 @@
 
-
 <!DOCTYPE html>
 
 
-<html lang="en" >
+<html lang="en" data-content_root="../" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>PyVBMC Example 5: Prior distributions &#8212; PyVBMC</title>
   
@@ -19,35 +18,33 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
-<link href="../_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
 
   
-  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+  <link href="../_static/vendor/fontawesome/6.5.1/css/all.min.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=384b581d" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
+  <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
-    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../_static/doctools.js"></script>
-    <script src="../_static/sphinx_highlight.js"></script>
-    <script src="../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_examples/pyvbmc_example_5_prior_distributions';</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="canonical" href="https://acerbilab.github.io/pyvbmc/_examples/pyvbmc_example_5_prior_distributions.html" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -62,7 +59,15 @@
 
   
   
-  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <a id="pst-skip-link" class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
   
   <input type="checkbox"
           class="sidebar-toggle"
@@ -97,11 +102,14 @@
 </form></div>
   </div>
   
-    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
-    </nav>
+    <header class="bd-header navbar navbar-expand-lg bd-navbar">
+    </header>
   
+
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
+      
+      
       
       <div class="bd-sidebar-primary bd-sidebar">
         
@@ -116,9 +124,11 @@
   
     <div class="sidebar-primary-items__start sidebar-primary__section">
         <div class="sidebar-primary-item">
+
   
 
 <a class="navbar-brand logo" href="../index.html">
+  
   
   
   
@@ -128,12 +138,23 @@
       
     
     
-    <img src="../_static/logo.svg" class="logo__image only-light" alt="Logo image"/>
-    <script>document.write(`<img src="../_static/logo.svg" class="logo__image only-dark" alt="Logo image"/>`);</script>
+    <img src="../_static/logo.svg" class="logo__image only-light" alt="PyVBMC - Home"/>
+    <script>document.write(`<img src="../_static/logo.svg" class="logo__image only-dark" alt="PyVBMC - Home"/>`);</script>
   
   
 </a></div>
-        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
@@ -404,20 +425,22 @@
 </button>
 
 
+
 <script>
 document.write(`
-  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
-    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
-    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
   </button>
 `);
 </script>
 
+
 <script>
 document.write(`
   <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
   </button>
 `);
 </script>
@@ -471,21 +494,21 @@ document.write(`
               
                 
 <div id="searchbox"></div>
-                <article class="bd-article" role="main">
+                <article class="bd-article">
                   
   <section class="tex2jax_ignore mathjax_ignore" id="pyvbmc-example-5-prior-distributions">
-<h1>PyVBMC Example 5: Prior distributions<a class="headerlink" href="#pyvbmc-example-5-prior-distributions" title="Permalink to this heading">#</a></h1>
+<h1>PyVBMC Example 5: Prior distributions<a class="headerlink" href="#pyvbmc-example-5-prior-distributions" title="Link to this heading">#</a></h1>
 <p>In this notebook, we discuss some considerations for using a prior distribution with PyVBMC, and demonstrate some convenient built-in priors.</p>
 <p>This notebook is Part 5 of a series of notebooks in which we present various example usages for VBMC with the PyVBMC package. The code used in this example is available as a script <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/examples/scripts/pyvbmc_example_5_full_code.py">here</a>.</p>
 <section id="preliminaries">
-<h2>0. Preliminaries<a class="headerlink" href="#preliminaries" title="Permalink to this heading">#</a></h2>
+<h2>0. Preliminaries<a class="headerlink" href="#preliminaries" title="Link to this heading">#</a></h2>
 <p>In Bayesian inference – and in PyVBMC – you <em>need</em> a <a class="reference external" href="https://en.wikipedia.org/wiki/Prior_probability">prior over parameters</a>, <span class="math notranslate nohighlight">\(p(\theta)\)</span>. The prior should be a proper probability density function (pdf), i.e. a normalized distribution. A common choice is an independent or factorized prior:</p>
 <div class="math notranslate nohighlight">
 \[ p(\theta) = \prod_{i} p_{i}(\theta_{i}) \iff \log \big( p(\theta) \big) = \sum_{i} \log \big( p_{i}(\theta_{i}) \big)\,, \]</div>
 <p>where each prior <span class="math notranslate nohighlight">\(p_{i}(\theta_{i})\)</span> is chosen separately for each parameter <span class="math notranslate nohighlight">\(\theta_{i}\)</span>. Note that an independent prior does not mean that the posterior is independent!</p>
 </section>
 <section id="specifying-a-prior-with-pyvbmc">
-<h2>1. Specifying a prior with PyVBMC<a class="headerlink" href="#specifying-a-prior-with-pyvbmc" title="Permalink to this heading">#</a></h2>
+<h2>1. Specifying a prior with PyVBMC<a class="headerlink" href="#specifying-a-prior-with-pyvbmc" title="Link to this heading">#</a></h2>
 <p>By default, as in the previous notebooks, PyVBMC assumes that the first argument to <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> is a function which returns the log-joint (i.e., the sum of log-likelihood and log-prior). However, you may instead pass a function which returns the log-likelihood as a first argument, and supply the prior separately. Using the keyword <code class="docutils literal notranslate"><span class="pre">log_prior</span></code>, you may pass a function (of a single argument) which returns the log-density of the prior given a point:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">vbmc</span> <span class="o">=</span> <span class="n">VBMC</span><span class="p">(</span><span class="n">log_likelihood</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">lb</span><span class="p">,</span> <span class="n">ub</span><span class="p">,</span> <span class="n">plb</span><span class="p">,</span> <span class="n">pub</span><span class="p">,</span> <span class="n">log_prior</span><span class="o">=</span><span class="n">log_prior_function</span><span class="p">)</span>
 </pre></div>
@@ -517,10 +540,10 @@ document.write(`
 </div>
 </section>
 <section id="bounded-parameters">
-<h2>2. Bounded parameters<a class="headerlink" href="#bounded-parameters" title="Permalink to this heading">#</a></h2>
+<h2>2. Bounded parameters<a class="headerlink" href="#bounded-parameters" title="Link to this heading">#</a></h2>
 <p>PyVBMC implements several priors for bounded parameters. All the priors listed below apply both to the univariate and to the multivariate case, with the assumption of independent/factorized priors mentioned above.</p>
 <section id="uniform-box-prior-uniformbox">
-<h3>Uniform-box prior (<code class="docutils literal notranslate"><span class="pre">UniformBox</span></code>)<a class="headerlink" href="#uniform-box-prior-uniformbox" title="Permalink to this heading">#</a></h3>
+<h3>Uniform-box prior (<code class="docutils literal notranslate"><span class="pre">UniformBox</span></code>)<a class="headerlink" href="#uniform-box-prior-uniformbox" title="Link to this heading">#</a></h3>
 <p>For bounded parameters, the first simple choice is a non-informative uniformly flat prior between the hard bounds. This is implemented by the <code class="docutils literal notranslate"><span class="pre">UniformBox</span></code> multivariate prior. Below, we plot the pdf of the prior for a one-dimensional problem (the pdf to the left and the log-pdf to the right).</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -554,7 +577,7 @@ document.write(`
 </div>
 </section>
 <section id="trapezoidal-prior-trapezoidal">
-<h3>Trapezoidal prior (<code class="docutils literal notranslate"><span class="pre">Trapezoidal</span></code>)<a class="headerlink" href="#trapezoidal-prior-trapezoidal" title="Permalink to this heading">#</a></h3>
+<h3>Trapezoidal prior (<code class="docutils literal notranslate"><span class="pre">Trapezoidal</span></code>)<a class="headerlink" href="#trapezoidal-prior-trapezoidal" title="Link to this heading">#</a></h3>
 <p>Alternatively, for each parameter we can define the prior to be flat within a range, where a reasonable choice is the “plausible” range, and then falls to zero towards the hard bounds. This is a trapezoidal or “tent” prior, implemented by the <code class="docutils literal notranslate"><span class="pre">Trapezoidal</span></code> prior shown below.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -581,7 +604,7 @@ document.write(`
 </div>
 </section>
 <section id="spline-smoothed-trapezoidal-prior-splinetrapezoidal">
-<h3>Spline-smoothed trapezoidal prior (<code class="docutils literal notranslate"><span class="pre">SplineTrapezoidal</span></code>)<a class="headerlink" href="#spline-smoothed-trapezoidal-prior-splinetrapezoidal" title="Permalink to this heading">#</a></h3>
+<h3>Spline-smoothed trapezoidal prior (<code class="docutils literal notranslate"><span class="pre">SplineTrapezoidal</span></code>)<a class="headerlink" href="#spline-smoothed-trapezoidal-prior-splinetrapezoidal" title="Link to this heading">#</a></h3>
 <p>Finally, we can use a <em>smoothed</em> trapezoidal prior with soft transitions at the edges obtained using cubic splines. This prior is better behaved numerically as it is continuous with continuous derivatives (i.e., no sharp edges), so we recommend it over the simple trapezoidal prior. The spline-smoothed trapezoidal prior is implemented by the <code class="docutils literal notranslate"><span class="pre">SplineTrapezoidal</span></code> class.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -609,11 +632,11 @@ document.write(`
 </section>
 </section>
 <section id="unbounded-parameters">
-<h2>3. Unbounded parameters<a class="headerlink" href="#unbounded-parameters" title="Permalink to this heading">#</a></h2>
+<h2>3. Unbounded parameters<a class="headerlink" href="#unbounded-parameters" title="Link to this heading">#</a></h2>
 <p>If your variables are <em>unbounded</em>, remember that PyVBMC supports <code class="docutils literal notranslate"><span class="pre">scipy.stats</span></code> univariate and multivariate distributions, so you  could use standard priors such as a multivariate normal distribution or a multivariate Student’s t distribution with 3-7 degrees of freedom.
 See for example <a class="reference external" href="https://github.com/stan-dev/stan/wiki/Prior-Choice-Recommendations">this page on the Stan wiki</a> for a broader discussion on prior choice.</p>
 <section id="smooth-box-prior-smoothbox">
-<h3>Smooth-box prior (<code class="docutils literal notranslate"><span class="pre">SmoothBox</span></code>)<a class="headerlink" href="#smooth-box-prior-smoothbox" title="Permalink to this heading">#</a></h3>
+<h3>Smooth-box prior (<code class="docutils literal notranslate"><span class="pre">SmoothBox</span></code>)<a class="headerlink" href="#smooth-box-prior-smoothbox" title="Link to this heading">#</a></h3>
 <p>As an alternative to these common choices, we also provide a smooth-box distribution which is uniform within an interval (typically, the plausible range) and then falls with Gaussian tails with standard deviation(s) equal to <code class="docutils literal notranslate"><span class="pre">scale</span></code> outside the interval. The smoothbox prior is implemented by the <code class="docutils literal notranslate"><span class="pre">SmoothBox</span></code> class.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -655,11 +678,11 @@ See for example <a class="reference external" href="https://github.com/stan-dev/
 </section>
 </section>
 <section id="using-a-prior-with-pyvbmc">
-<h2>4. Using a prior with PyVBMC<a class="headerlink" href="#using-a-prior-with-pyvbmc" title="Permalink to this heading">#</a></h2>
+<h2>4. Using a prior with PyVBMC<a class="headerlink" href="#using-a-prior-with-pyvbmc" title="Link to this heading">#</a></h2>
 <p><a id="using-a-prior"></a></p>
 <p>To conclude, we run inference on a couple of problems using some of the priors introduced in this notebook.</p>
 <section id="bounded-example">
-<h3>Bounded example<a class="headerlink" href="#bounded-example" title="Permalink to this heading">#</a></h3>
+<h3>Bounded example<a class="headerlink" href="#bounded-example" title="Link to this heading">#</a></h3>
 <p>In this example, we use the spline-smoothed trapezoidal prior (<code class="docutils literal notranslate"><span class="pre">SplineTrapezoidal</span></code>) introduced in this notebook. The code below shows several equivalent ways in which the prior can be set in PyVBMC (see the comments in the code below for details).</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -720,7 +743,7 @@ Estimated ELBO: -2.424 +/-0.002.
 </div>
 </section>
 <section id="unbounded-example">
-<h3>Unbounded example<a class="headerlink" href="#unbounded-example" title="Permalink to this heading">#</a></h3>
+<h3>Unbounded example<a class="headerlink" href="#unbounded-example" title="Link to this heading">#</a></h3>
 <p>We run now another example with an unbounded prior. In this case, we apply a multivariate normal prior with zero mean and diagonal covariance, with variance <span class="math notranslate nohighlight">\(\sigma^2 = 9\)</span> in each dimension (we chose <span class="math notranslate nohighlight">\(\sigma\)</span> equal to half the plausible range).
 Note that this is equivalent to setting a normal distribution separately for each variable. The code below shows a couple of equivalent ways in which the prior could be initialized in PyVBMC using <code class="docutils literal notranslate"><span class="pre">scipy.stats</span></code> distributions.</p>
 <div class="cell docutils container">
@@ -773,7 +796,7 @@ Estimated ELBO: -2.280 +/-0.001.
 </section>
 </section>
 <section id="acknowledgments">
-<h2>Acknowledgments<a class="headerlink" href="#acknowledgments" title="Permalink to this heading">#</a></h2>
+<h2>Acknowledgments<a class="headerlink" href="#acknowledgments" title="Link to this heading">#</a></h2>
 <p>Work on the PyVBMC package was funded by the <a class="reference external" href="https://fcai.fi/">Finnish Center for Artificial Intelligence FCAI</a>.</p>
 </section>
 </section>
@@ -784,11 +807,10 @@ Estimated ELBO: -2.280 +/-0.001.
 
               
               
-                <footer class="bd-footer-article">
+              
+              
+                <footer class="prev-next-footer">
                   
-<div class="footer-article-items footer-article__inner">
-  
-    <div class="footer-article-item"><!-- Previous / next buttons -->
 <div class="prev-next-area">
     <a class="left-prev"
        href="pyvbmc_example_4_validation.html"
@@ -808,10 +830,7 @@ Estimated ELBO: -2.280 +/-0.001.
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
-</div></div>
-  
 </div>
-
                 </footer>
               
             </div>
@@ -819,6 +838,7 @@ Estimated ELBO: -2.280 +/-0.001.
             
               
                 <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
 
   <div class="sidebar-secondary-item">
   <div class="page-toc tocsection onthispage">
@@ -861,6 +881,7 @@ Estimated ELBO: -2.280 +/-0.001.
   
   <div class="footer-item">
     
+
   <p class="copyright">
     
       © Copyright 2022, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).
@@ -887,8 +908,8 @@ Estimated ELBO: -2.280 +/-0.001.
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
-<script src="../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+  <script src="../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae"></script>
 
   <footer class="bd-footer">
   </footer>

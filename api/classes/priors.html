@@ -1,13 +1,12 @@
 
-
 <!DOCTYPE html>
 
 
-<html lang="en" >
+<html lang="en" data-content_root="../../" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Priors &#8212; PyVBMC</title>
   
@@ -19,33 +18,31 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
-<link href="../../_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
 
   
-  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+  <link href="../../_static/vendor/fontawesome/6.5.1/css/all.min.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=384b581d" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
+  <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/sphinx_highlight.js"></script>
-    <script src="../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'api/classes/priors';</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="canonical" href="https://acerbilab.github.io/pyvbmc/api/classes/priors.html" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -60,7 +57,15 @@
 
   
   
-  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <a id="pst-skip-link" class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
   
   <input type="checkbox"
           class="sidebar-toggle"
@@ -95,11 +100,14 @@
 </form></div>
   </div>
   
-    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
-    </nav>
+    <header class="bd-header navbar navbar-expand-lg bd-navbar">
+    </header>
   
+
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
+      
+      
       
       <div class="bd-sidebar-primary bd-sidebar">
         
@@ -114,9 +122,11 @@
   
     <div class="sidebar-primary-items__start sidebar-primary__section">
         <div class="sidebar-primary-item">
+
   
 
 <a class="navbar-brand logo" href="../../index.html">
+  
   
   
   
@@ -126,12 +136,23 @@
       
     
     
-    <img src="../../_static/logo.svg" class="logo__image only-light" alt="Logo image"/>
-    <script>document.write(`<img src="../../_static/logo.svg" class="logo__image only-dark" alt="Logo image"/>`);</script>
+    <img src="../../_static/logo.svg" class="logo__image only-light" alt="PyVBMC - Home"/>
+    <script>document.write(`<img src="../../_static/logo.svg" class="logo__image only-dark" alt="PyVBMC - Home"/>`);</script>
   
   
 </a></div>
-        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
@@ -353,20 +374,22 @@
 </button>
 
 
+
 <script>
 document.write(`
-  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
-    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
-    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
   </button>
 `);
 </script>
 
+
 <script>
 document.write(`
   <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
   </button>
 `);
 </script>
@@ -476,10 +499,10 @@ document.write(`
               
                 
 <div id="searchbox"></div>
-                <article class="bd-article" role="main">
+                <article class="bd-article">
                   
   <section id="priors">
-<h1>Priors<a class="headerlink" href="#priors" title="Permalink to this heading">#</a></h1>
+<h1>Priors<a class="headerlink" href="#priors" title="Link to this heading">#</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>By default, PyVBMC assumes that the first argument to <code class="docutils literal notranslate"><span class="pre">VBMC</span></code> is a function which returns the log-joint (i.e., the sum of log-likelihood and log-prior). However, you may instead pass a function which returns the log-likelihood as a first argument, and supply the prior separately. Using the keyword <code class="docutils literal notranslate"><span class="pre">log_prior</span></code>, you may pass a function (of a single argument) which returns the log-density of the prior given a point:</p>
@@ -500,15 +523,15 @@ document.write(`
 <p>For more details on (1), see the documentation below as well as <a class="reference internal" href="../../_examples/pyvbmc_example_5_prior_distributions.html#pyvbmc-example-5-prior-distributions"><span class="std std-ref">PyVBMC Example 5: Prior distributions</span></a>. For more details on (2), (3), and using a function as a <code class="docutils literal notranslate"><span class="pre">log_prior</span></code>, see the documentation on <a class="reference internal" href="#scipy-priors"><span class="std std-ref">SciPy priors</span></a>, <a class="reference internal" href="#product-priors"><span class="std std-ref">Product priors</span></a>, and <a class="reference internal" href="#userfunction-priors"><span class="std std-ref">UserFunction priors</span></a> below. (keyword arguments of these types will be converted to instances of these classes).</p>
 </div>
 <section id="prior-base-class">
-<h2><code class="docutils literal notranslate"><span class="pre">Prior</span></code> base class<a class="headerlink" href="#prior-base-class" title="Permalink to this heading">#</a></h2>
+<h2><code class="docutils literal notranslate"><span class="pre">Prior</span></code> base class<a class="headerlink" href="#prior-base-class" title="Link to this heading">#</a></h2>
 <p>These methods are common to all of the subclasses that follow.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.priors.Prior">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.priors.</span></span><span class="sig-name descname"><span class="pre">Prior</span></span><a class="reference internal" href="../../_modules/pyvbmc/priors/prior.html#Prior"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.Prior" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.priors.</span></span><span class="sig-name descname"><span class="pre">Prior</span></span><a class="reference internal" href="../../_modules/pyvbmc/priors/prior.html#Prior"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.Prior" title="Link to this definition">#</a></dt>
 <dd><p>Abstract base class for PyVBMC prior distributions.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.priors.Prior.log_pdf">
-<span class="sig-name descname"><span class="pre">log_pdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keepdims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/prior.html#Prior.log_pdf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.Prior.log_pdf" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">log_pdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keepdims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/prior.html#Prior.log_pdf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.Prior.log_pdf" title="Link to this definition">#</a></dt>
 <dd><p>Compute the log-pdf of the distribution.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -533,7 +556,7 @@ document.write(`
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.priors.Prior.pdf">
-<span class="sig-name descname"><span class="pre">pdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keepdims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/prior.html#Prior.pdf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.Prior.pdf" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">pdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keepdims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/prior.html#Prior.pdf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.Prior.pdf" title="Link to this definition">#</a></dt>
 <dd><p>Compute the pdf of the distribution.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -558,7 +581,7 @@ document.write(`
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.priors.Prior.sample">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/prior.html#Prior.sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.Prior.sample" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/prior.html#Prior.sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.Prior.sample" title="Link to this definition">#</a></dt>
 <dd><p>Sample random variables from the distribution.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -578,7 +601,7 @@ document.write(`
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.priors.Prior.support">
-<span class="sig-name descname"><span class="pre">support</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/prior.html#Prior.support"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.Prior.support" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">support</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/prior.html#Prior.support"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.Prior.support" title="Link to this definition">#</a></dt>
 <dd><p>Returns the support of the distribution.</p>
 <p>Used to test that the distribution integrates to one, so it is also
 acceptable to return a box which bounds the support of the
@@ -598,12 +621,12 @@ distribution.</p>
 
 </section>
 <section id="bounded-priors">
-<h2>Bounded priors<a class="headerlink" href="#bounded-priors" title="Permalink to this heading">#</a></h2>
+<h2>Bounded priors<a class="headerlink" href="#bounded-priors" title="Link to this heading">#</a></h2>
 <section id="uniformbox">
-<h3><code class="docutils literal notranslate"><span class="pre">UniformBox</span></code><a class="headerlink" href="#uniformbox" title="Permalink to this heading">#</a></h3>
+<h3><code class="docutils literal notranslate"><span class="pre">UniformBox</span></code><a class="headerlink" href="#uniformbox" title="Link to this heading">#</a></h3>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.priors.UniformBox">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.priors.</span></span><span class="sig-name descname"><span class="pre">UniformBox</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/uniform_box.html#UniformBox"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.UniformBox" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.priors.</span></span><span class="sig-name descname"><span class="pre">UniformBox</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/uniform_box.html#UniformBox"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.UniformBox" title="Link to this definition">#</a></dt>
 <dd><p>Multivariate uniform-box prior.</p>
 <p>A prior distribution represented by box of uniform dimension, with lower
 bound(s) <code class="docutils literal notranslate"><span class="pre">a</span></code> and upper bound(s) <code class="docutils literal notranslate"><span class="pre">b</span></code>.</p>
@@ -621,7 +644,7 @@ bound(s) <code class="docutils literal notranslate"><span class="pre">a</span></
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.priors.UniformBox.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/uniform_box.html#UniformBox.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.UniformBox.__init__" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/uniform_box.html#UniformBox.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.UniformBox.__init__" title="Link to this definition">#</a></dt>
 <dd><p>Initialize a multivariate uniform-box prior.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -647,10 +670,10 @@ bound(s) <code class="docutils literal notranslate"><span class="pre">a</span></
 
 </section>
 <section id="trapezoidal">
-<h3><code class="docutils literal notranslate"><span class="pre">Trapezoidal</span></code><a class="headerlink" href="#trapezoidal" title="Permalink to this heading">#</a></h3>
+<h3><code class="docutils literal notranslate"><span class="pre">Trapezoidal</span></code><a class="headerlink" href="#trapezoidal" title="Link to this heading">#</a></h3>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.priors.Trapezoidal">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.priors.</span></span><span class="sig-name descname"><span class="pre">Trapezoidal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/trapezoidal.html#Trapezoidal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.Trapezoidal" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.priors.</span></span><span class="sig-name descname"><span class="pre">Trapezoidal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/trapezoidal.html#Trapezoidal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.Trapezoidal" title="Link to this definition">#</a></dt>
 <dd><p>Multivariate trapezoidal prior.</p>
 <p>A prior distribution represented by a density with external bounds <code class="docutils literal notranslate"><span class="pre">a</span></code>
 and <code class="docutils literal notranslate"><span class="pre">b</span></code> and internal points <code class="docutils literal notranslate"><span class="pre">u</span></code> and <code class="docutils literal notranslate"><span class="pre">v</span></code>. Each marginal distribution
@@ -685,7 +708,7 @@ and falls of linearly to zero at <code class="docutils literal notranslate"><spa
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.priors.Trapezoidal.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/trapezoidal.html#Trapezoidal.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.Trapezoidal.__init__" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/trapezoidal.html#Trapezoidal.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.Trapezoidal.__init__" title="Link to this definition">#</a></dt>
 <dd><p>Initialize a multivariate trapezoidal prior.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -720,10 +743,10 @@ and falls of linearly to zero at <code class="docutils literal notranslate"><spa
 
 </section>
 <section id="splinetrapezoidal">
-<h3><code class="docutils literal notranslate"><span class="pre">SplineTrapezoidal</span></code><a class="headerlink" href="#splinetrapezoidal" title="Permalink to this heading">#</a></h3>
+<h3><code class="docutils literal notranslate"><span class="pre">SplineTrapezoidal</span></code><a class="headerlink" href="#splinetrapezoidal" title="Link to this heading">#</a></h3>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.priors.SplineTrapezoidal">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.priors.</span></span><span class="sig-name descname"><span class="pre">SplineTrapezoidal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/spline_trapezoidal.html#SplineTrapezoidal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.SplineTrapezoidal" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.priors.</span></span><span class="sig-name descname"><span class="pre">SplineTrapezoidal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/spline_trapezoidal.html#SplineTrapezoidal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.SplineTrapezoidal" title="Link to this definition">#</a></dt>
 <dd><p>Multivariate spline-trapezoidal prior.</p>
 <p>A prior distribution represented by a density with external bounds <code class="docutils literal notranslate"><span class="pre">a</span></code>
 and <code class="docutils literal notranslate"><span class="pre">b</span></code> and internal points <code class="docutils literal notranslate"><span class="pre">u</span></code> and <code class="docutils literal notranslate"><span class="pre">v</span></code>. Each marginal distribution
@@ -760,7 +783,7 @@ that the pdf is continuous and its derivatives at <code class="docutils literal 
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.priors.SplineTrapezoidal.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/spline_trapezoidal.html#SplineTrapezoidal.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.SplineTrapezoidal.__init__" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/spline_trapezoidal.html#SplineTrapezoidal.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.SplineTrapezoidal.__init__" title="Link to this definition">#</a></dt>
 <dd><p>Initialize a multivariate trapezoidal prior.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -796,12 +819,12 @@ that the pdf is continuous and its derivatives at <code class="docutils literal 
 </section>
 </section>
 <section id="unbounded-priors">
-<h2>Unbounded priors<a class="headerlink" href="#unbounded-priors" title="Permalink to this heading">#</a></h2>
+<h2>Unbounded priors<a class="headerlink" href="#unbounded-priors" title="Link to this heading">#</a></h2>
 <section id="smoothbox">
-<h3><code class="docutils literal notranslate"><span class="pre">SmoothBox</span></code><a class="headerlink" href="#smoothbox" title="Permalink to this heading">#</a></h3>
+<h3><code class="docutils literal notranslate"><span class="pre">SmoothBox</span></code><a class="headerlink" href="#smoothbox" title="Link to this heading">#</a></h3>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.priors.SmoothBox">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.priors.</span></span><span class="sig-name descname"><span class="pre">SmoothBox</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/smooth_box.html#SmoothBox"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.SmoothBox" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.priors.</span></span><span class="sig-name descname"><span class="pre">SmoothBox</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/smooth_box.html#SmoothBox"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.SmoothBox" title="Link to this definition">#</a></dt>
 <dd><p>Multivariate smooth-box prior.</p>
 <p>For each dimension <cite>i</cite>, the univariate smooth-box pdf is defined as a
 uniform distribution between pivots <code class="docutils literal notranslate"><span class="pre">a[i]</span></code>, <code class="docutils literal notranslate"><span class="pre">b[i]</span></code> with Gaussian tails
@@ -823,7 +846,7 @@ right) with standard deviation <code class="docutils literal notranslate"><span 
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.priors.SmoothBox.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/smooth_box.html#SmoothBox.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.SmoothBox.__init__" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/smooth_box.html#SmoothBox.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.SmoothBox.__init__" title="Link to this definition">#</a></dt>
 <dd><p>Initialize a multivariate smooth-box prior.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -854,13 +877,13 @@ this shape).</p>
 </section>
 </section>
 <section id="other-priors-and-functions">
-<h2>Other priors and functions<a class="headerlink" href="#other-priors-and-functions" title="Permalink to this heading">#</a></h2>
+<h2>Other priors and functions<a class="headerlink" href="#other-priors-and-functions" title="Link to this heading">#</a></h2>
 <section id="product-priors">
-<h3><code class="docutils literal notranslate"><span class="pre">Product</span></code> priors<a class="headerlink" href="#product-priors" title="Permalink to this heading">#</a></h3>
+<h3><code class="docutils literal notranslate"><span class="pre">Product</span></code> priors<a class="headerlink" href="#product-priors" title="Link to this heading">#</a></h3>
 <p>When a user passes a list of <code class="docutils literal notranslate"><span class="pre">Prior</span></code> instances or <code class="docutils literal notranslate"><span class="pre">scipy.stats</span></code> distributions, they are converted to a <code class="docutils literal notranslate"><span class="pre">Product</span></code> prior with a corresponding marginal distributions for each item in the list.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.priors.Product">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.priors.</span></span><span class="sig-name descname"><span class="pre">Product</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">marginals</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/product.html#Product"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.Product" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.priors.</span></span><span class="sig-name descname"><span class="pre">Product</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">marginals</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/product.html#Product"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.Product" title="Link to this definition">#</a></dt>
 <dd><p>A prior which is an product of independent univariate priors.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Attributes<span class="colon">:</span></dt>
@@ -874,7 +897,7 @@ this shape).</p>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.priors.Product.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">marginals</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/product.html#Product.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.Product.__init__" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">marginals</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/product.html#Product.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.Product.__init__" title="Link to this definition">#</a></dt>
 <dd><p>Initialize a <cite>Product</cite> prior from a list of marginal priors.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -900,11 +923,11 @@ PyVBMC priors or appropriate SciPy distributions.</p>
 
 </section>
 <section id="scipy-priors">
-<h3><code class="docutils literal notranslate"><span class="pre">SciPy</span></code> priors<a class="headerlink" href="#scipy-priors" title="Permalink to this heading">#</a></h3>
+<h3><code class="docutils literal notranslate"><span class="pre">SciPy</span></code> priors<a class="headerlink" href="#scipy-priors" title="Link to this heading">#</a></h3>
 <p>To standardize the interface, when a user provides a <code class="docutils literal notranslate"><span class="pre">scipy.stats</span></code> distribution as a prior, it is wrapped in a <code class="docutils literal notranslate"><span class="pre">SciPy</span></code> prior distribution</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.priors.SciPy">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.priors.</span></span><span class="sig-name descname"><span class="pre">SciPy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distribution</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/scipy.html#SciPy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.SciPy" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.priors.</span></span><span class="sig-name descname"><span class="pre">SciPy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distribution</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/scipy.html#SciPy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.SciPy" title="Link to this definition">#</a></dt>
 <dd><p>Wrapper class for <cite>scipy.stats</cite> distributions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Attributes<span class="colon">:</span></dt>
@@ -918,7 +941,7 @@ PyVBMC priors or appropriate SciPy distributions.</p>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.priors.SciPy.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distribution</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/scipy.html#SciPy.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.SciPy.__init__" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distribution</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/scipy.html#SciPy.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.SciPy.__init__" title="Link to this definition">#</a></dt>
 <dd><p>Initialize <cite>pyvbmc.priors.Prior</cite> from <cite>scipy.stats</cite> distribution(s).</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -941,11 +964,11 @@ a univariate continuous distribution (for 1-D models).</p>
 
 </section>
 <section id="userfunction-priors">
-<h3><code class="docutils literal notranslate"><span class="pre">UserFunction</span></code> priors<a class="headerlink" href="#userfunction-priors" title="Permalink to this heading">#</a></h3>
+<h3><code class="docutils literal notranslate"><span class="pre">UserFunction</span></code> priors<a class="headerlink" href="#userfunction-priors" title="Link to this heading">#</a></h3>
 <p>To standardize the interface, when a user provides a function as a log-prior it is wrapped in a <code class="docutils literal notranslate"><span class="pre">UserPrior</span></code> class.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.priors.UserFunction">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.priors.</span></span><span class="sig-name descname"><span class="pre">UserFunction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_prior</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_prior</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/user_function.html#UserFunction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.UserFunction" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.priors.</span></span><span class="sig-name descname"><span class="pre">UserFunction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_prior</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_prior</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/user_function.html#UserFunction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.UserFunction" title="Link to this definition">#</a></dt>
 <dd><p>Lightweight wrapper for user-defined priors.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Attributes<span class="colon">:</span></dt>
@@ -961,7 +984,7 @@ a univariate continuous distribution (for 1-D models).</p>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvbmc.priors.UserFunction.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_prior</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_prior</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/user_function.html#UserFunction.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.UserFunction.__init__" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_prior</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_prior</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/user_function.html#UserFunction.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.UserFunction.__init__" title="Link to this definition">#</a></dt>
 <dd><p>Initialize a user-specified prior from a function.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -985,10 +1008,10 @@ samples from the prior distribution as an <cite>(n, D)</cite> array.</p>
 
 </section>
 <section id="utility-functions">
-<h3>Utility functions<a class="headerlink" href="#utility-functions" title="Permalink to this heading">#</a></h3>
+<h3>Utility functions<a class="headerlink" href="#utility-functions" title="Link to this heading">#</a></h3>
 <dl class="py function">
 <dt class="sig sig-object py" id="pyvbmc.priors.convert_to_prior">
-<span class="sig-prename descclassname"><span class="pre">pyvbmc.priors.</span></span><span class="sig-name descname"><span class="pre">convert_to_prior</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prior</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_prior</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_prior</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/convert_to_prior.html#convert_to_prior"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.convert_to_prior" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">pyvbmc.priors.</span></span><span class="sig-name descname"><span class="pre">convert_to_prior</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prior</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_prior</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_prior</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/convert_to_prior.html#convert_to_prior"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.convert_to_prior" title="Link to this definition">#</a></dt>
 <dd><p>Convert an object to a pyvbmc Prior instance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1029,7 +1052,7 @@ user-defined priors.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="pyvbmc.priors.tile_inputs">
-<span class="sig-prename descclassname"><span class="pre">pyvbmc.priors.</span></span><span class="sig-name descname"><span class="pre">tile_inputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">squeeze</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/tile_inputs.html#tile_inputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.tile_inputs" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">pyvbmc.priors.</span></span><span class="sig-name descname"><span class="pre">tile_inputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">squeeze</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/tile_inputs.html#tile_inputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.tile_inputs" title="Link to this definition">#</a></dt>
 <dd><p>Tile scalar inputs to have the same dimension as array inputs.</p>
 <p>If all inputs are given as scalars, returned arrays will have shape <cite>size</cite>
 if <cite>size</cite> is a tuple, or shape <cite>(size,)</cite> if <cite>size</cite> is an integer.</p>
@@ -1056,7 +1079,7 @@ not agree with <cite>size</cite>.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="pyvbmc.priors.is_valid_scipy_dist">
-<span class="sig-prename descclassname"><span class="pre">pyvbmc.priors.</span></span><span class="sig-name descname"><span class="pre">is_valid_scipy_dist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/scipy.html#is_valid_scipy_dist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.is_valid_scipy_dist" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">pyvbmc.priors.</span></span><span class="sig-name descname"><span class="pre">is_valid_scipy_dist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/scipy.html#is_valid_scipy_dist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.is_valid_scipy_dist" title="Link to this definition">#</a></dt>
 <dd><p>Assess whether <code class="docutils literal notranslate"><span class="pre">obj</span></code> is a valid SciPy distribution for a PyVBMC prior.</p>
 <p>A valid SciPy distribution is a frozen multivariate normal, multivariate t,
 or continuous univariate distribution.</p>
@@ -1085,11 +1108,10 @@ or continuous univariate distribution.</p>
 
               
               
-                <footer class="bd-footer-article">
+              
+              
+                <footer class="prev-next-footer">
                   
-<div class="footer-article-items footer-article__inner">
-  
-    <div class="footer-article-item"><!-- Previous / next buttons -->
 <div class="prev-next-area">
     <a class="left-prev"
        href="../options/vbmc_options.html"
@@ -1109,10 +1131,7 @@ or continuous univariate distribution.</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
-</div></div>
-  
 </div>
-
                 </footer>
               
             </div>
@@ -1120,6 +1139,7 @@ or continuous univariate distribution.</p>
             
               
                 <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
 
   <div class="sidebar-secondary-item">
   <div class="page-toc tocsection onthispage">
@@ -1218,6 +1238,7 @@ or continuous univariate distribution.</p>
   
   <div class="footer-item">
     
+
   <p class="copyright">
     
       © Copyright 2022, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).
@@ -1244,8 +1265,8 @@ or continuous univariate distribution.</p>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
-<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+  <script src="../../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae"></script>
 
   <footer class="bd-footer">
   </footer>

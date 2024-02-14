@@ -1,13 +1,12 @@
 
-
 <!DOCTYPE html>
 
 
-<html lang="en" >
+<html lang="en" data-content_root="./" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Instructions for developers and contributors &#8212; PyVBMC</title>
   
@@ -19,33 +18,31 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
-<link href="_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link href="_static/styles/theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
 
   
-  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+  <link href="_static/vendor/fontawesome/6.5.1/css/all.min.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.1/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=384b581d" />
     <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
+  <script src="_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
-    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'development';</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="canonical" href="https://acerbilab.github.io/pyvbmc/development.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -60,7 +57,15 @@
 
   
   
-  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <a id="pst-skip-link" class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
   
   <input type="checkbox"
           class="sidebar-toggle"
@@ -95,11 +100,14 @@
 </form></div>
   </div>
   
-    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
-    </nav>
+    <header class="bd-header navbar navbar-expand-lg bd-navbar">
+    </header>
   
+
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
+      
+      
       
       <div class="bd-sidebar-primary bd-sidebar">
         
@@ -114,9 +122,11 @@
   
     <div class="sidebar-primary-items__start sidebar-primary__section">
         <div class="sidebar-primary-item">
+
   
 
 <a class="navbar-brand logo" href="index.html">
+  
   
   
   
@@ -126,12 +136,23 @@
       
     
     
-    <img src="_static/logo.svg" class="logo__image only-light" alt="Logo image"/>
-    <script>document.write(`<img src="_static/logo.svg" class="logo__image only-dark" alt="Logo image"/>`);</script>
+    <img src="_static/logo.svg" class="logo__image only-light" alt="PyVBMC - Home"/>
+    <script>document.write(`<img src="_static/logo.svg" class="logo__image only-dark" alt="PyVBMC - Home"/>`);</script>
   
   
 </a></div>
-        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
@@ -353,20 +374,22 @@
 </button>
 
 
+
 <script>
 document.write(`
-  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
-    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
-    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
   </button>
 `);
 </script>
 
+
 <script>
 document.write(`
   <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
   </button>
 `);
 </script>
@@ -416,15 +439,15 @@ document.write(`
               
                 
 <div id="searchbox"></div>
-                <article class="bd-article" role="main">
+                <article class="bd-article">
                   
   <section id="instructions-for-developers-and-contributors">
-<h1>Instructions for developers and contributors<a class="headerlink" href="#instructions-for-developers-and-contributors" title="Permalink to this heading">#</a></h1>
+<h1>Instructions for developers and contributors<a class="headerlink" href="#instructions-for-developers-and-contributors" title="Link to this heading">#</a></h1>
 <p>PyVBMC is the port of the MATLAB VBMC algorithm to Python 3.x (development has targeted version 3.9 and up).</p>
 <p>The reference code is the <a class="reference external" href="https://github.com/acerbilab/vbmc">MATLAB toolbox</a>.</p>
 <p>The documentation is available at: <a class="reference external" href="https://acerbilab.github.io/pyvbmc/">https://acerbilab.github.io/pyvbmc/</a></p>
 <section id="installation-instructions-for-developers">
-<h2>Installation instructions for developers<a class="headerlink" href="#installation-instructions-for-developers" title="Permalink to this heading">#</a></h2>
+<h2>Installation instructions for developers<a class="headerlink" href="#installation-instructions-for-developers" title="Link to this heading">#</a></h2>
 <p>Release versions of PyVBMC are available via <code class="docutils literal notranslate"><span class="pre">pip</span></code> and <code class="docutils literal notranslate"><span class="pre">conda-forge</span></code>, but developers will need to work with the latest source code. They should follow these steps to install:</p>
 <ol class="arabic">
 <li><p>(Optional, but recommended for development): Create a new environment in Conda and activate it.</p>
@@ -458,7 +481,7 @@ conda activate pyvbmc-env</p>
 <p>The necessary packages can be installed with <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/">conda</a> or <a class="reference external" href="https://pypi.org/project/pip/">pip</a>.</p>
 </section>
 <section id="coding-conventions">
-<h2>Coding conventions<a class="headerlink" href="#coding-conventions" title="Permalink to this heading">#</a></h2>
+<h2>Coding conventions<a class="headerlink" href="#coding-conventions" title="Link to this heading">#</a></h2>
 <p>We try to follow common conventions whenever possible. Some useful reading:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://www.python.org/dev/peps/pep-0008/">PEP 8 – Style Guide for Python Code</a></p></li>
@@ -466,7 +489,7 @@ conda activate pyvbmc-env</p>
 </ul>
 <p>These basic rules should be followed to ensure coherence and to make it easy for third parties to contribute. In the following, we list more detailed conventions. Please read carefully if you are contributing to PyVBMC.</p>
 <section id="code-formatting">
-<h3>Code formatting<a class="headerlink" href="#code-formatting" title="Permalink to this heading">#</a></h3>
+<h3>Code formatting<a class="headerlink" href="#code-formatting" title="Link to this heading">#</a></h3>
 <p>The code is formatted using <a class="reference external" href="https://pypi.org/project/black/">Black</a> with a line length of 79, with the help of pre-commit hooks. To install and use:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">pre</span><span class="o">-</span><span class="n">commit</span>
 <span class="n">pre</span><span class="o">-</span><span class="n">commit</span> <span class="n">install</span>
@@ -477,7 +500,7 @@ conda activate pyvbmc-env</p>
 <p>If you want, you can also check with <a class="reference external" href="https://beta.ruff.rs/docs/">ruff</a> or <a class="reference external" href="https://www.pylint.org/">Pylint</a> for more detailed errors, warnings, and suggestions.</p>
 </section>
 <section id="docstrings">
-<h3>Docstrings<a class="headerlink" href="#docstrings" title="Permalink to this heading">#</a></h3>
+<h3>Docstrings<a class="headerlink" href="#docstrings" title="Link to this heading">#</a></h3>
 <p>The docstrings are generated following the <a class="reference external" href="https://numpydoc.readthedocs.io/en/latest/format.html">NumPy format</a>.
 There are add-ons to generate docstring blueprints using IDEs.</p>
 <ul class="simple">
@@ -487,7 +510,7 @@ There are add-ons to generate docstring blueprints using IDEs.</p>
 </ul>
 </section>
 <section id="code-documentation">
-<h3>Code documentation<a class="headerlink" href="#code-documentation" title="Permalink to this heading">#</a></h3>
+<h3>Code documentation<a class="headerlink" href="#code-documentation" title="Link to this heading">#</a></h3>
 <p>The documentation is currently hosted on <a class="reference internal" href="index.html"><span class="doc">github.io</span></a>. We build the PyVBMC documentation using <a class="reference external" href="https://www.sphinx-doc.org/en/master/usage/quickstart.html">Sphinx</a>. The source code of the documentation is in the <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/docsrc">docsrc folder</a> and the build version is in the <a class="reference external" href="https://github.com/acerbilab/pyvbmc/tree/gh-pages">gh-pages</a> branch.</p>
 <p>GitHub workflows automatically build and update the documentation whenever a commit is merged into the <code class="docutils literal notranslate"><span class="pre">main</span></code> branch, but it is sometimes useful to first do this locally in order to confirm that everything builds and renders correctly. This is especially advisable if you have made significant changes to the docs. To do so:</p>
 <ol class="arabic">
@@ -511,7 +534,7 @@ There are add-ons to generate docstring blueprints using IDEs.</p>
 </ol>
 <p>If any changes have been made the the Jupyter Notebook examples, it is advisable to check that the <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/examples">examples</a> render correctly on GitHub (make sure to view them from your working branch).</p>
 <section id="general-structure">
-<h4>General structure<a class="headerlink" href="#general-structure" title="Permalink to this heading">#</a></h4>
+<h4>General structure<a class="headerlink" href="#general-structure" title="Link to this heading">#</a></h4>
 <p>For each new class, function, etc. a <code class="docutils literal notranslate"><span class="pre">.rst</span></code> file needs to be created in an appropriate folder. The folder names are arbitrary, for now we have <code class="docutils literal notranslate"><span class="pre">functions</span></code>, <code class="docutils literal notranslate"><span class="pre">classes</span></code>, etc.
 The <code class="docutils literal notranslate"><span class="pre">.rst</span></code> file contains the text in <a class="reference external" href="https://en.wikipedia.org/wiki/ReStructuredText">reStructuredText format</a>, a lightweight markup language with special commands that tell Sphynx where to compile the documentation, for example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">..</span> <span class="n">autoclass</span><span class="p">::</span> <span class="n">pyvbmc</span><span class="o">.</span><span class="n">vbmc</span><span class="o">.</span><span class="n">VBMC</span>
@@ -530,11 +553,11 @@ Please keep the documentation up to date. (Sphinx logs possible issues when comp
 </section>
 </section>
 <section id="exceptions">
-<h3>Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this heading">#</a></h3>
+<h3>Exceptions<a class="headerlink" href="#exceptions" title="Link to this heading">#</a></h3>
 <p>Please use standard Python exceptions whenever it is sensible. Here is a list of those <a class="reference external" href="https://docs.python.org/3/library/exceptions.html">exceptions</a>.</p>
 </section>
 <section id="git-commits">
-<h3><code class="docutils literal notranslate"><span class="pre">git</span></code> commits<a class="headerlink" href="#git-commits" title="Permalink to this heading">#</a></h3>
+<h3><code class="docutils literal notranslate"><span class="pre">git</span></code> commits<a class="headerlink" href="#git-commits" title="Link to this heading">#</a></h3>
 <p>Commits follow the <a class="reference external" href="https://www.conventionalcommits.org/en/v1.0.0/">conventional commits</a> style. This makes it easier to collaborate on the project. A cheat sheet is can be found <a class="reference external" href="https://cheatography.com/albelop/cheat-sheets/conventional-commits/">here</a>.</p>
 <p>Please do not submit pull requests with unfinished code or code which does not pass all tests. Work on feature branches whenever possible and sensible. All PRs must be approved by another developer before being merged to the main branch. <a class="reference external" href="https://martinfowler.com/bliki/FeatureBranch.html">Read this</a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="o">-</span><span class="n">b</span> <span class="o">&lt;</span><span class="n">new</span><span class="o">-</span><span class="n">feature</span><span class="o">&gt;</span>
@@ -546,11 +569,11 @@ Please keep the documentation up to date. (Sphinx logs possible issues when comp
 <p>If you switch to an existing branch using <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">checkout</span></code>, remember to <code class="docutils literal notranslate"><span class="pre">pull</span></code> before making any change as it is not done automatically.</p>
 </section>
 <section id="modules-and-code-organization">
-<h3>Modules and code organization<a class="headerlink" href="#modules-and-code-organization" title="Permalink to this heading">#</a></h3>
+<h3>Modules and code organization<a class="headerlink" href="#modules-and-code-organization" title="Link to this heading">#</a></h3>
 <p>We have decided against general util/misc modules. This means that general-purpose functions should be included in a fitting existing module or in their own module. This approach encourages us to keep functions general and coherent to their scope. Furthermore, it improves readability for new collaborators. See some reading about that <a class="reference external" href="https://breadcrumbscollector.tech/stop-naming-your-python-modules-utils/">here</a>.</p>
 </section>
 <section id="testing">
-<h3>Testing<a class="headerlink" href="#testing" title="Permalink to this heading">#</a></h3>
+<h3>Testing<a class="headerlink" href="#testing" title="Link to this heading">#</a></h3>
 <p>The testing is done using <code class="docutils literal notranslate"><span class="pre">pytest</span></code> with unit tests for each class in the respective folder.
 Tests can be run with:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pytest</span> <span class="n">test_filename</span><span class="o">.</span><span class="n">py</span>
@@ -578,11 +601,10 @@ Tests can be run with:</p>
 
               
               
-                <footer class="bd-footer-article">
+              
+              
+                <footer class="prev-next-footer">
                   
-<div class="footer-article-items footer-article__inner">
-  
-    <div class="footer-article-item"><!-- Previous / next buttons -->
 <div class="prev-next-area">
     <a class="left-prev"
        href="api/functions/whitening.html"
@@ -602,10 +624,7 @@ Tests can be run with:</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
-</div></div>
-  
 </div>
-
                 </footer>
               
             </div>
@@ -613,6 +632,7 @@ Tests can be run with:</p>
             
               
                 <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
 
   <div class="sidebar-secondary-item">
   <div class="page-toc tocsection onthispage">
@@ -651,6 +671,7 @@ Tests can be run with:</p>
   
   <div class="footer-item">
     
+
   <p class="copyright">
     
       © Copyright 2022, Machine and Human Intelligence research group (PI: Luigi Acerbi, University of Helsinki).
@@ -677,8 +698,8 @@ Tests can be run with:</p>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
-<script src="_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+  <script src="_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae"></script>
 
   <footer class="bd-footer">
   </footer>
