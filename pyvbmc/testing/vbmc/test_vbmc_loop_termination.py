@@ -37,7 +37,7 @@ def test_vbmc_check_termination_conditions_max_fun_evals(mocker):
     mocker.patch.object(
         vbmc,
         "_compute_reliability_index",
-        return_value=(np.Inf, np.NaN),
+        return_value=(np.inf, np.nan),
     )
     terminated, __ = vbmc._check_termination_conditions()
     assert terminated
@@ -60,7 +60,7 @@ def test_vbmc_check_termination_conditions_max_iter(mocker):
     mocker.patch.object(
         vbmc,
         "_compute_reliability_index",
-        return_value=(np.Inf, np.NaN),
+        return_value=(np.inf, np.nan),
     )
     terminated, __ = vbmc._check_termination_conditions()
     assert terminated
@@ -83,7 +83,7 @@ def test_vbmc_check_termination_conditions_prevent_early_termination(mocker):
     mocker.patch.object(
         vbmc,
         "_compute_reliability_index",
-        return_value=(np.Inf, np.NaN),
+        return_value=(np.inf, np.nan),
     )
     terminated, __ = vbmc._check_termination_conditions()
     assert not terminated
@@ -101,7 +101,7 @@ def test_vbmc_check_termination_conditions_prevent_early_termination(mocker):
     mocker.patch.object(
         vbmc,
         "_compute_reliability_index",
-        return_value=(np.Inf, np.NaN),
+        return_value=(np.inf, np.nan),
     )
     terminated, __ = vbmc._check_termination_conditions()
     assert not terminated
@@ -185,7 +185,7 @@ def test_vbmc_compute_reliability_index_less_than_2_iter():
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
     vbmc.optim_state["iter"] = 1
     r_index, ELCBO_improvement = vbmc._compute_reliability_index(6)
-    assert r_index == np.Inf
+    assert r_index == np.inf
     assert np.isnan(ELCBO_improvement)
 
 

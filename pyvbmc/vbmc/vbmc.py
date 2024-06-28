@@ -158,7 +158,7 @@ class VBMC:
                  provided, PLB and PUB need to be specified."""
                 )
             else:
-                x0 = np.full((plausible_lower_bounds.shape), np.NaN)
+                x0 = np.full((plausible_lower_bounds.shape), np.nan)
 
         if x0.ndim == 1:
             logging.warning("Reshaping x0 to row vector.")
@@ -660,7 +660,7 @@ class VBMC:
         if self.options.get("ns_gp_max") > 0:
             optim_state["stop_sampling"] = 0
         else:
-            optim_state["stop_sampling"] = np.Inf
+            optim_state["stop_sampling"] = np.inf
 
         # Fully recompute variational posterior
         optim_state["recompute_var_post"] = True
@@ -693,7 +693,7 @@ class VBMC:
         optim_state["run_mean"] = []
         optim_state["run_cov"] = []
         # Last time running average was updated
-        optim_state["last_run_avg"] = np.NaN
+        optim_state["last_run_avg"] = np.nan
 
         # Current number of components for variational posterior
         optim_state["vp_K"] = self.options.get("k_warmup")
@@ -1526,7 +1526,7 @@ class VBMC:
             ):
                 self.logger.info(
                     display_format.format(
-                        np.Inf,
+                        np.inf,
                         self.function_logger.func_count,
                         self.optim_state["N"],
                         elbo,
@@ -1540,7 +1540,7 @@ class VBMC:
             else:
                 self.logger.info(
                     display_format.format(
-                        np.Inf,
+                        np.inf,
                         self.function_logger.func_count,
                         elbo,
                         elbo_sd,
@@ -1653,7 +1653,7 @@ class VBMC:
         if len(self.optim_state.get("data_trim_list")) > 0:
             last_data_trim = self.optim_state.get("data_trim_list")[-1]
         else:
-            last_data_trim = -1 * np.Inf
+            last_data_trim = -1 * np.inf
 
         no_recent_trim_flag = (
             self.optim_state.get("N") - last_data_trim
@@ -1713,7 +1713,7 @@ class VBMC:
         idx_keep = (y_max - self.function_logger.y_orig) < threshold
         if np.sum(idx_keep) < n_keep_min:
             y_temp = np.copy(self.function_logger.y_orig)
-            y_temp[~np.isfinite(y_temp)] = -np.Inf
+            y_temp[~np.isfinite(y_temp)] = -np.inf
             order = np.argsort(y_temp * -1, axis=0)
             idx_keep[
                 order[: min(n_keep_min, self.function_logger.Xn + 1)]
@@ -1849,8 +1849,8 @@ class VBMC:
         iteration_idx = self.optim_state.get("iter")
         # Was < 3 in MATLAB due to different indexing.
         if self.optim_state.get("iter") < 2:
-            r_index = np.Inf
-            ELCBO_improvement = np.NaN
+            r_index = np.inf
+            ELCBO_improvement = np.nan
             return r_index, ELCBO_improvement
 
         sn = np.sqrt(self.optim_state.get("sn2_hpd"))
@@ -1862,7 +1862,7 @@ class VBMC:
             self.options.get("tol_sd") * 10,
         )
 
-        r_index_vec = np.full((3), np.NaN)
+        r_index_vec = np.full((3), np.nan)
         r_index_vec[0] = (
             np.abs(
                 self.iteration_history.get("elbo")[iteration_idx]
@@ -2017,7 +2017,7 @@ class VBMC:
             options.__setitem__("ns_ent", n_sent_boost, force=True)
             options.__setitem__("ns_ent_fast", n_sent_fast_boost, force=True)
             options.__setitem__("ns_ent_fine", n_sent_fine_boost, force=True)
-            options.__setitem__("max_iter_stochastic", np.Inf, force=True)
+            options.__setitem__("max_iter_stochastic", np.inf, force=True)
             self.optim_state["entropy_alpha"] = 0
 
             stable_flag = np.copy(vp.stats["stable"])
@@ -2298,7 +2298,7 @@ class VBMC:
         else:
             output["convergence_status"] = "no"
 
-        output["overhead"] = np.NaN
+        output["overhead"] = np.nan
         output["rng_state"] = "rng"
         output["algorithm"] = "Variational Bayesian Monte Carlo"
         try:
