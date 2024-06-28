@@ -2,7 +2,7 @@
 
 [project]
 name = "PyVBMC"
-dynamic = ["version"]  # use git tags for version, via setuptools_scm
+dynamic = ["version"] # use git tags for version, via setuptools_scm
 description = "Variational Bayesian Monte Carlo in Python."
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -12,8 +12,8 @@ dependencies = [
     "dill >= 0.3.5.1",
     "gpyreg >= 0.1.0",
     "imageio >= 2.13.5",
-    "matplotlib >= 3.5.1",
-    "numpy >= 1.22.1",
+    "matplotlib >= 3.9.0",
+    "numpy < 2.0.0",
     "plotly >= 5.11.0",
     "pytest >= 6.2.5",
     "pytest-mock >= 3.6.1",
@@ -26,7 +26,7 @@ requires-python = ">=3.9"
 include-package-data = true
 # Include examples in binary/wheel distribution:
 packages = ["pyvbmc", "pyvbmc.examples"]
-package-dir = {"pyvbmc.examples" = "examples"}
+package-dir = { "pyvbmc.examples" = "examples" }
 
 [tool.setuptools.package-data]
 # Make sure to include example Notebooks:
@@ -45,10 +45,7 @@ dev = [
 ]
 
 [build-system]
-requires = [
-    "setuptools >= 45",
-    "setuptools_scm[toml] >= 6.2",
-]
+requires = ["setuptools >= 45", "setuptools_scm[toml] >= 6.2"]
 build-backend = "setuptools.build_meta"
 
 [tool.black]

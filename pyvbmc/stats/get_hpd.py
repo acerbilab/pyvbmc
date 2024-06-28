@@ -40,6 +40,6 @@ def get_hpd(X: np.ndarray, y: np.ndarray, hpd_frac: float = 0.8):
     if hpd_N > 0:
         hpd_range = np.max(hpd_X, axis=0) - np.min(hpd_X, axis=0)
     else:
-        hpd_range = np.full((D), np.NaN)
+        hpd_range = np.full((D), np.nan)
 
     return hpd_X, hpd_y, hpd_range, indices

@@ -130,7 +130,7 @@ def active_sample(
                 Xs = np.append(Xs, random_Xs, axis=0)
                 ys = np.append(
                     ys,
-                    np.full(sample_count - provided_sample_count, np.NaN),
+                    np.full(sample_count - provided_sample_count, np.nan),
                     axis=0,
                 )
 
@@ -690,7 +690,7 @@ def _get_search_points(
 
     D = ub_search.shape[1]
 
-    search_X = np.full((0, D), np.NaN)
+    search_X = np.full((0, D), np.nan)
     idx_cache = np.array([])
     parameter_transformer = function_logger.parameter_transformer
 
@@ -708,7 +708,7 @@ def _get_search_points(
     # Randomly sample remaining points
     if x0.shape[0] < number_of_points:
         N_random_points = number_of_points - x0.shape[0]
-        random_Xs = np.full((0, D), np.NaN)
+        random_Xs = np.full((0, D), np.nan)
 
         N_search_cache = round(
             options.get("search_cache_frac") * N_random_points
