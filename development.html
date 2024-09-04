@@ -447,7 +447,7 @@ document.write(`
   <section id="instructions-for-developers-and-contributors">
 <h1>Instructions for developers and contributors<a class="headerlink" href="#instructions-for-developers-and-contributors" title="Link to this heading">#</a></h1>
 <p>PyVBMC is the port of the MATLAB VBMC algorithm to Python 3.x (development has targeted version 3.9 and up).</p>
-<p>The reference code is the <a class="reference external" href="https://github.com/acerbilab/vbmc">MATLAB toolbox</a>.</p>
+<p>The reference code is the <a class="extlink-labrepos reference external" href="https://github.com/acerbilab/vbmc">MATLAB toolbox</a>.</p>
 <p>The documentation is available at: <a class="reference external" href="https://acerbilab.github.io/pyvbmc/">https://acerbilab.github.io/pyvbmc/</a></p>
 <section id="installation-instructions-for-developers">
 <h2>Installation instructions for developers<a class="headerlink" href="#installation-instructions-for-developers" title="Link to this heading">#</a></h2>
@@ -464,7 +464,7 @@ conda activate pyvbmc-env</p>
 <span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">acerbilab</span><span class="o">/</span><span class="n">gpyreg</span>
 </pre></div>
 </div>
-<p>(PyVBMC depends on <a class="reference external" href="https://github.com/acerbilab/gpyreg">GPyReg</a>, which is a package for lightweight Gaussian process regression in Python.)</p>
+<p>(PyVBMC depends on <a class="extlink-labrepos reference external" href="https://github.com/acerbilab/gpyreg">GPyReg</a>, which is a package for lightweight Gaussian process regression in Python.)</p>
 </li>
 <li><p>Install the packages and their optional development dependencies:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">./</span><span class="n">gpyreg</span>
@@ -508,13 +508,13 @@ conda activate pyvbmc-env</p>
 There are add-ons to generate docstring blueprints using IDEs.</p>
 <ul class="simple">
 <li><p>See an example for a correct docstring from NumPy <a class="reference external" href="https://numpydoc.readthedocs.io/en/latest/example.html">here</a>.</p></li>
-<li><p>In PyVBMC, the <code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code> class can be taken as an example of (mostly) correct docstring structure, see <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/variational_posterior/variational_posterior.py">here</a>.</p></li>
+<li><p>In PyVBMC, the <code class="docutils literal notranslate"><span class="pre">VariationalPosterior</span></code> class can be taken as an example of (mostly) correct docstring structure, see <a class="extlink-mainbranch reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/variational_posterior/variational_posterior.py">here</a>.</p></li>
 <li><p>In particular, see how the single quotes and double quotes are used; the math notation is used; full stops are added at the end of each sentence, etc.</p></li>
 </ul>
 </section>
 <section id="code-documentation">
 <h3>Code documentation<a class="headerlink" href="#code-documentation" title="Link to this heading">#</a></h3>
-<p>The documentation is currently hosted on <a class="reference internal" href="index.html"><span class="doc">github.io</span></a>. We build the PyVBMC documentation using <a class="reference external" href="https://www.sphinx-doc.org/en/master/usage/quickstart.html">Sphinx</a>. The source code of the documentation is in the <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/docsrc">docsrc folder</a> and the build version is in the <a class="reference external" href="https://github.com/acerbilab/pyvbmc/tree/gh-pages">gh-pages</a> branch.</p>
+<p>The documentation is currently hosted on <a class="reference internal" href="index.html"><span class="doc">github.io</span></a>. We build the PyVBMC documentation using <a class="reference external" href="https://www.sphinx-doc.org/en/master/usage/quickstart.html">Sphinx</a>. The source code of the documentation is in the <a class="extlink-mainbranch reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/docsrc">docsrc folder</a> and the build version is in the <a class="extlink-labrepos reference external" href="https://github.com/acerbilab/pyvbmc/tree/gh-pages">gh-pages</a> branch.</p>
 <p>GitHub workflows automatically build and update the documentation whenever a commit is merged into the <code class="docutils literal notranslate"><span class="pre">main</span></code> branch, but it is sometimes useful to first do this locally in order to confirm that everything builds and renders correctly. This is especially advisable if you have made significant changes to the docs. To do so:</p>
 <ol class="arabic">
 <li><p>From your working branch, render new documentation:</p>
@@ -535,7 +535,7 @@ There are add-ons to generate docstring blueprints using IDEs.</p>
 <p>(If you are using Windows, run <code class="docutils literal notranslate"><span class="pre">.\make.bat</span> <span class="pre">clean</span></code> with <code class="docutils literal notranslate"><span class="pre">cmd</span></code> instead.)</p>
 </li>
 </ol>
-<p>If any changes have been made the the Jupyter Notebook examples, it is advisable to check that the <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/examples">examples</a> render correctly on GitHub (make sure to view them from your working branch).</p>
+<p>If any changes have been made the the Jupyter Notebook examples, it is advisable to check that the <a class="extlink-mainbranch reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/examples">examples</a> render correctly on GitHub (make sure to view them from your working branch).</p>
 <section id="general-structure">
 <h4>General structure<a class="headerlink" href="#general-structure" title="Link to this heading">#</a></h4>
 <p>For each new class, function, etc. a <code class="docutils literal notranslate"><span class="pre">.rst</span></code> file needs to be created in an appropriate folder. The folder names are arbitrary, for now we have <code class="docutils literal notranslate"><span class="pre">functions</span></code>, <code class="docutils literal notranslate"><span class="pre">classes</span></code>, etc.
@@ -547,11 +547,11 @@ The <code class="docutils literal notranslate"><span class="pre">.rst</span></co
 <p>Refer to existing documentation for an overview of the file structure. So far the documentation includes the following:</p>
 <ul class="simple">
 <li><p>Status of the port (what is missing?);</p></li>
-<li><p>Reference to the respective file of the original <a class="reference external" href="https://github.com/acerbilab/vbmc">MATLAB</a> implementation;</p></li>
+<li><p>Reference to the respective file of the original <a class="extlink-labrepos reference external" href="https://github.com/acerbilab/vbmc">MATLAB</a> implementation;</p></li>
 <li><p>Known issues (if something is currently suboptimal in PyVBMC);</p></li>
 <li><p>The documentation of the Python code (generated from the docstrings).</p></li>
 </ul>
-<p>For each new file, a link needs to be added manually to the <a class="reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/docsrc/source/index.rst">index page</a>.
+<p>For each new file, a link needs to be added manually to the <a class="extlink-mainbranch reference external" href="https://github.com/acerbilab/pyvbmc/blob/main/docsrc/source/index.rst">index page</a>.
 Please keep the documentation up to date. (Sphinx logs possible issues when compiling the documentation.)</p>
 </section>
 </section>
@@ -591,7 +591,7 @@ Tests can be run with:</p>
 <li><p>Still, as a good practice, please rerun all tests before major commits and pull requests. This might take a while, but it is worth it to avoid surprises.</p></li>
 <li><p>Please try to keep the total runtime of the tests minimal for the task at hand.</p></li>
 <li><p>A nice way of proceeding is “test first”: write a test first, make it fail, write the code until the test is passed.</p></li>
-<li><p>Many methods are tested against test cases produced with the original <a class="reference external" href="https://github.com/acerbilab/vbmc">MATLAB implementation</a>.</p></li>
+<li><p>Many methods are tested against test cases produced with the original <a class="extlink-labrepos reference external" href="https://github.com/acerbilab/vbmc">MATLAB implementation</a>.</p></li>
 <li><p>The <code class="docutils literal notranslate"><span class="pre">pytest-mock</span></code> library is very useful for testing. It allows you to replace parts of your system under test with mock objects and make assertions about how they have been used. (Perhaps we should switch to <code class="docutils literal notranslate"><span class="pre">unittest.mock</span></code> in the future, which is part of the Python standard library.)</p></li>
 </ul>
 </section>
@@ -670,6 +670,10 @@ Tests can be run with:</p>
   
   <div class="footer-item">
     
+<p class="component-author">
+By Author name not set
+</p>
+
   </div>
   
   <div class="footer-item">
