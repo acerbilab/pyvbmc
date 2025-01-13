@@ -15,29 +15,32 @@
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-<link href="../../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-  
-  <link href="../../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
-
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
   
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
-<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
-  <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
     <script src="../../../_static/documentation_options.js?v=9eb32ce0"></script>
-    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/pyvbmc/parameter_transformer/parameter_transformer';</script>
@@ -47,6 +50,7 @@
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
   </head>
   
   
@@ -62,19 +66,8 @@
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
   
-  <input type="checkbox"
-          class="sidebar-toggle"
-          id="pst-primary-sidebar-checkbox"/>
-  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
-  
-  <input type="checkbox"
-          class="sidebar-toggle"
-          id="pst-secondary-sidebar-checkbox"/>
-  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
-  
-  <div class="search-button__wrapper">
-    <div class="search-button__overlay"></div>
-    <div class="search-button__search-container">
+  <dialog id="pst-search-dialog">
+    
 <form class="bd-search d-flex align-items-center"
       action="../../../search.html"
       method="get">
@@ -82,7 +75,6 @@
   <input type="search"
          class="form-control"
          name="q"
-         id="search-input"
          placeholder="Search..."
          aria-label="Search..."
          autocomplete="off"
@@ -90,8 +82,8 @@
          autocapitalize="off"
          spellcheck="false"/>
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
-</form></div>
-  </div>
+</form>
+  </dialog>
 
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
@@ -109,7 +101,8 @@
       
         
       
-      <div class="bd-sidebar-primary bd-sidebar">
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
         
 
   
@@ -139,21 +132,17 @@
     
     
     <img src="../../../_static/logo.svg" class="logo__image only-light" alt="PyVBMC - Home"/>
-    <script>document.write(`<img src="../../../_static/logo.svg" class="logo__image only-dark" alt="PyVBMC - Home"/>`);</script>
+    <img src="../../../_static/logo.svg" class="logo__image only-dark pst-js-only" alt="PyVBMC - Home"/>
   
   
 </a></div>
         <div class="sidebar-primary-item">
 
- <script>
- document.write(`
-   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <span class="search-button__default-text">Search</span>
-    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-   </button>
- `);
- </script></div>
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         <ul class="nav bd-sidenav">
@@ -214,9 +203,14 @@
   
   
   <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
   </div>
-  
-  <div id="rtd-footer-container"></div>
 
 
       </div>
@@ -312,24 +306,16 @@
 
 
 
-<script>
-document.write(`
-  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
-    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
-    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
-  </button>
-`);
-</script>
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
 
 
-<script>
-document.write(`
-  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
-  </button>
-`);
-</script>
+</button>
 
 </div></div>
       
@@ -356,18 +342,18 @@ document.write(`
                 <article class="bd-article">
                   
   <h1>Source code for pyvbmc.parameter_transformer.parameter_transformer</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">textwrap</span> <span class="kn">import</span> <span class="n">indent</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">textwrap</span><span class="w"> </span><span class="kn">import</span> <span class="n">indent</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">erfc</span><span class="p">,</span> <span class="n">erfcinv</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.special</span><span class="w"> </span><span class="kn">import</span> <span class="n">erfc</span><span class="p">,</span> <span class="n">erfcinv</span>
 
-<span class="kn">from</span> <span class="nn">pyvbmc.decorators</span> <span class="kn">import</span> <span class="n">handle_0D_1D_input</span>
-<span class="kn">from</span> <span class="nn">pyvbmc.formatting</span> <span class="kn">import</span> <span class="n">full_repr</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc.decorators</span><span class="w"> </span><span class="kn">import</span> <span class="n">handle_0D_1D_input</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc.formatting</span><span class="w"> </span><span class="kn">import</span> <span class="n">full_repr</span>
 
 
 <div class="viewcode-block" id="ParameterTransformer">
 <a class="viewcode-back" href="../../../api/classes/parameter_transformer.html#pyvbmc.parameter_transformer.ParameterTransformer">[docs]</a>
-<span class="k">class</span> <span class="nc">ParameterTransformer</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ParameterTransformer</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A class used to enable transforming of variables from unconstrained to</span>
 <span class="sd">    constrained space and vice versa.</span>
@@ -397,7 +383,7 @@ document.write(`
 <span class="sd">        [&quot;logit&quot;, (&quot;norminv&quot; || &quot;probit&quot;), &quot;student4&quot;]. Default &quot;logit&quot;.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">D</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">lb_orig</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -451,7 +437,7 @@ document.write(`
             <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;Unrecognized bounded transform </span><span class="si">{</span><span class="n">transform_type</span><span class="si">}</span><span class="s2">.&quot;</span>
-                <span class="p">)</span> <span class="kn">from</span> <span class="nn">exc</span>
+                <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">transform_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">transform_types</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
@@ -494,7 +480,7 @@ document.write(`
 <div class="viewcode-block" id="ParameterTransformer.__call__">
 <a class="viewcode-back" href="../../../api/classes/parameter_transformer.html#pyvbmc.parameter_transformer.ParameterTransformer.__call__">[docs]</a>
     <span class="nd">@handle_0D_1D_input</span><span class="p">(</span><span class="n">patched_kwargs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">],</span> <span class="n">patched_argpos</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Performs direct transform of original variables ``x`` into</span>
 <span class="sd">        unconstrained variables ``u``.</span>
@@ -539,7 +525,7 @@ document.write(`
 <div class="viewcode-block" id="ParameterTransformer.inverse">
 <a class="viewcode-back" href="../../../api/classes/parameter_transformer.html#pyvbmc.parameter_transformer.ParameterTransformer.inverse">[docs]</a>
     <span class="nd">@handle_0D_1D_input</span><span class="p">(</span><span class="n">patched_kwargs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;u&quot;</span><span class="p">],</span> <span class="n">patched_argpos</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="k">def</span> <span class="nf">inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Performs inverse transform of unconstrained variables ``u`` into</span>
 <span class="sd">        variables ``x`` in the original space</span>
@@ -587,7 +573,7 @@ document.write(`
     <span class="nd">@handle_0D_1D_input</span><span class="p">(</span>
         <span class="n">patched_kwargs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;u&quot;</span><span class="p">],</span> <span class="n">patched_argpos</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">return_scalar</span><span class="o">=</span><span class="kc">True</span>
     <span class="p">)</span>
-    <span class="k">def</span> <span class="nf">log_abs_det_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">log_abs_det_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        ``log_abs_det_jacobian(u)`` returns the log absolute value of the</span>
 <span class="sd">        determinant of the Jacobian of the parameter transformation evaluated</span>
@@ -637,7 +623,7 @@ document.write(`
         <span class="k">return</span> <span class="n">p</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_set_bounded_transforms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_bounded_transforms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Initialize functions for bounded transform(s) by type.</span>
 
 <span class="sd">        Stores the resulting callables in a dictionary</span>
@@ -650,7 +636,7 @@ document.write(`
             <span class="k">if</span> <span class="n">t</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
                 <span class="c1"># logit</span>
 
-                <span class="k">def</span> <span class="nf">bounded_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+                <span class="k">def</span><span class="w"> </span><span class="nf">bounded_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
                     <span class="k">return</span> <span class="n">_center</span><span class="p">(</span>
                         <span class="n">_logit</span><span class="p">(</span>
                             <span class="n">_to_unit_interval</span><span class="p">(</span>
@@ -665,7 +651,7 @@ document.write(`
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">&quot;direct&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounded_transform</span>
 
-                <span class="k">def</span> <span class="nf">bounded_inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+                <span class="k">def</span><span class="w"> </span><span class="nf">bounded_inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
                     <span class="k">return</span> <span class="n">_from_unit_interval</span><span class="p">(</span>
                         <span class="n">_inverse_logit</span><span class="p">(</span>
                             <span class="n">_uncenter</span><span class="p">(</span>
@@ -678,7 +664,7 @@ document.write(`
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">&quot;inverse&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounded_inverse</span>
 
-                <span class="k">def</span> <span class="nf">bounded_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+                <span class="k">def</span><span class="w"> </span><span class="nf">bounded_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
                     <span class="n">j1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ub_orig</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">lb_orig</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">])</span>
                     <span class="n">y</span> <span class="o">=</span> <span class="n">_uncenter</span><span class="p">(</span><span class="n">u</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span>
                     <span class="n">z</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">y</span><span class="p">))</span>
@@ -691,7 +677,7 @@ document.write(`
             <span class="k">elif</span> <span class="n">t</span> <span class="o">==</span> <span class="mi">12</span><span class="p">:</span>
                 <span class="c1"># probit: inverse normal CDF (probit) transform (default)</span>
 
-                <span class="k">def</span> <span class="nf">bounded_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+                <span class="k">def</span><span class="w"> </span><span class="nf">bounded_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
                     <span class="k">return</span> <span class="n">_center</span><span class="p">(</span>
                         <span class="n">_probit</span><span class="p">(</span>
                             <span class="n">_to_unit_interval</span><span class="p">(</span>
@@ -706,7 +692,7 @@ document.write(`
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">&quot;direct&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounded_transform</span>
 
-                <span class="k">def</span> <span class="nf">bounded_inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+                <span class="k">def</span><span class="w"> </span><span class="nf">bounded_inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
                     <span class="k">return</span> <span class="n">_from_unit_interval</span><span class="p">(</span>
                         <span class="n">_inverse_probit</span><span class="p">(</span>
                             <span class="n">_uncenter</span><span class="p">(</span>
@@ -719,7 +705,7 @@ document.write(`
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">&quot;inverse&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounded_inverse</span>
 
-                <span class="k">def</span> <span class="nf">bounded_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+                <span class="k">def</span><span class="w"> </span><span class="nf">bounded_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
                     <span class="n">j1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ub_orig</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">lb_orig</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">])</span>
                     <span class="n">y</span> <span class="o">=</span> <span class="n">_uncenter</span><span class="p">(</span><span class="n">u</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span>
                     <span class="n">j2</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">y</span><span class="o">**</span><span class="mi">2</span>
@@ -731,7 +717,7 @@ document.write(`
             <span class="k">elif</span> <span class="n">t</span> <span class="o">==</span> <span class="mi">13</span><span class="p">:</span>
                 <span class="c1"># student4: Student&#39;s T with nu=4 CDF transform</span>
 
-                <span class="k">def</span> <span class="nf">bounded_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+                <span class="k">def</span><span class="w"> </span><span class="nf">bounded_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
                     <span class="k">return</span> <span class="n">_center</span><span class="p">(</span>
                         <span class="n">_student4</span><span class="p">(</span>
                             <span class="n">_to_unit_interval</span><span class="p">(</span>
@@ -746,7 +732,7 @@ document.write(`
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">&quot;direct&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounded_transform</span>
 
-                <span class="k">def</span> <span class="nf">bounded_inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+                <span class="k">def</span><span class="w"> </span><span class="nf">bounded_inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
                     <span class="k">return</span> <span class="n">_from_unit_interval</span><span class="p">(</span>
                         <span class="n">_inverse_student4</span><span class="p">(</span>
                             <span class="n">_uncenter</span><span class="p">(</span>
@@ -759,7 +745,7 @@ document.write(`
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">_bounded_transforms</span><span class="p">[</span><span class="n">t</span><span class="p">][</span><span class="s2">&quot;inverse&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounded_inverse</span>
 
-                <span class="k">def</span> <span class="nf">bounded_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+                <span class="k">def</span><span class="w"> </span><span class="nf">bounded_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
                     <span class="n">j1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ub_orig</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">lb_orig</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">])</span>
                     <span class="n">y</span> <span class="o">=</span> <span class="n">_uncenter</span><span class="p">(</span><span class="n">u</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span>
                     <span class="n">j2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">3</span> <span class="o">/</span> <span class="mi">8</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="mi">5</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">y</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="mi">4</span><span class="p">)</span>
@@ -771,7 +757,7 @@ document.write(`
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
-    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">(</span>
             <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span>
             <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">R_mat</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">R_mat</span><span class="p">)</span>
@@ -787,7 +773,7 @@ document.write(`
             <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delta</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">delta</span><span class="p">)</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Print a string summary.&quot;&quot;&quot;</span>
         <span class="n">transform_names</span> <span class="o">=</span> <span class="p">{</span>
             <span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;unbounded&quot;</span><span class="p">,</span>
@@ -805,7 +791,7 @@ document.write(`
             <span class="s2">&quot;    &quot;</span><span class="p">,</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr_size_thresh</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr_size_thresh</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a detailed string summary.</span>
 
 <span class="sd">        Parameters</span>
@@ -843,7 +829,7 @@ document.write(`
 
 
 
-<span class="k">def</span> <span class="nf">_to_unit_interval</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">lb</span><span class="p">,</span> <span class="n">ub</span><span class="p">,</span> <span class="n">safe</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_to_unit_interval</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">lb</span><span class="p">,</span> <span class="n">ub</span><span class="p">,</span> <span class="n">safe</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="n">z</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">lb</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">ub</span> <span class="o">-</span> <span class="n">lb</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">safe</span><span class="p">:</span>  <span class="c1"># Nudge points away from boundary</span>
         <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">z</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">x</span> <span class="o">!=</span> <span class="n">lb</span><span class="p">)</span>
@@ -855,7 +841,7 @@ document.write(`
     <span class="k">return</span> <span class="n">z</span>
 
 
-<span class="k">def</span> <span class="nf">_from_unit_interval</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">lb</span><span class="p">,</span> <span class="n">ub</span><span class="p">,</span> <span class="n">safe</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_from_unit_interval</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">lb</span><span class="p">,</span> <span class="n">ub</span><span class="p">,</span> <span class="n">safe</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">z</span> <span class="o">*</span> <span class="p">(</span><span class="n">ub</span> <span class="o">-</span> <span class="n">lb</span><span class="p">)</span> <span class="o">+</span> <span class="n">lb</span>
     <span class="k">if</span> <span class="n">safe</span><span class="p">:</span>  <span class="c1"># Nudge points away from boundary</span>
         <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nextafter</span><span class="p">(</span><span class="n">lb</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">))</span>
@@ -863,15 +849,15 @@ document.write(`
     <span class="k">return</span> <span class="n">y</span>
 
 
-<span class="k">def</span> <span class="nf">_center</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">delta</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_center</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">delta</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">u</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">delta</span>
 
 
-<span class="k">def</span> <span class="nf">_uncenter</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">delta</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_uncenter</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">delta</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">v</span> <span class="o">*</span> <span class="n">delta</span> <span class="o">+</span> <span class="n">mu</span>
 
 
-<span class="k">def</span> <span class="nf">_logit</span><span class="p">(</span><span class="n">z</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_logit</span><span class="p">(</span><span class="n">z</span><span class="p">):</span>
     <span class="c1"># prevent divide by zero</span>
     <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
     <span class="n">u</span><span class="p">[</span><span class="n">z</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
@@ -881,7 +867,7 @@ document.write(`
     <span class="k">return</span> <span class="n">u</span>
 
 
-<span class="k">def</span> <span class="nf">_inverse_logit</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_inverse_logit</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
     <span class="c1"># prevent overflow</span>
     <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
     <span class="n">mask</span> <span class="o">=</span> <span class="o">-</span><span class="n">u</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">)</span>
@@ -890,15 +876,15 @@ document.write(`
     <span class="k">return</span> <span class="n">z</span>
 
 
-<span class="k">def</span> <span class="nf">_probit</span><span class="p">(</span><span class="n">z</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_probit</span><span class="p">(</span><span class="n">z</span><span class="p">):</span>
     <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">erfcinv</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">z</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_inverse_probit</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_inverse_probit</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
     <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">erfc</span><span class="p">(</span><span class="o">-</span><span class="n">u</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
 
 
-<span class="k">def</span> <span class="nf">_student4</span><span class="p">(</span><span class="n">z</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_student4</span><span class="p">(</span><span class="n">z</span><span class="p">):</span>
     <span class="n">aa</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">z</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">z</span><span class="p">))</span>
     <span class="c1"># prevent divide by zero</span>
     <span class="n">mask</span> <span class="o">=</span> <span class="n">aa</span> <span class="o">==</span> <span class="mf">0.0</span>
@@ -908,7 +894,7 @@ document.write(`
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">z</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">q</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
 
 
-<span class="k">def</span> <span class="nf">_inverse_student4</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_inverse_student4</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
     <span class="n">t2</span> <span class="o">=</span> <span class="n">u</span><span class="o">**</span><span class="mi">2</span>
     <span class="k">return</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="p">(</span><span class="mi">3</span> <span class="o">/</span> <span class="mi">8</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">u</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">t2</span> <span class="o">/</span> <span class="mi">4</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span>
         <span class="mi">1</span> <span class="o">-</span> <span class="n">t2</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">t2</span> <span class="o">/</span> <span class="mi">4</span><span class="p">)</span> <span class="o">/</span> <span class="mi">12</span>
@@ -975,8 +961,8 @@ By Author name not set
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
-<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
 
   <footer class="bd-footer">
   </footer>

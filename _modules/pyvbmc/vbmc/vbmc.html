@@ -15,29 +15,32 @@
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-<link href="../../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-  
-  <link href="../../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
-
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
   
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
-<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
-  <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
     <script src="../../../_static/documentation_options.js?v=9eb32ce0"></script>
-    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/pyvbmc/vbmc/vbmc';</script>
@@ -47,6 +50,7 @@
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
   </head>
   
   
@@ -62,19 +66,8 @@
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
   
-  <input type="checkbox"
-          class="sidebar-toggle"
-          id="pst-primary-sidebar-checkbox"/>
-  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
-  
-  <input type="checkbox"
-          class="sidebar-toggle"
-          id="pst-secondary-sidebar-checkbox"/>
-  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
-  
-  <div class="search-button__wrapper">
-    <div class="search-button__overlay"></div>
-    <div class="search-button__search-container">
+  <dialog id="pst-search-dialog">
+    
 <form class="bd-search d-flex align-items-center"
       action="../../../search.html"
       method="get">
@@ -82,7 +75,6 @@
   <input type="search"
          class="form-control"
          name="q"
-         id="search-input"
          placeholder="Search..."
          aria-label="Search..."
          autocomplete="off"
@@ -90,8 +82,8 @@
          autocapitalize="off"
          spellcheck="false"/>
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
-</form></div>
-  </div>
+</form>
+  </dialog>
 
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
@@ -109,7 +101,8 @@
       
         
       
-      <div class="bd-sidebar-primary bd-sidebar">
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
         
 
   
@@ -139,21 +132,17 @@
     
     
     <img src="../../../_static/logo.svg" class="logo__image only-light" alt="PyVBMC - Home"/>
-    <script>document.write(`<img src="../../../_static/logo.svg" class="logo__image only-dark" alt="PyVBMC - Home"/>`);</script>
+    <img src="../../../_static/logo.svg" class="logo__image only-dark pst-js-only" alt="PyVBMC - Home"/>
   
   
 </a></div>
         <div class="sidebar-primary-item">
 
- <script>
- document.write(`
-   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <span class="search-button__default-text">Search</span>
-    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-   </button>
- `);
- </script></div>
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         <ul class="nav bd-sidenav">
@@ -214,9 +203,14 @@
   
   
   <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
   </div>
-  
-  <div id="rtd-footer-container"></div>
 
 
       </div>
@@ -312,24 +306,16 @@
 
 
 
-<script>
-document.write(`
-  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
-    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
-    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
-  </button>
-`);
-</script>
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
 
 
-<script>
-document.write(`
-  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
-  </button>
-`);
-</script>
+</button>
 
 </div></div>
       
@@ -356,41 +342,41 @@ document.write(`
                 <article class="bd-article">
                   
   <h1>Source code for pyvbmc.vbmc.vbmc</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">copy</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">math</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Iterable</span>
-<span class="kn">from</span> <span class="nn">importlib.metadata</span> <span class="kn">import</span> <span class="n">PackageNotFoundError</span><span class="p">,</span> <span class="n">version</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">textwrap</span> <span class="kn">import</span> <span class="n">indent</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">importlib.metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">PackageNotFoundError</span><span class="p">,</span> <span class="n">version</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">textwrap</span><span class="w"> </span><span class="kn">import</span> <span class="n">indent</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
 
-<span class="kn">import</span> <span class="nn">dill</span>
-<span class="kn">import</span> <span class="nn">gpyreg</span> <span class="k">as</span> <span class="nn">gpr</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dill</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">gpyreg</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpr</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">pyvbmc.formatting</span> <span class="kn">import</span> <span class="n">full_repr</span><span class="p">,</span> <span class="n">summarize</span>
-<span class="kn">from</span> <span class="nn">pyvbmc.function_logger</span> <span class="kn">import</span> <span class="n">FunctionLogger</span>
-<span class="kn">from</span> <span class="nn">pyvbmc.parameter_transformer</span> <span class="kn">import</span> <span class="n">ParameterTransformer</span>
-<span class="kn">from</span> <span class="nn">pyvbmc.priors</span> <span class="kn">import</span> <span class="n">Prior</span><span class="p">,</span> <span class="n">SciPy</span><span class="p">,</span> <span class="n">convert_to_prior</span>
-<span class="kn">from</span> <span class="nn">pyvbmc.stats</span> <span class="kn">import</span> <span class="n">kl_div_mvn</span>
-<span class="kn">from</span> <span class="nn">pyvbmc.timer</span> <span class="kn">import</span> <span class="n">main_timer</span> <span class="k">as</span> <span class="n">timer</span>
-<span class="kn">from</span> <span class="nn">pyvbmc.variational_posterior</span> <span class="kn">import</span> <span class="n">VariationalPosterior</span>
-<span class="kn">from</span> <span class="nn">pyvbmc.whitening</span> <span class="kn">import</span> <span class="n">warp_gp_and_vp</span><span class="p">,</span> <span class="n">warp_input</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc.formatting</span><span class="w"> </span><span class="kn">import</span> <span class="n">full_repr</span><span class="p">,</span> <span class="n">summarize</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc.function_logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">FunctionLogger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc.parameter_transformer</span><span class="w"> </span><span class="kn">import</span> <span class="n">ParameterTransformer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc.priors</span><span class="w"> </span><span class="kn">import</span> <span class="n">Prior</span><span class="p">,</span> <span class="n">SciPy</span><span class="p">,</span> <span class="n">convert_to_prior</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">kl_div_mvn</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc.timer</span><span class="w"> </span><span class="kn">import</span> <span class="n">main_timer</span> <span class="k">as</span> <span class="n">timer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc.variational_posterior</span><span class="w"> </span><span class="kn">import</span> <span class="n">VariationalPosterior</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyvbmc.whitening</span><span class="w"> </span><span class="kn">import</span> <span class="n">warp_gp_and_vp</span><span class="p">,</span> <span class="n">warp_input</span>
 
-<span class="kn">from</span> <span class="nn">.active_sample</span> <span class="kn">import</span> <span class="n">active_sample</span>
-<span class="kn">from</span> <span class="nn">.gaussian_process_train</span> <span class="kn">import</span> <span class="n">reupdate_gp</span><span class="p">,</span> <span class="n">train_gp</span>
-<span class="kn">from</span> <span class="nn">.iteration_history</span> <span class="kn">import</span> <span class="n">IterationHistory</span>
-<span class="kn">from</span> <span class="nn">.options</span> <span class="kn">import</span> <span class="n">Options</span>
-<span class="kn">from</span> <span class="nn">.variational_optimization</span> <span class="kn">import</span> <span class="n">optimize_vp</span><span class="p">,</span> <span class="n">update_K</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.active_sample</span><span class="w"> </span><span class="kn">import</span> <span class="n">active_sample</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.gaussian_process_train</span><span class="w"> </span><span class="kn">import</span> <span class="n">reupdate_gp</span><span class="p">,</span> <span class="n">train_gp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.iteration_history</span><span class="w"> </span><span class="kn">import</span> <span class="n">IterationHistory</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">Options</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.variational_optimization</span><span class="w"> </span><span class="kn">import</span> <span class="n">optimize_vp</span><span class="p">,</span> <span class="n">update_K</span>
 
 
 <div class="viewcode-block" id="VBMC">
 <a class="viewcode-back" href="../../../api/classes/vbmc.html#pyvbmc.VBMC">[docs]</a>
-<span class="k">class</span> <span class="nc">VBMC</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">VBMC</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Posterior and model inference via Variational Bayesian Monte Carlo (VBMC).</span>
 
@@ -490,7 +476,7 @@ document.write(`
 <span class="sd">    https://acerbilab.github.io/pyvbmc/_examples/pyvbmc_example_1.html</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">log_density</span><span class="p">:</span> <span class="nb">callable</span><span class="p">,</span>
         <span class="n">x0</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -672,7 +658,7 @@ document.write(`
             <span class="p">]</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_bounds_check</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_bounds_check</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">x0</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">lower_bounds</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -749,7 +735,7 @@ document.write(`
         <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="s2">&quot;Bounds must match problem dimension D=</span><span class="si">%d</span><span class="s2">.&quot;</span><span class="p">,</span> <span class="n">D</span>
-            <span class="p">)</span> <span class="kn">from</span> <span class="nn">exc</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
 
         <span class="c1"># check that plausible bounds are finite</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">invert</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">plausible_lower_bounds</span><span class="p">)))</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span>
@@ -925,7 +911,7 @@ document.write(`
             <span class="n">plausible_upper_bounds</span><span class="p">,</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_init_optim_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_optim_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A private function to init the optim_state dict that contains</span>
 <span class="sd">        information about VBMC variables.</span>
@@ -1182,7 +1168,7 @@ document.write(`
 
         <span class="k">return</span> <span class="n">optim_state</span>
 
-    <span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">optimize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Run inference on an initialized ``VBMC`` object.</span>
 
@@ -1944,7 +1930,7 @@ document.write(`
 
         <span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vp</span><span class="p">),</span> <span class="n">results</span>
 
-    <span class="k">def</span> <span class="nf">_check_warmup_end_conditions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_warmup_end_conditions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Private method to check the warmup end conditions.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -2026,7 +2012,7 @@ document.write(`
 
         <span class="k">return</span> <span class="n">stop_warmup</span>
 
-    <span class="k">def</span> <span class="nf">_setup_vbmc_after_warmup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_setup_vbmc_after_warmup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Private method to setup multiple vbmc settings after a the warmup has</span>
 <span class="sd">        been determined to be ended. The method whether the warmup ending was</span>
@@ -2092,7 +2078,7 @@ document.write(`
         <span class="c1"># Fully recompute variational posterior</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;recompute_var_post&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
 
-    <span class="k">def</span> <span class="nf">_check_termination_conditions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_termination_conditions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Private method to determine the status of termination conditions.</span>
 
@@ -2202,7 +2188,7 @@ document.write(`
             <span class="n">termination_message</span><span class="p">,</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_compute_reliability_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tol_stable_iters</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_reliability_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tol_stable_iters</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Private function to compute the reliability index.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -2260,7 +2246,7 @@ document.write(`
         <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">r_index_vec</span><span class="p">),</span> <span class="n">ELCBO_improvement</span>
 
-    <span class="k">def</span> <span class="nf">_is_gp_sampling_finished</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_is_gp_sampling_finished</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Private function to check if the MCMC sampling of the Gaussian Process</span>
 <span class="sd">        is finished.</span>
@@ -2286,7 +2272,7 @@ document.write(`
 
         <span class="k">return</span> <span class="n">finished_flag</span>
 
-    <span class="k">def</span> <span class="nf">_recompute_lcb_max</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_recompute_lcb_max</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        RECOMPUTE_LCB_MAX Recompute moving LCB maximum based on current GP.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -2297,7 +2283,7 @@ document.write(`
 
 <div class="viewcode-block" id="VBMC.final_boost">
 <a class="viewcode-back" href="../../../api/classes/vbmc.html#pyvbmc.VBMC.final_boost">[docs]</a>
-    <span class="k">def</span> <span class="nf">final_boost</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vp</span><span class="p">:</span> <span class="n">VariationalPosterior</span><span class="p">,</span> <span class="n">gp</span><span class="p">:</span> <span class="n">gpr</span><span class="o">.</span><span class="n">GP</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">final_boost</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vp</span><span class="p">:</span> <span class="n">VariationalPosterior</span><span class="p">,</span> <span class="n">gp</span><span class="p">:</span> <span class="n">gpr</span><span class="o">.</span><span class="n">GP</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Perform a final boost of variational components.</span>
 
@@ -2402,7 +2388,7 @@ document.write(`
 
 <div class="viewcode-block" id="VBMC.determine_best_vp">
 <a class="viewcode-back" href="../../../api/classes/vbmc.html#pyvbmc.VBMC.determine_best_vp">[docs]</a>
-    <span class="k">def</span> <span class="nf">determine_best_vp</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">determine_best_vp</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">max_idx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">safe_sd</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
@@ -2511,7 +2497,7 @@ document.write(`
         <span class="k">return</span> <span class="n">vp</span><span class="p">,</span> <span class="n">elbo</span><span class="p">,</span> <span class="n">elbo_sd</span><span class="p">,</span> <span class="n">idx_best</span></div>
 
 
-    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Save the VBMC instance to a file.</span>
 
 <span class="sd">        .. note::</span>
@@ -2550,7 +2536,7 @@ document.write(`
             <span class="n">dill</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">recurse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">new_options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">iteration</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">set_random_state</span><span class="o">=</span><span class="kc">False</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load a VBMC instance from a file.</span>
@@ -2638,7 +2624,7 @@ document.write(`
 
         <span class="k">return</span> <span class="n">vbmc</span>
 
-    <span class="k">def</span> <span class="nf">_create_result_dict</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_result_dict</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">idx_best</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">termination_message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">success_flag</span><span class="p">:</span> <span class="nb">bool</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -2684,7 +2670,7 @@ document.write(`
 
         <span class="k">return</span> <span class="n">output</span>
 
-    <span class="k">def</span> <span class="nf">_log_column_headers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_log_column_headers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Private method to log column headers for the iteration log.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -2715,7 +2701,7 @@ document.write(`
                     <span class="s2">&quot;sKL-iter[q]   K[q]  Convergence  Action&quot;</span>
                 <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_setup_logging_display_format</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_setup_logging_display_format</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Private method to set up the display format for logging the iterations.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -2740,7 +2726,7 @@ document.write(`
 
         <span class="k">return</span> <span class="n">display_format</span>
 
-    <span class="k">def</span> <span class="nf">_init_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">substring</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">substring</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Private method to initialize the logging object.</span>
 
@@ -2812,7 +2798,7 @@ document.write(`
                 <span class="p">)</span>
 
             <span class="c1"># Add a filter to ignore messages sent to logger.stream_only:</span>
-            <span class="k">def</span> <span class="nf">log_file_filter</span><span class="p">(</span><span class="n">record</span><span class="p">):</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">log_file_filter</span><span class="p">(</span><span class="n">record</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">record</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="s2">&quot;VBMC.stream_only&quot;</span>
 
             <span class="n">file_handler</span><span class="o">.</span><span class="n">addFilter</span><span class="p">(</span><span class="n">log_file_filter</span><span class="p">)</span>
@@ -2821,7 +2807,7 @@ document.write(`
 
         <span class="k">return</span> <span class="n">logger</span>
 
-    <span class="k">def</span> <span class="nf">_init_log_joint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_density</span><span class="p">,</span> <span class="n">prior</span><span class="p">,</span> <span class="n">log_prior</span><span class="p">,</span> <span class="n">sample_prior</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_log_joint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_density</span><span class="p">,</span> <span class="n">prior</span><span class="p">,</span> <span class="n">log_prior</span><span class="p">,</span> <span class="n">sample_prior</span><span class="p">):</span>
         <span class="c1"># Initialize log-joint</span>
         <span class="n">log_likelihood</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="p">(</span>
@@ -2840,13 +2826,13 @@ document.write(`
             <span class="n">log_likelihood</span> <span class="o">=</span> <span class="n">log_density</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optim_state</span><span class="p">[</span><span class="s2">&quot;uncertainty_handling_level&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
 
-                <span class="k">def</span> <span class="nf">log_joint</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+                <span class="k">def</span><span class="w"> </span><span class="nf">log_joint</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
                     <span class="n">ll</span><span class="p">,</span> <span class="n">noise_est</span> <span class="o">=</span> <span class="n">log_likelihood</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
                     <span class="k">return</span> <span class="n">ll</span> <span class="o">+</span> <span class="n">log_prior</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="n">noise_est</span>
 
             <span class="k">else</span><span class="p">:</span>
 
-                <span class="k">def</span> <span class="nf">log_joint</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+                <span class="k">def</span><span class="w"> </span><span class="nf">log_joint</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
                     <span class="k">return</span> <span class="n">log_likelihood</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">+</span> <span class="n">log_prior</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
@@ -2854,7 +2840,7 @@ document.write(`
             <span class="n">log_joint</span> <span class="o">=</span> <span class="n">log_density</span>
         <span class="k">return</span> <span class="n">log_joint</span><span class="p">,</span> <span class="n">log_likelihood</span><span class="p">,</span> <span class="n">prior</span>
 
-    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a string summary.&quot;&quot;&quot;</span>
 
         <span class="n">gp</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;vp&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="s2">&quot;gp&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -2880,7 +2866,7 @@ document.write(`
             <span class="s2">&quot;    &quot;</span><span class="p">,</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr_size_thresh</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr_size_thresh</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a detailed string summary.</span>
 
 <span class="sd">        Parameters</span>
@@ -2989,8 +2975,8 @@ By Author name not set
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
-<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
 
   <footer class="bd-footer">
   </footer>
