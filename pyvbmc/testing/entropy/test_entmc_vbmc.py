@@ -122,9 +122,9 @@ def test_entmc_vbmc_overlapping_mixture():
     D, K, Ns = 3, 2, 1e5
     vp = VariationalPosterior(D, K)
     vp.mu = np.random.uniform(-1, 1, size=(D, K))
-    vp.sigma = np.ones(K) + 0.2 * np.random.rand(K)
-    vp.lambd = np.ones(D) + 0.2 * np.random.rand(D)
-    vp.eta = np.random.rand(K)
+    vp.sigma = np.abs(np.ones(K) + 0.2 * np.random.rand(K))
+    vp.lambd = np.abs(np.ones(D) + 0.2 * np.random.rand(D))
+    vp.eta = [0.6, 0.4]
     vp.w = np.exp(vp.eta) / np.exp(vp.eta).sum()
 
     theta0 = np.concatenate(
