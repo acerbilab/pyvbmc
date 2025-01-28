@@ -2,7 +2,7 @@
 Instructions for developers and contributors
 ********************************************
 
-PyVBMC is the port of the MATLAB VBMC algorithm to Python 3.x (development has targeted version 3.9 and up).
+PyVBMC is the port of the MATLAB VBMC algorithm to Python 3.x (development has targeted version 3.10 and up).
 
 The reference code is the :labrepos:`MATLAB toolbox <vbmc>`.
 
