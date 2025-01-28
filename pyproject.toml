@@ -18,9 +18,9 @@ dependencies = [
     "pytest >= 6.2.5",
     "pytest-mock >= 3.6.1",
     "pytest-rerunfailures >= 10.2",
-    "scipy >= 1.7.3",
+    "scipy >= 1.15.0",
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 
 [tool.setuptools]
 include-package-data = true
