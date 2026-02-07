@@ -17,12 +17,12 @@ jobs:
 
     steps:
       - name: Checkout PyVBMC
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           path: pyvbmc
 
       - name: Checkout GPyReg
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: acerbilab/gpyreg
           path: gpyreg
