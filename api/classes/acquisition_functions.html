@@ -38,8 +38,8 @@
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
     <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
-    <script src="../../_static/doctools.js?v=9bcbadda"></script>
-    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'api/classes/acquisition_functions';</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -455,7 +455,7 @@ document.write(`
 <span id="acquisition-functions"></span><h1>Acquisition Functions<a class="headerlink" href="#module-pyvbmc.acquisition_functions" title="Link to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.acquisition_functions.AbstractAcqFcn">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.acquisition_functions.</span></span><span class="sig-name descname"><span class="pre">AbstractAcqFcn</span></span><a class="reference internal" href="../../_modules/pyvbmc/acquisition_functions/abstract_acq_fcn.html#AbstractAcqFcn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AbstractAcqFcn" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyvbmc.acquisition_functions.</span></span><span class="sig-name descname"><span class="pre">AbstractAcqFcn</span></span><a class="reference internal" href="../../_modules/pyvbmc/acquisition_functions/abstract_acq_fcn.html#AbstractAcqFcn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AbstractAcqFcn" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
 <p>Abstract acquisition function for VBMC.</p>
 <dl class="py method">
@@ -509,14 +509,14 @@ is the number of input points.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.acquisition_functions.AcqFcn">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.acquisition_functions.</span></span><span class="sig-name descname"><span class="pre">AcqFcn</span></span><a class="reference internal" href="../../_modules/pyvbmc/acquisition_functions/acq_fcn.html#AcqFcn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcn" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyvbmc.acquisition_functions.</span></span><span class="sig-name descname"><span class="pre">AcqFcn</span></span><a class="reference internal" href="../../_modules/pyvbmc/acquisition_functions/acq_fcn.html#AcqFcn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcn" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pyvbmc.acquisition_functions.AbstractAcqFcn" title="pyvbmc.acquisition_functions.abstract_acq_fcn.AbstractAcqFcn"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractAcqFcn</span></code></a></p>
 <p>Acquisition function for prospective uncertainty search.</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.acquisition_functions.AcqFcnIMIQR">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.acquisition_functions.</span></span><span class="sig-name descname"><span class="pre">AcqFcnIMIQR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quantile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.75</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/acquisition_functions/acq_fcn_imiqr.html#AcqFcnIMIQR"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcnIMIQR" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyvbmc.acquisition_functions.</span></span><span class="sig-name descname"><span class="pre">AcqFcnIMIQR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quantile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.75</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/acquisition_functions/acq_fcn_imiqr.html#AcqFcnIMIQR"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcnIMIQR" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pyvbmc.acquisition_functions.AbstractAcqFcn" title="pyvbmc.acquisition_functions.abstract_acq_fcn.AbstractAcqFcn"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractAcqFcn</span></code></a></p>
 <p>Integrated Median Interquantile Range (IMIQR) acquisition function.</p>
 <p>Approximates the Integrated Median Interquantile Range (IMIQR) via
@@ -615,21 +615,21 @@ provided.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.acquisition_functions.AcqFcnLog">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.acquisition_functions.</span></span><span class="sig-name descname"><span class="pre">AcqFcnLog</span></span><a class="reference internal" href="../../_modules/pyvbmc/acquisition_functions/acq_fcn_log.html#AcqFcnLog"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcnLog" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyvbmc.acquisition_functions.</span></span><span class="sig-name descname"><span class="pre">AcqFcnLog</span></span><a class="reference internal" href="../../_modules/pyvbmc/acquisition_functions/acq_fcn_log.html#AcqFcnLog"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcnLog" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pyvbmc.acquisition_functions.AbstractAcqFcn" title="pyvbmc.acquisition_functions.abstract_acq_fcn.AbstractAcqFcn"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractAcqFcn</span></code></a></p>
 <p>Acquisition function for prospective uncertainty search (log-valued).</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.acquisition_functions.AcqFcnNoisy">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.acquisition_functions.</span></span><span class="sig-name descname"><span class="pre">AcqFcnNoisy</span></span><a class="reference internal" href="../../_modules/pyvbmc/acquisition_functions/acq_fcn_noisy.html#AcqFcnNoisy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcnNoisy" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyvbmc.acquisition_functions.</span></span><span class="sig-name descname"><span class="pre">AcqFcnNoisy</span></span><a class="reference internal" href="../../_modules/pyvbmc/acquisition_functions/acq_fcn_noisy.html#AcqFcnNoisy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcnNoisy" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pyvbmc.acquisition_functions.AbstractAcqFcn" title="pyvbmc.acquisition_functions.abstract_acq_fcn.AbstractAcqFcn"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractAcqFcn</span></code></a></p>
 <p>Acquisition function for noisy prospective uncertainty search.</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.acquisition_functions.AcqFcnVIQR">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.acquisition_functions.</span></span><span class="sig-name descname"><span class="pre">AcqFcnVIQR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quantile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.75</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/acquisition_functions/acq_fcn_viqr.html#AcqFcnVIQR"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcnVIQR" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyvbmc.acquisition_functions.</span></span><span class="sig-name descname"><span class="pre">AcqFcnVIQR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quantile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.75</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/acquisition_functions/acq_fcn_viqr.html#AcqFcnVIQR"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcnVIQR" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pyvbmc.acquisition_functions.AbstractAcqFcn" title="pyvbmc.acquisition_functions.abstract_acq_fcn.AbstractAcqFcn"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractAcqFcn</span></code></a></p>
 <p>Variational Interquantile Range (VIQR) acquisition function.</p>
 <p>Approximates the Integrated Median Interquantile Range (IMIQR) by simple
@@ -727,7 +727,7 @@ distribution at the points of interest. Of the same shape as
 
 <dl class="py class">
 <dt class="sig sig-object py" id="pyvbmc.acquisition_functions.AcqFcnVanilla">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvbmc.acquisition_functions.</span></span><span class="sig-name descname"><span class="pre">AcqFcnVanilla</span></span><a class="reference internal" href="../../_modules/pyvbmc/acquisition_functions/acq_fcn_vanilla.html#AcqFcnVanilla"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcnVanilla" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyvbmc.acquisition_functions.</span></span><span class="sig-name descname"><span class="pre">AcqFcnVanilla</span></span><a class="reference internal" href="../../_modules/pyvbmc/acquisition_functions/acq_fcn_vanilla.html#AcqFcnVanilla"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.acquisition_functions.AcqFcnVanilla" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pyvbmc.acquisition_functions.AbstractAcqFcn" title="pyvbmc.acquisition_functions.abstract_acq_fcn.AbstractAcqFcn"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractAcqFcn</span></code></a></p>
 <p>Acquisition function via vanilla uncertainty sampling.</p>
 </dd></dl>
