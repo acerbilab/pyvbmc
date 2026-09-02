@@ -558,7 +558,7 @@ def _vp_bound_loss(
     theta_ext = []
     if vp.optimize_mu:
         theta_ext.append(mu.ravel())
-    if vp.optimize_sigma or vp.optimize_lambda:
+    if vp.optimize_sigma or vp.optimize_lambd:
         theta_ext.append(ln_scale.ravel(order="F"))
     if vp.optimize_weights:
         theta_ext.append(eta.ravel())
@@ -580,9 +580,13 @@ def _vp_bound_loss(
         else:
             start_idx = 0
 
-        if vp.optimize_sigma or vp.optimize_lambda:
+        if vp.optimize_sigma or vp.optimize_lambd:
+            # ln_scale was packed into theta_ext with order="F"; unpack the
+            # same way, otherwise the sigma and lambd blocks get scrambled.
             dlnscale = np.reshape(
-                dL[start_idx : start_idx + vp.D * vp.K], (vp.D, vp.K)
+                dL[start_idx : start_idx + vp.D * vp.K],
+                (vp.D, vp.K),
+                order="F",
             )
 
             if vp.optimize_sigma:
