@@ -157,3 +157,6 @@ docsrc/_build/
 
 # OS generated files
 .DS_Store
+
+# profiling output from dev/scripts/profile_run.py
+dev/scripts/runs/

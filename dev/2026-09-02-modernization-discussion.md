@@ -26,9 +26,9 @@ and cognitive neuroscience, psychology, and other model-fitting fields, some
 of them coming from the MATLAB version of VBMC. A significant share works on
 Windows with Anaconda. Typical hardware is a laptop or lab workstation, and
 sometimes an HPC cluster with home-directory quotas; CPU-only environments are
-common, so GPU acceleration is not something PyVBMC should strictly require. 
+common, so GPU acceleration is not something PyVBMC should strictly require.
 Many users expect `pip install pyvbmc` or `conda install pyvbmc` to work without
-further setup, and what matters to them is install friction, robustness, and 
+further setup, and what matters to them is install friction, robustness, and
 wall-clock time, not which array library sits underneath.
 
 A secondary audience is ML- or SBI-literate users with PyTorch models who want
@@ -82,6 +82,18 @@ Two conclusions:
   fallback (`:2332-2355`) exist because the matrices are borderline singular.
   PyTorch defaults to float32 and JAX needs a global `jax_enable_x64` flag;
   either must be pinned explicitly. This also rules out consumer-GPU throughput.
+
+**Measured 2026-09-02** (see `2026-09-02-profile-and-gradient-checks.md`):
+the table above misjudges the balance. On D=5 and D=10 Gaussian targets,
+active sampling is 50–60% of wall time (single-point `gp.predict` calls from
+CMA-ES, ~1.5 ms each, ~650–1,800 per new point), GP training 30% (the slice
+sampler as predicted, but only ~10% of each step is the Cholesky; the rest is
+prior evaluation, kernel recomputation and scipy call overhead), the
+variational stage 7–27% depending on `K`, and `final_boost` 3–15%. Those
+targets converge in 13–20 iterations with `N ≈ 70–100`, so the `N → 350`
+assumption above describes hard or noisy targets only. The two conclusions
+above (overhead-bound, GPU irrelevant here) stand; the Stage 2 priority order
+in §10 is revised.
 
 ---
 
@@ -381,6 +393,25 @@ state used by resume.
 - `priors/scipy.py:5-10`, `priors/product.py:5` — imports of scipy private classes.
 - gpyreg `predict` tiles `sW` to `(N, N_star)` instead of broadcasting (13 MB
   per sample at `Nc = 8192`).
+- **Fixed 2026-09-02:** `_vp_bound_loss` unpacked the ln-scale gradient block
+  with a C-order `reshape` after packing it with `order="F"`, scrambling the
+  sigma/lambd penalty gradients (a transpose when `D = K`) whenever a
+  component's scale left its soft bounds. `theta_bnd` is never `None` in
+  production, and the bounds are exceeded routinely in warmup, after `K`
+  grows and in `final_boost`, so L-BFGS-B was fed an inconsistent `(f, grad)`
+  pair and Adam pushed `lambd` where it should have pushed `sigma`. Found by
+  the finite-difference tests added the same day; MATLAB's column-major
+  `reshape` was correct, the port dropped the order.
+- `_gp_log_joint(..., jacobian_flag=False)` returns only the `mu` block of
+  `dG`: the sigma/lambd/w blocks are appended inside the `if jacobian_flag`
+  branches. Unreachable in production (`_neg_elcbo` hard-codes it to 1), but
+  it would make `dF = -dG - dH` a shape mismatch.
+- `vp.pdf(orig_flag=True, log_flag=False, grad_flag=True)` divides `y` by the
+  transform Jacobian but returns `dy` uncorrected (a transformed-space
+  gradient); the `log_flag=True` sibling raises `NotImplementedError` instead.
+- `_neg_elcbo` shifts `eta` to `max(eta) = 0` in place (on a view of the
+  caller's `theta`) before the bound loss, so the eta upper soft bound
+  (`ub = 0`) can never fire.
 
 ---
 
@@ -420,6 +451,13 @@ the golden traces afterwards. Decide what happens to `load(set_random_state=True
 6. Drop per-candidate `deepcopy` in `_vb_init` (`:969`).
 7. Call `GP.clean()` / stop retaining full GPs in `iteration_history`.
 Expected: the bulk of the wall-clock win, 5–30× on the variational stage.
+
+Priority order after the 2026-09-02 profile: item 3 first (50–60% of wall
+time), then a new item 8, gpyreg slice-sampler overhead (vectorize
+`__compute_log_priors`, direct LAPACK triangular solves instead of the
+validated scipy wrappers, less per-sample kernel/mean recomputation; lands in
+gpyreg, which PyBADS shares), then items 1–2 (7–27%, growing with `K`), then
+the rest.
 
 **Stage 3 — Pipeline features, backend-neutral.** Batched evaluation of the
 initial design and cache path (`FunctionLogger.batch_call`, `vectorized_target`
@@ -520,10 +558,16 @@ in §2 are estimates.
 4. Open the first PR: RNG `Generator` threading (Stage 1), together with
    fixing the §9 one-liners.
 
-**Status at end of 2026-09-02.** Nothing in this plan has started. Work so far
-is on branch `dev-next`: this folder, `papers/`, `AGENTS.md`. No dev
-environment exists on the main machine yet (no `gpyreg`, no `torch`), so step
-1 is the pickup point.
+**Status at end of 2026-09-02 (updated later the same day).** Steps 1–3 are
+done, on branch `dev-next`: venv with editable `gpyreg` and `pyvbmc` on the
+main machine (no `torch` yet), suite green (389 passed, 0 reruns, 18 min),
+`D=5`/`D=10` profiles measured (`2026-09-02-profile-and-gradient-checks.md`;
+§2 and §10 annotated above), and finite-difference checks added for
+`_gp_log_joint`, `_neg_elcbo`, `_vp_bound_loss`, `_soft_bound_loss` and
+`vp.pdf`, which found and fixed the `_vp_bound_loss` reshape bug (§9).
+Pickup point: step 4 (Stage 1 RNG PR bundled with the §9 one-liners), plus
+the remaining Stage 0 items (fixture generator, golden-trace harness,
+transformer and gpyreg gradient checks) and a profile of a noisy target.
 
 ---
 

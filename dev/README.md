@@ -23,3 +23,18 @@ would be committed, and anything that was would be published to the docs site.
   folder so users' coding agents set up and troubleshoot PyVBMC correctly.
   What BayesFlow did, the spec, and a design that lives in-repo and ships in
   the wheel. Build after the 1.5 API settles.
+- `2026-09-02-profile-and-gradient-checks.md` — Dev environment set up,
+  baseline test run, first measured profile (D=5, D=10): active sampling
+  dominates at 50–60%, GP training is overhead-bound, variational stage
+  8–27%. First Stage 0 finite-difference gradient checks; found and fixed a
+  reshape-order bug in `_vp_bound_loss`.
+
+## Scripts
+
+`scripts/` holds developer tooling that is not part of the package or the
+test suite. Output directories under it (e.g. `scripts/runs/`) are gitignored;
+results that matter get summarized in a dated devlog entry, not committed raw.
+
+- `scripts/profile_run.py` — run VBMC on a cheap synthetic target under a
+  fixed seed and report per-stage timers and, with `--cprofile`, a cProfile
+  attribution of the hot paths. See its docstring.
