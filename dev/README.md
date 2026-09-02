@@ -23,11 +23,28 @@ would be committed, and anything that was would be published to the docs site.
   folder so users' coding agents set up and troubleshoot PyVBMC correctly.
   What BayesFlow did, the spec, and a design that lives in-repo and ships in
   the wheel. Build after the 1.5 API settles.
-- `2026-09-02-profile-and-gradient-checks.md` — Dev environment set up,
-  baseline test run, first measured profile (D=5, D=10): active sampling
-  dominates at 50–60%, GP training is overhead-bound, variational stage
-  8–27%. First Stage 0 finite-difference gradient checks; found and fixed a
-  reshape-order bug in `_vp_bound_loss`.
+## Plans, worklogs and task files
+
+Devlogs (above) are the record of discussions and decisions that involved a
+person, most often the PI. Everything an agent produces on its own along the
+way lives in `plans/`: plans, checklists and status trackers, worklogs of a
+work session, measurement reports, task files. They are updated in place
+while the work is open and kept afterwards as the record of what was done;
+status and next steps never go into the devlogs.
+
+- `plans/modernization-roadmap.md` — living tracker of the staged plan in
+  `2026-09-02-modernization-discussion.md` §10: stage status, pickup point.
+- `plans/profile-and-gradient-checks.md` — dev environment, baseline test
+  run, first measured profile (D=5, D=10) and the first Stage 0
+  finite-difference gradient checks, which found the reshape-order bug in
+  `_vp_bound_loss`.
+- `plans/stage1-rng-generator.md` — Stage 1 worklog: `VBMC(seed=)`,
+  `vbmc.rng`, the gpyreg/cma global-state seam, the random-state save
+  format, what the tests had to change, review findings, follow-ups.
+
+Naming: `plans/` files are named by slug only, never by date (the date is in
+the file header), so that they cannot be mistaken for copies of the dated
+devlogs.
 
 ## Scripts
 

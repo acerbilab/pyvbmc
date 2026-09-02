@@ -83,7 +83,7 @@ Two conclusions:
   PyTorch defaults to float32 and JAX needs a global `jax_enable_x64` flag;
   either must be pinned explicitly. This also rules out consumer-GPU throughput.
 
-**Measured 2026-09-02** (see `2026-09-02-profile-and-gradient-checks.md`):
+**Measured 2026-09-02** (see `plans/profile-and-gradient-checks.md`):
 the table above misjudges the balance. On D=5 and D=10 Gaussian targets,
 active sampling is 50–60% of wall time (single-point `gp.predict` calls from
 CMA-ES, ~1.5 ms each, ~650–1,800 per new point), GP training 30% (the slice
@@ -571,7 +571,9 @@ in §2 are estimates.
 ## 13. Open questions
 
 - Keep `load(set_random_state=True)` semantics with a `Generator`, or accept a
-  save-format change?
+  save-format change? *Decided in Stage 1* (`plans/stage1-rng-generator.md`
+  §3): same flag and meaning, new per-iteration format holding both the
+  generator state and the legacy tuple, old files load with a warning.
 - Should Stage 2 vectorization be done in a way that is already
   backend-agnostic (Array API), or plainly in NumPy and re-done in torch?
   Current inclination: plainly in NumPy; the torch version will differ anyway
@@ -595,7 +597,7 @@ in §2 are estimates.
 **Status at end of 2026-09-02 (updated later the same day).** Steps 1–3 are
 done, on branch `dev-next`: venv with editable `gpyreg` and `pyvbmc` on the
 main machine (no `torch` yet), suite green (389 passed, 0 reruns, 18 min),
-`D=5`/`D=10` profiles measured (`2026-09-02-profile-and-gradient-checks.md`;
+`D=5`/`D=10` profiles measured (`plans/profile-and-gradient-checks.md`;
 §2 and §10 annotated above), and finite-difference checks added for
 `_gp_log_joint`, `_neg_elcbo`, `_vp_bound_loss`, `_soft_bound_loss` and
 `vp.pdf`, which found and fixed the `_vp_bound_loss` reshape bug (§9).
