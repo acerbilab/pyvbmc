@@ -35,12 +35,12 @@ jobs:
       - name: Install PyVBMC
         run: |
           cd ./pyvbmc
-          python -m pip install -e .
+          python -m pip install -e ".[test]"
 
       - name: Install GPyReg
         run: |
           cd ./gpyreg
-          python -m pip install -e .
+          python -m pip install -e ".[test]"
 
       - name: Run tests
         run: |

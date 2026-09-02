@@ -26,8 +26,11 @@ PyVBMC is available via ``pip`` and ``conda-forge``.
 
      python -m pyvbmc
 
-You can run PyVBMC's internal tests with ::
+   Example 2 uses ``plotly`` for one interactive figure; install it with ``python -m pip install "pyvbmc[examples]"``.
 
+You can run PyVBMC's internal tests after installing the test dependencies with ::
+
+  python -m pip install "pyvbmc[test]"
   pytest --pyargs pyvbmc --reruns=3
 
 The `--reruns=3` argument allows re-trying a failed test up to 3 times, as many of PyVBMC's tests are stochastic in nature. Note that the complete test suite may take a significant amount of time (20-30 minutes or more, depending on your hardware).

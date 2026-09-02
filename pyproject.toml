@@ -33,6 +33,13 @@ package-dir = { "pyvbmc.examples" = "examples" }
 examples = [
     "plotly >= 5.11.0",
 ]
+# What the test suite needs (`pytest --pyargs pyvbmc --reruns=3`); CI
+# installs this extra.
+test = [
+    "pytest >= 6.2.5",
+    "pytest-mock >= 3.6.1",
+    "pytest-rerunfailures >= 10.2",
+]
 dev = [
     "myst_nb >= 0.13.1",
     "numpydoc >= 1.2.1",
