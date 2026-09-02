@@ -861,7 +861,9 @@ DIAG_SEED = 2026
 DIAG_MC_SAMPLES = 200_000
 
 
-def posterior_moments(vp, n_mc=DIAG_MC_SAMPLES, seed=DIAG_SEED):
+def posterior_moments(
+    vp, n_mc=DIAG_MC_SAMPLES, seed=DIAG_SEED, force_mc=False
+):
     """Original-space posterior mean ``(1, D)`` and covariance ``(D, D)``.
 
     Exact through the transformer's affine map when every coordinate is
@@ -871,7 +873,7 @@ def posterior_moments(vp, n_mc=DIAG_MC_SAMPLES, seed=DIAG_SEED):
     ``(mean, cov, method)``.
     """
     pt = vp.parameter_transformer
-    if np.all(pt.type == 0):
+    if np.all(pt.type == 0) and not force_mc:
         mean_u, cov_u = vp.moments(orig_flag=False, cov_flag=True)
         mean_u = np.reshape(mean_u, (1, -1))
         D = mean_u.shape[1]
@@ -1065,6 +1067,18 @@ def run_smoke(configs, seed=0):
             vp, results = vbmc.optimize()
             ok = np.isfinite(results["elbo"])
             met = metrics(prob, vp, results["elbo"])
+            if prob.all_unbounded:
+                # the exact affine route must agree with Monte Carlo
+                m2, c2, _ = posterior_moments(vp, force_mc=True)
+                sd = np.sqrt(np.diag(met["post_cov"]))
+                dm = np.max(np.abs(met["post_mean"] - m2) / sd)
+                dc = np.max(np.abs(met["post_cov"] - c2)) / np.max(
+                    np.abs(met["post_cov"])
+                )
+                ok &= dm < 0.05 and dc < 0.05
+                met[
+                    "moment_method"
+                ] += f"; mc diff mean {dm:.3f} sd, cov {dc:.3f}"
             msg = (
                 f"iters={results['iterations'] + 1} evals={results['func_count']}"
                 f" elbo={results['elbo']:.3f} elbo_err={met['elbo_err']:.3f}"
