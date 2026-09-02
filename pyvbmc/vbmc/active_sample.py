@@ -56,6 +56,11 @@ def active_sample(
     options : Options
        Options from the VBMC instance this function is called from.
 
+    Notes
+    -----
+    Random draws (initial design, acquisition choice, search points, CMA-ES)
+    use ``vp.rng``.
+
     Returns
     -------
     function_logger : FunctionLogger
@@ -78,6 +83,7 @@ def active_sample(
         logger.setLevel(logging.DEBUG)
 
     parameter_transformer = function_logger.parameter_transformer
+    rng = vp.rng
 
     if gp is None:
         # No GP yet, just use provided points or sample from plausible box.
@@ -101,7 +107,7 @@ def active_sample(
                     # Uniform random samples in the plausible box
                     # (in transformed space)
                     random_Xs = (
-                        np.random.rand(sample_count - provided_sample_count, D)
+                        rng.random((sample_count - provided_sample_count, D))
                         * (pub_tran - plb_tran)
                         + plb_tran
                     )
@@ -109,7 +115,7 @@ def active_sample(
                 elif options.get("init_design") == "narrow":
                     start_Xs = parameter_transformer(Xs[0])
                     random_Xs = (
-                        np.random.rand(sample_count - provided_sample_count, D)
+                        rng.random((sample_count - provided_sample_count, D))
                         - 0.5
                     ) * 0.1 * (pub_tran - plb_tran) + start_Xs
                     random_Xs = np.minimum(
@@ -260,7 +266,7 @@ def active_sample(
             if not options["acq_hedge"]:
                 # If multiple acquisition functions are provided and not
                 # following a "hedge" strategy, pick one at random
-                idx_acq = np.random.randint(len(SearchAcqFcn))
+                idx_acq = rng.integers(len(SearchAcqFcn))
 
             ## Pre-computations for acquisition functions
 
@@ -392,7 +398,11 @@ def active_sample(
                         "tolfun": tol_fun,
                         "maxfevals": options["search_max_fun_evals"],
                         "bounds": (lb_search.squeeze(), ub_search.squeeze()),
+                        # Draw the CMA-ES population from our generator; with
+                        # a custom `randn`, cma neither seeds nor uses the
+                        # global NumPy state for the population.
                         "seed": np.nan,
+                        "randn": lambda *shape: rng.standard_normal(shape),
                     }
 
                     res = cma.fmin(
@@ -530,6 +540,7 @@ def active_sample(
                                 options_update,
                                 optim_state["plb_tran"],
                                 optim_state["pub_tran"],
+                                rng=rng,
                             )
                             timer.stop_timer("gp_train")
                         else:
@@ -548,7 +559,7 @@ def active_sample(
                             )
                             if options["update_random_alpha"]:
                                 optim_state["entropy_alpha"] = 1 - np.sqrt(
-                                    np.random.rand()
+                                    rng.random()
                                 )
 
                             vp, _, _ = optimize_vp(
@@ -680,7 +691,12 @@ def _get_search_points(
     ValueError
         When the options lead to more points sampled than requested, that means
         `search_X`.shape[0]` would be greater than `number_of_points``.
+
+    Notes
+    -----
+    Random draws use ``vp.rng``.
     """
+    rng = vp.rng
 
     # Take some points from starting cache, if not empty
     x0 = np.copy(optim_state["cache"]["x_orig"])
@@ -699,9 +715,7 @@ def _get_search_points(
         N_cache = math.ceil(number_of_points * options.get("cache_frac"))
 
         # idx_cache contains min(n_cache, x0.shape[0]) random indicies
-        idx_cache = np.random.permutation(x0.shape[0])[
-            : min(N_cache, x0.shape[0])
-        ]
+        idx_cache = rng.permutation(x0.shape[0])[: min(N_cache, x0.shape[0])]
 
         search_X = parameter_transformer(x0[idx_cache])
 
@@ -733,7 +747,7 @@ def _get_search_points(
         N_mvn = round(options.get("mvn_search_frac") * N_random_points)
         if N_mvn > 0:
             mubar, sigmabar = vp.moments(orig_flag=False, cov_flag=True)
-            mvn_Xs = np.random.multivariate_normal(
+            mvn_Xs = rng.multivariate_normal(
                 np.ravel(mubar), sigmabar, size=N_mvn
             )
             random_Xs = np.append(random_Xs, mvn_Xs, axis=0)
@@ -745,8 +759,7 @@ def _get_search_points(
             hpd_fracs = np.sort(
                 np.concatenate(
                     (
-                        np.random.uniform(size=4) * (hpd_max - hpd_min)
-                        + hpd_min,
+                        rng.uniform(size=4) * (hpd_max - hpd_min) + hpd_min,
                         np.array([hpd_min, hpd_max]),
                     )
                 )
@@ -779,7 +792,7 @@ def _get_search_points(
                 if sigmabar.shape != (D, D):
                     sigmabar = np.ones((D, D)) * sigmabar
 
-                hpd_Xs = np.random.multivariate_normal(
+                hpd_Xs = rng.multivariate_normal(
                     mubar, sigmabar, size=int(N_hpd_vec[idx])
                 )
                 random_Xs = np.append(random_Xs, hpd_Xs, axis=0)
@@ -804,8 +817,7 @@ def _get_search_points(
             box_ub = np.minimum(np.amax(X, axis=0) + 0.5 * X_diam, box_ub)
 
             box_Xs = (
-                np.random.standard_normal((N_box, D)) * (box_ub - box_lb)
-                + box_lb
+                rng.standard_normal((N_box, D)) * (box_ub - box_lb) + box_lb
             )
 
             random_Xs = np.append(random_Xs, box_Xs, axis=0)

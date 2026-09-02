@@ -4,6 +4,7 @@ import gpyreg as gpr
 import numpy as np
 
 from pyvbmc.function_logger import FunctionLogger
+from pyvbmc.rng import get_rng
 from pyvbmc.stats import get_hpd
 
 from .iteration_history import IterationHistory
@@ -18,6 +19,7 @@ def train_gp(
     options: Options,
     plb_tran: np.ndarray,
     pub_tran: np.ndarray,
+    rng=None,
 ):
     """
     Train Gaussian process model.
@@ -40,6 +42,11 @@ def train_gp(
         Transformed lower plausible bounds, used to set GP hyperparameters.
     pub_tran : ndarray, shape (1, D)
         Transformed upper plausible bounds, used to set GP hyperparameters.
+    rng : None, int, SeedSequence or np.random.Generator, optional
+        Random generator (or seed) used to subsample the starting
+        hyperparameters. By default a generator derived from NumPy's global
+        random state. Note that the hyperparameter fit itself (``gpyreg``)
+        still draws from NumPy's global random state.
 
     Returns
     =======
@@ -137,7 +144,7 @@ def train_gp(
         N0 = hyp0.shape[0]
         if N0 > gp_train["init_N"] / 2:
             hyp0 = hyp0[
-                np.random.choice(
+                get_rng(rng).choice(
                     N0, math.ceil(gp_train["init_N"] / 2), replace=False
                 ),
                 :,

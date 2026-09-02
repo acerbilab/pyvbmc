@@ -189,25 +189,21 @@ def test_neg_elcbo_grad_fd_mc_entropy():
     """
     gp, _ = _fixture_gp()
     Ns = int(1e4)
-    state = np.random.get_state()
-    try:
 
-        def f(th):
-            np.random.seed(7)
-            return _neg_elcbo(
-                th, gp, VariationalPosterior(D, K), 0.0, Ns, False, False
-            )[0]
+    # A fresh VP with the same generator seed per call gives the value and
+    # gradient evaluations common random numbers.
+    def f(th):
+        return _neg_elcbo(
+            th, gp, VariationalPosterior(D, K, rng=7), 0.0, Ns, False, False
+        )[0]
 
-        def grad(th):
-            np.random.seed(7)
-            return _neg_elcbo(
-                th, gp, VariationalPosterior(D, K), 0.0, Ns, True, False
-            )[1]
+    def grad(th):
+        return _neg_elcbo(
+            th, gp, VariationalPosterior(D, K, rng=7), 0.0, Ns, True, False
+        )[1]
 
-        theta0 = _raw_theta0(seed=2)
-        assert check_grad(f, grad, theta0, rtol=1e-2, atol=1e-2)
-    finally:
-        np.random.set_state(state)
+    theta0 = _raw_theta0(seed=2)
+    assert check_grad(f, grad, theta0, rtol=1e-2, atol=1e-2)
 
 
 def test_vp_bound_loss_grad_fd():

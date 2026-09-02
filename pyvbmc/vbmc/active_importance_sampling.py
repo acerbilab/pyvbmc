@@ -36,7 +36,12 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
     -------
     active_is : dict
         A dictionary of importance sampling values and bookkeeping.
+
+    Notes
+    -----
+    Random draws use ``vp.rng``.
     """
+    rng = vp.rng
     # Do we simply sample from the variational posterior?
     only_vp_flag = acq_fcn.acq_info.get(
         "variational_importance_sampling", False
@@ -162,9 +167,9 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
 
         # Box-uniform sampling around training inputs
         if Nbox_samples > 0:
-            jj = np.random.randint(0, len(gp.X), size=(Nbox_samples,))
+            jj = rng.integers(0, len(gp.X), size=(Nbox_samples,))
             Xa_box = (
-                gp.X[jj, :] + (2 * np.random.rand(jj.size, D) - 1) * rect_delta
+                gp.X[jj, :] + (2 * rng.random((jj.size, D)) - 1) * rect_delta
             )
             ln_weights, f_s2a_box = active_sample_proposal_pdf(
                 Xa_box, gp, vp_is, w_vp, rect_delta, acq_fcn
@@ -235,9 +240,7 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
                 weights = weights / np.sum(weights)
                 # x0 = np.zeros((Walkers, D))
                 # Select x0 without replacement by weight:
-                index = np.random.choice(
-                    a=len(weights), p=weights, replace=False
-                )
+                index = rng.choice(a=len(weights), p=weights, replace=False)
                 x0 = active_is_old["X"][index, :]
                 x0 = np.maximum(
                     np.minimum(x0, ub_tran), lb_tran

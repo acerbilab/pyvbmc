@@ -1,6 +1,7 @@
 # for annotating VP as input of itself in mtv
 from __future__ import annotations
 
+import copy
 import sys
 from pathlib import Path
 from textwrap import indent
@@ -18,6 +19,7 @@ from scipy.special import gammaln
 from pyvbmc.decorators import handle_0D_1D_input
 from pyvbmc.formatting import format_dict, full_repr, summarize
 from pyvbmc.parameter_transformer import ParameterTransformer
+from pyvbmc.rng import get_rng
 from pyvbmc.stats import kde_1d, kl_div_mvn
 
 
@@ -45,6 +47,12 @@ class VariationalPosterior:
         The ``ParameterTransformer`` object specifying the transformation of
         the input space that leads to the current representation used by the
         variational posterior, by default uses an identity transform.
+    rng : None, int, SeedSequence or np.random.Generator, optional
+        The random generator, or a seed for one, used by every method that
+        draws random numbers (e.g. ``sample``, ``kl_div``, ``mtv``). A
+        ``Generator`` is used as is, so it can be shared with a ``VBMC``
+        instance. By default a generator is derived from NumPy's global random
+        state, so that ``np.random.seed`` still gives reproducible results.
 
     Attributes
     ----------
@@ -101,10 +109,16 @@ class VariationalPosterior:
     """
 
     def __init__(
-        self, D: int, K: int = 2, x0=None, parameter_transformer=None
+        self,
+        D: int,
+        K: int = 2,
+        x0=None,
+        parameter_transformer=None,
+        rng=None,
     ):
         self.D = D  # number of dimensions
         self.K = K  # number of components
+        self._rng = get_rng(rng)
 
         if x0 is None:
             x0 = np.zeros((D, K))
@@ -118,7 +132,7 @@ class VariationalPosterior:
 
         self.w = np.ones((1, K)) / K
         self.eta = np.ones((1, K)) / K
-        self.mu = x0 + 1e-6 * np.random.randn(self.D, self.K)
+        self.mu = x0 + 1e-6 * self._rng.standard_normal((self.D, self.K))
         self.sigma = 1e-3 * np.ones((1, K))
         self.lambd = np.ones((self.D, 1))
 
@@ -136,6 +150,35 @@ class VariationalPosterior:
         self.bounds = None
         self.stats = None
         self._mode = None
+
+    @property
+    def rng(self) -> np.random.Generator:
+        """The random generator used by every method of this object that
+        draws random numbers (``sample``, ``kl_div``, ``mtv``, ``plot``,
+        ...). Copies made with ``copy.deepcopy`` share the same generator,
+        so that all copies of a variational posterior draw from a single
+        random stream."""
+        # Objects unpickled from before the generator existed have no `_rng`.
+        rng = self.__dict__.get("_rng")
+        if rng is None:
+            rng = self._rng = get_rng()
+        return rng
+
+    @rng.setter
+    def rng(self, rng):
+        self._rng = get_rng(rng)
+
+    def __deepcopy__(self, memo):
+        # Deep-copy everything except the random generator, which is shared so
+        # that every copy of the posterior draws from the same stream.
+        result = self.__class__.__new__(self.__class__)
+        memo[id(self)] = result
+        for key, value in self.__dict__.items():
+            if key == "_rng":
+                setattr(result, key, value)
+            else:
+                setattr(result, key, copy.deepcopy(value, memo))
+        return result
 
     def get_bounds(self, X: np.ndarray, options, K: int = None):
         """
@@ -280,6 +323,10 @@ class VariationalPosterior:
             `I` is an `N`-by-1 array such that the `i`-th element of `I`
             indicates the index of the variational mixture component from which
             the `i`-th row of X has been generated.
+
+        Notes
+        -----
+        Random draws use ``self.rng``.
         """
         # missing to sample from gp
         gp_sample = False
@@ -290,6 +337,7 @@ class VariationalPosterior:
         elif gp_sample:
             pass
         else:
+            rng = self.rng
             lambd_row = self.lambd.reshape(1, -1)
 
             if self.K > 1:
@@ -304,37 +352,31 @@ class VariationalPosterior:
                         repeats_extra = np.ceil(np.sum(w_extra))
                         w_extra += self.w * (repeats_extra - sum(w_extra))
                         w_extra /= np.sum(w_extra)
-                        i_extra = np.random.choice(
+                        i_extra = rng.choice(
                             range(self.K),
                             size=repeats_extra.astype("int"),
                             p=w_extra.ravel(),
                         )
                         i = np.append(i, i_extra)
 
-                    np.random.shuffle(i)
+                    rng.shuffle(i)
                     i = i[:N]
                 else:
-                    i = np.random.choice(
-                        range(self.K), size=N, p=self.w.ravel()
-                    )
+                    i = rng.choice(range(self.K), size=N, p=self.w.ravel())
 
                 if not np.isfinite(df) or df == 0:
                     x = (
                         self.mu.T[i]
                         + lambd_row
-                        * np.random.randn(N, self.D)
+                        * rng.standard_normal((N, self.D))
                         * self.sigma[:, i].T
                     )
                 else:
-                    t = (
-                        df
-                        / 2
-                        / np.sqrt(np.random.gamma(df / 2, df / 2, (N, 1)))
-                    )
+                    t = df / 2 / np.sqrt(rng.gamma(df / 2, df / 2, (N, 1)))
                     x = (
                         self.mu.T[i]
                         + lambd_row
-                        * np.random.randn(N, self.D)
+                        * rng.standard_normal((N, self.D))
                         * t
                         * self.sigma[:, i].T
                     )
@@ -342,19 +384,17 @@ class VariationalPosterior:
                 if not np.isfinite(df) or df == 0:
                     x = (
                         self.mu.T
-                        + lambd_row * np.random.randn(N, self.D) * self.sigma
+                        + lambd_row
+                        * rng.standard_normal((N, self.D))
+                        * self.sigma
                     )
                 else:
-                    t = (
-                        df
-                        / 2
-                        / np.sqrt(np.random.gamma(df / 2, df / 2, (N, 1)))
-                    )
+                    t = df / 2 / np.sqrt(rng.gamma(df / 2, df / 2, (N, 1)))
                     x = (
                         self.mu.T
                         + lambd_row
                         * t
-                        * np.random.randn(N, self.D)
+                        * rng.standard_normal((N, self.D))
                         * self.sigma
                     )
                 i = np.zeros(N)

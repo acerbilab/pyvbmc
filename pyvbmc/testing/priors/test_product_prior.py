@@ -11,7 +11,7 @@ from scipy.stats import (
     t,
 )
 
-from pyvbmc.priors import Product, SciPy, SmoothBox, UniformBox
+from pyvbmc.priors import Product, SciPy, SmoothBox, UniformBox, UserFunction
 
 
 def test_product_prior_scipy_mv_normal_pdf():
@@ -120,3 +120,22 @@ def test_product_type_checking():
         "All marginals of a product distribution should have dimension 1, but marginal SciPy prior:"
         in err.value.args[0]
     )
+
+
+def test_product_sample_rng():
+    prior = Product._generic(D=3)
+    s1 = prior.sample(5, rng=np.random.default_rng(0))
+    s2 = prior.sample(5, rng=np.random.default_rng(0))
+    assert np.array_equal(s1, s2)
+    assert prior.sample(5).shape == (5, prior.D)
+
+
+def test_product_sample_user_function_marginal():
+    # A UserFunction marginal samples with the user's own callable, which
+    # takes only `n`; Product.sample must not pass it `rng`.
+    user_prior = UserFunction(lambda x: 0.0, lambda n: np.zeros((n, 1)), D=1)
+    prior = Product([user_prior, UniformBox(0.0, 1.0, D=1)])
+    rvs = prior.sample(4, rng=np.random.default_rng(0))
+    assert rvs.shape == (4, 2)
+    assert np.all(rvs[:, 0] == 0.0)
+    assert np.all((rvs[:, 1] >= 0.0) & (rvs[:, 1] <= 1.0))

@@ -24,6 +24,10 @@ pip install -e ".[dev]"
 pip install pre-commit && pre-commit install
 ```
 
+Extras: `test` (pytest, pytest-mock, pytest-rerunfailures; what the test
+workflows install), `examples` (plotly for notebook 2), `dev` (both plus
+docs and formatting tools).
+
 Tests (no pytest config, no conftest, no markers; discovery is plain
 `pyvbmc/testing/**/test_*.py`):
 
@@ -126,9 +130,21 @@ Things you must hold in your head across files:
   add a `# description` line followed by `name = <expr>` to the right `.ini`;
   the comment is the user documentation. Unknown keys raise at validation.
   Options are frozen after init; use `options.__setitem__(k, v, force=True)`.
-- **Randomness is the global `np.random` state** at ~40 call sites; there is no
-  seed argument. Reproducibility works through stored `np.random` state in
-  `save/load`. This is why the suite is flaky and CI uses `--reruns=5 -x`.
+- **Randomness goes through `numpy.random.Generator` objects.** `VBMC(seed=)`
+  creates `vbmc.rng` (`pyvbmc/rng.py: get_rng`), shared with `vbmc.vp`;
+  `VariationalPosterior.__deepcopy__` shares the generator so every copy of a
+  VP stays on one stream, and functions that receive a `vp` draw from
+  `vp.rng`. `seed=None` derives the generator from the global `np.random`
+  state so that `np.random.seed()` beforehand still fixes a run (the example
+  notebooks rely on this). gpyreg (slice sampler, `f_min_fill`,
+  `GP.random_function`) and the `cma` noise handler still draw from the
+  global state, so a seeded instance reseeds it at construction and
+  reinstalls its own snapshot when `optimize()` starts; drop that seam once
+  gpyreg accepts a generator. The per-iteration `random_state` holds both
+  the generator state and the legacy tuple; `load(set_random_state=True)`
+  restores both. `test_vbmc_seed.py` deliberately holds two short (2
+  iteration, `D=2`) `optimize()` runs: they are the only end-to-end check of
+  the seam. Unseeded tests remain the reason CI uses `--reruns=5 -x`.
 - **float64 everywhere, implicitly.** The Cholesky retry ladder in gpyreg
   exists because the matrices are borderline singular.
 

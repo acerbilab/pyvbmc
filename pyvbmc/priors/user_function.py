@@ -56,8 +56,14 @@ class UserFunction(Prior):
         log_prior = lambda x: multivariate_normal(np.zeros(D)).logpdf(x)
         return cls(log_prior, D=D)
 
-    def sample(self, n):
-        """Unused"""
+    def sample(self, n, rng=None):
+        """Unused.
+
+        A `UserFunction` prior samples with the user-provided
+        ``sample_prior`` callable, which is bound to ``self.sample`` at
+        initialization (and takes only ``n``), so ``rng`` is accepted for
+        interface compatibility with the other priors but ignored.
+        """
         pass
 
     def _log_pdf(self):

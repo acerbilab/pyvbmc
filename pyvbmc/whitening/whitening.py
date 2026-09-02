@@ -107,6 +107,10 @@ def warp_input(vp, optim_state, function_logger, options):
     warp_action : str
         The type of warping performed ("rotoscaling" or "warp")
 
+    Notes
+    -----
+    Random draws use ``vp.rng``.
+
     Raises
     ------
     NotImplementedError
@@ -167,7 +171,7 @@ def warp_input(vp, optim_state, function_logger, options):
     parameter_transformer.delta = np.ones(vp.D)
     Nrnd = 100000
     xx = (
-        np.random.rand(Nrnd, vp.D)
+        vp.rng.random((Nrnd, vp.D))
         * (optim_state["pub_orig"] - optim_state["plb_orig"])
         + optim_state["plb_orig"]
     )
@@ -207,7 +211,7 @@ def warp_input(vp, optim_state, function_logger, options):
 
     Nrnd = 1000
     xx = (
-        np.random.rand(Nrnd, vp.D)
+        vp.rng.random((Nrnd, vp.D))
         * (optim_state["ub_search"] - optim_state["lb_search"])
         + optim_state["lb_search"]
     )

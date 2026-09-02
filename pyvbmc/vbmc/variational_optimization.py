@@ -127,6 +127,11 @@ def optimize_vp(
         log-joint, for each GP hyperparameter sample.
     pruned : int
         Number of pruned components.
+
+    Notes
+    =====
+    Random draws (starting points, Monte Carlo entropy, choice of the
+    component to prune) use ``vp.rng``.
     """
 
     if K is None:
@@ -331,7 +336,7 @@ def optimize_vp(
             idx = np.argwhere(
                 (vp.w < options["tol_weight"]).ravel() & ~already_checked
             ).ravel()
-            idx = idx[np.random.randint(0, np.size(idx))]
+            idx = idx[vp.rng.integers(0, np.size(idx))]
             vp_pruned.w = np.delete(vp_pruned.w, idx)
             vp_pruned.eta = np.delete(vp_pruned.eta, idx)
             vp_pruned.sigma = np.delete(vp_pruned.sigma, idx)
@@ -849,8 +854,12 @@ def _vb_init(
         The array of random starting parameters.
     type_vec : np.ndarray, shape (opts_N, )
         The array of type of each random starting parameter.
-    """
 
+    Notes
+    =====
+    Random draws use ``vp.rng``.
+    """
+    rng = vp.rng
     D = vp.D
     K = vp.K
     N_star = X_star.shape[0]
@@ -875,7 +884,7 @@ def _vb_init(
         else:
             V = np.var(X_star, axis=0, ddof=1)
         sigma0 = np.sqrt(np.mean(V / lambd0**2) / K_new) * np.exp(
-            0.2 * np.random.randn(1, K_new)
+            0.2 * rng.standard_normal((1, K_new))
         )
     else:
         # Start from random provided training points.
@@ -902,18 +911,21 @@ def _vb_init(
             if K_new > vp.K:
                 # Spawn a new component near an existing one
                 for i_new in range(K, K_new):
-                    idx = np.random.randint(0, K)
+                    idx = rng.integers(0, K)
                     mu = np.hstack((mu, mu[:, idx : idx + 1]))
                     sigma = np.hstack((sigma, sigma[0:1, idx : idx + 1]))
                     mu[:, i_new : i_new + 1] += (
-                        0.5 * sigma[0, i_new] * lambd * np.random.randn(D, 1)
+                        0.5
+                        * sigma[0, i_new]
+                        * lambd
+                        * rng.standard_normal((D, 1))
                     )
 
                     if vp.optimize_sigma:
-                        sigma[0, i_new] *= np.exp(0.2 * np.random.randn())
+                        sigma[0, i_new] *= np.exp(0.2 * rng.standard_normal())
 
                     if vp.optimize_weights:
-                        xi = 0.25 + 0.25 * np.random.rand()
+                        xi = 0.25 + 0.25 * rng.random()
                         w = np.hstack((w, xi * w[0:1, idx : idx + 1]))
                         w[0, idx] *= 1 - xi
         elif vb_type == 2:
@@ -928,7 +940,7 @@ def _vb_init(
         elif vb_type == 3:
             # Start from random provided training points
             if vp.optimize_mu:
-                order = np.random.permutation(N_star)
+                order = rng.permutation(N_star)
                 idx_order = np.tile(
                     range(0, min(K_new, N_star)),
                     (math.ceil(K_new / N_star),),
@@ -943,7 +955,7 @@ def _vb_init(
                 else:
                     V = np.var(X_star, axis=0, ddof=1)
                 sigma = np.sqrt(np.mean(V) / K_new) * np.exp(
-                    0.2 * np.random.randn(1, K_new)
+                    0.2 * rng.standard_normal((1, K_new))
                 )
 
             if vp.optimize_lambd:
@@ -961,13 +973,13 @@ def _vb_init(
             if vp.optimize_mu:
                 # When reproducing MATLAB numbers we need to do Fortran order
                 # here, adding .T works with square shape.
-                mu += sigma * lambd * np.random.randn(mu.shape[0], mu.shape[1])
+                mu += sigma * lambd * rng.standard_normal(mu.shape)
             if vp.optimize_sigma:
-                sigma *= np.exp(0.2 * np.random.randn(1, K_new))
+                sigma *= np.exp(0.2 * rng.standard_normal((1, K_new)))
             if vp.optimize_lambd:
-                lambd *= np.exp(0.2 * np.random.randn(D, 1))
+                lambd *= np.exp(0.2 * rng.standard_normal((D, 1)))
             if vp.optimize_weights:
-                w *= np.exp(0.2 * np.random.randn(1, K_new))
+                w *= np.exp(0.2 * rng.standard_normal((1, K_new)))
                 w /= np.sum(w)
 
         new_vp = copy.deepcopy(vp)

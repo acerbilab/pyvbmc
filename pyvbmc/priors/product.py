@@ -16,6 +16,8 @@ from pyvbmc.priors import (
     UniformBox,
     is_valid_scipy_dist,
 )
+from pyvbmc.priors.user_function import UserFunction
+from pyvbmc.rng import get_rng
 
 
 class Product(Prior):
@@ -54,7 +56,7 @@ class Product(Prior):
         self.a = np.full(self.D, -np.inf)
         self.b = np.full(self.D, np.inf)
         self.marginals = []
-        for (m, marginal) in enumerate(marginals):
+        for m, marginal in enumerate(marginals):
             if is_valid_scipy_dist(marginal):
                 marginal = SciPy(marginal)
             elif not isinstance(marginal, Prior):
@@ -86,27 +88,36 @@ class Product(Prior):
         """
         n, D = x.shape
         log_pdf = np.zeros((n, D))
-        for (m, marginal) in enumerate(self.marginals):
+        for m, marginal in enumerate(self.marginals):
             log_pdf[:, m] = marginal.log_pdf(x[:, m], keepdims=False)
         log_pdf = np.sum(log_pdf, axis=1, keepdims=True)
         return log_pdf
 
-    def sample(self, n):
+    def sample(self, n, rng=None):
         """Sample random variables from the uniform-box distribution.
 
         Parameters
         ----------
         n : int
             The number of points to sample.
+        rng : None, int, SeedSequence or Generator, optional
+            Random generator or seed; if None a generator is derived from
+            NumPy's global random state. The same generator is shared by all
+            marginals, so the whole product draws from one stream.
 
         Returns
         -------
         rvs : np.ndarray
             The samples points, of shape `(n, D)`, where `D` is the dimension.
         """
+        rng = get_rng(rng)
         rvs = np.zeros((n, self.D))
-        for (m, marginal) in enumerate(self.marginals):
-            rvs[:, m] = marginal.sample(n).ravel()
+        for m, marginal in enumerate(self.marginals):
+            if isinstance(marginal, UserFunction):
+                # `sample` is the user's own callable and takes only `n`.
+                rvs[:, m] = marginal.sample(n).ravel()
+            else:
+                rvs[:, m] = marginal.sample(n, rng=rng).ravel()
         return rvs
 
     @classmethod

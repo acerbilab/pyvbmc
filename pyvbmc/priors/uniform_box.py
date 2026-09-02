@@ -4,6 +4,7 @@ import numpy as np
 
 from pyvbmc.formatting import full_repr
 from pyvbmc.priors import Prior, tile_inputs
+from pyvbmc.rng import get_rng
 
 
 class UniformBox(Prior):
@@ -70,20 +71,24 @@ class UniformBox(Prior):
 
         return log_pdf
 
-    def sample(self, n):
+    def sample(self, n, rng=None):
         """Sample random variables from the uniform-box distribution.
 
         Parameters
         ----------
         n : int
             The number of points to sample.
+        rng : None, int, SeedSequence or Generator, optional
+            Random generator or seed; if None a generator is derived from
+            NumPy's global random state.
 
         Returns
         -------
         rvs : np.ndarray
             The samples points, of shape `(n, D)`, where `D` is the dimension.
         """
-        return np.random.uniform(self.a, self.b, size=(n, self.D))
+        rng = get_rng(rng)
+        return rng.uniform(self.a, self.b, size=(n, self.D))
 
     @classmethod
     def _generic(cls, D=1):

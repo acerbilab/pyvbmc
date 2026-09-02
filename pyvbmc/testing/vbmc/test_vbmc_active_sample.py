@@ -186,13 +186,13 @@ def test_active_sample_initial_sample_plausible(mocker):
     assert not np.all(np.isnan(vbmc.optim_state["cache"]["y_orig"][:10]))
 
     # return a linespace so that random_Xs is with mean 0
-    mocker.patch(
-        "numpy.random.rand",
-        return_value=np.linspace(
-            (-100, -100, -100),
-            (100, 100, 100),
-            sample_count - provided_sample_count,
-        ),
+    random_values = np.linspace(
+        (-100, -100, -100),
+        (100, 100, 100),
+        sample_count - provided_sample_count,
+    )
+    mocker.patch.object(
+        vbmc.vp, "_rng", mocker.Mock(**{"random.return_value": random_values})
     )
     function_logger, optim_state, _, _ = active_sample(
         gp=None,
@@ -246,13 +246,13 @@ def test_active_sample_initial_sample_narrow(mocker):
     assert not np.all(np.isnan(vbmc.optim_state["cache"]["y_orig"][:10]))
 
     # return a linespace so that random_Xs is with mean 0
-    mocker.patch(
-        "numpy.random.rand",
-        return_value=np.linspace(
-            (-0.1, -0.1, -0.1),
-            (0.1, 0.1, 0.1),
-            sample_count - provided_sample_count,
-        ),
+    random_values = np.linspace(
+        (-0.1, -0.1, -0.1),
+        (0.1, 0.1, 0.1),
+        sample_count - provided_sample_count,
+    )
+    mocker.patch.object(
+        vbmc.vp, "_rng", mocker.Mock(**{"random.return_value": random_values})
     )
     function_logger, optim_state, _, _ = active_sample(
         gp=None,
@@ -639,9 +639,10 @@ def test_get_search_points_all_box_search(mocker):
         (100, 100, 100),
         number_of_points,
     )
-    mocker.patch(
-        "numpy.random.standard_normal",
-        return_value=random_values,
+    mocker.patch.object(
+        vbmc.vp,
+        "_rng",
+        mocker.Mock(**{"standard_normal.return_value": random_values}),
     )
     # infinite bounds
     vbmc.optim_state["lb_search"] = np.full((1, 3), -np.inf)

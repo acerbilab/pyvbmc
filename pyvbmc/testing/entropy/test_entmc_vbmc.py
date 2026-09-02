@@ -33,24 +33,34 @@ def entmc_vbmc_wrapper(theta, D, K, Ns=1e5, ret="H"):
     vp.lambd = theta[D * K + K : D * K + K + D]
     vp.w = theta[D * K + K + D :]
 
-    state = np.random.get_state()
-    np.random.seed(42)  # important for numerical gradients testing
+    # A fixed seed per call gives common random numbers to the value and
+    # gradient evaluations (important for numerical gradient testing).
     if ret == "H":
         H, _ = entmc_vbmc(
-            vp, Ns, grad_flags=tuple([False] * 4), jacobian_flag=False
+            vp,
+            Ns,
+            grad_flags=tuple([False] * 4),
+            jacobian_flag=False,
+            rng=42,
         )
-        np.random.set_state(state)
         return H
     else:
         _, dH = entmc_vbmc(
-            vp, Ns, grad_flags=tuple([True] * 4), jacobian_flag=False
+            vp,
+            Ns,
+            grad_flags=tuple([True] * 4),
+            jacobian_flag=False,
+            rng=42,
         )
-        np.random.set_state(state)
         return dH
 
 
 def test_entmc_vbmc_single_gaussian():
-    # Check with a single Gaussian
+    # Check with a single Gaussian. For K = 1 the numerical gradient of the
+    # sample-based entropy is exact, while the reparameterization gradient
+    # carries Monte Carlo error of relative order sqrt(4 / Ns) per
+    # coordinate (0.6% at Ns = 1e5), so the gradient check below uses
+    # rtol = 0.03, about five standard deviations.
     D, K, Ns = 3, 1, 1e5
     vp = VariationalPosterior(D, K)
     vp.mu = np.ones((D, K))
@@ -68,7 +78,7 @@ def test_entmc_vbmc_single_gaussian():
     )
     f = lambda theta: entmc_vbmc_wrapper(theta, D, K, Ns, "H")
     f_grad = lambda theta: entmc_vbmc_wrapper(theta, D, K, Ns, "dH")
-    assert check_grad(f, f_grad, theta0, rtol=0.01)
+    assert check_grad(f, f_grad, theta0, rtol=0.03)
 
 
 def test_entmc_vbmc_nonoverlapping_mixture():
@@ -157,12 +167,13 @@ def test_entmc_vbmc_matlab():
     dHm = mat["dH"].squeeze()
     jacobian_flag = mat["jacobian_flag"].item()
 
-    state = np.random.get_state()
-    np.random.seed(42)  # Random seed used in MATLAB
     H, dH = entmc_vbmc(
-        vp, Ns, grad_flags=tuple([True] * 4), jacobian_flag=jacobian_flag
+        vp,
+        Ns,
+        grad_flags=tuple([True] * 4),
+        jacobian_flag=jacobian_flag,
+        rng=42,  # Random seed used in MATLAB
     )
-    np.random.set_state(state)
     if exact:
         assert np.isclose(H, Hm)
         assert np.allclose(dH, dHm)

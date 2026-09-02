@@ -4,6 +4,7 @@ import numpy as np
 
 from pyvbmc.formatting import full_repr
 from pyvbmc.priors import Prior, tile_inputs
+from pyvbmc.rng import get_rng
 
 
 class Trapezoidal(Prior):
@@ -120,19 +121,23 @@ class Trapezoidal(Prior):
 
         return np.sum(log_pdf, axis=1, keepdims=True)
 
-    def sample(self, n):
+    def sample(self, n, rng=None):
         """Sample random variables from the trapezoidal distribution.
 
         Parameters
         ----------
         n : int
             The number of points to sample.
+        rng : None, int, SeedSequence or Generator, optional
+            Random generator or seed; if None a generator is derived from
+            NumPy's global random state.
 
         Returns
         -------
         rvs : np.ndarray
             The samples points, of shape `(n, D)`, where `D` is the dimension.
         """
+        rng = get_rng(rng)
         rvs = np.zeros((n, self.D))
 
         # Sample one dimension at a time
@@ -151,10 +156,10 @@ class Trapezoidal(Prior):
             # Rejection sampling
             while n1 > 0:
                 # Uniform sampling in the bounding box
-                r1[mask] = np.random.uniform(self.a[d], self.b[d], size=n1)
+                r1[mask] = rng.uniform(self.a[d], self.b[d], size=n1)
 
                 # Rejection sampling
-                z1 = np.random.uniform(0.0, y_max, size=n1)
+                z1 = rng.uniform(0.0, y_max, size=n1)
                 y1 = one_d_dist.pdf(r1[mask].reshape(-1, 1), keepdims=False)
 
                 mask_new = np.full(n, False)

@@ -1,5 +1,6 @@
 import numpy as np
 
+from pyvbmc.rng import get_rng
 from pyvbmc.variational_posterior import VariationalPosterior
 
 
@@ -8,6 +9,7 @@ def entmc_vbmc(
     Ns: int,
     grad_flags: tuple = tuple([True] * 4),
     jacobian_flag: bool = True,
+    rng=None,
 ):
     r"""Monte Carlo estimate of entropy of variational posterior.
 
@@ -23,6 +25,9 @@ def entmc_vbmc(
         Whether variational parameters are transformed.
         The variational parameters and corresponding transformations are:
         sigma (log), lambda (log), w (softmax).
+    rng : None, int, SeedSequence or np.random.Generator, optional
+        Random generator (or seed) for the Monte Carlo samples. By default
+        ``vp.rng`` is used.
 
     Returns
     -------
@@ -35,6 +40,7 @@ def entmc_vbmc(
         \nabla_{\omega}^{T} H\right]`
 
     """
+    rng = vp.rng if rng is None else get_rng(rng)
 
     D = vp.D
     K = vp.K
@@ -64,7 +70,7 @@ def entmc_vbmc(
     for j in range(K):
         # Draw Monte Carlo samples from the j-th component
         # Antithetic sampling
-        epsilon[: Ns // 2, :] = np.random.randn(Ns // 2, D)
+        epsilon[: Ns // 2, :] = rng.standard_normal((Ns // 2, D))
         epsilon[Ns // 2 :, :] = -epsilon[: Ns // 2, :]
 
         Xs = epsilon * lambd * sigma[j] + mu[:, j]  # [Ns, D]

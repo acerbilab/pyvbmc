@@ -74,3 +74,11 @@ def test_scipy_type_checking():
         "A SciPy prior should be initialized from a \"frozen\" multivariate normal, multivariate t, or univariate SciPy distribution, but got `distribution` of type <class 'list'>."
         in err.value.args[0]
     )
+
+
+def test_scipy_sample_rng():
+    prior = SciPy._generic(D=3)
+    s1 = prior.sample(5, rng=np.random.default_rng(0))
+    s2 = prior.sample(5, rng=np.random.default_rng(0))
+    assert np.array_equal(s1, s2)
+    assert prior.sample(5).shape == (5, prior.D)

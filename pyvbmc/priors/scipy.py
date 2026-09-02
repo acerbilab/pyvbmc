@@ -10,6 +10,7 @@ from scipy.stats._multivariate import (
 
 from pyvbmc.formatting import full_repr
 from pyvbmc.priors import Prior
+from pyvbmc.rng import get_rng
 
 
 class SciPy(Prior):
@@ -78,20 +79,25 @@ class SciPy(Prior):
         log_pdf = self.distribution.logpdf(x).reshape((n, 1))
         return log_pdf
 
-    def sample(self, n):
+    def sample(self, n, rng=None):
         """Sample random variables from the uniform-box distribution.
 
         Parameters
         ----------
         n : int
             The number of points to sample.
+        rng : None, int, SeedSequence or Generator, optional
+            Random generator or seed; if None a generator is derived from
+            NumPy's global random state. It takes precedence over any
+            ``random_state`` set on the frozen scipy distribution.
 
         Returns
         -------
         rvs : np.ndarray
             The samples points, of shape `(n, D)`, where `D` is the dimension.
         """
-        rvs = self.distribution.rvs(n).reshape((n, self.D))
+        rng = get_rng(rng)
+        rvs = self.distribution.rvs(n, random_state=rng).reshape((n, self.D))
         return rvs
 
     @classmethod

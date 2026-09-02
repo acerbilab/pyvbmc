@@ -104,13 +104,16 @@ class Prior(ABC):
         pass
 
     @abstractmethod
-    def sample(self, n):
+    def sample(self, n, rng=None):
         """Sample random variables from the distribution.
 
         Parameters
         ----------
         n : int
             The number of points to sample.
+        rng : None, int, SeedSequence or Generator, optional
+            Random generator or seed; if None a generator is derived from
+            NumPy's global random state.
 
         Returns
         -------

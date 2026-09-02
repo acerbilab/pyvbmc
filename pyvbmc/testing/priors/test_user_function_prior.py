@@ -65,3 +65,14 @@ def test__str__and__repr__():
 
     repr_ = prior.__repr__()
     assert f"self.D = {D}" in repr_
+
+
+def test_user_function_prior_sample_rng_ignored():
+    # A user-supplied sampler is bound directly to `prior.sample` and takes
+    # only `n`, so `rng` is not threaded through it.
+    log_prior = lambda x: np.sum(x)
+    sample_prior = lambda n: np.random.default_rng(0).normal(size=(n, 1))
+    prior = UserFunction(log_prior, sample_prior, D=1)
+    assert prior.sample(5).shape == (5, 1)
+    # The (unused) class-level method accepts and ignores `rng`:
+    assert UserFunction.sample(prior, 5, rng=np.random.default_rng(0)) is None
