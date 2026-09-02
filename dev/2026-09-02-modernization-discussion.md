@@ -520,6 +520,11 @@ in §2 are estimates.
 4. Open the first PR: RNG `Generator` threading (Stage 1), together with
    fixing the §9 one-liners.
 
+**Status at end of 2026-09-02.** Nothing in this plan has started. Work so far
+is on branch `dev-next`: this folder, `papers/`, `AGENTS.md`. No dev
+environment exists on the main machine yet (no `gpyreg`, no `torch`), so step
+1 is the pickup point.
+
 ---
 
 ## Sources consulted for §7
