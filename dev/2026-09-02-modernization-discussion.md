@@ -608,6 +608,10 @@ benchmark target suite (§10) into `profile_run.py`, profile it, and confirm
 or revise the Stage 2 priority order, which currently rests on two easy
 Gaussians.
 
+The paragraph above is the status as of that day. Stage status and the
+current pickup point are tracked in `plans/modernization-roadmap.md` from
+here on, not in this devlog.
+
 ---
 
 ## Sources consulted for §7
