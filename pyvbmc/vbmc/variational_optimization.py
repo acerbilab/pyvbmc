@@ -1611,11 +1611,18 @@ def _gp_log_joint(
         if np.any(grad_flags):
             dG = np.sum(dG, axis=1) / Ns
 
-    # Drop extra dims if Ns == 1
+    # Drop extra dims if Ns == 1 (also for the variance terms: with a single
+    # hyperparameter sample, e.g. once GP sampling has stopped at
+    # N >= stable_gp_sampling, varG must be a scalar like G, or
+    # ``_eval_full_elcbo`` cannot store varF)
     if Ns == 1:
         G = G[0]
         if np.any(grad_flags):
             dG = dG[:, 0]
+        if compute_var:
+            varG = varG[0]
+        if compute_vargrad:
+            dvarG = dvarG[:, 0]
 
     if separate_K:
         return G, dG, varG, dvarG, var_ss, I_sk, J_sjk
