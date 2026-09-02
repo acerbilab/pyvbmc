@@ -19,3 +19,7 @@ would be committed, and anything that was would be published to the docs site.
   numerical core from NumPy to a tensor backend. Hot-path analysis, gradient
   inventory, gpyreg audit, backend decision (PyTorch), staged plan, repo
   process decisions, list of latent bugs found along the way.
+- `2026-09-02-user-agent-skill.md` — Deferred idea: ship an Agent Skills
+  folder so users' coding agents set up and troubleshoot PyVBMC correctly.
+  What BayesFlow did, the spec, and a design that lives in-repo and ships in
+  the wheel. Build after the 1.5 API settles.
