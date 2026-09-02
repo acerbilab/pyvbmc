@@ -659,7 +659,25 @@ logistics; and on the noisy path items 8 and 1 dominate outright because
 the active-sampling bucket is GP refits and VP optimizations there. The
 exhaust run (GP training at Ns = 0) is reported below when it finishes.
 
-**Exhaust run** (`normal_D5_exhaust`, after the fix): *pending*.
+**Exhaust run** (`normal_D5_exhaust`, plain, after the fix `6f3f0ba`):
+443 s, 69 iterations, 350 evaluations, terminated on the budget; Ns_gp
+8 → 14 → … → 5, then **0 from iteration 48 (N = 250 = 200 + 10D)** for the
+last 21 iterations; K grew to 30; elbo err 0.012, gsKL 0.000, MMTV 0.007.
+The two regimes, per iteration:
+
+| regime | iterations | active sampling | GP training | variational fit |
+|---|---|---|---|---|
+| Ns > 0 (sampling) | 48 | 3.41 s (44 %) | 2.89 s (37 %) | 1.42 s (18 %) |
+| Ns = 0 (optimize-only) | 21 | 1.99 s (62 %) | 0.03 s (1 %) | 1.13 s (35 %) |
+
+Once sampling stops, GP training all but vanishes (warm-started L-BFGS-B),
+active sampling halves because `GP.predict` runs over one hyperparameter
+sample instead of 5–8, and the variational stage is a third of a cheaper
+iteration. **The decision rule's second clause does not fire**: the
+budget-exhausting run is not dominated by GP refits at Ns = 0, so the
+L-BFGS-B path does not join item 8. The expensive regime is the sampling
+one, exactly where items 3 and 8 act. Its cProfile pass is *pending*
+(attribution only; the plain numbers above are the ones that matter).
 
 ### Golden population (`runs/golden/baseline/`)
 
@@ -781,7 +799,8 @@ Phase 2 — profiler and campaign
 - [x] Decision rule applied 23:05: Stage 2 order stands (3 → 8 → 1 → 2),
   refinements recorded in §Results, devlog §2/§10 and the roadmap
 - [x] commit (2) — 22:14, `4cf8626`
-- [~] Exhaust run plain + cprof (with the fix) running since ~22:59
+- [x] Exhaust run plain done 23:07 (443 s, reached Ns = 0 at N = 250,
+  terminated on the budget, fix holds); cprof running
 
 Phase 3 — golden traces
 - [x] `golden_trace.py` (`run`, `summary`, `compare`) — 22:16; commit (3)

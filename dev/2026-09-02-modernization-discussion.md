@@ -521,7 +521,11 @@ optimizations rather than by the acquisition search, so items 8 and 1 are
 what speed up noisy targets. Concrete targets inside item 8: the scipy
 `solve_triangular` validation wrappers (9–10 % of total time, 0.6–1.2 M
 calls per run) and `__core_computation` Python overhead; the Cholesky itself
-is under 2 %.
+is under 2 %. The budget-exhausting run (`normal` D=5, 350 evaluations, Ns
+= 0 from N = 250) settles the rule's second clause in the negative: in the
+optimize-only regime GP training is 1 % of an iteration (warm-started
+L-BFGS-B, 0.03 s), active sampling halves (one hyperparameter sample) and
+the variational stage is 35 %; the L-BFGS-B path does not join item 8.
 
 **Benchmark target suite (decided 2026-09-02, after the profile).** The
 profile was taken on an independent and a correlated Gaussian, which
