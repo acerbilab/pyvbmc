@@ -30,11 +30,17 @@ each substantive commit.
   golden-trace harness: banana, cigar, lumpy, Student-t at several `D`; a
   noisy VIQR-path target; one real likelihood with data; one
   budget-exhausting run reaching `N ≥ 200 + 10D`. Profile it before Stage 2.
-- [ ] **Stage 2 — NumPy vectorization + memory fix.** Provisional order
-  (measured on two easy Gaussians only): batched acquisition evaluation,
-  gpyreg sampler overhead (gpyreg PR), `_gp_log_joint` einsum,
-  `_eval_full_elcbo` multi-RHS solve, `vp.pdf` over `K`, `entmc_vbmc`,
-  drop per-candidate deepcopy, `GP.clean()` / stop retaining full GPs.
+- [ ] **Stage 2 — NumPy vectorization + memory fix.** Order confirmed
+  2026-09-02 (evening) on the benchmark suite
+  (`plans/benchmark-suite-and-golden-traces.md` §Results): (3) batched
+  acquisition evaluation (`GP.predict` over `Ns`, `vp.pdf` over `K`, the
+  CMA-ES population; 40–48 % of time is single-point `predict`), (8) gpyreg
+  sampler overhead (`solve_triangular` wrappers 9–10 %, `__core_computation`;
+  gpyreg PR), (1) `_gp_log_joint` einsum (close to (8); PyVBMC-local, may
+  land first), (2) `_eval_full_elcbo` multi-RHS solve (also shrinks
+  `final_boost`, 6–12 %), then `entmc_vbmc`, drop per-candidate deepcopy,
+  `GP.clean()` / stop retaining full GPs (memory only: deepcopy is 0.4 % of
+  time). On noisy targets (8) and (1) dominate.
 - [ ] **Stage 3 — pipeline features** (batched initial design,
   torch/jax target adapter docs, `vp.to_torch()`, ArviZ export).
 - [ ] **Stage 4 — PyTorch port** (decision point, not default).

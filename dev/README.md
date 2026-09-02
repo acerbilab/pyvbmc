@@ -41,6 +41,11 @@ status and next steps never go into the devlogs.
 - `plans/stage1-rng-generator.md` — Stage 1 worklog: `VBMC(seed=)`,
   `vbmc.rng`, the gpyreg/cma global-state seam, the random-state save
   format, what the tests had to change, review findings, follow-ups.
+- `plans/benchmark-suite-and-golden-traces.md` — plan and worklog for the
+  benchmark target suite (`scripts/benchmark_targets.py`), the profile
+  campaign on it that fixed the Stage 2 order, and the first golden-trace
+  population; target definitions and ground truth, the measured profile,
+  the harness design, results and follow-ups.
 
 Naming: `plans/` files are named by slug only, never by date (the date is in
 the file header), so that they cannot be mistaken for copies of the dated
@@ -50,8 +55,25 @@ devlogs.
 
 `scripts/` holds developer tooling that is not part of the package or the
 test suite. Output directories under it (e.g. `scripts/runs/`) are gitignored;
-results that matter get summarized in a dated devlog entry, not committed raw.
+results that matter get summarized in the relevant `plans/` worklog (and
+decisions taken with a person in a dated devlog), not committed raw. Run the
+scripts from the repo root with the project venv; they import each other by
+plain module name, so run them as `python dev/scripts/<name>.py`.
 
-- `scripts/profile_run.py` — run VBMC on a cheap synthetic target under a
-  fixed seed and report per-stage timers and, with `--cprofile`, a cProfile
-  attribution of the hot paths. See its docstring.
+- `scripts/benchmark_targets.py` — the benchmark target suite: nine targets
+  with ground truth (normal, corr, halfnormal, rosenbrock, banana, cigar,
+  lumpy, student, logreg), a generic noise wrapper, the `smoke` / `profile`
+  / `golden` suites, shared posterior-moment and metric helpers, and
+  `--list` / `--check` / `--smoke` self-tests. Every other script takes its
+  targets from here.
+- `scripts/profile_run.py` — run VBMC on one target or suite config under a
+  fixed seed and report per-stage timers, truth-based metrics and, with
+  `--cprofile`, a cProfile attribution of the hot paths.
+- `scripts/profile_suite.py` — run `profile_run.py` over a whole suite
+  (plain and/or cProfile, resumable) and aggregate the summaries into one
+  markdown table.
+- `scripts/golden_trace.py` — the golden-trace regression harness: `run` a
+  suite over many seeds in parallel processes, storing one compact `.npz`
+  trace and a JSON sidecar per run; `summary` a population; `compare` two
+  populations with KS tests under a Holm family correction (`--split` for a
+  null check). Populations live under `scripts/runs/golden/`.

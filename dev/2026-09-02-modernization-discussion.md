@@ -95,6 +95,20 @@ assumption above describes hard or noisy targets only. The two conclusions
 above (overhead-bound, GPU irrelevant here) stand; the Stage 2 priority order
 in §10 is revised.
 
+**Measured again the same evening on the benchmark target suite**
+(`plans/benchmark-suite-and-golden-traces.md` §Results: banana, cigar,
+lumpy, Student-t at D=4, a logistic regression at D=5, a noisy banana):
+same balance, sharper. Active sampling 55–67 %, of which single-point
+`GP.predict` calls are 40–48 % (36k–106k per run); GP training 15–22 %, with
+the Cholesky under 2 % and the scipy `solve_triangular` wrappers alone at
+9–10 %; the variational stage 16–24 % on ridged posteriors (`_gp_log_joint`
+11–18 %); `final_boost` 6–12 % in one call. On the noisy VIQR path the
+active-sampling bucket is the per-sample full GP refits (25 %) and VP
+optimizations (22 %), not the acquisition search (3.5 %). All these targets
+converged in 80–135 evaluations and 1–2 minutes, so the `N → 350` regime is
+reached only by the budget-exhausting configuration, which also exposed and
+fixed a crash in that regime (§9).
+
 ---
 
 ## 3. Hand-derived gradients (what autodiff would delete)
@@ -412,6 +426,38 @@ state used by resume.
 - `_neg_elcbo` shifts `eta` to `max(eta) = 0` in place (on a view of the
   caller's `theta`) before the bound loss, so the eta upper soft bound
   (`ub = 0`) can never fire.
+- **Found 2026-09-02 (evening) while building the benchmark suite**, not
+  fixed (`plans/benchmark-suite-and-golden-traces.md`):
+  - `vbmc.py:1341` tests `optim_state.get("stop_gp_sampling") == 0`, but
+    only `"stop_sampling"` is ever set, so `_is_gp_sampling_finished` and
+    the `tol_gp_var_mcmc` option are dead; the method itself reads history
+    keys `N` and `gp_sample_var` that are never declared, so it is broken
+    code behind a dead guard.
+  - `true_mean`/`true_cov` options (`vbmc.py:1274-1278`): the guard
+    evaluates the raw value's truthiness, so numpy arrays raise
+    `ValueError`; when they do run (as lists) they draw 10⁶ samples from
+    the run's own `vp.rng` every iteration inside the `finalize` timer,
+    changing the trajectory. No test exercises them.
+  - The `display` and `log_file_level` option comments advertise
+    `"notify"`/`"final"`; the code handles `"off"`, `"iter"`, `"full"`.
+  - `FunctionLogger.finalize()` is never called by `VBMC` and does not trim
+    `n_evals`.
+  - `results["rng_state"]` is the literal string `"rng"`; `search_cmaes_best`
+    is read nowhere; the MCMC branch of `active_importance_sampling` is
+    unreachable (`mcmc_importance_sampling` is never set by any acquisition
+    function).
+  - `gaussian_process_train.py:610`: the cubic `f = lambda x_: a*x_**3 +
+    b*x**2 + c*x + d` uses the closure `x` for the lower-order terms
+    (harmless as called with `f(x)`).
+  - `kl_div_mvn` is wrapped by `handle_0D_1D_input`, which swallows `mu1` as
+    `self`: `mu1` is never promoted to 2-D and keyword calls fail. Call it
+    positionally with a `(1, D)` array.
+  - Notebook 1 states `lml_true = -2.272` for Rosenbrock + N(0, 3²) at D=2;
+    two independent quadratures give **−2.2598** (the x2 integral is
+    analytic, leaving a 1-D integral). Notebook 6's heteroskedastic noise
+    uses one norm for the whole batch and broadcasts `(n,) + (n,1)` to
+    `(n,n)` for `n > 1`. `noisy_cigar` in `test_vbmc_optimize.py` is dead
+    code.
 
 ---
 
@@ -462,6 +508,20 @@ gpyreg, which PyBADS shares), then items 1–2 (7–27%, growing with `K`), then
 the rest. **This order is provisional**: it was measured on two easy Gaussian
 targets and must be re-checked on the benchmark target suite below before
 the first vectorization PR.
+
+*Confirmed 2026-09-02 (evening) on the benchmark suite*
+(`plans/benchmark-suite-and-golden-traces.md` §Results, decision rule
+below applied): the variational stage grew to 16–24 % on ridged posteriors
+but overtook nothing, so the order stands, **3 → 8 → 1 → 2**, with two
+refinements. Items 8 and 1 are close (GP training 15–22 % vs variational
+16–24 %), and item 1 is PyVBMC-local while item 8 is a gpyreg PR, so item 1
+may be done first for logistics. On the noisy (VIQR) path the
+active-sampling bucket is dominated by the per-sample full GP refits and VP
+optimizations rather than by the acquisition search, so items 8 and 1 are
+what speed up noisy targets. Concrete targets inside item 8: the scipy
+`solve_triangular` validation wrappers (9–10 % of total time, 0.6–1.2 M
+calls per run) and `__core_computation` Python overhead; the Cholesky itself
+is under 2 %.
 
 **Benchmark target suite (decided 2026-09-02, after the profile).** The
 profile was taken on an independent and a correlated Gaussian, which

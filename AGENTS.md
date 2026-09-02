@@ -6,6 +6,11 @@ possibly noisy, log-likelihoods with up to ~10–20 parameters. Plain NumPy/SciP
 no autodiff. The algorithm papers live in `papers/` (verified Markdown
 transcriptions); dated developer notes live in `dev/` (see `dev/README.md` for
 the convention). `pyvbmc/vbmc/README.md` is the MATLAB-to-Python porting log.
+`dev/scripts/` holds the benchmark target suite (`benchmark_targets.py`),
+the profiler (`profile_run.py`, `profile_suite.py`) and the golden-trace
+regression harness (`golden_trace.py`); `dev/README.md` describes them and
+`dev/plans/benchmark-suite-and-golden-traces.md` records how they were built
+and what they measured.
 
 Before touching the numerical core, read `dev/2026-09-02-modernization-discussion.md`:
 it maps the hot paths, catalogues every hand-derived gradient, lists known

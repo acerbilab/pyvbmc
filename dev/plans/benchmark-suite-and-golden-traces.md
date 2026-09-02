@@ -558,6 +558,163 @@ seed); a summary; a statistical comparison usable as a gate by later stages.
 
 ---
 
+## Results
+
+### Profile campaign (`runs/profile_20260902/`, seed 0, machine otherwise idle)
+
+Plain runs, true wall time. Stages nest (the noisy run's per-sample GP+VP
+refits are timed inside active sampling), so percentages need not sum to
+100 and `untimed = wall − Σ stages` is a lower bound on the post-loop work
+(`determine_best_vp`, `final_boost` to K = 50).
+
+| config | wall s | untimed s | iters | evals | final N | act. sampling % | GP train % | var. fit % | finalize % | elbo err | gsKL |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| banana_D4 | 59.4 | 7.2 | 18 | 95 | 95 | 58.3 | 16.7 | 11.7 | 1.1 | 0.055 | 0.107 |
+| cigar_D4 | 114.5 | 8.9 | 26 | 130 | 130 | 55.8 | 14.3 | 21.2 | 0.9 | 0.003 | 0.001 |
+| lumpy_D4 | 53.7 | 6.8 | 15 | 80 | 80 | 54.2 | 20.6 | 11.4 | 1.0 | 0.000 | 0.011 |
+| student_D4 | 67.7 | 7.2 | 20 | 105 | 105 | 59.3 | 20.3 | 8.6 | 1.1 | 0.001 | 0.015 |
+| logreg_D5 | 98.6 | 11.7 | 22 | 110 | 110 | 51.0 | 16.6 | 19.4 | 1.0 | 0.108 | 0.028 |
+| banana_D2_noise1 | 104.4 | −8.6 | 26 | 135 | 135 | 74.3 | 18.6 | 14.7 | 0.6 | 0.015 | 0.029 |
+| normal_D5_exhaust | *pending (rerun after the fix)* | | | | | | | | | | |
+
+Every converging run ended on the stability criterion with 80–135
+evaluations, all K = 50 after the final boost, Ns_gp never below 7. Against
+the earlier Gaussian profiles (D=5: 48 / 33 / 9 %, D=10: 59 / 30 / 7 % for
+active sampling / GP training / variational fit):
+
+1. **Active sampling still dominates**, 51–59 % on every noiseless target
+   and 74 % on the noisy one (where the per-sample GP and VP refits of the
+   noisy path are inside that bucket). Stage 2 item 3 stays first.
+2. **GP training is a smaller share than on the Gaussians** (14–21 % vs
+   30–33 %): these runs are shorter and never leave the sampling regime.
+3. **The variational stage grows on correlated and ridged posteriors**:
+   21 % on cigar, 19 % on logreg, against 9–12 % elsewhere. That is the
+   large-K signal the decision rule asked about, though weaker than "shifts
+   the balance": it does not overtake active sampling anywhere.
+4. **The post-loop tail is 7–12 s per run, 10–13 % of wall**, essentially
+   the K = 50 final boost (`_eval_full_elcbo` with `ns_ent_fine`); on these
+   short runs it is as large as the whole variational stage. Stage 2 item 2
+   (multi-RHS solve in `_eval_full_elcbo`) gains weight.
+5. The reviewer's cost model ("hard targets ride out the budget", 8–24
+   min per run) was wrong by 5–10×: with the paper's targets at D = 4 and
+   the quantile plausible boxes, VBMC converges in 1–2 min. The D = 6
+   banana is the hardest golden config (gsKL 1.04 on seed 0).
+
+**cProfile attribution** (% of profiled `VBMC.optimize`; calls in
+parentheses; profiled wall 83–183 s, 1.5–1.6× the plain runs; banana_D4 was
+profiled under the pre-crash 8-process load, the rest alone):
+
+| bucket | banana_D4 | cigar_D4 | lumpy_D4 | student_D4 | logreg_D5 | banana_D2_noise1 |
+|---|---|---|---|---|---|---|
+| active_sample | 58.8 | 61.0 | 54.9 | 61.8 | 67.3 | 71.3 |
+| ├ cma.fmin | 50.3 | 53.8 | 45.5 | 49.3 | 57.5 | 3.5 |
+| ├ acquisition `__call__` (calls) | 51.2 (48k) | 52.9 (106k) | 48.5 (36k) | 54.3 (53k) | 58.6 (85k) | 49.8 (3.5k) |
+| ├ `GP.predict` (calls) | 42.4 (48k) | 42.5 (106k) | 40.5 (36k) | 46.3 (53k) | 47.7 (85k) | 11.5 (3.6k) |
+| ├ `vp.pdf` | 4.6 | 5.5 | 4.4 | 3.8 | 5.8 | 0.0 |
+| └ `f_min_fill` | 2.3 | 1.8 | 1.8 | 2.3 | 2.1 | 6.1 |
+| train_gp | 17.7 | 14.6 | 21.5 | 21.2 | 15.8 | 24.7 |
+| ├ `SliceSampler.sample` | 15.3 | 12.7 | 19.5 | 18.7 | 13.6 | 18.2 |
+| ├ `GP.__core_computation` (calls) | 12.3 (56k) | 10.3 (92k) | 14.7 (64k) | 15.0 (72k) | 11.1 (72k) | 17.4 (126k) |
+| ├ `solve_triangular` (calls) | 8.8 (603k) | 9.0 (1.2M) | 9.1 (567k) | 9.8 (678k) | 9.6 (936k) | 5.6 (396k) |
+| └ scipy `cholesky` | 1.4 | 1.2 | 1.6 | 1.8 | 1.3 | 1.9 |
+| optimize_vp | 22.5 | 23.6 | 22.6 | 15.9 | 15.7 | 22.5 |
+| ├ `_neg_elcbo` (calls) | 21.9 (2.9k) | 23.0 (6.4k) | 22.0 (2.4k) | 15.4 (2.9k) | 15.3 (3.3k) | 21.8 (7.4k) |
+| ├ `_gp_log_joint` | 16.5 | 17.0 | 17.4 | 11.7 | 11.2 | 17.9 |
+| ├ `minimize_adam` | 12.9 | 14.1 | 11.3 | 8.7 | 8.3 | 11.6 |
+| ├ `_sieve` | 5.8 | 5.6 | 6.9 | 4.5 | 4.0 | 7.1 |
+| ├ `_eval_full_elcbo` | 3.8 | 3.9 | 4.3 | 2.7 | 3.3 | 3.8 |
+| └ `entmc_vbmc` | 5.0 | 5.6 | 4.2 | 3.4 | 3.8 | 3.5 |
+| final_boost (1 call) | 11.6 | 7.3 | 10.7 | 8.9 | 6.5 | 4.4 |
+| `copy.deepcopy` | 0.4 | 0.4 | 0.4 | 0.4 | 0.3 | 0.6 |
+| `active_importance_sampling` | 0 | 0 | 0 | 0 | 0 | 0.3 |
+
+Reading:
+
+- **Noiseless hard targets** repeat the Gaussian picture with sharper
+  edges: the single-point `GP.predict` inside the CMA-ES loop is 40–48 % of
+  everything (36k–106k calls per run), `vp.pdf` another 4–6 %. Inside GP
+  training the Cholesky is under 2 %; the scipy `solve_triangular` wrappers
+  alone are 9–10 % (0.6–1.2 M calls) and `__core_computation` overhead the
+  rest. The variational stage is 16–24 %, of which `_gp_log_joint` 11–18 %
+  and Adam's Python loop 8–14 %.
+- **Noisy (VIQR) path**: the acquisition search collapses (CMA-ES 3.5 %,
+  3.5k acquisition calls for 135 points, ~26 per point) and the
+  active-sampling bucket is instead the per-sample **full GP refits (train_gp
+  25 %, 72 fits for 26 iterations) and VP optimizations (22.5 %, 73 calls)**
+  that `active_sample_gp_update`/`vp_update` switch on; `f_min_fill` 6 %.
+  `active_importance_sampling` itself is negligible (0.3 %).
+- `copy.deepcopy` is 0.4 %: the `iteration_history` copies are a memory
+  problem, not a time problem, at this N.
+
+**Decision rule outcome (devlog §10).** The variational stage grew (8–16 %
+on the Gaussians → 16–24 % here) but did not overtake active sampling on
+any target, so the Stage 2 order **stands: item 3 (batch the acquisition
+evaluation: `GP.predict` over `Ns`, `vp.pdf` over `K`, the CMA-ES population),
+item 8 (gpyreg sampler overhead: `solve_triangular` wrappers,
+`__core_computation`), item 1 (`_gp_log_joint` einsum), item 2
+(`_eval_full_elcbo` multi-RHS solve, which also shrinks `final_boost`)**.
+Two refinements: items 8 and 1 are close (15–22 % vs 16–24 %) and item 1 is
+PyVBMC-local while item 8 is a gpyreg PR, so item 1 may land first for
+logistics; and on the noisy path items 8 and 1 dominate outright because
+the active-sampling bucket is GP refits and VP optimizations there. The
+exhaust run (GP training at Ns = 0) is reported below when it finishes.
+
+**Exhaust run** (`normal_D5_exhaust`, after the fix): *pending*.
+
+### Golden population (`runs/golden/baseline/`)
+
+*Pending: sweep in progress.*
+
+### Deviations from the plan
+
+- The laptop crashed at ~22:35 under 8 heavy processes (7 workers + the
+  cProfile pass). Everything after that ran as one sequential process (PI
+  decision). See the tracker for the timeline.
+- `normal_D5_exhaust` exposed a crash in PyVBMC itself (Ns = 0 regime on
+  NumPy 2); the PI approved a package fix out of the plan's stated scope
+  (`6f3f0ba`), and the exhaust config was rerun with it.
+- MMTV replaced RMSE as a headline metric (PI, 22:47); RMSE stays recorded.
+- Seeds: 20 attempted with one worker; whatever is finished by ~06:45 is the
+  baseline, the rest is appended later (resumable).
+
+## Follow-ups
+
+Compute and population:
+- Append seeds to 50 per config (`golden_trace.py run --seeds 20-49`,
+  one worker; the harness skips finished runs). About 1.5 min per run.
+- Add higher dimensions to the golden set (cigar, lumpy, student at D = 6
+  and 8; banana at D = 8, 10) and `normal_D5_exhaust` with a few seeds, so
+  the Ns = 0 regime is in the population that gates Stage 2.
+- An HPC variant of the sweep (Slurm array over seeds) if 50 seeds × a
+  larger suite stops fitting a laptop night.
+
+Tooling:
+- Time `determine_best_vp` and `final_boost` with the stage timers in
+  `VBMC.optimize` (small package change), so `untimed_s` disappears from the
+  profile tables.
+- Make `profile_run.py` report the stage nesting explicitly (the noisy
+  run's negative `untimed_s`).
+- The plausible box of the same target differs slightly across D for the
+  same marginal (quantile noise, e.g. banana x2: 13.9 at D=2 vs 14.0 at
+  D=4); harmless, but a per-coordinate analytic quantile would be cleaner
+  where the marginal is known.
+
+Package (devlog §9; none fixed here except the Ns = 1 crash):
+- Notebook 1 and `examples/scripts/pyvbmc_example_1_full_code.py`:
+  `lml_true = -2.272` should be −2.2598.
+- The `display` / `log_file_level` option comments; the dead
+  `stop_gp_sampling` guard and the broken `_is_gp_sampling_finished`; the
+  `true_mean`/`true_cov` truthiness guard and its per-iteration 10⁶-sample
+  draw from `vp.rng`; `kl_div_mvn`'s `mu1` promotion; `noisy_cigar` dead
+  test code; notebook 6's noise shapes.
+- CI on `dev-next` (`tests` workflow, manual dispatch) for the package fix
+  `6f3f0ba`: run before the eventual PR at the latest.
+
+Stage 0 items still open: fixture generator (regenerable `.npz`, retire
+`.mat`), finite-difference checks for the parameter-transformer Jacobian,
+gpyreg kernel/mean/noise derivatives and `compute_vargrad`; the gpyreg
+generator PR and removal of the PyVBMC seam.
+
 ## Execution tracker
 
 Legend: `[ ]` not started, `[~]` in progress, `[x]` done, `[!]` blocked or
@@ -568,25 +725,76 @@ Phase 0 — clean tree
 - [x] Commit this plan — 22:06
 
 Phase 1 — `dev/scripts/benchmark_targets.py`
-- [ ] Module: `Problem`, `Config`, `make_problem`, `SUITES`, CLI
-- [ ] `--list`
-- [ ] `--check --suite all`; logreg constants pasted
-- [ ] `--smoke --suite all`
-- [ ] pre-commit clean; commit (1) with the `profile_run` refactor
+- [x] Module: `Problem`, `Config`, `make_problem`, `SUITES`, CLI — 22:07
+- [x] `--list` — 22:08
+- [x] `--check --suite all`; logreg constants pasted — 22:10: all 12
+  targets pass (cigar density tolerance loosened to 1e-6 for its 1e8
+  condition number); logreg ln Z −33.3423 ± 0.0008, ESS 43 %, constants
+  stored and re-verified
+- [x] `--smoke --suite all` — 22:11: all 15 configs ok, 2–5 s each, peak
+  RSS 264 MB for the whole sequence in one process
+- [x] pre-commit clean; commit (1) with the `profile_run` refactor —
+  22:13, `e9743a4`
 
 Phase 2 — profiler and campaign
-- [ ] `profile_run.py` refactor; quick regression run
-- [ ] `profile_suite.py` (`--mode`, `--aggregate`)
-- [ ] Plain campaign started (time: ) / finished (time: )
-- [ ] cProfile campaign started (time: ) / finished (time: )
-- [ ] `aggregate.md`; decision rule applied
-- [ ] commit (2)
+- [x] `profile_run.py` refactor — 22:11, regression run ok (`untimed_s`
+  9.1 s of 29.8 s on a 40-eval normal_D5: the K=50 final boost)
+- [x] `profile_suite.py` (`--mode`, `--aggregate`) — 22:14, commit (2)
+- [~] Plain campaign started 22:14 → `runs/profile_20260902/` / finished
+  22:29 (15 min, not 85). Every hard target converged on the stability
+  criterion in 80–135 evaluations and 1–2 min (the reviewer's "rides out
+  the budget" model was wrong by 5–10×); `normal_D5_exhaust` FAILED after
+  6.6 min at iteration 48, N = 250 = 200 + 10D, the first iteration with
+  Ns_gp = 0: `_eval_full_elcbo` raises "setting an array element with a
+  sequence" because `_gp_log_joint` squeezes `G` but not `varG` when
+  Ns == 1 (`variational_optimization.py:1614-1617`); NumPy 2 refuses the
+  length-1 array where NumPy 1 squeezed it. **PyVBMC crashes on NumPy 2
+  whenever a run reaches the optimize-only GP regime.** Reported to the PI,
+  who asked for the fix: `fix(vbmc)` commit with three regression tests on
+  the single-sample GP fixture (22:50; scope change approved in chat)
+- [!] **22:33–22:37: the laptop crashed** (hard power-off, no bugcheck, no
+  WHEA record, "previous shutdown unexpected"; consistent with a thermal
+  cutoff) while the sweep ran 7 workers plus the cProfile pass, 8 heavy
+  processes. The user's standing rule is one heavy process at a time; the
+  plan's worker count contradicted it and I did not flag that. Decision
+  (PI, 22:45): **one process, sequential, until ~06:45**: cProfile pass →
+  exhaust plain + cprof (with the fix) → sweep seeds 0–9 → seeds 10–19,
+  resumable. The 8 traces produced before the crash are deleted and rerun
+  so the population is uniform (same code, same metrics)
+- [x] **MMTV added as a headline metric** (PI, 22:47: RMSE is not a
+  Bayesian metric; the papers use ΔLML, gsKL, MMTV): `metrics()` computes
+  `mmtv = mean(vp.mtv(samples=exact draws))` with dedicated generators;
+  logreg gets an importance-resampling sampler; `compare` gates
+  `elbo_err`, `gskl`, `mmtv`; `rmse` stays recorded, ungated
+- [x] Memory probe `banana_D6` seed 0 — 22:31: 1.5 min, peak RSS 232 MB,
+  12.5 GB free → 7 workers (gsKL 1.04 on this seed: D=6 banana is the
+  hardest golden config)
+- [!] cProfile campaign started 22:32 alongside the sweep; **killed by the
+  laptop crash** at ~22:35 (one summary, banana_D4, survived)
+- [~] **Sequential single-process chain started 22:52** (BLAS threads 1):
+  cProfile for the six converging configs → exhaust plain + cprof with the
+  fix (`6f3f0ba`) → sweep seeds 0–9 → seeds 10–19, one worker; the 8
+  pre-crash traces were deleted (no MMTV, pre-fix code). Runs until done
+  or ~06:45
+- [x] cProfile pass for the six converging configs finished 22:59 (11 min,
+  one process); `aggregate.md` regenerated
+- [x] Decision rule applied 23:05: Stage 2 order stands (3 → 8 → 1 → 2),
+  refinements recorded in §Results, devlog §2/§10 and the roadmap
+- [x] commit (2) — 22:14, `4cf8626`
+- [~] Exhaust run plain + cprof (with the fix) running since ~22:59
 
 Phase 3 — golden traces
-- [ ] `golden_trace.py` (`run`, `summary`, `compare`)
-- [ ] Smoke: resumable, error path, bit-for-bit, moment routes agree
-- [ ] Memory probe (`banana_D6`, peak RSS: ) → workers:
-- [ ] Sweep started (time: ) / finished (time: )
+- [x] `golden_trace.py` (`run`, `summary`, `compare`) — 22:16; commit (3)
+  22:20
+- [x] Smoke: resumable ✓, error path ✓ (`.error.txt`, sweep continues),
+  bit-for-bit ✓ (elbo, X_orig, gp_hyp, post_mean identical across two
+  runs), moment routes agree ✓ (affine vs MC: 0.003 SD in the mean, 0.2 %
+  in the covariance) — 22:19
+- [x] Memory probe (`banana_D6`, peak RSS 232 MB) → workers: 7
+- [!] Sweep started 22:32 with 7 workers, 20 seeds; **killed by the laptop
+  crash** after 8 traces (deleted; see Phase 2 notes)
+- [~] Sweep restarted 22:52 inside the sequential chain, **1 worker**, seeds
+  0–9 then 10–19 (after the cProfile and exhaust runs) / finished (time: )
 - [ ] `summary`, `compare --split`
 - [ ] commit (3)
 
