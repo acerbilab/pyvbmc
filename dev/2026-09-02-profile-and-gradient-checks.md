@@ -162,7 +162,11 @@ Relative to §2 of `2026-09-02-modernization-discussion.md` (estimates):
    8 and the optimize-only GP regime is not reached. The §2 assumption of
    ~70 iterations with `N → 350` describes hard or noisy targets, or runs that
    exhaust `max_fun_evals`. Both regimes matter; profile a noisy target and a
-   hard target next.
+   hard target next. More generally, Gaussians are fine as a smoke set but
+   not representative of users' posteriors, so the plan (§10, "Benchmark
+   target suite") now fixes a shared suite of harder targets for both
+   profiling and the golden-trace harness, and the Stage 2 priority order in
+   item 1 above is provisional until measured on it.
 6. Memory (`iteration_history` deep copies): 138k–241k `deepcopy` calls but
    under 1 s. Not a speed issue at this `N`; the memory-growth concern in §4
    of the plan is unchanged.
@@ -281,13 +285,19 @@ The other three hooks were left at their pins on purpose; bumping black past
 
 ## 8. Next steps
 
-1. Re-run the full suite after the fix (in progress) and commit as above.
-2. Profile a noisy target (`specify_target_noise`, VIQR path) and a harder
-   target that reaches `N ≥ 200 + 10D`, to cover the regime §2 assumed.
+1. ~~Re-run the full suite after the fix and commit as above.~~ Done (§7).
+2. Stage 1 (RNG `Generator` threading) as the first PR, bundled with the §9
+   one-liners. This is the pickup point.
 3. Stage 0 continued: fixture generator script and golden-trace harness
    (plan §10), finite-difference checks for the transformer Jacobian and
    gpyreg derivatives.
-4. Stage 1 (RNG `Generator` threading) as the first PR, bundled with the §9
-   one-liners.
-5. Stage 2 in the measured priority order: batched acquisition evaluation,
-   then gpyreg sampler overhead, then `_gp_log_joint`, then `_eval_full_elcbo`.
+4. Build the benchmark target suite from the plan (§10) into
+   `dev/scripts/profile_run.py`, as a module shared with the golden-trace
+   harness: banana, cigar, lumpy, Student-t at several `D`; a noisy target
+   on the VIQR path (`specify_target_noise`); one real likelihood with data;
+   one run that exhausts `max_fun_evals` and reaches `N ≥ 200 + 10D`.
+   Profile it the same way as §3–4 here.
+5. Only then Stage 2, in the priority order confirmed or revised by step 4.
+   The current order (batched acquisition evaluation, then gpyreg sampler
+   overhead, then `_gp_log_joint`, then `_eval_full_elcbo`) was set on two
+   easy Gaussians.

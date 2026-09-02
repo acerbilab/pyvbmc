@@ -430,7 +430,9 @@ The reference is the *current NumPy implementation*, frozen before any port.
   inputs so the same fixture is valid across backends.
 - Finite-difference checks (`testing/_check_grad.py`) on *every* hand gradient,
   before touching any.
-- Golden-trace harness: ~50 seeds × the e2e problems (plus higher `D`), dumping
+- Golden-trace harness: ~50 seeds × the benchmark target suite defined under
+  Stage 2 below (the e2e problems plus banana, lumpy, Student-t, a noisy and a
+  real-likelihood target, at several `D`), dumping
   per-iteration `(elbo, elbo_sd, sKL, r_index, K, Ns, func_count, N, X, y,
   gp hyps, vp.get_parameters())` to `.npz`. `IterationHistory` already records
   nearly this. Compare **statistically** (KS / paired bootstrap on
@@ -457,7 +459,39 @@ time), then a new item 8, gpyreg slice-sampler overhead (vectorize
 `__compute_log_priors`, direct LAPACK triangular solves instead of the
 validated scipy wrappers, less per-sample kernel/mean recomputation; lands in
 gpyreg, which PyBADS shares), then items 1–2 (7–27%, growing with `K`), then
-the rest.
+the rest. **This order is provisional**: it was measured on two easy Gaussian
+targets and must be re-checked on the benchmark target suite below before
+the first vectorization PR.
+
+**Benchmark target suite (decided 2026-09-02, after the profile).** The
+profile was taken on an independent and a correlated Gaussian, which
+converge in 13–20 iterations with `N ≈ 70–100` and are not representative
+of the posteriors users bring. Gaussians stay as the fast smoke set. Both
+`dev/scripts/profile_run.py` and the Stage 0 golden-trace harness get one
+shared, fixed suite of harder targets (define them once, in one module under
+`dev/scripts/`, so profiling and validation never drift apart):
+
+1. The VBMC-paper benchmark densities, partly already in
+   `testing/vbmc/test_vbmc_optimize.py`: Rosenbrock/banana, cigar
+   (correlated, ill-conditioned), lumpy/multimodal, Student-t heavy tails,
+   at `D = 2` to `10`. These exercise large `K`, slow warmup and the
+   component-pruning path that the Gaussian runs barely touch.
+2. A noisy target on the VIQR/IMIQR path (`specify_target_noise`), where `N`
+   grows large and `active_importance_sampling` enters the profile.
+3. One real model-fitting likelihood with data (a small regression or
+   psychophysics model of the kind in `examples/`), so per-evaluation cost is
+   non-trivial and the posterior is skewed or ridged the way users' are.
+4. One run that exhausts `max_fun_evals` and reaches `N ≥ 200 + 10D` with
+   slice sampling switched off, the regime §2 originally assumed and no
+   measurement has covered yet.
+
+Decision rule: profile this suite before committing to the Stage 2 order.
+If the banana, lumpy or noisy runs shift the balance toward the variational
+stage at large `K`, item 1 (the `_gp_log_joint` einsum) moves back up; if
+the budget-exhausting run is dominated by GP refits at `Ns = 0`, the
+L-BFGS-B path in `gpyreg.GP.fit` joins item 8. The same suite, with ~50
+seeds per problem, is the population for the golden-trace statistical
+comparison in Stage 0.
 
 **Stage 3 — Pipeline features, backend-neutral.** Batched evaluation of the
 initial design and cache path (`FunctionLogger.batch_call`, `vectorized_target`
@@ -567,7 +601,10 @@ main machine (no `torch` yet), suite green (389 passed, 0 reruns, 18 min),
 `vp.pdf`, which found and fixed the `_vp_bound_loss` reshape bug (§9).
 Pickup point: step 4 (Stage 1 RNG PR bundled with the §9 one-liners), plus
 the remaining Stage 0 items (fixture generator, golden-trace harness,
-transformer and gpyreg gradient checks) and a profile of a noisy target.
+transformer and gpyreg gradient checks). Before any Stage 2 PR: build the
+benchmark target suite (§10) into `profile_run.py`, profile it, and confirm
+or revise the Stage 2 priority order, which currently rests on two easy
+Gaussians.
 
 ---
 
