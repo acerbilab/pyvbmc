@@ -263,8 +263,10 @@ gradient in Fortran order in _vp_bound_loss` with the new tests.
 (`.pre-commit-config.yaml`, `v2.1.3`): its `libcst` dependency has no wheel
 for 3.12 at that version and tries to build from source with a Rust
 toolchain. `SKIP=pycln pre-commit run` works; isort 5.12 and black 23.3.0
-pass on all files touched today. Bumping the `pycln` rev (or dropping the
-hook) is a one-line follow-up for the first PR.
+pass on all files touched today. **Fixed the same day:** bumped the `pycln`
+rev to `v2.6.0`, which installs on 3.12 and passes over all files unchanged.
+The other three hooks were left at their pins on purpose; bumping black past
+23 would reformat the codebase.
 
 ## 8. Next steps
 
