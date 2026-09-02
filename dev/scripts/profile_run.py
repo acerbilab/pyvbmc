@@ -1,28 +1,37 @@
 """Profile one PyVBMC run and report where the wall-clock time goes.
 
 Developer tooling for the modernization work (see
-``dev/2026-09-02-modernization-discussion.md``, sections 2 and 14). Runs VBMC
-on a cheap synthetic target with known normalizing constant under a fixed
-seed and reports:
+``dev/2026-09-02-modernization-discussion.md``, sections 2 and 10, and
+``dev/plans/benchmark-suite-and-golden-traces.md``). Runs VBMC on a target
+from ``benchmark_targets.py`` under a fixed seed and reports:
 
 * the per-stage timers VBMC already records (``pyvbmc.timer.main_timer``,
   snapshotted into ``iteration_history["timer"]`` every iteration): totals
   and a per-iteration table. Note that ``active_sampling`` wraps the whole
   active-sampling stage, which internally starts ``gp_train`` and
   ``variational_fit`` timers for intermediate refits, so stage totals do not
-  sum to the wall-clock time;
+  sum to the wall-clock time; ``untimed_s`` (wall minus the sum) is therefore
+  a lower bound on the post-loop work (``determine_best_vp``, ``final_boost``);
 * with ``--cprofile``, a cProfile of ``VBMC.optimize()``: top functions by
   cumulative and internal time, plus cumulative time attributed to a curated
   list of hot-path functions so the numbers line up with the devlog tables.
 
 Output goes to ``dev/scripts/runs/<tag>/`` (gitignored):
-``summary.json`` (metadata, stage totals, per-iteration table, attribution),
+``summary.json`` (metadata, results with truth-based metrics where the target
+has ground truth, stage totals, per-iteration table, attribution),
 ``profile.prof`` (open with ``snakeviz`` or ``pstats``) and ``profile.txt``.
 
 Examples::
 
     python -u dev/scripts/profile_run.py --D 5 --seed 0 --cprofile
-    python -u dev/scripts/profile_run.py --D 10 --problem corr --cprofile
+    python -u dev/scripts/profile_run.py --problem lumpy --D 4
+    python -u dev/scripts/profile_run.py --config banana_D2_noise1 --cprofile
+    python -u dev/scripts/profile_run.py --problem normal --D 5 \
+        --options '{"tol_stable_excpt_frac": -1000000}' --tag exhaust
+
+``--config`` takes a label from ``benchmark_targets.SUITES`` (see
+``benchmark_targets.py --list``) and sets problem, dimension, noise and
+options at once; the other flags then override.
 
 The targets are deliberately cheap so what is measured is algorithm overhead,
 not target cost.
@@ -35,66 +44,33 @@ import json
 import os
 import platform
 import pstats
+import subprocess
 import sys
 import time
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
 import numpy as np
+from benchmark_targets import TARGET_NAMES, find_config, make_problem, metrics
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUT = REPO_ROOT / "dev" / "scripts" / "runs"
 
-
-# --------------------------------------------------------------------------
-# Synthetic targets (log joint, known ln Z, known posterior mean)
-# --------------------------------------------------------------------------
-
-
-def make_problem(name: str, D: int):
-    """Return (f, x0, lb, ub, plb, pub, ln_Z, mu_bar) for a named target."""
-    if name == "normal":
-        # Same target as test_vbmc_multivariate_normal: independent Gaussian
-        # with standard deviations 1..D, normalized (ln Z = 0).
-        scales = np.arange(1, D + 1, dtype=float)
-        log_norm = -np.sum(np.log(scales)) - 0.5 * D * np.log(2 * np.pi)
-
-        def f(x):
-            x = np.asarray(x, dtype=float).reshape(-1)
-            return float(np.sum(-0.5 * (x / scales) ** 2) + log_norm)
-
-        x0 = -np.ones((1, D))
-        plb = np.full((1, D), -2.0 * D)
-        pub = np.full((1, D), 2.0 * D)
-        lb = np.full((1, D), -np.inf)
-        ub = np.full((1, D), np.inf)
-        return f, x0, lb, ub, plb, pub, 0.0, np.zeros((1, D))
-
-    if name == "corr":
-        # Correlated Gaussian: fixed random rotation (independent of the run
-        # seed) times a diagonal of standard deviations in [0.2, 1].
-        rng = np.random.default_rng(12345)
-        Q, _ = np.linalg.qr(rng.standard_normal((D, D)))
-        scales = np.linspace(0.2, 1.0, D)
-        cov = Q @ np.diag(scales**2) @ Q.T
-        prec = np.linalg.inv(cov)
-        mean = np.linspace(-0.5, 0.5, D)
-        log_norm = -0.5 * np.linalg.slogdet(cov)[1] - 0.5 * D * np.log(
-            2 * np.pi
-        )
-
-        def f(x):
-            x = np.asarray(x, dtype=float).reshape(-1) - mean
-            return float(-0.5 * x @ prec @ x + log_norm)
-
-        x0 = np.zeros((1, D))
-        plb = np.full((1, D), -2.5)
-        pub = np.full((1, D), 2.5)
-        lb = np.full((1, D), -np.inf)
-        ub = np.full((1, D), np.inf)
-        return f, x0, lb, ub, plb, pub, 0.0, mean.reshape(1, -1)
-
-    raise ValueError(f"unknown problem {name!r}")
+# Options whose effective value is worth recording because VBMC rewrites them
+# (noisy targets) or because a suite config sets them.
+EFFECTIVE_OPTION_KEYS = (
+    "max_fun_evals",
+    "max_iter",
+    "tol_stable_count",
+    "tol_stable_excpt_frac",
+    "specify_target_noise",
+    "search_acq_fcn",
+    "active_sample_gp_update",
+    "active_sample_vp_update",
+    "min_final_components",
+    "do_final_boost",
+    "display",
+)
 
 
 # --------------------------------------------------------------------------
@@ -123,11 +99,13 @@ def stage_tables(vbmc):
             row[k] = float(t._durations.get(k, 0.0))
             totals[k] += row[k]
         row["K"] = int(hist["vp"][i].K)
+        row["N"] = int(hist["optim_state"][i]["N"])
         row["n_eff"] = int(hist["n_eff"][i])
         row["Ns_gp"] = int(hist["Ns_gp"][i])
         row["func_count"] = int(hist["func_count"][i])
         row["elbo"] = float(hist["elbo"][i])
         row["elbo_sd"] = float(hist["elbo_sd"][i])
+        row["warmup"] = bool(hist["warmup"][i])
         rows.append(row)
     return totals, rows, len(timers)
 
@@ -187,6 +165,11 @@ ATTRIBUTION = [
         "vbmc/vbmc.py",
         "_check_termination_conditions",
     ),
+    (
+        "determine_best_vp (incl. in-loop warping calls)",
+        "vbmc/vbmc.py",
+        "determine_best_vp",
+    ),
     ("final_boost", "vbmc/vbmc.py", "final_boost"),
     ("vp.kl_div", "variational_posterior.py", "kl_div"),
     ("vp.sample", "variational_posterior.py", "sample"),
@@ -228,7 +211,7 @@ def profile_text(stats: pstats.Stats, n: int = 40):
 
 
 # --------------------------------------------------------------------------
-# Main
+# Metadata helpers
 # --------------------------------------------------------------------------
 
 
@@ -239,10 +222,102 @@ def pkg_version(name):
         return None
 
 
-def main():
+def git_info():
+    try:
+        sha = subprocess.check_output(
+            ["git", "rev-parse", "--short", "HEAD"], cwd=REPO_ROOT, text=True
+        ).strip()
+        dirty = bool(
+            subprocess.check_output(
+                ["git", "status", "--porcelain", "--untracked-files=no"],
+                cwd=REPO_ROOT,
+                text=True,
+            ).strip()
+        )
+        return {"sha": sha, "dirty": dirty}
+    except Exception:  # noqa: BLE001
+        return {"sha": None, "dirty": None}
+
+
+def thread_env():
+    keys = ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS")
+    return {k: os.environ.get(k) for k in keys}
+
+
+def jsonable(v):
+    if isinstance(v, (np.floating, np.integer)):
+        return v.item()
+    if isinstance(v, np.ndarray):
+        return v.tolist()
+    if isinstance(v, (list, tuple)):
+        return [jsonable(x) for x in v]
+    if isinstance(v, dict):
+        return {str(k): jsonable(x) for k, x in v.items()}
+    if isinstance(v, (str, int, float, bool)) or v is None:
+        return v
+    return repr(v)
+
+
+def effective_options(vbmc, extra_keys=()):
+    keys = list(EFFECTIVE_OPTION_KEYS) + [
+        k for k in extra_keys if k not in EFFECTIVE_OPTION_KEYS
+    ]
+    return {k: jsonable(vbmc.options.get(k)) for k in keys}
+
+
+def build_meta(problem, cfg_label, args, requested_options, prof):
+    return {
+        "problem": problem.name,
+        "D": problem.D,
+        "config": cfg_label,
+        "noise_sd": problem.noise_sd,
+        "seed": args.seed,
+        "requested_options": jsonable(requested_options),
+        "cprofile": bool(prof),
+        "python": sys.version.split()[0],
+        "platform": platform.platform(),
+        "processor": platform.processor(),
+        "cpu_count": os.cpu_count(),
+        "threads": thread_env(),
+        "git": git_info(),
+        "numpy": np.__version__,
+        "scipy": pkg_version("scipy"),
+        "pyvbmc": pkg_version("pyvbmc"),
+        "gpyreg": pkg_version("gpyreg"),
+        "cma": pkg_version("cma"),
+        "plb": problem.plb.ravel().tolist(),
+        "pub": problem.pub.ravel().tolist(),
+    }
+
+
+# --------------------------------------------------------------------------
+# Main
+# --------------------------------------------------------------------------
+
+
+def parse_args(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("--D", type=int, default=5)
-    ap.add_argument("--problem", choices=["normal", "corr"], default="normal")
+    ap.add_argument(
+        "--D", type=int, default=None, help="dimension (default 5)"
+    )
+    ap.add_argument(
+        "--problem",
+        choices=list(TARGET_NAMES),
+        default=None,
+        help="target name (default normal)",
+    )
+    ap.add_argument(
+        "--config",
+        default=None,
+        help="suite config label from benchmark_targets --list; sets problem,"
+        " D, noise and options (other flags override)",
+    )
+    ap.add_argument("--noise-sd", type=float, default=None)
+    ap.add_argument(
+        "--options",
+        default=None,
+        help="JSON dict of VBMC options merged last (scalars only)",
+    )
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--cprofile", action="store_true")
     ap.add_argument(
@@ -254,30 +329,54 @@ def main():
         "--max-fun-evals",
         type=int,
         default=None,
-        help="override max_fun_evals (default: 50*(2+D))",
+        help="override max_fun_evals (default: 50*(2+D), x1.5 if noisy)",
     )
     ap.add_argument("--out", type=Path, default=DEFAULT_OUT)
     ap.add_argument("--tag", default=None)
-    args = ap.parse_args()
+    return ap.parse_args(argv)
 
-    from pyvbmc import VBMC
 
-    f, x0, lb, ub, plb, pub, ln_Z, mu_bar = make_problem(args.problem, args.D)
-    options = {}
+def resolve_problem(args):
+    """Turn the CLI into ``(problem, config_label, requested_options)``."""
+    name, D, noise_sd, options, label = "normal", 5, None, {}, None
+    if args.config:
+        cfg = find_config(args.config)
+        name, D, noise_sd = cfg.name, cfg.D, cfg.noise_sd
+        options = cfg.options_dict()
+        label = cfg.label
+    if args.problem:
+        name = args.problem
+    if args.D is not None:
+        D = args.D
+    if args.noise_sd is not None:
+        noise_sd = args.noise_sd
+    if args.options:
+        options.update(json.loads(args.options))
     if args.quiet:
         options["display"] = "off"
     if args.max_fun_evals is not None:
         options["max_fun_evals"] = args.max_fun_evals
-
-    tag = args.tag or (
-        f"{args.problem}_D{args.D}_seed{args.seed}_{int(time.time())}"
+    problem = make_problem(
+        name, D, noise_sd=noise_sd, seed=args.seed, options=options
     )
+    if label is None:
+        label = f"{name}_D{D}" + (f"_noise{noise_sd:g}" if noise_sd else "")
+    return problem, label, options
+
+
+def main(argv=None):
+    args = parse_args(argv)
+    problem, label, requested = resolve_problem(args)
+    vbmc_args, options = problem.vbmc_args()
+
+    tag = args.tag or f"{label}_seed{args.seed}_{int(time.time())}"
     out_dir = args.out / tag
     out_dir.mkdir(parents=True, exist_ok=True)
-    print(f"[profile_run] writing to {out_dir}", flush=True)
+    print(f"[profile_run] {label} seed {args.seed} -> {out_dir}", flush=True)
 
-    np.random.seed(args.seed)
-    vbmc = VBMC(f, x0, lb, ub, plb, pub, options=options)
+    from pyvbmc import VBMC
+
+    vbmc = VBMC(*vbmc_args, options=options, seed=args.seed)
 
     prof = cProfile.Profile() if args.cprofile else None
     t0 = time.perf_counter()
@@ -289,38 +388,29 @@ def main():
     wall = time.perf_counter() - t0
 
     totals, rows, n_iter = stage_tables(vbmc)
-    vmu = vp.moments()
-    rmse = float(np.sqrt(np.mean((vmu - mu_bar) ** 2)))
-    elbo_err = float(abs(results["elbo"] - ln_Z))
+    untimed = wall - sum(totals.values())
+    met = metrics(problem, vp, results["elbo"])
 
     summary = {
-        "meta": {
-            "problem": args.problem,
-            "D": args.D,
-            "seed": args.seed,
-            "cprofile": bool(prof),
-            "python": sys.version.split()[0],
-            "platform": platform.platform(),
-            "processor": platform.processor(),
-            "cpu_count": os.cpu_count(),
-            "numpy": np.__version__,
-            "scipy": pkg_version("scipy"),
-            "pyvbmc": pkg_version("pyvbmc"),
-            "gpyreg": pkg_version("gpyreg"),
-            "cma": pkg_version("cma"),
-        },
+        "meta": build_meta(problem, label, args, requested, prof),
+        "effective_options": effective_options(vbmc, requested.keys()),
         "result": {
             "wall_s": wall,
+            "untimed_s": untimed,
             "target_eval_s": float(vbmc.function_logger.total_fun_eval_time),
             "iterations": int(results["iterations"]),
             "recorded_iterations": n_iter,
             "func_count": int(results["func_count"]),
+            "final_N": int(vbmc.optim_state["N"]),
             "final_K": int(vp.K),
+            "min_Ns_gp": int(min(r["Ns_gp"] for r in rows)),
             "elbo": float(results["elbo"]),
             "elbo_sd": float(results["elbo_sd"]),
-            "ln_Z": ln_Z,
-            "elbo_err": elbo_err,
-            "posterior_mean_rmse": rmse,
+            "ln_Z": problem.ln_Z,
+            "elbo_err": met["elbo_err"],
+            "posterior_mean_rmse": met["rmse"],
+            "gskl": met["gskl"],
+            "moment_method": met["moment_method"],
             "message": results["message"],
         },
         "stage_totals_s": totals,
@@ -329,9 +419,11 @@ def main():
 
     print("", flush=True)
     print(
-        f"[profile_run] wall {wall:.1f} s, {n_iter} iterations, "
-        f"{results['func_count']} evals, K={vp.K}, "
-        f"|elbo-lnZ|={elbo_err:.3f}, RMSE={rmse:.3f}",
+        f"[profile_run] wall {wall:.1f} s (untimed {untimed:.1f} s), {n_iter}"
+        f" iterations, {results['func_count']} evals, N={summary['result']['final_N']},"
+        f" K={vp.K}, min Ns_gp={summary['result']['min_Ns_gp']},"
+        f" |elbo-lnZ|={met['elbo_err']:.3f}, RMSE={met['rmse']:.3f},"
+        f" gsKL={met['gskl']:.3f}",
         flush=True,
     )
     print(
@@ -358,12 +450,14 @@ def main():
         for a in attr:
             pct = 100 * a["cumtime"] / opt if opt else float("nan")
             print(
-                f"    {a['label']:30s} {a['cumtime']:8.2f}  {pct:5.1f}%  "
+                f"    {a['label']:48s} {a['cumtime']:8.2f}  {pct:5.1f}%  "
                 f"{a['ncalls']:>9d}",
                 flush=True,
             )
 
-    (out_dir / "summary.json").write_text(json.dumps(summary, indent=2))
+    (out_dir / "summary.json").write_text(
+        json.dumps(jsonable(summary), indent=2)
+    )
     print(f"[profile_run] done -> {out_dir / 'summary.json'}", flush=True)
 
 
