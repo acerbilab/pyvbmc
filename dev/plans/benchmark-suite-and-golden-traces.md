@@ -676,8 +676,16 @@ sample instead of 5–8, and the variational stage is a third of a cheaper
 iteration. **The decision rule's second clause does not fire**: the
 budget-exhausting run is not dominated by GP refits at Ns = 0, so the
 L-BFGS-B path does not join item 8. The expensive regime is the sampling
-one, exactly where items 3 and 8 act. Its cProfile pass is *pending*
-(attribution only; the plain numbers above are the ones that matter).
+one, exactly where items 3 and 8 act. Its cProfile pass (567 s profiled, 69
+iterations): active_sample 47.5 % (`GP.predict` 30.2 %, 216k calls; `vp.pdf`
+9.1 %, growing with K → 30), train_gp 30.8 % (`SliceSampler` 30.3 %,
+`__core_computation` 25.2 % over 350k calls, `solve_triangular` 11.8 % over
+2.4 M calls, Cholesky 5.3 % at N up to 350, `scipy.optimize.minimize` 0.1 %),
+optimize_vp 20.6 % (`_gp_log_joint` 13.1 %, `_eval_full_elcbo` 6.7 %,
+`entmc_vbmc` 6.8 %), `final_boost` 0.5 % (K was already 30), `copy.deepcopy`
+0.7 % over 1.86 M calls. Over a long run the GP-training share returns to the
+Gaussian D=5 level and the Cholesky becomes visible, but the per-call
+overhead around it is still 5× the factorization itself.
 
 ### Golden population (`runs/golden/baseline/`)
 
@@ -800,7 +808,8 @@ Phase 2 — profiler and campaign
   refinements recorded in §Results, devlog §2/§10 and the roadmap
 - [x] commit (2) — 22:14, `4cf8626`
 - [x] Exhaust run plain done 23:07 (443 s, reached Ns = 0 at N = 250,
-  terminated on the budget, fix holds); cprof running
+  terminated on the budget, fix holds); cprof done 23:16. Profile campaign
+  complete: 7 plain + 7 cprof runs
 
 Phase 3 — golden traces
 - [x] `golden_trace.py` (`run`, `summary`, `compare`) — 22:16; commit (3)
@@ -812,8 +821,14 @@ Phase 3 — golden traces
 - [x] Memory probe (`banana_D6`, peak RSS 232 MB) → workers: 7
 - [!] Sweep started 22:32 with 7 workers, 20 seeds; **killed by the laptop
   crash** after 8 traces (deleted; see Phase 2 notes)
-- [~] Sweep restarted 22:52 inside the sequential chain, **1 worker**, seeds
-  0–9 then 10–19 (after the cProfile and exhaust runs) / finished (time: )
+- [~] Sweep (re)started 23:16 inside the sequential chain, **1 worker**,
+  seeds 0–9 done 01:45 (110/110, no failures), seeds 10–19 running /
+  finished (time: )
+- [x] Interim `summary` + `compare --split` at 10 seeds (01:45): all
+  configs 100 % usable except banana_D6 (90 %); no KS rejection; **the
+  ±5 % func_count-ratio rule flagged 7 of 11 configs on a split of one
+  population** → uncalibrated at n ≤ 10; func_count moved into the KS/Holm
+  family, ratio kept as a descriptive column
 - [ ] `summary`, `compare --split`
 - [ ] commit (3)
 

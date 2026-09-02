@@ -27,10 +27,12 @@ blocks with index vectors, final arrays) and ``<label>_seed<seed>.json``
 final scalar metrics). ``summary`` and ``compare`` read only the sidecars.
 
 ``compare`` runs a two-sample Kolmogorov-Smirnov test per (config, metric)
-on the final ``elbo_err``, ``rmse`` and ``gskl``, applies a Holm correction
-over the whole family at alpha 0.05, and flags a config whose median
-``func_count`` ratio leaves +-5 %. Exit code 1 if anything is flagged.
-Per-iteration traces are stored for diagnosis, never compared.
+on the final ``elbo_err``, ``gskl``, ``mmtv`` and ``func_count`` and applies
+a Holm correction over the whole family at alpha 0.05; the median
+``func_count`` ratio is reported for orientation only (a +-5 % rule on it
+flagged 7 of 11 configs on a null split of the first population). Exit code
+1 if any test is rejected. Per-iteration traces are stored for diagnosis,
+never compared.
 """
 
 import argparse
@@ -64,11 +66,15 @@ EST_MINUTES = {
     "halfnormal_D2": 2,
 }
 
-# Gated metrics (the VBMC papers' three); rmse is recorded but not gated.
-METRICS = ("elbo_err", "gskl", "mmtv")
+# Gated metrics: the VBMC papers' three plus the evaluation count, all by
+# two-sample KS under one Holm family. The median func_count *ratio* is
+# reported for orientation only: on the first population's null check
+# (5 vs 5 seeds, evaluations quantized in steps of 5) a +-5 % rule flagged
+# 7 of 11 configs, so it is not a usable gate at these sample sizes. rmse is
+# recorded but not gated.
+METRICS = ("elbo_err", "gskl", "mmtv", "func_count")
 EXTRA_SCALARS = (
     "rmse",
-    "func_count",
     "iterations",
     "final_K",
     "wall_s",
@@ -505,14 +511,11 @@ def compare_populations(ref, new, alpha=0.05, ratio_tol=0.05):
         )
     lines += [
         "",
-        "| config | median func_count ratio (new/ref) | flag |",
-        "|---|---|---|",
+        "| config | median func_count ratio (new/ref), descriptive |",
+        "|---|---|",
     ]
     for label, r in sorted(ratios.items()):
-        bad = abs(r - 1) > ratio_tol
-        if bad:
-            flagged.add(label)
-        lines.append(f"| {label} | {r:.3f} | {'FLAG' if bad else 'ok'} |")
+        lines.append(f"| {label} | {r:.3f} |")
     if only_ref or only_new:
         lines += [
             "",
