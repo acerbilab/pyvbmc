@@ -232,13 +232,25 @@ def test_vp_bound_loss_grad_fd():
     def grad(th):
         return _vp_bound_loss(vp, th, theta_bnd, tol_con=0.01)[1]
 
-    assert check_grad(f, grad, theta0, rtol=1e-4, atol=1e-6)
+    # atol covers the platform-dependent finite-difference noise on the
+    # many coordinates where the penalty is exactly flat (see
+    # test_soft_bound_loss_grad_fd).
+    assert check_grad(f, grad, theta0, rtol=1e-4, atol=1e-5)
 
 
 def test_soft_bound_loss_grad_fd():
+    """Two coordinates outside the soft bounds, one inside.
+
+    The loss is exactly flat in the inside coordinate, where
+    ``scipy.differentiate.jacobian`` does not converge and returns roundoff
+    noise of order ``eps * L / h`` that differs between platforms (6.5e-7 on
+    Windows, above 1e-6 on Linux for ``L ~ 4e4``). Small bound excesses keep
+    ``L`` small, and ``atol = 1e-5`` sits well above that noise and far below
+    the gradients on the violated coordinates (hundreds).
+    """
     slb = np.full((3,), -10.0)
     sub = np.full((3,), 10.0)
-    x0 = np.array([15.0, -20.0, 3.0])
+    x0 = np.array([10.5, -10.7, 3.0])
 
     def f(x):
         return _soft_bound_loss(x, slb, sub)
@@ -246,7 +258,10 @@ def test_soft_bound_loss_grad_fd():
     def grad(x):
         return _soft_bound_loss(x, slb, sub, compute_grad=True)[1]
 
-    assert check_grad(f, grad, x0, rtol=1e-4, atol=1e-6)
+    L, dL = _soft_bound_loss(x0, slb, sub, compute_grad=True)
+    assert L > 0.0
+    assert dL[0] > 0.0 and dL[1] < 0.0 and dL[2] == 0.0
+    assert check_grad(f, grad, x0, rtol=1e-4, atol=1e-5)
 
 
 def test_vp_bound_loss_grad_fd_D_ne_K():
@@ -282,4 +297,4 @@ def test_vp_bound_loss_grad_fd_D_ne_K():
     def grad(th):
         return _vp_bound_loss(vp, th, theta_bnd, tol_con=0.01)[1]
 
-    assert check_grad(f, grad, theta0, rtol=1e-4, atol=1e-6)
+    assert check_grad(f, grad, theta0, rtol=1e-4, atol=1e-5)

@@ -238,6 +238,13 @@ Results:
 - Finite-difference artifacts to remember: `scipy.differentiate.jacobian`
   returns ~1e-7 (status −2, "did not converge") for coordinates whose true
   derivative is exactly zero, so `atol` must be ≥ 1e-6 for hinge-type losses.
+  *Later the same day:* that noise is platform dependent (roughly
+  `eps * L / h`): `test_soft_bound_loss_grad_fd` passed on Windows at
+  6.5e-7 and failed on CI's Ubuntu / Python 3.12 job five times out of five
+  at `atol = 1e-6`, with identical NumPy and SciPy versions. The three
+  bound-loss checks now use `atol = 1e-5` and the soft-bound test uses
+  small bound excesses so `L` stays small; the checks stay meaningful
+  because the gradients on violated coordinates are hundreds or more.
 
 Still untested by finite differences (next): `compute_vargrad` in
 `_gp_log_joint` (known broken, §9), the gpyreg kernel/mean/noise derivatives
