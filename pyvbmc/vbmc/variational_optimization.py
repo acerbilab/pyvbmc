@@ -1557,12 +1557,12 @@ def _gp_log_joint(
         # TODO: compute vargrad is untested
         vargrad_list = []
         if grad_flags[0]:
-            mu_vargrad = np.reshape(mu_vargrad, (D * K, Ns))
+            mu_vargrad = np.reshape(mu_vargrad, (D * K, Ns), order="F")
             vargrad_list.append(mu_vargrad)
 
         # Correct for standard log reparametrization of sigma
         if jacobian_flag and grad_flags[1]:
-            sigma_vargrad *= np.reshape(sigma_vargrad, (-1, 1))
+            sigma_vargrad *= np.reshape(sigma, (-1, 1))
             vargrad_list.append(sigma_vargrad)
 
         # Correct for standard log reparametrization of lambd
@@ -1575,7 +1575,7 @@ def _gp_log_joint(
             w_vargrad = np.dot(J_w, w_vargrad)
             vargrad_list.append(w_vargrad)
 
-        dvarG = np.concatenate(grad_list, axis=0)
+        dvarG = np.concatenate(vargrad_list, axis=0)
     else:
         dvarG = None
 
