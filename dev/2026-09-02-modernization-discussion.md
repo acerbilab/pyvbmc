@@ -521,6 +521,8 @@ in §2 are estimates.
   repo private anyway; it would have to be a mirror push.)
 - **Stages 0–3 go to `main` via ordinary PRs** as each stabilizes. Users get
   the improvements now and the eventual port diff shrinks.
+  *Revised 2026-09-02 (PI):* no PR from `dev-next` until the work is done;
+  one PR at the end. Current pickup point in `plans/modernization-roadmap.md`.
 - **A long-lived `torch-backend` branch is created only when the first torch
   commit exists.** Merge `main` into it periodically; do not rebase shared
   history with students on the branch. Optionally a draft PR against `main`

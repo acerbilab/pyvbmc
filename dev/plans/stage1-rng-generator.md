@@ -53,7 +53,8 @@ Generator threading
   11:29 wall
 - [x] Committed on `dev-next` (three commits: CI/test extra, the feature,
   the `dev/` restructure)
-- [ ] PR `dev-next` → `main`
+- [ ] PR `dev-next` → `main` (deferred: one PR at the end of the `dev-next`
+  work, see the roadmap)
 
 ## 2. API
 

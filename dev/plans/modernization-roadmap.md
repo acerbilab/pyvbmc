@@ -5,7 +5,10 @@ Status tracker for the staged plan in
 rationale and the decisions; this file holds only what is done, what is next,
 and where to pick up. Update it in place; do not add status to the devlogs.
 
-Branch: `dev-next` (PRs to `main` per stage, see devlog §11).
+Branch: `dev-next`. No PR to `main` until the work here is done: one PR at
+the end (decided 2026-09-02, superseding the per-stage PRs of devlog §11).
+CI on `dev-next` is the manually dispatched `tests` workflow; run it after
+each substantive commit.
 
 ## Stages
 
@@ -38,13 +41,16 @@ Branch: `dev-next` (PRs to `main` per stage, see devlog §11).
 
 ## Pickup point
 
-1. Open the Stage 1 PR from `dev-next` to `main` (one-liners + generator
-   threading + plans/devlog), after the full suite is green locally.
-2. gpyreg PR: accept a generator (`GP.fit`, `SliceSampler`, `f_min_fill`,
-   `GP.random_function`), then remove the PyVBMC seam.
-3. Stage 0 remaining items, starting with the benchmark target suite and the
-   golden-trace harness, then the remaining finite-difference checks.
-4. Profile the benchmark suite; confirm or revise the Stage 2 order.
+1. Benchmark target suite as a shared module under `dev/scripts/`, wired
+   into `profile_run.py`; profile it and confirm or revise the Stage 2 order.
+2. Stage 0 remaining items: golden-trace harness over the suite, fixture
+   generator, remaining finite-difference checks.
+3. Stage 2 in the measured order.
+4. gpyreg generator support (`GP.fit`, `SliceSampler`, `f_min_fill`,
+   `GP.random_function`) on a gpyreg branch when convenient. The PyVBMC seam
+   can only go once gpyreg `main` has it: CI installs gpyreg from `main`,
+   unpinned.
+5. One PR `dev-next` → `main` when the work is done.
 
 ## Deferred (devlog §12)
 
