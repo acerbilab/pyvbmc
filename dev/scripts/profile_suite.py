@@ -118,8 +118,9 @@ def aggregate(out_dir):
             "final_K": r["final_K"],
             "min_Ns_gp": r.get("min_Ns_gp"),
             "elbo_err": r.get("elbo_err"),
-            "rmse": r.get("posterior_mean_rmse"),
             "gskl": r.get("gskl"),
+            "mmtv": r.get("mmtv"),
+            "rmse": r.get("posterior_mean_rmse"),
             "message": r.get("message"),
         }
         for st in STAGES:
@@ -153,8 +154,8 @@ def aggregate(out_dir):
             "",
             "| config | wall s | untimed s | iters | evals | N | K | min Ns | "
             "act.samp % | gp_train % | var.fit % | finalize % | warping % | "
-            "elbo_err | rmse | gskl | termination |",
-            "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
+            "elbo_err | gskl | mmtv | rmse | termination |",
+            "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
         ]
         for r in plain:
             lines.append(
@@ -162,8 +163,9 @@ def aggregate(out_dir):
                 f" {r['iterations']} | {r['evals']} | {fmt(r['final_N'])} |"
                 f" {r['final_K']} | {fmt(r['min_Ns_gp'])} |"
                 + "".join(f" {fmt(r[f'{st}_pct'])} |" for st in STAGES)
-                + f" {fmt(r['elbo_err'], 3)} | {fmt(r['rmse'], 3)} |"
-                f" {fmt(r['gskl'], 3)} | {(r['message'] or '')[:40]} |"
+                + f" {fmt(r['elbo_err'], 3)} | {fmt(r['gskl'], 3)} |"
+                f" {fmt(r['mmtv'], 3)} | {fmt(r['rmse'], 3)} |"
+                f" {(r['message'] or '')[:40]} |"
             )
         lines.append("")
     cprof = [r for r in rows if r["mode"] == "cprof"]

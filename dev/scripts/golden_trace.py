@@ -64,7 +64,16 @@ EST_MINUTES = {
     "halfnormal_D2": 2,
 }
 
-METRICS = ("elbo_err", "rmse", "gskl")
+# Gated metrics (the VBMC papers' three); rmse is recorded but not gated.
+METRICS = ("elbo_err", "gskl", "mmtv")
+EXTRA_SCALARS = (
+    "rmse",
+    "func_count",
+    "iterations",
+    "final_K",
+    "wall_s",
+    "n_warps",
+)
 
 
 # --------------------------------------------------------------------------
@@ -246,8 +255,9 @@ def run_task(label, seed, extra_options, out_dir):
                 "wall_s": wall,
                 "target_eval_s": float(fl.total_fun_eval_time),
                 "elbo_err": met["elbo_err"],
-                "rmse": met["rmse"],
                 "gskl": met["gskl"],
+                "mmtv": met["mmtv"],
+                "rmse": met["rmse"],
                 "moment_method": met["moment_method"],
                 "peak_rss_mb": peak_mb,
             },
@@ -275,7 +285,7 @@ def run_task(label, seed, extra_options, out_dir):
             "peak_rss_mb": peak_mb,
             **{
                 k: side["final"][k]
-                for k in ("elbo_err", "rmse", "gskl", "func_count")
+                for k in ("elbo_err", "gskl", "mmtv", "func_count")
             },
         }
     except Exception:  # noqa: BLE001
@@ -351,8 +361,8 @@ def cmd_run(args):
                 print(
                     f"[golden] {k}/{len(tasks)} ok   {r['tag']:32s}"
                     f" {r['wall_s'] / 60:5.1f} min  peakRSS {r['peak_rss_mb']:5.0f} MB"
-                    f"  elbo_err={r['elbo_err']:.3f} rmse={r['rmse']:.3f}"
-                    f" gskl={r['gskl']:.3f} evals={r['func_count']}"
+                    f"  elbo_err={r['elbo_err']:.3f} gskl={r['gskl']:.3f}"
+                    f" mmtv={r['mmtv']:.3f} evals={r['func_count']}"
                     f"  [{(time.time() - t0) / 60:.0f} min elapsed]",
                     flush=True,
                 )
@@ -393,13 +403,7 @@ def load_population(d):
             "fails"
         ] += 1
     for e in pop.values():
-        for m in METRICS + (
-            "func_count",
-            "iterations",
-            "final_K",
-            "wall_s",
-            "n_warps",
-        ):
+        for m in METRICS + EXTRA_SCALARS:
             e[m] = np.array([r.get(m, np.nan) for r in e["rows"]], dtype=float)
     return pop
 
@@ -417,9 +421,9 @@ def cmd_summary(args):
     lines = [
         f"# Golden population {Path(args.dir).name}",
         "",
-        "| config | n | failed | elbo_err | rmse | gskl | usable | evals |"
-        " iters | K | warps | wall min |",
-        "|---|---|---|---|---|---|---|---|---|---|---|---|",
+        "| config | n | failed | elbo_err | gskl | mmtv | rmse | usable |"
+        " evals | iters | K | warps | wall min |",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|---|",
     ]
     for label in sorted(pop):
         e = pop[label]
@@ -430,8 +434,8 @@ def cmd_summary(args):
         )
         lines.append(
             f"| {label} | {len(e['rows'])} | {e['fails']} |"
-            f" {_med_iqr(e['elbo_err'])} | {_med_iqr(e['rmse'])} |"
-            f" {_med_iqr(e['gskl'])} | {usable:.2f} |"
+            f" {_med_iqr(e['elbo_err'])} | {_med_iqr(e['gskl'])} |"
+            f" {_med_iqr(e['mmtv'])} | {_med_iqr(e['rmse'])} | {usable:.2f} |"
             f" {_med_iqr(e['func_count'])} | {_med_iqr(e['iterations'])} |"
             f" {_med_iqr(e['final_K'])} | {np.nanmean(e['n_warps']):.1f} |"
             f" {_med_iqr(e['wall_s'] / 60)} |"

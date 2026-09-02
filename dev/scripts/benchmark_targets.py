@@ -687,7 +687,7 @@ def _logreg(D):
         ln_Z=truth["ln_Z"],
         true_mean=None if truth["mean"] is None else np.array([truth["mean"]]),
         true_cov=None if truth["cov"] is None else np.array(truth["cov"]),
-        sampler=None,
+        sampler=_logreg_sampler,
         reference_logpdf=None,
         notes=(
             f"logistic regression, {LOGREG_N} trials, predictors 1-2 at rho"
@@ -697,7 +697,23 @@ def _logreg(D):
     )
 
 
-def logreg_reference(m=2_000_000, chunk=20_000, df=4, scale=2.0, seed=1):
+_LOGREG_IS_CACHE = {}
+
+
+def _logreg_sampler(n, rng, m=200_000):
+    """Approximate exact draws for ``logreg``: importance resampling from a
+    cached Laplace-centred t(4) population (ESS about 40 % of ``m``). Good
+    enough for marginal total-variation distances on a 2^13 KDE grid."""
+    if "pop" not in _LOGREG_IS_CACHE:
+        ref = logreg_reference(m=m, seed=11, return_draws=True)
+        _LOGREG_IS_CACHE["pop"] = (ref["draws"], ref["weights"])
+    W, wn = _LOGREG_IS_CACHE["pop"]
+    return W[rng.choice(len(wn), size=n, p=wn)]
+
+
+def logreg_reference(
+    m=2_000_000, chunk=20_000, df=4, scale=2.0, seed=1, return_draws=False
+):
     """Laplace + importance-sampling truth for ``logreg`` (ln Z, mean, cov)."""
     from scipy import optimize
 
@@ -734,7 +750,7 @@ def logreg_reference(m=2_000_000, chunk=20_000, df=4, scale=2.0, seed=1):
     wn = w / w.sum()
     mean = wn @ W
     cov = (W - mean).T @ ((W - mean) * wn[:, None])
-    return dict(
+    out = dict(
         ln_Z=float(ln_Z),
         se_ln_Z=float(se_ln_Z),
         ess=float(ess),
@@ -744,6 +760,10 @@ def logreg_reference(m=2_000_000, chunk=20_000, df=4, scale=2.0, seed=1):
         laplace_cov=lap_cov,
         n_draws=len(w),
     )
+    if return_draws:
+        out["draws"] = W
+        out["weights"] = wn
+    return out
 
 
 _REGISTRY = {
@@ -894,20 +914,40 @@ def posterior_moments(
     return np.reshape(mean, (1, -1)), cov, "mc"
 
 
+DIAG_TV_SAMPLES = 100_000
+
+
 def metrics(problem, vp, elbo):
-    """``elbo_err``, ``rmse``, ``gskl`` against the problem's truth (NaN when
-    unknown), plus the posterior moments used."""
+    """``elbo_err``, ``gskl``, ``mmtv`` and ``rmse`` against the problem's
+    truth (NaN when unknown), plus the posterior moments used.
+
+    ``elbo_err`` (|ELBO - ln Z|), ``gskl`` (Gaussianized symmetrized KL to
+    the true mean and covariance) and ``mmtv`` (mean marginal total variation
+    distance to exact samples, via ``VariationalPosterior.mtv``) are the
+    metrics of the VBMC papers; ``rmse`` of the posterior mean is what the
+    end-to-end tests assert and is kept for that reason only. All draws use
+    dedicated generators on a copy of the VP, so the run's stream is never
+    consumed.
+    """
     from pyvbmc.stats import kl_div_mvn
 
     mean, cov, method = posterior_moments(vp)
     out = {
         "elbo_err": float("nan"),
-        "rmse": float("nan"),
         "gskl": float("nan"),
+        "mmtv": float("nan"),
+        "rmse": float("nan"),
         "moment_method": method,
         "post_mean": mean,
         "post_cov": cov,
     }
+    if problem.sampler is not None:
+        ref = problem.sampler(
+            DIAG_TV_SAMPLES, np.random.default_rng(DIAG_SEED + 1)
+        )
+        vp2 = copy.deepcopy(vp)
+        vp2.rng = np.random.default_rng(DIAG_SEED + 2)
+        out["mmtv"] = float(np.mean(vp2.mtv(samples=ref, N=DIAG_TV_SAMPLES)))
     if problem.ln_Z is not None:
         out["elbo_err"] = float(abs(elbo - problem.ln_Z))
     if problem.true_mean is not None:
@@ -1082,8 +1122,8 @@ def run_smoke(configs, seed=0):
             msg = (
                 f"iters={results['iterations'] + 1} evals={results['func_count']}"
                 f" elbo={results['elbo']:.3f} elbo_err={met['elbo_err']:.3f}"
-                f" rmse={met['rmse']:.3f} gskl={met['gskl']:.3f}"
-                f" ({met['moment_method']})"
+                f" gskl={met['gskl']:.3f} mmtv={met['mmtv']:.3f}"
+                f" rmse={met['rmse']:.3f} ({met['moment_method']})"
             )
         except Exception as e:  # noqa: BLE001
             ok = False

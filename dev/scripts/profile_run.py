@@ -408,8 +408,9 @@ def main(argv=None):
             "elbo_sd": float(results["elbo_sd"]),
             "ln_Z": problem.ln_Z,
             "elbo_err": met["elbo_err"],
-            "posterior_mean_rmse": met["rmse"],
             "gskl": met["gskl"],
+            "mmtv": met["mmtv"],
+            "posterior_mean_rmse": met["rmse"],
             "moment_method": met["moment_method"],
             "message": results["message"],
         },
@@ -422,8 +423,8 @@ def main(argv=None):
         f"[profile_run] wall {wall:.1f} s (untimed {untimed:.1f} s), {n_iter}"
         f" iterations, {results['func_count']} evals, N={summary['result']['final_N']},"
         f" K={vp.K}, min Ns_gp={summary['result']['min_Ns_gp']},"
-        f" |elbo-lnZ|={met['elbo_err']:.3f}, RMSE={met['rmse']:.3f},"
-        f" gsKL={met['gskl']:.3f}",
+        f" |elbo-lnZ|={met['elbo_err']:.3f}, gsKL={met['gskl']:.3f},"
+        f" MMTV={met['mmtv']:.3f}, RMSE={met['rmse']:.3f}",
         flush=True,
     )
     print(
