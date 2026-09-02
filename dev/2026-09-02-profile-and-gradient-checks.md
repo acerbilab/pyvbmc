@@ -2,7 +2,8 @@
 
 **Status:** steps 1–3 of the immediate next steps in
 `2026-09-02-modernization-discussion.md` §14 are done. One latent bug found
-and fixed. Nothing committed yet at the time of writing (see §7).
+and fixed. Everything is committed on `dev-next` (see §7 for the commits and
+for what is deliberately not in the repo).
 
 Companion to the modernization devlog: this note records *measurements*;
 the plan and its rationale stay in the other file, which is updated in place
@@ -240,12 +241,25 @@ beyond `log_posterior`, the parameter transformer Jacobian.
 
 ## 7. State at end of session
 
-Uncommitted on `dev-next`:
+Committed on `dev-next`:
 
-- `dev/scripts/profile_run.py`, `dev/scripts/runs/` gitignored, `dev/README.md`
-  scripts section, this file.
-- Fix in `pyvbmc/vbmc/variational_optimization.py` (`_vp_bound_loss`).
-- Two new test files (9 tests, all passing).
+- `dad661b` chore(dev): `dev/scripts/profile_run.py`, `dev/scripts/runs/`
+  gitignored, `dev/README.md` scripts section, this file, and the in-place
+  annotations of the modernization devlog.
+- `3cfc960` fix(vbmc): the `_vp_bound_loss` reshape fix with the two new test
+  files (9 tests, all passing).
+- `ee5aef3` chore: `pycln` pre-commit hook bumped to v2.6.0 (see below).
+
+Not in the repo, by design (regenerate on a fresh checkout):
+
+- `.venv/` and the sibling `../gpyreg` clone: the setup commands in
+  `AGENTS.md`, using a plain venv; no torch needed yet.
+- `dev/scripts/runs/*`: raw profile outputs (`summary.json`, `profile.prof`).
+  Every number quoted here comes from them; regenerate with the commands in
+  the script docstring (`--seed 0`, `--tag D5_normal_plain` etc.; about 2, 3,
+  5 and 8 minutes for D=5 plain, D=5 cProfile, D=10 plain, D=10 cProfile).
+- Test-run logs lived in the session scratch directory; the results are
+  summarized in §2 and below.
 - Full suite after the fix, first run (before the RNG fixtures, 397 tests):
   397 passed, 3 reruns (`test_minimize_adam_matyas_with_noise`,
   `test_vp_optimize_1D_g_mixture`, `test_active_uncertainty_sampling`; all
@@ -256,10 +270,7 @@ Uncommitted on `dev-next`:
   for every pre-existing test, so this is a like-for-like comparison: the fix
   changes no test outcome, and the three earlier reruns were the stream shift.
 
-Suggested commit split: (1) dev tooling + devlog, (2) `fix: unpack ln-scale
-gradient in Fortran order in _vp_bound_loss` with the new tests.
-
-**Pre-commit on Python 3.12 is broken by the pinned `pycln` hook**
+**Pre-commit on Python 3.12 was broken by the pinned `pycln` hook**
 (`.pre-commit-config.yaml`, `v2.1.3`): its `libcst` dependency has no wheel
 for 3.12 at that version and tries to build from source with a Rust
 toolchain. `SKIP=pycln pre-commit run` works; isort 5.12 and black 23.3.0
