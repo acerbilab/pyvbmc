@@ -760,9 +760,13 @@ K. The L-BFGS-B path is 1 % of the run: real, not dominant.
 
 ### Golden population (`runs/golden/baseline/`, 20 seeds)
 
-Code: the run path is that of `d76cdb6`; the sidecars record `0056016`
-(111 runs, docs-only difference, tree dirty) and `16369e5` (109 runs), the
-later commits touching only documentation and the `compare` gate.
+Code: the run path is that of `d76cdb6` for ten configurations (sidecars
+record `0056016`, 111 runs with a dirty tree, and `16369e5`, 109 runs; the
+commits in between touched only documentation and the `compare` gate) and
+`dbb7160` for the regenerated cigar_D4 (sidecars record `a07d28d`,
+`759d3b8`, `4b7d618`, dirty tree: documentation edits in progress; the
+package and target code were those of `dbb7160`). The reference sidecars
+and `summary.md` live in git under `dev/golden/baseline/` (PI decision).
 
 Sweep: one worker, BLAS single-threaded, seeds 0–9 23:16–01:45 and 10–19
 01:45–04:13 (2.5 h per pass, ≈ 14.4 min per seed over the 11 configs);
@@ -780,7 +784,7 @@ statistically equivalent elsewhere). Median [IQR] over seeds:
 | rosenbrock_D2 | 0.025 [0.022, 0.031] | 0.021 | 0.025 | 1.00 | 80 | 15 | 1.0 | 0.64 |
 | banana_D2 | 0.046 [0.036, 0.054] | 0.142 | 0.040 | 1.00 | 85 | 16 | 1.1 | 0.64 |
 | banana_D6 | 0.079 [0.065, 0.130] | 0.203 | 0.023 | 0.90 | 105 | 20 | 1.1 | 1.49 |
-| cigar_D4 | 0.006 [0.002, 0.020] | 0.001 | 0.009 | 1.00 | 135 | 27 | 2.0 | 2.45 |
+| cigar_D4 (regenerated, `x0` = mean) | 0.004 [0.002, 0.009] | 0.0008 | 0.009 | 1.00 | 125 | 25 | 2.0 | 2.01 |
 | lumpy_D4 | 0.048 [0.026, 0.083] | 0.023 | 0.033 | 1.00 | 90 | 17 | 1.2 | 1.09 |
 | student_D4 | 0.025 [0.012, 0.045] | 0.040 | 0.041 | 0.95 | 100 | 19 | 1.2 | 1.19 |
 | logreg_D5 | 0.023 [0.015, 0.069] | 0.006 | 0.016 | 1.00 | 125 | 24 | 1.6 | 1.84 |
@@ -810,10 +814,12 @@ criterion.) Observations:
   every cigar run tonight: the profiled cigar_D4 and its 20 baseline
   traces used a wider box than the plan states. Deterministic, so the
   baseline is internally consistent, but not the intended configuration.
-  Fixed in the module (`x0` = mean); **the cigar_D4 baseline must be
-  regenerated** (delete `cigar_D4_seed*.{npz,json}`, rerun; about 50 min on
-  one process) before it is used as a reference. The sidecars record the
-  requested box, not the expanded one.
+  Fixed in the module (`x0` = mean) and **the cigar_D4 baseline regenerated
+  07:18–08:00 (PI request)**: 20 of 20, median 125 evaluations instead of
+  135, elbo err 0.004, gsKL 0.0008, MMTV 0.009; the null check over the
+  full population stays clean. The 11 other configurations were not
+  affected (their `x0` lies inside their boxes). Sidecars record the
+  requested box, not an expanded one.
 - **Null check** (even vs odd seeds, 10 a side, 44 KS tests on `elbo_err`,
   `gskl`, `mmtv`, `func_count`): nothing rejected after Holm; smallest raw
   p 0.052 (func_count on two configs). The earlier ±5 % median-func_count
@@ -843,10 +849,12 @@ criterion.) Observations:
 ## Follow-ups
 
 Compute and population:
-- **Regenerate the cigar_D4 baseline** with the fixed `x0` (see Results):
-  `rm dev/scripts/runs/golden/baseline/cigar_D4_seed*` then the standard
-  `run` command; about 50 min on one process. Until then `compare` on
-  cigar_D4 compares against the expanded-box runs.
+- ~~Regenerate the cigar_D4 baseline with the fixed `x0`~~ — done
+  2026-09-03 07:12–08:00 (PI request), see Results.
+- **Reference sidecars in git** (PI decision, 07:15: "0.55 MB in total
+  seems alright"): `dev/golden/baseline/` holds the 220 JSON sidecars and
+  `summary.md`; `.npz` traces stay gitignored. Copy the sidecars over after
+  every extension of the population.
 - **Exhaust run on a hard target at D ≥ 15** (PI: cigar, D = 15, 750
   evaluations; started 05:48 on 2026-09-03, see the tracker): the D = 5
   Gaussian measurement of the optimize-only GP regime was the cheapest
@@ -1003,3 +1011,20 @@ Phase 4 — records
   profile_20260902/cigar_D15_exhaust_plain/`; written up in §Results.
   cProfile repeat (fixed `x0`) 06:24–07:09, written up in §Results. Laptop
   free until 08:00; nothing running after 07:09
+- [x] **cigar_D4 baseline regeneration** (PI, 07:12) with the fixed `x0`,
+  one worker, 07:18–08:00 (41.7 min, 20 of 20); `summary` and `compare
+  --split` clean; sidecars and `summary.md` copied to `dev/golden/baseline/`
+  (PI decision 07:15: commit the 0.55 MB) and committed 08:05
+- [x] Full-matrix `tests` dispatch for the package fix (`6f3f0ba`, run
+  33715620257): **success on all 9 jobs** (08:00)
+- [x] **CI discussion (PI, 07:20)**: the `tests` workflow ran only on
+  manual dispatch and twice a month on `main`, so 17 pushes to `dev-next`
+  tonight triggered nothing (and I had not dispatched it for the package
+  fix until 07:35: run 33715620257). Decision: pushes to any `dev*` branch
+  that touch the package run a reduced Ubuntu/3.12 smoke of the same
+  workflow, with a concurrency group that supersedes stale pushes; full
+  matrix unchanged on schedule, dispatch and PRs (`759d3b8`). Then (PI,
+  07:45) the two side notes: the job is defined once in
+  `test-matrix.yml` and called from `tests.yml` and `merge-tests.yml`, and
+  gpyreg is pinned (`GPYREG_PIN` = 236ddd7) everywhere except the scheduled
+  run, which tests against gpyreg `main` as the drift detector

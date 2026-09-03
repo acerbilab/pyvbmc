@@ -1,0 +1,104 @@
+{
+ "label": "rosenbrock_D2",
+ "seed": 1,
+ "problem": "rosenbrock",
+ "D": 2,
+ "noise_sd": null,
+ "requested_options": {
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false
+ },
+ "effective_options": {
+  "max_fun_evals": 200,
+  "max_iter": 200,
+  "tol_stable_count": 60,
+  "tol_stable_excpt_frac": 0.2,
+  "specify_target_noise": false,
+  "search_acq_fcn": [
+   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x0000016B43CD1F40>"
+  ],
+  "active_sample_gp_update": false,
+  "active_sample_vp_update": false,
+  "min_final_components": 50,
+  "do_final_boost": true,
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false
+ },
+ "timer_keys": [
+  "active_sampling",
+  "finalize",
+  "fun_time",
+  "gp_train",
+  "variational_fit",
+  "warping"
+ ],
+ "ln_Z": -2.2598471241723845,
+ "true_mean": [
+  [
+   0.026341030923601183,
+   1.248229380722166
+  ]
+ ],
+ "true_cov": [
+  [
+   1.3168816075188348,
+   0.041579143037725065
+  ],
+  [
+   0.041579143037725065,
+   2.444556103217786
+  ]
+ ],
+ "plb": [
+  -3.0,
+  -3.0
+ ],
+ "pub": [
+  3.0,
+  3.0
+ ],
+ "notes": "test/notebook Rosenbrock + N(0, 3^2) prior; truth by 1-D quadrature; notebook-1 box -+3",
+ "final": {
+  "elbo": -2.2768985314047487,
+  "elbo_sd": 0.00039057009181818047,
+  "best_iter": 17,
+  "iterations": 18,
+  "func_count": 95,
+  "final_K": 50,
+  "final_N": 95,
+  "min_Ns_gp": 8,
+  "n_warps": 1,
+  "success_flag": true,
+  "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+  "wall_s": 49.4136268000002,
+  "target_eval_s": 0.007878541946411133,
+  "elbo_err": 0.017051407232364202,
+  "gskl": 0.01955081075092796,
+  "mmtv": 0.02547612796625061,
+  "rmse": 0.07375913236808687,
+  "moment_method": "affine",
+  "peak_rss_mb": 309.96484375
+ },
+ "meta": {
+  "git": {
+   "sha": "0056016",
+   "dirty": true
+  },
+  "python": "3.12.6",
+  "numpy": "2.5.2",
+  "scipy": "1.18.1",
+  "pyvbmc": "1.0.5.dev28+gdcfeba694",
+  "gpyreg": "1.0.5.dev1+g236ddd723",
+  "cma": "4.4.4",
+  "threads": {
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1",
+   "MKL_NUM_THREADS": "1"
+  },
+  "started": "2026-09-03 01:00:15",
+  "finished": "2026-09-03 01:01:05",
+  "pid": 17084
+ }
+}

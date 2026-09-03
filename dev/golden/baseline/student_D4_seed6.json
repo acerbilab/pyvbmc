@@ -1,0 +1,126 @@
+{
+ "label": "student_D4",
+ "seed": 6,
+ "problem": "student",
+ "D": 4,
+ "noise_sd": null,
+ "requested_options": {
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false
+ },
+ "effective_options": {
+  "max_fun_evals": 300,
+  "max_iter": 300,
+  "tol_stable_count": 60,
+  "tol_stable_excpt_frac": 0.2,
+  "specify_target_noise": false,
+  "search_acq_fcn": [
+   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x0000016B42B3A1B0>"
+  ],
+  "active_sample_gp_update": false,
+  "active_sample_vp_update": false,
+  "min_final_components": 50,
+  "do_final_boost": true,
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false
+ },
+ "timer_keys": [
+  "active_sampling",
+  "finalize",
+  "fun_time",
+  "gp_train",
+  "variational_fit",
+  "warping"
+ ],
+ "ln_Z": -10.358109218644737,
+ "true_mean": [
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ]
+ ],
+ "true_cov": [
+  [
+   2.382379205925162,
+   0.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   1.8804775313871402,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   1.642539721073319,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   1.4997712821091969
+  ]
+ ],
+ "plb": [
+  -5.4,
+  -4.6,
+  -4.1,
+  -3.8
+ ],
+ "pub": [
+  5.4,
+  4.6,
+  4.1,
+  3.8
+ ],
+ "notes": "product of t(nu), nu = [2.5, 3.0, 3.5, 4.0], unit scale, times N(0, (3 sd_t)^2) priors; truth by per-coordinate quadrature",
+ "final": {
+  "elbo": -10.402094909981145,
+  "elbo_sd": 0.028900000410497593,
+  "best_iter": 17,
+  "iterations": 18,
+  "func_count": 95,
+  "final_K": 50,
+  "final_N": 95,
+  "min_Ns_gp": 8,
+  "n_warps": 1,
+  "success_flag": true,
+  "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+  "wall_s": 73.83955940000124,
+  "target_eval_s": 0.024564743041992188,
+  "elbo_err": 0.04398569133640784,
+  "gskl": 0.09600574088547709,
+  "mmtv": 0.04742701122072868,
+  "rmse": 0.04180236508742149,
+  "moment_method": "affine",
+  "peak_rss_mb": 309.96484375
+ },
+ "meta": {
+  "git": {
+   "sha": "0056016",
+   "dirty": true
+  },
+  "python": "3.12.6",
+  "numpy": "2.5.2",
+  "scipy": "1.18.1",
+  "pyvbmc": "1.0.5.dev28+gdcfeba694",
+  "gpyreg": "1.0.5.dev1+g236ddd723",
+  "cma": "4.4.4",
+  "threads": {
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1",
+   "MKL_NUM_THREADS": "1"
+  },
+  "started": "2026-09-03 00:55:10",
+  "finished": "2026-09-03 00:56:25",
+  "pid": 17084
+ }
+}

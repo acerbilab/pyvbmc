@@ -7,8 +7,10 @@ and where to pick up. Update it in place; do not add status to the devlogs.
 
 Branch: `dev-next`. No PR to `main` until the work here is done: one PR at
 the end (decided 2026-09-02, superseding the per-stage PRs of devlog §11).
-CI on `dev-next` is the manually dispatched `tests` workflow; run it after
-each substantive commit.
+CI on `dev*` branches: pushes that touch the package run a reduced smoke
+(Ubuntu, Python 3.12) of the `tests` workflow automatically (added
+2026-09-03); dispatch the workflow by hand for the full matrix before
+anything that changes numerics lands.
 
 ## Stages
 
@@ -57,14 +59,15 @@ each substantive commit.
    single-point `predict`). Gate every step with
    `golden_trace.py run --suite golden --seeds 0-19 --workers 1 --out
    dev/scripts/runs/golden/<label>` followed by `compare
-   dev/scripts/runs/golden/baseline dev/scripts/runs/golden/<label>`
-   (about 5 h per population on one process), plus the test suite.
-2. Run the `tests` workflow on `dev-next` for the package fix `6f3f0ba`
-   (`variational_optimization.py`, Ns = 1 variance shape) if not yet done.
+   dev/golden/baseline dev/scripts/runs/golden/<label>` (about 5 h per
+   population on one process), plus the test suite.
+2. ~~Run the `tests` workflow on `dev-next` for the package fix~~ done
+   2026-09-03 (full matrix green, run 33715620257); pushes to `dev*` now
+   run a smoke automatically.
 3. Grow the golden population to 50 seeds and add D = 8/10 and the exhaust
-   config (`plans/benchmark-suite-and-golden-traces.md` §Follow-ups);
-   decide whether the reference sidecars (0.55 MB of JSON) should live in
-   git so `compare` works from a fresh checkout.
+   config (`plans/benchmark-suite-and-golden-traces.md` §Follow-ups). The
+   reference sidecars live in git under `dev/golden/baseline/` (PI decision
+   2026-09-03); copy them over after every extension.
 4. Stage 0 remaining items: fixture generator, finite-difference checks for
    the transformer Jacobian, gpyreg derivatives and `compute_vargrad`.
 5. gpyreg generator support (`GP.fit`, `SliceSampler`, `f_min_fill`,

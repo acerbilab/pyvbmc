@@ -64,10 +64,15 @@ heavy process at a time** on a laptop (`golden_trace.py run --workers 1`,
 the default; eight concurrent VBMC processes hard-crashed the machine on
 2026-09-02) and export `OMP_NUM_THREADS=OPENBLAS_NUM_THREADS=MKL_NUM_THREADS=1`
 before profiling if wall times are to be compared with the golden baseline,
-which was made single-threaded. The golden reference population
-(`scripts/runs/golden/baseline/`, 20 seeds × 11 configs) is gitignored and
-takes about 5 hours to regenerate on one process; see the roadmap's pickup
-point about committing its sidecars.
+which was made single-threaded. The golden reference population's sidecars
+(20 seeds × 11 configs, JSON only, about 0.55 MB) are committed under
+`golden/baseline/` together with its `summary.md`, so
+`python dev/scripts/golden_trace.py compare dev/golden/baseline <new_dir>`
+works from a fresh checkout; the full traces (`.npz`) stay gitignored under
+`scripts/runs/golden/baseline/` and take about 5 hours to regenerate on one
+process. After regenerating or extending the reference, copy the sidecars
+and `summary.md` over (`cp dev/scripts/runs/golden/baseline/*.json
+dev/scripts/runs/golden/baseline/summary.md dev/golden/baseline/`).
 
 - `scripts/benchmark_targets.py` — the benchmark target suite: nine targets
   with ground truth (normal, corr, halfnormal, rosenbrock, banana, cigar,
