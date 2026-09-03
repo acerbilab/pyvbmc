@@ -26,6 +26,9 @@ from pyvbmc.vbmc.variational_optimization import (
 
 from .test_variational_optimization import setup_options
 from .test_variational_optimization_grad_fd import (
+    _restore_global_rng,  # autouse fixture: VP construction draws globally
+)
+from .test_variational_optimization_grad_fd import (  # noqa: F401
     D,
     K,
     _fixture_gp,

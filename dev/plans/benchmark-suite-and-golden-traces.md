@@ -1,6 +1,6 @@
 # Benchmark target suite, profile campaign, golden-trace baseline
 
-Created: 2026-09-02 21:20. Status: APPROVED 22:03, IN PROGRESS (tracker at
+Created: 2026-09-02 21:20. Status: DONE 2026-09-03 04:45 (tracker at
 the end of this file).
 Budget: about 10 hours of wall clock from 21:07, i.e. done by ~07:00 on
 2026-09-03, everything on the laptop (22 logical CPUs: 6 P-cores, 8 E-cores,
@@ -575,7 +575,14 @@ refits are timed inside active sampling), so percentages need not sum to
 | student_D4 | 67.7 | 7.2 | 20 | 105 | 105 | 59.3 | 20.3 | 8.6 | 1.1 | 0.001 | 0.015 |
 | logreg_D5 | 98.6 | 11.7 | 22 | 110 | 110 | 51.0 | 16.6 | 19.4 | 1.0 | 0.108 | 0.028 |
 | banana_D2_noise1 | 104.4 | −8.6 | 26 | 135 | 135 | 74.3 | 18.6 | 14.7 | 0.6 | 0.015 | 0.029 |
-| normal_D5_exhaust | *pending (rerun after the fix)* | | | | | | | | | | |
+| normal_D5_exhaust † | 443.2 | 3.6 | 69 | 350 | 350 | 46.3 | 31.4 | 20.8 | 0.7 | 0.012 | 0.000 |
+
+† Ran after the crash with BLAS pinned to one thread (`6f3f0ba` in place);
+the six rows above ran with default threads before it. Wall times across
+that line are not strictly comparable; the regime split inside the exhaust
+run is unaffected. The six converging plain rows predate the MMTV metric
+(`d76cdb6`) and carry none; their cProfile counterparts and the exhaust run
+do.
 
 Every converging run ended on the stability criterion with 80–135
 evaluations, all K = 50 after the final boost, Ns_gp never below 7. Against
@@ -591,7 +598,7 @@ active sampling / GP training / variational fit):
    21 % on cigar, 19 % on logreg, against 9–12 % elsewhere. That is the
    large-K signal the decision rule asked about, though weaker than "shifts
    the balance": it does not overtake active sampling anywhere.
-4. **The post-loop tail is 7–12 s per run, 10–13 % of wall**, essentially
+4. **The post-loop tail is 7–12 s per run, 8–13 % of wall**, essentially
    the K = 50 final boost (`_eval_full_elcbo` with `ns_ent_fine`); on these
    short runs it is as large as the whole variational stage. Stage 2 item 2
    (multi-RHS solve in `_eval_full_elcbo`) gains weight.
@@ -601,8 +608,9 @@ active sampling / GP training / variational fit):
    banana is the hardest golden config (gsKL 1.04 on seed 0).
 
 **cProfile attribution** (% of profiled `VBMC.optimize`; calls in
-parentheses; profiled wall 83–183 s, 1.5–1.6× the plain runs; banana_D4 was
-profiled under the pre-crash 8-process load, the rest alone):
+parentheses; profiled wall 83–183 s, 1.35–1.6× the plain runs, 2.0× for
+banana_D4, which was profiled under the pre-crash 8-process load; the rest
+ran alone, single-threaded):
 
 | bucket | banana_D4 | cigar_D4 | lumpy_D4 | student_D4 | logreg_D5 | banana_D2_noise1 |
 |---|---|---|---|---|---|---|
@@ -657,7 +665,7 @@ Two refinements: items 8 and 1 are close (15–22 % vs 16–24 %) and item 1 is
 PyVBMC-local while item 8 is a gpyreg PR, so item 1 may land first for
 logistics; and on the noisy path items 8 and 1 dominate outright because
 the active-sampling bucket is GP refits and VP optimizations there. The
-exhaust run (GP training at Ns = 0) is reported below when it finishes.
+exhaust run (GP training at Ns = 0) is reported below.
 
 **Exhaust run** (`normal_D5_exhaust`, plain, after the fix `6f3f0ba`):
 443 s, 69 iterations, 350 evaluations, terminated on the budget; Ns_gp
@@ -687,11 +695,16 @@ optimize_vp 20.6 % (`_gp_log_joint` 13.1 %, `_eval_full_elcbo` 6.7 %,
 Gaussian D=5 level and the Cholesky becomes visible, but the per-call
 overhead around it is still 5× the factorization itself.
 
-### Golden population (`runs/golden/baseline/`, 20 seeds, code `d76cdb6`)
+### Golden population (`runs/golden/baseline/`, 20 seeds)
+
+Code: the run path is that of `d76cdb6`; the sidecars record `0056016`
+(111 runs, docs-only difference, tree dirty) and `16369e5` (109 runs), the
+later commits touching only documentation and the `compare` gate.
 
 Sweep: one worker, BLAS single-threaded, seeds 0–9 23:16–01:45 and 10–19
 01:45–04:13 (2.5 h per pass, ≈ 14.4 min per seed over the 11 configs);
-**220 of 220 runs succeeded**, 9.8 MB of traces and sidecars (gitignored;
+**220 of 220 runs succeeded**, 9.3 MB of traces and sidecars (0.55 MB of
+sidecars; gitignored;
 regenerate with `golden_trace.py run --suite golden --seeds 0-19 --workers
 1 --out dev/scripts/runs/golden/baseline`, bit-for-bit on this machine,
 statistically equivalent elsewhere). Median [IQR] over seeds:
@@ -724,6 +737,9 @@ criterion.) Observations:
   the noiseless one at 85.
 - MMTV sits between 0.008 (Gaussians) and 0.041 (Student-t): all marginals
   are recovered to a few percent total variation.
+- Determinism spot check: banana_D6 seed 0 in the population has gsKL
+  1.0424, the value the pre-crash memory probe produced for the same
+  (config, seed) on the same code path.
 - **Null check** (even vs odd seeds, 10 a side, 44 KS tests on `elbo_err`,
   `gskl`, `mmtv`, `func_count`): nothing rejected after Holm; smallest raw
   p 0.052 (func_count on two configs). The earlier ±5 % median-func_count
@@ -744,8 +760,11 @@ criterion.) Observations:
   NumPy 2); the PI approved a package fix out of the plan's stated scope
   (`6f3f0ba`), and the exhaust config was rerun with it.
 - MMTV replaced RMSE as a headline metric (PI, 22:47); RMSE stays recorded.
-- Seeds: 20 attempted with one worker; whatever is finished by ~06:45 is the
-  baseline, the rest is appended later (resumable).
+- Seeds: 20 per config on one worker; all 220 runs finished at 04:13.
+- Phase 1 spec deviations: plausible-box quantiles from 10⁶ exact draws
+  (plan said 2·10⁶), `--check` sampled moments from 2·10⁶ (plan said
+  4·10⁶), density tolerance 1e-6 (plan said 1e-10; the cigar's 1e8
+  condition number needs it).
 
 ## Follow-ups
 
@@ -883,6 +902,14 @@ Phase 4 — records
 - [x] Devlog §2, §9, §10 annotations — 23:05 / 23:08
 - [x] Roadmap ticks, Stage 2 order, pickup point — 04:20
 - [x] `dev/README.md`, `AGENTS.md` — 22:25
-- [~] Full test suite run once for the package fix (background, 04:20)
-- [ ] commit (4); push `dev-next`
-- [ ] Final doublecheck
+- [x] Full test suite (`pytest --reruns=5 -x`, the CI command) run once
+  for the package fix: **417 passed, 0 reruns, 10:07** (04:14–04:24, one
+  process, BLAS single-threaded)
+- [x] commit (4) — 04:15, `8faed68`
+- [x] Final doublecheck — read-only Opus review, 04:15–04:30: every number
+  in the Results tables reproduced from the run files; fix confirmed
+  correct; findings applied 04:40 (stale "pending" text, wrong SHA
+  shorthand, undeclared `psutil`, `--workers` default 6 → 1, stale
+  `EST_MINUTES`, unused `ratio_tol`, missing RNG-restore fixture in the new
+  test, §9 cross-reference, README gaps)
+- [x] push `dev-next` — 04:45

@@ -22,7 +22,8 @@ each substantive commit.
   - [ ] stage-level oracles with pre-drawn randomness
   - [x] golden-trace harness over the benchmark target suite
     (`dev/scripts/golden_trace.py`; baseline population of 20 seeds × 11
-    configs on `d76cdb6`, gitignored under `dev/scripts/runs/golden/
+    configs on the run path of `d76cdb6` (sidecars record
+    `0056016`/`16369e5`), gitignored under `dev/scripts/runs/golden/
     baseline/`, null check clean; expand to 50 seeds and higher D;
     `plans/benchmark-suite-and-golden-traces.md` §Results)
   - [ ] dtype canary
@@ -62,7 +63,7 @@ each substantive commit.
    (`variational_optimization.py`, Ns = 1 variance shape) if not yet done.
 3. Grow the golden population to 50 seeds and add D = 8/10 and the exhaust
    config (`plans/benchmark-suite-and-golden-traces.md` §Follow-ups);
-   decide whether the reference sidecars (about 1 MB of JSON) should live in
+   decide whether the reference sidecars (0.55 MB of JSON) should live in
    git so `compare` works from a fresh checkout.
 4. Stage 0 remaining items: fixture generator, finite-difference checks for
    the transformer Jacobian, gpyreg derivatives and `compute_vargrad`.

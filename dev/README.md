@@ -58,7 +58,16 @@ test suite. Output directories under it (e.g. `scripts/runs/`) are gitignored;
 results that matter get summarized in the relevant `plans/` worklog (and
 decisions taken with a person in a dated devlog), not committed raw. Run the
 scripts from the repo root with the project venv; they import each other by
-plain module name, so run them as `python dev/scripts/<name>.py`.
+plain module name, so run them as `python dev/scripts/<name>.py`. They need
+`psutil` (not a package dependency; `pip install psutil`). Keep to **one
+heavy process at a time** on a laptop (`golden_trace.py run --workers 1`,
+the default; eight concurrent VBMC processes hard-crashed the machine on
+2026-09-02) and export `OMP_NUM_THREADS=OPENBLAS_NUM_THREADS=MKL_NUM_THREADS=1`
+before profiling if wall times are to be compared with the golden baseline,
+which was made single-threaded. The golden reference population
+(`scripts/runs/golden/baseline/`, 20 seeds × 11 configs) is gitignored and
+takes about 5 hours to regenerate on one process; see the roadmap's pickup
+point about committing its sidecars.
 
 - `scripts/benchmark_targets.py` — the benchmark target suite: nine targets
   with ground truth (normal, corr, halfnormal, rosenbrock, banana, cigar,

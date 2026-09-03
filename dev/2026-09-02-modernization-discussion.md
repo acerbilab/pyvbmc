@@ -426,8 +426,20 @@ state used by resume.
 - `_neg_elcbo` shifts `eta` to `max(eta) = 0` in place (on a view of the
   caller's `theta`) before the bound loss, so the eta upper soft bound
   (`ub = 0`) can never fire.
+- **Fixed 2026-09-02 (evening), `6f3f0ba`:** with a single GP
+  hyperparameter sample (Ns = 1, the regime once GP sampling stops at
+  `N ≥ 200 + 10D`), `_gp_log_joint` squeezed `G` and `dG` but not `varG`,
+  so `_eval_full_elcbo` received a length-1 `varF` and NumPy 2 raised
+  "setting an array element with a sequence": every run that reached the
+  optimize-only regime crashed (NumPy 1 squeezed silently). Found by the
+  budget-exhausting run of the benchmark suite; three regression tests on
+  the single-sample GP fixture.
 - **Found 2026-09-02 (evening) while building the benchmark suite**, not
   fixed (`plans/benchmark-suite-and-golden-traces.md`):
+  - `active_sample.py:336-338` calls `_gp_log_joint(..., compute_var=1)`
+    only when the acquisition function sets `compute_var_log_joint`, which
+    none does, and stores `optim_state["var_log_joint_samples"]`, which
+    nothing reads: unreachable code.
   - `vbmc.py:1341` tests `optim_state.get("stop_gp_sampling") == 0`, but
     only `"stop_sampling"` is ever set, so `_is_gp_sampling_finished` and
     the `tol_gp_var_mcmc` option are dead; the method itself reads history

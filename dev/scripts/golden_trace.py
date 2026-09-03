@@ -8,8 +8,8 @@ in ``dev/plans/benchmark-suite-and-golden-traces.md``). Targets come from
 
 Sub-commands::
 
-    python -u dev/scripts/golden_trace.py run --suite golden --seeds 0-9 \
-        --workers 6 --out dev/scripts/runs/golden/baseline
+    python -u dev/scripts/golden_trace.py run --suite golden --seeds 0-19 \
+        --workers 1 --out dev/scripts/runs/golden/baseline
     python dev/scripts/golden_trace.py summary dev/scripts/runs/golden/baseline
     python dev/scripts/golden_trace.py compare REF_DIR NEW_DIR
     python dev/scripts/golden_trace.py compare --split dev/scripts/runs/golden/baseline
@@ -50,20 +50,21 @@ HERE = Path(__file__).resolve().parent
 REPO_ROOT = HERE.parents[1]
 DEFAULT_RUNS = REPO_ROOT / "dev" / "scripts" / "runs" / "golden"
 
-# Rough solo minutes per run, used only to order tasks longest-first.
+# Median solo minutes per run (baseline population, 2026-09-03, single BLAS
+# thread), used only to order tasks longest-first when --workers > 1.
 EST_MINUTES = {
-    "banana_D2_noise1": 24,
-    "banana_D2_noise1_mfe150": 12,
-    "banana_D6": 15,
-    "logreg_D5": 10,
-    "cigar_D4": 7.5,
-    "lumpy_D4": 7.5,
-    "student_D4": 7.5,
-    "banana_D2": 4,
-    "rosenbrock_D2": 4,
-    "corr_D5": 2.5,
-    "normal_D5": 2,
-    "halfnormal_D2": 2,
+    "cigar_D4": 2.5,
+    "banana_D2_noise1_mfe150": 2.1,
+    "banana_D2_noise1": 2.0,
+    "logreg_D5": 1.8,
+    "banana_D6": 1.5,
+    "corr_D5": 1.25,
+    "student_D4": 1.2,
+    "lumpy_D4": 1.1,
+    "normal_D5": 1.1,
+    "banana_D2": 0.65,
+    "rosenbrock_D2": 0.65,
+    "halfnormal_D2": 0.55,
 }
 
 # Gated metrics: the VBMC papers' three plus the evaluation count, all by
@@ -319,6 +320,11 @@ def parse_seeds(spec):
 def cmd_run(args):
     from benchmark_targets import suite_configs
 
+    try:  # fail fast in the parent, not as 220 per-task error files
+        import psutil  # noqa: F401
+    except ImportError:
+        sys.exit("golden_trace.py needs psutil (pip install psutil)")
+
     # Environment for the spawned workers: one BLAS thread each, headless.
     for k in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS"):
         os.environ[k] = "1"
@@ -466,7 +472,7 @@ def _holm(pvals, alpha):
     return reject
 
 
-def compare_populations(ref, new, alpha=0.05, ratio_tol=0.05):
+def compare_populations(ref, new, alpha=0.05):
     from scipy import stats
 
     tests = []  # (label, metric, n_ref, n_new, ks, p, median shift)
@@ -557,7 +563,13 @@ def main(argv=None):
     r = sub.add_parser("run")
     r.add_argument("--suite", default="golden")
     r.add_argument("--seeds", default="0-9")
-    r.add_argument("--workers", type=int, default=6)
+    r.add_argument(
+        "--workers",
+        type=int,
+        default=1,
+        help="parallel VBMC processes (default 1: the baseline was made with"
+        " one; 8 heavy processes hard-crashed the laptop on 2026-09-02)",
+    )
     r.add_argument("--out", type=Path, default=None)
     r.add_argument("--only", default=None, help="comma-separated labels")
     r.add_argument(
