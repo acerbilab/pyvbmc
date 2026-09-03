@@ -681,10 +681,20 @@ The two regimes, per iteration:
 Once sampling stops, GP training all but vanishes (warm-started L-BFGS-B),
 active sampling halves because `GP.predict` runs over one hyperparameter
 sample instead of 5–8, and the variational stage is a third of a cheaper
-iteration. **The decision rule's second clause does not fire**: the
-budget-exhausting run is not dominated by GP refits at Ns = 0, so the
-L-BFGS-B path does not join item 8. The expensive regime is the sampling
-one, exactly where items 3 and 8 act. Its cProfile pass (567 s profiled, 69
+iteration. **The decision rule's second clause does not fire at this
+size**: the budget-exhausting run is not dominated by GP refits at Ns = 0
+(most optimize-only iterations reuse the previous hyperparameters through
+`gp_retrain_threshold`; `scipy.optimize.minimize` was called 29 times in
+69 iterations and is 0.1 % of profiled time in every run tonight), so the
+L-BFGS-B path does not join item 8 on this evidence. The expensive regime is
+the sampling one, exactly where items 3 and 8 act. **Caveat**: this is one
+run at D = 5, N ≤ 350. At D = 20 and N ≈ 700 each L-BFGS-B evaluation costs
+a 700-point Cholesky plus a 63-hyperparameter gradient, refits may trigger
+every iteration, and the Cholesky retry ladder may engage; the scaling
+arithmetic still puts GP training well under 10 % of an iteration against
+11,000 acquisition calls per point, but that is an estimate. Follow-up:
+run `normal`/`banana` at D = 20 with `max_fun_evals = 700` and the exhaust
+option before scoping Stage 2 item 8. Its cProfile pass (567 s profiled, 69
 iterations): active_sample 47.5 % (`GP.predict` 30.2 %, 216k calls; `vp.pdf`
 9.1 %, growing with K → 30), train_gp 30.8 % (`SliceSampler` 30.3 %,
 `__core_computation` 25.2 % over 350k calls, `solve_triangular` 11.8 % over
@@ -769,6 +779,9 @@ criterion.) Observations:
 ## Follow-ups
 
 Compute and population:
+- **Exhaust run at D = 20, 700 evaluations** (one process, 1–1.5 h): the
+  only measurement of the optimize-only GP regime is D = 5, N ≤ 350; the
+  Stage 2 item 8 scoping (whether the L-BFGS-B path matters) rests on it.
 - Append seeds to 50 per config (`golden_trace.py run --seeds 20-49`,
   one worker; the harness skips finished runs). About 1.5 min per run.
 - Add higher dimensions to the golden set (cigar, lumpy, student at D = 6
