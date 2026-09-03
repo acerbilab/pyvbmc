@@ -1,7 +1,11 @@
 # Benchmark target suite, profile campaign, golden-trace baseline
 
-Created: 2026-09-02 21:20. Status: DONE 2026-09-03 04:45 (tracker at
-the end of this file).
+Created: 2026-09-02 21:20. Status: **REOPENED 2026-09-03 08:15** — the
+night's results were withdrawn after the audit against the papers (§Audit:
+truth-anchored start points and plausible boxes); the suite is corrected
+and the regeneration (`bash dev/scripts/regenerate_baseline.sh`, one
+process, 10–12 h) is scheduled for the evening of 2026-09-03 on the PI's
+laptop. Tracker at the end of this file.
 Budget: about 10 hours of wall clock from 21:07, i.e. done by ~07:00 on
 2026-09-03, everything on the laptop (22 logical CPUs: 6 P-cores, 8 E-cores,
 2 LP-E; ~6.5 GB free RAM), no PRs. Roadmap: `plans/modernization-roadmap.md`
@@ -215,11 +219,11 @@ setup, and the named suites, used by both the profiler and the harness.
   | `corr` | as today: seeded rotation, SDs linspace(0.2, 1) | lnZ 0, analytic | ∓2.5, x0 = 0 (legacy) |
   | `halfnormal` | test target: N with SDs 1..D restricted to the negative orthant; lb = −10D, ub = 0 | lnZ −D ln 2 (to 1e-23), mean −s√(2/π), cov diag(s²(1 − 2/π)) | −6 / −0.05, x0 = −1 (test) |
   | `rosenbrock` | test/notebook target + N(0, 3²) prior, D=2 only | x2 analytic, 1-D quadrature in x1 → lnZ −2.2598, mean, cov (lazy cache) | ∓3, x0 = 0 (notebook 1) |
-  | `banana` | D ≥ 2: `z ~ N(0, diag σ²)`, σ1 = 2, other σ = 1; `x1 = z1`, `x2 = z2 + b(z1² − σ1²)`, b = 0.5, rest identity; log-density `log N(z(x))`, no Jacobian term. **Prototyped 22:00** (`scratchpad/proto_targets.py`): sampled cov diag(3.99, 9.00), off-diagonal 0.01; a clear banana whose curvature in unit-box coordinates matches notebook 1's Rosenbrock | lnZ 0, mean 0, cov diag(4, 9, 1, …). **Diagonal, so RMSE and gsKL cannot see the ridge; `elbo_err` is the shape-sensitive metric here** | quantile rule: x1 ±5.2, x2 [−4.1, 14.0], rest ±2.6 |
+  | `banana` | D ≥ 2: `z ~ N(0, diag σ²)`, σ1 = 2, other σ = 1; `x1 = z1`, `x2 = z2 + b(z1² − σ1²)`, b = 0.5, rest identity; log-density `log N(z(x))`, no Jacobian term. **Prototyped 22:00** (in a session scratch script that was not kept; `benchmark_targets.py --check` now carries the same verifications): sampled cov diag(3.99, 9.00), off-diagonal 0.01; a clear banana whose curvature in unit-box coordinates matches notebook 1's Rosenbrock | lnZ 0, mean 0, cov diag(4, 9, 1, …). **Diagonal, so RMSE and gsKL cannot see the ridge; `elbo_err` is the shape-sensitive metric here** | quantile rule: x1 ±5.2, x2 [−4.1, 14.0], rest ±2.6 |
   | `cigar` | mean linspace(−0.5, 0.5, D), `ell` = 0.01 on D−1 axes and 1.0 on the last, `Q` from `qr(default_rng(20260900 + D).standard_normal((D,D)))` (orthogonal, not necessarily a rotation); **one expression** `cov = Q diag(ell²) Qᵀ` shared by the density and `true_cov` | lnZ 0, analytic | rule (per-coordinate SDs differ: 0.29/0.92/0.18/0.19 at D=4) |
   | `lumpy` | 12 components; means U[0,1]^D, per-dim SDs U[0.2, 0.6], weights Dirichlet(1), frozen `default_rng(20260900 + D)`; log-sum-exp density | lnZ 0; mean Σ wμ; cov Σ w(diag(sd²) + μμᵀ) − μ̄μ̄ᵀ | rule (≈ [−1, 2] in expectation) |
   | `student` | product of 1-D t(ν_d), `ν = linspace(2.5, 2 + D/2, D)`, unit scale, **times the paper's prior N(0, (3·sd_d)²)** with `sd_d = sqrt(ν/(ν−2))` | factorizes: lnZ, mean, cov by per-coordinate 1-D quadrature (exact to ~1e-10) | rule, from the quadrature moments |
-  | `logreg` | Bayesian logistic regression, D=5 (intercept + 4 weights), `default_rng(20260905)`: **50 trials**, predictors 1–2 correlated at ρ = 0.95, predictor 4 a rare binary (6 ones) whose outcomes are all 1; generating weights (0.3, 1, −1, 0.8, 1.5); **N(0, 5²) prior**. **Prototyped 22:10** (`scratchpad/proto_targets.py`): a tight ridge (corr(w1, w2) = −0.94), a long right tail on the prior-identified w4 (skew 0.8, SD 3.0 vs Laplace 2.6), skew 0.2–0.3 elsewhere. Trial count barely matters for skew (0.25–0.43 for n = 10…100 at prior SD 2, because the symmetric prior takes over as n shrinks); the prior width is the lever (0.7–0.9 at SD 5) | Laplace + importance sampling (t(4) proposal, 2× Laplace covariance, 2·10⁶ draws in chunks; prototype: lnZ −33.341 ± 0.002, ESS 44 % of draws), constants hard-coded with the generating command, SE and ESS in the docstring | ±5 (one prior SD, paper convention) |
+  | `logreg` | Bayesian logistic regression, D=5 (intercept + 4 weights), `default_rng(20260905)`: **50 trials**, predictors 1–2 correlated at ρ = 0.95, predictor 4 a rare binary (6 ones) whose outcomes are all 1; generating weights (0.3, 1, −1, 0.8, 1.5); **N(0, 5²) prior**. **Prototyped 22:10** (in a session scratch script that was not kept; `benchmark_targets.py --check` now carries the same verifications): a tight ridge (corr(w1, w2) = −0.94), a long right tail on the prior-identified w4 (skew 0.8, SD 3.0 vs Laplace 2.6), skew 0.2–0.3 elsewhere. Trial count barely matters for skew (0.25–0.43 for n = 10…100 at prior SD 2, because the symmetric prior takes over as n shrinks); the prior width is the lever (0.7–0.9 at SD 5) | Laplace + importance sampling (t(4) proposal, 2× Laplace covariance, 2·10⁶ draws in chunks; prototype: lnZ −33.341 ± 0.002, ESS 44 % of draws), constants hard-coded with the generating command, SE and ESS in the docstring | ±5 (one prior SD, paper convention) |
 
   The cost half of devlog §10 item 3 ("per-evaluation cost non-trivial") is
   deliberately dropped: target time is additive and reported separately as
@@ -565,6 +569,12 @@ seed); a summary; a statistical comparison usable as a gate by later stages.
 ---
 
 ## Results
+
+**Withdrawn 2026-09-03 08:15 (see §Audit).** Every number in this section
+was produced with start points at or near the true posterior mean and
+plausible boxes drawn from the realized posteriors. It is kept as the
+record of the night and of the tooling's first use; nothing here is to be
+quoted. The regenerated results will be appended as a new section.
 
 ### Profile campaign (`runs/profile_20260902/`, seed 0, machine otherwise idle)
 
@@ -1131,6 +1141,18 @@ Phase 4 — records
   exhaust in the profile suite); `dev/golden/baseline/` emptied;
   `regenerate_baseline.sh` written for the evening run (PI: laptop free from
   the evening; one process; about 10–12 h)
+- [ ] **Pickup (handoff 2026-09-03 08:45)**: run `bash
+  dev/scripts/regenerate_baseline.sh` from the repo root when the laptop is
+  free (evening of 2026-09-03; one process, 10–12 h, resumable; log in
+  `dev/scripts/runs/regenerate_<stamp>.log`). Then: append the regenerated
+  profile tables and golden summary to this file as a new §Results
+  section, apply the devlog §10 decision rule to the new profile and update
+  the Stage 2 order in the devlog and the roadmap (currently marked
+  provisional), refresh `EST_MINUTES` in `golden_trace.py` from the new
+  `summary.md`, commit the republished `dev/golden/baseline/` sidecars and
+  push `dev-next`. Nothing is running now; no CI run is pending (the last
+  push touched only `dev/`, outside the workflow's path filter; the fix
+  `6f3f0ba` has a green full matrix and a green smoke run).
 - [x] **CI discussion (PI, 07:20)**: the `tests` workflow ran only on
   manual dispatch and twice a month on `main`, so 17 pushes to `dev-next`
   tonight triggered nothing (and I had not dispatched it for the package
