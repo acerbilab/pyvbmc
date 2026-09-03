@@ -65,14 +65,19 @@ the default; eight concurrent VBMC processes hard-crashed the machine on
 2026-09-02) and export `OMP_NUM_THREADS=OPENBLAS_NUM_THREADS=MKL_NUM_THREADS=1`
 before profiling if wall times are to be compared with the golden baseline,
 which was made single-threaded. The golden reference population's sidecars
-(20 seeds × 11 configs, JSON only, about 0.55 MB) are committed under
-`golden/baseline/` together with its `summary.md`, so
-`python dev/scripts/golden_trace.py compare dev/golden/baseline <new_dir>`
-works from a fresh checkout; the full traces (`.npz`) stay gitignored under
-`scripts/runs/golden/baseline/` and take about 5 hours to regenerate on one
-process. After regenerating or extending the reference, copy the sidecars
-and `summary.md` over (`cp dev/scripts/runs/golden/baseline/*.json
-dev/scripts/runs/golden/baseline/summary.md dev/golden/baseline/`).
+(JSON only, under 1 MB) live under `golden/baseline/` together with its
+`summary.md`, so `python dev/scripts/golden_trace.py compare
+dev/golden/baseline <new_dir>` works from a fresh checkout; the full traces
+(`.npz`) stay gitignored under `scripts/runs/golden/`.
+`scripts/regenerate_baseline.sh` regenerates everything (target checks,
+profile campaign plain and cProfile, golden sweep, summary, null check,
+publishing the sidecars) as one sequential process, about 10–12 hours;
+see `golden/README.md` for the population's status. The benchmark follows
+the VBMC papers' procedure: each run's start point is drawn uniformly inside
+the plausible box from a stream spawned off the run seed, and the plausible
+box is the papers' prior box (family mean ± 3 marginal SD); see the audit
+in `plans/benchmark-suite-and-golden-traces.md` for every deviation and its
+reason.
 
 - `scripts/benchmark_targets.py` — the benchmark target suite: nine targets
   with ground truth (normal, corr, halfnormal, rosenbrock, banana, cigar,
@@ -87,7 +92,9 @@ dev/scripts/runs/golden/baseline/summary.md dev/golden/baseline/`).
   (plain and/or cProfile, resumable) and aggregate the summaries into one
   markdown table.
 - `scripts/golden_trace.py` — the golden-trace regression harness: `run` a
-  suite over many seeds in parallel processes, storing one compact `.npz`
-  trace and a JSON sidecar per run; `summary` a population; `compare` two
-  populations with KS tests under a Holm family correction (`--split` for a
-  null check). Populations live under `scripts/runs/golden/`.
+  suite over many seeds (one process by default), storing one compact
+  `.npz` trace and a JSON sidecar per run; `summary` a population; `compare`
+  two populations with KS tests under a Holm family correction (`--split`
+  for a null check). Populations live under `scripts/runs/golden/`.
+- `scripts/regenerate_baseline.sh` — the whole benchmark regeneration as
+  one sequential process (see above).

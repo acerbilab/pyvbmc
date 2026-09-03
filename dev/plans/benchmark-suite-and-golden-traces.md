@@ -203,6 +203,12 @@ setup, and the named suites, used by both the profiler and the harness.
   `mean ± 3 SD` does not: the banana prototype showed the symmetric box
   wasting its lower half). Legacy targets keep their legacy boxes.
 
+  **Superseded 2026-09-03 08:30 (see §Audit):** the box rule above and the
+  fixed start points were wrong against the papers; the module now draws
+  `x0` uniformly in the box per seed and uses the papers' prior box (family
+  mean ± 3 marginal SD) with the papers' prior on cigar and lumpy. The table
+  below is the original plan; the audit's fix list is the current state.
+
   | name | definition | truth | plb / pub |
   |---|---|---|---|
   | `normal` | as today: independent N, SDs 1..D | lnZ 0, mean 0, cov diag(1..D²) | ∓2D, x0 = −1 (legacy) |
@@ -846,6 +852,105 @@ criterion.) Observations:
   4·10⁶), density tolerance 1e-6 (plan said 1e-10; the cigar's 1e8
   condition number needs it).
 
+## Audit against the VBMC papers (2026-09-03, 08:15)
+
+Triggered by the PI finding that several targets start VBMC at the true
+posterior mean. Every design choice of the suite checked against the
+benchmark procedure of the 2018 paper (`papers/acerbi2018variational_main.md`
+§3.5 l. 214, §3.7 l. 235, §4 l. 243, §4.1 l. 254; appendix C.2.1 l. 442),
+the 2020 paper (`acerbi2020variational_main.md` l. 180, 182, 186, 216–217,
+287, 312; appendix D.1 l. 279, E.1 l. 365–372) and the 2019 paper
+(`acerbi2019exploration_main.md` l. 130). Verdicts: SAME, JUSTIFIED (a
+reasoned deviation), UNJUSTIFIED (to fix), OPEN (PI's call).
+
+| # | aspect | the papers | the suite as run tonight | verdict |
+|---|---|---|---|---|
+| 1 | start point `x0` | drawn **uniformly from the plausible box, anew for each run** (2018 §4: "we draw the starting point x0 uniformly from a box within 1 prior SD from the prior mean"; 2020: "100 runs with random starting points"; 2019: "randomized starting points") | fixed per target; **cigar and lumpy at the true mean, banana and Student-t at 0 which is their true mean**; logreg and rosenbrock at the prior mean; normal and halfnormal at −1; corr at 0 | **UNJUSTIFIED**: a truth leak for four targets and a fixed start for all |
+| 2 | plausible box | prior mean ± 1 prior SD, the prior being a broad normal "centered at the **expected** mean of the family" with SD "3–4 times the SD in each dimension" (2018 §4.1); 2020: the ~68 % interval of the marginal prior; the initial design is uniform in that box | 0.5–99.5 % quantiles of the **realized** posterior's exact samples (≈ ±2.6 marginal SD, centred on the realized median, following skew) for the new targets; legacy boxes for normal, corr, halfnormal, rosenbrock | **UNJUSTIFIED**: narrower than the papers (2.6 vs 3–4 SD, easier) and centred on the realized posterior rather than the family's expected mean (a leak for lumpy, where the realized mixture mean ≠ 0.5, and for the banana's skewed x2). The papers' box also scales with the per-dimension target SD, so that part is the same |
+| 3 | prior | every synthetic likelihood is multiplied by the broad normal prior above; real problems: Gaussian in logit space (2018) or uniform on bounds (2020) | none for banana, cigar, lumpy (normalized densities, ln Z = 0); Student-t has it (3 × SD, added for its tails) | **UNJUSTIFIED for cigar and lumpy**: a Gaussian prior keeps both analytic (Gaussian × Gaussian; mixture × Gaussian is a mixture), so nothing was gained by dropping it. **JUSTIFIED for banana**: a prior in x-space breaks its closed form, and it is not a paper target |
+| 4 | lumpy, Student-t, cigar definitions | 12 normals, means in the unit hypercube, diagonal SDs in [0.2, 0.6], Dirichlet(1) weights; Student-t diagonal with ν equally spaced in [2.5, 2 + D/2] (scale unspecified); cigar one axis 100× longer, random rotation (centre unspecified) | as the papers; unit t scales; cigar centred at linspace(−0.5, 0.5) from the tests | SAME (two unspecified details filled in and stated) |
+| 5 | banana | not a 2018 target; the 2020 paper's Fig. 1 is a toy noisy 2-D banana with σ_obs = 1 (no formula given) | volume-preserving transform of a Gaussian, exact truth at any D; rosenbrock D=2 kept | JUSTIFIED as a stand-in for the devlog's "Rosenbrock/banana", labelled as not a paper target |
+| 6 | dimensions | D ∈ {2, 4, 6, 8, 10} | 4 (profile), 2 and 6 (golden); a 15-D cigar run by hand, not in any suite | JUSTIFIED by the night's budget; D = 10 for lumpy and banana and the 15-D cigar exhaust are in the suites from the regeneration on (PI, 08:15) |
+| 7 | budget and termination | 50 (D + 2) evaluations; VBMC terminates on stability or the budget; metrics reported at the budget | default termination, 50 (D + 2); **noisy: the profile run used PyVBMC's ×1.5 default (300 at D = 2), the golden config a cap of 150; the 2020 paper used 50 (D + 2) for noisy problems too** | SAME for noiseless; **UNJUSTIFIED for noisy in both directions** |
+| 8 | runs per problem | ≥ 20 (2018), 100 (2020), different seeds | 20 seeds | JUSTIFIED (time); 50 is the follow-up |
+| 9 | metrics | ΔLML = \|ELBO − LML\|; gsKL = ½[KL(N[p]‖N[q]) + KL(N[q]‖N[p])]; MMTV = (1/2D) Σ_i ∫\|p_i − q_i\|; usability: LML loss < 1, gsKL "(much) less than 1", MMTV reference line 0.2 | `elbo_err`, `gskl` (same formula), `mmtv` (`vp.mtv` is ½∫\|p − q\| per dimension, averaged: same), "usable" = ΔLML < 1 and gsKL < 1; MMTV not in the criterion; RMSE recorded, not gated | SAME for the three metrics; add MMTV < 0.2 to "usable" |
+| 10 | noise model | emulated noise: i.i.d. Gaussian on the log-likelihood with known σ_obs passed to VBMC; σ_obs ∈ [0, 7] studied, ≲ 3 recommended, Fig. 1 uses 1 | σ = 1, homoskedastic, known, on banana D = 2 | SAME |
+| 11 | initial design | x0 plus uniform points in the plausible box, n_init = 10 | PyVBMC default `fun_eval_start = max(D, 10)` | SAME |
+| 12 | ground truth | analytic or 1-D integrals (2018); extensive MCMC (2020); MMTV against those | analytic, quadrature or importance sampling; MMTV against exact samples | SAME or better |
+| 13 | real-data problem | 2018: neuronal model, logit-transformed bounded parameters with Gaussian priors in the transformed space; 2020: six models, uniform priors on bounded intervals | logistic regression on synthetic data, unbounded, N(0, 5²) prior; not a paper problem (their data and models are not in the repo) | OPEN: a stand-in; the PI may prefer bounds with a uniform prior in the 2020 style |
+| 14 | algorithm options | defaults ("we use default settings") | defaults; the exhaust config disables the stability exit for measurement only | SAME |
+
+**Consequences.** Rows 1, 2, 3 and 7 invalidate tonight's results: the
+golden population (all 220 traces) and the profile tables were produced
+with truth-anchored start points and boxes. That includes the stage
+balance and the attribution: a different start and a wider box change the
+warm-up length, N, the K path and the iteration count, and every stage
+share with them (the PI's correction of my first, wrong statement that
+"stage shares do not depend on where the run starts"). Nothing above in
+§Results should be quoted until the regeneration has run; the Stage 2
+order decision in the devlog and the roadmap is marked provisional again.
+
+**Independent review (Opus, read-only) of the same question** agreed on
+rows 1–3 and 7 and added: the 2020 paper's Fig. 1 "banana" (LML −2.27,
+σ_obs = 1) is Rosenbrock + N(0, 3²), i.e. this suite's `rosenbrock`, so
+that setting is reproducible exactly; every 2020 benchmark problem has
+σ_obs between 1.3 and 3.2, none at 1.0; the module docstring's "truth is
+never passed to VBMC" was false (`x0`, `plb`, `pub` all derived from it);
+row 6 above wrongly listed a D = 15 config that was not in the suites (the
+15-D cigar was run by hand); the banana note "only elbo_err sees the ridge"
+is incomplete (MMTV sees the skewed x2 marginal, only elbo_err the joint);
+logreg's MMTV/gsKL have a floor from its resampled reference; and three
+package-level deviations the suite cannot fix: PyVBMC transforms bounded
+coordinates with a probit where the papers used a logit, `tol_stable_count`
+gives 12 stable iterations where the 2018 paper set n_stable = 8, and no
+performance-versus-evaluations curve is stored (final values only).
+
+**Fixes applied 08:15–08:30** (PI approved the list and settled the open
+items: logreg in the 2020 style, 20 seeds, D = 10 for lumpy and banana,
+regeneration this evening):
+1. `x0` drawn uniformly from the plausible box with a stream spawned from
+   the run seed (`SeedSequence(seed).spawn(2)[1]`; the noise stream is
+   `[0]`), for every target including the legacy ones; `seed=None` draws
+   fresh. `Problem.x0` is `None` until `make_problem` sets it.
+2. Plausible box = prior mean ± 1 prior SD = family mean ± 3 marginal SD of
+   the likelihood (`PRIOR_SD_FACTOR = 3`, the papers' lower end) for
+   banana, cigar, lumpy, Student-t; family mean 0 for banana and Student-t,
+   0.5 for lumpy, the deterministic centre for cigar. Measured half-widths
+   in posterior SD after the change: banana 3.0, lumpy 3.1–3.2, cigar 3.6
+   (the prior shrinks its posterior), Student-t 3.5–4.4. Legacy targets keep
+   their test/notebook boxes and are labelled a smoke set.
+3. The papers' Gaussian prior N(family mean, (3 SD)²) on cigar (Gaussian ×
+   Gaussian: analytic; ln Z −3.51 at D = 4) and lumpy (mixture × Gaussian:
+   a mixture with reweighted, shrunk components; ln Z −5.32 at D = 4, −13.71
+   at D = 10); banana stays prior-free and labelled; Student-t unchanged.
+4. Noisy configs set `max_fun_evals = 50 (D + 2)` explicitly, which also
+   disables PyVBMC's ×1.5 default. The noisy configs are now
+   `rosenbrock_D2_noise1` (the 2020 paper's Fig. 1 toy, exactly) and
+   `logreg_D5_noise3` (bounded, at the top of the 2020 noise range); the
+   noisy banana is gone.
+5. "usable" = ΔLML < 1 and gsKL < 1 and MMTV < 0.2.
+6. logreg in the 2020 style: hard bounds ±10 with a uniform prior over the
+   box, plausible box ±5 (a modeller's plausible logit effects), so it also
+   exercises the probit path; truth by defensive importance sampling (half
+   t(4) at the constrained mode, half uniform over the box): ln Z −34.893 ±
+   0.002, ESS 10 % of 2·10⁶ draws. The rare predictor's coefficient has a
+   plateau posterior running into the +10 bound (mean 5.5, SD 2.7), so only
+   42 % of the posterior mass lies inside the ±5 plausible box: intended,
+   this is the "prior matters, likelihood is one-sided" geometry, and VBMC
+   has to leave the box to find it. The MMTV/gsKL reference for logreg is
+   importance resampling (ESS ≈ 2·10⁴ of 2·10⁵), a floor on its metrics.
+7. Suites: golden = 14 configs (normal_D5, corr_D5, halfnormal_D2,
+   rosenbrock_D2, banana_D2/D6/D10, cigar_D4, lumpy_D4/D10, student_D4,
+   logreg_D5, rosenbrock_D2_noise1, logreg_D5_noise3); profile = the D = 4
+   set, logreg_D5, both noisy configs, lumpy_D10, banana_D10 and
+   `cigar_D15_exhaust` (750 evaluations, stability exit disabled).
+8. `dev/scripts/regenerate_baseline.sh`: the whole regeneration (checks,
+   profile plain + cProfile, golden sweep, summary, null check, publish the
+   sidecars to `dev/golden/baseline/`) as one sequential process; resumable.
+   The withdrawn population's sidecars were removed from `dev/golden/`.
+9. Module docstring and `Problem` docstring rewritten to say exactly what
+   VBMC receives; the banana note corrected.
+
 ## Follow-ups
 
 Compute and population:
@@ -1017,6 +1122,15 @@ Phase 4 — records
   (PI decision 07:15: commit the 0.55 MB) and committed 08:05
 - [x] Full-matrix `tests` dispatch for the package fix (`6f3f0ba`, run
   33715620257): **success on all 9 jobs** (08:00)
+- [!] **08:05–08:35: the suite's start points and boxes were truth-anchored**
+  (PI caught the cigar `x0` = mean; the audit against the papers followed,
+  see §Audit). All results above are withdrawn; the module was corrected
+  (random start in the box per seed, the papers' prior box and priors,
+  2020-style bounded logreg with defensive-IS truth, paper budgets on the
+  noisy configs, MMTV in "usable", D = 10 lumpy and banana, the 15-D cigar
+  exhaust in the profile suite); `dev/golden/baseline/` emptied;
+  `regenerate_baseline.sh` written for the evening run (PI: laptop free from
+  the evening; one process; about 10–12 h)
 - [x] **CI discussion (PI, 07:20)**: the `tests` workflow ran only on
   manual dispatch and twice a month on `main`, so 17 pushes to `dev-next`
   tonight triggered nothing (and I had not dispatched it for the package

@@ -9,28 +9,41 @@ plausible box, VBMC options) and the named suites built from them, so that
 
 Targets (``make_problem(name, D)``), hard bounds infinite unless stated:
 
-``normal``      independent Gaussian, SDs 1..D (the historical profile target)
-``corr``        rotated Gaussian, SDs linspace(0.2, 1)
-``halfnormal``  Gaussian restricted to the negative orthant (bounded, probit
-                path); ln Z = -D ln 2
-``rosenbrock``  the test/notebook Rosenbrock with a N(0, 3^2) prior, D = 2;
+The paper set (Acerbi 2018, section 4.1; each likelihood times the papers'
+broad normal prior, centred at the family's expected mean with SD 3x the
+likelihood's marginal SD; plausible box = prior mean -+ 1 prior SD):
+
+``lumpy``       12-component Gaussian mixture; truth analytic
+``student``     product of Student-t, nu in [2.5, 2 + D/2]; truth by 1-D
+                quadratures
+``cigar``       one axis 100x longer than the others, seeded orthogonal
+                mixing; truth analytic
+
+Extras, declared as such (not paper targets):
+
+``banana``      volume-preserving transform of a Gaussian, D >= 2, no prior:
+                exact truth at any D, curvature comparable to the notebook
+                Rosenbrock; box = 0 -+ 3 marginal SD
+``rosenbrock``  the test/notebook Rosenbrock with a N(0, 3^2) prior, D = 2,
+                which is also the 2020 paper's Fig. 1 toy target (LML -2.27);
                 truth by 1-D quadrature (the x2 integral is analytic)
-``banana``      volume-preserving transform of a Gaussian, D >= 2: exact
-                truth at any D, curvature comparable to the notebook Rosenbrock
-``cigar``       one axis 100x longer than the others, seeded orthogonal mixing
-``lumpy``       12-component Gaussian mixture (Acerbi 2018, section 4.1)
-``student``     product of Student-t likelihoods, nu in [2.5, 2 + D/2], times
-                the paper's broad normal prior; truth by 1-D quadratures
-``logreg``      Bayesian logistic regression on fixed synthetic data, D = 5;
-                truth by Laplace + importance sampling, stored as constants
+``logreg``      Bayesian logistic regression on fixed synthetic data, D = 5,
+                bounded with a uniform prior in the 2020 style; truth by
+                defensive importance sampling, stored as constants
+
+Smoke / legacy targets with the tests' and notebooks' boxes (not benchmark
+entries): ``normal`` (independent Gaussian, SDs 1..D), ``corr`` (rotated
+Gaussian), ``halfnormal`` (Gaussian on the negative orthant, bounded; ln Z =
+-D ln 2).
+
+Start point: drawn uniformly inside the plausible box from a stream spawned
+off the run seed (``make_problem(..., seed=)``), as in the papers; it never
+uses the truth. The plausible boxes of the paper set and of banana follow
+the papers' prior rule and therefore scale with the target's marginal SD,
+as the papers' do; they do not use the realized posterior otherwise.
 
 Any target can be made noisy with ``noise_sd``: the callable then returns
 ``(y + sd * eps, sd)`` and ``options["specify_target_noise"] = True``.
-
-Plausible boxes: legacy targets keep the boxes of the tests / notebooks; the
-new targets use the per-coordinate 0.5 % and 99.5 % quantiles of 10^6 exact
-draws, rounded to one decimal (about +-2.6 SD for Gaussian marginals, and
-following skew where there is some).
 
 Command line::
 
@@ -65,9 +78,6 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 # the same target.
 STRUCTURE_SEED = 20260900
 LOGREG_SEED = 20260905
-BOX_SEED = 20260901
-BOX_DRAWS = 1_000_000
-BOX_QUANTILES = (0.005, 0.995)
 
 
 # --------------------------------------------------------------------------
@@ -84,13 +94,17 @@ class Problem:
     noise when ``noise_sd`` is set). ``sampler(n, rng)`` draws exact samples
     when the generative process is known; ``reference_logpdf`` is an
     independent implementation used by ``--check``. Truth entries are
-    ``None`` when unknown. Truth is never passed to VBMC.
+    ``None`` when unknown. What VBMC receives: ``fun``, the bounds, a
+    plausible box that follows the papers' prior rule (it scales with the
+    target's marginal SD, nothing else), and an ``x0`` drawn uniformly in
+    that box by ``make_problem``; ``true_mean``, ``true_cov`` and ``ln_Z``
+    are used only by the metrics.
     """
 
     name: str
     D: int
     log_density_vec: Callable[[np.ndarray], np.ndarray]
-    x0: np.ndarray
+    x0: Optional[np.ndarray]
     lb: np.ndarray
     ub: np.ndarray
     plb: np.ndarray
@@ -177,14 +191,26 @@ def _inf_bounds(D):
     return np.full((1, D), -np.inf), np.full((1, D), np.inf)
 
 
-def _quantile_box(sampler, D, n=BOX_DRAWS, seed=BOX_SEED):
-    """Plausible box from the 0.5 % / 99.5 % quantiles of exact draws."""
-    rng = np.random.default_rng(seed)
-    X = sampler(n, rng)
-    lo, hi = np.quantile(X, BOX_QUANTILES, axis=0)
-    lo = np.floor(lo * 10) / 10
-    hi = np.ceil(hi * 10) / 10
-    return lo.reshape(1, D), hi.reshape(1, D)
+PRIOR_SD_FACTOR = 3.0  # the papers' "3-4 times the SD in each dimension"
+
+
+def _paper_box(center, sd):
+    """The papers' plausible box: prior mean -+ 1 prior SD, where the prior is
+    a broad normal centred at the *expected* mean of the target family with
+    SD = PRIOR_SD_FACTOR x the target's marginal SD (Acerbi 2018, sections 3.5
+    and 4). ``center`` is the family's expected mean, ``sd`` the likelihood's
+    marginal SDs; neither depends on the realized posterior beyond its scale,
+    which is the papers' own convention."""
+    center = np.reshape(center, (1, -1))
+    half = PRIOR_SD_FACTOR * np.reshape(sd, (1, -1))
+    return center - half, center + half
+
+
+def _draw_x0(plb, pub, rng):
+    """Start point drawn uniformly inside the plausible box (Acerbi 2018,
+    section 4: "we draw the starting point x0 uniformly from a box within 1
+    prior standard deviation from the prior mean")."""
+    return plb + rng.random(plb.shape) * (pub - plb)
 
 
 def _mvn_logpdf_chol(X, mean, L):
@@ -251,7 +277,7 @@ def _normal(D):
         name="normal",
         D=D,
         log_density_vec=logp,
-        x0=-np.ones((1, D)),
+        x0=None,
         lb=lb,
         ub=ub,
         plb=np.full((1, D), -2.0 * D),
@@ -285,7 +311,7 @@ def _corr(D):
         name="corr",
         D=D,
         log_density_vec=logp,
-        x0=np.zeros((1, D)),
+        x0=None,
         lb=lb,
         ub=ub,
         plb=np.full((1, D), -2.5),
@@ -317,7 +343,7 @@ def _halfnormal(D):
         name="halfnormal",
         D=D,
         log_density_vec=logp,
-        x0=-np.ones((1, D)),
+        x0=None,
         lb=np.full((1, D), -10.0 * D),
         ub=np.zeros((1, D)),
         plb=np.full((1, D), -6.0),
@@ -397,7 +423,7 @@ def _rosenbrock(D):
         name="rosenbrock",
         D=D,
         log_density_vec=logp,
-        x0=np.zeros((1, D)),
+        x0=None,
         lb=lb,
         ub=ub,
         plb=np.full((1, D), -3.0),
@@ -444,13 +470,16 @@ def _banana(D, sig1=2.0, b=0.5):
 
     cov = np.diag(sig**2)
     cov[1, 1] = sig[1] ** 2 + 2 * b**2 * sig1**4
-    plb, pub = _quantile_box(sampler, D)
+    # Family mean 0 (exact); box = 0 -+ 3 marginal SD. No prior: a normal
+    # prior in x-space would break the closed form, and this is not a paper
+    # target (the 2020 paper's Fig. 1 "banana" is the Rosenbrock above).
+    plb, pub = _paper_box(np.zeros(D), np.sqrt(np.diag(cov)))
     lb, ub = _inf_bounds(D)
     return Problem(
         name="banana",
         D=D,
         log_density_vec=logp,
-        x0=np.zeros((1, D)),
+        x0=None,
         lb=lb,
         ub=ub,
         plb=plb,
@@ -462,8 +491,9 @@ def _banana(D, sig1=2.0, b=0.5):
         reference_logpdf=ref,
         notes=(
             f"z ~ N(0, diag(sig^2)), sig1={sig1}, x2 = z2 + {b}(z1^2 - sig1^2);"
-            " unit Jacobian; true cov is diagonal so only elbo_err sees the"
-            " ridge"
+            " unit Jacobian, no prior; not a paper target. The true cov is"
+            " diagonal, so gsKL and RMSE cannot see the ridge; MMTV sees the"
+            " skewed x2 marginal, only elbo_err sees the joint"
         ),
     )
 
@@ -473,42 +503,69 @@ def _cigar(D):
     Q, _ = np.linalg.qr(rng.standard_normal((D, D)))
     ell = np.full(D, 0.01)
     ell[-1] = 1.0
-    cov = Q @ np.diag(ell**2) @ Q.T  # the one expression used everywhere
-    mean = np.linspace(-0.5, 0.5, D)
-    L = np.linalg.cholesky(cov)
-    mvn = stats.multivariate_normal(mean, cov)
+    cov_lik = Q @ np.diag(ell**2) @ Q.T  # the one expression used everywhere
+    mean = np.linspace(-0.5, 0.5, D)  # the family's centre (deterministic)
+    L_lik = np.linalg.cholesky(cov_lik)
+    # The papers' prior: normal at the family mean with SD 3 x the marginal
+    # SD of the likelihood, per dimension. Gaussian x Gaussian stays Gaussian.
+    prior_sd = PRIOR_SD_FACTOR * np.sqrt(np.diag(cov_lik))
+    P = np.diag(prior_sd**2)
+    cov_post = np.linalg.inv(np.linalg.inv(cov_lik) + np.linalg.inv(P))
+    cov_post = 0.5 * (cov_post + cov_post.T)
+    # both factors are centred at `mean`, so the posterior mean is `mean` and
+    # ln Z = ln N(mean; mean, cov_lik + P) = -0.5 ln det(2 pi (cov_lik + P))
+    ln_Z = float(-0.5 * np.linalg.slogdet(2 * np.pi * (cov_lik + P))[1])
+    L_post = np.linalg.cholesky(cov_post)
+    mvn_lik = stats.multivariate_normal(mean, cov_lik)
 
     def logp(X):
-        return _mvn_logpdf_chol(np.atleast_2d(X), mean, L)
+        X = np.atleast_2d(X)
+        return _mvn_logpdf_chol(X, mean, L_lik) + np.sum(
+            stats.norm.logpdf(X, mean, prior_sd), axis=1
+        )
+
+    def ref(X):
+        X = np.atleast_2d(X)
+        return mvn_lik.logpdf(X) + np.sum(
+            stats.norm.logpdf(X, mean, prior_sd), axis=1
+        )
 
     def sampler(n, rng):
-        return mean + (rng.standard_normal((n, D)) * ell) @ Q.T
+        return mean + rng.standard_normal((n, D)) @ L_post.T
 
-    plb, pub = _quantile_box(sampler, D)
+    plb, pub = _paper_box(mean, np.sqrt(np.diag(cov_lik)))
     lb, ub = _inf_bounds(D)
-    # x0 at the mean: the tests' 0.5 * ones lies outside the quantile box on
-    # the 0.01-SD axes (one coordinate at D=4, eight at D=15), and VBMC then
-    # expands the plausible box. The 2026-09-03 baseline's cigar_D4 traces
-    # were made with the old x0 and must be regenerated.
     return Problem(
         name="cigar",
         D=D,
         log_density_vec=logp,
-        x0=mean.reshape(1, D).copy(),
+        x0=None,
         lb=lb,
         ub=ub,
         plb=plb,
         pub=pub,
-        ln_Z=0.0,
+        ln_Z=ln_Z,
         true_mean=mean.reshape(1, D),
-        true_cov=cov,
+        true_cov=cov_post,
         sampler=sampler,
-        reference_logpdf=lambda X: mvn.logpdf(np.atleast_2d(X)),
+        reference_logpdf=ref,
         notes=(
-            "SDs 0.01 on D-1 axes and 1 on one, mixed by a seeded orthogonal"
-            f" matrix (det {np.linalg.det(Q):+.0f}); cov = Q diag(ell^2) Q^T"
+            "likelihood: SDs 0.01 on D-1 axes and 1 on one, mixed by a seeded"
+            f" orthogonal matrix (det {np.linalg.det(Q):+.0f}), centred at"
+            " linspace(-0.5, 0.5); times the papers' prior N(centre,"
+            f" ({PRIOR_SD_FACTOR:g} marginal SD)^2); box = prior mean -+ 1 prior SD"
         ),
     )
+
+
+def _mixture_moments(w, mus, vars_):
+    """Mean and covariance of a mixture of diagonal Gaussians."""
+    mean = w @ mus
+    cov = np.zeros((mus.shape[1], mus.shape[1]))
+    for k in range(len(w)):
+        cov += w[k] * (np.diag(vars_[k]) + np.outer(mus[k], mus[k]))
+    cov -= np.outer(mean, mean)
+    return mean, cov
 
 
 def _lumpy(D, n_comp=12):
@@ -518,12 +575,30 @@ def _lumpy(D, n_comp=12):
     w = rng.dirichlet(np.ones(n_comp))
     log_w = np.log(w)
     comp_log_norm = -np.sum(np.log(sds), axis=1) - 0.5 * D * np.log(2 * np.pi)
+    # The papers' prior: normal at the family's expected mean (0.5 per
+    # coordinate for means U[0, 1]) with SD 3 x the likelihood's marginal SD.
+    lik_mean, lik_cov = _mixture_moments(w, mus, sds**2)
+    center = np.full(D, 0.5)
+    prior_sd = PRIOR_SD_FACTOR * np.sqrt(np.diag(lik_cov))
+    # mixture x Gaussian is a mixture: component k becomes N(m_k, V_k) with
+    # weight w_k N(mu_k; c, S_k + P); ln Z is the log of the weight sum
+    post_var = 1.0 / (1.0 / sds**2 + 1.0 / prior_sd**2)  # (K, D)
+    post_mu = post_var * (mus / sds**2 + center / prior_sd**2)
+    log_wpost = log_w + np.sum(
+        stats.norm.logpdf(mus, center, np.sqrt(sds**2 + prior_sd**2)),
+        axis=1,
+    )
+    ln_Z = float(logsumexp(log_wpost))
+    w_post = np.exp(log_wpost - ln_Z)
+    post_mean, post_cov = _mixture_moments(w_post, post_mu, post_var)
 
     def logp(X):
         X = np.atleast_2d(X)
         z = (X[:, None, :] - mus[None, :, :]) / sds[None, :, :]
         lc = -0.5 * np.sum(z**2, axis=2) + comp_log_norm + log_w  # (n, K)
-        return logsumexp(lc, axis=1)
+        return logsumexp(lc, axis=1) + np.sum(
+            stats.norm.logpdf(X, center, prior_sd), axis=1
+        )
 
     comps = [
         stats.multivariate_normal(mus[k], np.diag(sds[k] ** 2))
@@ -533,36 +608,35 @@ def _lumpy(D, n_comp=12):
     def ref(X):
         X = np.atleast_2d(X)
         lc = np.stack([c.logpdf(X) + log_w[k] for k, c in enumerate(comps)])
-        return logsumexp(np.atleast_2d(lc), axis=0)
+        return logsumexp(np.atleast_2d(lc), axis=0) + np.sum(
+            stats.norm.logpdf(X, center, prior_sd), axis=1
+        )
 
     def sampler(n, rng):
-        k = rng.choice(n_comp, size=n, p=w)
-        return mus[k] + rng.standard_normal((n, D)) * sds[k]
+        k = rng.choice(n_comp, size=n, p=w_post)
+        return post_mu[k] + rng.standard_normal((n, D)) * np.sqrt(post_var[k])
 
-    mean = w @ mus
-    cov = np.zeros((D, D))
-    for k in range(n_comp):
-        cov += w[k] * (np.diag(sds[k] ** 2) + np.outer(mus[k], mus[k]))
-    cov -= np.outer(mean, mean)
-    plb, pub = _quantile_box(sampler, D)
+    plb, pub = _paper_box(center, np.sqrt(np.diag(lik_cov)))
     lb, ub = _inf_bounds(D)
     return Problem(
         name="lumpy",
         D=D,
         log_density_vec=logp,
-        x0=mean.reshape(1, D).copy(),
+        x0=None,
         lb=lb,
         ub=ub,
         plb=plb,
         pub=pub,
-        ln_Z=0.0,
-        true_mean=mean.reshape(1, D),
-        true_cov=cov,
+        ln_Z=ln_Z,
+        true_mean=post_mean.reshape(1, D),
+        true_cov=post_cov,
         sampler=sampler,
         reference_logpdf=ref,
         notes=(
-            f"{n_comp} Gaussians, means U[0,1]^D, SDs U[0.2,0.6], Dirichlet(1)"
-            f" weights (top weight {w.max():.2f}); Acerbi 2018 section 4.1"
+            f"likelihood: {n_comp} Gaussians, means U[0,1]^D, SDs U[0.2,0.6],"
+            f" Dirichlet(1) weights (top weight {w.max():.2f}), Acerbi 2018"
+            f" section 4.1; times the papers' prior N(0.5, ({PRIOR_SD_FACTOR:g}"
+            " marginal SD)^2); box = prior mean -+ 1 prior SD"
         ),
     )
 
@@ -573,7 +647,7 @@ _STUDENT_CACHE = {}
 def _student(D):
     nu = np.linspace(2.5, 2.0 + D / 2.0, D)
     sd_t = np.sqrt(nu / (nu - 2.0))
-    prior_sd = 3.0 * sd_t  # the paper's broad normal prior
+    prior_sd = PRIOR_SD_FACTOR * sd_t  # the papers' broad normal prior
 
     def logp(X):
         X = np.atleast_2d(X)
@@ -600,13 +674,13 @@ def _student(D):
     def sampler(n, rng):
         return np.column_stack([g.sample(n, rng) for g in grids])
 
-    plb, pub = _quantile_box(sampler, D)
+    plb, pub = _paper_box(np.zeros(D), sd_t)  # = prior mean -+ 1 prior SD
     lb, ub = _inf_bounds(D)
     return Problem(
         name="student",
         D=D,
         log_density_vec=logp,
-        x0=np.zeros((1, D)),
+        x0=None,
         lb=lb,
         ub=ub,
         plb=plb,
@@ -618,35 +692,47 @@ def _student(D):
         reference_logpdf=None,  # logp is already the reference composition
         notes=(
             f"product of t(nu), nu = {np.round(nu, 2).tolist()}, unit scale,"
-            " times N(0, (3 sd_t)^2) priors; truth by per-coordinate"
-            " quadrature"
+            f" times the papers' prior N(0, ({PRIOR_SD_FACTOR:g} sd_t)^2); truth"
+            " by per-coordinate quadrature; box = prior mean -+ 1 prior SD"
         ),
     )
 
 
-# Logistic regression: design and data are frozen by LOGREG_SEED; the truth
-# constants below were produced by ``--check`` (Laplace + importance
-# sampling, t(4) proposal with 2x the Laplace covariance, 2e6 draws). Rerun
+# Logistic regression in the style of the 2020 noisy benchmark: bounded
+# parameters with a uniform prior over the box (Acerbi 2020, section 4.1),
+# so it also exercises the probit-transformed bounded path. Design and data
+# are frozen by LOGREG_SEED. The truth constants below are produced by
+# ``--check`` (defensive importance sampling: half a t(4) around the
+# constrained mode, half uniform over the box; 2e6 draws). Rerun
 # ``python dev/scripts/benchmark_targets.py --check --only logreg`` to
 # regenerate them; the standard error and ESS are printed alongside.
 LOGREG_N = 50
 LOGREG_RHO = 0.95
 LOGREG_N_RARE = 6
-LOGREG_PRIOR_SD = 5.0
 LOGREG_W_TRUE = np.array([0.3, 1.0, -1.0, 0.8, 1.5])
+LOGREG_LB, LOGREG_UB = -10.0, 10.0  # hard bounds; uniform prior over the box
+LOGREG_PLB, LOGREG_PUB = -5.0, 5.0  # a modeller's plausible logit effects
 LOGREG_TRUTH = {
-    # --check on 2026-09-02: ln_Z = -33.34232 +- 0.00081 (IS standard error),
-    # ESS = 868302 of 2e6 draws; t(4) proposal, 2x Laplace covariance.
-    "ln_Z": -33.34232,
-    "mean": [0.94379, -1.46096, 1.50319, 1.49473, 4.58708],
+    # --check on 2026-09-03: ln_Z = -34.89349 +- 0.00209 (IS standard error),
+    # ESS = 205544 of 2e6 draws (the uniform half of the defensive proposal
+    # costs ESS but bounds the weights; w4's posterior is a plateau running
+    # into the upper bound, mean 5.5, SD 2.7).
+    "ln_Z": -34.89349,
+    "mean": [0.95809, -1.70466, 1.72039, 1.53800, 5.47709],
     "cov": [
-        [0.15855, -0.06968, 0.07649, 0.07091, -0.09458],
-        [-0.06968, 1.84493, -1.54365, -0.10568, 0.05864],
-        [0.07649, -1.54365, 1.45224, 0.14413, -0.08335],
-        [0.07091, -0.10568, 0.14413, 0.30443, -0.02085],
-        [-0.09458, 0.05864, -0.08335, -0.02085, 9.12125],
+        [0.16504, -0.09694, 0.10047, 0.07820, -0.07712],
+        [-0.09694, 2.18496, -1.84405, -0.14672, 0.06923],
+        [0.10047, -1.84405, 1.72262, 0.18190, -0.08630],
+        [0.07820, -0.14672, 0.18190, 0.32108, -0.01763],
+        [-0.07712, 0.06923, -0.08630, -0.01763, 7.41547],
     ],
 }
+
+
+def _logreg_loglik(W, Xd, y):
+    W = np.atleast_2d(W)
+    eta = W @ Xd.T
+    return np.sum(y * log_expit(eta) + (1 - y) * log_expit(-eta), axis=1)
 
 
 def _logreg_data():
@@ -669,25 +755,24 @@ def _logreg(D):
     if D != 5:
         raise ValueError("logreg is defined for D = 5 only")
     Xd, y = _logreg_data()
+    log_prior = -D * np.log(LOGREG_UB - LOGREG_LB)  # uniform over the box
 
     def logp(W):
         W = np.atleast_2d(W)
-        eta = W @ Xd.T
-        ll = np.sum(y * log_expit(eta) + (1 - y) * log_expit(-eta), axis=1)
-        lp = np.sum(stats.norm.logpdf(W, 0.0, LOGREG_PRIOR_SD), axis=1)
-        return ll + lp
+        out = _logreg_loglik(W, Xd, y) + log_prior
+        inside = np.all((W >= LOGREG_LB) & (W <= LOGREG_UB), axis=1)
+        return np.where(inside, out, -np.inf)
 
     truth = LOGREG_TRUTH
-    lb, ub = _inf_bounds(D)
     return Problem(
         name="logreg",
         D=D,
         log_density_vec=logp,
-        x0=np.zeros((1, D)),
-        lb=lb,
-        ub=ub,
-        plb=np.full((1, D), -LOGREG_PRIOR_SD),
-        pub=np.full((1, D), LOGREG_PRIOR_SD),
+        x0=None,
+        lb=np.full((1, D), LOGREG_LB),
+        ub=np.full((1, D), LOGREG_UB),
+        plb=np.full((1, D), LOGREG_PLB),
+        pub=np.full((1, D), LOGREG_PUB),
         ln_Z=truth["ln_Z"],
         true_mean=None if truth["mean"] is None else np.array([truth["mean"]]),
         true_cov=None if truth["cov"] is None else np.array(truth["cov"]),
@@ -696,7 +781,9 @@ def _logreg(D):
         notes=(
             f"logistic regression, {LOGREG_N} trials, predictors 1-2 at rho"
             f" {LOGREG_RHO}, predictor 4 rare ({LOGREG_N_RARE} ones, all"
-            f" successes), N(0, {LOGREG_PRIOR_SD}^2) prior; box -+1 prior SD"
+            f" successes: its coefficient is identified only by the bound);"
+            f" uniform prior on [{LOGREG_LB:g}, {LOGREG_UB:g}]^D (2020 style),"
+            f" plausible box -+{LOGREG_PUB:g}; not a paper problem"
         ),
     )
 
@@ -705,9 +792,10 @@ _LOGREG_IS_CACHE = {}
 
 
 def _logreg_sampler(n, rng, m=200_000):
-    """Approximate exact draws for ``logreg``: importance resampling from a
-    cached Laplace-centred t(4) population (ESS about 40 % of ``m``). Good
-    enough for marginal total-variation distances on a 2^13 KDE grid."""
+    """Approximate exact draws for ``logreg``: importance resampling (with
+    replacement) from a cached defensive-IS population of ``m`` draws. Good
+    enough for marginal total-variation distances on a 2^13 KDE grid; the
+    ESS is printed by ``--check`` and sets a floor on logreg's MMTV/gsKL."""
     if "pop" not in _LOGREG_IS_CACHE:
         ref = logreg_reference(m=m, seed=11, return_draws=True)
         _LOGREG_IS_CACHE["pop"] = (ref["draws"], ref["weights"])
@@ -718,31 +806,54 @@ def _logreg_sampler(n, rng, m=200_000):
 def logreg_reference(
     m=2_000_000, chunk=20_000, df=4, scale=2.0, seed=1, return_draws=False
 ):
-    """Laplace + importance-sampling truth for ``logreg`` (ln Z, mean, cov)."""
+    """Defensive importance-sampling truth for ``logreg`` (ln Z, mean, cov).
+
+    Proposal: an equal mixture of a t(``df``) centred at the constrained
+    posterior mode with ``scale`` x the inverse Hessian (per-coordinate scale
+    capped at the box half-width, since the rare predictor's coefficient
+    has a flat likelihood towards the upper bound) and the uniform prior over
+    the box, which guarantees bounded weights.
+    """
     from scipy import optimize
 
     Xd, y = _logreg_data()
     D = Xd.shape[1]
     prob = _logreg(D)
+    lb, ub = LOGREG_LB, LOGREG_UB
 
     def f(w):
-        return -prob.log_density_vec(w)[0]
+        return -_logreg_loglik(w, Xd, y)[0]
 
     def g(w):
         p = expit(Xd @ w)
-        return -(Xd.T @ (y - p) - w / LOGREG_PRIOR_SD**2)
+        return -(Xd.T @ (y - p))
 
-    res = optimize.minimize(f, np.zeros(D), jac=g, method="BFGS")
-    p = expit(Xd @ res.x)
-    H = Xd.T @ (Xd * (p * (1 - p))[:, None]) + np.eye(D) / LOGREG_PRIOR_SD**2
-    lap_cov = np.linalg.inv(H)
-    prop = stats.multivariate_t(
-        loc=res.x, shape=lap_cov * scale, df=df, seed=seed
+    res = optimize.minimize(
+        f,
+        np.zeros(D),
+        jac=g,
+        method="L-BFGS-B",
+        bounds=[(lb + 1e-6, ub - 1e-6)] * D,
     )
+    p = expit(Xd @ res.x)
+    H = Xd.T @ (Xd * (p * (1 - p))[:, None]) + 1e-8 * np.eye(D)
+    cov_t = np.linalg.inv(H) * scale
+    s = np.sqrt(np.diag(cov_t))
+    fac = np.minimum(1.0, 0.5 * (ub - lb) / s)
+    cov_t = cov_t * np.outer(fac, fac)
+    prop = stats.multivariate_t(loc=res.x, shape=cov_t, df=df, seed=seed)
+    rng = np.random.default_rng(seed)
+    log_vol = D * np.log(ub - lb)
     Ws, lws = [], []
     for _ in range(m // chunk):
-        W = prop.rvs(chunk)
-        lws.append(prob.log_density_vec(W) - prop.logpdf(W))
+        n_t = chunk // 2
+        W = np.vstack(
+            [prop.rvs(n_t), rng.uniform(lb, ub, size=(chunk - n_t, D))]
+        )
+        log_q = np.logaddexp(
+            np.log(0.5) + prop.logpdf(W), np.log(0.5) - log_vol
+        )
+        lws.append(prob.log_density_vec(W) - log_q)  # -inf outside the box
         Ws.append(W)
     W = np.vstack(Ws)
     lw = np.concatenate(lws)
@@ -761,7 +872,7 @@ def logreg_reference(
         mean=mean,
         cov=cov,
         laplace_mode=res.x,
-        laplace_cov=lap_cov,
+        proposal_cov=cov_t,
         n_draws=len(w),
     )
     if return_draws:
@@ -798,16 +909,16 @@ def make_problem(name, D, noise_sd=None, seed=None, options=None):
     if name not in _REGISTRY:
         raise ValueError(f"unknown target {name!r}; known: {TARGET_NAMES}")
     prob = _REGISTRY[name](int(D))
+    # Two streams spawned from the run seed: one for the noise, one for the
+    # start point; neither is the stream VBMC(seed=seed) uses.
+    ss = np.random.SeedSequence(seed) if seed is not None else None
+    noise_ss, x0_ss = ss.spawn(2) if ss is not None else (None, None)
+    prob.x0 = _draw_x0(prob.plb, prob.pub, np.random.default_rng(x0_ss))
     if noise_sd is not None:
         if not noise_sd > 0:
             raise ValueError("noise_sd must be positive")
         prob.noise_sd = float(noise_sd)
-        if seed is None:
-            prob._noise_rng = np.random.default_rng()
-        else:
-            prob._noise_rng = np.random.default_rng(
-                np.random.SeedSequence(seed).spawn(1)[0]
-            )
+        prob._noise_rng = np.random.default_rng(noise_ss)
         prob.options["specify_target_noise"] = True
     if options:
         prob.options.update(options)
@@ -818,6 +929,18 @@ def make_problem(name, D, noise_sd=None, seed=None, options=None):
 # Suites
 # --------------------------------------------------------------------------
 
+
+def _paper_budget(D):
+    """The papers' budget, 50 (D + 2), set explicitly on noisy configs so
+    that PyVBMC's x1.5 default for noisy targets does not apply (the 2020
+    paper used the same budget for noisy and noiseless problems)."""
+    return (("max_fun_evals", 50 * (D + 2)),)
+
+
+# Noisy configs: rosenbrock_D2 at sigma = 1 reproduces the 2020 paper's
+# Fig. 1 toy problem (Rosenbrock + N(0, 3^2), LML -2.27, sigma_obs = 1);
+# logreg_D5 at sigma = 3 is a bounded problem at the top of the 2020
+# benchmark's noise range (1.3-3.2) on the probit-transformed path.
 SUITES = {
     "smoke": [
         Config("normal", 2),
@@ -830,11 +953,17 @@ SUITES = {
         Config("lumpy", 4),
         Config("student", 4),
         Config("logreg", 5),
-        Config("banana", 2, noise_sd=1.0),
+        Config("rosenbrock", 2, noise_sd=1.0, options=_paper_budget(2)),
+        Config("logreg", 5, noise_sd=3.0, options=_paper_budget(5)),
+        Config("lumpy", 10),
+        Config("banana", 10),
         Config(
-            "normal",
-            5,
-            options=(("tol_stable_excpt_frac", -(10**6)),),
+            "cigar",
+            15,
+            options=(
+                ("max_fun_evals", 750),
+                ("tol_stable_excpt_frac", -(10**6)),
+            ),
             tag="exhaust",
         ),
     ],
@@ -845,17 +974,14 @@ SUITES = {
         Config("rosenbrock", 2),
         Config("banana", 2),
         Config("banana", 6),
+        Config("banana", 10),
         Config("cigar", 4),
         Config("lumpy", 4),
+        Config("lumpy", 10),
         Config("student", 4),
         Config("logreg", 5),
-        Config(
-            "banana",
-            2,
-            noise_sd=1.0,
-            options=(("max_fun_evals", 150),),
-            tag="mfe150",
-        ),
+        Config("rosenbrock", 2, noise_sd=1.0, options=_paper_budget(2)),
+        Config("logreg", 5, noise_sd=3.0, options=_paper_budget(5)),
     ],
 }
 
@@ -988,7 +1114,14 @@ def check_problem(prob, n_ref=200, n_draws=2_000_000, seed=7):
         m = S.mean(0)
         c = np.cov(S.T)
         sd = np.sqrt(np.diag(prob.true_cov))
-        z = (m - prob.true_mean.ravel()) / (sd / np.sqrt(n_draws))
+        n_eff = n_draws
+        if prob.name == "logreg":
+            # importance *re*sampling: the draws are not independent; the
+            # effective size is that of the cached weighted population
+            _, wn = _LOGREG_IS_CACHE["pop"]
+            n_eff = min(n_draws, 1.0 / np.sum(wn**2))
+            res["sampler_ess"] = float(n_eff)
+        z = (m - prob.true_mean.ravel()) / (sd / np.sqrt(n_eff))
         res["mean_zscore_max"] = float(np.max(np.abs(z)))
         rel = np.max(np.abs(c - prob.true_cov)) / np.max(np.abs(prob.true_cov))
         res["cov_rel_err_max"] = float(rel)

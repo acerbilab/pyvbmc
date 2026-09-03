@@ -97,8 +97,11 @@ in §10 is revised.
 
 **Measured again the same evening on the benchmark target suite**
 (`plans/benchmark-suite-and-golden-traces.md` §Results: banana, cigar,
-lumpy, Student-t at D=4, a logistic regression at D=5, a noisy banana):
-same balance, sharper. Active sampling 55–67 %, of which single-point
+lumpy, Student-t at D=4, a logistic regression at D=5, a noisy banana);
+*withdrawn 2026-09-03 pending regeneration*, because those runs started
+VBMC at or near the true posterior mean inside plausible boxes drawn from
+the realized posteriors (§Audit in the same file), which shortens warm-up
+and changes every stage share. As measured then: same balance, sharper. Active sampling 55–67 %, of which single-point
 `GP.predict` calls are 40–48 % (36k–106k per run); GP training 15–22 %, with
 the Cholesky under 2 % and the scipy `solve_triangular` wrappers alone at
 9–10 %; the variational stage 16–24 % on ridged posteriors (`_gp_log_joint`
@@ -521,7 +524,14 @@ the rest. **This order is provisional**: it was measured on two easy Gaussian
 targets and must be re-checked on the benchmark target suite below before
 the first vectorization PR.
 
-*Confirmed 2026-09-02 (evening) on the benchmark suite*
+*Measured 2026-09-02 (evening) on the benchmark suite; withdrawn
+2026-09-03 08:15 and to be re-measured*: an audit against the papers
+(`plans/benchmark-suite-and-golden-traces.md` §Audit) found that the
+suite started VBMC at the true posterior mean for four targets and drew
+its plausible boxes from the realized posteriors, which changes warm-up,
+N, K and therefore every stage share; the suite has been corrected to the
+papers' procedure and the regeneration is scheduled. Until then the
+paragraph below is provisional. As measured then
 (`plans/benchmark-suite-and-golden-traces.md` §Results, decision rule
 below applied): the variational stage grew to 16–24 % on ridged posteriors
 but overtook nothing, so the order stands, **3 → 8 → 1 → 2**, with two

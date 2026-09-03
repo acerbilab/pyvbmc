@@ -37,9 +37,11 @@ anything that changes numerics lands.
   target, a logistic regression, a budget-exhausting run; profiled
   (`plans/benchmark-suite-and-golden-traces.md`). Still to add: D = 8 and
   10, the exhaust config in the golden set.
-- [ ] **Stage 2 — NumPy vectorization + memory fix.** Order confirmed
-  2026-09-02 (evening) on the benchmark suite
-  (`plans/benchmark-suite-and-golden-traces.md` §Results): (3) batched
+- [ ] **Stage 2 — NumPy vectorization + memory fix.** Order measured
+  2026-09-02 (evening) on the benchmark suite, **provisional again since
+  the 2026-09-03 audit** (the suite's start points and boxes were
+  truth-anchored; regeneration pending, pickup point 0)
+  (`plans/benchmark-suite-and-golden-traces.md` §Results, §Audit): (3) batched
   acquisition evaluation (`GP.predict` over `Ns`, `vp.pdf` over `K`, the
   CMA-ES population; 40–48 % of time is single-point `predict`), (8) gpyreg
   sampler overhead (`solve_triangular` wrappers 9–10 %, `__core_computation`;
@@ -54,12 +56,18 @@ anything that changes numerics lands.
 
 ## Pickup point
 
+0. **Regenerate the benchmark results** (evening of 2026-09-03, PI's
+   machine): `bash dev/scripts/regenerate_baseline.sh`, one process, about
+   10–12 h. The 2026-09-02/03 profile and golden population were withdrawn
+   after an audit against the papers found truth-anchored start points and
+   plausible boxes (`plans/benchmark-suite-and-golden-traces.md` §Audit);
+   the Stage 2 order below is therefore **provisional again** until the
+   regenerated profile confirms it.
 1. **Stage 2 item 3**: batch the acquisition evaluation (`GP.predict` over
-   `Ns`, `vp.pdf` over `K`, the CMA-ES population; 40–48 % of run time is
-   single-point `predict`). Gate every step with
+   `Ns`, `vp.pdf` over `K`, the CMA-ES population). Gate every step with
    `golden_trace.py run --suite golden --seeds 0-19 --workers 1 --out
    dev/scripts/runs/golden/<label>` followed by `compare
-   dev/golden/baseline dev/scripts/runs/golden/<label>` (about 5 h per
+   dev/golden/baseline dev/scripts/runs/golden/<label>` (about 10 h per
    population on one process), plus the test suite.
 2. ~~Run the `tests` workflow on `dev-next` for the package fix~~ done
    2026-09-03 (full matrix green, run 33715620257); pushes to `dev*` now

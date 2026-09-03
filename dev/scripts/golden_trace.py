@@ -50,12 +50,17 @@ HERE = Path(__file__).resolve().parent
 REPO_ROOT = HERE.parents[1]
 DEFAULT_RUNS = REPO_ROOT / "dev" / "scripts" / "runs" / "golden"
 
-# Median solo minutes per run (baseline population, 2026-09-03, single BLAS
-# thread), used only to order tasks longest-first when --workers > 1.
+# Rough solo minutes per run, used only to order tasks longest-first when
+# --workers > 1. Measured on the (truth-anchored) 2026-09-03 population for
+# the D <= 6 configs; the D = 10 and the two noisy entries are guesses to be
+# refreshed from the regenerated population's summary.md.
 EST_MINUTES = {
+    "cigar_D15_exhaust": 30,
+    "lumpy_D10": 8,
+    "banana_D10": 8,
+    "logreg_D5_noise3": 6,
+    "rosenbrock_D2_noise1": 3,
     "cigar_D4": 2.5,
-    "banana_D2_noise1_mfe150": 2.1,
-    "banana_D2_noise1": 2.0,
     "logreg_D5": 1.8,
     "banana_D6": 1.5,
     "corr_D5": 1.25,
@@ -439,8 +444,10 @@ def cmd_summary(args):
     ]
     for label in sorted(pop):
         e = pop[label]
+        # the papers' usability thresholds: LML loss < 1 (2018, 2019), gsKL
+        # < 1 (2019; "(much) less than 1" in 2020) and MMTV < 0.2 (2020)
         usable = (
-            np.mean((e["elbo_err"] < 1) & (e["gskl"] < 1))
+            np.mean((e["elbo_err"] < 1) & (e["gskl"] < 1) & (e["mmtv"] < 0.2))
             if len(e["rows"])
             else np.nan
         )
