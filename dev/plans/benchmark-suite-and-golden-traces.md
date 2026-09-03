@@ -738,8 +738,25 @@ the slice sampler overtakes active sampling** (11.6 vs 8.2 s per iteration
 at N 305–345): item 8's weight rises steeply with D and N, and a long run
 spends most of its pre-switch-off time exactly there. The Stage 2 order
 (3 → 8 → 1 → 2) is unchanged; the gap between 3 and 8 closes with
-dimension. cProfile of the same configuration (fixed `x0`): *pending,
-running since 06:24*.
+dimension.
+
+cProfile of the same configuration with the fixed `x0` (box not expanded,
+so a different trajectory: 151 iterations, elbo err 0.032, gsKL 0.001,
+MMTV 0.006; 2740 s profiled, 1.6× plain; `cigar_D15_exhaust_cprof/`), % of
+`VBMC.optimize`: active_sample 50.8 (cma.fmin 44.1; `GP.predict` 26.6 over
+1.53 M calls; `vp.pdf` 12.8 over 1.53 M calls at K ≈ 20), train_gp 20.4
+(`SliceSampler` 18.7; `__core_computation` 17.7 over 694k calls;
+`solve_triangular` 8.8 over 8.9 M calls; Cholesky 3.2; `scipy.optimize.
+minimize` 1.0 over 128 calls; `f_min_fill` 0.6), optimize_vp 27.5
+(`entmc_vbmc` 15.8; `minimize_adam` 15.5; `_gp_log_joint` 11.1;
+`_eval_full_elcbo` 9.7 over 1505 calls), final_boost 1.2, deepcopy 0.6.
+Only one optimize-only iteration had a slow refit this time (9.4 s), so the
+refit spikes are trajectory-dependent. Two shifts at D = 15 relative to the
+D = 4 runs: the variational stage (27.5 %) now exceeds GP training (20.4 %)
+over the whole run because more than half the iterations are optimize-only,
+and inside it the Monte Carlo entropy (`entmc_vbmc`, Stage 2 item 5) is the
+largest piece, ahead of `_gp_log_joint`; `vp.pdf` triples its share with
+K. The L-BFGS-B path is 1 % of the run: real, not dominant.
 
 ### Golden population (`runs/golden/baseline/`, 20 seeds)
 
@@ -978,10 +995,11 @@ Phase 4 — records
   `EST_MINUTES`, unused `ratio_tol`, missing RNG-restore fixture in the new
   test, §9 cross-reference, README gaps)
 - [x] push `dev-next` — 04:45
-- [~] **Addendum (PI, 05:47)**: the optimize-only conclusion rested on the
+- [x] **Addendum (PI, 05:47)**: the optimize-only conclusion rested on the
   cheapest possible case (a D=5 iid Gaussian I picked myself). Rerunning the
   exhaust profile on **cigar at D = 15 with 750 evaluations** (Ns = 0 from
   N = 350), one process, BLAS single-threaded, 05:54–06:23 (28.7 min,
   not the 3.5–5 h I projected from the slow first iterations) → `runs/
   profile_20260902/cigar_D15_exhaust_plain/`; written up in §Results.
-  cProfile repeat (fixed `x0`) started 06:24. Laptop free until 08:00
+  cProfile repeat (fixed `x0`) 06:24–07:09, written up in §Results. Laptop
+  free until 08:00; nothing running after 07:09

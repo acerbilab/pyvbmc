@@ -548,7 +548,13 @@ spike over a reuse iteration), so the L-BFGS-B path is not free at that N;
 and in the late sampling regime (N 305–345, Ns 5–4) the slice sampler
 **overtakes active sampling** (11.6 vs 8.2 s per iteration). Item 8's
 weight rises steeply with D and N; the order 3 → 8 → 1 → 2 stands with the
-gap between 3 and 8 closing with dimension.
+gap between 3 and 8 closing with dimension. Its cProfile: `predict` 26.6 %,
+`vp.pdf` 12.8 %, slice sampler 18.7 % (`solve_triangular` wrappers 8.8 %,
+Cholesky 3.2 %, `scipy.optimize.minimize` 1.0 %), variational stage 27.5 %
+with `entmc_vbmc` 15.8 % its largest piece: at D = 15 the entropy Monte
+Carlo (item 5) and `vp.pdf` over `K` (part of item 3) gain weight, and the
+variational stage exceeds GP training over a long run because more than
+half of it is optimize-only.
 
 **Benchmark target suite (decided 2026-09-02, after the profile).** The
 profile was taken on an independent and a correlated Gaussian, which
