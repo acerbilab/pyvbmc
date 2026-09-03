@@ -750,6 +750,17 @@ criterion.) Observations:
 - Determinism spot check: banana_D6 seed 0 in the population has gsKL
   1.0424, the value the pre-crash memory probe produced for the same
   (config, seed) on the same code path.
+- **Defect found 05:55 (PI's D=15 cigar request exposed it): the cigar's
+  `x0 = 0.5` (kept from the tests) lies outside the quantile box on the
+  0.01-SD axes** (coordinate 0 at D=4; eight coordinates at D=15), so VBMC
+  logged `InitialPointsOutsidePB` and **expanded the plausible box** for
+  every cigar run tonight: the profiled cigar_D4 and its 20 baseline
+  traces used a wider box than the plan states. Deterministic, so the
+  baseline is internally consistent, but not the intended configuration.
+  Fixed in the module (`x0` = mean); **the cigar_D4 baseline must be
+  regenerated** (delete `cigar_D4_seed*.{npz,json}`, rerun; about 50 min on
+  one process) before it is used as a reference. The sidecars record the
+  requested box, not the expanded one.
 - **Null check** (even vs odd seeds, 10 a side, 44 KS tests on `elbo_err`,
   `gskl`, `mmtv`, `func_count`): nothing rejected after Holm; smallest raw
   p 0.052 (func_count on two configs). The earlier ±5 % median-func_count
@@ -779,9 +790,14 @@ criterion.) Observations:
 ## Follow-ups
 
 Compute and population:
-- **Exhaust run at D = 20, 700 evaluations** (one process, 1–1.5 h): the
-  only measurement of the optimize-only GP regime is D = 5, N ≤ 350; the
-  Stage 2 item 8 scoping (whether the L-BFGS-B path matters) rests on it.
+- **Regenerate the cigar_D4 baseline** with the fixed `x0` (see Results):
+  `rm dev/scripts/runs/golden/baseline/cigar_D4_seed*` then the standard
+  `run` command; about 50 min on one process. Until then `compare` on
+  cigar_D4 compares against the expanded-box runs.
+- **Exhaust run on a hard target at D ≥ 15** (PI: cigar, D = 15, 750
+  evaluations; started 05:48 on 2026-09-03, see the tracker): the D = 5
+  Gaussian measurement of the optimize-only GP regime was the cheapest
+  possible case and the Stage 2 item 8 scoping should not rest on it.
 - Append seeds to 50 per config (`golden_trace.py run --seeds 20-49`,
   one worker; the harness skips finished runs). About 1.5 min per run.
 - Add higher dimensions to the golden set (cigar, lumpy, student at D = 6
@@ -926,3 +942,8 @@ Phase 4 — records
   `EST_MINUTES`, unused `ratio_tol`, missing RNG-restore fixture in the new
   test, §9 cross-reference, README gaps)
 - [x] push `dev-next` — 04:45
+- [~] **Addendum (PI, 05:47)**: the optimize-only conclusion rested on the
+  cheapest possible case (a D=5 iid Gaussian I picked myself). Rerunning the
+  exhaust profile on **cigar at D = 15 with 750 evaluations** (Ns = 0 from
+  N = 350), one process, BLAS single-threaded, started 05:48 → `runs/
+  profile_20260902/cigar_D15_exhaust_plain/`. Laptop free until 08:00

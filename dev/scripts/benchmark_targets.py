@@ -486,11 +486,15 @@ def _cigar(D):
 
     plb, pub = _quantile_box(sampler, D)
     lb, ub = _inf_bounds(D)
+    # x0 at the mean: the tests' 0.5 * ones lies outside the quantile box on
+    # the 0.01-SD axes (one coordinate at D=4, eight at D=15), and VBMC then
+    # expands the plausible box. The 2026-09-03 baseline's cigar_D4 traces
+    # were made with the old x0 and must be regenerated.
     return Problem(
         name="cigar",
         D=D,
         log_density_vec=logp,
-        x0=np.full((1, D), 0.5),
+        x0=mean.reshape(1, D).copy(),
         lb=lb,
         ub=ub,
         plb=plb,
