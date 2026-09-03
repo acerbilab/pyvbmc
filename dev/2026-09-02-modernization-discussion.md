@@ -540,10 +540,15 @@ that size**: in the optimize-only regime GP training is 1 % of an iteration
 `gp_retrain_threshold`; `scipy.optimize.minimize` is 0.1 % of profiled
 time in every run tonight), active sampling halves (one hyperparameter
 sample) and the variational stage is 35 %; the L-BFGS-B path does not join
-item 8 on this evidence. Not measured: D ≥ 10 with N in the hundreds, where
-refits may trigger every iteration and the Cholesky ladder may kick in; run
-the exhaust config at D = 20 with a 700-evaluation budget (about 1–1.5 h on
-one process) before scoping item 8.
+item 8 on this evidence. *Measured 2026-09-03 on cigar at D = 15 with 750
+evaluations* (PI's request; `plans/benchmark-suite-and-golden-traces.md`
+§Results): the optimize-only regime (N 350–750) is still 7 % GP training on
+average, but two full refits at N ≈ 500 and 700 cost 15–19 s each (a 20×
+spike over a reuse iteration), so the L-BFGS-B path is not free at that N;
+and in the late sampling regime (N 305–345, Ns 5–4) the slice sampler
+**overtakes active sampling** (11.6 vs 8.2 s per iteration). Item 8's
+weight rises steeply with D and N; the order 3 → 8 → 1 → 2 stands with the
+gap between 3 and 8 closing with dimension.
 
 **Benchmark target suite (decided 2026-09-02, after the profile).** The
 profile was taken on an independent and a correlated Gaussian, which

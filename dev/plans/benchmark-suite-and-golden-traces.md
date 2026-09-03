@@ -705,6 +705,42 @@ optimize_vp 20.6 % (`_gp_log_joint` 13.1 %, `_eval_full_elcbo` 6.7 %,
 Gaussian D=5 level and the Cholesky becomes visible, but the per-call
 overhead around it is still 5× the factorization itself.
 
+**Exhaust run on a hard target: cigar, D = 15, 750 evaluations** (PI's
+request after challenging the D=5 conclusion; plain, single-threaded, old
+`x0 = 0.5` so the plausible box was auto-expanded; `runs/profile_20260902/
+cigar_D15_exhaust_plain/`): 1720 s (28.7 min), 150 iterations, N = 750,
+Ns_gp 8 → … → 4 then **0 from iteration 69 (N = 350 = 200 + 10D)** for 81
+iterations, K 2 → 23 (50 after the boost); elbo err 0.004, gsKL 0.002, MMTV
+0.007, terminated on the budget.
+
+| regime | iterations | active sampling | GP training | variational fit |
+|---|---|---|---|---|
+| Ns > 0, N ≤ 110 (Ns 8, K 2) | 20 | 8.6 s | 1.4 s | 0.2 s |
+| Ns > 0, N 115–200 (Ns 7–6, K → 20) | 20 | 6.5 s | 2.5 s | 1.9 s |
+| Ns > 0, N 205–300 (Ns 6–5) | 20 | 7.4 s | 7.3 s | 3.5 s |
+| Ns > 0, N 305–345 (Ns 5–4) | 9 | 8.2 s | **11.6 s** | 3.6 s |
+| Ns > 0, all | 69 | 7.62 s (52 %) | 4.77 s (33 %) | 2.09 s (14 %) |
+| Ns = 0, N 350–750 | 81 | 5.49 s (64 %) | 0.63 s (7 %) | 2.31 s (27 %) |
+
+Inside the optimize-only regime GP training is 0.07–0.5 s in 79 of 81
+iterations and **19 s and 15 s in two** (N ≈ 500 and ≈ 700): the rare full
+refit through the space-filling init and L-BFGS-B is a 20× spike at that
+N, invisible in the D=5 run. Active sampling grows 4.6 → 6.7 s per
+iteration with N (`predict` over one sample scales with N); the variational
+fit 1.2–3.7 s at K ≈ 20.
+
+Reading, against the D=5 Gaussian: (i) the optimize-only regime is still
+not dominated by GP training on average (7 %), so the second clause of the
+decision rule still does not fire, but the L-BFGS-B path is not free at
+N ≥ 500 and would matter on a target whose hyperparameters drift enough to
+trigger refits every iteration; (ii) **in the late sampling regime at D=15
+the slice sampler overtakes active sampling** (11.6 vs 8.2 s per iteration
+at N 305–345): item 8's weight rises steeply with D and N, and a long run
+spends most of its pre-switch-off time exactly there. The Stage 2 order
+(3 → 8 → 1 → 2) is unchanged; the gap between 3 and 8 closes with
+dimension. cProfile of the same configuration (fixed `x0`): *pending,
+running since 06:24*.
+
 ### Golden population (`runs/golden/baseline/`, 20 seeds)
 
 Code: the run path is that of `d76cdb6`; the sidecars record `0056016`
@@ -945,5 +981,7 @@ Phase 4 — records
 - [~] **Addendum (PI, 05:47)**: the optimize-only conclusion rested on the
   cheapest possible case (a D=5 iid Gaussian I picked myself). Rerunning the
   exhaust profile on **cigar at D = 15 with 750 evaluations** (Ns = 0 from
-  N = 350), one process, BLAS single-threaded, started 05:48 → `runs/
-  profile_20260902/cigar_D15_exhaust_plain/`. Laptop free until 08:00
+  N = 350), one process, BLAS single-threaded, 05:54–06:23 (28.7 min,
+  not the 3.5–5 h I projected from the slow first iterations) → `runs/
+  profile_20260902/cigar_D15_exhaust_plain/`; written up in §Results.
+  cProfile repeat (fixed `x0`) started 06:24. Laptop free until 08:00
