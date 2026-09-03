@@ -19,8 +19,12 @@ port. Do not re-derive what is written there.
 
 ## Setup and commands
 
-`gpyreg` (the lab's GP library, `acerbilab/gpyreg`) is a sibling repo. CI installs
-it from GitHub `main`, unpinned, so PyVBMC CI can break without a PyVBMC change.
+`gpyreg` (the lab's GP library, `acerbilab/gpyreg`) is a sibling repo. CI
+installs it from GitHub at the commit pinned in
+`.github/workflows/test-matrix.yml` (`GPYREG_PIN`); only the twice-monthly
+scheduled run tests against gpyreg `main`, so that is where a gpyreg change
+breaking PyVBMC shows up first. Bump the pin when gpyreg `main` moves and
+that run is green.
 
 ```console
 git clone https://github.com/acerbilab/gpyreg ../gpyreg
@@ -67,8 +71,8 @@ clone or exported tarball fails to build. Commit messages follow conventional
 commits. Work on feature branches; PRs to `main` run the full 3-OS × 3-Python
 matrix, skipped when only docs changed. Pushes to `dev*` branches that touch
 `pyvbmc/`, `pyproject.toml` or `setup.py` run a reduced smoke (Ubuntu,
-newest Python) of the same `tests` workflow, which also runs the full
-matrix on manual dispatch and twice a month on `main`.
+newest Python). Both call the one job in `test-matrix.yml`, which `tests.yml`
+also runs as the full matrix on manual dispatch and twice a month on `main`.
 
 ## Architecture
 

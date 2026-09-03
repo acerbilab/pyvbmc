@@ -1,11 +1,17 @@
-# From github.com/dfm/tinygp
+# From github.com/dfm/tinygp; the job itself lives in test-matrix.yml.
 name: tests
 
 on:
   workflow_dispatch:
+    inputs:
+      gpyreg-ref:
+        description: gpyreg ref to test against (empty = the pinned commit)
+        type: string
+        default: ''
   schedule:
-    # Run on the 13th and 28th of each month, at 00:23 UTC (on main: drift
-    # detector for gpyreg, which is installed from its main branch unpinned).
+    # Run on the 13th and 28th of each month, at 00:23 UTC (on main). This
+    # run tests against gpyreg main instead of the pin: the drift detector
+    # for a dependency installed from a moving branch.
     - cron:  '23 00 13,28 * *'
   # Development branches (dev-next and whatever succeeds it): a reduced
   # smoke run on every push that touches the package, so a long-lived branch
@@ -19,6 +25,7 @@ on:
       - 'pyproject.toml'
       - 'setup.py'
       - '.github/workflows/tests.yml'
+      - '.github/workflows/test-matrix.yml'
 
 # A newer push to the same branch supersedes a running smoke run; scheduled
 # and dispatched runs are never cancelled.
@@ -28,42 +35,10 @@ concurrency:
 
 jobs:
   tests:
-    strategy:
-      matrix:
-        # Full 3 OS x 3 Python matrix on schedule and dispatch; Ubuntu with
-        # the newest Python only on branch pushes.
-        os: ${{ fromJSON(github.event_name == 'push' && '["ubuntu-latest"]' || '["ubuntu-latest", "windows-latest", "macos-latest"]') }}
-        python-version: ${{ fromJSON(github.event_name == 'push' && '["3.12"]' || '["3.10", "3.11", "3.12"]') }}
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - name: Checkout PyVBMC
-        uses: actions/checkout@v6
-        with:
-          path: pyvbmc
-
-      - name: Checkout GPyReg
-        uses: actions/checkout@v6
-        with:
-          repository: acerbilab/gpyreg
-          path: gpyreg
-
-      - name: Setup Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Install PyVBMC
-        run: |
-          cd ./pyvbmc
-          python -m pip install -e ".[test]"
-
-      - name: Install GPyReg
-        run: |
-          cd ./gpyreg
-          python -m pip install -e ".[test]"
-
-      - name: Run tests
-        run: |
-          cd ./pyvbmc
-          python -m pytest --reruns=5 -x -vv
+    uses: ./.github/workflows/test-matrix.yml
+    with:
+      # Full 3 OS x 3 Python matrix on schedule and dispatch; Ubuntu with
+      # the newest Python only on branch pushes.
+      os: ${{ github.event_name == 'push' && '["ubuntu-latest"]' || '["ubuntu-latest", "windows-latest", "macos-latest"]' }}
+      python-version: ${{ github.event_name == 'push' && '["3.12"]' || '["3.10", "3.11", "3.12"]' }}
+      gpyreg-ref: ${{ github.event_name == 'schedule' && 'main' || inputs.gpyreg-ref || '' }}

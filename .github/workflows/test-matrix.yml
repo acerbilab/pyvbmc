@@ -1,0 +1,70 @@
+# The test job, defined once. Called by tests.yml (manual dispatch, the
+# twice-monthly schedule, pushes to dev* branches) and merge-tests.yml (PRs
+# to main). Not triggered on its own.
+name: test-matrix
+
+on:
+  workflow_call:
+    inputs:
+      os:
+        description: JSON list of runner labels
+        type: string
+        default: '["ubuntu-latest", "windows-latest", "macos-latest"]'
+      python-version:
+        description: JSON list of Python versions
+        type: string
+        default: '["3.10", "3.11", "3.12"]'
+      gpyreg-ref:
+        description: >-
+          gpyreg git ref to test against. Empty means the pinned commit below
+          (the gpyreg the suite is known to pass with); the scheduled run
+          passes "main" to detect drift in gpyreg itself.
+        type: string
+        default: ''
+
+env:
+  # Bump when gpyreg main moves and the scheduled run against it is green.
+  # 236ddd7: gpyreg v1.0.4 + 1, 2026-02-17.
+  GPYREG_PIN: 236ddd723bf55be9e57fea05183feb4922ae11d2
+
+jobs:
+  tests:
+    strategy:
+      matrix:
+        os: ${{ fromJSON(inputs.os) }}
+        python-version: ${{ fromJSON(inputs.python-version) }}
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout PyVBMC
+        uses: actions/checkout@v6
+        with:
+          path: pyvbmc
+
+      - name: Checkout GPyReg
+        uses: actions/checkout@v6
+        with:
+          repository: acerbilab/gpyreg
+          ref: ${{ inputs.gpyreg-ref || env.GPYREG_PIN }}
+          path: gpyreg
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install PyVBMC
+        run: |
+          cd ./pyvbmc
+          python -m pip install -e ".[test]"
+
+      - name: Install GPyReg
+        run: |
+          cd ./gpyreg
+          git log --oneline -1
+          python -m pip install -e ".[test]"
+
+      - name: Run tests
+        run: |
+          cd ./pyvbmc
+          python -m pytest --reruns=5 -x -vv
