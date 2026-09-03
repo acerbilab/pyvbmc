@@ -4,15 +4,36 @@ name: tests
 on:
   workflow_dispatch:
   schedule:
-    # Run on the 13th and 28th of each month, at 00:23 UTC:
+    # Run on the 13th and 28th of each month, at 00:23 UTC (on main: drift
+    # detector for gpyreg, which is installed from its main branch unpinned).
     - cron:  '23 00 13,28 * *'
+  # Development branches (dev-next and whatever succeeds it): a reduced
+  # smoke run on every push that touches the package, so a long-lived branch
+  # without a PR is not left to manual dispatch. PRs to main run the full
+  # matrix through merge-tests.yml.
+  push:
+    branches:
+      - 'dev*'
+    paths:
+      - 'pyvbmc/**'
+      - 'pyproject.toml'
+      - 'setup.py'
+      - '.github/workflows/tests.yml'
+
+# A newer push to the same branch supersedes a running smoke run; scheduled
+# and dispatched runs are never cancelled.
+concurrency:
+  group: tests-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
 
 jobs:
   tests:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ["3.10", "3.11", "3.12"]
+        # Full 3 OS x 3 Python matrix on schedule and dispatch; Ubuntu with
+        # the newest Python only on branch pushes.
+        os: ${{ fromJSON(github.event_name == 'push' && '["ubuntu-latest"]' || '["ubuntu-latest", "windows-latest", "macos-latest"]') }}
+        python-version: ${{ fromJSON(github.event_name == 'push' && '["3.12"]' || '["3.10", "3.11", "3.12"]') }}
     runs-on: ${{ matrix.os }}
 
     steps:

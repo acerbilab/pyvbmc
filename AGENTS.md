@@ -65,7 +65,10 @@ are generated from them by `examples/scripts/Makefile`; regenerate, do not edit.
 Version comes from git tags via setuptools_scm with no fallback: a shallow
 clone or exported tarball fails to build. Commit messages follow conventional
 commits. Work on feature branches; PRs to `main` run the full 3-OS × 3-Python
-matrix, skipped when only docs changed.
+matrix, skipped when only docs changed. Pushes to `dev*` branches that touch
+`pyvbmc/`, `pyproject.toml` or `setup.py` run a reduced smoke (Ubuntu,
+newest Python) of the same `tests` workflow, which also runs the full
+matrix on manual dispatch and twice a month on `main`.
 
 ## Architecture
 
