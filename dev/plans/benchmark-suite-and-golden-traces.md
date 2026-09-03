@@ -687,9 +687,53 @@ optimize_vp 20.6 % (`_gp_log_joint` 13.1 %, `_eval_full_elcbo` 6.7 %,
 Gaussian D=5 level and the Cholesky becomes visible, but the per-call
 overhead around it is still 5× the factorization itself.
 
-### Golden population (`runs/golden/baseline/`)
+### Golden population (`runs/golden/baseline/`, 20 seeds, code `d76cdb6`)
 
-*Pending: sweep in progress.*
+Sweep: one worker, BLAS single-threaded, seeds 0–9 23:16–01:45 and 10–19
+01:45–04:13 (2.5 h per pass, ≈ 14.4 min per seed over the 11 configs);
+**220 of 220 runs succeeded**, 9.8 MB of traces and sidecars (gitignored;
+regenerate with `golden_trace.py run --suite golden --seeds 0-19 --workers
+1 --out dev/scripts/runs/golden/baseline`, bit-for-bit on this machine,
+statistically equivalent elsewhere). Median [IQR] over seeds:
+
+| config | elbo err | gsKL | MMTV | usable | evals | iters | warps | wall min |
+|---|---|---|---|---|---|---|---|---|
+| normal_D5 | 0.005 [0.003, 0.007] | 0.0001 | 0.008 | 1.00 | 70 | 13 | 1.0 | 1.1 |
+| corr_D5 | 0.006 [0.002, 0.028] | 0.002 | 0.008 | 1.00 | 95 | 19 | 1.3 | 1.25 |
+| halfnormal_D2 | 0.005 [0.003, 0.006] | 0.0001 | 0.018 | 1.00 | 70 | 13 | 1.0 | 0.55 |
+| rosenbrock_D2 | 0.025 [0.022, 0.031] | 0.021 | 0.025 | 1.00 | 80 | 15 | 1.0 | 0.64 |
+| banana_D2 | 0.046 [0.036, 0.054] | 0.142 | 0.040 | 1.00 | 85 | 16 | 1.1 | 0.64 |
+| banana_D6 | 0.079 [0.065, 0.130] | 0.203 | 0.023 | 0.90 | 105 | 20 | 1.1 | 1.49 |
+| cigar_D4 | 0.006 [0.002, 0.020] | 0.001 | 0.009 | 1.00 | 135 | 27 | 2.0 | 2.45 |
+| lumpy_D4 | 0.048 [0.026, 0.083] | 0.023 | 0.033 | 1.00 | 90 | 17 | 1.2 | 1.09 |
+| student_D4 | 0.025 [0.012, 0.045] | 0.040 | 0.041 | 0.95 | 100 | 19 | 1.2 | 1.19 |
+| logreg_D5 | 0.023 [0.015, 0.069] | 0.006 | 0.016 | 1.00 | 125 | 24 | 1.6 | 1.84 |
+| banana_D2_noise1_mfe150 | 0.058 [0.030, 0.117] | 0.098 | 0.038 | 1.00 | 142 | 28 | 1.9 | 2.13 |
+
+(gsKL and MMTV are medians; full IQRs in `runs/golden/baseline/summary.md`.
+"usable" = fraction of seeds with |Δelbo| < 1 and gsKL < 1, the papers'
+criterion.) Observations:
+
+- Every run terminated on the stability criterion; K = 50 after the boost
+  everywhere; 1–2 rotoscale warps per run. Evaluations 70–142, i.e. VBMC
+  uses 35–50 % of its default budget on these targets.
+- The hardest configurations are the D=6 banana (2 of 20 seeds above
+  gsKL 1; its diagonal true covariance means gsKL still cannot see the
+  ridge, so `elbo_err` 0.08 and MMTV 0.023 carry the shape information) and
+  Student-t (1 of 20). The noisy banana at 150 evaluations is as accurate as
+  the noiseless one at 85.
+- MMTV sits between 0.008 (Gaussians) and 0.041 (Student-t): all marginals
+  are recovered to a few percent total variation.
+- **Null check** (even vs odd seeds, 10 a side, 44 KS tests on `elbo_err`,
+  `gskl`, `mmtv`, `func_count`): nothing rejected after Holm; smallest raw
+  p 0.052 (func_count on two configs). The earlier ±5 % median-func_count
+  rule flagged 7 of 11 configs on the 5-a-side split and was replaced by the
+  KS test on `func_count` (`16369e5`).
+- Power: with 20 vs 20 seeds a two-sample KS at Holm-adjusted α = 0.05
+  detects roughly a one-SD median shift or a doubling of spread per metric.
+  Stage 2 changes that alter results *at all* (they should not: same
+  algorithm, different arithmetic order) will show up first in `elbo_err`
+  and `func_count`; subtler drifts need the 50-seed population.
 
 ### Deviations from the plan
 
@@ -821,21 +865,24 @@ Phase 3 — golden traces
 - [x] Memory probe (`banana_D6`, peak RSS 232 MB) → workers: 7
 - [!] Sweep started 22:32 with 7 workers, 20 seeds; **killed by the laptop
   crash** after 8 traces (deleted; see Phase 2 notes)
-- [~] Sweep (re)started 23:16 inside the sequential chain, **1 worker**,
-  seeds 0–9 done 01:45 (110/110, no failures), seeds 10–19 running /
-  finished (time: )
+- [x] Sweep (re)started 23:16 inside the sequential chain, **1 worker**,
+  seeds 0–9 done 01:45 (110/110, no failures), seeds 10–19 done 04:13
+  (220/220, no failures)
+- [x] Final `summary` and `compare --split` 04:13: all configs usable
+  ≥ 0.90; 44 KS tests, nothing flagged, smallest raw p 0.052
 - [x] Interim `summary` + `compare --split` at 10 seeds (01:45): all
   configs 100 % usable except banana_D6 (90 %); no KS rejection; **the
   ±5 % func_count-ratio rule flagged 7 of 11 configs on a split of one
   population** → uncalibrated at n ≤ 10; func_count moved into the KS/Holm
   family, ratio kept as a descriptive column
-- [ ] `summary`, `compare --split`
-- [ ] commit (3)
+- [x] `summary`, `compare --split` — 04:13 (see above)
+- [x] commit (3) — 22:20, `29b5f72`; MMTV `d76cdb6`; gate `16369e5`
 
 Phase 4 — records
-- [ ] §Results and §Follow-ups appended to this file
-- [ ] Devlog §2, §9, §10 annotations
-- [ ] Roadmap ticks, Stage 2 order, pickup point
-- [ ] `dev/README.md`, `AGENTS.md`
+- [x] §Results and §Follow-ups appended to this file — 04:20
+- [x] Devlog §2, §9, §10 annotations — 23:05 / 23:08
+- [x] Roadmap ticks, Stage 2 order, pickup point — 04:20
+- [x] `dev/README.md`, `AGENTS.md` — 22:25
+- [~] Full test suite run once for the package fix (background, 04:20)
 - [ ] commit (4); push `dev-next`
 - [ ] Final doublecheck

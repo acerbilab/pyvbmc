@@ -20,16 +20,20 @@ each substantive commit.
     kernel/mean/noise derivatives, `compute_vargrad`
   - [ ] fixture generator script (regenerable `.npz`/JSON; retire `.mat`)
   - [ ] stage-level oracles with pre-drawn randomness
-  - [ ] golden-trace harness over the benchmark target suite (below)
+  - [x] golden-trace harness over the benchmark target suite
+    (`dev/scripts/golden_trace.py`; baseline population of 20 seeds × 11
+    configs on `d76cdb6`, gitignored under `dev/scripts/runs/golden/
+    baseline/`, null check clean; expand to 50 seeds and higher D;
+    `plans/benchmark-suite-and-golden-traces.md` §Results)
   - [ ] dtype canary
 - [x] **Stage 1 — `seed=` and `Generator` threading**
   (`plans/stage1-rng-generator.md`). Remaining seam: gpyreg still draws
   from the global state; see the follow-ups there.
-- [ ] **Benchmark target suite** (devlog §10, "Benchmark target suite"):
-  shared module under `dev/scripts/` used by `profile_run.py` and the
-  golden-trace harness: banana, cigar, lumpy, Student-t at several `D`; a
-  noisy VIQR-path target; one real likelihood with data; one
-  budget-exhausting run reaching `N ≥ 200 + 10D`. Profile it before Stage 2.
+- [x] **Benchmark target suite** (`dev/scripts/benchmark_targets.py`,
+  2026-09-02/03): banana, cigar, lumpy, Student-t at D ≤ 6, a noisy VIQR
+  target, a logistic regression, a budget-exhausting run; profiled
+  (`plans/benchmark-suite-and-golden-traces.md`). Still to add: D = 8 and
+  10, the exhaust config in the golden set.
 - [ ] **Stage 2 — NumPy vectorization + memory fix.** Order confirmed
   2026-09-02 (evening) on the benchmark suite
   (`plans/benchmark-suite-and-golden-traces.md` §Results): (3) batched
@@ -47,16 +51,26 @@ each substantive commit.
 
 ## Pickup point
 
-1. Benchmark target suite as a shared module under `dev/scripts/`, wired
-   into `profile_run.py`; profile it and confirm or revise the Stage 2 order.
-2. Stage 0 remaining items: golden-trace harness over the suite, fixture
-   generator, remaining finite-difference checks.
-3. Stage 2 in the measured order.
-4. gpyreg generator support (`GP.fit`, `SliceSampler`, `f_min_fill`,
+1. **Stage 2 item 3**: batch the acquisition evaluation (`GP.predict` over
+   `Ns`, `vp.pdf` over `K`, the CMA-ES population; 40–48 % of run time is
+   single-point `predict`). Gate every step with
+   `golden_trace.py run --suite golden --seeds 0-19 --workers 1 --out
+   dev/scripts/runs/golden/<label>` followed by `compare
+   dev/scripts/runs/golden/baseline dev/scripts/runs/golden/<label>`
+   (about 5 h per population on one process), plus the test suite.
+2. Run the `tests` workflow on `dev-next` for the package fix `6f3f0ba`
+   (`variational_optimization.py`, Ns = 1 variance shape) if not yet done.
+3. Grow the golden population to 50 seeds and add D = 8/10 and the exhaust
+   config (`plans/benchmark-suite-and-golden-traces.md` §Follow-ups);
+   decide whether the reference sidecars (about 1 MB of JSON) should live in
+   git so `compare` works from a fresh checkout.
+4. Stage 0 remaining items: fixture generator, finite-difference checks for
+   the transformer Jacobian, gpyreg derivatives and `compute_vargrad`.
+5. gpyreg generator support (`GP.fit`, `SliceSampler`, `f_min_fill`,
    `GP.random_function`) on a gpyreg branch when convenient. The PyVBMC seam
    can only go once gpyreg `main` has it: CI installs gpyreg from `main`,
    unpinned.
-5. One PR `dev-next` → `main` when the work is done.
+6. One PR `dev-next` → `main` when the work is done.
 
 ## Deferred (devlog §12)
 
