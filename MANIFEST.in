@@ -4,4 +4,6 @@ include pyvbmc/testing/variational_posterior/test_vp_save_static.pkl
 include pyvbmc/testing/vbmc/*.txt
 include pyvbmc/testing/vbmc/compare_MATLAB/*
 include pyvbmc/testing/vbmc/test_vbmc_save_static.pkl
+include pyvbmc/testing/oracles/fixtures/*.npz
+include pyvbmc/testing/oracles/fixtures/*.json
 prune docsrc

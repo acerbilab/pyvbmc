@@ -1,0 +1,268 @@
+{
+ "cand": {
+  "Xs": "@@npz:cand/Xs"
+ },
+ "gp": {
+  "Ns": 7,
+  "X": "@@npz:gp/X",
+  "cov_fun": 1,
+  "hyp": "@@npz:gp/hyp",
+  "mean_fun": "negquad",
+  "noise_fun": [
+   1,
+   0,
+   0
+  ],
+  "noise_parameters": [
+   1,
+   0,
+   0
+  ],
+  "s2": null,
+  "y": "@@npz:gp/y"
+ },
+ "logger": {
+  "D": 4,
+  "S": null,
+  "X": "@@npz:logger/X",
+  "X_flag": "@@npz:logger/X_flag",
+  "X_orig": "@@npz:logger/X_orig",
+  "Xn": 134,
+  "cache_count": 0,
+  "cache_size": 500,
+  "fun_eval_time": "@@npz:logger/fun_eval_time",
+  "func_count": 135,
+  "n_evals": "@@npz:logger/n_evals",
+  "noise_flag": false,
+  "total_fun_eval_time": 0.02198028564453125,
+  "uncertainty_handling_level": 0,
+  "y": "@@npz:logger/y",
+  "y_max": -8.265547269990613,
+  "y_orig": "@@npz:logger/y_orig"
+ },
+ "meta": {
+  "D": 4,
+  "K": 50,
+  "N": 115,
+  "Ns": 7,
+  "best_iter": 26,
+  "config": "cigar_D4",
+  "generated": "2026-09-04 08:22:34",
+  "git": {
+   "dirty": true,
+   "sha": "413fd4f"
+  },
+  "iteration": 26,
+  "n_iterations": 26,
+  "noise_sd": null,
+  "note": "the returned (final-boost, K = 50) VP with the best iteration's GP",
+  "oracle_seed": 20260904,
+  "pick": "final_vp",
+  "problem": "cigar",
+  "problem_seed": 0,
+  "python": "3.12.6",
+  "r_index": 0.06974833707378854,
+  "recipe": "cigar_D4_boosted",
+  "recipe_options": {},
+  "versions": {
+   "gpyreg": "1.0.5.dev1+g236ddd723",
+   "numpy": "2.5.2",
+   "pyvbmc": "1.0.5.dev28+gdcfeba694",
+   "scipy": "1.18.1"
+  }
+ },
+ "optim_state": {
+  "H": 6.713750527203554,
+  "N": 135,
+  "N_eff": "@@npz:optim_state/N_eff",
+  "R": 0.06974833707378854,
+  "cache": {
+   "x_orig": "@@npz:optim_state/cache/x_orig",
+   "y_orig": "@@npz:optim_state/cache/y_orig"
+  },
+  "cache_active": false,
+  "data_trim_list": [],
+  "entropy_alpha": 0,
+  "entropy_switch": false,
+  "gp_cov_fun": 1,
+  "gp_length_scale": "@@npz:optim_state/gp_length_scale",
+  "gp_mean_fun": "negquad",
+  "gp_noise_fun": [
+   1,
+   0,
+   0
+  ],
+  "hyp_dict": {
+   "full": "@@npz:optim_state/hyp_dict/full",
+   "hyp": "@@npz:optim_state/hyp_dict/hyp",
+   "logp": "@@npz:optim_state/hyp_dict/logp",
+   "run_cov": "@@npz:optim_state/hyp_dict/run_cov",
+   "runcov": null,
+   "warp": null
+  },
+  "int_mean_fun": 0,
+  "integer_vars": "@@npz:optim_state/integer_vars",
+  "iter": 26,
+  "iter_list": {
+   "f_sd": [],
+   "f_val": [],
+   "fhyp": [],
+   "u": []
+  },
+  "last_run_avg": 135,
+  "last_successful_warping": 14,
+  "last_warmup": 8,
+  "last_warping": 20,
+  "lb_eps_orig": "@@npz:optim_state/lb_eps_orig",
+  "lb_orig": "@@npz:optim_state/lb_orig",
+  "lb_search": "@@npz:optim_state/lb_search",
+  "lb_tran": "@@npz:optim_state/lb_tran",
+  "lcb_max": -8.267176280604488,
+  "lcb_max_vec": "@@npz:optim_state/lcb_max_vec",
+  "max_fun_evals": 300,
+  "n_eff": 115,
+  "out_warp_delta": [],
+  "plb_orig": "@@npz:optim_state/plb_orig",
+  "plb_tran": "@@npz:optim_state/plb_tran",
+  "proposal_fcn": "@(x)proposal_vbmc",
+  "pruned": 0,
+  "pub_orig": "@@npz:optim_state/pub_orig",
+  "pub_tran": "@@npz:optim_state/pub_tran",
+  "recompute_var_post": false,
+  "redo_roto_scaling": false,
+  "repeated_observations_streak": 0,
+  "run_cov": "@@npz:optim_state/run_cov",
+  "run_mean": "@@npz:optim_state/run_mean",
+  "search_cache": [],
+  "skip_active_sampling": false,
+  "sn2_hpd": 1.0155935248153108e-05,
+  "stop_sampling": 0,
+  "tol_gp_var": 0.0001,
+  "ub_eps_orig": "@@npz:optim_state/ub_eps_orig",
+  "ub_orig": "@@npz:optim_state/ub_orig",
+  "ub_search": "@@npz:optim_state/ub_search",
+  "ub_tran": "@@npz:optim_state/ub_tran",
+  "uncertainty_handling_level": 0,
+  "variance_regularized_acqfcn": true,
+  "vp_K": 14,
+  "vp_repo": [],
+  "warmup": false,
+  "warmup_stable_count": 0,
+  "warping_count": 3
+ },
+ "options": {
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false
+ },
+ "pt": {
+  "D": 4,
+  "R_mat": "@@npz:pt/R_mat",
+  "delta": "@@npz:pt/delta",
+  "lb_orig": "@@npz:pt/lb_orig",
+  "mu": "@@npz:pt/mu",
+  "plb_orig": "@@npz:pt/plb_orig",
+  "pub_orig": "@@npz:pt/pub_orig",
+  "scale": "@@npz:pt/scale",
+  "transform_type": "probit",
+  "type": "@@npz:pt/type",
+  "ub_orig": "@@npz:pt/ub_orig"
+ },
+ "ref": {
+  "acq_AcqFcn": {
+   "acq": "@@npz:ref/acq_AcqFcn/acq"
+  },
+  "acq_AcqFcnLog": {
+   "acq": "@@npz:ref/acq_AcqFcnLog/acq"
+  },
+  "acq_AcqFcnNoisy": {
+   "acq": "@@npz:ref/acq_AcqFcnNoisy/acq"
+  },
+  "acq_AcqFcnVanilla": {
+   "acq": "@@npz:ref/acq_AcqFcnVanilla/acq"
+  },
+  "active_sample_step": {
+   "X_new": "@@npz:ref/active_sample_step/X_new",
+   "y_new": "@@npz:ref/active_sample_step/y_new"
+  },
+  "entlb": {
+   "H": "@@npz:ref/entlb/H",
+   "dH": "@@npz:ref/entlb/dH"
+  },
+  "entmc": {
+   "H": "@@npz:ref/entmc/H",
+   "dH": "@@npz:ref/entmc/dH"
+  },
+  "gp_log_joint": {
+   "G": "@@npz:ref/gp_log_joint/G",
+   "G_samples": "@@npz:ref/gp_log_joint/G_samples",
+   "G_var_call": "@@npz:ref/gp_log_joint/G_var_call",
+   "I_sk": "@@npz:ref/gp_log_joint/I_sk",
+   "J_sjk": "@@npz:ref/gp_log_joint/J_sjk",
+   "dG": "@@npz:ref/gp_log_joint/dG",
+   "dG_samples": "@@npz:ref/gp_log_joint/dG_samples",
+   "varG": "@@npz:ref/gp_log_joint/varG",
+   "var_ss": "@@npz:ref/gp_log_joint/var_ss"
+  },
+  "gp_predict": {
+   "fmu": "@@npz:ref/gp_predict/fmu",
+   "fmu_samples": "@@npz:ref/gp_predict/fmu_samples",
+   "fs2": "@@npz:ref/gp_predict/fs2",
+   "fs2_samples": "@@npz:ref/gp_predict/fs2_samples"
+  },
+  "neg_elcbo": {
+   "F": "@@npz:ref/neg_elcbo/F",
+   "F_detent": "@@npz:ref/neg_elcbo/F_detent",
+   "F_full": "@@npz:ref/neg_elcbo/F_full",
+   "G": "@@npz:ref/neg_elcbo/G",
+   "G_full": "@@npz:ref/neg_elcbo/G_full",
+   "H": "@@npz:ref/neg_elcbo/H",
+   "H_detent": "@@npz:ref/neg_elcbo/H_detent",
+   "H_full": "@@npz:ref/neg_elcbo/H_full",
+   "dF": "@@npz:ref/neg_elcbo/dF",
+   "dF_detent": "@@npz:ref/neg_elcbo/dF_detent",
+   "theta": "@@npz:ref/neg_elcbo/theta",
+   "varF": "@@npz:ref/neg_elcbo/varF",
+   "varG": "@@npz:ref/neg_elcbo/varG",
+   "varG_ss": "@@npz:ref/neg_elcbo/varG_ss",
+   "varH": "@@npz:ref/neg_elcbo/varH"
+  },
+  "transform": {
+   "U": "@@npz:ref/transform/U",
+   "X_back": "@@npz:ref/transform/X_back",
+   "log_abs_det_jacobian": "@@npz:ref/transform/log_abs_det_jacobian"
+  },
+  "vp_pdf": {
+   "dlogpdf": "@@npz:ref/vp_pdf/dlogpdf",
+   "dpdf": "@@npz:ref/vp_pdf/dpdf",
+   "logpdf": "@@npz:ref/vp_pdf/logpdf",
+   "pdf": "@@npz:ref/vp_pdf/pdf",
+   "pdf_orig": "@@npz:ref/vp_pdf/pdf_orig"
+  }
+ },
+ "vp": {
+  "D": 4,
+  "K": 50,
+  "bounds": null,
+  "eta": "@@npz:vp/eta",
+  "lambd": "@@npz:vp/lambd",
+  "mu": "@@npz:vp/mu",
+  "optimize_lambd": true,
+  "optimize_mu": true,
+  "optimize_sigma": true,
+  "optimize_weights": true,
+  "sigma": "@@npz:vp/sigma",
+  "stats": {
+   "I_sk": "@@npz:vp/stats/I_sk",
+   "J_sjk": "@@npz:vp/stats/J_sjk",
+   "e_log_joint": -10.237757235172191,
+   "e_log_joint_sd": 0.0008992469223850489,
+   "elbo": -3.5133986303084486,
+   "elbo_sd": 0.0008992469223850489,
+   "entropy": 6.724358604863743,
+   "entropy_sd": 0.0,
+   "stable": "@@npz:vp/stats/stable"
+  },
+  "w": "@@npz:vp/w"
+ }
+}

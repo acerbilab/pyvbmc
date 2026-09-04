@@ -52,6 +52,11 @@ status and next steps never go into the devlogs.
   campaign on it that fixed the Stage 2 order, and the first golden-trace
   population; target definitions and ground truth, the measured profile,
   the harness design, results and follow-ups.
+- `plans/fixture-generator-and-oracles.md` — plan and worklog for the
+  Stage 0 fixture generator and stage-level oracles
+  (`pyvbmc/testing/oracles/`): snapshot format, regime coverage, the
+  oracle list and tolerances, decisions, tracker. The per-commit gate for
+  Stage 2.
 
 Naming: `plans/` files are named by slug only, never by date (the date is in
 the file header), so that they cannot be mistaken for copies of the dated
@@ -104,3 +109,10 @@ reason.
   for a null check). Populations live under `scripts/runs/golden/`.
 - `scripts/regenerate_baseline.sh` — the whole benchmark regeneration as
   one sequential process (see above).
+- `scripts/make_oracle_fixtures.py` — generates the stage-level oracle
+  fixtures under `pyvbmc/testing/oracles/fixtures/`: short seeded runs on
+  the benchmark targets with regime-forcing options, the state at chosen
+  iterations saved as plain arrays, and the reference outputs of every
+  numerical stage computed from the rebuilt state (`--list`, `--only`,
+  `--check`; about six minutes, one process). Regenerating replaces the
+  references: only for a deliberate new baseline.

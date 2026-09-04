@@ -181,3 +181,17 @@ Things you must hold in your head across files:
 - `import pyvbmc` eagerly imports matplotlib.pyplot, corner, cma, and imageio.
   `pyvbmc.timer.main_timer` is a process-wide singleton shared by all `VBMC`
   instances, so concurrent runs in one interpreter are not safe.
+- `pyvbmc/testing/oracles/` pins the numerics stage by stage: each fixture
+  under `fixtures/` is one algorithm state (GP, VP, transformer, logger,
+  `optim_state`, options, candidate set) saved as plain arrays, with the
+  reference outputs of GP prediction, `vp.pdf`, every acquisition function,
+  `_gp_log_joint`, `_neg_elcbo`, both entropies, the transformer and one
+  seeded `active_sample` call. `pytest pyvbmc/testing/oracles` rebuilds the
+  state through public constructors and recomputes in seconds; a failure
+  means the numerics changed. Regenerate with
+  `python dev/scripts/make_oracle_fixtures.py` only to set a new baseline
+  on purpose, never to make a refactor pass; `--check` runs the comparison
+  outside pytest. The tests need a repository checkout: the testing
+  package ships in the sdist, not the wheel, and the `active_sample_step`
+  oracle also imports the benchmark targets from `dev/scripts` (skipped
+  when absent).

@@ -103,7 +103,7 @@ targets, a 15-D cigar run to 750 evaluations; a first pass on 2026-09-02
 with truth-anchored start points and boxes was withdrawn, and its shares
 turned out to lie within a few points of these). Same balance, sharper.
 Active sampling 54–69 % of wall on the noiseless targets, of which
-single-point `GP.predict` calls are 40–50 % of profiled time (51k–249k per
+single-point `GP.predict` calls are 40–50 % of profiled time (41k–249k per
 run) and `vp.pdf` another 4–6 % (15 % at D = 15 with K ≈ 25); GP training
 13–20 % at D = 4 and 22–28 % at D = 10, with the Cholesky at 1–3 %, the
 scipy `solve_triangular` wrappers alone at 9–10 % (0.6–9.4 M calls) and
@@ -112,8 +112,10 @@ largest on ridged posteriors (`_gp_log_joint` 12–18 %), only 4–7 % at
 D = 10; `final_boost` 3–12 % in one call. On the noisy VIQR path the
 active-sampling bucket is the per-sample full GP refits (26–33 %) and VP
 optimizations (20 %), not the acquisition search (5–8 %). The D ≤ 10
-targets converged in 85–220 evaluations and 1–5 minutes, so the `N → 350`
-regime is reached only by the budget-exhausting configuration (§10).
+targets converged in 85–220 evaluations and 1–5 minutes, so among the
+profiled runs only the budget-exhausting configuration reaches the
+optimize-only regime (§10); in the golden population 12 of 280 runs reach
+it briefly (9 noisy-logreg and 3 lumpy_D10 seeds).
 
 ---
 
@@ -484,6 +486,26 @@ state used by resume.
   for ln Z = −10.36 and gsKL 54, under a GP whose mean function had gone
   flat; 4 of 6 boost reruns from the same state fail. Algorithmic and
   inherited, not a port bug.
+- **Found 2026-09-04 by the review of the oracle plan**
+  (`plans/fixture-generator-and-oracles.md`), not fixed:
+  - `vbmc.py:755` sets `optim_state["variance_regularized_acqfcn"]` but
+    `AbstractAcqFcn.__call__` reads `optim_state.get(
+    "variance_regularized_acq_fcn")` (with the underscore), so the
+    variance-regularization branch of every acquisition function is dead in
+    every run, and `tol_gp_var` (read only inside that branch) has no
+    effect at all. The underscore spelling appears only in acquisition unit
+    tests; `testing/vbmc/test_vbmc_init.py` asserts the misspelled key, so
+    fixing the typo means updating that test. The oracle fixtures pin the
+    dead path as it is.
+  - `_gp_log_joint(..., compute_var=False, separate_K=True)` raises
+    `UnboundLocalError`: `J_sjk` is created only under `if compute_var` but
+    returned unconditionally in the `separate_K` branch. Unreachable in
+    production only because the one caller that could hit it,
+    `_eval_full_elcbo`, drops the variance solely under a
+    `skip_elbo_variance` option that no `.ini` defines and that
+    `validate_option_names` therefore rejects; `_neg_elcbo`'s own
+    `separate_K`-without-variance fallback (`J_sjk = None`) is dead code for
+    the same reason.
 
 ---
 
@@ -531,7 +553,8 @@ time), then a new item 8, gpyreg slice-sampler overhead (vectorize
 `__compute_log_priors`, direct LAPACK triangular solves instead of the
 validated scipy wrappers, less per-sample kernel/mean recomputation; lands in
 gpyreg, which PyBADS shares), then items 1–2 (7–27%, growing with `K`), then
-the rest. **This order is provisional**: it was measured on two easy Gaussian
+the rest. **This order is provisional** (resolved by the measurements
+below, 2026-09-03/04): it was measured on two easy Gaussian
 targets and must be re-checked on the benchmark target suite below before
 the first vectorization PR.
 

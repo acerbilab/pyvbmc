@@ -20,8 +20,17 @@ anything that changes numerics lands.
     `vp.pdf` (`plans/profile-and-gradient-checks.md` §6)
   - [ ] finite-difference checks: parameter transformer Jacobian, gpyreg
     kernel/mean/noise derivatives, `compute_vargrad`
-  - [ ] fixture generator script (regenerable `.npz`/JSON; retire `.mat`)
-  - [ ] stage-level oracles with pre-drawn randomness
+  - [x] fixture generator script (`dev/scripts/make_oracle_fixtures.py`,
+    2026-09-04: 8 snapshots as plain arrays under
+    `pyvbmc/testing/oracles/fixtures/`, 1.4 MB; retiring the `.mat`
+    fixtures is still open, `plans/fixture-generator-and-oracles.md`)
+  - [x] stage-level oracles (`pyvbmc/testing/oracles/`, 14 oracles × 8
+    snapshots, about 20 s; per-element tolerances with a robust floor,
+    set from measured rounding floors; the per-commit gate for Stage 2).
+    Not built from the devlog's Stage 0 list: oracles for the GP log
+    marginal likelihood and its gradient (gpyreg-side), `GP.quad`,
+    `kl_div_mvn`, `kde_1d`. Not yet exercised on another BLAS build: the
+    first CI run after the commit is.
   - [x] golden-trace harness over the benchmark target suite
     (`dev/scripts/golden_trace.py`; reference population `baseline_20260903`:
     20 seeds × 14 configs (D = 2–10, two noisy) on the code of `5020879`,
@@ -72,32 +81,47 @@ anything that changes numerics lands.
    (profile campaign plain + cProfile, golden population 20 × 14, null check
    clean, sidecars published; `plans/benchmark-suite-and-golden-traces.md`
    §Results (regenerated)). The Stage 2 order above is confirmed; committed
-   and pushed as `9206738`. The one failed run of the population,
+   and pushed as `9206738`. The one wrong posterior in the population,
    `student_D4` seed 19, is a final-boost failure, written up in
    `2026-09-04-final-boost-failure.md`; the guard is deferred (see
    Deferred below).
-1. **Stage 2 item 3**: batch the acquisition evaluation (`GP.predict` over
-   `Ns`, `vp.pdf` over `K`, the CMA-ES population). Gate every step with
-   `golden_trace.py run --suite golden --seeds 0-19 --workers 1 --out
-   dev/scripts/runs/golden/<label>` followed by `compare
-   dev/golden/baseline dev/scripts/runs/golden/<label>` (about 10 h per
-   population on one process), plus the test suite.
-2. ~~Run the `tests` workflow on `dev-next` for the package fix~~ done
+1. ~~Stage 0 oracles first~~ done 2026-09-04 (PI: an arithmetic-preserving
+   refactor is gated by fixed-state oracles, not by the 10-hour statistical
+   run, which is the end-of-stage check and the Stage 4 gate):
+   `pyvbmc/testing/oracles/` and `dev/scripts/make_oracle_fixtures.py`,
+   `plans/fixture-generator-and-oracles.md`; reviewed (three read-only
+   Opus reviews, all findings folded in), committed and pushed 2026-09-04.
+   **First thing next session: check the smoke CI run of that push** (the
+   first run of the oracles on another BLAS build); if a tolerance floor
+   is exceeded there, re-measure it with `--check --verbose` on that
+   platform as the plan describes, do not guess.
+2. **Stage 2 item 3**: batch the acquisition evaluation (`GP.predict` over
+   `Ns`, `vp.pdf` over `K`, the CMA-ES population). Gate: the oracles on
+   every commit; per PR a deterministic replay of a few golden configs
+   against their stored traces (the first evaluations agree to rounding
+   before trajectories part; minutes) and the profile suite for the speedup
+   (one seed per config, about an hour); the 20-seed population
+   (`golden_trace.py run --suite golden --seeds 0-19 --workers 1 --out
+   dev/scripts/runs/golden/<label>`, then `compare dev/golden/baseline
+   dev/scripts/runs/golden/<label>`, about 10 h) once at the end of the
+   stage.
+3. ~~Run the `tests` workflow on `dev-next` for the package fix~~ done
    2026-09-03 (full matrix green, run 33715620257); pushes to `dev*` now
    run a smoke automatically.
-3. Grow the golden population to 50 seeds (`golden_trace.py run --seeds
+4. Grow the golden population to 50 seeds (`golden_trace.py run --seeds
    20-49`, about 14 h on one process) and add cigar/Student-t at D = 6–8
    and the exhaust config (`plans/benchmark-suite-and-golden-traces.md`
    §Follow-ups). The reference sidecars live in git under
    `dev/golden/baseline/` (PI decision 2026-09-03); copy them over after
    every extension.
-4. Stage 0 remaining items: fixture generator, finite-difference checks for
-   the transformer Jacobian, gpyreg derivatives and `compute_vargrad`.
-5. gpyreg generator support (`GP.fit`, `SliceSampler`, `f_min_fill`,
+5. Stage 0 remaining after the oracles: finite-difference checks for the
+   transformer Jacobian, gpyreg derivatives and `compute_vargrad`; retire
+   the `.mat` fixtures once the oracles cover what they pin.
+6. gpyreg generator support (`GP.fit`, `SliceSampler`, `f_min_fill`,
    `GP.random_function`) on a gpyreg branch when convenient. The PyVBMC seam
    can only go once gpyreg `main` has it: CI installs gpyreg from `main`,
    unpinned.
-6. One PR `dev-next` → `main` when the work is done.
+7. One PR `dev-next` → `main` when the work is done.
 
 ## Deferred (devlog §12)
 
