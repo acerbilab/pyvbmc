@@ -51,10 +51,9 @@ REPO_ROOT = HERE.parents[1]
 DEFAULT_RUNS = REPO_ROOT / "dev" / "scripts" / "runs" / "golden"
 
 # Rough solo minutes per run, used only to order tasks longest-first when
-# --workers > 1. Measured on the (truth-anchored) 2026-09-03 population for
-# the D <= 6 configs; the D = 10 and the two noisy entries are guesses to be
-# refreshed from the regenerated population's summary.md.
-EST_MINUTES = {  # medians of the 2026-09-03 baseline (one worker, 1 thread)
+# --workers > 1. Medians of the regenerated `baseline_20260903` population
+# (one worker, one BLAS thread); the exhaust entry is its plain profile run.
+EST_MINUTES = {
     "cigar_D15_exhaust": 35,
     "lumpy_D10": 6.8,
     "logreg_D5_noise3": 4.9,

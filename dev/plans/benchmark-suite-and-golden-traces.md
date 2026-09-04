@@ -1014,9 +1014,10 @@ ended on the budget. Reading:
 3. **At D = 10 the balance tilts to GP training** (22–28 %) and away from
    the variational stage (4–7 %); the ridged posteriors (cigar, logreg) keep
    the variational stage at 16–20 %.
-4. **The post-loop tail is 6–15 s per converging run**, 8–13 % of wall,
-   essentially the K = 50 final boost; on the 1-minute runs it is as large
-   as the whole variational stage (item 2 gains weight on short runs).
+4. **The post-loop tail is 6–15 s per converging run**, 4–13 % of wall
+   (8–13 % at D = 4–5, 4 % at D = 10), essentially the K = 50 final boost;
+   on the 1-minute runs it is as large as the whole variational stage
+   (item 2 gains weight on short runs).
 5. **The 15-D exhaust run** (Ns 8 → 4, then 0 from iteration 69 at N = 350
    for the remaining 81 iterations; K 2 → 32 → 31, 50 after the boost), per
    iteration:
@@ -1039,7 +1040,8 @@ ended on the budget. Reading:
 
 ### cProfile attribution (% of profiled `VBMC.optimize`; calls in parentheses)
 
-Profiled wall 1.35–1.6× the plain runs. Columns: banana_D4, cigar_D4,
+Profiled wall 1.4–1.6× the plain runs on the converging noiseless configs,
+1.1–1.2× on the noisy ones and the 15-D exhaust. Columns: banana_D4, cigar_D4,
 lumpy_D4, student_D4, logreg_D5, rosenbrock_D2_noise1 (ros2n1),
 logreg_D5_noise3 (lr5n3), lumpy_D10, banana_D10, cigar_D15_exhaust (cig15x).
 
@@ -1050,7 +1052,6 @@ logreg_D5_noise3 (lr5n3), lumpy_D10, banana_D10, cigar_D15_exhaust (cig15x).
 | ├ acquisition `__call__` (calls) | 53.3 (51k) | 55.4 (131k) | 48.0 (41k) | 55.9 (58k) | 50.4 (84k) | 52.0 (5.6k) | 43.7 (20k) | 55.3 (249k) | 62.0 (201k) | 53.0 (1.79M) |
 | ├ `GP.predict` | 44.2 | 44.6 | 39.7 | 46.2 | 40.0 | 13.3 | 14.6 | 44.6 | 50.4 | 31.5 |
 | ├ `vp.pdf` | 4.7 | 5.4 | 4.4 | 5.1 | 5.1 | 0.0 | 0.0 | 5.4 | 5.5 | 15.4 |
-| ├ `f_min_fill` | 2.3 | 1.9 | 2.1 | 2.3 | 2.3 | 7.0 | 5.6 | 2.0 | 1.6 | 0.8 |
 | └ `active_importance_sampling` | 0 | 0 | 0 | 0 | 0 | 0.3 | 0.2 | 0 | 0 | 0 |
 | train_gp | 18.3 | 14.1 | 21.5 | 20.1 | 17.1 | 25.5 | 32.9 | 26.7 | 21.5 | 16.7 |
 | ├ `SliceSampler.sample` | 15.8 | 12.1 | 19.2 | 17.6 | 14.6 | 18.1 | 27.0 | 24.5 | 19.8 | 14.0 |
@@ -1058,6 +1059,7 @@ logreg_D5_noise3 (lr5n3), lumpy_D10, banana_D10, cigar_D15_exhaust (cig15x).
 | ├ scipy `solve_triangular` (calls) | 9.6 (0.63M) | 9.1 (1.41M) | 9.3 (0.58M) | 10.2 (0.71M) | 9.0 (1.00M) | 6.2 (0.42M) | 7.3 (1.05M) | 10.4 (2.48M) | 10.1 (1.97M) | 9.0 (9.39M) |
 | ├ scipy `cholesky` | 1.5 | 1.2 | 1.7 | 1.7 | 1.5 | 2.0 | 3.2 | 3.1 | 2.0 | 2.3 |
 | ├ `__compute_log_priors` | 3.8 | 2.8 | 4.6 | 4.1 | 3.4 | 5.3 | 6.0 | 3.9 | 3.8 | 1.5 |
+| ├ `f_min_fill` (the space-filling init in `GP.fit`) | 2.3 | 1.9 | 2.1 | 2.3 | 2.3 | 7.0 | 5.6 | 2.0 | 1.6 | 0.8 |
 | └ `scipy.optimize.minimize` | 0.1 | 0.1 | 0.1 | 0.1 | 0.1 | 0.1 | 0.1 | 0.1 | 0.1 | 1.7 |
 | optimize_vp | 19.8 | 21.3 | 22.9 | 15.2 | 24.1 | 20.0 | 20.3 | 9.4 | 6.6 | 21.0 |
 | ├ `_gp_log_joint` | 14.6 | 14.9 | 17.2 | 11.6 | 17.6 | 15.7 | 14.3 | 6.2 | 4.6 | 9.2 |
@@ -1070,7 +1072,7 @@ logreg_D5_noise3 (lr5n3), lumpy_D10, banana_D10, cigar_D15_exhaust (cig15x).
 Reading:
 
 - **Noiseless targets, D ≤ 10**: single-point `GP.predict` inside the
-  CMA-ES loop is 40–50 % of everything (51k–249k calls per run), `vp.pdf`
+  CMA-ES loop is 40–50 % of everything (41k–249k calls per run), `vp.pdf`
   another 4–6 %. Inside GP training the slice sampler is 12–25 %, of which
   `__core_computation` 10–21 %, the scipy `solve_triangular` wrappers alone
   9–10 % (0.6–2.5 M calls), the hyperprior evaluation 3–5 %, the Cholesky
@@ -1091,8 +1093,9 @@ Reading:
 ### Decision rule outcome (devlog §10)
 
 The variational stage did not overtake active sampling on any target (at
-most 20 % of wall on the ridged posteriors against 55–60 % for active
-sampling), so the Stage 2 order **stands, confirmed on the papers'
+most 24 % of wall, on the 15-D exhaust run; 16–20 % on the ridged D = 4–5
+posteriors; against 55–60 % for active sampling), so the Stage 2 order
+**stands, confirmed on the papers'
 procedure: item 3 (batch the acquisition evaluation: `GP.predict` over
 `Ns`, `vp.pdf` over `K`, the CMA-ES population), item 8 (gpyreg sampler
 overhead: `__core_computation`, the `solve_triangular` wrappers, the
@@ -1112,8 +1115,9 @@ than trail the list.
 ### Golden population (`baseline_20260903`, 20 seeds × 14 configs)
 
 Sweep: one worker, BLAS single-threaded; 22 runs 16:21–17:28 on
-2026-09-03, 258 runs 19:09–04:00 overnight (531.9 min); ≈ 28.7 min per seed
-over the 14 configurations, ≈ 10.0 h in total; **280 of 280 succeeded**.
+2026-09-03, 258 runs 19:09–04:00 overnight (531.9 min); ≈ 30 min per seed
+over the 14 configurations (28.7 by the sum of the config medians), ≈ 9.9 h
+in total; **280 of 280 succeeded**.
 Regenerate bit-for-bit on this machine (statistically equivalent
 elsewhere) with `golden_trace.py run --suite golden --seeds 0-19 --workers
 1 --out dev/scripts/runs/golden/baseline_20260903`. Median [IQR] over
@@ -1140,8 +1144,11 @@ seeds (gsKL and MMTV medians; full IQRs in `dev/golden/baseline/summary.md`):
 Observations:
 
 - Every run terminated on the stability criterion; K = 50 after the boost;
-  1–2.7 rotoscale warps per run. Evaluations 65–260, i.e. 20–70 % of the
-  default budget 50 (D + 2).
+  1–2.7 rotoscale warps per run on average per config (0–4 per run).
+  Evaluations 65–350 per run (config medians 70–242), i.e. 20–70 % of the
+  default budget 50 (D + 2) by config median, up to 96 % for one
+  noisy-logreg seed; 12 runs (9 noisy logreg, 3 lumpy_D10) briefly reached
+  the single-posterior regime.
 - **Two configurations are below 1.00.** `logreg_D5_noise3`: seeds 0, 10
   and 14 fail on MMTV alone (0.20–0.25; ΔLML ≤ 0.43, gsKL ≤ 0.82): the
   rare predictor's plateau posterior against the +10 bound, under σ = 3
@@ -1153,8 +1160,9 @@ Observations:
 - The hardest well-behaved configurations are `lumpy_D10` (ΔLML 0.57,
   gsKL 0.44, 220 evaluations, 44 iterations, 6.8 min) and the D = 10 banana
   (gsKL 0.29 with ΔLML 0.10 and MMTV 0.019: its diagonal true covariance
-  hides the ridge from gsKL). Maximum gsKL across all other seeds: 0.82
-  (banana_D10), 0.81 (lumpy_D10), 0.92 (rosenbrock_D2_noise1 seed 11).
+  hides the ridge from gsKL). Maximum gsKL across all other seeds: 0.92
+  (rosenbrock_D2_noise1 seed 11), 0.87 (banana_D6 seed 17), 0.82
+  (banana_D10), 0.81 (lumpy_D10).
 - MMTV medians 0.008 (Gaussians) to 0.085 (lumpy_D10) and 0.154 (noisy
   logreg): marginals recovered to a few percent total variation except on
   the noisy bounded problem.
@@ -1197,11 +1205,13 @@ Compute and population:
   the profile suite and was profiled plain and under cProfile.
 - Append seeds to 50 per config (`golden_trace.py run --suite golden
   --seeds 20-49 --workers 1 --out dev/scripts/runs/golden/baseline_20260903`;
-  the harness skips finished runs; ≈ 28.7 min per seed, ≈ 14 h for 30
+  the harness skips finished runs; ≈ 30 min per seed, ≈ 15 h for 30
   seeds), then `summary`, `compare --split`, copy the sidecars.
 - Add cigar and Student-t at D = 6 and 8, banana at D = 8, and the exhaust
-  configuration with a few seeds to the golden set, so the Ns = 0 regime is
-  in the population that gates Stage 2.
+  configuration with a few seeds to the golden set, so the long
+  optimize-only tail is in the population that gates Stage 2 (12 of the
+  280 runs already touch the single-posterior regime, briefly: 9
+  noisy-logreg and 3 lumpy_D10 seeds).
 - An HPC variant of the sweep (Slurm array over seeds) if 50 seeds × a
   larger suite stops fitting a laptop night.
 

@@ -18,7 +18,7 @@ two of them noisy) × seeds 0–19, run on 2026-09-03/04 on the code of
 sessions; 280 of 280 succeeded; even-vs-odd null check clean over 56 KS
 tests). The 258 sidecars of the second session say `dirty: true` because a
 worklog note under `dev/plans/` was uncommitted at the time; no code
-differed. The first population (220 runs of 2026-09-03) was withdrawn the
+differed. The first population (220 runs of 2026-09-02/03) was withdrawn the
 same morning because its start points and plausible boxes were derived from
 the true posteriors (see the audit in
 `dev/plans/benchmark-suite-and-golden-traces.md`). Regenerate with
