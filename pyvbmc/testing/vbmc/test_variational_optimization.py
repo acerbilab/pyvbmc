@@ -397,9 +397,13 @@ def test_vp_optimize_1D_g_mixture():
     )
     mixture_mu = np.mean(mixture_samples)
     mixture_sigma = np.std(mixture_samples)
+    # Unseeded (GP fit, VP initialization and the 1e7 samples all draw from
+    # the global stream): the moment-matched KL fluctuates with the fit and
+    # reached 0.0014 in one of seven runs on 2026-09-05 against the earlier
+    # threshold of 0.00125 (PI: raised to 0.0015).
     assert np.all(
         np.abs(kl_div_mvn(mixture_mu, mixture_sigma, vp_mu, vp_sigma))
-        < 1e-3 * 1.25
+        < 1e-3 * 1.5
     )
 
 
