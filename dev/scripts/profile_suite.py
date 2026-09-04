@@ -119,9 +119,20 @@ def run_probe(cfg, when, out_dir, seed, extra):
     return float(json.loads(summ.read_text())["result"]["wall_s"])
 
 
+def _row_order(summ):
+    """Configs alphabetically, the start probe first and the end probe
+    last, so the two probes frame the table."""
+    tag = summ.parent.name
+    if tag.startswith("probe_start_"):
+        return (0, tag)
+    if tag.startswith("probe_end_"):
+        return (2, tag)
+    return (1, tag)
+
+
 def aggregate(out_dir):
     rows = []
-    for summ in sorted(out_dir.glob("*/summary.json")):
+    for summ in sorted(out_dir.glob("*/summary.json"), key=_row_order):
         s = json.loads(summ.read_text())
         r = s["result"]
         wall = r["wall_s"]
@@ -281,7 +292,7 @@ def main(argv=None):
     )
     if probe_cfg is not None:
         a, b = probe.get("start"), probe.get("end")
-        if a and b:
+        if a is not None and b is not None:
             print(
                 f"[suite] speed probe {probe_cfg.label}: {a:.1f} s at start,"
                 f" {b:.1f} s at end (end/start {b / a:.2f}); much above 1"

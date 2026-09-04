@@ -229,8 +229,14 @@ def run_task(label, seed, extra_options, out_dir):
             y_orig=np.ravel(np.asarray(fl.y_orig))[live],
             # The initial design: every evaluation before the first GP fit
             # (live or trimmed), drawn from the generator before any
-            # numerics run. The replay gate compares it exactly; traces
-            # written before 2026-09-05 lack it (see golden_replay.py).
+            # numerics run (row 0 is the start point x0). The replay gate
+            # compares it exactly; traces written before commit 9d92c7f
+            # (2026-09-04 evening, i.e. the whole 2026-09-03 baseline) lack
+            # it (see golden_replay.py). The first func_count[0] logger
+            # rows are the design because the benchmark passes no y0 (a
+            # user-provided y0 goes through the cache, not func_count) and
+            # draws continuous points (a duplicate would merge into an
+            # existing row).
             X_init=np.asarray(fl.X_orig)[: int(per_iter["func_count"][0])],
             y_init=np.ravel(np.asarray(fl.y_orig))[
                 : int(per_iter["func_count"][0])

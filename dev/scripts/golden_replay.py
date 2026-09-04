@@ -24,7 +24,8 @@ under ``--baseline``:
   evaluation horizon; the ELBO horizon is the primary measure;
 - whether the initial design (every evaluation before the first GP fit,
   drawn from the generator before any numerics run) is identical: exactly,
-  when both traces store it (``X_init``, written since 2026-09-05), else
+  when both traces store it (``X_init``, written since commit 9d92c7f of
+  2026-09-04; the 2026-09-03 baseline lacks it), else
   by finding the new run's design points among the reference's live rows
   (warm-up trimming can remove the whole design on a target like cigar,
   and then the stored trace cannot certify it: reported, not flagged);
@@ -149,7 +150,7 @@ def compare_traces(ref, new):
     )
     # The initial design (every evaluation before the first GP fit) is
     # drawn from the generator before any numerics run, so it must be
-    # identical. Traces written since 2026-09-05 store it as ``X_init``;
+    # identical. Traces written since commit 9d92c7f store it as ``X_init``;
     # the 2026-09-03 baseline does not, so the fallback looks for the new
     # run's design points among the reference's live rows. Warm-up trimming
     # removes low-density rows, on some targets (cigar) the whole design:
@@ -167,20 +168,27 @@ def compare_traces(ref, new):
         ) + " (X_init in both traces)"
         out["initial_design_ok"] = ok
     elif "X_init" in new:
-        n0 = len(new["X_init"])
+        # Row 0 is the start point x0, drawn by the benchmark from a stream
+        # spawned off the run seed (benchmark_targets.py), so it is
+        # identical whatever the code did: only the rows VBMC's generator
+        # drew can certify the design.
+        drawn = new["X_init"][1:]
+        n0 = len(drawn)
         found = sum(
-            bool(np.any(np.all(ref["X_orig"] == x, axis=1)))
-            for x in new["X_init"]
+            bool(np.any(np.all(ref["X_orig"] == x, axis=1))) for x in drawn
         )
         if found:
-            # One identical design point means the same generator stream,
-            # hence the same design.
-            out["design"] = f"{found} of {n0} design points live in the ref"
+            # One identical generator-drawn design point means the same
+            # generator stream, hence the same design.
+            out["design"] = (
+                f"{found} of {n0} generator-drawn design points live in"
+                " the ref"
+            )
             out["initial_design_ok"] = True
         else:
             out["design"] = (
-                f"not certifiable (none of the {n0} design points is live"
-                " in the reference trace)"
+                f"not certifiable (none of the {n0} generator-drawn design"
+                " points is live in the reference trace)"
             )
             out["initial_design_ok"] = None
     else:
@@ -255,11 +263,15 @@ def compare_run(label, seed, out_dir, baseline, sidecars, pop):
         if row["elbo_iter"] > row["elbo_exact_iter"]:
             verdict += f" (beyond 1e-6 at {row['elbo_iter']})"
         verdict += f"; live points identical: {row['X_orig_exact']}"
+    else:
+        verdict = "finals only"
+    if "design" in row:
+        # Whenever the traces were compared, identical runs included (an
+        # identical live set with a different trimmed design row would
+        # otherwise be flagged without saying why).
         verdict += f"; initial design {row['design']}"
         if row["initial_design_ok"] is False:
             verdict = "INITIAL DESIGN DIFFERS; " + verdict
-    else:
-        verdict = "finals only"
     if outside:
         verdict += "; OUTSIDE envelope: " + ", ".join(outside)
     row["flagged"] = bool(outside) or (
@@ -344,7 +356,9 @@ def render(rows, git, args, minutes):
         " live-point count is a lower bound on the evaluation horizon"
         " because warm-up trimming removes rows. Flags: a run failed,"
         " the initial design differs (exact where both traces store it,"
-        " else a design point of the new run found live in the reference),"
+        " else a generator-drawn design point of the new run found live in"
+        " the reference; where none is live, e.g. cigar, the trace cannot"
+        " certify the design and no flag is raised),"
         " a final is not finite, or a parted run's"
         " ΔLML/gsKL/MMTV exceeds the population's Q3 + 3 IQR fence."
     )
