@@ -160,12 +160,16 @@ anything that changes numerics lands.
    gpyreg PR** (sampler overhead plus `predict`'s per-sample loop and `sW`
    tiling from item 3), then item 5 (`entmc_vbmc`), then the memory items.
    The 20-seed population against `dev/golden/baseline` (the end-of-stage
-   check, about 7 h) was launched on the night of 2026-09-04/05 on the
-   final code of this item, output under
-   `dev/scripts/runs/golden/item1_20260905/` with the comparison report
-   written next to it when it finishes: **read it first when picking up**
-   (`python dev/scripts/golden_trace.py compare dev/golden/baseline
-   dev/scripts/runs/golden/item1_20260905`).
+   check of items 3, 1 and 2 together, about 7 h) was launched 2026-09-05
+   01:05 on the final code (`a39e5ec`), output under
+   `dev/scripts/runs/golden/item1_20260905/`; the same job writes
+   `summary_item1.md` and `compare_vs_baseline.md` next to the traces
+   when it finishes (the harness prints to stdout; the job redirects).
+   **Read `compare_vs_baseline.md` first when picking up**; if the job
+   died, rerun `python dev/scripts/golden_trace.py compare
+   dev/golden/baseline dev/scripts/runs/golden/item1_20260905` (the `run`
+   subcommand skips finished tasks, so it can be resumed with the same
+   `--out`).
 4. ~~Run the `tests` workflow on `dev-next` for the package fix~~ done
    2026-09-03 (full matrix green, run 33715620257); pushes to `dev*` now
    run a smoke automatically.
