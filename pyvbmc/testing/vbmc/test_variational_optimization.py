@@ -5,7 +5,6 @@ import gpyreg as gpr
 import numpy as np
 import pytest
 import scipy as sp
-import scipy.linalg
 from scipy.stats import multivariate_normal, norm
 
 from pyvbmc.stats import kl_div_mvn
@@ -19,6 +18,20 @@ from pyvbmc.vbmc.variational_optimization import (
     optimize_vp,
     update_K,
 )
+
+
+@pytest.fixture(autouse=True)
+def _restore_global_rng():
+    """``VariationalPosterior.__init__`` draws its seed from the global
+    ``np.random`` state, and the two ``*_g_mixture`` tests below fit their
+    GP and draw their samples from that same unseeded stream; leave the
+    stream as each test found it, so that adding a test to this module does
+    not shift what a later one sees (as the ``_gp_log_joint`` tests added
+    on 2026-09-04 did; the sibling ``_grad_fd`` module has the same
+    fixture)."""
+    state = np.random.get_state()
+    yield
+    np.random.set_state(state)
 
 
 def setup_options(D: int, user_options: dict = None):
@@ -122,26 +135,11 @@ def test_update_K():
 
 
 def test_gp_log_joint():
-    D = 2
-    K = 2
-    vp = VariationalPosterior(D, K)
     base_path = Path(__file__).parent
-    vp.mu = np.loadtxt(open(base_path.joinpath("mu.txt"), "rb"), delimiter=",")
+    vp, gp = _gp_log_joint_fixture()
+    # 1-D eta and lambd on purpose: the function must reshape, not index.
     vp.eta = vp.eta.flatten()
     vp.lambd = vp.lambd.flatten()
-
-    gp = gpr.GP(
-        D=D,
-        covariance=gpr.covariance_functions.SquaredExponential(),
-        mean=gpr.mean_functions.NegativeQuadratic(),
-        noise=gpr.noise_functions.GaussianNoise(constant_add=True),
-    )
-    X = np.loadtxt(open(base_path.joinpath("X.txt"), "rb"), delimiter=",")
-    y = np.loadtxt(
-        open(base_path.joinpath("y.txt"), "rb"), delimiter=","
-    ).reshape((-1, 1))
-    hyp = np.loadtxt(open(base_path.joinpath("hyp.txt"), "rb"), delimiter=",")
-    gp.update(X_new=X, y_new=y, hyp=hyp)
 
     G, dG, varG, dvarG, var_ss, I_sk, J_sjk = _gp_log_joint(
         vp, gp, False, True, True, True, True
@@ -241,17 +239,32 @@ def test_gp_log_joint_variance_non_cholesky_branch():
     vp = VariationalPosterior(D, K)
     vp.mu = rng.uniform(-1.0, 1.0, size=(D, K))
     vp.sigma = np.exp(rng.normal(-0.5, 0.3, size=(1, K)))
-    G0, _, varG0, _, var_ss0, I0, J0 = _gp_log_joint(
+    # Per sample (avg_flag=False), so varG is compared sample by sample
+    # rather than through the mean plus the spread of G, which is the same
+    # in both forms.
+    G0, _, varG0, _, _, I0, J0 = _gp_log_joint(
+        vp, gp, False, False, True, True, True
+    )
+    G1, _, varG1, _, _, I1, J1 = _gp_log_joint(
+        vp, gp_chol, False, False, True, True, True
+    )
+    assert np.array_equal(G0, G1) and np.array_equal(I0, I1)  # same alpha
+    # J = Jbase - z' (K + sn2 I)^{-1} z is a near-cancellation at
+    # sn2 = exp(-16), so a purely relative comparison would fail on the
+    # smallest entries; a sign flip or a transposition still moves entries
+    # by O(max |J|), far above this floor.
+    assert np.allclose(J0, J1, rtol=1e-6, atol=1e-9 * np.abs(J0).max())
+    assert np.allclose(varG0, varG1, rtol=1e-6)
+    assert np.array_equal(J0, np.swapaxes(J0, 1, 2))  # exactly symmetric
+    # And the averaged form the callers use.
+    _, _, varG0a, _, var_ss0, _, _ = _gp_log_joint(
         vp, gp, False, True, True, True, True
     )
-    G1, _, varG1, _, var_ss1, I1, J1 = _gp_log_joint(
+    _, _, varG1a, _, var_ss1, _, _ = _gp_log_joint(
         vp, gp_chol, False, True, True, True, True
     )
-    assert G0 == G1 and np.array_equal(I0, I1)  # same alpha
-    assert np.allclose(J0, J1, rtol=1e-6, atol=1e-9 * np.abs(J0).max())
-    assert np.isclose(varG0, varG1, rtol=1e-6)
+    assert np.isclose(varG0a, varG1a, rtol=1e-6)
     assert np.isclose(var_ss0, var_ss1, rtol=1e-6)
-    assert np.allclose(J0, np.swapaxes(J0, 1, 2))  # stored symmetric
 
 
 def test_gp_log_joint_variance_gradient_not_implemented():
@@ -399,7 +412,7 @@ def test_vp_optimize_1D_g_mixture():
     mixture_sigma = np.std(mixture_samples)
     # Unseeded (GP fit, VP initialization and the 1e7 samples all draw from
     # the global stream): the moment-matched KL fluctuates with the fit and
-    # reached 0.0014 in one of seven runs on 2026-09-05 against the earlier
+    # reached 0.0014 in one of seven runs on 2026-09-04 against the earlier
     # threshold of 0.00125 (PI: raised to 0.0015).
     assert np.all(
         np.abs(kl_div_mvn(mixture_mu, mixture_sigma, vp_mu, vp_sigma))

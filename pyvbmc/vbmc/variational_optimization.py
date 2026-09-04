@@ -1269,8 +1269,8 @@ def _gp_log_joint(
     computed at once over the hyperparameter samples ``s`` and the mixture
     components ``k`` by broadcasting: the standardized distances of the
     training inputs from the components form an ``(Ns, K, D, N)`` array and
-    the contractions with the GP weights ``alpha`` are batched matrix
-    products (`dev/plans/stage2-gp-log-joint-einsum.md`).
+    the contractions with the GP weights ``alpha`` are ``einsum``
+    contractions (`dev/plans/stage2-gp-log-joint-einsum.md`).
 
     Parameters
     ==========
@@ -1289,8 +1289,8 @@ def _gp_log_joint(
         Whether variational parameters are transformed, i.e. whether the
         gradient is taken with respect to ``(mu, ln sigma, ln lambd, eta)``
         (the parameterization of ``vp.get_parameters``) rather than to
-        ``(mu, sigma, lambd, w)``. The gradient has all four blocks either
-        way.
+        ``(mu, sigma, lambd, w)``. The requested gradient blocks are
+        present either way.
     compute_var : bool, defaults to False
         Whether to compute variance.
     separate_K : bool, defaults to False
@@ -1344,7 +1344,6 @@ def _gp_log_joint(
 
     D = vp.D
     K = vp.K
-    N = gp.X.shape[0]
     Ns = len(gp.posteriors)
     # Private copies (tests pass 1-D ``lambd``/``eta``; nothing here may
     # write into the VP).
@@ -1429,11 +1428,15 @@ def _gp_log_joint(
     # block laid out as in ``vp.get_parameters``: mu with d fastest.
     if compute_grad:
         za = z * alpha[:, None, :]  # (Ns, K, N)
-        # Sums over the training inputs of delta * z * alpha and of
-        # (delta**2 - 1) * z * alpha, per sample, component and dimension.
-        M = np.einsum("skdn,skn->skd", delta, za)  # (Ns, K, D)
-        B = np.einsum("skdn,skdn,skn->skd", delta, delta, za)
-        B -= zalpha[:, :, None]
+        # Sums over the training inputs of delta * z * alpha (the mu
+        # block) and of (delta**2 - 1) * z * alpha (the sigma and lambd
+        # blocks), per sample, component and dimension; each is one pass
+        # over the (Ns, K, D, N) array, computed only if a block needs it.
+        if grad_flags[0]:
+            M = np.einsum("skdn,skn->skd", delta, za)  # (Ns, K, D)
+        if grad_flags[1] or grad_flags[2]:
+            B = np.einsum("skdn,skdn,skn->skd", delta, delta, za)
+            B -= zalpha[:, :, None]
         w_ = w[None, :, None]
 
         grad_list = []
