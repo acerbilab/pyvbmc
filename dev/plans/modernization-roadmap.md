@@ -95,8 +95,8 @@ anything that changes numerics lands.
    platform-bound step oracle, then three cross-BLAS floors on the
    ill-conditioned snapshots); each was measured and its tolerance class
    set from the measurement (plan tracker); the fifth run is green (510
-   passed). macOS has not run the oracles yet: handle the full-matrix
-   dispatch before the PR the same way.
+   passed), and a full-matrix dispatch (33865996373) is green on all nine
+   jobs, macOS included: the oracles hold on three BLAS builds.
 2. **Stage 2 item 3**: batch the acquisition evaluation (`GP.predict` over
    `Ns`, `vp.pdf` over `K`, the CMA-ES population). Gate: the oracles on
    every commit; per PR a deterministic replay of a few golden configs

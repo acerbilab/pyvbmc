@@ -477,6 +477,11 @@ attention. Times are wall clock on 2026-09-04.
   after four measurements: GP-free 1e-10; GP-solve (log joint, gradients,
   ELCBO) 1e-6 + 1e-10 abs; predictive mean 1e-4; variance-type 1e-3 +
   1e-8 abs; log-form acquisitions 1e-5, exponential-form 1e-3; the step
-  oracle platform-bound. macOS (Accelerate) has not run them yet: the
-  full-matrix dispatch before the eventual PR is the next data point, to
-  be handled the same way (measure, then set).
+  oracle platform-bound.
+- [x] **Full matrix (dispatch 33865996373, PI's request): all nine jobs
+  green** — Ubuntu, Windows and macOS × Python 3.10–3.12, 10–20 min each.
+  The oracle tolerance classes hold on macOS without any change, so they
+  have now been exercised on three BLAS builds. The platform-bound step
+  oracle ran on none of the CI machines (the `windows-latest` platform
+  string differs from the generating laptop's); it remains a same-machine
+  check, run locally.
