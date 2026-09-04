@@ -190,11 +190,11 @@ total about six minutes.
 
 | oracle | call | stored | tolerance |
 |---|---|---|---|
-| `gp_predict` | `gp.predict(Xs, separate_samples=True)` and averaged | `fmu_samples, fs2_samples (Nc, Ns)`, `fmu, fs2 (Nc, 1)` | mean 1e-10 (floor 0); variance 1e-3 per element (floor 2e-5: `k** − vᵀv` cancels near the training points, where the variance is tiny) |
-| `vp_pdf` | `vp.pdf(Xs, orig_flag=False, log_flag∈{F,T}, grad_flag=True)`, `vp.pdf(Xs_orig, orig_flag=True)` | values `(Nc, 1)`, gradients `(Nc, D)` | 1e-10 (floor 0) |
+| `gp_predict` | `gp.predict(Xs, separate_samples=True)` and averaged | `fmu_samples, fs2_samples (Nc, Ns)`, `fmu, fs2 (Nc, 1)` | mean: GP-solve class, 1e-6 + 1e-10 abs (bit-identical across thread counts, but the GP solve moves across BLAS builds); variance 1e-3 per element (floor 2e-5: `k** − vᵀv` cancels near the training points, where the variance is tiny) |
+| `vp_pdf` | `vp.pdf(Xs, orig_flag=False, log_flag∈{F,T}, grad_flag=True)`, `vp.pdf(Xs_orig, orig_flag=True)` | values `(Nc, 1)`, gradients `(Nc, D)` | 1e-10 (floor 0; no GP involved) |
 | `acq_<name>` | after `prepare_gp_for_acq`: each of `AcqFcnLog, AcqFcn, AcqFcnVanilla, AcqFcnNoisy` on every snapshot; `AcqFcnVIQR, AcqFcnIMIQR` on noisy snapshots, with the importance samples redrawn from the rebuilt state under the oracle seed (the recorded ones are stale for the recorded GP) | `acq (Nc,)` | log forms and VIQR/IMIQR 1e-5 per element (floor 3e-7: they carry the variance); exponential forms `AcqFcn`, `AcqFcnNoisy`, `AcqFcnVanilla` 1e-3 (floor 1e-5: exp of the log form, so its absolute error becomes their relative error); no absolute tolerance |
-| `gp_log_joint` | `_gp_log_joint(vp, gp, True, True, True, False)` (gradients, no variance), the same with `avg_flag=False` (per sample), and `(vp, gp, False, True, True, True, separate_K=True)` (variance, `I_sk`, `J_sjk`) | `G, dG, G_samples, dG_samples, G_var_call, varG, var_ss, I_sk, J_sjk` | 1e-10 |
-| `neg_elcbo` | `theta = vp.get_parameters()` on a copy, `theta_bnd = vp.get_bounds(gp.X, options, K)`, `Ns = ceil(ns_ent(K)/K)`; gradient calls without variance (MC entropy, then `Ns = 0`), and the `_eval_full_elcbo` form (no gradient, full variance, `separate_K`); fresh `theta` copy and seeded `vp.rng` per call | `theta, F, dF, G, H, F_detent, dF_detent, H_detent, F_full, G_full, H_full, varF, varG_ss, varG, varH` | 1e-10 |
+| `gp_log_joint` | `_gp_log_joint(vp, gp, True, True, True, False)` (gradients, no variance), the same with `avg_flag=False` (per sample), and `(vp, gp, False, True, True, True, separate_K=True)` (variance, `I_sk`, `J_sjk`) | `G, dG, G_samples, dG_samples, G_var_call, varG, var_ss, I_sk, J_sjk` | GP-solve class, 1e-6 + 1e-10 abs (Ubuntu floors on `cigar_D4_boosted`: `dG` 1.2e-8, `dG_samples` 2.9e-8, `I_sk` 3.3e-10, `G_samples` 1.5e-10, `J_sjk` 2e-11 absolute; zero across thread counts on Windows) |
+| `neg_elcbo` | `theta = vp.get_parameters()` on a copy, `theta_bnd = vp.get_bounds(gp.X, options, K)`, `Ns = ceil(ns_ent(K)/K)`; gradient calls without variance (MC entropy, then `Ns = 0`), and the `_eval_full_elcbo` call shape (no gradient, full variance, `separate_K`, `ns_ent_fine` samples); fresh `theta` copy and seeded `vp.rng` per call | `theta, F, dF, G, H, F_detent, dF_detent, H_detent, F_full, G_full, H_full, varF, varG_ss, varG, varH` | GP-solve class 1e-6 + 1e-10 abs for everything that carries `G`; `H`, `H_detent` 1e-10 and `theta` 1e-12 (no GP) |
 | `entlb` | `entlb_vbmc(vp)` | `H, dH` | 1e-10 |
 | `entmc` | `entmc_vbmc(vp, ceil(ns_ent(K)/K), rng=default_rng(seed))` | `H, dH` | 1e-10 while the draw order is unchanged; item 5 (vectorized `entmc`) re-baselines this oracle deliberately after its own finite-difference and statistical checks |
 | `transform` | `pt(X_orig)`, `pt.inverse(U)`, `pt.log_abs_det_jacobian(U)` on the live rows | arrays | 1e-12 |
@@ -434,6 +434,17 @@ attention. Times are wall clock on 2026-09-04.
   Ubuntu are not yet known. Fix (2026-09-04): the step oracle is gated on
   the fixture's recorded `platform` (skipped elsewhere unless
   `PYVBMC_ORACLES_ALL=1`), the generator records the platform, fixtures
-  regenerated (references bit-identical). **Next: read the CI run of that
-  push**; any remaining failure is a floor to re-measure on Ubuntu with
-  `--check --verbose`, not a tolerance to guess.
+  regenerated (references bit-identical).
+- [x] **Second CI run (33862592547): one failure**,
+  `cigar_D4_boosted / gp_log_joint`, the first cross-BLAS measurement of
+  the GP-solve class: `dG` 1.2e-8, `dG_samples` 2.9e-8, `I_sk` 3.3e-10,
+  `G_samples` 1.5e-10 per element, `J_sjk` 2e-11 absolute (`G`, `varG`,
+  `var_ss` within tolerance); all zero across thread counts on Windows, so
+  a different BLAS build is the larger perturbation, amplified by the
+  cigar GP's conditioning. Fix: two tolerance classes, GP-solve outputs
+  (prediction mean, expected log joint and gradients, ELCBO and its
+  gradient, variances) at 1e-6 + 1e-10 absolute, GP-free outputs
+  (densities, entropies, theta, transformer) at 1e-10; recorded in the
+  `_oracles.py` docstring and the table above. `-x` again stopped the
+  run at the first failure, so later snapshots' floors on Ubuntu are still
+  unmeasured. **Next: read the CI run of the third push.**

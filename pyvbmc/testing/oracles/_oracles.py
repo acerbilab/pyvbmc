@@ -23,10 +23,22 @@ the predictive variance moved by up to 2e-5 of its per-element scale
 (cancellation in ``k** - v'v`` near training points, where the variance
 is tiny); the log acquisition by 3e-7; the exponential-form acquisitions
 (``AcqFcn``, ``AcqFcnNoisy``, ``AcqFcnVanilla``) by 1e-5, since they are
-exponentials of the log form. Each tolerance leaves 30-100x over its floor
-(exact for the bit-identical outputs, 1e-10 for rounding headroom); a
-different BLAS (the CI matrix) may need one revisited, in which case the
-floor is re-measured rather than the tolerance guessed.
+exponentials of the log form.
+
+A different BLAS build is a larger perturbation than a thread count: the
+first Ubuntu CI run (fixtures generated on Windows, both NumPy's bundled
+OpenBLAS) moved every quantity that passes through the GP solve on the
+ill-conditioned cigar snapshot: expected-log-joint gradients by 3e-8 per
+element, the per-sample expectations and the I_sk integrals by 3e-10, the
+pairwise J_sjk terms by 2e-11 absolute (the Cholesky's conditioning,
+about 1e8, times machine epsilon). Hence two classes: outputs that touch
+the GP posterior (prediction mean, expected log joint and its gradients,
+the ELCBO and its gradient, the variances) are held to 1e-6 relative plus
+1e-10 absolute per element; outputs that do not (densities, entropies,
+theta, the transformer) stay at 1e-10, and the bit-identical ones are
+effectively exact. Each tolerance leaves at least 30x over its measured
+floor; if a platform exceeds one, re-measure there (``make_oracle_fixtures
+--check --verbose``) rather than guess.
 
 Two combinations here are not what production runs, on purpose: the
 ``entmc`` oracle and the first ``neg_elcbo`` call use ``ceil(ns_ent(K)/K)``
@@ -174,7 +186,8 @@ def _no_full_update(state):
 # (cancellation near the training points).
 @oracle(
     "gp_predict",
-    rtol={"default": 1e-10, "fs2": 1e-3, "fs2_samples": 1e-3},
+    rtol={"default": 1e-6, "fs2": 1e-3, "fs2_samples": 1e-3},
+    atol=1e-10,
 )
 def gp_predict(state, seed):
     Xs = state["cand"]["Xs"]
@@ -235,7 +248,10 @@ for _name in ("AcqFcnVIQR", "AcqFcnIMIQR"):
     _make_acq_oracle(_name, _is_noisy, 1e-5)
 
 
-@oracle("gp_log_joint")
+# GP-solve class (see the module docstring): Ubuntu floors on the
+# ill-conditioned cigar snapshot were 3e-8 (gradients), 3e-10 (I_sk),
+# 2e-11 absolute (J_sjk).
+@oracle("gp_log_joint", rtol=1e-6, atol=1e-10)
 def gp_log_joint(state, seed):
     vp = copy.deepcopy(state["vp"])
     gp = state["gp"]
@@ -262,7 +278,12 @@ def gp_log_joint(state, seed):
     return out
 
 
-@oracle("neg_elcbo")
+# The entropies (H, H_detent) and theta do not touch the GP: exact class.
+@oracle(
+    "neg_elcbo",
+    rtol={"default": 1e-6, "H": 1e-10, "H_detent": 1e-10, "theta": 1e-12},
+    atol=1e-10,
+)
 def neg_elcbo(state, seed):
     gp = state["gp"]
     vp = copy.deepcopy(state["vp"])
