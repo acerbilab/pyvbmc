@@ -117,6 +117,27 @@ profiled runs only the budget-exhausting configuration reaches the
 optimize-only regime (§10); in the golden population 12 of 280 runs reach
 it briefly (9 noisy-logreg and 3 lumpy_D10 seeds).
 
+**Measured 2026-09-04 after Stage 2 item 3** (the PyVBMC half:
+CMA-ES evaluates each generation's population in one acquisition call and
+`vp.pdf` broadcasts over K; `plans/stage2-batched-acquisition.md`
+§Results). Same suite, same seed, same machine: the noiseless targets run
+1.4–1.8× faster end to end (banana_D4 67 → 43 s, cigar_D4 141 → 79 s,
+lumpy_D10 283 → 182 s, banana_D10 175 → 103 s), active sampling is 2.1–2.5×
+faster and falls from 54–69 % to 36–47 % of wall, GP training and the
+variational stage are unchanged to the second, and the noisy VIQR targets
+gain 6–9 % (their active-sampling bucket is the per-sample GP refits and VP
+re-optimizations, as recorded above). Six of the nine converging
+trajectories are bit-identical to the 2026-09-03 runs. The balance is now
+active sampling ≈ GP training + variational fit on the noiseless targets
+(cProfile at D = 4: active sampling 31–48 %, GP training 25–32 %,
+variational stage 23–38 %), so items 8 and 1 carry relatively more weight
+than before; inside active sampling the largest remaining piece is
+gpyreg's per-call `predict` overhead over the hyperparameter samples
+(21–28 % of the run at 5× fewer calls), which is item 8's. The 15-D
+exhaust run was measured on a throttling laptop (its untouched GP refits
+took 2.35× longer than the day before) and has to be repeated; its
+active sampling was still 2.4× faster.
+
 ---
 
 ## 3. Hand-derived gradients (what autodiff would delete)
@@ -616,6 +637,20 @@ optimize-only, and inside it `entmc_vbmc` (item 5, 11 %) is the largest
 piece ahead of `_gp_log_joint` (9 %); `vp.pdf` reaches 15 % with K ≈ 25
 (part of item 3). `copy.deepcopy` is under 1 % everywhere: the
 `iteration_history` copies are a memory problem, not a time problem.
+
+*Item 3 done 2026-09-04 for the PyVBMC half* (`plans/stage2-batched-
+acquisition.md`): `active_sample` hands `cma.fmin` the acquisition as
+`parallel_objective` and batches the noise handler's re-evaluations, so
+the acquisition is evaluated twice per generation instead of `popsize + 2`
+times; `vp.pdf` broadcasts over K. Same algorithm and random stream (with
+per-row evaluation inside the batch call the search reproduces the stored
+points bit-for-bit); the batched arithmetic differs by a few ulp and flips
+some CMA-ES rankings, which the `active_sample_step` oracle absorbed by a
+targeted re-baseline. Measured 1.4–1.8× end to end on noiseless targets
+(§2). The gpyreg half (`predict`'s Python loop over the hyperparameter
+samples and its `sW` tiling) joins item 8, so that all gpyreg changes land
+in one PR. Item 8 and item 1 are next, in that order of weight but item 1
+first for logistics (PyVBMC-local).
 
 **Benchmark target suite (decided 2026-09-02, after the profile).** The
 profile was taken on an independent and a correlated Gaussian, which

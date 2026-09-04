@@ -52,17 +52,24 @@ anything that changes numerics lands.
   profiled 2026-09-03 (`plans/benchmark-suite-and-golden-traces.md`
   §Results (regenerated)). Still to add: D = 6–8 for cigar and Student-t,
   the exhaust config in the golden set.
-- [ ] **Stage 2 — NumPy vectorization + memory fix.** Order measured
+- [~] **Stage 2 — NumPy vectorization + memory fix.** Order measured
   2026-09-02 on the first suite and **confirmed 2026-09-03/04 on the
   regenerated suite** (papers' procedure; the shares below are the
   regenerated ones, `plans/benchmark-suite-and-golden-traces.md` §Results
   (regenerated)): (3) batched acquisition evaluation (`GP.predict` over
   `Ns`, `vp.pdf` over `K`, the CMA-ES population; active sampling 54–69 %
   of wall on every noiseless target, single-point `predict` 40–50 % of
-  profiled time at D ≤ 10, `vp.pdf` 15 % at D = 15 with K ≈ 25), (8) gpyreg
+  profiled time at D ≤ 10, `vp.pdf` 15 % at D = 15 with K ≈ 25) —
+  **PyVBMC half done 2026-09-04** (`plans/stage2-batched-acquisition.md`:
+  CMA-ES evaluates each generation in one call, `vp.pdf` broadcasts over
+  K; noiseless targets 1.4–1.8× faster end to end, active sampling
+  2.1–2.5× and down to 36–47 % of wall, noisy VIQR targets +6–9 %; six of
+  nine profiled trajectories bit-identical to the baseline; gpyreg's
+  `predict` loop over `Ns` and `sW` tiling moved to item 8), (8) gpyreg
   sampler overhead (GP training 13–20 % at D = 4, 22–28 % at D = 10, and
   41 % of an iteration in the late sampling regime at D = 15; the Cholesky
-  is a small part of it; gpyreg PR), (1) `_gp_log_joint` einsum (variational
+  is a small part of it; plus, from item 3, `predict`'s per-sample loop and
+  `sW` tiling; gpyreg PR), (1) `_gp_log_joint` einsum (variational
   stage 9–20 % at D = 4, largest on ridged posteriors and 32 % of an
   optimize-only iteration; PyVBMC-local, may land before (8) for
   logistics), (2) `_eval_full_elcbo` multi-RHS solve (also shrinks
@@ -97,16 +104,24 @@ anything that changes numerics lands.
    set from the measurement (plan tracker); the fifth run is green (510
    passed), and a full-matrix dispatch (33865996373) is green on all nine
    jobs, macOS included: the oracles hold on three BLAS builds.
-2. **Stage 2 item 3**: batch the acquisition evaluation (`GP.predict` over
-   `Ns`, `vp.pdf` over `K`, the CMA-ES population). Gate: the oracles on
-   every commit; per PR a deterministic replay of a few golden configs
-   against their stored traces (the first evaluations agree to rounding
-   before trajectories part; minutes) and the profile suite for the speedup
-   (one seed per config, about an hour); the 20-seed population
+2. ~~Stage 2 item 3~~ done 2026-09-04 for the PyVBMC half
+   (`plans/stage2-batched-acquisition.md`, commits `50c1e50`, `7a07c0b`,
+   `f441172`, `eca45ec`): the per-change gates now exist and were used —
+   the oracles on every commit (the `active_sample_step` oracle
+   re-baselined once from the stored state with
+   `make_oracle_fixtures.py --rebaseline`, every `acq_*` oracle unchanged),
+   the golden replay (`golden_replay.py`, 7 min: iteration 0 identical,
+   finals inside the population envelope) per step, the profile suite once
+   (1.4–1.8× on noiseless targets at D ≤ 10; the 15-D exhaust run must be
+   re-profiled on a cool machine, the laptop throttled during it). The
+   20-seed population
    (`golden_trace.py run --suite golden --seeds 0-19 --workers 1 --out
    dev/scripts/runs/golden/<label>`, then `compare dev/golden/baseline
-   dev/scripts/runs/golden/<label>`, about 10 h) once at the end of the
-   stage.
+   dev/scripts/runs/golden/<label>`, about 7 h now) stays the once-per-stage
+   check. **Next: Stage 2 item 1** (`_gp_log_joint` einsum; PyVBMC-local,
+   same gates: oracles → replay → profile), then item 8 as one gpyreg PR
+   (sampler overhead plus `predict`'s per-sample loop and `sW` tiling from
+   item 3), then item 2.
 3. ~~Run the `tests` workflow on `dev-next` for the package fix~~ done
    2026-09-03 (full matrix green, run 33715620257); pushes to `dev*` now
    run a smoke automatically.
