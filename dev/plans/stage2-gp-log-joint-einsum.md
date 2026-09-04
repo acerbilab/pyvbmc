@@ -1,13 +1,13 @@
-# Stage 2 item 1: `_gp_log_joint` vectorized over hyperparameter samples and components
+# Stage 2 items 1 and 2: `_gp_log_joint` vectorized over hyperparameter samples and components, its variance from multi-RHS solves
 
-Created: 2026-09-04 22:35. Status: **DONE 2026-09-05 00:30** (items 1 and 2; the 20-seed population run launched afterwards, see the tracker). Roadmap pickup point 3
+Created: 2026-09-04 22:35. Status: **DONE 2026-09-04 (evening; records committed 2026-09-05 00:20)** for items 1 and 2; the end-of-stage 20-seed population run was launched 2026-09-05 00:39 (tracker, last entry). Roadmap pickup point 3
 (`plans/modernization-roadmap.md`; pickup point 2 named it "Next: Stage 2
 item 1"); rationale in
 `dev/2026-09-02-modernization-discussion.md` §2, §3, §9 and §10 (Stage 2,
 item 1: "`_gp_log_joint` `(s,k)` loop → `einsum` over `(Ns,K,D,N)`"), and
 the profile in `plans/stage2-batched-acquisition.md` §Results: after item 3
 the variational stage is 24–32 % of a D = 4 run under cProfile, of which
-`_gp_log_joint` is 18–24 % (3.1k–6.7k `_neg_elcbo` calls per run, 5–17 ms
+`_gp_log_joint` is 18–24 % (2.4k–6.7k `_neg_elcbo` calls per run, 5–17 ms
 each, ~50 tiny NumPy calls per `(s, k)` loop body), and `final_boost`
 10–17 % in one call at K = 50. Method as in item 3: fixed-state oracles on
 every commit, the golden replay per step, the profile suite once. This
@@ -22,16 +22,17 @@ that expectation. Today it loops in Python over the `Ns` hyperparameter
 samples and the `K` components, with a third loop over component pairs
 for the variance, two single-RHS triangular solves per pair. (1) The
 `(s, k)` loop becomes broadcasting over an `(Ns, K, D, N)` tensor of
-standardized distances and two batched matrix-vector products against
-`alpha`; every per-sample and per-component scalar (`ell`, `sf2`, `m0`,
+standardized distances and two `einsum` contractions against `alpha`;
+every per-sample and per-component scalar (`ell`, `sf2`, `m0`,
 `xm`, `omega`, `tau`, `lnnf`) becomes an `(Ns, …)` array. (2) The pair
 loop becomes, per hyperparameter sample, two multi-RHS triangular solves
 `L^{-1} (L^{-T} Z^T)` and one `K × K` product (today's summands, one
 contraction), which is roadmap item 2 done in its natural home (the loop
 lives in `_gp_log_joint`, not in `_eval_full_elcbo`); it is a separate
 commit so the oracle report and the replay attribute the change. (3) Four
-latent defects of the function are resolved on the way, three recorded in
-devlog §9 because the loop that contained them is gone: the dead
+latent defects of the function are resolved on the way, three of them
+previously catalogued in devlog §9, because the loop that contained them
+is gone: the dead
 `compute_vargrad` accumulators are deleted (the two `NotImplementedError`s
 that make them unreachable stay, same conditions, same messages),
 `separate_K` without variance returns `J_sjk = None` instead of raising
@@ -52,8 +53,12 @@ replay, the full suite; the profile suite once.
   (`pyvbmc/testing/vbmc/test_variational_optimization_grad_fd.py`,
   `..._single_sample.py` or a sibling); a speed probe option for
   `dev/scripts/profile_suite.py` (item 3 follow-up: a reference config run
-  at the start and the end of a campaign); records (`dev/README.md` index,
-  roadmap, devlog §2/§9/§10 dated addenda, this file).
+  at the start and the end of a campaign); the initial design stored in
+  the golden traces (`X_init`, `dev/scripts/golden_trace.py`) and the
+  replay's design certificate built on it (`golden_replay.py`; added when
+  the first replay showed the old iteration-0 criterion could not serve a
+  change to the ELBO arithmetic); records (`dev/README.md` index, roadmap,
+  devlog §2/§9/§10 dated addenda, this file).
 - **Out**: `_neg_elcbo` (its duplicated grad/no-grad branches are a
   cleanup, not this item; it needs no change for the fixes above because
   its own fallback already sets `J_sjk = None`); the softmax Jacobian
@@ -228,7 +233,7 @@ Verified against the code on 2026-09-04 (`c48c025`).
   finite-difference tests (`Ns = 8` and `Ns = 1`, raw parameterization,
   `rtol 1e-5`), the `_neg_elcbo` finite-difference tests through it, and
   the `vp_optimize` tests end to end.
-- **A fifth latent defect, found by the review of the rewrite.** The
+- **A fourth latent defect, found by the review of the rewrite.** The
   softmax Jacobian in the current `_gp_log_joint` is `-np.exp(vp.eta).T *
   np.exp(vp.eta) / eta_sum**2 + diag(...)`, an outer product only when
   `vp.eta` is `(1, K)`; with the 1-D `eta` that `test_gp_log_joint` sets
@@ -323,15 +328,15 @@ varG[s] = einsum("sjk,j,k->s", J with diag clamped at eps, w, w); varG = max(var
 J_sjk = J if separate_K
 ```
 
-Two `solve_triangular` calls per sample (Ns BLAS TRSMs; SciPy ≥ 1.15 is
-the floor in `pyproject.toml`, batched `solve_triangular` is not relied
-on).
+Two `solve_triangular` calls per sample (2 Ns BLAS TRSMs; SciPy ≥ 1.15
+is the floor in `pyproject.toml`, batched `solve_triangular` is not
+relied on).
 Gates: the `gp_log_joint` oracle's `varG`, `var_ss`, `J_sjk` (variance
 class, 1e-3 + 1e-8) and the `neg_elcbo` oracle's `varF`, `varG`,
 `varG_ss`, `F_full`; `test_gp_log_joint`'s `varG` and `var_ss`
 (`np.isclose`); the single-sample tests; the replay; the full suite.
-Commit `perf(vbmc): compute the log-joint variance with one multi-RHS
-solve per hyperparameter sample`.
+Commit `perf(vbmc): compute the log-joint variance with multi-RHS solves
+per hyperparameter sample`.
 
 ### Step 3: tests for the fixes
 
@@ -349,10 +354,12 @@ solve per hyperparameter sample`.
 
 ### Step 4: speed probe in `profile_suite.py`
 
-`--probe <config>` runs the named config plain (own tag `probe_start_…`,
+`--probe <config>` runs the named config plain (own tags `probe_start_…`,
 `probe_end_…`) before the first and after the last campaign run and
 prints both walls with their ratio at the end; the aggregate lists them
-as ordinary plain rows. Twenty lines; recorded in `dev/README.md`.
+as the first and last rows of the plain table under their tags (as
+landed after the review: about 80 lines with `run_probe` and
+`_row_order`). Recorded in `dev/README.md`.
 
 ### Step 5: measure
 
@@ -400,10 +407,13 @@ dated addendum in devlog §2/§10.
       GP solve; `z` moves by an ulp with `einsum`)
 - [x] `test_variational_optimization*.py` green (MATLAB-pinned values,
       FD checks, single-sample regressions, the new tests)
-- [x] Replay after each step: initial design certified on every config
-      (iteration 0's ELBO is numerics and parts, see Findings), finals
-      inside the population envelope, 0 flagged of 5
-- [x] `pytest --reruns=5 -x` green after each step (522 passed twice)
+- [x] Replay after each step: 0 flagged of 5, finals inside the
+      population envelope; the initial design certified from the Step 2
+      traces on four configs and by hand on cigar (its design is trimmed
+      out of every stored trace; the Step 1 traces predate `X_init`);
+      iteration 0's ELBO is numerics and parts, see Findings
+- [x] `pytest --reruns=5 -x` green after each step and on the final tree
+      (522 passed three times)
 - [x] Profile: wall and variational-fit share per config against the
       2026-09-04 numbers (§Results); untouched stages within trajectory
       noise except the exhaust run's active sampling (+20 %, discussed);
@@ -495,7 +505,7 @@ dated addendum in devlog §2/§10.
 
 ## Results (2026-09-04/05)
 
-### Per call (scratch timing, one thread, median of 5, ms; old loop → new)
+### Per call (scratch timing, one thread, median of 5, ms; old loop → new; a separate run from the tracker's timings, which agree with these within run-to-run noise)
 
 | shape (D, K, N, Ns) | gradient call (`_neg_elcbo` as Adam sees it) | variance call (`_eval_full_elcbo`) |
 |---|---|---|
@@ -513,8 +523,9 @@ D = 4–5 operating point of most runs) and by memory traffic over the
 
 ### End to end: plain profile campaign, seed 0, one process, one BLAS thread
 
-`runs/profile_20260905/` (code `8943cec`, i.e. both perf commits; started
-23:31, 32.7 min, machine otherwise idle) against `runs/profile_20260904/`
+`runs/profile_20260905/` (code `8943cec`, i.e. both perf commits, with
+the review's docstring and guard edits uncommitted in the tree, all
+numerically inert; started 23:31, 32.7 min, machine otherwise idle) against `runs/profile_20260904/`
 (after item 3, code `f441172`) and, for the exhaust row, against
 `runs/profile_20260904_retry/` (cool machine, code `93dc29d`). Speed
 probe `banana_D4` plain: **31.4 s at the start, 32.3 s at the end
@@ -541,24 +552,28 @@ Reading:
    (banana, lumpy 1.39; student, banana_D10 1.30; cigar 1.28; lumpy_D10
    1.24; logreg 1.13), the **variational fit 2.6–5.0× faster** and down
    from 7–28 % of wall to 3–12 %. On the **15-D exhaust run** (half of
-   its 150 iterations in the optimize-only regime, K 23–33) the
+   its 150 iterations in the optimize-only regime, K 20–33) the
    variational fit is **2.2× faster** (585 → 264 s) and the run 1.24×.
-   Combined with item 3 the noiseless targets are now 1.7–2.4× faster
-   than the 2026-09-03 baseline (banana_D4 67 → 31 s, cigar_D4 141 → 62,
-   lumpy_D10 283 → 147, banana_D10 175 → 79, exhaust 2123 → 1041).
+   Combined with item 3 the noiseless targets are now 1.5–2.3× faster
+   than the 2026-09-03 baseline (walls divided: banana_D4 67 → 31 s,
+   cigar_D4 141 → 62, lumpy_D10 283 → 147, banana_D10 175 → 79, exhaust
+   2123 → 1041, i.e. 1.9–2.3× on these five; logreg_D5 110 → 72 is the
+   1.5×).
 2. **Every trajectory changed** (the ELBO arithmetic moved by rounding,
    §Findings): 7 of 10 configs took a different number of iterations or
    evaluations. Every seed-0 final lies inside its population's
-   `Q3 + 3 IQR` fence (checked for the eight configs in the golden set;
-   the widest margins are cigar_D4 gsKL 1e-4 vs 8.1e-3, the narrowest
-   lumpy_D4 MMTV 0.032 vs 0.041 and student_D4 gsKL 0.057 vs 0.236).
-3. **The untouched stages stayed put within trajectory noise** — GP
-   training within ±1 s on every D ≤ 5 config and −9 s on both D = 10
-   configs (fewer iterations), active sampling within ±2 s at D ≤ 5 and
-   −7 / −8 s at D = 10 — with one exception: **the exhaust run's active
-   sampling took 363 → 437 s** (+20 %; 1.98 → 2.67 s per iteration in
-   the optimize-only tail at the same mean K = 26.4 and the same N path;
-   GP training 308 → 303 s on the same run). The probe rules out
+   `Q3 + 3 IQR` fence (checked for the eight configs in the golden set, 24 of 24
+   metrics; the narrowest margins are lumpy_D4 MMTV 0.032 vs 0.041 and
+   lumpy_D10 MMTV 0.113 vs 0.160, the widest logreg_D5 ΔLML 0.001 vs 0.21
+   and cigar_D4 gsKL 1e-4 vs 8.1e-3).
+3. **The untouched stages stayed put within trajectory noise** — on the
+   noiseless D ≤ 5 configs GP training within ±1.3 s and active sampling
+   within ±2 s; at D = 10 GP training −9 s (lumpy) and −5 s (banana) and
+   active sampling −7 / −8 s, on runs with fewer iterations; the noisy
+   configs are discussed in reading 4 — with one exception: **the
+   exhaust run's active sampling took 363 → 437 s** (+20 %; 1.93 → 2.59 s
+   per iteration over the 81 optimize-only iterations, mean K 26.3 →
+   25.6, the same N path; GP training 308 → 303 s on the same run). The probe rules out
    throttling (1.03), the stage does not call `_gp_log_joint` (the
    per-sample VP update is off), and the trajectory differs from
    iteration 0, so this is the search cost of a different trajectory
@@ -615,7 +630,7 @@ Reading:
 ## Execution tracker
 
 Legend: `[ ]` not started, `[~]` in progress, `[x]` done, `[!]` needs
-attention. Times are wall clock on 2026-09-04 (the session started at 22:27, right after `c48c025`).
+attention. Times are wall clock on 2026-09-04/05 (the session started at 22:27 on the 4th, right after `c48c025`; entries from 00:04 on are on the 5th).
 
 - [x] Plan written — 22:35; read-only Opus review dispatched 22:36
 - [x] Step 1 code in place — 22:43 (first with `np.matmul` for the
@@ -667,13 +682,15 @@ attention. Times are wall clock on 2026-09-04 (the session started at 22:27, rig
   bit-identical and the iteration-0 ELBO within 1e-6 (a different design
   moves it by far more); the flag text says "beyond 1e-6"; docstring and
   legend updated. The finished run is re-rendered with `--report-only`
-- [x] Step 1 replay re-rendered with the corrected criterion — 22:57
+- [x] Step 1 replay re-rendered with the corrected criterion — 22:57 (and
+  again after each later change to the script, last at 23:08)
   (`--report-only`): `normal_D5` parted at iteration 0 (within 1e-6 to
   iteration 4), `banana_D2` at 1 (to 3), `halfnormal_D2` at 0 (to 8),
   `rosenbrock_D2_noise1` at 1 (to 10), all with 5–11 leading live points
-  identical and finals inside the envelope (all three metrics improve or
-  stay on normal, halfnormal, rosenbrock; banana ΔLML 0.042 → 0.091
-  against a fence of 0.124, gsKL 0.20 → 0.23 against 0.45).
+  identical and finals inside the envelope (ΔLML worsened on normal
+  0.0037 → 0.0069, banana 0.042 → 0.091 against a fence of 0.124 and
+  rosenbrock 0.059 → 0.097 against 0.36; gsKL and MMTV improved or
+  stayed on all four; banana gsKL 0.20 → 0.23 against 0.45).
   **`cigar_D4`: parted at iteration 0 by 0.36 in the ELBO (−767.898 →
   −767.538), no live point shared with the baseline (0 of 108), finals
   inside the envelope** (ΔLML 0.0066 vs fence 0.045, gsKL 6.9e-5 vs
@@ -753,14 +770,15 @@ attention. Times are wall clock on 2026-09-04 (the session started at 22:27, rig
   end-to-end test that draws its GP fit and its 1e7 samples from the
   global stream and that already appeared among the flaky reruns on
   2026-09-02; no exception
-- [x] Step 2 replay — 23:16–23:23 → `runs/golden/replay_item1_step2/`:
+- [x] Step 2 replay — 23:19–23:23 → `runs/golden/replay_item1_step2/`:
   **0 flagged of 5**; the same verdicts and the same finals to every
   stored digit as the Step 1 replay on every config (the variance
   re-expression flipped nothing on these runs; it enters only through
   the ELCBO used to pick among candidates and to prune). Initial design
   certified from the new `X_init`: 8, 5, 10 and 6 of 10 design points
   found live in the baseline on normal_D5, banana_D2, halfnormal_D2,
-  rosenbrock_D2_noise1; on cigar_D4 none is live in either trace, and
+  rosenbrock_D2_noise1 (counting the start point, which the review later
+  excluded: 7, 4, 9, 5 of 9 without it); on cigar_D4 none is live in either trace, and
   the design was certified by hand instead: `X_init` and `y_init` of the
   new run are bit-identical to those of the old-code `dG`-perturbation
   run of the same seed. Wall (min, baseline → Step 1 → Step 2): normal_D5
@@ -771,7 +789,7 @@ attention. Times are wall clock on 2026-09-04 (the session started at 22:27, rig
   raised from 0.00125 to 0.0015 (own `test(vbmc)` commit)
 - [x] Full suite for Step 2 — 23:23–23:30: **522 passed, 15 skipped, 0
   reruns, 6:43**. Commits `f93ea5e perf(vbmc)` (the variance) and
-  `8943cec test(vbmc)` (the threshold) — 23:30
+  `8943cec test(vbmc)` (the threshold) — 23:30–23:31
 - [x] **Code review (Opus, read-only) of the four commits — 23:35–23:50**:
   an independent re-implementation of the old loop and the new code
   agreed to ≤ 1.7e-15 on every output at six shapes including K = 1,
@@ -808,16 +826,53 @@ attention. Times are wall clock on 2026-09-04 (the session started at 22:27, rig
   docstring wording, `M`/`B` computed only for the requested blocks):
   oracles and the three test modules 122 passed (after repairing a
   `base_path` the refactored MATLAB test had lost), bit-check unchanged
-- [x] Records — 00:30: §Results here, checklists ticked, roadmap (Stage 2
+- [x] Final full suite on the working tree — 00:12–00:19: **522 passed,
+  15 skipped, 0 reruns, 6:45**
+- [x] Records — 00:20: §Results here, checklists ticked, roadmap (Stage 2
   paragraph, pickup point 3 with the population run as the first thing to
   read), devlog §2 and §10 addenda, §9 entries; dates corrected to
-  2026-09-04 (the tracker's first draft ran ~2 h ahead of the clock)
-- [~] Final full suite on the working tree, then the records commit and
-  push (CI smoke), `/doublecheck`, and the 20-seed population run
-  (`golden_trace.py run --suite golden --seeds 0-19 --workers 1 --out
-  dev/scripts/runs/golden/item1_20260905`, about 7 h, then `compare`
-  against `dev/golden/baseline`; PI 2026-09-04 23:24: run it overnight
-  once everything else is done)
+  2026-09-04 (the tracker's first draft ran ~2 h ahead of the clock).
+  Commits `7794b8d test(dev)`, `b5faa63 refactor(vbmc)`, `b00ce1f
+  docs(dev)`; pushed `c48c025..b00ce1f` 00:20; **CI smoke green** (run
+  33920627536, Ubuntu / 3.12)
+- [x] `/doublecheck` — 00:22–00:38: three read-only Opus verifiers (final
+  code state; every number against the run files; records consistency).
+  Code: the rewrite matches the Design and the old loop term for term,
+  and an independent differential run over 10 states × 28 flag
+  combinations agreed to ≤ 8e-14 relative. Numbers: the whole plain
+  table, the exhaust row, all cProfile cells and call counts, the fences
+  (24 of 24 inside), the replay tables, the sensitivity experiment, the
+  pytest totals and the SHAs reproduce. Corrected in `ac521da` and
+  `a39e5ec` (and, for this file, again in the commit after the launch
+  entry below, because an edit made from a stale copy had overwritten the
+  first pass): the combined item 3 + items 1/2 speedup is 1.5–2.3×, not
+  1.7–2.4×; the D = 10 GP-training deltas; the exhaust tail's
+  per-iteration figures recomputed over the 81 optimize-only iterations;
+  the fence superlatives; the tail's K range; two replay descriptions that
+  contradicted their own tables; timestamps; the design certificate's
+  row-0 exclusion stated wherever the certificate is described; the
+  roadmap's stale `compute_vargrad` pickup line; `AGENTS.md`'s
+  finite-difference sentence, stale since 2026-09-02; a superseded
+  parenthetical in `dev/README.md`; a dated addendum in devlog §3; a
+  regression test for the 1-D `eta` softmax Jacobian, which had none. The
+  scratch measurements (per-call timings, bit-checks, oracle counts) have
+  no artifact in the repository and rest on this tracker
+- [~] **20-seed population run** (PI 2026-09-04 23:24: overnight once
+  everything else is done) — **launched 2026-09-05 00:39** on the final
+  code (`a39e5ec`), one worker, one BLAS thread per run:
+  `golden_trace.py run --suite golden --seeds 0-19 --workers 1 --out
+  dev/scripts/runs/golden/item1_20260905` (280 tasks, about 7 h), followed
+  in the same job by `summary` → `item1_20260905/summary_item1.md` and
+  `compare dev/golden/baseline item1_20260905` →
+  `item1_20260905/compare_vs_baseline.md` (the harness prints to stdout,
+  so the job redirects); progress in
+  `dev/scripts/runs/golden_item1_20260905.log`. **Read
+  `compare_vs_baseline.md` first when picking up**: it is the end-of-stage
+  statistical check of items 3, 1 and 2 together (KS tests under a Holm
+  family on ΔLML, gsKL, MMTV and evaluations per config). Expected: no
+  rejection; a rejection on one config's finals would be the first real
+  evidence of a numerical change beyond rounding and would reopen this
+  item
 - [x] `profile_suite.py --probe CONFIG` — 22:57 (item 3 follow-up): the
   named config runs plain before and after the campaign as
   `probe_start_<cfg>` / `probe_end_<cfg>`, the two walls and their ratio

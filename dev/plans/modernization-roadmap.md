@@ -161,7 +161,7 @@ anything that changes numerics lands.
    tiling from item 3), then item 5 (`entmc_vbmc`), then the memory items.
    The 20-seed population against `dev/golden/baseline` (the end-of-stage
    check of items 3, 1 and 2 together, about 7 h) was launched 2026-09-05
-   01:05 on the final code (`a39e5ec`), output under
+   00:39 on the final code (`a39e5ec`), output under
    `dev/scripts/runs/golden/item1_20260905/`; the same job writes
    `summary_item1.md` and `compare_vs_baseline.md` next to the traces
    when it finishes (the harness prints to stdout; the job redirects).
