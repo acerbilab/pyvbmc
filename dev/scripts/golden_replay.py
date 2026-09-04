@@ -33,11 +33,14 @@ An arithmetic-preserving refactor is expected to *part* from the stored
 trajectory at some point: a few-ulp change in an acquisition value flips a
 CMA-ES ranking and the search ends elsewhere. What must hold is that
 iteration 0 is identical (the initial design is drawn from the generator
-before any numerics run) and that the finals stay inside the envelope.
-Exit code 1 if any run fails, an iteration 0 differs, or a final accuracy
-metric exceeds the envelope. Without the baseline ``.npz`` traces (a fresh
-checkout; they are gitignored) only the final-metric comparison runs.
-Timers, wall times and memory figures are never compared.
+before any numerics run) and that a parted run's finals stay inside the
+envelope (an identical run is exempt: its own seed may be the
+population's far outlier). Exit code 1 if any run fails, an iteration 0
+differs, a final is not finite, a parted run's accuracy metric exceeds
+the envelope, or nothing was compared. Without the baseline ``.npz``
+traces (a fresh checkout; they are gitignored) only the final-metric
+comparison runs. Timers, wall times and memory figures are never
+compared.
 """
 
 import argparse
@@ -131,6 +134,7 @@ def compare_traces(ref, new):
     out["identical"] = bool(
         out["n_live_ref"] == out["n_live_new"]
         and out["X_orig_exact"] == out["n_live_ref"]
+        and out["y_orig_exact"] == out["n_live_ref"]  # noisy targets
         and out["n_iter_ref"] == out["n_iter_new"]
         and out["elbo_exact_iter"] == out["n_iter_ref"]
     )
@@ -168,9 +172,9 @@ def compare_run(label, seed, out_dir, baseline, sidecars, pop):
         fin_ref = json.loads(ref_json.read_text())["final"]
         row["final_ref"] = {k: fin_ref.get(k) for k in FINAL_KEYS}
 
-    ref_npz = baseline / f"{tag}.npz"
-    if ref_npz.exists():
-        with np.load(ref_npz) as ref, np.load(out_dir / f"{tag}.npz") as new:
+    ref_npz, new_npz = baseline / f"{tag}.npz", out_dir / f"{tag}.npz"
+    if ref_npz.exists() and new_npz.exists():
+        with np.load(ref_npz) as ref, np.load(new_npz) as new:
             row.update(compare_traces(ref, new))
 
     outside = []
@@ -382,6 +386,7 @@ def main(argv=None):
             saved = json.loads(prev.read_text())
             git = saved.get("git", git)
             minutes = saved.get("minutes", minutes)
+            args.threads = saved.get("threads", args.threads)
     report, n_flag = render(rows, git, args, minutes)
     (out_dir / "replay.md").write_text(report, encoding="utf-8")
     (out_dir / "replay.json").write_text(

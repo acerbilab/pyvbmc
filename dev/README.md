@@ -118,7 +118,8 @@ reason.
   0 identical certifies the initial design), the live points identical,
   and the finals against the baseline population's `Q3 + 3 IQR` envelope.
   An arithmetic-preserving change is expected to part once a CMA-ES
-  ranking flips; the finals must stay inside the envelope. Needs the
+  ranking flips; a parted run's finals must stay inside the envelope (an
+  identical run is exempt: its own seed may be the outlier). Needs the
   baseline `.npz` traces for the horizons (finals only without them);
   `--report-only` re-renders a finished run. Flags: `--configs`, `--seeds`
   (default seed 0 only), `--baseline` (the traces directory; the default

@@ -312,8 +312,9 @@ dated addendum.
 - [x] Step 4 profile campaign (plain; cProfile on the D = 4 set); write-up
 - [x] Records: `dev/README.md` (replay script), roadmap ticks and pickup
       point, devlog §2/§10 addendum, this file's results; pushed
-- [~] CI smoke of the push (see Verification)
-- [~] `/doublecheck` (three read-only Opus verifiers; findings folded in)
+- [x] CI smoke of the push green (see Verification)
+- [x] `/doublecheck` (three read-only Opus verifiers; findings folded in,
+      `da0aa91` and the commit after it)
 
 ## Verification
 
@@ -328,8 +329,8 @@ dated addendum.
       recorded against the 2026-09-03 numbers; no config's ΔLML/gsKL/MMTV
       outside the population range at seed 0 (the exhaust row flagged as
       measured on a throttling machine).
-- [ ] CI smoke (Ubuntu / 3.12) green on the push (pending at the time of
-      writing; the push is the last action of this session).
+- [x] CI smoke (Ubuntu / 3.12) green on the push of `3033526` (run
+      33886022057, 15:10). The doublecheck follow-up push re-runs it.
 
 ## Decisions
 
@@ -716,4 +717,18 @@ attention. Times are wall clock on 2026-09-04.
   replay, the mislabelled 9:30 comparison, the missing `e923163`, the
   noise-handler rationale and the Step 1 design text updated; devlog
   next-step sentence removed (roadmap owns it); AGENTS.md and README
-  wording tightened
+  wording tightened (`da0aa91`). Code verifier: no blocker; the batched
+  objective, the `fmin` wiring and the noise handler confirmed against
+  cma 4.4.4, `pdf`'s gradient bit-identical up to K = 1000; two
+  should-fixes applied: the replay's `identical` now also requires
+  identical `y_orig` (a noisy target whose noise stream moved would
+  otherwise have been exempt from the envelope), and the re-baseline
+  mode's post-write check is scoped to the re-baselined oracle (exact)
+  with the other oracles at their own tolerances (the broadcast `pdf` no
+  longer reproduces the stored `vp_pdf` references bit-exactly at K ≥ 8,
+  by ~1e-15, so the old exact check would have aborted the next
+  re-baseline after its first write); temp files now live outside the
+  fixtures directory and are removed on failure; `--rebaseline` refuses
+  `--list`/`--check`; `--report-only` restores `threads`; a missing new
+  trace degrades to finals only. CI smoke of `3033526` green
+  (33886022057)

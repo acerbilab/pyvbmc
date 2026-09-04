@@ -455,9 +455,12 @@ def rebaseline(names, oracle_name, reason):
         print(f"  [{name}] {oracle_name} old vs new\n{format_rows(rows)}")
         pending.append((name, path, fun, arrays, tree, out, rows))
 
-    # Phase 2: write each fixture through temporary files renamed into
-    # place, then verify that everything else is bit-identical and that the
-    # new reference reproduces exactly from the stored state.
+    # Phase 2: write each fixture through temporary files (outside the
+    # fixtures directory, which the tests glob) renamed into place, then
+    # verify that every other array is bit-identical, that the new
+    # reference reproduces exactly from the stored state, and that the
+    # other oracles still pass at their own tolerances (not bit-exactly:
+    # a refactor that this mode exists for may have moved them by ulps).
     def finite(v):
         return float(v) if np.isfinite(v) else repr(float(v))
 
@@ -475,11 +478,16 @@ def rebaseline(names, oracle_name, reason):
                 "max_abs_change": {r[0]: finite(r[1]) for r in rows},
             }
         )
-        tmp = path.parent / (path.name + ".rebaseline-tmp")
-        save_snapshot(tmp, arrays, tree)
+        tmp = FIXTURES.parent / (path.name + ".rebaseline-tmp")
         tmp_npz, tmp_js = _files(tmp)
-        os.replace(tmp_npz, npz)
-        os.replace(tmp_js, js)
+        try:
+            save_snapshot(tmp, arrays, tree)
+            os.replace(tmp_npz, npz)  # the pair is not atomic together;
+            os.replace(tmp_js, js)  # the json holds only markers + meta
+        finally:
+            for p in (tmp_npz, tmp_js):
+                if p.exists():
+                    p.unlink()
         with np.load(npz, allow_pickle=False) as z:
             after = {k: z[k] for k in z.files}
         assert set(after) == set(before), name
@@ -489,9 +497,18 @@ def rebaseline(names, oracle_name, reason):
                     name,
                     k,
                 )
-        bad = check_one(path, fun, exact=True)
+        snap = load_snapshot(path)
+        state = build_state(snap, fun=fun)
+        again = orc(state, snap["meta"]["oracle_seed"])
+        exact = compare(snap["ref"][oracle_name], again, 0.0, 0.0)
+        if not all(r[3] for r in exact):
+            raise RuntimeError(
+                f"{name}: {oracle_name} does not reproduce from the stored"
+                f" state\n{format_rows(exact)}"
+            )
+        bad = check_one(path, fun, exact=False)
         if bad:
-            raise RuntimeError(f"round trip failed for {name}: {bad}")
+            raise RuntimeError(f"{name}: other oracles fail after: {bad}")
         print(f"[rebaseline] {name:28s} {oracle_name} replaced", flush=True)
     print(f"[rebaseline] {len(pending)} of {len(names)} fixtures rewritten")
     return len(pending)
@@ -514,6 +531,8 @@ def main(argv=None):
     ap.add_argument("--reason", default=None)
     ap.add_argument("--verbose", action="store_true")
     args = ap.parse_args(argv)
+    if args.rebaseline and (args.list or args.check):
+        sys.exit("--rebaseline cannot be combined with --list or --check")
     if args.list:
         for r in RECIPES:
             print(

@@ -500,7 +500,9 @@ class VariationalPosterior:
             # memory-bound and slower than the loop for large inputs.
             # Rows are independent, so the chunk size does not affect
             # the result.
-            K = int(self.K)  # a NumPy integer in some stored VPs
+            # `K` is a NumPy integer in some stored VPs (uint8 in the
+            # MATLAB fixtures), and NumPy 2 refuses `2**16 // uint8`.
+            K = int(self.K)
             mu_k = self.mu.T[np.newaxis, :, :]  # (1, K, D)
             sigma_k = self.sigma.reshape(1, K, 1)
             lambd_d = lamd_row.reshape(1, 1, D)
