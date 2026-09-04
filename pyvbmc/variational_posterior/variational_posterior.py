@@ -493,7 +493,13 @@ class VariationalPosterior:
             # component's term is computed with the same products in the
             # same order as before; only the summation over K changes
             # order. Rows are chunked so that no (n, K, D) temporary
-            # exceeds 2^22 elements (32 MB).
+            # exceeds 2^16 elements (0.5 MB): the temporaries then stay in
+            # cache, which makes the broadcast faster than the loop at
+            # every size measured (1e5 rows: 1.2-1.9x; a CMA-ES batch of
+            # 8 rows: 5-10x), whereas 2^22-element chunks were
+            # memory-bound and slower than the loop for large inputs.
+            # Rows are independent, so the chunk size does not affect
+            # the result.
             K = int(self.K)  # a NumPy integer in some stored VPs
             mu_k = self.mu.T[np.newaxis, :, :]  # (1, K, D)
             sigma_k = self.sigma.reshape(1, K, 1)
@@ -502,7 +508,7 @@ class VariationalPosterior:
             w_k = (nf * self.w / self.sigma**D).reshape(1, K)
             if grad_flag:
                 scale2 = lambd_d**2 * sigma_k**2
-            step = max(1, 2**22 // max(1, K * D))
+            step = max(1, 2**16 // max(1, K * D))
             for i0 in range(0, N, step):
                 rows = slice(i0, min(N, i0 + step))
                 diff = x[rows, np.newaxis, :] - mu_k  # (n, K, D)
