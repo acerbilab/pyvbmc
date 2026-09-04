@@ -250,9 +250,12 @@ mu.T[None]` (`(N, K, D)`): `z = diff / (sig · lam)`; `d2 = (z²).sum(2)`
 keepdims=True)`; `dy = −(nn[:, :, None] · diff / (lam² · sig²)).sum(1)`.
 Per-component terms stay bit-identical to the loop's (the same scalar
 products, the `D`-sum on the contiguous axis); only the `K`-sum order
-changes, ~1e-16 relative on `y`, potentially more on `dy` where signed
-component terms cancel (the `vp_pdf` oracle's lower-quartile floor covers
-that). Two or three `(N, K, D)` temporaries are live at once, so the
+changes: measured (tracker), `y` is bit-identical for K < 8 and within
+1e-15 relative from K = 8 on (NumPy's 8-way unrolled pairwise reduction
+over the last axis), and `dy` is bit-identical at every K because the
+reduction over the middle axis of `(n, K, D)` is sequential, the loop's
+order (so the signed-cancellation concern raised in review does not
+materialize). Two or three `(N, K, D)` temporaries are live at once, so the
 sieve's worst case (`N = 8192`, `K = 50`, `D = 20`) is 200–260 MB, not 66;
 chunk over `N` so that `n · K · D ≤ 2^22` elements (32 MB per temporary;
 at the sieve this means two chunks at `K = 50, D = 20`, no chunking
@@ -285,12 +288,13 @@ dated addendum.
 - [x] Plan reviewed (two read-only Opus agents), findings folded in
 - [x] Step 1 `golden_replay.py`; verification: unchanged code replays
       `identical` on the default set
-- [~] Step 2 batched CMA-ES objective + batched noise handler; oracles,
-      unit tests, replay, full suite; commit
-- [~] Step 2b targeted re-baseline (the step oracle flipped on four
-      snapshots; mode written, run pending)
-- [ ] Step 3 `vp.pdf` broadcast; oracles, unit tests, replay; commit
-- [ ] Step 4 profile campaign (plain; cProfile on the D = 4 set); write-up
+- [x] Step 2 batched CMA-ES objective + batched noise handler; oracles,
+      unit tests, replay, full suite; commit `7a07c0b`
+- [x] Step 2b targeted re-baseline (the step oracle flipped on four
+      snapshots; mode written and run, `50c1e50` / `7a07c0b`)
+- [x] Step 3 `vp.pdf` broadcast; oracles, unit tests, replay, full suite;
+      commit
+- [~] Step 4 profile campaign (plain; cProfile on the D = 4 set); write-up
 - [ ] Records: `dev/README.md` (replay script), roadmap ticks and pickup
       point, devlog §2/§10 addendum, this file's results; push; CI smoke
       green
@@ -428,9 +432,48 @@ attention. Times are wall clock on 2026-09-04.
 - [x] Devlog §9: four findings of the reviews recorded (the `elbo_1 ==
   elbo_1` test, the batch-only shape bug in the dead regularization
   block, `_sq_dist`'s batch dependence, `_real2int`'s in-place snapping)
-- [x] Commits — 15:40: `test(dev)` (replay gate, `--rebaseline` mode,
-  records) then `perf(vbmc)` (the batched objective, the noise handler,
-  the four re-baselined step-oracle references)
+- [x] Commits — 15:40: `50c1e50 test(dev)` (replay gate, `--rebaseline`
+  mode, records) then `7a07c0b perf(vbmc)` (the batched objective, the
+  noise handler, the four re-baselined step-oracle references)
+- [x] Step 3 `vp.pdf` broadcast written — 15:45 (Gaussian branch; rows
+  chunked at 2^22 elements per `(n, K, D)` temporary). First run tripped
+  on the MATLAB fixture VP, whose `K` is a `np.uint8` (NumPy 2 refuses
+  `2**22 // K` in `uint8`): cast to `int`. Then VP, acquisition, oracle
+  and active-sampling tests: **201 passed, 15 skipped**; the step oracle
+  did not flip
+- [x] Bit check old loop vs broadcast (scratch, random VPs): `dy`
+  bit-identical at every K tested (2, 8, 9, 50; the reduction over the
+  middle axis of `(n, K, D)` is sequential, the loop's order); `y`
+  bit-identical at K = 2 and within 9e-16 relative from K = 8 upward
+  (NumPy's 8-way unrolled pairwise reduction over the last axis), which
+  is the `K`-sum reordering the plan predicted, one power of ten below
+  its "~1e-16" wording's spirit but not its letter
+- [!] Step 3 replay started 15:38 → `runs/golden/replay_step3_pdf_broadcast/`;
+  **killed at 15:43 on the PI's request (laptop needed)** after 4 of 5
+  configs, all with the same verdicts and finals as the Step 2 replay
+  (`normal_D5` identical; the others parted at the same iterations).
+  **Pickup point**: Step 3 code is in the working tree, uncommitted (the
+  `pdf` broadcast in `variational_posterior.py`; 201 targeted tests
+  green). Resume with: (1) `python -u dev/scripts/golden_replay.py --out
+  dev/scripts/runs/golden/replay_step3_pdf_broadcast` (rerun in full,
+  7 min), (2) the full suite `pytest --reruns=5 -x` with one BLAS thread
+  (10 min), (3) commit `perf(vp): broadcast pdf over the mixture
+  components`, (4) Step 4 profiling (§Design), (5) records and
+  `/doublecheck`. The two Step 2 commits (`50c1e50`, `7a07c0b`) are local,
+  not pushed.
+- [x] Resumed 16:37 (PI); Step 3 replay rerun in full, 16:37–16:44 →
+  `runs/golden/replay_step3_pdf_broadcast/`: **the same verdicts and the
+  same finals as the Step 2 replay on every config** (the `K`-sum
+  reordering did not flip a single ranking on these runs); the only flag
+  is halfnormal's seed-0 gsKL, already shown to be chance. Wall, baseline
+  → Step 2 → Step 3 (min): normal_D5 1.0 → 0.81 → 0.72; banana_D2 0.59 →
+  0.52 → 0.46; halfnormal_D2 0.54 → 0.49 → 0.49; cigar_D4 2.4 → 1.4 →
+  1.3; rosenbrock_D2_noise1 2.0 → 2.0 → 1.9
+- [x] Full suite for Step 3 — 16:45–16:52: **517 passed, 15 skipped, 0
+  reruns, 7:09** (9:30 before Step 2: the six end-to-end runs got faster)
+- [x] Commit — 16:53: `perf(vp): broadcast pdf over the mixture components`
+- [~] Step 4 profile campaign (plain) started 16:55 →
+  `runs/profile_20260904/`
 - [x] Step 2b `--rebaseline ORACLE --reason` mode written in
   `make_oracle_fixtures.py` — 15:18; to run on the four snapshots after
   the replay (one process at a time)

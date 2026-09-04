@@ -488,24 +488,30 @@ class VariationalPosterior:
 
             # common normalization factor
             nf = 1 / (2 * np.pi) ** (D / 2) / np.prod(lamd_row)
-            for k in range(self.K):
-                d2 = np.sum(
-                    ((x - self.mu.T[k]) / (self.sigma[:, k].dot(lamd_row)))
-                    ** 2,
-                    axis=1,
-                )
-                nn = (
-                    nf
-                    * self.w[:, k]
-                    / self.sigma[:, k] ** D
-                    * np.exp(-0.5 * d2)[:, np.newaxis]
-                )
-                y += nn
+            # Broadcast over the K components (the former loop over k
+            # accumulated y and dy one component at a time). Each
+            # component's term is computed with the same products in the
+            # same order as before; only the summation over K changes
+            # order. Rows are chunked so that no (n, K, D) temporary
+            # exceeds 2^22 elements (32 MB).
+            K = int(self.K)  # a NumPy integer in some stored VPs
+            mu_k = self.mu.T[np.newaxis, :, :]  # (1, K, D)
+            sigma_k = self.sigma.reshape(1, K, 1)
+            lambd_d = lamd_row.reshape(1, 1, D)
+            scale = sigma_k * lambd_d  # (1, K, D)
+            w_k = (nf * self.w / self.sigma**D).reshape(1, K)
+            if grad_flag:
+                scale2 = lambd_d**2 * sigma_k**2
+            step = max(1, 2**22 // max(1, K * D))
+            for i0 in range(0, N, step):
+                rows = slice(i0, min(N, i0 + step))
+                diff = x[rows, np.newaxis, :] - mu_k  # (n, K, D)
+                d2 = np.sum((diff / scale) ** 2, axis=2)  # (n, K)
+                nn = w_k * np.exp(-0.5 * d2)  # (n, K)
+                y[rows] = np.sum(nn, axis=1, keepdims=True)
                 if grad_flag:
-                    dy -= (
-                        nn
-                        * (x - self.mu.T[k])
-                        / ((lamd_row**2) * self.sigma[:, k] ** 2)
+                    dy[rows] = -np.sum(
+                        nn[:, :, np.newaxis] * diff / scale2, axis=1
                     )
 
         else:
