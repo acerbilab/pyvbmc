@@ -1,7 +1,8 @@
 # Stage 2 item 1: `_gp_log_joint` vectorized over hyperparameter samples and components
 
-Created: 2026-09-04 23:10. Status: **IN PROGRESS**. Roadmap pickup point 2
-(`plans/modernization-roadmap.md`, "Next: Stage 2 item 1"); rationale in
+Created: 2026-09-04 22:35. Status: **DONE 2026-09-05 00:30** (items 1 and 2; the 20-seed population run launched afterwards, see the tracker). Roadmap pickup point 3
+(`plans/modernization-roadmap.md`; pickup point 2 named it "Next: Stage 2
+item 1"); rationale in
 `dev/2026-09-02-modernization-discussion.md` §2, §3, §9 and §10 (Stage 2,
 item 1: "`_gp_log_joint` `(s,k)` loop → `einsum` over `(Ns,K,D,N)`"), and
 the profile in `plans/stage2-batched-acquisition.md` §Results: after item 3
@@ -24,18 +25,20 @@ for the variance, two single-RHS triangular solves per pair. (1) The
 standardized distances and two batched matrix-vector products against
 `alpha`; every per-sample and per-component scalar (`ell`, `sf2`, `m0`,
 `xm`, `omega`, `tau`, `lnnf`) becomes an `(Ns, …)` array. (2) The pair
-loop becomes, per hyperparameter sample, one multi-RHS triangular solve
-`L^{-T} Z^T` and one `K × K` Gram product, which is roadmap item 2 done in
-its natural home (the loop lives in `_gp_log_joint`, not in
-`_eval_full_elcbo`); it is a separate commit so the oracle report and the
-replay attribute the change. (3) Three latent defects of the function
-recorded in devlog §9 are resolved on the way, because the loop that
-contained them is gone: the dead `compute_vargrad` accumulators are
-deleted (the two `NotImplementedError`s that make them unreachable stay,
-same conditions, same messages), `separate_K` without variance returns
-`J_sjk = None` instead of raising `UnboundLocalError`, and
-`jacobian_flag=False` returns all four gradient blocks (the Jacobian
-corrections become conditional, the blocks are not). Gates: the
+loop becomes, per hyperparameter sample, two multi-RHS triangular solves
+`L^{-1} (L^{-T} Z^T)` and one `K × K` product (today's summands, one
+contraction), which is roadmap item 2 done in its natural home (the loop
+lives in `_gp_log_joint`, not in `_eval_full_elcbo`); it is a separate
+commit so the oracle report and the replay attribute the change. (3) Four
+latent defects of the function are resolved on the way, three recorded in
+devlog §9 because the loop that contained them is gone: the dead
+`compute_vargrad` accumulators are deleted (the two `NotImplementedError`s
+that make them unreachable stay, same conditions, same messages),
+`separate_K` without variance returns `J_sjk = None` instead of raising
+`UnboundLocalError`, `jacobian_flag=False` returns all four gradient
+blocks (the Jacobian corrections become conditional, the blocks are not),
+and the softmax Jacobian is an outer product for a 1-D `eta` too (found
+by the plan review). Gates: the
 `gp_log_joint` and `neg_elcbo` oracles (GP-solve class 1e-6, variance
 class 1e-3), the finite-difference tests, the MATLAB-pinned test, the
 replay, the full suite; the profile suite once.
@@ -138,7 +141,9 @@ Verified against the code on 2026-09-04 (`c48c025`).
   as large: about 37 MB peak. No chunking is needed at any supported
   operating point; the item 3 lesson (a 33 MB chunk was memory-bound) says
   to keep the tensors in the low tens of MB, which they are (and the
-  `einsum` form measured fastest there, see the tracker).
+  `einsum` form measured fastest there, see the tracker). The variance
+  block adds four `(Ns, K, K, D)` arrays (`tau_jk`, its log, `delta_jk`,
+  its square): 1.8 MB each at that corner, 0.6 MB on the boosted snapshot.
 - **Where rounding can move** (corrected by the review and by
   measurement). Elementwise pieces (`tau`, `delta`, `exp`) are the same
   scalar operations and bit-identical. `Σ_d ln tau`, `Σ ln ell` and the
@@ -368,37 +373,42 @@ dated addendum in devlog §2/§10.
 
 - [x] Plan reviewed (one read-only Opus agent: formulas vs the code,
       shapes, gates); findings folded in
-- [~] Step 1 vectorized mean and gradients; bit-check; oracles; unit and
-      FD tests; replay; full suite (running); commit
-- [ ] Step 2 multi-RHS variance; oracles; tests; replay; full suite; commit
+- [x] Step 1 vectorized mean and gradients; bit-check; oracles; unit and
+      FD tests; replay; full suite; commit `5ce1bc6`
+- [x] Step 2 multi-RHS variance; oracles; tests; replay; full suite; commit
+      `f93ea5e`
 - [x] Step 3 tests for the fixes (land with Step 1): FD at `D ≠ K`, FD
       with `jacobian_flag=False`, `separate_K` without variance, the two
       raises, the `L_chol=False` branch against a hand-built Cholesky-form
       posterior
 - [x] Step 4 `--probe` in `profile_suite.py`; `X_init` in the traces and
       the design certificate in the replay
-- [ ] Step 5 profile campaign (plain with probes; cProfile on the D = 4
-      set); write-up
-- [ ] Records: `dev/README.md`, roadmap, devlog §2/§9/§10, this file;
-      commit and push; CI smoke green
-- [ ] Read-only Opus code review of the commits; `/doublecheck`
+- [x] Step 5 profile campaign (plain with probes; cProfile on the D = 4
+      set); write-up (§Results)
+- [x] Records: `dev/README.md`, roadmap, devlog §2/§9/§10, this file;
+      commit and push; CI smoke (see the tracker)
+- [x] Read-only Opus code review of the commits (folded in); `/doublecheck`
+      (see the tracker)
 
 ## Verification
 
-- [ ] `pytest pyvbmc/testing/oracles` green after each step with no
-      re-baseline
-- [ ] Bit-check old vs new on the eight snapshots and random states:
-      max relative difference per output recorded (expected ≤ 1e-13 on
-      `G`, `dG`, `I_sk`; `Z` bit-identical)
-- [ ] `test_variational_optimization*.py` green (MATLAB-pinned values,
+- [x] `pytest pyvbmc/testing/oracles` green after each step with no
+      re-baseline (100 passed, 15 skipped, three times)
+- [x] Bit-check old vs new on the eight snapshots and random states:
+      recorded in the tracker (1e-15 on random states; up to 2e-7 per
+      element on the ill-conditioned snapshots, the conditioning of the
+      GP solve; `z` moves by an ulp with `einsum`)
+- [x] `test_variational_optimization*.py` green (MATLAB-pinned values,
       FD checks, single-sample regressions, the new tests)
-- [ ] Replay after each step: iteration 0 identical on every config,
-      finals inside the population envelope
-- [ ] `pytest --reruns=5 -x` green after each step
-- [ ] Profile: wall and variational-fit share per config against the
-      2026-09-04 numbers; untouched stages within a few percent; probe
-      start/end within ~5 %
-- [ ] CI smoke green on the push
+- [x] Replay after each step: initial design certified on every config
+      (iteration 0's ELBO is numerics and parts, see Findings), finals
+      inside the population envelope, 0 flagged of 5
+- [x] `pytest --reruns=5 -x` green after each step (522 passed twice)
+- [x] Profile: wall and variational-fit share per config against the
+      2026-09-04 numbers (§Results); untouched stages within trajectory
+      noise except the exhaust run's active sampling (+20 %, discussed);
+      probe start/end 1.03
+- [ ] CI smoke green on the push (pending at the time of writing)
 
 ## Decisions
 
@@ -478,18 +488,133 @@ dated addendum in devlog §2/§10.
 - Profiling must run alone and cool (item 3's throttling lesson; the
   probe makes it visible).
 
-## Results
+## Results (2026-09-04/05)
 
-(to be written)
+### Per call (scratch timing, one thread, median of 5, ms; old loop → new)
+
+| shape (D, K, N, Ns) | gradient call (`_neg_elcbo` as Adam sees it) | variance call (`_eval_full_elcbo`) |
+|---|---|---|
+| 4, 15, 95, 8 | 6.2 → 0.56 (11×) | 42.7 → 0.85 (50×) |
+| 5, 17, 100, 8 | 6.9 → 0.71 (10×) | 58.6 → 0.95 (62×) |
+| 8, 12, 120, 6 | 3.9 → 0.55 (7×) | 23.0 → 0.69 (33×) |
+| 10, 25, 185, 6 | 9.0 → 2.1 (4.3×) | 106 → 2.2 (47×) |
+| 15, 26, 345, 4 | 8.4 → 3.4 (2.5×) | 107 → 3.8 (28×) |
+| 15, 31, 750, 1 | 4.2 → 2.6 (1.7×) | 86 → 3.3 (26×) |
+
+The gradient call is bound by Python overhead below D ≈ 8 (11× at the
+D = 4–5 operating point of most runs) and by memory traffic over the
+`(Ns, K, D, N)` array above it; the variance call was bound by
+`K (K + 1)` single-RHS solves per sample and is now two multi-RHS solves.
+
+### End to end: plain profile campaign, seed 0, one process, one BLAS thread
+
+`runs/profile_20260905/` (code `8943cec`, i.e. both perf commits; started
+23:31, 32.7 min, machine otherwise idle) against `runs/profile_20260904/`
+(after item 3, code `f441172`) and, for the exhaust row, against
+`runs/profile_20260904_retry/` (cool machine, code `93dc29d`). Speed
+probe `banana_D4` plain: **31.4 s at the start, 32.3 s at the end
+(1.03)**, so no throttling this time (the item 3 campaign's probes were
+42.8 / 45.5 / 42.6 s on the item 3 code). Wall and stage totals in
+seconds; the arrow reads before → after this item.
+
+| config | wall (×) | variational fit (× ; % of wall) | active sampling | GP train | iters | evals | ΔLML | gsKL | MMTV |
+|---|---|---|---|---|---|---|---|---|---|
+| banana_D4 | 43 → 31 (1.39) | 8 → 2 (4.1; 19 → 6 %) | 18 → 16 | 10 → 10 | 18 → 17 | 95 → 90 | 0.041 → 0.062 | 0.118 → 0.216 | 0.021 → 0.032 |
+| cigar_D4 | 79 → 62 (1.28) | 18 → 7 (2.6; 23 → 11 %) | 34 → 33 | 17 → 18 | 25 → 25 | 125 → 125 | 0.000 → 0.007 | 0.001 → 0.000 | 0.007 → 0.006 |
+| lumpy_D4 | 41 → 29 (1.39) | 7 → 1 (5.0; 17 → 5 %) | 15 → 14 | 11 → 11 | 16 → 16 | 85 → 85 | 0.040 → 0.034 | 0.013 → 0.015 | 0.026 → 0.032 |
+| student_D4 | 47 → 36 (1.30) | 7 → 2 (3.1; 14 → 6 %) | 21 → 19 | 13 → 12 | 20 → 19 | 105 → 100 | 0.019 → 0.045 | 0.008 → 0.057 | 0.039 → 0.043 |
+| logreg_D5 | 81 → 72 (1.13) | 22 → 8 (2.6; 28 → 12 %) | 29 → 31 | 18 → 19 | 24 → 26 | 120 → 130 | 0.066 → 0.001 | 0.012 → 0.010 | 0.029 → 0.019 |
+| rosenbrock_D2_noise1 | 116 → 106 (1.10) | 15 → 8 (2.1; 13 → 7 %) | 87 → 87 | 23 → 24 | 27 → 27 | 140 → 140 | 0.059 → 0.097 | 0.025 → 0.008 | 0.026 → 0.022 |
+| logreg_D5_noise3 | 251 → 273 (0.92) | 44 → 28 (1.6; 17 → 10 %) | 164 → 193 | 72 → 83 | 45 → 56 | 220 → 280 | 0.132 → 0.061 | 0.771 → 0.211 | 0.247 → 0.107 |
+| lumpy_D10 | 182 → 147 (1.24) | 19 → 4 (4.6; 10 → 3 %) | 72 → 65 | 76 → 67 | 38 → 35 | 185 → 175 | 0.784 → 0.764 | 0.808 → 0.600 | 0.125 → 0.113 |
+| banana_D10 | 103 → 79 (1.30) | 7 → 2 (3.1; 7 → 3 %) | 48 → 40 | 39 → 34 | 26 → 22 | 135 → 115 | 0.127 → 0.114 | 0.493 → 0.489 | 0.024 → 0.025 |
+| cigar_D15_exhaust | 1288 → 1041 (1.24) | 585 → 264 (2.2; 45 → 25 %) | 363 → 437 | 308 → 303 | 151 → 150 | 750 → 750 | 0.015 → 0.007 | 0.001 → 0.004 | 0.007 → 0.008 |
+
+Reading:
+
+1. **Noiseless targets at D ≤ 10 run 1.13–1.39× faster end to end**
+   (banana, lumpy 1.39; student, banana_D10 1.30; cigar 1.28; lumpy_D10
+   1.24; logreg 1.13), the **variational fit 2.6–5.0× faster** and down
+   from 7–28 % of wall to 3–12 %. On the **15-D exhaust run** (half of
+   its 150 iterations in the optimize-only regime, K 23–33) the
+   variational fit is **2.2× faster** (585 → 264 s) and the run 1.24×.
+   Combined with item 3 the noiseless targets are now 1.7–2.4× faster
+   than the 2026-09-03 baseline (banana_D4 67 → 31 s, cigar_D4 141 → 62,
+   lumpy_D10 283 → 147, banana_D10 175 → 79, exhaust 2123 → 1041).
+2. **Every trajectory changed** (the ELBO arithmetic moved by rounding,
+   §Findings): 7 of 10 configs took a different number of iterations or
+   evaluations. Every seed-0 final lies inside its population's
+   `Q3 + 3 IQR` fence (checked for the eight configs in the golden set;
+   the widest margins are cigar_D4 gsKL 1e-4 vs 8.1e-3, the narrowest
+   lumpy_D4 MMTV 0.032 vs 0.041 and student_D4 gsKL 0.057 vs 0.236).
+3. **The untouched stages stayed put within trajectory noise** — GP
+   training within ±1 s on every D ≤ 5 config and −9 s on both D = 10
+   configs (fewer iterations), active sampling within ±2 s at D ≤ 5 and
+   −7 / −8 s at D = 10 — with one exception: **the exhaust run's active
+   sampling took 363 → 437 s** (+20 %; 1.98 → 2.67 s per iteration in
+   the optimize-only tail at the same mean K = 26.4 and the same N path;
+   GP training 308 → 303 s on the same run). The probe rules out
+   throttling (1.03), the stage does not call `_gp_log_joint` (the
+   per-sample VP update is off), and the trajectory differs from
+   iteration 0, so this is the search cost of a different trajectory
+   (the number of CMA-ES generations per point is not recorded by the
+   plain run); a cProfile of the exhaust run would settle it (35 min, not
+   done). Noted for item 8, which owns the acquisition's per-call cost.
+4. **The noisy VIQR targets** gain 10 % (rosenbrock) or run longer:
+   `logreg_D5_noise3` took 56 iterations instead of 45 (280 instead of
+   220 evaluations) on its new trajectory and ended with far better
+   finals (gsKL 0.77 → 0.21, MMTV 0.25 → 0.11), so its wall rose 251 →
+   273 s while its cost per iteration fell 5.6 → 4.9 s; the population
+   spread of evaluations for that config is the reference, not this
+   pair.
+
+### Where the time goes now: cProfile of the four D = 4 configs
+
+`runs/profile_20260905/<config>_cprof/` (00:04–00:08, right after the
+plain campaign) against the item 3 pass on the cool machine
+(`runs/profile_20260904_retry/`). Percentages of profiled
+`VBMC.optimize`; call counts in parentheses where they matter.
+
+| bucket | banana_D4 | cigar_D4 | lumpy_D4 | student_D4 |
+|---|---|---|---|---|
+| active_sample | 40.0 → 51.0 | 43.8 → 54.1 | 34.5 → 45.6 | 43.5 → 50.7 |
+| ├ `GP.predict` (calls) | 26.5 → 33.8 (10.1k → 9.4k) | 26.4 → 32.6 (24.2k → 24.9k) | 23.2 → 30.8 (8.0k → 7.8k) | 29.3 → 34.0 (11.5k → 10.9k) |
+| train_gp | 27.4 → 36.9 | 24.0 → 31.1 | 31.8 → 42.2 | 31.3 → 37.2 |
+| ├ `SliceSampler.sample` | 23.5 → 31.8 | 20.8 → 27.2 | 28.4 → 37.5 | 27.4 → 32.7 |
+| optimize_vp | 31.1 → 10.1 | 30.9 → 13.3 | 32.3 → 10.3 | 23.6 → 10.3 |
+| ├ `_gp_log_joint` (calls) | 23.5 → 2.1 (3.1k → 2.9k) | 22.6 → 2.5 (6.7k → 6.6k) | 24.2 → 1.8 (2.4k → 2.3k) | 18.2 → 1.9 (2.7k → 2.8k) |
+| ├ `_eval_full_elcbo` | 6.3 → 1.7 | 4.6 → 1.6 | 6.6 → 1.7 | 4.8 → 1.4 |
+| └ `entmc_vbmc` (calls) | 6.1 → 6.2 (1.9k → 1.7k) | 6.9 → 8.9 (4.4k → 3.4k) | 6.7 → 6.8 (1.3k → 1.2k) | 4.2 → 6.9 (1.5k → 1.6k) |
+| final_boost | 13.7 → 4.6 | 10.0 → 3.7 | 16.9 → 6.0 | 10.7 → 5.3 |
+| `copy.deepcopy` | 0.6 → 0.7 | 0.6 → 0.9 | 0.5 → 0.7 | 0.6 → 0.7 |
+| profiled wall s | 58 → 45 | 105 → 95 | 58 → 46 | 65 → 55 |
+
+Reading:
+
+- **`_gp_log_joint` fell from 18–24 % of a D = 4 run to about 2 %** at
+  the same call counts (±10 %), `optimize_vp` from 24–32 % to 10–13 %,
+  `_eval_full_elcbo` from 5–7 % to 1.4–1.7 % and `final_boost` (one call
+  at K = 50) from 10–17 % to 4–6 %.
+- **`entmc_vbmc` is now the largest piece of the variational stage**
+  (6–9 % of the run; item 5), ahead of `_gp_log_joint`; the Adam loop's
+  own overhead is the rest of `optimize_vp`.
+- **Active sampling (46–54 %) and GP training (31–42 %) are what is
+  left**, both untouched here: inside active sampling, gpyreg's per-call
+  `predict` overhead (31–34 % of the run at 8k–25k calls) and inside GP
+  training the slice sampler (27–38 %), both item 8's. On these targets
+  the variational stage is no longer a comparable third.
+- Profiled wall fell 1.1–1.3× (less than the plain 1.3–1.4×): cProfile's
+  per-call overhead is now a larger share of the remaining, call-heavy
+  stages.
 
 ## Execution tracker
 
 Legend: `[ ]` not started, `[~]` in progress, `[x]` done, `[!]` needs
-attention. Times are wall clock on 2026-09-04/05.
+attention. Times are wall clock on 2026-09-04 (the session started at 22:27, right after `c48c025`).
 
-- [x] Plan written — 23:10; read-only Opus review dispatched 23:20
-- [x] Step 1 code in place — 23:35 (first with `np.matmul` for the
-  contractions; switched to `einsum` at 23:55 after timing, see below)
+- [x] Plan written — 22:35; read-only Opus review dispatched 22:36
+- [x] Step 1 code in place — 22:43 (first with `np.matmul` for the
+  contractions; switched to `einsum` at 22:50 after timing, see below)
 - [x] **Bit-check old vs new** (scratch `bitcheck_gp_log_joint.py`, the
   eight snapshots and 23 random states at D 2–15, N 20–750, Ns 1–8, three
   mean functions, noisy and noiseless): random states agree to 1e-15;
@@ -513,7 +638,7 @@ attention. Times are wall clock on 2026-09-04/05.
   materialized) is 0.45 / 3.2 at those shapes; chunking over `s` at 2^16
   elements with matmul 0.32 / 3.7 and does nothing for `Ns = 1`.
   Decision: one-shot `einsum`, one large temporary, no chunking
-- [x] Oracle gate — 23:40 and 23:58: **100 passed, 15 skipped** both
+- [x] Oracle gate — 22:46 and 22:51: **100 passed, 15 skipped** both
   versions, no re-baseline
 - [x] `test_variational_optimization*.py` — 18 passed; the whole function
   old → new: D = 4, K = 15, N = 95, Ns = 8: 6.5 → 0.58 ms (11×); D = 5,
@@ -521,11 +646,11 @@ attention. Times are wall clock on 2026-09-04/05.
   D = 15, K = 26, N = 345, Ns = 4: 9.0 → 4.3 (2.1×); D = 15, K = 31,
   N = 750, Ns = 1: 4.3 → 3.0 (1.5×); the variance path (pair loop still in
   place) 1.4–2.3× from the reuse of `z`
-- [x] Step 3 tests written — 00:05: FD at `D = 3, K = 2` on a random GP,
+- [x] Step 3 tests written — 22:54: FD at `D = 3, K = 2` on a random GP,
   FD with `jacobian_flag=False` (w free, `dG/dw = mean_s I_sk`),
   `separate_K` without variance (`J_sjk is None`, `I_sk @ w == G`), the
   two `NotImplementedError`s; 7 `gp_log_joint` tests pass
-- [~] Step 1 replay — 00:00 → `runs/golden/replay_item1_step1/`. First
+- [x] Step 1 replay — 22:51–22:56 → `runs/golden/replay_item1_step1/`. First
   rows: `normal_D5`, `banana_D2`, `halfnormal_D2` all **"ITERATION 0
   DIFFERS"** with the first 10–11 live points identical: the ELBO of
   iteration 0 is itself computed by `_gp_log_joint`, so an ulp change in
@@ -537,7 +662,7 @@ attention. Times are wall clock on 2026-09-04/05.
   bit-identical and the iteration-0 ELBO within 1e-6 (a different design
   moves it by far more); the flag text says "beyond 1e-6"; docstring and
   legend updated. The finished run is re-rendered with `--report-only`
-- [x] Step 1 replay re-rendered with the corrected criterion — 00:30
+- [x] Step 1 replay re-rendered with the corrected criterion — 22:57
   (`--report-only`): `normal_D5` parted at iteration 0 (within 1e-6 to
   iteration 4), `banana_D2` at 1 (to 3), `halfnormal_D2` at 0 (to 8),
   `rosenbrock_D2_noise1` at 1 (to 10), all with 5–11 leading live points
@@ -553,7 +678,7 @@ attention. Times are wall clock on 2026-09-04/05.
   trimming removes all of it; the first live rows have `y ≈ 4–6`), so
   the stored trace cannot certify the design there
 - [x] **Plan review (Opus, read-only) returned 21 findings, no blocker**
-  — 00:35; folded into Findings/Design/Decisions: callers
+  — 22:57; folded into Findings/Design/Decisions: callers
   (`active_sample.py:337` passes `jacobian_flag=0`; warm-up runs with
   `optimize_weights=False`, oracle-gated by two snapshots; the live
   no-gradient full-variance `separate_K=False` shape), the rounding
@@ -566,7 +691,7 @@ attention. Times are wall clock on 2026-09-04/05.
   copies of the VP arrays restored
 - [x] **Sensitivity experiment on `cigar_D4` seed 0** (scratch
   `perturb_experiment.py`: the old loop code monkey-patched in, run
-  through the replay) — 00:40–00:50: *control* (old code unchanged)
+  through the replay) — 22:58–23:01: *control* (old code unchanged)
   reproduces HEAD's trajectory exactly (parted from the pre-item-3
   baseline at iteration 2 as item 3's replay did, same finals 2e-5 /
   9.6e-4 / 7.1e-3 / 125 evaluations); *G × (1 + 2⁻⁵²)* parts at iteration
@@ -577,7 +702,7 @@ attention. Times are wall clock on 2026-09-04/05.
   (an ulp), on the iteration-1 GP (N = 15, `Σ|alpha| / |Σ alpha| = 2e6`)
   to 1.3e-8 on per-sample `dG`, on the iteration-2 GP (N = 20, 4e6) to
   2.9e-7 on per-sample `dG` and 3.5e-8 on `G`: the warm-up cigar GP is
-  far worse conditioned than any oracle snapshot. **Confirmation, 00:55:
+  far worse conditioned than any oracle snapshot. **Confirmation, 23:04–23:08:
   the old code with `dG × (1 + 2⁻⁵²)` (one ulp on the gradient, value
   untouched) moves the iteration-0 ELBO by 0.44 (−767.898 → −767.462; the
   vectorized code: 0.36), iteration 1 by 34, and ends at ΔLML 0.039 /
@@ -600,7 +725,95 @@ attention. Times are wall clock on 2026-09-04/05.
   live in the reference trace"). A missing `import numpy` in the new
   block crashed the first two runs after the traces were written (fixed;
   reports re-rendered with `--report-only`, traces intact)
-- [x] `profile_suite.py --probe CONFIG` — 00:20 (item 3 follow-up): the
+- [x] Full suite for Step 1 — 23:08–23:15: **522 passed, 15 skipped, 1
+  rerun, 7:10**. Commits `9d92c7f test(dev)` (replay design certificate,
+  `X_init`, `--probe`, the plan) and `5ce1bc6 perf(vbmc)` (the function,
+  the tests, devlog §9) — 23:16
+- [x] **Step 2 code in place** — 23:16 (two-solve form). Bit-check old vs
+  new (the pair loop is gone, so the variance outputs now move too):
+  `J_sjk` 2.2e-11 absolute on cigar_boosted (7.5e-5 under the criterion,
+  which ignores the 1e-8 `atol`), 1.9e-10 absolute on corr (2.2e-4 under
+  the criterion; the Ubuntu cross-BLAS floor on corr was 2.3e-10, i.e. the
+  re-expression moves `J_sjk` by the same amount as a BLAS swap), `varG`
+  ≤ 3.7e-6 relative (abs ≤ 4e-12), `var_ss` ≤ 2.5e-5 (abs ≤ 5e-12); the
+  two `L_chol=False` random states (`ln sn = −8`, D = 3 and 5) agree with
+  the old loop to better than 1e-9 on every output. Oracle gate **100
+  passed, 15 skipped**, no re-baseline. Variance path old → new: D = 4,
+  K = 15, N = 95, Ns = 8: 42.7 → 0.85 ms (50×); D = 5, K = 17: 58.6 →
+  0.95 (62×); D = 10, K = 25, N = 185: 106 → 2.2 (47×); D = 15, K = 26,
+  N = 345: 107 → 3.8 (28×); D = 15, K = 31, N = 750, Ns = 1: 86 → 3.3
+  (26×). `test_variational_optimization*.py`: 22 passed and
+  `test_vp_optimize_1D_g_mixture` failed once, then passed alone and 6 of
+  7 repeats: a statistical miss (KL 0.0014 against 0.00125) of an unseeded
+  end-to-end test that draws its GP fit and its 1e7 samples from the
+  global stream and that already appeared among the flaky reruns on
+  2026-09-02; no exception
+- [x] Step 2 replay — 23:16–23:23 → `runs/golden/replay_item1_step2/`:
+  **0 flagged of 5**; the same verdicts and the same finals to every
+  stored digit as the Step 1 replay on every config (the variance
+  re-expression flipped nothing on these runs; it enters only through
+  the ELCBO used to pick among candidates and to prune). Initial design
+  certified from the new `X_init`: 8, 5, 10 and 6 of 10 design points
+  found live in the baseline on normal_D5, banana_D2, halfnormal_D2,
+  rosenbrock_D2_noise1; on cigar_D4 none is live in either trace, and
+  the design was certified by hand instead: `X_init` and `y_init` of the
+  new run are bit-identical to those of the old-code `dG`-perturbation
+  run of the same seed. Wall (min, baseline → Step 1 → Step 2): normal_D5
+  1.0 → 0.61 → 0.62, banana_D2 0.59 → 0.36 → 0.36, halfnormal_D2 0.54 →
+  0.31 → 0.30, cigar_D4 2.4 → 1.2 → 1.1, rosenbrock_D2_noise1 2.0 → 1.9
+  → 1.8 (the baseline predates item 3)
+- [x] PI (23:24): the KL threshold of `test_vp_optimize_1D_g_mixture`
+  raised from 0.00125 to 0.0015 (own `test(vbmc)` commit)
+- [x] Full suite for Step 2 — 23:23–23:30: **522 passed, 15 skipped, 0
+  reruns, 6:43**. Commits `f93ea5e perf(vbmc)` (the variance) and
+  `8943cec test(vbmc)` (the threshold) — 23:30
+- [x] **Code review (Opus, read-only) of the four commits — 23:35–23:50**:
+  an independent re-implementation of the old loop and the new code
+  agreed to ≤ 1.7e-15 on every output at six shapes including K = 1,
+  D = 1, Ns = 1 and D = 12; mirroring direction, the `einsum` variance
+  identity, the gpyreg `L`/`sW`/`sl` conventions in both branches, the
+  `dG` layout and the four fixes confirmed; no blocker. Should-fixes,
+  applied: the replay's fallback certificate counted the start point
+  `x0`, which the benchmark draws from a stream spawned off the run seed
+  and which is therefore identical by construction, so row 0 is now
+  excluded (Step 2 replay re-rendered: 7, 4, 9, 5 of 9 generator-drawn
+  design points live in the baseline on normal, banana, halfnormal,
+  rosenbrock; cigar not certifiable, as before); the new `_gp_log_joint`
+  tests construct VPs, which draw their seed from the global legacy
+  stream, ahead of the unseeded `*_g_mixture` tests in the same module,
+  so the module gets the autouse restore fixture its `_grad_fd` sibling
+  has (the 0.0015 threshold stays: the test also failed alone in 1 of 7
+  runs); the docstring's "all four blocks either way" → the requested
+  blocks; the design line of the replay verdict now appears on identical
+  runs too and the legend names the not-certifiable case. Notes applied:
+  dead `N`, "batched matrix products" → `einsum`, `M` and `B` computed
+  only for the blocks requested (`variable_means=False` skips `M`), the
+  `X_init` caveats (no user `y0`, no duplicate design points), `--probe`
+  `is not None` and probe rows pinned to the ends of the table, the
+  non-Cholesky test compares per-sample `varG` and asserts exact
+  symmetry, redundant `import scipy.linalg` removed and the MATLAB test
+  reuses the fixture helper, devlog §9 gets the inert `J_sjk` pruning
+  note, this file's memory bullet gets the `(Ns, K, K, D)` arrays
+- [x] Step 5 profile campaign — 23:31–00:08: plain suite with `--probe
+  banana_D4` (32.7 min; probe 31.4 → 32.3 s, 1.03), then cProfile on the
+  four D = 4 configs (4.1 min) → `runs/profile_20260905/`; §Results.
+  Every seed-0 final inside its population fence (checked against the
+  golden sidecars for the eight configs in the golden set)
+- [x] Review fixes to the package after the campaign — 00:15 (dead `N`,
+  docstring wording, `M`/`B` computed only for the requested blocks):
+  oracles and the three test modules 122 passed (after repairing a
+  `base_path` the refactored MATLAB test had lost), bit-check unchanged
+- [x] Records — 00:30: §Results here, checklists ticked, roadmap (Stage 2
+  paragraph, pickup point 3 with the population run as the first thing to
+  read), devlog §2 and §10 addenda, §9 entries; dates corrected to
+  2026-09-04 (the tracker's first draft ran ~2 h ahead of the clock)
+- [~] Final full suite on the working tree, then the records commit and
+  push (CI smoke), `/doublecheck`, and the 20-seed population run
+  (`golden_trace.py run --suite golden --seeds 0-19 --workers 1 --out
+  dev/scripts/runs/golden/item1_20260905`, about 7 h, then `compare`
+  against `dev/golden/baseline`; PI 2026-09-04 23:24: run it overnight
+  once everything else is done)
+- [x] `profile_suite.py --probe CONFIG` — 22:57 (item 3 follow-up): the
   named config runs plain before and after the campaign as
   `probe_start_<cfg>` / `probe_end_<cfg>`, the two walls and their ratio
   are printed, the aggregate lists them as rows under their tag

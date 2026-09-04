@@ -135,7 +135,7 @@ reason.
   a parted run's finals must stay inside the envelope (an identical run
   is exempt: its own seed may be the outlier). The initial design is
   certified from the traces: exactly where both store it (`X_init`,
-  written by `golden_trace.py` since 2026-09-05), against the 2026-09-03
+  written by `golden_trace.py` since commit `9d92c7f`), against the 2026-09-03
   baseline by finding a design point of the new run among the reference's
   live rows, and "not certifiable" without a flag where warm-up trimming
   removed the whole design (cigar). Needs the baseline `.npz` traces for

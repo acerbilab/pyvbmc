@@ -142,6 +142,28 @@ it on a throttling laptop (untouched GP training 2.1–2.5× slower per
 iteration after 27 minutes of load) was repeated on a cool machine on the
 bit-identical trajectory.
 
+**Measured 2026-09-05 (00:04) after Stage 2 items 1 and 2**
+(`_gp_log_joint` vectorized over hyperparameter samples and components,
+its variance from two multi-RHS solves per sample;
+`plans/stage2-gp-log-joint-einsum.md` §Results). Same suite, same seed,
+same machine, speed probe 1.03 (no throttling): the noiseless D ≤ 10
+targets run 1.13–1.39× faster end to end (banana_D4 43 → 31 s, cigar_D4
+79 → 62, lumpy_D10 182 → 147, banana_D10 103 → 79), the variational fit
+is 2.6–5× faster and falls from 7–28 % of wall to 3–12 %, active
+sampling and GP training are unchanged within trajectory noise. The 15-D
+exhaust run is 1.24× faster (1288 → 1041 s) with its variational fit
+2.2× faster (585 → 264 s); its active sampling, untouched, took 20 %
+longer on a different trajectory (the search cost of a different run,
+unexplained in detail). Combined with item 3 the noiseless targets are
+1.7–2.4× faster than the 2026-09-03 baseline. Every trajectory changed
+(the ELBO arithmetic moved by rounding), every seed-0 final is inside its
+population fence. Under cProfile at D = 4, `_gp_log_joint` fell from
+18–24 % of the run to about 2 % at the same call counts, `final_boost`
+from 10–17 % to 4–6 %, and `entmc_vbmc` (6–9 %) is now the largest piece
+of the variational stage; what remains is active sampling (46–54 %,
+gpyreg's per-call `predict` overhead 31–34 %) and GP training (31–42 %,
+the slice sampler 27–38 %), i.e. item 8.
+
 ---
 
 ## 3. Hand-derived gradients (what autodiff would delete)
@@ -427,7 +449,7 @@ state used by resume.
   `sigma` intended. `:1574` assembles `dvarG` from `grad_list` instead of
   `vargrad_list`. `:1556` drops the `order="F"` used at `:1525`. All in the
   `compute_vargrad` path, marked `# TODO: compute vargrad is untested` (`:1346`, `:1553`).
-  **Resolved 2026-09-05 by deletion** (Stage 2 item 1,
+  **Resolved 2026-09-04 (evening) by deletion** (Stage 2 item 1,
   `plans/stage2-gp-log-joint-einsum.md`): the path was doubly unreachable
   (`compute_var == 2` raises "not implemented" and any other
   `compute_var` with gradients raises before it), so the vectorized
@@ -459,7 +481,7 @@ state used by resume.
 - `_gp_log_joint(..., jacobian_flag=False)` returns only the `mu` block of
   `dG`: the sigma/lambd/w blocks are appended inside the `if jacobian_flag`
   branches. Unreachable in production (`_neg_elcbo` hard-codes it to 1), but
-  it would make `dF = -dG - dH` a shape mismatch. **Fixed 2026-09-05**
+  it would make `dF = -dG - dH` a shape mismatch. **Fixed 2026-09-04**
   (item 1): all four blocks are returned, the Jacobian corrections alone
   are conditional; finite-difference test in the raw `(mu, sigma, lambd,
   w)` coordinates.
@@ -540,9 +562,9 @@ state used by resume.
     `skip_elbo_variance` option that no `.ini` defines and that
     `validate_option_names` therefore rejects; `_neg_elcbo`'s own
     `separate_K`-without-variance fallback (`J_sjk = None`) is dead code for
-    the same reason. **Fixed 2026-09-05** (item 1): `J_sjk = None` is
+    the same reason. **Fixed 2026-09-04** (item 1): `J_sjk = None` is
     returned in that case; unit test added.
-- **Found 2026-09-05 by the review of the `_gp_log_joint` rewrite**
+- **Found 2026-09-04 by the review of the `_gp_log_joint` rewrite**
   (`plans/stage2-gp-log-joint-einsum.md`), fixed in the rewrite: the
   softmax Jacobian in the old `_gp_log_joint` was
   `-np.exp(vp.eta).T * np.exp(vp.eta)`, an outer product only for a
@@ -552,6 +574,11 @@ state used by resume.
   is affected (`_neg_elcbo` reshapes `eta` to `(1, K)`). The rewrite uses
   `np.outer`; `_neg_elcbo`'s own copy of the Jacobian (also on a `(1, K)`
   `eta`, so correct) keeps the old form.
+- **Found 2026-09-04 by the same review**, not fixed (inert):
+  `optimize_vp` prunes `J_sjk` along `axis=2` only
+  (`variational_optimization.py:381`), so `vp.stats["J_sjk"]` is no
+  longer square after a component is pruned; nothing in the package reads
+  that key.
 - **Found 2026-09-04 by the reviews of the batched-acquisition plan**
   (`plans/stage2-batched-acquisition.md`), not fixed:
   - `testing/vbmc/test_vbmc_optimize.py:630` asserts `elbo_1 == elbo_1`
@@ -675,6 +702,28 @@ targeted re-baseline. Measured 1.4–1.8× end to end on noiseless targets
 (§2). The gpyreg half (`predict`'s Python loop over the hyperparameter
 samples and its `sW` tiling) joins item 8, so that all gpyreg changes land
 in one PR (the order of the remaining items is the roadmap's).
+
+*Items 1 and 2 done 2026-09-04 (evening)*
+(`plans/stage2-gp-log-joint-einsum.md`): the `(s, k)` loop of
+`_gp_log_joint` is broadcasting over an `(Ns, K, D, N)` array of
+standardized distances with `einsum` contractions against `alpha`
+(measured faster than batched `matmul` once the array leaves the cache,
+and it never materializes `delta²`), and the `(j, k)` variance loop is,
+per sample, two multi-RHS triangular solves plus one `K × K` product
+whose entries are the old summands in a different contraction order
+(chosen over the Gram form `VᵀV` because `J = Jbase − C` cancels). Item 2
+was done here because its loop lived inside the loop item 1 removed.
+Same formulas: the oracles held with no re-baseline on every commit, the
+finite-difference tests pass, the old and new code agree to 1e-15 on
+well-conditioned states and to 1e-9–2e-7 per element on the
+ill-conditioned oracle snapshots (the GP solve's conditioning, the same
+order as the cross-BLAS floors the tolerance classes were set from).
+Because `G` and `dG` feed Adam and the sieve, every trajectory parts at
+iteration 0; on cigar_D4 seed 0 a one-ulp perturbation of the old code's
+gradient moves the iteration-0 ELBO by 0.4, so the replay's initial-design
+check now reads the design from the trace (`X_init`) instead of demanding
+an identical iteration-0 ELBO. Speedup in §2 above. Four latent defects of
+the function were fixed on the way (§9).
 
 **Benchmark target suite (decided 2026-09-02, after the profile).** The
 profile was taken on an independent and a correlated Gaussian, which
