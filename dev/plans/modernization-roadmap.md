@@ -86,8 +86,9 @@ anything that changes numerics lands.
   run, `final_boost` 10–17 % → 4–6 %; every trajectory changed at
   rounding level, all seed-0 finals inside the population fences; four
   latent defects of the function fixed), then `entmc_vbmc` (item 5; now
-  the largest piece of the variational stage at 6–9 % of a D = 4 run and
-  11 % at D = 15), drop per-candidate deepcopy, `GP.clean()` / stop
+  the largest piece of the variational stage at 6–9 % of a D = 4 run, and
+  11 % of the 15-D exhaust run in the 2026-09-03 profile), drop
+  per-candidate deepcopy, `GP.clean()` / stop
   retaining full GPs (memory only: deepcopy is < 1 % of time). On noisy
   targets the active-sampling bucket is the per-sample GP refits and VP
   re-optimizations, so (8) and (1) are what speed those up. After items
@@ -175,7 +176,8 @@ anything that changes numerics lands.
    `dev/golden/baseline/` (PI decision 2026-09-03); copy them over after
    every extension.
 6. Stage 0 remaining after the oracles: finite-difference checks for the
-   transformer Jacobian, gpyreg derivatives and `compute_vargrad`; retire
+   transformer Jacobian and the gpyreg derivatives (`compute_vargrad`
+   dropped from the list: the path was deleted with Stage 2 item 1); retire
    the `.mat` fixtures once the oracles cover what they pin.
 7. gpyreg generator support (`GP.fit`, `SliceSampler`, `f_min_fill`,
    `GP.random_function`) on a gpyreg branch when convenient. The PyVBMC seam
@@ -191,6 +193,10 @@ penalization or Kriging believer, a research item; not the batched
 acquisition *evaluation* of Stage 2 item 3), multi-chain slice sampling,
 scaling to `N ≈ 2k–5k`, log-space
 mixture sums, user-facing agent skill (`2026-09-02-user-agent-skill.md`),
+porting MATLAB's diagonal approximation of the log-joint variance and its
+gradient (`compute_var == 2` in `_gp_log_joint`, which raises "not
+implemented"; it would allow the ELCBO gradient with `beta ≠ 0`, which no
+option enables today; the dead accumulators were deleted 2026-09-04),
 a guard for `final_boost` (`2026-09-04-final-boost-failure.md`: a small,
 independent algorithmic tweak; alters one trace of the 280 in the golden
 baseline).

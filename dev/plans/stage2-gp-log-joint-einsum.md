@@ -444,9 +444,11 @@ dated addendum in devlog §2/§10.
 - **No chunking**: see Findings on memory. Revisit only if a profile
   shows the D = 15 exhaust run's variational fit memory-bound.
 - **Rounding-level differences accepted, bit-identity not pursued**
-  (item 3's rule). The one place where a free choice keeps identity, the
-  `Σ_d` over the second-to-last axis, is kept sequential; the last-axis
-  sums (`ln tau`, the quadratic term) are not contorted.
+  (item 3's rule). Nothing is contorted for identity: the `Σ_d` of the
+  squared distances goes through `einsum` (which moved `z` by an ulp on
+  large arrays in the bit-check), and the last-axis sums (`ln tau`, the
+  quadratic term) happen to be bit-identical to today's coalesced
+  reductions without any effort.
 - **The three §9 fixes ride along** because the loop that contained them
   is deleted, plus the 1-D `eta` softmax Jacobian found by the review;
   each is covered by a test. Porting the diagonal variance approximation
@@ -458,9 +460,12 @@ dated addendum in devlog §2/§10.
 - **The replay's initial-design certificate is the design itself, not the
   iteration-0 ELBO** (found on the first Step 1 replay): the trace now
   stores `X_init`; against the 2026-09-03 baseline, which lacks it, a
-  design point of the new run found live in the reference certifies the
-  design, and where warm-up trimming removed the whole design (cigar) the
-  trace cannot certify it and says so instead of flagging.
+  generator-drawn design point of the new run found live in the reference
+  certifies the design (row 0 is the benchmark's start point `x0`, drawn
+  from a stream spawned off the run seed and identical by construction,
+  so it does not count), and where warm-up trimming removed the whole
+  design (cigar) the trace cannot certify it and says so instead of
+  flagging.
 
 ## Open questions (defaults in bold)
 

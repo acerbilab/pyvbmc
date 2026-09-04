@@ -127,18 +127,20 @@ reason.
 - `scripts/golden_replay.py` — the per-change trajectory gate of Stage 2:
   replays a few golden configurations in-process with the current code
   (about 7 minutes for the default set) and compares each run with its
-  stored trace: the first iteration at which the ELBO path parts (iteration
-  0 identical certifies the initial design), the live points identical,
-  and the finals against the baseline population's `Q3 + 3 IQR` envelope.
+  stored trace: the first iteration at which the ELBO path parts, the live
+  points identical, the initial design (see below), and the finals against
+  the baseline population's `Q3 + 3 IQR` envelope.
   An arithmetic-preserving change is expected to part once a CMA-ES
   ranking flips (a change to the ELBO arithmetic parts at iteration 0);
   a parted run's finals must stay inside the envelope (an identical run
   is exempt: its own seed may be the outlier). The initial design is
   certified from the traces: exactly where both store it (`X_init`,
   written by `golden_trace.py` since commit `9d92c7f`), against the 2026-09-03
-  baseline by finding a design point of the new run among the reference's
-  live rows, and "not certifiable" without a flag where warm-up trimming
-  removed the whole design (cigar). Needs the baseline `.npz` traces for
+  baseline by finding a generator-drawn design point of the new run among
+  the reference's live rows (the start point `x0` comes from the run seed
+  and is identical by construction, so it does not count), and "not
+  certifiable" without a flag where warm-up trimming removed the whole
+  design (cigar). Needs the baseline `.npz` traces for
   the horizons (finals only without them); `--report-only` re-renders a
   finished run. Flags: `--configs`, `--seeds`
   (default seed 0 only), `--baseline` (the traces directory; the default

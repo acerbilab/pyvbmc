@@ -155,7 +155,8 @@ exhaust run is 1.24× faster (1288 → 1041 s) with its variational fit
 2.2× faster (585 → 264 s); its active sampling, untouched, took 20 %
 longer on a different trajectory (the search cost of a different run,
 unexplained in detail). Combined with item 3 the noiseless targets are
-1.7–2.4× faster than the 2026-09-03 baseline. Every trajectory changed
+1.5–2.3× faster than the 2026-09-03 baseline (1.9–2.3× except logreg_D5
+at 1.5×). Every trajectory changed
 (the ELBO arithmetic moved by rounding), every seed-0 final is inside its
 population fence. Under cProfile at D = 4, `_gp_log_joint` fell from
 18–24 % of the run to about 2 % at the same call counts, `final_boost`
@@ -222,6 +223,18 @@ hard-coded scalars: correct by agreement with MATLAB, not independently.
    jitter loop; `_gp_log_joint:1473` is a triangular loop. Fine eagerly,
    hostile to tracing.
 7. Slice-assignment gradient buffers everywhere (`mu_grad[:, k, s:s+1] = …`).
+
+*Addendum 2026-09-05.* The line numbers and three of the descriptions in
+this section predate Stage 2 items 1 and 2
+(`plans/stage2-gp-log-joint-einsum.md`): `_gp_log_joint` no longer has a
+`(s, k)` loop, a triangular `(j, k)` loop (pitfall 6) or slice-assigned
+gradient buffers (pitfall 7); its `compute_vargrad` path is deleted, so
+the "~136 lines" of the table above are now about 100 lines of
+broadcasting. The clamps of pitfall 5 remain. The coverage paragraph
+below was already stale on 2026-09-02 (see the Stage 0 lines of the
+roadmap): finite-difference checks exist for `_gp_log_joint`,
+`_neg_elcbo`, `_vp_bound_loss`, `_soft_bound_loss` and `vp.pdf`
+(`test_*_grad_fd.py`), not only for the entropies.
 
 ---
 
@@ -484,7 +497,10 @@ state used by resume.
   it would make `dF = -dG - dH` a shape mismatch. **Fixed 2026-09-04**
   (item 1): all four blocks are returned, the Jacobian corrections alone
   are conditional; finite-difference test in the raw `(mu, sigma, lambd,
-  w)` coordinates.
+  w)` coordinates. The entropies (`entlb_vbmc`, `entmc_vbmc`) still
+  return only the `mu` block at `jacobian_flag=False`, so the mismatch
+  now sits on their side; equally unreachable (`_neg_elcbo` hard-codes
+  the flag), and it would fail loudly.
 - `vp.pdf(orig_flag=True, log_flag=False, grad_flag=True)` divides `y` by the
   transform Jacobian but returns `dy` uncorrected (a transformed-space
   gradient); the `log_flag=True` sibling raises `NotImplementedError` instead.

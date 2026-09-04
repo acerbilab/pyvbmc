@@ -115,9 +115,15 @@ Things you must hold in your head across files:
   lambd, w` across `_gp_log_joint`, `_neg_elcbo`, `_vp_bound_loss`,
   `entlb_vbmc`, `entmc_vbmc`, and for `vp.pdf`. Changing the variational
   parameterization means updating every one of them, plus the softmax
-  Jacobian that is duplicated four times. Only the entropy gradients are
-  finite-difference tested (`pyvbmc/testing/_check_grad.py`); the rest are
-  pinned to stored reference arrays.
+  Jacobian that is duplicated four times. Finite-difference checks
+  (`pyvbmc/testing/_check_grad.py`) exist for the entropies and, since
+  2026-09-02, for `_gp_log_joint`, `_neg_elcbo`, `_vp_bound_loss`,
+  `_soft_bound_loss` and `vp.pdf` (`pyvbmc/testing/**/test_*_grad_fd.py`);
+  the stored MATLAB arrays remain the value gate, and the oracles pin the
+  numerics stage by stage. `_gp_log_joint` is vectorized over
+  hyperparameter samples and mixture components (2026-09-04): one
+  `(Ns, K, D, N)` array, `einsum` contractions, the variance from
+  multi-RHS solves; the formulas are the loop's.
 - **Two coordinate spaces.** The algorithm runs in an unbounded transformed
   space; users see the original constrained space. `ParameterTransformer`
   (`__call__` forward, `.inverse()` back; probit by default) mediates.
