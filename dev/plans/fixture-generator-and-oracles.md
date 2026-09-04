@@ -469,4 +469,14 @@ attention. Times are wall clock on 2026-09-04.
   the prediction mean alone to 1e-4; the log joint and the ELCBO stay at
   1e-6. Remaining unmeasured on Ubuntu: halfnormal's ELCBO, transformer
   and density, then the well-conditioned `normal_D2_*` snapshots and the
-  noisy one. **Next: read the CI run of the fifth push.**
+  noisy one.
+- [x] **Fifth CI run (33863547190): green.** 510 passed, 22 skipped (the
+  15 by-design oracle skips plus the 7 platform-gated `active_sample_step`
+  tests), 1 rerun, 18:48 on Ubuntu / 3.12. Every oracle on every snapshot
+  now holds on a second BLAS build. The tolerance classes as they stand
+  after four measurements: GP-free 1e-10; GP-solve (log joint, gradients,
+  ELCBO) 1e-6 + 1e-10 abs; predictive mean 1e-4; variance-type 1e-3 +
+  1e-8 abs; log-form acquisitions 1e-5, exponential-form 1e-3; the step
+  oracle platform-bound. macOS (Accelerate) has not run them yet: the
+  full-matrix dispatch before the eventual PR is the next data point, to
+  be handled the same way (measure, then set).

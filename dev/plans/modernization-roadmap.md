@@ -91,12 +91,12 @@ anything that changes numerics lands.
    `pyvbmc/testing/oracles/` and `dev/scripts/make_oracle_fixtures.py`,
    `plans/fixture-generator-and-oracles.md`; reviewed (three read-only
    Opus reviews, all findings folded in), committed and pushed 2026-09-04.
-   The first smoke CI run failed on the platform-bound `active_sample_step`
-   oracle only (now gated on the fixture's platform); `-x` stopped it
-   there. **First thing next session: check the smoke CI run of the
-   follow-up push**; if a tolerance floor is exceeded on Ubuntu, re-measure
-   it with `--check --verbose` on that platform as the plan describes, do
-   not guess.
+   Four smoke CI runs on Ubuntu each stopped at one oracle (the
+   platform-bound step oracle, then three cross-BLAS floors on the
+   ill-conditioned snapshots); each was measured and its tolerance class
+   set from the measurement (plan tracker); the fifth run is green (510
+   passed). macOS has not run the oracles yet: handle the full-matrix
+   dispatch before the PR the same way.
 2. **Stage 2 item 3**: batch the acquisition evaluation (`GP.predict` over
    `Ns`, `vp.pdf` over `K`, the CMA-ES population). Gate: the oracles on
    every commit; per PR a deterministic replay of a few golden configs
