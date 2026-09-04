@@ -1492,59 +1492,59 @@ def _gp_log_joint(
     else:
         dG = None
 
-    # Variance of the expected log joint per sample, from the integrated
-    # posterior covariance between pairs of components.
+    # Variance of the expected log joint per sample: the integrated
+    # posterior covariance between every pair of components, from two
+    # multi-RHS triangular solves and one K x K product per hyperparameter
+    # sample (roadmap item 2; the pair loop it replaces solved twice per
+    # pair). The two-solve form keeps the pair loop's summands
+    # z_k . (L^-1 L^-T z_j) and changes only their contraction order.
     if compute_var:
-        varG = np.zeros((Ns,))
-        J_sjk = np.zeros((Ns, K, K)) if separate_K else None
-        lambd_ = lambd[:, None]  # (D, 1)
+        # Kernel integrated against the product of two components: width
+        # tau_jk, normalization lnnf_jk, evaluated at the components' offset.
+        sig2 = sigma**2
+        tau_jk = np.sqrt(
+            (sig2[:, None] + sig2[None, :])[None, :, :, None]
+            * lambd[None, None, None, :] ** 2
+            + ell[:, None, None, :] ** 2
+        )  # (Ns, K, K, D)
+        lnnf_jk = (
+            ln_sf2[:, None, None]
+            + sum_lnell[:, None, None]
+            - np.sum(np.log(tau_jk), axis=3)
+        )  # (Ns, K, K)
+        delta_jk = (mu_T[:, None, :] - mu_T[None, :, :])[None] / tau_jk
+        J = np.exp(lnnf_jk - 0.5 * np.sum(delta_jk**2, axis=3))  # (Ns, K, K)
         for s in range(0, Ns):
-            L = gp.posteriors[s].L
-            L_chol = gp.posteriors[s].L_chol
-            sn2_eff = 1 / gp.posteriors[s].sW[0] ** 2
-            ell_s = ell[s][:, None]  # (D, 1)
-            for k in range(0, K):
-                z_k = z[s, k]
-                for j in range(0, k + 1):
-                    z_j = z[s, j]
-                    tau_jk = np.sqrt(
-                        (sigma[j] ** 2 + sigma[k] ** 2) * lambd_**2
-                        + ell_s**2
+            post = gp.posteriors[s]
+            z_s = z[s]  # (K, N)
+            if post.L_chol:
+                sn2_eff = 1 / post.sW[0] ** 2
+                Y = (
+                    sp.linalg.solve_triangular(
+                        post.L,
+                        sp.linalg.solve_triangular(
+                            post.L, z_s.T, trans=1, check_finite=False
+                        ),
+                        trans=0,
+                        check_finite=False,
                     )
-                    lnnf_jk = ln_sf2[s] + sum_lnell[s] - np.sum(np.log(tau_jk))
-                    delta_jk = (mu[:, j : j + 1] - mu[:, k : k + 1]) / tau_jk
-
-                    J_jk = np.exp(
-                        lnnf_jk - 0.5 * np.sum(delta_jk**2, axis=0).item()
-                    )
-                    if L_chol:
-                        J_jk -= np.dot(
-                            z_k,
-                            sp.linalg.solve_triangular(
-                                L,
-                                sp.linalg.solve_triangular(
-                                    L, z_j, trans=1, check_finite=False
-                                ),
-                                trans=0,
-                                check_finite=False,
-                            )
-                            / sn2_eff,
-                        )
-                    else:
-                        J_jk += np.dot(z_k, np.dot(L, z_j.T))
-
-                    # Off-diagonal elements are symmetric (count twice)
-                    if j == k:
-                        varG[s] += w[k] ** 2 * np.maximum(np.spacing(1), J_jk)
-                        if separate_K:
-                            J_sjk[s, k, k] = J_jk
-                    else:
-                        varG[s] += 2 * w[j] * w[k] * J_jk
-                        if separate_K:
-                            J_sjk[s, j, k] = J_jk
-                            J_sjk[s, k, j] = J_jk
+                    / sn2_eff
+                )  # (N, K): column j is (L L')^{-1} z_j / sn2_eff
+                J[s] -= z_s @ Y  # entry (k, j) = z_k . y_j
+            else:
+                # L = -(K + sn2 I)^{-1} in this parametrization.
+                J[s] += z_s @ post.L @ z_s.T
+        # The pair loop computed j <= k, i.e. the lower triangle (row k,
+        # column j), and stored it symmetrically; mirror it the same way.
+        lower = np.tril_indices(K, -1)
+        J[:, lower[1], lower[0]] = J[:, lower[0], lower[1]]
+        diag = np.arange(K)
+        J_clamped = J.copy()
+        J_clamped[:, diag, diag] = np.maximum(np.spacing(1), J[:, diag, diag])
+        varG = np.einsum("sjk,j,k->s", J_clamped, w, w)  # (Ns,)
         # Correct for numerical error
         varG = np.maximum(varG, np.spacing(1))
+        J_sjk = J if separate_K else None
     else:
         varG = None
         J_sjk = None
