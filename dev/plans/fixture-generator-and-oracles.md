@@ -198,7 +198,7 @@ total about six minutes.
 | `entlb` | `entlb_vbmc(vp)` | `H, dH` | 1e-10 |
 | `entmc` | `entmc_vbmc(vp, ceil(ns_ent(K)/K), rng=default_rng(seed))` | `H, dH` | 1e-10 while the draw order is unchanged; item 5 (vectorized `entmc`) re-baselines this oracle deliberately after its own finite-difference and statistical checks |
 | `transform` | `pt(X_orig)`, `pt.inverse(U)`, `pt.log_abs_det_jacobian(U)` on the live rows | arrays | 1e-12 |
-| `active_sample_step` | `np.random.seed(seed)`, `vp.rng = default_rng(seed)`, `active_sample(gp, fun_evals_per_iter, …)` on deep copies of the rebuilt state, history stand-in `{"r_index": [r]}` | the chosen points `X_new (n, D)` in original space, their `y_new` | atol 1e-8 on points; a legitimate rounding change in the acquisition can flip a CMA-ES ranking and move a point: then the `acq_*` oracles at 1e-10 are the arbiter and this oracle is re-baselined with a note |
+| `active_sample_step` | legacy state and `vp.rng` seeded, `active_sample(gp, fun_evals_per_iter, …)` on deep copies of the rebuilt state, history stand-in `{"r_index": [r]}` | the chosen points `X_new (n, D)` in original space, their `y_new` | atol 1e-8 on points, **on the platform that generated the fixture only** (`meta["platform"]`; `PYVBMC_ORACLES_ALL=1` forces it elsewhere). The first CI run showed why: on Ubuntu's BLAS the CMA-ES search on `cigar_D4_boosted` ended 1.3 away from the reference points while every acquisition oracle before it passed. It is a same-machine determinism check; a rounding change in the acquisition can flip a CMA-ES ranking even locally, and then the `acq_*` oracles are the arbiter and this oracle is re-baselined with a note |
 
 **Tolerances are per element with a robust floor** (for every entry
 `|out − ref| ≤ rtol · max(|ref|, q25(|ref|)) + atol`, with `q25` the lower
@@ -426,7 +426,14 @@ attention. Times are wall clock on 2026-09-04.
   the earlier records (final-boost devlog, benchmark plan §Results
   wording, golden README, `golden_trace.py` comment) in a second. The push
   touches `pyvbmc/`, so it runs the reduced CI smoke (Ubuntu / 3.12): the
-  first test of the tolerance floors on another BLAS build. **Next
-  session: read that run's result first**; if an oracle fails there,
-  re-measure the floor as described under the oracle table, do not loosen
-  by guesswork.
+  first test of the tolerance floors on another BLAS build.
+- [x] **First CI run (33841593231, Ubuntu / 3.12): one failure**,
+  `cigar_D4_boosted / active_sample_step` (chosen points 1.3 away, 5
+  identical reruns), after every acquisition oracle on that snapshot had
+  passed; `-x` stopped the run there, so the other snapshots' floors on
+  Ubuntu are not yet known. Fix (2026-09-04): the step oracle is gated on
+  the fixture's recorded `platform` (skipped elsewhere unless
+  `PYVBMC_ORACLES_ALL=1`), the generator records the platform, fixtures
+  regenerated (references bit-identical). **Next: read the CI run of that
+  push**; any remaining failure is a floor to re-measure on Ubuntu with
+  `--check --verbose`, not a tolerance to guess.

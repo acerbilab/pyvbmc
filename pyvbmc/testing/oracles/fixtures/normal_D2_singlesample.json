@@ -34,7 +34,7 @@
   "func_count": 65,
   "n_evals": "@@npz:logger/n_evals",
   "noise_flag": false,
-  "total_fun_eval_time": 0.0009989738464355469,
+  "total_fun_eval_time": 0.0,
   "uncertainty_handling_level": 0,
   "y": "@@npz:logger/y",
   "y_max": 1.6278530298083913,
@@ -47,10 +47,10 @@
   "Ns": 1,
   "best_iter": 11,
   "config": "normal_D2",
-  "generated": "2026-09-04 08:16:31",
+  "generated": "2026-09-04 13:11:57",
   "git": {
    "dirty": true,
-   "sha": "413fd4f"
+   "sha": "6606b98"
   },
   "iteration": 11,
   "n_iterations": 11,
@@ -58,6 +58,7 @@
   "note": "GP hyperparameter sampling switched off from the first fit: a single posterior (the Ns = 1 squeeze regime)",
   "oracle_seed": 20260904,
   "pick": "last",
+  "platform": "Windows-11-10.0.26200-SP0",
   "problem": "normal",
   "problem_seed": 0,
   "python": "3.12.6",

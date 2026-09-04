@@ -47,10 +47,10 @@
   "Ns": 8,
   "best_iter": 11,
   "config": "normal_D2",
-  "generated": "2026-09-04 08:16:08",
+  "generated": "2026-09-04 13:11:40",
   "git": {
    "dirty": true,
-   "sha": "413fd4f"
+   "sha": "6606b98"
   },
   "iteration": 2,
   "n_iterations": 11,
@@ -58,6 +58,7 @@
   "note": "warm-up iteration: K = 2, Ns = 8, no warp; the baseline state",
   "oracle_seed": 20260904,
   "pick": 2,
+  "platform": "Windows-11-10.0.26200-SP0",
   "problem": "normal",
   "problem_seed": 0,
   "python": "3.12.6",

@@ -34,7 +34,7 @@
   "func_count": 25,
   "n_evals": "@@npz:logger/n_evals",
   "noise_flag": true,
-  "total_fun_eval_time": 0.007024049758911133,
+  "total_fun_eval_time": 0.0010001659393310547,
   "uncertainty_handling_level": 2,
   "y": "@@npz:logger/y",
   "y_max": -0.2419522604076616,
@@ -47,10 +47,10 @@
   "Ns": 8,
   "best_iter": 3,
   "config": "rosenbrock_D2_noise1",
-  "generated": "2026-09-04 08:24:25",
+  "generated": "2026-09-04 13:17:17",
   "git": {
    "dirty": true,
-   "sha": "413fd4f"
+   "sha": "6606b98"
   },
   "iteration": 3,
   "n_iterations": 3,
@@ -58,6 +58,7 @@
   "note": "noisy target on the VIQR path: per-point noise, pre-drawn importance samples for the VIQR/IMIQR acquisitions",
   "oracle_seed": 20260904,
   "pick": "last",
+  "platform": "Windows-11-10.0.26200-SP0",
   "problem": "rosenbrock",
   "problem_seed": 0,
   "python": "3.12.6",

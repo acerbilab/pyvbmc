@@ -295,6 +295,9 @@ def make_snapshot(recipe):
             p: pkg_version(p) for p in ("pyvbmc", "gpyreg", "numpy", "scipy")
         },
         "python": platform.python_version(),
+        # The `active_sample_step` oracle reproduces only on the platform
+        # (BLAS build) that generated the fixture; the test gates on this.
+        "platform": platform.platform(),
         "generated": time.strftime("%Y-%m-%d %H:%M:%S"),
     }
     arrays, tree = snapshot_from_objects(

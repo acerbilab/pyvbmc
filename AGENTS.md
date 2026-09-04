@@ -194,4 +194,6 @@ Things you must hold in your head across files:
   outside pytest. The tests need a repository checkout: the testing
   package ships in the sdist, not the wheel, and the `active_sample_step`
   oracle also imports the benchmark targets from `dev/scripts` (skipped
-  when absent).
+  when absent) and runs only on the platform that generated the fixtures
+  (a CMA-ES search turns BLAS rounding differences into different chosen
+  points; `PYVBMC_ORACLES_ALL=1` forces it).

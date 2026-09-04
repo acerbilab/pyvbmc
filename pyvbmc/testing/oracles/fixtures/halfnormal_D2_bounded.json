@@ -34,7 +34,7 @@
   "func_count": 70,
   "n_evals": "@@npz:logger/n_evals",
   "noise_flag": false,
-  "total_fun_eval_time": 0.003004312515258789,
+  "total_fun_eval_time": 0.0009822845458984375,
   "uncertainty_handling_level": 0,
   "y": "@@npz:logger/y",
   "y_max": 0.12467881104104306,
@@ -47,10 +47,10 @@
   "Ns": 10,
   "best_iter": 12,
   "config": "halfnormal_D2",
-  "generated": "2026-09-04 08:23:44",
+  "generated": "2026-09-04 13:16:48",
   "git": {
    "dirty": true,
-   "sha": "413fd4f"
+   "sha": "6606b98"
   },
   "iteration": 12,
   "n_iterations": 12,
@@ -58,6 +58,7 @@
   "note": "finite bounds: probit transform and a non-constant log-Jacobian",
   "oracle_seed": 20260904,
   "pick": "last",
+  "platform": "Windows-11-10.0.26200-SP0",
   "problem": "halfnormal",
   "problem_seed": 0,
   "python": "3.12.6",

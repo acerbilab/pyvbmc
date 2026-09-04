@@ -47,10 +47,10 @@
   "Ns": 8,
   "best_iter": 11,
   "config": "normal_D2",
-  "generated": "2026-09-04 08:16:12",
+  "generated": "2026-09-04 13:11:44",
   "git": {
    "dirty": true,
-   "sha": "413fd4f"
+   "sha": "6606b98"
   },
   "iteration": 2,
   "n_iterations": 11,
@@ -58,6 +58,7 @@
   "note": "the warm-up GP of normal_D2 with a synthetic single-component VP (K = 1 branches of the entropy and density code)",
   "oracle_seed": 20260904,
   "pick": "k1",
+  "platform": "Windows-11-10.0.26200-SP0",
   "problem": "normal",
   "problem_seed": 0,
   "python": "3.12.6",
