@@ -1269,8 +1269,8 @@ def _gp_log_joint(
     computed at once over the hyperparameter samples ``s`` and the mixture
     components ``k`` by broadcasting: the standardized distances of the
     training inputs from the components form an ``(Ns, K, D, N)`` array and
-    the contractions with the GP weights ``alpha`` are ``einsum``
-    contractions (`dev/plans/stage2-gp-log-joint-einsum.md`).
+    the sums over the training inputs are ``einsum`` contractions
+    (`dev/plans/stage2-gp-log-joint-einsum.md`).
 
     Parameters
     ==========

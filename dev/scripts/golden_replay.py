@@ -26,9 +26,12 @@ under ``--baseline``:
   drawn from the generator before any numerics run) is identical: exactly,
   when both traces store it (``X_init``, written since commit 9d92c7f of
   2026-09-04; the 2026-09-03 baseline lacks it), else
-  by finding the new run's design points among the reference's live rows
-  (warm-up trimming can remove the whole design on a target like cigar,
-  and then the stored trace cannot certify it: reported, not flagged);
+  by finding the new run's generator-drawn design points among the
+  reference's live rows (row 0 is the benchmark's start point ``x0``,
+  drawn from a stream spawned off the run seed and identical by
+  construction, so it does not count; warm-up trimming can remove the
+  whole design on a target like cigar, and then the stored trace cannot
+  certify it: reported, not flagged);
 - the final metrics side by side, and whether the new run's ΔLML, gsKL and
   MMTV lie inside the baseline population's envelope for that config
   (Tukey far-out fence, ``Q3 + 3 IQR`` over the seeds' sidecars under

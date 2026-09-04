@@ -182,6 +182,31 @@ def _gp_log_joint_fixture():
     return vp, gp
 
 
+def test_gp_log_joint_softmax_jacobian_1d_eta():
+    """The w block of ``dG`` for a 1-D, non-uniform ``eta`` must equal the
+    2-D result. Until 2026-09-04 the softmax Jacobian was built as
+    ``-exp(eta).T * exp(eta)``, which is an outer product only for a
+    ``(1, K)`` ``eta`` and degenerates to a row broadcast for a 1-D one; the
+    MATLAB-pinned test above did not see it because its ``eta`` is uniform,
+    where the two forms coincide."""
+    vp, gp = _gp_log_joint_fixture()
+    eta = np.array([[0.0, -0.4]])
+    vp.eta = eta
+    vp.w = np.exp(eta) / np.sum(np.exp(eta))
+    _, dG_2d, *_ = _gp_log_joint(vp, gp, True)
+    vp.eta = eta.ravel()
+    _, dG_1d, *_ = _gp_log_joint(vp, gp, True)
+    assert np.array_equal(dG_1d, dG_2d)
+    # And the block is the softmax Jacobian applied to the per-component
+    # expected log joint, averaged over the hyperparameter samples.
+    _, _, _, _, _, I_sk, _ = _gp_log_joint(
+        vp, gp, False, True, True, False, True
+    )
+    e = np.exp(eta.ravel())
+    J_w = -np.outer(e, e) / e.sum() ** 2 + np.diag(e) / e.sum()
+    assert np.allclose(dG_2d[-vp.K :], J_w @ I_sk.mean(axis=0))
+
+
 def test_gp_log_joint_separate_K_without_variance():
     """Per-component contributions without the variance: ``J_sjk`` is
     ``None`` (until 2026-09-04 this raised ``UnboundLocalError``) and the
