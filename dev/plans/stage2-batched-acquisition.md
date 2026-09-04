@@ -1,7 +1,8 @@
 # Stage 2 item 3: batched acquisition evaluation
 
-Created: 2026-09-04 14:50. Status: **DONE 2026-09-04 18:00** (PyVBMC
-half of item 3; follow-ups at the end). Roadmap pickup point 2
+Created: 2026-09-04 14:50. Status: **DONE 2026-09-04 18:00; the two
+throttled measurements repeated on a cool machine 22:19** (PyVBMC half of
+item 3; follow-ups at the end). Roadmap pickup point 2
 (`plans/modernization-roadmap.md`); rationale in
 `dev/2026-09-02-modernization-discussion.md` §10 (Stage 2, item 3, first in
 the measured order) and the profile in
