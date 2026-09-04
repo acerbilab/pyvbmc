@@ -16,7 +16,11 @@ Examples::
 
 ``--aggregate`` writes ``aggregate.md`` (two tables: wall time and stage
 balance from the plain runs; cProfile attribution from the cprof runs) and
-``aggregate.json`` next to the run directories.
+``aggregate.json`` next to the run directories. ``--probe CONFIG`` runs a
+short reference config plain before and after the campaign (rows
+``probe_start_…`` / ``probe_end_…`` in the aggregate) and prints the ratio
+of the two walls: a speed probe that shows whether the machine slowed
+down under sustained load, which a laptop did on 2026-09-04.
 """
 
 import argparse
@@ -26,7 +30,7 @@ import sys
 import time
 from pathlib import Path
 
-from benchmark_targets import SUITES, suite_configs
+from benchmark_targets import SUITES, find_config, suite_configs
 
 HERE = Path(__file__).resolve().parent
 REPO_ROOT = HERE.parents[1]
@@ -62,8 +66,8 @@ BUCKETS = [
 ]
 
 
-def run_one(cfg, mode, out_dir, seed, extra):
-    tag = f"{cfg.label}_{mode}"
+def run_one(cfg, mode, out_dir, seed, extra, tag=None):
+    tag = tag or f"{cfg.label}_{mode}"
     run_dir = out_dir / tag
     if (run_dir / "summary.json").exists():
         print(f"[suite] skip {tag} (summary.json exists)", flush=True)
@@ -100,15 +104,35 @@ def run_one(cfg, mode, out_dir, seed, extra):
     return rc == 0
 
 
+def run_probe(cfg, when, out_dir, seed, extra):
+    """Plain run of a short reference config before (``when="start"``) or
+    after (``"end"``) a campaign: a speed probe. Comparing the two walls
+    (and either with the same config's wall in an earlier campaign) tells
+    whether the machine slowed down during the campaign, e.g. a laptop
+    throttling after sustained load (`dev/plans/stage2-batched-acquisition.md`
+    §Results, 2026-09-04). Returns the wall time in seconds, or ``None``."""
+    tag = f"probe_{when}_{cfg.label}"
+    ok = run_one(cfg, "plain", out_dir, seed, extra, tag=tag)
+    summ = out_dir / tag / "summary.json"
+    if not (ok and summ.exists()):
+        return None
+    return float(json.loads(summ.read_text())["result"]["wall_s"])
+
+
 def aggregate(out_dir):
     rows = []
     for summ in sorted(out_dir.glob("*/summary.json")):
         s = json.loads(summ.read_text())
         r = s["result"]
         wall = r["wall_s"]
+        tag = summ.parent.name
         row = {
-            "tag": summ.parent.name,
-            "config": s["meta"].get("config"),
+            "tag": tag,
+            # Probe rows keep their tag as the label so the start and end
+            # probes of one config are distinguishable in the table.
+            "config": (
+                tag if tag.startswith("probe_") else s["meta"].get("config")
+            ),
             "mode": "cprof" if s["meta"].get("cprofile") else "plain",
             "wall_s": wall,
             "untimed_s": r.get("untimed_s"),
@@ -213,6 +237,13 @@ def main(argv=None):
     )
     ap.add_argument("--aggregate", type=Path, default=None)
     ap.add_argument(
+        "--probe",
+        default=None,
+        metavar="CONFIG",
+        help="run this config plain before and after the campaign as a"
+        " speed probe (e.g. banana_D4, ~45 s) and report the two walls",
+    )
+    ap.add_argument(
         "extra", nargs="*", help="extra args passed to profile_run"
     )
     args = ap.parse_args(argv)
@@ -228,16 +259,37 @@ def main(argv=None):
         wanted = set(args.only.split(","))
         cfgs = [c for c in cfgs if c.label in wanted]
     modes = ["plain", "cprof"] if args.mode == "both" else [args.mode]
+    probe_cfg = find_config(args.probe) if args.probe else None
     print(f"[suite] {len(cfgs)} configs x {modes} -> {out_dir}", flush=True)
     t0 = time.time()
     ok = True
+    probe = {}
+    if probe_cfg is not None:
+        probe["start"] = run_probe(
+            probe_cfg, "start", out_dir, args.seed, args.extra
+        )
     for mode in modes:
         for cfg in cfgs:
             ok &= run_one(cfg, mode, out_dir, args.seed, args.extra)
+    if probe_cfg is not None:
+        probe["end"] = run_probe(
+            probe_cfg, "end", out_dir, args.seed, args.extra
+        )
     print(
         f"[suite] campaign finished in {(time.time() - t0) / 60:.1f} min",
         flush=True,
     )
+    if probe_cfg is not None:
+        a, b = probe.get("start"), probe.get("end")
+        if a and b:
+            print(
+                f"[suite] speed probe {probe_cfg.label}: {a:.1f} s at start,"
+                f" {b:.1f} s at end (end/start {b / a:.2f}); much above 1"
+                " means the machine slowed down during the campaign",
+                flush=True,
+            )
+        else:
+            print(f"[suite] speed probe incomplete: {probe}", flush=True)
     aggregate(out_dir)
     return 0 if ok else 1
 

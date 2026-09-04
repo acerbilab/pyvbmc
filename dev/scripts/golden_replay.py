@@ -21,8 +21,13 @@ under ``--baseline``:
   differs (exactly, and beyond 1e-6), and how many leading *live* evaluated
   points are identical. The trace stores only the rows that survive
   warm-up trimming, so the point horizon is a lower bound on the true
-  evaluation horizon; the ELBO horizon is the primary measure, and an
-  identical iteration 0 certifies an identical initial design;
+  evaluation horizon; the ELBO horizon is the primary measure;
+- whether the initial design (every evaluation before the first GP fit,
+  drawn from the generator before any numerics run) is identical: exactly,
+  when both traces store it (``X_init``, written since 2026-09-05), else
+  by finding the new run's design points among the reference's live rows
+  (warm-up trimming can remove the whole design on a target like cigar,
+  and then the stored trace cannot certify it: reported, not flagged);
 - the final metrics side by side, and whether the new run's ΔLML, gsKL and
   MMTV lie inside the baseline population's envelope for that config
   (Tukey far-out fence, ``Q3 + 3 IQR`` over the seeds' sidecars under
@@ -31,12 +36,14 @@ under ``--baseline``:
 
 An arithmetic-preserving refactor is expected to *part* from the stored
 trajectory at some point: a few-ulp change in an acquisition value flips a
-CMA-ES ranking and the search ends elsewhere. What must hold is that
-iteration 0 is identical (the initial design is drawn from the generator
-before any numerics run) and that a parted run's finals stay inside the
-envelope (an identical run is exempt: its own seed may be the
-population's far outlier). Exit code 1 if any run fails, an iteration 0
-differs, a final is not finite, a parted run's accuracy metric exceeds
+CMA-ES ranking and the search ends elsewhere; a change to the ELBO
+arithmetic itself (e.g. ``_gp_log_joint``) parts at iteration 0, and on a
+target whose warm-up variational optimization is chaotic (cigar) by far
+more than rounding. What must hold is that the initial design is the same
+and that a parted run's finals stay inside the envelope (an identical run
+is exempt: its own seed may be the population's far outlier). Exit code 1
+if any run fails, the initial design differs, a final is not finite, a
+parted run's accuracy metric exceeds
 the envelope, or nothing was compared. Without the baseline ``.npz``
 traces (a fresh checkout; they are gitignored) only the final-metric
 comparison runs. Timers, wall times and memory figures are never
@@ -119,6 +126,8 @@ def _horizon(a, b, rtol, atol):
 
 def compare_traces(ref, new):
     """Agreement horizons between two trace archives (dict-like)."""
+    import numpy as np
+
     out = {}
     for key in ("X_orig", "y_orig"):
         out[f"{key}_exact"] = _horizon(ref[key], new[key], 0.0, 0.0)
@@ -138,7 +147,45 @@ def compare_traces(ref, new):
         and out["n_iter_ref"] == out["n_iter_new"]
         and out["elbo_exact_iter"] == out["n_iter_ref"]
     )
-    out["initial_design_ok"] = out["elbo_exact_iter"] >= 1
+    # The initial design (every evaluation before the first GP fit) is
+    # drawn from the generator before any numerics run, so it must be
+    # identical. Traces written since 2026-09-05 store it as ``X_init``;
+    # the 2026-09-03 baseline does not, so the fallback looks for the new
+    # run's design points among the reference's live rows. Warm-up trimming
+    # removes low-density rows, on some targets (cigar) the whole design:
+    # then the stored trace cannot certify the design and the check is
+    # reported as such, not flagged. The ELBO of iteration 0 is numerics
+    # run on that design (a change to the ELBO arithmetic moves it) and is
+    # not part of the certificate.
+    if "X_init" in ref and "X_init" in new:
+        ok = bool(
+            ref["X_init"].shape == new["X_init"].shape
+            and np.array_equal(ref["X_init"], new["X_init"])
+        )
+        out["design"] = (
+            "identical" if ok else "DIFFERENT"
+        ) + " (X_init in both traces)"
+        out["initial_design_ok"] = ok
+    elif "X_init" in new:
+        n0 = len(new["X_init"])
+        found = sum(
+            bool(np.any(np.all(ref["X_orig"] == x, axis=1)))
+            for x in new["X_init"]
+        )
+        if found:
+            # One identical design point means the same generator stream,
+            # hence the same design.
+            out["design"] = f"{found} of {n0} design points live in the ref"
+            out["initial_design_ok"] = True
+        else:
+            out["design"] = (
+                f"not certifiable (none of the {n0} design points is live"
+                " in the reference trace)"
+            )
+            out["initial_design_ok"] = None
+    else:
+        out["design"] = "not certifiable (no X_init in the new trace)"
+        out["initial_design_ok"] = None
     return out
 
 
@@ -208,15 +255,16 @@ def compare_run(label, seed, out_dir, baseline, sidecars, pop):
         if row["elbo_iter"] > row["elbo_exact_iter"]:
             verdict += f" (beyond 1e-6 at {row['elbo_iter']})"
         verdict += f"; live points identical: {row['X_orig_exact']}"
-        if not row["initial_design_ok"]:
-            verdict = (
-                "ITERATION 0 DIFFERS (initial design or GP fit); " + verdict
-            )
+        verdict += f"; initial design {row['design']}"
+        if row["initial_design_ok"] is False:
+            verdict = "INITIAL DESIGN DIFFERS; " + verdict
     else:
         verdict = "finals only"
     if outside:
         verdict += "; OUTSIDE envelope: " + ", ".join(outside)
-    row["flagged"] = bool(outside) or not row.get("initial_design_ok", True)
+    row["flagged"] = bool(outside) or (
+        row.get("initial_design_ok", True) is False
+    )
     row["verdict"] = verdict
     return row
 
@@ -295,7 +343,9 @@ def render(rows, git, args, minutes):
         " arithmetic-preserving change once a CMA-ES ranking flips); the"
         " live-point count is a lower bound on the evaluation horizon"
         " because warm-up trimming removes rows. Flags: a run failed,"
-        " iteration 0 differs, a final is not finite, or a parted run's"
+        " the initial design differs (exact where both traces store it,"
+        " else a design point of the new run found live in the reference),"
+        " a final is not finite, or a parted run's"
         " ΔLML/gsKL/MMTV exceeds the population's Q3 + 3 IQR fence."
     )
     return "\n".join(lines) + "\n", n_flag

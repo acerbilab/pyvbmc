@@ -61,6 +61,15 @@ status and next steps never go into the devlogs.
   item 3: the replay gate (`scripts/golden_replay.py`), the batched CMA-ES
   acquisition evaluation, the broadcast `vp.pdf`, the targeted re-baseline
   of the step oracle, the measured speedup.
+- `plans/stage2-gp-log-joint-einsum.md` — plan and worklog for Stage 2
+  items 1 and 2: `_gp_log_joint` vectorized over hyperparameter samples
+  and mixture components (one `(Ns, K, D, N)` tensor, `einsum`
+  contractions), the log-joint variance from multi-RHS solves, the latent
+  defects of the function fixed on the way, the bit-checks against the
+  loop, the sensitivity experiment that explains why the replay parts at
+  iteration 0 on cigar, the initial-design certificate added to the
+  replay (`X_init` in the traces), the `--probe` speed probe of the
+  profile suite, the measured speedup.
 
 Naming: `plans/` files are named by slug only, never by date (the date is in
 the file header), so that they cannot be mistaken for copies of the dated
@@ -105,7 +114,11 @@ reason.
   `--cprofile`, a cProfile attribution of the hot paths.
 - `scripts/profile_suite.py` — run `profile_run.py` over a whole suite
   (plain and/or cProfile, resumable) and aggregate the summaries into one
-  markdown table.
+  markdown table. `--probe CONFIG` runs a short reference config plain
+  before and after the campaign and prints the ratio of the two walls: a
+  speed probe, because a laptop under sustained load can slow down by
+  1.5× partway through a campaign (2026-09-04) and the untouched stages
+  are otherwise the only tell.
 - `scripts/golden_trace.py` — the golden-trace regression harness: `run` a
   suite over many seeds (one process by default), storing one compact
   `.npz` trace and a JSON sidecar per run; `summary` a population; `compare`
@@ -118,10 +131,16 @@ reason.
   0 identical certifies the initial design), the live points identical,
   and the finals against the baseline population's `Q3 + 3 IQR` envelope.
   An arithmetic-preserving change is expected to part once a CMA-ES
-  ranking flips; a parted run's finals must stay inside the envelope (an
-  identical run is exempt: its own seed may be the outlier). Needs the
-  baseline `.npz` traces for the horizons (finals only without them);
-  `--report-only` re-renders a finished run. Flags: `--configs`, `--seeds`
+  ranking flips (a change to the ELBO arithmetic parts at iteration 0);
+  a parted run's finals must stay inside the envelope (an identical run
+  is exempt: its own seed may be the outlier). The initial design is
+  certified from the traces: exactly where both store it (`X_init`,
+  written by `golden_trace.py` since 2026-09-05), against the 2026-09-03
+  baseline by finding a design point of the new run among the reference's
+  live rows, and "not certifiable" without a flag where warm-up trimming
+  removed the whole design (cigar). Needs the baseline `.npz` traces for
+  the horizons (finals only without them); `--report-only` re-renders a
+  finished run. Flags: `--configs`, `--seeds`
   (default seed 0 only), `--baseline` (the traces directory; the default
   `scripts/runs/golden/baseline_20260903/` exists only on the machine that
   made the baseline), `--sidecars`, `--out`, `--threads` (1, as the

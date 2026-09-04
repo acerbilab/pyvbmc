@@ -227,6 +227,14 @@ def run_task(label, seed, extra_options, out_dir):
             vp_lambd=np.vstack(vp_lambd),
             X_orig=np.asarray(fl.X_orig)[live],
             y_orig=np.ravel(np.asarray(fl.y_orig))[live],
+            # The initial design: every evaluation before the first GP fit
+            # (live or trimmed), drawn from the generator before any
+            # numerics run. The replay gate compares it exactly; traces
+            # written before 2026-09-05 lack it (see golden_replay.py).
+            X_init=np.asarray(fl.X_orig)[: int(per_iter["func_count"][0])],
+            y_init=np.ravel(np.asarray(fl.y_orig))[
+                : int(per_iter["func_count"][0])
+            ],
             final_w=np.ravel(vp.w),
             final_mu=np.asarray(vp.mu),
             final_sigma=np.ravel(vp.sigma),
