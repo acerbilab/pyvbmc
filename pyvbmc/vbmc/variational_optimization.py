@@ -1263,6 +1263,15 @@ def _gp_log_joint(
     """
     Expected variational log joint probability via GP approximation.
 
+    The expectation of the GP posterior mean under the variational mixture
+    and its gradient are analytic (Gaussian components times a squared
+    exponential kernel with a negative quadratic mean). Every quantity is
+    computed at once over the hyperparameter samples ``s`` and the mixture
+    components ``k`` by broadcasting: the standardized distances of the
+    training inputs from the components form an ``(Ns, K, D, N)`` array and
+    the contractions with the GP weights ``alpha`` are batched matrix
+    products (`dev/plans/stage2-gp-log-joint-einsum.md`).
+
     Parameters
     ==========
     vp : VariationalPosterior
@@ -1277,7 +1286,11 @@ def _gp_log_joint(
     avg_flag : bool, defaults to True
         Whether to average over multiple GP hyperparameters if provided.
     jacobian_flag : bool, defaults to True
-        Whether variational parameters are transformed.
+        Whether variational parameters are transformed, i.e. whether the
+        gradient is taken with respect to ``(mu, ln sigma, ln lambd, eta)``
+        (the parameterization of ``vp.get_parameters``) rather than to
+        ``(mu, sigma, lambd, w)``. The gradient has all four blocks either
+        way.
     compute_var : bool, defaults to False
         Whether to compute variance.
     separate_K : bool, defaults to False
@@ -1291,8 +1304,9 @@ def _gp_log_joint(
         The gradient.
     varG : np.ndarray, optional
         The variance.
-    dvarG : np.ndarray, optional
-        The gradient of the variance.
+    dvarG : None
+        The gradient of the variance. Not implemented (see Raises); always
+        ``None``.
     var_ss : float
         Variance for each GP hyperparameter sample.
     I_sk : np.ndarray
@@ -1300,37 +1314,45 @@ def _gp_log_joint(
         component.
     J_sjk : np.ndarray
         The contribution to ``varG`` per GP hyperparameter sample and per pair
-        of VP components.
+        of VP components (``None`` unless ``compute_var``).
 
     Raises
     ------
     NotImplementedError
-        If the diagonal approximation of the gradient is requested
+        If the diagonal approximation of the variance is requested
         (``compute_var == 2``) or if the gradient of the variance is requested
-        without the diagonal approximation.
+        (gradients together with ``compute_var``) without the diagonal
+        approximation.
     """
     if np.isscalar(grad_flags):
         if grad_flags:
             grad_flags = (True, True, True, True)
         else:
             grad_flags = (False, False, False, False)
+    compute_grad = any(grad_flags)
 
-    compute_vargrad = compute_var and np.any(grad_flags)
-    if compute_vargrad and compute_var != 2:
+    if compute_var and compute_grad and compute_var != 2:
         raise NotImplementedError(
             "Computation of gradient of log joint variance is currently "
             "available only for diagonal approximation of the variance."
+        )
+    if compute_var == 2:
+        # Missing port: compute_var == 2 skipped since it is not used
+        raise NotImplementedError(
+            "Diagonal approximation of GP log-joint variance not implemented."
         )
 
     D = vp.D
     K = vp.K
     N = gp.X.shape[0]
-    mu = vp.mu.copy()
-    sigma = vp.sigma.copy()
-    lambd = vp.lambd.copy().reshape(-1, 1)
-
-    w = vp.w.copy()[0, :]
     Ns = len(gp.posteriors)
+    # Private copies (tests pass 1-D ``lambd``/``eta``; nothing here may
+    # write into the VP).
+    mu = np.array(vp.mu, dtype=float)  # (D, K)
+    mu_T = mu.T  # (K, D)
+    sigma = np.array(vp.sigma, dtype=float).reshape(-1)  # (K,)
+    lambd = np.array(vp.lambd, dtype=float).reshape(-1)  # (D,)
+    w = np.array(vp.w, dtype=float).reshape(-1)  # (K,)
 
     # TODO: once we get more mean function add a check here
     # if all(gp.meanfun ~= [0,1,4,6,8,10,12,14,16,18,20,22])
@@ -1344,159 +1366,152 @@ def _gp_log_joint(
     quadratic_meanfun = isinstance(
         gp.mean, gpr.mean_functions.NegativeQuadratic
     )
+    zero_meanfun = isinstance(gp.mean, gpr.mean_functions.ZeroMean)
 
-    G = np.zeros((Ns,))
-    # Check which gradients are computed
-    if grad_flags[0]:
-        mu_grad = np.zeros((D, K, Ns))
-    if grad_flags[1]:
-        sigma_grad = np.zeros((K, Ns))
-    if grad_flags[2]:
-        lambd_grad = np.zeros((D, Ns))
-    if grad_flags[3]:
-        w_grad = np.zeros((K, Ns))
+    # GP hyperparameters, one row per posterior sample.
+    # Missing port: no code related to mean functions we haven't
+    #               implemented in gpyreg
+    cov_N = gp.covariance.hyperparameter_count(D)
+    noise_N = gp.noise.hyperparameter_count()
+    hyp = np.stack(
+        [np.ravel(post.hyp) for post in gp.posteriors]
+    )  # (Ns, hyp_N)
+    ell = np.exp(hyp[:, 0:D])  # (Ns, D)
+    ln_sf2 = 2 * hyp[:, D]  # (Ns,)
+    sum_lnell = np.sum(hyp[:, 0:D], axis=1)  # (Ns,)
+    if zero_meanfun:
+        m0 = np.zeros((Ns,))
+    else:
+        m0 = hyp[:, cov_N + noise_N]  # (Ns,)
+    if quadratic_meanfun:
+        xm = hyp[:, cov_N + noise_N + 1 : cov_N + noise_N + D + 1]  # (Ns, D)
+        omega = np.exp(hyp[:, cov_N + noise_N + D + 1 :])  # (Ns, D)
+        inv_omega2 = 1 / omega**2
+    alpha = np.stack(
+        [np.reshape(post.alpha, (-1,)) for post in gp.posteriors]
+    )  # (Ns, N)
+
+    # Integrals of the kernel against each component: tau is the width of
+    # the product Gaussian, lnnf its normalization, z the integrated kernel
+    # at every training input.
+    tau = np.sqrt(
+        sigma[None, :, None] ** 2 * lambd[None, None, :] ** 2
+        + ell[:, None, :] ** 2
+    )  # (Ns, K, D)
+    lnnf = (
+        ln_sf2[:, None] + sum_lnell[:, None] - np.sum(np.log(tau), axis=2)
+    )  # (Ns, K)
+    # The (Ns, K, D, N) array below is the one large temporary of the
+    # function (a few MB at the supported operating points); its
+    # contractions use ``einsum``, one pass each and no second copy, which
+    # measured faster than materializing delta**2 for BLAS once the array
+    # leaves the cache (`dev/plans/stage2-gp-log-joint-einsum.md`).
+    Xt = mu_T[:, :, None] - gp.X.T[None, :, :]  # (K, D, N)
+    delta = Xt[None, :, :, :] / tau[:, :, :, None]  # (Ns, K, D, N)
+    dsq_sum = np.einsum("skdn,skdn->skn", delta, delta)  # (Ns, K, N)
+    z = np.exp(lnnf[:, :, None] - 0.5 * dsq_sum)  # (Ns, K, N)
+
+    # Expected log joint per sample and component.
+    zalpha = (z @ alpha[:, :, None])[:, :, 0]  # (Ns, K)
+    I_sk = zalpha + m0[:, None]
+    if quadratic_meanfun:
+        sig2lam2 = sigma[None, :, None] ** 2 * lambd[None, None, :] ** 2
+        xm_ = xm[:, None, :]
+        nu = -0.5 * np.sum(
+            inv_omega2[:, None, :]
+            * (mu_T[None] ** 2 + sig2lam2 - 2 * mu_T[None] * xm_ + xm_**2),
+            axis=2,
+        )  # (Ns, K)
+        I_sk = I_sk + nu
+    G = np.sum(w[None, :] * I_sk, axis=1)  # (Ns,)
+
+    # Gradients with respect to mu, sigma, lambd, w (per sample), each
+    # block laid out as in ``vp.get_parameters``: mu with d fastest.
+    if compute_grad:
+        za = z * alpha[:, None, :]  # (Ns, K, N)
+        # Sums over the training inputs of delta * z * alpha and of
+        # (delta**2 - 1) * z * alpha, per sample, component and dimension.
+        M = np.einsum("skdn,skn->skd", delta, za)  # (Ns, K, D)
+        B = np.einsum("skdn,skdn,skn->skd", delta, delta, za)
+        B -= zalpha[:, :, None]
+        w_ = w[None, :, None]
+
+        grad_list = []
+        if grad_flags[0]:
+            mu_grad = -w_ * M / tau  # (Ns, K, D)
+            if quadratic_meanfun:
+                mu_grad -= (w_ * inv_omega2[:, None, :]) * (
+                    mu_T[None] - xm[:, None, :]
+                )
+            grad_list.append(mu_grad.reshape(Ns, K * D).T)  # (D K, Ns)
+
+        if grad_flags[1]:
+            sigma_grad = (
+                w[None, :]
+                * sigma[None, :]
+                * np.sum((lambd[None, None, :] / tau) ** 2 * B, axis=2)
+            )  # (Ns, K)
+            if quadratic_meanfun:
+                sigma_grad -= (
+                    w[None, :]
+                    * sigma[None, :]
+                    * np.sum(inv_omega2 * lambd[None, :] ** 2, axis=1)[:, None]
+                )
+            # Correct for standard log reparametrization of sigma
+            if jacobian_flag:
+                sigma_grad *= sigma[None, :]
+            grad_list.append(sigma_grad.T)  # (K, Ns)
+
+        if grad_flags[2]:
+            lambd_grad = lambd[None, :] * np.sum(
+                w_ * (sigma[None, :, None] / tau) ** 2 * B, axis=1
+            )  # (Ns, D)
+            if quadratic_meanfun:
+                lambd_grad -= (
+                    lambd[None, :] * inv_omega2 * np.sum(w * sigma**2)
+                )
+            # Correct for standard log reparametrization of lambd
+            if jacobian_flag:
+                lambd_grad *= lambd[None, :]
+            grad_list.append(lambd_grad.T)  # (D, Ns)
+
+        if grad_flags[3]:
+            w_grad = I_sk.T  # (K, Ns)
+            # Correct for standard softmax reparametrization of w
+            if jacobian_flag:
+                exp_eta = np.exp(np.reshape(vp.eta, (-1,)))
+                eta_sum = np.sum(exp_eta)
+                J_w = (
+                    -np.outer(exp_eta, exp_eta) / eta_sum**2
+                    + np.diag(exp_eta) / eta_sum
+                )
+                w_grad = np.dot(J_w, w_grad)
+            grad_list.append(w_grad)
+
+        dG = np.concatenate(grad_list, axis=0)  # (D K + K + D + K, Ns)
+    else:
+        dG = None
+
+    # Variance of the expected log joint per sample, from the integrated
+    # posterior covariance between pairs of components.
     if compute_var:
         varG = np.zeros((Ns,))
-    # Compute gradient of variance?
-    if compute_vargrad:
-        # TODO: compute vargrad is untested
-        if grad_flags[0]:
-            mu_vargrad = np.zeros((D, K, Ns))
-        if grad_flags[1]:
-            sigma_vargrad = np.zeros((K, Ns))
-        if grad_flags[2]:
-            lambd_vargrad = np.zeros((D, Ns))
-        if grad_flags[3]:
-            w_vargrad = np.zeros((K, Ns))
-
-    # Store contribution to the jog joint separately for each component?
-    if separate_K:
-        I_sk = np.zeros((Ns, K))
-        if compute_var:
-            J_sjk = np.zeros((Ns, K, K))
-
-    Xt = np.zeros((K, D, N))
-    for k in range(0, K):
-        Xt[k, :, :] = np.reshape(mu[:, k], (-1, 1)) - gp.X.T
-
-    # Number of GP hyperparameters
-    cov_N = gp.covariance.hyperparameter_count(D)
-    # mean_N = gp.mean.hyperparameter_count(D)
-    noise_N = gp.noise.hyperparameter_count()
-
-    # Loop over hyperparameter samples.
-    # Missing port: below loop does not have code related to mean functions
-    #               we haven't implemented in gpyreg
-    for s in range(0, Ns):
-        hyp = gp.posteriors[s].hyp
-
-        # Extract GP hyperparameters from hyperparameter array.
-        ell = np.exp(hyp[0:D]).reshape(-1, 1)
-        ln_sf2 = 2 * hyp[D]
-        sum_lnell = np.sum(hyp[0:D])
-
-        # GP mean function hyperparameters
-        if isinstance(gp.mean, gpr.mean_functions.ZeroMean):
-            m0 = 0
-        else:
-            m0 = hyp[cov_N + noise_N]
-
-        if quadratic_meanfun:
-            xm = hyp[cov_N + noise_N + 1 : cov_N + noise_N + D + 1].reshape(
-                -1, 1
-            )
-            omega = np.exp(hyp[cov_N + noise_N + D + 1 :]).reshape(-1, 1)
-
-        # GP posterior parameters
-        alpha = gp.posteriors[s].alpha
-        L = gp.posteriors[s].L
-        L_chol = gp.posteriors[s].L_chol
-        sn2_eff = 1 / gp.posteriors[s].sW[0] ** 2
-
-        for k in range(0, K):
-            tau_k = np.sqrt(sigma[:, k] ** 2 * lambd**2 + ell**2)
-            lnnf_k = (
-                ln_sf2 + sum_lnell - np.sum(np.log(tau_k), axis=0)
-            )  # Covariance normalization factor
-            delta_k = Xt[k, :, :] / tau_k
-            z_k = np.exp(lnnf_k - 0.5 * np.sum(delta_k**2, axis=0))
-            I_k = np.dot(z_k, alpha).item() + m0
-
-            if quadratic_meanfun:
-                nu_k = (
-                    -0.5
-                    * np.sum(
-                        1
-                        / omega**2
-                        * (
-                            mu[:, k : k + 1] ** 2
-                            + sigma[:, k] ** 2 * lambd**2
-                            - 2 * mu[:, k : k + 1] * xm
-                            + xm**2
-                        ),
-                        axis=0,
-                    ).item()
-                )
-                I_k += nu_k
-            G[s] += w[k] * I_k
-
-            if separate_K:
-                I_sk[s, k] = I_k
-
-            if grad_flags[0]:
-                dz_dmu = -(delta_k / tau_k) * z_k
-                mu_grad[:, k, s : s + 1] = w[k] * np.dot(dz_dmu, alpha)
-                if quadratic_meanfun:
-                    mu_grad[:, k, s : s + 1] -= (
-                        w[k] / omega**2 * (mu[:, k : k + 1] - xm)
-                    )
-
-            if grad_flags[1]:
-                dz_dsigma = (
-                    np.sum((lambd / tau_k) ** 2 * (delta_k**2 - 1), axis=0)
-                    * sigma[:, k]
-                    * z_k
-                )
-                sigma_grad[k, s] = w[k] * np.dot(dz_dsigma, alpha).item()
-                if quadratic_meanfun:
-                    sigma_grad[k, s] -= (
-                        w[k]
-                        * sigma[0, k]
-                        * np.sum(1 / omega**2 * lambd**2, axis=0).item()
-                    )
-
-            if grad_flags[2]:
-                dz_dlambd = (
-                    (sigma[:, k] / tau_k) ** 2
-                    * (delta_k**2 - 1)
-                    * (lambd * z_k)
-                )
-                lambd_grad[:, s : s + 1] += w[k] * np.dot(dz_dlambd, alpha)
-                if quadratic_meanfun:
-                    lambd_grad[:, s : s + 1] -= (
-                        w[k] * sigma[:, k] ** 2 / omega**2 * lambd
-                    )
-
-            if grad_flags[3]:
-                w_grad[k, s] = I_k
-
-            if compute_var == 2:
-                # Missing port: compute_var == 2 skipped since it is not used
-                raise NotImplementedError(
-                    "Diagonal approximation of GP log-joint variance not implemented."
-                )
-            elif compute_var:
+        J_sjk = np.zeros((Ns, K, K)) if separate_K else None
+        lambd_ = lambd[:, None]  # (D, 1)
+        for s in range(0, Ns):
+            L = gp.posteriors[s].L
+            L_chol = gp.posteriors[s].L_chol
+            sn2_eff = 1 / gp.posteriors[s].sW[0] ** 2
+            ell_s = ell[s][:, None]  # (D, 1)
+            for k in range(0, K):
+                z_k = z[s, k]
                 for j in range(0, k + 1):
-                    tau_j = np.sqrt(sigma[:, j] ** 2 * lambd**2 + ell**2)
-                    lnnf_j = ln_sf2 + sum_lnell - np.sum(np.log(tau_j), axis=0)
-                    delta_j = (mu[:, j : j + 1] - gp.X.T) / tau_j
-                    z_j = np.exp(lnnf_j - 0.5 * np.sum(delta_j**2, axis=0))
-
+                    z_j = z[s, j]
                     tau_jk = np.sqrt(
-                        (sigma[:, j] ** 2 + sigma[:, k] ** 2) * lambd**2
-                        + ell**2
+                        (sigma[j] ** 2 + sigma[k] ** 2) * lambd_**2
+                        + ell_s**2
                     )
-                    lnnf_jk = ln_sf2 + sum_lnell - np.sum(np.log(tau_jk))
+                    lnnf_jk = ln_sf2[s] + sum_lnell[s] - np.sum(np.log(tau_jk))
                     delta_jk = (mu[:, j : j + 1] - mu[:, k : k + 1]) / tau_jk
 
                     J_jk = np.exp(
@@ -1528,68 +1543,13 @@ def _gp_log_joint(
                         if separate_K:
                             J_sjk[s, j, k] = J_jk
                             J_sjk[s, k, j] = J_jk
-
-    # Correct for numerical error
-    if compute_var:
+        # Correct for numerical error
         varG = np.maximum(varG, np.spacing(1))
     else:
         varG = None
-
-    if np.any(grad_flags):
-        grad_list = []
-        if grad_flags[0]:
-            mu_grad = np.reshape(mu_grad, (D * K, Ns), order="F")
-            grad_list.append(mu_grad)
-
-        # Correct for standard log reparametrization of sigma
-        if jacobian_flag and grad_flags[1]:
-            sigma_grad *= np.reshape(sigma, (-1, 1))
-            grad_list.append(sigma_grad)
-
-        # Correct for standard log reparametrization of lambd
-        if jacobian_flag and grad_flags[2]:
-            lambd_grad *= lambd
-            grad_list.append(lambd_grad)
-
-        # Correct for standard softmax reparametrization of w
-        if jacobian_flag and grad_flags[3]:
-            eta_sum = np.sum(np.exp(vp.eta))
-            J_w = (
-                -np.exp(vp.eta).T * np.exp(vp.eta) / eta_sum**2
-                + np.diag(np.exp(vp.eta.ravel())) / eta_sum
-            )
-            w_grad = np.dot(J_w, w_grad)
-            grad_list.append(w_grad)
-
-        dG = np.concatenate(grad_list, axis=0)
-    else:
-        dG = None
-
-    if compute_vargrad:
-        # TODO: compute vargrad is untested
-        vargrad_list = []
-        if grad_flags[0]:
-            mu_vargrad = np.reshape(mu_vargrad, (D * K, Ns), order="F")
-            vargrad_list.append(mu_vargrad)
-
-        # Correct for standard log reparametrization of sigma
-        if jacobian_flag and grad_flags[1]:
-            sigma_vargrad *= np.reshape(sigma, (-1, 1))
-            vargrad_list.append(sigma_vargrad)
-
-        # Correct for standard log reparametrization of lambd
-        if jacobian_flag and grad_flags[2]:
-            lambd_vargrad *= lambd
-            vargrad_list.append(lambd_vargrad)
-
-        # Correct for standard softmax reparametrization of w
-        if jacobian_flag and grad_flags[3]:
-            w_vargrad = np.dot(J_w, w_vargrad)
-            vargrad_list.append(w_vargrad)
-
-        dvarG = np.concatenate(vargrad_list, axis=0)
-    else:
-        dvarG = None
+        J_sjk = None
+    # The gradient of the variance is not implemented (see above).
+    dvarG = None
 
     # Average multiple hyperparameter samples
     var_ss = 0
@@ -1601,14 +1561,8 @@ def _gp_log_joint(
             # Variability due to sampling
             var_ss = varG_ss + np.std(varG, ddof=1)
             varG = np.sum(varG, axis=0) / Ns + varG_ss
-        if compute_vargrad:
-            # TODO: compute vargrad is untested
-            dvv = 2 * np.sum(G * dG, axis=1) / (Ns - 1) - 2 * G_bar * np.sum(
-                dG, axis=1
-            ) / (Ns - 1)
-            dvarG = np.sum(dvarG, axis=1) / Ns + dvv
         G = G_bar
-        if np.any(grad_flags):
+        if compute_grad:
             dG = np.sum(dG, axis=1) / Ns
 
     # Drop extra dims if Ns == 1 (also for the variance terms: with a single
@@ -1617,12 +1571,10 @@ def _gp_log_joint(
     # ``_eval_full_elcbo`` cannot store varF)
     if Ns == 1:
         G = G[0]
-        if np.any(grad_flags):
+        if compute_grad:
             dG = dG[:, 0]
         if compute_var:
             varG = varG[0]
-        if compute_vargrad:
-            dvarG = dvarG[:, 0]
 
     if separate_K:
         return G, dG, varG, dvarG, var_ss, I_sk, J_sjk

@@ -9,12 +9,12 @@ against numerical differentiation, not only against stored MATLAB arrays.
 The GP fixture (``X.txt``, ``y.txt``, ``hyp.txt`` with 8 hyperparameter
 samples, ``mu.txt``) is shared with ``test_variational_optimization.py``.
 
-Parameterization note: ``_gp_log_joint`` with ``jacobian_flag=False`` only
-returns the ``mu`` block of the gradient (the sigma/lambd/w blocks are appended
-inside the ``jacobian_flag`` branch), so all checks here use the raw
-parameterization ``theta = (mu, ln sigma, ln lambd, eta)`` with
-``jacobian_flag=True``, which is what ``_neg_elcbo`` uses in production.
-``VariationalPosterior.set_parameters`` renormalizes ``lambd`` to
+Parameterization note: the checks use the raw parameterization
+``theta = (mu, ln sigma, ln lambd, eta)`` with ``jacobian_flag=True``, which is
+what ``_neg_elcbo`` uses in production; one check takes ``jacobian_flag=False``
+and differentiates with respect to ``(mu, sigma, lambd, w)`` directly (until
+2026-09-04 that path returned only the ``mu`` block of the gradient, devlog
+section 9). ``VariationalPosterior.set_parameters`` renormalizes ``lambd`` to
 ``||lambd|| = sqrt(D)`` and rescales ``sigma`` to compensate; the objective is
 invariant along that ray, so finite differences in raw coordinates agree with
 the analytic gradient evaluated at the renormalized point.
@@ -133,6 +133,116 @@ def test_gp_log_joint_grad_fd_single_sample():
 
     theta0 = _raw_theta0(seed=3)
     assert grad(theta0).shape == theta0.shape
+    assert check_grad(f, grad, theta0, rtol=1e-5, atol=1e-8)
+
+
+def _random_gp(D, N, Ns, seed):
+    """A small GP with ``Ns`` hyperparameter samples at any ``D``, from a
+    local Generator (the shared fixture is ``D = 2`` only)."""
+    rng = np.random.default_rng(seed)
+    gp = gpr.GP(
+        D=D,
+        covariance=gpr.covariance_functions.SquaredExponential(),
+        mean=gpr.mean_functions.NegativeQuadratic(),
+        noise=gpr.noise_functions.GaussianNoise(constant_add=True),
+    )
+    X = rng.uniform(-2.0, 2.0, size=(N, D))
+    y = -0.5 * np.sum(X**2, axis=1) + 0.1 * rng.standard_normal(N)
+    cov_N = gp.covariance.hyperparameter_count(D)
+    noise_N = gp.noise.hyperparameter_count()
+    hyp = np.zeros((Ns, cov_N + noise_N + gp.mean.hyperparameter_count(D)))
+    hyp[:, :D] = rng.normal(0.0, 0.3, size=(Ns, D))  # ln ell
+    hyp[:, D] = rng.normal(0.0, 0.3, size=Ns)  # ln sf
+    hyp[:, cov_N : cov_N + noise_N] = -2.0  # ln sn
+    hyp[:, cov_N + noise_N] = rng.normal(0.0, 0.5, size=Ns)  # m0
+    hyp[:, cov_N + noise_N + 1 : cov_N + noise_N + 1 + D] = rng.normal(
+        0.0, 0.3, size=(Ns, D)
+    )  # xm
+    hyp[:, cov_N + noise_N + 1 + D :] = rng.normal(
+        0.3, 0.3, size=(Ns, D)
+    )  # ln omega
+    gp.update(X_new=X, y_new=y.reshape(-1, 1), hyp=hyp)
+    return gp
+
+
+def test_gp_log_joint_grad_fd_D_ne_K():
+    """``D = 3, K = 2``: a wrong packing order of the ``mu`` block
+    (``d`` fastest) or a transposed sigma/lambd block is a scramble here,
+    not a symmetry."""
+    D3, K2 = 3, 2
+    gp = _random_gp(D3, N=25, Ns=4, seed=5)
+    rng = np.random.default_rng(6)
+
+    def vp_from(theta):
+        vp = VariationalPosterior(D3, K2)
+        vp.mu = theta[: D3 * K2].reshape((D3, K2), order="F")
+        vp.sigma = np.exp(theta[D3 * K2 : D3 * K2 + K2]).reshape(1, -1)
+        vp.lambd = np.exp(theta[D3 * K2 + K2 : D3 * K2 + K2 + D3]).reshape(
+            -1, 1
+        )
+        eta = theta[-K2:] - np.max(theta[-K2:])
+        vp.eta = eta.reshape(1, -1)
+        vp.w = (np.exp(eta) / np.sum(np.exp(eta))).reshape(1, -1)
+        return vp
+
+    theta0 = np.concatenate(
+        [
+            rng.uniform(-1.0, 1.0, size=D3 * K2),
+            np.log(0.5 + 0.5 * rng.random(K2)),
+            np.log(0.7 + 0.6 * rng.random(D3)),
+            0.5 * rng.standard_normal(K2),
+        ]
+    )
+
+    def f(theta):
+        return _gp_log_joint(vp_from(theta), gp, False)[0]
+
+    def grad(theta):
+        return _gp_log_joint(vp_from(theta), gp, True)[1]
+
+    assert grad(theta0).shape == theta0.shape
+    assert check_grad(f, grad, theta0, rtol=1e-5, atol=1e-8)
+
+
+def test_gp_log_joint_grad_fd_no_jacobian():
+    """``jacobian_flag=False``: the gradient with respect to the untransformed
+    ``(mu, sigma, lambd, w)``, with ``w`` free (the function uses the weights
+    as given, so ``dG/dw_k = I_k``). All four blocks must be present."""
+    gp, _ = _fixture_gp()
+    rng = np.random.default_rng(4)
+
+    def vp_from(theta):
+        vp = VariationalPosterior(D, K)
+        vp.mu = theta[: D * K].reshape((D, K), order="F")
+        vp.sigma = theta[D * K : D * K + K].reshape(1, -1)
+        vp.lambd = theta[D * K + K : D * K + K + D].reshape(-1, 1)
+        vp.w = theta[-K:].reshape(1, -1)
+        return vp
+
+    theta0 = np.concatenate(
+        [
+            (_load("mu.txt") + 0.1 * rng.standard_normal((D, K))).ravel(
+                order="F"
+            ),
+            0.5 + 0.5 * rng.random(K),
+            0.7 + 0.6 * rng.random(D),
+            0.3 + 0.5 * rng.random(K),
+        ]
+    )
+
+    def f(theta):
+        return _gp_log_joint(vp_from(theta), gp, False, True, False)[0]
+
+    def grad(theta):
+        return _gp_log_joint(vp_from(theta), gp, True, True, False)[1]
+
+    dG = grad(theta0)
+    assert dG.shape == (D * K + K + D + K,)
+    # The w block is the per-component expected log joint.
+    _, _, _, _, _, I_sk, _ = _gp_log_joint(
+        vp_from(theta0), gp, False, True, False, False, True
+    )
+    assert np.allclose(dG[-K:], I_sk.mean(axis=0))
     assert check_grad(f, grad, theta0, rtol=1e-5, atol=1e-8)
 
 

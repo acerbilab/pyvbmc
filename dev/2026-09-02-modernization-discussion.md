@@ -427,6 +427,13 @@ state used by resume.
   `sigma` intended. `:1574` assembles `dvarG` from `grad_list` instead of
   `vargrad_list`. `:1556` drops the `order="F"` used at `:1525`. All in the
   `compute_vargrad` path, marked `# TODO: compute vargrad is untested` (`:1346`, `:1553`).
+  **Resolved 2026-09-05 by deletion** (Stage 2 item 1,
+  `plans/stage2-gp-log-joint-einsum.md`): the path was doubly unreachable
+  (`compute_var == 2` raises "not implemented" and any other
+  `compute_var` with gradients raises before it), so the vectorized
+  `_gp_log_joint` drops the accumulators and keeps the two raises with
+  their conditions and messages; `dvarG` is always `None`. Porting
+  MATLAB's diagonal variance approximation would be a feature, not a fix.
 - `variational_optimization.py:561,583` — reference nonexistent
   `vp.optimize_lambda` (attribute is `optimize_lambd`); masked by short-circuit
   because `optimize_sigma` is always `True`.
@@ -452,7 +459,10 @@ state used by resume.
 - `_gp_log_joint(..., jacobian_flag=False)` returns only the `mu` block of
   `dG`: the sigma/lambd/w blocks are appended inside the `if jacobian_flag`
   branches. Unreachable in production (`_neg_elcbo` hard-codes it to 1), but
-  it would make `dF = -dG - dH` a shape mismatch.
+  it would make `dF = -dG - dH` a shape mismatch. **Fixed 2026-09-05**
+  (item 1): all four blocks are returned, the Jacobian corrections alone
+  are conditional; finite-difference test in the raw `(mu, sigma, lambd,
+  w)` coordinates.
 - `vp.pdf(orig_flag=True, log_flag=False, grad_flag=True)` divides `y` by the
   transform Jacobian but returns `dy` uncorrected (a transformed-space
   gradient); the `log_flag=True` sibling raises `NotImplementedError` instead.
@@ -530,7 +540,18 @@ state used by resume.
     `skip_elbo_variance` option that no `.ini` defines and that
     `validate_option_names` therefore rejects; `_neg_elcbo`'s own
     `separate_K`-without-variance fallback (`J_sjk = None`) is dead code for
-    the same reason.
+    the same reason. **Fixed 2026-09-05** (item 1): `J_sjk = None` is
+    returned in that case; unit test added.
+- **Found 2026-09-05 by the review of the `_gp_log_joint` rewrite**
+  (`plans/stage2-gp-log-joint-einsum.md`), fixed in the rewrite: the
+  softmax Jacobian in the old `_gp_log_joint` was
+  `-np.exp(vp.eta).T * np.exp(vp.eta)`, an outer product only for a
+  `(1, K)` `eta`; `test_gp_log_joint` passes a 1-D `eta`, for which the
+  expression broadcasts to a row and the off-diagonal entries are wrong,
+  and the test passed only because the default `eta` is uniform. No run
+  is affected (`_neg_elcbo` reshapes `eta` to `(1, K)`). The rewrite uses
+  `np.outer`; `_neg_elcbo`'s own copy of the Jacobian (also on a `(1, K)`
+  `eta`, so correct) keeps the old form.
 - **Found 2026-09-04 by the reviews of the batched-acquisition plan**
   (`plans/stage2-batched-acquisition.md`), not fixed:
   - `testing/vbmc/test_vbmc_optimize.py:630` asserts `elbo_1 == elbo_1`

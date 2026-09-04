@@ -1,7 +1,11 @@
+import copy
 from pathlib import Path
 
 import gpyreg as gpr
 import numpy as np
+import pytest
+import scipy as sp
+import scipy.linalg
 from scipy.stats import multivariate_normal, norm
 
 from pyvbmc.stats import kl_div_mvn
@@ -157,6 +161,109 @@ def test_gp_log_joint():
     )
     assert np.allclose(dG, matlab_dG)
     assert np.isclose(G, -0.461812484952867)
+
+
+def _gp_log_joint_fixture():
+    D = 2
+    K = 2
+    vp = VariationalPosterior(D, K)
+    base_path = Path(__file__).parent
+    vp.mu = np.loadtxt(open(base_path.joinpath("mu.txt"), "rb"), delimiter=",")
+    gp = gpr.GP(
+        D=D,
+        covariance=gpr.covariance_functions.SquaredExponential(),
+        mean=gpr.mean_functions.NegativeQuadratic(),
+        noise=gpr.noise_functions.GaussianNoise(constant_add=True),
+    )
+    X = np.loadtxt(open(base_path.joinpath("X.txt"), "rb"), delimiter=",")
+    y = np.loadtxt(
+        open(base_path.joinpath("y.txt"), "rb"), delimiter=","
+    ).reshape((-1, 1))
+    hyp = np.loadtxt(open(base_path.joinpath("hyp.txt"), "rb"), delimiter=",")
+    gp.update(X_new=X, y_new=y, hyp=hyp)
+    return vp, gp
+
+
+def test_gp_log_joint_separate_K_without_variance():
+    """Per-component contributions without the variance: ``J_sjk`` is
+    ``None`` (until 2026-09-04 this raised ``UnboundLocalError``) and the
+    weighted sum of ``I_sk`` is ``G`` for every hyperparameter sample."""
+    vp, gp = _gp_log_joint_fixture()
+    Ns = len(gp.posteriors)
+    G, dG, varG, dvarG, var_ss, I_sk, J_sjk = _gp_log_joint(
+        vp, gp, False, False, True, False, True
+    )
+    assert I_sk.shape == (Ns, vp.K) and J_sjk is None
+    assert varG is None and dvarG is None and dG is None and var_ss == 0
+    assert np.allclose(I_sk @ vp.w.ravel(), G)
+    # Averaged over samples, with the gradient.
+    G_avg, dG, _, _, _, I_sk_avg, J_sjk = _gp_log_joint(
+        vp, gp, True, True, True, False, True
+    )
+    assert J_sjk is None and np.allclose(I_sk_avg, I_sk)
+    assert np.isclose(G_avg, np.mean(G))
+    assert dG.shape == (vp.D * vp.K + vp.K + vp.D + vp.K,)
+
+
+def test_gp_log_joint_variance_non_cholesky_branch():
+    """gpyreg stores a posterior as ``L = -(K + sn2 I)^{-1}`` when the noise
+    variance is below 1e-6 (``L_chol=False``), a regime a VBMC run never
+    enters (``tol_gp_noise`` bounds the noise below at 1e-5), so this branch
+    of the variance is exercised by no oracle. The variance must agree with
+    the Cholesky-form posterior of the same GP, rebuilt by hand (``alpha``
+    and ``sW`` are the same in both forms)."""
+    D, K, N, Ns = 3, 4, 20, 2
+    rng = np.random.default_rng(21)
+    gp = gpr.GP(
+        D=D,
+        covariance=gpr.covariance_functions.SquaredExponential(),
+        mean=gpr.mean_functions.NegativeQuadratic(),
+        noise=gpr.noise_functions.GaussianNoise(constant_add=True),
+    )
+    X = rng.uniform(-2.0, 2.0, size=(N, D))
+    y = (-0.5 * np.sum(X**2, axis=1)).reshape(-1, 1)
+    cov_N = gp.covariance.hyperparameter_count(D)
+    noise_N = gp.noise.hyperparameter_count()
+    hyp = np.zeros((Ns, cov_N + noise_N + gp.mean.hyperparameter_count(D)))
+    hyp[:, :D] = rng.normal(0.0, 0.3, size=(Ns, D))  # ln ell
+    hyp[:, cov_N] = -8.0  # ln sn: sn2 = exp(-16) < 1e-6
+    hyp[:, cov_N + noise_N + 1 + D :] = 0.3  # ln omega
+    gp.update(X_new=X, y_new=y, hyp=hyp)
+    assert all(not post.L_chol for post in gp.posteriors)
+
+    gp_chol = copy.deepcopy(gp)
+    for post in gp_chol.posteriors:
+        K_mat = gp.covariance.compute(post.hyp[:cov_N], X)
+        sl = 1 / post.sW[0, 0] ** 2  # sn2 * sn2_mult
+        post.L = sp.linalg.cholesky((K_mat + sl * np.eye(N)) / sl)
+        post.L_chol = True
+
+    vp = VariationalPosterior(D, K)
+    vp.mu = rng.uniform(-1.0, 1.0, size=(D, K))
+    vp.sigma = np.exp(rng.normal(-0.5, 0.3, size=(1, K)))
+    G0, _, varG0, _, var_ss0, I0, J0 = _gp_log_joint(
+        vp, gp, False, True, True, True, True
+    )
+    G1, _, varG1, _, var_ss1, I1, J1 = _gp_log_joint(
+        vp, gp_chol, False, True, True, True, True
+    )
+    assert G0 == G1 and np.array_equal(I0, I1)  # same alpha
+    assert np.allclose(J0, J1, rtol=1e-6, atol=1e-9 * np.abs(J0).max())
+    assert np.isclose(varG0, varG1, rtol=1e-6)
+    assert np.isclose(var_ss0, var_ss1, rtol=1e-6)
+    assert np.allclose(J0, np.swapaxes(J0, 1, 2))  # stored symmetric
+
+
+def test_gp_log_joint_variance_gradient_not_implemented():
+    """The gradient of the variance and the diagonal variance approximation
+    are unported; both requests raise instead of returning something."""
+    vp, gp = _gp_log_joint_fixture()
+    with pytest.raises(NotImplementedError, match="gradient of log joint"):
+        _gp_log_joint(vp, gp, True, compute_var=True)
+    with pytest.raises(NotImplementedError, match="Diagonal approximation"):
+        _gp_log_joint(vp, gp, False, compute_var=2)
+    with pytest.raises(NotImplementedError, match="Diagonal approximation"):
+        _gp_log_joint(vp, gp, True, compute_var=2)
 
 
 def test_neg_elcbo():
