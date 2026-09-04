@@ -64,7 +64,7 @@ anything that changes numerics lands.
   CMA-ES evaluates each generation in one call, `vp.pdf` broadcasts over
   K; noiseless targets 1.4–1.8× faster end to end, active sampling
   2.1–2.5× and down to 36–47 % of wall, noisy VIQR targets +6–9 %; six of
-  nine profiled trajectories bit-identical to the baseline; gpyreg's
+  the nine converging trajectories bit-identical to the baseline; gpyreg's
   `predict` loop over `Ns` and `sW` tiling moved to item 8), (8) gpyreg
   sampler overhead (GP training 13–20 % at D = 4, 22–28 % at D = 10, and
   41 % of an iteration in the late sampling regime at D = 15; the Cholesky
@@ -106,12 +106,14 @@ anything that changes numerics lands.
    jobs, macOS included: the oracles hold on three BLAS builds.
 2. ~~Stage 2 item 3~~ done 2026-09-04 for the PyVBMC half
    (`plans/stage2-batched-acquisition.md`, commits `50c1e50`, `7a07c0b`,
-   `f441172`, `eca45ec`): the per-change gates now exist and were used —
-   the oracles on every commit (the `active_sample_step` oracle
-   re-baselined once from the stored state with
+   `f441172`, `eca45ec`, `e923163`, `3033526`): the per-change gates now
+   exist and were used — the oracles on every commit (the
+   `active_sample_step` oracle re-baselined once from the stored state with
    `make_oracle_fixtures.py --rebaseline`, every `acq_*` oracle unchanged),
-   the golden replay (`golden_replay.py`, 7 min: iteration 0 identical,
-   finals inside the population envelope) per step, the profile suite once
+   the golden replay (`golden_replay.py`, 7 min: iteration 0 identical on
+   every config, finals inside the population envelope except one chance
+   excursion of `halfnormal_D2` seed 0's gsKL, not reproduced on seeds
+   1–4) per step, the profile suite once
    (1.4–1.8× on noiseless targets at D ≤ 10; the 15-D exhaust run must be
    re-profiled on a cool machine, the laptop throttled during it). The
    20-seed population
@@ -143,7 +145,10 @@ anything that changes numerics lands.
 ## Deferred (devlog §12)
 
 Per-component `lambd`, gradient-based acquisition optimization, batched
-acquisition, multi-chain slice sampling, scaling to `N ≈ 2k–5k`, log-space
+acquisition (parallel target evaluations within an iteration via local
+penalization or Kriging believer, a research item; not the batched
+acquisition *evaluation* of Stage 2 item 3), multi-chain slice sampling,
+scaling to `N ≈ 2k–5k`, log-space
 mixture sums, user-facing agent skill (`2026-09-02-user-agent-skill.md`),
 a guard for `final_boost` (`2026-09-04-final-boost-failure.md`: a small,
 independent algorithmic tweak; alters one trace of the 280 in the golden

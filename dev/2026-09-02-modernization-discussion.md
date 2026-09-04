@@ -127,16 +127,17 @@ faster and falls from 54–69 % to 36–47 % of wall, GP training and the
 variational stage are unchanged to the second, and the noisy VIQR targets
 gain 6–9 % (their active-sampling bucket is the per-sample GP refits and VP
 re-optimizations, as recorded above). Six of the nine converging
-trajectories are bit-identical to the 2026-09-03 runs. The balance is now
-active sampling ≈ GP training + variational fit on the noiseless targets
-(cProfile at D = 4: active sampling 31–48 %, GP training 25–32 %,
-variational stage 23–38 %), so items 8 and 1 carry relatively more weight
-than before; inside active sampling the largest remaining piece is
+trajectories are bit-identical to the 2026-09-03 runs. The three stages
+are now of comparable size on the noiseless targets (cProfile at D = 4:
+active sampling 31–48 %, GP training 25–32 %, variational stage 23–38 %;
+nested buckets, not additive), so items 8 and 1 carry relatively more
+weight than before; inside active sampling the largest remaining piece is
 gpyreg's per-call `predict` overhead over the hyperparameter samples
 (21–28 % of the run at 5× fewer calls), which is item 8's. The 15-D
-exhaust run was measured on a throttling laptop (its untouched GP refits
-took 2.35× longer than the day before) and has to be repeated; its
-active sampling was still 2.4× faster.
+exhaust run was measured on a throttling laptop (untouched GP training
+2.1–2.5× slower per iteration from iteration 66 on, a same-code probe
+1.3–1.4× slower on every stage afterwards), so its numbers are lower
+bounds only; its active sampling was still 2.4× faster.
 
 ---
 
@@ -649,8 +650,7 @@ some CMA-ES rankings, which the `active_sample_step` oracle absorbed by a
 targeted re-baseline. Measured 1.4–1.8× end to end on noiseless targets
 (§2). The gpyreg half (`predict`'s Python loop over the hyperparameter
 samples and its `sW` tiling) joins item 8, so that all gpyreg changes land
-in one PR. Item 8 and item 1 are next, in that order of weight but item 1
-first for logistics (PyVBMC-local).
+in one PR (the order of the remaining items is the roadmap's).
 
 **Benchmark target suite (decided 2026-09-02, after the profile).** The
 profile was taken on an independent and a correlated Gaussian, which

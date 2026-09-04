@@ -886,10 +886,12 @@ class _BatchedNoiseHandler(cma.NoiseHandler):
     ``ask`` (one draw from the strategy's ``randn``) and one scalar
     objective call per solution; this subclass performs the same ``ask``
     calls in the same order first and then evaluates all perturbed
-    solutions with one call to `batch_fun`, so the random stream and the
-    fitness values are those of the stock handler. Falls back to the stock
-    method whenever its one-evaluation-per-solution assumption does not
-    hold (never with ``NoiseHandler(N)`` defaults, whose ``maxevals`` is 1).
+    solutions with one call to `batch_fun`, so the random stream is that
+    of the stock handler and the fitness values are the same up to the
+    arithmetic of a batched evaluation (a few ulp, as for the population
+    itself). Falls back to the stock method whenever its
+    one-evaluation-per-solution assumption does not hold (never with
+    ``NoiseHandler(N)`` defaults, whose ``maxevals`` is 1).
     """
 
     def __init__(self, N, batch_fun):

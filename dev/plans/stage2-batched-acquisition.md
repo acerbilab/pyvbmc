@@ -194,10 +194,13 @@ traces and report:
   baseline population's envelope for that config, the Tukey far-out fence
   `Q3 + 3 IQR` over the seeds' sidecars (the plain maximum is vacuous
   where a seed is a known failure: `student_D4` seed 19, gsKL 54);
-- verdict per config: `identical` / `parted at iteration i` / flags for a
-  failed run, a different iteration 0, or a final outside the envelope.
-  Nonzero exit if anything is flagged. `--report-only --out <dir>`
-  re-renders a finished run.
+- verdict per config: `identical` / `parted at iteration i` (0-based:
+  iterations `0..i−1` bit-identical) / flags for a failed run, a
+  different iteration 0, a non-finite final, or a parted run's final
+  outside the envelope (an identical run is exempt: its own seed may be
+  the population's far outlier). Exit 1 if anything is flagged or nothing
+  was compared. `--report-only --out <dir>` re-renders a finished run,
+  keeping its provenance.
 
 Without the `.npz` traces (fresh checkout) it degrades to the final-metric
 comparison against the sidecars. Default set, seed 0, about 7 minutes:
@@ -219,11 +222,13 @@ options=cma_options, parallel_objective=acq_fun, noise_handler=...)` and
 keep everything else (`x0`, `insigma`, options, the `res[:2]` unpacking,
 the `f_val_optim < f_val_old` acceptance) unchanged. Add a
 `_BatchedNoiseHandler(cma.NoiseHandler)` that receives the batched
-objective (fmin hands `reeval` only the scalar wrapper) and whose `reeval`
-performs the stock method's `ask` calls in the stock order and then one
-batched evaluation, wrapping each value as `f_aggregate([v])` as the stock
-code does, falling back to the parent when `evaluations != 1` (never the
-case here). Nelder–Mead keeps the scalar form. `res[:2]` is the best-ever
+objective explicitly (the stock `reeval` calls its `func` argument once
+per solution whatever fmin hands it; here `acq_fun` is passed as both
+`objective_function` and `parallel_objective`, so `func` happens to be the
+same dual-mode callable) and whose `reeval` performs the stock method's
+`ask` calls in the stock order and then one batched evaluation, wrapping
+each value as `f_aggregate([v])` as the stock code does, falling back to
+the parent when `evaluations != 1` (never the case here). Nelder–Mead keeps the scalar form. `res[:2]` is the best-ever
 told solution (or the final mean), never a re-evaluation, in both modes.
 
 Gates: `pytest pyvbmc/testing/oracles` (the `acq_*` oracles are the
@@ -263,11 +268,12 @@ changes: measured (tracker), `y` is bit-identical for K < 8 and within
 over the last axis), and `dy` is bit-identical at every K because the
 reduction over the middle axis of `(n, K, D)` is sequential, the loop's
 order (so the signed-cancellation concern raised in review does not
-materialize). Two or three `(N, K, D)` temporaries are live at once, so the
-sieve's worst case (`N = 8192`, `K = 50`, `D = 20`) is 200–260 MB, not 66;
-chunk over `N` so that `n · K · D ≤ 2^22` elements (32 MB per temporary;
-at the sieve this means two chunks at `K = 50, D = 20`, no chunking
-below `K · D = 512`). Keep the computation on all rows and the `mask`
+materialize). Three or four `(N, K, D)` temporaries are live at once, so
+the sieve's worst case (`N = 8192`, `K = 50`, `D = 20`) is 200–260 MB, not
+66; chunk over `N` so that `n · K · D ≤ 2^16` elements (0.5 MB per
+temporary, in cache; the first commit used 2^22, which §Results shows
+was memory-bound and slower than the loop on large inputs). Keep the
+computation on all rows and the `mask`
 handling exactly where it is (`dy = dy / y` runs before masking, `mask`
 is never applied to `dy`); `handle_0D_1D_input` only promotes a 1-D `x`
 and ravels the return, so `(N, 1)` / `(N, D)` outputs are unaffected.
@@ -301,12 +307,13 @@ dated addendum.
 - [x] Step 2b targeted re-baseline (the step oracle flipped on four
       snapshots; mode written and run, `50c1e50` / `7a07c0b`)
 - [x] Step 3 `vp.pdf` broadcast; oracles, unit tests, replay, full suite;
-      commit
+      commit `f441172`; chunk size corrected in `e923163` (VP and oracle
+      tests only: no result changes)
 - [x] Step 4 profile campaign (plain; cProfile on the D = 4 set); write-up
 - [x] Records: `dev/README.md` (replay script), roadmap ticks and pickup
-      point, devlog §2/§10 addendum, this file's results; push; CI smoke
-      green
-- [~] `/doublecheck`
+      point, devlog §2/§10 addendum, this file's results; pushed
+- [~] CI smoke of the push (see Verification)
+- [~] `/doublecheck` (three read-only Opus verifiers; findings folded in)
 
 ## Verification
 
@@ -349,9 +356,10 @@ dated addendum.
 
 1. Should the replay's default set include `logreg_D5` (bounded, 2 min)?
    **No**: `halfnormal_D2` covers the probit path in 30 s.
-2. Chunking threshold for the broadcast `pdf`: **`n · K · D ≤ 2^22` per
-   chunk** (the first draft said 2^24, which the review showed could
-   never fire at a supported dimension).
+2. Chunking threshold for the broadcast `pdf`: **`n · K · D ≤ 2^16` per
+   chunk**, measured (§Results). The first draft said 2^24, which the
+   review showed could never fire at a supported dimension; the first
+   commit used 2^22, which timing showed to be memory-bound.
 
 ## Risks
 
@@ -368,11 +376,15 @@ dated addendum.
 
 ### Speedup: plain profile campaign, seed 0, one process, BLAS single-threaded
 
-`runs/profile_20260904/` (code `f441172`, clean tree) against
-`runs/profile_20260903/` (code `5020879`, the pre-change numbers of
+`runs/profile_20260904/` (code `f441172`, clean tree, i.e. the batched
+search and the broadcast `pdf` with its first, 2^22-element chunking; the
+cache-sized chunking of `e923163` came after the campaign and was not
+re-profiled: it changes no result and, in a run, only the once-per-point
+sieve call and the final `mode`) against `runs/profile_20260903/` (code
+`5020879`, the pre-change numbers of
 `plans/benchmark-suite-and-golden-traces.md` §Results (regenerated)).
-Both campaigns on the same laptop, otherwise idle. Wall and stage totals
-in seconds; the arrow reads old → new.
+Both campaigns on the same laptop, otherwise idle; started 16:51. Wall and
+stage totals in seconds; the arrow reads old → new.
 
 | config | wall (×) | active sampling (× ; % of wall) | GP train | var. fit | iters | evals | ΔLML | gsKL | MMTV |
 |---|---|---|---|---|---|---|---|---|---|
@@ -390,36 +402,48 @@ in seconds; the arrow reads old → new.
 † **The exhaust run's tail is not a valid measurement: the laptop was
 throttling.** Its variational fit doubled (503 → 900 s) on code that was
 not touched, at equal K and N (median 2.8 → 6.1 s per optimize-only
-iteration with no refit and no K change; the K paths, the three GP
-refits and the ~32 K changes match between the runs), while its GP
-*refits*, also untouched, took 2.35× longer (9.7 → 22.8 s) and the cheap
-hyperparameter-reusing GP iterations were unchanged (0.29 → 0.28 s). The
-first 90 iterations match the old run (GP training 1.39 → 1.24 s per
-iteration at the start, 8.0 → 6.7 s in the late sampling regime), so the
-slowdown set in after about 25 minutes of sustained single-core load,
-which is when this run, the campaign's last, was in its optimize-only
-tail. Confirmed by a probe: `banana_D4` plain rerun at 17:47 on the same
-code took 56.5 s against 42.8 s at 16:55 (GP training 10.1 → 13.4 s,
-variational fit 7.9 → 11.0 s, same 17 iterations and 95 evaluations).
-The laptop had been closed and resumed an hour before the campaign. The
-nine converging configs ran in the campaign's first 12 minutes, and their
-untouched stages match the old run to the second, so their numbers stand.
+iteration with no refit and no K change; mean K 25.9 vs 26.3 over the
+tail, three GP refits in each, 33 vs 30 K changes). GP training, also
+untouched, tells when: per iteration it is equal or faster in the new run
+up to N = 325 (1.39 → 1.24 s over the first 20 iterations, 8.0 → 6.7 s in
+the sampling regime at N ≥ 205), then 2.1–2.5× slower at N = 330–345
+(iterations 66–69: 24.3/23.8/23.1/19.1 s against 9.6/10.7/11.0/12.7 s),
+the three tail refits are 1.8× slower by median (4.1 → 7.4 s), and the
+cheap hyperparameter-reusing iterations are unchanged (0.29 → 0.28 s). So
+the slowdown set in around iteration 66, about 27 minutes of sustained
+single-core load after the campaign started, when this run, the
+campaign's last, was entering its optimize-only tail. Confirmed by a
+probe: `banana_D4` plain rerun at 17:47 on the same package code (tree
+`eca45ec`, which differs from `f441172` only under `dev/`) took 56.5 s
+against 42.8 s at 16:51, every stage 1.31–1.39× slower (GP training
+10.1 → 13.4 s, variational fit 7.9 → 11.0 s), same 17 iterations, 95
+evaluations and metrics. The laptop had been closed and resumed an hour
+before the campaign. The nine converging configs ran in the campaign's
+first 16 minutes, and their untouched stages are within ±3 % (a few
+seconds either way, mixed signs) of the old run, so their numbers stand.
 The exhaust row is a lower bound on the speedup (active sampling 2.36×
-even throttled) and says nothing about the variational fit; **rerun
-`cigar_D15_exhaust` plain on a cool machine** (follow-up).
+even throttled) and says nothing reliable about the variational fit;
+**rerun `cigar_D15_exhaust` plain on a cool machine** (follow-up). A
+residual risk remains until then: part of the variational-fit doubling
+could be real trajectory-dependent work (Adam's early stopping), which
+that rerun, or a cProfile of it against the 2026-09-03 `_neg_elcbo` count
+of 44,257 calls, would show.
 
 Reading:
 
-1. **Noiseless targets run 1.4–1.8× faster end to end**; active sampling
-   itself is 2.1–2.5× faster and drops from 54–69 % of wall to 36–47 %.
-   GP training and the variational fit are unchanged to the second, as
-   they must be (nothing in them was touched).
+1. **Noiseless targets run 1.4–1.8× faster end to end** (1.36–1.79);
+   active sampling itself is 2.1–2.5× faster and drops from 54–69 % of
+   wall to 36–47 %. GP training and the variational fit move by at most
+   3 % (a few seconds, mixed signs), as they must (nothing in them was
+   touched).
 2. **Six of the nine trajectories are bit-identical to the 2026-09-03
-   runs** (same iterations, evaluations and metrics to every printed
+   runs** (same iterations, evaluations and metrics to every stored
    digit: lumpy_D4, student_D4, logreg_D5, logreg_D5_noise3, lumpy_D10,
    banana_D10): the batched arithmetic flipped no CMA-ES ranking on those
-   seeds. banana_D4, cigar_D4 and rosenbrock_D2_noise1 parted and ended at
-   equal or better metrics.
+   seeds. banana_D4, cigar_D4 and rosenbrock_D2_noise1 parted; their
+   finals stay well inside the population spread (banana and rosenbrock
+   improved on all three metrics; cigar_D4's gsKL went 0.0003 → 0.001
+   against a population fence of 0.008).
 3. **The noisy VIQR path gains 6–9 %**, as the profile predicted: its
    active-sampling bucket is the per-sample GP refits and VP
    re-optimizations (items 8 and 1), not the acquisition search.
@@ -437,10 +461,11 @@ Reading:
 
 `runs/profile_20260904/<config>_cprof/` against the 2026-09-03 pass.
 Percentages of profiled `VBMC.optimize`; call counts in parentheses (old →
-new). **Absolute profiled times are inflated 1.3–1.5× by the throttling
-above** (the pass ran right after the campaign: the same 3.1k `_neg_elcbo`
-calls took 18 s before and 29 s now), so only the percentages and the
-call counts are read.
+new). **Absolute profiled times are inflated 1.1–1.65× by the throttling
+above** (the pass ran right after the campaign: banana_D4's 3.09k → 3.14k
+`_neg_elcbo` calls took 18 s before and 29 s now, 1.53× per call), so
+only the percentages and the call counts are read, and per-call figures
+derived from the new pass are upper bounds.
 
 | bucket | banana_D4 | cigar_D4 | lumpy_D4 | student_D4 |
 |---|---|---|---|---|
@@ -471,19 +496,21 @@ Reading:
   `predict` calls' solves, which gpyreg's `predict` makes once per
   hyperparameter sample per call.
 - **`GP.predict` is still 21–28 % of the run at 8k–24k calls**, i.e.
-  about 2.4 ms per batched call against ~0.8 ms per single-row call
-  before: the cost of a `predict` call is dominated by gpyreg's Python
+  1.8–2.6 ms per batched call in this (inflated) pass, roughly 1.2–1.9 ms
+  deflated, against 0.7–0.8 ms per single-row call in the 2026-09-03
+  pass: the cost of a `predict` call is dominated by gpyreg's Python
   loop over the `Ns` posteriors (kernel evaluation, `sW` tiling to
   `(N, N_star)`, two triangular solves, per sample) and grows only mildly
   with the number of rows. That per-call overhead, over `Ns`, is exactly
   the gpyreg half of item 3 that moved to item 8, and it is now the
-  largest single remaining piece of active sampling. `vp.pdf` is 1–1.6 %.
+  largest single remaining piece of active sampling. `vp.pdf` is 0.9–1.6 %.
 - **The other stages' shares grew because the denominator shrank**: GP
   training 25–32 % (slice sampler 21–28 %, `__core_computation` 18–23 %),
   the variational stage 23–38 % (`_gp_log_joint` 18–28 %), `final_boost`
-  6–23 %. Same call counts as before (`_neg_elcbo` 3.1k → 3.1k). On these
-  D = 4 targets the three stages are now of comparable size, which is what
-  the roadmap's revised weighting of items 8 and 1 says.
+  6–23 %, with call counts within ±6 % of before (`_neg_elcbo` 3.09k →
+  3.14k on banana, 7.1k → 6.7k on cigar, equal on lumpy and student). On
+  these D = 4 targets the three stages are now of comparable size, which
+  is what the roadmap's revised weighting of items 8 and 1 says.
 
 ### `vp.pdf` chunk size (found while investigating the exhaust run)
 
@@ -508,7 +535,7 @@ at the sieve. With 2^16 elements (0.5 MB, in cache) the broadcast is
 1.2–1.9× faster than the loop on 1e5 rows, 5–10× on a CMA-ES batch, and
 within 10–30 % of the loop at the sieve (one call per acquired point:
 a few seconds per run). Rows are independent, so the chunk size changes
-no result; committed as a follow-up to `f441172`. In VBMC itself the
+no result; committed as `e923163`. In VBMC itself the
 large-N calls are rare (`kl_div` in the main loop uses the Gaussian
 approximation, `kl_gauss`), so this matters for the user-facing `mode`
 and `mtv` more than for a run.
@@ -562,7 +589,7 @@ attention. Times are wall clock on 2026-09-04.
   reconfigured to UTF-8 when redirected on Windows), and the iteration
   column was made unambiguous (later replaced by the count of identical
   leading iterations, after the design review)
-- [~] Step 2 code in place (batched `acq_fun`, `parallel_objective`,
+- [x] Step 2 code in place (batched `acq_fun`, `parallel_objective`,
   `_BatchedNoiseHandler`, integer-variable write-back) — 15:08
 - [x] Oracle gate — 15:10: `pytest pyvbmc/testing/oracles` **96 passed, 4
   failed, 15 skipped**; every `acq_*` oracle green on every snapshot; the
@@ -603,8 +630,11 @@ attention. Times are wall clock on 2026-09-04.
   `runs/golden/replay_step2_halfnormal_seeds/`: nothing flagged; gsKL
   baseline → batched by seed: 9.0e-5 → 7.7e-5, 4.0e-4 → 3.3e-4,
   1.4e-4 → 8.1e-5, 6.3e-5 → 6.0e-4 (seed 0: 2.6e-4 → 7.5e-4). Three
-  seeds down, two up: noise, not a shift; the 20-seed population
-  comparison at the end of the stage is the arbiter
+  seeds down, two up (sign test p = 1; paired t on log ratios p ≈ 0.4),
+  so no shift is established, but n = 5 has no power and the two upward
+  moves are large (2.9× and 9.7× against 1.2–1.8× downward, geometric
+  mean 1.6× upward; seed 4 sits at 95 % of the gsKL fence): the 20-seed
+  population comparison at the end of the stage is the arbiter
 - [x] **Step 2b re-baseline run** — 15:21: `--rebaseline
   active_sample_step --only cigar_D4_boosted,cigar_D4_largeK,
   corr_D5_warped,halfnormal_D2_bounded`; max |ΔX_new| 1.07, 1.0e-4,
@@ -619,10 +649,10 @@ attention. Times are wall clock on 2026-09-04.
 - [x] Devlog §9: four findings of the reviews recorded (the `elbo_1 ==
   elbo_1` test, the batch-only shape bug in the dead regularization
   block, `_sq_dist`'s batch dependence, `_real2int`'s in-place snapping)
-- [x] Commits — 15:40: `50c1e50 test(dev)` (replay gate, `--rebaseline`
+- [x] Commits — 15:37: `50c1e50 test(dev)` (replay gate, `--rebaseline`
   mode, records) then `7a07c0b perf(vbmc)` (the batched objective, the
   noise handler, the four re-baselined step-oracle references)
-- [x] Step 3 `vp.pdf` broadcast written — 15:45 (Gaussian branch; rows
+- [x] Step 3 `vp.pdf` broadcast written — 15:38 (Gaussian branch; rows
   chunked at 2^22 elements per `(n, K, D)` temporary). First run tripped
   on the MATLAB fixture VP, whose `K` is a `np.uint8` (NumPy 2 refuses
   `2**22 // K` in `uint8`): cast to `int`. Then VP, acquisition, oracle
@@ -635,19 +665,12 @@ attention. Times are wall clock on 2026-09-04.
   (NumPy's 8-way unrolled pairwise reduction over the last axis), which
   is the `K`-sum reordering the plan predicted, one power of ten below
   its "~1e-16" wording's spirit but not its letter
-- [!] Step 3 replay started 15:38 → `runs/golden/replay_step3_pdf_broadcast/`;
-  **killed at 15:43 on the PI's request (laptop needed)** after 4 of 5
-  configs, all with the same verdicts and finals as the Step 2 replay
-  (`normal_D5` identical; the others parted at the same iterations).
-  **Pickup point**: Step 3 code is in the working tree, uncommitted (the
-  `pdf` broadcast in `variational_posterior.py`; 201 targeted tests
-  green). Resume with: (1) `python -u dev/scripts/golden_replay.py --out
-  dev/scripts/runs/golden/replay_step3_pdf_broadcast` (rerun in full,
-  7 min), (2) the full suite `pytest --reruns=5 -x` with one BLAS thread
-  (10 min), (3) commit `perf(vp): broadcast pdf over the mixture
-  components`, (4) Step 4 profiling (§Design), (5) records and
-  `/doublecheck`. The two Step 2 commits (`50c1e50`, `7a07c0b`) are local,
-  not pushed.
+- [x] Step 3 replay, first attempt, 15:39 → **killed at 15:43 on the PI's
+  request (laptop needed)** after 4 of 5 configs, all with the same
+  verdicts and finals as the Step 2 replay. The pickup note written then
+  (Step 3 uncommitted; rerun the replay, the full suite, commit, profile,
+  records, doublecheck; Step 2 commits local) was followed from 16:37 and
+  is superseded by the entries below.
 - [x] Resumed 16:37 (PI); Step 3 replay rerun in full, 16:37–16:44 →
   `runs/golden/replay_step3_pdf_broadcast/`: **the same verdicts and the
   same finals as the Step 2 replay on every config** (the `K`-sum
@@ -657,7 +680,8 @@ attention. Times are wall clock on 2026-09-04.
   0.52 → 0.46; halfnormal_D2 0.54 → 0.49 → 0.49; cigar_D4 2.4 → 1.4 →
   1.3; rosenbrock_D2_noise1 2.0 → 2.0 → 1.9
 - [x] Full suite for Step 3 — 16:45–16:52: **517 passed, 15 skipped, 0
-  reruns, 7:09** (9:30 before Step 2: the six end-to-end runs got faster)
+  reruns, 7:09** (the Step 2 gate run at 15:27 took 9:30; both runs had
+  the batched search, so the difference is not attributed)
 - [x] Commit — 16:53: `perf(vp): broadcast pdf over the mixture components`
 - [x] Step 4 profile campaign (plain) 16:55–17:37 →
   `runs/profile_20260904/` (§Results); cProfile pass on the four D = 4
@@ -677,6 +701,19 @@ attention. Times are wall clock on 2026-09-04.
   provenance kept on re-render, 0-based iterations; re-baseline: two-phase
   with temp files, shape check, finite JSON) and the records aligned
   (AGENTS.md exception paragraph, open question 2, this tracker)
-- [x] Step 2b `--rebaseline ORACLE --reason` mode written in
-  `make_oracle_fixtures.py` — 15:18; to run on the four snapshots after
-  the replay (one process at a time)
+- [x] Commits `e923163 perf(vp)` (2^16 chunks) and `3033526 docs(dev)`
+  (results, roadmap, devlog) — 17:58; pushed `348dd0e..3033526`
+- [x] `/doublecheck` — 18:00–18:30: three read-only Opus verifiers (final
+  code state; records consistency; every number against the run files).
+  Every table cell of both profile tables and all four replay reports
+  reproduced; corrections folded in: the exhaust paragraph's GP-refit
+  figure was the variational fit at the refit iterations (the GP-training
+  evidence is the 2.1–2.5× slower iterations 66–69 and the 1.8× slower
+  refits), "first 90 iterations" → about 65, "first 12 minutes" → 16,
+  campaign start 16:51, cProfile inflation 1.1–1.65×, "equal or better"
+  → within the population spread (cigar_D4 gsKL 3× worse), "to the
+  second" → within 3 %; stale 2^22 mentions, the chronology of the killed
+  replay, the mislabelled 9:30 comparison, the missing `e923163`, the
+  noise-handler rationale and the Step 1 design text updated; devlog
+  next-step sentence removed (roadmap owns it); AGENTS.md and README
+  wording tightened

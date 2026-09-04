@@ -204,4 +204,5 @@ Things you must hold in your head across files:
   oracle also imports the benchmark targets from `dev/scripts` (skipped
   when absent) and runs only on the platform that generated the fixtures
   (a CMA-ES search turns BLAS rounding differences into different chosen
-  points; `PYVBMC_ORACLES_ALL=1` forces it).
+  points; `PYVBMC_ORACLES_ALL=1` forces the *test* elsewhere, while
+  `--rebaseline active_sample_step` refuses to run off that platform).

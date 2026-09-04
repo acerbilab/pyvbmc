@@ -120,7 +120,11 @@ reason.
   An arithmetic-preserving change is expected to part once a CMA-ES
   ranking flips; the finals must stay inside the envelope. Needs the
   baseline `.npz` traces for the horizons (finals only without them);
-  `--report-only` re-renders a finished run.
+  `--report-only` re-renders a finished run. Flags: `--configs`, `--seeds`
+  (default seed 0 only), `--baseline` (the traces directory; the default
+  `scripts/runs/golden/baseline_20260903/` exists only on the machine that
+  made the baseline), `--sidecars`, `--out`, `--threads` (1, as the
+  baseline). Exit code 1 if anything is flagged or nothing was compared.
 - `scripts/regenerate_baseline.sh` — the whole benchmark regeneration as
   one sequential process (see above).
 - `scripts/make_oracle_fixtures.py` — generates the stage-level oracle
@@ -133,4 +137,9 @@ reason.
   --reason "..."` replaces one oracle's references from the stored state
   without rerunning the source runs (every other reference stays
   bit-identical, asserted): for the CMA-ES step oracle after a change
-  that the `acq_*` oracles have cleared.
+  that the `acq_*` oracles have cleared. It rewrites the whole `.npz`
+  (git shows a full binary change), appends an audit entry under
+  `meta["rebaselined"]` in the `.json` (oracle, date, git SHA, reason,
+  per-output max change: the thing to look for when reviewing such a
+  diff), refuses the step oracle off the generating platform, and runs
+  one process at a time.
