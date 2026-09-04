@@ -398,9 +398,27 @@ stage totals in seconds; the arrow reads old → new.
 | logreg_D5_noise3 | 267 → 251 (1.06) | 178 → 164 (1.09; 67 → 65 %) | 73 → 72 | 44 → 44 | 44 → 44 | 220 → 220 | 0.132 → 0.132 | 0.771 → 0.771 | 0.247 → 0.247 |
 | lumpy_D10 | 283 → 182 (1.55) | 170 → 72 (2.35; 60 → 40 %) | 79 → 76 | 19 → 19 | 37 → 37 | 185 → 185 | 0.784 → 0.784 | 0.808 → 0.808 | 0.125 → 0.125 |
 | banana_D10 | 175 → 103 (1.70) | 121 → 48 (2.52; 69 → 47 %) | 38 → 39 | 7 → 7 | 25 → 25 | 135 → 135 | 0.127 → 0.127 | 0.493 → 0.493 | 0.024 → 0.024 |
-| cigar_D15_exhaust † | 2123 → 1838 (1.15) | 1204 → 511 (2.36; 57 → 28 %) | 367 → 379 | 503 → 900 | 149 → 150 | 750 → 750 | 0.021 → 0.015 | 0.004 → 0.001 | 0.009 → 0.007 |
+| cigar_D15_exhaust (retry 21:51, cool machine) | 2123 → 1288 (1.65) | 1204 → 363 (3.32; 57 → 28 %) | 367 → 308 | 503 → 585 | 149 → 150 | 750 → 750 | 0.021 → 0.015 | 0.004 → 0.001 | 0.009 → 0.007 |
+| cigar_D15_exhaust † (first run 17:07, throttled) | 2123 → 1838 (1.15) | 1204 → 511 (2.36; 57 → 28 %) | 367 → 379 | 503 → 900 | 149 → 150 | 750 → 750 | 0.021 → 0.015 | 0.004 → 0.001 | 0.009 → 0.007 |
 
-† **The exhaust run's tail is not a valid measurement: the laptop was
+**Retry (2026-09-04 21:51–22:12, `runs/profile_20260904_retry/`, code
+`93dc29d`, machine idle for four hours; speed probe just before: `banana_D4`
+45.5 s against 42.8 s at 16:51 and 56.5 s hot).** The trajectory is
+bit-identical to the throttled run (same K path, same ELBO at every
+iteration, same finals), so the two rows measure the same computation on
+two machine states: wall 1838 → 1288 s, active sampling 511 → 363 s, GP
+training 379 → 308 s, variational fit 900 → 585 s. Against the 2026-09-03
+run the exhaust configuration is **1.65× faster end to end**, its active
+sampling **3.3× faster** (per optimize-only iteration 7.35 → 1.89 s: one
+hyperparameter sample, so gpyreg's per-sample overhead is small there and
+the call-count reduction shows in full), GP training 16 % faster (the same
+three refits, faster hyperparameter reuse) and the variational fit 16 %
+*slower* (per tail iteration with no refit and no K change 2.77 → 3.21 s,
+n = 46/50; a different trajectory with a different Adam path, and the
+machine still ~6 % warm), not doubled. The throttling factor on the first
+run's tail was therefore about 1.5, matching the 17:47 probe.
+
+† **The first exhaust run's tail was not a valid measurement: the laptop was
 throttling.** Its variational fit doubled (503 → 900 s) on code that was
 not touched, at equal K and N (median 2.8 → 6.1 s per optimize-only
 iteration with no refit and no K change; mean K 25.9 vs 26.3 over the
@@ -422,13 +440,9 @@ evaluations and metrics. The laptop had been closed and resumed an hour
 before the campaign. The nine converging configs ran in the campaign's
 first 16 minutes, and their untouched stages are within ±3 % (a few
 seconds either way, mixed signs) of the old run, so their numbers stand.
-The exhaust row is a lower bound on the speedup (active sampling 2.36×
-even throttled) and says nothing reliable about the variational fit;
-**rerun `cigar_D15_exhaust` plain on a cool machine** (follow-up). A
-residual risk remains until then: part of the variational-fit doubling
-could be real trajectory-dependent work (Adam's early stopping), which
-that rerun, or a cProfile of it against the 2026-09-03 `_neg_elcbo` count
-of 44,257 calls, would show.
+The retry above replaces this row; the residual risk that part of the
+variational-fit doubling was real is closed by it (585 s on the identical
+trajectory).
 
 Reading:
 
@@ -450,7 +464,9 @@ Reading:
    re-optimizations (items 8 and 1), not the acquisition search.
 4. The acquisition is called `2 n_gen + 1` times per search instead of
    `(popsize + 2) n_gen + 1`, i.e. 5× fewer calls at D = 4–5, but the
-   bucket shrinks only 2.1–2.5×: a batched `GP.predict` on `popsize` rows
+   bucket shrinks only 2.1–2.5× at D ≤ 10 (3.3× on the 15-D exhaust run,
+   where a single hyperparameter sample leaves little per-call overhead
+   to pay): a batched `GP.predict` on `popsize` rows
    costs more than a single-row one (the triangular solve scales with the
    number of columns, and gpyreg's per-sample Python loop and `sW` tiling
    are paid once per call either way), and the sieve (`2^13` points, one
@@ -460,33 +476,38 @@ Reading:
 
 ### Where the time goes now: cProfile of the four D = 4 configs
 
-`runs/profile_20260904/<config>_cprof/` against the 2026-09-03 pass.
-Percentages of profiled `VBMC.optimize`; call counts in parentheses (old →
-new). **Absolute profiled times are inflated 1.1–1.65× by the throttling
-above** (the pass ran right after the campaign: banana_D4's 3.09k → 3.14k
-`_neg_elcbo` calls took 18 s before and 29 s now, 1.53× per call), so
-only the percentages and the call counts are read, and per-call figures
-derived from the new pass are upper bounds.
+`runs/profile_20260904_retry/<config>_cprof/` (22:12–22:19, cool machine:
+speed probes 45.5 s before and 42.6 s after, against 42.8 s at the
+campaign's start) against the 2026-09-03 pass. Percentages of profiled
+`VBMC.optimize`; call counts in parentheses (old → new). A first pass at
+17:38 (`runs/profile_20260904/`) ran on the throttling machine; its
+percentages and call counts agree with this one within a few points, its
+absolute times were inflated 1.1–1.65×, and it is superseded. Absolute
+times are now consistent: banana_D4's 3.09k → 3.14k `_neg_elcbo` calls
+took 18.4 s before and 17.5 s now; the profiled wall itself falls 95 → 58,
+213 → 105, 84 → 58 and 102 → 65 s (1.6–2.0×, more than the plain 1.5–1.8×,
+because cProfile's own per-call overhead shrinks with the call count).
 
 | bucket | banana_D4 | cigar_D4 | lumpy_D4 | student_D4 |
 |---|---|---|---|---|
-| active_sample | 60.9 → 39.8 | 63.8 → 47.7 | 54.6 → 31.4 | 63.8 → 43.1 |
-| ├ cma.fmin | 51.7 → 26.0 | 57.4 → 37.1 | 45.9 → 19.8 | 53.2 → 27.8 |
-| ├ acquisition `__call__` (calls) | 53.3 → 28.9 (50.7k → 10.0k) | 55.4 → 32.3 (130.7k → 24.1k) | 48.0 → 23.1 (40.5k → 7.9k) | 55.9 → 31.4 (58.4k → 11.4k) |
-| ├ `GP.predict` (calls) | 44.2 → 26.2 (50.8k → 10.1k) | 44.6 → 28.4 (130.8k → 24.2k) | 39.7 → 21.0 (40.6k → 8.0k) | 46.2 → 28.5 (58.5k → 11.5k) |
-| └ `vp.pdf` (calls) | 4.7 → 1.2 (50.7k → 10.0k) | 5.4 → 1.6 (130.7k → 24.1k) | 4.4 → 0.9 (40.5k → 7.9k) | 5.1 → 1.3 (58.4k → 11.4k) |
-| train_gp | 18.3 → 27.2 | 14.1 → 25.1 | 21.5 → 29.8 | 20.1 → 32.4 |
-| ├ `SliceSampler.sample` | 15.8 → 23.5 | 12.1 → 21.4 | 19.2 → 26.6 | 17.6 → 28.3 |
-| ├ `GP.__core_computation` (calls) | 12.8 → 19.0 (58k → 57k) | 10.0 → 17.6 (97k → 89k) | 14.8 → 20.6 (65k → 65k) | 14.1 → 22.9 (69k → 69k) |
-| └ `solve_triangular` (calls) | 9.6 → 8.6 (633k → 280k) | 9.1 → 8.1 (1.41M → 477k) | 9.3 → 7.7 (585k → 285k) | 10.2 → 9.2 (712k → 304k) |
-| optimize_vp | 19.8 → 31.5 | 21.3 → 26.1 | 22.9 → 37.6 | 15.2 → 23.2 |
-| ├ `_neg_elcbo` (calls) | 19.3 → 30.7 (3.1k → 3.1k) | 20.8 → 25.4 (7.1k → 6.7k) | 22.4 → 36.8 (2.4k → 2.4k) | 14.7 → 22.5 (2.7k → 2.7k) |
-| ├ `_gp_log_joint` | 14.6 → 23.8 | 14.9 → 19.4 | 17.2 → 27.9 | 11.6 → 17.9 |
-| ├ `minimize_adam` | 11.0 → 15.9 | 13.7 → 16.8 | 11.6 → 19.3 | 7.0 → 11.0 |
-| ├ `_eval_full_elcbo` | 3.6 → 6.4 | 3.3 → 3.5 | 4.8 → 7.5 | 3.3 → 4.8 |
-| └ `entmc_vbmc` (calls) | 4.3 → 6.3 (2.0k → 1.9k) | 5.6 → 5.3 (4.6k → 4.4k) | 4.8 → 8.4 (1.3k → 1.3k) | 2.7 → 4.1 (1.5k → 1.5k) |
-| final_boost | 10.0 → 14.7 | 7.5 → 6.1 | 12.4 → 23.0 | 7.0 → 10.8 |
-| `copy.deepcopy` | 0.4 → 0.6 | 0.4 → 0.5 | 0.4 → 0.5 | 0.4 → 0.6 |
+| active_sample | 60.9 → 40.0 | 63.8 → 43.8 | 54.6 → 34.5 | 63.8 → 43.5 |
+| ├ cma.fmin | 51.7 → 25.6 | 57.4 → 33.0 | 45.9 → 21.6 | 53.2 → 27.0 |
+| ├ acquisition `__call__` (calls) | 53.3 → 29.2 (50.7k → 10.0k) | 55.4 → 29.9 (130.7k → 24.1k) | 48.0 → 25.4 (40.5k → 7.9k) | 55.9 → 32.2 (58.4k → 11.4k) |
+| ├ `GP.predict` (calls) | 44.2 → 26.5 (50.8k → 10.1k) | 44.6 → 26.4 (130.8k → 24.2k) | 39.7 → 23.2 (40.6k → 8.0k) | 46.2 → 29.3 (58.5k → 11.5k) |
+| └ `vp.pdf` (calls) | 4.7 → 1.1 (50.7k → 10.0k) | 5.4 → 1.4 (130.7k → 24.1k) | 4.4 → 0.9 (40.5k → 7.9k) | 5.1 → 1.2 (58.4k → 11.4k) |
+| train_gp | 18.3 → 27.4 | 14.1 → 24.0 | 21.5 → 31.8 | 20.1 → 31.3 |
+| ├ `SliceSampler.sample` | 15.8 → 23.5 | 12.1 → 20.8 | 19.2 → 28.4 | 17.6 → 27.4 |
+| ├ `GP.__core_computation` (calls) | 12.8 → 19.0 (58k → 57k) | 10.0 → 16.8 (97k → 89k) | 14.8 → 22.0 (65k → 65k) | 14.1 → 22.1 (69k → 69k) |
+| └ `solve_triangular` (calls) | 9.6 → 8.4 (633k → 280k) | 9.1 → 7.7 (1.41M → 477k) | 9.3 → 8.2 (585k → 285k) | 10.2 → 9.2 (712k → 304k) |
+| optimize_vp | 19.8 → 31.1 | 21.3 → 30.9 | 22.9 → 32.3 | 15.2 → 23.6 |
+| ├ `_neg_elcbo` (calls) | 19.3 → 30.2 (3.1k → 3.1k) | 20.8 → 30.2 (7.1k → 6.7k) | 22.4 → 31.5 (2.4k → 2.4k) | 14.7 → 22.8 (2.7k → 2.7k) |
+| ├ `_gp_log_joint` | 14.6 → 23.5 | 14.9 → 22.6 | 17.2 → 24.2 | 11.6 → 18.2 |
+| ├ `minimize_adam` | 11.0 → 15.9 | 13.7 → 19.2 | 11.6 → 16.5 | 7.0 → 11.1 |
+| ├ `_eval_full_elcbo` | 3.6 → 6.3 | 3.3 → 4.6 | 4.8 → 6.6 | 3.3 → 4.8 |
+| └ `entmc_vbmc` (calls) | 4.3 → 6.1 (2.0k → 1.9k) | 5.6 → 6.9 (4.6k → 4.4k) | 4.8 → 6.7 (1.3k → 1.3k) | 2.7 → 4.2 (1.5k → 1.5k) |
+| final_boost | 10.0 → 13.7 | 7.5 → 10.0 | 12.4 → 16.9 | 7.0 → 10.7 |
+| `copy.deepcopy` | 0.4 → 0.6 | 0.4 → 0.6 | 0.4 → 0.5 | 0.4 → 0.6 |
+| profiled wall s | 95 → 58 | 213 → 105 | 84 → 58 | 102 → 65 |
 
 Reading:
 
@@ -496,19 +517,18 @@ Reading:
   in GP *training* also halves (633k → 280k): those are the per-point
   `predict` calls' solves, which gpyreg's `predict` makes once per
   hyperparameter sample per call.
-- **`GP.predict` is still 21–28 % of the run at 8k–24k calls**, i.e.
-  1.8–2.6 ms per batched call in this (inflated) pass, roughly 1.2–1.9 ms
-  deflated, against 0.7–0.8 ms per single-row call in the 2026-09-03
-  pass: the cost of a `predict` call is dominated by gpyreg's Python
+- **`GP.predict` is still 23–29 % of the run at 8k–24k calls**, i.e.
+  1.2–1.7 ms per batched call against 0.7–0.8 ms per single-row call in
+  the 2026-09-03 pass: the cost of a `predict` call is dominated by gpyreg's Python
   loop over the `Ns` posteriors (kernel evaluation, `sW` tiling to
   `(N, N_star)`, two triangular solves, per sample) and grows only mildly
   with the number of rows. That per-call overhead, over `Ns`, is exactly
   the gpyreg half of item 3 that moved to item 8, and it is now the
-  largest single remaining piece of active sampling. `vp.pdf` is 0.9–1.6 %.
+  largest single remaining piece of active sampling. `vp.pdf` is 0.9–1.4 %.
 - **The other stages' shares grew because the denominator shrank**: GP
-  training 25–32 % (slice sampler 21–28 %, `__core_computation` 18–23 %),
-  the variational stage 23–38 % (`_gp_log_joint` 18–28 %), `final_boost`
-  6–23 %, with call counts within ±6 % of before (`_neg_elcbo` 3.09k →
+  training 24–32 % (slice sampler 21–28 %, `__core_computation` 17–22 %),
+  the variational stage 24–32 % (`_gp_log_joint` 18–24 %), `final_boost`
+  10–17 %, with call counts within ±6 % of before (`_neg_elcbo` 3.09k →
   3.14k on banana, 7.1k → 6.7k on cigar, equal on lumpy and student). On
   these D = 4 targets the three stages are now of comparable size, which
   is what the roadmap's revised weighting of items 8 and 1 says.
@@ -543,15 +563,14 @@ and `mtv` more than for a run.
 
 ## Follow-ups
 
-- Re-profile `cigar_D15_exhaust` plain on a cool machine (35 min before
-  the change; `python -u dev/scripts/profile_suite.py --suite profile
-  --mode plain --only cigar_D15_exhaust --out <fresh dir>` with the BLAS
-  threads pinned), and check the laptop's thermal behaviour before any
-  long campaign: interleave a short reference config (e.g. `banana_D4`)
-  at the start and the end of a campaign as a built-in speed probe.
+- ~~Re-profile `cigar_D15_exhaust` plain on a cool machine~~ done 21:51
+  (§Results). Keep the lesson: check the laptop's thermal behaviour before
+  any long campaign, and interleave a short reference config (e.g.
+  `banana_D4`) at the start and the end of a campaign as a built-in speed
+  probe (a `profile_suite.py` option is the natural home).
 - Item 8 (gpyreg PR) now also owns the per-call `predict` overhead: the
   Python loop over the posteriors, the `sW` tiling to `(N, N_star)`, the
-  two triangular solves per sample; at 5× fewer calls it is still 21–28 %
+  two triangular solves per sample; at 5× fewer calls it is still 23–29 %
   of a D = 4 run. `_sq_dist`'s batch-mean centring in the noisy
   acquisitions is worth making batch-invariant at the same time.
 - The 20-seed golden population against `dev/golden/baseline` once at the
@@ -732,3 +751,16 @@ attention. Times are wall clock on 2026-09-04.
   `--list`/`--check`; `--report-only` restores `threads`; a missing new
   trace degrades to finals only. CI smoke of `3033526` green
   (33886022057)
+- [~] **Retry of the throttled measurements (PI, 21:49)**: speed probe
+  `banana_D4` plain 45.5 s (42.8 s at 16:51, 56.5 s hot at 17:47; GP
+  training 11.1 s, variational fit 8.7 s), so the machine is back within
+  ~6 % of its cool speed; `cigar_D15_exhaust` plain 21:51–22:12 →
+  `runs/profile_20260904_retry/`: **1288 s (2123 before the change,
+  1838 throttled), bit-identical trajectory to the throttled run,
+  variational fit 585 s (503 old, 900 throttled)**: the doubling was the
+  machine (§Results). cProfile pass on the D = 4 set 22:12–22:19,
+  percentages as before and absolute times now consistent (§Results
+  table replaced). Closing probe `banana_D4` 42.6 s = the campaign's
+  start (42.8): no throttling during the retry. The §Results and the
+  roadmap/devlog sentences on the exhaust run updated; the follow-up
+  ticked

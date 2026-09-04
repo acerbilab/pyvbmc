@@ -114,9 +114,10 @@ anything that changes numerics lands.
    every config, finals inside the population envelope except one chance
    excursion of `halfnormal_D2` seed 0's gsKL, not reproduced on seeds
    1–4) per step, the profile suite once
-   (1.4–1.8× on noiseless targets at D ≤ 10; the 15-D exhaust run must be
-   re-profiled on a cool machine, the laptop throttled during it). The
-   20-seed population
+   (1.4–1.8× on noiseless targets at D ≤ 10, 1.65× on the 15-D exhaust
+   run with active sampling 3.3× faster there; a first exhaust measurement
+   on a throttling laptop was repeated on a cool one). The 20-seed
+   population
    (`golden_trace.py run --suite golden --seeds 0-19 --workers 1 --out
    dev/scripts/runs/golden/<label>`, then `compare dev/golden/baseline
    dev/scripts/runs/golden/<label>`, about 7 h now) stays the once-per-stage
