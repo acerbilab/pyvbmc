@@ -11,15 +11,23 @@ outputs as the reference next to the state. Fixtures land in
     python dev/scripts/make_oracle_fixtures.py            # regenerate all
     python dev/scripts/make_oracle_fixtures.py --only cigar_D4_largeK
     python dev/scripts/make_oracle_fixtures.py --check    # recompute, compare
+    python dev/scripts/make_oracle_fixtures.py --rebaseline active_sample_step \
+        --reason "..."                     # one oracle, from the stored state
 
 Regenerating **replaces the references**: do it only when the current code
 is the one the references should pin (a fresh baseline), never to make a
 failing oracle pass. One process, single BLAS thread, about six minutes.
-Plan and worklog: ``dev/plans/fixture-generator-and-oracles.md``.
+``--rebaseline`` replaces a single oracle's references without rerunning
+the source run (whose trajectory would move and take every other reference
+with it); it is for the one oracle that is *expected* to change under an
+arithmetic-preserving refactor, the CMA-ES search of ``active_sample_step``,
+after the ``acq_*`` oracles have confirmed the acquisition itself. Plan and
+worklog: ``dev/plans/fixture-generator-and-oracles.md``.
 """
 
 import argparse
 import copy
+import json
 import os
 import platform
 import sys
@@ -49,6 +57,7 @@ from pyvbmc.testing.oracles._oracles import (  # noqa: E402
     format_rows,
 )
 from pyvbmc.testing.oracles._state import (  # noqa: E402
+    _files,
     build_state,
     encode,
     load_snapshot,
@@ -391,6 +400,83 @@ def check(names, verbose):
     return failures
 
 
+def rebaseline(names, oracle_name, reason):
+    """Recompute one oracle from the *stored* state of each snapshot and
+    replace only its references.
+
+    Regenerating a recipe would rerun its VBMC run, whose trajectory moves
+    with any change to the search, so every reference of the snapshot
+    would move and stop pinning the pre-change numerics. This mode keeps
+    the state and every other oracle's reference bit-identical (asserted
+    after the write) and records the event under ``meta["rebaselined"]``.
+    """
+    orc = ORACLES[oracle_name]
+    n_done = 0
+    for name in names:
+        path = FIXTURES / name
+        npz, js = _files(path)
+        tree = json.loads(js.read_text(encoding="utf-8"))
+        with np.load(npz, allow_pickle=False) as z:
+            arrays = {k: z[k] for k in z.files}
+        before = {k: v.copy() for k, v in arrays.items()}
+        snap = load_snapshot(path)
+        meta = snap["meta"]
+        if oracle_name not in snap["ref"]:
+            print(f"[rebaseline] {name:28s} no {oracle_name} reference; skip")
+            continue
+        if (
+            oracle_name == "active_sample_step"
+            and meta.get("platform") != platform.platform()
+        ):
+            sys.exit(
+                f"{name}: the step oracle is platform-bound and this is not"
+                f" the generating platform ({meta.get('platform')})"
+            )
+        fun = target_for(meta)
+        state = build_state(snap, fun=fun)
+        if not orc.applies(state):
+            sys.exit(f"{name}: {oracle_name} not applicable on rebuilt state")
+        out = orc(state, meta["oracle_seed"])
+        old = snap["ref"][oracle_name]
+        if set(out) != set(old):
+            sys.exit(
+                f"{name}: {oracle_name} outputs {sorted(out)} but the"
+                f" reference holds {sorted(old)}"
+            )
+        rows = compare(old, out, orc.rtol, orc.atol)
+        print(f"  [{name}] {oracle_name} old vs new\n{format_rows(rows)}")
+        prefix = f"ref/{oracle_name}/"
+        for key, val in out.items():
+            arrays[prefix + key] = np.asarray(val, dtype=float)
+        tree["meta"].setdefault("rebaselined", []).append(
+            {
+                "oracle": oracle_name,
+                "date": time.strftime("%Y-%m-%d %H:%M:%S"),
+                "git": git_info(),
+                "reason": reason,
+                "max_abs_change": {r[0]: r[1] for r in rows},
+            }
+        )
+        save_snapshot(path, arrays, tree)
+        # Everything else bit-identical after the rewrite; the new
+        # reference reproduces exactly from the stored state.
+        with np.load(npz, allow_pickle=False) as z:
+            after = {k: z[k] for k in z.files}
+        assert set(after) == set(before), name
+        for k in before:
+            if not k.startswith(prefix):
+                assert np.array_equal(before[k], after[k], equal_nan=True), (
+                    name,
+                    k,
+                )
+        bad = check_one(path, fun, exact=True)
+        if bad:
+            raise RuntimeError(f"round trip failed for {name}: {bad}")
+        n_done += 1
+        print(f"[rebaseline] {name:28s} {oracle_name} replaced", flush=True)
+    print(f"[rebaseline] {n_done} of {len(names)} fixtures rewritten")
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--list", action="store_true")
@@ -398,6 +484,14 @@ def main(argv=None):
     ap.add_argument(
         "--only", default=None, help="comma-separated recipe names"
     )
+    ap.add_argument(
+        "--rebaseline",
+        default=None,
+        metavar="ORACLE",
+        help="replace one oracle's references from the stored state"
+        " (needs --reason); every other reference stays bit-identical",
+    )
+    ap.add_argument("--reason", default=None)
     ap.add_argument("--verbose", action="store_true")
     args = ap.parse_args(argv)
     if args.list:
@@ -422,6 +516,16 @@ def main(argv=None):
             f"[check] {len(names) - len(failures)} of {len(names)} fixtures ok"
         )
         return 1 if failures else 0
+    if args.rebaseline:
+        if args.rebaseline not in ORACLES:
+            sys.exit(f"unknown oracle {args.rebaseline!r}")
+        if not args.reason:
+            sys.exit("--rebaseline needs --reason")
+        names = [
+            n for n in snapshot_names(FIXTURES) if not wanted or n in wanted
+        ]
+        rebaseline(names, args.rebaseline, args.reason)
+        return 0
     recipes = [r for r in RECIPES if not wanted or r.name in wanted]
     generate(recipes)
     return 0

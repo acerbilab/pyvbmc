@@ -506,6 +506,29 @@ state used by resume.
     `validate_option_names` therefore rejects; `_neg_elcbo`'s own
     `separate_K`-without-variance fallback (`J_sjk = None`) is dead code for
     the same reason.
+- **Found 2026-09-04 by the reviews of the batched-acquisition plan**
+  (`plans/stage2-batched-acquisition.md`), not fixed:
+  - `testing/vbmc/test_vbmc_optimize.py:630` asserts `elbo_1 == elbo_1`
+    (a self-comparison), so `test_vbmc_resume_optimization` does not pin
+    the resumed ELBO at all.
+  - The dead variance-regularization block in `AbstractAcqFcn.__call__`
+    (`abstract_acq_fcn.py:121-127`, unreachable because of the misspelt
+    option key above) would also fail on any batch of more than one point
+    when `acq` is still 2-D, which is the case for VIQR/IMIQR with a single
+    GP sample: `acq[mask] += ...` with a `(k, 1)` left side and a `(k,)`
+    right side. Fixing the key alone would expose it.
+  - `AbstractAcqFcn._sq_dist` (`abstract_acq_fcn.py:214-216`) centres both
+    point sets on a mean that depends on the size and content of the
+    candidate batch, so the squared distances, and the nearest-training-
+    point `argmin` in `_estimate_observation_noise` built on them, are not
+    batch-invariant (2e-15 relative). Not a bug, but it is why the noisy
+    acquisitions evaluated one point at a time and in a batch can differ by
+    a finite amount on a near-tie, on top of BLAS rounding.
+  - `AbstractAcqFcn._real2int` snaps its input in place, and through the
+    `Xs[None, :]` view of a 1-D input the pointwise CMA-ES objective was
+    snapping CMA-ES's own solution arrays to the integer grid (an
+    undocumented side effect that the batched objective now reproduces
+    deliberately).
 
 ---
 

@@ -57,6 +57,10 @@ status and next steps never go into the devlogs.
   (`pyvbmc/testing/oracles/`): snapshot format, regime coverage, the
   oracle list and tolerances, decisions, tracker. The per-commit gate for
   Stage 2.
+- `plans/stage2-batched-acquisition.md` — plan and worklog for Stage 2
+  item 3: the replay gate (`scripts/golden_replay.py`), the batched CMA-ES
+  acquisition evaluation, the broadcast `vp.pdf`, the targeted re-baseline
+  of the step oracle, the measured speedup.
 
 Naming: `plans/` files are named by slug only, never by date (the date is in
 the file header), so that they cannot be mistaken for copies of the dated
@@ -107,6 +111,16 @@ reason.
   `.npz` trace and a JSON sidecar per run; `summary` a population; `compare`
   two populations with KS tests under a Holm family correction (`--split`
   for a null check). Populations live under `scripts/runs/golden/`.
+- `scripts/golden_replay.py` — the per-change trajectory gate of Stage 2:
+  replays a few golden configurations in-process with the current code
+  (about 7 minutes for the default set) and compares each run with its
+  stored trace: the first iteration at which the ELBO path parts (iteration
+  0 identical certifies the initial design), the live points identical,
+  and the finals against the baseline population's `Q3 + 3 IQR` envelope.
+  An arithmetic-preserving change is expected to part once a CMA-ES
+  ranking flips; the finals must stay inside the envelope. Needs the
+  baseline `.npz` traces for the horizons (finals only without them);
+  `--report-only` re-renders a finished run.
 - `scripts/regenerate_baseline.sh` — the whole benchmark regeneration as
   one sequential process (see above).
 - `scripts/make_oracle_fixtures.py` — generates the stage-level oracle
@@ -115,4 +129,8 @@ reason.
   iterations saved as plain arrays, and the reference outputs of every
   numerical stage computed from the rebuilt state (`--list`, `--only`,
   `--check`; about six minutes, one process). Regenerating replaces the
-  references: only for a deliberate new baseline.
+  references: only for a deliberate new baseline. `--rebaseline ORACLE
+  --reason "..."` replaces one oracle's references from the stored state
+  without rerunning the source runs (every other reference stays
+  bit-identical, asserted): for the CMA-ES step oracle after a change
+  that the `acq_*` oracles have cleared.
