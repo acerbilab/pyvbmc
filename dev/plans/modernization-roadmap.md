@@ -71,9 +71,11 @@ anything that changes numerics lands.
 0. ~~Regenerate the benchmark results~~ done 2026-09-03/04 in two sessions
    (profile campaign plain + cProfile, golden population 20 × 14, null check
    clean, sidecars published; `plans/benchmark-suite-and-golden-traces.md`
-   §Results (regenerated)). The Stage 2 order above is confirmed. **Left
-   from it: commit the write-up and the republished `dev/golden/baseline/`
-   and push `dev-next`** (PI's call).
+   §Results (regenerated)). The Stage 2 order above is confirmed; committed
+   and pushed as `9206738`. The one failed run of the population,
+   `student_D4` seed 19, is a final-boost failure, written up in
+   `2026-09-04-final-boost-failure.md`; the guard is deferred (see
+   Deferred below).
 1. **Stage 2 item 3**: batch the acquisition evaluation (`GP.predict` over
    `Ns`, `vp.pdf` over `K`, the CMA-ES population). Gate every step with
    `golden_trace.py run --suite golden --seeds 0-19 --workers 1 --out
@@ -101,4 +103,7 @@ anything that changes numerics lands.
 
 Per-component `lambd`, gradient-based acquisition optimization, batched
 acquisition, multi-chain slice sampling, scaling to `N ≈ 2k–5k`, log-space
-mixture sums, user-facing agent skill (`2026-09-02-user-agent-skill.md`).
+mixture sums, user-facing agent skill (`2026-09-02-user-agent-skill.md`),
+a guard for `final_boost` (`2026-09-04-final-boost-failure.md`: a small,
+independent algorithmic tweak; alters one trace of the 280 in the golden
+baseline).

@@ -476,6 +476,14 @@ state used by resume.
     uses one norm for the whole batch and broadcasts `(n,) + (n,1)` to
     `(n,n)` for `n > 1`. `noisy_cigar` in `test_vbmc_optimize.py` is dead
     code.
+- **Found 2026-09-04 in the golden population**, not fixed, decision
+  deferred (own devlog: `2026-09-04-final-boost-failure.md`): `final_boost`
+  accepts the re-optimized K = 50 posterior unconditionally, as MATLAB's
+  `finalboost_vbmc.m` does, and on `student_D4` seed 19 turned a converged
+  posterior (ELBO within 0.02 of ln Z, gsKL 0.06) into ELBO −9.03 ± 0.49
+  for ln Z = −10.36 and gsKL 54, under a GP whose mean function had gone
+  flat; 4 of 6 boost reruns from the same state fail. Algorithmic and
+  inherited, not a port bug.
 
 ---
 

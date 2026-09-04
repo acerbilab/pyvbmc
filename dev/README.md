@@ -23,6 +23,12 @@ would be committed, and anything that was would be published to the docs site.
   folder so users' coding agents set up and troubleshoot PyVBMC correctly.
   What BayesFlow did, the spec, and a design that lives in-repo and ships in
   the wheel. Build after the 1.5 API settles.
+- `2026-09-04-final-boost-failure.md` — `final_boost` can turn a converged
+  posterior into an unusable one when the GP mean function has gone flat
+  (golden population, `student_D4` seed 19; 4 of 6 boost reruns fail;
+  inherited from MATLAB). Mechanism, evidence, three candidate guards,
+  reproduction; decision deferred.
+
 ## Plans, worklogs and task files
 
 Devlogs (above) are the record of discussions and decisions that involved a

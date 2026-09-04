@@ -1229,10 +1229,16 @@ Package (devlog §9; none fixed here except the Ns = 1 crash):
   `true_mean`/`true_cov` truthiness guard and its per-iteration 10⁶-sample
   draw from `vp.rng`; `kl_div_mvn`'s `mu1` promotion; `noisy_cigar` dead
   test code; notebook 6's noise shapes.
-- `student_D4` seed 19 of the golden population is a clean VBMC failure
-  (ΔLML 1.33, gsKL 54, MMTV 0.44 at K = 50 after a normal termination):
-  look at its trace before Stage 2 changes anything, to know whether it is
-  a behaviour to preserve in the gate or a bug to find.
+- **`student_D4` seed 19 is a final-boost failure, not a convergence
+  failure** (investigated 2026-09-04; `dev/2026-09-04-final-boost-failure.md`
+  holds the evidence, the mechanism, the MATLAB parity check, the options
+  and the reproduction). In short: the main loop ended with a good
+  posterior (ELBO within 0.02 of ln Z, gsKL 0.06); `final_boost` returned
+  ELBO −9.03 ± 0.49 for ln Z = −10.36 and gsKL 54, and fails 4 times in 6
+  when re-run from the same state, because this seed's GP mean function is
+  nearly flat and the boost optimizes the plain ELBO with pruning off.
+  Decision on a guard deferred (PI). Any fix changes this one trace of the
+  280, so the baseline stays valid up to it.
 - CI on `dev-next` (`tests` workflow, manual dispatch) for the package fix
   `6f3f0ba`: done 2026-09-03 (full matrix green, run 33715620257).
 
@@ -1416,6 +1422,12 @@ Phase 4 — records
   the devlog, the roadmap, `golden_trace.py`, the golden README, as
   `docs(dev): regenerate the benchmark profile and golden baseline with the
   papers' procedure`. Only `dev/` changes, so no CI run is triggered.
+  Pushed as `9206738`.
+- [x] **`student_D4` seed 19 investigated (2026-09-04, PI's request)**:
+  a final-boost failure under a flat GP mean, 4 of 6 boost reruns fail from
+  the same state, MATLAB behaves the same; written up as its own devlog,
+  `dev/2026-09-04-final-boost-failure.md` (pointers in §Follow-ups and the
+  modernization devlog §9). Decision on a guard deferred (PI).
 - [x] **CI discussion (PI, 07:20)**: the `tests` workflow ran only on
   manual dispatch and twice a month on `main`, so 17 pushes to `dev-next`
   tonight triggered nothing (and I had not dispatched it for the package
