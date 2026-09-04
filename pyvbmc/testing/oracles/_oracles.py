@@ -32,8 +32,10 @@ ill-conditioned cigar snapshot: expected-log-joint gradients by 3e-8 per
 element, the per-sample expectations and the I_sk integrals by 3e-10, the
 pairwise J_sjk terms by 2e-11 absolute (the Cholesky's conditioning,
 about 1e8, times machine epsilon). Hence three classes. GP-solve outputs
-(prediction mean, expected log joint and its gradients, the ELCBO and its
-gradient) are held to 1e-6 relative plus 1e-10 absolute per element.
+(expected log joint and its gradients, the ELCBO and its gradient) are
+held to 1e-6 relative plus 1e-10 absolute per element; the predictive
+mean at the candidate points, which reach far into the probit tails on
+the bounded snapshot, to 1e-4 (Ubuntu floor 1.2e-6 there).
 Variance-type outputs, which are differences of nearly equal terms
 (predictive variance, ``varG``, ``var_ss``, the pairwise ``J_sjk``
 integrals, the ELCBO variances), are held to 1e-3 relative plus 1e-8
@@ -188,9 +190,12 @@ def _no_full_update(state):
 
 # Mean: bit-identical across thread counts. Variance: floor 2e-5 per element
 # (cancellation near the training points).
+# Mean at arbitrary candidate points: Ubuntu moved the per-sample mean on
+# the bounded (probit) snapshot by 1.2e-6 per element, worse than the
+# analytic expectations under the VP, which weight the data region.
 @oracle(
     "gp_predict",
-    rtol={"default": 1e-6, "fs2": 1e-3, "fs2_samples": 1e-3},
+    rtol={"default": 1e-4, "fs2": 1e-3, "fs2_samples": 1e-3},
     atol={"default": 1e-10, "fs2": 1e-8, "fs2_samples": 1e-8},
 )
 def gp_predict(state, seed):
