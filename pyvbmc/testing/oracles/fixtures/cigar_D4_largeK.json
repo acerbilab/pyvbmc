@@ -63,6 +63,21 @@
   "problem_seed": 0,
   "python": "3.12.6",
   "r_index": 0.06974833707378854,
+  "rebaselined": [
+   {
+    "date": "2026-09-04 15:21:22",
+    "git": {
+     "dirty": true,
+     "sha": "348dd0e"
+    },
+    "max_abs_change": {
+     "X_new": 0.00010279624402276255,
+     "y_new": 0.0010157515278228502
+    },
+    "oracle": "active_sample_step",
+    "reason": "Stage 2 item 3: CMA-ES evaluates the acquisition per generation in one batched call (parallel_objective + batched noise handler); the same search on batched arithmetic ends at different points; every acq_* oracle unchanged"
+   }
+  ],
   "recipe": "cigar_D4_largeK",
   "recipe_options": {},
   "versions": {

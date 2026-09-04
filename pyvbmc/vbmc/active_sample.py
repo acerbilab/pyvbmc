@@ -354,9 +354,29 @@ def active_sample(
             X_search = np.delete(X_search, idx, 0)
             idx_cache = np.delete(idx_cache, idx, 0)
 
-            acq_fun = lambda X: acq_eval(
-                X, gp, vp, function_logger, optim_state
-            ).item()
+            def acq_fun(X):
+                """Acquisition for the search optimizers.
+
+                One point (a 1-D array: Nelder-Mead, or CMA-ES's rejection
+                path) returns a float; a list of points (one CMA-ES
+                generation, or the noise handler's re-evaluations) is
+                evaluated in a single batched call and returns a list.
+                With integer variables the acquisition snaps its input to
+                the integer grid in place (`AbstractAcqFcn._real2int`), and
+                the pointwise call let that reach CMA-ES's own solution
+                arrays through a view; the batched call copies the rows,
+                so it writes the snapped rows back.
+                """
+                if isinstance(X, np.ndarray) and X.ndim == 1:
+                    return acq_eval(
+                        X[None, :], gp, vp, function_logger, optim_state
+                    ).item()
+                Xs = np.array(X, dtype=float)
+                acq = acq_eval(Xs, gp, vp, function_logger, optim_state)
+                if np.any(optim_state.get("integer_vars")):
+                    for x, row in zip(X, Xs):
+                        x[...] = row
+                return acq.tolist()
 
             # Additional search via optimization
             if options["search_optimizer"] != "none":
@@ -405,12 +425,19 @@ def active_sample(
                         "randn": lambda *shape: rng.standard_normal(shape),
                     }
 
+                    # The population of each generation is evaluated in one
+                    # call (`parallel_objective`); `ask_and_eval` draws it
+                    # with a single `ask` in either mode, so the random
+                    # stream is the same as with a pointwise objective.
                     res = cma.fmin(
                         acq_fun,
                         x0,
                         np.max(insigma),
                         options=cma_options,
-                        noise_handler=cma.NoiseHandler(np.size(x0)),
+                        parallel_objective=acq_fun,
+                        noise_handler=_BatchedNoiseHandler(
+                            np.size(x0), acq_fun
+                        ),
                     )
 
                     xsearch_optim, f_val_optim = res[:2]
@@ -847,3 +874,44 @@ def _get_search_points(
     # Apply search bounds
     search_X = np.minimum((np.maximum(search_X, lb_search)), ub_search)
     return search_X, idx_cache
+
+
+class _BatchedNoiseHandler(cma.NoiseHandler):
+    """``cma.NoiseHandler`` whose re-evaluations are one batched call.
+
+    ``cma.fmin`` re-evaluates ``2 + popsize/20`` solutions per generation
+    at a perturbation of ``epsilon`` to measure "noise" (on VBMC's
+    deterministic acquisition this measures its local variation and only
+    affects the step-size adaptation). The stock ``reeval`` alternates
+    ``ask`` (one draw from the strategy's ``randn``) and one scalar
+    objective call per solution; this subclass performs the same ``ask``
+    calls in the same order first and then evaluates all perturbed
+    solutions with one call to `batch_fun`, so the random stream and the
+    fitness values are those of the stock handler. Falls back to the stock
+    method whenever its one-evaluation-per-solution assumption does not
+    hold (never with ``NoiseHandler(N)`` defaults, whose ``maxevals`` is 1).
+    """
+
+    def __init__(self, N, batch_fun):
+        super().__init__(N)
+        self._batch_fun = batch_fun
+
+    def reeval(self, X, fit, func, ask, args=()):
+        if (
+            not self.epsilon
+            or self.f_aggregate is None
+            or int(self.evaluations) != 1
+            or args
+        ):
+            return super().reeval(X, fit, func, ask, args)
+        self.fit = list(fit)
+        self.fitre = list(fit)
+        self.idx = self.indices(fit)
+        if not len(self.idx):
+            return self.idx
+        X_re = [ask(1, X[i], self.epsilon)[0] for i in self.idx]
+        f_re = self._batch_fun(X_re)
+        for i, f in zip(self.idx, f_re):
+            self.fitre[i] = self.f_aggregate([f])
+        self.evaluations_just_done = len(self.idx)
+        return self.fit, self.fitre, self.idx
