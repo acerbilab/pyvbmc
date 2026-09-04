@@ -109,6 +109,13 @@ Verified against the installed `cma` 4.4.4 and the code on 2026-09-04.
   -9` does set (`utils.py:357-373`); the acquisition never returns NaN
   today (`np.maximum(acq, -realmax)` would propagate one), so the path is
   unreachable in practice.
+- The strategy's final mean (`eval_final_mean`) and the noise handler's
+  re-evaluations are evaluated at different batch sizes from the
+  population (1 and `2 + popsize/20` against `popsize`), so `es.best` and
+  the noise measure compare values of two provenances; on a near-tie this
+  can differ from the pointwise run by a few ulp. Pre-existing in kind
+  (`f_val_old` comes from the 8192-point sieve and is compared with the
+  CMA-ES optimum).
 - Dormant batch-only shape bug (dead code): the variance-regularization
   block `acq[mask] += …` (`abstract_acq_fcn.py:121-127`) would fail on a
   batch when `acq` is still 2-D (VIQR/IMIQR with `Ns = 1`); the block is
@@ -302,12 +309,13 @@ dated addendum.
 
 ## Verification
 
-- [ ] Replay of the unchanged code: every default config `identical`.
-- [ ] After Step 2: `pytest pyvbmc/testing/oracles` green (or the step
+- [x] Replay of the unchanged code: every default config `identical`.
+- [x] After Step 2: `pytest pyvbmc/testing/oracles` green (or the step
       oracle re-baselined with the `acq_*` oracles green and the distance
       recorded); `pytest --reruns=5 -x` green; replay: initial design
-      identical on every config, finals inside the population.
-- [ ] After Step 3: same gates; `vp_pdf` oracle green without re-baseline.
+      identical on every config, finals inside the population (one
+      chance excursion on `halfnormal_D2` seed 0, cleared on seeds 1–4).
+- [x] After Step 3: same gates; `vp_pdf` oracle green without re-baseline.
 - [ ] Step 4: wall time per config and the active-sampling share
       recorded against the 2026-09-03 numbers; no config's ΔLML/gsKL/MMTV
       outside the population range at seed 0.
@@ -338,7 +346,9 @@ dated addendum.
 
 1. Should the replay's default set include `logreg_D5` (bounded, 2 min)?
    **No**: `halfnormal_D2` covers the probit path in 30 s.
-2. Chunking threshold for the broadcast `pdf`: **`N · K · D > 2^24`**.
+2. Chunking threshold for the broadcast `pdf`: **`n · K · D ≤ 2^22` per
+   chunk** (the first draft said 2^24, which the review showed could
+   never fire at a supported dimension).
 
 ## Risks
 
@@ -373,8 +383,9 @@ attention. Times are wall clock on 2026-09-04.
   → `runs/golden/replay_step1_unchanged/`: **all five configs
   `identical`** (same live points, same ELBO path, same finals). Two
   script fixes after the run: the report's arrows are not cp1252 (stdout
-  reconfigured to UTF-8 when redirected on Windows), and the "first
-  differing iteration" column reads `none` for identical runs
+  reconfigured to UTF-8 when redirected on Windows), and the iteration
+  column was made unambiguous (later replaced by the count of identical
+  leading iterations, after the design review)
 - [~] Step 2 code in place (batched `acq_fun`, `parallel_objective`,
   `_BatchedNoiseHandler`, integer-variable write-back) — 15:08
 - [x] Oracle gate — 15:10: `pytest pyvbmc/testing/oracles` **96 passed, 4

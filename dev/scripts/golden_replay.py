@@ -174,27 +174,40 @@ def compare_run(label, seed, out_dir, baseline, sidecars, pop):
             row.update(compare_traces(ref, new))
 
     outside = []
-    if label in pop:
+    pop_ok = label in pop and np.isfinite(pop[label]["func_count"]).any()
+    if pop_ok:
         row["pop_fence"] = {m: envelope(pop[label][m]) for m in ACCURACY}
         row["pop_evals"] = [
             int(np.nanmin(pop[label]["func_count"])),
             int(np.nanmax(pop[label]["func_count"])),
         ]
+        # An identical replay cannot be an outlier of its own population
+        # (the reference seed may itself be the population's far outlier,
+        # e.g. student_D4 seed 19), so the envelope applies only to runs
+        # that parted. A non-finite final is always a flag.
         for m in ACCURACY:
             v = fin_new.get(m)
-            if v is not None and v > row["pop_fence"][m]:
+            v = float("nan") if v is None else float(v)
+            fence = row["pop_fence"][m]
+            if not np.isfinite(v) or (
+                not row.get("identical") and np.isfinite(fence) and v > fence
+            ):
                 outside.append(m)
     row["outside"] = outside
 
     if row.get("identical"):
         verdict = "identical"
     elif "elbo_exact_iter" in row:
-        verdict = (
-            f"parted at iteration {row['elbo_exact_iter'] + 1}"
-            f" (live points identical: {row['X_orig_exact']})"
-        )
+        # Iterations are 0-based: "parted at iteration i" means iterations
+        # 0..i-1 are bit-identical and iteration i is the first to differ.
+        verdict = f"parted at iteration {row['elbo_exact_iter']}"
+        if row["elbo_iter"] > row["elbo_exact_iter"]:
+            verdict += f" (beyond 1e-6 at {row['elbo_iter']})"
+        verdict += f"; live points identical: {row['X_orig_exact']}"
         if not row["initial_design_ok"]:
-            verdict = "INITIAL DESIGN DIFFERS; " + verdict
+            verdict = (
+                "ITERATION 0 DIFFERS (initial design or GP fit); " + verdict
+            )
     else:
         verdict = "finals only"
     if outside:
@@ -226,8 +239,8 @@ def render(rows, git, args, minutes):
         f" baseline `{args.baseline.name}`; threads {args.threads};"
         f" {minutes:.1f} min.",
         "",
-        "| config | seed | verdict | ELBO path identical to iteration /"
-        " iters ref → new | live points identical / ref → new | ΔLML ref →"
+        "| config | seed | verdict | identical iterations / iters ref →"
+        " new | live points identical / ref → new | ΔLML ref →"
         " new (fence) | gsKL ref → new (fence) | MMTV ref → new (fence) |"
         " evals ref → new [pop] | wall min ref → new |",
         "|---|---|---|---|---|---|---|---|---|---|",
@@ -273,11 +286,12 @@ def render(rows, git, args, minutes):
     lines.append(
         f"{n_flag} flagged of {len(rows)}."
         " `identical` = same live points and ELBO path. `parted at"
-        " iteration i` = the ELBO path is bit-identical through iteration"
-        " i − 1 (expected for an arithmetic-preserving change once a CMA-ES"
-        " ranking flips); the live-point count is a lower bound on the"
-        " evaluation horizon because warm-up trimming removes rows."
-        " Flags: a run failed, iteration 0 differs (initial design), or"
+        " iteration i` (0-based) = iterations 0..i−1 are bit-identical and"
+        " iteration i is the first to differ (expected for an"
+        " arithmetic-preserving change once a CMA-ES ranking flips); the"
+        " live-point count is a lower bound on the evaluation horizon"
+        " because warm-up trimming removes rows. Flags: a run failed,"
+        " iteration 0 differs, a final is not finite, or a parted run's"
         " ΔLML/gsKL/MMTV exceeds the population's Q3 + 3 IQR fence."
     )
     return "\n".join(lines) + "\n", n_flag
@@ -358,11 +372,26 @@ def main(argv=None):
                     flush=True,
                 )
 
-    report, n_flag = render(rows, git, args, (time.time() - t_all) / 60)
+    if not rows:
+        print(f"[replay] nothing to report under {out_dir}", flush=True)
+        return 1
+    minutes = (time.time() - t_all) / 60
+    if args.report_only:  # keep the provenance of the run being re-rendered
+        prev = out_dir / "replay.json"
+        if prev.exists():
+            saved = json.loads(prev.read_text())
+            git = saved.get("git", git)
+            minutes = saved.get("minutes", minutes)
+    report, n_flag = render(rows, git, args, minutes)
     (out_dir / "replay.md").write_text(report, encoding="utf-8")
     (out_dir / "replay.json").write_text(
         json.dumps(
-            {"git": git, "threads": args.threads, "rows": rows},
+            {
+                "git": git,
+                "threads": args.threads,
+                "minutes": minutes,
+                "rows": rows,
+            },
             indent=1,
             default=str,
         )

@@ -411,14 +411,16 @@ def rebaseline(names, oracle_name, reason):
     after the write) and records the event under ``meta["rebaselined"]``.
     """
     orc = ORACLES[oracle_name]
-    n_done = 0
+    prefix = f"ref/{oracle_name}/"
+    # Phase 1: recompute for every snapshot and check, writing nothing, so
+    # that a refusal or a mismatch leaves every fixture as it was.
+    pending = []
     for name in names:
         path = FIXTURES / name
         npz, js = _files(path)
         tree = json.loads(js.read_text(encoding="utf-8"))
         with np.load(npz, allow_pickle=False) as z:
             arrays = {k: z[k] for k in z.files}
-        before = {k: v.copy() for k, v in arrays.items()}
         snap = load_snapshot(path)
         meta = snap["meta"]
         if oracle_name not in snap["ref"]:
@@ -443,9 +445,25 @@ def rebaseline(names, oracle_name, reason):
                 f"{name}: {oracle_name} outputs {sorted(out)} but the"
                 f" reference holds {sorted(old)}"
             )
+        for key, val in out.items():
+            if np.shape(val) != np.shape(old[key]):
+                sys.exit(
+                    f"{name}: {oracle_name}/{key} changed shape"
+                    f" {np.shape(old[key])} -> {np.shape(val)}"
+                )
         rows = compare(old, out, orc.rtol, orc.atol)
         print(f"  [{name}] {oracle_name} old vs new\n{format_rows(rows)}")
-        prefix = f"ref/{oracle_name}/"
+        pending.append((name, path, fun, arrays, tree, out, rows))
+
+    # Phase 2: write each fixture through temporary files renamed into
+    # place, then verify that everything else is bit-identical and that the
+    # new reference reproduces exactly from the stored state.
+    def finite(v):
+        return float(v) if np.isfinite(v) else repr(float(v))
+
+    for name, path, fun, arrays, tree, out, rows in pending:
+        npz, js = _files(path)
+        before = {k: v.copy() for k, v in arrays.items()}
         for key, val in out.items():
             arrays[prefix + key] = np.asarray(val, dtype=float)
         tree["meta"].setdefault("rebaselined", []).append(
@@ -454,12 +472,14 @@ def rebaseline(names, oracle_name, reason):
                 "date": time.strftime("%Y-%m-%d %H:%M:%S"),
                 "git": git_info(),
                 "reason": reason,
-                "max_abs_change": {r[0]: r[1] for r in rows},
+                "max_abs_change": {r[0]: finite(r[1]) for r in rows},
             }
         )
-        save_snapshot(path, arrays, tree)
-        # Everything else bit-identical after the rewrite; the new
-        # reference reproduces exactly from the stored state.
+        tmp = path.parent / (path.name + ".rebaseline-tmp")
+        save_snapshot(tmp, arrays, tree)
+        tmp_npz, tmp_js = _files(tmp)
+        os.replace(tmp_npz, npz)
+        os.replace(tmp_js, js)
         with np.load(npz, allow_pickle=False) as z:
             after = {k: z[k] for k in z.files}
         assert set(after) == set(before), name
@@ -472,9 +492,9 @@ def rebaseline(names, oracle_name, reason):
         bad = check_one(path, fun, exact=True)
         if bad:
             raise RuntimeError(f"round trip failed for {name}: {bad}")
-        n_done += 1
         print(f"[rebaseline] {name:28s} {oracle_name} replaced", flush=True)
-    print(f"[rebaseline] {n_done} of {len(names)} fixtures rewritten")
+    print(f"[rebaseline] {len(pending)} of {len(names)} fixtures rewritten")
+    return len(pending)
 
 
 def main(argv=None):
@@ -524,8 +544,7 @@ def main(argv=None):
         names = [
             n for n in snapshot_names(FIXTURES) if not wanted or n in wanted
         ]
-        rebaseline(names, args.rebaseline, args.reason)
-        return 0
+        return 0 if rebaseline(names, args.rebaseline, args.reason) else 1
     recipes = [r for r in RECIPES if not wanted or r.name in wanted]
     generate(recipes)
     return 0

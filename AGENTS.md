@@ -192,7 +192,14 @@ Things you must hold in your head across files:
   means the numerics changed. Regenerate with
   `python dev/scripts/make_oracle_fixtures.py` only to set a new baseline
   on purpose, never to make a refactor pass; `--check` runs the comparison
-  outside pytest. The tests need a repository checkout: the testing
+  outside pytest. The one sanctioned exception is the `active_sample_step`
+  oracle (a full CMA-ES search, which a few-ulp change in the acquisition
+  sends to a different point): once every `acq_*` oracle is green, replace
+  its references alone with `--rebaseline active_sample_step --reason
+  "..."`, which recomputes from the stored state and keeps every other
+  reference bit-identical (`dev/plans/stage2-batched-acquisition.md`);
+  the per-step trajectory check is `python dev/scripts/golden_replay.py`
+  (`dev/README.md`). The tests need a repository checkout: the testing
   package ships in the sdist, not the wheel, and the `active_sample_step`
   oracle also imports the benchmark targets from `dev/scripts` (skipped
   when absent) and runs only on the platform that generated the fixtures
