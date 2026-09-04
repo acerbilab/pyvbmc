@@ -1,0 +1,142 @@
+{
+ "label": "logreg_D5_noise3",
+ "seed": 16,
+ "problem": "logreg",
+ "D": 5,
+ "noise_sd": 3.0,
+ "requested_options": {
+  "specify_target_noise": true,
+  "max_fun_evals": 350,
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false
+ },
+ "effective_options": {
+  "max_fun_evals": 350,
+  "max_iter": 350,
+  "tol_stable_count": 90,
+  "tol_stable_excpt_frac": 0.2,
+  "specify_target_noise": true,
+  "search_acq_fcn": [
+   "<pyvbmc.acquisition_functions.acq_fcn_viqr.AcqFcnVIQR object at 0x000001DA90142B10>"
+  ],
+  "active_sample_gp_update": true,
+  "active_sample_vp_update": true,
+  "min_final_components": 50,
+  "do_final_boost": true,
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false
+ },
+ "timer_keys": [
+  "active_sampling",
+  "finalize",
+  "fun_time",
+  "gp_train",
+  "variational_fit",
+  "warping"
+ ],
+ "ln_Z": -34.89349,
+ "true_mean": [
+  [
+   0.95809,
+   -1.70466,
+   1.72039,
+   1.538,
+   5.47709
+  ]
+ ],
+ "true_cov": [
+  [
+   0.16504,
+   -0.09694,
+   0.10047,
+   0.0782,
+   -0.07712
+  ],
+  [
+   -0.09694,
+   2.18496,
+   -1.84405,
+   -0.14672,
+   0.06923
+  ],
+  [
+   0.10047,
+   -1.84405,
+   1.72262,
+   0.1819,
+   -0.0863
+  ],
+  [
+   0.0782,
+   -0.14672,
+   0.1819,
+   0.32108,
+   -0.01763
+  ],
+  [
+   -0.07712,
+   0.06923,
+   -0.0863,
+   -0.01763,
+   7.41547
+  ]
+ ],
+ "plb": [
+  -5.0,
+  -5.0,
+  -5.0,
+  -5.0,
+  -5.0
+ ],
+ "pub": [
+  5.0,
+  5.0,
+  5.0,
+  5.0,
+  5.0
+ ],
+ "notes": "logistic regression, 50 trials, predictors 1-2 at rho 0.95, predictor 4 rare (6 ones, all successes: its coefficient is identified only by the bound); uniform prior on [-10, 10]^D (2020 style), plausible box -+5; not a paper problem",
+ "final": {
+  "elbo": -34.591446970639005,
+  "elbo_sd": 0.35172020297713896,
+  "best_iter": 50,
+  "iterations": 51,
+  "func_count": 255,
+  "final_K": 50,
+  "final_N": 255,
+  "min_Ns_gp": 0,
+  "n_warps": 3,
+  "success_flag": true,
+  "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+  "wall_s": 375.49310519998835,
+  "target_eval_s": 0.010149002075195312,
+  "elbo_err": 0.3020430293609948,
+  "gskl": 0.3544558127426951,
+  "mmtv": 0.1711759326683177,
+  "rmse": 0.35518430223176095,
+  "moment_method": "mc",
+  "peak_rss_mb": 471.46484375
+ },
+ "meta": {
+  "git": {
+   "sha": "5020879",
+   "dirty": true
+  },
+  "python": "3.12.6",
+  "numpy": "2.5.2",
+  "scipy": "1.18.1",
+  "pyvbmc": "1.0.5.dev28+gdcfeba694",
+  "gpyreg": "1.0.5.dev1+g236ddd723",
+  "cma": "4.4.4",
+  "threads": {
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1",
+   "MKL_NUM_THREADS": "1"
+  },
+  "started": "2026-09-03 22:42:19",
+  "finished": "2026-09-03 22:48:35",
+  "pid": 10232
+ }
+}

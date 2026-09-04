@@ -23,46 +23,57 @@ anything that changes numerics lands.
   - [ ] fixture generator script (regenerable `.npz`/JSON; retire `.mat`)
   - [ ] stage-level oracles with pre-drawn randomness
   - [x] golden-trace harness over the benchmark target suite
-    (`dev/scripts/golden_trace.py`; baseline population of 20 seeds × 11
-    configs on the run path of `d76cdb6` (sidecars record
-    `0056016`/`16369e5`), gitignored under `dev/scripts/runs/golden/
-    baseline/`, null check clean; expand to 50 seeds and higher D;
-    `plans/benchmark-suite-and-golden-traces.md` §Results)
+    (`dev/scripts/golden_trace.py`; reference population `baseline_20260903`:
+    20 seeds × 14 configs (D = 2–10, two noisy) on the code of `5020879`,
+    run 2026-09-03/04 with the papers' procedure, 280 of 280 succeeded,
+    null check clean over 56 KS tests; sidecars and `summary.md` in git
+    under `dev/golden/baseline/`, traces gitignored under
+    `dev/scripts/runs/golden/baseline_20260903/`; expand to 50 seeds and
+    add the exhaust config; `plans/benchmark-suite-and-golden-traces.md`
+    §Results (regenerated))
   - [ ] dtype canary
 - [x] **Stage 1 — `seed=` and `Generator` threading**
   (`plans/stage1-rng-generator.md`). Remaining seam: gpyreg still draws
   from the global state; see the follow-ups there.
 - [x] **Benchmark target suite** (`dev/scripts/benchmark_targets.py`,
-  2026-09-02/03): banana, cigar, lumpy, Student-t at D ≤ 6, a noisy VIQR
-  target, a logistic regression, a budget-exhausting run; profiled
-  (`plans/benchmark-suite-and-golden-traces.md`). Still to add: D = 8 and
-  10, the exhaust config in the golden set.
+  2026-09-02/03, corrected to the papers' procedure 2026-09-03): banana,
+  cigar, lumpy, Student-t at D = 4 (lumpy and banana also at D = 10, banana
+  at D = 2 and 6), two noisy VIQR targets (Rosenbrock σ = 1, bounded logreg
+  σ = 3), a bounded logistic regression, a 15-D cigar budget-exhausting run;
+  profiled 2026-09-03 (`plans/benchmark-suite-and-golden-traces.md`
+  §Results (regenerated)). Still to add: D = 6–8 for cigar and Student-t,
+  the exhaust config in the golden set.
 - [ ] **Stage 2 — NumPy vectorization + memory fix.** Order measured
-  2026-09-02 (evening) on the benchmark suite, **provisional again since
-  the 2026-09-03 audit** (the suite's start points and boxes were
-  truth-anchored; regeneration pending, pickup point 0)
-  (`plans/benchmark-suite-and-golden-traces.md` §Results, §Audit): (3) batched
-  acquisition evaluation (`GP.predict` over `Ns`, `vp.pdf` over `K`, the
-  CMA-ES population; 40–48 % of time is single-point `predict`), (8) gpyreg
-  sampler overhead (`solve_triangular` wrappers 9–10 %, `__core_computation`;
-  gpyreg PR), (1) `_gp_log_joint` einsum (close to (8); PyVBMC-local, may
-  land first), (2) `_eval_full_elcbo` multi-RHS solve (also shrinks
-  `final_boost`, 6–12 %), then `entmc_vbmc`, drop per-candidate deepcopy,
-  `GP.clean()` / stop retaining full GPs (memory only: deepcopy is 0.4 % of
-  time). On noisy targets (8) and (1) dominate.
+  2026-09-02 on the first suite and **confirmed 2026-09-03/04 on the
+  regenerated suite** (papers' procedure; the shares below are the
+  regenerated ones, `plans/benchmark-suite-and-golden-traces.md` §Results
+  (regenerated)): (3) batched acquisition evaluation (`GP.predict` over
+  `Ns`, `vp.pdf` over `K`, the CMA-ES population; active sampling 54–69 %
+  of wall on every noiseless target, single-point `predict` 40–50 % of
+  profiled time at D ≤ 10, `vp.pdf` 15 % at D = 15 with K ≈ 25), (8) gpyreg
+  sampler overhead (GP training 13–20 % at D = 4, 22–28 % at D = 10, and
+  41 % of an iteration in the late sampling regime at D = 15; the Cholesky
+  is a small part of it; gpyreg PR), (1) `_gp_log_joint` einsum (variational
+  stage 9–20 % at D = 4, largest on ridged posteriors and 32 % of an
+  optimize-only iteration; PyVBMC-local, may land before (8) for
+  logistics), (2) `_eval_full_elcbo` multi-RHS solve (also shrinks
+  `final_boost`, 3–12 % of a short run), then `entmc_vbmc` (11 % at D = 15),
+  drop per-candidate deepcopy, `GP.clean()` / stop retaining full GPs
+  (memory only: deepcopy is < 1 % of time). On noisy targets the
+  active-sampling bucket is the per-sample GP refits and VP re-optimizations,
+  so (8) and (1) are what speed those up.
 - [ ] **Stage 3 — pipeline features** (batched initial design,
   torch/jax target adapter docs, `vp.to_torch()`, ArviZ export).
 - [ ] **Stage 4 — PyTorch port** (decision point, not default).
 
 ## Pickup point
 
-0. **Regenerate the benchmark results** (evening of 2026-09-03, PI's
-   machine): `bash dev/scripts/regenerate_baseline.sh`, one process, about
-   10–12 h. The 2026-09-02/03 profile and golden population were withdrawn
-   after an audit against the papers found truth-anchored start points and
-   plausible boxes (`plans/benchmark-suite-and-golden-traces.md` §Audit);
-   the Stage 2 order below is therefore **provisional again** until the
-   regenerated profile confirms it.
+0. ~~Regenerate the benchmark results~~ done 2026-09-03/04 in two sessions
+   (profile campaign plain + cProfile, golden population 20 × 14, null check
+   clean, sidecars published; `plans/benchmark-suite-and-golden-traces.md`
+   §Results (regenerated)). The Stage 2 order above is confirmed. **Left
+   from it: commit the write-up and the republished `dev/golden/baseline/`
+   and push `dev-next`** (PI's call).
 1. **Stage 2 item 3**: batch the acquisition evaluation (`GP.predict` over
    `Ns`, `vp.pdf` over `K`, the CMA-ES population). Gate every step with
    `golden_trace.py run --suite golden --seeds 0-19 --workers 1 --out
@@ -72,10 +83,12 @@ anything that changes numerics lands.
 2. ~~Run the `tests` workflow on `dev-next` for the package fix~~ done
    2026-09-03 (full matrix green, run 33715620257); pushes to `dev*` now
    run a smoke automatically.
-3. Grow the golden population to 50 seeds and add D = 8/10 and the exhaust
-   config (`plans/benchmark-suite-and-golden-traces.md` §Follow-ups). The
-   reference sidecars live in git under `dev/golden/baseline/` (PI decision
-   2026-09-03); copy them over after every extension.
+3. Grow the golden population to 50 seeds (`golden_trace.py run --seeds
+   20-49`, about 14 h on one process) and add cigar/Student-t at D = 6–8
+   and the exhaust config (`plans/benchmark-suite-and-golden-traces.md`
+   §Follow-ups). The reference sidecars live in git under
+   `dev/golden/baseline/` (PI decision 2026-09-03); copy them over after
+   every extension.
 4. Stage 0 remaining items: fixture generator, finite-difference checks for
    the transformer Jacobian, gpyreg derivatives and `compute_vargrad`.
 5. gpyreg generator support (`GP.fit`, `SliceSampler`, `f_min_fill`,

@@ -95,22 +95,25 @@ assumption above describes hard or noisy targets only. The two conclusions
 above (overhead-bound, GPU irrelevant here) stand; the Stage 2 priority order
 in §10 is revised.
 
-**Measured again the same evening on the benchmark target suite**
-(`plans/benchmark-suite-and-golden-traces.md` §Results: banana, cigar,
-lumpy, Student-t at D=4, a logistic regression at D=5, a noisy banana);
-*withdrawn 2026-09-03 pending regeneration*, because those runs started
-VBMC at or near the true posterior mean inside plausible boxes drawn from
-the realized posteriors (§Audit in the same file), which shortens warm-up
-and changes every stage share. As measured then: same balance, sharper. Active sampling 55–67 %, of which single-point
-`GP.predict` calls are 40–48 % (36k–106k per run); GP training 15–22 %, with
-the Cholesky under 2 % and the scipy `solve_triangular` wrappers alone at
-9–10 %; the variational stage 16–24 % on ridged posteriors (`_gp_log_joint`
-11–18 %); `final_boost` 6–12 % in one call. On the noisy VIQR path the
-active-sampling bucket is the per-sample full GP refits (25 %) and VP
-optimizations (22 %), not the acquisition search (3.5 %). All these targets
-converged in 80–135 evaluations and 1–2 minutes, so the `N → 350` regime is
-reached only by the budget-exhausting configuration, which also exposed and
-fixed a crash in that regime (§9).
+**Measured again on the benchmark target suite, regenerated 2026-09-03/04
+with the papers' procedure** (`plans/benchmark-suite-and-golden-traces.md`
+§Results (regenerated): banana, cigar, lumpy, Student-t at D = 4, a bounded
+logistic regression at D = 5, lumpy and banana at D = 10, two noisy
+targets, a 15-D cigar run to 750 evaluations; a first pass on 2026-09-02
+with truth-anchored start points and boxes was withdrawn, and its shares
+turned out to lie within a few points of these). Same balance, sharper.
+Active sampling 54–69 % of wall on the noiseless targets, of which
+single-point `GP.predict` calls are 40–50 % of profiled time (51k–249k per
+run) and `vp.pdf` another 4–6 % (15 % at D = 15 with K ≈ 25); GP training
+13–20 % at D = 4 and 22–28 % at D = 10, with the Cholesky at 1–3 %, the
+scipy `solve_triangular` wrappers alone at 9–10 % (0.6–9.4 M calls) and
+`__core_computation` at 10–21 %; the variational stage 9–20 % at D = 4,
+largest on ridged posteriors (`_gp_log_joint` 12–18 %), only 4–7 % at
+D = 10; `final_boost` 3–12 % in one call. On the noisy VIQR path the
+active-sampling bucket is the per-sample full GP refits (26–33 %) and VP
+optimizations (20 %), not the acquisition search (5–8 %). The D ≤ 10
+targets converged in 85–220 evaluations and 1–5 minutes, so the `N → 350`
+regime is reached only by the budget-exhausting configuration (§10).
 
 ---
 
@@ -524,47 +527,41 @@ the rest. **This order is provisional**: it was measured on two easy Gaussian
 targets and must be re-checked on the benchmark target suite below before
 the first vectorization PR.
 
-*Measured 2026-09-02 (evening) on the benchmark suite; withdrawn
-2026-09-03 08:15 and to be re-measured*: an audit against the papers
-(`plans/benchmark-suite-and-golden-traces.md` §Audit) found that the
-suite started VBMC at the true posterior mean for four targets and drew
-its plausible boxes from the realized posteriors, which changes warm-up,
-N, K and therefore every stage share; the suite has been corrected to the
-papers' procedure and the regeneration is scheduled. Until then the
-paragraph below is provisional. As measured then
-(`plans/benchmark-suite-and-golden-traces.md` §Results, decision rule
-below applied): the variational stage grew to 16–24 % on ridged posteriors
-but overtook nothing, so the order stands, **3 → 8 → 1 → 2**, with two
-refinements. Items 8 and 1 are close (GP training 15–22 % vs variational
-16–24 %), and item 1 is PyVBMC-local while item 8 is a gpyreg PR, so item 1
-may be done first for logistics. On the noisy (VIQR) path the
-active-sampling bucket is dominated by the per-sample full GP refits and VP
-optimizations rather than by the acquisition search, so items 8 and 1 are
-what speed up noisy targets. Concrete targets inside item 8: the scipy
-`solve_triangular` validation wrappers (9–10 % of total time, 0.6–1.2 M
-calls per run) and `__core_computation` Python overhead; the Cholesky itself
-is under 2 %. The budget-exhausting run (`normal` D=5, 350 evaluations, Ns
-= 0 from N = 250) answers the rule's second clause in the negative **at
-that size**: in the optimize-only regime GP training is 1 % of an iteration
-(most iterations reuse the previous hyperparameters through
-`gp_retrain_threshold`; `scipy.optimize.minimize` is 0.1 % of profiled
-time in every run tonight), active sampling halves (one hyperparameter
-sample) and the variational stage is 35 %; the L-BFGS-B path does not join
-item 8 on this evidence. *Measured 2026-09-03 on cigar at D = 15 with 750
-evaluations* (PI's request; `plans/benchmark-suite-and-golden-traces.md`
-§Results): the optimize-only regime (N 350–750) is still 7 % GP training on
-average, but two full refits at N ≈ 500 and 700 cost 15–19 s each (a 20×
-spike over a reuse iteration), so the L-BFGS-B path is not free at that N;
-and in the late sampling regime (N 305–345, Ns 5–4) the slice sampler
-**overtakes active sampling** (11.6 vs 8.2 s per iteration). Item 8's
-weight rises steeply with D and N; the order 3 → 8 → 1 → 2 stands with the
-gap between 3 and 8 closing with dimension. Its cProfile: `predict` 26.6 %,
-`vp.pdf` 12.8 %, slice sampler 18.7 % (`solve_triangular` wrappers 8.8 %,
-Cholesky 3.2 %, `scipy.optimize.minimize` 1.0 %), variational stage 27.5 %
-with `entmc_vbmc` 15.8 % its largest piece: at D = 15 the entropy Monte
-Carlo (item 5) and `vp.pdf` over `K` (part of item 3) gain weight, and the
-variational stage exceeds GP training over a long run because more than
-half of it is optimize-only.
+*Measured 2026-09-03/04 on the regenerated benchmark suite* (papers'
+procedure: random start in the prior box, the papers' priors and budgets;
+`plans/benchmark-suite-and-golden-traces.md` §Results (regenerated). The
+withdrawn first pass of 2026-09-02 gave the same order with shares within a
+few points, so the correction repaired the procedure, not the conclusion.)
+Decision rule applied: the variational stage grew with correlation (16–20 %
+on cigar and logreg) but overtook nothing, so the order stands, **3 → 8 →
+1 → 2**, with three refinements. (i) Items 8 and 1 are close at D = 4 (GP
+training 13–20 % vs variational 9–20 %) and item 1 is PyVBMC-local while
+item 8 is a gpyreg PR, so item 1 may be done first for logistics; but item
+8's weight rises with dimension: GP training is 22–28 % at D = 10 against
+4–7 % for the variational stage, and in the late sampling regime of the
+15-D cigar run (N 305–345, Ns 5–4) the slice sampler is 41 % of an
+iteration against 35 % for active sampling. Concrete targets inside item 8:
+`__core_computation` 10–24 % of profiled time, the scipy `solve_triangular`
+validation wrappers 6–10 % (0.4–9.4 M calls per run), the hyperprior
+evaluation 1.5–6 %; the Cholesky itself is 1.2–3.2 %. (ii) On the noisy
+(VIQR) path the active-sampling bucket is dominated by the per-sample full
+GP refits and VP optimizations rather than by the acquisition search, so
+items 8 and 1 are what speed up noisy targets. (iii) The budget-exhausting
+run (cigar D = 15, 750 evaluations, Ns = 0 from N = 350 for 81 of 150
+iterations) answers the rule's second clause in the negative: in the
+optimize-only regime GP training is 6 % of an iteration (median 0.29 s,
+most iterations reusing the previous hyperparameters through
+`gp_retrain_threshold`; one full refit of 35 s at N = 560), active sampling
+61 % (one hyperparameter sample, growing 6.5 → 7.7 s per iteration with N)
+and the variational stage 32 % (1.3–20 s at K 23–31); `scipy.optimize.
+minimize` is 1.7 % of that run and 0.1 % of every converging run, so the
+L-BFGS-B path does not join item 8, though the rare refit spike at N ≥ 500
+is real. Over the whole 15-D run the variational stage (24 % of wall)
+exceeds GP training (17 %) because more than half the iterations are
+optimize-only, and inside it `entmc_vbmc` (item 5, 11 %) is the largest
+piece ahead of `_gp_log_joint` (9 %); `vp.pdf` reaches 15 % with K ≈ 25
+(part of item 3). `copy.deepcopy` is under 1 % everywhere: the
+`iteration_history` copies are a memory problem, not a time problem.
 
 **Benchmark target suite (decided 2026-09-02, after the profile).** The
 profile was taken on an independent and a correlated Gaussian, which

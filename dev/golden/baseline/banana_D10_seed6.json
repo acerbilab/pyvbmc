@@ -1,0 +1,240 @@
+{
+ "label": "banana_D10",
+ "seed": 6,
+ "problem": "banana",
+ "D": 10,
+ "noise_sd": null,
+ "requested_options": {
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false
+ },
+ "effective_options": {
+  "max_fun_evals": 600,
+  "max_iter": 600,
+  "tol_stable_count": 60,
+  "tol_stable_excpt_frac": 0.2,
+  "specify_target_noise": false,
+  "search_acq_fcn": [
+   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x00000200B189E780>"
+  ],
+  "active_sample_gp_update": false,
+  "active_sample_vp_update": false,
+  "min_final_components": 50,
+  "do_final_boost": true,
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false
+ },
+ "timer_keys": [
+  "active_sampling",
+  "finalize",
+  "fun_time",
+  "gp_train",
+  "variational_fit",
+  "warping"
+ ],
+ "ln_Z": 0.0,
+ "true_mean": [
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ]
+ ],
+ "true_cov": [
+  [
+   4.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   9.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1.0
+  ]
+ ],
+ "plb": [
+  -6.0,
+  -9.0,
+  -3.0,
+  -3.0,
+  -3.0,
+  -3.0,
+  -3.0,
+  -3.0,
+  -3.0,
+  -3.0
+ ],
+ "pub": [
+  6.0,
+  9.0,
+  3.0,
+  3.0,
+  3.0,
+  3.0,
+  3.0,
+  3.0,
+  3.0,
+  3.0
+ ],
+ "notes": "z ~ N(0, diag(sig^2)), sig1=2.0, x2 = z2 + 0.5(z1^2 - sig1^2); unit Jacobian, no prior; not a paper target. The true cov is diagonal, so gsKL and RMSE cannot see the ridge; MMTV sees the skewed x2 marginal, only elbo_err sees the joint",
+ "final": {
+  "elbo": -0.10370491122586056,
+  "elbo_sd": 0.007891883513739812,
+  "best_iter": 22,
+  "iterations": 23,
+  "func_count": 120,
+  "final_K": 50,
+  "final_N": 120,
+  "min_Ns_gp": 7,
+  "n_warps": 1,
+  "success_flag": true,
+  "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+  "wall_s": 144.95791080000345,
+  "target_eval_s": 0.002998828887939453,
+  "elbo_err": 0.10370491122586056,
+  "gskl": 0.24724500392831494,
+  "mmtv": 0.01819162590076796,
+  "rmse": 0.1765703380289909,
+  "moment_method": "affine",
+  "peak_rss_mb": 239.3984375
+ },
+ "meta": {
+  "git": {
+   "sha": "5020879",
+   "dirty": false
+  },
+  "python": "3.12.6",
+  "numpy": "2.5.2",
+  "scipy": "1.18.1",
+  "pyvbmc": "1.0.5.dev28+gdcfeba694",
+  "gpyreg": "1.0.5.dev1+g236ddd723",
+  "cma": "4.4.4",
+  "threads": {
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1",
+   "MKL_NUM_THREADS": "1"
+  },
+  "started": "2026-09-03 16:38:24",
+  "finished": "2026-09-03 16:40:50",
+  "pid": 3156
+ }
+}

@@ -1,0 +1,156 @@
+{
+ "label": "banana_D6",
+ "seed": 11,
+ "problem": "banana",
+ "D": 6,
+ "noise_sd": null,
+ "requested_options": {
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false
+ },
+ "effective_options": {
+  "max_fun_evals": 400,
+  "max_iter": 400,
+  "tol_stable_count": 60,
+  "tol_stable_excpt_frac": 0.2,
+  "specify_target_noise": false,
+  "search_acq_fcn": [
+   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x000001DA9E877C80>"
+  ],
+  "active_sample_gp_update": false,
+  "active_sample_vp_update": false,
+  "min_final_components": 50,
+  "do_final_boost": true,
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false
+ },
+ "timer_keys": [
+  "active_sampling",
+  "finalize",
+  "fun_time",
+  "gp_train",
+  "variational_fit",
+  "warping"
+ ],
+ "ln_Z": 0.0,
+ "true_mean": [
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ]
+ ],
+ "true_cov": [
+  [
+   4.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   9.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1.0
+  ]
+ ],
+ "plb": [
+  -6.0,
+  -9.0,
+  -3.0,
+  -3.0,
+  -3.0,
+  -3.0
+ ],
+ "pub": [
+  6.0,
+  9.0,
+  3.0,
+  3.0,
+  3.0,
+  3.0
+ ],
+ "notes": "z ~ N(0, diag(sig^2)), sig1=2.0, x2 = z2 + 0.5(z1^2 - sig1^2); unit Jacobian, no prior; not a paper target. The true cov is diagonal, so gsKL and RMSE cannot see the ridge; MMTV sees the skewed x2 marginal, only elbo_err sees the joint",
+ "final": {
+  "elbo": -0.06866195997279201,
+  "elbo_sd": 0.0030336782322869884,
+  "best_iter": 24,
+  "iterations": 25,
+  "func_count": 130,
+  "final_K": 50,
+  "final_N": 130,
+  "min_Ns_gp": 7,
+  "n_warps": 2,
+  "success_flag": true,
+  "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+  "wall_s": 148.67455390001123,
+  "target_eval_s": 0.005017518997192383,
+  "elbo_err": 0.06866195997279201,
+  "gskl": 0.2456405727660469,
+  "mmtv": 0.024799697859272708,
+  "rmse": 0.21654195735822215,
+  "moment_method": "affine",
+  "peak_rss_mb": 473.0078125
+ },
+ "meta": {
+  "git": {
+   "sha": "5020879",
+   "dirty": true
+  },
+  "python": "3.12.6",
+  "numpy": "2.5.2",
+  "scipy": "1.18.1",
+  "pyvbmc": "1.0.5.dev28+gdcfeba694",
+  "gpyreg": "1.0.5.dev1+g236ddd723",
+  "cma": "4.4.4",
+  "threads": {
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1",
+   "MKL_NUM_THREADS": "1"
+  },
+  "started": "2026-09-04 01:35:29",
+  "finished": "2026-09-04 01:37:58",
+  "pid": 10232
+ }
+}

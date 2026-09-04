@@ -1,0 +1,126 @@
+{
+ "label": "cigar_D4",
+ "seed": 2,
+ "problem": "cigar",
+ "D": 4,
+ "noise_sd": null,
+ "requested_options": {
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false
+ },
+ "effective_options": {
+  "max_fun_evals": 300,
+  "max_iter": 300,
+  "tol_stable_count": 60,
+  "tol_stable_excpt_frac": 0.2,
+  "specify_target_noise": false,
+  "search_acq_fcn": [
+   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x000001DA97316CF0>"
+  ],
+  "active_sample_gp_update": false,
+  "active_sample_vp_update": false,
+  "min_final_components": 50,
+  "do_final_boost": true,
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false
+ },
+ "timer_keys": [
+  "active_sampling",
+  "finalize",
+  "fun_time",
+  "gp_train",
+  "variational_fit",
+  "warping"
+ ],
+ "ln_Z": -3.512749660301357,
+ "true_mean": [
+  [
+   -0.5,
+   -0.16666666666666669,
+   0.16666666666666663,
+   0.5
+  ]
+ ],
+ "true_cov": [
+  [
+   0.05827296793462907,
+   -0.18515421378088975,
+   0.034990238686527314,
+   0.03743206194897333
+  ],
+  [
+   -0.18515421378088975,
+   0.5894128069069604,
+   -0.11136768318326512,
+   -0.11913957070646519
+  ],
+  [
+   0.034990238686527314,
+   -0.11136768318326512,
+   0.021146105270293543,
+   0.02251486439818677
+  ],
+  [
+   0.03743206194897333,
+   -0.11913957070646519,
+   0.02251486439818677,
+   0.024186051328759145
+  ]
+ ],
+ "plb": [
+  -1.3699810396321572,
+  -2.933847368591483,
+  -0.35728456115392815,
+  -0.06037403976337341
+ ],
+ "pub": [
+  0.3699810396321572,
+  2.60051403525815,
+  0.6906178944872614,
+  1.0603740397633734
+ ],
+ "notes": "likelihood: SDs 0.01 on D-1 axes and 1 on one, mixed by a seeded orthogonal matrix (det -1), centred at linspace(-0.5, 0.5); times the papers' prior N(centre, (3 marginal SD)^2); box = prior mean -+ 1 prior SD",
+ "final": {
+  "elbo": -3.527255158036816,
+  "elbo_sd": 0.0009720917988974282,
+  "best_iter": 26,
+  "iterations": 27,
+  "func_count": 135,
+  "final_K": 50,
+  "final_N": 135,
+  "min_Ns_gp": 7,
+  "n_warps": 2,
+  "success_flag": true,
+  "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+  "wall_s": 140.65132829999493,
+  "target_eval_s": 0.008510351181030273,
+  "elbo_err": 0.014505497735458839,
+  "gskl": 0.001771795936832521,
+  "mmtv": 0.02371337596338475,
+  "rmse": 0.019192835912645173,
+  "moment_method": "affine",
+  "peak_rss_mb": 473.0078125
+ },
+ "meta": {
+  "git": {
+   "sha": "5020879",
+   "dirty": true
+  },
+  "python": "3.12.6",
+  "numpy": "2.5.2",
+  "scipy": "1.18.1",
+  "pyvbmc": "1.0.5.dev28+gdcfeba694",
+  "gpyreg": "1.0.5.dev1+g236ddd723",
+  "cma": "4.4.4",
+  "threads": {
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1",
+   "MKL_NUM_THREADS": "1"
+  },
+  "started": "2026-09-03 23:51:19",
+  "finished": "2026-09-03 23:53:40",
+  "pid": 10232
+ }
+}

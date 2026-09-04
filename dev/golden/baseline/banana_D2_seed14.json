@@ -1,0 +1,104 @@
+{
+ "label": "banana_D2",
+ "seed": 14,
+ "problem": "banana",
+ "D": 2,
+ "noise_sd": null,
+ "requested_options": {
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false
+ },
+ "effective_options": {
+  "max_fun_evals": 200,
+  "max_iter": 200,
+  "tol_stable_count": 60,
+  "tol_stable_excpt_frac": 0.2,
+  "specify_target_noise": false,
+  "search_acq_fcn": [
+   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x000001DAAC7D09B0>"
+  ],
+  "active_sample_gp_update": false,
+  "active_sample_vp_update": false,
+  "min_final_components": 50,
+  "do_final_boost": true,
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false
+ },
+ "timer_keys": [
+  "active_sampling",
+  "finalize",
+  "fun_time",
+  "gp_train",
+  "variational_fit",
+  "warping"
+ ],
+ "ln_Z": 0.0,
+ "true_mean": [
+  [
+   0.0,
+   0.0
+  ]
+ ],
+ "true_cov": [
+  [
+   4.0,
+   0.0
+  ],
+  [
+   0.0,
+   9.0
+  ]
+ ],
+ "plb": [
+  -6.0,
+  -9.0
+ ],
+ "pub": [
+  6.0,
+  9.0
+ ],
+ "notes": "z ~ N(0, diag(sig^2)), sig1=2.0, x2 = z2 + 0.5(z1^2 - sig1^2); unit Jacobian, no prior; not a paper target. The true cov is diagonal, so gsKL and RMSE cannot see the ridge; MMTV sees the skewed x2 marginal, only elbo_err sees the joint",
+ "final": {
+  "elbo": -0.06657460597734599,
+  "elbo_sd": 0.00045188494630950244,
+  "best_iter": 14,
+  "iterations": 15,
+  "func_count": 80,
+  "final_K": 50,
+  "final_N": 80,
+  "min_Ns_gp": 8,
+  "n_warps": 1,
+  "success_flag": true,
+  "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+  "wall_s": 40.064775299993926,
+  "target_eval_s": 0.0009975433349609375,
+  "elbo_err": 0.06657460597734599,
+  "gskl": 0.2830839850696566,
+  "mmtv": 0.061083128831115344,
+  "rmse": 0.39201010139678427,
+  "moment_method": "affine",
+  "peak_rss_mb": 473.0078125
+ },
+ "meta": {
+  "git": {
+   "sha": "5020879",
+   "dirty": true
+  },
+  "python": "3.12.6",
+  "numpy": "2.5.2",
+  "scipy": "1.18.1",
+  "pyvbmc": "1.0.5.dev28+gdcfeba694",
+  "gpyreg": "1.0.5.dev1+g236ddd723",
+  "cma": "4.4.4",
+  "threads": {
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1",
+   "MKL_NUM_THREADS": "1"
+  },
+  "started": "2026-09-04 03:45:52",
+  "finished": "2026-09-04 03:46:32",
+  "pid": 10232
+ }
+}

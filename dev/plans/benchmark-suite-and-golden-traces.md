@@ -1,11 +1,11 @@
 # Benchmark target suite, profile campaign, golden-trace baseline
 
-Created: 2026-09-02 21:20. Status: **REOPENED 2026-09-03 08:15** — the
+Created: 2026-09-02 21:20. Status: **CLOSED 2026-09-04 04:01** — the first
 night's results were withdrawn after the audit against the papers (§Audit:
-truth-anchored start points and plausible boxes); the suite is corrected
-and the regeneration (`bash dev/scripts/regenerate_baseline.sh`, one
-process, 10–12 h) is scheduled for the evening of 2026-09-03 on the PI's
-laptop. Tracker at the end of this file.
+truth-anchored start points and plausible boxes); the suite was corrected
+and the whole campaign regenerated on 2026-09-03/04. **§Results
+(regenerated)** is the section to quote; the original §Results is kept as
+the record of the first night. Tracker at the end of this file.
 Budget: about 10 hours of wall clock from 21:07, i.e. done by ~07:00 on
 2026-09-03, everything on the laptop (22 logical CPUs: 6 P-cores, 8 E-cores,
 2 LP-E; ~6.5 GB free RAM), no PRs. Roadmap: `plans/modernization-roadmap.md`
@@ -961,37 +961,265 @@ regeneration this evening):
 9. Module docstring and `Problem` docstring rewritten to say exactly what
    VBMC receives; the banana note corrected.
 
+## Results (regenerated 2026-09-03/04)
+
+The section to quote. Setup: the corrected suite (§Audit, fixes 1–9), code
+`5020879`, `STAMP=20260903 bash dev/scripts/regenerate_baseline.sh`, one
+process, BLAS single-threaded, laptop otherwise idle, in two sessions:
+2026-09-03 14:10–17:33 (checks; profile campaign plain 14:11–15:08 and
+cProfile 15:08–16:21; golden runs 1–22, then killed at the PI's request)
+and 2026-09-03 19:09 – 2026-09-04 04:01 (`… golden`: runs 23–280, summary,
+null check, publish). The profile runs and the first 22 golden sidecars
+record a clean tree; the other 258 sidecars say `dirty` because the
+resume note in this file's tracker was uncommitted (no code differed).
+Outputs: `dev/scripts/runs/profile_20260903/` (per-run `summary.json`,
+`.prof`, logs; `aggregate.md` built by hand with `profile_suite.py
+--aggregate`), `dev/scripts/runs/golden/baseline_20260903/` (280 `.npz`
+traces, gitignored), `dev/golden/baseline/` (280 sidecars and `summary.md`,
+in git), `dev/scripts/runs/regenerate_20260903.log`.
+
+### Profile campaign (seed 0, plain runs, true wall time)
+
+Stages nest (the noisy runs' per-sample GP and VP refits are timed inside
+active sampling), so percentages need not sum to 100 and `untimed = wall −
+Σ stages` is the post-loop work (`determine_best_vp`, `final_boost` to
+K = 50), negative where nesting double-counts.
+
+| config | wall s | untimed s | iters | evals | min Ns | act. sampling % | GP train % | var. fit % | finalize % | ΔLML | gsKL | MMTV |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| banana_D4 | 66.5 | 7.6 | 18 | 95 | 8 | 59.2 | 17.1 | 11.3 | 1.0 | 0.053 | 0.144 | 0.029 |
+| cigar_D4 | 141.2 | 14.7 | 27 | 135 | 7 | 59.7 | 13.1 | 16.1 | 0.7 | 0.001 | 0.000 | 0.008 |
+| lumpy_D4 | 60.6 | 8.1 | 16 | 85 | 8 | 53.7 | 19.8 | 12.0 | 0.9 | 0.040 | 0.013 | 0.026 |
+| student_D4 | 72.1 | 5.7 | 20 | 105 | 8 | 62.8 | 19.0 | 9.3 | 1.0 | 0.019 | 0.008 | 0.039 |
+| logreg_D5 | 110.0 | 8.8 | 24 | 120 | 7 | 55.2 | 15.9 | 19.5 | 1.4 | 0.066 | 0.012 | 0.029 |
+| rosenbrock_D2_noise1 | 126.3 | −11.3 | 27 | 140 | 7 | 74.9 | 19.1 | 14.3 | 0.5 | 0.059 | 0.050 | 0.040 |
+| logreg_D5_noise3 | 266.7 | −33.0 | 45 | 220 | 5 | 66.9 | 27.6 | 16.6 | 1.3 | 0.132 | 0.771 | 0.247 |
+| lumpy_D10 | 282.6 | 11.2 | 38 | 185 | 6 | 60.1 | 27.9 | 6.9 | 1.1 | 0.784 | 0.808 | 0.125 |
+| banana_D10 | 175.3 | 6.8 | 26 | 135 | 7 | 69.0 | 21.8 | 4.2 | 1.1 | 0.127 | 0.493 | 0.024 |
+| cigar_D15_exhaust | 2122.7 | 22.9 | 150 | 750 | 0 | 56.7 | 17.3 | 23.7 | 1.1 | 0.021 | 0.004 | 0.009 |
+
+Every converging run ended on the stability criterion, K = 50 after the
+boost, Ns never below 5; the exhaust run reached Ns = 0 at N = 350 and
+ended on the budget. Reading:
+
+1. **Active sampling dominates everywhere**: 54–69 % on the noiseless
+   targets, 67–75 % on the noisy ones (where the per-sample refits sit in
+   that bucket). Stage 2 item 3 stays first.
+2. **The D = 4 shares are within a few points of the withdrawn ones**
+   (banana 59/17/11 vs 58/17/12, cigar 60/13/16 vs 56/14/21, lumpy 54/20/12
+   vs 54/21/11, Student-t 63/19/9 vs 59/20/9, logreg 55/16/20 vs 51/17/19)
+   and the evaluation counts moved by 0–9 %. The truth-anchored start and
+   box were a defect of procedure, not a distortion of the balance at this
+   dimension.
+3. **At D = 10 the balance tilts to GP training** (22–28 %) and away from
+   the variational stage (4–7 %); the ridged posteriors (cigar, logreg) keep
+   the variational stage at 16–20 %.
+4. **The post-loop tail is 6–15 s per converging run**, 8–13 % of wall,
+   essentially the K = 50 final boost; on the 1-minute runs it is as large
+   as the whole variational stage (item 2 gains weight on short runs).
+5. **The 15-D exhaust run** (Ns 8 → 4, then 0 from iteration 69 at N = 350
+   for the remaining 81 iterations; K 2 → 32 → 31, 50 after the boost), per
+   iteration:
+
+   | regime | iterations | active sampling | GP training | variational fit |
+   |---|---|---|---|---|
+   | Ns > 0, N ≤ 110 (Ns 8, K 2) | 20 | 9.65 s (85 %) | 1.50 s (13 %) | 0.20 s (2 %) |
+   | Ns > 0, N 115–200 (Ns 7–6, K 2 → 8) | 18 | 9.24 s (81 %) | 1.84 s (16 %) | 0.27 s (2 %) |
+   | Ns > 0, N 205–300 (Ns 6–5, K 8 → 32) | 22 | 7.24 s (37 %) | 6.85 s (35 %) | 5.51 s (28 %) |
+   | Ns > 0, N 305–345 (Ns 5–4, K 29 → 23) | 9 | 8.55 s (35 %) | **9.99 s (41 %)** | 5.57 s (23 %) |
+   | Ns > 0, all | 69 | 8.63 s (55 %) | 4.40 s (28 %) | 2.61 s (17 %) |
+   | Ns = 0, N 350–750 | 81 | 7.51 s (61 %) | 0.78 s (6 %) | 3.99 s (32 %) |
+
+   In the optimize-only regime GP training is 0.29 s median with a single
+   full refit of 34.6 s at N = 560 (the only iteration above 5 s); active
+   sampling grows 6.5 → 7.7 s per iteration with N; the variational fit is
+   1.3–19.7 s at K 23–31. In the late sampling regime the slice sampler
+   overtakes active sampling (41 vs 35 %), as in the by-hand run of
+   2026-09-03.
+
+### cProfile attribution (% of profiled `VBMC.optimize`; calls in parentheses)
+
+Profiled wall 1.35–1.6× the plain runs. Columns: banana_D4, cigar_D4,
+lumpy_D4, student_D4, logreg_D5, rosenbrock_D2_noise1 (ros2n1),
+logreg_D5_noise3 (lr5n3), lumpy_D10, banana_D10, cigar_D15_exhaust (cig15x).
+
+| bucket | ban4 | cig4 | lum4 | stu4 | lr5 | ros2n1 | lr5n3 | lum10 | ban10 | cig15x |
+|---|---|---|---|---|---|---|---|---|---|---|
+| active_sample | 60.9 | 63.8 | 54.6 | 63.8 | 57.6 | 71.4 | 64.4 | 62.8 | 71.0 | 61.0 |
+| ├ cma.fmin | 51.7 | 57.4 | 45.9 | 53.2 | 49.7 | 5.0 | 7.8 | 54.3 | 64.5 | 54.5 |
+| ├ acquisition `__call__` (calls) | 53.3 (51k) | 55.4 (131k) | 48.0 (41k) | 55.9 (58k) | 50.4 (84k) | 52.0 (5.6k) | 43.7 (20k) | 55.3 (249k) | 62.0 (201k) | 53.0 (1.79M) |
+| ├ `GP.predict` | 44.2 | 44.6 | 39.7 | 46.2 | 40.0 | 13.3 | 14.6 | 44.6 | 50.4 | 31.5 |
+| ├ `vp.pdf` | 4.7 | 5.4 | 4.4 | 5.1 | 5.1 | 0.0 | 0.0 | 5.4 | 5.5 | 15.4 |
+| ├ `f_min_fill` | 2.3 | 1.9 | 2.1 | 2.3 | 2.3 | 7.0 | 5.6 | 2.0 | 1.6 | 0.8 |
+| └ `active_importance_sampling` | 0 | 0 | 0 | 0 | 0 | 0.3 | 0.2 | 0 | 0 | 0 |
+| train_gp | 18.3 | 14.1 | 21.5 | 20.1 | 17.1 | 25.5 | 32.9 | 26.7 | 21.5 | 16.7 |
+| ├ `SliceSampler.sample` | 15.8 | 12.1 | 19.2 | 17.6 | 14.6 | 18.1 | 27.0 | 24.5 | 19.8 | 14.0 |
+| ├ `GP.__core_computation` (calls) | 12.8 (58k) | 10.0 (96k) | 14.8 (65k) | 14.1 (69k) | 12.2 (88k) | 18.1 (131k) | 24.2 (317k) | 20.9 (252k) | 15.9 (165k) | 14.3 (559k) |
+| ├ scipy `solve_triangular` (calls) | 9.6 (0.63M) | 9.1 (1.41M) | 9.3 (0.58M) | 10.2 (0.71M) | 9.0 (1.00M) | 6.2 (0.42M) | 7.3 (1.05M) | 10.4 (2.48M) | 10.1 (1.97M) | 9.0 (9.39M) |
+| ├ scipy `cholesky` | 1.5 | 1.2 | 1.7 | 1.7 | 1.5 | 2.0 | 3.2 | 3.1 | 2.0 | 2.3 |
+| ├ `__compute_log_priors` | 3.8 | 2.8 | 4.6 | 4.1 | 3.4 | 5.3 | 6.0 | 3.9 | 3.8 | 1.5 |
+| └ `scipy.optimize.minimize` | 0.1 | 0.1 | 0.1 | 0.1 | 0.1 | 0.1 | 0.1 | 0.1 | 0.1 | 1.7 |
+| optimize_vp | 19.8 | 21.3 | 22.9 | 15.2 | 24.1 | 20.0 | 20.3 | 9.4 | 6.6 | 21.0 |
+| ├ `_gp_log_joint` | 14.6 | 14.9 | 17.2 | 11.6 | 17.6 | 15.7 | 14.3 | 6.2 | 4.6 | 9.2 |
+| ├ `_eval_full_elcbo` | 3.6 | 3.3 | 4.8 | 3.3 | 4.4 | 4.0 | 5.0 | 1.1 | 1.2 | 6.6 |
+| └ `entmc_vbmc` | 4.3 | 5.6 | 4.8 | 2.7 | 5.5 | 3.2 | 5.1 | 2.7 | 1.6 | 11.2 |
+| final_boost (1 call) | 10.0 | 7.5 | 12.4 | 7.0 | 6.7 | 4.3 | 2.8 | 3.4 | 3.1 | 0.7 |
+| `copy.deepcopy` | 0.4 | 0.4 | 0.4 | 0.4 | 0.4 | 0.6 | 0.7 | 0.3 | 0.2 | 0.6 |
+| profiled wall s | 95.5 | 213.0 | 84.0 | 101.9 | 156.5 | 143.7 | 322.3 | 410.5 | 275.1 | 2543.6 |
+
+Reading:
+
+- **Noiseless targets, D ≤ 10**: single-point `GP.predict` inside the
+  CMA-ES loop is 40–50 % of everything (51k–249k calls per run), `vp.pdf`
+  another 4–6 %. Inside GP training the slice sampler is 12–25 %, of which
+  `__core_computation` 10–21 %, the scipy `solve_triangular` wrappers alone
+  9–10 % (0.6–2.5 M calls), the hyperprior evaluation 3–5 %, the Cholesky
+  1.2–3.1 %; L-BFGS-B 0.1 %. The variational stage is 15–24 % at D = 4–5
+  (`_gp_log_joint` 12–18 %, Adam's Python loop inside it) and 7–9 % at
+  D = 10. `final_boost` 3–12 %; `copy.deepcopy` under 1 %.
+- **D = 15, 750 evaluations**: `GP.predict` falls to 31.5 % (one
+  hyperparameter sample for half the run) while `vp.pdf` rises to 15.4 %
+  (K ≈ 25, 1.79 M calls); `entmc_vbmc` 11.2 % is the largest piece of the
+  variational stage, ahead of `_gp_log_joint` 9.2 % and `_eval_full_elcbo`
+  6.6 %; `scipy.optimize.minimize` 1.7 % over 138 calls.
+- **Noisy (VIQR) path**: the acquisition search collapses (`cma.fmin` 5–8 %,
+  5.6k–20k acquisition calls) and the bucket is the per-sample **full GP
+  refits (train_gp 26–33 %, 73–112 fits) and VP optimizations (20 %)**
+  switched on by `active_sample_gp_update`/`vp_update`; `f_min_fill` 6–7 %;
+  `active_importance_sampling` itself ≤ 0.3 %.
+
+### Decision rule outcome (devlog §10)
+
+The variational stage did not overtake active sampling on any target (at
+most 20 % of wall on the ridged posteriors against 55–60 % for active
+sampling), so the Stage 2 order **stands, confirmed on the papers'
+procedure: item 3 (batch the acquisition evaluation: `GP.predict` over
+`Ns`, `vp.pdf` over `K`, the CMA-ES population), item 8 (gpyreg sampler
+overhead: `__core_computation`, the `solve_triangular` wrappers, the
+hyperprior evaluation), item 1 (`_gp_log_joint` einsum), item 2
+(`_eval_full_elcbo` multi-RHS solve, which also shrinks `final_boost`)**.
+Refinements: (i) items 8 and 1 are close at D = 4 (GP training 13–20 % vs
+variational 9–20 %) and item 1 is PyVBMC-local, so it may land first; but
+item 8 gains with dimension (22–28 % vs 4–7 % at D = 10; 41 % of a late
+sampling iteration at D = 15). (ii) On the noisy path items 8 and 1 are what
+matter. (iii) The second clause (exhaust run dominated by GP refits at
+Ns = 0) does not fire: GP training is 6 % of an optimize-only iteration and
+L-BFGS-B 1.7 % of the run; the rare full refit at N ≥ 500 (35 s here) is
+real but not dominant, so the L-BFGS-B path does not join item 8. (iv) New:
+`entmc_vbmc` (item 5) is 11 % at D = 15 and should follow item 2 rather
+than trail the list.
+
+### Golden population (`baseline_20260903`, 20 seeds × 14 configs)
+
+Sweep: one worker, BLAS single-threaded; 22 runs 16:21–17:28 on
+2026-09-03, 258 runs 19:09–04:00 overnight (531.9 min); ≈ 28.7 min per seed
+over the 14 configurations, ≈ 10.0 h in total; **280 of 280 succeeded**.
+Regenerate bit-for-bit on this machine (statistically equivalent
+elsewhere) with `golden_trace.py run --suite golden --seeds 0-19 --workers
+1 --out dev/scripts/runs/golden/baseline_20260903`. Median [IQR] over
+seeds (gsKL and MMTV medians; full IQRs in `dev/golden/baseline/summary.md`):
+
+| config | ΔLML | gsKL | MMTV | usable | evals | iters | warps | wall min |
+|---|---|---|---|---|---|---|---|---|
+| normal_D5 | 0.004 [0.001, 0.006] | 0.0001 | 0.008 | 1.00 | 70 | 13 | 1.0 | 1.0 |
+| corr_D5 | 0.009 [0.006, 0.012] | 0.0015 | 0.008 | 1.00 | 100 | 20 | 1.1 | 1.3 |
+| halfnormal_D2 | 0.005 [0.002, 0.006] | 0.0001 | 0.017 | 1.00 | 70 | 13 | 1.0 | 0.5 |
+| rosenbrock_D2 | 0.024 [0.023, 0.035] | 0.027 | 0.028 | 1.00 | 80 | 15 | 1.1 | 0.7 |
+| banana_D2 | 0.049 [0.043, 0.063] | 0.189 | 0.047 | 1.00 | 80 | 15 | 1.0 | 0.6 |
+| banana_D6 | 0.081 [0.067, 0.095] | 0.245 | 0.025 | 1.00 | 105 | 20 | 1.1 | 1.5 |
+| banana_D10 | 0.100 [0.080, 0.127] | 0.286 | 0.019 | 1.00 | 125 | 24 | 1.0 | 2.7 |
+| cigar_D4 | 0.004 [0.003, 0.014] | 0.0004 | 0.009 | 1.00 | 135 | 27 | 2.0 | 2.4 |
+| lumpy_D4 | 0.038 [0.014, 0.050] | 0.012 | 0.026 | 1.00 | 95 | 18 | 1.1 | 1.0 |
+| lumpy_D10 | 0.569 [0.442, 0.649] | 0.442 | 0.085 | 1.00 | 220 | 44 | 2.5 | 6.8 |
+| student_D4 | 0.024 [0.014, 0.038] | 0.028 | 0.040 | 0.95 | 102 | 19.5 | 1.1 | 1.1 |
+| logreg_D5 | 0.049 [0.025, 0.071] | 0.014 | 0.030 | 1.00 | 132 | 27 | 1.8 | 2.0 |
+| rosenbrock_D2_noise1 | 0.061 [0.017, 0.103] | 0.012 | 0.028 | 1.00 | 140 | 27 | 1.9 | 2.1 |
+| logreg_D5_noise3 | 0.186 [0.075, 0.310] | 0.412 | 0.154 | 0.85 | 242 | 49 | 2.7 | 4.9 |
+
+("usable" = ΔLML < 1, gsKL < 1 and MMTV < 0.2, the papers' criterion.)
+Observations:
+
+- Every run terminated on the stability criterion; K = 50 after the boost;
+  1–2.7 rotoscale warps per run. Evaluations 65–260, i.e. 20–70 % of the
+  default budget 50 (D + 2).
+- **Two configurations are below 1.00.** `logreg_D5_noise3`: seeds 0, 10
+  and 14 fail on MMTV alone (0.20–0.25; ΔLML ≤ 0.43, gsKL ≤ 0.82): the
+  rare predictor's plateau posterior against the +10 bound, under σ = 3
+  noise, and a reference that is itself importance-resampled (a floor on
+  the metric). `student_D4`: seed 19 is a clean VBMC failure, ΔLML 1.33,
+  gsKL 53.8, MMTV 0.44 after a normal-looking run; the 19 other seeds are
+  under every threshold. Recorded as a behaviour of the current code (the
+  papers count such failures), see §Follow-ups.
+- The hardest well-behaved configurations are `lumpy_D10` (ΔLML 0.57,
+  gsKL 0.44, 220 evaluations, 44 iterations, 6.8 min) and the D = 10 banana
+  (gsKL 0.29 with ΔLML 0.10 and MMTV 0.019: its diagonal true covariance
+  hides the ridge from gsKL). Maximum gsKL across all other seeds: 0.82
+  (banana_D10), 0.81 (lumpy_D10), 0.92 (rosenbrock_D2_noise1 seed 11).
+- MMTV medians 0.008 (Gaussians) to 0.085 (lumpy_D10) and 0.154 (noisy
+  logreg): marginals recovered to a few percent total variation except on
+  the noisy bounded problem.
+- **Null check** (even vs odd seeds, 10 a side, 56 KS tests on ΔLML, gsKL,
+  MMTV, `func_count`): nothing rejected after Holm; two raw p < 0.05
+  (rosenbrock_D2_noise1 ΔLML 0.002, lumpy_D10 ΔLML 0.012) against 2.8
+  expected under the null.
+- **Against the withdrawn population** (`compare` of
+  `runs/golden/baseline` vs `baseline_20260903`, informational): over the
+  ten configurations present in both, only `logreg_D5` MMTV is rejected
+  (median +0.014), and logreg is a different target now (bounded, uniform
+  prior, new reference); `func_count` ratios 0.94–1.08. At D ≤ 6 the
+  random start and the 3-SD prior box moved the final-metric
+  distributions by less than the seed-to-seed spread.
+- Power: with 20 vs 20 seeds a two-sample KS at Holm-adjusted α = 0.05
+  detects roughly a one-SD median shift or a doubling of spread per metric;
+  subtler drifts need the 50-seed population.
+
+### Deviations from the plan
+
+- Two sessions instead of one night: the PI needed the machine 17:33–19:08;
+  the kill left no partial file (checked: every `.npz` loaded, every one had
+  a sidecar) and the resume skipped the 22 finished runs.
+- The 258 second-session sidecars record `dirty: true` for an uncommitted
+  worklog note, no code change.
+- `aggregate.md` built by hand (the script does not call `--aggregate`).
+- The reviewer's per-seed estimates (`EST_MINUTES`) were refreshed from the
+  new `summary.md`.
+
 ## Follow-ups
 
 Compute and population:
-- ~~Regenerate the cigar_D4 baseline with the fixed `x0`~~ — done
-  2026-09-03 07:12–08:00 (PI request), see Results.
+- ~~Regenerate the cigar_D4 baseline with the fixed `x0`~~ — superseded by
+  the full regeneration of 2026-09-03/04 (§Results (regenerated)).
 - **Reference sidecars in git** (PI decision, 07:15: "0.55 MB in total
-  seems alright"): `dev/golden/baseline/` holds the 220 JSON sidecars and
-  `summary.md`; `.npz` traces stay gitignored. Copy the sidecars over after
-  every extension of the population.
-- **Exhaust run on a hard target at D ≥ 15** (PI: cigar, D = 15, 750
-  evaluations; started 05:48 on 2026-09-03, see the tracker): the D = 5
-  Gaussian measurement of the optimize-only GP regime was the cheapest
-  possible case and the Stage 2 item 8 scoping should not rest on it.
-- Append seeds to 50 per config (`golden_trace.py run --seeds 20-49`,
-  one worker; the harness skips finished runs). About 1.5 min per run.
-- Add higher dimensions to the golden set (cigar, lumpy, student at D = 6
-  and 8; banana at D = 8, 10) and `normal_D5_exhaust` with a few seeds, so
-  the Ns = 0 regime is in the population that gates Stage 2.
+  seems alright"): `dev/golden/baseline/` holds the 280 JSON sidecars and
+  `summary.md` of `baseline_20260903`; `.npz` traces stay gitignored. Copy
+  the sidecars over after every extension of the population.
+- ~~Exhaust run on a hard target at D ≥ 15~~ — `cigar_D15_exhaust` is in
+  the profile suite and was profiled plain and under cProfile.
+- Append seeds to 50 per config (`golden_trace.py run --suite golden
+  --seeds 20-49 --workers 1 --out dev/scripts/runs/golden/baseline_20260903`;
+  the harness skips finished runs; ≈ 28.7 min per seed, ≈ 14 h for 30
+  seeds), then `summary`, `compare --split`, copy the sidecars.
+- Add cigar and Student-t at D = 6 and 8, banana at D = 8, and the exhaust
+  configuration with a few seeds to the golden set, so the Ns = 0 regime is
+  in the population that gates Stage 2.
 - An HPC variant of the sweep (Slurm array over seeds) if 50 seeds × a
   larger suite stops fitting a laptop night.
 
 Tooling:
+- `regenerate_baseline.sh` should call `profile_suite.py --aggregate` after
+  the cProfile pass (the 2026-09-03 `aggregate.md` was built by hand).
+- Write each trace to a temporary name and rename it into place, so that a
+  kill during `np.savez_compressed` can never leave a truncated `.npz` that
+  the resume would then skip (the window is milliseconds; checked by hand
+  after the 2026-09-03 kill).
 - Time `determine_best_vp` and `final_boost` with the stage timers in
   `VBMC.optimize` (small package change), so `untimed_s` disappears from the
-  profile tables.
-- Make `profile_run.py` report the stage nesting explicitly (the noisy
-  run's negative `untimed_s`).
+  profile tables; make `profile_run.py` report the stage nesting explicitly
+  (the noisy runs' negative `untimed_s`).
 - The plausible box of the same target differs slightly across D for the
-  same marginal (quantile noise, e.g. banana x2: 13.9 at D=2 vs 14.0 at
-  D=4); harmless, but a per-coordinate analytic quantile would be cleaner
-  where the marginal is known.
+  same marginal where it is derived from samples; harmless, but a
+  per-coordinate analytic quantile would be cleaner where the marginal is
+  known.
 
 Package (devlog §9; none fixed here except the Ns = 1 crash):
 - Notebook 1 and `examples/scripts/pyvbmc_example_1_full_code.py`:
@@ -1001,8 +1229,12 @@ Package (devlog §9; none fixed here except the Ns = 1 crash):
   `true_mean`/`true_cov` truthiness guard and its per-iteration 10⁶-sample
   draw from `vp.rng`; `kl_div_mvn`'s `mu1` promotion; `noisy_cigar` dead
   test code; notebook 6's noise shapes.
+- `student_D4` seed 19 of the golden population is a clean VBMC failure
+  (ΔLML 1.33, gsKL 54, MMTV 0.44 at K = 50 after a normal termination):
+  look at its trace before Stage 2 changes anything, to know whether it is
+  a behaviour to preserve in the gate or a bug to find.
 - CI on `dev-next` (`tests` workflow, manual dispatch) for the package fix
-  `6f3f0ba`: run before the eventual PR at the latest.
+  `6f3f0ba`: done 2026-09-03 (full matrix green, run 33715620257).
 
 Stage 0 items still open: fixture generator (regenerable `.npz`, retire
 `.mat`), finite-difference checks for the parameter-transformer Jacobian,
@@ -1141,7 +1373,8 @@ Phase 4 — records
   exhaust in the profile suite); `dev/golden/baseline/` emptied;
   `regenerate_baseline.sh` written for the evening run (PI: laptop free from
   the evening; one process; about 10–12 h)
-- [ ] **Pickup (handoff 2026-09-03 08:45)**: run `bash
+- [x] **Pickup (handoff 2026-09-03 08:45)** — done 2026-09-03/04, see the
+  three entries below. The handoff text was: run `bash
   dev/scripts/regenerate_baseline.sh` from the repo root when the laptop is
   free (evening of 2026-09-03; one process, 10–12 h, resumable; log in
   `dev/scripts/runs/regenerate_<stamp>.log`). Then: append the regenerated
@@ -1153,6 +1386,36 @@ Phase 4 — records
   push `dev-next`. Nothing is running now; no CI run is pending (the last
   push touched only `dev/`, outside the workflow's path filter; the fix
   `6f3f0ba` has a green full matrix and a green smoke run).
+- [x] **Regeneration, first session (2026-09-03 14:10–17:33,
+  `STAMP=20260903`, one process, BLAS single-threaded, laptop otherwise
+  idle, clean tree at `5020879`)**: target checks all 15 ok; **profile
+  campaign complete** (10 plain 14:11–15:08, 10 cProfile 15:08–16:21, no
+  failures; `aggregate.md` built by hand in
+  `dev/scripts/runs/profile_20260903/`); **golden sweep 22 of 280**
+  (banana_D10 seeds 0–19, lumpy_D10 seeds 0–1; 16:21–17:28) when the PI
+  asked for the machine and the process tree was killed from the script's
+  root PID (17:33). All 22 traces loaded and had sidecars; no partial files.
+  The resume point was recorded here (this entry, in its earlier form),
+  which is the uncommitted change that marks the second session's sidecars
+  `dirty`.
+- [x] **Regeneration, second session (2026-09-03 19:09 – 2026-09-04 04:01,
+  `STAMP=20260903 bash dev/scripts/regenerate_baseline.sh golden`)**: checks
+  ok again; the sweep skipped the 22 finished runs and ran the remaining
+  258 in 531.9 min (19:09–04:00), **280 of 280 succeeded**; `summary`,
+  `compare --split` (**no config flagged, 56 KS tests, Holm α = 0.05**) and
+  the publish step ran at 04:00–04:01: `dev/golden/baseline/` holds the 280
+  sidecars and `summary.md`. Golden compute in total ≈ 10.0 h (67 + 532
+  min), ≈ 28.7 min per seed over the 14 configurations.
+- [x] **Write-up (2026-09-04, 04:05–04:45)**: §Results (regenerated)
+  appended; §Follow-ups revised; devlog §2 and §10 rewritten in place with
+  the regenerated numbers (Stage 2 order confirmed, no longer provisional);
+  roadmap ticks and pickup point updated; `EST_MINUTES` refreshed from
+  `summary.md` (pre-commit clean); `dev/golden/README.md` status.
+- [x] **Commit and push** (PI, 2026-09-04): the republished
+  `dev/golden/baseline/` (280 sidecars + `summary.md`, 1.4 MB), this file,
+  the devlog, the roadmap, `golden_trace.py`, the golden README, as
+  `docs(dev): regenerate the benchmark profile and golden baseline with the
+  papers' procedure`. Only `dev/` changes, so no CI run is triggered.
 - [x] **CI discussion (PI, 07:20)**: the `tests` workflow ran only on
   manual dispatch and twice a month on `main`, so 17 pushes to `dev-next`
   tonight triggered nothing (and I had not dispatched it for the package

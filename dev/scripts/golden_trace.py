@@ -54,19 +54,19 @@ DEFAULT_RUNS = REPO_ROOT / "dev" / "scripts" / "runs" / "golden"
 # --workers > 1. Measured on the (truth-anchored) 2026-09-03 population for
 # the D <= 6 configs; the D = 10 and the two noisy entries are guesses to be
 # refreshed from the regenerated population's summary.md.
-EST_MINUTES = {
-    "cigar_D15_exhaust": 30,
-    "lumpy_D10": 8,
-    "banana_D10": 8,
-    "logreg_D5_noise3": 6,
-    "rosenbrock_D2_noise1": 3,
-    "cigar_D4": 2.5,
-    "logreg_D5": 1.8,
+EST_MINUTES = {  # medians of the 2026-09-03 baseline (one worker, 1 thread)
+    "cigar_D15_exhaust": 35,
+    "lumpy_D10": 6.8,
+    "logreg_D5_noise3": 4.9,
+    "banana_D10": 2.7,
+    "cigar_D4": 2.4,
+    "rosenbrock_D2_noise1": 2.1,
+    "logreg_D5": 2.0,
     "banana_D6": 1.5,
-    "corr_D5": 1.25,
-    "student_D4": 1.2,
-    "lumpy_D4": 1.1,
-    "normal_D5": 1.1,
+    "corr_D5": 1.3,
+    "student_D4": 1.1,
+    "lumpy_D4": 1.0,
+    "normal_D5": 1.0,
     "banana_D2": 0.65,
     "rosenbrock_D2": 0.65,
     "halfnormal_D2": 0.55,
