@@ -49,12 +49,10 @@ its value moved by 1e-8 to 9e-8; the gradients are held to 2e-2 (about
 50x the largest floor), the values to 1e-6. On the generating machine the
 gradients are pinned exactly by the dump gate of
 ``make_oracle_fixtures.py --check --exact --against``. GP-free outputs
-(densities,
-entropies, theta, the transformer) stay at 1e-10, and the bit-identical
-ones are effectively exact. Each tolerance leaves at least 30x over its
-measured floor; if a
-platform exceeds one, re-measure there (``make_oracle_fixtures --check
---verbose``) rather than guess.
+(densities, entropies, theta, the transformer) stay at 1e-10, and the
+bit-identical ones are effectively exact. Each tolerance leaves at least
+30x over its measured floor; if a platform exceeds one, re-measure there
+(``make_oracle_fixtures --check --verbose``) rather than guess.
 
 Two combinations here are not what production runs, on purpose: the
 ``entmc`` oracle and the first ``neg_elcbo`` call use ``ceil(ns_ent(K)/K)``
@@ -438,8 +436,10 @@ def active_sample_step(state, seed):
     history = {"r_index": np.array([state["meta"].get("r_index", np.inf)])}
     n = state["options"]["fun_evals_per_iter"]
     # Since 2026-09-05 every draw of the search comes from `vp.rng` (the
-    # noise-handler subclass included; re-baselined then); the legacy seed
-    # is kept so that a stray global draw would at least be reproducible.
+    # noise-handler subclass included; re-baselined then). The legacy seed
+    # is inert and kept only for symmetry with the older fixtures; it would
+    # not *detect* a stray global draw (that is
+    # `test_seeded_run_leaves_global_state_untouched`'s job).
     with legacy_seed(seed):
         fl, optim_state, vp, gp = active_sample(
             gp, n, optim_state, fl, history, vp, state["options"]
@@ -455,11 +455,12 @@ def _nlz_and_grad(gp, hyp, compute_prior):
     the negative log posterior when ``compute_prior``.
 
     Through the private method that the space-filling design, L-BFGS-B and
-    the slice sampler all call (``__gp_obj_fun``): the public
-    ``GP.log_likelihood`` / ``GP.log_posterior`` apply the unary minus to
-    the ``(nlZ, dnlZ)`` tuple and raise ``TypeError`` when a gradient is
-    requested (gpyreg ``236ddd7``; devlog §9). Switch to the public API once
-    the fix is pinned.
+    the slice sampler all call (``__gp_obj_fun``), because the public
+    ``GP.log_likelihood`` / ``GP.log_posterior`` of every *released* gpyreg
+    apply the unary minus to the ``(nlZ, dnlZ)`` tuple and raise
+    ``TypeError`` when a gradient is requested (fixed on the gpyreg branch
+    of Stage 2 item 8, acerbilab/gpyreg#43; devlog §9). The private call
+    works on both, so it stays until the fix is in a release.
     """
     return gp._GP__compute_nlZ(
         np.asarray(hyp, dtype=float), True, compute_prior
@@ -563,8 +564,9 @@ def gp_fit(state, seed):
     # Every draw of the fit (the space-filling design, the slice sampler,
     # the warm-start subsample) comes from `rng` since 2026-09-05, when
     # `train_gp` started handing its generator to `gpyreg.GP.fit`; the
-    # reference was re-baselined then. The legacy seed is kept so that a
-    # stray global draw, should one reappear, is at least reproducible.
+    # reference was re-baselined then. The legacy seed is inert and kept
+    # only for symmetry; a stray global draw is caught by
+    # `test_seeded_run_leaves_global_state_untouched`, not here.
     with legacy_seed(seed):
         gp, gp_s_N, sn2_hpd, _ = train_gp(
             hyp_dict,

@@ -1618,8 +1618,10 @@ class VBMC:
             idx_best, termination_message, success_flag
         )
 
-        # Snapshot the random state after the post-loop work, so that a
-        # further `optimize` call on this instance continues from here.
+        # Snapshot the generator state after the post-loop work, so that
+        # `vbmc.random_state` (saved with the instance) describes where a
+        # further `optimize` call would start; the generator itself simply
+        # continues.
         self.random_state = self._get_random_state()
         return copy.deepcopy(self.vp), results
 

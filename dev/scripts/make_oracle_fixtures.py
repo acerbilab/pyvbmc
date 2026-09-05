@@ -382,6 +382,15 @@ def check_one(path, fun, exact=False, verbose=False, reference=None, skip=()):
     oracles named in ``skip`` are not checked."""
     snap = load_snapshot(path)
     refs = snap["ref"] if reference is None else reference
+    if reference is not None and set(reference) != set(snap["ref"]):
+        # A dump made before an oracle was added (or after one was removed)
+        # would otherwise pass with that oracle silently unchecked.
+        print(
+            f"  [{path.stem}] WARNING: the dump holds oracles"
+            f" {sorted(reference)} but the fixture {sorted(snap['ref'])};"
+            " only the dump's are compared",
+            flush=True,
+        )
     bad = []
     for name, ref in refs.items():
         if name in skip:
@@ -603,7 +612,12 @@ def add_oracle(names, oracle_name, reason, expect_moving=()):
         )
         _write_fixture(path, arrays, tree)
         _verify_rewrite(
-            path, fun, oracle_name, before, [prefix + k for k in out]
+            path,
+            fun,
+            oracle_name,
+            before,
+            [prefix + k for k in out],
+            skip=expect_moving,
         )
         print(f"[add-oracle] {name:28s} {oracle_name} added", flush=True)
     print(f"[add-oracle] {len(pending)} of {len(names)} fixtures rewritten")
@@ -749,6 +763,8 @@ def main(argv=None):
         )
     if (args.exact or args.against) and not args.check:
         sys.exit("--exact and --against only apply to --check")
+    if args.expect_moving and not targeted:
+        sys.exit("--expect-moving only applies to --rebaseline / --add-oracle")
     if args.list:
         for r in RECIPES:
             print(
@@ -762,6 +778,10 @@ def main(argv=None):
         unknown = wanted - {r.name for r in RECIPES}
         if unknown:
             sys.exit(f"unknown recipe(s): {sorted(unknown)}")
+    if wanted is not None and args.check:
+        missing = wanted - set(snapshot_names(FIXTURES))
+        if missing:
+            sys.exit(f"no fixture named {sorted(missing)}")
     if args.check:
         names = [
             n for n in snapshot_names(FIXTURES) if not wanted or n in wanted
