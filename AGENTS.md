@@ -157,7 +157,8 @@ Things you must hold in your head across files:
   so the history does not grow with `Ns` times the square of the
   training-set size. `vbmc.get_gp(iteration)` returns a copy with the
   factors recomputed from the record, identical to the ones dropped; it is
-  what `final_boost` and `load` use, and it copies a record that still
+  what `optimize()` hands to `final_boost` and what `load` uses, and it
+  copies a record that still
   carries its factors (files saved by versions that stored complete GPs)
   as it is. The recorded `optim_state` leaves out the importance samples
   of the noisy acquisitions (`active_importance_sampling`, drawn afresh

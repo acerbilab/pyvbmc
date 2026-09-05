@@ -95,9 +95,11 @@ status and next steps never go into the devlogs.
   every record, the readers of the stored GPs, the decisions taken with the
   PI (what can be rebuilt from the record is never stored; what cannot is
   dropped by default and kept under `record_full_history_details`), and
-  the four steps that followed (the history grows without re-copying, lean
-  GP records restored by the public `VBMC.get_gp`, the importance samples
-  out of the recorded `optim_state`), each replayed and measured.
+  the four steps that followed the same night (the resume test made real,
+  the history growing without re-copying its past, lean GP records
+  restored by the public `VBMC.get_gp`, the importance samples out of the
+  recorded `optim_state`), the three code steps each replayed and
+  measured.
 
 Naming: `plans/` files are named by slug only, never by date (the date is in
 the file header), so that they cannot be mistaken for copies of the dated

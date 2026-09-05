@@ -143,15 +143,14 @@ anything that changes numerics lands.
   0.37–0.88 of its time on nine configs; end to end within trajectory
   noise (suite 1424 → 1384 s; the exhaust run 777 s on both, its
   variational fit 244 → 209 s on a higher-K path). **(6) done 2026-09-05
-  (evening)** (`plans/stage2-memory.md`, which also holds the plan for
-  (7)): `_vb_init` builds each sieve candidate as a shell sharing the
+  (evening)** (`plans/stage2-memory.md`, shared with (7)): `_vb_init`
+  builds each sieve candidate as a shell sharing the
   run's generator and transformer instead of `copy.deepcopy(vp)`;
   bit-identical candidates and stream (27,936 candidates checked against
   the old code, replay `identical` with finals equal to item 5's), the
   `_vb_init` step 31–43 → 12–20 µs per candidate, about 0.1 % of a run
-  (cProfile had overstated the copy about 6×), and the run keeps one
-  transformer object between warps. **(7) done 2026-09-05 (night)**
-  (`plans/stage2-memory.md`; decided with the PI: what can be rebuilt
+  (cProfile had overstated the copy about 6×). **(7) done 2026-09-05
+  (night)** (`plans/stage2-memory.md`; decided with the PI: what can be rebuilt
   from the record is never stored, what cannot is dropped by default and
   kept under a new option): the history grows without re-copying its
   stored past (the re-copy was quadratic, 1.3 % of the exhaust run under
@@ -163,7 +162,8 @@ anything that changes numerics lands.
   `record_full_history_details` is set. Retained history 9.4 → 1.9 MB on
   `cigar_D4`, 25.8 → 1.3 MB on `rosenbrock_D2_noise1`, 117 → 4.6 MB on
   `logreg_D5_noise3` (RSS after that run 332 → 163 MB, peak 427 → 273);
-  the 15-D exhaust run's 323 MB of factors (analytic) become about 2 MB.
+  the 15-D exhaust run's 323 MB of factors (analytic) become about 8 MB
+  of data and hyperparameters.
   Every step replay `identical` and full suite green; the resume test
   compares the two runs' ELBOs (it compared one with itself) and pins a
   `load(iteration=)` round trip on a file written by the new code; two
@@ -282,8 +282,10 @@ anything that changes numerics lands.
    error grows without bound with the components' width ratio (plan,
    Open question 1). Item 5 is complete; the population run of 3c is the
    statistical gate for items 8 and 5 together.
-3c. **Next** (handoff 2026-09-05 18:30, code `a0e70fe`, tree clean,
-   nothing running). Two tracks, the first needing the laptop free for
+3c. ~~**Next**~~ (handoff 2026-09-05 18:30, code `a0e70fe`, tree clean,
+   nothing running; track (ii) done the same night, see the Status line
+   at the end of this point and 3d; track (i) is point 3e). Two tracks,
+   the first needing the laptop free for
    about 6.5 h and started only when the PI says so, the second light
    enough to run beside it.
    (i) **The 20-seed population** after the seam removal and item 5 (the
@@ -362,6 +364,37 @@ anything that changes numerics lands.
    replay's finals exercise what `final_boost` receives). Open question 8
    of `plans/stage2-gpyreg-predict-and-sampler.md` (re-baseline the
    committed oracle references) is still the PI's call.
+3e. **Next** (2026-09-06, 00:20; code `bdaf322`, the ten commits since
+   `2dcb51a` unpushed). (i) **The 20-seed population is running**: started
+   2026-09-06 00:16 on the PI's word, one process, code `bdaf322`
+   (`python -u dev/scripts/golden_trace.py run --suite golden --seeds
+   0-19 --workers 1 --out dev/scripts/runs/golden/item7_20260906`, then
+   `summary`, `compare dev/golden/baseline`, `compare` with the item 1
+   population and a per-config table of the sidecars' `peak_rss_mb`
+   medians against item 1's, all chained by one script into
+   `runs/golden_item7_20260906.log`; about 6.5 h). Its sidecars say
+   `dirty: true` because the record files of this commit were uncommitted
+   when it started; no code differed. It is the statistical gate for
+   items 8, 5, 6 and 7 together (none identity-preserving against the
+   item 1 population, whose code predates the seam removal). Read
+   `runs/golden/item7_20260906/compare_vs_baseline.md` first: expected no
+   rejection over the 56 KS tests (Holm α 0.05); a rejection on one
+   config's finals would be the first evidence of a change beyond
+   rounding and would reopen the item it points at. Then
+   `compare_vs_item1.md` (the same finals against the item 1 population,
+   which shares the reference's procedure) and `peak_rss_vs_item1.md`
+   (the in-situ memory effect of item 7 on 280 runs). Not promoted to the
+   reference until the stage ends (pickup 5). (ii) Push `dev-next` so the
+   CI smoke runs on the package commits, and dispatch the full matrix
+   once before anything else lands (the oracle tests run on three BLAS
+   builds there). (iii) Then pickup 5 (the end-of-stage re-baseline of the
+   golden population, 50 seeds, the exhaust config) and pickup 6 (the
+   Stage 0 leftovers); Open question 8 of
+   `plans/stage2-gpyreg-predict-and-sampler.md` is still the PI's call.
+   Reading list for a fresh session: `dev/README.md`; this file's Stage 2
+   bullet and pickup points 3c–3e; `plans/stage2-memory.md` (§Summary,
+   §Decisions, §Results, the tracker's doublecheck entry); the population
+   reports above.
 4. ~~Run the `tests` workflow on `dev-next` for the package fix~~ done
    2026-09-03 (full matrix green, run 33715620257); pushes to `dev*` now
    run a smoke automatically.

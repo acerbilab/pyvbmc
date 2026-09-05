@@ -18,6 +18,8 @@
 
   See below for more details on the ``VBMC`` class methods and interface. The primary entry-points for users are the ``VBMC`` class, which initializes the algorithm, and the :ref:`\`\`VariationalPosterior\`\`` class, which represents the returned variational solution. The :ref:`Basic options` may also be useful.
 
+  The iteration history (``vbmc.iteration_history``) keeps each iteration's Gaussian process surrogate as its training data and hyperparameters, without the posterior factors; ``vbmc.get_gp(iteration)`` returns the surrogate of an iteration with its posterior restored, ready for prediction.
+
 .. autoclass:: pyvbmc.VBMC
    :exclude-members: optimize, save, load
    :members:

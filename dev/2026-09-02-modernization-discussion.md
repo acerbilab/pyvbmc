@@ -334,6 +334,9 @@ Of these, ~400 are hand derivatives that vanish under autodiff and ~500
 Memory note: `gp.posteriors` holds `Ns` factors of `N×N`, `GP.clean()` is never
 called, and every iteration's GP is deep-copied into `iteration_history`
 (`vbmc.py:1272`), so memory grows as `Σ_i Ns_i·N_i²`. Fix independently of any port.
+*Resolved 2026-09-05 (Stage 2 item 7, `plans/stage2-memory.md`): the
+history records each GP without its factors and `VBMC.get_gp(iteration)`
+rebuilds them on demand; the live GP still holds its `Ns` factors.*
 
 ---
 
@@ -520,9 +523,11 @@ state used by resume.
 - `gaussian_process_train.py:768` — `noise_shaping` is an unported stub; the
   option only flips a noise-function flag.
 - GPs retained for every iteration with all `Ns` Cholesky factors; `GP.clean()`
-  never called (§4). **Resolved 2026-09-05** (Stage 2 item 7,
-  `plans/stage2-memory.md`): the history records each GP without its
-  factors and `VBMC.get_gp(iteration)` rebuilds them on demand.
+  never called (§4). **Resolved for the history 2026-09-05** (Stage 2
+  item 7, `plans/stage2-memory.md`): the history records each GP without
+  its factors and `VBMC.get_gp(iteration)` rebuilds them on demand. The
+  live GP, one object, still holds its `Ns` factors, and `GP.clean()` is
+  still never called.
 - `pyproject.toml:16-20` — `plotly`, `pytest*` as runtime deps. `matplotlib`
   and `corner` imported at module top level.
 - `priors/scipy.py:5-10`, `priors/product.py:5` — imports of scipy private classes.
@@ -931,10 +936,10 @@ item: the `_vb_init` step goes from 31–43 to 12–20 µs per candidate, about
 much, its usual inflation of many tiny Python calls); and the §2 table's
 "5K–50K candidate VPs in the sieve" is the per-call bound at a full
 re-optimization, while a run sieves 5 K per iteration (1–3k candidates per
-D = 4 run, 21.7k on the exhaust run). A side effect: `vbmc.py` re-points
-the run's transformer at the winning posterior's after every fit, so the
-run now keeps one transformer object between warps instead of a fresh copy
-per iteration. *Item 7 is planned in the same file, not started*: the
+D = 4 run, 21.7k on the exhaust run). The sharing is confined to the
+sieve: the posterior `optimize_vp` returns is a deep copy of a candidate
+and carries its own transformer copy, as before. *Item 7 is planned in the
+same file, not started*: the
 memory it targets is Σ_i Ns_i N_i² doubles of Cholesky factors (323 MB on
 the exhaust run, roughly 0.8 GB at D = 20), and a second defect found on
 the way is that `IterationHistory._expand_array` re-deep-copies the whole
@@ -953,15 +958,18 @@ record (the GP posteriors) is never stored and is rebuilt on demand through
 a public `VBMC.get_gp(iteration)`, while what cannot be rebuilt (the
 importance samples, drawn mid-iteration) is dropped by default and kept
 under a new option, `record_full_history_details`; the warm start of
-`train_gp` keeps reading the GP records (lean records answer it
-unchanged, and reading `gp_hyp_full` instead would move the `gp_fit`
-oracle through its history stand-in); and the existing resume test, whose
-ELBO assertion was a self-comparison, is fixed and used as the
-resume-identity guard before any history change.
+`train_gp` switches to `gp_hyp_full` (agreed then, reversed during the
+implementation: the `gp_fit` oracle's history stand-in would have made
+the switch move that oracle for no numerical reason, and a lean record
+answers the existing reader unchanged; `plans/stage2-memory.md` Open
+question 2); and the existing resume test, whose ELBO assertion was a
+self-comparison, is fixed and used as the resume-identity guard before
+any history change.
 
 *Item 7 done 2026-09-05 (night)* (`plans/stage2-memory.md`), in four
-steps, each replayed (`identical` on the five configs) and run through
-the full suite: the resume test compares the two runs (it passed as it
+steps, the three that change code each replayed (`identical` on the five
+configs) and run through the full suite: the resume test compares the two
+runs (it passed as it
 was, so resume was exact already); `IterationHistory` grows its arrays
 without deep-copying the stored past again (the re-copy was quadratic in
 the iteration count, 1.3 % of the exhaust run under cProfile and 254 →
@@ -976,7 +984,8 @@ importance samples of the noisy acquisitions unless
 `record_full_history_details` is set. The history of the noisy logreg run
 went from 117 to 4.6 MB, its RSS after the run from 332 to 163 MB and its
 peak from 427 to 273 MB; `cigar_D4`'s history 9.4 → 1.9 MB; the 15-D
-exhaust run's 323 MB of factors become about 2 MB by the same arithmetic.
+exhaust run's 323 MB of factors become about 8 MB of data and
+hyperparameters (Σ N (D + 2) doubles) by the same arithmetic.
 The §4 memory note and the §9 bullet on retained GPs are resolved by
 this. Two latent defects were fixed on the way (§9): a continued run
 aliased the history's last entries, and the in-loop plot drew no training
