@@ -125,11 +125,12 @@ anything that changes numerics lands.
   evaluates the mixture density once as a broadcast over a `(components,
   samples, D, K)` tensor with `einsum` contractions and takes the
   reparameterization gradients from the same tensors, in 2^16-element
-  blocks; per call 7–13× faster at the shape Adam sees (K = 14–50 at
+  blocks; per call 6.7–12.5× faster at the shape Adam sees (K = 14–50 at
   D ≤ 15; 3.8× at D = 20, K = 60) and 0.9–1.35× at the value-only shape
   of `_eval_full_elcbo`, which is arithmetic-bound (a GEMM expansion would
-  give 3–7× there, but its error grows without bound with the components'
-  width ratio; rejected, the plan's Open question 1); oracles green with no
+  give 2.8–6.9× there, but its error grows without bound with the
+  components' width ratio; rejected, the plan's Open question 1); oracles
+  green with no
   re-baseline, the exact check against a pre-change dump moves only the
   entropy-carrying outputs at 1e-15, replay 0 flagged of 5 with the
   design identical, full suite green. Profile campaign (17:11, idle
@@ -249,7 +250,7 @@ anything that changes numerics lands.
    (`runs/profile_20260905_item5/`, compared with item 8's through
    `profile_compare.py --control gp_train`; plan §Results): the Stage 2
    bullet above has the numbers. The GEMM expansion for the value-only
-   entropy path (3–7× there) was rejected by the PI the same day: its
+   entropy path (2.8–6.9× there) was rejected by the PI the same day: its
    error grows without bound with the components' width ratio (plan,
    Open question 1). Item 5 is complete; the population run of 3c is the
    statistical gate for items 8 and 5 together.

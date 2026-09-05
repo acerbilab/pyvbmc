@@ -8,7 +8,7 @@ run; tracker at the end). This file is the plan and the worklog. Roadmap pickup 
 "Vectorize `entmc_vbmc` component loop"); the profile that made it the next
 item in `plans/stage2-gpyreg-predict-and-sampler.md` §Results: after items
 3, 1, 2 and 8 the Monte Carlo entropy is 9–13 % of a profiled D = 4 run
-(1.7k–3.4k calls) and 228 of 953 profiled seconds on the 15-D exhaust run,
+(1.2k–3.4k calls) and 228 of 953 profiled seconds on the 15-D exhaust run,
 the largest piece of the variational stage and the largest PyVBMC-local
 piece left. Method as in items 1 and 2 (`plans/stage2-gp-log-joint-einsum.md`):
 same formulas, rounding-level differences accepted, fixed-state oracles on
@@ -32,8 +32,8 @@ the per-component draws, so the random stream is untouched), evaluates the
 density once as a broadcast over a `(g, Ns, D, K)` tensor of standardized
 distances with `einsum` contractions, and takes the gradients from the same
 tensors, in blocks of components (and of samples for the largest calls) so
-that the tensor never exceeds 2^16 doubles. Per call 7–13× faster at the
-shape Adam sees (`ceil(100 K^(2/3) / K)` samples per component, all
+that the tensor never exceeds 2^16 doubles. Per call 6.7–12.5× faster at
+the shape Adam sees (`ceil(100 K^(2/3) / K)` samples per component, all
 gradients) for K = 14–50 at D ≤ 15, 3.8× at the D = 20, K = 60 corner;
 the value-only shape of `_eval_full_elcbo` (4096 samples per component,
 no gradients) is bound by the arithmetic itself and changes by 0.9–1.35×
@@ -101,11 +101,12 @@ to rebuild them).
 - **Share of the two shapes in a run** (item 8's cProfile listings,
   `runs/profile_20260905_item8/*_cprof/profile.prof`, callers of
   `_neg_elcbo`): at D = 4 the `_eval_full_elcbo` calls (44–66 per run)
-  cost 0.7–1.3 s of which the entropy is about 0.6–1.1 s, i.e. **22–25 %
-  of the entropy's 2.7–8.0 s**; the Adam calls the rest. On the 15-D
-  exhaust run the 817 `_eval_full_elcbo` calls cost 84 s (8.9 % of the
-  run), about 81 s of it the entropy at K = 20–33: **36 % of the entropy's
-  228 s**; the 20k Adam-shape calls about 145 s.
+  cost 0.7–1.3 s of which the entropy is about 0.7–1.2 s, i.e. **16–26 %
+  of the entropy's 2.7–8.0 s** (banana 26, lumpy 23, student 19,
+  cigar 16); the Adam calls the rest. On the 15-D exhaust run the 817
+  `_eval_full_elcbo` calls cost 84 s (8.9 % of the run), about 81 s of it
+  the entropy at K = 2–33: **36 % of the entropy's 228 s**; the 20k
+  Adam-shape calls about 147 s.
 - **Draw-order identity.** `Generator.standard_normal((K, half, D))` fills
   the array in C order from the same stream that `K` sequential draws of
   `(half, D)` would consume, and the two are bit-identical (checked with
@@ -183,7 +184,7 @@ to rebuild them).
   squared distance, `|u|² − 2 u·v + |v|²` over `sigma_k²` with `u = (x −
   mu_j) / lambd`, `v = (mu_k − mu_j) / lambd` and the cross term as a
   batched matrix product, has no tensor at all and takes 6 / 9 / 66 / 32 /
-  22 / 116 ms (2.7–7×). Its error is not rounding-level: the cancellation
+  22 / 116 ms (2.8–6.9×). Its error is not rounding-level: the cancellation
   in the expansion bounds the absolute error of `d2` by `eps · 2D
   (sigma_j / sigma_k)²` for the terms that matter (with centering; without
   it, by `eps · |x / (sigma lambd)|²`, unbounded in the position of the
@@ -363,10 +364,11 @@ comparison. Record here, in the roadmap and as a dated addendum in devlog
       on every config, finals inside the envelope, 0 flagged of 5 (no
       excursion, so no second seed was needed)
 - [x] `pytest --reruns=5 -x` green: 541 passed, 15 skipped, 0 reruns
-- [x] Profile: `entmc_vbmc` per call 1.4–3.0× in situ (5× on the
-      Adam-shape calls, no gain on the value-only calls), share of a
-      D = 4 run 9–13 % → 3–6 %; untouched stages within trajectory noise
-      (control `gp_train` 0.96–1.12 where iteration counts are close)
+- [x] Profile: the `entmc_vbmc` bucket 1.4–3.0× smaller in situ (per
+      call 1.4–3.5×; 5× on the Adam-shape calls, no gain on the
+      value-only calls), share of a D = 4 run 9–13 % → 3–6 %; untouched
+      stages within trajectory noise (control `gp_train` 0.96–1.12 where
+      iteration counts are close)
 
 ## Decisions
 
@@ -416,7 +418,7 @@ comparison. Record here, in the roadmap and as a dated addendum in devlog
 ## Open questions (defaults in bold)
 
 1. ~~Adopt the centered GEMM expansion for the value-only path
-   (`_eval_full_elcbo`, 22–36 % of the entropy's time, 2.7–7× faster
+   (`_eval_full_elcbo`, 16–36 % of the entropy's time, 2.8–6.9× faster
    there, about 6 % of the exhaust run's wall)?~~ **Rejected (PI,
    2026-09-05).** The expansion's error is bounded only by the mixture's
    geometry: for a sample of component `j` evaluated under component `k`
@@ -474,7 +476,7 @@ bucket shares carry the comparison.
 | rosenbrock_D2_noise1 | 92.9 → 71.6 (0.77) | 7.8 → 4.0 (0.51) | 78.9 → 62.7 | 12.3 → 8.7 | 27/140 → 22/115 |
 | logreg_D5_noise3 | 220.0 → 199.4 (0.91) | 27.1 → 10.0 (0.37) | 166.4 → 162.6 | 38.9 → 41.3 | 56/280 → 52/255 |
 | lumpy_D10 | 98.4 → 99.6 (1.01) | 4.1 → 3.6 (0.88) | 56.0 → 60.6 | 28.0 → 28.9 | 35/175 → 36/180 |
-| banana_D10 | 54.0 → 56.3 (1.04) | 2.3 → 2.0 (0.83) | 33.7 → 35.3 | 12.9 → 14.5 | 22/115 → 24/125 |
+| banana_D10 | 54.0 → 56.3 (1.04) | 2.4 → 2.0 (0.83) | 33.7 → 35.3 | 12.9 → 14.5 | 22/115 → 24/125 |
 | cigar_D15_exhaust | 776.8 → 777.5 (1.00) | 243.9 → 209.4 (0.86) | 373.4 → 350.8 | 126.5 → 189.1 | 150/750 → 150/750 |
 
 Suite wall without probes 1424 → 1384 s (1.03×). Reading: the
@@ -482,19 +484,20 @@ variational fit, the stage this item changes, took 0.37–0.88 of its time
 on nine configs (the tenth, `student_D4`, ran 31 iterations instead of 19
 on its new trajectory, and every stage of it grew accordingly); the
 untouched stages moved with the trajectories (the control `gp_train`
-0.96–1.12 where the iteration counts are close; the exhaust run's 1.50 is
-`scipy.optimize.minimize` 24 → 83 s, the rare full refits at N ≥ 500 on
-a different trajectory, with the slice sampler 1.11 per call over the
-same 72 calls). The exhaust run's variational fit fell 244 → 209 s even
-though its new trajectory spends more time at large K (tail mean K 27.9
-against 25.6; K by tenth of the run 2, 3, 10, 17, 22, 22, 28, 28, 31, 30
-against 2, 2, 6, 16, 24, 20, 24, 25, 28, 30): the sampled first half of
-the run, where Adam-shape calls dominate, 72.7 → 30.1 s; the
-optimize-only tail 171 → 179 s at the higher K. End to end this item is
-worth a few percent at D ≤ 10 (a 5–13 % bucket cut in half) and is
-invisible in single-run walls against trajectory noise; the exhaust wall
-is unchanged at 777 s with a variational fit 34 s smaller and GP training
-63 s larger on its new path.
+0.96–1.12 where the iteration counts are close, 0.71 on
+`rosenbrock_D2_noise1` with 27 → 22 iterations, 1.94 on `student_D4` with
+19 → 31; the exhaust run's 1.50 is `scipy.optimize.minimize` 24 → 83 s,
+two full refits at N = 520 and N = 725 against one at N = 580, with the
+slice sampler 1.11 per call over the same 72 calls). The exhaust run's
+variational fit fell 244 → 209 s even though its new trajectory spends
+more time at large K (tail mean K 27.9 against 25.6; mean K by tenth of
+the run 2, 3, 11, 17, 22, 22, 29, 29, 32, 30 against 2, 2, 6, 16, 24, 21,
+24, 25, 29, 31): the sampled first half of the run, where Adam-shape calls
+dominate, 72.7 → 30.1 s; the optimize-only tail 171 → 179 s at the higher
+K. End to end this item is worth a few percent at D ≤ 10 (a 9–13 % bucket
+cut in half) and is invisible in single-run walls against trajectory
+noise; the exhaust wall is unchanged at 777 s with a variational fit 34 s
+smaller and GP training 63 s larger on its new path.
 
 ### Under cProfile (old → new; seconds and calls)
 
@@ -502,7 +505,7 @@ is unchanged at 777 s with a variational fit 34 s smaller and GP training
 |---|---|---|---|---|---|
 | `entmc_vbmc` | 2.7 → 1.3 (0.50) [1744 → 1831] | 7.9 → 3.0 (0.38) [3446 → 3130] | 2.8 → 0.9 (0.33) [1228 → 1346] | 3.5 → 1.7 (0.47) [1608 → 2673] | 227.6 → 160.7 (0.71) [20797 → 20843] |
 | share of the profiled run | 9.4 → 4.7 % | 12.8 → 5.5 % | 10.5 → 3.2 % | 10.1 → 2.8 % | 23.9 → 17.7 % |
-| per call | 1.55 → 0.71 ms | 2.29 → 0.96 ms | 2.28 → 0.67 ms | 2.18 → 0.64 ms | 10.9 → 7.7 ms |
+| per call | 1.54 → 0.73 ms | 2.31 → 0.97 ms | 2.29 → 0.69 ms | 2.18 → 0.62 ms | 10.9 → 7.7 ms |
 | `_eval_full_elcbo` | 0.7 → 0.9 [44 → 51] | 1.3 → 2.0 [66 → 90] | 0.7 → 0.6 [48 → 46] | 0.7 → 1.1 [48 → 93] | 84.3 → 135.6 [817 → 963] |
 | `optimize_vp` | 4.4 → 3.1 (0.71) | 11.9 → 6.7 (0.56) | 4.3 → 2.4 (0.57) | 5.3 → 4.6 (0.87) | 285.9 → 220.4 (0.77) |
 | `final_boost` | 2.0 → 1.2 (0.58) | 3.2 → 1.7 (0.52) | 2.6 → 1.2 (0.46) | 2.6 → 1.2 (0.47) | 10.5 → 4.3 (0.41) |
@@ -514,22 +517,25 @@ time less about 1 ms per call for `_gp_log_joint`'s variance at D = 4 and
 
 - **Adam-shape calls** (all but 44–963 of the calls): on the exhaust run
   147 → 29 s over 20k calls, **7.3 → 1.46 ms per call (5.0×)** at K = 2–34,
-  D = 15; at D = 4 about 1.2 → 0.25 ms per call (banana_D4), the same
-  factor. `final_boost`, whose Adam loop runs at K = 50, halves on every
-  config (0.41–0.58).
+  D = 15; at D = 4 1.18 → 0.27 ms per call (banana_D4, 4.4×).
+  `final_boost`, whose Adam loop runs at K = 50, halves on every config
+  (0.41–0.58).
 - **Value-only calls** (`_eval_full_elcbo`, 4096 samples per component):
-  no gain. At D = 4 their per-call cost moved 15.9 → 17.6 ms (banana),
-  19.7 → 22.2 (cigar), 14.6 → 13.0 (lumpy), 14.6 → 11.8 (student), i.e.
-  within ±20 % on different K mixes; on the exhaust run 99 → 136 ms per
-  call (81 → 132 s over 817 → 963 calls) on a trajectory whose K is 9 %
-  higher in the tail (the cost scales with K², which accounts for about
-  half of the rise) and where more pruning candidates were evaluated at
-  large K; the fixed-K micro-benchmarks put this shape at 0.9–1.35× of the
-  loop, so a per-call loss of 10–15 % at D = 15 is within their spread and
+  no gain. At D = 4 their per-call cost moved 15.7 → 17.0 ms (banana),
+  18.7 → 21.1 (cigar), 13.5 → 11.5 (lumpy), 13.7 → 10.8 (student), i.e.
+  between −21 % and +13 % on different K mixes; on the exhaust run 99 →
+  137 ms per call (81 → 132 s over 817 → 963 calls) on a trajectory whose
+  K is 9 % higher in the tail (the cost scales with K², and the tail's
+  mean K² rose 1.18×, about half of the 1.38× rise in log terms) and
+  where more pruning candidates were evaluated at large K; the residual
+  after the K² factor is 17 % before crediting those candidates, while
+  the fixed-K micro-benchmarks put this shape at 0.9–1.35× of the loop,
+  so a per-call loss of 10–20 % at D = 15 is within their spread and
   cannot be separated from the K mix here (Follow-ups). These calls are
   now the entropy's dominant cost on large-K runs (132 of 161 s on the
-  exhaust run, about two thirds at D = 4) and are bound by the arithmetic
-  of `M K` distance elements and `M K` exponentials at `M = 4096 K`.
+  exhaust run; 51–63 % of the entropy at D = 4) and are bound by the
+  arithmetic of `M K` distance elements and `M K` exponentials at
+  `M = 4096 K`.
 
 Over Stage 2 so far (items 3, 1, 2, 8, 5) the exhaust run's plain wall is
 2123 → 777 s (2.7×), unchanged by this item on its new trajectory; its
@@ -588,10 +594,11 @@ attention. Times are wall clock on 2026-09-05.
   152 → 120, 209 → 157, 114 → 86, 888 → 659 (a second, loaded run had the
   loop and the tensor within ±20 % of each other at shape (b))
 - [x] Caller split from item 8's cProfile (`entmc_callers.py`) — 14:53:
-  `_eval_full_elcbo` 22–25 % of the entropy at D = 4, 36 % on the exhaust
-  run
+  `_eval_full_elcbo` 16–26 % of the entropy at D = 4, 36 % on the exhaust
+  run (the first write-up said 22–25 %, arithmetically impossible for two
+  of the four configs; corrected by the records verification)
 - [x] Variants (`entmc_variants.py`) — 14:57: density layouts equal within
-  noise, `np.square` in place slower; centered GEMM 2.7–7× at shape (b)
+  noise, `np.square` in place slower; centered GEMM 2.8–6.9× at shape (b)
   but 3e-12 on the log density and 1e-4 of the gradient's peak on an
   adversarial state (tensor form 1.8e-15 and 4e-8 there); decision in
   §Decisions
@@ -655,21 +662,35 @@ attention. Times are wall clock on 2026-09-05.
   stand; the exact check against the dump moves the same outputs;
   pre-commit clean — 15:30
 - [x] **Committed** `5a8e181 perf(entropy): vectorize entmc_vbmc over
-  components and samples` (the function and the test) — 15:31; the
+  components and samples` (the function and the test) — 15:25; the
   records (this plan, `dev/README.md`, the roadmap, devlog §3/§9/§10, the
   einsum plan's correction) in the `docs(dev)` commit after it; pushed,
   CI smoke on the push
 - [x] The GEMM expansion for the value-only path rejected by the PI
-  (unbounded error in the width ratio) — 15:55, `6d6bbfd`. Meanwhile the
+  (unbounded error in the width ratio) — 15:30, `6d6bbfd`. Meanwhile the
   gpyreg PR was merged (squash `a2f8ddc`), gpyreg v1.1.0 released and
   required by `pyproject.toml`, `GPYREG_PIN` moved (`b834b4b`, `0beadc7`,
   `9585f02`, another session); the CI smoke of the item 5 push green
   (run 33965989663)
-- [x] **Profile campaign** — 17:11–17:54 on the idle laptop at the PI's
-  word (a start at 17:01 made before it was killed at 17:08 and its
-  directory deleted): plain suite with probes 17:12–17:36, cProfile on the
-  four D = 4 configs and the exhaust run 17:38–17:54, `profile_compare.py
-  --control gp_train`; §Results. Records: this file, devlog §2, the
-  roadmap's Stage 2 bullet and pickup 3b
+- [x] **Profile campaign** — 17:11–17:54 on the idle laptop, started when
+  the PI said it was free (a first start at 17:01, made before the PI had
+  asked for it, was killed at 17:08 and its directory deleted): plain
+  suite with probes 17:12–17:36, cProfile on the four D = 4 configs and
+  the exhaust run 17:36–17:54, `profile_compare.py --control gp_train`;
+  §Results. Records: this file, devlog §2, the roadmap's Stage 2 bullet
+  and pickup 3b (`e593476`)
+- [x] Read-only Opus verification of the campaign records against the
+  artifacts — 18:00–18:13: every load-bearing number reproduced (the
+  exhaust split to the digit); fifteen small defects corrected in the
+  commit after `e593476`: a truncated cell, D = 4 value-only per-call
+  figures that skipped the `_gp_log_joint` subtraction the text promises
+  (and the "two thirds" built on them: 51–63 %), "per call" on a
+  bucket-total range, per-call figures computed from rounded seconds, the
+  cProfile start time, two estimated tracker timestamps, "5–13 %" for
+  9–13 %, truncated K means, the 0.71 control of rosenbrock left out, the
+  D = 15 residual after the K² factor (17 %), the D = 4 Adam factor
+  (4.4×, not "the same" 5×), the GEMM range (2.8–6.9×), the Adam-shape
+  low end (6.7×), the §Findings caller split (16–26 %, not 22–25 %), and
+  one sentence only a session witness could parse
 - [ ] 20-seed population (roadmap 3c): when the PI says the laptop is free
   for about 6.5 h

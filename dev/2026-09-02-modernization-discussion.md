@@ -191,8 +191,8 @@ not in single-run walls. Under cProfile the Monte Carlo entropy is
 1.4–3.0× faster (`entmc_vbmc` 9–13 % → 3–6 % of a D = 4 run, 24 → 18 % of
 the exhaust run), and the two call shapes separate cleanly: the
 Adam-objective calls (the great majority) are 5× faster per call in situ
-(the exhaust run's 147 → 29 s over 20k calls at K = 2–34, D = 15; about
-1.2 → 0.25 ms at D = 4), `final_boost` halves on every config, while the
+(the exhaust run's 147 → 29 s over 20k calls at K = 2–34, D = 15; 1.18 →
+0.27 ms, 4.4×, at D = 4), `final_boost` halves on every config, while the
 value-only calls of `_eval_full_elcbo` (4096 samples per component) gain
 nothing and are now the entropy's dominant cost on large-K runs (132 of
 161 s on the exhaust run). In the plain runs the variational fit took
@@ -882,12 +882,12 @@ there and 1–9 % in the draws. Same formulas, rounding-level differences:
 the eight oracle snapshots agree with the loop to 1e-14, and the exact
 check against a pre-change dump moves only the entropy-carrying outputs
 (`entmc`, and `F`, `dF`, `H`, `F_full`, `H_full` of `neg_elcbo`), by
-1e-15. Per call 7–13× faster at the shape Adam sees (K = 14–50 at
+1e-15. Per call 6.7–12.5× faster at the shape Adam sees (K = 14–50 at
 D ≤ 15, 24 → 1.9 ms at K = 50; 3.8× at the D = 20, K = 60 corner) and
 0.9–1.35× at the value-only shape of `_eval_full_elcbo` (within ±10 % of
 the loop at D = 4, K ≤ 17, 1.2–1.35× at K ≥ 25), where the arithmetic is
 the floor (a centered GEMM
-expansion of the squared distances would make that shape 3–7× faster,
+expansion of the squared distances would make that shape 2.8–6.9× faster,
 but its error grows without bound with the squared width ratio of the
 components, the Gram-form objection of item 2, and a broad component next
 to a narrow one is an ordinary VBMC state; rejected by the PI, plan Open
