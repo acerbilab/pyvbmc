@@ -159,7 +159,10 @@ Things you must hold in your head across files:
   factors recomputed from the record, identical to the ones dropped; it is
   what `final_boost` and `load` use, and it copies a record that still
   carries its factors (files saved by versions that stored complete GPs)
-  as it is.
+  as it is. The recorded `optim_state` leaves out the importance samples
+  of the noisy acquisitions (`active_importance_sampling`, drawn afresh
+  every active-sampling step and not rebuildable from the record) unless
+  the option `record_full_history_details` is set.
 - **Options** are layered: `option_configs/basic_vbmc_options.ini`, then
   `advanced_vbmc_options.ini`, then `options_path=`, with the `options=` dict
   winning. `.ini` values are `eval`'d with `D` bound and only the names

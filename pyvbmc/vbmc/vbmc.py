@@ -1523,6 +1523,7 @@ class VBMC:
                     highlight_data=highlight_data,
                     plot_vp_centres=True,
                     title=title,
+                    gp=self.gp,
                 )
                 plt.show()
 
@@ -1530,7 +1531,7 @@ class VBMC:
             self.random_state = self._get_random_state()
             self.iteration_history.record_iteration(
                 {
-                    "optim_state": self.optim_state,
+                    "optim_state": self._optim_state_record(),
                     "random_state": self.random_state,
                 },
                 self.iteration,
@@ -2400,6 +2401,27 @@ class VBMC:
             vbmc._set_random_state(random_state)
 
         return vbmc
+
+    def _optim_state_record(self):
+        """The ``optim_state`` to record in the iteration history.
+
+        The live dictionary itself, except that the importance samples of
+        the noisy acquisitions (``active_importance_sampling``: the samples,
+        their weights and the ``(Ns, Na, N)`` kernel arrays, the largest
+        entry of the history on noisy runs) are left out unless the option
+        ``record_full_history_details`` is set. ``active_sample`` draws them
+        afresh before the acquisition that uses them, so a resumed run never
+        reads the recorded ones, and they cannot be rebuilt from the record
+        (the draws happen in the middle of an iteration).
+        ``IterationHistory.record`` deep-copies what this returns.
+        """
+        if self.options.get("record_full_history_details"):
+            return self.optim_state
+        if self.optim_state.get("active_importance_sampling") is None:
+            return self.optim_state
+        record = dict(self.optim_state)
+        record["active_importance_sampling"] = None
+        return record
 
     def _get_random_state(self):
         """Snapshot the state of the instance's generator, the only source
