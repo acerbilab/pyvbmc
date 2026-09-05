@@ -168,13 +168,13 @@ the slice sampler 27–38 %), i.e. item 8.
 **Measured 2026-09-05 (10:42) after Stage 2 item 8** (gpyreg PR #43;
 `plans/stage2-gpyreg-predict-and-sampler.md` §Results), on the
 identity-preserving PyVBMC commit so that every trajectory equals the
-00:04 campaign's: the seven configs measured on an idle machine run
-1.24–1.49× faster end to end (banana_D4 31 → 24 s, cigar_D4 62 → 48,
-lumpy_D10 147 → 98, banana_D10 79 → 54, logreg_D5_noise3 273 → 220, the
-15-D exhaust run 1041 → 777 s); GP training is 2.1–2.6× faster (29–46 %
-of wall → 16–29 %), active sampling 1.15–1.20× faster (48–76 % of wall).
-Three configs were slowed by desktop use on every attempt and are marked
-in the plan. Under cProfile at D = 4, `GP.predict` is 1.5–1.7× faster per
+00:04 campaign's: the ten configs run 1.14–1.49× faster end to end (the
+noiseless ones 1.19–1.49×: banana_D4 31 → 24 s, cigar_D4 62 → 48,
+student_D4 36 → 29, lumpy_D10 147 → 98, banana_D10 79 → 54, the 15-D
+exhaust run 1041 → 777 s; the noisy VIQR targets 1.14× and 1.24×); GP
+training is 2.0–2.6× faster (23–46 % of wall → 13–29 %), active sampling
+1.11–1.20× faster (46–85 % of wall). Under cProfile at D = 4, `GP.predict`
+is 1.5–1.7× faster per
 call and still 30–36 % of the run (its kernel evaluations 15–17 %, the
 next `predict` step if wanted), one log-posterior evaluation 2.8–3.3×
 faster on average because 47–55 % of the log-posterior evaluations reuse
@@ -817,9 +817,9 @@ deselected). Per call: `predict` 1.4–1.7× at CMA-ES batch sizes, the
 log-posterior evaluation 1.4–1.9×, one `train_gp` call 2.1–2.5×; what
 remains in an evaluation is the N² exponential of the kernel and the
 factorization. End to end (§2, campaign of 10:42 on the
-identity-preserving commit, identical trajectories): 1.24–1.49× on the
-seven cleanly measured configs, GP training 2.1–2.6×, active sampling
-1.15–1.20×. The same PR adds `rng=` to
+identity-preserving commit, identical trajectories): 1.14–1.49× over
+the ten configs (noiseless 1.19–1.49×), GP training 2.0–2.6×, active
+sampling 1.11–1.20×. The same PR adds `rng=` to
 `GP.fit`, `SliceSampler`, `f_min_fill` and `GP.random_function`
 (`None` keeps today's legacy draws call for call), and PyVBMC's seam of
 Stage 1 is removed: `train_gp` hands `vbmc.rng` to `gp.fit`, the CMA-ES

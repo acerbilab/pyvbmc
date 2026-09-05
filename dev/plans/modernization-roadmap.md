@@ -114,11 +114,11 @@ anything that changes numerics lands.
   identity-preserving: it shifts the stream of every existing seed, and
   the two stream-dependent oracles were re-baselined. End to end
   (profile campaign on the identity-preserving commit, identical
-  trajectories, seven clean configs): 1.24–1.49× faster, GP training
-  2.1–2.6× (29–46 % of wall → 16–29 %), active sampling 1.15–1.20×
-  (now 48–76 % of wall, `GP.predict` alone 30–36 % of a profiled D = 4
-  run); the 15-D exhaust run 1041 → 777 s, 2.7× since 2026-09-03 over
-  items 3, 1, 2 and 8 together.
+  trajectories, ten configs): 1.14–1.49× faster (noiseless 1.19–1.49×),
+  GP training 2.0–2.6× (23–46 % of wall → 13–29 %), active sampling
+  1.11–1.20× (now 46–85 % of wall, `GP.predict` alone 30–36 % of a
+  profiled D = 4 run); the 15-D exhaust run 1041 → 777 s, 2.7× since
+  2026-09-03 over items 3, 1, 2 and 8 together.
 - [ ] **Stage 3 — pipeline features** (batched initial design,
   torch/jax target adapter docs, `vp.to_torch()`, ArviZ export).
 - [ ] **Stage 4 — PyTorch port** (decision point, not default).
@@ -201,16 +201,12 @@ anything that changes numerics lands.
    outputs, `rng=` support), `GPYREG_PIN` points at its head, PyBADS's
    suite passes against it with one metadata-dependent test deselected,
    PyVBMC's seam is removed, and the profile campaign is recorded (plan
-   §Results; `runs/profile_20260905_item8/`). **Open:** (i) three configs
-   of that campaign (`student_D4`, `logreg_D5`, `rosenbrock_D2_noise1`)
-   were slowed by desktop use on every attempt and carry a † in the
-   table; a clean rerun is four minutes on an idle machine from a detached
-   checkout of `284747e` (`README.txt` in the campaign directory has the
-   command); (ii) merge PR #43 after the PI's
+   §Results; `runs/profile_20260905_item8/`). **Open:** (i) merge PR #43
+   after the PI's
    review, move the pin to the merge commit, and bump the gpyreg minimum in
-   `pyproject.toml` once a gpyreg release carries it; (iii) whether to run
+   `pyproject.toml` once a gpyreg release carries it; (ii) whether to run
    the 20-seed population right after item 8 (the seam removal changed
-   every stream) or at the end of the stage; (iv) Open question 8 of the
+   every stream) or at the end of the stage; (iii) Open question 8 of the
    plan: re-baseline the committed oracle references that items 3, 1, 2
    moved within tolerance, so `--check --exact` against the fixtures becomes
    the identity gate.

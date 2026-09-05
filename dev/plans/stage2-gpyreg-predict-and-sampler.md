@@ -584,9 +584,9 @@ question 3).
       green on the smoke and on all nine matrix jobs.
 - [x] Step 7: per-config walls and shares recorded (§Results);
       trajectories identical to 2026-09-05 on all seventeen runs; probes
-      28.5 / 21.9 s against 31.4 / 32.3 s (the machine was not slower);
-      seven configs clean, three slowed by desktop use on all three
-      attempts and marked as such.
+      23.9 / 21.9 s against 31.4 / 32.3 s (the machine was not slower);
+      three configs slowed by desktop use on their first three attempts,
+      clean on the fourth (14:06).
 - [~] Step 8: `test_vbmc_seed.py` green (13 with save/load) including the
       new global-state-untouched test; replay finals inside the envelope
       on 4 of 5 configs, `halfnormal_D2` MMTV marginally outside at seed 0
@@ -710,7 +710,8 @@ Same laptop, seed 0, one process, BLAS single-threaded. **Every trajectory
 is identical to the baseline** (iterations, evaluations, `N`, `K`, `Ns`,
 ELBO, gsKL, MMTV, RMSE equal on all twelve plain runs and the five cProfile
 runs), so each row compares the same computation on two builds of gpyreg.
-Plain campaign 10:42–11:08, cProfile 11:09–11:27, then two reruns (below).
+Plain campaign 10:42–11:08, cProfile 11:09–11:27, then reruns of three
+configs (below).
 The arrow reads old → new; × is old/new; the variational-fit column, which
 item 8 does not touch, is the per-config machine-speed control (new/old;
 1.0 means the machine ran at the baseline's speed).
@@ -720,40 +721,36 @@ item 8 does not touch, is the per-config machine-speed control (new/old;
 | banana_D4 | 31 → 24 (1.31) | 16 → 14 (1.15; 53 → 61 %) | 10 → 5 (2.10; 33 → 20 %) | 1.9 → 2.0 (1.02) | 17 / 90 |
 | cigar_D4 | 62 → 48 (1.28) | 33 → 29 (1.17; 54 → 59 %) | 18 → 8 (2.14; 29 → 17 %) | 6.9 → 7.3 (1.06) | 25 / 125 |
 | lumpy_D4 | 29 → 22 (1.36) | 14 → 12 (1.16; 49 → 57 %) | 11 → 5 (2.22; 37 → 23 %) | 1.4 → 1.4 (1.04) | 16 / 85 |
-| student_D4 † | 36 → 36 (1.01) | 19 → 22 (0.89; 53 → 61 %) | 12 → 8 (1.61; 33 → 21 %) | 2.1 → 2.9 (1.38) | 19 / 100 |
-| logreg_D5 † | 72 → 71 (1.01) | 31 → 33 (0.94; 43 → 46 %) | 19 → 11 (1.71; 27 → 16 %) | 8.5 → 10.9 (1.29) | 26 / 130 |
-| rosenbrock_D2_noise1 † | 106 → 101 (1.04) | 87 → 86 (1.01; 83 → 85 %) | 24 → 13 (1.81; 23 → 13 %) | 7.5 → 8.3 (1.11) | 27 / 140 |
+| student_D4 | 36 → 29 (1.26) | 19 → 17 (1.11; 53 → 61 %) | 12 → 6 (2.07; 33 → 20 %) | 2.1 → 2.3 (1.08) | 19 / 100 |
+| logreg_D5 | 72 → 60 (1.19) | 31 → 28 (1.12; 43 → 46 %) | 19 → 9 (2.02; 27 → 16 %) | 8.5 → 9.1 (1.07) | 26 / 130 |
+| rosenbrock_D2_noise1 | 106 → 93 (1.14) | 87 → 79 (1.11; 83 → 85 %) | 24 → 12 (1.99; 23 → 13 %) | 7.5 → 7.8 (1.03) | 27 / 140 |
 | logreg_D5_noise3 | 273 → 220 (1.24) | 193 → 166 (1.16; 71 → 76 %) | 83 → 39 (2.14; 31 → 18 %) | 28.1 → 27.1 (0.97) | 56 / 280 |
 | lumpy_D10 | 147 → 98 (1.49) | 65 → 56 (1.16; 44 → 57 %) | 67 → 28 (2.40; 46 → 29 %) | 4.1 → 4.1 (1.01) | 35 / 175 |
 | banana_D10 | 79 → 54 (1.47) | 40 → 34 (1.20; 51 → 62 %) | 34 → 13 (2.60; 42 → 24 %) | 2.3 → 2.4 (1.01) | 22 / 115 |
 | cigar_D15_exhaust | 1041 → 777 (1.34) | 437 → 373 (1.17; 42 → 48 %) | 303 → 126 (2.40; 29 → 16 %) | 263.8 → 243.9 (0.92) | 150 / 750 |
 
-† **Not measured cleanly.** The laptop was in desktop use 10:44–10:49
-(compositor and browser at about two thirds of a core), which slowed the
-three configs that ran then: their control stage took 1.9×, 1.9× and 1.1×
-the baseline's time. Reruns of the three plus the start probe at 11:29 and
-13:35 were slowed again (control 1.3–2.4 for `student_D4`, `logreg_D5`
-and the probe; `rosenbrock_D2_noise1` 1.1 on every attempt). The rows
-above are the
-least-slowed attempt of each (control 1.38, 1.29, 1.11; `README.txt` in
-the campaign directory lists the attempts, kept under
-`contaminated_<HHMM>/`); their GP-training ratios (1.6–1.8×) are lower
-bounds and their wall and active-sampling ratios say nothing. A clean
-rerun is four minutes on an idle machine (delete the three run directories,
-rerun `--mode plain` with the same `--out`, `--aggregate`). Speed probes:
-`banana_D4` 28.5 s at 10:42 (control 1.06) and 21.9 s at 11:08 (control
-0.92) against the baseline's 31.4 / 32.3 s; the seven clean configs and the
-end probe have control 0.92–1.06.
+**Reruns.** The laptop was in desktop use 10:44–10:49 (compositor and
+browser at about two thirds of a core), which slowed the three configs
+that ran then, `student_D4`, `logreg_D5` and `rosenbrock_D2_noise1`: their
+control stage took 1.9×, 1.9× and 1.1× the baseline's time. Reruns of the
+three and the start probe at 11:29 and 13:35 were slowed again (control
+1.3–2.4); the fourth attempt at 14:06, on an idle machine, has control
+1.03–1.08 and is the one in the table (`README.txt` in the campaign
+directory; the earlier attempts are kept under `attempts/`). Speed probes:
+`banana_D4` 23.9 s at 14:06 and 21.9 s at 11:08 against the baseline's
+31.4 / 32.3 s; every row's control is 0.92–1.08.
 
-**On the seven clean configs** (noiseless D = 4–15 and the noisy D = 5
-target): end to end **1.24–1.49× faster** (banana_D4 31 → 24 s, cigar_D4
-62 → 48, lumpy_D4 29 → 22, banana_D10 79 → 54, lumpy_D10 147 → 98,
-logreg_D5_noise3 273 → 220, the 15-D exhaust run 1041 → 777 s). The GP
-training stage is **2.1–2.6× faster** and falls from 29–46 % of wall to
-16–29 %; the active sampling stage is **1.15–1.20× faster** and, being
-the piece that shrank least, rises from 42–71 % of wall to 48–76 %. The
-suite without probes 1875 → 1451 s (1.29×; the three † configs at their
-slowed values). The exhaust run's GP training is 2.4× faster although its
+**On the ten configs**: end to end **1.14–1.49× faster**; the eight
+noiseless configs 1.19–1.49× (banana_D4 31 → 24 s, cigar_D4 62 → 48,
+lumpy_D4 29 → 22, student_D4 36 → 29, logreg_D5 72 → 60, banana_D10
+79 → 54, lumpy_D10 147 → 98, the 15-D exhaust run 1041 → 777 s), the two
+noisy VIQR targets 1.14× and 1.24× (their active sampling is per-sample GP
+refits and VP re-optimizations rather than the search, so `predict`'s
+gain reaches less of it). The GP training stage is **2.0–2.6× faster**
+and falls from 23–46 % of wall to 13–29 %; the active sampling stage is
+**1.11–1.20× faster** and, being the piece that shrank least, rises from
+42–83 % of wall to 46–85 %. The suite without probes 1875 → 1424 s
+(1.32×). The exhaust run's GP training is 2.4× faster although its
 sampler stops at N ≥ 350 (`Ns = 0`): the L-BFGS-B path inherits the shared
 savings (per `scipy.optimize.minimize` call 321 → 173 ms under cProfile
 against the 2026-09-03 listing, 138 → 141 calls), and the sampled early
@@ -761,7 +758,7 @@ iterations dominate the stage anyway.
 
 **Under cProfile at D = 4** (same trajectories; cProfile inflates code
 that makes many small Python calls, so its ratios are upper bounds on the
-plain-run ones; the profiled runs are 1.53–1.72× faster against 1.28–1.36×
+plain-run ones; the profiled runs are 1.53–1.72× faster against 1.26–1.36×
 plain):
 
 | bucket (% of profiled run; calls) | banana_D4 | cigar_D4 | lumpy_D4 | student_D4 |
@@ -1148,19 +1145,19 @@ written from an estimated clock that ran up to five hours ahead).
 - [x] Step 7 profile campaign — 10:42–11:27 (plain 10:42–11:08, cProfile
   11:09–11:27, from a detached checkout of `284747e` with gpyreg
   `79b4986`; the two chains ran detached with their own logs), reruns of
-  three configs 11:29–11:33 and 13:35–13:40; results in §Results. Every
-  trajectory identical to the 2026-09-05 baseline; the seven clean configs
-  1.24–1.49× end to end, GP training 2.1–2.6×, active sampling
-  1.15–1.20×; three configs slowed by desktop use on all three attempts
-  (marked †, least-slowed attempt kept, others under `contaminated_*/`).
+  three configs 11:29–11:33 and 13:35–13:40 (slowed again by desktop use)
+  and 14:06–14:10 (clean); results in §Results. Every trajectory
+  identical to the 2026-09-05 baseline; end to end 1.14–1.49× (noiseless
+  1.19–1.49×), GP training 2.0–2.6×, active sampling 1.11–1.20× (the
+  earlier attempts of the three configs are kept under `attempts/`).
   The records: §Results, roadmap Stage 2 bullet and pickup point 3a,
   devlog §2 and §10 (`66c1a2e`) — 13:46. The Results section was checked
   against the aggregates and cProfile listings by the author only (every
   range re-derived from `aggregate.json`), not by a reviewer.
-- [x] **Item 8 complete** except the clean rerun of the three † configs
-  (roadmap pickup point 3a (i), four minutes on an idle machine) and the
-  PI's decisions: PR #43 review and merge (then the pin to the merge
-  commit), the 20-seed population run, Open question 8 — 13:50
+- [x] **Item 8 complete** — 14:15 (the three configs rerun cleanly at
+  14:06 in a five-minute idle window, records updated). The PI's decisions
+  remain: PR #43 review and merge (then the pin to the merge commit), the
+  20-seed population run, Open question 8.
 - [x] `/doublecheck` on the completed steps (three read-only Opus
   reviewers: the gpyreg commits, the PyVBMC commits, the records against
   the artifacts) — 10:02–10:20. Findings, all folded in. **Must fix**: the
