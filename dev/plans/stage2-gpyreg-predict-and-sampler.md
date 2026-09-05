@@ -735,8 +735,8 @@ that ran then, `student_D4`, `logreg_D5` and `rosenbrock_D2_noise1`: their
 control stage took 1.9×, 1.9× and 1.1× the baseline's time. Reruns of the
 three and the start probe at 11:29 and 13:35 were slowed again (control
 1.3–2.4); the fourth attempt at 14:06, on an idle machine, has control
-1.03–1.08 and is the one in the table (`README.txt` in the campaign
-directory; the earlier attempts are kept under `attempts/`). Speed probes:
+1.03–1.08 and is the one in the table (the slowed attempts were
+discarded). Speed probes:
 `banana_D4` 23.9 s at 14:06 and 21.9 s at 11:08 against the baseline's
 31.4 / 32.3 s; every row's control is 0.92–1.08.
 
@@ -1148,8 +1148,7 @@ written from an estimated clock that ran up to five hours ahead).
   three configs 11:29–11:33 and 13:35–13:40 (slowed again by desktop use)
   and 14:06–14:10 (clean); results in §Results. Every trajectory
   identical to the 2026-09-05 baseline; end to end 1.14–1.49× (noiseless
-  1.19–1.49×), GP training 2.0–2.6×, active sampling 1.11–1.20× (the
-  earlier attempts of the three configs are kept under `attempts/`).
+  1.19–1.49×), GP training 2.0–2.6×, active sampling 1.11–1.20×.
   The records: §Results, roadmap Stage 2 bullet and pickup point 3a,
   devlog §2 and §10 (`66c1a2e`) — 13:46. The Results section was checked
   against the aggregates and cProfile listings by the author only (every
