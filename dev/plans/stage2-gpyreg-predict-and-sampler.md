@@ -140,15 +140,31 @@ from the gpyreg code at `236ddd7` the same morning.
      receives the same `+ 1.0`. With per-row noise, `+= sn2 / sn2_div` on
      the diagonal likewise. No `eye` allocation, no N² add.
   6. **Cholesky reuse.** The slice sampler changes one coordinate per
-     evaluation (`slice_sample.py:393-457`). For `SquaredExponential` +
-     `GaussianNoise` + `NegativeQuadratic`, `hyp` is `[ln ell (D), ln sf,
-     ln sn (1 or 2), m0, xm (D), ln omega (D)]`; when the changed
-     coordinate is in the mean block (2D+1 of 3D+3: 9 of 15 at D = 4, 31
-     of 48 at D = 15), `K`, `sn2`, `sn2_mult`, `sl`, `L`, `L_chol` and
-     `Σ log diag L` are unchanged and only `m`, `alpha` and the quadratic
-     form move. Same `potrf` input gives the same `L`. Expected hit rate
-     ≈ 55–60 % of the sampler's evaluations, each hit skipping the kernel
-     (60 µs), the Cholesky (26 µs) and the ladder.
+     evaluation (`slice_sample.py:393-457`) **because `step_out` is off**
+     (`SliceSampler` default `False`, `slice_sample.py:208`; `GP.fit`
+     passes only `display` and `diagnostics`, `gaussian_process.py:1215`):
+     with step-out on, `x_l`/`x_r` are copied from `xx` once per sweep and
+     never re-synced after `xx[dd] = xprime[dd]`, so the step-out
+     evaluations carry stale coordinates from earlier axes (a gpyreg
+     defect in its own right, inert for PyVBMC; devlog §9) and a
+     one-entry cache would hit almost never, still correctly. For
+     `SquaredExponential` + `GaussianNoise` + `NegativeQuadratic`, `hyp`
+     is `[ln ell (D), ln sf, ln sn (1 or 2), m0, xm (D), ln omega (D)]`;
+     when the changed coordinate is in the mean block (2D+1 of 3D+3: 9 of
+     15 at D = 4, 31 of 48 at D = 15), `K`, `sn2`, `sn2_mult`, `sl`, `L`,
+     `L_chol`, `sW` and `Σ log diag L` are unchanged and only `m`, `alpha`
+     and the quadratic form move; nothing else in `__core_computation`
+     reads `hyp` (the review checked: `dnlZ = zeros(hyp.shape)` uses the
+     shape, the `Posterior` stores `hyp` verbatim), and the ladder's
+     `sn2_mult` is a deterministic function of `K` and `sn2`. Same
+     Cholesky input gives the same `L`. **The cache must serve only the
+     no-gradient path** (`compute_nlZ_grad` false: the space-filling
+     design's and the sampler's objectives): the gradient path needs
+     `dK`, `dsn2`, `dm` from the skipped block, and a bound-projected
+     L-BFGS-B step can leave the whole cov+noise block unchanged between
+     two evaluations (review blocker B1). Expected hit rate ≈ 55–60 % of
+     the sampler's evaluations, each hit skipping the kernel (60 µs), the
+     Cholesky (26 µs) and the ladder.
   7. The prior masks (`f_idx`, `sb_idx`, `sb_t_idx`, `u_idx`, `g_idx`,
      `t_idx`) and the smooth-box constants depend only on `hyper_priors`
      and the bounds, which change in `set_priors` (:418), `set_bounds`
@@ -168,14 +184,23 @@ from the gpyreg code at `236ddd7` the same morning.
   `(Ns, N, N*)` instead of `Ns` `cdist` calls) changes the summation
   order over `d` and the BLAS kernel; it would save a further ≈ 0.15 ms
   per call, about 3–4 % of a D = 4 run. Deferred to Open question 2.
-- **PyVBMC's `predict` call sites** (grep, non-test): the hot path is
-  `abstract_acq_fcn.py:79` (`separate_samples=True`);
-  `active_importance_sampling.py:83, 113, 230, 257, 354` (separate
-  samples) and `:465` (averaged); `acq_fcn_viqr.py:246` and
-  `acq_fcn_imiqr.py:264` pointwise with `add_noise=True` inside the noisy
-  proposal density; `vbmc.py:1265` and `:1405` (`add_noise=True`). The
+- **`predict` call sites**: the hot path is `abstract_acq_fcn.py:79`
+  (`separate_samples=True`); `active_importance_sampling.py:83, 113, 230,
+  257, 354` (separate samples) and `:465` (averaged); `acq_fcn_viqr.py:
+  246` and `acq_fcn_imiqr.py:264` pointwise with `add_noise=True` inside
+  the noisy proposal density; `vbmc.py:1265` and `:1405`
+  (`add_noise=True`); and, inside gpyreg, **the rank-1 update**
+  (`GP.update`, `gaussian_process.py:753-756`: `predict(X_new, y_new,
+  add_noise=True, separate_samples=True)` with `N* = 1`, whose `m_star`
+  and `v_star` drive `alpha`, `L` and `sW` for every point active
+  sampling adds; the review's S1, missed by the PyVBMC grep). The
   `add_noise`, `return_lpd` and averaging branches must keep their
-  semantics; `predict_full` has no PyVBMC caller.
+  semantics. `predict_full` has no PyVBMC production caller (two
+  acquisition unit tests call it) and keeps its `np.tile`; `quad` keeps
+  its wrapped solves; both are PyBADS-facing and deliberately untouched.
+  The `cdist` change (Step 3) reaches `random_function`, `predict_full`
+  and the rank-1 update's `K = compute(hyp_cov, X_new)` (an `N = 1`
+  matrix), with identical values by fact 3.
 - **gpyreg's own tests** (`gpyreg/testing/`): `test_slice_sample.py::
   test_multiple_runs` asserts sample equality across two
   `np.random.seed(1234)` runs, a determinism test the generator work must
@@ -239,35 +264,46 @@ from the gpyreg code at `236ddd7` the same morning.
     `history["gp"]` makes that loop a no-op (then `hyp0 = np.unique(hyp_
     dict["hyp"], axis=0)`), deterministic and the same on every snapshot.
   - **Surprise 1 (PyVBMC, live, not in devlog §9): the sampler widths are
-    always discarded.** `_get_hyp_cov`'s weighted branch (:712-718) takes
-    `gp_hyp_full[i]`, shape `(Ns, hyp_N)`, uses `shape[1]` as the sample
-    count and appends `hyp.T`, so `hyp_cov` is `(Ns, Ns)`; `train_gp:121-
-    124` then drops `gp_train["widths"]` because its size is not `hyp_N`.
-    Verified on all eight fixtures (`Ns ≠ hyp_N` everywhere), so every
-    production fit slice-samples with gpyreg's `widths_default`
-    (`np.std` of the space-filling design, or `PUB − PLB` when `init_N =
-    0`). Consequence for the oracle: a synthetic `sKL`/`gp_hyp_full` cannot
-    change the result, only the shape matters. Forcing `weighted_hyp_cov
-    = False` would *keep* the widths (`run_cov` is `(hyp_N, hyp_N)`) and
-    leave production's code path. Fixing the bug changes the sampler's
-    proposal widths and therefore every trajectory: out of item 8's scope,
-    recorded for devlog §9 with its own population check when fixed.
+    discarded in every fit measured.** `_get_hyp_cov`'s weighted branch
+    appends `hyp.T` (:717) with `hyp = gp_hyp_full[i]` of shape `(Ns,
+    hyp_N)`, then takes `hyp_n = np.shape(hyp_list)[1]` (:729) as the
+    sample count, so `hyp_cov` comes out `(Ns, Ns)`; `train_gp:121-124`
+    drops `gp_train["widths"]` because its size is not `hyp_N`. Verified
+    on all eight fixtures (`(Ns, hyp_N)` = (7, 15), (8, 18), (10, 9), (8,
+    9), (1, 9), …), so those fits slice-sample with gpyreg's
+    `widths_default` (`np.std` of the space-filling design, or `PUB −
+    PLB` when `init_N = 0`). The review adds that `Ns == hyp_N` is
+    reachable (D = 2, `hyp_N = 9`, `Ns = 9` lies between the fixtures'
+    8 and 10), and then a degenerate width vector *is* used: a second,
+    independent slip at :731-735 takes `np.dot(row, row)` of 1-D rows, a
+    scalar, so every entry of `hyp_cov` is the same number. Consequence
+    for the oracle: a synthetic `sKL`/`gp_hyp_full` cannot change the
+    result, only the shape matters, and the oracle asserts the drop.
+    Forcing `weighted_hyp_cov = False` would *keep* the widths (`run_cov`
+    is `(hyp_N, hyp_N)`) and leave production's code path. Fixing the two
+    slips changes the sampler's proposal widths and therefore every
+    trajectory: out of item 8's scope, recorded for devlog §9 (one bullet,
+    both slips) with its own population check when fixed.
   - **Surprise 2 (gpyreg, not in devlog §9)**: `GP.log_likelihood(hyp,
     compute_grad=True)` and `GP.log_posterior(..., True)` raise `TypeError`
     (unary minus on the `(nlZ, dnlZ)` tuple, `gaussian_process.py:1488`,
     `:1518`). Reproduced on all eight fixtures. The oracle calls the
     mangled `gp._GP__compute_nlZ(hyp, compute_grad, compute_prior)` (what
     `__gp_obj_fun` calls) until the gpyreg PR fixes the two lines.
-  - **Surprise 3**: `build_gp` never sets priors or bounds (`GP.__init__`
-    leaves `no_prior = True`), so on a rebuilt GP `log_posterior ==
-    log_likelihood` exactly; installing PyVBMC's hyperprior with `_gp_hyp(
-    optim_state, options, plb_tran, pub_tran, gp, X, y)` (:272, priors and
-    bounds set at :481-482) leaves NaN bounds that make the normalization
-    constants NaN until `fit`'s two repair lines run (`df` NaNs → 7 at
-    `gaussian_process.py:1029`; `set_bounds(get_recommended_bounds(lb,
-    ub))` at :1038-1046). The oracle replicates the two lines; with them
-    `lp` is finite on every fixture (cigar `lZ = 426.2503917972849`, `lp =
-    420.54313794248304`).
+  - **Surprise 3 (a trap, not a defect)**: `build_gp` never sets priors or
+    bounds (`GP.__init__` leaves `no_prior = True`), so on a rebuilt GP
+    `log_posterior == log_likelihood` exactly; installing PyVBMC's
+    hyperprior with `_gp_hyp(optim_state, options, plb_tran, pub_tran, gp,
+    X, y)` (:272, priors and bounds set at :481-482) leaves NaN bounds
+    that make the normalization constants NaN until `fit`'s two repair
+    lines run (`df` NaNs → 7 at `gaussian_process.py:1029`; `set_bounds(
+    get_recommended_bounds(lb, ub))` at :1038-1046), **in that order**:
+    `__recompute_normalization_constants` branches on `df` (Student-t vs
+    normal cdf), so the `df` fill must precede `set_bounds`, as in `fit`.
+    The oracle replicates the two lines in that order; with them `lp` is
+    finite on every fixture (cigar `lZ = 426.2503917972849`, `lp =
+    420.54313794248304`). Calling `gp.log_posterior` between `_gp_hyp`
+    and `fit` returns NaN by design.
   - Generator: `rebaseline()` (:403-514) loads the raw JSON tree and npz,
     refuses the step oracle off `meta["platform"]`, asserts an unchanged
     key set and shapes, rewrites only the npz arrays under `ref/<oracle>/`
@@ -422,8 +458,12 @@ branch.
 - Prior-mask cache: a private `_prior_cache` holding the six masks, the
   two smooth-box constants and `Σ log normalization_constants`, built on
   first use and cleared in `set_priors`, `set_bounds` and after the `df`
-  fill in `fit` (fact 7). `__compute_log_priors` reads the cache; every
-  arithmetic statement on `hyp` stays as written.
+  fill in `fit` (fact 7; the review's grep confirms these plus `__init__`
+  are the only writers). `__compute_log_priors` reaches it through
+  `getattr(self, "_prior_cache", None)` and builds it lazily, because
+  PyVBMC's `test_*_save_static.pkl` fixtures hold GP objects pickled
+  without the attribute (review S9); every arithmetic statement on `hyp`
+  stays as written.
 
 Gates: bit-check of `__core_computation` outputs (`Posterior` fields,
 `nlZ`, `dnlZ`, `log_posterior`) old vs new on the snapshots' stored
@@ -433,17 +473,28 @@ hyperparameter samples and on random hyperparameters, all `==`; the
 ### Step 4: Cholesky reuse in the sampler
 
 `__core_computation(hyp, compute_nlZ, compute_nlZ_grad, cache=None)`.
-When `cache` is a dict and `np.array_equal(cache["key"],
-hyp[: cov_N + noise_N])`, reuse `sn2`, `L`, `sl`, `sn2_mult`, `L_chol`,
-`pL`, `logdet` from it and compute only `m`, `alpha`, `nlZ`; otherwise
-compute as in Step 3 and store. `fit` owns one cache dict per objective
-closure (`objective_f_1` for `f_min_fill`, `objective_f_2` for L-BFGS-B,
-`sample_f` for the sampler); `update` and `set_hyperparameters` pass no
+When `cache` is a dict, `compute_nlZ_grad` is false and
+`np.array_equal(cache["key"], hyp[: cov_N + noise_N])`, reuse `sn2`,
+`L`, `sl`, `sn2_mult`, `L_chol`, `pL`, `logdet` from it and compute only
+`m`, `alpha`, `nlZ`; otherwise compute as in Step 3 and, on the
+no-gradient path, store. `fit` owns one cache dict for `objective_f_1`
+(`f_min_fill`) and one for `sample_f` (the sampler); `objective_f_2`
+(L-BFGS-B, gradients) gets none (review B1: a hit there would skip the
+`dK`, `dsn2`, `dm` the gradient needs, and a bound-projected step can
+leave the block unchanged); `update` and `set_hyperparameters` pass no
 cache and are unaffected. Hits are exact by construction (fact 6).
 
-Gates: as Step 3, plus a gpyreg unit test that a fit with the cache
-reproduces a fit without it bit for bit under the same seed (run the
-sampler twice from one seed with the cache monkey-patched off). Commit.
+On a hit the cached `Σ log diag L` is reused too, so `nlZ` is the same
+expression on the same numbers. A module-level `_REUSE_CHOLESKY = True`
+is consulted at call time so a test can switch the reuse off through
+`monkeypatch` without touching numpy.
+
+Gates: as Step 3, plus gpyreg unit tests: a fit with the reuse on
+reproduces a fit with it off bit for bit under the same seed (`hyp`, the
+chain's `samples` and `f_vals`), and `__core_computation(hyp, 1, 1,
+cache)` with a cache whose key matches but whose factor is garbage
+returns the no-cache gradient result (the gradient path never consults
+it). Commit.
 
 ### Step 5: generator support
 
@@ -497,7 +548,14 @@ with the existing warning); update `test_vbmc_seed.py`, `AGENTS.md`'s
 randomness paragraph, the `seed=` docstring; bump the gpyreg minimum in
 `pyproject.toml` once a release exists (until then the pin carries CI).
 gpyreg's `merge-tests.yml` runs its 3-OS matrix on any PR to `main` that
-touches `gpyreg/`, so the draft PR of Step 6 gets gpyreg's own CI as well. Every stream changes, so
+touches `gpyreg/`, so the draft PR of Step 6 gets gpyreg's own CI as well.
+**This step re-baselines the `gp_fit` oracle deliberately** (review B2):
+the oracle already passes `rng=default_rng(seed)` to `train_gp`, which
+today reaches only the inert warm-start pick; once `train_gp` forwards it
+to `gp.fit(rng=)`, the space-filling design and the chain leave the legacy
+stream and `hyp` / `sn2_hpd` move. `--rebaseline gp_fit --reason "..."`
+on this machine, recorded in `meta["rebaselined"]`; the oracle's
+docstring says its reference is valid for the stream `train_gp` uses. Every stream changes, so
 the replay parts at iteration 0 by design and the design certificate
 carries the check; the population run is the statistical gate (Open
 question 3).
@@ -533,10 +591,19 @@ question 3).
   scipy's and `potrs` is not used, because neither reproduces today's
   numbers (fact 2).
 - **Batched mean over samples in `predict` through a new
-  `compute_batched(H, X)` on the mean-function classes** (measured
-  identical, fact 8): `NegativeQuadratic` and `ConstantMean` / `ZeroMean`
-  get one-line implementations, the base class a loop over rows of `H`.
-  Backward compatible; PyBADS unaffected.
+  `compute_batched(H, X)` on the three mean-function classes** (measured
+  identical, fact 8; there is no base class, so `predict` falls back to a
+  loop over `mean.compute` when a mean lacks the method, which keeps
+  user-defined or unpickled means working). The batched
+  `NegativeQuadratic` materializes the C-contiguous `(Ns, N*, D)` array
+  `((X - x_m) / omega) ** 2` and reduces its last axis, the layout the
+  identity was measured on. `np.dot(Ks.T, alpha)[:, 0]` keeps the `(N, 1)`
+  product (the same `dgemv`), not a raveled `alpha`.
+- **`cholesky` stays scipy's; `alpha` keeps two solves as direct `trtrs`
+  calls** (fact 2). The mimic reproduces scipy 1.18.1's rule; that rule
+  has been in `scipy.linalg._basic` for many releases, but gpyreg declares
+  `scipy >= 1.7.3` and the identity is verified only on the versions the
+  tests run (Risks).
 - **Cholesky reuse scoped to `fit`'s objective closures**, not a cache on
   the GP object keyed on array identity: the data are fixed inside one
   `fit` call, so the cache cannot go stale, and `update` /
@@ -561,8 +628,13 @@ question 3).
    D = 4 run)? **No for this PR**; revisit with the Step 7 numbers.
 3. Run the 20-seed population after Step 8 or at the end of Stage 2?
    **Open (PI)**: depends on a free night; nothing before Step 8 needs it.
-4. Clone `acerbilab/pybads` and run its suite against the branch before
-   the merge? **Yes, once**, if its tests run without extra setup.
+4. Run PyBADS's suite against the branch before the merge? **Yes, as a
+   pre-merge gate** (review): `predict_full`, `quad` and `random_function`
+   are the PyBADS-facing surface the `cdist` change reaches. PyBADS is
+   already a sibling checkout (`../pybads`, cloned 2024-10, on the PI's
+   branch `1d-tests-and-global-fixes` at `8c31fa2`, clean, installed
+   editable in the venv): run its tests there as it stands, without
+   switching its branch.
 5. ~~Expose the exact-comparison mode of `--check` as a CLI flag?~~ It has
    none; `--check --exact` is added in Step 1.
 6. Fix the two `TypeError` lines in gpyreg's `log_likelihood` /
@@ -596,11 +668,28 @@ question 3).
   `hyper_priors` in place (fact 7 lists three; grep for others before
   Step 3).
 - gpyreg CI on Python 3.9: no `match`, no `X | Y` unions in annotations.
+- The layout rule of fact 2 is copied from scipy 1.18.1; gpyreg's floor is
+  `scipy >= 1.7.3`. The rule has been in `_solve_triangular` for many
+  releases (the "trtrs expects Fortran ordering" branch), so older scipy
+  should agree, but the identity is measured only on the versions the
+  test matrices run. A change in scipy's rule would show as a
+  rounding-level difference between `predict` and `solve_triangular`, not
+  a wrong result.
 - Machine in use during the day: gates are single short processes; the
   profile campaign and the population wait.
 
 ## Follow-ups
 
+- **Devlog §9 entries to write with the records** (the review checked
+  §9): the `sW` tiling bullet already there is resolved by Step 2 (mark
+  it); new: the two `_get_hyp_cov` slips (an `(Ns, Ns)` covariance and a
+  scalar `np.dot` of 1-D rows, so the widths are dropped in every fit
+  measured and degenerate when `Ns == hyp_N`); gpyreg's
+  `log_likelihood` / `log_posterior` raising `TypeError` with
+  `compute_grad=True` (fixed in the gpyreg PR); the slice sampler's stale
+  `x_l` / `x_r` under `step_out=True` (gpyreg, inert for PyVBMC); the
+  `_gp_hyp`-then-`log_posterior` NaN trap (by design, a note not a
+  defect).
 - **Reproducing the scratch checks.** `identity_facts.py` (session
   scratchpad, not committed) compares, with one BLAS thread: `potrf` and
   scipy's `cholesky`; a direct `trtrs` with scipy's layout rule against
@@ -642,7 +731,182 @@ attention. Times are wall clock on 2026-09-05.
   led to the dump mode; `--dump-outputs
   dev/scripts/runs/oracle_outputs_prechange_de6d98f` (53 arrays per
   snapshot, 1.1 MB) and `--check --exact --against` it: **8 of 8 ok**
-- [ ] Step 1 commit (after pre-commit): oracles, generator, fixtures, plan
+- [x] Step 1 commit (pre-commit clean after black reformatted two files):
+  oracles, generator, fixtures, this plan — 10:10, `test(oracles): pin the
+  GP log marginal likelihood and the GP training path`
+- [x] gpyreg branch `perf/predict-sampler-overhead` created off `236ddd7`
+  in `../gpyreg` (the editable install follows it) — 10:10
+- [x] Random-GP bit-check script (`gpyreg_bitcheck.py`, scratchpad): the
+  paths no snapshot exercises (per-row noise, `L_chol=False`, three means,
+  `add_noise` / `return_lpd`, the rank-1 update, every hyperprior type
+  in and out of the box, three small seeded fits); `dump` on the pinned
+  gpyreg: 721 arrays, self-compare 0 differ — 10:15
+- [~] **Step 2 `predict`** (gpyreg branch, uncommitted): module-level
+  `_solve_triangular` (direct `trtrs` with scipy's layout rule), `sW * Ks`
+  broadcast, the mean over all samples through a new `compute_batched`
+  on `ZeroMean` / `ConstantMean` / `NegativeQuadratic` (loop fallback for
+  a mean without it), the SE diagonal fast path, column assignments
+  instead of `(-1, 1)` reshapes — 10:20–10:35. Gates: random-GP bit-check
+  **721 arrays, 0 differ**; `--check --exact --against` the pre-change
+  dump **8 of 8**; gpyreg suite **82 passed** (2:11); PyVBMC oracles 116
+  passed. Per call on snapshot GPs (one thread, median of 5 × 400,
+  `predict(separate_samples=True)`), old → new: cigar_D4_largeK (Ns 7,
+  N 115) N* = 8: 0.413 → 0.256 ms, N* = 2: 0.349 → 0.208, N* = 512:
+  5.37 → 5.16; corr_D5_warped (Ns 8, N 100) N* = 8: 0.463 → 0.272;
+  normal_D2_singlesample (Ns 1) N* = 8: 0.054 → 0.038. So 1.6–1.7× per
+  CMA-ES-sized call; the remainder is `Ns` kernel evaluations (Open
+  question 2). Plain per-call cost is a third of cProfile's 1.24 ms
+- [x] Plan review returned (read-only Opus, 17 min): no wrong identity
+  fact; two blockers for later steps (B1: the Step 4 cache must serve
+  only the no-gradient path; B2: Step 8 moves the `gp_fit` chain, a
+  deliberate re-baseline), eleven should-fixes (the rank-1 update's
+  `predict` call, no mean base class, Surprise 1 over-generalized and a
+  second `_get_hyp_cov` slip, `L_chol=False` unreachable in PyVBMC,
+  `step_out=False` as fact 6's precondition, the scipy floor, `cdist`
+  reaching `random_function` / `predict_full` / the rank-1 `K`, the
+  `_prior_cache` attribute on old pickles, the Step 1 gate wording, the
+  `(N, 1)` product), the bit-check additions, and the §9 bookkeeping
+  (the `sW` tiling bullet is already in §9: mark resolved). All folded
+  into §Findings, §Design, §Decisions, §Open questions, §Risks,
+  §Follow-ups — 10:40–10:55
+- [x] Bit-check extended per the review (every `predict` branch incl.
+  `add_noise × return_lpd × separate_samples`, `y is None`, `N* = 1`,
+  `Ns = 1`, `predict` after a rank-1 update with unequal `sW` rows,
+  `predict_full`, `random_function` under a seeded stream, Matern and
+  rational-quadratic kernels, a single training point, both `L_chol`
+  regimes, a case whose Cholesky ladder fires to `sn2_mult = 1e4`, the
+  no-value `__compute_nlZ(hyp, False, True)` shape); reference re-dumped
+  on the pinned gpyreg by a stash round trip; the branch: **2219 arrays,
+  0 differ** — 11:00
+- [x] Step 2 formatting: gpyreg's pre-commit hooks do not install on this
+  Python (the pinned `pycln` / `black` envs fail to build), so the venv's
+  `isort` and `black --target-version py39` ran with gpyreg's
+  `pyproject.toml`; black 26 also rewrapped three unrelated expressions,
+  reverted by hand so the diff holds only the item's hunks — 11:05
+- [x] Step 2 gpyreg tests: `compute_batched` bit-identical to `compute`
+  per column for the three means at D ∈ {1, 3, 8, 12} plus the shape
+  errors; `_solve_triangular` bit-identical to `solve_triangular` for C-
+  and F-ordered factors and both `trans`, `LinAlgError` on a singular
+  factor; `predict` with a mean lacking `compute_batched` equals the
+  batched path. 17 passed — 11:10
+- [x] Step 2 replay (`runs/golden/replay_item8_step2`, 4.2 min, one
+  process) — 11:08–11:13: against the default baseline (the pre-Stage-2
+  population, which items 1 and 2 already parted) every config parts at
+  iteration 0 or 1 with finals inside every fence, **and every final,
+  evaluation count and iteration count equals the item 1/2 Step 2 replay
+  of the current code digit for digit** (normal_D5 ΔLML 0.00693, gsKL
+  7.91e-5; banana_D2 0.0907 / 0.231 / 85 evaluations; halfnormal_D2
+  0.00206 / 0.000177; cigar_D4 0.00657 / 6.87e-5 / 125 evaluations, 25
+  iterations; rosenbrock_D2_noise1 0.0972 / 0.00838 / 0.0224): the
+  trajectories did not move. Wall per config 0.57 / 0.31 / 0.27 / 0.98 /
+  2.0 min against 0.62 / 0.36 / 0.30 / 1.1 / 1.8 after items 1/2.
+  **Re-rendered against the item 1/2 traces** (`--report-only --baseline
+  runs/golden/replay_item1_step2`, report in
+  `replay_item8_step2_vs_item12.log`): **all five configs `identical`**,
+  same live points, same ELBO path at every iteration, initial design
+  identical (`X_init` in both traces), 0 flagged of 5. Step 2 changes no
+  trajectory. (For later steps the replay's `--baseline` should point at
+  these item 1/2 traces so that `identical` is the verdict to expect.)
+- [x] Step 2 full PyVBMC suite (`runs/fullsuite_item8_step2.log`, one
+  BLAS thread): **539 passed, 15 skipped, 0 reruns, 6:20** — 11:20–11:27
+- [x] **Step 2 committed** on `../gpyreg` branch
+  `perf/predict-sampler-overhead`: `b8f03dd perf: predict without scipy's
+  wrapper layers, tiling or per-sample mean calls` (three modules, two
+  test modules) — 11:30
+- [~] **Step 3** (gpyreg branch, uncommitted) — 11:30–12:05: SE
+  `compute(X)` through `cdist(Xs, Xs)`; the noise added in place on the
+  diagonal of `K / sl` (both `L_chol` branches) instead of `+ eye` /
+  `+ diag`; `alpha` by two direct `_solve_triangular` calls; the
+  hyperprior masks and normalization constants cached in
+  `__prior_masks()` (read through `getattr`, cleared in `set_bounds`,
+  `set_priors` and after `fit`'s `df` fill); `log_likelihood` /
+  `log_posterior` return `(value, gradient)` instead of raising. Gates:
+  random-GP bit-check **2219 arrays, 0 differ**; `--check --exact
+  --against` the pre-change dump **8 of 8** (`gp_nlZ` and `gp_fit`
+  included); gpyreg suite **102 passed** (three new tests: the gradient
+  wrappers against finite differences, cache invalidation on priors /
+  bounds / `df` fill and on an object without the attribute, the
+  symmetric kernel matrix); PyVBMC oracles 116 passed. Black re-wrapped
+  the same two unrelated expressions; reverted again. Per evaluation of
+  the sampler's objective (`__compute_nlZ(h, False, True)`, one thread,
+  median of 5 × 300), Step 2 state → Step 3: cigar_D4_largeK (N 115,
+  hyp_N 15) 277 → 196 µs, corr_D5_warped (N 100, 18) 250 → 166,
+  normal_D2_warmup (N 20, 9) 138 → 72; with gradient (L-BFGS-B) 737 →
+  698, 678 → 608, 254 → 197. Less than the breakdown predicted; a
+  cProfile of one evaluation on cigar_D4_largeK (N 115, D 4; 210 µs under
+  the profiler) says why: the kernel is now 86 µs (the N² exponential
+  and its two elementwise passes ≈ 60 µs, `cdist` 24 µs), the Cholesky
+  38 µs (27 µs of LAPACK in scipy's batched C routine plus 11 µs of
+  wrapper), `__core_computation`'s own arithmetic 26 µs (`K / sl`, the
+  quadratic form, `Σ log diag L`), the priors 21 µs (from 63), the mean
+  11 µs, the two solves 10 µs. What remains is arithmetic on N² entries
+  plus the factorization, i.e. exactly what Step 4's reuse skips on the
+  ≈ 60 % of evaluations that move a mean hyperparameter (≈ 130 of 196
+  µs per hit). Replay against the item 1/2 traces
+  (`runs/golden/replay_item8_step3`, 3.7 min): **all five `identical`**,
+  initial designs identical, 0 flagged; walls 0.4 / 0.3 / 0.2 / 0.9 /
+  1.9 min (Step 2: 0.57 / 0.31 / 0.27 / 0.98 / 2.0). Full suite **539
+  passed, 15 skipped, 1 rerun** (an unseeded test), 5:52 — 12:20–12:27
+- [x] **Step 3 committed**: `c0b9248 perf: log-posterior evaluation
+  without wrapper layers or rebuilt prior masks` — 12:28
+- [~] **Step 4** (gpyreg branch, uncommitted) — 12:30–12:50: a
+  caller-owned factorization cache threaded through `__gp_obj_fun` →
+  `__compute_nlZ` → `__core_computation(hyp, compute_nlZ,
+  compute_nlZ_grad, cache=None)`; `fit` gives one cache to the
+  space-filling design's objective and one to the sampler's, none to the
+  L-BFGS-B objective (review B1); a hit (`compute_nlZ` true, no gradient,
+  `_REUSE_CHOLESKY`, cov+noise block `array_equal` to the stored key)
+  reuses `L`, `sl` and `Σ log diag L` and recomputes only the mean,
+  `alpha` and the quadratic form; a miss stores them. Gates: random-GP
+  bit-check **2219 arrays, 0 differ** (its three seeded fits run the
+  sampler with the cache live); `--check --exact --against` the
+  pre-change dump **8 of 8** (the `gp_fit` oracle is the real fit);
+  gpyreg suite **104 passed, 1 rerun** (two new tests: a fit with the
+  reuse on equals one with it off bit for bit in `hyp`, `samples` and
+  `f_vals`; a cache with a matching key and a garbage factor leaves the
+  gradient result untouched, while the no-gradient path hits on a mean
+  move and refreshes on a covariance move); PyVBMC oracles 116 passed.
+  Black re-wrapped the same two expressions; reverted. **One `train_gp`
+  call from a snapshot state** (the `gp_fit` oracle, one thread, median
+  of 3), pinned `236ddd7` → Step 3 → Step 4: cigar_D4_largeK (Ns 7,
+  N 115) 783 → 572 → 316 ms (**2.5×**); corr_D5_warped (Ns 8, N 100)
+  672 → 469 → 304 ms (2.2×); rosenbrock_D2_noise1_viqr (Ns 8, N 25,
+  `init_N` 814 so the design dominates and misses the cache by nature)
+  291 → 150 → 138 ms (2.1×). Replay against the item 1/2 traces
+  (`runs/golden/replay_item8_step4`, 3.3 min): **all five `identical`**,
+  0 flagged; walls 0.4 / 0.3 / 0.2 / 0.8 / 1.6 min (Step 3: 0.4 / 0.3 /
+  0.2 / 0.9 / 1.9). Full suite **539 passed, 15 skipped, 0 reruns, 5:12**
+  — 12:55–13:01
+- [x] **Step 4 committed**: `cc63452 perf: reuse the Cholesky factor
+  across log-posterior evaluations that move only mean hyperparameters`
+  — 13:05
+- [~] **Step 5** (gpyreg branch, uncommitted) — 12:58–13:15: new
+  `gpyreg/rng.py` (`resolve_rng`: `None` → the `numpy.random` module,
+  i.e. today's legacy draws call for call; a `Generator` as is; anything
+  else through `default_rng`; `random_integer` for the one method whose
+  name differs); `SliceSampler(..., rng=None)` with its five draws on
+  `self.rng` (`random()` is the module's `rand()`); `f_min_fill(...,
+  rng=None)` (the Sobol column shuffle, the uniform design);
+  `GP.fit(..., rng=None)` forwarding to both; `GP.random_function(...,
+  rng=None)`. Tests: a `Generator` twin of `test_multiple_runs` (same
+  chain across `sample` calls whatever the global state does, `rng=None`
+  equal to the unchanged legacy path); `fit` / `random_function` with a
+  generator under two different global seeds agree bit for bit and the
+  `rng=None` path still follows `np.random.seed`. Gates: random-GP
+  bit-check **2219 arrays, 0 differ** (its seeded legacy fits are the
+  `rng=None` path); `--check --exact --against` the pre-change dump **8 of
+  8**; gpyreg suite **106 passed** (1:37); PyVBMC oracles 116 passed;
+  black's two re-wraps and a third in `slice_sample.py` reverted; the
+  replay is skipped for this step (PyVBMC passes no `rng` yet, and the
+  `gp_fit` oracle already shows the fit unchanged). Full suite **539
+  passed, 15 skipped, 0 reruns, 7:07** (the laptop was in use) —
+  13:20–13:28
+- [x] **Step 5 committed**: `966414d feat: rng= on GP.fit, SliceSampler,
+  f_min_fill and GP.random_function` — 13:30. The gpyreg branch is four
+  commits on `236ddd7`: `b8f03dd`, `c0b9248`, `cc63452`, `966414d`
+- [~] Step 6: PyBADS suite against the branch running
+  (`runs/pybads_item8_branch.log`); branch pushed; draft PR; `GPYREG_PIN`
+  → branch head — 13:32
 - [ ] Step 2: gpyreg branch; `predict`; bit-check; gates; commit
 - [ ] Step 3: `__core_computation`, SE `cdist`, prior-mask cache;
   bit-check; gates; commit
