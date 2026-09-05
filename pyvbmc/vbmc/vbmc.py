@@ -18,7 +18,7 @@ from pyvbmc.formatting import full_repr, summarize
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.priors import Prior, SciPy, convert_to_prior
-from pyvbmc.rng import get_rng, seed_global_from
+from pyvbmc.rng import get_rng
 from pyvbmc.stats import kl_div_mvn
 from pyvbmc.timer import main_timer as timer
 from pyvbmc.variational_posterior import VariationalPosterior
@@ -106,17 +106,13 @@ class VBMC:
         problem dimension. Currently unused.
     seed : None, int, SeedSequence or np.random.Generator, optional
         Seed (or generator) for the random generator ``vbmc.rng`` used by
-        this instance and by its variational posterior, for reproducible
-        runs. Anything accepted by ``numpy.random.default_rng``. If ``None``
-        (default), a generator is derived from NumPy's global random state, so
-        that calling ``np.random.seed`` beforehand still makes a run
-        reproducible. If a seed is given, NumPy's global random state is also
-        reseeded from it when the instance is created and restored from the
-        instance's own snapshot whenever ``optimize`` starts, because the GP
-        hyperparameter fit (``gpyreg``) still draws from the global state.
-        This also applies when an existing ``Generator`` is passed (one draw
-        is taken from it to reseed the global state). Only ``optimize``
-        itself is protected that way: draws from ``vbmc.rng`` before it
+        this instance, by its variational posterior and by the GP
+        hyperparameter fit, for reproducible runs. Anything accepted by
+        ``numpy.random.default_rng``. If ``None`` (default), a generator is
+        derived from NumPy's global random state, so that calling
+        ``np.random.seed`` beforehand still makes a run reproducible. Every
+        random draw of a run comes from ``vbmc.rng``; NumPy's global random
+        state is never written. Draws from ``vbmc.rng`` before ``optimize``
         (e.g. ``vbmc.vp.sample``) change the run like any other change of
         the generator's state.
 
@@ -171,15 +167,11 @@ class VBMC:
         # set up root logger (only changes stuff if not initialized yet)
         logging.basicConfig(stream=sys.stdout, format="%(message)s")
 
-        # Random generator used by this instance (shared with its VP).
+        # Random generator used by this instance: shared with its VP, handed
+        # to the GP hyperparameter fit (`train_gp` -> `gpyreg.GP.fit`) and
+        # to the CMA-ES noise handler, so a run never touches NumPy's global
+        # random state.
         self.rng = get_rng(seed)
-        self._seeded = seed is not None
-        if self._seeded:
-            # gpyreg and the cma noise handler still draw from NumPy's global
-            # random state; seed it too so that `seed` fixes the whole run.
-            # `optimize` reinstalls the snapshot taken below, so that global
-            # draws made in between do not affect the run.
-            seed_global_from(self.rng)
 
         # Initialize variables and algorithm structures
         if x0 is None:
@@ -875,21 +867,14 @@ class VBMC:
 
         Notes
         -----
-        If the instance was created with a ``seed``, NumPy's global random
-        state is set from the instance's own snapshot when this method
-        starts (see the ``seed`` parameter), and the snapshot is refreshed
-        when it returns.
+        Every random draw of the run comes from ``vbmc.rng`` (see the
+        ``seed`` parameter); NumPy's global random state is neither read nor
+        written.
         """
         # Initialize main logger with potentially new options:
         self.logger = self._init_logger()
         # set up strings for logging of the iteration
         display_format = self._setup_logging_display_format()
-
-        if getattr(self, "_seeded", False):
-            # Seeded instance: continue NumPy's global random state (used by
-            # gpyreg) from this instance's own last snapshot, so that global
-            # draws made elsewhere since then do not affect the run.
-            np.random.set_state(self.random_state["legacy"])
 
         if self.optim_state["uncertainty_handling_level"] > 0:
             self.logger.info(
@@ -2264,17 +2249,17 @@ class VBMC:
             The iteration at which to initialize the stored VBMC instance.
             Default is `None`, meaning initialize to the last recorded iteration.
         set_random_state : bool
-            Whether to restore the random state stored at the specified
-            iteration, for reproducibility: the state of the instance's own
-            generator (``vbmc.rng``) and NumPy's global random state (still
-            used by the GP hyperparameter fit). Default `False`, in which
-            case ``vbmc.rng`` continues from the state it had when the file
-            was saved and the global state is left as it is now, also when
-            ``optimize`` is called again (the instance no longer counts as
-            seeded). Files saved before ``vbmc.rng`` existed only stored the
-            global state; loading them with ``set_random_state=True``
+            Whether to restore the state of the instance's generator
+            (``vbmc.rng``) stored at the specified iteration, for
+            reproducibility. Default `False`, in which case ``vbmc.rng``
+            continues from the state it had when the file was saved. Files
+            saved before ``vbmc.rng`` existed only stored NumPy's global
+            random state; loading them with ``set_random_state=True``
             restores it, derives a fresh generator from it (leaving the
-            global state where it was saved), and warns.
+            global state where it was saved), and warns. Files saved while
+            the GP hyperparameter fit still drew from the global state also
+            hold that state; it is ignored, so a run resumed from such a
+            file does not replay the original exactly.
 
         Returns
         -------
@@ -2335,7 +2320,6 @@ class VBMC:
         # (continuation, `determine_best_vp`).
         if not hasattr(vbmc, "rng"):
             vbmc.rng = np.random.default_rng()
-            vbmc._seeded = False
             stored_vps = []
             if hasattr(vbmc, "iteration_history"):
                 stored_vps = vbmc.iteration_history["vp"]
@@ -2349,35 +2333,26 @@ class VBMC:
         if set_random_state:
             random_state = vbmc.iteration_history["random_state"][iteration]
             vbmc._set_random_state(random_state)
-        else:
-            # Not restoring means the loaded instance continues from the
-            # global random state as it is now, so `optimize` must not
-            # reinstall the snapshot saved with the file either.
-            vbmc._seeded = False
 
         return vbmc
 
     def _get_random_state(self):
-        """Snapshot the random state: own generator plus NumPy's global state.
-
-        The global legacy state is still recorded because ``gpyreg`` (GP
-        hyperparameter fit) and the ``cma`` noise handler draw from it.
-        """
-        return {
-            "generator": self.rng.bit_generator.state,
-            "legacy": np.random.get_state(),
-        }
+        """Snapshot the state of the instance's generator, the only source
+        of randomness in a run."""
+        return {"generator": self.rng.bit_generator.state}
 
     def _set_random_state(self, random_state):
         """Restore a random state recorded by ``_get_random_state``.
 
-        Also accepts the legacy format (a bare ``np.random.get_state()``
-        tuple) of files saved before the generator existed.
+        Also accepts the two older formats: the dict that additionally held
+        NumPy's global legacy state while the GP hyperparameter fit still
+        drew from it (that entry is ignored), and the bare
+        ``np.random.get_state()`` tuple of files saved before the generator
+        existed.
         """
         if isinstance(random_state, dict) and "generator" in random_state:
             self.rng.bit_generator.state = random_state["generator"]
-            np.random.set_state(random_state["legacy"])
-            self.random_state = random_state
+            self.random_state = {"generator": random_state["generator"]}
         else:
             # Derive the generator from the restored global state, then put
             # the global state back where it was saved.

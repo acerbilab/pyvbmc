@@ -436,7 +436,7 @@ def active_sample(
                         options=cma_options,
                         parallel_objective=acq_fun,
                         noise_handler=_BatchedNoiseHandler(
-                            np.size(x0), acq_fun
+                            np.size(x0), acq_fun, vp.rng
                         ),
                     )
 
@@ -886,17 +886,36 @@ class _BatchedNoiseHandler(cma.NoiseHandler):
     ``ask`` (one draw from the strategy's ``randn``) and one scalar
     objective call per solution; this subclass performs the same ``ask``
     calls in the same order first and then evaluates all perturbed
-    solutions with one call to `batch_fun`, so the random stream is that
-    of the stock handler and the fitness values are the same up to the
-    arithmetic of a batched evaluation (a few ulp, as for the population
+    solutions with one call to `batch_fun`, so the strategy's random stream
+    is that of the stock handler and the fitness values are the same up to
+    the arithmetic of a batched evaluation (a few ulp, as for the population
     itself). Falls back to the stock method whenever its
     one-evaluation-per-solution assumption does not hold (never with
     ``NoiseHandler(N)`` defaults, whose ``maxevals`` is 1).
+
+    The stock ``indices`` decides the fractional part of the number of
+    re-evaluations (``2 + popsize / 20``) with one ``np.random.rand()``,
+    the only draw of a VBMC run that came from NumPy's global state; the
+    override takes it from `rng` (the instance's generator) instead.
     """
 
-    def __init__(self, N, batch_fun):
+    def __init__(self, N, batch_fun, rng):
         super().__init__(N)
         self._batch_fun = batch_fun
+        self._rng = rng
+
+    def indices(self, fit):
+        # The stock policy (`choice == 1` in cma 4.4.4): the first
+        # `lam_reev - lam_reev // 2` solutions and the best of the rest.
+        lam_reev = 1.0 * (
+            self.lam_reeval if self.lam_reeval else 2 + len(fit) / 20
+        )
+        lam_reev = int(lam_reev) + ((lam_reev % 1) > self._rng.random())
+        n_first = lam_reev - lam_reev // 2
+        sort_idx = np.argsort(np.asarray(fit)[n_first:]) + n_first
+        return np.asarray(
+            list(range(0, n_first)) + list(sort_idx[0 : lam_reev - n_first])
+        )
 
     def reeval(self, X, fit, func, ask, args=()):
         if (

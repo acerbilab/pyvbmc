@@ -44,9 +44,9 @@ def train_gp(
         Transformed upper plausible bounds, used to set GP hyperparameters.
     rng : None, int, SeedSequence or np.random.Generator, optional
         Random generator (or seed) used to subsample the starting
-        hyperparameters. By default a generator derived from NumPy's global
-        random state. Note that the hyperparameter fit itself (``gpyreg``)
-        still draws from NumPy's global random state.
+        hyperparameters and handed to the fit itself (``gpyreg.GP.fit``: the
+        space-filling initial design and the slice sampler). By default a
+        generator derived from NumPy's global random state.
 
     Returns
     =======
@@ -71,6 +71,7 @@ def train_gp(
         hyp_dict["full"] = None
     if "run_cov" not in hyp_dict:
         hyp_dict["run_cov"] = None
+    rng = get_rng(rng)
 
     # Get training dataset.
     x_train, y_train, s2_train, t_train = _get_training_data(function_logger)
@@ -144,7 +145,7 @@ def train_gp(
         N0 = hyp0.shape[0]
         if N0 > gp_train["init_N"] / 2:
             hyp0 = hyp0[
-                get_rng(rng).choice(
+                rng.choice(
                     N0, math.ceil(gp_train["init_N"] / 2), replace=False
                 ),
                 :,
@@ -165,7 +166,7 @@ def train_gp(
 
     # print(hyp0.shape)
     hyp_dict["hyp"], _, res = gp.fit(
-        x_train, y_train, s2_train, hyp0=hyp0, options=gp_train
+        x_train, y_train, s2_train, hyp0=hyp0, options=gp_train, rng=rng
     )
 
     if res is not None:

@@ -1,10 +1,10 @@
 """Tests for the ``seed`` argument and the random generator threading.
 
-``VBMC(seed=...)`` must make a run reproducible end to end, including the
-parts that still draw from NumPy's global random state (the ``gpyreg``
-hyperparameter fit and the ``cma`` noise handler), and ``seed=None`` must keep
-the legacy behaviour in which ``np.random.seed`` before construction fixes
-the run.
+``VBMC(seed=...)`` must make a run reproducible end to end without touching
+NumPy's global random state (the ``gpyreg`` hyperparameter fit receives the
+generator, the ``cma`` noise handler subclass draws from it), and
+``seed=None`` must keep the legacy behaviour in which ``np.random.seed``
+before construction fixes the run.
 """
 
 import copy
@@ -125,6 +125,21 @@ def test_seed_fixes_optimization():
     )
     # The returned posterior keeps sharing the instance's generator.
     assert vp_1.rng is vbmc_1.rng
+
+
+def test_seeded_run_leaves_global_state_untouched():
+    """Every draw of a run comes from ``vbmc.rng``: a seeded run neither
+    reads nor writes NumPy's global random state (the GP fit and the CMA-ES
+    noise handler included)."""
+    np.random.seed(7)
+    before = np.random.get_state()
+    vbmc = _make_vbmc(3)
+    vbmc.optimize()
+    after = np.random.get_state()
+    assert before[0] == after[0]
+    assert np.array_equal(before[1], after[1])
+    assert before[2:] == after[2:]
+    assert "legacy" not in vbmc.random_state
 
 
 def test_load_legacy_random_state_warns(caplog):

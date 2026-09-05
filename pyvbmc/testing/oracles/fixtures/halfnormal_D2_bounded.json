@@ -124,6 +124,47 @@
     },
     "oracle": "active_sample_step",
     "reason": "Stage 2 item 3: CMA-ES evaluates the acquisition per generation in one batched call (parallel_objective + batched noise handler); the same search on batched arithmetic ends at different points; every acq_* oracle unchanged"
+   },
+   {
+    "date": "2026-09-05 09:42:22",
+    "git": {
+     "dirty": true,
+     "sha": "284747e"
+    },
+    "max_abs_change": {
+     "gp_s_N": 0.0,
+     "hyp": 20.98828225376374,
+     "sn2_hpd": 4.5162332559850317e-07
+    },
+    "oracle": "gp_fit",
+    "reason": "Stage 2 item 8 step 8: train_gp now hands its generator to gpyreg.GP.fit, so the space-filling design and the slice sampler draw from rng instead of the legacy global state; the fit's chain moves by design (same algorithm, different stream)"
+   },
+   {
+    "date": "2026-09-05 09:46:29",
+    "git": {
+     "dirty": true,
+     "sha": "284747e"
+    },
+    "max_abs_change": {
+     "gp_s_N": 0.0,
+     "hyp": 0.0,
+     "sn2_hpd": 0.0
+    },
+    "oracle": "gp_fit",
+    "reason": "Stage 2 item 8 step 8: train_gp now hands its generator to gpyreg.GP.fit, so the space-filling design and the slice sampler draw from rng instead of the legacy global state; the fit's chain moves by design (same algorithm, different stream)"
+   },
+   {
+    "date": "2026-09-05 09:47:05",
+    "git": {
+     "dirty": true,
+     "sha": "284747e"
+    },
+    "max_abs_change": {
+     "X_new": 0.01759510619456961,
+     "y_new": 0.009251301430663883
+    },
+    "oracle": "active_sample_step",
+    "reason": "Stage 2 item 8 step 8: the CMA-ES noise-handler subclass draws its re-evaluation count from vp.rng instead of the legacy global state, so the search's stream moves by design; every acq_* oracle is unchanged"
    }
   ],
   "recipe": "halfnormal_D2_bounded",

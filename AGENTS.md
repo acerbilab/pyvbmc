@@ -155,15 +155,18 @@ Things you must hold in your head across files:
   VP stays on one stream, and functions that receive a `vp` draw from
   `vp.rng`. `seed=None` derives the generator from the global `np.random`
   state so that `np.random.seed()` beforehand still fixes a run (the example
-  notebooks rely on this). gpyreg (slice sampler, `f_min_fill`,
-  `GP.random_function`) and the `cma` noise handler still draw from the
-  global state, so a seeded instance reseeds it at construction and
-  reinstalls its own snapshot when `optimize()` starts; drop that seam once
-  gpyreg accepts a generator. The per-iteration `random_state` holds both
-  the generator state and the legacy tuple; `load(set_random_state=True)`
-  restores both. `test_vbmc_seed.py` deliberately holds two short (2
-  iteration, `D=2`) `optimize()` runs: they are the only end-to-end check of
-  the seam. Unseeded tests remain the reason CI uses `--reruns=5 -x`.
+  notebooks rely on this). The GP hyperparameter fit receives the generator
+  (`train_gp(rng=)` → `gpyreg.GP.fit(rng=)`, which covers the space-filling
+  design and the slice sampler; needs the gpyreg commit pinned in
+  `test-matrix.yml` or later) and the CMA-ES noise-handler subclass in
+  `active_sample.py` draws its re-evaluation count from `vp.rng`, so a run
+  never reads or writes NumPy's global state (since 2026-09-05; before, a
+  seeded instance reseeded the global state and the per-iteration
+  `random_state` also held the legacy tuple, which
+  `load(set_random_state=True)` now ignores). `test_vbmc_seed.py`
+  deliberately holds three short (2 iteration, `D=2`) `optimize()` runs:
+  the end-to-end reproducibility checks. Unseeded tests remain the reason
+  CI uses `--reruns=5 -x`.
 - **float64 everywhere, implicitly.** The Cholesky retry ladder in gpyreg
   exists because the matrices are borderline singular.
 
@@ -204,11 +207,21 @@ Things you must hold in your head across files:
   its references alone with `--rebaseline active_sample_step --reason
   "..."`, which recomputes from the stored state and keeps every other
   reference bit-identical (`dev/plans/stage2-batched-acquisition.md`);
-  the per-step trajectory check is `python dev/scripts/golden_replay.py`
+  the same holds for `gp_fit` (a slice-sampling chain), and a change to
+  the random stream moves both, so `--expect-moving` names the second
+  while the first is re-baselined. A new oracle is added to the existing
+  fixtures with `--add-oracle NAME --reason "..."` (never by rerunning the
+  recipes, which would move every snapshot). The committed references pin
+  the numerics of the day they were made and several outputs have since
+  moved within tolerance, so the gate for a change that must not move any
+  output is `--dump-outputs DIR` before it and `--check --exact --against
+  DIR` after (`dev/plans/stage2-gpyreg-predict-and-sampler.md`); the
+  per-step trajectory check is `python dev/scripts/golden_replay.py`
   (`dev/README.md`). The tests need a repository checkout: the testing
   package ships in the sdist, not the wheel, and the `active_sample_step`
   oracle also imports the benchmark targets from `dev/scripts` (skipped
-  when absent) and runs only on the platform that generated the fixtures
-  (a CMA-ES search turns BLAS rounding differences into different chosen
-  points; `PYVBMC_ORACLES_ALL=1` forces the *test* elsewhere, while
-  `--rebaseline active_sample_step` refuses to run off that platform).
+  when absent); it and `gp_fit` run only on the platform that generated
+  the fixtures (a CMA-ES search or a slice-sampling chain turns BLAS
+  rounding differences into different decisions; `PYVBMC_ORACLES_ALL=1`
+  forces the *tests* elsewhere, while the targeted generator modes refuse
+  to run off that platform).

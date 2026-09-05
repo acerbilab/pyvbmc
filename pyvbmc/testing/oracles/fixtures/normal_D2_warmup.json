@@ -111,6 +111,49 @@
   "problem_seed": 0,
   "python": "3.12.6",
   "r_index": 0.08212808756057749,
+  "rebaselined": [
+   {
+    "date": "2026-09-05 09:42:24",
+    "git": {
+     "dirty": true,
+     "sha": "284747e"
+    },
+    "max_abs_change": {
+     "gp_s_N": 0.0,
+     "hyp": 5.676074279448588,
+     "sn2_hpd": 4.6857002316012083e-07
+    },
+    "oracle": "gp_fit",
+    "reason": "Stage 2 item 8 step 8: train_gp now hands its generator to gpyreg.GP.fit, so the space-filling design and the slice sampler draw from rng instead of the legacy global state; the fit's chain moves by design (same algorithm, different stream)"
+   },
+   {
+    "date": "2026-09-05 09:46:31",
+    "git": {
+     "dirty": true,
+     "sha": "284747e"
+    },
+    "max_abs_change": {
+     "gp_s_N": 0.0,
+     "hyp": 0.0,
+     "sn2_hpd": 0.0
+    },
+    "oracle": "gp_fit",
+    "reason": "Stage 2 item 8 step 8: train_gp now hands its generator to gpyreg.GP.fit, so the space-filling design and the slice sampler draw from rng instead of the legacy global state; the fit's chain moves by design (same algorithm, different stream)"
+   },
+   {
+    "date": "2026-09-05 09:47:13",
+    "git": {
+     "dirty": true,
+     "sha": "284747e"
+    },
+    "max_abs_change": {
+     "X_new": 0.0598798953369597,
+     "y_new": 0.028853117806099338
+    },
+    "oracle": "active_sample_step",
+    "reason": "Stage 2 item 8 step 8: the CMA-ES noise-handler subclass draws its re-evaluation count from vp.rng instead of the legacy global state, so the search's stream moves by design; every acq_* oracle is unchanged"
+   }
+  ],
   "recipe": "normal_D2_warmup",
   "recipe_options": {},
   "versions": {
