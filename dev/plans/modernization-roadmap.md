@@ -132,8 +132,16 @@ anything that changes numerics lands.
   width ratio; rejected, the plan's Open question 1); oracles green with no
   re-baseline, the exact check against a pre-change dump moves only the
   entropy-carrying outputs at 1e-15, replay 0 flagged of 5 with the
-  design identical, full suite green; the end-to-end profile campaign is
-  pending (evening, idle machine).
+  design identical, full suite green. Profile campaign (17:11, idle
+  machine, gpyreg v1.1.0; every trajectory differs from item 8's because
+  the seam removal moved every stream): in situ the Adam-shape entropy
+  calls are 5× faster per call (the exhaust run's 147 → 29 s over 20k
+  calls), the value-only `_eval_full_elcbo` calls gain nothing and are now
+  the entropy's dominant cost on large-K runs; `entmc_vbmc` 9–13 % → 3–6 %
+  of a profiled D = 4 run, `final_boost` halved, the variational fit
+  0.37–0.88 of its time on nine configs; end to end within trajectory
+  noise (suite 1424 → 1384 s; the exhaust run 777 s on both, its
+  variational fit 244 → 209 s on a higher-K path).
 - [ ] **Stage 3 — pipeline features** (batched initial design,
   torch/jax target adapter docs, `vp.to_torch()`, ArviZ export).
 - [ ] **Stage 4 — PyTorch port** (decision point, not default).
@@ -237,15 +245,14 @@ anything that changes numerics lands.
    --against` a pre-change dump moves only `entmc` and the
    entropy-carrying `neg_elcbo` outputs, by 1e-15; replay 0 flagged of 5
    against the item 8 Step 8 traces, initial design identical on every
-   config; 541 passed). **Open:** the profile campaign
-   (`profile_suite.py --suite profile --mode plain --probe banana_D4`,
-   then `--mode cprof` on the D = 4 set, compared with
-   `runs/profile_20260905_item8/` through `profile_compare.py --control
-   gp_train`, because the variational fit is the stage being changed;
-   about 35 min on an idle machine) and the plan's §Results. The GEMM
-   expansion for the value-only entropy path (3–7× there) was rejected by
-   the PI the same day: its error grows without bound with the
-   components' width ratio (plan, Open question 1).
+   config; 541 passed). Profile campaign 17:11–17:54
+   (`runs/profile_20260905_item5/`, compared with item 8's through
+   `profile_compare.py --control gp_train`; plan §Results): the Stage 2
+   bullet above has the numbers. The GEMM expansion for the value-only
+   entropy path (3–7× there) was rejected by the PI the same day: its
+   error grows without bound with the components' width ratio (plan,
+   Open question 1). Item 5 is complete; the population run of 3c is the
+   statistical gate for items 8 and 5 together.
 3c. **Next:** the 20-seed population after the seam removal (3a (ii)),
    about 6.5 h with the laptop idle: `python -u
    dev/scripts/golden_trace.py run --suite golden --seeds 0-19 --workers 1

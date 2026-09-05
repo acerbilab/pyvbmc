@@ -1,7 +1,8 @@
 # Stage 2 item 5: `entmc_vbmc` vectorized over components and samples
 
-Created: 2026-09-05 15:00. Status: **IN PROGRESS** (this file is the plan
-and the worklog; tracker at the end). Roadmap pickup point 3b
+Created: 2026-09-05 15:00. Status: **DONE 2026-09-05 18:00** (the
+20-seed population that also covers item 8's seam removal is still to
+run; tracker at the end). This file is the plan and the worklog. Roadmap pickup point 3b
 (`plans/modernization-roadmap.md`); rationale in
 `dev/2026-09-02-modernization-discussion.md` §2, §3, §10 (Stage 2, item 5:
 "Vectorize `entmc_vbmc` component loop"); the profile that made it the next
@@ -338,15 +339,14 @@ comparison. Record here, in the roadmap and as a dated addendum in devlog
 - [x] Implementation in `pyvbmc/entropy/entmc_vbmc.py`; chunk-invariance
       test; entropy tests; oracles; `--check --exact --against` the dump;
       variational tests; replay; full suite; commit `5a8e181`
-- [~] Records: `dev/README.md`, roadmap (Stage 2 bullet, pickup 3b →
-      done, next pickup), devlog §3/§9/§10 addenda and the §9
-      correction, this file (done, committed after `5a8e181`); devlog §2
-      and §Results after the campaign; push; CI smoke
+- [x] Records: `dev/README.md`, roadmap (Stage 2 bullet, pickup 3b →
+      done, next pickup), devlog §2/§3/§9/§10 addenda and the §9
+      correction, this file; pushed; CI smoke green
 - [x] Read-only Opus code review of the diff and the plan (folded in,
       tracker); `/doublecheck` after the campaign's records
-- [ ] Profile campaign (idle machine) and §Results
-- [ ] 20-seed population (roadmap 3a (ii); tonight if the laptop is idle,
-      about 6.5 h): `golden_trace.py run --suite golden --seeds 0-19
+- [x] Profile campaign (idle machine) and §Results
+- [ ] 20-seed population (roadmap 3c; when the laptop is free for about
+      6.5 h): `golden_trace.py run --suite golden --seeds 0-19
       --workers 1 --out dev/scripts/runs/golden/item8_<date>`, then
       `summary` and `compare dev/golden/baseline <out>`
 
@@ -363,8 +363,10 @@ comparison. Record here, in the roadmap and as a dated addendum in devlog
       on every config, finals inside the envelope, 0 flagged of 5 (no
       excursion, so no second seed was needed)
 - [x] `pytest --reruns=5 -x` green: 541 passed, 15 skipped, 0 reruns
-- [ ] Profile: `entmc_vbmc` per call and share against item 8's campaign;
-      untouched stages within trajectory noise (control `gp_train`)
+- [x] Profile: `entmc_vbmc` per call 1.4–3.0× in situ (5× on the
+      Adam-shape calls, no gain on the value-only calls), share of a
+      D = 4 run 9–13 % → 3–6 %; untouched stages within trajectory noise
+      (control `gp_train` 0.96–1.12 where iteration counts are close)
 
 ## Decisions
 
@@ -446,9 +448,92 @@ comparison. Record here, in the roadmap and as a dated addendum in devlog
 - Profiling must run alone on an idle machine (item 8: three configs
   slowed by desktop use, rerun clean; the control stage tells).
 
-## Results
+## Results (2026-09-05, 17:11–17:54)
 
-(to be written after the profile campaign)
+`runs/profile_20260905_item5/` (PyVBMC `9585f02`, gpyreg v1.1.0 `a2f8ddc`)
+against `runs/profile_20260905_item8/` (PyVBMC `284747e`, gpyreg
+`79b4986`), same laptop, seed 0, one process, one BLAS thread, machine
+idle; `profile_compare.py --control gp_train`, report in
+`runs/profile_20260905_item5_compare.log`. Speed probe `banana_D4` plain:
+22.4 s at the start, 22.2 s at the end (item 8's 23.9 / 21.9 s), so the
+machine ran at the baseline's speed. **Every trajectory differs** from
+item 8's (the seam removal shifted every seed's stream; 9 of 10 configs
+took a different number of iterations or evaluations), so per-config
+walls are trajectory noise and the cProfile per-call figures and the
+bucket shares carry the comparison.
+
+### End to end (plain runs, seconds; old → new)
+
+| config | wall (new/old) | variational fit | active sampling | GP train | iters / evals old → new |
+|---|---|---|---|---|---|
+| banana_D4 | 23.6 → 22.6 (0.96) | 2.0 → 1.5 (0.75) | 14.3 → 14.2 | 4.8 → 5.0 | 17/90 → 18/95 |
+| cigar_D4 | 48.2 → 43.8 (0.91) | 7.3 → 4.1 (0.56) | 28.6 → 29.0 | 8.2 → 8.0 | 25/125 → 26/130 |
+| lumpy_D4 | 21.6 → 22.8 (1.06) | 1.4 → 1.0 (0.68) | 12.3 → 14.7 | 4.9 → 5.4 | 16/85 → 18/95 |
+| student_D4 | 28.8 → 48.9 (1.70) | 2.3 → 2.7 (1.19) | 17.5 → 32.6 | 5.8 → 11.3 | 19/100 → 31/160 |
+| logreg_D5 | 60.0 → 41.8 (0.70) | 9.1 → 4.7 (0.52) | 27.5 → 24.5 | 9.5 → 9.1 | 26/130 → 25/125 |
+| rosenbrock_D2_noise1 | 92.9 → 71.6 (0.77) | 7.8 → 4.0 (0.51) | 78.9 → 62.7 | 12.3 → 8.7 | 27/140 → 22/115 |
+| logreg_D5_noise3 | 220.0 → 199.4 (0.91) | 27.1 → 10.0 (0.37) | 166.4 → 162.6 | 38.9 → 41.3 | 56/280 → 52/255 |
+| lumpy_D10 | 98.4 → 99.6 (1.01) | 4.1 → 3.6 (0.88) | 56.0 → 60.6 | 28.0 → 28.9 | 35/175 → 36/180 |
+| banana_D10 | 54.0 → 56.3 (1.04) | 2.3 → 2.0 (0.83) | 33.7 → 35.3 | 12.9 → 14.5 | 22/115 → 24/125 |
+| cigar_D15_exhaust | 776.8 → 777.5 (1.00) | 243.9 → 209.4 (0.86) | 373.4 → 350.8 | 126.5 → 189.1 | 150/750 → 150/750 |
+
+Suite wall without probes 1424 → 1384 s (1.03×). Reading: the
+variational fit, the stage this item changes, took 0.37–0.88 of its time
+on nine configs (the tenth, `student_D4`, ran 31 iterations instead of 19
+on its new trajectory, and every stage of it grew accordingly); the
+untouched stages moved with the trajectories (the control `gp_train`
+0.96–1.12 where the iteration counts are close; the exhaust run's 1.50 is
+`scipy.optimize.minimize` 24 → 83 s, the rare full refits at N ≥ 500 on
+a different trajectory, with the slice sampler 1.11 per call over the
+same 72 calls). The exhaust run's variational fit fell 244 → 209 s even
+though its new trajectory spends more time at large K (tail mean K 27.9
+against 25.6; K by tenth of the run 2, 3, 10, 17, 22, 22, 28, 28, 31, 30
+against 2, 2, 6, 16, 24, 20, 24, 25, 28, 30): the sampled first half of
+the run, where Adam-shape calls dominate, 72.7 → 30.1 s; the
+optimize-only tail 171 → 179 s at the higher K. End to end this item is
+worth a few percent at D ≤ 10 (a 5–13 % bucket cut in half) and is
+invisible in single-run walls against trajectory noise; the exhaust wall
+is unchanged at 777 s with a variational fit 34 s smaller and GP training
+63 s larger on its new path.
+
+### Under cProfile (old → new; seconds and calls)
+
+| bucket | banana_D4 | cigar_D4 | lumpy_D4 | student_D4 | cigar_D15_exhaust |
+|---|---|---|---|---|---|
+| `entmc_vbmc` | 2.7 → 1.3 (0.50) [1744 → 1831] | 7.9 → 3.0 (0.38) [3446 → 3130] | 2.8 → 0.9 (0.33) [1228 → 1346] | 3.5 → 1.7 (0.47) [1608 → 2673] | 227.6 → 160.7 (0.71) [20797 → 20843] |
+| share of the profiled run | 9.4 → 4.7 % | 12.8 → 5.5 % | 10.5 → 3.2 % | 10.1 → 2.8 % | 23.9 → 17.7 % |
+| per call | 1.55 → 0.71 ms | 2.29 → 0.96 ms | 2.28 → 0.67 ms | 2.18 → 0.64 ms | 10.9 → 7.7 ms |
+| `_eval_full_elcbo` | 0.7 → 0.9 [44 → 51] | 1.3 → 2.0 [66 → 90] | 0.7 → 0.6 [48 → 46] | 0.7 → 1.1 [48 → 93] | 84.3 → 135.6 [817 → 963] |
+| `optimize_vp` | 4.4 → 3.1 (0.71) | 11.9 → 6.7 (0.56) | 4.3 → 2.4 (0.57) | 5.3 → 4.6 (0.87) | 285.9 → 220.4 (0.77) |
+| `final_boost` | 2.0 → 1.2 (0.58) | 3.2 → 1.7 (0.52) | 2.6 → 1.2 (0.46) | 2.6 → 1.2 (0.47) | 10.5 → 4.3 (0.41) |
+| profiled wall | 28.8 → 28.4 | 62.1 → 55.3 | 26.8 → 28.5 | 34.7 → 58.5 | 952.5 → 909.0 |
+
+The two call shapes, separated through `_eval_full_elcbo` (its cumulative
+time less about 1 ms per call for `_gp_log_joint`'s variance at D = 4 and
+4 ms at D = 15):
+
+- **Adam-shape calls** (all but 44–963 of the calls): on the exhaust run
+  147 → 29 s over 20k calls, **7.3 → 1.46 ms per call (5.0×)** at K = 2–34,
+  D = 15; at D = 4 about 1.2 → 0.25 ms per call (banana_D4), the same
+  factor. `final_boost`, whose Adam loop runs at K = 50, halves on every
+  config (0.41–0.58).
+- **Value-only calls** (`_eval_full_elcbo`, 4096 samples per component):
+  no gain. At D = 4 their per-call cost moved 15.9 → 17.6 ms (banana),
+  19.7 → 22.2 (cigar), 14.6 → 13.0 (lumpy), 14.6 → 11.8 (student), i.e.
+  within ±20 % on different K mixes; on the exhaust run 99 → 136 ms per
+  call (81 → 132 s over 817 → 963 calls) on a trajectory whose K is 9 %
+  higher in the tail (the cost scales with K², which accounts for about
+  half of the rise) and where more pruning candidates were evaluated at
+  large K; the fixed-K micro-benchmarks put this shape at 0.9–1.35× of the
+  loop, so a per-call loss of 10–15 % at D = 15 is within their spread and
+  cannot be separated from the K mix here (Follow-ups). These calls are
+  now the entropy's dominant cost on large-K runs (132 of 161 s on the
+  exhaust run, about two thirds at D = 4) and are bound by the arithmetic
+  of `M K` distance elements and `M K` exponentials at `M = 4096 K`.
+
+Over Stage 2 so far (items 3, 1, 2, 8, 5) the exhaust run's plain wall is
+2123 → 777 s (2.7×), unchanged by this item on its new trajectory; its
+variational fit 585 → 264 → 244 → 209 s.
 
 ## Follow-ups
 
@@ -471,6 +556,13 @@ comparison. Record here, in the roadmap and as a dated addendum in devlog
 - **`vp.pdf` and `entmc_vbmc` compute the same mixture density** with
   the same tensor broadcast and the same 2^16 chunking (the exact
   differences; Open question 1's expansion is rejected for both).
+- **The value-only shape at D = 15 is measured only at fixed K and in
+  situ on a different trajectory** (§Results): a paired timing of the loop
+  and the tensor form on the same VP states inside one exhaust run (a
+  13-minute run with the old function called alongside the new one at
+  every `_eval_full_elcbo`) would give the per-call ratio without the K
+  mix. Not done; the shape is arithmetic-bound and no exact NumPy
+  re-expression measured so far beats the loop by more than 1.35× there.
 - **Item 6 and 7 (memory)** are the next roadmap items after this one.
 
 ## Execution tracker
@@ -567,7 +659,17 @@ attention. Times are wall clock on 2026-09-05.
   records (this plan, `dev/README.md`, the roadmap, devlog §3/§9/§10, the
   einsum plan's correction) in the `docs(dev)` commit after it; pushed,
   CI smoke on the push
-- [ ] Profile campaign and 20-seed population: a scheduled check at
-  19:33 starts them only if the laptop is idle (no desktop use) and
-  otherwise re-checks every 30 min; §Results and devlog §2 after the
-  campaign
+- [x] The GEMM expansion for the value-only path rejected by the PI
+  (unbounded error in the width ratio) — 15:55, `6d6bbfd`. Meanwhile the
+  gpyreg PR was merged (squash `a2f8ddc`), gpyreg v1.1.0 released and
+  required by `pyproject.toml`, `GPYREG_PIN` moved (`b834b4b`, `0beadc7`,
+  `9585f02`, another session); the CI smoke of the item 5 push green
+  (run 33965989663)
+- [x] **Profile campaign** — 17:11–17:54 on the idle laptop at the PI's
+  word (a start at 17:01 made before it was killed at 17:08 and its
+  directory deleted): plain suite with probes 17:12–17:36, cProfile on the
+  four D = 4 configs and the exhaust run 17:38–17:54, `profile_compare.py
+  --control gp_train`; §Results. Records: this file, devlog §2, the
+  roadmap's Stage 2 bullet and pickup 3b
+- [ ] 20-seed population (roadmap 3c): when the PI says the laptop is free
+  for about 6.5 h

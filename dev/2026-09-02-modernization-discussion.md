@@ -183,6 +183,27 @@ the Cholesky factor, `SliceSampler.sample` 2.7–3.0× per call; GP training is
 9–13 %. Over Stage 2 so far (items 3, 1, 2, 8) the exhaust run went
 2123 → 777 s, 2.7×.
 
+**Measured 2026-09-05 (17:11) after Stage 2 item 5** (`entmc_vbmc`
+vectorized; `plans/stage2-entmc.md` §Results), with gpyreg v1.1.0, on
+trajectories that all differ from the 10:42 campaign's because the seam
+removal moved every seed's stream: the change is visible in the buckets,
+not in single-run walls. Under cProfile the Monte Carlo entropy is
+1.4–3.0× faster (`entmc_vbmc` 9–13 % → 3–6 % of a D = 4 run, 24 → 18 % of
+the exhaust run), and the two call shapes separate cleanly: the
+Adam-objective calls (the great majority) are 5× faster per call in situ
+(the exhaust run's 147 → 29 s over 20k calls at K = 2–34, D = 15; about
+1.2 → 0.25 ms at D = 4), `final_boost` halves on every config, while the
+value-only calls of `_eval_full_elcbo` (4096 samples per component) gain
+nothing and are now the entropy's dominant cost on large-K runs (132 of
+161 s on the exhaust run). In the plain runs the variational fit took
+0.37–0.88 of its time on nine of ten configs; the suite wall 1424 →
+1384 s, the exhaust run 777 s on both campaigns (its variational fit
+244 → 209 s on a new path that spends more time at large K, its GP
+training 127 → 189 s from the rare N ≥ 500 refits on that path). The
+remaining time at D = 4 is active sampling (61–66 % of a profiled run,
+`GP.predict` 34–43 %) and GP training (19–26 %); the variational stage is
+8–12 %.
+
 ---
 
 ## 3. Hand-derived gradients (what autodiff would delete)
