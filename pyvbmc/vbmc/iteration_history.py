@@ -117,8 +117,8 @@ class IterationHistory(MutableMapping, dict):
         without going through ``__setitem__``: the stored values were
         deep-copied when they were recorded, and copying them again on every
         expansion made each ``record`` cost as much as all the iterations
-        before it (and, for the GPs, briefly held two copies of every
-        Cholesky factor of the run).
+        before it (and briefly held two copies of everything stored under
+        the key).
         """
         dict.__setitem__(
             self,

@@ -9,6 +9,7 @@ states, and the public method on a saved instance.
 import copy
 from pathlib import Path
 
+import gpyreg as gpr
 import numpy as np
 import pytest
 
@@ -165,3 +166,21 @@ def test_get_gp_without_a_recorded_gp():
     with pytest.raises(ValueError) as err:
         vbmc.get_gp(0)
     assert "No Gaussian process has been recorded" in err.value.args[0]
+
+
+def test_lean_gp_of_a_gp_without_posteriors():
+    """A GP that was never fitted has no posteriors; the lean copy and the
+    restore leave it that way."""
+    gp_empty = gpr.GP(
+        D=2,
+        covariance=gpr.covariance_functions.SquaredExponential(),
+        mean=gpr.mean_functions.NegativeQuadratic(),
+        noise=gpr.noise_functions.GaussianNoise(constant_add=True),
+    )
+    assert gp_empty.posteriors is None
+    lean = _lean_gp(gp_empty)
+    assert lean is not gp_empty
+    assert lean.posteriors is None
+    assert lean.temporary_data == {}
+    assert _restore_gp_posteriors(lean) is lean
+    assert lean.posteriors is None

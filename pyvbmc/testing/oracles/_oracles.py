@@ -457,8 +457,7 @@ def _lz_and_grad(gp, hyp, compute_prior):
     Through the public ``GP.log_likelihood`` / ``GP.log_posterior``, which
     negate the ``(nlZ, dnlZ)`` pair that the space-filling design, L-BFGS-B
     and the slice sampler evaluate (gpyreg 1.1.0 or later: earlier releases
-    raised ``TypeError`` when a gradient was requested, devlog §9, and the
-    oracle went through the private method until 2026-09-05).
+    raised ``TypeError`` when a gradient was requested, devlog §9).
     """
     hyp = np.asarray(hyp, dtype=float)
     if compute_prior:

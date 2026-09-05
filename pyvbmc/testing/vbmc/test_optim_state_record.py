@@ -83,3 +83,21 @@ def test_recorded_history_copy_has_no_importance_samples():
     assert stored["active_importance_sampling"] is None
     assert vbmc.optim_state["active_importance_sampling"]["X"].shape == (2, D)
     assert stored is not vbmc.optim_state
+
+
+def test_recorded_history_copy_keeps_importance_samples_when_asked():
+    vbmc = make_vbmc(record_full_history_details=True)
+    vbmc.optim_state["active_importance_sampling"] = importance_samples()
+
+    vbmc.iteration_history.record("optim_state", vbmc._optim_state_record(), 0)
+
+    stored = vbmc.iteration_history["optim_state"][0]
+    assert stored is not vbmc.optim_state
+    assert np.array_equal(
+        stored["active_importance_sampling"]["K_Xa_X"],
+        vbmc.optim_state["active_importance_sampling"]["K_Xa_X"],
+    )
+    assert (
+        stored["active_importance_sampling"]["K_Xa_X"]
+        is not vbmc.optim_state["active_importance_sampling"]["K_Xa_X"]
+    )

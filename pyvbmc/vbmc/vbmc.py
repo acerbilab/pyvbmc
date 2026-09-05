@@ -2238,7 +2238,7 @@ class VBMC:
                 "No Gaussian process has been recorded: run optimize() "
                 "before asking for the GP of an iteration."
             )
-        if not 0 <= iteration < len(gps):
+        if not 0 <= iteration < len(gps) or gps[iteration] is None:
             raise ValueError(
                 f"Specified iteration ({iteration}) should be >= 0 and < "
                 f"the number of recorded iterations ({len(gps)})."

@@ -1009,8 +1009,9 @@ _CANDIDATE_ASSIGNED = ("w", "eta", "mu", "sigma", "lambd", "bounds", "stats")
 # Attributes shared with the base posterior instead of copied: the generator
 # (as `VariationalPosterior.__deepcopy__` shares it) and the parameter
 # transformer, which no code path mutates after construction (`whitening`
-# deep-copies it before changing the rotation), so every candidate, and the
-# posterior `optimize_vp` returns, can use the run's transformer object.
+# deep-copies it before changing the rotation), so every candidate can use
+# the base posterior's transformer object. (The posterior `optimize_vp`
+# returns is a `copy.deepcopy` of a candidate and carries its own copy.)
 _CANDIDATE_SHARED = ("_rng", "parameter_transformer")
 
 
@@ -1019,9 +1020,10 @@ def _candidate_vp(vp: VariationalPosterior):
     An empty shell of ``vp`` for one sieve candidate.
 
     A ``copy.deepcopy`` per candidate copied the parameter transformer and
-    the variational parameters that ``_vb_init`` then overwrote, at about
-    150 microseconds per candidate for the 5-50 candidates per component
-    of every ``optimize_vp`` call. The shell has the same attributes in the
+    the variational parameters that ``_vb_init`` then overwrote: 20-25 of
+    the 31-43 microseconds the whole step took per candidate, for the 5-50
+    candidates per component of every ``optimize_vp`` call. The shell has
+    the same attributes in the
     same order: the generator and the transformer are shared, the
     attributes ``_vb_init`` assigns are left ``None``, everything else
     (dimensions, the ``optimize_*`` flags, the cached mode) is deep-copied,
