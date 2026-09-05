@@ -26,8 +26,8 @@ env:
   # Bump when gpyreg main moves and the scheduled run against it is green.
   # a2f8ddc (2026-09-05): gpyreg main after the squash merge of
   # acerbilab/gpyreg#43 (Stage 2 item 8; PyVBMC needs its GP.fit(rng=)).
-  # No PyPI release carries it yet: bump pyproject.toml's minimum when one
-  # is cut. Previous pins: 79b4986 and 966414d (the PR branch),
+  # Released as gpyreg v1.1.0 the same day; pyproject.toml requires it.
+  # Previous pins: 79b4986 and 966414d (the PR branch),
   # 236ddd7 (gpyreg v1.0.4 + 1, 2026-02-17).
   GPYREG_PIN: a2f8ddce867f502e29717959cf0ff3529f598618
 
@@ -51,6 +51,10 @@ jobs:
           repository: acerbilab/gpyreg
           ref: ${{ inputs.gpyreg-ref || env.GPYREG_PIN }}
           path: gpyreg
+          # full history so setuptools_scm reads gpyreg's real version from
+          # its tags (a shallow clone reports 0.1.dev1, below the minimum
+          # pyproject.toml requires)
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v6

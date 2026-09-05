@@ -230,7 +230,8 @@ from the gpyreg code at `236ddd7` the same morning.
   `indices`, first lines); `_BatchedNoiseHandler` (`active_sample.py:879`)
   can override `indices` with the same six lines drawing from `vp.rng`,
   so no global draw remains in a run and the whole seam can go.
-- **Pins and versions**: PyVBMC requires `gpyreg >= 0.1.0`; CI installs
+- **Pins and versions**: PyVBMC requires `gpyreg >= 0.1.0` (raised to
+  `>= 1.1.0` with the release of 2026-09-05); CI installs
   `acerbilab/gpyreg` at `GPYREG_PIN` = `236ddd7` for every run except the
   scheduled one (gpyreg `main`). A branch commit pushed to the org repo can
   be pinned before the merge; the minimum version bump waits for a gpyreg
@@ -1176,6 +1177,11 @@ written from an estimated clock that ran up to five hours ahead).
   `GPYREG_PIN` → `a2f8ddc`; `AGENTS.md`, roadmap Stage 2 bullet and
   pickup point 3a, devlog §10 updated. Left: bump the gpyreg minimum in
   `pyproject.toml` once a release carries the PR — 15:45
+- [x] **gpyreg v1.1.0 released** — 16:06: GitHub release on `a2f8ddc`
+  (notes: performance, `rng=`, the gradient-wrapper fix, the two
+  invariants), publish workflow green, on PyPI within minutes;
+  `pyproject.toml` requires `gpyreg >= 1.1.0`, `AGENTS.md`'s setup note
+  and the pin comment updated. Nothing of item 8 remains open — 16:15
 - [x] `/doublecheck` on the completed steps (three read-only Opus
   reviewers: the gpyreg commits, the PyVBMC commits, the records against
   the artifacts) — 10:02–10:20. Findings, all folded in. **Must fix**: the

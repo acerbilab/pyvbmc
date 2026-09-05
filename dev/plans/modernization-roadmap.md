@@ -214,15 +214,14 @@ anything that changes numerics lands.
    2026-09-05): the gpyreg work is merged into `acerbilab/gpyreg` `main`
    (PR #43, squash `a2f8ddc`, 2026-09-05; bit-identical outputs, `rng=`
    support, four review fixes folded in before the merge), `GPYREG_PIN`
-   points at the merge commit, PyBADS's
+   points at the merge commit, gpyreg v1.1.0 released to PyPI the same day
+   and required by `pyproject.toml`), PyBADS's
    suite passes against it with one metadata-dependent test deselected,
    PyVBMC's seam is removed, and the profile campaign is recorded (plan
-   §Results; `runs/profile_20260905_item8/`). **Open:** (i) bump the
-   gpyreg minimum in `pyproject.toml` once a gpyreg release carries PR #43
-   (PyPI is at v1.0.4), before `dev-next` merges into `main`; (ii) whether
+   §Results; `runs/profile_20260905_item8/`). **Open:** (i) whether
    to run
    the 20-seed population right after item 8 (the seam removal changed
-   every stream) or at the end of the stage; (iii) Open question 8 of the
+   every stream) or at the end of the stage; (ii) Open question 8 of the
    plan: re-baseline the committed oracle references that items 3, 1, 2
    moved within tolerance, so `--check --exact` against the fixtures becomes
    the identity gate.
@@ -275,8 +274,8 @@ anything that changes numerics lands.
 7. ~~gpyreg generator support (`GP.fit`, `SliceSampler`, `f_min_fill`,
    `GP.random_function`) on a gpyreg branch when convenient.~~ Done
    2026-09-05 in acerbilab/gpyreg#43 (item 8, point 3a); the PyVBMC seam is
-   removed on `dev-next` against the pinned branch head. Remaining: the
-   gpyreg minimum version in `pyproject.toml` once a release carries it.
+   removed on `dev-next`; gpyreg v1.1.0 released 2026-09-05 and required
+   by `pyproject.toml`.
 8. One PR `dev-next` → `main` when the work is done.
 
 ## Deferred (devlog §12)
