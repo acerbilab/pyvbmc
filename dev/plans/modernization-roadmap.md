@@ -99,8 +99,8 @@ anything that changes numerics lands.
   re-optimizations, so (8) and (1) are what speed those up. After items
   3, 1 and 2 the remaining time at D = 4 is active sampling (46–54 %,
   gpyreg's `predict` overhead 31–34 %) and GP training (31–42 %, the
-  slice sampler 27–38 %): item 8. **(8) done 2026-09-05 except its
-  profile campaign** (`plans/stage2-gpyreg-predict-and-sampler.md`;
+  slice sampler 27–38 %): item 8. **(8) done 2026-09-05**
+  (`plans/stage2-gpyreg-predict-and-sampler.md`;
   gpyreg branch `perf/predict-sampler-overhead`, draft PR
   acerbilab/gpyreg#43, five commits on `236ddd7`, `GPYREG_PIN` at its
   head): the three performance commits are identity-preserving (every
@@ -112,10 +112,13 @@ anything that changes numerics lands.
   branch (one metadata-dependent test deselected). The PyVBMC seam is
   removed (every draw through `vbmc.rng`), which is *not*
   identity-preserving: it shifts the stream of every existing seed, and
-  the two stream-dependent oracles were re-baselined. The end-to-end
-  profile (Step 7) must
-  run on the identity-preserving commit `284747e` from a detached
-  checkout, machine idle, ≈ 40 min.
+  the two stream-dependent oracles were re-baselined. End to end
+  (profile campaign on the identity-preserving commit, identical
+  trajectories, seven clean configs): 1.24–1.49× faster, GP training
+  2.1–2.6× (29–46 % of wall → 16–29 %), active sampling 1.15–1.20×
+  (now 48–76 % of wall, `GP.predict` alone 30–36 % of a profiled D = 4
+  run); the 15-D exhaust run 1041 → 777 s, 2.7× since 2026-09-03 over
+  items 3, 1, 2 and 8 together.
 - [ ] **Stage 3 — pipeline features** (batched initial design,
   torch/jax target adapter docs, `vp.to_torch()`, ArviZ export).
 - [ ] **Stage 4 — PyTorch port** (decision point, not default).
@@ -197,16 +200,13 @@ anything that changes numerics lands.
    of `acerbilab/gpyreg` (draft PR #43; five commits, bit-identical
    outputs, `rng=` support), `GPYREG_PIN` points at its head, PyBADS's
    suite passes against it with one metadata-dependent test deselected,
-   and PyVBMC's seam is removed. **Open:** (i) the
-   profile campaign of Step 7, to run from a detached checkout of the
-   identity-preserving commit `284747e` when the laptop is idle
-   (`git checkout 284747e`, then `OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1
-   MKL_NUM_THREADS=1 python -u dev/scripts/profile_suite.py --suite profile
-   --mode plain --probe banana_D4 --out dev/scripts/runs/profile_<stamp>`,
-   ≈ 35 min, then `--mode cprof --only banana_D4,cigar_D4,lumpy_D4,
-   student_D4,cigar_D15_exhaust` ≈ 40 min, then `git checkout dev-next`;
-   compare with `runs/profile_20260905/aggregate.md`, record in the plan's
-   §Results, here and in devlog §2/§10); (ii) merge PR #43 after the PI's
+   PyVBMC's seam is removed, and the profile campaign is recorded (plan
+   §Results; `runs/profile_20260905_item8/`). **Open:** (i) three configs
+   of that campaign (`student_D4`, `logreg_D5`, `rosenbrock_D2_noise1`)
+   were slowed by desktop use on every attempt and carry a † in the
+   table; a clean rerun is four minutes on an idle machine from a detached
+   checkout of `284747e` (`README.txt` in the campaign directory has the
+   command); (ii) merge PR #43 after the PI's
    review, move the pin to the merge commit, and bump the gpyreg minimum in
    `pyproject.toml` once a gpyreg release carries it; (iii) whether to run
    the 20-seed population right after item 8 (the seam removal changed

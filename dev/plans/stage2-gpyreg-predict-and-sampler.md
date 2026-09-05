@@ -575,17 +575,18 @@ question 3).
       step; PyVBMC full suite green after each commit (539 passed).
 - [x] Step 5: gpyreg suite green with the new tests (106); PyVBMC gates
       unchanged (bit-check, exact oracles, full suite).
-- [~] Step 6: branch pushed, draft PR #43, pin bumped; PyBADS 87 passed
+- [x] Step 6: branch pushed, draft PR #43, pin bumped; PyBADS 87 passed
       with `test_version` deselected (an environment artefact); three CI
       rounds failed in turn on the `gp_nlZ` gradient floor (cigar, then
       corr; the class is now 2e-2) and on `test_vp_optimize_2D_g_mixture`
       replaying its draws on reruns (fixture made rerun-aware); the fourth
-      round (`6a65cfd`) is the first that can reach the gpyreg branch
-      itself.
-- [ ] Step 7: per-config walls and shares recorded; trajectories identical
-      to 2026-09-05 (same iterations, evaluations, metrics); probe within
-      a few percent. To run from a detached checkout of `284747e` when the
-      machine is idle.
+      round (`6a65cfd`) and the fifth (`b144c51`, pin at `79b4986`) are
+      green on the smoke and on all nine matrix jobs.
+- [x] Step 7: per-config walls and shares recorded (§Results);
+      trajectories identical to 2026-09-05 on all seventeen runs; probes
+      28.5 / 21.9 s against 31.4 / 32.3 s (the machine was not slower);
+      seven configs clean, three slowed by desktop use on all three
+      attempts and marked as such.
 - [~] Step 8: `test_vbmc_seed.py` green (13 with save/load) including the
       new global-state-untouched test; replay finals inside the envelope
       on 4 of 5 configs, `halfnormal_D2` MMTV marginally outside at seed 0
@@ -641,7 +642,10 @@ question 3).
    call? **Add it**, since the identity is measured and the API addition
    is backward compatible.
 2. Batch the kernel over `Ns` in `predict` (non-identical, ≈ 3–4 % of a
-   D = 4 run)? **No for this PR**; revisit with the Step 7 numbers.
+   D = 4 run)? **No for this PR**; revisit with the Step 7 numbers. *Step 7
+   says (§Results):* the kernel evaluations inside `predict` are 15–17 %
+   of a profiled D = 4 run, mostly per-call overhead, so this is the
+   next `predict` step if one is wanted.
 3. Run the 20-seed population after Step 8 or at the end of Stage 2?
    **Open (PI)**: depends on a free night; nothing before Step 8 needs it.
 4. Run PyBADS's suite against the branch before the merge? **Yes, as a
@@ -693,6 +697,132 @@ question 3).
   a wrong result.
 - Machine in use during the day: gates are single short processes; the
   profile campaign and the population wait.
+
+## Results (2026-09-05)
+
+### Step 7: the profile campaign
+
+`runs/profile_20260905_item8/` (PyVBMC `284747e` from a detached checkout,
+i.e. the identity-preserving state before the seam removal, with gpyreg
+`79b4986`, the head of PR #43) against `runs/profile_20260905/` (the same
+PyVBMC code path with gpyreg `236ddd7`, the item 1/2 campaign of 00:04).
+Same laptop, seed 0, one process, BLAS single-threaded. **Every trajectory
+is identical to the baseline** (iterations, evaluations, `N`, `K`, `Ns`,
+ELBO, gsKL, MMTV, RMSE equal on all twelve plain runs and the five cProfile
+runs), so each row compares the same computation on two builds of gpyreg.
+Plain campaign 10:42–11:08, cProfile 11:09–11:27, then two reruns (below).
+The arrow reads old → new; × is old/new; the variational-fit column, which
+item 8 does not touch, is the per-config machine-speed control (new/old;
+1.0 means the machine ran at the baseline's speed).
+
+| config | wall s (×) | active sampling s (× ; % of wall) | GP training s (× ; % of wall) | var. fit s (control, new/old) | iters / evals |
+|---|---|---|---|---|---|
+| banana_D4 | 31 → 24 (1.31) | 16 → 14 (1.15; 53 → 61 %) | 10 → 5 (2.10; 33 → 20 %) | 1.9 → 2.0 (1.02) | 17 / 90 |
+| cigar_D4 | 62 → 48 (1.28) | 33 → 29 (1.17; 54 → 59 %) | 18 → 8 (2.14; 29 → 17 %) | 6.9 → 7.3 (1.06) | 25 / 125 |
+| lumpy_D4 | 29 → 22 (1.36) | 14 → 12 (1.16; 49 → 57 %) | 11 → 5 (2.22; 37 → 23 %) | 1.4 → 1.4 (1.04) | 16 / 85 |
+| student_D4 † | 36 → 36 (1.01) | 19 → 22 (0.89; 53 → 61 %) | 12 → 8 (1.61; 33 → 21 %) | 2.1 → 2.9 (1.38) | 19 / 100 |
+| logreg_D5 † | 72 → 71 (1.01) | 31 → 33 (0.94; 43 → 46 %) | 19 → 11 (1.71; 27 → 16 %) | 8.5 → 10.9 (1.29) | 26 / 130 |
+| rosenbrock_D2_noise1 † | 106 → 101 (1.04) | 87 → 86 (1.01; 83 → 85 %) | 24 → 13 (1.81; 23 → 13 %) | 7.5 → 8.3 (1.11) | 27 / 140 |
+| logreg_D5_noise3 | 273 → 220 (1.24) | 193 → 166 (1.16; 71 → 76 %) | 83 → 39 (2.14; 31 → 18 %) | 28.1 → 27.1 (0.97) | 56 / 280 |
+| lumpy_D10 | 147 → 98 (1.49) | 65 → 56 (1.16; 44 → 57 %) | 67 → 28 (2.40; 46 → 29 %) | 4.1 → 4.1 (1.01) | 35 / 175 |
+| banana_D10 | 79 → 54 (1.47) | 40 → 34 (1.20; 51 → 62 %) | 34 → 13 (2.60; 42 → 24 %) | 2.3 → 2.4 (1.01) | 22 / 115 |
+| cigar_D15_exhaust | 1041 → 777 (1.34) | 437 → 373 (1.17; 42 → 48 %) | 303 → 126 (2.40; 29 → 16 %) | 263.8 → 243.9 (0.92) | 150 / 750 |
+
+† **Not measured cleanly.** The laptop was in desktop use 10:44–10:49
+(compositor and browser at about two thirds of a core), which slowed the
+three configs that ran then: their control stage took 1.9×, 1.9× and 1.1×
+the baseline's time. Reruns of the three plus the start probe at 11:29 and
+13:35 were slowed again (control 1.3–2.4 for `student_D4`, `logreg_D5`
+and the probe; `rosenbrock_D2_noise1` 1.1 on every attempt). The rows
+above are the
+least-slowed attempt of each (control 1.38, 1.29, 1.11; `README.txt` in
+the campaign directory lists the attempts, kept under
+`contaminated_<HHMM>/`); their GP-training ratios (1.6–1.8×) are lower
+bounds and their wall and active-sampling ratios say nothing. A clean
+rerun is four minutes on an idle machine (delete the three run directories,
+rerun `--mode plain` with the same `--out`, `--aggregate`). Speed probes:
+`banana_D4` 28.5 s at 10:42 (control 1.06) and 21.9 s at 11:08 (control
+0.92) against the baseline's 31.4 / 32.3 s; the seven clean configs and the
+end probe have control 0.92–1.06.
+
+**On the seven clean configs** (noiseless D = 4–15 and the noisy D = 5
+target): end to end **1.24–1.49× faster** (banana_D4 31 → 24 s, cigar_D4
+62 → 48, lumpy_D4 29 → 22, banana_D10 79 → 54, lumpy_D10 147 → 98,
+logreg_D5_noise3 273 → 220, the 15-D exhaust run 1041 → 777 s). The GP
+training stage is **2.1–2.6× faster** and falls from 29–46 % of wall to
+16–29 %; the active sampling stage is **1.15–1.20× faster** and, being
+the piece that shrank least, rises from 42–71 % of wall to 48–76 %. The
+suite without probes 1875 → 1451 s (1.29×; the three † configs at their
+slowed values). The exhaust run's GP training is 2.4× faster although its
+sampler stops at N ≥ 350 (`Ns = 0`): the L-BFGS-B path inherits the shared
+savings (per `scipy.optimize.minimize` call 321 → 173 ms under cProfile
+against the 2026-09-03 listing, 138 → 141 calls), and the sampled early
+iterations dominate the stage anyway.
+
+**Under cProfile at D = 4** (same trajectories; cProfile inflates code
+that makes many small Python calls, so its ratios are upper bounds on the
+plain-run ones; the profiled runs are 1.53–1.72× faster against 1.28–1.36×
+plain):
+
+| bucket (% of profiled run; calls) | banana_D4 | cigar_D4 | lumpy_D4 | student_D4 |
+|---|---|---|---|---|
+| active_sample | 51 → 59 % (17) | 54 → 60 % (24) | 46 → 56 % (16) | 51 → 60 % (19) |
+| cma.fmin | 33 → 35 % (80) | 41 → 43 % (115) | 28 → 31 % (75) | 32 → 34 % (90) |
+| acquisition __call__ | 37 → 39 % (9280) | 37 → 36 % (24782) | 34 → 38 % (7774) | 37 → 40 % (10792) |
+| GP.predict | 34 → 34 % (9361) | 33 → 30 % (24899) | 31 → 33 % (7850) | 34 → 36 % (10883) |
+| train_gp | 37 → 22 % (18) | 31 → 18 % (27) | 42 → 25 % (17) | 37 → 23 % (20) |
+| SliceSampler.sample | 32 → 19 % (18) | 27 → 15 % (27) | 38 → 22 % (17) | 33 → 19 % (20) |
+| scipy.optimize.minimize | 0 → 0 % (10) | 0 → 0 % (18) | 0 → 0 % (9) | 0 → 0 % (11) |
+| optimize_vp | 10 → 15 % (19) | 13 → 19 % (28) | 10 → 16 % (18) | 10 → 15 % (21) |
+| entmc_vbmc | 6 → 9 % (1744) | 9 → 13 % (3446) | 7 → 10 % (1228) | 7 → 10 % (1608) |
+| final_boost | 5 → 7 % (1) | 4 → 5 % (1) | 6 → 10 % (1) | 5 → 8 % (1) |
+| profiled wall | 45 → 29 s (1.56) | 95 → 62 s (1.53) | 46 → 27 s (1.72) | 55 → 35 s (1.57) |
+
+Per call, from the cProfile listings (banana_D4 / cigar_D4 / lumpy_D4 /
+student_D4):
+
+- `GP.predict`: 1.62 / 1.24 / 1.81 / 1.71 ms → 1.06 / 0.74 / 1.13 / 1.13 ms
+  (1.5–1.7×) at the same call counts. Inside a call the kernel evaluations
+  (`SquaredExponential.compute`, two per hyperparameter sample, 29 µs each
+  at N ≈ 100) are now about half of the time, the direct triangular
+  solves (11–13 µs each, two per sample, against 20–21 µs through scipy)
+  about a sixth, the batched mean under 5 %; the rest is `predict`'s own
+  body.
+- `__core_computation`: 208 / 222 / 211 / 215 µs → 74 / 78 / 64 / 74 µs per
+  evaluation (2.8–3.3×), averaged over cache hits and misses: the
+  Cholesky count fell 55118 → 29367, 97096 → 51229, 64089 → 28587,
+  66378 → 32570, i.e. **47–55 % of the log-posterior evaluations reuse
+  the factor** (every hit is the sampler's; the space-filling design's
+  evaluations move every coordinate and never hit), and the kernel is not
+  evaluated on a hit.
+  `__compute_log_priors` 63 → 21 µs (the cached masks).
+- `SliceSampler.sample`: 0.79 / 0.95 / 1.02 / 0.89 s → 0.30 / 0.35 / 0.34 /
+  0.33 s per call (2.7–3.0×); one `train_gp` call 0.92 / 1.09 / 1.15 / 1.02
+  → 0.36 / 0.42 / 0.40 / 0.39 s (2.5–2.9× under cProfile; 2.1–2.6× as a
+  stage in the plain runs).
+
+The exhaust run under cProfile has no 2026-09-05 counterpart (the item 1/2
+campaign profiled the four D = 4 configs only); against the 2026-09-03
+pre-Stage-2 listing, on a different trajectory (items 3, 1 and 2 changed
+the arithmetic; 150 iterations and 750 evaluations in both), the profiled
+run is 2544 → 953 s: `active_sample` 1551 → 487 s (`GP.predict` 1.79 M →
+283 k calls from item 3's batched search, 0.45 → 0.84 ms per call on the
+larger batches; `vp.pdf` 391 → 23 s), `train_gp` 425 → 146 s (the sampler
+357 → 102 s in 72 calls), `optimize_vp` 534 → 286 s (items 1/2), and the
+untouched `entmc_vbmc` 285 → 228 s. The plain exhaust wall across the
+Stage 2 campaigns: 2123 (2026-09-03) → 1288 (item 3) → 1041 (items 1/2)
+→ 777 s (item 8), 2.7× so far.
+
+**What remains at D = 4.** Active sampling is 56–60 % of a profiled run,
+`GP.predict` alone 30–36 %: its kernel evaluations (15–17 % of the run,
+mostly per-call overhead at N ≈ 100, since the exponential of a 100 × 8
+matrix is a few microseconds) are the answer to Open question 2, i.e. the
+next `predict` step would batch the kernel over `Ns` (not
+identity-preserving; not in this PR). GP training is 18–25 %, of which the
+sampler 15–22 %: on a miss an evaluation is the N² kernel exponential plus
+the factorization; on a hit the mean, `alpha` and the quadratic form. The
+variational stage (`optimize_vp` 15–19 %, `entmc_vbmc` 9–13 %) is now the
+second piece, and `final_boost` 5–10 %.
 
 ## Follow-ups
 
@@ -1015,9 +1145,16 @@ written from an estimated clock that ran up to five hours ahead).
   table, `dev/README.md`); `dev-next` pushed; smoke run 33951343730 and
   the dispatched matrix 33951358343 running (the first CI exercise of the
   gpyreg branch beyond the `gp_nlZ` floor)
-- [ ] Step 7 profile campaign: **blocked on machine availability** (the
-  laptop is in use); to run from a detached checkout of `284747e`, see
-  roadmap pickup point 3a for the commands
+- [x] Step 7 profile campaign — 10:42–11:27 (plain 10:42–11:08, cProfile
+  11:09–11:27, from a detached checkout of `284747e` with gpyreg
+  `79b4986`; the two chains ran detached with their own logs), reruns of
+  three configs 11:29–11:33 and 13:35–13:40; results in §Results. Every
+  trajectory identical to the 2026-09-05 baseline; the seven clean configs
+  1.24–1.49× end to end, GP training 2.1–2.6×, active sampling
+  1.15–1.20×; three configs slowed by desktop use on all three attempts
+  (marked †, least-slowed attempt kept, others under `contaminated_*/`).
+  The records: this section, roadmap Stage 2 bullet and pickup point 3a,
+  devlog §2 and §10 — 13:55
 - [x] `/doublecheck` on the completed steps (three read-only Opus
   reviewers: the gpyreg commits, the PyVBMC commits, the records against
   the artifacts) — 10:02–10:20. Findings, all folded in. **Must fix**: the
