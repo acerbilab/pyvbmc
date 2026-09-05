@@ -834,6 +834,12 @@ second piece, and `final_boost` 5–10 %.
   `x_l` / `x_r` under `step_out=True` (gpyreg, inert for PyVBMC); the
   `_gp_hyp`-then-`log_posterior` NaN trap (by design, a note not a
   defect).
+- **Drop the private call in the `gp_nlZ` oracle.** `_nlz_and_grad` in
+  `pyvbmc/testing/oracles/_oracles.py` calls `gp._GP__compute_nlZ` because
+  the public `log_posterior(compute_grad=True)` raised in gpyreg 1.0.4.
+  gpyreg 1.1.0 (required since 2026-09-05) returns `(value, gradient)`, so
+  the oracle can call the public method and negate (exact); gate: the
+  oracle pytest, bit-identical references.
 - **Reproducing the scratch checks.** `identity_facts.py` (session
   scratchpad, not committed) compares, with one BLAS thread: `potrf` and
   scipy's `cholesky`; a direct `trtrs` with scipy's layout rule against
@@ -1182,6 +1188,12 @@ written from an estimated clock that ran up to five hours ahead).
   invariants), publish workflow green, on PyPI within minutes;
   `pyproject.toml` requires `gpyreg >= 1.1.0`, `AGENTS.md`'s setup note
   and the pin comment updated. Nothing of item 8 remains open — 16:15
+- [x] **CI on the pin move (`b834b4b`) and on the version bump
+  (`0beadc7`)**: smoke and all nine matrix jobs green on both; the bump's
+  log shows pip resolving `gpyreg-1.1.0` from PyPI before the editable
+  install at the pin replaces it (now checked out with full history, so
+  setuptools_scm reads the tag). PyBADS against the merged gpyreg `main`:
+  87 passed, 1 deselected — 16:37
 - [x] `/doublecheck` on the completed steps (three read-only Opus
   reviewers: the gpyreg commits, the PyVBMC commits, the records against
   the artifacts) — 10:02–10:20. Findings, all folded in. **Must fix**: the

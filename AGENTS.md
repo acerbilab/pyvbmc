@@ -36,6 +36,11 @@ pip install -e ".[dev]"
 pip install pre-commit && pre-commit install
 ```
 
+After gpyreg is tagged, `git fetch --tags` in the sibling checkout and
+reinstall it editable: its setuptools_scm version otherwise stays below the
+minimum in `pyproject.toml`, and the next `pip install -e .` installs
+gpyreg from PyPI over the checkout.
+
 Extras: `test` (pytest, pytest-mock, pytest-rerunfailures; what the test
 workflows install), `examples` (plotly for notebook 2), `dev` (both plus
 docs and formatting tools).
