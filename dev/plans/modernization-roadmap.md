@@ -128,8 +128,8 @@ anything that changes numerics lands.
   blocks; per call 7–13× faster at the shape Adam sees (K = 14–50 at
   D ≤ 15; 3.8× at D = 20, K = 60) and 0.9–1.35× at the value-only shape
   of `_eval_full_elcbo`, which is arithmetic-bound (a GEMM expansion would
-  give 3–7× there but is not rounding-level: the plan's Open question 1);
-  oracles green with no
+  give 3–7× there, but its error grows without bound with the components'
+  width ratio; rejected, the plan's Open question 1); oracles green with no
   re-baseline, the exact check against a pre-change dump moves only the
   entropy-carrying outputs at 1e-15, replay 0 flagged of 5 with the
   design identical, full suite green; the end-to-end profile campaign is
@@ -242,9 +242,10 @@ anything that changes numerics lands.
    then `--mode cprof` on the D = 4 set, compared with
    `runs/profile_20260905_item8/` through `profile_compare.py --control
    gp_train`, because the variational fit is the stage being changed;
-   about 35 min on an idle machine) and the plan's §Results; the plan's
-   Open question 1 (a GEMM expansion for the value-only entropy path, 3–7×
-   there, not rounding-level: PI's call).
+   about 35 min on an idle machine) and the plan's §Results. The GEMM
+   expansion for the value-only entropy path (3–7× there) was rejected by
+   the PI the same day: its error grows without bound with the
+   components' width ratio (plan, Open question 1).
 3c. **Next:** the 20-seed population after the seam removal (3a (ii)),
    about 6.5 h with the laptop idle: `python -u
    dev/scripts/golden_trace.py run --suite golden --seeds 0-19 --workers 1

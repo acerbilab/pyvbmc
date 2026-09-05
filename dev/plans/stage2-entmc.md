@@ -413,14 +413,18 @@ comparison. Record here, in the roadmap and as a dated addendum in devlog
 
 ## Open questions (defaults in bold)
 
-1. Adopt the centered GEMM expansion for the value-only path
+1. ~~Adopt the centered GEMM expansion for the value-only path
    (`_eval_full_elcbo`, 22–36 % of the entropy's time, 2.7–7× faster
-   there, about 6 % of the exhaust run's wall), with its error bound
-   `eps · 2D (sigma_j / sigma_k)²` documented and a test on an adversarial
-   state? **Not in this item** (PI's call): it is a second formula with a
-   cancellation the Stage 2 rule has so far rejected, and the gain at
-   D ≤ 10 is about 1 % of a run. A 25-line separate commit if wanted;
-   `vp.pdf` would deserve the same treatment for consistency.
+   there, about 6 % of the exhaust run's wall)?~~ **Rejected (PI,
+   2026-09-05).** The expansion's error is bounded only by the mixture's
+   geometry: for a sample of component `j` evaluated under component `k`
+   the density term is off by about `eps · D (sigma_j / sigma_k)²`
+   relative, which grows without bound with the width ratio, and a broad
+   low-weight or warm-up component next to a narrow one is an ordinary
+   VBMC state (at a ratio of 1e4 and D = 10 the term is off by 2e-7). The
+   direct form's error is `eps · d2`, relative to the quantity itself. A
+   compensated product would give the speed back. Not to be revisited for
+   `vp.pdf` either.
 2. Should the `(g, Ns, D, K)` tensor be avoided at shape (a) too by
    the D-loop form (`D` passes over `(g n, K)` arrays)? **No**: measured
    equal at best; the tensor form is simpler.
@@ -465,8 +469,8 @@ comparison. Record here, in the roadmap and as a dated addendum in devlog
   `mu` block is exact zero plus noise); time with `time.perf_counter`
   medians, one BLAS thread.
 - **`vp.pdf` and `entmc_vbmc` compute the same mixture density** with
-  the same tensor broadcast and the same 2^16 chunking; if Open question
-  1 is taken up, both should move together.
+  the same tensor broadcast and the same 2^16 chunking (the exact
+  differences; Open question 1's expansion is rejected for both).
 - **Item 6 and 7 (memory)** are the next roadmap items after this one.
 
 ## Execution tracker

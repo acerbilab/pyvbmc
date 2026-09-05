@@ -867,9 +867,10 @@ D ≤ 15, 24 → 1.9 ms at K = 50; 3.8× at the D = 20, K = 60 corner) and
 the loop at D = 4, K ≤ 17, 1.2–1.35× at K ≥ 25), where the arithmetic is
 the floor (a centered GEMM
 expansion of the squared distances would make that shape 3–7× faster,
-but its error grows with the squared width ratio of the components, the
-Gram-form objection of item 2, so it is an open question of the plan, not
-adopted). Replay against the item 8 traces: every config parts at
+but its error grows without bound with the squared width ratio of the
+components, the Gram-form objection of item 2, and a broad component next
+to a narrow one is an ordinary VBMC state; rejected by the PI, plan Open
+question 1). Replay against the item 8 traces: every config parts at
 iteration 0 or 1 with the initial design identical and the finals inside
 the population envelope; full suite green. End to end: the campaign of
 the same evening (§2).
