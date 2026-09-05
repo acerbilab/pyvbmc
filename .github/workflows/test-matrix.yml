@@ -25,7 +25,7 @@ on:
 env:
   # Bump when gpyreg main moves and the scheduled run against it is green.
   # 236ddd7: gpyreg v1.0.4 + 1, 2026-02-17.
-  GPYREG_PIN: 236ddd723bf55be9e57fea05183feb4922ae11d2
+  GPYREG_PIN: 966414d09046a1d60b2edae8af4a53b034aecd85
 
 jobs:
   tests:
