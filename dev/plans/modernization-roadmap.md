@@ -210,6 +210,29 @@ anything that changes numerics lands.
    plan: re-baseline the committed oracle references that items 3, 1, 2
    moved within tolerance, so `--check --exact` against the fixtures becomes
    the identity gate.
+3b. **Next: Stage 2 item 5, `entmc_vbmc`** (recommended 2026-09-05 after
+   item 8's campaign; not started). It is the largest piece the campaign
+   left untouched: 9–13 % of a profiled D = 4 run and 228 of 953 profiled
+   seconds in the 15-D exhaust run, where K is large. PyVBMC-local.
+   First step: profile one `entmc_vbmc` call at K = 20 and K = 50 from a
+   stored oracle snapshot to see whether the time is the component loop
+   or the sample draws, then write `plans/stage2-entmc.md` on the pattern
+   of `plans/stage2-gp-log-joint-einsum.md` (findings, design, gates:
+   the `entmc` oracle at tolerance since the estimator draws samples, the
+   finite-difference gradient check in
+   `pyvbmc/testing/entropy/test_entmc_vbmc.py`, the replay, the full
+   suite, a profile campaign compared with `profile_compare.py`). Reading
+   list for a fresh session: `dev/README.md`; this file's Stage 2 bullet
+   and pickup points; devlog §2 (the measured paragraphs), §9, §10;
+   `plans/stage2-gp-log-joint-einsum.md` §Design, §Verification, §Results;
+   `plans/stage2-gpyreg-predict-and-sampler.md` §Results and §Follow-ups;
+   `plans/fixture-generator-and-oracles.md` (oracle table and tolerance
+   paragraph); `pyvbmc/entropy/entmc_vbmc.py` and its tests.
+   The 20-seed population after the seam removal (3a (ii)) is best run
+   the same night, about 6.5 h with the laptop idle:
+   `python -u dev/scripts/golden_trace.py run --suite golden --seeds 0-19
+   --workers 1 --out dev/scripts/runs/golden/item8_<date>`, then `summary`
+   and `compare dev/golden/baseline <out>` as for items 1 and 2.
 4. ~~Run the `tests` workflow on `dev-next` for the package fix~~ done
    2026-09-03 (full matrix green, run 33715620257); pushes to `dev*` now
    run a smoke automatically.

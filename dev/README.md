@@ -127,6 +127,15 @@ reason.
   speed probe, because a laptop under sustained load can slow down by
   1.5× partway through a campaign (2026-09-04) and the untouched stages
   are otherwise the only tell.
+- `scripts/profile_compare.py BASE NEW` — compare two campaigns config by
+  config: wall and per-stage seconds with ratios, whether each trajectory
+  is the same, cProfile buckets and per-call times, and a per-config
+  machine-speed control (the ratio of a stage the change does not touch,
+  `--control variational_fit` by default). A control far from 1.0 marks a
+  config the machine slowed, not the code; rerun those alone by deleting
+  their run directories and repeating `profile_suite.py` with the same
+  `--out` (item 8, 2026-09-05: three configs slowed by desktop use, clean
+  on the fourth attempt).
 - `scripts/golden_trace.py` — the golden-trace regression harness: `run` a
   suite over many seeds (one process by default), storing one compact
   `.npz` trace and a JSON sidecar per run; `summary` a population; `compare`
