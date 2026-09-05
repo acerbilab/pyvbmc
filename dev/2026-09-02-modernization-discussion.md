@@ -931,8 +931,16 @@ demand (every stored GP of three measured runs rebuilds bit for bit from
 its data and hyperparameters), gated like the other items; it also found
 that on noisy runs the importance-sampling arrays copied into the recorded
 `optim_state` are the largest key of the history (56–70 % of the retained
-bytes, more than the factors), never read again; the PI decides its open
-questions.
+bytes, more than the factors), which a resumed run recomputes before any
+read. *Decided with the PI the same evening*: the history is kept for
+resume and for debugging, so the rule is that what can be rebuilt from the
+record (the GP posteriors) is never stored and is rebuilt on demand through
+a public `VBMC.get_gp(iteration)`, while what cannot be rebuilt (the
+importance samples, drawn mid-iteration) is dropped by default and kept
+under a new option, `record_full_history_details`; the warm start of
+`train_gp` reads `gp_hyp_full`; and the existing resume test, whose ELBO
+assertion was a self-comparison, is fixed and used as the resume-identity
+guard before any history change.
 
 **Benchmark target suite (decided 2026-09-02, after the profile).** The
 profile was taken on an independent and a correlated Gaussian, which

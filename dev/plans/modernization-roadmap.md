@@ -333,17 +333,20 @@ anything that changes numerics lands.
    written in the same file with the readers of the stored GPs, the
    measurements and three identity-preserving steps. Track (i), the
    population, has not run.
-3d. **Next** (handoff 2026-09-05, evening). (i) The 20-seed population
-   exactly as in 3c (i), when the PI says the laptop is free. (ii) Item 7:
-   the PI's answers to the four open questions of `plans/stage2-memory.md`
-   (lean GP records restored on demand, or `GP.clean()` on the copies, or
-   best/last only; the warm start through `gp_hyp_full`; dropping the
-   importance-sampling arrays from the recorded `optim_state`; a
-   resume-identity test), then its three steps with the gates listed
-   there (`mem_history.py` before and after; the replay's finals exercise
-   what `final_boost` receives). Open question 8 of
-   `plans/stage2-gpyreg-predict-and-sampler.md` (re-baseline the committed
-   oracle references) is still the PI's call.
+3d. **Next** (2026-09-05, late evening). (i) The 20-seed population
+   exactly as in 3c (i), when the PI says the laptop is free. (ii) Item 7,
+   decided with the PI (`plans/stage2-memory.md` §Decisions): the
+   retention rule (what can be rebuilt from the record, the GP posteriors,
+   is never stored and rebuilt on demand; what cannot, the importance
+   samples of the noisy acquisitions, is dropped by default and kept under
+   the new option `record_full_history_details`), lean GP records with a
+   public `VBMC.get_gp(iteration)` restoring a copy, the warm start
+   through `gp_hyp_full`, and the existing resume test made real
+   (`elbo_1 == elbo_2`) before any history change. Four steps in the
+   plan's §Design with their gates (`mem_history.py` before and after; the
+   replay's finals exercise what `final_boost` receives). Open question 8
+   of `plans/stage2-gpyreg-predict-and-sampler.md` (re-baseline the
+   committed oracle references) is still the PI's call.
 4. ~~Run the `tests` workflow on `dev-next` for the package fix~~ done
    2026-09-03 (full matrix green, run 33715620257); pushes to `dev*` now
    run a smoke automatically.
