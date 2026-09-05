@@ -998,7 +998,26 @@ attention. Times are wall clock on 2026-09-05.
   that same-machine exactness comes from the dump gate. Every CI round
   under `-x` reveals one floor; `normal_D2_*`, `halfnormal_D2_bounded` and
   the noisy snapshot are still unmeasured on Ubuntu for this oracle
-  — 15:15
+  — 15:15 (`acde5f7`)
+- [!] **Third CI round (15:06, matrix 33951610366): a different failure,
+  not item 8's.** Ubuntu / 3.11 failed `test_vp_optimize_2D_g_mixture`
+  six times in a row (five reruns): the K = 2 VP fitted to the bimodal
+  target collapsed both components to the centre (mu ≈ ±0.3, sigma ≈ 1.5;
+  the moment-matching KL passed, the marginal total variation did not), a
+  bad local optimum of `optimize_vp`. The test is unseeded and uses no
+  VBMC instance (a direct `gp.fit`, whose `rng=None` path draws exactly as
+  before, and a VP seeded from the global stream), so item 8 does not
+  touch its draws; what made six identical attempts possible is the
+  module's autouse fixture that restores the global state around each
+  test (added with items 1/2 to keep the module's tests on their
+  historical draws), which makes every rerun replay the failed attempt.
+  The full matrix had not run since items 1 and 2 changed the ELBO
+  arithmetic (only the Ubuntu / 3.12 smoke), so that platform's draws met
+  the new arithmetic for the first time. Fix: the fixture advances the
+  stream by the attempt number (`request.node.execution_count`) before
+  yielding, so reruns see fresh draws and later tests are unaffected;
+  `AGENTS.md` testing traps updated; both `*_g_mixture` tests pass locally
+  under `--reruns=5` — 15:30
 - [!] **First CI runs of the day failed on the new `gp_nlZ` oracle**
   (smoke 33950214079 on Ubuntu / 3.12 and the dispatched matrix
   33950213844, whose macOS / 3.11 job failed first and cancelled the

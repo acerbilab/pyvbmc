@@ -21,15 +21,25 @@ from pyvbmc.vbmc.variational_optimization import (
 
 
 @pytest.fixture(autouse=True)
-def _restore_global_rng():
+def _restore_global_rng(request):
     """``VariationalPosterior.__init__`` draws its seed from the global
     ``np.random`` state, and the two ``*_g_mixture`` tests below fit their
     GP and draw their samples from that same unseeded stream; leave the
     stream as each test found it, so that adding a test to this module does
     not shift what a later one sees (as the ``_gp_log_joint`` tests added
     on 2026-09-04 did; the sibling ``_grad_fd`` module has the same
-    fixture)."""
+    fixture).
+
+    Restoring the state would make a rerun (``pytest --reruns``) replay the
+    failed attempt's draws exactly, which defeats the rerun (seen on CI on
+    2026-09-05: ``test_vp_optimize_2D_g_mixture`` landed in a bad local
+    optimum six times in a row on one platform). The stream is therefore
+    advanced by the attempt number first, so that each attempt sees a
+    different, still deterministic, stream (``execution_count`` is set by
+    pytest-rerunfailures, 1 on the first attempt)."""
     state = np.random.get_state()
+    for _ in range(getattr(request.node, "execution_count", 1) - 1):
+        np.random.random()
     yield
     np.random.set_state(state)
 

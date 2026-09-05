@@ -175,6 +175,13 @@ Things you must hold in your head across files:
 - Seed explicitly, keep statistical tolerances loose, and do not add more
   full `optimize()` runs: `pyvbmc/testing/vbmc/test_vbmc_optimize.py` already
   holds six end-to-end runs and dominates runtime.
+- An autouse fixture that saves and restores the global random state
+  around each test (four modules have one) makes `--reruns` replay a failed
+  attempt's draws exactly; where a module holds unseeded statistical tests
+  (`test_variational_optimization.py`), the fixture advances the stream by
+  the attempt number (`request.node.execution_count`, set by
+  pytest-rerunfailures) before yielding, so a rerun sees fresh draws and
+  later tests still find the stream where they used to.
 - `test_*_save_dynamic` write `.pkl` files into the source tree that the
   matching `load` tests read; running a `load` test alone fails.
 - `test_*_save_static.pkl` fixtures are pickled instances of the current
