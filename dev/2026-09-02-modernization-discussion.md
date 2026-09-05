@@ -803,8 +803,8 @@ check now reads the design from the trace (`X_init`) instead of demanding
 an identical iteration-0 ELBO. Speedup in §2 above. Four latent defects of
 the function were fixed on the way (§9).
 
-*Item 8 done 2026-09-05 as one gpyreg PR* (acerbilab/gpyreg#43, branch
-`perf/predict-sampler-overhead`, five commits on `236ddd7`;
+*Item 8 done 2026-09-05 as one gpyreg PR* (acerbilab/gpyreg#43, merged
+into gpyreg `main` the same day as `a2f8ddc` after four review fixes;
 `plans/stage2-gpyreg-predict-and-sampler.md`), **identity-preserving
 throughout**: `predict` drops scipy's Python layers around a 5 µs
 triangular solve (a direct `trtrs` with scipy's own layout rule, which

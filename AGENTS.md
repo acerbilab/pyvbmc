@@ -26,9 +26,9 @@ installs it from GitHub at the commit pinned in
 scheduled run tests against gpyreg `main`, so that is where a gpyreg change
 breaking PyVBMC shows up first. Bump the pin when gpyreg `main` moves and
 that run is green. Since 2026-09-05 `dev-next` needs gpyreg's
-`GP.fit(rng=)` (acerbilab/gpyreg#43): install gpyreg from the pinned
-branch commit, not from PyPI, until a gpyreg release carries it and
-`pyproject.toml`'s minimum version is bumped.
+`GP.fit(rng=)` (acerbilab/gpyreg#43, on gpyreg `main` since that day):
+install gpyreg from GitHub as below, not from PyPI, until a gpyreg release
+carries it and `pyproject.toml`'s minimum version is bumped.
 
 ```console
 git clone https://github.com/acerbilab/gpyreg ../gpyreg

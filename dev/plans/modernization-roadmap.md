@@ -102,8 +102,8 @@ anything that changes numerics lands.
   slice sampler 27–38 %): item 8. **(8) done 2026-09-05**
   (`plans/stage2-gpyreg-predict-and-sampler.md`;
   gpyreg branch `perf/predict-sampler-overhead`, draft PR
-  acerbilab/gpyreg#43, five commits on `236ddd7`, `GPYREG_PIN` at its
-  head): the three performance commits are identity-preserving (every
+  acerbilab/gpyreg#43, merged into gpyreg `main` as `a2f8ddc` on
+  2026-09-05, `GPYREG_PIN` at the merge commit): the three performance commits are identity-preserving (every
   oracle output checked is bit-identical to a dump of the pre-change
   code, the replay `identical` after each), `predict` 1.4–1.7× per
   CMA-ES-sized call, the sampler's log-posterior evaluation 1.4–1.9×, one
@@ -211,15 +211,16 @@ anything that changes numerics lands.
    pre-Stage-2 reference until the stage ends (then re-baseline once, and
    grow to 50 seeds, pickup point 5).
 3a. **Stage 2 item 8** (`plans/stage2-gpyreg-predict-and-sampler.md`,
-   2026-09-05): the gpyreg work is on branch `perf/predict-sampler-overhead`
-   of `acerbilab/gpyreg` (draft PR #43; five commits, bit-identical
-   outputs, `rng=` support), `GPYREG_PIN` points at its head, PyBADS's
+   2026-09-05): the gpyreg work is merged into `acerbilab/gpyreg` `main`
+   (PR #43, squash `a2f8ddc`, 2026-09-05; bit-identical outputs, `rng=`
+   support, four review fixes folded in before the merge), `GPYREG_PIN`
+   points at the merge commit, PyBADS's
    suite passes against it with one metadata-dependent test deselected,
    PyVBMC's seam is removed, and the profile campaign is recorded (plan
-   §Results; `runs/profile_20260905_item8/`). **Open:** (i) merge PR #43
-   after the PI's
-   review, move the pin to the merge commit, and bump the gpyreg minimum in
-   `pyproject.toml` once a gpyreg release carries it; (ii) whether to run
+   §Results; `runs/profile_20260905_item8/`). **Open:** (i) bump the
+   gpyreg minimum in `pyproject.toml` once a gpyreg release carries PR #43
+   (PyPI is at v1.0.4), before `dev-next` merges into `main`; (ii) whether
+   to run
    the 20-seed population right after item 8 (the seam removal changed
    every stream) or at the end of the stage; (iii) Open question 8 of the
    plan: re-baseline the committed oracle references that items 3, 1, 2

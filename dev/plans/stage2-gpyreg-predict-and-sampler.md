@@ -1157,6 +1157,25 @@ written from an estimated clock that ran up to five hours ahead).
   14:06 in a five-minute idle window, records updated). The PI's decisions
   remain: PR #43 review and merge (then the pin to the merge commit), the
   20-seed population run, Open question 8.
+- [x] **PR #43 merged** into gpyreg `main` as the squash `a2f8ddc` (15:11)
+  after four fixes from the PI's review, all folded in before the merge: a
+  mean-function subclass that overrides `compute` alone takes the loop
+  (the inherited `compute_batched` is used only when its defining class is
+  the one defining `compute`, or a subclass of it); the two `K` copies in
+  `__core_computation` cast to float64, so a float32 custom kernel keeps
+  its diagonal noise as the old `+ eye` sum did; `fit` resolves `rng`
+  once, so an integer seed shares one stream between the design and the
+  sampler; the legacy stream is a picklable proxy object, so a default
+  `SliceSampler` can be copied and pickled again. Gates on the merged
+  `main`: bit-check 2219 arrays 0 differ; exact oracles against the
+  pre-change dump differ only in `gp_fit` / `active_sample_step` (Step 8)
+  and, at 2e-16, `entmc` / `neg_elcbo` (item 5's `5a8e181`; the same set
+  with the pre-merge head, so nothing from the merge); PyVBMC `main`'s own
+  suite against gpyreg `main` from a detached worktree **389 passed,
+  1 rerun, 11:09**, so the scheduled run of `main` will stay green.
+  `GPYREG_PIN` → `a2f8ddc`; `AGENTS.md`, roadmap Stage 2 bullet and
+  pickup point 3a, devlog §10 updated. Left: bump the gpyreg minimum in
+  `pyproject.toml` once a release carries the PR — 15:45
 - [x] `/doublecheck` on the completed steps (three read-only Opus
   reviewers: the gpyreg commits, the PyVBMC commits, the records against
   the artifacts) — 10:02–10:20. Findings, all folded in. **Must fix**: the
