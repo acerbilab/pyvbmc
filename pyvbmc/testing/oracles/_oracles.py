@@ -450,21 +450,20 @@ def active_sample_step(state, seed):
     }
 
 
-def _nlz_and_grad(gp, hyp, compute_prior):
-    """``(nlZ, dnlZ)`` at ``hyp``: the negative log marginal likelihood, or
-    the negative log posterior when ``compute_prior``.
+def _lz_and_grad(gp, hyp, compute_prior):
+    """``(lZ, dlZ)`` at ``hyp``: the log marginal likelihood, or the log
+    posterior when ``compute_prior``, with the gradient.
 
-    Through the private method that the space-filling design, L-BFGS-B and
-    the slice sampler all call (``__gp_obj_fun``), because the public
-    ``GP.log_likelihood`` / ``GP.log_posterior`` of every *released* gpyreg
-    apply the unary minus to the ``(nlZ, dnlZ)`` tuple and raise
-    ``TypeError`` when a gradient is requested (fixed on the gpyreg branch
-    of Stage 2 item 8, acerbilab/gpyreg#43; devlog §9). The private call
-    works on both, so it stays until the fix is in a release.
+    Through the public ``GP.log_likelihood`` / ``GP.log_posterior``, which
+    negate the ``(nlZ, dnlZ)`` pair that the space-filling design, L-BFGS-B
+    and the slice sampler evaluate (gpyreg 1.1.0 or later: earlier releases
+    raised ``TypeError`` when a gradient was requested, devlog §9, and the
+    oracle went through the private method until 2026-09-05).
     """
-    return gp._GP__compute_nlZ(
-        np.asarray(hyp, dtype=float), True, compute_prior
-    )
+    hyp = np.asarray(hyp, dtype=float)
+    if compute_prior:
+        return gp.log_posterior(hyp, compute_grad=True)
+    return gp.log_likelihood(hyp, compute_grad=True)
 
 
 def _install_hyperprior(gp, state):
@@ -511,14 +510,14 @@ def _install_hyperprior(gp, state):
 def gp_nlZ(state, seed):
     gp = state["gp"]
     H = gp.get_hyperparameters(as_array=True)
-    lZ, dlZ = zip(*[_nlz_and_grad(gp, h, False) for h in H])
+    lZ, dlZ = zip(*[_lz_and_grad(gp, h, False) for h in H])
     g = _install_hyperprior(copy.deepcopy(gp), state)
-    lp, dlp = zip(*[_nlz_and_grad(g, h, True) for h in H])
+    lp, dlp = zip(*[_lz_and_grad(g, h, True) for h in H])
     return {
-        "lZ": -np.asarray(lZ, dtype=float),
-        "dlZ": -np.asarray(dlZ, dtype=float),
-        "lp": -np.asarray(lp, dtype=float),
-        "dlp": -np.asarray(dlp, dtype=float),
+        "lZ": np.asarray(lZ, dtype=float),
+        "dlZ": np.asarray(dlZ, dtype=float),
+        "lp": np.asarray(lp, dtype=float),
+        "dlp": np.asarray(dlp, dtype=float),
     }
 
 
