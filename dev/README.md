@@ -78,6 +78,14 @@ status and next steps never go into the devlogs.
   iteration 0 on cigar, the initial-design certificate added to the
   replay (`X_init` in the traces), the `--probe` speed probe of the
   profile suite, the measured speedup.
+- `plans/stage2-entmc.md` — plan and worklog for Stage 2 item 5:
+  `entmc_vbmc` vectorized over components and samples (one draw for every
+  component's antithetic samples, the mixture density and the
+  reparameterization gradients as a broadcast over a `(components,
+  samples, D, K)` tensor in 2^16-element blocks), the per-call profile
+  that put the time in the density loop rather than the draws, the
+  bit-checks against the loop, the tensor layouts and the GEMM expansion
+  that were measured and not taken, the speedup.
 
 Naming: `plans/` files are named by slug only, never by date (the date is in
 the file header), so that they cannot be mistaken for copies of the dated

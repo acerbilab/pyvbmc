@@ -252,7 +252,12 @@ broadcasting. The clamps of pitfall 5 remain. The coverage paragraph
 below was already stale on 2026-09-02 (see the Stage 0 lines of the
 roadmap): finite-difference checks exist for `_gp_log_joint`,
 `_neg_elcbo`, `_vp_bound_loss`, `_soft_bound_loss` and `vp.pdf`
-(`test_*_grad_fd.py`), not only for the entropies.
+(`test_*_grad_fd.py`), not only for the entropies. Since Stage 2 item 5
+(2026-09-05, `plans/stage2-entmc.md`) `entmc_vbmc` has no component loop
+either: its density and reparameterization gradients are a broadcast over
+a `(components, samples, D, K)` tensor with `einsum` contractions, in
+blocks, and the density is evaluated once; the softmax Jacobian copies
+remain.
 
 ---
 
@@ -517,10 +522,15 @@ state used by resume.
   it would make `dF = -dG - dH` a shape mismatch. **Fixed 2026-09-04**
   (item 1): all four blocks are returned, the Jacobian corrections alone
   are conditional; finite-difference test in the raw `(mu, sigma, lambd,
-  w)` coordinates. The entropies (`entlb_vbmc`, `entmc_vbmc`) still
-  return only the `mu` block at `jacobian_flag=False`, so the mismatch
-  now sits on their side; equally unreachable (`_neg_elcbo` hard-codes
-  the flag), and it would fail loudly.
+  w)` coordinates. The entropies (`entlb_vbmc`, `entmc_vbmc`) already
+  returned every requested block at `jacobian_flag=False` (their blocks
+  are allocated by `grad_flags` and concatenated unconditionally; the flag
+  switches only the three Jacobian corrections), so the three functions
+  agree since the fix. *Corrected 2026-09-05 (item 5)*: this bullet said
+  until then that the entropies returned the `mu` block only; the
+  finite-difference wrapper in `test_entmc_vbmc.py`, which calls with
+  `jacobian_flag=False` and compares the full `D K + K + D + K` gradient,
+  shows otherwise.
 - `vp.pdf(orig_flag=True, log_flag=False, grad_flag=True)` divides `y` by the
   transform Jacobian but returns `dy` uncorrected (a transformed-space
   gradient); the `log_flag=True` sibling raises `NotImplementedError` instead.
@@ -832,6 +842,37 @@ need a *dump* of the pre-change oracle outputs rather than the committed
 references, which items 3, 1 and 2 had already moved within tolerance;
 the generator gained `--dump-outputs` / `--check --exact --against`,
 `--add-oracle` and `--expect-moving`.
+
+*Item 5 done 2026-09-05 (afternoon)* (`plans/stage2-entmc.md`):
+`entmc_vbmc` draws every component's antithetic samples with one
+`standard_normal((K, Ns / 2, D))` call (bit-identical to the
+per-component draws, so the random stream is untouched and the `entmc`
+oracle holds at 1e-10 without a re-baseline), evaluates the mixture
+density once as a broadcast over a `(components, samples, D, K)` tensor
+of standardized distances with `einsum` contractions, and takes the
+reparameterization gradients from the same tensors, in blocks of 2^16
+elements (cache residency, measured as item 3 measured it for `vp.pdf`;
+blocks of samples within a component for the 4096-samples-per-component
+calls of `_eval_full_elcbo`, whose tensor would otherwise reach 328 MB at
+K = 50). The loop had evaluated the density twice per component (once
+for the value, once inside the gradient block) with a `K × K` Python
+loop for the first; the profile of one call put 56–97 % of the time
+there and 1–9 % in the draws. Same formulas, rounding-level differences:
+the eight oracle snapshots agree with the loop to 1e-14, and the exact
+check against a pre-change dump moves only the entropy-carrying outputs
+(`entmc`, and `F`, `dF`, `H`, `F_full`, `H_full` of `neg_elcbo`), by
+1e-15. Per call 7–13× faster at the shape Adam sees (K = 14–50 at
+D ≤ 15, 24 → 1.9 ms at K = 50; 3.8× at the D = 20, K = 60 corner) and
+0.9–1.35× at the value-only shape of `_eval_full_elcbo` (within ±10 % of
+the loop at D = 4, K ≤ 17, 1.2–1.35× at K ≥ 25), where the arithmetic is
+the floor (a centered GEMM
+expansion of the squared distances would make that shape 3–7× faster,
+but its error grows with the squared width ratio of the components, the
+Gram-form objection of item 2, so it is an open question of the plan, not
+adopted). Replay against the item 8 traces: every config parts at
+iteration 0 or 1 with the initial design identical and the finals inside
+the population envelope; full suite green. End to end: the campaign of
+the same evening (§2).
 
 **Benchmark target suite (decided 2026-09-02, after the profile).** The
 profile was taken on an independent and a correlated Gaussian, which

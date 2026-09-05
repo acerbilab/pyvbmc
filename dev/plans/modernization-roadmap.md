@@ -118,7 +118,22 @@ anything that changes numerics lands.
   GP training 2.0–2.6× (23–46 % of wall → 13–29 %), active sampling
   1.11–1.20× (now 46–85 % of wall, `GP.predict` alone 30–36 % of a
   profiled D = 4 run); the 15-D exhaust run 1041 → 777 s, 2.7× since
-  2026-09-03 over items 3, 1, 2 and 8 together.
+  2026-09-03 over items 3, 1, 2 and 8 together. **(5) done 2026-09-05
+  (afternoon)** (`plans/stage2-entmc.md`): `entmc_vbmc` draws every
+  component's antithetic samples in one call (the same stream, in the
+  same order, so the `entmc` oracle holds without a re-baseline),
+  evaluates the mixture density once as a broadcast over a `(components,
+  samples, D, K)` tensor with `einsum` contractions and takes the
+  reparameterization gradients from the same tensors, in 2^16-element
+  blocks; per call 7–13× faster at the shape Adam sees (K = 14–50 at
+  D ≤ 15; 3.8× at D = 20, K = 60) and 0.9–1.35× at the value-only shape
+  of `_eval_full_elcbo`, which is arithmetic-bound (a GEMM expansion would
+  give 3–7× there but is not rounding-level: the plan's Open question 1);
+  oracles green with no
+  re-baseline, the exact check against a pre-change dump moves only the
+  entropy-carrying outputs at 1e-15, replay 0 flagged of 5 with the
+  design identical, full suite green; the end-to-end profile campaign is
+  pending (evening, idle machine).
 - [ ] **Stage 3 — pipeline features** (batched initial design,
   torch/jax target adapter docs, `vp.to_torch()`, ArviZ export).
 - [ ] **Stage 4 — PyTorch port** (decision point, not default).
@@ -210,29 +225,38 @@ anything that changes numerics lands.
    plan: re-baseline the committed oracle references that items 3, 1, 2
    moved within tolerance, so `--check --exact` against the fixtures becomes
    the identity gate.
-3b. **Next: Stage 2 item 5, `entmc_vbmc`** (recommended 2026-09-05 after
-   item 8's campaign; not started). It is the largest piece the campaign
-   left untouched: 9–13 % of a profiled D = 4 run and 228 of 953 profiled
-   seconds in the 15-D exhaust run, where K is large. PyVBMC-local.
-   First step: profile one `entmc_vbmc` call at K = 20 and K = 50 from a
-   stored oracle snapshot to see whether the time is the component loop
-   or the sample draws, then write `plans/stage2-entmc.md` on the pattern
-   of `plans/stage2-gp-log-joint-einsum.md` (findings, design, gates:
-   the `entmc` oracle at tolerance since the estimator draws samples, the
-   finite-difference gradient check in
-   `pyvbmc/testing/entropy/test_entmc_vbmc.py`, the replay, the full
-   suite, a profile campaign compared with `profile_compare.py`). Reading
-   list for a fresh session: `dev/README.md`; this file's Stage 2 bullet
-   and pickup points; devlog §2 (the measured paragraphs), §9, §10;
-   `plans/stage2-gp-log-joint-einsum.md` §Design, §Verification, §Results;
-   `plans/stage2-gpyreg-predict-and-sampler.md` §Results and §Follow-ups;
-   `plans/fixture-generator-and-oracles.md` (oracle table and tolerance
-   paragraph); `pyvbmc/entropy/entmc_vbmc.py` and its tests.
-   The 20-seed population after the seam removal (3a (ii)) is best run
-   the same night, about 6.5 h with the laptop idle:
-   `python -u dev/scripts/golden_trace.py run --suite golden --seeds 0-19
-   --workers 1 --out dev/scripts/runs/golden/item8_<date>`, then `summary`
-   and `compare dev/golden/baseline <out>` as for items 1 and 2.
+3b. ~~Stage 2 item 5, `entmc_vbmc`~~ done 2026-09-05 (afternoon;
+   `plans/stage2-entmc.md`, commit `5a8e181` and the records commit after
+   it). The profile of one call from the stored
+   snapshots answered the pickup question: the `K × K` density loop, not
+   the draws (draws 1–9 % of a call, the density loop 56–97 %, the
+   gradient block the rest, and the gradient block recomputed the
+   density). Vectorized as in the Stage 2 bullet above; gates green
+   (`pytest pyvbmc/testing/oracles` 116 passed with no re-baseline, since
+   the draw order is preserved; `make_oracle_fixtures.py --check --exact
+   --against` a pre-change dump moves only `entmc` and the
+   entropy-carrying `neg_elcbo` outputs, by 1e-15; replay 0 flagged of 5
+   against the item 8 Step 8 traces, initial design identical on every
+   config; 541 passed). **Open:** the profile campaign
+   (`profile_suite.py --suite profile --mode plain --probe banana_D4`,
+   then `--mode cprof` on the D = 4 set, compared with
+   `runs/profile_20260905_item8/` through `profile_compare.py --control
+   gp_train`, because the variational fit is the stage being changed;
+   about 35 min on an idle machine) and the plan's §Results; the plan's
+   Open question 1 (a GEMM expansion for the value-only entropy path, 3–7×
+   there, not rounding-level: PI's call).
+3c. **Next:** the 20-seed population after the seam removal (3a (ii)),
+   about 6.5 h with the laptop idle: `python -u
+   dev/scripts/golden_trace.py run --suite golden --seeds 0-19 --workers 1
+   --out dev/scripts/runs/golden/item8_<date>`, then `summary` and
+   `compare dev/golden/baseline <out>` as for items 1 and 2 (it now also
+   covers item 5). Then Stage 2 items 6 and 7 (memory: the per-candidate
+   `deepcopy` in `_vb_init`, `GP.clean()` / not retaining full GPs in
+   `iteration_history`; `copy.deepcopy` is under 1 % of time, so these are
+   memory items with no profile gate), then Open question 8 of the item 8
+   plan (re-baseline the committed oracle references to the current
+   numerics) and the end-of-stage re-baseline of the golden population
+   (pickup point 5).
 4. ~~Run the `tests` workflow on `dev-next` for the package fix~~ done
    2026-09-03 (full matrix green, run 33715620257); pushes to `dev*` now
    run a smoke automatically.

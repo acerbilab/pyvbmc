@@ -640,9 +640,13 @@ Reading:
   `-exp(eta).T * exp(eta)` form (correct there because `eta` is reshaped
   to `(1, K)` first); the four copies of the Jacobian remain a cleanup
   candidate (devlog §3).
-- **`jacobian_flag=False` is now asymmetric between `_gp_log_joint` (all
-  requested blocks) and the entropies (`mu` block only)**; unreachable and
-  loud if reached (devlog §9).
+- **`jacobian_flag=False` returns every requested block in `_gp_log_joint`
+  since the fix, as the entropies always did** (`entlb_vbmc` and
+  `entmc_vbmc` allocate their blocks by `grad_flags` and concatenate them
+  unconditionally; the flag switches only the Jacobian corrections). A
+  first version of this bullet claimed the entropies returned the `mu`
+  block only; corrected 2026-09-05 with item 5 (`plans/stage2-entmc.md`
+  §Findings), together with the matching sentence in devlog §9.
 - **`optimize_vp` prunes `J_sjk` along one axis only** (inert, devlog §9).
 - **Reproducing the scratch checks.** The bit-check harness, the timing
   of the contraction variants, the `cigar_D4` sensitivity experiment and
