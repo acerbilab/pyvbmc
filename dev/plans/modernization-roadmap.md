@@ -254,18 +254,59 @@ anything that changes numerics lands.
    error grows without bound with the components' width ratio (plan,
    Open question 1). Item 5 is complete; the population run of 3c is the
    statistical gate for items 8 and 5 together.
-3c. **Next:** the 20-seed population after the seam removal (3a (ii)),
-   about 6.5 h with the laptop idle: `python -u
-   dev/scripts/golden_trace.py run --suite golden --seeds 0-19 --workers 1
-   --out dev/scripts/runs/golden/item8_<date>`, then `summary` and
-   `compare dev/golden/baseline <out>` as for items 1 and 2 (it now also
-   covers item 5). Then Stage 2 items 6 and 7 (memory: the per-candidate
-   `deepcopy` in `_vb_init`, `GP.clean()` / not retaining full GPs in
-   `iteration_history`; `copy.deepcopy` is under 1 % of time, so these are
-   memory items with no profile gate), then Open question 8 of the item 8
+3c. **Next** (handoff 2026-09-05 18:30, code `a0e70fe`, tree clean,
+   nothing running). Two tracks, the first needing the laptop free for
+   about 6.5 h and started only when the PI says so, the second light
+   enough to run beside it.
+   (i) **The 20-seed population** after the seam removal and item 5 (the
+   statistical gate for both, neither being identity-preserving):
+   `python -u dev/scripts/golden_trace.py run --suite golden --seeds 0-19
+   --workers 1 --out dev/scripts/runs/golden/item8_<date>`, then
+   `golden_trace.py summary <out>` and `golden_trace.py compare
+   dev/golden/baseline <out>` (the item 1/2 run, `runs/golden/
+   item1_20260905/` and `runs/golden_item1_20260905.log`, shows the
+   chain and the report layout). Read `compare_vs_baseline.md` first:
+   expected no rejection over the 56 KS tests (Holm α 0.05); a rejection
+   on one config's finals would be the first evidence of a change beyond
+   rounding and would reopen item 8 or 5. Not promoted to the reference
+   until the stage ends (pickup 5).
+   (ii) **Stage 2 items 6 and 7 (memory)** and two small follow-ups.
+   Item 6: `_vb_init` (`variational_optimization.py`) deep-copies the VP
+   for every sieve candidate (5k–50k per `optimize_vp`); make the copies
+   cheap or unnecessary without changing any output. It is
+   identity-preserving, so the gate is `make_oracle_fixtures.py
+   --dump-outputs DIR` before and `--check --exact --against DIR` after
+   (every oracle output bit-identical), the replay `identical` against
+   `runs/golden/replay_item5_step1` traces, and the full suite; no profile
+   campaign (`copy.deepcopy` is 1–2 % of a profiled run). Item 7 needs a
+   plan first (`plans/stage2-memory.md`, on the pattern of
+   `plans/stage2-entmc.md`): `iteration_history` deep-copies every
+   iteration's GP with all `Ns` Cholesky factors and `GP.clean()` is never
+   called, so memory grows as `Σ_i Ns_i N_i²`; readers of the stored GPs
+   are `final_boost` (the best iteration's GP), `train_gp`'s warm start
+   (`iteration_history["gp"]`), the noisy path's per-sample full update
+   in `active_sample.py`, save/load and resume (`vbmc.py`,
+   `iteration_history.py`). First step: measure (RSS per iteration on
+   `cigar_D15_exhaust` and a noisy config, `psutil`), then decide between
+   `GP.clean()` on recorded copies, storing hyperparameters and data only
+   and rebuilding on demand, or keeping only the best/last GPs; gate as
+   item 6. The follow-ups: the `gp_nlZ` oracle should call gpyreg 1.1's
+   public `log_likelihood` / `log_posterior` instead of the mangled
+   private method (`plans/stage2-gpyreg-predict-and-sampler.md`
+   §Follow-ups; references bit-identical), and Open question 8 of that
    plan (re-baseline the committed oracle references to the current
-   numerics) and the end-of-stage re-baseline of the golden population
-   (pickup point 5).
+   numerics so `--check --exact` against the fixtures becomes the identity
+   gate) is the PI's call.
+   Reading list for a fresh session: `dev/README.md`; this file's Stage 2
+   bullet and pickup points; devlog §2 (the last two measured paragraphs),
+   §9, §10 (the item 8 and item 5 paragraphs); `plans/stage2-entmc.md`
+   §Findings, §Decisions, §Results (the current template for a
+   PyVBMC-local item and its gates); `plans/fixture-generator-and-oracles.md`
+   (oracle table, the dump gate); `pyvbmc/vbmc/variational_optimization.py`
+   (`_sieve`, `_vb_init`); for item 7 also `pyvbmc/vbmc/iteration_history.py`
+   and the `final_boost` / save / load / resume paths of `pyvbmc/vbmc/vbmc.py`.
+   Then the end-of-stage re-baseline of the golden population (pickup 5)
+   and the Stage 0 leftovers (pickup 6).
 4. ~~Run the `tests` workflow on `dev-next` for the package fix~~ done
    2026-09-03 (full matrix green, run 33715620257); pushes to `dev*` now
    run a smoke automatically.

@@ -104,7 +104,12 @@ heavy process at a time** on a laptop (`golden_trace.py run --workers 1`,
 the default; eight concurrent VBMC processes hard-crashed the machine on
 2026-09-02) and export `OMP_NUM_THREADS=OPENBLAS_NUM_THREADS=MKL_NUM_THREADS=1`
 before profiling if wall times are to be compared with the golden baseline,
-which was made single-threaded. The golden reference population's sidecars
+which was made single-threaded. The long runs (a profile campaign, about
+an hour; a golden population, about 6.5 h) measure absolute time, so
+desktop use distorts them (item 8 reran three configs for that reason):
+they start only when the PI has said the laptop is free, never on a
+timer or a guess; short gates (oracles, a module's tests, the replay)
+can run at any time as one process. The golden reference population's sidecars
 (JSON only, under 1 MB) live under `golden/baseline/` together with its
 `summary.md`, so `python dev/scripts/golden_trace.py compare
 dev/golden/baseline <new_dir>` works from a fresh checkout; the full traces
