@@ -602,6 +602,13 @@ state used by resume.
     uses one norm for the whole batch and broadcasts `(n,) + (n,1)` to
     `(n,n)` for `n > 1`. `noisy_cigar` in `test_vbmc_optimize.py` is dead
     code.
+- **Found 2026-09-05 (evening) by the bit-check of Stage 2 item 6**
+  (`plans/stage2-memory.md`), not fixed (unreachable): `_vb_init` with
+  `vb_type = 3`, `optimize_sigma = False` and `K_new > vp.K` keeps
+  `sigma = np.zeros((1, K))` at the old `K` while `mu` grows to `K_new`, so
+  the jitter `mu += sigma * lambd * randn(mu.shape)` raises `ValueError`
+  (and `sigma` would stay zero if it did not). `optimize_sigma` is always
+  `True` in production (the `optimize_lambda` bullet above).
 - **Found 2026-09-04 in the golden population**, not fixed, decision
   deferred (own devlog: `2026-09-04-final-boost-failure.md`): `final_boost`
   accepts the re-optimized K = 50 posterior unconditionally, as MATLAB's
@@ -895,6 +902,37 @@ question 1). Replay against the item 8 traces: every config parts at
 iteration 0 or 1 with the initial design identical and the finals inside
 the population envelope; full suite green. End to end: the campaign of
 the same evening (§2).
+
+*Item 6 done 2026-09-05 (evening)* (`plans/stage2-memory.md`): `_vb_init`
+builds each sieve candidate as a shell that shares the base posterior's
+generator and parameter transformer and deep-copies only the dimensions,
+flags and cached mode, instead of `copy.deepcopy(vp)`, which copied the
+transformer and the parameters it then overwrote. Identity-preserving in
+the strict sense: 27,936 candidates compared with the old code are equal
+attribute by attribute and the generator state after every call is the
+same, the replay is `identical` with finals equal to item 5's. Not a speed
+item: the `_vb_init` step goes from 31–43 to 12–20 µs per candidate, about
+0.1 % of a run (cProfile had attributed 145 µs to the copy, about 6× too
+much, its usual inflation of many tiny Python calls); and the §2 table's
+"5K–50K candidate VPs in the sieve" is the per-call bound at a full
+re-optimization, while a run sieves 5 K per iteration (1–3k candidates per
+D = 4 run, 21.7k on the exhaust run). A side effect: `vbmc.py` re-points
+the run's transformer at the winning posterior's after every fit, so the
+run now keeps one transformer object between warps instead of a fresh copy
+per iteration. *Item 7 is planned in the same file, not started*: the
+memory it targets is Σ_i Ns_i N_i² doubles of Cholesky factors (323 MB on
+the exhaust run, roughly 0.8 GB at D = 20), and a second defect found on
+the way is that `IterationHistory._expand_array` re-deep-copies the whole
+stored past on every record (quadratic; 1.3 % of the exhaust run and a
+transient doubling of the retained memory). The plan lists the readers of
+the stored GPs (`final_boost`, `load`, the `train_gp` warm start,
+plotting) and proposes lean GP records with the posteriors restored on
+demand (every stored GP of three measured runs rebuilds bit for bit from
+its data and hyperparameters), gated like the other items; it also found
+that on noisy runs the importance-sampling arrays copied into the recorded
+`optim_state` are the largest key of the history (56–70 % of the retained
+bytes, more than the factors), never read again; the PI decides its open
+questions.
 
 **Benchmark target suite (decided 2026-09-02, after the profile).** The
 profile was taken on an independent and a correlated Gaussian, which

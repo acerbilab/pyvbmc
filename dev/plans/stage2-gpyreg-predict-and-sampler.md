@@ -834,12 +834,12 @@ second piece, and `final_boost` 5–10 %.
   `x_l` / `x_r` under `step_out=True` (gpyreg, inert for PyVBMC); the
   `_gp_hyp`-then-`log_posterior` NaN trap (by design, a note not a
   defect).
-- **Drop the private call in the `gp_nlZ` oracle.** `_nlz_and_grad` in
-  `pyvbmc/testing/oracles/_oracles.py` calls `gp._GP__compute_nlZ` because
-  the public `log_posterior(compute_grad=True)` raised in gpyreg 1.0.4.
-  gpyreg 1.1.0 (required since 2026-09-05) returns `(value, gradient)`, so
-  the oracle can call the public method and negate (exact); gate: the
-  oracle pytest, bit-identical references.
+- ~~**Drop the private call in the `gp_nlZ` oracle.**~~ Done 2026-09-05
+  (evening): `_lz_and_grad` in `pyvbmc/testing/oracles/_oracles.py` calls
+  `gp.log_likelihood` / `gp.log_posterior` with `compute_grad=True` (gpyreg
+  1.1.0 returns `(value, gradient)`; 1.0.4 raised); the oracle pytest
+  passes and `--check --exact --against` a dump of `2dcb51a` is
+  bit-identical on all eight fixtures.
 - **Reproducing the scratch checks.** `identity_facts.py` (session
   scratchpad, not committed) compares, with one BLAS thread: `potrf` and
   scipy's `cholesky`; a direct `trtrs` with scipy's layout rule against

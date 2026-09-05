@@ -136,7 +136,11 @@ Things you must hold in your head across files:
   (`__call__` forward, `.inverse()` back; probit by default) mediates.
   `VariationalPosterior` methods take `orig_flag=True` by default and only
   provide gradients with `orig_flag=False`. The same transformer object must
-  be shared by `vbmc`, `vp`, and `function_logger` (tests assert identity).
+  be shared by `vbmc`, `vp`, and `function_logger` (tests assert identity);
+  the sieve candidates that `_vb_init` builds share it and the generator
+  rather than copying them (a transformer is never mutated after
+  construction; a warp installs a fresh copy), while `copy.deepcopy` of a
+  VP copies the transformer and shares only the generator.
 - **Shapes are rigid.** VP: `w (1,K)`, `mu (D,K)`, `sigma (1,K)`, `lambd (D,1)`.
   Bounds `(1,D)`, `x0 (n0,D)`. `decorators/handle_0D_1D_input.py` promotes
   1-D inputs for methods; it assumes a `self` first argument and misbehaves on

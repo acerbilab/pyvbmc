@@ -86,6 +86,15 @@ status and next steps never go into the devlogs.
   that put the time in the density loop rather than the draws, the
   bit-checks against the loop, the tensor layouts and the GEMM expansion
   that were measured and not taken, the speedup.
+- `plans/stage2-memory.md` — plan and worklog for Stage 2 items 6 and 7
+  (memory): the sieve candidates of `_vb_init` built as shells that share
+  the run's generator and transformer instead of a `copy.deepcopy` each
+  (done; bit-identical candidates, about 0.1 % of a run), what
+  `iteration_history` retains (the GPs' Cholesky factors, Σ Ns N² doubles,
+  323 MB on the exhaust run) and the history re-copying its whole past on
+  every record, the readers of the stored GPs, and the design options for
+  lean GP records with the posteriors restored on demand (planned, PI's
+  decision pending).
 
 Naming: `plans/` files are named by slug only, never by date (the date is in
 the file header), so that they cannot be mistaken for copies of the dated

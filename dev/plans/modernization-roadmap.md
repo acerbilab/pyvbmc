@@ -142,7 +142,25 @@ anything that changes numerics lands.
   of a profiled D = 4 run, `final_boost` halved, the variational fit
   0.37–0.88 of its time on nine configs; end to end within trajectory
   noise (suite 1424 → 1384 s; the exhaust run 777 s on both, its
-  variational fit 244 → 209 s on a higher-K path).
+  variational fit 244 → 209 s on a higher-K path). **(6) done 2026-09-05
+  (evening)** (`plans/stage2-memory.md`, which also holds the plan for
+  (7)): `_vb_init` builds each sieve candidate as a shell sharing the
+  run's generator and transformer instead of `copy.deepcopy(vp)`;
+  bit-identical candidates and stream (27,936 candidates checked against
+  the old code, replay `identical` with finals equal to item 5's), the
+  `_vb_init` step 31–43 → 12–20 µs per candidate, about 0.1 % of a run
+  (cProfile had overstated the copy about 6×), and the run keeps one
+  transformer object between warps. **(7) planned, not started**: the
+  history re-copies its whole stored past on every record (quadratic;
+  1.3 % of the exhaust run) and retains Σ Ns N² doubles of Cholesky
+  factors (323 MB on the exhaust run, roughly 0.8 GB at D = 20); the plan
+  proposes growing the history without the re-copy, lean GP records with
+  the posteriors restored for `final_boost` and `load` (every stored GP
+  of three measured runs, 100 of 100, rebuilds bit for bit from its data
+  and hyperparameters), and dropping the importance-sampling arrays from
+  the recorded `optim_state`, which are the largest key on noisy runs
+  (56–70 % of the retained bytes); each identity-preserving; the PI
+  decides the open questions.
 - [ ] **Stage 3 — pipeline features** (batched initial design,
   torch/jax target adapter docs, `vp.to_torch()`, ArviZ export).
 - [ ] **Stage 4 — PyTorch port** (decision point, not default).
@@ -307,6 +325,25 @@ anything that changes numerics lands.
    and the `final_boost` / save / load / resume paths of `pyvbmc/vbmc/vbmc.py`.
    Then the end-of-stage re-baseline of the golden population (pickup 5)
    and the Stage 0 leftovers (pickup 6).
+   **Status 2026-09-05 (evening):** track (ii) done as far as it goes
+   without a decision: item 6 done (`plans/stage2-memory.md`; the gates of
+   the point above, replay `identical`, full suite green), the `gp_nlZ`
+   oracle calls gpyreg 1.1's public `log_likelihood` / `log_posterior`
+   (references bit-identical against the dump), and the item 7 plan is
+   written in the same file with the readers of the stored GPs, the
+   measurements and three identity-preserving steps. Track (i), the
+   population, has not run.
+3d. **Next** (handoff 2026-09-05, evening). (i) The 20-seed population
+   exactly as in 3c (i), when the PI says the laptop is free. (ii) Item 7:
+   the PI's answers to the four open questions of `plans/stage2-memory.md`
+   (lean GP records restored on demand, or `GP.clean()` on the copies, or
+   best/last only; the warm start through `gp_hyp_full`; dropping the
+   importance-sampling arrays from the recorded `optim_state`; a
+   resume-identity test), then its three steps with the gates listed
+   there (`mem_history.py` before and after; the replay's finals exercise
+   what `final_boost` receives). Open question 8 of
+   `plans/stage2-gpyreg-predict-and-sampler.md` (re-baseline the committed
+   oracle references) is still the PI's call.
 4. ~~Run the `tests` workflow on `dev-next` for the package fix~~ done
    2026-09-03 (full matrix green, run 33715620257); pushes to `dev*` now
    run a smoke automatically.
