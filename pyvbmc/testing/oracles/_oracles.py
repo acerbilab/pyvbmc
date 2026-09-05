@@ -40,9 +40,14 @@ Variance-type outputs, which are differences of nearly equal terms
 (predictive variance, ``varG``, ``var_ss``, the pairwise ``J_sjk``
 integrals, the ELCBO variances), are held to 1e-3 relative plus 1e-8
 absolute: on the corr snapshot Ubuntu moved ``J_sjk`` by 2.3e-10 absolute
-on entries of order 1e-6. GP-free outputs (densities, entropies, theta,
-the transformer) stay at 1e-10, and the bit-identical ones are effectively
-exact. Each tolerance leaves at least 30x over its measured floor; if a
+on entries of order 1e-6. The gradient of the GP log marginal likelihood
+(``gp_nlZ``), which goes through the explicit inverse ``Q = K^-1 - alpha
+alpha^T``, moved by 2.6e-6 per element on the cigar snapshot on Ubuntu
+(first CI run of 2026-09-05) while its value moved by 1e-8: the gradients
+are held to 1e-4, the values to 1e-6. GP-free outputs (densities,
+entropies, theta, the transformer) stay at 1e-10, and the bit-identical
+ones are effectively exact. Each tolerance leaves at least 30x over its
+measured floor; if a
 platform exceeds one, re-measure there (``make_oracle_fixtures --check
 --verbose``) rather than guess.
 
@@ -427,7 +432,10 @@ def active_sample_step(state, seed):
     # excludes; kept so the call matches production's signature.
     history = {"r_index": np.array([state["meta"].get("r_index", np.inf)])}
     n = state["options"]["fun_evals_per_iter"]
-    with legacy_seed(seed):  # cma.NoiseHandler draws from the legacy state
+    # Since 2026-09-05 every draw of the search comes from `vp.rng` (the
+    # noise-handler subclass included; re-baselined then); the legacy seed
+    # is kept so that a stray global draw would at least be reproducible.
+    with legacy_seed(seed):
         fl, optim_state, vp, gp = active_sample(
             gp, n, optim_state, fl, history, vp, state["options"]
         )
@@ -482,9 +490,15 @@ def _install_hyperprior(gp, state):
     return gp
 
 
-# GP-solve class (the marginal likelihood and its gradient go through the
-# Cholesky solve and, for the gradient, the explicit inverse in `Q`).
-@oracle("gp_nlZ", rtol=1e-6, atol=1e-10)
+# The values are GP-solve class; the gradients go through the explicit
+# inverse in `Q = K^-1 - alpha alpha^T` and are worse conditioned: on the
+# cigar snapshot Ubuntu's BLAS moved `dlZ` / `dlp` by 2.6e-6 per element
+# (the values by 1e-8), so the gradients are held to 1e-4.
+@oracle(
+    "gp_nlZ",
+    rtol={"default": 1e-6, "dlZ": 1e-4, "dlp": 1e-4},
+    atol=1e-10,
+)
 def gp_nlZ(state, seed):
     gp = state["gp"]
     H = gp.get_hyperparameters(as_array=True)
@@ -538,8 +552,11 @@ def gp_fit(state, seed):
         "train_gp would keep the sampler widths built from the stand-in"
         " history; the gp_fit oracle assumes it drops them"
     )
-    # f_min_fill and the slice sampler draw from the legacy state; `rng`
-    # only picks the warm-start subsample, inert with no past GPs.
+    # Every draw of the fit (the space-filling design, the slice sampler,
+    # the warm-start subsample) comes from `rng` since 2026-09-05, when
+    # `train_gp` started handing its generator to `gpyreg.GP.fit`; the
+    # reference was re-baselined then. The legacy seed is kept so that a
+    # stray global draw, should one reappear, is at least reproducible.
     with legacy_seed(seed):
         gp, gp_s_N, sn2_hpd, _ = train_gp(
             hyp_dict,

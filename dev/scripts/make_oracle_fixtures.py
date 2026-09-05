@@ -375,14 +375,17 @@ def generate(recipes):
         )
 
 
-def check_one(path, fun, exact=False, verbose=False, reference=None):
+def check_one(path, fun, exact=False, verbose=False, reference=None, skip=()):
     """Recompute every stored oracle of one snapshot and compare with the
     stored references, or with ``reference`` (``{oracle: {key: array}}``,
-    e.g. a dump of an earlier code state, see :func:`dump_outputs`)."""
+    e.g. a dump of an earlier code state, see :func:`dump_outputs`);
+    oracles named in ``skip`` are not checked."""
     snap = load_snapshot(path)
     refs = snap["ref"] if reference is None else reference
     bad = []
     for name, ref in refs.items():
+        if name in skip:
+            continue
         orc = ORACLES[name]
         state = build_state(snap, fun=fun)
         if not orc.applies(state):
@@ -513,12 +516,14 @@ def _write_fixture(path, arrays, tree):
                 p.unlink()
 
 
-def _verify_rewrite(path, fun, oracle_name, before, extra_keys=()):
+def _verify_rewrite(path, fun, oracle_name, before, extra_keys=(), skip=()):
     """After a targeted rewrite: every array outside ``ref/<oracle>/`` is
     bit-identical to ``before`` (and only ``extra_keys`` were added), the
     rewritten oracle reproduces exactly from the stored state, and the
     other oracles still pass at their own tolerances (not bit-exactly: a
-    refactor that these modes exist for may have moved them by ulps)."""
+    refactor that these modes exist for may have moved them by ulps),
+    except those named in ``skip`` (oracles known to move as well, to be
+    re-baselined next)."""
     prefix = f"ref/{oracle_name}/"
     npz, _ = _files(path)
     with np.load(npz, allow_pickle=False) as z:
@@ -539,14 +544,15 @@ def _verify_rewrite(path, fun, oracle_name, before, extra_keys=()):
             f"{path.name}: {oracle_name} does not reproduce from the stored"
             f" state\n{format_rows(exact)}"
         )
-    bad = check_one(path, fun, exact=False)
+    bad = check_one(path, fun, exact=False, skip=skip)
     if bad:
         raise RuntimeError(f"{path.name}: other oracles fail after: {bad}")
 
 
-def add_oracle(names, oracle_name, reason):
+def add_oracle(names, oracle_name, reason, expect_moving=()):
     """Compute a newly registered oracle from the *stored* state of each
-    snapshot and add its references, leaving everything else bit-identical.
+    snapshot and add its references, leaving everything else bit-identical
+    (``expect_moving`` as in :func:`rebaseline`).
 
     The counterpart of :func:`rebaseline` for an oracle the fixtures do not
     hold yet: rerunning the recipes would move every snapshot (the runs'
@@ -604,7 +610,7 @@ def add_oracle(names, oracle_name, reason):
     return len(pending)
 
 
-def rebaseline(names, oracle_name, reason):
+def rebaseline(names, oracle_name, reason, expect_moving=()):
     """Recompute one oracle from the *stored* state of each snapshot and
     replace only its references.
 
@@ -613,6 +619,9 @@ def rebaseline(names, oracle_name, reason):
     would move and stop pinning the pre-change numerics. This mode keeps
     the state and every other oracle's reference bit-identical (asserted
     after the write) and records the event under ``meta["rebaselined"]``.
+    When a change moves more than one oracle (a random-stream change moves
+    every oracle that draws), name the others in ``expect_moving`` so the
+    post-write check does not fail on them; re-baseline them next.
     """
     orc = ORACLES[oracle_name]
     prefix = f"ref/{oracle_name}/"
@@ -675,7 +684,7 @@ def rebaseline(names, oracle_name, reason):
             }
         )
         _write_fixture(path, arrays, tree)
-        _verify_rewrite(path, fun, oracle_name, before)
+        _verify_rewrite(path, fun, oracle_name, before, skip=expect_moving)
         print(f"[rebaseline] {name:28s} {oracle_name} replaced", flush=True)
     print(f"[rebaseline] {len(pending)} of {len(names)} fixtures rewritten")
     return len(pending)
@@ -703,6 +712,14 @@ def main(argv=None):
         " state (needs --reason); every existing array stays bit-identical",
     )
     ap.add_argument("--reason", default=None)
+    ap.add_argument(
+        "--expect-moving",
+        default=None,
+        metavar="ORACLES",
+        help="with --rebaseline / --add-oracle: comma-separated oracles that"
+        " the same change moves too (re-baselined next); excluded from the"
+        " post-write check",
+    )
     ap.add_argument(
         "--exact",
         action="store_true",
@@ -773,8 +790,15 @@ def main(argv=None):
         names = [
             n for n in snapshot_names(FIXTURES) if not wanted or n in wanted
         ]
+        moving = (
+            set(args.expect_moving.split(",")) if args.expect_moving else set()
+        )
+        if moving - set(ORACLES):
+            sys.exit(
+                f"unknown oracle(s) in --expect-moving: {sorted(moving - set(ORACLES))}"
+            )
         mode = rebaseline if args.rebaseline else add_oracle
-        return 0 if mode(names, oracle_name, args.reason) else 1
+        return 0 if mode(names, oracle_name, args.reason, moving) else 1
     recipes = [r for r in RECIPES if not wanted or r.name in wanted]
     generate(recipes)
     return 0
