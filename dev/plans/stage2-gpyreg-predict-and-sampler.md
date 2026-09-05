@@ -1153,8 +1153,14 @@ written from an estimated clock that ran up to five hours ahead).
   1.24–1.49× end to end, GP training 2.1–2.6×, active sampling
   1.15–1.20×; three configs slowed by desktop use on all three attempts
   (marked †, least-slowed attempt kept, others under `contaminated_*/`).
-  The records: this section, roadmap Stage 2 bullet and pickup point 3a,
-  devlog §2 and §10 — 13:55
+  The records: §Results, roadmap Stage 2 bullet and pickup point 3a,
+  devlog §2 and §10 (`66c1a2e`) — 13:46. The Results section was checked
+  against the aggregates and cProfile listings by the author only (every
+  range re-derived from `aggregate.json`), not by a reviewer.
+- [x] **Item 8 complete** except the clean rerun of the three † configs
+  (roadmap pickup point 3a (i), four minutes on an idle machine) and the
+  PI's decisions: PR #43 review and merge (then the pin to the merge
+  commit), the 20-seed population run, Open question 8 — 13:50
 - [x] `/doublecheck` on the completed steps (three read-only Opus
   reviewers: the gpyreg commits, the PyVBMC commits, the records against
   the artifacts) — 10:02–10:20. Findings, all folded in. **Must fix**: the
