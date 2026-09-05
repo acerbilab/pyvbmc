@@ -24,8 +24,13 @@ on:
 
 env:
   # Bump when gpyreg main moves and the scheduled run against it is green.
-  # 236ddd7: gpyreg v1.0.4 + 1, 2026-02-17.
-  GPYREG_PIN: 966414d09046a1d60b2edae8af4a53b034aecd85
+  # 79b4986 (2026-09-05): head of gpyreg branch perf/predict-sampler-overhead
+  # (acerbilab/gpyreg#43, Stage 2 item 8), NOT yet on gpyreg main: PyVBMC
+  # needs its GP.fit(rng=), so the scheduled run against main stays red
+  # until the PR merges; then move the pin to the merge commit.
+  # Previous pins: 966414d (same branch, before the review fixes),
+  # 236ddd7 (gpyreg v1.0.4 + 1, 2026-02-17).
+  GPYREG_PIN: 79b4986bb98bf117697bb6011617e33617e3e359
 
 jobs:
   tests:
