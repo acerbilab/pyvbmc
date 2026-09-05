@@ -857,7 +857,7 @@ attention. Times are wall clock on 2026-09-04/05 (the session started at 22:27 o
   regression test for the 1-D `eta` softmax Jacobian, which had none. The
   scratch measurements (per-call timings, bit-checks, oracle counts) have
   no artifact in the repository and rest on this tracker
-- [~] **20-seed population run** (PI 2026-09-04 23:24: overnight once
+- [x] **20-seed population run** (PI 2026-09-04 23:24: overnight once
   everything else is done) — **launched 2026-09-05 00:39** on the final
   code (`a39e5ec`), one worker, one BLAS thread per run:
   `golden_trace.py run --suite golden --seeds 0-19 --workers 1 --out
@@ -872,7 +872,24 @@ attention. Times are wall clock on 2026-09-04/05 (the session started at 22:27 o
   family on ΔLML, gsKL, MMTV and evaluations per config). Expected: no
   rejection; a rejection on one config's finals would be the first real
   evidence of a numerical change beyond rounding and would reopen this
-  item
+  item.
+  **Result (2026-09-05 07:06): 280 of 280 runs succeeded, 386.6 min wall,
+  no config flagged over the 56 KS tests (Holm α 0.05; smallest p 0.175,
+  KS 0.35 on three ΔLML samples), median evaluation ratios 0.98–1.10
+  (lumpy_D10 +22.5 evaluations at p 0.98)**: the end-of-stage check of
+  items 3, 1 and 2 together is clean. The population's summed run time
+  fell from 9.92 h (baseline, code `5020879`) to 6.41 h (1.55×): the
+  noiseless configs 1.56–2.03× faster (cigar_D4 2.03, banana_D6 1.90,
+  rosenbrock_D2 1.83, banana_D2 1.82, lumpy_D4 1.79, halfnormal 1.78,
+  student 1.77, logreg_D5 1.74, banana_D10 1.72, corr 1.65, lumpy_D10
+  1.65, normal 1.56), the noisy VIQR configs 1.13–1.20×, as the profile
+  campaigns predicted. The baseline's one wrong posterior (`student_D4`
+  seed 19, a final-boost failure, gsKL 54) did not recur on its new
+  trajectory; the new population's worst posteriors are banana_D10 seed 5
+  (gsKL 1.22) and banana_D2 seed 9 (1.09), with usable fractions 0.95,
+  0.95 and 0.90 (logreg_D5_noise3). Reports: `summary_item1.md` and
+  `compare_vs_baseline.md` under `runs/golden/item1_20260905/` (traces
+  gitignored, as the baseline's)
 - [x] `profile_suite.py --probe CONFIG` — 22:57 (item 3 follow-up): the
   named config runs plain before and after the campaign as
   `probe_start_<cfg>` / `probe_end_<cfg>`, the two walls and their ratio

@@ -160,16 +160,17 @@ anything that changes numerics lands.
    gpyreg PR** (sampler overhead plus `predict`'s per-sample loop and `sW`
    tiling from item 3), then item 5 (`entmc_vbmc`), then the memory items.
    The 20-seed population against `dev/golden/baseline` (the end-of-stage
-   check of items 3, 1 and 2 together, about 7 h) was launched 2026-09-05
-   00:39 on the final code (`a39e5ec`), output under
-   `dev/scripts/runs/golden/item1_20260905/`; the same job writes
-   `summary_item1.md` and `compare_vs_baseline.md` next to the traces
-   when it finishes (the harness prints to stdout; the job redirects).
-   **Read `compare_vs_baseline.md` first when picking up**; if the job
-   died, rerun `python dev/scripts/golden_trace.py compare
-   dev/golden/baseline dev/scripts/runs/golden/item1_20260905` (the `run`
-   subcommand skips finished tasks, so it can be resumed with the same
-   `--out`).
+   check of items 3, 1 and 2 together) ran 2026-09-05 00:39–07:06 on the
+   final code (`a39e5ec`): **280 of 280 succeeded, no config flagged over
+   56 KS tests (Holm α 0.05)**, median evaluation ratios 0.98–1.10, the
+   population's summed run time 9.92 → 6.41 h (noiseless configs
+   1.56–2.03× faster, noisy VIQR 1.13–1.20×); the baseline's final-boost
+   failure (`student_D4` seed 19) did not recur. Reports under
+   `dev/scripts/runs/golden/item1_20260905/` (`summary_item1.md`,
+   `compare_vs_baseline.md`; traces gitignored). The new population is
+   not promoted to the reference: `dev/golden/baseline` stays the
+   pre-Stage-2 reference until the stage ends (then re-baseline once, and
+   grow to 50 seeds, pickup point 5).
 4. ~~Run the `tests` workflow on `dev-next` for the package fix~~ done
    2026-09-03 (full matrix green, run 33715620257); pushes to `dev*` now
    run a smoke automatically.
