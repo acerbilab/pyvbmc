@@ -1,3 +1,4 @@
+import importlib
 from pathlib import Path
 
 import numpy as np
@@ -192,6 +193,52 @@ def test_entmc_vbmc_grad_flags():
     grad_flags = tuple([False] * 3) + (True,)
     _, dH = entmc_vbmc(vp, Ns=1e5, grad_flags=grad_flags)
     assert dH.shape == (K,)
+
+
+def test_entmc_vbmc_block_size_invariance(monkeypatch):
+    """The computation runs in blocks of components (and of samples when
+    one component's distance tensor exceeds the budget); the block size
+    changes only the order of sums, not the estimate."""
+    # The package re-exports the function under the module's name, so the
+    # module itself is fetched from the import system.
+    mod = importlib.import_module("pyvbmc.entropy.entmc_vbmc")
+
+    rs = np.random.default_rng(11)
+    D, K = 3, 7
+    vp = VariationalPosterior(D, K)
+    vp.mu = rs.normal(0, 1, (D, K))
+    vp.sigma = np.exp(rs.normal(0, 0.3, (1, K)))
+    vp.lambd = np.exp(rs.normal(0, 0.3, (D, 1)))
+    vp.eta = rs.normal(0, 0.5, (1, K))
+    vp.w = np.exp(vp.eta) / np.exp(vp.eta).sum()
+
+    # Ns * D * K = 40 * 3 * 7 = 840 elements per component: the default
+    # budget takes all components in one block; 2600 elements give blocks
+    # of 3, 3 and 1 components (a partial last block, as K = 50 in
+    # production: 11, 11, 11, 11, 6); 1000 force one component per block;
+    # 500 force blocks of samples within a component of 23 and 17 samples
+    # (500 // (D * K) = 23); 100 give ten blocks of 4 samples.
+    Ns = 40
+    H_ref, dH_ref = entmc_vbmc(vp, Ns, rng=5)
+    _, dH_ref_raw = entmc_vbmc(vp, Ns, jacobian_flag=False, rng=5)
+    for budget in (2600, 1000, 500, 100):
+        monkeypatch.setattr(mod, "_MAX_TENSOR_ELEMENTS", budget)
+        H, dH = entmc_vbmc(vp, Ns, rng=5)
+        assert np.isclose(H, H_ref, rtol=1e-12, atol=0)
+        assert np.allclose(dH, dH_ref, rtol=1e-12, atol=1e-14)
+        _, dH_raw = entmc_vbmc(vp, Ns, jacobian_flag=False, rng=5)
+        assert np.allclose(dH_raw, dH_ref_raw, rtol=1e-12, atol=1e-14)
+        # Partial gradient requests: only the requested blocks, same values
+        _, dH_w = entmc_vbmc(
+            vp, Ns, grad_flags=(False, False, False, True), rng=5
+        )
+        assert np.allclose(dH_w, dH_ref[-K:], rtol=1e-12, atol=1e-14)
+        _, dH_s = entmc_vbmc(
+            vp, Ns, grad_flags=(False, True, False, False), rng=5
+        )
+        assert np.allclose(
+            dH_s, dH_ref[D * K : D * K + K], rtol=1e-12, atol=1e-14
+        )
 
 
 if __name__ == "__main__":
