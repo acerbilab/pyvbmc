@@ -14,6 +14,7 @@ from pyvbmc.vbmc.variational_optimization import (
     _gp_log_joint,
     _neg_elcbo,
     _soft_bound_loss,
+    _vb_init,
     _vp_bound_loss,
     optimize_vp,
     update_K,
@@ -570,3 +571,51 @@ def test_vp_optimize_deterministic_entropy_approximation():
         np.abs(kl_div_mvn(mixture_mu, mixture_sigma, vp_mu, vp_sigma))
         < 1e-4 * 1.25
     )
+
+
+def test_vb_init_candidates():
+    """Sieve candidates share the base posterior's generator and parameter
+    transformer, own their variational parameters, start with no bounds
+    or stats, and leave the base posterior untouched; the first type-1
+    candidate at the same K carries the base parameters verbatim."""
+    D, K = 3, 4
+    rng = np.random.default_rng(0)
+    vp = VariationalPosterior(D, K, rng=np.random.default_rng(1))
+    vp.mu = rng.standard_normal((D, K))
+    vp.sigma = np.exp(rng.standard_normal((1, K)))
+    vp.lambd = np.exp(rng.standard_normal((D, 1)))
+    vp.w = rng.random((1, K))
+    vp.w /= np.sum(vp.w)
+    vp.bounds = {"mu_lb": np.zeros(D)}
+    vp.stats = {"elbo": -1.0}
+    base = copy.deepcopy(vp)
+    X_star = rng.standard_normal((20, D))
+    y_star = rng.standard_normal((20, 1))
+
+    for vb_type in (1, 2, 3):
+        for K_new in (K, K + 2):
+            vec, types = _vb_init(vp, vb_type, 5, K_new, X_star, y_star)
+            assert len(vec) == 5 and np.all(types == vb_type)
+            for cand in vec:
+                assert cand.rng is vp.rng
+                assert cand.parameter_transformer is vp.parameter_transformer
+                assert cand.D == D and cand.K == K_new
+                assert cand.bounds is None and cand.stats is None
+                assert cand.mu.shape == (D, K_new)
+                assert cand.sigma.shape == (1, K_new)
+                assert cand.lambd.shape == (D, 1)
+                assert cand.w.shape == (1, K_new)
+                assert cand.eta.shape == (1, K_new)
+                for name in ("w", "eta", "mu", "sigma", "lambd"):
+                    assert getattr(cand, name) is not getattr(vp, name)
+            # The base posterior is not modified.
+            for name in ("w", "eta", "mu", "sigma", "lambd"):
+                assert np.array_equal(getattr(vp, name), getattr(base, name))
+            assert vp.K == K and vp.bounds is not None and vp.stats is not None
+
+    vec, _ = _vb_init(vp, 1, 3, K, X_star, y_star)
+    for name in ("w", "mu", "sigma", "lambd"):
+        assert np.array_equal(getattr(vec[0], name), getattr(vp, name))
+    assert not np.array_equal(vec[1].mu, vp.mu)
+    vec[0].mu[:] = 0.0
+    assert np.array_equal(vp.mu, base.mu)

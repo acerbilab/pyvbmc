@@ -982,7 +982,7 @@ def _vb_init(
                 w *= np.exp(0.2 * rng.standard_normal((1, K_new)))
                 w /= np.sum(w)
 
-        new_vp = copy.deepcopy(vp)
+        new_vp = _candidate_vp(vp)
         new_vp.K = K_new
 
         if vp.optimize_weights:
@@ -1002,6 +1002,51 @@ def _vb_init(
         vp0_list.append(new_vp)
 
     return np.array(vp0_list), type_vec
+
+
+# Attributes of a candidate that `_vb_init` assigns itself.
+_CANDIDATE_ASSIGNED = ("w", "eta", "mu", "sigma", "lambd", "bounds", "stats")
+# Attributes shared with the base posterior instead of copied: the generator
+# (as `VariationalPosterior.__deepcopy__` shares it) and the parameter
+# transformer, which no code path mutates after construction (`whitening`
+# deep-copies it before changing the rotation), so every candidate, and the
+# posterior `optimize_vp` returns, can use the run's transformer object.
+_CANDIDATE_SHARED = ("_rng", "parameter_transformer")
+
+
+def _candidate_vp(vp: VariationalPosterior):
+    """
+    An empty shell of ``vp`` for one sieve candidate.
+
+    A ``copy.deepcopy`` per candidate copied the parameter transformer and
+    the variational parameters that ``_vb_init`` then overwrote, at about
+    150 microseconds per candidate for the 5-50 candidates per component
+    of every ``optimize_vp`` call. The shell has the same attributes in the
+    same order: the generator and the transformer are shared, the
+    attributes ``_vb_init`` assigns are left ``None``, everything else
+    (dimensions, the ``optimize_*`` flags, the cached mode) is deep-copied,
+    so an attribute added to the class later is copied, not shared.
+
+    Parameters
+    ==========
+    vp : VariationalPosterior
+        Variational posterior to use as base.
+
+    Returns
+    =======
+    new_vp : VariationalPosterior
+        The shell; ``_vb_init`` fills in ``K``, ``w``, ``eta``, ``mu``,
+        ``sigma``, ``lambd``, ``bounds`` and ``stats``.
+    """
+    new_vp = vp.__class__.__new__(vp.__class__)
+    for key, value in vp.__dict__.items():
+        if key in _CANDIDATE_SHARED:
+            setattr(new_vp, key, value)
+        elif key in _CANDIDATE_ASSIGNED:
+            setattr(new_vp, key, None)
+        else:
+            setattr(new_vp, key, copy.deepcopy(value))
+    return new_vp
 
 
 def _neg_elcbo(
