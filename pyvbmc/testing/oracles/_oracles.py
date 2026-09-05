@@ -42,9 +42,14 @@ integrals, the ELCBO variances), are held to 1e-3 relative plus 1e-8
 absolute: on the corr snapshot Ubuntu moved ``J_sjk`` by 2.3e-10 absolute
 on entries of order 1e-6. The gradient of the GP log marginal likelihood
 (``gp_nlZ``), which goes through the explicit inverse ``Q = K^-1 - alpha
-alpha^T``, moved by 2.6e-6 per element on the cigar snapshot on Ubuntu
-(first CI run of 2026-09-05) while its value moved by 1e-8: the gradients
-are held to 1e-4, the values to 1e-6. GP-free outputs (densities,
+alpha^T``, is the worst-conditioned quantity of all: per element it moved
+by 2.6e-6 on the cigar snapshot and by 4.1e-4 on the corr snapshot on
+Ubuntu, and by 1.6e-6 on cigar on macOS (CI runs of 2026-09-05), while
+its value moved by 1e-8 to 9e-8; the gradients are held to 2e-2 (about
+50x the largest floor), the values to 1e-6. On the generating machine the
+gradients are pinned exactly by the dump gate of
+``make_oracle_fixtures.py --check --exact --against``. GP-free outputs
+(densities,
 entropies, theta, the transformer) stay at 1e-10, and the bit-identical
 ones are effectively exact. Each tolerance leaves at least 30x over its
 measured floor; if a
@@ -491,12 +496,15 @@ def _install_hyperprior(gp, state):
 
 
 # The values are GP-solve class; the gradients go through the explicit
-# inverse in `Q = K^-1 - alpha alpha^T` and are worse conditioned: on the
-# cigar snapshot Ubuntu's BLAS moved `dlZ` / `dlp` by 2.6e-6 per element
-# (the values by 1e-8), so the gradients are held to 1e-4.
+# inverse in `Q = K^-1 - alpha alpha^T` and are far worse conditioned: per
+# element, Ubuntu's BLAS moved `dlZ` / `dlp` by 2.6e-6 on the cigar
+# snapshot and by 4.1e-4 on the corr snapshot, macOS by 1.6e-6 on cigar
+# (the values by 1e-8 and 9e-8), so the gradients are held to 2e-2, about
+# 50x the largest floor. Same-machine exactness comes from the dump gate
+# (`make_oracle_fixtures.py --check --exact --against`), not from here.
 @oracle(
     "gp_nlZ",
-    rtol={"default": 1e-6, "dlZ": 1e-4, "dlp": 1e-4},
+    rtol={"default": 1e-6, "dlZ": 2e-2, "dlp": 2e-2},
     atol=1e-10,
 )
 def gp_nlZ(state, seed):
