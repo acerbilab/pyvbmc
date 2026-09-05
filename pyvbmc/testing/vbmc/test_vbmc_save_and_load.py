@@ -102,6 +102,11 @@ def test_vbmc_load_static():
         assert np.all(np.random.get_state()[i] == val)
     assert vbmc.options["max_fun_evals"] == 40
     assert vbmc.iteration == 0
+    # The instance is set up to continue, so its GP carries the posterior
+    # factors the iteration history does not store, and is a copy of the
+    # record rather than the record itself.
+    assert vbmc.gp.posteriors[0].alpha is not None
+    assert vbmc.gp is not vbmc.iteration_history["gp"][0]
 
     vbmc = VBMC.load(
         base_path.joinpath("test_vbmc_save_static.pkl"),

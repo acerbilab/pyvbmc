@@ -162,3 +162,10 @@ def test_iteration_history_record_keeps_earlier_entries():
     value["name"] = "changed"
     assert iteration_history["gp"][2] == {"name": "gp2"}
     assert iteration_history["gp"][0] is first
+
+    # Growing by more than one slot: the gap is None, the dtype object.
+    iteration_history.record("gp", {"name": "gp5"}, 5)
+    assert iteration_history["gp"].dtype == object
+    assert list(iteration_history["gp"][3:5]) == [None, None]
+    assert iteration_history["gp"][5] == {"name": "gp5"}
+    assert iteration_history["gp"][0] is first

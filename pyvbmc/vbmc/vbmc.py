@@ -25,7 +25,12 @@ from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.whitening import warp_gp_and_vp, warp_input
 
 from .active_sample import active_sample
-from .gaussian_process_train import reupdate_gp, train_gp
+from .gaussian_process_train import (
+    _lean_gp,
+    _restore_gp_posteriors,
+    reupdate_gp,
+    train_gp,
+)
 from .iteration_history import IterationHistory
 from .options import Options
 from .variational_optimization import optimize_vp, update_K
@@ -890,8 +895,13 @@ class VBMC:
         if self.is_finished:
             self.logger.warning("Continuing optimization from previous state.")
             self.is_finished = False
-            self.vp = self.iteration_history["vp"][-1]
-            self.optim_state = self.iteration_history["optim_state"][-1]
+            # Copies, not the history's entries themselves: those describe
+            # the last recorded iteration and must not follow the live
+            # objects through the iterations that come.
+            self.vp = copy.deepcopy(self.iteration_history["vp"][-1])
+            self.optim_state = copy.deepcopy(
+                self.iteration_history["optim_state"][-1]
+            )
         self._log_column_headers()
         while not self.is_finished:
             self.iteration += 1
@@ -1305,7 +1315,7 @@ class VBMC:
                 "var_ss": var_ss,
                 "sKL": sKL,
                 "sKL_true": sKL_true,
-                "gp": self.gp,
+                "gp": _lean_gp(self.gp),
                 "gp_hyp_full": self.gp.get_hyperparameters(as_array=True),
                 "Ns_gp": Ns_gp,
                 "pruned": pruned,
@@ -1532,7 +1542,7 @@ class VBMC:
         if self.options.get("do_final_boost"):
             # Last variational optimization with large number of components
             self.vp, elbo, elbo_sd, changed_flag = self.final_boost(
-                self.vp, self.iteration_history["gp"][idx_best]
+                self.vp, self.get_gp(idx_best)
             )
         else:
             changed_flag = False
@@ -2186,6 +2196,54 @@ class VBMC:
         vp.stats["stable"] = self.iteration_history.get("stable")[idx_best]
         return vp, elbo, elbo_sd, idx_best
 
+    def get_gp(self, iteration: int):
+        """
+        Return the Gaussian process surrogate of a recorded iteration.
+
+        The iteration history stores each iteration's GP without its
+        posterior factors: the training data, the hyperparameter samples and
+        the model (covariance, mean and noise functions, hyperparameter
+        priors and bounds), but not the Cholesky factors and the other
+        per-sample quantities that a GP prediction needs, which would make
+        the history grow with the square of the training-set size. This
+        method returns a copy of that record with the factors recomputed
+        from the stored data and hyperparameters. They are a deterministic
+        function of those, so the returned GP is the one the algorithm held
+        at that iteration. The stored record is left without them, and a
+        record that does carry its factors (an instance saved by a version
+        of PyVBMC that stored complete GPs) is copied as it is.
+
+        Parameters
+        ----------
+        iteration : int
+            The iteration whose GP to return, from `0` to the last recorded
+            iteration.
+
+        Returns
+        -------
+        gp : gpyreg.GP
+            The Gaussian process of that iteration, ready for prediction.
+
+        Raises
+        ------
+        ValueError
+            If no GP has been recorded (the instance has not been
+            optimized), or if ``iteration`` is not the index of a recorded
+            iteration.
+        """
+        gps = self.iteration_history["gp"]
+        if gps is None:
+            raise ValueError(
+                "No Gaussian process has been recorded: run optimize() "
+                "before asking for the GP of an iteration."
+            )
+        if not 0 <= iteration < len(gps):
+            raise ValueError(
+                f"Specified iteration ({iteration}) should be >= 0 and < "
+                f"the number of recorded iterations ({len(gps)})."
+            )
+        return _restore_gp_posteriors(copy.deepcopy(gps[iteration]))
+
     def save(self, file, overwrite=False):
         """Save the VBMC instance to a file.
 
@@ -2297,9 +2355,14 @@ class VBMC:
             # Handle instances saved before running vbmc.optimize()
             for attr in ["gp", "vp", "function_logger", "optim_state"]:
                 if vbmc.iteration_history[attr] is not None:
-                    setattr(
-                        vbmc, attr, vbmc.iteration_history[attr][iteration]
-                    )
+                    if attr == "gp":
+                        # A continued run predicts with this GP, so it needs
+                        # the posterior factors the history does not store.
+                        vbmc.gp = vbmc.get_gp(iteration)
+                    else:
+                        setattr(
+                            vbmc, attr, vbmc.iteration_history[attr][iteration]
+                        )
             if vbmc.optim_state.get("hyp_dict") is not None:
                 vbmc.hyp_dict = vbmc.optim_state["hyp_dict"]
             vbmc.iteration = iteration

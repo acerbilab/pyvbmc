@@ -151,7 +151,15 @@ Things you must hold in your head across files:
 - **`optim_state`** is a plain dict read and written everywhere (hundreds of
   sites). `IterationHistory` stores object-dtype arrays, deep-copies
   everything it records (VP, GP, logger, `optim_state`, every iteration), and
-  only accepts keys pre-declared in the list in `VBMC.__init__`.
+  only accepts keys pre-declared in the list in `VBMC.__init__`. The GP is
+  recorded without its posterior factors (training data, hyperparameter
+  samples and model only, through `_lean_gp` in `gaussian_process_train.py`),
+  so the history does not grow with `Ns` times the square of the
+  training-set size. `vbmc.get_gp(iteration)` returns a copy with the
+  factors recomputed from the record, identical to the ones dropped; it is
+  what `final_boost` and `load` use, and it copies a record that still
+  carries its factors (files saved by versions that stored complete GPs)
+  as it is.
 - **Options** are layered: `option_configs/basic_vbmc_options.ini`, then
   `advanced_vbmc_options.ini`, then `options_path=`, with the `options=` dict
   winning. `.ini` values are `eval`'d with `D` bound and only the names

@@ -629,3 +629,17 @@ def test_vbmc_resume_optimization():
     assert success_flag_1 == success_flag_2
     assert elbo_1 == elbo_2
     assert elbo_sd_1 == elbo_sd_2
+
+    # Every history entry describes its own iteration, including the ones
+    # recorded before the round trip (the continued run works on copies of
+    # them, not on the entries themselves).
+    for i, optim_state in enumerate(vbmc_2.iteration_history["optim_state"]):
+        assert optim_state["iter"] == i
+    # The GP records hold data and hyperparameters only; get_gp restores the
+    # factors, and so does load, whose GP a continued run predicts with.
+    assert vbmc_2.iteration_history["gp"][0].posteriors[0].alpha is None
+    assert vbmc_2.get_gp(0).posteriors[0].alpha is not None
+    vbmc_3 = VBMC.load(file_path, iteration=2)
+    assert vbmc_3.gp.posteriors[0].alpha is not None
+    assert vbmc_3.gp is not vbmc_3.iteration_history["gp"][2]
+    assert np.array_equal(vbmc_3.gp.X, vbmc_3.iteration_history["gp"][2].X)

@@ -1,3 +1,4 @@
+import copy
 import math
 
 import gpyreg as gpr
@@ -820,6 +821,72 @@ def _estimate_noise(gp: gpr.GP):
         sn2[:, s : s + 1] = gp.noise.compute(hyp, hpd_X, hpd_y, hpd_s2)
 
     return np.median(np.mean(sn2, axis=1))
+
+
+def _lean_gp(gp: gpr.GP):
+    """Copy a GP without the posterior factors, for the iteration history.
+
+    The copy keeps the training data (``X``, ``y``, ``s2``), the
+    hyperparameter samples and the model (covariance, mean and noise
+    functions, hyperparameter priors and bounds), and drops the per-sample
+    posterior quantities: the Cholesky factor ``L`` (``N`` by ``N`` per
+    hyperparameter sample) and the vectors ``alpha`` and ``sW``.
+    :py:func:`_restore_gp_posteriors` recomputes them from what the copy
+    keeps.
+
+    Parameters
+    ==========
+    gp : GP
+        The GP to copy. It is left unchanged.
+
+    Returns
+    =======
+    lean : GP
+        A shallow copy of ``gp`` sharing its training data and model, with
+        posteriors that hold only the hyperparameters and with an empty
+        ``temporary_data``.
+    """
+    lean = copy.copy(gp)
+    if gp.posteriors is not None:
+        # Assigns a fresh `posteriors` array on the copy, built from the
+        # hyperparameters alone; nothing else on the copy is touched, so
+        # `gp` keeps its own posteriors and factors. (`lean.clean()` would
+        # not do: it empties the Posterior objects in place, and the shallow
+        # copy shares them with `gp`.)
+        lean.update(
+            hyp=gp.get_hyperparameters(as_array=True),
+            compute_posterior=False,
+        )
+    lean.temporary_data = {}
+    return lean
+
+
+def _restore_gp_posteriors(gp: gpr.GP):
+    """Recompute the posterior factors of a GP that lacks them.
+
+    The factors are a deterministic function of the training data and the
+    hyperparameters, so the ones recomputed here are those a GP stripped by
+    :py:func:`_lean_gp` had before. A GP that already carries its factors is
+    returned untouched.
+
+    Parameters
+    ==========
+    gp : GP
+        The GP to complete, modified in place.
+
+    Returns
+    =======
+    gp : GP
+        The same object, with every posterior carrying its factors.
+    """
+    if gp.posteriors is not None and any(
+        posterior.alpha is None for posterior in gp.posteriors
+    ):
+        gp.update(
+            hyp=gp.get_hyperparameters(as_array=True),
+            compute_posterior=True,
+        )
+    return gp
 
 
 def reupdate_gp(function_logger: FunctionLogger, gp: gpr.GP):
