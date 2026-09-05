@@ -627,5 +627,5 @@ def test_vbmc_resume_optimization():
     success_flag_2 = results_2["success_flag"]
 
     assert success_flag_1 == success_flag_2
-    assert elbo_1 == elbo_1
+    assert elbo_1 == elbo_2
     assert elbo_sd_1 == elbo_sd_2
