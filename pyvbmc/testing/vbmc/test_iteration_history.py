@@ -143,3 +143,22 @@ def test_iteration__setitem___key_not_existing():
     with pytest.raises(ValueError) as execinfo:
         iteration_history["foo"] = None
     assert "The key has not been specified" in execinfo.value.args[0]
+
+
+def test_iteration_history_record_keeps_earlier_entries():
+    """Recording a new iteration grows a key's array without copying the
+    values already stored: they were deep-copied once, when recorded, and
+    keep their identity afterwards. The new value is still copied."""
+    iteration_history = IterationHistory(["gp", "elbo"])
+    iteration_history.record_iteration({"gp": {"name": "gp0"}, "elbo": 1}, 0)
+    first = iteration_history["gp"][0]
+    iteration_history.record_iteration({"gp": {"name": "gp1"}, "elbo": 2}, 1)
+    assert iteration_history["gp"][0] is first
+    assert iteration_history["gp"][1] == {"name": "gp1"}
+    assert list(iteration_history["elbo"]) == [1, 2]
+
+    value = {"name": "gp2"}
+    iteration_history.record("gp", value, 2)
+    value["name"] = "changed"
+    assert iteration_history["gp"][2] == {"name": "gp2"}
+    assert iteration_history["gp"][0] is first

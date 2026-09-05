@@ -112,9 +112,18 @@ class IterationHistory(MutableMapping, dict):
     def _expand_array(self, key: str, resize_amount: int):
         """
         A private method to expand the array for a given key by a resize_amount.
+
+        The longer array holds the same objects as the old one and is stored
+        without going through ``__setitem__``: the stored values were
+        deep-copied when they were recorded, and copying them again on every
+        expansion made each ``record`` cost as much as all the iterations
+        before it (and, for the GPs, briefly held two copies of every
+        Cholesky factor of the run).
         """
-        self[key] = np.append(
-            self[key], np.full([resize_amount], None), axis=0
+        dict.__setitem__(
+            self,
+            key,
+            np.append(self[key], np.full([resize_amount], None), axis=0),
         )
 
     def record_iteration(
