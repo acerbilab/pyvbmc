@@ -627,6 +627,42 @@ Reading:
   per-call overhead is now a larger share of the remaining, call-heavy
   stages.
 
+## Follow-ups
+
+- **Item 8 (gpyreg PR)** now also carries the observation that the 15-D
+  exhaust run's active sampling took 20 % longer on its new trajectory
+  (§Results reading 3): the plain run does not record the number of
+  CMA-ES generations per point, so a cProfile of the exhaust run (about
+  35 min) is the way to attribute it if it matters.
+- **Item 5 (`entmc_vbmc`)** is now the largest piece of the variational
+  stage (6–9 % of a D = 4 run under cProfile).
+- **`_neg_elcbo`'s own softmax Jacobian** still uses the
+  `-exp(eta).T * exp(eta)` form (correct there because `eta` is reshaped
+  to `(1, K)` first); the four copies of the Jacobian remain a cleanup
+  candidate (devlog §3).
+- **`jacobian_flag=False` is now asymmetric between `_gp_log_joint` (all
+  requested blocks) and the entropies (`mu` block only)**; unreachable and
+  loud if reached (devlog §9).
+- **`optimize_vp` prunes `J_sjk` along one axis only** (inert, devlog §9).
+- **Reproducing the scratch checks.** The bit-check harness, the timing
+  of the contraction variants, the `cigar_D4` sensitivity experiment and
+  the iteration-state measurement were session scratch scripts, not
+  committed; their numbers live in the tracker. To rebuild: `git show
+  c48c025:pyvbmc/vbmc/variational_optimization.py`, cut out
+  `_gp_log_joint` into a module (it needs `math`, `numpy`, `scipy`,
+  `gpyreg` and `VariationalPosterior`), and compare it with the current
+  function on `pyvbmc.testing.oracles._state.build_state(load_snapshot(
+  fixtures / name))` for the eight snapshots and on random GP/VP states
+  (`gp.update(X_new, y_new, hyp=(Ns, hyp_N))`), reporting the oracle
+  criterion `|new − old| / max(|old|, q25 |old|)` per output. For the
+  sensitivity experiment, monkey-patch
+  `pyvbmc.vbmc.variational_optimization._gp_log_joint` with the old
+  function (or with the old function times `1 + 2**-52` on `G` or `dG`)
+  before importing `golden_replay`, then call `golden_replay.main([
+  "--configs", "cigar_D4", "--seeds", "0", "--out", <dir>])`; the
+  `_neg_elcbo` module global is looked up at call time, so the patch
+  takes effect.
+
 ## Execution tracker
 
 Legend: `[ ]` not started, `[~]` in progress, `[x]` done, `[!]` needs
