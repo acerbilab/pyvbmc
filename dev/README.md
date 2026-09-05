@@ -92,9 +92,12 @@ status and next steps never go into the devlogs.
   (done; bit-identical candidates, about 0.1 % of a run), what
   `iteration_history` retains (the GPs' Cholesky factors, Σ Ns N² doubles,
   323 MB on the exhaust run) and the history re-copying its whole past on
-  every record, the readers of the stored GPs, and the design options for
-  lean GP records with the posteriors restored on demand (planned, PI's
-  decision pending).
+  every record, the readers of the stored GPs, the decisions taken with the
+  PI (what can be rebuilt from the record is never stored; what cannot is
+  dropped by default and kept under `record_full_history_details`), and
+  the four steps that followed (the history grows without re-copying, lean
+  GP records restored by the public `VBMC.get_gp`, the importance samples
+  out of the recorded `optim_state`), each replayed and measured.
 
 Naming: `plans/` files are named by slug only, never by date (the date is in
 the file header), so that they cannot be mistaken for copies of the dated

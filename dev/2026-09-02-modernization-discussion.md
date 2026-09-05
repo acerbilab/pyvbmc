@@ -520,7 +520,9 @@ state used by resume.
 - `gaussian_process_train.py:768` — `noise_shaping` is an unported stub; the
   option only flips a noise-function flag.
 - GPs retained for every iteration with all `Ns` Cholesky factors; `GP.clean()`
-  never called (§4).
+  never called (§4). **Resolved 2026-09-05** (Stage 2 item 7,
+  `plans/stage2-memory.md`): the history records each GP without its
+  factors and `VBMC.get_gp(iteration)` rebuilds them on demand.
 - `pyproject.toml:16-20` — `plotly`, `pytest*` as runtime deps. `matplotlib`
   and `corner` imported at module top level.
 - `priors/scipy.py:5-10`, `priors/product.py:5` — imports of scipy private classes.
@@ -609,6 +611,19 @@ state used by resume.
   the jitter `mu += sigma * lambd * randn(mu.shape)` raises `ValueError`
   (and `sigma` would stay zero if it did not). `optimize_sigma` is always
   `True` in production (the `optimize_lambda` bullet above).
+- **Found 2026-09-05 (late evening) by the review of the item 7 plan**
+  (`plans/stage2-memory.md`):
+  - `optimize()` on a finished instance set `self.vp` and
+    `self.optim_state` to the history's last entries themselves
+    (`vbmc.py:893–894`), so those entries followed the live objects
+    through the continued run (until the history's next growth re-copied
+    them, which item 7 step 1 stopped). No computed output read them;
+    `golden_trace.py` and a later `load(iteration=)` would have. **Fixed**
+    with item 7 step 2 (deep copies), pinned by the resume test.
+  - The in-loop plot (`vbmc.py:1511–1516`) called `vp.plot` without
+    `gp=`, so no training points were drawn and the `highlight_data`
+    computed from the previous GP's inputs a few lines above was never
+    used. **Fixed** with item 7 step 3 (`gp=self.gp`).
 - **Found 2026-09-04 in the golden population**, not fixed, decision
   deferred (own devlog: `2026-09-04-final-boost-failure.md`): `final_boost`
   accepts the re-optimized K = 50 posterior unconditionally, as MATLAB's
@@ -938,9 +953,36 @@ record (the GP posteriors) is never stored and is rebuilt on demand through
 a public `VBMC.get_gp(iteration)`, while what cannot be rebuilt (the
 importance samples, drawn mid-iteration) is dropped by default and kept
 under a new option, `record_full_history_details`; the warm start of
-`train_gp` reads `gp_hyp_full`; and the existing resume test, whose ELBO
-assertion was a self-comparison, is fixed and used as the resume-identity
-guard before any history change.
+`train_gp` keeps reading the GP records (lean records answer it
+unchanged, and reading `gp_hyp_full` instead would move the `gp_fit`
+oracle through its history stand-in); and the existing resume test, whose
+ELBO assertion was a self-comparison, is fixed and used as the
+resume-identity guard before any history change.
+
+*Item 7 done 2026-09-05 (night)* (`plans/stage2-memory.md`), in four
+steps, each replayed (`identical` on the five configs) and run through
+the full suite: the resume test compares the two runs (it passed as it
+was, so resume was exact already); `IterationHistory` grows its arrays
+without deep-copying the stored past again (the re-copy was quadratic in
+the iteration count, 1.3 % of the exhaust run under cProfile and 254 →
+208 s of wall on the noisy logreg run); each iteration's GP is recorded
+without its posterior factors and the public `VBMC.get_gp(iteration)`
+recomputes them from the stored data and hyperparameters, bit for bit
+(every recorded GP is the product of a fresh core computation in
+`gp.fit`, never of a rank-1 update, traced through gpyreg by the review;
+100 of 100 stored GPs of three runs checked), for `final_boost`'s call
+site and `load`; and the recorded `optim_state` leaves out the
+importance samples of the noisy acquisitions unless
+`record_full_history_details` is set. The history of the noisy logreg run
+went from 117 to 4.6 MB, its RSS after the run from 332 to 163 MB and its
+peak from 427 to 273 MB; `cigar_D4`'s history 9.4 → 1.9 MB; the 15-D
+exhaust run's 323 MB of factors become about 2 MB by the same arithmetic.
+The §4 memory note and the §9 bullet on retained GPs are resolved by
+this. Two latent defects were fixed on the way (§9): a continued run
+aliased the history's last entries, and the in-loop plot drew no training
+points. Files saved by this code hold lean GP records, so an older PyVBMC
+cannot resume them (old files load unchanged); a release note for the
+eventual PR.
 
 **Benchmark target suite (decided 2026-09-02, after the profile).** The
 profile was taken on an independent and a correlated Gaussian, which

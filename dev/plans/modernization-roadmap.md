@@ -150,17 +150,27 @@ anything that changes numerics lands.
   the old code, replay `identical` with finals equal to item 5's), the
   `_vb_init` step 31–43 → 12–20 µs per candidate, about 0.1 % of a run
   (cProfile had overstated the copy about 6×), and the run keeps one
-  transformer object between warps. **(7) planned, not started**: the
-  history re-copies its whole stored past on every record (quadratic;
-  1.3 % of the exhaust run) and retains Σ Ns N² doubles of Cholesky
-  factors (323 MB on the exhaust run, roughly 0.8 GB at D = 20); the plan
-  proposes growing the history without the re-copy, lean GP records with
-  the posteriors restored for `final_boost` and `load` (every stored GP
-  of three measured runs, 100 of 100, rebuilds bit for bit from its data
-  and hyperparameters), and dropping the importance-sampling arrays from
-  the recorded `optim_state`, which are the largest key on noisy runs
-  (56–70 % of the retained bytes); each identity-preserving; the PI
-  decides the open questions.
+  transformer object between warps. **(7) done 2026-09-05 (night)**
+  (`plans/stage2-memory.md`; decided with the PI: what can be rebuilt
+  from the record is never stored, what cannot is dropped by default and
+  kept under a new option): the history grows without re-copying its
+  stored past (the re-copy was quadratic, 1.3 % of the exhaust run under
+  cProfile; on the noisy logreg run alone 254 → 208 s of wall), each
+  iteration's GP is recorded without its posterior factors and the public
+  `VBMC.get_gp(iteration)` restores them bit for bit where a full GP is
+  needed (`final_boost`, `load`), and the recorded `optim_state` leaves
+  out the importance samples of the noisy acquisitions unless
+  `record_full_history_details` is set. Retained history 9.4 → 1.9 MB on
+  `cigar_D4`, 25.8 → 1.3 MB on `rosenbrock_D2_noise1`, 117 → 4.6 MB on
+  `logreg_D5_noise3` (RSS after that run 332 → 163 MB, peak 427 → 273);
+  the 15-D exhaust run's 323 MB of factors (analytic) become about 2 MB.
+  Every step replay `identical` and full suite green; the resume test
+  compares the two runs' ELBOs (it compared one with itself) and pins a
+  `load(iteration=)` round trip on a file written by the new code; two
+  latent defects fixed on the way (a continued run aliased the history's
+  last entries; the in-loop plot passed no GP). Save format: files
+  written by this code hold lean GP records, so an older PyVBMC cannot
+  resume them; old files load unchanged.
 - [ ] **Stage 3 — pipeline features** (batched initial design,
   torch/jax target adapter docs, `vp.to_torch()`, ArviZ export).
 - [ ] **Stage 4 — PyTorch port** (decision point, not default).
@@ -333,16 +343,21 @@ anything that changes numerics lands.
    written in the same file with the readers of the stored GPs, the
    measurements and three identity-preserving steps. Track (i), the
    population, has not run.
-3d. **Next** (2026-09-05, late evening). (i) The 20-seed population
+3d. ~~**Next** (2026-09-05, late evening)~~ done the same night: item 7's
+   four steps are committed (`564f53a`, `e357216`, `1aa1933`, `ffbd4b2`)
+   with their gates (`plans/stage2-memory.md` §Verification (item 7),
+   §Results); the population run is point 3e. The text of the decision
+   stays below for the record. (i) The 20-seed population
    exactly as in 3c (i), when the PI says the laptop is free. (ii) Item 7,
    decided with the PI (`plans/stage2-memory.md` §Decisions): the
    retention rule (what can be rebuilt from the record, the GP posteriors,
    is never stored and rebuilt on demand; what cannot, the importance
    samples of the noisy acquisitions, is dropped by default and kept under
    the new option `record_full_history_details`), lean GP records with a
-   public `VBMC.get_gp(iteration)` restoring a copy, the warm start
-   through `gp_hyp_full`, and the existing resume test made real
-   (`elbo_1 == elbo_2`) before any history change. Four steps in the
+   public `VBMC.get_gp(iteration)` restoring a copy, the warm start left
+   on the GP records (a switch to `gp_hyp_full` would move the `gp_fit`
+   oracle through its history stand-in), and the existing resume test
+   made real (`elbo_1 == elbo_2`) before any history change. Four steps in the
    plan's §Design with their gates (`mem_history.py` before and after; the
    replay's finals exercise what `final_boost` receives). Open question 8
    of `plans/stage2-gpyreg-predict-and-sampler.md` (re-baseline the

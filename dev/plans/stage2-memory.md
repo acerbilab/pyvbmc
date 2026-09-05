@@ -1,8 +1,9 @@
 # Stage 2 items 6 and 7: memory (sieve candidates; the GPs retained in the iteration history)
 
 Created: 2026-09-05 19:30. Status: **item 6 DONE 2026-09-05 (evening)**;
-**item 7 DECIDED with the PI 2026-09-05 (late evening), no code written**
-(design and gates below; the open questions are closed, see §Decisions).
+**item 7 DONE 2026-09-05 (night)**, decided with the PI the same evening
+(§Decisions) and done in four steps (§Design, §Verification (item 7),
+§Results).
 Roadmap pickup point 3c (ii) (`plans/modernization-roadmap.md`); rationale
 in `dev/2026-09-02-modernization-discussion.md` §4 (memory note), §9 ("GPs
 retained for every iteration"), §10 (Stage 2 items 6 and 7). Method as in
@@ -36,18 +37,22 @@ exhaust run, roughly 0.8 GB at D = 20 with the default budget. And
 `__setitem__`, which deep-copies the array *and every stored object in it*,
 so each record re-copies the whole past: quadratic in the iteration count
 (11.6 s of the exhaust run under cProfile) and a transient doubling of the
-retained memory. Proposed, in this order: (1) grow the arrays without the
-re-copy; (2) record lean GPs (training data and hyperparameters, no
-factors) and restore the posteriors where a full GP is needed
-(`final_boost`, `load`); (3) drop the importance-sampling arrays from the
-recorded `optim_state`, the largest key on noisy runs (56–70 % of the
-retained bytes; a resumed run recomputes them before any read), unless the
-new option `record_full_history_details` asks to keep them for debugging.
-The rule behind (2) and (3), decided with the PI: what can be rebuilt from
-the record is never stored, flag or no flag; what cannot be rebuilt is
-dropped by default and kept under the flag. Each step is
-identity-preserving; the rebuild was checked bit for bit on every stored GP
-of three measurement runs (§Findings, "Measured").
+retained memory. Done, in this order: (0) the resume test compares the two
+runs' ELBOs (it compared one with itself); (1) the arrays grow without the
+re-copy; (2) each iteration's GP is recorded without its factors (training
+data, hyperparameter samples and model) and the public
+`VBMC.get_gp(iteration)` restores them, bit for bit, where a full GP is
+needed (`final_boost`, `load`); (3) the recorded `optim_state` leaves out
+the importance-sampling arrays, the largest key on noisy runs (56–70 % of
+the retained bytes; a resumed run recomputes them before any read), unless
+the new option `record_full_history_details` asks to keep them for
+debugging. The rule behind (2) and (3), decided with the PI: what can be
+rebuilt from the record is never stored, flag or no flag; what cannot be
+rebuilt is dropped by default and kept under the flag. Each step is
+identity-preserving (replay `identical`, full suite green after each); the
+history of the noisy logreg run went from 117 to 4.6 MB (its RSS after the
+run 332 → 163 MB, its peak 427 → 273 MB), `cigar_D4`'s from 9.4 to 1.9 MB
+(§Results).
 
 ## Scope
 
@@ -174,7 +179,11 @@ scratchpad, not committed; Follow-ups says how to rebuild them).
   (`alpha`, `L`, `sW`, `L_chol`). (iii) `VBMC.load(iteration=)`
   (`vbmc.py:2296–2302`): `vbmc.gp = iteration_history["gp"][iteration]`,
   and `optimize()` then continues with active sampling on `self.gp` and
-  the warp block copies it, so a full GP is needed there. (iv) Plotting:
+  the warp block copies it, so a full GP is needed there (`load` then
+  truncates every history key through `__setitem__`, which deep-copies
+  the entries, so the instance's GP is a copy of the record even today;
+  the restore must therefore act on a copy and never refill the record,
+  or the truncation would copy the factors back in). (iv) Plotting:
   `vbmc.py:1487` and `create_vbmc_animation.py:58–59` read `gp.X` and
   `previous_gp.X`; `vp.plot(gp=gp)` reads only `gp.X`
   (`variational_posterior.py:1284–1293`). (v) `active_sample.py:566`
@@ -205,7 +214,32 @@ scratchpad, not committed; Follow-ups says how to rebuild them).
 - **Everything else recorded is small**: `vp` (D K doubles plus `stats`),
   `function_logger` (the preallocated rows, `N_alloc (D + 4)` doubles),
   `optim_state` without the importance-sampling arrays (`vp_repo`,
-  `hyp_dict`, scalars), `timer`.
+  `hyp_dict`, scalars), `timer`. One latent exception, inert at the
+  defaults: `optim_state["search_cache"]` is the whole `ns_search = 2^13`
+  by `D` sieve when `search_cache_frac > 0` (`active_sample.py:343–345`),
+  recorded every iteration and recomputed by a resumed run; the second
+  candidate for `record_full_history_details` if that default changes.
+- **Unpickling re-copies the history.** `IterationHistory.__setstate__`
+  restores its entries through `update` → `__setitem__`, which
+  deep-copies each one, so `dill.load` of a saved instance briefly holds
+  two copies of the history (a second Σ Ns N² transient until the GP
+  records are lean). Left as it is; a follow-up if it ever matters.
+- **`optimize()` on a finished instance aliased the history.** The
+  continuation (`vbmc.py:893–894`) set `self.vp` and `self.optim_state`
+  to the last recorded entries themselves. Before step 1 the re-copy of
+  `_expand_array` detached them at the next record, freezing the entries
+  at a later, wrong state; after step 1 they kept following the live
+  objects to the end of the run. Neither is the recorded iteration's
+  state, and no computed output read those entries (the only reader of a
+  past `optim_state` entry is commented out in `active_sample.py`), but
+  `golden_trace.py` walks them and a later `save`/`load(iteration=)`
+  would return them. Found by the review of this plan; fixed with step 2
+  (the continuation works on deep copies) and pinned by the resume test,
+  which asserts that every recorded `optim_state` carries its own
+  iteration number.
+- **The in-loop plot** (`vbmc.py:1511–1516`) calls `vp.plot` without
+  `gp=`, so the `highlight_data` it computes from `previous_gp.X` a few
+  lines above is never used. Not changed here (devlog §9).
 
 ### Measured (2026-09-05, 21:31–21:38; `mem_history.py`, seed 0, one BLAS thread, display off, code `2dcb51a` plus item 6)
 
@@ -284,7 +318,7 @@ posterior is untouched, the first type-1 candidate at the same `K` carries
 the base parameters verbatim, writing into a candidate leaves the base
 alone).
 
-### Item 7 (decided; not started)
+### Item 7 (done)
 
 Four steps, each with its own commit and gates, in this order.
 
@@ -319,9 +353,15 @@ Four steps, each with its own commit and gates, in this order.
    otherwise, so files saved with full GPs load unchanged); it is what a
    user or a debugger calls on a stored iteration, and what `optimize()`
    calls before `final_boost` and `load` calls for the GP it puts on the
-   instance. The warm start switches to `gp_hyp_full` (identical arrays;
-   removes a reader). Plotting and the animation read `gp.X`, which a lean
-   GP has. `hyp_dict["hyp"]` and the `optim_state` copies are untouched.
+   instance. The warm start of `train_gp` keeps reading the GP records: a
+   lean GP answers `get_hyperparameters` unchanged, and reading
+   `gp_hyp_full` instead would change the `gp_fit` oracle's inputs (its
+   history stand-in has an empty `gp` array but `gp_hyp_full` filled with
+   the current hyperparameters, because `_get_hyp_cov` indexes that key
+   for every past iteration; the switch would add starting points to the
+   fit and, once there are enough, consume a generator draw, moving the
+   oracle for no numerical reason). Plotting and the animation read
+   `gp.X`, which a lean GP has. `hyp_dict["hyp"]` and the `optim_state` copies are untouched.
    Memory: the GP key drops from Σ Ns N² to Σ N (D + 2) doubles plus the
    hyperparameters (323 MB → about 2 MB on the exhaust run). Cost: one
    restore of `Ns` Choleskys at the best iteration (milliseconds) and one
@@ -385,12 +425,14 @@ key and peak RSS).
 - [x] Item 7: measurement runs (`cigar_D4`, `rosenbrock_D2_noise1`,
       `logreg_D5_noise3`) recorded under "Measured"
 - [x] Item 7: PI's decisions on the open questions (§Decisions)
-- [ ] Item 7 step 0: `elbo_1 == elbo_2` in the resume test; run it
-- [ ] Item 7 step 1: `_expand_array` without the re-copy; test
-- [ ] Item 7 step 2: lean GP records, `VBMC.get_gp`, warm start through
-      `gp_hyp_full`, tests, docs
-- [ ] Item 7 step 3: `record_full_history_details`, the `.ini` entry, test
-- [ ] Item 7: `mem_history.py` after; records
+- [x] Item 7 step 0: `elbo_1 == elbo_2` in the resume test; passes
+      (`564f53a`)
+- [x] Item 7 step 1: `_expand_array` without the re-copy; test (`e357216`)
+- [x] Item 7 step 2: lean GP records, `VBMC.get_gp`, tests, docs (the warm
+      start stays on the GP records, see the tracker); `1aa1933`
+- [x] Item 7 step 3: `record_full_history_details`, the `.ini` entry,
+      test; the in-loop plot fix; committed with it
+- [x] Item 7: `mem_history.py` after each step (§Results); records
 
 ## Verification (item 6)
 
@@ -452,9 +494,12 @@ in §Design and §Decisions.
    copy, or best and last GPs only?~~ **Lean records restored on demand**
    (`GP.clean()` on a copy keeps the per-record copy of the factors;
    best/last changes what `load(iteration=)` can do).
-2. ~~Switch the `train_gp` warm start to `gp_hyp_full`?~~ **Yes**:
-   identical arrays, one reader fewer (the noisy per-sample update
-   included).
+2. ~~Switch the `train_gp` warm start to `gp_hyp_full`?~~ **No.** Agreed
+   as "yes" at first (identical arrays, one reader fewer); reversed while
+   implementing step 2, when the `gp_fit` oracle's history stand-in turned
+   out to make the switch move that oracle for no numerical reason
+   (§Design, step 2). The reader works on lean records unchanged, so the
+   gain would have been cosmetic.
 3. ~~Drop `active_importance_sampling` from the recorded `optim_state`?~~
    **Yes by default, kept under `record_full_history_details`** (the
    retention rule above); the measurement made it the largest key on noisy
@@ -471,12 +516,34 @@ in §Design and §Decisions.
   differ at rounding level, and `final_boost` with it; the per-GP rebuild
   check in `mem_history.py` and the replay's finals are the detectors.
 - Item 7 step 2: `load()` of a file written by the new code on an old
-  PyVBMC would hand `final_boost` a GP without factors; the save format
-  changes in that direction only (old files load on new code). Note in the
-  release notes of the eventual PR.
-- Item 7 step 1: a caller that relied on `_expand_array` deep-copying (none
-  found) would now see shared elements; the history's public API is
-  unchanged.
+  PyVBMC would set `vbmc.gp` to a record without factors and fail at the
+  first acquisition of a continued run (`gp.predict` with `alpha =
+  None`); the save format changes in that direction only (old files load
+  on new code). Release note for the eventual PR:
+  `iteration_history["gp"][i]` holds data and hyperparameters, and
+  `vbmc.get_gp(i)` is the usable GP of iteration `i`.
+- Item 7 step 1 on its own changed what a continued run leaves in the
+  history (Findings, "`optimize()` on a finished instance aliased the
+  history"); step 2's continuation copies close that. The history's
+  public API is unchanged.
+
+## Verification (item 7)
+
+Each step: `pytest pyvbmc/testing/oracles` (116 passed, 15 skipped every
+time; no oracle reaches the history, the standing gate), the replay
+against the item 6 traces (`identical` on all five configs, initial design
+identical, every time: `runs/golden/replay_item7_step{1,2,3}`), the full
+suite (`pytest --reruns=5 -x`: 543, 556 and 560 passed with 0 reruns as
+the tests were added; 15 skipped), `mem_history.py` on the three configs
+(§Results), pre-commit clean. Step 0's resume test passes at every step
+with the ELBO compared; after step 2 it also asserts the lean records,
+`get_gp`, a `VBMC.load(iteration=2)` round trip on a file written by the
+new code and that every recorded `optim_state` carries its own iteration
+number. Step 2's unit tests (`test_gp_records.py`, 13) check the lean copy
+and the bit-exact restore on three oracle snapshots and `get_gp` on the
+static pickle; step 3's (`test_optim_state_record.py`, 4) the recorded
+`optim_state` with and without the option. A read-only Opus review of
+step 1 and the step 2/3 design ran before the gates (tracker).
 
 ## Results
 
@@ -484,6 +551,44 @@ Item 6 has no speed result worth a table: `_vb_init` is about 0.1 % of a
 run after the change (Findings). Memory per candidate: the transformer copy
 (a few KB) and the copied `stats` (`Ns K²` doubles at large K: 20 KB at
 K = 50, Ns = 1) are gone; candidates hold only their own parameters.
+
+Item 7, `mem_history.py` after each step (seed 0, one BLAS thread; the
+same runs as "Measured" in §Findings, identical trajectories throughout):
+
+| config | step | history retained | `gp` | `optim_state` | RSS after `optimize()` | peak RSS | wall |
+|---|---|---|---|---|---|---|---|
+| `cigar_D4` | before | 9.4 MB | 7.6 MB | 0.2 MB | 162 MB | 200 MB | 46 s |
+| | 1 | 9.4 MB | 7.6 MB | 0.2 MB | 163 MB | 200 MB | 44 s |
+| | 2 | 1.9 MB | 0.1 MB | 0.2 MB | 153 MB | 191 MB | 43 s |
+| | 3 | 1.9 MB | 0.1 MB | 0.2 MB | 153 MB | 191 MB | 42 s |
+| `rosenbrock_D2_noise1` | before | 25.8 MB | 6.5 MB | 18.3 MB | 190 MB | 251 MB | 74 s |
+| | 1 | 25.8 MB | 6.5 MB | 18.3 MB | 188 MB | 244 MB | 72 s |
+| | 2 | 19.4 MB | 0.1 MB | 18.3 MB | 174 MB | 244 MB | 70 s |
+| | 3 | 1.3 MB | 0.1 MB | 0.1 MB | 158 MB | 225 MB | 71 s |
+| `logreg_D5_noise3` | before | 117.3 MB | 47.7 MB | 66.0 MB | 332 MB | 427 MB | 254 s |
+| | 1 | 117.3 MB | 47.7 MB | 66.0 MB | 279 MB | 383 MB | 208 s |
+| | 2 | 70.1 MB | 0.5 MB | 66.0 MB | 229 MB | 338 MB | 197 s |
+| | 3 | 4.6 MB | 0.5 MB | 0.5 MB | 163 MB | 273 MB | 198 s |
+
+Reading: step 1 changes nothing retained and removes the quadratic
+re-copy, visible only where the history is large (`logreg_D5_noise3`: RSS
+after the run 332 → 279 MB, peak 427 → 383 MB, wall 254 → 208 s; within
+noise on the two small configs). Step 2 takes the GP key from Σ Ns N²
+doubles to the data and hyperparameters (47.7 → 0.5 MB on logreg, 7.6 →
+0.1 MB on cigar). Step 3 removes what remained on the noisy runs, the
+importance-sampling arrays: the history of `logreg_D5_noise3` ends at
+4.6 MB (3.2 of them the logger's preallocated rows), its RSS after the run
+at 163 MB against 332 before the item and its peak at 273 MB against 427;
+`rosenbrock_D2_noise1` 25.8 → 1.3 MB. The peak RSS still exceeds the
+post-run RSS by 40–110 MB: the working set of an iteration (the sieve, the
+entropy blocks, the CMA-ES `predict` batches), not the history. The
+exhaust run (323 MB of factors by the analytic sum) was not
+re-measured; the overnight population run records a `peakRSS` per run,
+so its report against the item 1 population shows the in-situ effect on
+280 runs. `mem_history.py`'s rebuild check compares each stored GP with
+its own rebuild and so reports "differ" on lean records (no factors to
+compare); the bit-exactness of the restore is pinned by
+`test_gp_records.py` instead.
 
 ## Follow-ups
 
@@ -551,4 +656,86 @@ attention. Times are wall clock on 2026-09-05.
 - [x] The four open questions discussed with the PI and closed: lean GP
   records, the warm start through `gp_hyp_full`, the retention rule with
   `record_full_history_details`, the existing resume test fixed and used;
-  `VBMC.get_gp` public — 22:00–22:15; §Design, §Decisions, §Steps updated
+  `VBMC.get_gp` public — 22:00–22:15; §Design, §Decisions, §Steps updated;
+  committed `181e489`
+- [x] **Step 0** — 22:20: `elbo_1 == elbo_2` in
+  `test_vbmc_resume_optimization`; the test passes (a run resumed through a
+  `dill` round trip reproduces the straight run's ELBO and ELBO sd
+  exactly); `564f53a`
+- [x] **Step 1** — 22:25–22:50: `_expand_array` stores the grown array
+  with `dict.__setitem__`; `test_iteration_history_record_keeps_earlier_
+  entries`; history tests 13 passed; oracles 116 passed, 15 skipped;
+  replay against the item 6 traces (`runs/golden/replay_item7_step1`):
+  `identical` on all five, initial design identical; full suite **543
+  passed, 15 skipped, 0 reruns, 4:42**
+  (`runs/pytest_full_item7_step1_1788638671.log`); `mem_history.py`
+  after (`runs/mem_history_item7_step1_1788638671.log`): retained bytes
+  unchanged (9.4 / 25.8 / 117.3 MB, as expected: the fix removes a
+  transient, not what is retained); on `logreg_D5_noise3` the RSS after
+  `optimize()` 332 → 279 MB, the peak 427 → 383 MB and the wall 254 →
+  208 s; on the two small configs (history 9–26 MB) peak and RSS within
+  noise (200 → 200, 251 → 244 MB), so their peak excess over the final
+  RSS (38–56 MB) is the iteration's working set, not the re-copy;
+  100 of 100 stored GPs again rebuilt bit-identically; committed
+  `e357216`
+- [~] **Step 2** — implemented by an Opus agent in an isolated worktree
+  from a written spec (helpers `_lean_gp` / `_restore_gp_posteriors` in
+  `gaussian_process_train.py`, the seam, `VBMC.get_gp`, the `final_boost`
+  call site, `load`, `test_gp_records.py` with 13 tests on the oracle
+  snapshots and the static pickle, `test_vbmc_load_static` assertions,
+  `AGENTS.md`); the agent verified against gpyreg's `update` source that
+  the shallow copy cannot mutate the original and ran only the new
+  module and `-k load_static` (13 + 1 passed); patch applied to the main
+  tree 23:00 with two wording fixes. The warm start of `train_gp` stays on
+  the (lean) GP records rather than `gp_hyp_full`: the `gp_fit` oracle's
+  history stand-in provides an empty `gp` array but `gp_hyp_full` filled
+  with the current hyperparameters, so the switch would feed the warm
+  start extra starting points and draw from the generator
+  (`rng.choice`), moving the oracle for no numerical reason; identical
+  arrays either way.
+- [x] **Read-only Opus review of step 1 and the step 2/3 design** (ran in
+  parallel with the implementation, static analysis only) — 22:35–22:50:
+  no blocker; every reader in the plan's list confirmed and the rebuild's
+  exactness traced through gpyreg (`fit` ends in `update(hyp=...)` with no
+  new data on every exit, so no recorded GP carries rank-1 factors).
+  Should-fixes, applied: the continuation of `optimize()` aliased the
+  live VP and `optim_state` to the history's last entries, which step 1
+  stopped detaching → deep copies, and the resume test asserts every
+  recorded `optim_state` carries its own iteration number; `load` does
+  not alias (its truncation deep-copies every entry), so the plan's
+  aliasing claim was wrong → corrected, with the rule that the restore
+  acts on a copy; the warm start must stay on the GP records (the
+  `gp_hyp_full` switch would move the `gp_fit` oracle) → plan and
+  records corrected, Open question 2 reversed; step 3 must read the
+  option with `.get` and leave the key set of a noiseless `optim_state`
+  alone → the draft already did; the resume test gains a
+  `VBMC.load(iteration=2)` round trip on a file written by the new code
+  (the static pickle only exercises the no-op branch) → added. Notes,
+  applied: the history test covers a growth by several slots and the
+  object dtype; the `clean()`-on-a-shallow-copy trap is in `_lean_gp`'s
+  comment; `search_cache`, the unpickle re-copy and the in-loop plot's
+  unused `highlight_data` are in §Findings. Light tests after the edits:
+  32 passed (the resume test included); step 2 gate chain restarted on
+  the final code — 23:05
+- [x] **Step 2 gates** — 23:05–23:30: oracles 116 passed, 15 skipped;
+  replay against the item 6 traces (`runs/golden/replay_item7_step2`)
+  `identical` on all five, initial design identical, 0 flagged; full suite
+  **556 passed, 15 skipped, 0 reruns, 4:43**
+  (`runs/pytest_full_item7_step2_1788639831.log`); `mem_history.py`
+  (`runs/mem_history_item7_step2_1788639831.log`): §Results, the GP key
+  47.7 → 0.5 MB on logreg; committed `1aa1933` — 23:31
+- [x] **Step 3** — 23:35–23:51: `_optim_state_record` and the seam in
+  `vbmc.py`, `record_full_history_details = False` in
+  `advanced_vbmc_options.ini` (the options page includes the file, no
+  other docs change), `test_optim_state_record.py` (4 tests),
+  `AGENTS.md`; at the PI's request the in-loop plot passes `gp=self.gp`
+  (it drew no training points; smoke-tested with `plot=True` under the
+  Agg backend, 3 iterations); light tests 37 passed; oracles 116 passed;
+  replay `identical` on all five (`runs/golden/replay_item7_step3`); full
+  suite **560 passed, 15 skipped, 0 reruns, 4:36**
+  (`runs/pytest_full_item7_step3_*.log`); `mem_history.py`: §Results, the
+  logreg history 70.1 → 4.6 MB; committed `ffbd4b2` — 23:52
+- [x] Records (this file, roadmap, devlog §9/§10, `dev/README.md`) —
+  23:55
+- [ ] `/doublecheck` of the item 7 commits and records (read-only
+  reviewers); then the 20-seed population overnight on the PI's word
