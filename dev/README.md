@@ -61,6 +61,14 @@ status and next steps never go into the devlogs.
   item 3: the replay gate (`scripts/golden_replay.py`), the batched CMA-ES
   acquisition evaluation, the broadcast `vp.pdf`, the targeted re-baseline
   of the step oracle, the measured speedup.
+- `plans/stage2-gpyreg-predict-and-sampler.md` — plan and worklog for
+  Stage 2 item 8: the gpyreg PR (acerbilab/gpyreg#43; `predict` and the
+  slice sampler's log-posterior evaluation without scipy's wrapper layers,
+  the Cholesky factor reused across mean-hyperparameter moves, generator
+  support), identity-preserving and gated by exactness (the `gp_nlZ` and
+  `gp_fit` oracles, a dump of the pre-change oracle outputs, the replay
+  reporting `identical`), the PyVBMC seam removal (every draw of a run
+  through `vbmc.rng`), the measured speedup, the review findings.
 - `plans/stage2-gp-log-joint-einsum.md` — plan and worklog for Stage 2
   items 1 and 2: `_gp_log_joint` vectorized over hyperparameter samples
   and mixture components (one `(Ns, K, D, N)` tensor, `einsum`
@@ -163,5 +171,17 @@ reason.
   (git shows a full binary change), appends an audit entry under
   `meta["rebaselined"]` in the `.json` (oracle, date, git SHA, reason,
   per-output max change: the thing to look for when reviewing such a
-  diff), refuses the step oracle off the generating platform, and runs
-  one process at a time.
+  diff), refuses the platform-bound oracles (`active_sample_step`,
+  `gp_fit`) off the generating platform, and runs one process at a time.
+  Since 2026-09-05 (item 8): `--expect-moving A,B` names the other
+  oracles a change moves so the post-write check does not fail on them
+  (a random-stream change moves every oracle that draws); `--add-oracle
+  NAME --reason "..."` adds a newly registered oracle's references to the
+  existing fixtures from their stored state (audit entry under
+  `meta["oracles_added"]`); `--dump-outputs DIR` writes the current code's
+  outputs of every oracle on every snapshot and `--check --exact
+  --against DIR` compares the working tree with such a dump bit for bit,
+  the gate for an identity-preserving refactor (the committed references
+  pin the numerics of the day they were made and several outputs have
+  since moved within tolerance); `--check --exact` alone compares with
+  the committed references bit for bit.

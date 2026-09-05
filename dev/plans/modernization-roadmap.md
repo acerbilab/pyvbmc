@@ -44,8 +44,12 @@ anything that changes numerics lands.
     §Results (regenerated))
   - [ ] dtype canary
 - [x] **Stage 1 — `seed=` and `Generator` threading**
-  (`plans/stage1-rng-generator.md`). Remaining seam: gpyreg still draws
-  from the global state; see the follow-ups there.
+  (`plans/stage1-rng-generator.md`). The remaining seam (gpyreg and the
+  cma noise handler drawing from the global state) was removed on
+  2026-09-05 with Stage 2 item 8: gpyreg's `fit` takes `rng=`
+  (acerbilab/gpyreg#43), the noise-handler subclass draws from `vp.rng`,
+  and a run never reads or writes NumPy's global state; the per-iteration
+  `random_state` holds only the generator state.
 - [x] **Benchmark target suite** (`dev/scripts/benchmark_targets.py`,
   2026-09-02/03, corrected to the papers' procedure 2026-09-03): banana,
   cigar, lumpy, Student-t at D = 4 (lumpy and banana also at D = 10, banana
@@ -94,7 +98,19 @@ anything that changes numerics lands.
   re-optimizations, so (8) and (1) are what speed those up. After items
   3, 1 and 2 the remaining time at D = 4 is active sampling (46–54 %,
   gpyreg's `predict` overhead 31–34 %) and GP training (31–42 %, the
-  slice sampler 27–38 %): item 8.
+  slice sampler 27–38 %): item 8. **(8) done 2026-09-05 except its
+  profile campaign** (`plans/stage2-gpyreg-predict-and-sampler.md`;
+  gpyreg branch `perf/predict-sampler-overhead`, draft PR
+  acerbilab/gpyreg#43, four commits on `236ddd7`, `GPYREG_PIN` at its
+  head): identity-preserving throughout (every oracle output bit-identical
+  to a dump of the pre-change code, the replay `identical`), `predict`
+  1.6–1.7× per CMA-ES-sized call, the sampler's log-posterior evaluation
+  1.4–1.9×, one `train_gp` call 2.2–2.5× (the Cholesky reused on
+  mean-hyperparameter moves); generator support in gpyreg and the
+  PyVBMC seam removed (every draw through `vbmc.rng`, which shifts the
+  stream of every existing seed). The end-to-end profile (Step 7) must
+  run on the identity-preserving commit `284747e` from a detached
+  checkout, machine idle, ≈ 40 min.
 - [ ] **Stage 3 — pipeline features** (batched initial design,
   torch/jax target adapter docs, `vp.to_torch()`, ArviZ export).
 - [ ] **Stage 4 — PyTorch port** (decision point, not default).
@@ -156,9 +172,9 @@ anything that changes numerics lands.
    ELBO by 0.4 and can push a seed outside the population fence), so the
    initial design is now certified from the traces (`X_init`) rather than
    from an identical iteration-0 ELBO; and the envelope check on a single
-   seed has a visible false-alarm rate on cigar. **Next: item 8 as one
-   gpyreg PR** (sampler overhead plus `predict`'s per-sample loop and `sW`
-   tiling from item 3), then item 5 (`entmc_vbmc`), then the memory items.
+   seed has a visible false-alarm rate on cigar. ~~Next: item 8 as one
+   gpyreg PR~~ done 2026-09-05 except the profile, see point 3a below;
+   then item 5 (`entmc_vbmc`), then the memory items.
    The 20-seed population against `dev/golden/baseline` (the end-of-stage
    check of items 3, 1 and 2 together) ran 2026-09-05 00:39–07:06 on the
    final code (`a39e5ec`): **280 of 280 succeeded, no config flagged over
@@ -171,6 +187,27 @@ anything that changes numerics lands.
    not promoted to the reference: `dev/golden/baseline` stays the
    pre-Stage-2 reference until the stage ends (then re-baseline once, and
    grow to 50 seeds, pickup point 5).
+3a. **Stage 2 item 8** (`plans/stage2-gpyreg-predict-and-sampler.md`,
+   2026-09-05): the gpyreg work is on branch `perf/predict-sampler-overhead`
+   of `acerbilab/gpyreg` (draft PR #43; four commits, bit-identical
+   outputs, `rng=` support), `GPYREG_PIN` points at its head, PyBADS's
+   suite passes against it, and PyVBMC's seam is removed. **Open:** (i) the
+   profile campaign of Step 7, to run from a detached checkout of the
+   identity-preserving commit `284747e` when the laptop is idle
+   (`git checkout 284747e`, then `OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1
+   MKL_NUM_THREADS=1 python -u dev/scripts/profile_suite.py --suite profile
+   --mode plain --probe banana_D4 --out dev/scripts/runs/profile_<stamp>`,
+   ≈ 35 min, then `--mode cprof --only banana_D4,cigar_D4,lumpy_D4,
+   student_D4,cigar_D15_exhaust` ≈ 40 min, then `git checkout dev-next`;
+   compare with `runs/profile_20260905/aggregate.md`, record in the plan's
+   §Results, here and in devlog §2/§10); (ii) merge PR #43 after the PI's
+   review, move the pin to the merge commit, and bump the gpyreg minimum in
+   `pyproject.toml` once a gpyreg release carries it; (iii) whether to run
+   the 20-seed population right after item 8 (the seam removal changed
+   every stream) or at the end of the stage; (iv) Open question 8 of the
+   plan: re-baseline the committed oracle references that items 3, 1, 2
+   moved within tolerance, so `--check --exact` against the fixtures becomes
+   the identity gate.
 4. ~~Run the `tests` workflow on `dev-next` for the package fix~~ done
    2026-09-03 (full matrix green, run 33715620257); pushes to `dev*` now
    run a smoke automatically.
@@ -184,10 +221,11 @@ anything that changes numerics lands.
    transformer Jacobian and the gpyreg derivatives (`compute_vargrad`
    dropped from the list: the path was deleted with Stage 2 item 1); retire
    the `.mat` fixtures once the oracles cover what they pin.
-7. gpyreg generator support (`GP.fit`, `SliceSampler`, `f_min_fill`,
-   `GP.random_function`) on a gpyreg branch when convenient. The PyVBMC seam
-   can only go once gpyreg `main` has it: CI installs gpyreg from `main`,
-   unpinned.
+7. ~~gpyreg generator support (`GP.fit`, `SliceSampler`, `f_min_fill`,
+   `GP.random_function`) on a gpyreg branch when convenient.~~ Done
+   2026-09-05 in acerbilab/gpyreg#43 (item 8, point 3a); the PyVBMC seam is
+   removed on `dev-next` against the pinned branch head. Remaining: the
+   gpyreg minimum version in `pyproject.toml` once a release carries it.
 8. One PR `dev-next` → `main` when the work is done.
 
 ## Deferred (devlog §12)

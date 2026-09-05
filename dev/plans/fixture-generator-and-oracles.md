@@ -199,6 +199,20 @@ total about six minutes.
 | `entmc` | `entmc_vbmc(vp, ceil(ns_ent(K)/K), rng=default_rng(seed))` | `H, dH` | 1e-10 while the draw order is unchanged; item 5 (vectorized `entmc`) re-baselines this oracle deliberately after its own finite-difference and statistical checks |
 | `transform` | `pt(X_orig)`, `pt.inverse(U)`, `pt.log_abs_det_jacobian(U)` on the live rows | arrays | 1e-12 |
 | `active_sample_step` | legacy state and `vp.rng` seeded, `active_sample(gp, fun_evals_per_iter, …)` on deep copies of the rebuilt state, history stand-in `{"r_index": [r]}` | the chosen points `X_new (n, D)` in original space, their `y_new` | atol 1e-8 on points, **on the platform that generated the fixture only** (`meta["platform"]`; `PYVBMC_ORACLES_ALL=1` forces it elsewhere). The first CI run showed why: on Ubuntu's BLAS the CMA-ES search on `cigar_D4_boosted` ended 1.3 away from the reference points while every acquisition oracle before it passed. It is a same-machine determinism check; a rounding change in the acquisition can flip a CMA-ES ranking even locally, and then the `acq_*` oracles are the arbiter and this oracle is re-baselined with a note |
+| `gp_nlZ` (added 2026-09-05, item 8) | on the bare rebuilt GP, `__compute_nlZ(hyp_s, True, False)` per stored sample; on a copy with PyVBMC's hyperprior installed as `train_gp` does (`_gp_hyp`, then `fit`'s `df` fill and bound repair, in that order), `__compute_nlZ(hyp_s, True, True)` | `lZ, lp (Ns,)`, `dlZ, dlp (Ns, hyp_N)` with the public API's signs | values GP-solve class 1e-6 + 1e-10 abs; gradients 1e-4 (they go through the explicit inverse `Q = K⁻¹ − ααᵀ`: Ubuntu moved them by 2.6e-6 per element on `cigar_D4_boosted`, macOS by 1.6e-6, the values by 1e-8) |
+| `gp_fit` (added 2026-09-05, item 8) | one `train_gp` call from the stored state under `legacy_seed` and `rng=default_rng(seed)`, with a history stand-in (the current `r_index`, unit `sKL` weights, the current hyperparameters, no past GPs; inert because `train_gp` drops the sampler widths, asserted) | `hyp (Ns, hyp_N)`, `sn2_hpd`, `gp_s_N` | exact (`rtol 0`, `atol 1e-8`), **platform-bound** like the step oracle (`PLATFORM_BOUND`); re-baselined 2026-09-05 when `train_gp` started handing its generator to `gpyreg.GP.fit` |
+
+Since 2026-09-05 (item 8) the generator also has `--add-oracle NAME --reason`
+(a newly registered oracle's references added to the fixtures from their
+stored state, every other array asserted bit-identical), `--expect-moving
+A,B` for `--rebaseline` / `--add-oracle` when one change moves several
+oracles (a random-stream change moves every oracle that draws), and
+`--dump-outputs DIR` + `--check --exact --against DIR`: the committed
+references pin the numerics of the day they were made and several outputs
+have since moved within tolerance (items 3, 1, 2), so the gate for an
+identity-preserving refactor is a dump of the pre-change outputs compared
+bit for bit, not the committed references
+(`plans/stage2-gpyreg-predict-and-sampler.md`).
 
 **Tolerances are per element with a robust floor** (for every entry
 `|out − ref| ≤ rtol · max(|ref|, q25(|ref|)) + atol`, with `q25` the lower

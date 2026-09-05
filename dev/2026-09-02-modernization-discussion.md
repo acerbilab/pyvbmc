@@ -481,7 +481,9 @@ state used by resume.
   and `corner` imported at module top level.
 - `priors/scipy.py:5-10`, `priors/product.py:5` — imports of scipy private classes.
 - gpyreg `predict` tiles `sW` to `(N, N_star)` instead of broadcasting (13 MB
-  per sample at `Nc = 8192`).
+  per sample at `Nc = 8192`). **Fixed 2026-09-05** (Stage 2 item 8, gpyreg
+  PR acerbilab/gpyreg#43, `plans/stage2-gpyreg-predict-and-sampler.md`):
+  `sW * Ks` broadcasts, bit-identically.
 - **Fixed 2026-09-02:** `_vp_bound_loss` unpacked the ln-scale gradient block
   with a C-order `reshape` after packing it with `order="F"`, scrambling the
   sigma/lambd penalty gradients (a transpose when `D = K`) whenever a
@@ -618,6 +620,38 @@ state used by resume.
     snapping CMA-ES's own solution arrays to the integer grid (an
     undocumented side effect that the batched objective now reproduces
     deliberately).
+- **Found 2026-09-05 while building the `gp_fit` oracle and reviewing the
+  item 8 plan** (`plans/stage2-gpyreg-predict-and-sampler.md`):
+  - `gaussian_process_train.py: _get_hyp_cov`, the weighted branch that
+    `weighted_hyp_cov = True` (the default) selects, has two slips: it
+    appends `gp_hyp_full[i].T` and then takes `np.shape(hyp_list)[1]` as
+    the sample count (:717, :729), so `hyp_cov` comes out `(Ns, Ns)`
+    instead of `(hyp_N, hyp_N)`, and its `np.dot` of 1-D rows (:731-735)
+    is a scalar, so every entry is the same number. `train_gp:121-124`
+    then drops the slice-sampler widths whenever `Ns ≠ hyp_N`, which held
+    in every fit measured (all eight oracle snapshots): production
+    slice-samples with gpyreg's `widths_default`. When `Ns == hyp_N`
+    (reachable at D = 2: `hyp_N = 9`, `Ns = 9`) a degenerate constant
+    width vector *is* used. **Not fixed**: fixing changes the sampler's
+    proposal widths and therefore every trajectory; it needs its own item
+    with a population check. The `gp_fit` oracle asserts the drop so a fix
+    is noticed there.
+  - gpyreg `GP.log_likelihood` / `GP.log_posterior` with `compute_grad=True`
+    applied the unary minus to the returned `(nlZ, dnlZ)` tuple and raised
+    `TypeError` (no PyVBMC caller; gpyreg's own gradient test bypasses the
+    wrappers). **Fixed in acerbilab/gpyreg#43** (they return `(value,
+    gradient)`).
+  - gpyreg `SliceSampler` with `step_out=True` (off in PyVBMC and by
+    default): `x_l` / `x_r` are copied from `xx` once per sweep
+    (`slice_sample.py:387-388`) and never re-synced after `xx[dd] =
+    xprime[dd]`, so the step-out evaluations of later axes carry stale
+    coordinates from earlier ones (off the coordinate line). Inert for
+    PyVBMC; not fixed.
+  - A trap, not a defect: after `_gp_hyp` installs PyVBMC's hyperprior on
+    a GP and before `GP.fit` runs, `gp.log_posterior` is NaN (`_gp_hyp`
+    leaves NaN bounds, so the normalization constants are NaN until
+    `fit` fills the prior's `df` and the bounds, in that order). The
+    `gp_nlZ` oracle replicates `fit`'s two repairs.
 
 ---
 
@@ -740,6 +774,43 @@ gradient moves the iteration-0 ELBO by 0.4, so the replay's initial-design
 check now reads the design from the trace (`X_init`) instead of demanding
 an identical iteration-0 ELBO. Speedup in §2 above. Four latent defects of
 the function were fixed on the way (§9).
+
+*Item 8 done 2026-09-05 as one gpyreg PR* (acerbilab/gpyreg#43, branch
+`perf/predict-sampler-overhead`, four commits on `236ddd7`;
+`plans/stage2-gpyreg-predict-and-sampler.md`), **identity-preserving
+throughout**: `predict` drops scipy's Python layers around a 5 µs
+triangular solve (a direct `trtrs` with scipy's own layout rule, which
+the measurements showed to be bit-identical where `potrs` and a plain
+`potrf` are not), the `sW` tiling and the per-sample mean calls (a
+`compute_batched` on the mean functions, whose columns equal the
+per-sample values because numpy's last-axis reduction does not depend on
+leading dimensions); the sampler's log-posterior evaluation uses
+`cdist(Xs, Xs)` for the symmetric kernel (bit-equal to `squareform(pdist)`),
+adds the noise in place on the diagonal, caches the hyperprior's type
+masks, and reuses the Cholesky factor when the sampler moves a
+mean-function hyperparameter (two thirds of the coordinates), the
+gradient path excluded; the two public gradient wrappers that raised
+`TypeError` are fixed (§9). Every gpyreg output is bit-identical to a dump
+of the pre-change code (2219 random-GP arrays, the eight oracle snapshots
+through every oracle incl. the new `gp_nlZ` and `gp_fit`), the golden
+replay is `identical` after each commit, PyBADS's suite passes against
+the branch. Per call: `predict` 1.6–1.7× at CMA-ES batch sizes, the
+log-posterior evaluation 1.4–1.9×, one `train_gp` call 2.2–2.5×; what
+remains in an evaluation is the N² exponential of the kernel and the
+factorization. The end-to-end profile is pending (it must run on the
+identity-preserving commit, machine idle). The same PR adds `rng=` to
+`GP.fit`, `SliceSampler`, `f_min_fill` and `GP.random_function`
+(`None` keeps today's legacy draws call for call), and PyVBMC's seam of
+Stage 1 is removed: `train_gp` hands `vbmc.rng` to `gp.fit`, the CMA-ES
+noise-handler subclass draws its re-evaluation count from `vp.rng`, and a
+run never reads or writes NumPy's global state (a seeded run's stream
+shifts by one draw relative to before, since the removed reseed drew one
+integer from `vbmc.rng`; the `gp_fit` and `active_sample_step` oracles
+were re-baselined for the stream change). The identity gate was found to
+need a *dump* of the pre-change oracle outputs rather than the committed
+references, which items 3, 1 and 2 had already moved within tolerance;
+the generator gained `--dump-outputs` / `--check --exact --against`,
+`--add-oracle` and `--expect-moving`.
 
 **Benchmark target suite (decided 2026-09-02, after the profile).** The
 profile was taken on an independent and a correlated Gaussian, which

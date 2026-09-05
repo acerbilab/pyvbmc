@@ -562,20 +562,29 @@ question 3).
 
 ## Verification
 
-- [ ] Step 1: oracles green; `--check` exact; fixture diffs show only new
-      `ref/` keys and `meta`.
-- [ ] Steps 2–4: bit-check `==` on every output; oracles exact; gpyreg
-      suite green; replay `identical` on all five configs after each
-      step; PyVBMC full suite green after each commit.
-- [ ] Step 5: gpyreg suite green with the new tests; PyVBMC gates
-      unchanged.
-- [ ] Step 6: PyVBMC smoke and full matrix green against the branch pin.
+- [x] Step 1: oracles green (116 passed); `--check --exact --against` the
+      pre-change dump 8 of 8 (the committed references cannot serve an
+      exact check, see Design); fixture diffs show only the new `ref/`
+      keys and `meta` (asserted by `--add-oracle`).
+- [x] Steps 2–4: random-GP bit-check 2219 arrays `==` after each step;
+      oracles exact against the dump 8 of 8 after each step; gpyreg suite
+      green (82 → 104); replay `identical` on all five configs after each
+      step; PyVBMC full suite green after each commit (539 passed).
+- [x] Step 5: gpyreg suite green with the new tests (106); PyVBMC gates
+      unchanged (bit-check, exact oracles, full suite).
+- [~] Step 6: branch pushed, draft PR #43, pin bumped; PyBADS 87 passed;
+      CI failed on the `gp_nlZ` gradient floor (tolerance set from the
+      Ubuntu and macOS measurements, see the tracker); rerun pending with
+      the Step 8 push.
 - [ ] Step 7: per-config walls and shares recorded; trajectories identical
       to 2026-09-05 (same iterations, evaluations, metrics); probe within
-      a few percent.
-- [ ] Step 8: `test_vbmc_seed.py` green; seeded runs reproducible without
-      any global-state write; replay finals inside the envelope; design
-      certified.
+      a few percent. To run from a detached checkout of `284747e` when the
+      machine is idle.
+- [~] Step 8: `test_vbmc_seed.py` green (13 with save/load) including the
+      new global-state-untouched test; replay finals inside the envelope
+      on 4 of 5 configs, `halfnormal_D2` MMTV marginally outside at seed 0
+      (seeds 1–4 running); the design is *not* certified by construction
+      (the stream shifted by one draw); full suite pending.
 
 ## Decisions
 
@@ -904,9 +913,78 @@ attention. Times are wall clock on 2026-09-05.
 - [x] **Step 5 committed**: `966414d feat: rng= on GP.fit, SliceSampler,
   f_min_fill and GP.random_function` — 13:30. The gpyreg branch is four
   commits on `236ddd7`: `b8f03dd`, `c0b9248`, `cc63452`, `966414d`
-- [~] Step 6: PyBADS suite against the branch running
-  (`runs/pybads_item8_branch.log`); branch pushed; draft PR; `GPYREG_PIN`
-  → branch head — 13:32
+- [x] **Step 6** — 13:32–13:50: branch pushed to `acerbilab/gpyreg`;
+  **draft PR acerbilab/gpyreg#43** ("perf: predict and sampler overhead,
+  bit-identical; rng= support"); `GPYREG_PIN` → `966414d` (`1d40308 ci:`,
+  `284747e docs(dev):`), `dev-next` pushed, smoke run 33950214079 started
+  by the push and the full matrix dispatched (run 33950213844). **PyBADS
+  suite against the branch** (`../pybads` as it stands, `pytest --reruns=5
+  -x`): the first run stopped at `test_init_conf.py::test_version`, which
+  needs installed package metadata (`PackageNotFoundError` for `pybads`;
+  an environment artefact of the editable checkout, unrelated to gpyreg);
+  rerun with that test deselected: **87 passed** (`runs/pybads_item8_
+  branch.log`). PyBADS uses gpyreg's `fit`, `predict`, `predict_full` and
+  `quad` through `pybads/bads/gaussian_process_train.py`.
+- [~] **Step 8** (PyVBMC, uncommitted) — 13:55–14:15: `train_gp` resolves
+  its generator once and hands it to `gp.fit(rng=)`;
+  `_BatchedNoiseHandler(N, batch_fun, rng)` overrides `indices` (cma
+  4.4.4's `choice == 1` policy, the fractional re-evaluation count from
+  `vp.rng`); deleted `seed_global_from`, the constructor reseed and
+  `_seeded`, the reinstall at the start of `optimize()`, the `"legacy"`
+  half of `random_state` (`_set_random_state` still reads the two older
+  formats: the dict with a legacy entry, now ignored, and the bare tuple
+  of pre-generator files, restored with the existing warning); docstrings
+  (`seed`, `optimize`, `load`, `train_gp`), `AGENTS.md` randomness
+  paragraph; `test_vbmc_seed.py` gets
+  `test_seeded_run_leaves_global_state_untouched` (global state identical
+  before and after a seeded `optimize()`, no `"legacy"` key). Gates so
+  far: pre-commit clean; `test_vbmc_seed.py` + `test_vbmc_save_and_load.py`
+  **13 passed** (so no stray global draw remains in a run). Step 7 (the
+  profile campaign) will run from a detached checkout of `284747e`, the
+  identity-preserving state, when the machine is free, so that the
+  per-config comparison with 2026-09-05 is on identical trajectories.
+  Oracles: `--check --exact --against` the dump shows **exactly `gp_fit`
+  and `active_sample_step` moved**, and only where they draw (the
+  L-BFGS-B-only `normal_D2_singlesample` fit is unchanged); both
+  re-baselined from the stored state with reasons (`--rebaseline gp_fit
+  --expect-moving active_sample_step`, then `--rebaseline
+  active_sample_step`; the new `--expect-moving` option exists because the
+  post-write check of a targeted rewrite assumed one moving oracle at a
+  time, and a stream change moves every oracle that draws: the first
+  attempt without it rewrote one fixture and refused, the fixtures were
+  restored from git and redone); oracle suite 116 passed. **Replay**
+  (`runs/golden/replay_item8_step8`, against the item 1/2 traces, 3.8
+  min): every config **parts at iteration 0 with a different initial
+  design** (only the start point `x0` is shared), which is what the
+  change implies for an existing seed: the removed constructor reseed
+  drew one integer from `vbmc.rng`, so the whole generator stream is
+  shifted by one draw and the design, drawn from it before any fit, moves
+  with everything after it (and the GP fits now interleave their draws
+  on the same stream). The design certificate flags this by design;
+  `VBMC(seed=s)` runs from before and after this commit are two different
+  members of the same population. Finals: inside the fence on every
+  metric of four configs; `halfnormal_D2` MMTV 0.0253 against a fence of
+  0.0251 (ΔLML 0.0141 vs 0.0174, gsKL 0.00024 vs 0.00063 inside);
+  evaluations 70 / 105 / 65 / 130 / 145 within the population ranges;
+  walls 0.41 / 0.38 / 0.2 / 1.1 / 1.7 min against the pre-Stage-2
+  baseline's 1 / 0.59 / 0.54 / 2.4 / 2.0. `halfnormal_D2` seeds 1–4
+  (`runs/golden/replay_item8_step8_halfnormal_seeds`, the item 3 rule):
+  **0 flagged of 4**, MMTV baseline → new 0.0163 → 0.0178, 0.0182 →
+  0.0196, 0.0173 → 0.0161, 0.0238 → 0.0155 against the 0.0251 fence, two
+  up and two down: the seed-0 excursion is chance. Full suite running
+  — 14:45
+- [!] **First CI runs of the day failed on the new `gp_nlZ` oracle**
+  (smoke 33950214079 on Ubuntu / 3.12 and the dispatched matrix
+  33950213844, whose macOS / 3.11 job failed first and cancelled the
+  rest): `cigar_D4_boosted / gp_nlZ`, `dlZ` and `dlp` at 2.61e-6 per
+  element (8.2e-6 absolute) against the 1e-6 GP-solve class, `lZ` / `lp`
+  at 1e-8. The gradient goes through the explicit inverse `Q = K⁻¹ −
+  ααᵀ` on the cigar GP (conditioning ≈ 1e8), a worse-conditioned quantity
+  than the analytic expectations under the VP. Fix per the tolerance
+  rule (measure, then set 30–100× above): `dlZ`, `dlp` → 1e-4, values stay
+  at 1e-6; recorded in the module docstring. Nothing else has run on CI
+  yet (`-x` stopped both runs at this test), so the gpyreg branch is
+  untested there until the next push — 14:30
 - [ ] Step 2: gpyreg branch; `predict`; bit-check; gates; commit
 - [ ] Step 3: `__core_computation`, SE `cdist`, prior-mask cache;
   bit-check; gates; commit
