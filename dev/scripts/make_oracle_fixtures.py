@@ -11,8 +11,13 @@ outputs as the reference next to the state. Fixtures land in
     python dev/scripts/make_oracle_fixtures.py            # regenerate all
     python dev/scripts/make_oracle_fixtures.py --only cigar_D4_largeK
     python dev/scripts/make_oracle_fixtures.py --check    # recompute, compare
+    python dev/scripts/make_oracle_fixtures.py --check --exact   # bit for bit
     python dev/scripts/make_oracle_fixtures.py --rebaseline active_sample_step \
         --reason "..."                     # one oracle, from the stored state
+    python dev/scripts/make_oracle_fixtures.py --add-oracle gp_fit \
+        --reason "..."                     # a new oracle, from the stored state
+    python dev/scripts/make_oracle_fixtures.py --dump-outputs DIR   # current outputs
+    python dev/scripts/make_oracle_fixtures.py --check --exact --against DIR
 
 Regenerating **replaces the references**: do it only when the current code
 is the one the references should pin (a fresh baseline), never to make a
@@ -21,7 +26,15 @@ failing oracle pass. One process, single BLAS thread, about six minutes.
 the source run (whose trajectory would move and take every other reference
 with it); it is for the one oracle that is *expected* to change under an
 arithmetic-preserving refactor, the CMA-ES search of ``active_sample_step``,
-after the ``acq_*`` oracles have confirmed the acquisition itself. Plan and
+after the ``acq_*`` oracles have confirmed the acquisition itself.
+``--add-oracle`` computes a newly registered oracle from the stored state
+and adds its references, leaving every existing array bit-identical (the
+recipes are not rerun, so the snapshots keep pinning what they pin).
+``--check --exact`` compares bit for bit instead of at the tolerances. The
+committed references pin the numerics of the day they were made (several
+outputs have since moved within tolerance, Stage 2 items 1–3), so the gate
+for an identity-preserving refactor is ``--dump-outputs DIR`` on the code
+just before it and ``--check --exact --against DIR`` after. Plan and
 worklog: ``dev/plans/fixture-generator-and-oracles.md``.
 """
 
@@ -52,6 +65,7 @@ from pyvbmc import VBMC  # noqa: E402
 from pyvbmc.testing.oracles._oracles import (  # noqa: E402
     DEFAULT_SEED,
     ORACLES,
+    PLATFORM_BOUND,
     applicable,
     compare,
     format_rows,
@@ -361,10 +375,14 @@ def generate(recipes):
         )
 
 
-def check_one(path, fun, exact=False, verbose=False):
+def check_one(path, fun, exact=False, verbose=False, reference=None):
+    """Recompute every stored oracle of one snapshot and compare with the
+    stored references, or with ``reference`` (``{oracle: {key: array}}``,
+    e.g. a dump of an earlier code state, see :func:`dump_outputs`)."""
     snap = load_snapshot(path)
+    refs = snap["ref"] if reference is None else reference
     bad = []
-    for name, ref in snap["ref"].items():
+    for name, ref in refs.items():
         orc = ORACLES[name]
         state = build_state(snap, fun=fun)
         if not orc.applies(state):
@@ -385,12 +403,80 @@ def target_for(meta):
     return prob.fun
 
 
-def check(names, verbose):
+def _dump_files(out_dir, name):
+    out_dir = Path(out_dir)
+    return out_dir / (name + ".npz"), out_dir / (name + ".json")
+
+
+def dump_outputs(names, out_dir):
+    """Write the *current* code's outputs of every stored oracle on every
+    snapshot to ``out_dir`` (one ``.npz`` per snapshot, keys
+    ``<oracle>/<output>``, plus a ``.json`` with the provenance).
+
+    The committed references pin the numerics of the day they were made,
+    at tolerance; a refactor that must not change any output at all is
+    checked against a dump of the code just before it (``--check --exact
+    --against <dir>``), which the dump makes reproducible without a second
+    checkout.
+    """
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    for name in names:
+        path = FIXTURES / name
+        snap = load_snapshot(path)
+        fun = target_for(snap["meta"])
+        arrays = {}
+        for oracle_name in snap["ref"]:
+            state = build_state(snap, fun=fun)
+            out = ORACLES[oracle_name](state, snap["meta"]["oracle_seed"])
+            for key, val in out.items():
+                arrays[f"{oracle_name}/{key}"] = np.asarray(val, dtype=float)
+        npz, js = _dump_files(out_dir, name)
+        np.savez_compressed(npz, **arrays)
+        with open(js, "w", encoding="utf-8", newline="\n") as f:
+            json.dump(
+                {
+                    "snapshot": name,
+                    "oracles": sorted(snap["ref"]),
+                    "git": git_info(),
+                    "platform": platform.platform(),
+                    "date": time.strftime("%Y-%m-%d %H:%M:%S"),
+                    "threads": {
+                        k: os.environ.get(k)
+                        for k in (
+                            "OMP_NUM_THREADS",
+                            "OPENBLAS_NUM_THREADS",
+                            "MKL_NUM_THREADS",
+                        )
+                    },
+                },
+                f,
+                indent=1,
+                sort_keys=True,
+            )
+            f.write("\n")
+        print(f"[dump] {name:28s} {len(arrays)} arrays", flush=True)
+
+
+def load_dump(out_dir, name):
+    npz, _ = _dump_files(out_dir, name)
+    reference = {}
+    with np.load(npz, allow_pickle=False) as z:
+        for key in z.files:
+            oracle_name, output = key.split("/", 1)
+            reference.setdefault(oracle_name, {})[output] = z[key]
+    return reference
+
+
+def check(names, verbose, exact=False, against=None):
     failures = {}
     for name in names:
         path = FIXTURES / name
         fun = target_for(load_snapshot(path)["meta"])
-        bad = check_one(path, fun, verbose=verbose)
+        reference = None if against is None else load_dump(against, name)
+        bad = check_one(
+            path, fun, exact=exact, verbose=verbose, reference=reference
+        )
         print(
             f"[check] {name:28s} {'ok' if not bad else 'FAIL ' + str(bad)}",
             flush=True,
@@ -398,6 +484,124 @@ def check(names, verbose):
         if bad:
             failures[name] = bad
     return failures
+
+
+def _refuse_off_platform(name, oracle_name, meta):
+    if (
+        oracle_name in PLATFORM_BOUND
+        and meta.get("platform") != platform.platform()
+    ):
+        sys.exit(
+            f"{name}: {oracle_name} is platform-bound and this is not the"
+            f" generating platform ({meta.get('platform')})"
+        )
+
+
+def _write_fixture(path, arrays, tree):
+    """Write both files through temporary files outside the fixtures
+    directory (which the tests glob), renamed into place."""
+    npz, js = _files(path)
+    tmp = FIXTURES.parent / (path.name + ".rewrite-tmp")
+    tmp_npz, tmp_js = _files(tmp)
+    try:
+        save_snapshot(tmp, arrays, tree)
+        os.replace(tmp_npz, npz)  # the pair is not atomic together;
+        os.replace(tmp_js, js)  # the json holds only markers + meta
+    finally:
+        for p in (tmp_npz, tmp_js):
+            if p.exists():
+                p.unlink()
+
+
+def _verify_rewrite(path, fun, oracle_name, before, extra_keys=()):
+    """After a targeted rewrite: every array outside ``ref/<oracle>/`` is
+    bit-identical to ``before`` (and only ``extra_keys`` were added), the
+    rewritten oracle reproduces exactly from the stored state, and the
+    other oracles still pass at their own tolerances (not bit-exactly: a
+    refactor that these modes exist for may have moved them by ulps)."""
+    prefix = f"ref/{oracle_name}/"
+    npz, _ = _files(path)
+    with np.load(npz, allow_pickle=False) as z:
+        after = {k: z[k] for k in z.files}
+    assert set(after) == set(before) | set(extra_keys), path.name
+    for k in before:
+        if not k.startswith(prefix):
+            assert np.array_equal(before[k], after[k], equal_nan=True), (
+                path.name,
+                k,
+            )
+    snap = load_snapshot(path)
+    state = build_state(snap, fun=fun)
+    again = ORACLES[oracle_name](state, snap["meta"]["oracle_seed"])
+    exact = compare(snap["ref"][oracle_name], again, 0.0, 0.0)
+    if not all(r[3] for r in exact):
+        raise RuntimeError(
+            f"{path.name}: {oracle_name} does not reproduce from the stored"
+            f" state\n{format_rows(exact)}"
+        )
+    bad = check_one(path, fun, exact=False)
+    if bad:
+        raise RuntimeError(f"{path.name}: other oracles fail after: {bad}")
+
+
+def add_oracle(names, oracle_name, reason):
+    """Compute a newly registered oracle from the *stored* state of each
+    snapshot and add its references, leaving everything else bit-identical.
+
+    The counterpart of :func:`rebaseline` for an oracle the fixtures do not
+    hold yet: rerunning the recipes would move every snapshot (the runs'
+    trajectories change with every Stage 2 item), so a new oracle is pinned
+    on the states as they are. Records the event under
+    ``meta["oracles_added"]``.
+    """
+    orc = ORACLES[oracle_name]
+    prefix = f"ref/{oracle_name}/"
+    pending = []
+    for name in names:
+        path = FIXTURES / name
+        npz, js = _files(path)
+        tree = json.loads(js.read_text(encoding="utf-8"))
+        with np.load(npz, allow_pickle=False) as z:
+            arrays = {k: z[k] for k in z.files}
+        snap = load_snapshot(path)
+        meta = snap["meta"]
+        if oracle_name in snap["ref"]:
+            sys.exit(
+                f"{name}: {oracle_name} already has a reference"
+                " (use --rebaseline to replace it)"
+            )
+        _refuse_off_platform(name, oracle_name, meta)
+        fun = target_for(meta)
+        state = build_state(snap, fun=fun)
+        if not orc.applies(state):
+            print(
+                f"[add-oracle] {name:28s} {oracle_name} not applicable; skip"
+            )
+            continue
+        out = orc(state, meta["oracle_seed"])
+        shapes = {k: list(np.shape(v)) for k, v in out.items()}
+        print(f"  [{name}] {oracle_name} outputs {shapes}")
+        pending.append((name, path, fun, arrays, tree, out, shapes))
+
+    for name, path, fun, arrays, tree, out, shapes in pending:
+        before = {k: v.copy() for k, v in arrays.items()}
+        tree["ref"][oracle_name] = encode(out, f"ref/{oracle_name}", arrays)
+        tree["meta"].setdefault("oracles_added", []).append(
+            {
+                "oracle": oracle_name,
+                "date": time.strftime("%Y-%m-%d %H:%M:%S"),
+                "git": git_info(),
+                "reason": reason,
+                "outputs": shapes,
+            }
+        )
+        _write_fixture(path, arrays, tree)
+        _verify_rewrite(
+            path, fun, oracle_name, before, [prefix + k for k in out]
+        )
+        print(f"[add-oracle] {name:28s} {oracle_name} added", flush=True)
+    print(f"[add-oracle] {len(pending)} of {len(names)} fixtures rewritten")
+    return len(pending)
 
 
 def rebaseline(names, oracle_name, reason):
@@ -426,14 +630,7 @@ def rebaseline(names, oracle_name, reason):
         if oracle_name not in snap["ref"]:
             print(f"[rebaseline] {name:28s} no {oracle_name} reference; skip")
             continue
-        if (
-            oracle_name == "active_sample_step"
-            and meta.get("platform") != platform.platform()
-        ):
-            sys.exit(
-                f"{name}: the step oracle is platform-bound and this is not"
-                f" the generating platform ({meta.get('platform')})"
-            )
+        _refuse_off_platform(name, oracle_name, meta)
         fun = target_for(meta)
         state = build_state(snap, fun=fun)
         if not orc.applies(state):
@@ -465,7 +662,6 @@ def rebaseline(names, oracle_name, reason):
         return float(v) if np.isfinite(v) else repr(float(v))
 
     for name, path, fun, arrays, tree, out, rows in pending:
-        npz, js = _files(path)
         before = {k: v.copy() for k, v in arrays.items()}
         for key, val in out.items():
             arrays[prefix + key] = np.asarray(val, dtype=float)
@@ -478,37 +674,8 @@ def rebaseline(names, oracle_name, reason):
                 "max_abs_change": {r[0]: finite(r[1]) for r in rows},
             }
         )
-        tmp = FIXTURES.parent / (path.name + ".rebaseline-tmp")
-        tmp_npz, tmp_js = _files(tmp)
-        try:
-            save_snapshot(tmp, arrays, tree)
-            os.replace(tmp_npz, npz)  # the pair is not atomic together;
-            os.replace(tmp_js, js)  # the json holds only markers + meta
-        finally:
-            for p in (tmp_npz, tmp_js):
-                if p.exists():
-                    p.unlink()
-        with np.load(npz, allow_pickle=False) as z:
-            after = {k: z[k] for k in z.files}
-        assert set(after) == set(before), name
-        for k in before:
-            if not k.startswith(prefix):
-                assert np.array_equal(before[k], after[k], equal_nan=True), (
-                    name,
-                    k,
-                )
-        snap = load_snapshot(path)
-        state = build_state(snap, fun=fun)
-        again = orc(state, snap["meta"]["oracle_seed"])
-        exact = compare(snap["ref"][oracle_name], again, 0.0, 0.0)
-        if not all(r[3] for r in exact):
-            raise RuntimeError(
-                f"{name}: {oracle_name} does not reproduce from the stored"
-                f" state\n{format_rows(exact)}"
-            )
-        bad = check_one(path, fun, exact=False)
-        if bad:
-            raise RuntimeError(f"{name}: other oracles fail after: {bad}")
+        _write_fixture(path, arrays, tree)
+        _verify_rewrite(path, fun, oracle_name, before)
         print(f"[rebaseline] {name:28s} {oracle_name} replaced", flush=True)
     print(f"[rebaseline] {len(pending)} of {len(names)} fixtures rewritten")
     return len(pending)
@@ -528,11 +695,43 @@ def main(argv=None):
         help="replace one oracle's references from the stored state"
         " (needs --reason); every other reference stays bit-identical",
     )
+    ap.add_argument(
+        "--add-oracle",
+        default=None,
+        metavar="ORACLE",
+        help="add a newly registered oracle's references from the stored"
+        " state (needs --reason); every existing array stays bit-identical",
+    )
     ap.add_argument("--reason", default=None)
+    ap.add_argument(
+        "--exact",
+        action="store_true",
+        help="with --check: compare bit for bit instead of at the tolerances",
+    )
+    ap.add_argument(
+        "--against",
+        default=None,
+        metavar="DIR",
+        help="with --check: compare with a dump of an earlier code state"
+        " (see --dump-outputs) instead of the stored references",
+    )
+    ap.add_argument(
+        "--dump-outputs",
+        default=None,
+        metavar="DIR",
+        help="write the current code's outputs of every stored oracle to DIR",
+    )
     ap.add_argument("--verbose", action="store_true")
     args = ap.parse_args(argv)
-    if args.rebaseline and (args.list or args.check):
-        sys.exit("--rebaseline cannot be combined with --list or --check")
+    targeted = [m for m in (args.rebaseline, args.add_oracle) if m]
+    modes = len(targeted) + args.list + args.check + bool(args.dump_outputs)
+    if modes > 1:
+        sys.exit(
+            "--list, --check, --rebaseline, --add-oracle and --dump-outputs"
+            " are mutually exclusive"
+        )
+    if (args.exact or args.against) and not args.check:
+        sys.exit("--exact and --against only apply to --check")
     if args.list:
         for r in RECIPES:
             print(
@@ -550,20 +749,32 @@ def main(argv=None):
         names = [
             n for n in snapshot_names(FIXTURES) if not wanted or n in wanted
         ]
-        failures = check(names, args.verbose)
+        failures = check(
+            names, args.verbose, exact=args.exact, against=args.against
+        )
         print(
-            f"[check] {len(names) - len(failures)} of {len(names)} fixtures ok"
+            f"[check{' --exact' if args.exact else ''}"
+            f"{' --against ' + args.against if args.against else ''}]"
+            f" {len(names) - len(failures)} of {len(names)} fixtures ok"
         )
         return 1 if failures else 0
-    if args.rebaseline:
-        if args.rebaseline not in ORACLES:
-            sys.exit(f"unknown oracle {args.rebaseline!r}")
-        if not args.reason:
-            sys.exit("--rebaseline needs --reason")
+    if args.dump_outputs:
         names = [
             n for n in snapshot_names(FIXTURES) if not wanted or n in wanted
         ]
-        return 0 if rebaseline(names, args.rebaseline, args.reason) else 1
+        dump_outputs(names, args.dump_outputs)
+        return 0
+    if targeted:
+        oracle_name = targeted[0]
+        if oracle_name not in ORACLES:
+            sys.exit(f"unknown oracle {oracle_name!r}")
+        if not args.reason:
+            sys.exit("--rebaseline / --add-oracle need --reason")
+        names = [
+            n for n in snapshot_names(FIXTURES) if not wanted or n in wanted
+        ]
+        mode = rebaseline if args.rebaseline else add_oracle
+        return 0 if mode(names, oracle_name, args.reason) else 1
     recipes = [r for r in RECIPES if not wanted or r.name in wanted]
     generate(recipes)
     return 0

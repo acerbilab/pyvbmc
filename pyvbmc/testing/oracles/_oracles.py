@@ -51,6 +51,14 @@ Two combinations here are not what production runs, on purpose: the
 Monte Carlo samples even at ``K = 1``, where the sieve would switch to the
 deterministic entropy (the ``*_detent`` outputs cover that path), and the
 ``K = 1`` snapshot is synthetic. Both are extra coverage, not behaviour.
+
+Two oracles pin the GP training side of gpyreg (added 2026-09-05 for Stage
+2 item 8, ``dev/plans/stage2-gpyreg-predict-and-sampler.md``): ``gp_nlZ``,
+the log marginal likelihood and the log posterior under PyVBMC's hyperprior
+with their gradients at the stored hyperparameter samples (GP-solve class),
+and ``gp_fit``, one ``train_gp`` call from the stored state under a seeded
+legacy stream, exact and platform-bound like ``active_sample_step`` (a
+slice-sampling chain turns BLAS rounding into different decisions).
 """
 
 import contextlib
@@ -63,11 +71,24 @@ from pyvbmc import acquisition_functions as acqs
 from pyvbmc.entropy import entlb_vbmc, entmc_vbmc
 from pyvbmc.vbmc.active_importance_sampling import active_importance_sampling
 from pyvbmc.vbmc.active_sample import active_sample
+from pyvbmc.vbmc.gaussian_process_train import (
+    _get_gp_training_options,
+    _get_training_data,
+    _gp_hyp,
+    train_gp,
+)
 from pyvbmc.vbmc.variational_optimization import _gp_log_joint, _neg_elcbo
 
 from ._state import _missing_fun
 
 DEFAULT_SEED = 20260904
+
+# Oracles whose reference reproduces only on the machine that generated it:
+# a chain of data-dependent decisions (a CMA-ES search, a slice-sampling
+# chain) amplifies BLAS rounding differences into different outcomes. The
+# tests skip them off ``meta["platform"]`` unless ``PYVBMC_ORACLES_ALL`` is
+# set; the generator's targeted modes refuse to rewrite them elsewhere.
+PLATFORM_BOUND = frozenset({"active_sample_step", "gp_fit"})
 
 
 class Oracle:
@@ -413,6 +434,127 @@ def active_sample_step(state, seed):
     return {
         "X_new": fl.X_orig[Xn0 + 1 : fl.Xn + 1],
         "y_new": fl.y_orig[Xn0 + 1 : fl.Xn + 1],
+    }
+
+
+def _nlz_and_grad(gp, hyp, compute_prior):
+    """``(nlZ, dnlZ)`` at ``hyp``: the negative log marginal likelihood, or
+    the negative log posterior when ``compute_prior``.
+
+    Through the private method that the space-filling design, L-BFGS-B and
+    the slice sampler all call (``__gp_obj_fun``): the public
+    ``GP.log_likelihood`` / ``GP.log_posterior`` apply the unary minus to
+    the ``(nlZ, dnlZ)`` tuple and raise ``TypeError`` when a gradient is
+    requested (gpyreg ``236ddd7``; devlog §9). Switch to the public API once
+    the fix is pinned.
+    """
+    return gp._GP__compute_nlZ(
+        np.asarray(hyp, dtype=float), True, compute_prior
+    )
+
+
+def _install_hyperprior(gp, state):
+    """Give a rebuilt GP the bounds and hyperprior a PyVBMC run gives it.
+
+    ``build_gp`` leaves the GP without priors (``GP.__init__`` defaults), so
+    ``log_posterior == log_likelihood`` there. ``train_gp`` installs
+    PyVBMC's hyperprior with ``_gp_hyp``, which leaves NaN in the bounds;
+    ``GP.fit`` then repairs two things before it evaluates anything: the
+    prior's NaN ``df`` become ``df_base = 7`` and the NaN bounds are filled
+    from ``get_recommended_bounds`` (which also recomputes the
+    normalization constants). Both repairs are replicated so that the log
+    posterior here is the one the sampler's objective sees.
+    """
+    optim_state = state["optim_state"]
+    x_train, y_train, _, _ = _get_training_data(state["logger"])
+    _gp_hyp(
+        optim_state,
+        state["options"],
+        optim_state["plb_tran"],
+        optim_state["pub_tran"],
+        gp,
+        x_train,
+        y_train,
+    )
+    df = gp.hyper_priors["df"]
+    df[np.isnan(df)] = 7
+    gp.set_bounds(gp.get_recommended_bounds(gp.lower_bounds, gp.upper_bounds))
+    return gp
+
+
+# GP-solve class (the marginal likelihood and its gradient go through the
+# Cholesky solve and, for the gradient, the explicit inverse in `Q`).
+@oracle("gp_nlZ", rtol=1e-6, atol=1e-10)
+def gp_nlZ(state, seed):
+    gp = state["gp"]
+    H = gp.get_hyperparameters(as_array=True)
+    lZ, dlZ = zip(*[_nlz_and_grad(gp, h, False) for h in H])
+    g = _install_hyperprior(copy.deepcopy(gp), state)
+    lp, dlp = zip(*[_nlz_and_grad(g, h, True) for h in H])
+    return {
+        "lZ": -np.asarray(lZ, dtype=float),
+        "dlZ": -np.asarray(dlZ, dtype=float),
+        "lp": -np.asarray(lp, dtype=float),
+        "dlp": -np.asarray(dlp, dtype=float),
+    }
+
+
+@oracle("gp_fit", rtol=0.0, atol=1e-8)
+def gp_fit(state, seed):
+    """One ``train_gp`` call from the stored state: the space-filling design
+    and L-BFGS-B where the recorded fit ran them (``init_N``, ``opts_N``
+    from the stored ``optim_state``), then the slice sampler for ``Ns``
+    samples, under a seeded legacy stream. Exact on the generating
+    platform (see ``PLATFORM_BOUND``)."""
+    optim_state = copy.deepcopy(state["optim_state"])
+    fl = copy.deepcopy(state["logger"])
+    hyp_dict = copy.deepcopy(optim_state["hyp_dict"])
+    options = state["options"]
+    hyp_prev = state["gp"].get_hyperparameters(as_array=True)
+    n = max(int(optim_state["iter"]), 1)
+    # `train_gp` indexes the history at `iter - 1` (reliability index) and,
+    # with the default `weighted_hyp_cov`, over every past iteration (`sKL`,
+    # `gp_hyp_full`) to build sampler widths; with `init_N > 0` it also
+    # warm-starts from past GPs. The snapshot holds one iteration, so the
+    # history is a stand-in: the current reliability index, unit weights,
+    # the current hyperparameters and no past GPs (the warm start then
+    # reduces to the stored `hyp_dict["hyp"]`, `np.unique`-sorted).
+    history = {
+        "r_index": np.full(n, float(state["meta"]["r_index"])),
+        "sKL": np.full(n + 1, float(options["tol_skl"])),
+        "gp_hyp_full": [hyp_prev] * n,
+        "gp": np.array([], dtype=object),
+    }
+    # The stand-in cannot influence the fit: `_get_hyp_cov`'s weighted
+    # branch builds an `(Ns, Ns)` covariance from `gp_hyp_full` (a shape
+    # slip, devlog §9), so `train_gp` discards the widths whenever `Ns !=
+    # hyp_N`, which holds in every production run and on every snapshot.
+    # Asserted, so that fixing the slip is noticed here (this oracle would
+    # then need a real history and a re-baseline).
+    widths = _get_gp_training_options(
+        optim_state, history, options, hyp_dict, hyp_prev.shape[0]
+    )["widths"]
+    assert widths is None or np.size(widths) != hyp_prev.shape[1], (
+        "train_gp would keep the sampler widths built from the stand-in"
+        " history; the gp_fit oracle assumes it drops them"
+    )
+    # f_min_fill and the slice sampler draw from the legacy state; `rng`
+    # only picks the warm-start subsample, inert with no past GPs.
+    with legacy_seed(seed):
+        gp, gp_s_N, sn2_hpd, _ = train_gp(
+            hyp_dict,
+            optim_state,
+            fl,
+            history,
+            options,
+            optim_state["plb_tran"],
+            optim_state["pub_tran"],
+            rng=np.random.default_rng(seed),
+        )
+    return {
+        "hyp": gp.get_hyperparameters(as_array=True),
+        "sn2_hpd": np.array([sn2_hpd], dtype=float),
+        "gp_s_N": np.array([gp_s_N], dtype=float),
     }
 
 

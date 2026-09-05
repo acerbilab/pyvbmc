@@ -57,6 +57,54 @@
   "noise_sd": null,
   "note": "warm-up iteration: K = 2, Ns = 8, no warp; the baseline state",
   "oracle_seed": 20260904,
+  "oracles_added": [
+   {
+    "date": "2026-09-05 08:17:25",
+    "git": {
+     "dirty": true,
+     "sha": "de6d98f"
+    },
+    "oracle": "gp_nlZ",
+    "outputs": {
+     "dlZ": [
+      8,
+      9
+     ],
+     "dlp": [
+      8,
+      9
+     ],
+     "lZ": [
+      8
+     ],
+     "lp": [
+      8
+     ]
+    },
+    "reason": "Stage 2 item 8: pin the GP log marginal likelihood and log posterior with gradients at the stored hyperparameter samples before the gpyreg refactor"
+   },
+   {
+    "date": "2026-09-05 08:18:00",
+    "git": {
+     "dirty": true,
+     "sha": "de6d98f"
+    },
+    "oracle": "gp_fit",
+    "outputs": {
+     "gp_s_N": [
+      1
+     ],
+     "hyp": [
+      8,
+      9
+     ],
+     "sn2_hpd": [
+      1
+     ]
+    },
+    "reason": "Stage 2 item 8: pin one train_gp call (space-filling design, L-BFGS-B, slice sampler) from the stored state under a seeded legacy stream before the gpyreg refactor; platform-bound"
+   }
+  ],
   "pick": 2,
   "platform": "Windows-11-10.0.26200-SP0",
   "problem": "normal",
@@ -198,6 +246,11 @@
    "H": "@@npz:ref/entmc/H",
    "dH": "@@npz:ref/entmc/dH"
   },
+  "gp_fit": {
+   "gp_s_N": "@@npz:ref/gp_fit/gp_s_N",
+   "hyp": "@@npz:ref/gp_fit/hyp",
+   "sn2_hpd": "@@npz:ref/gp_fit/sn2_hpd"
+  },
   "gp_log_joint": {
    "G": "@@npz:ref/gp_log_joint/G",
    "G_samples": "@@npz:ref/gp_log_joint/G_samples",
@@ -208,6 +261,12 @@
    "dG_samples": "@@npz:ref/gp_log_joint/dG_samples",
    "varG": "@@npz:ref/gp_log_joint/varG",
    "var_ss": "@@npz:ref/gp_log_joint/var_ss"
+  },
+  "gp_nlZ": {
+   "dlZ": "@@npz:ref/gp_nlZ/dlZ",
+   "dlp": "@@npz:ref/gp_nlZ/dlp",
+   "lZ": "@@npz:ref/gp_nlZ/lZ",
+   "lp": "@@npz:ref/gp_nlZ/lp"
   },
   "gp_predict": {
    "fmu": "@@npz:ref/gp_predict/fmu",

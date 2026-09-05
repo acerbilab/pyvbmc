@@ -9,13 +9,13 @@ tests rebuild the state through the public constructors and recompute.
 A failure means the numerics changed. If the change is intended (a new
 baseline), regenerate the fixtures with the generator; never loosen a
 tolerance to make a refactor pass. The ``active_sample_step`` oracle needs
-the benchmark targets in ``dev/scripts`` (a repository checkout) and runs
-only on the platform that generated the fixture (a CMA-ES search turns
-BLAS rounding differences into different chosen points; set
-``PYVBMC_ORACLES_ALL=1`` to force it elsewhere); the ``entmc`` and
-``neg_elcbo`` oracles depend on the order of the Monte Carlo draws and are
-re-baselined deliberately when that order changes (see the plan in
-``dev/plans/``).
+the benchmark targets in ``dev/scripts`` (a repository checkout). It and
+``gp_fit`` run only on the platform that generated the fixture (a CMA-ES
+search or a slice-sampling chain turns BLAS rounding differences into
+different decisions; set ``PYVBMC_ORACLES_ALL=1`` to force them
+elsewhere); the ``entmc`` and ``neg_elcbo`` oracles depend on the order of
+the Monte Carlo draws and are re-baselined deliberately when that order
+changes (see the plan in ``dev/plans/``).
 """
 
 import os
@@ -28,6 +28,7 @@ import pytest
 
 from pyvbmc.testing.oracles._oracles import (
     ORACLES,
+    PLATFORM_BOUND,
     applicable,
     compare,
     format_rows,
@@ -70,17 +71,18 @@ def test_oracle(snapshots, name, oracle):
     if oracle not in snap["ref"]:
         pytest.skip(f"{oracle} not applicable to {name}")
     fun = _target(snap["meta"]) if oracle == "active_sample_step" else None
-    if oracle == "active_sample_step":
-        if fun is None:
-            pytest.skip("benchmark targets (dev/scripts) not available")
-        # A full CMA-ES search amplifies BLAS rounding differences into
-        # different decisions: the chosen points reproduce only on the
-        # platform that generated the fixture (seen on the first CI run:
-        # Ubuntu picked points 1.3 away). Same-machine determinism check.
+    if oracle == "active_sample_step" and fun is None:
+        pytest.skip("benchmark targets (dev/scripts) not available")
+    if oracle in PLATFORM_BOUND:
+        # A CMA-ES search or a slice-sampling chain amplifies BLAS rounding
+        # differences into different decisions: the result reproduces only
+        # on the platform that generated the fixture (seen on the first CI
+        # run: Ubuntu's search picked points 1.3 away). Same-machine
+        # determinism check.
         here, there = platform.platform(), snap["meta"].get("platform")
         if here != there and not os.environ.get("PYVBMC_ORACLES_ALL"):
             pytest.skip(
-                f"active_sample_step is platform-bound (fixture: {there}, "
+                f"{oracle} is platform-bound (fixture: {there}, "
                 f"here: {here}); set PYVBMC_ORACLES_ALL=1 to force"
             )
     orc = ORACLES[oracle]
