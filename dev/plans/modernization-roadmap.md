@@ -26,13 +26,14 @@ anything that changes numerics lands.
     2026-09-04: 8 snapshots as plain arrays under
     `pyvbmc/testing/oracles/fixtures/`, 1.4 MB; retiring the `.mat`
     fixtures is still open, `plans/fixture-generator-and-oracles.md`)
-  - [x] stage-level oracles (`pyvbmc/testing/oracles/`, 14 oracles × 8
-    snapshots, about 20 s; per-element tolerances with a robust floor,
-    set from measured rounding floors; the per-commit gate for Stage 2).
-    Not built from the devlog's Stage 0 list: oracles for the GP log
-    marginal likelihood and its gradient (gpyreg-side), `GP.quad`,
-    `kl_div_mvn`, `kde_1d`. Not yet exercised on another BLAS build: the
-    first CI run after the commit is.
+  - [x] stage-level oracles (`pyvbmc/testing/oracles/`, 16 oracles × 8
+    snapshots since 2026-09-05 (`gp_nlZ`, the GP log marginal likelihood
+    and log posterior with gradients, and `gp_fit`, a whole `train_gp`
+    call, added for item 8), about 25 s; per-element tolerances with a
+    robust floor, set from measured rounding floors on three BLAS builds
+    (Windows, Ubuntu, macOS); the per-commit gate for Stage 2). Not built
+    from the devlog's Stage 0 list: `GP.quad`, `kl_div_mvn`, `kde_1d`.
+    Fixtures 1.5 MB.
   - [x] golden-trace harness over the benchmark target suite
     (`dev/scripts/golden_trace.py`; reference population `baseline_20260903`:
     20 seeds × 14 configs (D = 2–10, two noisy) on the code of `5020879`,
@@ -101,14 +102,18 @@ anything that changes numerics lands.
   slice sampler 27–38 %): item 8. **(8) done 2026-09-05 except its
   profile campaign** (`plans/stage2-gpyreg-predict-and-sampler.md`;
   gpyreg branch `perf/predict-sampler-overhead`, draft PR
-  acerbilab/gpyreg#43, four commits on `236ddd7`, `GPYREG_PIN` at its
-  head): identity-preserving throughout (every oracle output bit-identical
-  to a dump of the pre-change code, the replay `identical`), `predict`
-  1.6–1.7× per CMA-ES-sized call, the sampler's log-posterior evaluation
-  1.4–1.9×, one `train_gp` call 2.2–2.5× (the Cholesky reused on
-  mean-hyperparameter moves); generator support in gpyreg and the
-  PyVBMC seam removed (every draw through `vbmc.rng`, which shifts the
-  stream of every existing seed). The end-to-end profile (Step 7) must
+  acerbilab/gpyreg#43, five commits on `236ddd7`, `GPYREG_PIN` at its
+  head): the three performance commits are identity-preserving (every
+  oracle output checked is bit-identical to a dump of the pre-change
+  code, the replay `identical` after each), `predict` 1.4–1.7× per
+  CMA-ES-sized call, the sampler's log-posterior evaluation 1.4–1.9×, one
+  `train_gp` call 2.1–2.5× (the Cholesky reused on mean-hyperparameter
+  moves); generator support in gpyreg; PyBADS's suite passes against the
+  branch (one metadata-dependent test deselected). The PyVBMC seam is
+  removed (every draw through `vbmc.rng`), which is *not*
+  identity-preserving: it shifts the stream of every existing seed, and
+  the two stream-dependent oracles were re-baselined. The end-to-end
+  profile (Step 7) must
   run on the identity-preserving commit `284747e` from a detached
   checkout, machine idle, ≈ 40 min.
 - [ ] **Stage 3 — pipeline features** (batched initial design,
@@ -189,9 +194,10 @@ anything that changes numerics lands.
    grow to 50 seeds, pickup point 5).
 3a. **Stage 2 item 8** (`plans/stage2-gpyreg-predict-and-sampler.md`,
    2026-09-05): the gpyreg work is on branch `perf/predict-sampler-overhead`
-   of `acerbilab/gpyreg` (draft PR #43; four commits, bit-identical
+   of `acerbilab/gpyreg` (draft PR #43; five commits, bit-identical
    outputs, `rng=` support), `GPYREG_PIN` points at its head, PyBADS's
-   suite passes against it, and PyVBMC's seam is removed. **Open:** (i) the
+   suite passes against it with one metadata-dependent test deselected,
+   and PyVBMC's seam is removed. **Open:** (i) the
    profile campaign of Step 7, to run from a detached checkout of the
    identity-preserving commit `284747e` when the laptop is idle
    (`git checkout 284747e`, then `OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1

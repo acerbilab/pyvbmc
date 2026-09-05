@@ -776,7 +776,7 @@ an identical iteration-0 ELBO. Speedup in §2 above. Four latent defects of
 the function were fixed on the way (§9).
 
 *Item 8 done 2026-09-05 as one gpyreg PR* (acerbilab/gpyreg#43, branch
-`perf/predict-sampler-overhead`, four commits on `236ddd7`;
+`perf/predict-sampler-overhead`, five commits on `236ddd7`;
 `plans/stage2-gpyreg-predict-and-sampler.md`), **identity-preserving
 throughout**: `predict` drops scipy's Python layers around a 5 µs
 triangular solve (a direct `trtrs` with scipy's own layout rule, which
@@ -790,12 +790,13 @@ adds the noise in place on the diagonal, caches the hyperprior's type
 masks, and reuses the Cholesky factor when the sampler moves a
 mean-function hyperparameter (two thirds of the coordinates), the
 gradient path excluded; the two public gradient wrappers that raised
-`TypeError` are fixed (§9). Every gpyreg output is bit-identical to a dump
-of the pre-change code (2219 random-GP arrays, the eight oracle snapshots
-through every oracle incl. the new `gp_nlZ` and `gp_fit`), the golden
-replay is `identical` after each commit, PyBADS's suite passes against
-the branch. Per call: `predict` 1.6–1.7× at CMA-ES batch sizes, the
-log-posterior evaluation 1.4–1.9×, one `train_gp` call 2.2–2.5×; what
+`TypeError` are fixed (§9). Every output checked is bit-identical to a
+dump of the pre-change code (2219 random-GP arrays, the eight oracle
+snapshots through every oracle incl. the new `gp_nlZ` and `gp_fit`), the
+golden replay is `identical` after each of the three performance commits,
+PyBADS's suite passes against the branch (one metadata-dependent test
+deselected). Per call: `predict` 1.4–1.7× at CMA-ES batch sizes, the
+log-posterior evaluation 1.4–1.9×, one `train_gp` call 2.1–2.5×; what
 remains in an evaluation is the N² exponential of the kernel and the
 factorization. The end-to-end profile is pending (it must run on the
 identity-preserving commit, machine idle). The same PR adds `rng=` to

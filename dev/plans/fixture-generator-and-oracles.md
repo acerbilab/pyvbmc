@@ -288,7 +288,8 @@ prints a table, so a refactor branch can be checked in one command.
       skipped); the `active_sample_step` oracle takes 0.4–4 s per snapshot.
 - [x] Deliberate perturbation of a stored reference makes the test fail
       (1e-7 on the predictive mean, 1e-9 on the density).
-- [x] Fixtures 1.4 MB in total (8 snapshot pairs, 100–330 KB each);
+- [x] Fixtures 1.4 MB in total (8 snapshot pairs, 100–330 KB each; 1.5 MB
+      since the two oracles of item 8);
       `MANIFEST.in` lists `fixtures/*.npz` and `*.json` (they reach the
       sdist; the testing package is not in the wheel).
 - [x] Regime assertions hold: one posterior on the single-sample
