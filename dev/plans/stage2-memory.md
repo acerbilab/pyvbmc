@@ -791,4 +791,14 @@ attention. Times are wall clock on 2026-09-05.
   script was a session scratch file, not committed; its steps are listed
   in roadmap pickup 3e). The sidecars say `dirty: true`: the record files
   of this commit were uncommitted when it started, no code differed.
-  About 6.5 h; roadmap pickup 3e says what to read when it ends.
+  **Done 05:01** (4.75 h): 280 of 280 succeeded, no config flagged
+  against the reference over the 56 KS tests nor against the item 1
+  population; summed run time 6.41 → 4.71 h against item 1; the runner's
+  high-water mark 474 → 402 MB (the sidecars' `peak_rss_mb` is the
+  process's mark up to each run, so the first config's rows are its own
+  and the later configs show what they add: in item 1 the noisy logreg
+  runs raised it from 438 to 474 MB, here nothing after lumpy_D10 raised
+  it); the one descriptive shift is lumpy_D10's median evaluation count,
+  242 → 308 (KS p 0.03, far from the Holm threshold), with its quality
+  metrics unchanged or better. Reports under `runs/golden/item7_20260906/`;
+  roadmap pickup 3e has the reading.

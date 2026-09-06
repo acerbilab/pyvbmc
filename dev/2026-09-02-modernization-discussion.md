@@ -993,6 +993,15 @@ points. Files saved by this code hold lean GP records, so an older PyVBMC
 cannot resume them (old files load unchanged); a release note for the
 eventual PR.
 
+*The 20-seed population after items 8, 5, 6 and 7* (2026-09-06, 00:16–05:01,
+`plans/modernization-roadmap.md` pickup 3e): 280 of 280 succeeded, no
+config flagged against the reference population over the 56 KS tests
+(Holm α 0.05) nor against the item 1 population; summed run time 6.41 →
+4.71 h against item 1 (9.92 h for the reference); the runner's high-water
+mark 474 → 402 MB. The one descriptive shift is lumpy_D10's median
+evaluation count, 242 → 308, with its quality metrics unchanged or
+better.
+
 **Benchmark target suite (decided 2026-09-02, after the profile).** The
 profile was taken on an independent and a correlated Gaussian, which
 converge in 13–20 iterations with `N ≈ 70–100` and are not representative

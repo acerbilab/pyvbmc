@@ -170,7 +170,13 @@ anything that changes numerics lands.
   latent defects fixed on the way (a continued run aliased the history's
   last entries; the in-loop plot passed no GP). Save format: files
   written by this code hold lean GP records, so an older PyVBMC cannot
-  resume them; old files load unchanged.
+  resume them; old files load unchanged. **The 20-seed population after
+  items 8, 5, 6 and 7** (2026-09-06, pickup 3e): 280 of 280 succeeded, no
+  config flagged against the reference over 56 KS tests nor against the
+  item 1 population, summed run time 6.41 → 4.71 h against item 1 (9.92 h
+  for the reference), the runner's high-water mark 474 → 402 MB; one
+  descriptive shift, lumpy_D10's median evaluations 242 → 308 with its
+  quality metrics unchanged or better.
 - [ ] **Stage 3 — pipeline features** (batched initial design,
   torch/jax target adapter docs, `vp.to_torch()`, ArviZ export).
 - [ ] **Stage 4 — PyTorch port** (decision point, not default).
@@ -365,26 +371,35 @@ anything that changes numerics lands.
    of `plans/stage2-gpyreg-predict-and-sampler.md` (re-baseline the
    committed oracle references) is still the PI's call.
 3e. **Next** (2026-09-06, 00:20; code `bdaf322`, the ten commits since
-   `2dcb51a` unpushed). (i) **The 20-seed population is running**: started
-   2026-09-06 00:16 on the PI's word, one process, code `bdaf322`
+   `2dcb51a` unpushed). (i) ~~**The 20-seed population is running**~~
+   **Done 2026-09-06 00:16–05:01: 280 of 280 succeeded, no config flagged
+   against the reference over the 56 KS tests (Holm α 0.05), none against
+   the item 1 population either** (`runs/golden/item7_20260906/
+   compare_vs_baseline.md`, `compare_vs_item1.md`, `summary.md`). Summed
+   run time 6.41 → 4.71 h against the item 1 population (0.74; items 8, 5,
+   6 and 7 together), 9.92 h for the reference. The runner's high-water
+   mark fell from 474 to 402 MB (`peak_rss_vs_item1.md`: in item 1 the
+   noisy logreg runs raised it from 438 to 474 MB, here nothing after the
+   lumpy_D10 runs raised it at all). One descriptive shift worth the PI's
+   eye: lumpy_D10's median evaluation count went 220 (reference) → 242
+   (item 1) → 308 here (KS p 0.012 against the reference, 0.034 against
+   item 1, neither near the Holm threshold; its quality metrics moved
+   toward the truth, median shifts −0.036 ΔLML, −0.007 gsKL), so the
+   multimodal 10-D target runs longer before the stability test is met.
+   Every other config's median evaluations are within 10 %. Not promoted
+   to the reference until the stage ends (pickup 5). Run on the PI's
+   word, one process, code `bdaf322`
    (`python -u dev/scripts/golden_trace.py run --suite golden --seeds
    0-19 --workers 1 --out dev/scripts/runs/golden/item7_20260906`, then
    `summary`, `compare dev/golden/baseline`, `compare` with the item 1
    population and a per-config table of the sidecars' `peak_rss_mb`
    medians against item 1's, all chained by one script into
-   `runs/golden_item7_20260906.log`; about 6.5 h). Its sidecars say
+   `runs/golden_item7_20260906.log`; 4.75 h elapsed). Its sidecars say
    `dirty: true` because the record files of this commit were uncommitted
-   when it started; no code differed. It is the statistical gate for
+   when it started; no code differed. It was the statistical gate for
    items 8, 5, 6 and 7 together (none identity-preserving against the
-   item 1 population, whose code predates the seam removal). Read
-   `runs/golden/item7_20260906/compare_vs_baseline.md` first: expected no
-   rejection over the 56 KS tests (Holm α 0.05); a rejection on one
-   config's finals would be the first evidence of a change beyond
-   rounding and would reopen the item it points at. Then
-   `compare_vs_item1.md` (the same finals against the item 1 population,
-   which shares the reference's procedure) and `peak_rss_vs_item1.md`
-   (the in-situ memory effect of item 7 on 280 runs). Not promoted to the
-   reference until the stage ends (pickup 5). (ii) Push `dev-next` so the
+   item 1 population, whose code predates the seam removal), and it
+   passed. (ii) Push `dev-next` so the
    CI smoke runs on the package commits, and dispatch the full matrix
    once before anything else lands (the oracle tests run on three BLAS
    builds there). (iii) Then pickup 5 (the end-of-stage re-baseline of the
