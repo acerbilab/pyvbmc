@@ -941,6 +941,22 @@ def _paper_budget(D):
 # Fig. 1 toy problem (Rosenbrock + N(0, 3^2), LML -2.27, sigma_obs = 1);
 # logreg_D5 at sigma = 3 is a bounded problem at the top of the 2020
 # benchmark's noise range (1.3-3.2) on the probit-transformed path.
+# The budget-exhausting configuration: 750 evaluations at D = 15 with early
+# termination disabled, the one run that spends long in the optimize-only
+# regime (a single GP hyperparameter sample from N >= 350, K around 30, the
+# occasional full refit at N >= 500). About 13 minutes per seed; in the
+# golden population it is run with 10 seeds, for regime coverage rather than
+# statistics (`golden_trace.py run --only cigar_D15_exhaust --seeds 0-9`).
+_EXHAUST = Config(
+    "cigar",
+    15,
+    options=(
+        ("max_fun_evals", 750),
+        ("tol_stable_excpt_frac", -(10**6)),
+    ),
+    tag="exhaust",
+)
+
 SUITES = {
     "smoke": [
         Config("normal", 2),
@@ -957,15 +973,7 @@ SUITES = {
         Config("logreg", 5, noise_sd=3.0, options=_paper_budget(5)),
         Config("lumpy", 10),
         Config("banana", 10),
-        Config(
-            "cigar",
-            15,
-            options=(
-                ("max_fun_evals", 750),
-                ("tol_stable_excpt_frac", -(10**6)),
-            ),
-            tag="exhaust",
-        ),
+        _EXHAUST,
     ],
     "golden": [
         Config("normal", 5),
@@ -982,6 +990,11 @@ SUITES = {
         Config("logreg", 5),
         Config("rosenbrock", 2, noise_sd=1.0, options=_paper_budget(2)),
         Config("logreg", 5, noise_sd=3.0, options=_paper_budget(5)),
+        # The two hard shapes (ill-conditioned, heavy-tailed) at an
+        # intermediate-high dimension; the other shapes cover D = 6 and 10.
+        Config("cigar", 8),
+        Config("student", 8),
+        _EXHAUST,
     ],
 }
 

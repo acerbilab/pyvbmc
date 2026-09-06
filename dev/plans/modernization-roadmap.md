@@ -432,15 +432,29 @@ anything that changes numerics lands.
    `dev/golden/baseline/`, the comparison reports under
    `dev/golden/promotion_20260906/`, the replay's default trace directory
    moved to it (`golden_replay.py`), `dev/golden/README.md` updated.
-   Still to do: grow it to 50 seeds (`golden_trace.py run --suite golden
-   --seeds 20-49 --workers 1 --out dev/scripts/runs/golden/item7_20260906`
-   on code the replay reports `identical` against these traces; about 7 h
-   at the 2026-09-06 speed of 285 min per 20 seeds) and add cigar/Student-t
-   at D = 6–8 and the exhaust config (`plans/benchmark-suite-and-golden-
-   traces.md` §Follow-ups; the exhaust config costs about 13 min per seed,
-   so its seed count is a separate decision). The reference sidecars live
-   in git under `dev/golden/baseline/` (PI decision 2026-09-03); copy them
-   over after every extension.
+   **Extension, decided with the PI 2026-09-06 (morning), two nights on
+   code the replay reports `identical` against the reference traces
+   (`df02705` or later, before any change that moves the numerics):**
+   the `golden` suite now holds 17 configurations (`benchmark_targets.py`:
+   `cigar_D8` and `student_D8`, the two hard shapes at an intermediate-high
+   dimension, ground truth checked; and `cigar_D15_exhaust`, shared with
+   the profile suite, for coverage of the optimize-only regime).
+   Night 1: grow the 14 existing configurations to 50 seeds,
+   `golden_trace.py run --suite golden --only <the 14 labels> --seeds
+   20-49 --workers 1 --out dev/scripts/runs/golden/item7_20260906`
+   (about 7 h at 285 min per 20 seeds), then `summary`, the even-vs-odd
+   null check and a second null check of seeds 0–19 against 20–49,
+   then publish the sidecars and `summary.md` to `dev/golden/baseline/`.
+   Night 2: `--only cigar_D8,student_D8 --seeds 0-49` (1.2 and 2.0 min per
+   seed, about 2.7 h) and `--only cigar_D15_exhaust --seeds 0-9` (10 seeds,
+   about 13 min each, 2.2 h; regime coverage rather than statistics, its
+   evaluation count is always 750), then summary, null checks, publish.
+   The family becomes 17 × 4 = 68 KS tests. Each night's run starts on the
+   PI's word that the laptop is free. Afterwards: `dev/golden/README.md`,
+   this file's Stage 0 bullet and `dev/README.md` describe the population
+   as 14 configurations × 20 seeds and need the new counts. The reference
+   sidecars live in git under `dev/golden/baseline/` (PI decision
+   2026-09-03); copy them over after every extension.
 6. Stage 0 remaining after the oracles: finite-difference checks for the
    transformer Jacobian and the gpyreg derivatives (`compute_vargrad`
    dropped from the list: the path was deleted with Stage 2 item 1); retire
