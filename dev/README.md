@@ -114,6 +114,11 @@ status and next steps never go into the devlogs.
   `active_sample_step` oracle's need for single-threaded BLAS on the
   machine that generated the fixtures.
 
+- `plans/stage3-pipeline-features.md` - approved Stage 3 plan and live
+  worklog: connect torch/JAX models through opt-in initial-design batching,
+  use fitted posteriors through torch and current ArviZ DataTree exports,
+  optional dependencies, documentation, CI wiring and verification gates.
+
 Naming: `plans/` files are named by slug only, never by date (the date is in
 the file header), so that they cannot be mistaken for copies of the dated
 devlogs.

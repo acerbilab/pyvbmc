@@ -203,9 +203,17 @@ anything that changes numerics lands.
   leaves the VBMC algorithm as designed and fixes the latent bugs of
   devlog §9, the trajectory-moving ones included, each replayed and the
   set checked as a population against the extended reference).
-- [ ] **Stage 3 — pipeline features** (batched initial design,
-  torch/jax target adapter docs, `vp.to_torch()`, ArviZ export). Ships
-  in 1.5 with Stages 0–2 (PI decision 2026-09-06: the whole body of work
+- [~] **Stage 3: connect models and use posteriors downstream.** Implemented
+  and locally verified on `dev-next-stage3` (`4ee612d`); integration awaits
+  the reference nights. Exact oracles pass, all five replay cases are
+  identical, and the full suite passes (957 passed). Two
+  workflows (PI confirmed 2026-09-06): bring torch/JAX models into PyVBMC
+  through documented adapters and an opt-in batched initial design; take
+  the fitted posterior into torch as a distribution or ArviZ as samples.
+  The plan is `plans/stage3-pipeline-features.md` on `dev-next-stage3`.
+  Current ArviZ DataTree support is agreed; the core stays Python >=3.10,
+  the ArviZ export requires >=3.12, and reconsidering the core Python floor
+  is deferred to Stage 4. Ships in 1.5 with Stages 0–2 (PI decision 2026-09-06: the whole body of work
   in one release, for visibility, rather than a 1.5 followed by a 1.6
   within days). May start now on the branch `dev-next-stage3`, plan
   first, in parallel with the reference nights (pickup 11 for the
