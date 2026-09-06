@@ -1115,6 +1115,10 @@ in §2 are estimates.
   the improvements now and the eventual port diff shrinks.
   *Revised 2026-09-02 (PI):* no PR from `dev-next` until the work is done;
   one PR at the end. Current pickup point in `plans/modernization-roadmap.md`.
+  *Decided 2026-09-06 (PI):* the work includes Stage 3. Stages 0–3 ship
+  together as 1.5, the first large body of work on the package in years,
+  in one release for visibility rather than a 1.5 followed by a 1.6
+  within days.
 - **A long-lived `torch-backend` branch is created only when the first torch
   commit exists.** Merge `main` into it periodically; do not rebase shared
   history with students on the branch. Optionally a draft PR against `main`

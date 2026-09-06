@@ -200,7 +200,13 @@ anything that changes numerics lands.
   descriptive shift, lumpy_D10's median evaluations 242 → 308 with its
   quality metrics unchanged or better.
 - [ ] **Stage 3 — pipeline features** (batched initial design,
-  torch/jax target adapter docs, `vp.to_torch()`, ArviZ export).
+  torch/jax target adapter docs, `vp.to_torch()`, ArviZ export). Ships
+  in 1.5 with Stages 0–2 (PI decision 2026-09-06: the whole body of work
+  in one release, for visibility, rather than a 1.5 followed by a 1.6
+  within days). Needs its own plan before it starts; its items are
+  expected to leave every trajectory as it is, so the reference of
+  pickup 3f remains the release's validation population, with the
+  replay `identical` after each item.
 - [ ] **Stage 4 — PyTorch port** (decision point, not default).
 
 ## Pickup point
@@ -479,11 +485,13 @@ anything that changes numerics lands.
    configurations; 50 seeds, the exhaust 10; the code), this file's Stage 0
    bullet and `dev/README.md` where they say 14 configurations × 20 seeds,
    and run the replay once with defaults (the fences tighten with 50
-   seeds). Then the PR `dev-next` → `main` (pickup 8) with the release
-   note that files saved by this code hold lean GP records an older PyVBMC
-   cannot resume. The dtype canary (`plans/stage0-dtype-canary.md`) is
-   done, tests only; its one production follow-up, widening float32 and
-   float16 constructor inputs, waits for the nights.
+   seeds). Then Stage 3, its plan first (PI decision 2026-09-06: it ships
+   in 1.5 with everything else), and after it the PR `dev-next` → `main`
+   (pickup 8) with the release note that files saved by this code hold
+   lean GP records an older PyVBMC cannot resume. The dtype canary
+   (`plans/stage0-dtype-canary.md`) is done, tests only; its one
+   production follow-up, widening float32 and float16 constructor inputs,
+   waits for the nights.
    Reading list for a fresh session: `dev/README.md`; this file's Stage 0
    and Stage 2 bullets and pickup points 5, 3e and 3f;
    `dev/golden/README.md`; `plans/stage2-memory.md` §Summary and
@@ -542,13 +550,14 @@ anything that changes numerics lands.
    2026-09-05 in acerbilab/gpyreg#43 (item 8, point 3a); the PyVBMC seam is
    removed on `dev-next`; gpyreg v1.1.0 released 2026-09-05 and required
    by `pyproject.toml`.
-8. One PR `dev-next` → `main` when the work is done. With the 1.5 release
-   that follows it, attach the reference population's `.npz` traces as a
-   release asset (PI decision 2026-09-06): one zip per reference, made
-   from the traces of the population the released code was validated
-   against (about 45 MB for 17 configurations at 50 seeds, the exhaust at
-   10), unpacked to `dev/scripts/runs/golden/<population>/` for
-   `golden_replay.py`'s per-iteration verdict; `dev/golden/README.md`
+8. One PR `dev-next` → `main` when the work is done, Stage 3 included
+   (decided with the PI 2026-09-06: Stages 0–3 ship together as 1.5).
+   With the 1.5 release that follows it, attach the reference population's
+   `.npz` traces as a release asset (PI decision 2026-09-06): one zip per
+   reference, made from the traces of the population the released code
+   was validated against (about 45 MB for 17 configurations at 50 seeds,
+   the exhaust at 10), unpacked to `dev/scripts/runs/golden/<population>/`
+   for `golden_replay.py`'s per-iteration verdict; `dev/golden/README.md`
    names the asset. The sidecars stay in git, the traces stay out of it,
    and anyone working on the numerics can fetch them. Until the release
    the traces exist only on the machine that ran the population
