@@ -223,7 +223,12 @@ anything that changes numerics lands.
   visibility, rather than a 1.5 followed by a 1.6 within days). Both
   trajectory-neutral and trajectory-moving latent bug fixes remain behind
   the reference-night boundary; pickup 9 fixes land only after both nights.
-- [ ] **Stage 4 — PyTorch port** (decision point, not default).
+- [ ] **Stage 4 — PyTorch port** (decision point, not default). Whether
+  this implementation is included in 1.5 remains TBD (PI clarification,
+  2026-09-06); it is not categorically deferred to a later release. The
+  solver backend would be PyTorch, not JAX. JAX model adapters remain
+  part of Stage 3. Revisit core dependencies and the Python floor with
+  this decision.
 
 ## Pickup point
 
@@ -669,7 +674,10 @@ anything that changes numerics lands.
    Stays deferred as algorithmic (devlog §12): `compute_var == 2`, noise
    shaping, log-space mixture sums.
 10. **S-VBMC integration and compatibility** (PI, 2026-09-06: part of the
-    1.5 work; how to integrate is still to be decided). `acerbilab/svbmc`
+    1.5 work; how to integrate is still to be decided). The broader goal
+    is to bring in or connect better to S-VBMC and other upcoming VBMC
+    extensions; individual extension integration details remain open
+    (PI clarification, 2026-09-06). `acerbilab/svbmc`
     (Stacking VBMC) is the lab's own package, separate on PyPI (`svbmc` 0.1.1 at a glance on
     2026-09-06; last commit 2025-11-10; depends on `pyvbmc>=1.0.4`,
     `GPyReg>=1.0.2` and `torch>=2.7`) that stacks the components of

@@ -15,6 +15,9 @@ would be committed, and anything that was would be published to the docs site.
 
 ## Index
 
+For the release overview, start with
+[PyVBMC 1.5: the big picture](2026-09-06-pyvbmc-1.5-overview.md).
+
 - `2026-09-02-modernization-discussion.md` — Assessment of porting the
   numerical core from NumPy to a tensor backend. Hot-path analysis, gradient
   inventory, gpyreg audit, backend decision (PyTorch), staged plan, repo
@@ -28,6 +31,10 @@ would be committed, and anything that was would be published to the docs site.
   (golden population, `student_D4` seed 19; 4 of 6 boost reruns fail;
   inherited from MATLAB). Mechanism, evidence, three candidate guards,
   reproduction; decision deferred.
+
+- [2026-09-06-pyvbmc-1.5-overview.md](2026-09-06-pyvbmc-1.5-overview.md) —
+  Human-readable release outline: benefits, scope, validation, and the path
+  to 1.5. A dated overview of the agreed direction, not an execution checklist.
 
 `TODO.md` is a scratch reminder of the ongoing work and the current pickup
 point, rewritten at each handoff. It is not a record: the roadmap and the

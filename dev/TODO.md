@@ -30,7 +30,9 @@ record the frozen SHA. Exact commands: roadmap pickup 3f.
 After both batches and their records, land the planned latent fixes,
 then run final population validation and prepare dev-next -> main for 1.5.
 Read-only bug investigation/planning can proceed beforehand. S-VBMC remains
-planned (pickup 10); Stage 4 and the core Python-floor decision stay deferred.
+planned alongside better connections to upcoming VBMC extensions (pickup 10).
+Whether the PyTorch solver (Stage 4) joins 1.5 is TBD; it would not be a
+JAX solver. Revisit core dependencies and the Python floor with that decision.
 
 Read first: dev/README.md; modernization-roadmap.md pickups 3f, 5, 9, 11;
 dev/golden/README.md; stage3-pipeline-features.md; stage2-memory.md;
