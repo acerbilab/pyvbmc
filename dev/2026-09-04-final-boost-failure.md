@@ -1,9 +1,11 @@
 # 2026-09-04 — The final boost can destroy a converged posterior
 
-**Status:** finding recorded, decision deferred (PI, 2026-09-04: an
-independent, small algorithmic tweak; to be thought about later). No code
-changed. The behaviour is inherited from MATLAB VBMC, so this is not a
-porting bug.
+**Status:** finding recorded; decision deferred on 2026-09-04 (PI: an
+independent, small algorithmic tweak; to be thought about later), then
+ruled on 2026-09-06 (PI: a borderline bug rather than an algorithmic
+decision; option 1 below, the guard, is a 1.5 fix, roadmap pickup 9). No
+code changed. The behaviour is inherited from MATLAB VBMC, so this is not
+a porting bug.
 
 ## What was seen
 

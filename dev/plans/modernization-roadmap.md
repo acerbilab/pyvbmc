@@ -221,8 +221,8 @@ anything that changes numerics lands.
    §Results (regenerated)). The Stage 2 order above is confirmed; committed
    and pushed as `9206738`. The one wrong posterior in the population,
    `student_D4` seed 19, is a final-boost failure, written up in
-   `2026-09-04-final-boost-failure.md`; the guard is deferred (see
-   Deferred below).
+   `2026-09-04-final-boost-failure.md`; the guard is a 1.5 fix (pickup
+   9, PI ruling 2026-09-06).
 1. ~~Stage 0 oracles first~~ done 2026-09-04 (PI: an arithmetic-preserving
    refactor is gated by fixed-state oracles, not by the 10-hour statistical
    run, which is the end-of-stage check and the Stage 4 gate):
@@ -587,7 +587,11 @@ anything that changes numerics lands.
    with it, and `test_vbmc_init.py` asserts the misspelling); the
    misspelled `stop_gp_sampling` key (`_is_gp_sampling_finished` and
    `tol_gp_var_mcmc` are dead, and the method reads undeclared history
-   keys, so it is an implementation, not a one-liner). To verify against
+   keys, so it is an implementation, not a one-liner); the `final_boost`
+   guard (`2026-09-04-final-boost-failure.md`, option 1: keep the
+   pre-boost posterior when the boosted one's ELCBO is worse; PI ruling
+   2026-09-06, a borderline bug rather than an algorithmic decision;
+   alters one trace of the 280 in the reference). To verify against
    MATLAB before deciding: the in-place `eta` shift in `_neg_elcbo` that
    keeps the eta upper soft bound from firing, and `vp.pdf`'s uncorrected
    gradient in the original space (moves a trajectory only if a run path
@@ -608,8 +612,8 @@ anything that changes numerics lands.
    `pyproject.toml`; the scipy private imports in `priors/`; gpyreg's
    `step_out` stale coordinates (inert for PyVBMC; a gpyreg PR with the
    next pin bump).
-   Stays deferred as algorithmic (devlog §12): the `final_boost` guard,
-   `compute_var == 2`, noise shaping, log-space mixture sums.
+   Stays deferred as algorithmic (devlog §12): `compute_var == 2`, noise
+   shaping, log-space mixture sums.
 
 ## Deferred (devlog §12)
 
@@ -622,7 +626,7 @@ mixture sums, user-facing agent skill (`2026-09-02-user-agent-skill.md`),
 porting MATLAB's diagonal approximation of the log-joint variance and its
 gradient (`compute_var == 2` in `_gp_log_joint`, which raises "not
 implemented"; it would allow the ELCBO gradient with `beta ≠ 0`, which no
-option enables today; the dead accumulators were deleted 2026-09-04),
-a guard for `final_boost` (`2026-09-04-final-boost-failure.md`: a small,
-independent algorithmic tweak; alters one trace of the 280 in the golden
-baseline).
+option enables today; the dead accumulators were deleted 2026-09-04).
+The guard for `final_boost` (`2026-09-04-final-boost-failure.md`) left
+this list on 2026-09-06: the PI ruled it a borderline bug, and it is a
+1.5 fix (pickup 9).

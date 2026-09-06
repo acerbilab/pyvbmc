@@ -689,7 +689,9 @@ state used by resume.
   posterior (ELBO within 0.02 of ln Z, gsKL 0.06) into ELBO −9.03 ± 0.49
   for ln Z = −10.36 and gsKL 54, under a GP whose mean function had gone
   flat; 4 of 6 boost reruns from the same state fail. Algorithmic and
-  inherited, not a port bug.
+  inherited, not a port bug. *Ruled 2026-09-06 (PI):* a borderline bug
+  rather than an algorithmic decision; the guard (option 1 of that
+  devlog) is a 1.5 fix (roadmap pickup 9).
 - **Found 2026-09-04 by the review of the oracle plan**
   (`plans/fixture-generator-and-oracles.md`), not fixed:
   - `vbmc.py:755` sets `optim_state["variance_regularized_acqfcn"]` but
@@ -1138,10 +1140,11 @@ in §2 are estimates.
   fixes the latent bugs of §9, the trajectory-moving ones included (the
   `_get_hyp_cov` sampler widths, the dead variance regularization, the
   dead GP-sampling stop check), each replayed and the set checked as a
-  population against the extended reference; the algorithmic items (the
-  `final_boost` guard, `compute_var == 2`, noise shaping) stay deferred
-  (roadmap pickup 9). Where bug and involuntary design decision are hard
-  to tell apart, the PI rules case by case.
+  population against the extended reference; the algorithmic items
+  (`compute_var == 2`, noise shaping) stay deferred (roadmap pickup 9).
+  Where bug and involuntary design decision are hard to tell apart, the
+  PI rules case by case; the first ruling, the same day: the `final_boost`
+  guard is a borderline bug and goes into 1.5.
 - **Dev notes live in `dev/`** (this folder). `docs/` is the Sphinx build output.
 - Design decisions get recorded here as they are made; a separate
   decision-record format is not needed yet.
