@@ -528,7 +528,18 @@ anything that changes numerics lands.
    2026-09-05 in acerbilab/gpyreg#43 (item 8, point 3a); the PyVBMC seam is
    removed on `dev-next`; gpyreg v1.1.0 released 2026-09-05 and required
    by `pyproject.toml`.
-8. One PR `dev-next` → `main` when the work is done.
+8. One PR `dev-next` → `main` when the work is done. With the 1.5 release
+   that follows it, attach the reference population's `.npz` traces as a
+   release asset (PI decision 2026-09-06): one zip per reference, made
+   from the traces of the population the released code was validated
+   against (about 45 MB for 17 configurations at 50 seeds, the exhaust at
+   10), unpacked to `dev/scripts/runs/golden/<population>/` for
+   `golden_replay.py`'s per-iteration verdict; `dev/golden/README.md`
+   names the asset. The sidecars stay in git, the traces stay out of it,
+   and anyone working on the numerics can fetch them. Until the release
+   the traces exist only on the machine that ran the population
+   (regenerable from the sidecars' code SHA, seeds and options, about
+   12 h); a copy on the lab server is cheap insurance.
 
 ## Deferred (devlog §12)
 

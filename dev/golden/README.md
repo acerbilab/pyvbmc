@@ -8,8 +8,14 @@ git SHA, final metrics) and the `summary.md` of the reference population of
 python dev/scripts/golden_trace.py compare dev/golden/baseline <new_dir>
 ```
 
-works from a fresh checkout. The full `.npz` traces stay gitignored under
-`dev/scripts/runs/golden/`.
+works from a fresh checkout. The full `.npz` traces (the per-iteration
+record of every run, which `dev/scripts/golden_replay.py` needs for its
+per-iteration verdict; about 60 KB per run) stay gitignored under
+`dev/scripts/runs/golden/`; from the 1.5 release on they are published as a
+release asset, one zip per reference population, to be unpacked into that
+directory. Until then they exist only on the machine that ran the
+population and can be regenerated from the sidecars' code SHA, seeds and
+options.
 
 **Status (2026-09-06):** the 280 sidecars and `summary.md` of population
 `item7_20260906`: the `golden` suite (14 configurations, D = 2 to 10, two
