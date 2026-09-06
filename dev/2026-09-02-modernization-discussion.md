@@ -1134,6 +1134,13 @@ in §2 are estimates.
   release notes, not a patch. "2.0" is reserved for algorithmic changes, which
   are not planned now but may follow once autodiff makes them cheap (§12).
   Released from the same repo on the same PyPI/conda-forge names.
+  *Decided 2026-09-06 (PI):* 1.5 does not change the VBMC algorithm but
+  fixes the latent bugs of §9, the trajectory-moving ones included (the
+  `_get_hyp_cov` sampler widths, the dead variance regularization, the
+  dead GP-sampling stop check), each replayed and the set checked as a
+  population against the extended reference; the algorithmic items (the
+  `final_boost` guard, `compute_var == 2`, noise shaping) stay deferred
+  (roadmap pickup 9).
 - **Dev notes live in `dev/`** (this folder). `docs/` is the Sphinx build output.
 - Design decisions get recorded here as they are made; a separate
   decision-record format is not needed yet.

@@ -199,6 +199,10 @@ anything that changes numerics lands.
   for the reference), the runner's high-water mark 474 → 402 MB; one
   descriptive shift, lumpy_D10's median evaluations 242 → 308 with its
   quality metrics unchanged or better.
+- [ ] **Latent bug fixes for 1.5** (pickup 9; PI decision 2026-09-06: 1.5
+  leaves the VBMC algorithm as designed and fixes the latent bugs of
+  devlog §9, the trajectory-moving ones included, each replayed and the
+  set checked as a population against the extended reference).
 - [ ] **Stage 3 — pipeline features** (batched initial design,
   torch/jax target adapter docs, `vp.to_torch()`, ArviZ export). Ships
   in 1.5 with Stages 0–2 (PI decision 2026-09-06: the whole body of work
@@ -485,8 +489,10 @@ anything that changes numerics lands.
    configurations; 50 seeds, the exhaust 10; the code), this file's Stage 0
    bullet and `dev/README.md` where they say 14 configurations × 20 seeds,
    and run the replay once with defaults (the fences tighten with 50
-   seeds). Then Stage 3, its plan first (PI decision 2026-09-06: it ships
-   in 1.5 with everything else), and after it the PR `dev-next` → `main`
+   seeds). Then the latent bug fixes (pickup 9, its own plan, one more
+   population night at its end), then Stage 3, its plan first (PI decision
+   2026-09-06: both ship in 1.5 with everything else), and after it the
+   PR `dev-next` → `main`
    (pickup 8) with the release note that files saved by this code hold
    lean GP records an older PyVBMC cannot resume. The dtype canary
    (`plans/stage0-dtype-canary.md`) is done, tests only; its one
@@ -563,6 +569,44 @@ anything that changes numerics lands.
    the traces exist only on the machine that ran the population
    (regenerable from the sidecars' code SHA, seeds and options, about
    12 h); a copy on the lab server is cheap insurance.
+9. **Latent bug fixes for 1.5** (PI decision 2026-09-06: 1.5 does not
+   change the VBMC algorithm, but it fixes the latent bugs; own plan under
+   `plans/` before it starts; after the nights, before Stage 3). The
+   candidates are the unfixed entries of devlog §9; the split below is a
+   first reading, to be confirmed in the plan.
+   Trajectory-moving, each replayed on its own and the set checked as a
+   population against the extended reference, which then becomes the
+   release's reference (one more population night, about 12 h): the
+   `_get_hyp_cov` slips (production slice-samples with gpyreg's default
+   widths); the misspelled `variance_regularized_acqfcn` key (the
+   variance-regularization branch of every acquisition is dead and
+   `tol_gp_var` has no effect; the dead block's batch-shape bug comes
+   with it, and `test_vbmc_init.py` asserts the misspelling); the
+   misspelled `stop_gp_sampling` key (`_is_gp_sampling_finished` and
+   `tol_gp_var_mcmc` are dead, and the method reads undeclared history
+   keys, so it is an implementation, not a one-liner). To verify against
+   MATLAB before deciding: the in-place `eta` shift in `_neg_elcbo` that
+   keeps the eta upper soft bound from firing, and `vp.pdf`'s uncorrected
+   gradient in the original space (moves a trajectory only if a run path
+   uses it).
+   Trajectory-neutral, landing with the replay `identical`: the
+   float32/float16 widening cast; the integer placeholders and the
+   `var_ss` docstring; `optimize_lambda` → `optimize_lambd`;
+   `ParameterTransformer.__eq__`'s self-comparison of `scale`; the
+   `true_mean`/`true_cov` guard; the `display`/`log_file_level` option
+   comments; `results["rng_state"]`; whether `optimize` calls
+   `FunctionLogger.finalize()`; the unreachable code behind
+   `compute_var_log_joint`, `mcmc_importance_sampling` and
+   `search_cmaes_best`; the cubic's closure variable; `kl_div_mvn`'s
+   decorator; the `_vb_init` shape at `vb_type = 3`; the logit Jacobian's
+   overflow; the `|det R| = 1` assumption of `log_abs_det_jacobian`;
+   `_compare_matlab.rand_int`; `noisy_cigar`; notebook 1's `lml_true`
+   and notebook 6's noise broadcast; the runtime dependencies in
+   `pyproject.toml`; the scipy private imports in `priors/`; gpyreg's
+   `step_out` stale coordinates (inert for PyVBMC; a gpyreg PR with the
+   next pin bump).
+   Stays deferred as algorithmic (devlog §12): the `final_boost` guard,
+   `compute_var == 2`, noise shaping, log-space mixture sums.
 
 ## Deferred (devlog §12)
 
