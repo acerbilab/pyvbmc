@@ -204,24 +204,28 @@ anything that changes numerics lands.
   devlog §9, the trajectory-moving ones included, each replayed and the
   set checked as a population against the extended reference).
 - [~] **Stage 3: connect models and use posteriors downstream.** Implemented
-  and locally verified on `dev-next-stage3` (`4ee612d`); integration awaits
-  the reference nights. Exact oracles pass, all five replay cases are
-  identical, and the full suite passes (957 passed). Two
-  workflows (PI confirmed 2026-09-06): bring torch/JAX models into PyVBMC
-  through documented adapters and an opt-in batched initial design; take
-  the fitted posterior into torch as a distribution or ArviZ as samples.
-  The plan is `plans/stage3-pipeline-features.md` on `dev-next-stage3`.
-  Current ArviZ DataTree support is agreed; the core stays Python >=3.10,
-  the ArviZ export requires >=3.12, and reconsidering the core Python floor
-  is deferred to Stage 4. Ships in 1.5 with Stages 0–2 (PI decision 2026-09-06: the whole body of work
-  in one release, for visibility, rather than a 1.5 followed by a 1.6
-  within days). May start now on the branch `dev-next-stage3`, plan
-  first, in parallel with the reference nights (pickup 11 for the
-  branch rules and the decisions already taken); its items are expected
-  to leave every trajectory as it is, so it merges into `dev-next` after
-  the nights with the replay `identical` and the full suite green, and
-  the population night of pickup 9 then validates the released code,
-  fixes and features together.
+  and locally verified on `dev-next-stage3`: code `4ee612d`, records/docs
+  `285cd74`; exact oracles pass, all five replay cases are identical, and
+  the full suite passes (957 passed). The branch is pushed; smoke run
+  `34043031387` and full-matrix run `34043071150` are green on all jobs.
+  Stage 3 has not been merged into
+  `dev-next`, and
+  the integrated freeze commit has not been chosen. Once both branch CI
+  runs pass, merge Stage 3 into `dev-next`, run the exact oracles, identical
+  golden replay and full local suite on that integrated tree, then freeze
+  that one code commit for both reference-extension nights (pickup 3f and
+  11). Every reference configuration keeps `vectorized_target=False`.
+  Two workflows (PI confirmed 2026-09-06): bring torch/JAX models into
+  PyVBMC through documented adapters and an opt-in batched initial design;
+  take the fitted posterior into torch as a distribution or ArviZ as
+  samples. The plan is `plans/stage3-pipeline-features.md` on
+  `dev-next-stage3`. Current ArviZ DataTree support is agreed; the core
+  stays Python >=3.10, the ArviZ export requires >=3.12, and reconsidering
+  the core Python floor is deferred to Stage 4. Ships in 1.5 with Stages
+  0–2 (PI decision 2026-09-06: the whole body of work in one release, for
+  visibility, rather than a 1.5 followed by a 1.6 within days). Both
+  trajectory-neutral and trajectory-moving latent bug fixes remain behind
+  the reference-night boundary; pickup 9 starts only after both nights.
 - [ ] **Stage 4 — PyTorch port** (decision point, not default).
 
 ## Pickup point
@@ -438,9 +442,9 @@ anything that changes numerics lands.
    `summary`, `compare dev/golden/baseline`, `compare` with the item 1
    population and a per-config table of the sidecars' `peak_rss_mb`
    medians against item 1's, all chained by one script into
-   `runs/golden_item7_20260906.log`; 4.75 h elapsed). Its sidecars say
-   `dirty: true` because the record files of this commit were uncommitted
-   when it started; no code differed. It was the statistical gate for
+   `runs/golden_item7_20260906.log`; 4.75 h elapsed). Its sidecars record
+   `18a236c`, `dirty: false`: a documentation-only descendant of `bdaf322`.
+   Git metadata is captured after each run; the numerical code is unchanged. It was the statistical gate for
    items 8, 5, 6 and 7 together (none identity-preserving against the
    item 1 population, whose code predates the seam removal), and it
    passed. (ii) ~~Push `dev-next` so the CI smoke runs on the package
@@ -462,55 +466,87 @@ anything that changes numerics lands.
    bullet and pickup points 3c–3e; `plans/stage2-memory.md` (§Summary,
    §Decisions, §Results, the tracker's doublecheck entry); the population
    reports above.
-3f. **Next** (handoff 2026-09-06 midday; code `282e0ed`, tree clean and
-   pushed, CI smoke green on it, the full matrix green on `4f77e1a` and
-   only tests and records since; nothing running). Stage 2 is complete,
-   the oracle references and the golden reference are re-baselined to the
-   current numerics, and Stage 0 is complete (its last item, the dtype
-   canary, landed 2026-09-06 midday as a tests-only change).
-   Two long runs, then records, then the PR.
-   (i) **Night 1, on the PI's word that the laptop is free (about 7 h)**:
-   grow the 14 original configurations of the reference to 50 seeds, in
-   the reference's own run directory. Before starting, `python
-   dev/scripts/golden_replay.py` with defaults must report `identical` on
-   the five configs (3 min; it did on `afb66cd`, and nothing numerical has
-   landed since): the extension is valid only on code identical to the
-   reference's. Then, as one chained script logging to
+3f. **Next — in progress** (sequence revised with the PI 2026-09-06).
+   Stage 2 and Stage 0 are complete. The committed oracle references and
+   the current golden reference are the end-of-Stage-2 baseline. Stage 3
+   is implemented on `dev-next-stage3` at code `4ee612d` with records/docs
+   `285cd74`; smoke run `34043031387` is green and full-matrix run
+   `34043071150` is green on all nine jobs. The CI merge gate is passed.
+   (i) **Integrate and freeze before either night.** Merge
+   `dev-next-stage3` into `dev-next`, then run on the integrated checkout:
+   `python dev/scripts/make_oracle_fixtures.py --check --exact`,
+   `python dev/scripts/golden_replay.py` (all five cases must report
+   `identical`), and `python -m pytest --reruns=5 -x -vv` (the full local
+   suite). The merge and these integrated checks are not done yet. Once
+   they pass, record the integrated commit as the freeze point and make no
+   code changes until both reference-extension nights finish. Keep
+   `vectorized_target=False` in every reference configuration. Pass the
+   shared `--options` argument as JSON `{"vectorized_target": false}` to
+   all three `golden_trace.py run` invocations below, so requested/effective
+   options in each new sidecar attest the setting. On Windows, preserve
+   JSON quoting with a Python subprocess argument list. The
+   existing 280 sidecars and stored traces retain their recorded `18a236c`, clean-tree
+   provenance (the numerical code is that of `bdaf322`); do not rewrite them. Every new sidecar records the actual
+   frozen integrated code that generated it.
+   (ii) **Night 1, only on the PI's explicit word that the laptop is free
+   (about 7 h)**: grow the 14 original configurations of the reference to
+   50 seeds in the reference's existing run directory. Immediately before
+   starting, rerun `python dev/scripts/golden_replay.py` with defaults; it
+   must still report `identical` on all five configs and the checkout must
+   be the recorded freeze commit. Then, as one chained script logging to
    `runs/golden_grow_20260906.log`: `python -u dev/scripts/golden_trace.py
    run --suite golden --only normal_D5,corr_D5,halfnormal_D2,
    rosenbrock_D2,banana_D2,banana_D6,banana_D10,cigar_D4,lumpy_D4,
    lumpy_D10,student_D4,logreg_D5,rosenbrock_D2_noise1,logreg_D5_noise3
    --seeds 20-49 --workers 1 --out dev/scripts/runs/golden/item7_20260906`
    (the `--only` keeps the three new configurations for night 2; the run
-   skips the 280 sidecars already there), `golden_trace.py summary <out>`,
+   skips the 280 records already there), `golden_trace.py summary <out>`,
    `golden_trace.py compare --split <out>` (even against odd seeds), a
-   second null check of seeds 0–19 against 20–49 (copy the sidecars of
-   each half into a temporary directory and `compare` the two), and the
-   publish step of `regenerate_baseline.sh` (`rm -f
+   second null check of seeds 0–19 against 20–49 (copy the sidecars of each
+   half into a temporary directory and `compare` the two), and the publish
+   step of `regenerate_baseline.sh` (`rm -f
    dev/golden/baseline/*.json dev/golden/baseline/summary.md; cp
    <out>/*.json <out>/summary.md dev/golden/baseline/`). Expected: 420 of
    420 new runs succeed, no config flagged in either null check.
-   (ii) **Night 2 (about 5 h)**: `--only cigar_D8,student_D8 --seeds 0-49`
-   then `--only cigar_D15_exhaust --seeds 0-9`, same out directory, then
+   The chain must check each command exit status and the expected run
+   counts before publishing: 700 JSON/NPZ pairs after batch 1 and 810
+   after batch 2, no error files, and new sidecars naming the frozen SHA.
+   The runner skips existing NPZs, so an orphan NPZ must not count as a
+   complete run. Call `compare` directly: it exits nonzero on
+   flags; do not copy the failure-masking `|| true` from
+   `regenerate_baseline.sh`. `summary` alone does not certify completeness.
+   (iii) **Night 2, on the same frozen commit (about 5 h)**:
+   `--only cigar_D8,student_D8 --seeds 0-49`, then
+   `--only cigar_D15_exhaust --seeds 0-9`, same out directory, then
    summary, the even-vs-odd null check and the publish step. The exhaust
    configuration's evaluation count is always 750, so only its three
    quality metrics carry information; its 10 seeds are regime coverage.
-   (iii) **After the nights**: commit the republished sidecars and
-   `summary.md` (990 files), update `dev/golden/README.md` (17
-   configurations; 50 seeds, the exhaust 10; the code), this file's Stage 0
-   bullet and `dev/README.md` where they say 14 configurations × 20 seeds,
-   and run the replay once with defaults (the fences tighten with 50
-   seeds). Then the merge of Stage 3 from `dev-next-stage3` (pickup 11;
-   replay `identical`, full suite green) together with the
-   trajectory-neutral fixes of pickup 9, then the trajectory-moving fixes
-   of pickup 9, each replayed, then its population night on the final
-   code (PI decisions 2026-09-06: everything ships in 1.5), and after it
-   the PR `dev-next` → `main`
-   (pickup 8) with the release note that files saved by this code hold
-   lean GP records an older PyVBMC cannot resume. The dtype canary
-   (`plans/stage0-dtype-canary.md`) is done, tests only; its one
-   production follow-up, widening float32 and float16 constructor inputs,
-   waits for the nights.
+   The two batches may be one explicitly authorized chain; batch 2 starts
+   only if every batch-1 run and its summary, null checks and publication
+   step succeed; no extra approval is needed between the two batches of an
+   authorized chain. The whole
+   chain is about 12–13 h plus check and publication overhead. Keep the
+   laptop plugged in and awake, with no competing heavy numerical job.
+   Light browsing and documentation work before or after dinner are fine,
+   but wall times under mixed use are not a clean speed benchmark
+   (`wall_s` is recorded, but it is not a result-gate metric). The proposed
+   approximately 20:00 start is not scheduled or authorized; wait for the
+   PI's explicit word before launching the chain.
+   (iv) **After both nights**: commit the republished sidecars and
+   `summary.md` (810 run sidecars plus the summary, 811 files), update
+   `dev/golden/README.md` (17
+   configurations; 50 seeds, the exhaust 10; mixed historical and frozen
+   code provenance), this file's Stage 0 bullet and `dev/README.md` where
+   they say 14 configurations × 20 seeds, and run the replay once with
+   defaults (the fences tighten with 50 seeds). Only then begin pickup 9:
+   trajectory-neutral fixes first or alongside its planned sequence, and
+   trajectory-moving fixes each replayed, followed by the population night
+   on the final 1.5 code. Then open the PR `dev-next` → `main` (pickup 8)
+   with the release note that files saved by this code hold lean GP records
+   an older PyVBMC cannot resume. The dtype canary
+   (`plans/stage0-dtype-canary.md`) is done, tests only; its production
+   widening of float32 and float16 constructor inputs is a latent fix and
+   therefore also waits until both nights finish.
    Reading list for a fresh session: `dev/README.md`; this file's Stage 0
    and Stage 2 bullets and pickup points 5, 3e and 3f;
    `dev/golden/README.md`; `plans/stage2-memory.md` §Summary and
@@ -527,10 +563,15 @@ anything that changes numerics lands.
    `dev/golden/baseline/`, the comparison reports under
    `dev/golden/promotion_20260906/`, the replay's default trace directory
    moved to it (`golden_replay.py`), `dev/golden/README.md` updated.
-   **Extension, decided with the PI 2026-09-06 (morning), two nights on
-   code the replay reports `identical` against the reference traces
-   (`df02705` or later, before any change that moves the numerics):**
-   the `golden` suite now holds 17 configurations (`benchmark_targets.py`:
+   **Extension sequence revised with the PI 2026-09-06: two nights on one
+   frozen `dev-next` commit after Stage 3 is merged and the integrated exact
+   oracles, identical replay and full local suite pass.** Keep
+   `vectorized_target=False` in all reference configurations. The original
+   seeds 0–19 preserve their `18a236c` sidecars and stored traces; the new
+   runs record the actual frozen integrated code in their sidecars. The
+   replay establishes numerical identity across that provenance boundary;
+   neither the historical records nor their code SHA are rewritten.
+   The `golden` suite now holds 17 configurations (`benchmark_targets.py`:
    `cigar_D8` and `student_D8`, the two hard shapes at an intermediate-high
    dimension, ground truth checked; and `cigar_D15_exhaust`, shared with
    the profile suite, for coverage of the optimize-only regime).
@@ -544,8 +585,9 @@ anything that changes numerics lands.
    seed, about 2.7 h) and `--only cigar_D15_exhaust --seeds 0-9` (10 seeds,
    about 13 min each, 2.2 h; regime coverage rather than statistics, its
    evaluation count is always 750), then summary, null checks, publish.
-   The family becomes 17 × 4 = 68 KS tests. Each night's run starts on the
-   PI's word that the laptop is free. Afterwards: `dev/golden/README.md`,
+   The family becomes 17 × 4 = 68 KS tests. One explicit start authorization may cover both
+   batches as a chain, with batch 2 gated on batch 1 and its checks. Both
+   run on the same frozen commit. Afterwards: `dev/golden/README.md`,
    this file's Stage 0 bullet and `dev/README.md` describe the population
    as 14 configurations × 20 seeds and need the new counts. The reference
    sidecars live in git under `dev/golden/baseline/` (PI decision
@@ -584,9 +626,12 @@ anything that changes numerics lands.
    12 h); a copy on the lab server is cheap insurance.
 9. **Latent bug fixes for 1.5** (PI decision 2026-09-06: 1.5 does not
    change the VBMC algorithm, but it fixes the latent bugs; own plan under
-   `plans/` before it starts; after the nights: the trajectory-neutral
-   fixes with the Stage 3 merge, the trajectory-moving ones after it, so
-   that the population night at the end runs on the final code). The
+   `plans/` before it starts). The integration boundary is now explicit:
+   Stage 3 merges first and that integrated code is frozen for both
+   reference-extension nights. No latent fix lands before or between those
+   nights, whether classified trajectory-neutral or trajectory-moving.
+   Pickup 9 begins only after both nights and their records are complete,
+   so that its final population night runs on the final code. The
    candidates are the unfixed entries of devlog §9; the split below is a
    first reading, to be confirmed in the plan. Where the line between a
    bug and an involuntary design decision is loose, the PI rules case by
@@ -645,18 +690,23 @@ anything that changes numerics lands.
     `torch` dependency meets Stage 3's `vp.to_torch()`), and release it
     in step with 1.5: its `pyvbmc` pin bumped, its tests green against the
     released code, its pickles regenerated if the classes changed.
-11. **Stage 3 on `dev-next-stage3`** (PI, 2026-09-06: Stage 3 may start
-    now, in parallel with the reference nights; nothing in it depends on
-    them, and the rule that nothing numerical lands on `dev-next` before
-    the nights concerns that branch only). Branch rules: the branch is
-    cut from `dev-next` and named so that the origin is plain; the smoke
-    workflow runs on it (`dev*`); the work happens in a separate git
-    worktree with its own editable install or venv, so the `dev-next`
-    checkout the nights run from is never touched, and the worktree links
-    `dev/scripts/runs` to the main checkout's for the replay's traces;
-    no full-suite or replay runs while a night is running (heavy compute
-    is the night's). The plan (`plans/stage3-*.md`) comes first and starts
-    from these decisions, taken with the PI on 2026-09-06:
+11. **Stage 3 on `dev-next-stage3` — integration in progress** (PI,
+    2026-09-06). Implementation is complete at code `4ee612d`; its
+    records/docs commit is `285cd74`. The branch is pushed; smoke run
+    `34043031387` and all nine jobs of full-matrix run `34043071150` are
+    green. The CI gate is passed. The merge into
+    `dev-next`, integrated exact oracle check, identical golden replay and
+    full local suite have not
+    happened. Once both branch CI runs are green, merge Stage 3 into
+    `dev-next`, run those three integrated gates, and record the passing
+    integrated commit as the single freeze point for both reference
+    nights. Keep every reference configuration at
+    `vectorized_target=False`. Existing `18a236c` sidecars and traces stay
+    intact; new sidecars identify the actual frozen commit. No code change,
+    including a trajectory-neutral latent fix, lands between the freeze
+    and completion of night 2. Heavy local checks do not run while either
+    night is running. The plan (`plans/stage3-pipeline-features.md`) and
+    these decisions were taken with the PI on 2026-09-06:
     (a) torch and ArviZ are optional extras, `pyvbmc[torch]` and
     `pyvbmc[arviz]`, imported lazily inside the methods that need them,
     with an error naming the extra to install; their tests skip when the

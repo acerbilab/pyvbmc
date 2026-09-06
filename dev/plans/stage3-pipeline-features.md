@@ -1,6 +1,6 @@
 # Stage 3: pipeline features
 
-Created: 2026-09-06. Status: **implemented and locally verified; integration awaits reference nights**.
+Created: 2026-09-06. Status: **implemented and locally verified; pre-night integration in progress**.
 Branch: `dev-next-stage3`, based on `dev-next` at `4d91a5e`.
 This file owns the Stage 3 implementation design, decisions, gates and live
 tracker for maintainers. The roadmap owns release sequencing; this plan
@@ -47,8 +47,10 @@ that S-VBMC's pickles rely on; its full compatibility campaign remains pickup 10
 
 - Worktree: `C:/Users/luigi/Documents/GitHub/pyvbmc-stage3`.
 - Interpreter: `.venv/Scripts/python.exe` inside that worktree.
-- The original checkout stays on `dev-next`; never install this branch into
-  its venv. All subsequent edit/test commands explicitly use the Stage 3 cwd.
+- During implementation, the original checkout stayed on `dev-next` and
+  retained its own venv. The revised integration below advances that checkout
+  only after CI; its numerical dependency versions remain the reference ones.
+  Commands explicitly name their intended checkout and interpreter.
 - The new venv has the reference venv's pinned development dependencies
   (local manifest `.venv/baseline-requirements.txt`), an editable PyVBMC
   install from this worktree, and the released gpyreg 1.1.0 wheel.
@@ -60,9 +62,10 @@ that S-VBMC's pickles rely on; its full compatibility campaign remains pickup 10
 - No full-suite or replay runs during a reference night. Check that a night
   is not running before heavy gates; one heavy process, single-threaded BLAS.
   Long campaigns start only on the PI's word. This plan does not start one.
-- Merge into `dev-next` only after both reference-extension nights and their
-  records; require an identical replay and green full suite after integration.
-  Resolve roadmap/TODO record conflicts then, preserving the nights' results.
+- Revised by the PI after implementation: merge Stage 3 into `dev-next`
+  before the nights once CI passes; require exact oracles, an identical replay
+  and a green full suite after integration. Freeze that code for both nights;
+  preserve existing traces and their provenance, and defer latent bug fixes.
 
 ## Existing code and constraints verified by reading
 
@@ -313,7 +316,7 @@ regenerate its script, never hand-edit generated scripts.
 - [x] Independent implementation review and fixes: export and batching findings fixed; focused regressions pass.
 - [x] Exact oracles, identical replay and full suite passed outside reference nights.
 - [x] Final records and conventional feature commit on dev-next-stage3 (`4ee612d`); verification record committed alongside it.
-- [ ] Future integration gate (outside this branch implementation): merge only after reference nights, then repeat required integration checks.
+- [~] Revised integration gate: merge before reference nights after CI, then repeat required integration checks (live checklist below).
 
 Primary agent owns this tracker. Implementation work is separated by file ownership;
 all test commands are centralized and run one process at a time.
@@ -330,7 +333,8 @@ all test commands are centralized and run one process at a time.
 6. Independent implementation review; fix confirmed findings. When no reference
    night is running, run the final local gates below, one process at a time.
 7. Commit conventional commits on Stage 3; push only within the user's
-   authorized workflow. Do not merge into dev-next before the nights end.
+   authorized workflow. The revised PI decision below moves integration before
+   the nights, after CI and with repeated integrated verification.
 
 Gates (checklist entries record completed verification):
 
@@ -501,13 +505,54 @@ were fixed and covered by passing regressions. The numerical references
 were unchanged. The task tracker remains here as the durable design and
 verification record.
 
-The original `dev-next` checkout remains clean and unchanged. This branch
-has not been pushed or merged; remote CI has not run. After the reference
-nights, integrate according to roadmap pickup 11, repeat the identity/full
-suite gates, and run the Ubuntu extras leg and release matrix. This is the
-already-agreed future integration gate, not unfinished feature work.
+At implementation completion, the original `dev-next` checkout was clean
+and unchanged, and the branch had not been pushed or merged. The subsequent
+PI decision below supersedes that handoff: pre-night integration and remote
+CI are now in progress. The local verification above remains the feature
+branch evidence; integrated results are recorded separately below.
 
 Local detailed logs are `.venv/stage3-{pytest,oracles,replay}.log` and
 `.venv/stage3-sphinx{,-warnings}.log`; artifacts and wheel smoke evidence
 are under `.venv/stage3-*`. These are ignored local verification artifacts;
 this plan records the durable outcomes needed from a fresh checkout.
+
+
+## Revised integration sequence (PI, 2026-09-06)
+
+The PI approved moving Stage 3 integration before the reference-extension
+nights. This supersedes the earlier post-night merge restriction in this
+plan and roadmap pickup 11. Preserve default `vectorized_target=False`,
+require CI and integrated numerical checks, then freeze that code for both
+nights. Existing Stage 2 traces retain their original provenance; new
+sidecars record the integrated Stage 3 code. Do not land bug fixes before
+the reference extension is finished. The PI must authorize the start; that instruction may cover both batches
+as one sequential chain, with phase 2 gated on phase 1 and its checks.
+
+- [x] Push Stage 3 and pass CI: smoke 34043031387 and all nine jobs of full matrix 34043071150 passed on 285cd74.
+- [x] Update roadmap/TODO/reference instructions to the approved sequence.
+- [~] Merge into clean dev-next and check its environment against the reference.
+- [ ] Integrated exact oracles, identical replay and full local suite.
+- [ ] Independent integration review; commit/push records and freeze the tested code.
+- [ ] Later: start the reference campaign on explicit instruction, which may authorize both batches as one chain.
+
+Integration preflight: original dev-next is clean at `4d91a5e`, fast-forward
+merge is available, and no Python jobs were running. Its own editable
+installation resolves to that checkout and the reference sibling gpyreg.
+NumPy 2.5.2, SciPy 1.18.1, gpyreg 1.1.0 and cma 4.4.4 match the reference
+environment; pip check is clean. Torch and ArviZ are absent, so integrated
+local testing will also cover the base installation.
+
+Operational clarification (PI, same session): light laptop use is compatible
+with these reference runs. The population gate uses `elbo_err`, `gskl`,
+`mmtv` and `func_count`; wall time is recorded but not gated. Mixed-use
+timings must not be treated as an idle-machine speed benchmark. A start
+around 20:00 with both batches chained is feasible (roughly 12-13 hours
+plus overhead), on power and without sleep or competing heavy computation.
+This discussion does not itself launch or schedule the campaign.
+
+Independent Sol integration review: corrected the sidecar provenance
+(280 records at `18a236c`, dirty false; documentation-only descendant of
+numerical code `bdaf322`), residual authorization wording and CI status.
+The future chain explicitly gates counts/pairs and compares, without the
+legacy shell script's masked compare failures; it passes batching false
+explicitly in JSON options. No historical sidecar or trace was modified.

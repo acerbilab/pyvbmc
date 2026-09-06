@@ -118,6 +118,9 @@ status and next steps never go into the devlogs.
   worklog: connect torch/JAX models through opt-in initial-design batching,
   use fitted posteriors through torch and current ArviZ DataTree exports,
   optional dependencies, documentation, CI wiring and verification gates.
+  Implementation is complete on `dev-next-stage3` at code `4ee612d`
+  (records/docs `285cd74`); branch CI is in progress and integration into
+  `dev-next` has not happened.
 
 Naming: `plans/` files are named by slug only, never by date (the date is in
 the file header), so that they cannot be mistaken for copies of the dated
@@ -145,7 +148,16 @@ can run at any time as one process. The golden reference population's sidecars
 (JSON only, under 1 MB) live under `golden/baseline/` together with its
 `summary.md`, so `python dev/scripts/golden_trace.py compare
 dev/golden/baseline <new_dir>` works from a fresh checkout; the full traces
-(`.npz`) stay gitignored under `scripts/runs/golden/`.
+(`.npz`) stay gitignored under `scripts/runs/golden/`. For the current
+two-night extension, first merge Stage 3 into `dev-next`, pass the exact
+oracles, identical replay and full local suite on the integrated tree, then
+freeze that code for both nights. Keep `vectorized_target=False` in every
+reference configuration. Preserve the existing `18a236c` sidecars and
+traces; new sidecars record the actual frozen integrated SHA. Neither
+trajectory-neutral nor trajectory-moving latent fixes begin until both
+nights have finished. The nights may be one explicitly authorized chain
+(about 7 h and 5 h, plus check overhead); its second batch starts only after
+the first and its checks succeed.
 `scripts/regenerate_baseline.sh` regenerates everything (target checks,
 profile campaign plain and cProfile, golden sweep, summary, null check,
 publishing the sidecars) as one sequential process, about 10–12 hours;
