@@ -29,7 +29,9 @@ Fractional effective sample size of the importance-sampling weights.
 
 Importance weights and predictive variances for the proposal mixture of the
 variational posterior and box-uniforms around the training points, for both
-noisy acquisitions. Columns are the two GP hyperparameter samples.
+noisy acquisitions. Columns are the two GP hyperparameter samples. The
+script writes `activesample_proposalpdf.mat`, to be converted to this
+`.npz` with the same keys.
 
 | key | shape | contents |
 | --- | --- | --- |

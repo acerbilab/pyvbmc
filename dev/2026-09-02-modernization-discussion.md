@@ -642,6 +642,12 @@ state used by resume.
   - `log_abs_det_jacobian` takes `|det R_mat| = 1` for granted, true of
     every rotation `warp_input` installs (an orthogonal factor of an SVD)
     and silently wrong for any other matrix.
+  - The MATLAB generator `testing/vbmc/compare_MATLAB/
+    activesample_proposalpdf.m` misspelled its local function and its
+    output file (`activcesample_proposalpdf`), so rerunning it would have
+    written a file with a different name from the fixture it produced.
+    **Fixed** the same day (a rename in the script; MATLAB is not needed
+    to apply it, only to rerun it).
 - **Found 2026-09-05 (late evening) by the review of the item 7 plan**
   (`plans/stage2-memory.md`):
   - `optimize()` on a finished instance set `self.vp` and
