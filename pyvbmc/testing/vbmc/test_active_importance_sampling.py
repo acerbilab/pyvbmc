@@ -3,7 +3,6 @@ from sys import float_info
 
 import gpyreg as gpr
 import numpy as np
-import scipy.io
 import scipy.stats as sps
 
 from pyvbmc.acquisition_functions import AcqFcnIMIQR, AcqFcnVIQR
@@ -164,15 +163,15 @@ def test_fess():
     Xa = 2 * np.arange(-4, 5).reshape((3, 3), order="F") / np.pi
 
     dirpath = os.path.dirname(os.path.realpath(__file__))
-    filepath = os.path.join(dirpath, "compare_MATLAB", "fess.mat")
-    MATLAB = scipy.io.loadmat(filepath)
+    filepath = os.path.join(dirpath, "compare_MATLAB", "fess.npz")
 
     fess_means = fess(vp, gp_means, X)
     fess_gp = fess(vp, gp, Xa)
     assert np.isscalar(fess_means)
     assert np.isscalar(fess_gp)
-    assert np.isclose(fess_means, MATLAB["fess_means"])
-    assert np.isclose(fess_gp, MATLAB["fess_gp"])
+    with np.load(filepath, allow_pickle=False) as MATLAB:
+        assert np.isclose(fess_means, MATLAB["fess_means"])
+        assert np.isclose(fess_gp, MATLAB["fess_gp"])
 
 
 def test_active_sample_proposal_pdf():
@@ -231,9 +230,8 @@ def test_active_sample_proposal_pdf():
 
     dirpath = os.path.dirname(os.path.realpath(__file__))
     filepath = os.path.join(
-        dirpath, "compare_MATLAB", "activesample_proposalpdf.mat"
+        dirpath, "compare_MATLAB", "activesample_proposalpdf.npz"
     )
-    MATLAB = scipy.io.loadmat(filepath)
 
     ln_weights_viqr, f_s2_viqr = active_sample_proposal_pdf(
         Xa, gp, vp, w_vp, rect_delta, AcqFcnVIQR()
@@ -244,10 +242,11 @@ def test_active_sample_proposal_pdf():
     Ns_gp = hyp.shape[0]
     assert ln_weights_viqr.shape == ln_weights_imiqr.shape == (D, Ns_gp)
     assert f_s2_viqr.shape == f_s2_imiqr.shape == (D, Ns_gp)
-    assert np.allclose(ln_weights_viqr, MATLAB["ln_weights_viqr"])
-    assert np.allclose(f_s2_viqr, MATLAB["f_s2_viqr"])
-    assert np.allclose(ln_weights_imiqr, MATLAB["ln_weights_imiqr"])
-    assert np.allclose(f_s2_imiqr, MATLAB["f_s2_imiqr"])
+    with np.load(filepath, allow_pickle=False) as MATLAB:
+        assert np.allclose(ln_weights_viqr, MATLAB["ln_weights_viqr"])
+        assert np.allclose(f_s2_viqr, MATLAB["f_s2_viqr"])
+        assert np.allclose(ln_weights_imiqr, MATLAB["ln_weights_imiqr"])
+        assert np.allclose(f_s2_imiqr, MATLAB["f_s2_imiqr"])
 
 
 def test_acq_log_f():
@@ -303,9 +302,8 @@ def test_acq_log_f():
     Xa = 2 * np.arange(-4, 5).reshape((3, 3), order="F") / np.pi
 
     dirpath = os.path.dirname(os.path.realpath(__file__))
-    filepath = os.path.join(dirpath, "compare_MATLAB", "log_isbasefun.mat")
+    filepath = os.path.join(dirpath, "compare_MATLAB", "log_isbasefun.npz")
     print(filepath)
-    MATLAB = scipy.io.loadmat(filepath)
 
     viqr = AcqFcnVIQR()
     # Use vp weights for this test, since IMIQR uses them.
@@ -321,5 +319,6 @@ def test_acq_log_f():
     y_imiqr = AcqFcnIMIQR().is_log_full(Xa, gp=gp, vp=vp)
 
     assert y_viqr.shape == y_imiqr.shape == (D, 1)
-    assert np.allclose(y_viqr, MATLAB["y_viqr"], atol=1e-3)
-    assert np.allclose(y_imiqr, MATLAB["y_imiqr"], atol=1e-3)
+    with np.load(filepath, allow_pickle=False) as MATLAB:
+        assert np.allclose(y_viqr, MATLAB["y_viqr"], atol=1e-3)
+        assert np.allclose(y_imiqr, MATLAB["y_imiqr"], atol=1e-3)

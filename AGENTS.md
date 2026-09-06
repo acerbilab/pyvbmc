@@ -211,9 +211,14 @@ Things you must hold in your head across files:
   classes. Renaming or removing an attribute on `VBMC`, `VariationalPosterior`,
   `Options`, or `IterationHistory` breaks them, and they cannot be regenerated
   without rerunning `optimize()`.
-- MATLAB `.mat` fixtures are read with `scipy.io.loadmat` (no MATLAB needed)
-  but are opaque and unregenerable. New fixture files or directories must be
-  added to `MANIFEST.in` by hand or they are missing from the sdist.
+- MATLAB-derived reference values live in plain `.npz` files (flat keys,
+  `np.load(path, allow_pickle=False)`) under `entropy/`,
+  `variational_posterior/` and `vbmc/compare_MATLAB/`, each directory with a
+  `FIXTURES.md` listing what every array holds, which test reads it at what
+  tolerance, and where it came from. Regenerating any of them needs MATLAB
+  and the VBMC toolbox, so the numbers are fixed. New fixture files or
+  directories must be added to `MANIFEST.in` by hand or they are missing
+  from the sdist.
 - New test directories need an `__init__.py` (`entropy/` and `whitening/`
   currently lack one).
 - `pyvbmc/priors/__init__.py` has `# isort:skip` markers preserving a

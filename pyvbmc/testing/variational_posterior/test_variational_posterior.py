@@ -2,26 +2,25 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from scipy.io import loadmat
 
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.variational_posterior import VariationalPosterior
 
 
 def get_matlab_vp():
-    path = Path(__file__).parent.joinpath("vp-test.mat")
-    mat = loadmat(path)
-    vp = VariationalPosterior(2, 2, np.array([[5]]))
-    vp.D = mat["D"][0, 0]
-    vp.K = mat["K"][0, 0]
-    vp.w = mat["w"]
-    vp.mu = mat["mu"]
-    vp.sigma = mat["sigma"]
-    vp.lambd = mat["lambda"]
-    vp.optimize_lambd = mat["optimize_lambda"][0, 0] == 1
-    vp.optimize_mu = mat["optimize_mu"][0, 0] == 1
-    vp.optimize_sigma = mat["optimize_sigma"][0, 0] == 1
-    vp.optimize_weights = mat["optimize_weights"][0, 0] == 1
+    path = Path(__file__).parent.joinpath("vp-test.npz")
+    with np.load(path, allow_pickle=False) as fixture:
+        vp = VariationalPosterior(2, 2, np.array([[5]]))
+        vp.D = fixture["D"][0, 0]
+        vp.K = fixture["K"][0, 0]
+        vp.w = fixture["w"]
+        vp.mu = fixture["mu"]
+        vp.sigma = fixture["sigma"]
+        vp.lambd = fixture["lambd"]
+        vp.optimize_lambd = fixture["optimize_lambd"][0, 0] == 1
+        vp.optimize_mu = fixture["optimize_mu"][0, 0] == 1
+        vp.optimize_sigma = fixture["optimize_sigma"][0, 0] == 1
+        vp.optimize_weights = fixture["optimize_weights"][0, 0] == 1
     vp.parameter_transformer = ParameterTransformer(vp.D)
     return vp
 
@@ -547,14 +546,13 @@ def test_moments_no_orig_flag_2():
 
     mubar, sigma = vp.moments(N=1e6, cov_flag=True, orig_flag=False)
     path = Path(__file__).parent.joinpath(
-        "test_moments_no_orig_flag_2_MATLAB.mat"
+        "test_moments_no_orig_flag_2_MATLAB.npz"
     )
-    matlab = loadmat(path)
-
-    assert mubar.shape == (1, 6)
-    assert sigma.shape == (6, 6)
-    assert np.allclose(mubar, matlab["mubar"])
-    assert np.allclose(sigma, matlab["sigma"])
+    with np.load(path, allow_pickle=False) as matlab:
+        assert mubar.shape == (1, 6)
+        assert sigma.shape == (6, 6)
+        assert np.allclose(mubar, matlab["mubar"])
+        assert np.allclose(sigma, matlab["sigma"])
 
 
 def test_moments_no_cov_flag():

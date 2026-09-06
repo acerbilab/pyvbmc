@@ -1,7 +1,11 @@
+include pyvbmc/testing/entropy/*.npz
+include pyvbmc/testing/entropy/FIXTURES.md
 include pyvbmc/testing/variational_posterior/*.txt
-include pyvbmc/testing/variational_posterior/*.mat
+include pyvbmc/testing/variational_posterior/*.npz
+include pyvbmc/testing/variational_posterior/FIXTURES.md
 include pyvbmc/testing/variational_posterior/test_vp_save_static.pkl
 include pyvbmc/testing/vbmc/*.txt
+include pyvbmc/testing/whitening/*.txt
 include pyvbmc/testing/vbmc/compare_MATLAB/*
 include pyvbmc/testing/vbmc/test_vbmc_save_static.pkl
 include pyvbmc/testing/oracles/fixtures/*.npz

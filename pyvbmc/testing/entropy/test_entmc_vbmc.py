@@ -2,7 +2,6 @@ import importlib
 from pathlib import Path
 
 import numpy as np
-from scipy.io import loadmat
 
 from pyvbmc.entropy import entmc_vbmc
 from pyvbmc.testing import check_grad
@@ -153,20 +152,20 @@ def test_entmc_vbmc_matlab():
     # with MATLAB version, i.e. entmc_vbmc.py need to be modified a
     # bit: epsilon[: Ns // 2, :] = randn2(D, Ns // 2).transpose()
     exact = False
-    path = Path(__file__).parent.joinpath("entropy-test.mat")
-    mat = loadmat(path)
-    D = mat["D"].item()
-    K = mat["K"].item()
-    Ns = mat["Ns"].item()
-    vp = VariationalPosterior(D, K)
-    vp.w = mat["vp"]["w"].item().astype(float)
-    vp.mu = mat["vp"]["mu"].item().astype(float)
-    vp.sigma = mat["vp"]["sigma"].item().astype(float)
-    vp.lambd = mat["vp"]["lambda"].item().astype(float)
-    vp.eta = mat["vp"]["eta"].item().astype(float)
-    Hm = mat["H"].item()
-    dHm = mat["dH"].squeeze()
-    jacobian_flag = mat["jacobian_flag"].item()
+    path = Path(__file__).parent.joinpath("entropy-test.npz")
+    with np.load(path, allow_pickle=False) as fixture:
+        D = fixture["D"].item()
+        K = fixture["K"].item()
+        Ns = fixture["Ns"].item()
+        vp = VariationalPosterior(D, K)
+        vp.w = fixture["vp_w"].astype(float)
+        vp.mu = fixture["vp_mu"].astype(float)
+        vp.sigma = fixture["vp_sigma"].astype(float)
+        vp.lambd = fixture["vp_lambd"].astype(float)
+        vp.eta = fixture["vp_eta"].astype(float)
+        Hm = fixture["H"].item()
+        dHm = fixture["dH"].squeeze()
+        jacobian_flag = fixture["jacobian_flag"].item()
 
     H, dH = entmc_vbmc(
         vp,

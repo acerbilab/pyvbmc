@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import numpy as np
-from scipy.io import loadmat
 
 from pyvbmc.entropy import entlb_vbmc
 from pyvbmc.testing import check_grad
@@ -99,19 +98,19 @@ def test_entlb_vbmc_overlapping_mixture():
 
 
 def test_entlb_vbmc_matlab():
-    path = Path(__file__).parent.joinpath("entropy-test.mat")
-    mat = loadmat(path)
-    D = mat["D"].item()
-    K = mat["K"].item()
-    vp = VariationalPosterior(D, K)
-    vp.w = mat["vp"]["w"].item()
-    vp.mu = mat["vp"]["mu"].item()
-    vp.sigma = mat["vp"]["sigma"].item()
-    vp.lambd = mat["vp"]["lambda"].item()
-    vp.eta = mat["vp"]["eta"].item()
-    Hlm = mat["Hl"].item()
-    dHlm = mat["dHl"].squeeze()
-    jacobian_flag = mat["jacobian_flag"].item()
+    path = Path(__file__).parent.joinpath("entropy-test.npz")
+    with np.load(path, allow_pickle=False) as fixture:
+        D = fixture["D"].item()
+        K = fixture["K"].item()
+        vp = VariationalPosterior(D, K)
+        vp.w = fixture["vp_w"]
+        vp.mu = fixture["vp_mu"]
+        vp.sigma = fixture["vp_sigma"]
+        vp.lambd = fixture["vp_lambd"]
+        vp.eta = fixture["vp_eta"]
+        Hlm = fixture["Hl"].item()
+        dHlm = fixture["dHl"].squeeze()
+        jacobian_flag = fixture["jacobian_flag"].item()
 
     Hl, dHl = entlb_vbmc(vp, jacobian_flag=jacobian_flag)
 
