@@ -151,6 +151,129 @@
     },
     "oracle": "active_sample_step",
     "reason": "Stage 2 item 8 step 8: the CMA-ES noise-handler subclass draws its re-evaluation count from vp.rng instead of the legacy global state, so the search's stream moves by design; every acq_* oracle is unchanged"
+   },
+   {
+    "date": "2026-09-06 06:45:35",
+    "git": {
+     "dirty": true,
+     "sha": "bbbe3e9"
+    },
+    "max_abs_change": {
+     "dlogpdf": 3.552713678800501e-15,
+     "dpdf": 0.0,
+     "logpdf": 1.7763568394002505e-15,
+     "pdf": 1.734723475976807e-18,
+     "pdf_orig": 7.275957614183426e-12
+    },
+    "oracle": "vp_pdf",
+    "reason": "Stage 2 item 3 (2026-09-04) broadcast vp.pdf over K; rounding-level moves. Re-baselined 2026-09-06 at the end of Stage 2, after the 20-seed population of that night passed (280 of 280, no config flagged over 56 KS tests), so that --check --exact against the committed references is the identity gate; PI decision (Open question 8 of plans/stage2-gpyreg-predict-and-sampler.md)."
+   },
+   {
+    "date": "2026-09-06 06:45:48",
+    "git": {
+     "dirty": true,
+     "sha": "bbbe3e9"
+    },
+    "max_abs_change": {
+     "acq": 3.552713678800501e-15
+    },
+    "oracle": "acq_AcqFcnLog",
+    "reason": "Stage 2 item 3 (2026-09-04): the acquisition reads vp.pdf, broadcast over K since then; rounding-level moves. Re-baselined 2026-09-06 at the end of Stage 2, after the 20-seed population of that night passed (280 of 280, no config flagged over 56 KS tests), so that --check --exact against the committed references is the identity gate; PI decision (Open question 8 of plans/stage2-gpyreg-predict-and-sampler.md)."
+   },
+   {
+    "date": "2026-09-06 06:46:00",
+    "git": {
+     "dirty": true,
+     "sha": "bbbe3e9"
+    },
+    "max_abs_change": {
+     "acq": 8.271806125530277e-25
+    },
+    "oracle": "acq_AcqFcn",
+    "reason": "Stage 2 item 3 (2026-09-04): the acquisition reads vp.pdf, broadcast over K since then; rounding-level moves. Re-baselined 2026-09-06 at the end of Stage 2, after the 20-seed population of that night passed (280 of 280, no config flagged over 56 KS tests), so that --check --exact against the committed references is the identity gate; PI decision (Open question 8 of plans/stage2-gpyreg-predict-and-sampler.md)."
+   },
+   {
+    "date": "2026-09-06 06:46:13",
+    "git": {
+     "dirty": true,
+     "sha": "bbbe3e9"
+    },
+    "max_abs_change": {
+     "acq": 1.9387045606711586e-26
+    },
+    "oracle": "acq_AcqFcnVanilla",
+    "reason": "Stage 2 item 3 (2026-09-04): the acquisition reads vp.pdf, broadcast over K since then; rounding-level moves. Re-baselined 2026-09-06 at the end of Stage 2, after the 20-seed population of that night passed (280 of 280, no config flagged over 56 KS tests), so that --check --exact against the committed references is the identity gate; PI decision (Open question 8 of plans/stage2-gpyreg-predict-and-sampler.md)."
+   },
+   {
+    "date": "2026-09-06 06:46:25",
+    "git": {
+     "dirty": true,
+     "sha": "bbbe3e9"
+    },
+    "max_abs_change": {
+     "acq": 4.1359030627651384e-25
+    },
+    "oracle": "acq_AcqFcnNoisy",
+    "reason": "Stage 2 item 3 (2026-09-04): the acquisition reads vp.pdf, broadcast over K since then; rounding-level moves. Re-baselined 2026-09-06 at the end of Stage 2, after the 20-seed population of that night passed (280 of 280, no config flagged over 56 KS tests), so that --check --exact against the committed references is the identity gate; PI decision (Open question 8 of plans/stage2-gpyreg-predict-and-sampler.md)."
+   },
+   {
+    "date": "2026-09-06 06:46:38",
+    "git": {
+     "dirty": true,
+     "sha": "bbbe3e9"
+    },
+    "max_abs_change": {
+     "G": 6.137135244443925e-11,
+     "G_samples": 3.4706992835253914e-10,
+     "G_var_call": 6.137135244443925e-11,
+     "I_sk": 1.3969838619232178e-09,
+     "J_sjk": 1.2732925824820995e-11,
+     "dG": 6.290416104670626e-11,
+     "dG_samples": 1.334873114822166e-10,
+     "varG": 1.5438855458269296e-13,
+     "var_ss": 3.61609139071373e-13
+    },
+    "oracle": "gp_log_joint",
+    "reason": "Stage 2 items 1 and 2 (2026-09-04): _gp_log_joint as einsum contractions over (Ns, K, D, N) and its variance from multi-RHS solves; rounding-level moves, largest on the ill-conditioned cigar snapshots. Re-baselined 2026-09-06 at the end of Stage 2, after the 20-seed population of that night passed (280 of 280, no config flagged over 56 KS tests), so that --check --exact against the committed references is the identity gate; PI decision (Open question 8 of plans/stage2-gpyreg-predict-and-sampler.md)."
+   },
+   {
+    "date": "2026-09-06 06:46:51",
+    "git": {
+     "dirty": true,
+     "sha": "bbbe3e9"
+    },
+    "max_abs_change": {
+     "F": 6.137046426601955e-11,
+     "F_detent": 6.137135244443925e-11,
+     "F_full": 6.137135244443925e-11,
+     "G": 6.137135244443925e-11,
+     "G_full": 6.137135244443925e-11,
+     "H": 8.881784197001252e-16,
+     "H_detent": 0.0,
+     "H_full": 0.0,
+     "dF": 6.290398063546476e-11,
+     "dF_detent": 6.290410553555503e-11,
+     "theta": 0.0,
+     "varF": 1.543886578148334e-13,
+     "varG": 1.543886578148334e-13,
+     "varG_ss": 3.616092421976343e-13,
+     "varH": 0.0
+    },
+    "oracle": "neg_elcbo",
+    "reason": "Stage 2 items 1, 2 and 5: _neg_elcbo carries _gp_log_joint (items 1 and 2) and entmc_vbmc (item 5); rounding-level moves. Re-baselined 2026-09-06 at the end of Stage 2, after the 20-seed population of that night passed (280 of 280, no config flagged over 56 KS tests), so that --check --exact against the committed references is the identity gate; PI decision (Open question 8 of plans/stage2-gpyreg-predict-and-sampler.md)."
+   },
+   {
+    "date": "2026-09-06 06:47:03",
+    "git": {
+     "dirty": true,
+     "sha": "bbbe3e9"
+    },
+    "max_abs_change": {
+     "H": 8.881784197001252e-16,
+     "dH": 7.771561172376096e-16
+    },
+    "oracle": "entmc",
+    "reason": "Stage 2 item 5 (2026-09-05): entmc_vbmc vectorized over components and samples with the same draws; rounding-level moves. Re-baselined 2026-09-06 at the end of Stage 2, after the 20-seed population of that night passed (280 of 280, no config flagged over 56 KS tests), so that --check --exact against the committed references is the identity gate; PI decision (Open question 8 of plans/stage2-gpyreg-predict-and-sampler.md)."
    }
   ],
   "recipe": "cigar_D4_largeK",
