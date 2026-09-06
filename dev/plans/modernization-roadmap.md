@@ -402,10 +402,13 @@ anything that changes numerics lands.
    when it started; no code differed. It was the statistical gate for
    items 8, 5, 6 and 7 together (none identity-preserving against the
    item 1 population, whose code predates the seam removal), and it
-   passed. (ii) Push `dev-next` so the
-   CI smoke runs on the package commits, and dispatch the full matrix
-   once before anything else lands (the oracle tests run on three BLAS
-   builds there). (iii) Then the rest of pickup 5 (grow the reference
+   passed. (ii) ~~Push `dev-next` so the CI smoke runs on the package
+   commits, and dispatch the full matrix once~~ done 2026-09-06 (PI's
+   word): pushed `2dcb51a..4f77e1a` at 05:14 UTC; the smoke (run
+   34013498552, Ubuntu / 3.12) green in 11 min, the dispatched full matrix
+   (run 34014012295, three OSes × Python 3.10–3.12) green on all nine jobs
+   in 12 min, so the re-baselined oracle references hold at their
+   tolerances on three BLAS builds. (iii) Then the rest of pickup 5 (grow the reference
    population to 50 seeds, add the exhaust config) and pickup 6 (the
    Stage 0 leftovers). Open question 8 of
    `plans/stage2-gpyreg-predict-and-sampler.md` was decided and done on
