@@ -87,6 +87,8 @@ def test_vbmc_load_static():
         assert np.all(np.random.get_state()[i] == val)
     assert vbmc.options["max_fun_evals"] == 40
     assert vbmc.iteration == 6
+    assert vbmc.options["vectorized_target"] is False
+    assert vbmc.function_logger.vectorized_target is False
 
     vbmc = VBMC.load(
         base_path.joinpath("test_vbmc_save_static.pkl"),
@@ -165,3 +167,80 @@ def test_vbmc_save_load_error_handling():
         "Specified iteration (-1) should be >= 0 and <= last stored iteration (6)."
         in err.value.args[0]
     )
+
+
+def _save_load_vbmc(target, tmp_path, *, vectorized):
+    D = 2
+    vbmc = VBMC(
+        target,
+        np.zeros((1, D)),
+        np.full((1, D), -np.inf),
+        np.full((1, D), np.inf),
+        np.full((1, D), -1.0),
+        np.full((1, D), 1.0),
+        prior=SciPy._generic(D),
+        options={"vectorized_target": vectorized},
+    )
+    path = tmp_path / ("vectorized" if vectorized else "scalar")
+    vbmc.save(path)
+    return path
+
+
+def test_vbmc_save_load_vectorized_mode_and_override(tmp_path):
+    def dual_target(x):
+        if x.ndim == 1:
+            return np.sum(x)
+        return np.sum(x, axis=1)
+
+    path = _save_load_vbmc(dual_target, tmp_path, vectorized=True)
+    loaded = VBMC.load(path)
+    assert loaded.options["vectorized_target"] is True
+    assert loaded.function_logger.vectorized_target is True
+    values, _, _ = loaded.function_logger.batch_call(np.zeros((2, loaded.D)))
+    assert values.shape == (2,)
+
+    scalar = VBMC.load(path, new_options={"vectorized_target": False})
+    assert scalar.options["vectorized_target"] is False
+    assert scalar.function_logger.vectorized_target is False
+    value, _, _ = scalar.function_logger(np.zeros(scalar.D))
+    assert np.isfinite(value)
+
+
+def test_vbmc_load_rebuilds_vectorized_prior_wrapper(tmp_path):
+    def dual_target(x):
+        if x.ndim == 1:
+            return np.sum(x)
+        return np.sum(x, axis=1)
+
+    path = _save_load_vbmc(dual_target, tmp_path, vectorized=False)
+    loaded = VBMC.load(path, new_options={"vectorized_target": True})
+
+    assert loaded.options["vectorized_target"] is True
+    assert loaded.function_logger.vectorized_target is True
+    values, _, _ = loaded.function_logger.batch_call(np.zeros((2, loaded.D)))
+    assert values.shape == (2,)
+
+
+def test_vbmc_load_defaults_missing_vectorized_flags_to_false(tmp_path):
+    path = _save_load_vbmc(np.sum, tmp_path, vectorized=False)
+    with open(path.with_suffix(".pkl"), "rb") as file:
+        vbmc = dill.load(file)
+    del vbmc.options["vectorized_target"]
+    del vbmc.function_logger.vectorized_target
+    vbmc.save(path, overwrite=True)
+
+    loaded = VBMC.load(path)
+
+    assert loaded.options["vectorized_target"] is False
+    assert loaded.function_logger.vectorized_target is False
+
+
+def test_vbmc_load_mode_override_requires_likelihood_provenance(tmp_path):
+    path = _save_load_vbmc(np.sum, tmp_path, vectorized=False)
+    with open(path.with_suffix(".pkl"), "rb") as file:
+        vbmc = dill.load(file)
+    vbmc.log_likelihood = None
+    vbmc.save(path, overwrite=True)
+
+    with pytest.raises(ValueError, match="original likelihood is unavailable"):
+        VBMC.load(path, new_options={"vectorized_target": True})

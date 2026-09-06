@@ -167,11 +167,14 @@ def active_sample(
 
         Xs = parameter_transformer(Xs)
 
-        for idx in range(sample_count):
-            if np.isnan(ys[idx]):  # Function value is not available
-                function_logger(Xs[idx])
-            else:
-                function_logger.add(Xs[idx], ys[idx])
+        if getattr(function_logger, "vectorized_target", False):
+            function_logger.batch_call(Xs, ys)
+        else:
+            for idx in range(sample_count):
+                if np.isnan(ys[idx]):  # Function value is not available
+                    function_logger(Xs[idx])
+                else:
+                    function_logger.add(Xs[idx], ys[idx])
 
     else:
         # active uncertainty sampling

@@ -420,6 +420,118 @@ def test_active_sample_initial_sample_more_provided(caplog):
     assert function_logger.Xn == sample_count - 1
 
 
+@pytest.mark.parametrize("D", [1, 2])
+@pytest.mark.parametrize("noisy", [False, True])
+def test_vectorized_initial_design_matches_scalar(D, noisy):
+    scalar_calls = []
+    vector_calls = []
+
+    def scalar_target(x):
+        scalar_calls.append(x.copy())
+        value = np.sum(x**2 + 2)
+        return (value, 0.5) if noisy else value
+
+    def vector_target(x):
+        vector_calls.append(x.copy())
+        values = np.sum(x**2 + 2, axis=1)
+        return (values, np.full(x.shape[0], 0.5)) if noisy else values
+
+    x0 = np.vstack((np.zeros(D), np.full(D, 0.25)))
+    bounds = np.full((1, D), np.inf)
+    plausible = np.full((1, D), 1.0)
+    common_options = {
+        "f_vals": [2 * D, np.nan],
+        "specify_target_noise": noisy,
+    }
+    scalar = VBMC(
+        scalar_target,
+        x0,
+        -bounds,
+        bounds,
+        -plausible,
+        plausible,
+        options=common_options,
+        seed=1234,
+    )
+    vector = VBMC(
+        vector_target,
+        x0,
+        -bounds,
+        bounds,
+        -plausible,
+        plausible,
+        options={**common_options, "vectorized_target": True},
+        seed=1234,
+    )
+
+    for vbmc in (scalar, vector):
+        active_sample(
+            gp=None,
+            sample_count=5,
+            optim_state=vbmc.optim_state,
+            function_logger=vbmc.function_logger,
+            iteration_history=vbmc.iteration_history,
+            vp=vbmc.vp,
+            options=vbmc.options,
+        )
+
+    scalar_logger = scalar.function_logger
+    vector_logger = vector.function_logger
+    for name in ("X", "X_orig", "y", "y_orig", "n_evals", "X_flag"):
+        assert np.array_equal(
+            getattr(scalar_logger, name),
+            getattr(vector_logger, name),
+            equal_nan=True,
+        )
+    if noisy:
+        assert np.array_equal(scalar_logger.S, vector_logger.S, equal_nan=True)
+    assert scalar_logger.func_count == vector_logger.func_count == 4
+    assert scalar_logger.cache_count == vector_logger.cache_count == 1
+    assert (
+        scalar.vp.rng.bit_generator.state == vector.vp.rng.bit_generator.state
+    )
+    assert len(scalar_calls) == 4
+    assert all(call.shape == (D,) for call in scalar_calls)
+    assert len(vector_calls) == 1
+    assert vector_calls[0].shape == (4, D)
+
+
+def test_vectorized_initial_design_all_values_cached():
+    calls = []
+
+    def target(x):
+        calls.append(x)
+        return np.sum(x, axis=1)
+
+    x0 = np.array([[0.0], [0.5], [1.0]])
+    vbmc = VBMC(
+        target,
+        x0,
+        np.array([[-np.inf]]),
+        np.array([[np.inf]]),
+        np.array([[-1.0]]),
+        np.array([[1.0]]),
+        options={"vectorized_target": True, "f_vals": [0.0, 0.5, 1.0]},
+        seed=1234,
+    )
+    state_before = vbmc.vp.rng.bit_generator.state
+
+    active_sample(
+        gp=None,
+        sample_count=3,
+        optim_state=vbmc.optim_state,
+        function_logger=vbmc.function_logger,
+        iteration_history=vbmc.iteration_history,
+        vp=vbmc.vp,
+        options=vbmc.options,
+    )
+
+    assert calls == []
+    assert vbmc.function_logger.func_count == 0
+    assert vbmc.function_logger.cache_count == 3
+    assert vbmc.vp.rng.bit_generator.state == state_before
+
+
 def test_get_search_points_all_cache():
     """
     Take all points from cache.

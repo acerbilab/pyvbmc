@@ -16,6 +16,10 @@ import numpy as np
 
 from pyvbmc.formatting import full_repr, summarize
 from pyvbmc.function_logger import FunctionLogger
+from pyvbmc.function_logger.function_logger import (
+    _validate_vectorized_output,
+    _validate_vectorized_target_output,
+)
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.priors import Prior, SciPy, convert_to_prior
 from pyvbmc.rng import get_rng
@@ -58,6 +62,10 @@ class VBMC:
         ``options["specify_target_noise"]`` is true, ``log_density`` should
         return a tuple where the first element is the noisy log-density, and
         the second is an estimate of the standard deviation of the noise.
+        If ``options["vectorized_target"]`` is true, it instead receives a
+        NumPy array with shape ``(N, D)`` and returns values with shape
+        ``(N,)`` or ``(N, 1)``. A noisy vectorized target returns a pair of
+        arrays with one value and positive standard deviation per row.
     x0 : np.ndarray, optional
         Starting point for the inference. Ideally ``x0`` is a point in the
         proximity of the mode of the posterior. Default is ``None``.
@@ -222,6 +230,7 @@ class VBMC:
             self.options.validate_option_names(
                 [basic_options_path, advanced_options_path]
             )
+        self._validate_vectorized_target_option()
 
         # Create an initial logger for initialization messages:
         self.logger = self._init_logger("_init")
@@ -309,6 +318,7 @@ class VBMC:
             ),
             cache_size=self.options.get("cache_size"),
             parameter_transformer=self.parameter_transformer,
+            vectorized_target=self.options["vectorized_target"],
         )
 
         self.x0 = self.parameter_transformer(self.x0)
@@ -2379,6 +2389,17 @@ class VBMC:
             vbmc.options.update(new_options)
             vbmc.options.is_initialized = True
 
+        if "vectorized_target" not in vbmc.options:
+            vbmc.options.__setitem__("vectorized_target", False, force=True)
+        vbmc._validate_vectorized_target_option()
+        vectorized_target = bool(vbmc.options["vectorized_target"])
+        logger_vectorized = bool(
+            getattr(vbmc.function_logger, "vectorized_target", False)
+        )
+        if vectorized_target != logger_vectorized:
+            vbmc._rebuild_log_joint(vectorized_target)
+        vbmc.function_logger.vectorized_target = vectorized_target
+
         # Instances saved before the generator existed have no `rng`. Give
         # them a fresh one (without touching NumPy's global state) and share
         # it with every stored variational posterior, so that the invariant
@@ -2654,7 +2675,56 @@ class VBMC:
             # Combine log-prior and log-likelihood:
             log_prior = prior.log_pdf
             log_likelihood = log_density
-            if self.optim_state["uncertainty_handling_level"] == 2:
+            uncertainty_handling_level = self.optim_state[
+                "uncertainty_handling_level"
+            ]
+            if self.options.get("vectorized_target", False):
+
+                def log_joint(theta):
+                    n_rows = theta.shape[0]
+                    likelihood_output = log_likelihood(theta)
+                    (
+                        likelihood_values,
+                        noise_est,
+                    ) = _validate_vectorized_target_output(
+                        likelihood_output,
+                        n_rows,
+                        uncertainty_handling_level,
+                    )
+                    prior_values = np.empty(n_rows, dtype=float)
+                    for row, point in enumerate(theta):
+                        prior_value = np.asarray(log_prior(point))
+                        if prior_value.size != 1:
+                            raise ValueError(
+                                "The prior log density must return a scalar "
+                                f"for row {row}, but has shape "
+                                f"{prior_value.shape}."
+                            )
+                        prior_value = prior_value.item()
+                        try:
+                            valid_prior = np.isreal(
+                                prior_value
+                            ) and np.isfinite(prior_value)
+                        except TypeError:
+                            valid_prior = False
+                        if not valid_prior:
+                            raise ValueError(
+                                "The prior log density must return a finite "
+                                f"real scalar for row {row}, but returned "
+                                f"{prior_value}."
+                            )
+                        prior_values[row] = prior_value
+                    prior_values = _validate_vectorized_output(
+                        prior_values,
+                        n_rows,
+                        "Prior log-density values",
+                    )
+                    values = likelihood_values + prior_values
+                    if uncertainty_handling_level == 2:
+                        return values, noise_est
+                    return values
+
+            elif uncertainty_handling_level == 2:
 
                 def log_joint(theta):
                     ll, noise_est = log_likelihood(theta)
@@ -2669,6 +2739,43 @@ class VBMC:
             # Otherwise just use provided log-joint
             log_joint = log_density
         return log_joint, log_likelihood, prior
+
+    def _validate_vectorized_target_option(self):
+        """Validate the opt-in target batching mode."""
+        value = self.options.get("vectorized_target", False)
+        if not isinstance(value, (bool, np.bool_)):
+            raise ValueError("The option 'vectorized_target' must be boolean.")
+
+    def _rebuild_log_joint(self, vectorized_target):
+        """Rebuild a saved likelihood/prior wrapper for a target mode change."""
+        prior = getattr(self, "prior", None)
+        if prior is not None and prior.log_pdf is not None:
+            log_likelihood = getattr(self, "log_likelihood", None)
+            if log_likelihood is None:
+                raise ValueError(
+                    "Cannot change 'vectorized_target' for this saved VBMC "
+                    "instance because its original likelihood is unavailable."
+                )
+            old_value = self.options["vectorized_target"]
+            self.options.__setitem__(
+                "vectorized_target", bool(vectorized_target), force=True
+            )
+            try:
+                (
+                    self.log_joint,
+                    self.log_likelihood,
+                    self.prior,
+                ) = self._init_log_joint(log_likelihood, prior, None, None)
+            finally:
+                self.options.__setitem__(
+                    "vectorized_target", old_value, force=True
+                )
+        elif not hasattr(self, "log_joint"):
+            raise ValueError(
+                "Cannot change 'vectorized_target' for this saved VBMC "
+                "instance because its original target is unavailable."
+            )
+        self.function_logger.fun = self.log_joint
 
     def __str__(self):
         """Construct a string summary."""

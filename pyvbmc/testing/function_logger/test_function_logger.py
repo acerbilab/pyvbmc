@@ -313,3 +313,267 @@ def test__str__():
         f_logger(x * i)
     f_logger.__str__()
     f_logger.__repr__()
+
+
+def test_batch_call_requires_vectorized_mode():
+    f_logger = FunctionLogger(non_noisy_function, 3, False, 0)
+    with pytest.raises(RuntimeError, match="vectorized_target=True"):
+        f_logger.batch_call(np.ones((2, 3)))
+
+
+def test_vectorized_call_keeps_two_dimensional_target_contract():
+    calls = []
+
+    def target(x):
+        calls.append(x.copy())
+        return np.sum(x, axis=1)
+
+    f_logger = FunctionLogger(target, 3, False, 0, vectorized_target=True)
+    value, sd, idx = f_logger(np.array([1.0, 2.0, 3.0]))
+
+    assert calls[0].shape == (1, 3)
+    assert value == 6
+    assert sd is None
+    assert idx == 0
+
+
+@pytest.mark.parametrize("column_output", [False, True])
+def test_batch_call_output_shape_and_order(column_output):
+    calls = []
+
+    def target(x):
+        calls.append(x.copy())
+        values = np.sum(x, axis=1)
+        return values[:, None] if column_output else values
+
+    f_logger = FunctionLogger(
+        target, 2, False, 0, cache_size=1, vectorized_target=True
+    )
+    x = np.array([[0.0, 0.0], [1.0, 1.0], [0.0, 0.0], [2.0, 2.0]])
+    values, sds, indices = f_logger.batch_call(
+        x, np.array([10.0, np.nan, np.nan, np.nan])
+    )
+
+    assert np.array_equal(calls[0], x[[1, 2, 3]])
+    assert np.array_equal(values, [10.0, 2.0, 5.0, 4.0])
+    assert sds is None
+    assert np.array_equal(indices, [0, 1, 0, 2])
+    assert np.array_equal(f_logger.X[:3], x[[0, 1, 3]])
+    assert f_logger.func_count == 3
+    assert f_logger.cache_count == 1
+    assert f_logger.X.shape[0] > 1
+
+
+def test_batch_call_all_cached_skips_target():
+    def target(x):
+        raise AssertionError("target should not be called")
+
+    f_logger = FunctionLogger(target, 1, False, 0, vectorized_target=True)
+    values, sds, indices = f_logger.batch_call(
+        np.array([[1.0], [2.0]]), [3.0, 4.0]
+    )
+
+    assert np.array_equal(values, [3.0, 4.0])
+    assert sds is None
+    assert np.array_equal(indices, [0, 1])
+    assert f_logger.func_count == 0
+    assert f_logger.cache_count == 2
+
+
+def test_batch_call_transforms_all_target_inputs_to_original_space():
+    target_inputs = []
+    transformer = ParameterTransformer(
+        2,
+        np.full((1, 2), -2.0),
+        np.full((1, 2), 2.0),
+        np.full((1, 2), -1.0),
+        np.full((1, 2), 1.0),
+    )
+
+    def target(x):
+        target_inputs.append(x.copy())
+        return np.sum(x, axis=1)
+
+    f_logger = FunctionLogger(
+        target,
+        2,
+        False,
+        0,
+        parameter_transformer=transformer,
+        vectorized_target=True,
+    )
+    x_orig = np.array([[-0.5, 0.25], [0.75, -0.25]])
+    f_logger.batch_call(transformer(x_orig))
+
+    assert np.allclose(target_inputs[0], x_orig)
+    assert np.allclose(f_logger.X_orig[:2], x_orig)
+
+
+def test_batch_call_noisy_pair_and_unknown_noise():
+    x = np.array([[1.0, 2.0], [3.0, 4.0]])
+
+    def noisy_target(points):
+        return np.sum(points, axis=1), np.array([[0.5], [1.5]])
+
+    provided = FunctionLogger(noisy_target, 2, True, 2, vectorized_target=True)
+    values, sds, _ = provided.batch_call(x)
+    assert np.array_equal(values, [3.0, 7.0])
+    assert np.array_equal(sds, [0.5, 1.5])
+
+    unknown = FunctionLogger(
+        lambda points: np.sum(points, axis=1),
+        2,
+        True,
+        1,
+        vectorized_target=True,
+    )
+    _, sds, _ = unknown.batch_call(x)
+    assert np.array_equal(sds, np.ones(2))
+
+
+def test_batch_call_rejects_noisy_n_by_two_without_mutation():
+    f_logger = FunctionLogger(
+        lambda x: np.column_stack((np.sum(x, axis=1), np.ones(x.shape[0]))),
+        2,
+        True,
+        2,
+        vectorized_target=True,
+    )
+    with pytest.raises(ValueError, match=r"not an \(N, 2\) ndarray"):
+        f_logger.batch_call(np.ones((2, 2)))
+    assert f_logger.Xn == -1
+    assert f_logger.func_count == 0
+    assert f_logger.cache_count == 0
+
+
+@pytest.mark.parametrize(
+    "output, message",
+    [
+        (1.0, "shape"),
+        (np.ones((2, 2)), "shape"),
+        (np.array([1.0, np.inf]), "invalid rows: \\[1\\]"),
+        (np.array([1.0, 2.0j]), "real values"),
+    ],
+)
+def test_batch_call_validates_complete_output_before_recording(
+    output, message
+):
+    f_logger = FunctionLogger(
+        lambda x: output, 2, False, 0, vectorized_target=True
+    )
+    with pytest.raises(ValueError, match=message):
+        f_logger.batch_call(np.ones((2, 2)))
+    assert f_logger.Xn == -1
+    assert f_logger.func_count == 0
+    assert f_logger.cache_count == 0
+
+
+def test_batch_call_validates_inputs_and_sd_before_recording():
+    with pytest.raises(ValueError, match="must be a boolean"):
+        FunctionLogger(np.sum, 2, False, 0, vectorized_target=1)
+
+    f_logger = FunctionLogger(
+        lambda x: (np.ones(2), np.array([1.0, 0.0])),
+        2,
+        True,
+        2,
+        vectorized_target=True,
+    )
+    with pytest.raises(ValueError, match="positive values"):
+        f_logger.batch_call(np.ones((2, 2)))
+    assert f_logger.Xn == -1
+
+    with pytest.raises(ValueError, match="nonempty shape"):
+        f_logger.batch_call(np.ones(2))
+    with pytest.raises(ValueError, match="invalid rows"):
+        f_logger.batch_call(np.ones((2, 2)), [1.0, np.inf])
+
+
+@pytest.mark.parametrize(
+    "x",
+    [
+        np.array([[1.0], ["bad"]], dtype=object),
+        np.array([[1.0], [np.nan]]),
+        np.array([[1.0], [np.inf]]),
+        np.array([[1.0], [2.0j]]),
+    ],
+)
+def test_batch_call_validates_all_coordinates_before_mutation(x):
+    calls = []
+
+    def target(points):
+        calls.append(points)
+        return np.zeros(points.shape[0])
+
+    f_logger = FunctionLogger(target, 1, False, 0, vectorized_target=True)
+    arrays_before = {
+        name: getattr(f_logger, name).copy()
+        for name in ("X", "X_orig", "y", "y_orig", "X_flag", "n_evals")
+    }
+
+    with pytest.raises(ValueError, match=r"invalid rows: \[1\]"):
+        f_logger.batch_call(x, [1.0, 2.0])
+
+    assert calls == []
+    assert f_logger.Xn == -1
+    assert f_logger.func_count == 0
+    assert f_logger.cache_count == 0
+    for name, before in arrays_before.items():
+        assert np.array_equal(getattr(f_logger, name), before, equal_nan=True)
+
+
+def test_batch_call_validates_inverse_transformed_coordinates_before_mutation():
+    class InvalidInverse:
+        def inverse(self, x):
+            result = x.copy()
+            result[-1, 0] = np.inf
+            return result
+
+    calls = []
+
+    def target(points):
+        calls.append(points)
+        return np.zeros(points.shape[0])
+
+    f_logger = FunctionLogger(
+        target,
+        1,
+        False,
+        0,
+        parameter_transformer=InvalidInverse(),
+        vectorized_target=True,
+    )
+    with pytest.raises(ValueError, match=r"invalid rows: \[1\]"):
+        f_logger.batch_call(np.array([[1.0], [2.0]]), [1.0, 2.0])
+
+    assert calls == []
+    assert f_logger.Xn == -1
+    assert f_logger.func_count == 0
+    assert f_logger.cache_count == 0
+
+
+def test_batch_call_distributes_target_time(mocker):
+    mocker.patch("pyvbmc.timer.timer.time.time", side_effect=[10.0, 16.0])
+    f_logger = FunctionLogger(
+        lambda x: np.sum(x, axis=1),
+        1,
+        False,
+        0,
+        vectorized_target=True,
+    )
+    f_logger.batch_call(np.array([[1.0], [2.0], [3.0]]))
+
+    assert np.array_equal(f_logger.fun_eval_time[:3, 0], [2.0, 2.0, 2.0])
+    assert f_logger.total_fun_eval_time == 6.0
+
+
+def test_batch_call_function_error_has_batch_context():
+    def target(x):
+        raise RuntimeError("model failed")
+
+    f_logger = FunctionLogger(target, 2, False, 0, vectorized_target=True)
+    with pytest.raises(RuntimeError) as err:
+        f_logger.batch_call(np.ones((3, 2)))
+    assert "FunctionLogger:FuncError" in str(err.value)
+    assert "3 batch rows" in str(err.value)
+    assert "(3, 2)" in str(err.value)

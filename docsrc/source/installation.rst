@@ -2,37 +2,90 @@
 Installation
 ************
 
-PyVBMC is available via ``pip`` and ``conda-forge``.
+PyVBMC is available via ``pip`` and ``conda-forge`` and requires Python 3.10
+or newer.
 
-1. Install with::
+Basic installation
+==================
 
-     python -m pip install pyvbmc
+Install PyVBMC with pip::
 
-   or::
+  python -m pip install pyvbmc
 
-     conda install --channel=conda-forge pyvbmc
+or with Conda::
 
-   PyVBMC requires Python version 3.10 or newer.
+  conda install --channel=conda-forge pyvbmc
 
-2. (Optional): Install Jupyter to view the examples. You can skip this step if you're working from a Conda environment which already has Jupyter, but be aware that if the wrong ``jupyter`` executable is found on your path then import errors may arise. ::
+Optional integrations
+=====================
 
-     conda install jupyter
+Torch
+-----
 
-   If you are running Python 3.11 and get an ``UnsatisfiableError`` you may need to install Jupyter from ``conda-forge``::
+The :meth:`~pyvbmc.VariationalPosterior.to_torch` export requires torch 2.7
+or newer. For a CPU-only installation, install torch from its official CPU
+wheel index first, then install the PyVBMC extra::
 
-     conda install --channel=conda-forge jupyter
+  python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+  python -m pip install "pyvbmc[torch]"
 
-   The example notebooks can be accessed by running ::
+Installing torch first ensures that pip selects a CPU wheel. If your model or
+export will run on an accelerator, follow the `torch installation selector
+<https://pytorch.org/get-started/locally/>`_ for your platform before
+installing ``pyvbmc[torch]``.
 
-     python -m pyvbmc
+With Conda, install the named packages directly::
 
-   Example 2 uses ``plotly`` for one interactive figure; install it with ``python -m pip install "pyvbmc[examples]"``.
+  conda install --channel=conda-forge pyvbmc pytorch
 
-You can run PyVBMC's internal tests after installing the test dependencies with ::
+ArviZ
+-----
+
+The :meth:`~pyvbmc.VariationalPosterior.to_arviz` export uses the current
+ArviZ DataTree format and requires Python 3.12 or newer. Install it with::
+
+  python -m pip install "pyvbmc[arviz]"
+
+PyVBMC itself continues to support Python 3.10 and newer. On Python 3.10 or
+3.11, pip does not install the ArviZ dependencies because of their Python
+version marker, and ``to_arviz`` is unavailable. With Conda, install the
+corresponding packages directly::
+
+  conda install --channel=conda-forge pyvbmc arviz arviz-base
+
+The bracketed ``torch`` and ``arviz`` names are pip dependency groups; they
+are not Conda package names. Both integrations are optional and loaded on demand.
+
+Examples and tests
+==================
+
+Install Jupyter to view the examples. You can skip this step if your Conda
+environment already has Jupyter, but an unrelated ``jupyter`` executable on
+your path can cause import errors::
+
+  conda install jupyter
+
+If Python 3.11 produces an ``UnsatisfiableError``, install Jupyter from
+``conda-forge``::
+
+  conda install --channel=conda-forge jupyter
+
+Open the example notebooks with::
+
+  python -m pyvbmc
+
+Example 2 uses ``plotly`` for one interactive figure. Install it with::
+
+  python -m pip install "pyvbmc[examples]"
+
+Run PyVBMC's internal tests after installing the test dependencies with::
 
   python -m pip install "pyvbmc[test]"
   pytest --pyargs pyvbmc --reruns=3
 
-The `--reruns=3` argument allows re-trying a failed test up to 3 times, as many of PyVBMC's tests are stochastic in nature. Note that the complete test suite may take a significant amount of time (20-30 minutes or more, depending on your hardware).
+The ``--reruns=3`` argument retries a failed test up to three times because
+some tests are stochastic. The complete suite can take 20--30 minutes or
+longer, depending on the hardware.
 
-If you wish to install directly from latest source code, please see the :ref:`installation instructions for developers`.
+To install directly from the latest source, see the :ref:`installation
+instructions for developers`.

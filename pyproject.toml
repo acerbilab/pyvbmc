@@ -29,6 +29,13 @@ package-dir = { "pyvbmc.examples" = "examples" }
 "pyvbmc.examples" = ["*.ipynb"]
 
 [project.optional-dependencies]
+# Posterior exports; both are imported only when requested.
+torch = ["torch >= 2.7"]
+# Current ArviZ uses DataTree and requires Python 3.12+. Core stays 3.10+.
+arviz = [
+    "arviz >= 1.0; python_version >= '3.12'",
+    "arviz-base >= 1.0; python_version >= '3.12'",
+]
 # Example notebooks only (examples/pyvbmc_example_2_inputs_outputs.ipynb).
 examples = [
     "plotly >= 5.11.0",

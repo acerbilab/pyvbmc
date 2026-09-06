@@ -48,6 +48,7 @@ PyVBMC is available via `pip` and `conda-forge`.
     conda install --channel=conda-forge pyvbmc
     ```
     PyVBMC requires Python version 3.10 or newer.
+
 2. (Optional): Install Jupyter to view the example Notebooks. You can skip this step if you're working from a Conda environment which already has Jupyter, but be aware that if the wrong `jupyter` executable is found on your path then import errors may arise.
    ```console
    conda install jupyter
@@ -60,6 +61,21 @@ PyVBMC is available via `pip` and `conda-forge`.
    ```console
    python -m pyvbmc
    ```
+
+Optional integrations are installed separately. For a CPU-only torch setup,
+install the official CPU wheel first, followed by the PyVBMC extra:
+```console
+python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+python -m pip install "pyvbmc[torch]"
+```
+The torch integration requires torch 2.7 or newer. The current ArviZ export
+requires Python 3.12 or newer and is installed with:
+```console
+python -m pip install "pyvbmc[arviz]"
+```
+Conda users can install the corresponding `pytorch`, `arviz`, and
+`arviz-base` packages from `conda-forge`; PyVBMC's bracketed extras are pip
+dependency groups.
 
 If you wish to install directly from latest source code, please see the [instructions for developers and contributors](https://acerbilab.github.io/pyvbmc/development.html#installation-instructions-for-developers).
 

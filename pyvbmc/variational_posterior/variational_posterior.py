@@ -3,11 +3,11 @@ from __future__ import annotations
 
 import copy
 import sys
+from numbers import Integral
 from pathlib import Path
 from textwrap import indent
 from typing import Optional
 
-import corner
 import dill
 import matplotlib.pyplot as plt
 import numpy as np
@@ -280,6 +280,152 @@ class VariationalPosterior:
             theta_bnd["weight_penalty"] = options["weight_penalty"]
 
         return theta_bnd
+
+    def to_torch(self, orig_flag=True, *, dtype=None, device=None):
+        """Export a snapshot as a torch probability distribution.
+
+        Parameters
+        ----------
+        orig_flag : bool, optional
+            Return a distribution in original parameter coordinates (default
+            True), or in the internal unconstrained coordinates if False.
+        dtype : torch.dtype, optional
+            Export precision, either ``torch.float64`` (default) or
+            ``torch.float32``. This does not change the NumPy posterior.
+        device : str or torch.device, optional
+            Device for the distribution's tensors, default CPU.
+
+        Returns
+        -------
+        distribution : torch.distributions.Distribution
+            A Gaussian mixture, transformed to original coordinates when
+            requested, with event shape ``(D,)``. Its ``log_prob`` supports
+            differentiation with respect to its input. Mixture sampling is
+            not reparameterized.
+
+        Raises
+        ------
+        ImportError
+            If torch is absent; install ``pyvbmc[torch]``.
+        ValueError
+            If the posterior or transformer cannot define the distribution.
+
+        Notes
+        -----
+        Parameters are copied; later changes to either object do not affect
+        the other. Conversion draws no random numbers. Sampling the exported
+        distribution uses torch's RNG, controlled by ``torch.manual_seed``,
+        independently of ``self.rng``. No torch objects are stored on this VP.
+        In original space, density inputs must be finite and strictly inside
+        parameter bounds. Samples rounded to a bound are moved to the nearest
+        representable interior point; the analytic density transform is not
+        clamped. Explicit float32 exports have less resolution near bounds.
+        """
+        try:
+            from ._torch import to_torch
+        except ModuleNotFoundError as exc:
+            if exc.name != "torch":
+                raise
+            raise ImportError(
+                "Torch export requires torch; install pyvbmc[torch]."
+            ) from exc
+        return to_torch(self, orig_flag=orig_flag, dtype=dtype, device=device)
+
+    def to_arviz(self, n_samples=1000, *, var_names=None, orig_flag=True):
+        """Export independent posterior draws as an ArviZ DataTree.
+
+        Parameters
+        ----------
+        n_samples : int, optional
+            Positive number of independent draws, default 1000.
+        var_names : sequence of str, optional
+            Unique names for the D scalar parameters, default ``x_0``,
+            ``x_1``, and so on. Names must differ from ``chain`` and ``draw``.
+        orig_flag : bool, optional
+            Draw in original coordinates (default True), or in the internal
+            unconstrained coordinates if False.
+
+        Returns
+        -------
+        data : xarray.DataTree
+            A ``posterior`` group with one variable per parameter, each with
+            dimensions ``(chain, draw)`` and shape ``(1, n_samples)``.
+
+        Raises
+        ------
+        ImportError
+            If Python is older than 3.12 or ArviZ's current data API is absent;
+            use Python 3.12+ and install ``pyvbmc[arviz]``.
+        ValueError
+            If the sample count or parameter names are invalid.
+
+        Notes
+        -----
+        This method advances ``self.rng`` exactly as a call to
+        ``self.sample(n_samples, orig_flag=orig_flag)`` does. It creates no
+        likelihood or sampler-diagnostic groups. These are draws from a
+        variational approximation: MCMC diagnostics on them do not assess
+        how well the approximation represents the target posterior.
+        """
+        if (
+            isinstance(n_samples, (bool, np.bool_))
+            or not isinstance(n_samples, Integral)
+            or n_samples < 1
+        ):
+            raise ValueError("n_samples must be a positive integer.")
+        if var_names is None:
+            names = [f"x_{i}" for i in range(self.D)]
+        else:
+            if isinstance(var_names, str):
+                raise ValueError("var_names must contain D parameter names.")
+            try:
+                names = list(var_names)
+            except TypeError as exc:
+                raise ValueError(
+                    "var_names must contain D parameter names."
+                ) from exc
+            if (
+                len(names) != self.D
+                or any(not isinstance(n, str) or not n.strip() for n in names)
+                or len(set(names)) != self.D
+                or any(n in {"chain", "draw"} for n in names)
+            ):
+                raise ValueError(
+                    "var_names must contain D unique, nonempty strings, "
+                    "excluding 'chain' and 'draw'."
+                )
+        if sys.version_info < (3, 12):
+            raise ImportError(
+                "ArviZ DataTree export requires Python 3.12+; "
+                "use Python 3.12+ and install pyvbmc[arviz]."
+            )
+        try:
+            from arviz_base import from_dict
+        except ModuleNotFoundError as exc:
+            if exc.name != "arviz_base":
+                raise
+            raise ImportError(
+                "ArviZ DataTree export requires arviz-base; "
+                "install pyvbmc[arviz] on Python 3.12+."
+            ) from exc
+        samples, _ = self.sample(n_samples, orig_flag=orig_flag)
+        posterior = {
+            name: samples[:, i].reshape(1, n_samples)
+            for i, name in enumerate(names)
+        }
+        return from_dict(
+            {"posterior": posterior},
+            sample_dims=["chain", "draw"],
+            coords={"chain": [0], "draw": np.arange(n_samples)},
+            attrs={
+                "posterior": {
+                    "inference_library": "pyvbmc",
+                    "inference_method": "variational approximation",
+                    "sample_type": "independent",
+                    "parameter_space": "original" if orig_flag else "internal",
+                }
+            },
+        )
 
     def sample(
         self,
@@ -1257,6 +1403,8 @@ class VariationalPosterior:
             corner_style.update(plot_style.get("corner"))
 
         # suppress warnings for small datasets with quiet=True
+        import corner
+
         fig = corner.corner(Xs, quiet=True, **corner_style)
 
         # style of the gp data

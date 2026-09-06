@@ -8,6 +8,7 @@ import scipy.stats
 
 from pyvbmc import VBMC
 from pyvbmc.priors import (
+    Prior,
     Product,
     SciPy,
     SmoothBox,
@@ -1105,3 +1106,145 @@ def test__str__and__repr__():
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
     vbmc.__str__()
     vbmc.__repr__()
+
+
+class TrackingPrior(Prior):
+    def __init__(self, D=2, complex_output=False):
+        self.D = D
+        self.complex_output = complex_output
+        self.calls = []
+
+    def _log_pdf(self, x):
+        self.calls.append(x.copy())
+        values = -np.sum(x**2, axis=1, keepdims=True)
+        if self.complex_output:
+            values = values.astype(complex) + 1j
+        return values
+
+    def sample(self, n, rng=None):
+        return np.zeros((n, self.D))
+
+    @classmethod
+    def _generic(cls, D=1):
+        return cls(D)
+
+
+def _vectorized_vbmc(target, *, prior=None, options=None, D=2):
+    merged_options = {"vectorized_target": True}
+    if options:
+        merged_options.update(options)
+    return VBMC(
+        target,
+        np.zeros((1, D)),
+        np.full((1, D), -np.inf),
+        np.full((1, D), np.inf),
+        np.full((1, D), -1.0),
+        np.full((1, D), 1.0),
+        options=merged_options,
+        prior=prior,
+    )
+
+
+def test_vectorized_target_option_and_logger_mode():
+    vbmc = _vectorized_vbmc(lambda x: np.sum(x, axis=1))
+    assert vbmc.options["vectorized_target"] is True
+    assert vbmc.function_logger.vectorized_target is True
+
+    with pytest.raises(ValueError, match="must be boolean"):
+        _vectorized_vbmc(
+            lambda x: np.sum(x, axis=1),
+            options={"vectorized_target": 1},
+        )
+
+
+def test_vectorized_likelihood_with_builtin_prior_and_column_output():
+    prior = UniformBox(np.full(2, -2.0), np.full(2, 2.0))
+    vbmc = _vectorized_vbmc(
+        lambda x: np.sum(x, axis=1, keepdims=True), prior=prior
+    )
+    points = np.array([[0.0, 0.0], [0.5, -0.5]])
+
+    values = vbmc.log_joint(points)
+
+    expected = np.sum(points, axis=1) + prior.log_pdf(points, keepdims=False)
+    assert values.shape == (2,)
+    assert np.allclose(values, expected)
+
+
+def test_vectorized_likelihood_evaluates_custom_prior_row_by_row():
+    prior = TrackingPrior()
+    vbmc = _vectorized_vbmc(lambda x: np.sum(x, axis=1), prior=prior)
+    points = np.array([[0.25, -0.5], [0.75, 0.5]])
+
+    values = vbmc.log_joint(points)
+
+    assert values.shape == (2,)
+    assert len(prior.calls) == 2
+    assert all(call.shape == (1, 2) for call in prior.calls)
+    assert np.allclose(
+        values,
+        np.sum(points, axis=1) - np.sum(points**2, axis=1),
+    )
+
+
+def test_vectorized_cached_log_joint_does_not_apply_prior_twice():
+    likelihood_calls = []
+    prior = TrackingPrior()
+
+    def likelihood(x):
+        likelihood_calls.append(x.copy())
+        return np.sum(x, axis=1)
+
+    vbmc = _vectorized_vbmc(likelihood, prior=prior)
+    points = np.array([[0.25, -0.5], [0.75, 0.5]])
+    cached_log_joint = 123.0
+
+    vbmc.function_logger.batch_call(
+        vbmc.parameter_transformer(points),
+        [cached_log_joint, np.nan],
+    )
+
+    assert vbmc.function_logger.y_orig[0, 0] == cached_log_joint
+    assert len(likelihood_calls) == 1
+    assert likelihood_calls[0].shape == (1, 2)
+    assert np.allclose(likelihood_calls[0][0], points[1])
+    assert len(prior.calls) == 1
+
+
+def test_vectorized_unknown_noise_prior_returns_values_only():
+    prior = TrackingPrior()
+    vbmc = _vectorized_vbmc(
+        lambda x: np.sum(x, axis=1),
+        prior=prior,
+        options={"uncertainty_handling": [1]},
+    )
+    points = np.array([[0.25, -0.5], [0.75, 0.5]])
+
+    log_joint_output = vbmc.log_joint(points)
+    _, sds, _ = vbmc.function_logger.batch_call(
+        vbmc.parameter_transformer(points)
+    )
+
+    assert isinstance(log_joint_output, np.ndarray)
+    assert log_joint_output.shape == (2,)
+    assert np.array_equal(sds, np.ones(2))
+
+
+def test_vectorized_noisy_prior_rejects_n_by_two_likelihood():
+    vbmc = _vectorized_vbmc(
+        lambda x: np.column_stack((np.sum(x, axis=1), np.ones(x.shape[0]))),
+        prior=TrackingPrior(),
+        options={"specify_target_noise": True},
+    )
+    with pytest.raises(ValueError, match=r"not an \(N, 2\) ndarray"):
+        vbmc.function_logger.batch_call(np.zeros((2, 2)))
+    assert vbmc.function_logger.Xn == -1
+
+
+def test_vectorized_prior_rejects_complex_scalar_with_row_context():
+    vbmc = _vectorized_vbmc(
+        lambda x: np.sum(x, axis=1),
+        prior=TrackingPrior(complex_output=True),
+    )
+    with pytest.raises(ValueError, match="finite real scalar for row 0"):
+        vbmc.log_joint(np.zeros((2, 2)))

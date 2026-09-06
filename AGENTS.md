@@ -152,6 +152,19 @@ Things you must hold in your head across files:
   Bounds `(1,D)`, `x0 (n0,D)`. `decorators/handle_0D_1D_input.py` promotes
   1-D inputs for methods; it assumes a `self` first argument and misbehaves on
   module-level functions.
+- **Vectorized targets are opt-in.** With `vectorized_target=True`,
+  `FunctionLogger.batch_call` evaluates missing initial-design rows in one
+  original-coordinate `(M,D)` call, then records supplied/evaluated rows in
+  design order. Later target calls remain sequential with shape `(1,D)`.
+  Separate priors retain their scalar interface. Missing flags in old saves
+  mean False; load-time overrides synchronize the logger and prior wrapper.
+- **Posterior exports.** `vp.to_torch()` copies CPU float64 state by default
+  and returns a distribution in original coordinates; conversion makes no
+  draws, its samples use torch's RNG. Bounded density inputs must be strictly
+  interior. `vp.to_arviz()` exports one-chain DataTree samples and advances
+  `vp.rng`. Extras are `torch` (torch >=2.7) and `arviz` (current API,
+  Python >=3.12); core PyVBMC remains Python >=3.10. No exported objects are
+  retained on the VP, so the dtype canary is unchanged.
 - **`FunctionLogger`** preallocates 500 rows and grows; `Xn` is the index of
   the last filled row, `X_flag` the boolean mask of live rows. Always index
   through `X_flag`; rows beyond `Xn` are NaN. `finalize()` trims.
@@ -237,7 +250,9 @@ Things you must hold in your head across files:
   currently lack one).
 - `pyvbmc/priors/__init__.py` has `# isort:skip` markers preserving a
   circular-import-safe order; do not reorder.
-- `import pyvbmc` eagerly imports matplotlib.pyplot, corner, cma, and imageio.
+- `import pyvbmc` eagerly imports matplotlib.pyplot, cma, and imageio.
+  Corner is imported inside `vp.plot`; torch and ArviZ exports import their
+  dependencies lazily.
   `pyvbmc.timer.main_timer` is a process-wide singleton shared by all `VBMC`
   instances, so concurrent runs in one interpreter are not safe.
 - `pyvbmc/testing/oracles/` pins the numerics stage by stage: each fixture
