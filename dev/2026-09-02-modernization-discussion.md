@@ -1092,6 +1092,46 @@ initial design and cache path (`FunctionLogger.batch_call`, `vectorized_target`
 option); documented torch/jax target adapter; `vp.to_torch()`; ArviZ export.
 
 **Stage 4 — Port the numerical core to PyTorch (decision point, not default).**
+
+*Decision 2026-09-06, after discussing the 1.5 release outline with the PI:*
+the intended direction is to include the PyTorch solver in 1.5, subject to
+validation. This supersedes the undecided release scope above. The motivation
+combines performance, a coherent architectural modernization, and integration
+with the modern ML ecosystem, with future method development especially
+important. Comparable CPU performance is acceptable if autodiff and a common
+tensor representation substantially simplify extension and integration;
+immediate speedup or a GPU advantage is not required. Numerical reliability,
+float64 robustness, acceptable CPU performance against the modernized NumPy
+implementation, and manageable installation friction remain acceptance
+criteria. The release can include the additional work needed to meet those
+criteria if the feasibility evidence supports proceeding.
+
+*PI clarification in the same discussion:* feasibility prototyping is the
+first step, followed by an explicit decision before committing to the full
+port. A roughly 3× runtime (one-third the speed) would be a reason to rethink
+the port or its inclusion in 1.5, even if the slowdown is understood. This is
+an illustrative concern, not an agreed numerical cutoff. Inclusion in 1.5 is
+the preferred direction if feasible; the full port is not yet a commitment.
+Prototype stage timings must be distinguished from end-to-end runtime impact.
+The PI also requires testing both CPU and GPU. Compare float64 PyTorch on
+each device against the modernized NumPy CPU baseline at representative
+shapes, including transfer costs. Report the hardware and device results
+separately, synchronize GPU work for timing, and distinguish setup/warmup
+from repeated execution. GPU gains do not remove the need for acceptable
+CPU performance; absent GPU measurements leave that part of feasibility open.
+
+The port preserves the existing method. Richer posterior parameterizations,
+gradient-based acquisition optimization, batched design, and larger-scale
+inference are opportunities for subsequent algorithmic work, not requirements
+for accepting the port. The proposed feasibility prototype covers a complete
+variational optimization step, including GP integrals, entropy, parameter
+handling, and the optimizer, to assess values and gradients, CPU/GPU performance
+at representative and final-refinement shapes, and implementation simplicity.
+The NumPy transition, dependency policy, and Python floor remain design
+questions. No solver implementation was started as part of this decision.
+
+Original technical scope and anticipated longer-term payoffs:
+
 Scope: vendored GP core, `variational_optimization`, `entropy`, `acquisition_functions`,
 `parameter_transformer` (as bijectors). Orchestration stays Python. Payoff:
 delete ~610 gradient lines; gradient-based multi-start acquisition

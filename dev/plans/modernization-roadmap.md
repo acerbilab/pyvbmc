@@ -223,12 +223,38 @@ anything that changes numerics lands.
   visibility, rather than a 1.5 followed by a 1.6 within days). Both
   trajectory-neutral and trajectory-moving latent bug fixes remain behind
   the reference-night boundary; pickup 9 fixes land only after both nights.
-- [ ] **Stage 4 — PyTorch port** (decision point, not default). Whether
-  this implementation is included in 1.5 remains TBD (PI clarification,
-  2026-09-06); it is not categorically deferred to a later release. The
-  solver backend would be PyTorch, not JAX. JAX model adapters remain
-  part of Stage 3. Revisit core dependencies and the Python floor with
-  this decision.
+- [ ] **Stage 4 — PyTorch feasibility prototype, then a port decision**
+  (preferred for 1.5 if feasible;
+  PI decision, 2026-09-06). The purpose combines future method development,
+  participation in the modern ML ecosystem, and performance opportunities.
+  Comparable CPU performance can be acceptable if autodiff and the tensor
+  architecture substantially simplify extension and integration. Acceptance
+  requires numerical reliability, float64 robustness, acceptable CPU
+  performance against the modernized NumPy core, and manageable installation
+  friction. A roughly 3× runtime (one-third the speed) would be a reason to
+  rethink the port or its inclusion in 1.5, even if the slowdown is understood;
+  this is an illustrative concern, not an agreed numerical cutoff.
+  Immediate speedup or GPU advantage is not required. Preserve the existing
+  method for the port; richer posterior families, gradient-based acquisition
+  optimization, and larger-scale inference remain separate future work.
+  The first step is feasibility prototyping; the proposed scope is a complete
+  variational optimization
+  step (GP integrals, entropy, parameter handling, and optimizer), checked
+  for values, gradients, CPU and GPU performance, and code simplicity,
+  including final-refinement shapes. Test both devices in float64 against
+  the modernized NumPy CPU baseline, include transfer costs, and report
+  hardware and timings separately. GPU timings must synchronize completed
+  work; separate setup/warmup from repeated execution. GPU gains do not
+  remove the CPU acceptance requirement. If GPU hardware is unavailable,
+  record GPU feasibility as untested and obtain measurements before closing
+  this investigation. Use that evidence for an explicit decision before
+  committing to the full port; a stage timing alone does not establish the
+  end-to-end runtime impact. Inclusion in 1.5 remains conditional on this
+  decision and subsequent implementation and validation.
+  Settle the NumPy transition, core dependencies, and Python floor in the
+  implementation design. JAX model adapters remain part of Stage 3; the
+  solver backend is PyTorch. Decision rationale: devlog §10 and the
+  [1.5 overview](../2026-09-06-pyvbmc-1.5-overview.md).
 
 ## Pickup point
 

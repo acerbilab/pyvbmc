@@ -37,11 +37,21 @@ retain metadata 18a236c, dirty false (numerical code bdaf322); new sidecars
 record the frozen SHA. Exact commands: roadmap pickup 3f.
 
 After both batches and their records, land the planned latent fixes,
-then run final population validation and prepare dev-next -> main for 1.5.
+complete the remaining release scope below, then run final population
+validation and prepare dev-next -> main for 1.5.
 Read-only bug investigation/planning can proceed beforehand. S-VBMC remains
 planned alongside better connections to upcoming VBMC extensions (pickup 10).
-Whether the PyTorch solver (Stage 4) joins 1.5 is TBD; it would not be a
-JAX solver. Revisit core dependencies and the Python floor with that decision.
+The first Stage 4 step is a PyTorch feasibility prototype tested on both CPU
+and GPU in float64 against the modernized NumPy CPU baseline, including
+transfer costs, followed by an explicit decision on the full port
+(PI decision, 2026-09-06). Inclusion in 1.5 is preferred if feasible, subject
+to numerical reliability, acceptable CPU performance, manageable installation
+friction, and simpler future method development. Immediate speedup is not
+required; roughly 3× runtime would be a reason to rethink the port or its
+release scope, not an agreed numerical cutoff. The full port is not yet a
+commitment. Settle the NumPy transition, core dependencies, and Python floor
+in the design. Algorithmic extensions remain separate from the port. See
+the roadmap Stage 4 entry and the 1.5 overview.
 
 Local state at handoff (2026-09-06): no Python numerical jobs, scheduled
 campaign, or session-bound watchers remain. No campaign launcher was created;
