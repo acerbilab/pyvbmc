@@ -18,14 +18,26 @@ anything that changes numerics lands.
   - [x] finite-difference checks: `entmc`, `entlb` (pre-existing),
     `_gp_log_joint`, `_neg_elcbo`, `_vp_bound_loss`, `_soft_bound_loss`,
     `vp.pdf` (`plans/profile-and-gradient-checks.md` §6)
-  - [ ] finite-difference checks: parameter transformer Jacobian, gpyreg
+  - [x] finite-difference checks: parameter transformer Jacobian, gpyreg
     kernel/mean/noise derivatives (`compute_vargrad` no longer applies:
     the dead path was deleted with Stage 2 item 1 on 2026-09-04; the
-    variance gradient is unimplemented and raises)
+    variance gradient is unimplemented and raises). Done 2026-09-06
+    (`test_parameter_transformer_jacobian_fd.py`: the full `D × D`
+    Jacobian of `inverse` by central differences against
+    `log_abs_det_jacobian`, unbounded, centered, bounded, mixed and
+    rotoscale-warped cases at D = 1, 2, 5, round trips and the sign
+    convention; `test_gpyreg_derivatives_fd.py`: gpyreg's mean, noise (the
+    six switch combinations PyVBMC selects) and SE kernel gradients; 248
+    tests, no discrepancy; three incidental findings in devlog §9)
   - [x] fixture generator script (`dev/scripts/make_oracle_fixtures.py`,
     2026-09-04: 8 snapshots as plain arrays under
-    `pyvbmc/testing/oracles/fixtures/`, 1.4 MB; retiring the `.mat`
-    fixtures is still open, `plans/fixture-generator-and-oracles.md`)
+    `pyvbmc/testing/oracles/fixtures/`, 1.4 MB;
+    `plans/fixture-generator-and-oracles.md`). The MATLAB `.mat` fixtures
+    were converted on 2026-09-06 to plain `.npz` files with a `FIXTURES.md`
+    per directory (every array bit-identical, the readers' assertions and
+    tolerances unchanged, the orphan `whitening/vp_initialized_MATLAB.mat`
+    deleted, `MANIFEST.in` covering every fixture directory): the MATLAB
+    agreement they pin is kept, the opaque format is gone.
   - [x] stage-level oracles (`pyvbmc/testing/oracles/`, 16 oracles × 8
     snapshots since 2026-09-05 (`gp_nlZ`, the GP log marginal likelihood
     and log posterior with gradients, and `gp_fit`, a whole `train_gp`
@@ -455,10 +467,16 @@ anything that changes numerics lands.
    as 14 configurations × 20 seeds and need the new counts. The reference
    sidecars live in git under `dev/golden/baseline/` (PI decision
    2026-09-03); copy them over after every extension.
-6. Stage 0 remaining after the oracles: finite-difference checks for the
+6. ~~Stage 0 remaining after the oracles: finite-difference checks for the
    transformer Jacobian and the gpyreg derivatives (`compute_vargrad`
    dropped from the list: the path was deleted with Stage 2 item 1); retire
-   the `.mat` fixtures once the oracles cover what they pin.
+   the `.mat` fixtures once the oracles cover what they pin.~~ Done
+   2026-09-06 by two Opus agents from written specs, tests only (the
+   reference population is unaffected): the finite-difference modules
+   (Stage 0 bullet above; no discrepancy, three incidental findings in
+   devlog §9) and the `.mat` fixtures converted to `.npz` rather than
+   deleted (PI: keep the MATLAB agreement, drop the opaque format).
+   Remaining of Stage 0: the dtype canary.
 7. ~~gpyreg generator support (`GP.fit`, `SliceSampler`, `f_min_fill`,
    `GP.random_function`) on a gpyreg branch when convenient.~~ Done
    2026-09-05 in acerbilab/gpyreg#43 (item 8, point 3a); the PyVBMC seam is

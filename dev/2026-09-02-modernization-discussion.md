@@ -385,6 +385,16 @@ backward-compatible load. They are read with `scipy.io.loadmat`, so no MATLAB
 is needed at test time; the problem is that they are opaque, cannot be
 regenerated, and cover a handful of internals.
 
+*Addendum 2026-09-06.* The `.mat` files were converted to plain `.npz`
+arrays (every array bit-identical, the tests' assertions unchanged) with a
+`FIXTURES.md` per directory naming what each array holds, its MATLAB
+provenance and the test that reads it; the orphan
+`whitening/vp_initialized_MATLAB.mat`, which nothing read, was deleted. The
+MATLAB agreement they pin is kept; only the opaque format is gone. The same
+day the Stage 0 finite-difference checks were completed for the transformer
+Jacobian and gpyreg's mean, noise and kernel gradients (no discrepancy; §9
+for three incidental findings).
+
 End-to-end: 6 full `optimize()` runs asserting posterior-mean RMSE `< 0.5` and
 `|elbo − lnZ| < 0.5`. This cannot distinguish a subtly broken port from an
 unlucky seed. Tolerances elsewhere span `1e-14` to `5e-2`.
@@ -616,6 +626,22 @@ state used by resume.
   the jitter `mu += sigma * lambd * randn(mu.shape)` raises `ValueError`
   (and `sigma` would stay zero if it did not). `optimize_sigma` is always
   `True` in production (the `optimize_lambda` bullet above).
+- **Found 2026-09-06 by the finite-difference checks that closed Stage 0**
+  (`testing/parameter_transformer/test_parameter_transformer_jacobian_fd.py`,
+  `testing/vbmc/test_gpyreg_derivatives_fd.py`; every check passes, so
+  none of these is a wrong gradient), not fixed:
+  - `ParameterTransformer.__eq__` compares `self.scale` with itself
+    (`parameter_transformer.py:407`), so two transformers that differ only
+    in `scale` compare equal; the tests asserting transformer identity
+    across `vbmc`, `vp` and `function_logger` go through this `__eq__`.
+  - The `logit` bounded Jacobian (`parameter_transformer.py:312–318`)
+    computes `-log1p(exp(-y))`, which overflows to `-inf` for
+    `y < -709.78` where the value is finite (`-708.61` at `y = -710`), with
+    a `RuntimeWarning` rather than a NaN. Unreachable in a healthy run:
+    `inverse` saturates to the hard bound long before.
+  - `log_abs_det_jacobian` takes `|det R_mat| = 1` for granted, true of
+    every rotation `warp_input` installs (an orthogonal factor of an SVD)
+    and silently wrong for any other matrix.
 - **Found 2026-09-05 (late evening) by the review of the item 7 plan**
   (`plans/stage2-memory.md`):
   - `optimize()` on a finished instance set `self.vp` and
