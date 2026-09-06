@@ -15,3 +15,5 @@ night at the end), then Stage 3 (plan first), both shipping in 1.5 with
 everything else (PI decisions 2026-09-06), then the PR dev-next -> main.
 Nothing numerical may land before the two nights are done. The reference traces
 live only on this laptop under dev/scripts/runs/golden/item7_20260906/.
+Also part of 1.5, form still to be decided: S-VBMC integration and
+compatibility (roadmap pickup 10).
