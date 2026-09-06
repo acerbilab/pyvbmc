@@ -1140,7 +1140,8 @@ in §2 are estimates.
   dead GP-sampling stop check), each replayed and the set checked as a
   population against the extended reference; the algorithmic items (the
   `final_boost` guard, `compute_var == 2`, noise shaping) stay deferred
-  (roadmap pickup 9).
+  (roadmap pickup 9). Where bug and involuntary design decision are hard
+  to tell apart, the PI rules case by case.
 - **Dev notes live in `dev/`** (this folder). `docs/` is the Sphinx build output.
 - Design decisions get recorded here as they are made; a separate
   decision-record format is not needed yet.

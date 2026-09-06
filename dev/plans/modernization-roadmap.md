@@ -573,7 +573,10 @@ anything that changes numerics lands.
    change the VBMC algorithm, but it fixes the latent bugs; own plan under
    `plans/` before it starts; after the nights, before Stage 3). The
    candidates are the unfixed entries of devlog §9; the split below is a
-   first reading, to be confirmed in the plan.
+   first reading, to be confirmed in the plan. Where the line between a
+   bug and an involuntary design decision is loose, the PI rules case by
+   case: the plan lists such items as open questions, it does not decide
+   them.
    Trajectory-moving, each replayed on its own and the set checked as a
    population against the extended reference, which then becomes the
    release's reference (one more population night, about 12 h): the
