@@ -404,8 +404,13 @@ anything that changes numerics lands.
    once before anything else lands (the oracle tests run on three BLAS
    builds there). (iii) Then pickup 5 (the end-of-stage re-baseline of the
    golden population, 50 seeds, the exhaust config) and pickup 6 (the
-   Stage 0 leftovers); Open question 8 of
-   `plans/stage2-gpyreg-predict-and-sampler.md` is still the PI's call.
+   Stage 0 leftovers). Open question 8 of
+   `plans/stage2-gpyreg-predict-and-sampler.md` was decided and done on
+   2026-09-06 (PI: option A): the eight oracle references that items 3, 1,
+   2 and 5 had moved within tolerance were re-baselined to the current
+   numerics from their stored states, so `--check --exact` against the
+   committed fixtures is the identity gate from here on
+   (`plans/fixture-generator-and-oracles.md`).
    Reading list for a fresh session: `dev/README.md`; this file's Stage 2
    bullet and pickup points 3c–3e; `plans/stage2-memory.md` (§Summary,
    §Decisions, §Results, the tracker's doublecheck entry); the population

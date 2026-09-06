@@ -241,12 +241,15 @@ Things you must hold in your head across files:
   the random stream moves both, so `--expect-moving` names the second
   while the first is re-baselined. A new oracle is added to the existing
   fixtures with `--add-oracle NAME --reason "..."` (never by rerunning the
-  recipes, which would move every snapshot). The committed references pin
-  the numerics of the day they were made and several outputs have since
-  moved within tolerance, so the gate for a change that must not move any
-  output is `--dump-outputs DIR` before it and `--check --exact --against
-  DIR` after (`dev/plans/stage2-gpyreg-predict-and-sampler.md`); the
-  per-step trajectory check is `python dev/scripts/golden_replay.py`
+  recipes, which would move every snapshot). The committed references
+  equal the current numerics on the generating machine (re-baselined at
+  the end of Stage 2, 2026-09-06, after the population check; the
+  `meta["rebaselined"]` entries record what moved and why), so the gate
+  for a change that must not move any output is `--check --exact`
+  against them; `--dump-outputs DIR` before a change and `--check --exact
+  --against DIR` after remain available for a change made while the
+  references are known to lag (`dev/plans/fixture-generator-and-oracles.md`);
+  the per-step trajectory check is `python dev/scripts/golden_replay.py`
   (`dev/README.md`). The tests need a repository checkout: the testing
   package ships in the sdist, not the wheel, and the `active_sample_step`
   oracle also imports the benchmark targets from `dev/scripts` (skipped

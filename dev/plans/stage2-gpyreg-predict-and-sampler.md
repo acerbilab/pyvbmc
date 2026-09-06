@@ -666,15 +666,21 @@ question 3).
    It changes the sampler's proposal widths and therefore every
    trajectory; it deserves its own small item with a population check.
    Recorded in devlog §9.
-8. Re-baseline the committed references of the oracles that items 3, 1
+8. ~~Re-baseline the committed references of the oracles that items 3, 1
    and 2 moved within tolerance (`vp_pdf`, `gp_log_joint`, `neg_elcbo`,
    the four noiseless `acq_*`) to the current numerics, so that
    `--check --exact` against the committed fixtures becomes the identity
-   gate for later items? **PI's call, proposed for the end of Stage 2**
-   together with the golden re-baseline (roadmap pickup point 5): the
-   population check has already validated the moved numerics, the
-   `--rebaseline` mode records each change with its reason, and until then
-   the dump serves.
+   gate for later items?~~ **Yes (PI, 2026-09-06), done the same morning
+   at the end of Stage 2** (`plans/fixture-generator-and-oracles.md`, the
+   re-baseline paragraph): the eight moved oracles (item 5 had added
+   `entmc`) re-baselined one at a time from their stored states with
+   `--rebaseline --reason --expect-moving`, after the 20-seed population
+   of that night passed; the alternatives weighed were keeping the dump
+   workflow indefinitely (the references would have stayed the Stage 0
+   baseline, at the price of a permanently red `--check --exact` and an
+   artifact that does not travel) and regenerating the fixtures (rejected:
+   the seam removal changed every stream, so the snapshot states would
+   have changed too). The Stage 0 references stay in git history.
 
 ## Risks
 

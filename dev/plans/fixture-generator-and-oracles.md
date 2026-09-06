@@ -207,12 +207,41 @@ Since 2026-09-05 (item 8) the generator also has `--add-oracle NAME --reason`
 stored state, every other array asserted bit-identical), `--expect-moving
 A,B` for `--rebaseline` / `--add-oracle` when one change moves several
 oracles (a random-stream change moves every oracle that draws), and
-`--dump-outputs DIR` + `--check --exact --against DIR`: the committed
-references pin the numerics of the day they were made and several outputs
-have since moved within tolerance (items 3, 1, 2), so the gate for an
-identity-preserving refactor is a dump of the pre-change outputs compared
-bit for bit, not the committed references
-(`plans/stage2-gpyreg-predict-and-sampler.md`).
+`--dump-outputs DIR` + `--check --exact --against DIR`: while the committed
+references pinned the numerics of the day they were made and several
+outputs had moved within tolerance (items 3, 1, 2, 5), the gate for an
+identity-preserving refactor was a dump of the pre-change outputs compared
+bit for bit (`plans/stage2-gpyreg-predict-and-sampler.md`). Since the
+re-baseline of 2026-09-06 (below) the references equal the current
+numerics on the generating machine and `--check --exact` against them is
+that gate; the dump remains the tool for a change made while they lag.
+
+**Re-baseline of 2026-09-06** (PI decision, Open question 8 of
+`plans/stage2-gpyreg-predict-and-sampler.md`, taken once Stage 2 was
+complete and the 20-seed population of that night had passed with no
+config flagged). `--check --exact` on `bbbe3e9` found eight oracles off
+the Stage 0 references on some or all snapshots: `vp_pdf` and the four
+noiseless acquisitions (item 3's broadcast `vp.pdf`), `gp_log_joint` and
+`neg_elcbo` (items 1 and 2, and `neg_elcbo` also item 5), `entmc`
+(item 5); `gp_predict`, `entlb`, `transform`, the two noisy acquisitions,
+`gp_nlZ`, `gp_fit` and `active_sample_step` were bit-identical. Each of
+the eight was re-baselined from its stored states with `--rebaseline
+ORACLE --reason "..." --expect-moving <the rest>`, one process at a time,
+every other reference asserted bit-identical; the `meta["rebaselined"]`
+entries carry the reasons and the per-output maximum absolute change,
+which over the eight snapshots is: `vp_pdf` 8.9e-16 (`pdf`), 3.6e-15
+(`logpdf`), 7.1e-15 (`dlogpdf`), 1.1e-11 (`pdf_orig`, a density in the
+original space); the acquisitions 3.6e-15 (`AcqFcnLog`) and at most 1e-20
+(the exponential forms); `entmc` 8.9e-16 (`H`), 1.4e-15 (`dH`);
+`gp_log_joint` 4.3e-10 (`G`), 2.9e-10 (`dG`), 3.6e-9 (`G_samples`),
+1.1e-9 (`dG_samples`), 1.1e-8 (`I_sk`), 1.9e-10 (`J_sjk`), 4.3e-12
+(`varG`), 5.0e-12 (`var_ss`), the GP-solve conditioning of the cigar
+snapshots; `neg_elcbo` the same 4.3e-10 on the `G`-carrying outputs and
+8.9e-16 on the `H`-carrying ones (`theta`, `H_detent`, `varH` unchanged).
+Afterwards `--check --exact` reports 8 of 8 and the oracle tests pass
+(116 passed, 15 skipped); the Stage 0 references remain in git history
+before `e170964`. The tolerances and floors above are unchanged: they
+were set from cross-BLAS measurements, not from these moves.
 
 **Tolerances are per element with a robust floor** (for every entry
 `|out − ref| ≤ rtol · max(|ref|, q25(|ref|)) + atol`, with `q25` the lower

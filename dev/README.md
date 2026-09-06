@@ -214,10 +214,10 @@ reason.
   (a random-stream change moves every oracle that draws); `--add-oracle
   NAME --reason "..."` adds a newly registered oracle's references to the
   existing fixtures from their stored state (audit entry under
-  `meta["oracles_added"]`); `--dump-outputs DIR` writes the current code's
-  outputs of every oracle on every snapshot and `--check --exact
-  --against DIR` compares the working tree with such a dump bit for bit,
-  the gate for an identity-preserving refactor (the committed references
-  pin the numerics of the day they were made and several outputs have
-  since moved within tolerance); `--check --exact` alone compares with
-  the committed references bit for bit.
+  `meta["oracles_added"]`); `--check --exact` compares the working tree
+  with the committed references bit for bit, the gate for an
+  identity-preserving refactor since the references were re-baselined to
+  the current numerics at the end of Stage 2 (2026-09-06); `--dump-outputs
+  DIR` writes the current code's outputs of every oracle on every snapshot
+  and `--check --exact --against DIR` compares with such a dump, for a
+  change made while the references are known to lag.
