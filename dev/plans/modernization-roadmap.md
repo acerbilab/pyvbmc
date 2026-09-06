@@ -207,10 +207,13 @@ anything that changes numerics lands.
   torch/jax target adapter docs, `vp.to_torch()`, ArviZ export). Ships
   in 1.5 with Stages 0–2 (PI decision 2026-09-06: the whole body of work
   in one release, for visibility, rather than a 1.5 followed by a 1.6
-  within days). Needs its own plan before it starts; its items are
-  expected to leave every trajectory as it is, so the reference of
-  pickup 3f remains the release's validation population, with the
-  replay `identical` after each item.
+  within days). May start now on the branch `dev-next-stage3`, plan
+  first, in parallel with the reference nights (pickup 11 for the
+  branch rules and the decisions already taken); its items are expected
+  to leave every trajectory as it is, so it merges into `dev-next` after
+  the nights with the replay `identical` and the full suite green, and
+  the population night of pickup 9 then validates the released code,
+  fixes and features together.
 - [ ] **Stage 4 — PyTorch port** (decision point, not default).
 
 ## Pickup point
@@ -489,10 +492,12 @@ anything that changes numerics lands.
    configurations; 50 seeds, the exhaust 10; the code), this file's Stage 0
    bullet and `dev/README.md` where they say 14 configurations × 20 seeds,
    and run the replay once with defaults (the fences tighten with 50
-   seeds). Then the latent bug fixes (pickup 9, its own plan, one more
-   population night at its end), then Stage 3, its plan first (PI decision
-   2026-09-06: both ship in 1.5 with everything else), and after it the
-   PR `dev-next` → `main`
+   seeds). Then the merge of Stage 3 from `dev-next-stage3` (pickup 11;
+   replay `identical`, full suite green) together with the
+   trajectory-neutral fixes of pickup 9, then the trajectory-moving fixes
+   of pickup 9, each replayed, then its population night on the final
+   code (PI decisions 2026-09-06: everything ships in 1.5), and after it
+   the PR `dev-next` → `main`
    (pickup 8) with the release note that files saved by this code hold
    lean GP records an older PyVBMC cannot resume. The dtype canary
    (`plans/stage0-dtype-canary.md`) is done, tests only; its one
@@ -571,7 +576,9 @@ anything that changes numerics lands.
    12 h); a copy on the lab server is cheap insurance.
 9. **Latent bug fixes for 1.5** (PI decision 2026-09-06: 1.5 does not
    change the VBMC algorithm, but it fixes the latent bugs; own plan under
-   `plans/` before it starts; after the nights, before Stage 3). The
+   `plans/` before it starts; after the nights: the trajectory-neutral
+   fixes with the Stage 3 merge, the trajectory-moving ones after it, so
+   that the population night at the end runs on the final code). The
    candidates are the unfixed entries of devlog §9; the split below is a
    first reading, to be confirmed in the plan. Where the line between a
    bug and an involuntary design decision is loose, the PI rules case by
@@ -630,6 +637,52 @@ anything that changes numerics lands.
     `torch` dependency meets Stage 3's `vp.to_torch()`), and release it
     in step with 1.5: its `pyvbmc` pin bumped, its tests green against the
     released code, its pickles regenerated if the classes changed.
+11. **Stage 3 on `dev-next-stage3`** (PI, 2026-09-06: Stage 3 may start
+    now, in parallel with the reference nights; nothing in it depends on
+    them, and the rule that nothing numerical lands on `dev-next` before
+    the nights concerns that branch only). Branch rules: the branch is
+    cut from `dev-next` and named so that the origin is plain; the smoke
+    workflow runs on it (`dev*`); the work happens in a separate git
+    worktree with its own editable install or venv, so the `dev-next`
+    checkout the nights run from is never touched, and the worktree links
+    `dev/scripts/runs` to the main checkout's for the replay's traces;
+    no full-suite or replay runs while a night is running (heavy compute
+    is the night's). The plan (`plans/stage3-*.md`) comes first and starts
+    from these decisions, taken with the PI on 2026-09-06:
+    (a) torch and ArviZ are optional extras, `pyvbmc[torch]` and
+    `pyvbmc[arviz]`, imported lazily inside the methods that need them,
+    with an error naming the extra to install; their tests skip when the
+    extra is absent, and the Ubuntu newest-Python leg of CI installs both,
+    torch from the CPU wheel index; conda-forge has no extras, so the
+    install docs name the conda packages. Torch as a hard dependency of
+    the core remains Stage 4's question (devlog §13).
+    (b) `vp.to_torch()` builds and returns a torch distribution; nothing
+    torch is stored on a PyVBMC object, so the dtype canary stays as it is
+    (its Decision 5; Stage 4 revises the canary when the state itself
+    becomes tensors).
+    (c) The batched target: a boolean option `vectorized_target`, default
+    off, in the basic options. When on, the target always receives a 2-D
+    array of shape (N, D), N ≥ 1, the single-point calls of active
+    sampling included as (1, D), and returns an array of shape (N,), with
+    (N, 1) accepted and squeezed, or for a noisy target the pair of such
+    arrays that vectorizes today's pair of scalars (an (N, 2) array is
+    refused with a message saying to return a pair). The batch path is
+    the initial design only, through a `FunctionLogger.batch_call` that
+    evaluates the batch once and records each row as the sequential loop
+    does, in input order, the batch's wall time split equally across
+    rows, the evaluation count raised by N; rows with provided values keep
+    going through `add`. Every later evaluation stays sequential by
+    construction (the five points of an iteration are chosen one after
+    another with a rank-1 GP update in between), so the payoff is the
+    `fun_eval_start` evaluations in one call, plus one code path for users
+    with vectorized torch or JAX models and a path batched acquisition
+    (deferred) would reuse. Rejected: detecting batch support by probing
+    the target (costs an evaluation, misreads functions that broadcast);
+    a process pool over the initial design for non-vectorized targets
+    (pickles the user's closure, differs under Windows spawning,
+    duplicates the user's framework). The default path is unchanged, so
+    the replay reads `identical`; a unit test asserts batch and sequential
+    agree on a vectorizable target.
 
 ## Deferred (devlog §12)
 

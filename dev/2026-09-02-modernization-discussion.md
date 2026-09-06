@@ -1120,7 +1120,11 @@ in §2 are estimates.
   *Decided 2026-09-06 (PI):* the work includes Stage 3. Stages 0–3 ship
   together as 1.5, the first large body of work on the package in years,
   in one release for visibility rather than a 1.5 followed by a 1.6
-  within days.
+  within days. *Decided 2026-09-06 (PI), later the same day:* Stage 3
+  proceeds on the branch `dev-next-stage3` in parallel with the reference
+  nights and merges after them, gated by the replay; the extras, the
+  canary rule and the batched-target contract are settled in roadmap
+  pickup 11.
 - **A long-lived `torch-backend` branch is created only when the first torch
   commit exists.** Merge `main` into it periodically; do not rebase shared
   history with students on the branch. Optionally a draft PR against `main`
@@ -1189,7 +1193,10 @@ in §2 are estimates.
   because of autodiff.
 - torch as a hard dependency vs. `pyvbmc[torch]` extra: only meaningful if a
   NumPy core survives, which conflicts with deleting the hand gradients.
-  Decide at Stage 4.
+  Decide at Stage 4. *Stage 3 (decided 2026-09-06)* makes torch and ArviZ
+  optional extras, `pyvbmc[torch]` for `vp.to_torch()` and `pyvbmc[arviz]`
+  for the export; torch as a hard dependency of the core stays Stage 4's
+  question.
 
 ---
 
