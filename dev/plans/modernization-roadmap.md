@@ -385,8 +385,9 @@ anything that changes numerics lands.
    replay's finals exercise what `final_boost` receives). Open question 8
    of `plans/stage2-gpyreg-predict-and-sampler.md` (re-baseline the
    committed oracle references) is still the PI's call.
-3e. **Next** (2026-09-06, 00:20; code `bdaf322`, the ten commits since
-   `2dcb51a` unpushed). (i) ~~**The 20-seed population is running**~~
+3e. ~~**Next**~~ (2026-09-06, 00:20; code `bdaf322`, the ten commits since
+   `2dcb51a` unpushed; all three tracks done the same morning, see 3f).
+   (i) ~~**The 20-seed population is running**~~
    **Done 2026-09-06 00:16–05:01: 280 of 280 succeeded, no config flagged
    against the reference over the 56 KS tests (Holm α 0.05), none against
    the item 1 population either** (`runs/golden/item7_20260906/
@@ -433,6 +434,51 @@ anything that changes numerics lands.
    bullet and pickup points 3c–3e; `plans/stage2-memory.md` (§Summary,
    §Decisions, §Results, the tracker's doublecheck entry); the population
    reports above.
+3f. **Next** (handoff 2026-09-06 midday; code `0c4111a`, tree clean and
+   pushed, CI smoke green on it, the full matrix green on `4f77e1a` and
+   only tests and records since; nothing running). Stage 2 is complete,
+   the oracle references and the golden reference are re-baselined to the
+   current numerics, and Stage 0 has one item left (the dtype canary).
+   Two long runs, then records, then the PR.
+   (i) **Night 1, on the PI's word that the laptop is free (about 7 h)**:
+   grow the 14 original configurations of the reference to 50 seeds, in
+   the reference's own run directory. Before starting, `python
+   dev/scripts/golden_replay.py` with defaults must report `identical` on
+   the five configs (3 min; it did on `afb66cd`, and nothing numerical has
+   landed since): the extension is valid only on code identical to the
+   reference's. Then, as one chained script logging to
+   `runs/golden_grow_20260906.log`: `python -u dev/scripts/golden_trace.py
+   run --suite golden --only normal_D5,corr_D5,halfnormal_D2,
+   rosenbrock_D2,banana_D2,banana_D6,banana_D10,cigar_D4,lumpy_D4,
+   lumpy_D10,student_D4,logreg_D5,rosenbrock_D2_noise1,logreg_D5_noise3
+   --seeds 20-49 --workers 1 --out dev/scripts/runs/golden/item7_20260906`
+   (the `--only` keeps the three new configurations for night 2; the run
+   skips the 280 sidecars already there), `golden_trace.py summary <out>`,
+   `golden_trace.py compare --split <out>` (even against odd seeds), a
+   second null check of seeds 0–19 against 20–49 (copy the sidecars of
+   each half into a temporary directory and `compare` the two), and the
+   publish step of `regenerate_baseline.sh` (`rm -f
+   dev/golden/baseline/*.json dev/golden/baseline/summary.md; cp
+   <out>/*.json <out>/summary.md dev/golden/baseline/`). Expected: 420 of
+   420 new runs succeed, no config flagged in either null check.
+   (ii) **Night 2 (about 5 h)**: `--only cigar_D8,student_D8 --seeds 0-49`
+   then `--only cigar_D15_exhaust --seeds 0-9`, same out directory, then
+   summary, the even-vs-odd null check and the publish step. The exhaust
+   configuration's evaluation count is always 750, so only its three
+   quality metrics carry information; its 10 seeds are regime coverage.
+   (iii) **After the nights**: commit the republished sidecars and
+   `summary.md` (990 files), update `dev/golden/README.md` (17
+   configurations; 50 seeds, the exhaust 10; the code), this file's Stage 0
+   bullet and `dev/README.md` where they say 14 configurations × 20 seeds,
+   and run the replay once with defaults (the fences tighten with 50
+   seeds). Then the dtype canary, the last Stage 0 item, and the PR
+   `dev-next` → `main` (pickup 8) with the release note that files saved
+   by this code hold lean GP records an older PyVBMC cannot resume.
+   Reading list for a fresh session: `dev/README.md`; this file's Stage 0
+   and Stage 2 bullets and pickup points 5, 3e and 3f;
+   `dev/golden/README.md`; `plans/stage2-memory.md` §Summary and
+   §Decisions; devlog §9's 2026-09-06 entries (the incidental findings
+   left unfixed).
 4. ~~Run the `tests` workflow on `dev-next` for the package fix~~ done
    2026-09-03 (full matrix green, run 33715620257); pushes to `dev*` now
    run a smoke automatically.
