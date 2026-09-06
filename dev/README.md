@@ -29,6 +29,10 @@ would be committed, and anything that was would be published to the docs site.
   inherited from MATLAB). Mechanism, evidence, three candidate guards,
   reproduction; decision deferred.
 
+`TODO.md` is a scratch reminder of the ongoing work and the current pickup
+point, rewritten at each handoff. It is not a record: the roadmap and the
+plans are.
+
 ## Plans, worklogs and task files
 
 Devlogs (above) are the record of discussions and decisions that involved a
