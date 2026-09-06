@@ -364,6 +364,17 @@ after §Follow-ups, "130 walks" for 113. The two reformatted loop headers
 in `test_vbmc_init.py` were checked against the pinned hook: black
 23.3.0 re-applies them, so they stay and §Scope records them.
 
+A second pair of read-only Opus reviewers read the commit on the PI's
+request (tracker, follow-up). Addressed: the results walk's floor, the
+placeholder exemption, the dict-subclass rule, the tracker's times and
+the roadmap's pickup code. Left as they are: the dtype checks in
+`test_oracle` run before the value comparison, so a tripped floor is
+reported ahead of a value mismatch; the floor assertion precedes the
+offender list; the leaf counts of §Findings are over six objects while
+`STATE_KEYS` has seven (`options`; the canary's own counts in §Results
+are over the seven); the line citations into `_oracles.py` in §Findings
+predate `cast_outputs` and are read on the commit that section names.
+
 ## Results
 
 - **Negative controls on real state**: a float32 `vp.mu` and a float32
