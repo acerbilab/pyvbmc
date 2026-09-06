@@ -16,7 +16,7 @@
   "tol_stable_excpt_frac": 0.2,
   "specify_target_noise": false,
   "search_acq_fcn": [
-   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x000001DA9C6AA5D0>"
+   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x000001B7F0A9B470>"
   ],
   "active_sample_gp_update": false,
   "active_sample_vp_update": false,
@@ -61,8 +61,8 @@
  ],
  "notes": "z ~ N(0, diag(sig^2)), sig1=2.0, x2 = z2 + 0.5(z1^2 - sig1^2); unit Jacobian, no prior; not a paper target. The true cov is diagonal, so gsKL and RMSE cannot see the ridge; MMTV sees the skewed x2 marginal, only elbo_err sees the joint",
  "final": {
-  "elbo": -0.07201152090641405,
-  "elbo_sd": 0.0004510905647410817,
+  "elbo": -0.05116683243312581,
+  "elbo_sd": 0.0004668345122602749,
   "best_iter": 14,
   "iterations": 15,
   "func_count": 80,
@@ -72,33 +72,33 @@
   "n_warps": 1,
   "success_flag": true,
   "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
-  "wall_s": 38.82262659999833,
-  "target_eval_s": 0.0019979476928710938,
-  "elbo_err": 0.07201152090641405,
-  "gskl": 0.2985087588151303,
-  "mmtv": 0.06399768272217574,
-  "rmse": 0.40577268050789256,
+  "wall_s": 13.414700000023004,
+  "target_eval_s": 0.00201416015625,
+  "elbo_err": 0.05116683243312581,
+  "gskl": 0.22281280422284327,
+  "mmtv": 0.05160633446840461,
+  "rmse": 0.3509169956541707,
   "moment_method": "affine",
-  "peak_rss_mb": 473.0078125
+  "peak_rss_mb": 401.78515625
  },
  "meta": {
   "git": {
-   "sha": "5020879",
-   "dirty": true
+   "sha": "18a236c",
+   "dirty": false
   },
   "python": "3.12.6",
   "numpy": "2.5.2",
   "scipy": "1.18.1",
   "pyvbmc": "1.0.5.dev28+gdcfeba694",
-  "gpyreg": "1.0.5.dev1+g236ddd723",
+  "gpyreg": "1.1.0",
   "cma": "4.4.4",
   "threads": {
    "OMP_NUM_THREADS": "1",
    "OPENBLAS_NUM_THREADS": "1",
    "MKL_NUM_THREADS": "1"
   },
-  "started": "2026-09-04 03:37:23",
-  "finished": "2026-09-04 03:38:02",
-  "pid": 10232
+  "started": "2026-09-06 04:51:27",
+  "finished": "2026-09-06 04:51:41",
+  "pid": 29876
  }
 }

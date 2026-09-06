@@ -16,7 +16,7 @@
   "tol_stable_excpt_frac": 0.2,
   "specify_target_noise": false,
   "search_acq_fcn": [
-   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x000001DAAC748B90>"
+   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x000001B7F0BAF4D0>"
   ],
   "active_sample_gp_update": false,
   "active_sample_vp_update": false,
@@ -83,8 +83,8 @@
  ],
  "notes": "likelihood: 12 Gaussians, means U[0,1]^D, SDs U[0.2,0.6], Dirichlet(1) weights (top weight 0.28), Acerbi 2018 section 4.1; times the papers' prior N(0.5, (3 marginal SD)^2); box = prior mean -+ 1 prior SD",
  "final": {
-  "elbo": -5.3185465621039025,
-  "elbo_sd": 0.026112154941322047,
+  "elbo": -5.333382795799757,
+  "elbo_sd": 0.021394943947941142,
   "best_iter": 17,
   "iterations": 18,
   "func_count": 95,
@@ -94,33 +94,33 @@
   "n_warps": 1,
   "success_flag": true,
   "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
-  "wall_s": 62.534121000004234,
-  "target_eval_s": 0.027994155883789062,
-  "elbo_err": 0.0001495419751940119,
-  "gskl": 0.014801090702499242,
-  "mmtv": 0.02841687428221592,
-  "rmse": 0.021432417416665225,
+  "wall_s": 25.049392400018405,
+  "target_eval_s": 0.021756887435913086,
+  "elbo_err": 0.014686691720660505,
+  "gskl": 0.00476567681515383,
+  "mmtv": 0.021129369805742544,
+  "rmse": 0.010700564168134955,
   "moment_method": "affine",
-  "peak_rss_mb": 473.0078125
+  "peak_rss_mb": 401.78515625
  },
  "meta": {
   "git": {
-   "sha": "5020879",
-   "dirty": true
+   "sha": "18a236c",
+   "dirty": false
   },
   "python": "3.12.6",
   "numpy": "2.5.2",
   "scipy": "1.18.1",
   "pyvbmc": "1.0.5.dev28+gdcfeba694",
-  "gpyreg": "1.0.5.dev1+g236ddd723",
+  "gpyreg": "1.1.0",
   "cma": "4.4.4",
   "threads": {
    "OMP_NUM_THREADS": "1",
    "OPENBLAS_NUM_THREADS": "1",
    "MKL_NUM_THREADS": "1"
   },
-  "started": "2026-09-04 03:04:07",
-  "finished": "2026-09-04 03:05:10",
-  "pid": 10232
+  "started": "2026-09-06 04:38:31",
+  "finished": "2026-09-06 04:38:56",
+  "pid": 29876
  }
 }

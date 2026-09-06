@@ -16,7 +16,7 @@
   "tol_stable_excpt_frac": 0.2,
   "specify_target_noise": false,
   "search_acq_fcn": [
-   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x000001DAAC7CB170>"
+   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x000001B7F07C3DA0>"
   ],
   "active_sample_gp_update": false,
   "active_sample_vp_update": false,
@@ -61,44 +61,44 @@
  ],
  "notes": "Gaussian (SDs 1..D) on the negative orthant, lb=-10D, ub=0; ln Z exact up to Phi(-10); legacy box [-6, -0.05]",
  "final": {
-  "elbo": -1.3959331086130689,
-  "elbo_sd": 0.00062433993485891,
-  "best_iter": 11,
-  "iterations": 12,
-  "func_count": 65,
+  "elbo": -1.3946036802953814,
+  "elbo_sd": 0.0008748349031862783,
+  "best_iter": 12,
+  "iterations": 13,
+  "func_count": 70,
   "final_K": 50,
-  "final_N": 65,
+  "final_N": 70,
   "min_Ns_gp": 8,
   "n_warps": 1,
   "success_flag": true,
   "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
-  "wall_s": 30.05652550001105,
-  "target_eval_s": 0.0010013580322265625,
-  "elbo_err": 0.009638747493178279,
-  "gskl": 0.00024042368843624207,
-  "mmtv": 0.020740426914937098,
-  "rmse": 0.002857263050528148,
+  "wall_s": 13.024701899965294,
+  "target_eval_s": 0.0,
+  "elbo_err": 0.008309319175490826,
+  "gskl": 2.756123917158071e-05,
+  "mmtv": 0.016630516240979804,
+  "rmse": 0.0007031208956392319,
   "moment_method": "mc",
-  "peak_rss_mb": 473.0078125
+  "peak_rss_mb": 401.78515625
  },
  "meta": {
   "git": {
-   "sha": "5020879",
-   "dirty": true
+   "sha": "18a236c",
+   "dirty": false
   },
   "python": "3.12.6",
   "numpy": "2.5.2",
   "scipy": "1.18.1",
   "pyvbmc": "1.0.5.dev28+gdcfeba694",
-  "gpyreg": "1.0.5.dev1+g236ddd723",
+  "gpyreg": "1.1.0",
   "cma": "4.4.4",
   "threads": {
    "OMP_NUM_THREADS": "1",
    "OPENBLAS_NUM_THREADS": "1",
    "MKL_NUM_THREADS": "1"
   },
-  "started": "2026-09-04 03:56:08",
-  "finished": "2026-09-04 03:56:38",
-  "pid": 10232
+  "started": "2026-09-06 04:59:02",
+  "finished": "2026-09-06 04:59:15",
+  "pid": 29876
  }
 }

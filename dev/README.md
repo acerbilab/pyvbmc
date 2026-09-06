@@ -188,9 +188,10 @@ reason.
   the horizons (finals only without them); `--report-only` re-renders a
   finished run. Flags: `--configs`, `--seeds`
   (default seed 0 only), `--baseline` (the traces directory; the default
-  `scripts/runs/golden/baseline_20260903/` exists only on the machine that
-  made the baseline), `--sidecars`, `--out`, `--threads` (1, as the
-  baseline). Exit code 1 if anything is flagged or nothing was compared.
+  `scripts/runs/golden/item7_20260906/`, the reference population since
+  2026-09-06, exists only on the machine that made it), `--sidecars`,
+  `--out`, `--threads` (1, as the baseline). Exit code 1 if anything is
+  flagged or nothing was compared.
 - `scripts/regenerate_baseline.sh` — the whole benchmark regeneration as
   one sequential process (see above).
 - `scripts/make_oracle_fixtures.py` — generates the stage-level oracle

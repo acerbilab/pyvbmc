@@ -64,7 +64,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 REPO_ROOT = HERE.parents[1]
 DEFAULT_BASELINE = REPO_ROOT / "dev" / "scripts" / "runs" / "golden"
-DEFAULT_BASELINE = DEFAULT_BASELINE / "baseline_20260903"
+DEFAULT_BASELINE = DEFAULT_BASELINE / "item7_20260906"
 DEFAULT_SIDECARS = REPO_ROOT / "dev" / "golden" / "baseline"
 DEFAULT_OUT_ROOT = REPO_ROOT / "dev" / "scripts" / "runs" / "golden"
 THREAD_KEYS = ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS")

@@ -16,7 +16,7 @@
   "tol_stable_excpt_frac": 0.2,
   "specify_target_noise": false,
   "search_acq_fcn": [
-   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x000001DA9C6F0E00>"
+   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x000001B7F6FB3D70>"
   ],
   "active_sample_gp_update": false,
   "active_sample_vp_update": false,
@@ -97,44 +97,44 @@
  ],
  "notes": "independent Gaussian, SDs 1..D; legacy box -+2D",
  "final": {
-  "elbo": 0.012045768840749371,
-  "elbo_sd": 0.0005418697231620986,
-  "best_iter": 11,
-  "iterations": 12,
-  "func_count": 65,
+  "elbo": 0.0002537593662501614,
+  "elbo_sd": 0.00048142464876786185,
+  "best_iter": 12,
+  "iterations": 13,
+  "func_count": 70,
   "final_K": 50,
-  "final_N": 65,
+  "final_N": 70,
   "min_Ns_gp": 8,
   "n_warps": 1,
   "success_flag": true,
   "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
-  "wall_s": 54.71554479999759,
+  "wall_s": 20.631881000008434,
   "target_eval_s": 0.0,
-  "elbo_err": 0.012045768840749371,
-  "gskl": 0.00017118353809975062,
-  "mmtv": 0.006380463395295686,
-  "rmse": 0.015622963278583602,
+  "elbo_err": 0.0002537593662501614,
+  "gskl": 0.0001677725508015815,
+  "mmtv": 0.00660540370834044,
+  "rmse": 0.009339652713354293,
   "moment_method": "affine",
-  "peak_rss_mb": 473.0078125
+  "peak_rss_mb": 401.78515625
  },
  "meta": {
   "git": {
-   "sha": "5020879",
-   "dirty": true
+   "sha": "18a236c",
+   "dirty": false
   },
   "python": "3.12.6",
   "numpy": "2.5.2",
   "scipy": "1.18.1",
   "pyvbmc": "1.0.5.dev28+gdcfeba694",
-  "gpyreg": "1.0.5.dev1+g236ddd723",
+  "gpyreg": "1.1.0",
   "cma": "4.4.4",
   "threads": {
    "OMP_NUM_THREADS": "1",
    "OPENBLAS_NUM_THREADS": "1",
    "MKL_NUM_THREADS": "1"
   },
-  "started": "2026-09-04 03:01:05",
-  "finished": "2026-09-04 03:02:00",
-  "pid": 10232
+  "started": "2026-09-06 04:37:15",
+  "finished": "2026-09-06 04:37:36",
+  "pid": 29876
  }
 }

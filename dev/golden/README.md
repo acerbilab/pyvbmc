@@ -11,19 +11,25 @@ python dev/scripts/golden_trace.py compare dev/golden/baseline <new_dir>
 works from a fresh checkout. The full `.npz` traces stay gitignored under
 `dev/scripts/runs/golden/`.
 
-**Status (2026-09-04):** the 280 sidecars and `summary.md` of population
-`baseline_20260903`: the `golden` suite (14 configurations, D = 2 to 10,
-two of them noisy) × seeds 0–19, run on 2026-09-03/04 on the code of
-`5020879` (one process, BLAS single-threaded, about 10 h of compute in two
-sessions; 280 of 280 succeeded; even-vs-odd null check clean over 56 KS
-tests). The 258 sidecars of the second session say `dirty: true` because a
-worklog note under `dev/plans/` was uncommitted at the time; no code
-differed. The first population (220 runs of 2026-09-02/03) was withdrawn the
-same morning because its start points and plausible boxes were derived from
-the true posteriors (see the audit in
-`dev/plans/benchmark-suite-and-golden-traces.md`). Regenerate with
-`bash dev/scripts/regenerate_baseline.sh golden` (resumable; refills this
-directory at the end); extend with `python dev/scripts/golden_trace.py run
---suite golden --seeds 20-49 --workers 1 --out
-dev/scripts/runs/golden/baseline_20260903` and copy the new sidecars and
-`summary.md` here.
+**Status (2026-09-06):** the 280 sidecars and `summary.md` of population
+`item7_20260906`: the `golden` suite (14 configurations, D = 2 to 10, two
+of them noisy) × seeds 0–19, run on 2026-09-06 00:16–05:01 on the code of
+`bdaf322` (the end of Stage 2 of the modernization plan; one process, BLAS
+single-threaded, 4.75 h; 280 of 280 succeeded; even-vs-odd null check
+clean over 56 KS tests, `promotion_20260906/null_check_even_vs_odd.md`).
+The sidecars say `dirty: true` because record files under `dev/` were
+uncommitted when it started; no code differed. It replaced the previous
+reference, `baseline_20260903` (code `5020879`, 2026-09-03/04, 9.92 h),
+after comparing with it: no config flagged over the 56 KS tests
+(`promotion_20260906/compare_vs_baseline.md`; also `compare_vs_item1.md`
+against the intermediate population of 2026-09-05 and
+`peak_rss_vs_item1.md`, the runner's memory high-water mark per config).
+The previous reference's sidecars and summary are in git history before
+the promotion commit; its traces stay under
+`dev/scripts/runs/golden/baseline_20260903/` on the generating machine.
+Regenerate with `bash dev/scripts/regenerate_baseline.sh golden`
+(resumable; refills this directory at the end); extend with `python
+dev/scripts/golden_trace.py run --suite golden --seeds 20-49 --workers 1
+--out dev/scripts/runs/golden/item7_20260906` on the same code (`bdaf322`
+or a later commit that the replay reports `identical` against these
+traces) and copy the new sidecars and `summary.md` here.

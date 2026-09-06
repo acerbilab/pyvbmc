@@ -35,14 +35,17 @@ anything that changes numerics lands.
     from the devlog's Stage 0 list: `GP.quad`, `kl_div_mvn`, `kde_1d`.
     Fixtures 1.5 MB.
   - [x] golden-trace harness over the benchmark target suite
-    (`dev/scripts/golden_trace.py`; reference population `baseline_20260903`:
-    20 seeds × 14 configs (D = 2–10, two noisy) on the code of `5020879`,
-    run 2026-09-03/04 with the papers' procedure, 280 of 280 succeeded,
-    null check clean over 56 KS tests; sidecars and `summary.md` in git
-    under `dev/golden/baseline/`, traces gitignored under
-    `dev/scripts/runs/golden/baseline_20260903/`; expand to 50 seeds and
-    add the exhaust config; `plans/benchmark-suite-and-golden-traces.md`
-    §Results (regenerated))
+    (`dev/scripts/golden_trace.py`; first reference population
+    `baseline_20260903`: 20 seeds × 14 configs (D = 2–10, two noisy) on
+    the code of `5020879`, run 2026-09-03/04 with the papers' procedure,
+    280 of 280 succeeded, null check clean over 56 KS tests;
+    `plans/benchmark-suite-and-golden-traces.md` §Results (regenerated).
+    Replaced on 2026-09-06 by `item7_20260906`, the same suite and seeds
+    on the end-of-Stage-2 code `bdaf322`, after it passed against the
+    first (pickup 5); sidecars and `summary.md` in git under
+    `dev/golden/baseline/`, traces gitignored under
+    `dev/scripts/runs/golden/item7_20260906/`; expand to 50 seeds and add
+    the exhaust config)
   - [ ] dtype canary
 - [x] **Stage 1 — `seed=` and `Generator` threading**
   (`plans/stage1-rng-generator.md`). The remaining seam (gpyreg and the
@@ -386,8 +389,8 @@ anything that changes numerics lands.
    item 1, neither near the Holm threshold; its quality metrics moved
    toward the truth, median shifts −0.036 ΔLML, −0.007 gsKL), so the
    multimodal 10-D target runs longer before the stability test is met.
-   Every other config's median evaluations are within 10 %. Not promoted
-   to the reference until the stage ends (pickup 5). Run on the PI's
+   Every other config's median evaluations are within 10 %. Promoted to
+   the reference the same morning (pickup 5). Run on the PI's
    word, one process, code `bdaf322`
    (`python -u dev/scripts/golden_trace.py run --suite golden --seeds
    0-19 --workers 1 --out dev/scripts/runs/golden/item7_20260906`, then
@@ -402,8 +405,8 @@ anything that changes numerics lands.
    passed. (ii) Push `dev-next` so the
    CI smoke runs on the package commits, and dispatch the full matrix
    once before anything else lands (the oracle tests run on three BLAS
-   builds there). (iii) Then pickup 5 (the end-of-stage re-baseline of the
-   golden population, 50 seeds, the exhaust config) and pickup 6 (the
+   builds there). (iii) Then the rest of pickup 5 (grow the reference
+   population to 50 seeds, add the exhaust config) and pickup 6 (the
    Stage 0 leftovers). Open question 8 of
    `plans/stage2-gpyreg-predict-and-sampler.md` was decided and done on
    2026-09-06 (PI: option A): the eight oracle references that items 3, 1,
@@ -418,12 +421,23 @@ anything that changes numerics lands.
 4. ~~Run the `tests` workflow on `dev-next` for the package fix~~ done
    2026-09-03 (full matrix green, run 33715620257); pushes to `dev*` now
    run a smoke automatically.
-5. Grow the golden population to 50 seeds (`golden_trace.py run --seeds
-   20-49`, about 14 h on one process) and add cigar/Student-t at D = 6–8
-   and the exhaust config (`plans/benchmark-suite-and-golden-traces.md`
-   §Follow-ups). The reference sidecars live in git under
-   `dev/golden/baseline/` (PI decision 2026-09-03); copy them over after
-   every extension.
+5. ~~Re-baseline the golden population at the end of Stage 2~~ done
+   2026-09-06 (PI: promote now, grow later): the population of that night
+   (`item7_20260906`, code `bdaf322`) replaced `baseline_20260903` as the
+   reference after passing against it (no config flagged over 56 KS
+   tests; null check clean), sidecars and `summary.md` under
+   `dev/golden/baseline/`, the comparison reports under
+   `dev/golden/promotion_20260906/`, the replay's default trace directory
+   moved to it (`golden_replay.py`), `dev/golden/README.md` updated.
+   Still to do: grow it to 50 seeds (`golden_trace.py run --suite golden
+   --seeds 20-49 --workers 1 --out dev/scripts/runs/golden/item7_20260906`
+   on code the replay reports `identical` against these traces; about 7 h
+   at the 2026-09-06 speed of 285 min per 20 seeds) and add cigar/Student-t
+   at D = 6–8 and the exhaust config (`plans/benchmark-suite-and-golden-
+   traces.md` §Follow-ups; the exhaust config costs about 13 min per seed,
+   so its seed count is a separate decision). The reference sidecars live
+   in git under `dev/golden/baseline/` (PI decision 2026-09-03); copy them
+   over after every extension.
 6. Stage 0 remaining after the oracles: finite-difference checks for the
    transformer Jacobian and the gpyreg derivatives (`compute_vargrad`
    dropped from the list: the path was deleted with Stage 2 item 1); retire

@@ -16,7 +16,7 @@
   "tol_stable_excpt_frac": 0.2,
   "specify_target_noise": false,
   "search_acq_fcn": [
-   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x000001DAAC7A33E0>"
+   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x000001B7F0BA2330>"
   ],
   "active_sample_gp_update": false,
   "active_sample_vp_update": false,
@@ -61,44 +61,44 @@
  ],
  "notes": "test/notebook Rosenbrock + N(0, 3^2) prior; truth by 1-D quadrature; notebook-1 box -+3",
  "final": {
-  "elbo": -2.283080951576114,
-  "elbo_sd": 0.0004311086881354581,
-  "best_iter": 14,
-  "iterations": 15,
-  "func_count": 80,
+  "elbo": -2.2935209263088527,
+  "elbo_sd": 0.0004975639209819088,
+  "best_iter": 12,
+  "iterations": 13,
+  "func_count": 70,
   "final_K": 50,
-  "final_N": 80,
+  "final_N": 70,
   "min_Ns_gp": 8,
   "n_warps": 1,
   "success_flag": true,
   "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
-  "wall_s": 39.6514121999935,
-  "target_eval_s": 0.005013465881347656,
-  "elbo_err": 0.023233827403729368,
-  "gskl": 0.011920306378834067,
-  "mmtv": 0.020340324244919418,
-  "rmse": 0.06344245133651734,
+  "wall_s": 12.20989900000859,
+  "target_eval_s": 0.006014347076416016,
+  "elbo_err": 0.0336738021364682,
+  "gskl": 0.03727458505436426,
+  "mmtv": 0.03168159033274161,
+  "rmse": 0.10615585704860614,
   "moment_method": "affine",
-  "peak_rss_mb": 473.0078125
+  "peak_rss_mb": 401.78515625
  },
  "meta": {
   "git": {
-   "sha": "5020879",
-   "dirty": true
+   "sha": "18a236c",
+   "dirty": false
   },
   "python": "3.12.6",
   "numpy": "2.5.2",
   "scipy": "1.18.1",
   "pyvbmc": "1.0.5.dev28+gdcfeba694",
-  "gpyreg": "1.0.5.dev1+g236ddd723",
+  "gpyreg": "1.1.0",
   "cma": "4.4.4",
   "threads": {
    "OMP_NUM_THREADS": "1",
    "OPENBLAS_NUM_THREADS": "1",
    "MKL_NUM_THREADS": "1"
   },
-  "started": "2026-09-04 03:32:27",
-  "finished": "2026-09-04 03:33:07",
-  "pid": 10232
+  "started": "2026-09-06 04:49:26",
+  "finished": "2026-09-06 04:49:38",
+  "pid": 29876
  }
 }

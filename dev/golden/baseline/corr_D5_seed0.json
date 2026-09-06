@@ -16,7 +16,7 @@
   "tol_stable_excpt_frac": 0.2,
   "specify_target_noise": false,
   "search_acq_fcn": [
-   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x000001DA97396B10>"
+   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x000001B782603BC0>"
   ],
   "active_sample_gp_update": false,
   "active_sample_vp_update": false,
@@ -97,44 +97,44 @@
  ],
  "notes": "rotated Gaussian, SDs linspace(0.2, 1); legacy box -+2.5",
  "final": {
-  "elbo": -0.0102022381239113,
-  "elbo_sd": 0.0010683921536474247,
-  "best_iter": 20,
-  "iterations": 21,
-  "func_count": 105,
+  "elbo": -0.03281445891806545,
+  "elbo_sd": 0.0012618941605120055,
+  "best_iter": 19,
+  "iterations": 20,
+  "func_count": 100,
   "final_K": 50,
-  "final_N": 105,
+  "final_N": 100,
   "min_Ns_gp": 8,
   "n_warps": 1,
   "success_flag": true,
   "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
-  "wall_s": 78.42866850001155,
-  "target_eval_s": 0.0030002593994140625,
-  "elbo_err": 0.0102022381239113,
-  "gskl": 0.0014556701594035104,
-  "mmtv": 0.008479030888024434,
-  "rmse": 0.0014345133028313597,
+  "wall_s": 29.02987430000212,
+  "target_eval_s": 0.00396275520324707,
+  "elbo_err": 0.03281445891806545,
+  "gskl": 0.006358822669780606,
+  "mmtv": 0.012924672897717935,
+  "rmse": 0.008344293683961558,
   "moment_method": "affine",
-  "peak_rss_mb": 473.0078125
+  "peak_rss_mb": 401.78515625
  },
  "meta": {
   "git": {
-   "sha": "5020879",
-   "dirty": true
+   "sha": "18a236c",
+   "dirty": false
   },
   "python": "3.12.6",
   "numpy": "2.5.2",
   "scipy": "1.18.1",
   "pyvbmc": "1.0.5.dev28+gdcfeba694",
-  "gpyreg": "1.0.5.dev1+g236ddd723",
+  "gpyreg": "1.1.0",
   "cma": "4.4.4",
   "threads": {
    "OMP_NUM_THREADS": "1",
    "OPENBLAS_NUM_THREADS": "1",
    "MKL_NUM_THREADS": "1"
   },
-  "started": "2026-09-04 01:50:45",
-  "finished": "2026-09-04 01:52:04",
-  "pid": 10232
+  "started": "2026-09-06 04:07:54",
+  "finished": "2026-09-06 04:08:24",
+  "pid": 29876
  }
 }

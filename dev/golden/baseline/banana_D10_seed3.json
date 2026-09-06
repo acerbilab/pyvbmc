@@ -16,7 +16,7 @@
   "tol_stable_excpt_frac": 0.2,
   "specify_target_noise": false,
   "search_acq_fcn": [
-   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x00000200B0252660>"
+   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x000001B781086330>"
   ],
   "active_sample_gp_update": false,
   "active_sample_vp_update": false,
@@ -197,44 +197,44 @@
  ],
  "notes": "z ~ N(0, diag(sig^2)), sig1=2.0, x2 = z2 + 0.5(z1^2 - sig1^2); unit Jacobian, no prior; not a paper target. The true cov is diagonal, so gsKL and RMSE cannot see the ridge; MMTV sees the skewed x2 marginal, only elbo_err sees the joint",
  "final": {
-  "elbo": -0.09709465354197011,
-  "elbo_sd": 0.007542580764373711,
-  "best_iter": 24,
-  "iterations": 25,
-  "func_count": 130,
+  "elbo": -0.12785450738518556,
+  "elbo_sd": 0.009563010878205243,
+  "best_iter": 30,
+  "iterations": 31,
+  "func_count": 155,
   "final_K": 50,
-  "final_N": 130,
-  "min_Ns_gp": 7,
-  "n_warps": 1,
+  "final_N": 155,
+  "min_Ns_gp": 6,
+  "n_warps": 2,
   "success_flag": true,
   "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
-  "wall_s": 177.45826639999723,
-  "target_eval_s": 0.003999948501586914,
-  "elbo_err": 0.09709465354197011,
-  "gskl": 0.3263178853319433,
-  "mmtv": 0.019773259722182565,
-  "rmse": 0.19426603114075386,
+  "wall_s": 84.21180969994748,
+  "target_eval_s": 0.0,
+  "elbo_err": 0.12785450738518556,
+  "gskl": 0.417288061922096,
+  "mmtv": 0.02309200173976283,
+  "rmse": 0.22834336601133076,
   "moment_method": "affine",
-  "peak_rss_mb": 239.3984375
+  "peak_rss_mb": 401.78515625
  },
  "meta": {
   "git": {
-   "sha": "5020879",
+   "sha": "18a236c",
    "dirty": false
   },
   "python": "3.12.6",
   "numpy": "2.5.2",
   "scipy": "1.18.1",
   "pyvbmc": "1.0.5.dev28+gdcfeba694",
-  "gpyreg": "1.0.5.dev1+g236ddd723",
+  "gpyreg": "1.1.0",
   "cma": "4.4.4",
   "threads": {
    "OMP_NUM_THREADS": "1",
    "OPENBLAS_NUM_THREADS": "1",
    "MKL_NUM_THREADS": "1"
   },
-  "started": "2026-09-03 16:29:51",
-  "finished": "2026-09-03 16:32:49",
-  "pid": 3156
+  "started": "2026-09-06 02:37:41",
+  "finished": "2026-09-06 02:39:06",
+  "pid": 29876
  }
 }

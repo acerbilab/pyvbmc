@@ -16,7 +16,7 @@
   "tol_stable_excpt_frac": 0.2,
   "specify_target_noise": false,
   "search_acq_fcn": [
-   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x000001DAAC8C4890>"
+   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x000001B786DBB0E0>"
   ],
   "active_sample_gp_update": false,
   "active_sample_vp_update": false,
@@ -97,44 +97,44 @@
  ],
  "notes": "independent Gaussian, SDs 1..D; legacy box -+2D",
  "final": {
-  "elbo": -0.0013371790640395176,
-  "elbo_sd": 0.000788626019065533,
-  "best_iter": 12,
-  "iterations": 13,
-  "func_count": 70,
+  "elbo": -0.004713948902485665,
+  "elbo_sd": 0.0007162256223505719,
+  "best_iter": 13,
+  "iterations": 14,
+  "func_count": 75,
   "final_K": 50,
-  "final_N": 70,
+  "final_N": 75,
   "min_Ns_gp": 8,
   "n_warps": 1,
   "success_flag": true,
   "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
-  "wall_s": 60.53715289999673,
-  "target_eval_s": 0.0010139942169189453,
-  "elbo_err": 0.0013371790640395176,
-  "gskl": 6.51593402496431e-05,
-  "mmtv": 0.00847513993292037,
-  "rmse": 0.013178835013660361,
+  "wall_s": 23.890697500028182,
+  "target_eval_s": 0.0,
+  "elbo_err": 0.004713948902485665,
+  "gskl": 9.07094199080749e-05,
+  "mmtv": 0.0074801572518797665,
+  "rmse": 0.00929770076631093,
   "moment_method": "affine",
-  "peak_rss_mb": 473.0078125
+  "peak_rss_mb": 401.78515625
  },
  "meta": {
   "git": {
-   "sha": "5020879",
-   "dirty": true
+   "sha": "18a236c",
+   "dirty": false
   },
   "python": "3.12.6",
   "numpy": "2.5.2",
   "scipy": "1.18.1",
   "pyvbmc": "1.0.5.dev28+gdcfeba694",
-  "gpyreg": "1.0.5.dev1+g236ddd723",
+  "gpyreg": "1.1.0",
   "cma": "4.4.4",
   "threads": {
    "OMP_NUM_THREADS": "1",
    "OPENBLAS_NUM_THREADS": "1",
    "MKL_NUM_THREADS": "1"
   },
-  "started": "2026-09-04 02:46:48",
-  "finished": "2026-09-04 02:47:49",
-  "pid": 10232
+  "started": "2026-09-06 04:31:56",
+  "finished": "2026-09-06 04:32:20",
+  "pid": 29876
  }
 }

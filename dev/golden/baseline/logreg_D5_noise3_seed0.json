@@ -18,7 +18,7 @@
   "tol_stable_excpt_frac": 0.2,
   "specify_target_noise": true,
   "search_acq_fcn": [
-   "<pyvbmc.acquisition_functions.acq_fcn_viqr.AcqFcnVIQR object at 0x000001DAA285B710>"
+   "<pyvbmc.acquisition_functions.acq_fcn_viqr.AcqFcnVIQR object at 0x000001B782459A60>"
   ],
   "active_sample_gp_update": true,
   "active_sample_vp_update": true,
@@ -99,44 +99,44 @@
  ],
  "notes": "logistic regression, 50 trials, predictors 1-2 at rho 0.95, predictor 4 rare (6 ones, all successes: its coefficient is identified only by the bound); uniform prior on [-10, 10]^D (2020 style), plausible box -+5; not a paper problem",
  "final": {
-  "elbo": -35.025192527400556,
-  "elbo_sd": 0.32809374882561204,
-  "best_iter": 44,
-  "iterations": 45,
-  "func_count": 220,
+  "elbo": -35.12546530582986,
+  "elbo_sd": 0.31327234531177045,
+  "best_iter": 51,
+  "iterations": 52,
+  "func_count": 255,
   "final_K": 50,
-  "final_N": 220,
-  "min_Ns_gp": 5,
+  "final_N": 255,
+  "min_Ns_gp": 0,
   "n_warps": 3,
   "success_flag": true,
   "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
-  "wall_s": 258.63805950000824,
-  "target_eval_s": 0.004000663757324219,
-  "elbo_err": 0.13170252740055588,
-  "gskl": 0.7709404489784861,
-  "mmtv": 0.24741333895424086,
-  "rmse": 0.7550229831561752,
+  "wall_s": 208.0711345000309,
+  "target_eval_s": 0.00852823257446289,
+  "elbo_err": 0.23197530582986303,
+  "gskl": 0.4982881947692299,
+  "mmtv": 0.19833598470152933,
+  "rmse": 0.40722788427602363,
   "moment_method": "mc",
-  "peak_rss_mb": 435.50390625
+  "peak_rss_mb": 401.78515625
  },
  "meta": {
   "git": {
-   "sha": "5020879",
-   "dirty": true
+   "sha": "18a236c",
+   "dirty": false
   },
   "python": "3.12.6",
   "numpy": "2.5.2",
   "scipy": "1.18.1",
   "pyvbmc": "1.0.5.dev28+gdcfeba694",
-  "gpyreg": "1.0.5.dev1+g236ddd723",
+  "gpyreg": "1.1.0",
   "cma": "4.4.4",
   "threads": {
    "OMP_NUM_THREADS": "1",
    "OPENBLAS_NUM_THREADS": "1",
    "MKL_NUM_THREADS": "1"
   },
-  "started": "2026-09-03 21:24:03",
-  "finished": "2026-09-03 21:28:23",
-  "pid": 10232
+  "started": "2026-09-06 01:26:32",
+  "finished": "2026-09-06 01:30:01",
+  "pid": 29876
  }
 }

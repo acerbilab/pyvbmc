@@ -16,7 +16,7 @@
   "tol_stable_excpt_frac": 0.2,
   "specify_target_noise": false,
   "search_acq_fcn": [
-   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x000001DA9C6F0140>"
+   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x000001B782566F90>"
   ],
   "active_sample_gp_update": false,
   "active_sample_vp_update": false,
@@ -197,44 +197,44 @@
  ],
  "notes": "likelihood: 12 Gaussians, means U[0,1]^D, SDs U[0.2,0.6], Dirichlet(1) weights (top weight 0.20), Acerbi 2018 section 4.1; times the papers' prior N(0.5, (3 marginal SD)^2); box = prior mean -+ 1 prior SD",
  "final": {
-  "elbo": -14.343730210466212,
-  "elbo_sd": 0.09655910894615495,
-  "best_iter": 40,
-  "iterations": 41,
-  "func_count": 205,
+  "elbo": -13.984661439405402,
+  "elbo_sd": 0.04393718801892136,
+  "best_iter": 63,
+  "iterations": 64,
+  "func_count": 305,
   "final_K": 50,
-  "final_N": 205,
-  "min_Ns_gp": 6,
-  "n_warps": 2,
+  "final_N": 305,
+  "min_Ns_gp": 0,
+  "n_warps": 4,
   "success_flag": true,
   "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
-  "wall_s": 284.58414019999327,
-  "target_eval_s": 0.04701042175292969,
-  "elbo_err": 0.6318076369929173,
-  "gskl": 0.5374929722444093,
-  "mmtv": 0.1017417065786355,
-  "rmse": 0.09466066144703926,
+  "wall_s": 256.60877230000915,
+  "target_eval_s": 0.0661931037902832,
+  "elbo_err": 0.27273886593210683,
+  "gskl": 0.32065730578514584,
+  "mmtv": 0.07357669874789977,
+  "rmse": 0.07940947675723192,
   "moment_method": "affine",
-  "peak_rss_mb": 430.96875
+  "peak_rss_mb": 380.1015625
  },
  "meta": {
   "git": {
-   "sha": "5020879",
-   "dirty": true
+   "sha": "18a236c",
+   "dirty": false
   },
   "python": "3.12.6",
   "numpy": "2.5.2",
   "scipy": "1.18.1",
   "pyvbmc": "1.0.5.dev28+gdcfeba694",
-  "gpyreg": "1.0.5.dev1+g236ddd723",
+  "gpyreg": "1.1.0",
   "cma": "4.4.4",
   "threads": {
    "OMP_NUM_THREADS": "1",
    "OPENBLAS_NUM_THREADS": "1",
    "MKL_NUM_THREADS": "1"
   },
-  "started": "2026-09-03 19:53:45",
-  "finished": "2026-09-03 19:58:30",
-  "pid": 10232
+  "started": "2026-09-06 00:43:38",
+  "finished": "2026-09-06 00:47:56",
+  "pid": 29876
  }
 }

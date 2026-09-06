@@ -16,7 +16,7 @@
   "tol_stable_excpt_frac": 0.2,
   "specify_target_noise": false,
   "search_acq_fcn": [
-   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x000001DA9C6F1F40>"
+   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x000001B78102FC80>"
   ],
   "active_sample_gp_update": false,
   "active_sample_vp_update": false,
@@ -61,44 +61,44 @@
  ],
  "notes": "z ~ N(0, diag(sig^2)), sig1=2.0, x2 = z2 + 0.5(z1^2 - sig1^2); unit Jacobian, no prior; not a paper target. The true cov is diagonal, so gsKL and RMSE cannot see the ridge; MMTV sees the skewed x2 marginal, only elbo_err sees the joint",
  "final": {
-  "elbo": -0.043308912638378994,
-  "elbo_sd": 0.00040439921923827055,
-  "best_iter": 20,
-  "iterations": 21,
-  "func_count": 110,
+  "elbo": -0.02874016861897255,
+  "elbo_sd": 0.000394926715743536,
+  "best_iter": 21,
+  "iterations": 22,
+  "func_count": 115,
   "final_K": 50,
-  "final_N": 110,
-  "min_Ns_gp": 8,
+  "final_N": 115,
+  "min_Ns_gp": 7,
   "n_warps": 1,
   "success_flag": true,
   "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
-  "wall_s": 54.403717599998345,
-  "target_eval_s": 0.002002716064453125,
-  "elbo_err": 0.043308912638378994,
-  "gskl": 0.1649428230342535,
-  "mmtv": 0.040882975371260996,
-  "rmse": 0.2970413688829675,
+  "wall_s": 23.978759299963713,
+  "target_eval_s": 0.004998445510864258,
+  "elbo_err": 0.02874016861897255,
+  "gskl": 0.08886617032395505,
+  "mmtv": 0.03038999664793607,
+  "rmse": 0.22120239973830774,
   "moment_method": "affine",
-  "peak_rss_mb": 473.0078125
+  "peak_rss_mb": 401.78515625
  },
  "meta": {
   "git": {
-   "sha": "5020879",
-   "dirty": true
+   "sha": "18a236c",
+   "dirty": false
   },
   "python": "3.12.6",
   "numpy": "2.5.2",
   "scipy": "1.18.1",
   "pyvbmc": "1.0.5.dev28+gdcfeba694",
-  "gpyreg": "1.0.5.dev1+g236ddd723",
+  "gpyreg": "1.1.0",
   "cma": "4.4.4",
   "threads": {
    "OMP_NUM_THREADS": "1",
    "OPENBLAS_NUM_THREADS": "1",
    "MKL_NUM_THREADS": "1"
   },
-  "started": "2026-09-04 03:40:26",
-  "finished": "2026-09-04 03:41:21",
-  "pid": 10232
+  "started": "2026-09-06 04:52:46",
+  "finished": "2026-09-06 04:53:10",
+  "pid": 29876
  }
 }
