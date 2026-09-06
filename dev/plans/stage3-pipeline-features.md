@@ -1,6 +1,6 @@
 # Stage 3: pipeline features
 
-Created: 2026-09-06. Status: **implemented and locally verified; pre-night integration in progress**.
+Created: 2026-09-06. Status: **implemented, integrated and verified; reference campaign awaits start instruction**.
 Branch: `dev-next-stage3`, based on `dev-next` at `4d91a5e`.
 This file owns the Stage 3 implementation design, decisions, gates and live
 tracker for maintainers. The roadmap owns release sequencing; this plan
@@ -316,7 +316,7 @@ regenerate its script, never hand-edit generated scripts.
 - [x] Independent implementation review and fixes: export and batching findings fixed; focused regressions pass.
 - [x] Exact oracles, identical replay and full suite passed outside reference nights.
 - [x] Final records and conventional feature commit on dev-next-stage3 (`4ee612d`); verification record committed alongside it.
-- [~] Revised integration gate: merge before reference nights after CI, then repeat required integration checks (live checklist below).
+- [x] Revised integration gate: merged before reference nights after CI; repeated integrated checks passed (evidence below).
 
 Primary agent owns this tracker. Implementation work is separated by file ownership;
 all test commands are centralized and run one process at a time.
@@ -363,7 +363,7 @@ Gates (checklist entries record completed verification):
 - [x] Golden replay with defaults for baseline/sidecars/configs and a unique
   Stage 3 output directory: require `identical`, not merely unflagged.
 - [x] Full local suite: `python -m pytest --reruns=5 -x -vv`.
-- [ ] After merge at the permitted time, replay identical and full suite green;
+- [x] After merge at the permitted time, replay identical and full suite green;
   Ubuntu extras leg plus the release's full CI matrix green before main PR.
 
 Before local numerical gates:
@@ -507,8 +507,8 @@ verification record.
 
 At implementation completion, the original `dev-next` checkout was clean
 and unchanged, and the branch had not been pushed or merged. The subsequent
-PI decision below supersedes that handoff: pre-night integration and remote
-CI are now in progress. The local verification above remains the feature
+PI decision below supersedes that handoff: pre-night integration is merged, all CI passed, and integrated
+local verification passed. The local verification above remains the feature
 branch evidence; integrated results are recorded separately below.
 
 Local detailed logs are `.venv/stage3-{pytest,oracles,replay}.log` and
@@ -530,9 +530,9 @@ as one sequential chain, with phase 2 gated on phase 1 and its checks.
 
 - [x] Push Stage 3 and pass CI: smoke 34043031387 and all nine jobs of full matrix 34043071150 passed on 285cd74.
 - [x] Update roadmap/TODO/reference instructions to the approved sequence.
-- [~] Merge into clean dev-next and check its environment against the reference.
-- [ ] Integrated exact oracles, identical replay and full local suite.
-- [ ] Independent integration review; commit/push records and freeze the tested code.
+- [x] Fast-forwarded clean dev-next to 4bff1a5; editable install refreshed with --no-deps and isolated build tools, reference numerical dependencies retained, pip check clean.
+- [x] Integrated exact oracles passed (8/8); all five replay cases identical (3.8 min); full local suite: 858 passed, 35 skipped, 2 xfailed, 346.59 s.
+- [x] Independent integration review findings reconciled; verified records and frozen reference snapshot preserved.
 - [ ] Later: start the reference campaign on explicit instruction, which may authorize both batches as one chain.
 
 Integration preflight: original dev-next is clean at `4d91a5e`, fast-forward
@@ -556,3 +556,49 @@ numerical code `bdaf322`), residual authorization wording and CI status.
 The future chain explicitly gates counts/pairs and compares, without the
 legacy shell script's masked compare failures; it passes batching false
 explicitly in JSON options. No historical sidecar or trace was modified.
+
+Freeze mechanism: after integrated gates pass, keep a non-moving branch
+`reference/stage3-20260906` at the final verification-record commit. This
+names the exact checkout for both batches without introducing a version
+tag that could affect setuptools_scm. The final record commit changes
+only documentation relative to the tested integration commit `4bff1a5`.
+Verify that equality before recording the freeze; preserve runtime
+dependency versions. No overnight process is started in this task.
+
+
+### Integrated verification and final freeze (2026-09-06)
+
+All integration checks passed on `dev-next` at `4bff1a5`. Its source code
+and CI configuration equal feature branch `285cd74`; only documentation
+was added. Branch smoke 34043031387 and all nine jobs of full matrix
+34043071150 passed on 285cd74. Integrated smoke 34043979358 passed on
+4bff1a5. URLs:
+https://github.com/acerbilab/pyvbmc/actions/runs/34043031387
+https://github.com/acerbilab/pyvbmc/actions/runs/34043071150
+https://github.com/acerbilab/pyvbmc/actions/runs/34043979358
+
+On the original checkout's reference environment, single-threaded:
+- Exact oracles: 8/8 fixtures passed, without rebaselining.
+- Replay: all five cases identical, including initial designs, points and
+  every ELBO iteration; 3.8 min. Output:
+  `dev/scripts/runs/stage3_integrated_replay_20260906`.
+- Full base-install suite: 858 passed, 35 skipped, 2 xfailed, 3 existing VP
+  gradient warnings, 346.59 s; no reruns. Optional numerical modules skip
+  here; their tests passed in the feature environment and Ubuntu extras CI.
+- Existing reference: 280 matching JSON/NPZ pairs, all with recorded
+  18a236c and dirty false. No historical reference changed.
+
+The replay's dirty flag refers only to in-progress documentation edits.
+The final documentation-only record commit is preserved by non-moving
+branch `reference/stage3-20260906`. Use that exact checkout for both
+reference batches; preserve its dependencies and HEAD. Pass explicit
+batching=false options and record the actual frozen SHA in new sidecars.
+No overnight process or schedule was started. Reference timings under
+light laptop use are observational, not controlled speed benchmarks.
+
+Independent Sol integration review found provenance/status inconsistencies
+and gaps in future chain instructions. These were corrected and checked
+against Git history, all 280 sidecars and runner behavior: explicit batching
+option, fail-fast comparisons, complete pair counts and frozen-SHA checks.
+The final status sweep replaces transient pending-CI/merge statements.
+Local logs: `.venv/stage3-integrated-{oracles,replay,pytest,ci}.log`.

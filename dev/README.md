@@ -119,8 +119,9 @@ status and next steps never go into the devlogs.
   use fitted posteriors through torch and current ArviZ DataTree exports,
   optional dependencies, documentation, CI wiring and verification gates.
   Implementation is complete on `dev-next-stage3` at code `4ee612d`
-  (records/docs `285cd74`); branch CI is in progress and integration into
-  `dev-next` has not happened.
+  (records/docs `285cd74`); merged into `dev-next` at `4bff1a5`, with
+  branch/full-matrix/integrated CI and all local integration checks passed.
+  Reference snapshot: `reference/stage3-20260906`.
 
 Naming: `plans/` files are named by slug only, never by date (the date is in
 the file header), so that they cannot be mistaken for copies of the dated
@@ -154,7 +155,7 @@ oracles, identical replay and full local suite on the integrated tree, then
 freeze that code for both nights. Keep `vectorized_target=False` in every
 reference configuration. Preserve the existing `18a236c` sidecars and
 traces; new sidecars record the actual frozen integrated SHA. Neither
-trajectory-neutral nor trajectory-moving latent fixes begin until both
+trajectory-neutral nor trajectory-moving latent fixes land until both
 nights have finished. The nights may be one explicitly authorized chain
 (about 7 h and 5 h, plus check overhead); its second batch starts only after
 the first and its checks succeed.

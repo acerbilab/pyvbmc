@@ -203,18 +203,15 @@ anything that changes numerics lands.
   leaves the VBMC algorithm as designed and fixes the latent bugs of
   devlog §9, the trajectory-moving ones included, each replayed and the
   set checked as a population against the extended reference).
-- [~] **Stage 3: connect models and use posteriors downstream.** Implemented
-  and locally verified on `dev-next-stage3`: code `4ee612d`, records/docs
-  `285cd74`; exact oracles pass, all five replay cases are identical, and
-  the full suite passes (957 passed). The branch is pushed; smoke run
-  `34043031387` and full-matrix run `34043071150` are green on all jobs.
-  Stage 3 has not been merged into
-  `dev-next`, and
-  the integrated freeze commit has not been chosen. Once both branch CI
-  runs pass, merge Stage 3 into `dev-next`, run the exact oracles, identical
-  golden replay and full local suite on that integrated tree, then freeze
-  that one code commit for both reference-extension nights (pickup 3f and
-  11). Every reference configuration keeps `vectorized_target=False`.
+- [x] **Stage 3: connect models and use posteriors downstream.** Merged
+  into `dev-next` at `4bff1a5`. Branch smoke 34043031387, all nine jobs of
+  full matrix 34043071150, and integrated smoke 34043979358 passed.
+  Integrated local checks: exact oracles 8/8, all five replay cases
+  identical, full base-install suite 858 passed (35 skipped, 2 xfailed).
+  The feature-branch suite with optional exports passed 957 tests.
+  Non-moving snapshot `reference/stage3-20260906` names the exact final
+  checkout for both reference batches; its final commit adds only
+  verification records to tested code `4bff1a5`. Keep batching off.
   Two workflows (PI confirmed 2026-09-06): bring torch/JAX models into
   PyVBMC through documented adapters and an opt-in batched initial design;
   take the fitted posterior into torch as a distribution or ArviZ as
@@ -225,7 +222,7 @@ anything that changes numerics lands.
   0–2 (PI decision 2026-09-06: the whole body of work in one release, for
   visibility, rather than a 1.5 followed by a 1.6 within days). Both
   trajectory-neutral and trajectory-moving latent bug fixes remain behind
-  the reference-night boundary; pickup 9 starts only after both nights.
+  the reference-night boundary; pickup 9 fixes land only after both nights.
 - [ ] **Stage 4 — PyTorch port** (decision point, not default).
 
 ## Pickup point
@@ -466,28 +463,25 @@ anything that changes numerics lands.
    bullet and pickup points 3c–3e; `plans/stage2-memory.md` (§Summary,
    §Decisions, §Results, the tracker's doublecheck entry); the population
    reports above.
-3f. **Next — in progress** (sequence revised with the PI 2026-09-06).
-   Stage 2 and Stage 0 are complete. The committed oracle references and
-   the current golden reference are the end-of-Stage-2 baseline. Stage 3
-   is implemented on `dev-next-stage3` at code `4ee612d` with records/docs
-   `285cd74`; smoke run `34043031387` is green and full-matrix run
-   `34043071150` is green on all nine jobs. The CI merge gate is passed.
-   (i) **Integrate and freeze before either night.** Merge
-   `dev-next-stage3` into `dev-next`, then run on the integrated checkout:
-   `python dev/scripts/make_oracle_fixtures.py --check --exact`,
-   `python dev/scripts/golden_replay.py` (all five cases must report
-   `identical`), and `python -m pytest --reruns=5 -x -vv` (the full local
-   suite). The merge and these integrated checks are not done yet. Once
-   they pass, record the integrated commit as the freeze point and make no
-   code changes until both reference-extension nights finish. Keep
-   `vectorized_target=False` in every reference configuration. Pass the
-   shared `--options` argument as JSON `{"vectorized_target": false}` to
-   all three `golden_trace.py run` invocations below, so requested/effective
-   options in each new sidecar attest the setting. On Windows, preserve
-   JSON quoting with a Python subprocess argument list. The
-   existing 280 sidecars and stored traces retain their recorded `18a236c`, clean-tree
-   provenance (the numerical code is that of `bdaf322`); do not rewrite them. Every new sidecar records the actual
-   frozen integrated code that generated it.
+3f. **Next: reference extension; integration complete** (PI sequence
+   revision, 2026-09-06). Stage 3 was fast-forwarded into `dev-next` at
+   `4bff1a5`. Branch smoke 34043031387, all nine jobs of full matrix
+   34043071150, and integrated smoke 34043979358 passed.
+   (i) **Integrated and frozen before either batch.** Exact oracles passed
+   8/8, all five replay cases were identical, and the base-install suite
+   passed: 858 passed, 35 skipped, 2 xfailed. The exact final checkout is
+   named by non-moving branch `reference/stage3-20260906`; only
+   verification records changed after tested commit `4bff1a5`. Preserve
+   this commit and the reference dependencies for both batches. No run
+   has been launched or scheduled.
+   Keep `vectorized_target=False`. Pass shared `--options` JSON
+   {"vectorized_target": false} to all three `golden_trace.py run`
+   invocations below, so new sidecars record it; on Windows use a Python
+   subprocess argument list to preserve JSON quoting. Existing 280
+   JSON/NPZ pairs retain recorded `18a236c`, dirty false, provenance
+   (numerical code `bdaf322`); do not rewrite them. New sidecars record
+   the actual frozen commit. Integrated replay output:
+   `dev/scripts/runs/stage3_integrated_replay_20260906`.
    (ii) **Night 1, only on the PI's explicit word that the laptop is free
    (about 7 h)**: grow the 14 original configurations of the reference to
    50 seeds in the reference's existing run directory. Immediately before
@@ -538,7 +532,7 @@ anything that changes numerics lands.
    configurations; 50 seeds, the exhaust 10; mixed historical and frozen
    code provenance), this file's Stage 0 bullet and `dev/README.md` where
    they say 14 configurations × 20 seeds, and run the replay once with
-   defaults (the fences tighten with 50 seeds). Only then begin pickup 9:
+   defaults (the fences tighten with 50 seeds). Only then land pickup 9 fixes:
    trajectory-neutral fixes first or alongside its planned sequence, and
    trajectory-moving fixes each replayed, followed by the population night
    on the final 1.5 code. Then open the PR `dev-next` → `main` (pickup 8)
@@ -630,7 +624,7 @@ anything that changes numerics lands.
    Stage 3 merges first and that integrated code is frozen for both
    reference-extension nights. No latent fix lands before or between those
    nights, whether classified trajectory-neutral or trajectory-moving.
-   Pickup 9 begins only after both nights and their records are complete,
+   Pickup 9 fixes land only after both nights and their records are complete,
    so that its final population night runs on the final code. The
    candidates are the unfixed entries of devlog §9; the split below is a
    first reading, to be confirmed in the plan. Where the line between a
@@ -690,17 +684,14 @@ anything that changes numerics lands.
     `torch` dependency meets Stage 3's `vp.to_torch()`), and release it
     in step with 1.5: its `pyvbmc` pin bumped, its tests green against the
     released code, its pickles regenerated if the classes changed.
-11. **Stage 3 on `dev-next-stage3` — integration in progress** (PI,
-    2026-09-06). Implementation is complete at code `4ee612d`; its
-    records/docs commit is `285cd74`. The branch is pushed; smoke run
-    `34043031387` and all nine jobs of full-matrix run `34043071150` are
-    green. The CI gate is passed. The merge into
-    `dev-next`, integrated exact oracle check, identical golden replay and
-    full local suite have not
-    happened. Once both branch CI runs are green, merge Stage 3 into
-    `dev-next`, run those three integrated gates, and record the passing
-    integrated commit as the single freeze point for both reference
-    nights. Keep every reference configuration at
+11. **Stage 3 integrated before the reference extension** (PI,
+    2026-09-06). Feature code `4ee612d` was fast-forwarded into `dev-next`
+    at `4bff1a5`. Branch smoke 34043031387, all nine full-matrix jobs
+    34043071150, and integrated smoke 34043979358 passed. Integrated
+    local checks: exact oracles 8/8, all five replay cases identical,
+    full suite 858 passed (35 skipped, 2 xfailed). Final reference snapshot:
+    `reference/stage3-20260906` (only verification records after tested
+    code `4bff1a5`). Keep every reference configuration at
     `vectorized_target=False`. Existing `18a236c` sidecars and traces stay
     intact; new sidecars identify the actual frozen commit. No code change,
     including a trajectory-neutral latent fix, lands between the freeze

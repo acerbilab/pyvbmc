@@ -37,16 +37,15 @@ the promotion commit; its traces stay under
 Regenerate with `bash dev/scripts/regenerate_baseline.sh golden`
 (resumable; refills this directory at the end).
 
-**Extension status (in progress):** Stage 3 is implemented on
-`dev-next-stage3` at code `4ee612d` with records/docs `285cd74`; smoke run
-`34043031387` and full-matrix run `34043071150` are green (all nine matrix jobs).
-It has not been merged into `dev-next`, the integrated gates have not
-run, and no freeze commit is recorded. After both CI runs pass, merge Stage 3 into
-`dev-next`; on that integrated checkout require
-`make_oracle_fixtures.py --check --exact`, an `identical` default
-`golden_replay.py`, and the full local suite. Freeze the passing integrated
-commit for both extension nights and keep `vectorized_target=False` in
-every reference configuration.
+**Extension ready; not started or scheduled.** Stage 3 is merged into
+`dev-next` at `4bff1a5`. Branch and integrated smoke CI plus all nine
+full-matrix jobs passed. Integrated exact oracles passed 8/8, all five
+replay cases were identical, and the base-install suite passed 858 tests
+(35 skipped, 2 xfailed). Use non-moving snapshot
+`reference/stage3-20260906` for both batches. Its final commit changes
+only verification records from tested code `4bff1a5`. Keep batching off
+explicitly in the run options (roadmap pickup 3f), and preserve the
+reference dependency versions.
 
 Night 1 extends the 14 original configurations with seeds 20–49 (about
 7 h); night 2 adds `cigar_D8` and `student_D8` at seeds 0–49 and
