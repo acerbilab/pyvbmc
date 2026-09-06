@@ -441,7 +441,7 @@ anything that changes numerics lands.
    bullet and pickup points 3c–3e; `plans/stage2-memory.md` (§Summary,
    §Decisions, §Results, the tracker's doublecheck entry); the population
    reports above.
-3f. **Next** (handoff 2026-09-06 midday; code `0c4111a`, tree clean and
+3f. **Next** (handoff 2026-09-06 midday; code `282e0ed`, tree clean and
    pushed, CI smoke green on it, the full matrix green on `4f77e1a` and
    only tests and records since; nothing running). Stage 2 is complete,
    the oracle references and the golden reference are re-baselined to the

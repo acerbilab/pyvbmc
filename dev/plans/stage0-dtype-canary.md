@@ -1,7 +1,7 @@
 # Stage 0: the dtype canary
 
 Created: 2026-09-06 10:56. Status: **done 2026-09-06 midday; committed
-to `dev-next`** (tracker at the end).
+to `dev-next` as `282e0ed`** (tracker at the end).
 This file is the plan and the worklog. Roadmap Stage 0, last bullet, and
 pickup point 3f (`plans/modernization-roadmap.md`); rationale in
 `dev/2026-09-02-modernization-discussion.md` §2 ("float64 is
@@ -361,11 +361,11 @@ in `test_vbmc_init.py` were checked against the pinned hook: black
 
 ## Results
 
-- **Negative controls on real state** (11:22): a float32 `vp.mu` and a
-  float32 `gp.posteriors[0].alpha` injected into the rebuilt
-  `cigar_D4_boosted` state are the two offenders the walk reports, by
-  path; a float32 `vp.sigma` fails the manifest as `vp.sigma <float32>`;
-  a deleted `vp.lambd` raises `AttributeError` naming it.
+- **Negative controls on real state**: a float32 `vp.mu` and a float32
+  `gp.posteriors[0].alpha` injected into the rebuilt `cigar_D4_boosted`
+  state are the two offenders the walk reports, by path; a float32
+  `vp.sigma` fails the manifest as `vp.sigma <float32>`; a deleted
+  `vp.lambd` raises `AttributeError` naming it.
 - **Leaf counts of the canary's walker** (after the review): over
   `STATE_KEYS`, 62 leaves on `normal_D2_singlesample` and 97–110 on the
   other seven rebuilt states, 0.3–0.6 ms per walk; 394 on the seed-42
@@ -376,16 +376,18 @@ in `test_vbmc_init.py` were checked against the pinned hook: black
   180 passed, 15 skipped, 2 xfailed. The oracle package alone is about
   20 s including `active_sample_step` (7) and `gp_fit` (8) on this
   machine; the seed module 6 s for its three runs.
-- **Full suite, first run** (11:26–11:33, `runs/pytest_full_canary_
+- **Full suite, first run** (11:10–11:16, `runs/pytest_full_canary_
   1788682211.log`, BLAS single-threaded, code before the review's
   changes): 818 passed, 33 skipped, 2 xfailed, 0 reruns, 6 min 26 s,
   exit 0; the morning baseline on `353118a` had 810 passed, 33 skipped.
-- **Full suite, second run** (after the review's changes, BLAS
+- **Full suite, second run** (11:38–11:44, `runs/pytest_full_canary_
+  final_1788683882.log`, after the review's changes, BLAS
   single-threaded): 818 passed, 33 skipped, 2 xfailed, 0 reruns, 6 min
   9 s, exit 0 (the same totals as the first run).
-- **Replay** (`golden_replay.py`, defaults): 0 flagged of 5 configs,
-  every config `identical`, exit 0. A tests-only change moves no
-  production code, so the reference precondition of pickup 3f is intact.
+- **Replay** (11:44–11:47, `golden_replay.py`, defaults,
+  `runs/replay_canary_1788683882.log`): 0 flagged of 5 configs, every
+  config `identical`, exit 0. A tests-only change moves no production
+  code, so the reference precondition of pickup 3f is intact.
 
 ## Follow-ups
 
@@ -408,24 +410,31 @@ in `test_vbmc_init.py` were checked against the pinned hook: black
 ## Execution tracker
 
 Legend: `[ ]` not started, `[~]` in progress, `[x]` done, `[!]` needs
-attention. Times are wall clock on 2026-09-06.
+attention. Times are wall clock on 2026-09-06, from the run logs, the
+modification times of the files and the commits; a step without a time
+left no record of its own, and the steps listed before the first full
+suite ran before it.
 
 - [x] Verification of the discarded draft's claims and of the four Opus
       reviews of it — 10:27–10:56 (§Findings)
 - [x] Plan written — 10:56–11:05
-- [x] Code written — 11:05–11:20
-- [x] Floors measured and set — 11:22
-- [x] Formatting — 11:22 (pre-commit: all hooks pass)
-- [x] Negative controls on real state — 11:22
-- [x] Targeted tests — 11:24: 180 passed, 15 skipped, 2 xfailed, 19.6 s
-- [x] Full suite, first run — 11:26–11:33: 818 passed, 33 skipped, 2
+- [x] Code in place — by 11:10 (`_oracles.py` last edited 11:07; the
+      first full suite started on it at 11:10)
+- [x] Floors measured and set
+- [x] Formatting (pre-commit: all hooks pass)
+- [x] Negative controls on real state
+- [x] Targeted tests — 180 passed, 15 skipped, 2 xfailed, 19.6 s
+- [x] Full suite, first run — 11:10–11:16: 818 passed, 33 skipped, 2
       xfailed, 0 reruns, exit 0
-- [x] Records — 11:28 (AGENTS.md, dev/README.md, roadmap, TODO, devlog
-      §9)
-- [x] Doublecheck — 11:32–11:47, two read-only Opus reviewers (§Review)
-- [x] Review changes, floors re-measured (62–110; 394), targeted tests
-      green — after the PI's pause
-- [x] Full suite, second run — 818 passed, 33 skipped, 2 xfailed, 0
-      reruns, exit 0
-- [x] Replay — 0 flagged of 5, every config identical
-- [x] Commit and push to `dev-next` — 2026-09-06
+- [x] Records — 11:10 (devlog §9) to 11:33 (AGENTS.md, dev/README.md,
+      roadmap, after the review); TODO with the commits
+- [x] Doublecheck — after the first full suite, done by 11:33; two
+      read-only Opus reviewers (§Review)
+- [x] Review changes — 11:33–11:35, after the PI's pause; floors
+      re-measured (62–110; 394), targeted tests green
+- [x] Full suite, second run — 11:38–11:44: 818 passed, 33 skipped, 2
+      xfailed, 0 reruns, exit 0
+- [x] Replay — 11:44–11:47: 0 flagged of 5, every config identical
+- [x] Commit and push to `dev-next` — 11:53, `282e0ed` (CI smoke green
+      on the push, run 34023111174); `dev/TODO.md` updated in `78431fd`,
+      11:55
