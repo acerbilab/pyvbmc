@@ -62,9 +62,11 @@ def iter_dtype_leaves(obj, path="root"):
     any other object exposing a ``dtype`` attribute, yielded as is and
     not entered even if its class is a ``pyvbmc`` one. Entered: object
     arrays, ``dict`` values, ``list``, ``tuple`` and ``set`` elements, and
-    the ``__dict__`` of instances of ``pyvbmc`` / ``gpyreg`` classes.
-    Python scalars, strings, ``None``, classes and everything else end a
-    branch.
+    the ``__dict__`` of instances of ``pyvbmc`` / ``gpyreg`` classes. A
+    ``dict`` subclass of those packages (``Options``, ``IterationHistory``)
+    is entered as a mapping, through its values and not its instance
+    attributes. Python scalars, strings, ``None``, classes and everything
+    else end a branch.
     """
     seen = set()
     keep = []

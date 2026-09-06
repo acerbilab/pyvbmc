@@ -83,7 +83,7 @@ def _assert_outputs_float64(label, out):
     bad = [
         (k, np.asarray(v).dtype.name)
         for k, v in out.items()
-        if not (k in INTEGER_PLACEHOLDERS and isinstance(v, int))
+        if not (k in INTEGER_PLACEHOLDERS and isinstance(v, int) and v == 0)
         and np.asarray(v).dtype != np.float64
     ]
     assert not bad, f"{label}: outputs that are not float64: {bad}"

@@ -160,7 +160,8 @@ def test_seeded_run_state_is_float64(seeded_run):
     included), and the arrays the numerics ride on are present."""
     vbmc, vp, results = seeded_run
     assert_float64(vbmc, "vbmc", min_leaves=LIVE_MIN_LEAVES)
-    assert_float64(results, "results")
+    # A handful of scalars, so no floor: an offender fails, nothing else.
+    assert_float64(results, "results", min_leaves=0)
     arrays = load_bearing_arrays(
         vp=vp,
         gp=vbmc.gp,

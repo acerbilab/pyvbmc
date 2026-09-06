@@ -205,10 +205,11 @@ once; the canary's own walker counts differently (§Results).
 
 `test_oracles.py`: `test_oracle` calls `orc.fn` for the raw outputs,
 checks them (float64, except `INTEGER_PLACEHOLDERS = {varH, var_ss,
-varG_ss}` when they are a Python `int`), walks the rebuilt objects and
-the candidate set (`STATE_KEYS`; the stored references and the metadata
-are the fixture's own and are left out, so the leaf floor counts what the
-oracle worked on), then compares `cast_outputs(raw)` as before.
+varG_ss}` when they are the Python integer `0`), walks the rebuilt
+objects and the candidate set (`STATE_KEYS`; the stored references and
+the metadata are the fixture's own and are left out, so the leaf floor
+counts what the oracle worked on), then compares `cast_outputs(raw)` as
+before.
 `test_rebuilt_state_arrays_are_float64` applies the manifest and the
 candidate set to every snapshot. `_oracles.py` gains `cast_outputs`,
 which `Oracle.__call__` uses, so the generator is unchanged.
@@ -295,8 +296,12 @@ gate has run.
    `pyvbmc`/`gpyreg` objects and containers only, so every attribute of a
    PyVBMC class is covered without registration, and third-party objects
    (loggers, distributions, figures) cannot fail it for reasons of their
-   own. Non-float dtypes (bool masks, integer counts) pass by kind; a
-   float that turned into an integer is the manifest's job.
+   own. A `dict` subclass (`Options`, `IterationHistory`) is entered as a
+   mapping, so its instance attributes are not walked; those hold flags,
+   strings, the `D` of the option expressions and the user's option dict,
+   whose values the mapping also holds. Non-float dtypes (bool masks,
+   integer counts) pass by kind; a float that turned into an integer is
+   the manifest's job.
 5. **A foreign dtype is an offender.** Anything with a `dtype` that is
    not NumPy's fails the walk, in float64 too. A tensor backend has to
    teach the walker its dtypes deliberately, which is where that decision
@@ -438,3 +443,10 @@ suite ran before it.
 - [x] Commit and push to `dev-next` — 11:53, `282e0ed` (CI smoke green
       on the push, run 34023111174); `dev/TODO.md` updated in `78431fd`,
       11:55
+- [x] Follow-up after the PI's read of the commit, two more read-only
+      Opus reviewers on the code and on the records — 12:24 (`83a0ee4`:
+      the tracker's times taken from the logs, the roadmap's pickup code)
+      and the commit after it (the results walk without a floor, the
+      placeholder exemption narrowed to the integer `0`, the dict-subclass
+      rule in the walker's docstring; targeted modules 180 passed, 15
+      skipped, 2 xfailed)
