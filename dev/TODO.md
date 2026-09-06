@@ -1,7 +1,16 @@
 Stage 3 is integrated, verified, and ready for the reference extension.
-Frozen checkout: reference/stage3-20260906 (non-moving branch).
-Only verification records changed after tested integration code 4bff1a5.
-Keep this frozen HEAD and the existing .venv for both reference batches.
+Frozen checkout: reference/stage3-20260906 at 7314a6a (non-moving branch,
+pushed). Only verification records changed after tested code 4bff1a5.
+dev-next has subsequent documentation-only changes, including the human
+release overview introduced in 2a9ab03; it is no longer at the frozen HEAD.
+Read the current overview and this reminder before switching checkouts.
+
+After explicit campaign authorization, start from the clean original worktree,
+use `git switch --detach 7314a6a`, and keep that HEAD and the existing .venv
+for both batches. Use .venv/Scripts/python.exe explicitly. After both finish,
+return with `git switch dev-next` to record/publish results. Preserve the
+generated sidecars and summary when returning; do not advance the frozen
+reference branch or replace current release decisions with its older docs.
 
 Passed: branch smoke 34043031387, full matrix 34043071150 (all nine jobs),
 integrated smoke 34043979358; exact oracles 8/8; all five replays identical;
@@ -34,6 +43,31 @@ planned alongside better connections to upcoming VBMC extensions (pickup 10).
 Whether the PyTorch solver (Stage 4) joins 1.5 is TBD; it would not be a
 JAX solver. Revisit core dependencies and the Python floor with that decision.
 
-Read first: dev/README.md; modernization-roadmap.md pickups 3f, 5, 9, 11;
-dev/golden/README.md; stage3-pipeline-features.md; stage2-memory.md;
-devlog section 9. Plans are under dev/plans/.
+Local state at handoff (2026-09-06): no Python numerical jobs, scheduled
+campaign, or session-bound watchers remain. No campaign launcher was created;
+the next session must construct the sequential fail-fast command chain from
+roadmap 3f when the start is authorized. There is no job ID to reattach to.
+
+Artifacts deliberately kept out of Git:
+
+- The 280 reference JSON/NPZ pairs are on this laptop under
+  C:/Users/luigi/Documents/GitHub/pyvbmc/dev/scripts/runs/golden/item7_20260906/.
+  A fresh clone must copy this directory from the laptop to use exact replay.
+  The JSON sidecars are also tracked in dev/golden/baseline; the NPZ traces
+  are not. Publishing traces as a 1.5 release asset remains future work.
+- The original .venv is the base reference environment. Numerical versions
+  and verification evidence are in plans/stage3-pipeline-features.md;
+  recreate an environment from the documented setup and those versions if
+  this venv is unavailable. Exact identity also requires the recorded platform.
+- C:/Users/luigi/Documents/GitHub/pyvbmc-stage3 still exists at 7314a6a with
+  its separate torch/JAX/ArviZ environment. It is optional for continuing;
+  its runs directory is a junction to the original checkout's artifacts.
+- Local verification logs are .venv/stage3-integrated-*.log in the original
+  checkout and .venv/stage3-*.log in the Stage 3 worktree. Durable outcomes
+  are in the plan; rerun the documented checks if detailed logs are needed
+  elsewhere. No pending result exists only in a session process.
+
+Read first: dev/2026-09-06-pyvbmc-1.5-overview.md, then this reminder;
+dev/plans/modernization-roadmap.md pickups 3f, 5, 9, 10, 11;
+dev/golden/README.md and dev/plans/stage3-pipeline-features.md. For bug work,
+also read dev/2026-09-02-modernization-discussion.md section 9.
