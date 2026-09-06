@@ -615,9 +615,8 @@ anything that changes numerics lands.
    Stays deferred as algorithmic (devlog §12): `compute_var == 2`, noise
    shaping, log-space mixture sums.
 10. **S-VBMC integration and compatibility** (PI, 2026-09-06: part of the
-    1.5 work; how to integrate is still to be decided, possibly in
-    coordination with the svbmc maintainers). `acerbilab/svbmc` (Stacking
-    VBMC) is a separate package on PyPI (`svbmc` 0.1.1 at a glance on
+    1.5 work; how to integrate is still to be decided). `acerbilab/svbmc`
+    (Stacking VBMC) is the lab's own package, separate on PyPI (`svbmc` 0.1.1 at a glance on
     2026-09-06; last commit 2025-11-10; depends on `pyvbmc>=1.0.4`,
     `GPyReg>=1.0.2` and `torch>=2.7`) that stacks the components of
     several `VariationalPosterior` objects, which its users pass in as
@@ -628,8 +627,9 @@ anything that changes numerics lands.
     test suite against this branch; the pickled posteriors it carries
     are instances of the current classes, so they are exposed to the same
     attribute changes as PyVBMC's own static pickles; the shared
-    `torch` dependency meets Stage 3's `vp.to_torch()`), and agree the
-    release order with its maintainers.
+    `torch` dependency meets Stage 3's `vp.to_torch()`), and release it
+    in step with 1.5: its `pyvbmc` pin bumped, its tests green against the
+    released code, its pickles regenerated if the classes changed.
 
 ## Deferred (devlog §12)
 
