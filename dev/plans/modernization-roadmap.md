@@ -14,7 +14,7 @@ anything that changes numerics lands.
 
 ## Stages
 
-- [~] **Stage 0 — test oracle** (devlog §10)
+- [x] **Stage 0 — test oracle** (devlog §10)
   - [x] finite-difference checks: `entmc`, `entlb` (pre-existing),
     `_gp_log_joint`, `_neg_elcbo`, `_vp_bound_loss`, `_soft_bound_loss`,
     `vp.pdf` (`plans/profile-and-gradient-checks.md` §6)
@@ -58,7 +58,14 @@ anything that changes numerics lands.
     `dev/golden/baseline/`, traces gitignored under
     `dev/scripts/runs/golden/item7_20260906/`; expand to 50 seeds and add
     the exhaust config)
-  - [ ] dtype canary
+  - [x] dtype canary (`plans/stage0-dtype-canary.md`, 2026-09-06 midday;
+    tests only: every raw oracle output and every rebuilt oracle state
+    checked for float64 inside `test_oracles.py`, a walk of a live run in
+    `test_vbmc_seed.py` on a shared short run, a manifest of the
+    load-bearing arrays (`pyvbmc/testing/_dtype.py`); float32/float16
+    constructor inputs found to keep their dtype in `optim_state` and the
+    transformer, pinned as a strict `xfail` until the boundary cast lands
+    after the nights)
 - [x] **Stage 1 — `seed=` and `Generator` threading**
   (`plans/stage1-rng-generator.md`). The remaining seam (gpyreg and the
   cma noise handler drawing from the global state) was removed on
@@ -438,7 +445,8 @@ anything that changes numerics lands.
    pushed, CI smoke green on it, the full matrix green on `4f77e1a` and
    only tests and records since; nothing running). Stage 2 is complete,
    the oracle references and the golden reference are re-baselined to the
-   current numerics, and Stage 0 has one item left (the dtype canary).
+   current numerics, and Stage 0 is complete (its last item, the dtype
+   canary, landed 2026-09-06 midday as a tests-only change).
    Two long runs, then records, then the PR.
    (i) **Night 1, on the PI's word that the laptop is free (about 7 h)**:
    grow the 14 original configurations of the reference to 50 seeds, in
@@ -471,9 +479,11 @@ anything that changes numerics lands.
    configurations; 50 seeds, the exhaust 10; the code), this file's Stage 0
    bullet and `dev/README.md` where they say 14 configurations × 20 seeds,
    and run the replay once with defaults (the fences tighten with 50
-   seeds). Then the dtype canary, the last Stage 0 item, and the PR
-   `dev-next` → `main` (pickup 8) with the release note that files saved
-   by this code hold lean GP records an older PyVBMC cannot resume.
+   seeds). Then the PR `dev-next` → `main` (pickup 8) with the release
+   note that files saved by this code hold lean GP records an older PyVBMC
+   cannot resume. The dtype canary (`plans/stage0-dtype-canary.md`) is
+   done, tests only; its one production follow-up, widening float32 and
+   float16 constructor inputs, waits for the nights.
    Reading list for a fresh session: `dev/README.md`; this file's Stage 0
    and Stage 2 bullets and pickup points 5, 3e and 3f;
    `dev/golden/README.md`; `plans/stage2-memory.md` §Summary and
@@ -522,7 +532,11 @@ anything that changes numerics lands.
    (Stage 0 bullet above; no discrepancy, three incidental findings in
    devlog §9) and the `.mat` fixtures converted to `.npz` rather than
    deleted (PI: keep the MATLAB agreement, drop the opaque format).
-   Remaining of Stage 0: the dtype canary.
+   The dtype canary, the last Stage 0 item, followed on 2026-09-06 midday
+   (`plans/stage0-dtype-canary.md`). A first draft of that plan, written
+   by an Opus orchestrator, was discarded because its verification section
+   recorded gates that had not run; it was redone with Opus agents
+   confined to read-only review.
 7. ~~gpyreg generator support (`GP.fit`, `SliceSampler`, `f_min_fill`,
    `GP.random_function`) on a gpyreg branch when convenient.~~ Done
    2026-09-05 in acerbilab/gpyreg#43 (item 8, point 3a); the PyVBMC seam is

@@ -795,7 +795,7 @@ def test_vbmc_init_log_joint_prior():
             assert vbmc.prior.distribution == prior
         else:
             assert isinstance(vbmc.prior, Product)
-            for (m, marginal) in enumerate(vbmc.prior.marginals):
+            for m, marginal in enumerate(vbmc.prior.marginals):
                 assert marginal.distribution is prior[m]
         x = vbmc.prior.sample(1)
         np.isclose(
@@ -874,7 +874,7 @@ def test_vbmc_init_log_joint_noisy_prior():
             assert vbmc.prior.distribution == prior
         else:
             assert isinstance(vbmc.prior, Product)
-            for (m, marginal) in enumerate(vbmc.prior.marginals):
+            for m, marginal in enumerate(vbmc.prior.marginals):
                 assert marginal.distribution is prior[m]
         x = vbmc.prior.sample(1)
         np.isclose(
@@ -982,6 +982,40 @@ def test_init_integer_input():
         vbmc.optim_state["ub_orig"],
         vbmc.optim_state["plb_orig"],
         vbmc.optim_state["pub_orig"],
+    ]:
+        assert arr.dtype == np.float64
+
+
+@pytest.mark.xfail(
+    strict=True,
+    reason="VBMC.__init__ widens integer inputs to float64 but leaves "
+    "float32 and float16 inputs as they are: the bounds and x0 keep their "
+    "dtype in optim_state and in the parameter transformer while every "
+    "downstream array is float64 holding rounded values. The widening cast "
+    "at the boundary is a pending production change "
+    "(dev/plans/stage0-dtype-canary.md, Follow-ups).",
+)
+@pytest.mark.parametrize("dtype", [np.float32, np.float16])
+def test_init_narrow_float_input(dtype):
+    D = 2
+    lb = np.full((1, D), -10, dtype=dtype)
+    ub = np.full((1, D), 10, dtype=dtype)
+    x0_array = np.full((1, D), 0, dtype=dtype)
+    plb = np.full((1, D), -5, dtype=dtype)
+    pub = np.full((1, D), 5, dtype=dtype)
+
+    def log_joint(x):
+        return x**2 + x + 1, 1.0
+
+    vbmc = VBMC(log_joint, x0_array, lb, ub, plb, pub)
+    for arr in [
+        vbmc.optim_state["cache"]["x_orig"],
+        vbmc.optim_state["lb_orig"],
+        vbmc.optim_state["ub_orig"],
+        vbmc.optim_state["plb_orig"],
+        vbmc.optim_state["pub_orig"],
+        vbmc.parameter_transformer.lb_orig,
+        vbmc.parameter_transformer.ub_orig,
     ]:
         assert arr.dtype == np.float64
 

@@ -104,6 +104,15 @@ status and next steps never go into the devlogs.
   restored by the public `VBMC.get_gp`, the importance samples out of the
   recorded `optim_state`), the three code steps each replayed and
   measured.
+- `plans/stage0-dtype-canary.md` — plan and worklog for the last Stage 0
+  item, the dtype canary (tests only): what the value-comparing oracles
+  can and cannot see of a float32 regression, the raw-output and
+  rebuilt-state checks inside `test_oracles.py`, the walk of a live run
+  in `test_vbmc_seed.py` and the manifest of load-bearing arrays
+  (`pyvbmc/testing/_dtype.py`), the float32/float16 constructor inputs
+  found to keep their dtype (pinned as a strict `xfail`), and the
+  `active_sample_step` oracle's need for single-threaded BLAS on the
+  machine that generated the fixtures.
 
 Naming: `plans/` files are named by slug only, never by date (the date is in
 the file header), so that they cannot be mistaken for copies of the dated

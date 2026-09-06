@@ -648,6 +648,27 @@ state used by resume.
     written a file with a different name from the fixture it produced.
     **Fixed** the same day (a rename in the script; MATLAB is not needed
     to apply it, only to rerun it).
+- **Found 2026-09-06 (midday) by the dtype canary**
+  (`plans/stage0-dtype-canary.md`), not fixed:
+  - `VBMC.__init__` widens integer `x0` and bounds to float64
+    (`vbmc.py:450-468`) and leaves float32 and float16 inputs as they
+    are: `optim_state["lb_orig"]` and the other bound arrays,
+    `optim_state["cache"]["x_orig"]` and the transformer's `lb_orig` /
+    `ub_orig` keep the narrow dtype, while every downstream array is
+    float64 holding the rounded values. Pinned as a strict `xfail` in
+    `test_vbmc_init.py`; the widening cast is a no-op on float64 inputs
+    and waits for the reference extension of roadmap pickup 3f.
+  - `_neg_elcbo` initializes `varH` and `varF` to the integer literal `0`
+    (`variational_optimization.py:1242`, `:1246`) and `_gp_log_joint`
+    `var_ss` (`:1605`), so they are Python ints on the paths that do not
+    fill them (`varH` always; `var_ss` and `varG_ss` with a single
+    hyperparameter sample). `optimize_vp` documents `var_ss : int`
+    (`:125`) and `_gp_log_joint`, which produces it, `float` (`:1357`).
+  - The `active_sample_step` oracle reproduces its reference on the
+    generating machine only with BLAS single-threaded; under default
+    threading its CMA-ES search picks different points on 4 of 7
+    snapshots. Every local full-suite run since 2026-09-04 set the thread
+    variables without saying so; AGENTS.md now does.
 - **Found 2026-09-05 (late evening) by the review of the item 7 plan**
   (`plans/stage2-memory.md`):
   - `optimize()` on a finished instance set `self.vp` and

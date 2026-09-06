@@ -99,6 +99,16 @@ DEFAULT_SEED = 20260904
 PLATFORM_BOUND = frozenset({"active_sample_step", "gp_fit"})
 
 
+def cast_outputs(out):
+    """The outputs of an oracle as float64 arrays: the form the references
+    are stored in and :func:`compare` reads. The cast widens a narrower
+    float silently and turns an integer placeholder (``varH``, ``var_ss``,
+    ``varG_ss``: the literal ``0`` of a branch that did not run) into
+    float, which is why ``test_oracles.py`` checks the dtypes of an
+    oracle's outputs on the uncast dict."""
+    return {k: np.asarray(v, dtype=float) for k, v in out.items()}
+
+
 class Oracle:
     """``rtol`` / ``atol`` are floats, or dicts ``{output_key: value}`` with
     a ``"default"`` entry, so that outputs of one oracle with different
@@ -118,8 +128,7 @@ class Oracle:
         return pick(self.rtol), pick(self.atol)
 
     def __call__(self, state, seed=DEFAULT_SEED):
-        out = self.fn(state, seed)
-        return {k: np.asarray(v, dtype=float) for k, v in out.items()}
+        return cast_outputs(self.fn(state, seed))
 
 
 ORACLES = {}

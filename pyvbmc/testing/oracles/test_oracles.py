@@ -6,7 +6,12 @@ saved as plain arrays by ``dev/scripts/make_oracle_fixtures.py``, together
 with the outputs of the numerical stages computed from that state. The
 tests rebuild the state through the public constructors and recompute.
 
-A failure means the numerics changed. If the change is intended (a new
+A failure means the numerics changed, or a dtype did: every output of an
+oracle is checked to be float64 before the cast that stores and compares
+it (``cast_outputs``), the state an oracle worked on is walked for stray
+floating-point dtypes, and the arrays the numerics ride on are asserted
+present and float64 on every rebuilt state (the dtype canary,
+``pyvbmc.testing._dtype``). If a numerical change is intended (a new
 baseline), regenerate the fixtures with the generator; never loosen a
 tolerance to make a refactor pass. The ``active_sample_step`` oracle needs
 the benchmark targets in ``dev/scripts`` (a repository checkout). It and
@@ -26,10 +31,16 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from pyvbmc.testing import (
+    assert_float64,
+    assert_manifest_float64,
+    load_bearing_arrays,
+)
 from pyvbmc.testing.oracles._oracles import (
     ORACLES,
     PLATFORM_BOUND,
     applicable,
+    cast_outputs,
     compare,
     format_rows,
 )
@@ -43,6 +54,19 @@ FIXTURES = Path(__file__).parent / "fixtures"
 DEV_SCRIPTS = Path(__file__).resolve().parents[3] / "dev" / "scripts"
 NAMES = snapshot_names(FIXTURES) if FIXTURES.exists() else []
 
+# Outputs that may be the Python integer 0: a variance whose branch did
+# not run (the entropy variance is never computed; the per-sample
+# variance needs more than one hyperparameter sample). Every other output
+# must be float64.
+INTEGER_PLACEHOLDERS = frozenset({"varH", "var_ss", "varG_ss"})
+# The rebuilt objects and the candidate set: what an oracle works on.
+# ``ref`` and ``meta`` are the fixture's own and are not walked.
+STATE_KEYS = ("pt", "vp", "gp", "logger", "optim_state", "options", "cand")
+# Fewest dtype leaves a walk of one rebuilt state may find: half the
+# smallest count measured over ``STATE_KEYS``, 62 on the single-sample
+# snapshot (dev/plans/stage0-dtype-canary.md).
+STATE_MIN_LEAVES = 31
+
 
 def _target(meta):
     """The benchmark target of a fixture, or ``None`` outside a checkout."""
@@ -53,6 +77,16 @@ def _target(meta):
     from benchmark_targets import find_config
 
     return find_config(meta["config"]).make(seed=meta["problem_seed"]).fun
+
+
+def _assert_outputs_float64(label, out):
+    bad = [
+        (k, np.asarray(v).dtype.name)
+        for k, v in out.items()
+        if not (k in INTEGER_PLACEHOLDERS and isinstance(v, int))
+        and np.asarray(v).dtype != np.float64
+    ]
+    assert not bad, f"{label}: outputs that are not float64: {bad}"
 
 
 @pytest.fixture(scope="module")
@@ -88,7 +122,12 @@ def test_oracle(snapshots, name, oracle):
     orc = ORACLES[oracle]
     state = build_state(snap, fun=fun)
     assert orc.applies(state), f"{oracle} stored but not applicable now"
-    out = orc(state, snap["meta"]["oracle_seed"])
+    raw = orc.fn(state, snap["meta"]["oracle_seed"])
+    _assert_outputs_float64(f"{name}/{oracle}", raw)
+    # The state the oracle worked on, scratch arrays included.
+    walked = {k: state[k] for k in STATE_KEYS}
+    assert_float64(walked, f"{name}/{oracle} state", STATE_MIN_LEAVES)
+    out = cast_outputs(raw)
     rows = compare(snap["ref"][oracle], out, orc.rtol, orc.atol)
     assert all(r[3] for r in rows), f"{name}/{oracle}:\n{format_rows(rows)}"
 
@@ -100,6 +139,22 @@ def test_fixture_complete(snapshots):
         needed = set(applicable(build_state(snap)))
         missing = needed - set(snap["ref"])
         assert not missing, f"{name}: no reference for {sorted(missing)}"
+
+
+def test_rebuilt_state_arrays_are_float64(snapshots):
+    """The load-bearing arrays of every rebuilt state are present and
+    float64. The GP posterior factors are recomputed by ``build_gp``; the
+    rest is the fixture's own dtype, so this also pins the fixtures."""
+    for name, snap in snapshots.items():
+        state = build_state(snap)
+        arrays = load_bearing_arrays(
+            vp=state["vp"],
+            gp=state["gp"],
+            logger=state["logger"],
+            pt=state["pt"],
+        )
+        arrays["cand['Xs']"] = state["cand"]["Xs"]
+        assert_manifest_float64({f"{name}: {k}": v for k, v in arrays.items()})
 
 
 def test_state_rebuilds(snapshots):

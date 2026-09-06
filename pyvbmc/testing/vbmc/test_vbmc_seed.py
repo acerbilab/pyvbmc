@@ -5,6 +5,11 @@ NumPy's global random state (the ``gpyreg`` hyperparameter fit receives the
 generator, the ``cma`` noise handler subclass draws from it), and
 ``seed=None`` must keep the legacy behaviour in which ``np.random.seed``
 before construction fixes the run.
+
+This module holds the suite's short end-to-end runs (two iterations at
+``D = 2``). One of them is shared through the ``seeded_run`` fixture, and
+the live check of the dtype canary (``pyvbmc.testing._dtype``) rides on
+it rather than adding a run.
 """
 
 import copy
@@ -15,10 +20,18 @@ import numpy as np
 import pytest
 
 from pyvbmc import VBMC
+from pyvbmc.testing import (
+    assert_float64,
+    assert_manifest_float64,
+    load_bearing_arrays,
+)
 from pyvbmc.variational_posterior import VariationalPosterior
 
 base_path = Path(__file__).parent
 D = 2
+# Fewest dtype leaves the walk of a finished instance may find: half the
+# 394 measured on the shared run (dev/plans/stage0-dtype-canary.md).
+LIVE_MIN_LEAVES = 197
 
 
 @pytest.fixture(autouse=True)
@@ -47,6 +60,19 @@ def _make_vbmc(seed, **options):
         options=opts,
         seed=seed,
     )
+
+
+@pytest.fixture(scope="module")
+def seeded_run():
+    """One short seeded run, shared by the tests that need a finished
+    instance (the suite holds few full ``optimize()`` runs; AGENTS.md).
+    Module-scoped, so it runs outside the per-test snapshot of the global
+    random state and takes its own."""
+    state = np.random.get_state()
+    vbmc = _make_vbmc(42)
+    vp, results = vbmc.optimize()
+    np.random.set_state(state)
+    return vbmc, vp, results
 
 
 def test_seed_fixes_initialization():
@@ -104,15 +130,15 @@ def test_vp_sample_reproducible_with_seed():
     assert np.array_equal(x_1, x_2)
 
 
-def test_seed_fixes_optimization():
-    """Two short runs with the same seed are identical, even if the global
-    random state is touched in between construction and optimization."""
-    vbmc_1 = _make_vbmc(42)
-    np.random.seed(999)
-    vp_1, results_1 = vbmc_1.optimize()
+def test_seed_fixes_optimization(seeded_run):
+    """Two short runs with the same seed are identical: the shared run,
+    and a second one with the global random state reseeded before its
+    construction and again between construction and optimization."""
+    vbmc_1, vp_1, results_1 = seeded_run
 
     np.random.seed(12345)
     vbmc_2 = _make_vbmc(42)
+    np.random.seed(999)
     vp_2, results_2 = vbmc_2.optimize()
 
     assert results_1["elbo"] == results_2["elbo"]
@@ -125,6 +151,37 @@ def test_seed_fixes_optimization():
     )
     # The returned posterior keeps sharing the instance's generator.
     assert vp_1.rng is vbmc_1.rng
+
+
+def test_seeded_run_state_is_float64(seeded_run):
+    """The dtype canary on a live run: every floating-point array
+    reachable from the instance and the results is float64 (the GP
+    factors, the recorded history, ``optim_state`` and the transformer
+    included), and the arrays the numerics ride on are present."""
+    vbmc, vp, results = seeded_run
+    assert_float64(vbmc, "vbmc", min_leaves=LIVE_MIN_LEAVES)
+    assert_float64(results, "results")
+    arrays = load_bearing_arrays(
+        vp=vp,
+        gp=vbmc.gp,
+        logger=vbmc.function_logger,
+        pt=vbmc.parameter_transformer,
+    )
+    for k in (
+        "lb_orig",
+        "ub_orig",
+        "plb_orig",
+        "pub_orig",
+        "lb_tran",
+        "ub_tran",
+        "plb_tran",
+        "pub_tran",
+    ):
+        arrays[f"optim_state[{k!r}]"] = vbmc.optim_state[k]
+    arrays["optim_state['cache']['x_orig']"] = vbmc.optim_state["cache"][
+        "x_orig"
+    ]
+    assert_manifest_float64(arrays)
 
 
 def test_seeded_run_leaves_global_state_untouched():

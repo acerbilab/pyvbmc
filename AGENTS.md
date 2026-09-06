@@ -54,6 +54,13 @@ python -m pytest pyvbmc/testing/vbmc/test_options.py::test_del -vv
 pytest --reruns 5 --cov=. --cov-report html:cov_html    # coverage report
 ```
 
+On the machine that generated the oracle fixtures, run the suite with
+BLAS single-threaded (`OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1
+MKL_NUM_THREADS=1`): the platform-bound oracles were generated that way,
+and the CMA-ES search of `active_sample_step` picks different points under
+default threading. Elsewhere those oracles are skipped (unless
+`PYVBMC_ORACLES_ALL=1` forces them) and the thread count does not matter.
+
 Formatting is enforced only by the pre-commit hook (black 79, isort profile
 black, pycln, black-jupyter for notebooks); no lint or format job runs in CI.
 `pylintrc` is stock and disagrees with black on line length; ignore it.
@@ -188,10 +195,17 @@ Things you must hold in your head across files:
   `random_state` also held the legacy tuple, which
   `load(set_random_state=True)` now ignores). `test_vbmc_seed.py`
   deliberately holds three short (2 iteration, `D=2`) `optimize()` runs:
-  the end-to-end reproducibility checks. Unseeded tests remain the reason
-  CI uses `--reruns=5 -x`.
+  the end-to-end reproducibility checks, one of them shared through a
+  module-scoped fixture with the live check of the dtype canary. Unseeded
+  tests remain the reason CI uses `--reruns=5 -x`.
 - **float64 everywhere, implicitly.** The Cholesky retry ladder in gpyreg
-  exists because the matrices are borderline singular.
+  exists because the matrices are borderline singular. No class declares
+  the dtype of its state; the dtype canary (`pyvbmc/testing/_dtype.py`,
+  run from the oracle tests on every raw oracle output and rebuilt state
+  and from `test_vbmc_seed.py` on a live run) pins it. `VBMC.__init__`
+  widens integer inputs only: float32 or float16 bounds and `x0` keep
+  their dtype in `optim_state` and in the transformer, pinned as a strict
+  `xfail` in `test_vbmc_init.py` until the boundary cast lands.
 
 ## Testing conventions and traps
 
@@ -233,7 +247,10 @@ Things you must hold in your head across files:
   `_gp_log_joint`, `_neg_elcbo`, both entropies, the transformer and one
   seeded `active_sample` call. `pytest pyvbmc/testing/oracles` rebuilds the
   state through public constructors and recomputes in seconds; a failure
-  means the numerics changed. Regenerate with
+  means the numerics changed, or a dtype did (every raw oracle output must
+  be float64, the state an oracle worked on is walked for stray
+  floating-point dtypes, and the load-bearing arrays of every rebuilt
+  state are asserted float64). Regenerate with
   `python dev/scripts/make_oracle_fixtures.py` only to set a new baseline
   on purpose, never to make a refactor pass; `--check` runs the comparison
   outside pytest. The one sanctioned exception is the `active_sample_step`
