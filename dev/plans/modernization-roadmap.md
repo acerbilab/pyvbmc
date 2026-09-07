@@ -234,9 +234,10 @@ anything that changes numerics lands.
   architecture substantially simplify extension and integration. Acceptance
   requires numerical reliability, float64 robustness, acceptable CPU
   performance against the modernized NumPy core, and manageable installation
-  friction. A roughly 3× runtime (one-third the speed) would be a reason to
-  rethink the port or its inclusion in 1.5, even if the slowdown is understood;
-  this is an illustrative concern, not an agreed numerical cutoff.
+  friction. PI clarification (2026-09-07): 3× runtime was an example of
+  clearly unacceptable performance; concern starts at substantially smaller
+  slowdowns. Around 1.2× runtime may be acceptable given the other benefits,
+  but is not an agreed cutoff.
   Immediate speedup or GPU advantage is not required. Preserve the existing
   method for the port; richer posterior families, gradient-based acquisition
   optimization, and larger-scale inference remain separate future work.
@@ -592,7 +593,25 @@ anything that changes numerics lands.
    12 h); a copy on the lab server is cheap insurance.
 9. **Latent bug fixes for 1.5** (PI decision 2026-09-06: 1.5 does not
    change the VBMC algorithm, but it fixes the latent bugs; own plan under
-   `plans/` before it starts). The reference boundary was completed on
+   `plans/` before it starts). The [implementation plan](latent-bug-fixes.md)
+   is partially approved (2026-09-07): D1–D5 and Q2/Q3 settled; Q1/Q4
+   comparison designs agreed, final scientific choices await evidence.
+   Compare no eta-bound penalty, MATLAB's historical formula with consistent
+   implementation, and current Python as a diagnostic only. Test a boost
+   score-loss tolerance of 0.1 and 0.2 for every b in [0,5] (the endpoints
+   suffice), with boost weight shrinkage disabled. No numerical fixes have
+   started. The validation sequence is neutral fixes, boost, then other
+   moving groups; development may proceed in parallel on isolated checkouts
+   while the reference batch runs, with only one heavy computation at a time.
+   The PI approved extending the reference itself by 150 runs: add
+   rosenbrock_D2_noise3, student_D8_noise3 and lumpy_D10_noise3, each at seeds
+   0–49, to the standard benchmark set. The resulting reference will have
+   960 runs across 20 configurations (250 noisy runs across five configs).
+   Prepare those runs for the night of 2026-09-07 on frozen reference
+   numerics plus benchmark registrations, retaining the existing 810 pairs.
+   No new batch is launched or scheduled. The plan owns exact preparation,
+   source isolation, verification, experiment and per-change gate details.
+   The reference boundary was completed on
    2026-09-07 (pickup 3f); this work is next. The agreed boundary was:
    Stage 3 merges first and that integrated code is frozen for both
    reference-extension nights. No latent fix lands before or between those
@@ -708,6 +727,59 @@ anything that changes numerics lands.
     duplicates the user's framework). The default path is unchanged, so
     the replay reads `identical`; a unit test asserts batch and sequential
     agree on a vectorizable target.
+
+12. **Machine-local performance calibration** (PI proposal, 2026-09-07;
+    broader modernization work, outside the pickup 9 latent-fix plan).
+    Some implementation choices were timed on the development laptop and
+    need not be optimal on another CPU, memory hierarchy or numerical stack.
+    The PI proposes short kernel parameter sweeps on the user's machine,
+    caching the chosen settings and providing an explicit recalibration
+    flag/API. Prefer automatic calibration on first relevant use when no
+    valid record exists, if measurement establishes that it fits within a
+    few seconds; subsequent uses load the record. This is a proposed design
+    direction, not an implemented feature or a measured startup-time claim.
+
+    Concrete starting points are `vp.pdf`'s `2**16`-element row-chunk budget
+    (`plans/stage2-batched-acquisition.md`, “vp.pdf chunk size”) and
+    `entmc_vbmc`'s `_MAX_TENSOR_ELEMENTS = 2**16`
+    (`plans/stage2-entmc.md`). The PDF sweep measured 159 ms at 2^16 versus
+    436 ms at 2^22 for D=15, K=26, N=100000 on this laptop. Broader choices
+    such as `_gp_log_joint` contraction strategy may be candidates later,
+    but need their own correctness and benefit checks. Tune execution
+    details, not algorithmic sample counts, evaluation budgets, or stopping
+    criteria. Cache capacity is one influence; BLAS implementation, thread
+    settings, array shapes, allocation costs and memory bandwidth also matter.
+
+    Explore a bounded sweep over a small set of representative shape regimes
+    (D, K, sample count, gradients on/off as relevant), with warmup, repeated
+    interleaved timings, and a conservative choice when differences are within
+    timing variability. Use synthetic inputs and a private RNG: no user-target
+    calls and no consumption of the solver's stream. Establish a measured
+    wall-time/memory budget and keep existing defaults if calibration cannot
+    complete reliably. First-use calibration should occur at relevant compute
+    use, not unconditionally on `import pyvbmc`.
+
+    Cache records need a versioned tuning schema and enough machine/software
+    identity to detect materially stale settings (CPU/architecture, numerical
+    backend and relevant library versions, effective threads, backend/device
+    and dtype as applicable). Record selected settings with run provenance;
+    allow explicit recalibration, disabling calibration, and fixed settings
+    for reproducibility and benchmark/oracle runs. Define atomic writes and
+    concurrent-start behavior, and work without persistence if the cache is
+    unwritable. The exact cache directory, invalidation policy, public API,
+    calibration budget and release placement remain to be discussed; a
+    per-user cache directory is a candidate, not a decided location.
+
+    Numerical equivalence must be established per knob. PDF row chunking
+    leaves independent row reductions unchanged; entropy chunking changes
+    accumulation order and can move results by rounding, potentially changing
+    optimizer trajectories. Do not promise seeded bit identity across tuning
+    choices without evidence. Validate values/gradients/RNG behavior, pin
+    settings for exact reference gates, and decide the policy for automatic
+    tuning of reduction-changing kernels before enabling them. This proposal
+    does not alter the frozen reference or existing PyTorch feasibility
+    decisions. Verify useful speedups and actual first-use cost before
+    deciding the automatic default's scope.
 
 ## Deferred (devlog §12)
 

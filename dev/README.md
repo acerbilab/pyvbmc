@@ -51,6 +51,11 @@ status and next steps never go into the devlogs.
 
 - `plans/modernization-roadmap.md` — living tracker of the staged plan in
   `2026-09-02-modernization-discussion.md` §10: stage status, pickup point.
+- [plans/latent-bug-fixes.md](plans/latent-bug-fixes.md) — partially approved pickup 9
+  implementation plan: verified candidate dispositions, numerical and
+  compatibility contracts, open PI questions, and regression gates against
+  the completed 810-run reference and approved expansion to 960. D1–D5,
+  Q2/Q3 and the experiment designs are approved; final Q1/Q4 choices await evidence.
 - `plans/profile-and-gradient-checks.md` — dev environment, baseline test
   run, first measured profile (D=5, D=10) and the first Stage 0
   finite-difference gradient checks, which found the reshape-order bug in

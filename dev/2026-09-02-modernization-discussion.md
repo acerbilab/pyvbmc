@@ -1108,9 +1108,10 @@ criteria if the feasibility evidence supports proceeding.
 
 *PI clarification in the same discussion:* feasibility prototyping is the
 first step, followed by an explicit decision before committing to the full
-port. A roughly 3× runtime (one-third the speed) would be a reason to rethink
-the port or its inclusion in 1.5, even if the slowdown is understood. This is
-an illustrative concern, not an agreed numerical cutoff. Inclusion in 1.5 is
+port. *Runtime expectation clarified by the PI on 2026-09-07:* 3× runtime was
+an example of clearly unacceptable performance, not where concern begins.
+Substantially smaller slowdowns need scrutiny; around 1.2× runtime may be
+acceptable given the other benefits, but is not an agreed cutoff. Inclusion in 1.5 is
 the preferred direction if feasible; the full port is not yet a commitment.
 Prototype stage timings must be distinguished from end-to-end runtime impact.
 The PI also requires testing both CPU and GPU. Compare float64 PyTorch on

@@ -25,6 +25,14 @@ use seeds 0–49; the 15-dimensional budget-exhaustion case uses seeds 0–9.
 The [results summary](baseline/summary.md) gives the measured outcomes for
 every configuration.
 
+**Approved next extension (2026-09-07; not yet run):** add
+`rosenbrock_D2_noise3`, `student_D8_noise3`, and `lumpy_D10_noise3` to the
+standard benchmark set, each at seeds 0–49. These 150 runs will extend this
+reference to 960 runs across 20 configurations, including 250 noisy runs
+across five configurations. Existing reference pairs remain unchanged.
+Preparation and validation are recorded in
+[`latent-bug-fixes.md`](../plans/latent-bug-fixes.md).
+
 | Target | Dimensions | What it exercises |
 |---|---|---|
 | `normal` | 5 | Independent Gaussian parameters with different scales |
