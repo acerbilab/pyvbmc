@@ -1,4 +1,20 @@
 Pickup (2026-09-07): resume dev/plans/latent-bug-fixes.md with $task.
+Latest PI update after CI 135: reduce the noisy reference addition because
+the estimated day-long 150-run batch is infeasible. The reduced proposal is
+30 seeds each of noisy Rosenbrock D2 and Student D8 (60 additions, 870 total).
+The PI now authorizes exactly one timed seed-0 run of each, sequentially on
+pinned reference code, to replace the extrapolated runtime with measurements.
+The remaining 58 runs are not launched. The prepared 150-run manifest/launch
+command below are superseded for future execution.
+The two timed seed-0 runs are now complete and validated: Rosenbrock 201.96 s
+(190/200 evaluations), Student 344.74 s (255/500), both converged. Including
+worker startup, these observations extrapolate to 4.600 h for all 60, or
+4.447 h for the remaining 58; one seed per target does not measure seed
+variability. Reusable traces, runtime records and validation are under
+`dev/scripts/runs/noisy_reference_20260907/timing_20260907/`. All 1,620
+original files remain byte-identical; published reference count is still 810.
+Next: adapt the preparation/coverage records to the reduced allocation before
+any separately authorized bulk launch. No timing worker remains running.
 Astra orchestrates scientific decisions; Sol implements and reviews bounded
 groups. The agreed fixes and experiment designs are approved; Q1's final
 main-loop penalty treatment and Q4's final default remain evidence-dependent.

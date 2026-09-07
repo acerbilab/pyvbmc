@@ -8,6 +8,58 @@ Reference-extension preparation is complete (2026-09-07). The PI resumed
 Phase 0 and the approved Phase 1 neutral fixes later that day; both are now
 complete and verified. The 150-run noisy extension remains parked and must
 not be launched or scheduled without a separate PI instruction.
+PI update (2026-09-07, after CI 135): the estimated day-long runtime is
+infeasible; reduce the reference addition. The 150-run allocation and launch
+command below are historical preparation, superseded for future execution.
+The PI selected 30 seeds each of `rosenbrock_D2_noise3` and
+`student_D8_noise3` for the reduced proposal (60 additions, 870 combined).
+Its runtime remains unmeasured: the earlier 5–6.5 hour estimate was an
+extrapolation from other targets, not a Student D8 noisy measurement.
+The PI subsequently authorized a couple of timed runs: exactly seed 0 of
+each selected configuration, sequentially, on the pinned reference code.
+This timing check does not launch the remaining 58 runs or the old 150.
+
+- [x] Select a smaller allocation: 30 seeds each of noisy Rosenbrock D2 and
+  Student D8; preserve pinned numerical source and original 810.
+- [x] Measure one full seed-0 reference run of each selected configuration,
+  verifying actual imports and retaining reusable JSON/NPZ results; report
+  measured runtimes, termination and a revised batch estimate.
+- [ ] Update the existing preparation and coverage records for that allocation.
+
+Timing evidence: `dev/scripts/runs/noisy_reference_20260907/timing_20260907/`.
+The ignored one-off driver reuses the frozen launcher's isolation and
+validation helpers and calls the pinned `golden_trace.run_task` for the two
+fixed seed-0 tasks. Independent Sol review of this invocation found no issues.
+Both runs completed and passed the existing record/trace validator:
+
+| Configuration (seed 0, noise SD 3) | Optimizer wall | Whole subprocess | Evaluations | Termination |
+|---|---:|---:|---:|---|
+| Rosenbrock D2 | 201.96 s | 204.21 s | 190/200 | Converged |
+| Student D8 | 344.74 s | 347.82 s | 255/500 | Converged |
+
+Worker times including trace/metric work were 202.38 and 345.84 s;
+worker CPU times were 197.02 and 336.34 s. The recorded active-sampling
+timers were 179.91 and 267.87 s (89% and 78% of optimizer wall; GP/VP
+timers nest inside this bucket). Target evaluation took only 0.030 and
+0.085 s. Student's convergence flag does not imply exact inference:
+its evidence error was 1.603, gsKL 0.654 and MMTV 0.171; Rosenbrock's
+were 0.297, 0.00580 and 0.0202. These are two reference observations,
+not a tolerance selection or a population-quality conclusion.
+
+Multiplying the measured subprocess times by 30 gives 4.600 h for the
+proposed 60 runs, or 4.447 h for the remaining 58 if these two are reused.
+This replaces the earlier cross-target extrapolation but is still based
+on only one seed per configuration; it is not a measured population mean
+or a runtime guarantee. No further runs are queued or running.
+Both standard JSON/NPZ pairs and per-worker import records remain under
+`timing_20260907/output/`, with `timing.json` there and `validation.json`
+one level above. Actual imports matched the canonical preparation;
+reference `623f5cd`, gpyreg `a2f8ddc`, supporting source hashes and the
+frozen launcher were unchanged. All 1,620 original files passed raw-byte
+hash checks. The obsolete 150-run `extension/` remains empty. The two
+timing pairs are retained for validation/adoption into the reduced batch;
+the published reference remains 810 until that integration is performed.
+
 Base inspected: `dev-next`, `edb59700bbb77034c877c71f8475994abfd40f66`.
 
 ## Purpose and boundaries
