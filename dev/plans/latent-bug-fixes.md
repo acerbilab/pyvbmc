@@ -408,6 +408,32 @@ authorized committing the remaining reference-preparation files and developer
 notes and pushing `dev-latent-neutral-fixes` (2026-09-07). The parked 150-run
 batch remains a separate future action.
 
+#### CI follow-up: run 133 (2026-09-07)
+
+- [x] Diagnose the failed push run on `613ba72`: Ubuntu/Python 3.12 reached
+  1,009 passing tests before the new live-transformer identity assertion failed
+  in `test_vbmc_optimize_rosenbrock` at iteration 0. The previous focused checks
+  omitted this end-to-end module; the exact replays do not assert object identity.
+- [x] Repair live-transformer sharing without weakening the assertion or changing
+  posterior deepcopy/history isolation; Sol implements, Astra runs checks.
+- [x] Run the affected end-to-end module, focused regression and numerical gate;
+  independently review the correction.
+- [~] Commit/push the correction and verify its CI result.
+
+The reference extension remains parked. Evidence is under
+`dev/scripts/runs/latent_fixes/neutral_20260907/ci_133*`.
+Local reproduction failed at the same assertion. `optimize_vp` now retains its
+input transformer on the accepted return object after internal fine/pruned
+copies; ordinary VP deepcopy and history isolation remain intact. The existing
+pruning test covers both pruned/unpruned returns and the deepcopy contract.
+Independent Sol static review found no issues. The complete
+`test_vbmc_optimize.py` module, both new return-path cases, and the existing
+deepcopy test passed: 12 tests, five reruns (312.28 s; `ci_133_after.log`).
+All eight exact oracles passed (`ci_133_oracles.log`); all five replay cases
+matched every stored loop/final output and initial design with zero flags
+(3.0 minutes; `ci_133_replay.log`). No oracle or baseline references changed.
+Post-push CI verification remains pending.
+
 #### Active subset: prepare the noisy reference extension (2026-09-07)
 
 This subset implements the approved allocation above without running it.

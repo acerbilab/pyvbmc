@@ -648,11 +648,21 @@ def test_vb_init_type3_preserves_fixed_sigma_without_extra_draws(K, growth):
     assert vp.rng.bit_generator.state == reference_rng.bit_generator.state
 
 
-def test_optimize_vp_prunes_j_sjk_on_both_component_axes(mocker):
+@pytest.mark.parametrize("prune_expected", [False, True])
+def test_optimize_vp_preserves_transformer_through_pruning(
+    mocker, prune_expected
+):
     D, K, Ns = 1, 3, 1
     vp = VariationalPosterior(D, K, rng=np.random.default_rng(4))
-    vp.w = np.array([[1e-6, 0.4, 0.6 - 1e-6]])
+    if prune_expected:
+        vp.w = np.array([[1e-6, 0.4, 0.6 - 1e-6]])
+    else:
+        vp.w = np.array([[0.2, 0.3, 0.5]])
     vp.eta = np.log(vp.w)
+    parameter_transformer = vp.parameter_transformer
+    private_copy = copy.deepcopy(vp)
+    assert private_copy.parameter_transformer is not parameter_transformer
+    assert private_copy.rng is vp.rng
     theta0 = vp.get_parameters().copy()
     options = setup_options(D)
     options.__setitem__("tol_weight", 1e-3, force=True)
@@ -699,7 +709,12 @@ def test_optimize_vp_prunes_j_sjk_on_both_component_axes(mocker):
 
     optimized, _, pruned = optimize_vp(options, optim_state, vp, gp, 1, 1, K)
 
-    expected_j = np.delete(np.delete(original_j, 0, axis=1), 0, axis=2)
-    assert pruned == 1
-    assert optimized.stats["J_sjk"].shape == (Ns, K - 1, K - 1)
+    if prune_expected:
+        expected_j = np.delete(np.delete(original_j, 0, axis=1), 0, axis=2)
+    else:
+        expected_j = original_j
+    assert pruned == int(prune_expected)
+    assert optimized.parameter_transformer is parameter_transformer
+    expected_k = K - int(prune_expected)
+    assert optimized.stats["J_sjk"].shape == (Ns, expected_k, expected_k)
     assert np.array_equal(optimized.stats["J_sjk"], expected_j)

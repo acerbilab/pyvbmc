@@ -136,6 +136,7 @@ def optimize_vp(
 
     if K is None:
         K = vp.K
+    parameter_transformer = vp.parameter_transformer
 
     # Missing port: assigning default values to options if it is none
     #               due to the new structure of the program
@@ -393,6 +394,10 @@ def optimize_vp(
     vp.stats["stable"] = False  # Unstable until proven otherwise
     vp.stats["I_sk"] = I_sk  # Expected log joint per component
     vp.stats["J_sjk"] = J_sjk  # Covariance of expected log joint
+    # The accepted posterior becomes live solver state, so retain the
+    # transformer's shared identity from the input posterior. Fine and pruned
+    # candidates remain ordinary isolated deep copies while they are internal.
+    vp.parameter_transformer = parameter_transformer
 
     return vp, var_ss, pruned
 
@@ -1016,8 +1021,9 @@ _CANDIDATE_ASSIGNED = ("w", "eta", "mu", "sigma", "lambd", "bounds", "stats")
 # (as `VariationalPosterior.__deepcopy__` shares it) and the parameter
 # transformer, which no code path mutates after construction (`whitening`
 # deep-copies it before changing the rotation), so every candidate can use
-# the base posterior's transformer object. (The posterior `optimize_vp`
-# returns is a `copy.deepcopy` of a candidate and carries its own copy.)
+# the base posterior's transformer object. Fine-optimization copies are
+# isolated while internal; `optimize_vp` reattaches the accepted posterior to
+# this shared transformer before returning it as live solver state.
 _CANDIDATE_SHARED = ("_rng", "parameter_transformer")
 
 
