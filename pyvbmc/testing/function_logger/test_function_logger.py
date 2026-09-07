@@ -213,6 +213,7 @@ def test_finalize():
     assert f_logger.y.shape[0] == 10
     assert f_logger.X_flag.shape[0] == 10
     assert f_logger.fun_eval_time.shape[0] == 10
+    assert f_logger.n_evals.shape[0] == 10
 
     # noise level 2
     f_logger = FunctionLogger(noisy_function, 3, True, 2)
@@ -223,6 +224,66 @@ def test_finalize():
     assert f_logger.S[8] == f_sd
     assert f_logger.y_orig[8] == f_val
     assert f_logger.S.shape[0] == 9
+    assert f_logger.n_evals.shape[0] == 9
+
+
+def test_finalize_empty_repeated_then_evaluate():
+    f_logger = FunctionLogger(non_noisy_function, 3, False, 0, cache_size=2)
+
+    f_logger.finalize()
+    f_logger.finalize()
+    for name in (
+        "X_orig",
+        "y_orig",
+        "X",
+        "y",
+        "X_flag",
+        "fun_eval_time",
+        "n_evals",
+    ):
+        assert getattr(f_logger, name).shape[0] == 0
+
+    _, _, idx = f_logger(np.array([1.0, 2.0, 3.0]))
+    assert idx == 0
+    assert f_logger.Xn == 0
+    assert f_logger.X_flag.tolist() == [True]
+    assert f_logger.n_evals[:, 0].tolist() == [1]
+
+
+def test_finalize_preserves_noisy_duplicate_and_inactive_rows_then_appends():
+    x = np.array([1.0, 2.0, 3.0])
+    f_logger = FunctionLogger(noisy_function, 3, True, 2, cache_size=2)
+    f_logger(x)
+    f_logger.fun = noisy_function_2
+    _, _, duplicate_idx = f_logger(x)
+    f_logger(x * 2)
+    f_logger.X_flag[0] = False
+    counts_before = f_logger.n_evals.copy()
+
+    f_logger.finalize()
+    f_logger.finalize()
+
+    assert duplicate_idx == 0
+    assert f_logger.Xn == 1
+    assert f_logger.X_flag.tolist() == [False, True]
+    assert np.array_equal(f_logger.n_evals, counts_before)
+    for name in (
+        "X_orig",
+        "y_orig",
+        "X",
+        "y",
+        "S",
+        "X_flag",
+        "fun_eval_time",
+        "n_evals",
+    ):
+        assert getattr(f_logger, name).shape[0] == 2
+
+    _, _, idx = f_logger(x * 3)
+    assert idx == 2
+    assert f_logger.Xn == 2
+    assert f_logger.X_flag.tolist() == [False, True, True]
+    assert f_logger.n_evals[:, 0].tolist() == [2, 1, 1]
 
 
 def test_call_parameter_transform_no_constraints():

@@ -102,9 +102,8 @@ PLATFORM_BOUND = frozenset({"active_sample_step", "gp_fit"})
 def cast_outputs(out):
     """The outputs of an oracle as float64 arrays: the form the references
     are stored in and :func:`compare` reads. The cast widens a narrower
-    float silently and turns an integer placeholder (``varH``, ``var_ss``,
-    ``varG_ss``: the literal ``0`` of a branch that did not run) into
-    float, which is why ``test_oracles.py`` checks the dtypes of an
+    float silently and would hide an integer-valued variance regression,
+    which is why ``test_oracles.py`` checks the dtypes of an
     oracle's outputs on the uncast dict."""
     return {k: np.asarray(v, dtype=float) for k, v in out.items()}
 

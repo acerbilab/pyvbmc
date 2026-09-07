@@ -1,3 +1,4 @@
+import copy
 from pathlib import Path
 
 import dill
@@ -16,10 +17,10 @@ def wrap_with_test(method, vbmc):
         To be run at the end of every iteration:
         """
         assert vbmc.vp.K == vbmc.optim_state["vp_K"]
-        assert vbmc.parameter_transformer == vbmc.vp.parameter_transformer
+        assert vbmc.parameter_transformer is vbmc.vp.parameter_transformer
         assert (
             vbmc.parameter_transformer
-            == vbmc.function_logger.parameter_transformer
+            is vbmc.function_logger.parameter_transformer
         )
         return method(*args, **kwargs)
 
@@ -286,10 +287,6 @@ def test_vbmc_multivariate_half_normal_noisy(return_results=False):
         return err_1, err_2
 
 
-def noisy_cigar(x, noise_scale=0.4):
-    return cigar(x) + noise_scale * np.random.normal(), noise_scale
-
-
 def cigar(x):
     """
     Benchmark log pdf -- cigar density.
@@ -514,7 +511,14 @@ def test_optimize_results(mocker):
     assert results["r_index"] == 2
     assert results["convergence_status"] == "no"
     assert np.isnan(results["overhead"])
-    assert "rng_state" in results
+    assert set(results["rng_state"]) == {"generator"}
+    returned_state = copy.deepcopy(results["rng_state"]["generator"])
+    expected_rng = np.random.default_rng()
+    expected_rng.bit_generator.state = returned_state
+    live_rng = copy.deepcopy(vbmc.rng)
+    assert expected_rng.random() == live_rng.random()
+    results["rng_state"]["generator"]["state"]["state"] += 1
+    assert vbmc.rng.bit_generator.state == returned_state
     assert results["algorithm"] == "Variational Bayesian Monte Carlo"
     assert "version" in results
     assert results["message"] == "test message"

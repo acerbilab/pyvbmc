@@ -1,3 +1,4 @@
+import copy
 import sys
 from pathlib import Path
 
@@ -987,15 +988,6 @@ def test_init_integer_input():
         assert arr.dtype == np.float64
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="VBMC.__init__ widens integer inputs to float64 but leaves "
-    "float32 and float16 inputs as they are: the bounds and x0 keep their "
-    "dtype in optim_state and in the parameter transformer while every "
-    "downstream array is float64 holding rounded values. The widening cast "
-    "at the boundary is a pending production change "
-    "(dev/plans/stage0-dtype-canary.md, Follow-ups).",
-)
 @pytest.mark.parametrize("dtype", [np.float32, np.float16])
 def test_init_narrow_float_input(dtype):
     D = 2
@@ -1008,8 +1000,15 @@ def test_init_narrow_float_input(dtype):
     def log_joint(x):
         return x**2 + x + 1, 1.0
 
-    vbmc = VBMC(log_joint, x0_array, lb, ub, plb, pub)
+    inputs = [x0_array, lb, ub, plb, pub]
+    originals = [array.copy() for array in inputs]
+    vbmc = VBMC(log_joint, *inputs)
     for arr in [
+        vbmc.x0,
+        vbmc.lower_bounds,
+        vbmc.upper_bounds,
+        vbmc.plausible_lower_bounds,
+        vbmc.plausible_upper_bounds,
         vbmc.optim_state["cache"]["x_orig"],
         vbmc.optim_state["lb_orig"],
         vbmc.optim_state["ub_orig"],
@@ -1019,6 +1018,101 @@ def test_init_narrow_float_input(dtype):
         vbmc.parameter_transformer.ub_orig,
     ]:
         assert arr.dtype == np.float64
+    for supplied, original in zip(inputs, originals):
+        assert supplied.dtype == dtype
+        assert np.array_equal(supplied, original)
+
+
+def test_init_does_not_modify_repaired_input_arrays():
+    D = 2
+    x0 = np.full((1, D), -10.0)
+    lb = np.full((1, D), -10.0)
+    ub = np.full((1, D), 10.0)
+    plb = np.full((1, D), -5.0)
+    pub = np.full((1, D), 5.0)
+    inputs = [x0, lb, ub, plb, pub]
+    originals = [array.copy() for array in inputs]
+
+    VBMC(fun, *inputs)
+
+    for supplied, original in zip(inputs, originals):
+        assert np.array_equal(supplied, original)
+
+
+def test_init_widens_before_inferring_plausible_bounds():
+    x0 = np.array([[-60000.0], [60000.0]], dtype=np.float16)
+    lb = np.array([[-np.inf]], dtype=np.float16)
+    ub = np.array([[np.inf]], dtype=np.float16)
+    original_x0 = x0.copy()
+
+    vbmc = VBMC(fun, x0, lb, ub)
+
+    assert np.all(np.isfinite(vbmc.plausible_lower_bounds))
+    assert np.all(np.isfinite(vbmc.plausible_upper_bounds))
+    assert vbmc.plausible_lower_bounds.dtype == np.float64
+    assert vbmc.plausible_upper_bounds.dtype == np.float64
+    assert np.array_equal(x0, original_x0)
+
+
+@pytest.mark.parametrize(
+    "true_mean",
+    [np.zeros(2), np.zeros((1, 2))],
+)
+def test_true_diagnostic_uses_independent_generator(mocker, true_mean):
+    vbmc = create_vbmc(2, 0.0, -5.0, 5.0, -2.0, 2.0)
+    vbmc.options.__setitem__("true_mean", true_mean, force=True)
+    vbmc.options.__setitem__("true_cov", np.eye(2), force=True)
+    moments = mocker.patch.object(
+        VariationalPosterior,
+        "moments",
+        autospec=True,
+        return_value=(np.zeros((1, 2)), np.eye(2)),
+    )
+    state_before = copy.deepcopy(vbmc.rng.bit_generator.state)
+
+    assert vbmc._compute_true_diagnostic(vbmc.vp) == 0.0
+
+    diagnostic_vp = moments.call_args.args[0]
+    assert moments.call_args.args[1:] == (1e6, True, True)
+    assert diagnostic_vp.rng is not vbmc.rng
+    assert diagnostic_vp.rng.bit_generator.state == state_before
+    diagnostic_vp.rng.random()
+    assert vbmc.rng.bit_generator.state == state_before
+
+
+@pytest.mark.parametrize(
+    ("true_mean", "true_cov"),
+    [([], []), (np.zeros(2), []), ([], np.eye(2))],
+)
+def test_true_diagnostic_skips_absent_values(true_mean, true_cov):
+    vbmc = create_vbmc(2, 0.0, -5.0, 5.0, -2.0, 2.0)
+    vbmc.options.__setitem__("true_mean", true_mean, force=True)
+    vbmc.options.__setitem__("true_cov", true_cov, force=True)
+    assert vbmc._compute_true_diagnostic(vbmc.vp) is None
+
+
+@pytest.mark.parametrize(
+    ("true_mean", "true_cov", "message"),
+    [
+        (np.zeros((2, 1)), np.eye(2), "true_mean"),
+        (np.zeros(2), np.ones((1, 2)), "true_cov"),
+    ],
+)
+def test_true_diagnostic_validates_shapes(true_mean, true_cov, message):
+    vbmc = create_vbmc(2, 0.0, -5.0, 5.0, -2.0, 2.0)
+    vbmc.options.__setitem__("true_mean", true_mean, force=True)
+    vbmc.options.__setitem__("true_cov", true_cov, force=True)
+    with pytest.raises(ValueError, match=message):
+        vbmc._compute_true_diagnostic(vbmc.vp)
+
+
+def test_true_diagnostic_skips_nonfinite_values(mocker):
+    vbmc = create_vbmc(2, 0.0, -5.0, 5.0, -2.0, 2.0)
+    vbmc.options.__setitem__("true_mean", np.array([np.nan, 0.0]), force=True)
+    vbmc.options.__setitem__("true_cov", np.eye(2), force=True)
+    moments = mocker.patch.object(VariationalPosterior, "moments")
+    assert vbmc._compute_true_diagnostic(vbmc.vp) is None
+    moments.assert_not_called()
 
 
 def test_init_1D_input():

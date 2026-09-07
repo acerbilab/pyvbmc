@@ -54,7 +54,7 @@ def test_gp_log_joint_single_sample_variance_is_scalar():
     assert np.ndim(G) == 0 and np.isfinite(G)
     assert dG is None and dvarG is None
     assert np.ndim(varG) == 0 and varG > 0
-    assert var_ss == 0
+    assert isinstance(var_ss, float) and var_ss == 0.0
     # and the gradient path still drops the sample axis
     _, dG, *_ = _gp_log_joint(vp, gp, True)
     assert dG.shape == (D * K + K + D + K,)
@@ -75,6 +75,23 @@ def test_neg_elcbo_single_sample_var_f_is_scalar():
     assert np.ndim(F) == 0 and np.isfinite(F)
     assert np.ndim(varF) == 0 and varF > 0
     assert dF is None
+
+
+def test_neg_elcbo_without_variance_returns_float_placeholders():
+    gp = _single_sample_gp()
+    theta = _raw_theta0(seed=3)
+    result = _neg_elcbo(
+        theta.copy(),
+        gp,
+        VariationalPosterior(D, K, rng=1),
+        0.0,
+        0,
+        False,
+        False,
+        separate_K=True,
+    )
+    for value in (result[4], result[6], result[7], result[8]):
+        assert isinstance(value, float) and value == 0.0
 
 
 def test_eval_full_elcbo_single_sample_stores_var_f():

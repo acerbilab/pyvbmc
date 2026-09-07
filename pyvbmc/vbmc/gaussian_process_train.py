@@ -609,7 +609,7 @@ def _get_gp_training_options(
     x = (optim_state["n_eff"] - options["fun_eval_start"]) / (
         min(options["max_fun_evals"], 1e3) - options["fun_eval_start"]
     )
-    f = lambda x_: a * x_**3 + b * x**2 + c * x + d
+    f = lambda x_: a * x_**3 + b * x_**2 + c * x_ + d
     init_N = max(round(f(x)), 9)
 
     # Set other hyperparameter fitting parameters

@@ -574,6 +574,7 @@ class FunctionLogger:
             self.S = self.S[: self.Xn + 1]
         self.X_flag = self.X_flag[: self.Xn + 1]
         self.fun_eval_time = self.fun_eval_time[: self.Xn + 1]
+        self.n_evals = self.n_evals[: self.Xn + 1]
 
     def _expand_arrays(self, resize_amount: int = None):
         """

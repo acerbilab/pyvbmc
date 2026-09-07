@@ -54,11 +54,6 @@ FIXTURES = Path(__file__).parent / "fixtures"
 DEV_SCRIPTS = Path(__file__).resolve().parents[3] / "dev" / "scripts"
 NAMES = snapshot_names(FIXTURES) if FIXTURES.exists() else []
 
-# Outputs that may be the Python integer 0: a variance whose branch did
-# not run (the entropy variance is never computed; the per-sample
-# variance needs more than one hyperparameter sample). Every other output
-# must be float64.
-INTEGER_PLACEHOLDERS = frozenset({"varH", "var_ss", "varG_ss"})
 # The rebuilt objects and the candidate set: what an oracle works on.
 # ``ref`` and ``meta`` are the fixture's own and are not walked.
 STATE_KEYS = ("pt", "vp", "gp", "logger", "optim_state", "options", "cand")
@@ -83,8 +78,7 @@ def _assert_outputs_float64(label, out):
     bad = [
         (k, np.asarray(v).dtype.name)
         for k, v in out.items()
-        if not (k in INTEGER_PLACEHOLDERS and isinstance(v, int) and v == 0)
-        and np.asarray(v).dtype != np.float64
+        if np.asarray(v).dtype != np.float64
     ]
     assert not bad, f"{label}: outputs that are not float64: {bad}"
 

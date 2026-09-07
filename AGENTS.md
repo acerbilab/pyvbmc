@@ -216,9 +216,9 @@ Things you must hold in your head across files:
   the dtype of its state; the dtype canary (`pyvbmc/testing/_dtype.py`,
   run from the oracle tests on every raw oracle output and rebuilt state
   and from `test_vbmc_seed.py` on a live run) pins it. `VBMC.__init__`
-  widens integer inputs only: float32 or float16 bounds and `x0` keep
-  their dtype in `optim_state` and in the transformer, pinned as a strict
-  `xfail` in `test_vbmc_init.py` until the boundary cast lands.
+  widens bounds and `x0` to float64 without modifying caller arrays;
+  `test_vbmc_init.py` checks narrow floating inputs and the resulting state.
+  Mathematical variance placeholders are floating zeros; counts remain integers.
 
 ## Testing conventions and traps
 

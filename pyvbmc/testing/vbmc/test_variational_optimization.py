@@ -228,7 +228,8 @@ def test_gp_log_joint_separate_K_without_variance():
         vp, gp, False, False, True, False, True
     )
     assert I_sk.shape == (Ns, vp.K) and J_sjk is None
-    assert varG is None and dvarG is None and dG is None and var_ss == 0
+    assert varG is None and dvarG is None and dG is None
+    assert isinstance(var_ss, float) and var_ss == 0.0
     assert np.allclose(I_sk @ vp.w.ravel(), G)
     # Averaged over samples, with the gradient.
     G_avg, dG, _, _, _, I_sk_avg, J_sjk = _gp_log_joint(
@@ -619,3 +620,86 @@ def test_vb_init_candidates():
     assert not np.array_equal(vec[1].mu, vp.mu)
     vec[0].mu[:] = 0.0
     assert np.array_equal(vp.mu, base.mu)
+
+
+@pytest.mark.parametrize("K", [1, 3])
+@pytest.mark.parametrize("growth", [0, 2])
+def test_vb_init_type3_preserves_fixed_sigma_without_extra_draws(K, growth):
+    D = 2
+    K_new = K + growth
+    vp = VariationalPosterior(D, K, rng=np.random.default_rng(12))
+    vp.sigma = np.arange(1, K + 1, dtype=float).reshape(1, K) / 10
+    vp.optimize_sigma = False
+    vp.optimize_lambd = False
+    vp.optimize_weights = False
+    X_star = np.arange(20, dtype=float).reshape(10, D)
+    y_star = np.arange(10, dtype=float).reshape(-1, 1)
+    reference_rng = copy.deepcopy(vp.rng)
+
+    candidates, types = _vb_init(vp, 3, 2, K_new, X_star, y_star)
+
+    expected_sigma = vp.sigma[:, np.arange(K_new) % K]
+    assert np.all(types == 3)
+    for candidate in candidates:
+        assert np.array_equal(candidate.sigma, expected_sigma)
+    for _ in candidates:
+        reference_rng.permutation(X_star.shape[0])
+        reference_rng.standard_normal((D, K_new))
+    assert vp.rng.bit_generator.state == reference_rng.bit_generator.state
+
+
+def test_optimize_vp_prunes_j_sjk_on_both_component_axes(mocker):
+    D, K, Ns = 1, 3, 1
+    vp = VariationalPosterior(D, K, rng=np.random.default_rng(4))
+    vp.w = np.array([[1e-6, 0.4, 0.6 - 1e-6]])
+    vp.eta = np.log(vp.w)
+    theta0 = vp.get_parameters().copy()
+    options = setup_options(D)
+    options.__setitem__("tol_weight", 1e-3, force=True)
+    options.__setitem__("tol_improvement", 1.0, force=True)
+    optim_state = {"warmup": False}
+    gp = mocker.Mock(X=np.array([[-1.0], [1.0]]), posteriors=[object()])
+    mocker.patch(
+        "pyvbmc.vbmc.variational_optimization._sieve",
+        return_value=(
+            np.array([vp]),
+            np.array([1]),
+            0.0,
+            0,
+            0,
+            None,
+        ),
+    )
+    mocker.patch(
+        "pyvbmc.vbmc.variational_optimization.sp.optimize.minimize",
+        return_value=mocker.Mock(success=True, x=theta0),
+    )
+    original_j = np.arange(Ns * K * K, dtype=float).reshape(Ns, K, K)
+
+    def fake_eval(idx, theta, vp_arg, gp, stats, beta, options):
+        current_k = vp_arg.K
+        stats["nelbo"][idx] = 0.0
+        stats["G"][idx] = 0.0
+        stats["H"][idx] = 0.0
+        stats["varF"][idx] = 1.0
+        stats["varG"][idx] = 1.0
+        stats["varH"][idx] = 0.0
+        stats["var_ss"][idx] = 0.0
+        stats["nelcbo"][idx] = 0.0
+        stats["theta"][idx, : theta.size] = theta
+        stats["I_sk"][idx, :, :current_k] = np.arange(current_k)
+        if current_k == K:
+            stats["J_sjk"][idx] = original_j
+        return stats
+
+    mocker.patch(
+        "pyvbmc.vbmc.variational_optimization._eval_full_elcbo",
+        side_effect=fake_eval,
+    )
+
+    optimized, _, pruned = optimize_vp(options, optim_state, vp, gp, 1, 1, K)
+
+    expected_j = np.delete(np.delete(original_j, 0, axis=1), 0, axis=2)
+    assert pruned == 1
+    assert optimized.stats["J_sjk"].shape == (Ns, K - 1, K - 1)
+    assert np.array_equal(optimized.stats["J_sjk"], expected_j)

@@ -366,6 +366,52 @@ class VBMC:
         Private function to do the initial check of the VBMC bounds.
         """
 
+        # Work on detached arrays: the permissive bound repairs below must
+        # not modify arrays owned by the caller.
+        x0 = np.array(x0, copy=True)
+        lower_bounds = np.array(lower_bounds, copy=True)
+        upper_bounds = np.array(upper_bounds, copy=True)
+        if plausible_lower_bounds is not None:
+            plausible_lower_bounds = np.array(
+                plausible_lower_bounds, copy=True
+            )
+        if plausible_upper_bounds is not None:
+            plausible_upper_bounds = np.array(
+                plausible_upper_bounds, copy=True
+            )
+
+        supplied = [
+            x0,
+            lower_bounds,
+            upper_bounds,
+            plausible_lower_bounds,
+            plausible_upper_bounds,
+        ]
+        if any(
+            value is not None and np.any(np.invert(np.isreal(value)))
+            for value in supplied
+        ):
+            raise ValueError(
+                """All input vectors (x0, lower_bounds, upper_bounds,
+                 plausible_lower_bounds, plausible_upper_bounds), if specified,
+                 need to be real valued."""
+            )
+        integer_inputs = [
+            value is not None and np.issubdtype(value.dtype, np.integer)
+            for value in supplied
+        ]
+        x0 = x0.astype(np.float64, copy=False)
+        lower_bounds = lower_bounds.astype(np.float64, copy=False)
+        upper_bounds = upper_bounds.astype(np.float64, copy=False)
+        if plausible_lower_bounds is not None:
+            plausible_lower_bounds = plausible_lower_bounds.astype(
+                np.float64, copy=False
+            )
+        if plausible_upper_bounds is not None:
+            plausible_upper_bounds = plausible_upper_bounds.astype(
+                np.float64, copy=False
+            )
+
         N0, D = x0.shape
 
         if plausible_lower_bounds is None or plausible_upper_bounds is None:
@@ -403,8 +449,10 @@ class VBMC:
                 )
                 if plausible_lower_bounds is None:
                     plausible_lower_bounds = np.copy(lower_bounds)
+                    integer_inputs[3] = integer_inputs[1]
                 if plausible_upper_bounds is None:
                     plausible_upper_bounds = np.copy(upper_bounds)
+                    integer_inputs[4] = integer_inputs[2]
 
         # Try to reshape bounds to row vectors
         lower_bounds = np.atleast_1d(lower_bounds)
@@ -441,41 +489,21 @@ class VBMC:
                 "Plausible interval bounds PLB and PUB need to be finite."
             )
 
-        # Test that all vectors are real-valued
-        if (
-            np.any(np.invert(np.isreal(x0)))
-            or np.any(np.invert(np.isreal(lower_bounds)))
-            or np.any(np.invert(np.isreal(upper_bounds)))
-            or np.any(np.invert(np.isreal(plausible_lower_bounds)))
-            or np.any(np.invert(np.isreal(plausible_upper_bounds)))
-        ):
-            raise ValueError(
-                """All input vectors (x0, lower_bounds, upper_bounds,
-                 plausible_lower_bounds, plausible_upper_bounds), if specified,
-                 need to be real valued."""
-            )
-
-        # Cast all vectors to floats
-        # (integer_vars are represented as floats but handled separately).
-        if np.issubdtype(x0.dtype, np.integer):
+        # Preserve warnings for integer inputs after validation and widening.
+        if integer_inputs[0]:
             logging.warning("Casting initial points to floating point.")
-            x0 = x0.astype(np.float64)
-        if np.issubdtype(lower_bounds.dtype, np.integer):
+        if integer_inputs[1]:
             logging.warning("Casting lower bounds to floating point.")
-            lower_bounds = lower_bounds.astype(np.float64)
-        if np.issubdtype(upper_bounds.dtype, np.integer):
+        if integer_inputs[2]:
             logging.warning("Casting upper bounds to floating point.")
-            upper_bounds = upper_bounds.astype(np.float64)
-        if np.issubdtype(plausible_lower_bounds.dtype, np.integer):
+        if integer_inputs[3]:
             logging.warning(
                 "Casting plausible lower bounds to floating point."
             )
-            plausible_lower_bounds = plausible_lower_bounds.astype(np.float64)
-        if np.issubdtype(plausible_upper_bounds.dtype, np.integer):
+        if integer_inputs[4]:
             logging.warning(
                 "Casting plausible upper bounds to floating point."
             )
-            plausible_upper_bounds = plausible_upper_bounds.astype(np.float64)
 
         # Fixed variables (all bounds equal) are not supported
         fixidx = (
@@ -1274,24 +1302,8 @@ class VBMC:
                 f_mu - self.options.get("elcbo_impro_weight") * np.sqrt(f_s2)
             )
 
-            # Compare variational posterior's moments with ground truth
-            if (
-                self.options.get("true_mean")
-                and self.options.get("true_cov")
-                and np.all(np.isfinite(self.options.get("true_mean")))
-                and np.all(np.isfinite(self.options.get("true_cov")))
-            ):
-                mubar_orig, sigma_orig = vp_real.moments(1e6, True, True)
-
-                kl = kl_div_mvn(
-                    mubar_orig,
-                    sigma_orig,
-                    self.options.get("true_mean"),
-                    self.options.get("true_cov"),
-                )
-                sKL_true = 0.5 * np.sum(kl)
-            else:
-                sKL_true = None
+            # Compare variational posterior's moments with ground truth.
+            sKL_true = self._compute_true_diagnostic(vp_real)
 
             # Record moments in transformed space
             mubar, sigma = self.vp.moments(orig_flag=False, cov_flag=True)
@@ -2447,7 +2459,39 @@ class VBMC:
     def _get_random_state(self):
         """Snapshot the state of the instance's generator, the only source
         of randomness in a run."""
-        return {"generator": self.rng.bit_generator.state}
+        return {"generator": copy.deepcopy(self.rng.bit_generator.state)}
+
+    def _compute_true_diagnostic(self, vp):
+        """Return the optional moment diagnostic without advancing run RNG."""
+        true_mean = self.options.get("true_mean")
+        true_cov = self.options.get("true_cov")
+        true_mean = None if true_mean is None else np.asarray(true_mean)
+        true_cov = None if true_cov is None else np.asarray(true_cov)
+        if true_mean is not None and true_mean.size == 0:
+            true_mean = None
+        if true_cov is not None and true_cov.size == 0:
+            true_cov = None
+
+        if true_mean is None or true_cov is None:
+            return None
+        if true_mean.shape == (self.D,):
+            true_mean = true_mean.reshape(1, self.D)
+        elif true_mean.shape != (1, self.D):
+            raise ValueError(
+                f"true_mean must have shape ({self.D},) or (1, {self.D})."
+            )
+        if true_cov.shape != (self.D, self.D):
+            raise ValueError(f"true_cov must have shape ({self.D}, {self.D}).")
+        if not np.all(np.isfinite(true_mean)) or not np.all(
+            np.isfinite(true_cov)
+        ):
+            return None
+
+        diagnostic_vp = copy.deepcopy(vp)
+        diagnostic_vp.rng = copy.deepcopy(vp.rng)
+        mubar_orig, sigma_orig = diagnostic_vp.moments(1e6, True, True)
+        kl = kl_div_mvn(mubar_orig, sigma_orig, true_mean, true_cov)
+        return 0.5 * np.sum(kl)
 
     def _set_random_state(self, random_state):
         """Restore a random state recorded by ``_get_random_state``.
@@ -2502,7 +2546,7 @@ class VBMC:
             output["convergence_status"] = "no"
 
         output["overhead"] = np.nan
-        output["rng_state"] = "rng"
+        output["rng_state"] = self._get_random_state()
         output["algorithm"] = "Variational Bayesian Monte Carlo"
         try:
             __version__ = version("pyvbmc")

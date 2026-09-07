@@ -122,7 +122,7 @@ def optimize_vp(
     =======
     vp : VariationalPosterior
         The optimized variational posterior.
-    var_ss : int
+    var_ss : float
         Estimated variance of the ELBO, due to variance of the expected
         log-joint, for each GP hyperparameter sample.
     pruned : int
@@ -378,6 +378,7 @@ def optimize_vp(
                 pruned += 1
                 already_checked = np.delete(already_checked, idx)
                 I_sk = np.delete(I_sk, idx, axis=1)
+                J_sjk = np.delete(J_sjk, idx, axis=1)
                 J_sjk = np.delete(J_sjk, idx, axis=2)
             else:
                 already_checked[idx] = True
@@ -890,7 +891,12 @@ def _vb_init(
         # Start from random provided training points.
         if vp.optimize_mu:
             mu0 = np.zeros((D, K))
-        sigma0 = np.zeros((1, K))
+        if vp.optimize_sigma:
+            sigma0 = np.zeros((1, K))
+        else:
+            # Fixed component widths remain fixed; growing candidates reuse
+            # the supplied widths cyclically without consuming random draws.
+            sigma0 = vp.sigma[:, np.arange(K_new) % K].copy()
 
     vp0_list = []
     for i in range(0, opts_N):
@@ -1106,10 +1112,10 @@ def _neg_elcbo(
         Variance of NELCBO.
     dH : np.ndarray
         Gradient of entropy term.
-    varG_ss :
+    varG_ss : float
         Variance of the expected variational log joint, for each GP
         hyperparameter sample.
-    varG :
+    varG : float
         Variance of the expected variational log joint
         probability.
     varH : float
@@ -1194,7 +1200,7 @@ def _neg_elcbo(
             G, dG, _, _, _, I_sk, _ = _gp_log_joint(
                 vp, gp, grad_flags, avg_flag, jacobian_flag, 0, True
             )
-            varG = varG_ss = 0
+            varG = varG_ss = 0.0
             J_sjk = None
     else:
         if compute_var:
@@ -1220,7 +1226,7 @@ def _neg_elcbo(
             G, dG, _, _, _ = _gp_log_joint(
                 vp, gp, grad_flags, avg_flag, jacobian_flag, 0
             )
-            varG = varG_ss = 0
+            varG = varG_ss = 0.0
 
     # Entropy term
     if Ns > 0:
@@ -1239,11 +1245,11 @@ def _neg_elcbo(
         dH = None
 
     # For the moment use zero variance for entropy
-    varH = 0
+    varH = 0.0
     if compute_var:
         varF = varG + varH
     else:
-        varF = 0
+        varF = 0.0
 
     # Negative ELCBO (add confidence bound)
     if beta != 0:
@@ -1602,7 +1608,7 @@ def _gp_log_joint(
     dvarG = None
 
     # Average multiple hyperparameter samples
-    var_ss = 0
+    var_ss = 0.0
     if Ns > 1 and avg_flag:
         G_bar = np.sum(G) / Ns
         if compute_var:
