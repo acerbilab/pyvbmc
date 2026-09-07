@@ -59,7 +59,15 @@ anything that changes numerics lands.
     `dev/scripts/runs/golden/item7_20260906/`. Extended 2026-09-07 on
     frozen `7314a6a`: 810 pairs, 16 configs at 50 seeds plus the D15
     exhaust at 10, all null checks passed and final replay identical
-    on all five cases; `dev/golden/extension_20260907/README.md`)
+    on all five cases; `dev/golden/extension_20260907/README.md`. The current
+    combined reference is `reference_870_20260907`: 60 further runs from
+    pinned source `623f5cd`, 30 each for noisy Rosenbrock D2 and Student D8,
+    giving 870 runs across 19 configurations and 160 noisy runs;
+    `dev/golden/noisy_extension_20260907/README.md`. All archives passed
+    integrity checks, the 76-test even/odd comparison had no flags, and the
+    default five-case replay matched stored loop/final values and initial
+    designs with zero flags; the historical returned transformer is explicitly
+    uncertifiable because those traces did not store it.)
   - [x] dtype canary (`plans/stage0-dtype-canary.md`, 2026-09-06 midday;
     tests only: every raw oracle output and every rebuilt oracle state
     checked for float64 inside `test_oracles.py`, a walk of a live run in
@@ -202,7 +210,7 @@ anything that changes numerics lands.
   for the reference), the runner's high-water mark 474 → 402 MB; one
   descriptive shift, lumpy_D10's median evaluations 242 → 308 with its
   quality metrics unchanged or better.
-- [ ] **Latent bug fixes for 1.5** (pickup 9; PI decision 2026-09-06: 1.5
+- [~] **Latent bug fixes for 1.5** (pickup 9; PI decision 2026-09-06: 1.5
   leaves the VBMC algorithm as designed and fixes the latent bugs of
   devlog §9, the trajectory-moving ones included, each replayed and the
   set checked as a population against the extended reference).
@@ -225,7 +233,9 @@ anything that changes numerics lands.
   0–2 (PI decision 2026-09-06: the whole body of work in one release, for
   visibility, rather than a 1.5 followed by a 1.6 within days). Both
   trajectory-neutral and trajectory-moving latent bug fixes were held behind
-  the reference boundary, completed on 2026-09-07 (pickup 3f); pickup 9 is next.
+  the reference boundary. That boundary completed on 2026-09-07 (pickup 3f).
+  Pickup 9 is in progress: Phase 1 neutral fixes are complete; Q1/Q4 decisions
+  and moving groups remain open.
 - [ ] **Stage 4 — PyTorch feasibility prototype, then a port decision**
   (preferred for 1.5 if feasible;
   PI decision, 2026-09-06). The purpose combines future method development,
@@ -582,15 +592,15 @@ anything that changes numerics lands.
    With the 1.5 release that follows it, attach the reference population's
    `.npz` traces as a release asset (PI decision 2026-09-06): one zip per
    reference, made from the traces of the population the released code
-   was validated against (currently 55.9 MiB of NPZ traces for 16
-   configurations at 50 seeds and the exhaust at 10), unpacked to
+   was validated against (currently 870 traces across 19 configurations),
+   unpacked to
    `dev/scripts/runs/golden/<population>/`
    for `golden_replay.py`'s per-iteration verdict; `dev/golden/README.md`
    names the asset. The sidecars stay in git, the traces stay out of it,
    and anyone working on the numerics can fetch them. Until the release
    the traces exist only on the machine that ran the population
-   (regenerable from the sidecars' code SHA, seeds and options, about
-   12 h); a copy on the lab server is cheap insurance.
+   (regenerable from the sidecars' code SHA, seeds and options);
+   a copy on the lab server is cheap insurance.
 9. **Latent bug fixes for 1.5** (PI decision 2026-09-06: 1.5 does not
    change the VBMC algorithm, but it fixes the latent bugs; own plan under
    `plans/` before it starts). The [implementation plan](latent-bug-fixes.md)
@@ -599,13 +609,15 @@ anything that changes numerics lands.
    Compare no eta-bound penalty, MATLAB's historical formula with consistent
    implementation, and current Python as a diagnostic only. Test a boost
    score-loss tolerance of 0.1 and 0.2 for every b in [0,5] (the endpoints
-   suffice), with boost weight shrinkage disabled. No numerical fixes have
-   started. The validation sequence is neutral fixes, boost, then other
-   moving groups; development may proceed in parallel on isolated checkouts
-   while the reference batch runs, with only one heavy computation at a time.
-   The PI approved extending the reference itself by 150 runs: add
+   suffice), with boost weight shrinkage disabled. Phase 0 and all Phase 1
+   trajectory-neutral fixes are complete and verified; CI run 135 passed
+   1,043 tests with 49 skipped. The exact oracles and five-case replay retained
+   their reference outputs. Q1 and Q4 remain open, and the boost and other
+   trajectory-moving groups have not been selected by this result. The
+   validation sequence remains neutral fixes, boost, then other moving groups.
+   The PI originally approved extending the reference itself by 150 runs: add
    rosenbrock_D2_noise3, student_D8_noise3 and lumpy_D10_noise3, each at seeds
-   0–49, to the standard benchmark set. The resulting reference will have
+   0–49, to the standard benchmark set. That proposal would have produced
    960 runs across 20 configurations (250 noisy runs across five configs).
    Preparation completed on 2026-09-07 with isolated reference source at
    `623f5cd` (benchmark-only addition to `7314a6a`), verified worker imports,
@@ -614,13 +626,21 @@ anything that changes numerics lands.
    This original preparation was superseded later that day: after timing one
    seed each, the PI selected and authorized launching 30 seeds each of noisy
    Rosenbrock D2 and Student D8, reusing the two timing pairs (58 new runs).
-   The reduced reference will have 870 runs across 19 configurations,
-   including 160 noisy runs across four configurations, with 76 KS tests.
-   No noisy lumpy runs are included. The published reference remains 810
-   until the expanded set is validated and integrated. The plan owns preparation,
-   source isolation, verification, experiment and per-change gate details.
-   The reference boundary was completed on
-   2026-09-07 (pickup 3f); this work is next. The agreed boundary was:
+   The reduced batch completed: 870 runs now form the combined reference across
+   19 configurations, including 160 noisy runs across four configurations,
+   with 76 KS tests. All 60 additions produced complete pairs; 53 converged
+   and seven noisy Rosenbrock runs reached their budget. No noisy lumpy runs
+   are included, and the pre-existing 810 pairs remain byte-identical. The
+   active traces are under
+   `dev/scripts/runs/golden/reference_870_20260907/`; integration evidence is
+   under `dev/golden/noisy_extension_20260907/`. All archive, allocation,
+   provenance, 76-test even/odd and default five-case replay gates passed with
+   no flags; the replay matched stored loop/final values and initial designs.
+   The historical returned transformer remains explicitly uncertifiable
+   because it was not stored. The plan owns preparation, source isolation,
+   verification, experiment and per-change gate details.
+   The original reference boundary was completed on
+   2026-09-07 (pickup 3f). The agreed boundary was:
    Stage 3 merges first and that integrated code is frozen for both
    reference-extension nights. No latent fix lands before or between those
    nights, whether classified trajectory-neutral or trajectory-moving.
@@ -633,7 +653,7 @@ anything that changes numerics lands.
    them.
    Trajectory-moving, each replayed on its own and the set checked as a
    population against the extended reference, which then becomes the
-   release's reference (one more population night, about 12 h): the
+   release's reference (a separately authorized population campaign): the
    `_get_hyp_cov` slips (production slice-samples with gpyreg's default
    widths); the misspelled `variance_regularized_acqfcn` key (the
    variance-regularization branch of every acquisition is dead and

@@ -20,23 +20,31 @@ an intentional correctness fix may change its results.
 
 ## Current reference
 
-**`item7_20260906`: 810 runs across 17 configurations.** Sixteen configurations
-use seeds 0–49; the 15-dimensional budget-exhaustion case uses seeds 0–9.
-The [results summary](baseline/summary.md) gives the measured outcomes for
-every configuration.
+**`reference_870_20260907`: 870 runs across 19 configurations.** Sixteen
+configurations use seeds 0–49, two noisy additions use seeds 0–29, and the
+15-dimensional budget-exhaustion case uses seeds 0–9. The population includes
+160 noisy runs across four configurations and 76 KS tests. The
+[results summary](baseline/summary.md) gives the measured outcomes for every
+configuration.
 
-**Reduced next extension (PI launch authorized 2026-09-07):** add
-`rosenbrock_D2_noise3` and `student_D8_noise3`, each at seeds 0–29.
-These 60 runs will extend the reference to 870 runs across 19 configurations,
-including 160 noisy runs across four configurations. Existing reference
-pairs remain unchanged. Both seed-0 timing runs are validated and will be
-reused, leaving 58 runs to execute sequentially. Noise SD is 3 and evaluation
-budgets are 200 and 500. `lumpy_D10_noise3` remains registered but is deferred
-from this batch. This supersedes the original 150-run/960-total allocation.
-The published reference and its 68-test comparison still cover 810 runs;
-the 870-run combined population will have 76 KS tests after validation.
-Preparation and validation are recorded in
-[`latent-bug-fixes.md`](../plans/latent-bug-fixes.md).
+The 60 additions are `rosenbrock_D2_noise3` and `student_D8_noise3`, each at
+seeds 0–29, with noise SD 3 and evaluation budgets 200 and 500. They were
+generated from pinned source `623f5cd` with gpyreg `a2f8ddc`; all 60 produced
+complete result pairs, 53 converged, and seven noisy Rosenbrock runs reached
+their evaluation budget. The Rosenbrock usable count is 23/30 and the Student
+usable count is 14/30; Student's median absolute ELBO error is 1.08. The
+reference records these outcomes rather than treating every completed run as
+an accurate fit. `lumpy_D10_noise3` remains registered but was deferred from
+this batch. This supersedes the original 150-run/960-total allocation.
+
+The historical 810 pairs remain byte-identical. Their execution record is
+[`extension_20260907`](extension_20260907/README.md); the additions and combined
+reference are recorded in
+[`noisy_extension_20260907`](noisy_extension_20260907/README.md). All 870
+archives passed integrity checks, the 76-test even/odd comparison had no
+flags, and the default five-case replay matched stored loop and final values
+and initial designs with zero flags. Historical traces omit the returned
+posterior's transformer, so replay reports that field as uncertifiable.
 
 | Target | Dimensions | What it exercises |
 |---|---|---|
@@ -51,6 +59,8 @@ Preparation and validation are recorded in
 | `logreg` | 5 | Logistic regression with bounded parameters |
 | `rosenbrock_D2_noise1` | 2 | Noisy log-density evaluations, noise SD 1 |
 | `logreg_D5_noise3` | 5 | Bounded parameters and noisy evaluations, noise SD 3 |
+| `rosenbrock_D2_noise3` | 2 | Harder noisy curved posterior, noise SD 3 |
+| `student_D8_noise3` | 8 | Heavy-tailed posterior and noisy evaluations, noise SD 3 |
 | `cigar_D15_exhaust` | 15 | The late GP regime under a fixed 750-evaluation budget |
 
 A run's seed controls the solver and separate streams for the starting point
@@ -80,12 +90,13 @@ certifies its full joint shape. The summary also reports posterior-mean
 RMSE, iterations, mixture size, warps and wall time. `usable` is the fraction
 meeting all three accuracy thresholds: `elbo_err < 1`, `gskl < 1`, and
 `mmtv < 0.2`. `failed` counts execution failures, not unconverged or inaccurate
-fits. All 810 reference runs completed; the ten D15 cases reached their
-intended budget limit.
+fits. All 870 reference runs completed. Of these, 853 converged and 17 reached
+their budgets: the ten intentional D15 exhaust cases and seven noisy
+Rosenbrock additions.
 
 The population check applies two-sample Kolmogorov–Smirnov tests to
 `elbo_err`, `gskl`, `mmtv` and evaluation count, with a Holm correction at
-alpha 0.05 across the family (68 tests for all 17 configurations). A flag
+alpha 0.05 across the family (76 tests for all 19 configurations). A flag
 means a distribution changed and needs investigation; it does not establish
 that the change is a regression. No flag is not proof of equivalence.
 Wall time is recorded but is not a pass/fail metric. These runs assess
@@ -93,11 +104,11 @@ inference behavior; controlled speed comparisons need dedicated benchmarks.
 
 ## Files and checks
 
-- [`baseline/`](baseline/) contains the 810 JSON sidecars and summary, tracked
+- [`baseline/`](baseline/) contains the 870 JSON sidecars and summary, tracked
   in Git. Each sidecar records the target, seed, requested/effective options,
   code and dependency versions, and final metrics.
 - Full `.npz` traces contain per-iteration data and final arrays. They remain
-  local under `dev/scripts/runs/golden/item7_20260906/` (gitignored). Copy that
+  local under `dev/scripts/runs/golden/reference_870_20260907/` (gitignored). Copy that
   directory from the generating laptop for exact replay elsewhere. Publishing
   a downloadable trace archive is planned for the 1.5 release.
 
@@ -130,7 +141,8 @@ dependency versions and numerical platform. These are part of the reference;
 matching the seed alone is insufficient.
 
 Exact environment information, reproduction commands, file hashes and
-validation reports are in the [execution record](extension_20260907/README.md).
+validation reports are in the [810-run record](extension_20260907/README.md)
+and [60-run integration record](noisy_extension_20260907/README.md).
 The legacy `regenerate_baseline.sh` uses a different seed allocation and
 masks comparison failures; use the recorded procedure when reproducing this
 snapshot.

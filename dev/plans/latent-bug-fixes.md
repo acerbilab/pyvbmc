@@ -4,10 +4,12 @@ Created: 2026-09-07
 Status: PARTIALLY APPROVED — D1–D5, Q2/Q3, Q1/Q4 comparison designs,
 the reduced 60-run reference addition and parallel development approved on
 2026-09-07; final Q1 treatment and Q4 default remain open.
-Reference-extension preparation is complete (2026-09-07). The PI resumed
-Phase 0 and the approved Phase 1 neutral fixes later that day; both are now
-complete and verified. The 150-run noisy extension remains parked and must
-not be launched or scheduled without a separate PI instruction.
+The reduced reference extension is complete and integrated (2026-09-07):
+870 pairs across 19 configurations, including 160 noisy runs across four
+configurations. Checks and provenance are in
+[`noisy_extension_20260907`](../golden/noisy_extension_20260907/README.md).
+Phase 0's regression gate and Phase 1's neutral fixes are also complete and
+verified. The original 150-run proposal is superseded; do not launch it.
 PI update (2026-09-07, after CI 135): the estimated day-long runtime is
 infeasible; reduce the reference addition. The 150-run allocation and launch
 command below are historical preparation, superseded for future execution.
@@ -32,8 +34,12 @@ gpyreg `a2f8ddc`. The old 150-task manifest remains historical and unused.
   create `reduced_60/preparation.json` and adopt the two validated seed-0 pairs.
 - [x] Start the remaining 58 runs, confirm the first worker's pinned imports,
   and record the background PID, log paths and exact resume/validation commands.
-- [ ] After completion, validate all 60 pairs and original hashes, then perform
-  the combined-reference checks before publishing 870 as the current count.
+- [x] After completion, validate all 60 pairs and original hashes.
+- [x] Perform the combined-reference checks before publishing 870 as the
+  current count.
+- [~] Publish the validated 870-run sidecars, summaries and provenance;
+  independently review, commit/push and verify CI. No boost experiment is
+  included in this reference-completion task (PI, 2026-09-07).
 
 Timing evidence: `dev/scripts/runs/noisy_reference_20260907/timing_20260907/`.
 The ignored one-off driver reuses the frozen launcher's isolation and
@@ -67,9 +73,29 @@ reference `623f5cd`, gpyreg `a2f8ddc`, supporting source hashes and the
 frozen launcher were unchanged. All 1,620 original files passed raw-byte
 hash checks. The obsolete 150-run `extension/` remains empty. The two
 timing pairs are retained for validation/adoption into the reduced batch;
-the published reference remains 810 until that integration is performed.
+At that point the published reference remained 810 pending integration.
 
-**Reduced batch running (2026-09-07, 17:02:17 UTC+03):** seven focused
+**Reduced batch completed (2026-09-07, 21:08:49 UTC+03):** the remaining
+58 runs finished 4 h 6 min 32 s after launch. All 60 pairs passed the frozen
+launcher's `validate` command; all 1,620 original files passed raw-byte
+hash checks. Rosenbrock: 23 converged, 7 reached the 200-evaluation limit;
+Student D8: all 30 converged. Mean optimizer times were 2.262 and 6.180
+minutes respectively. No run errors; launcher exited and its lock was removed.
+`reduced_60/completion.json` records these results. Combined-reference checks
+and local publication are now complete: all 870 copied pairs match their
+inputs, all archives passed integrity checks, the 76-test even/odd comparison
+had zero flags, and the final default five-case replay had exact stored
+loop/final values and initial designs with zero flags (4.741 minutes).
+The replay used verified reference imports at `623f5cd` and the stronger
+development comparator. Historical returned transformers remain uncertifiable.
+The original 810 baseline sidecars were not rewritten. Canonical traces now
+live at `dev/scripts/runs/golden/reference_870_20260907/`; the new tracked
+summary, 60 added sidecars, full 870-pair hash manifest and reports are
+published locally. Independent Sol final review passed with no remaining
+findings; 74 focused harness tests passed with retries disabled (11.69 s).
+Commit/push and CI acceptance are pending.
+
+**Launch record (2026-09-07, 17:02:17 UTC+03):** seven focused
 preparation tests passed with retries disabled (1.60 s); independent Sol
 review found no issues in the helper/tests, new manifest, adopted timing
 artifacts or exact launch command. The new canonical manifest is
@@ -83,11 +109,11 @@ that child's actual imports exactly matched the prepared runtime record.
 No numerical core or reference source was changed. The source keeps the
 unused lumpy registration; launch allocation includes only the two targets.
 
-The hidden launcher is PID **6380** (the venv executable shim is PID 3712).
+The hidden launcher was PID **6380** (the venv executable shim was PID 3712).
 `reduced_60/launch.json` and `launch_verification.json` record the invocation
 and initial live-worker check. Logs are `reduced_60/run.stdout.log` and
 `run.stderr.log`; lock state is `preparation.json.run.lock`. AC power was
-connected and automatic AC sleep disabled at launch. One heavy worker runs;
+connected and automatic AC sleep disabled at launch. One heavy worker ran;
 do not start local suites, replays, other numerical jobs, or trigger CI while
 it is active. Push the launcher/test changes after this worker finishes,
 because this branch's test-file changes trigger CI on push.
@@ -117,14 +143,14 @@ Base inspected: `dev-next`, `edb59700bbb77034c877c71f8475994abfd40f66`.
 
 Repair the remaining implementation defects in modernization-roadmap pickup 9,
 with each numerical change attributable and checked against the completed
-reference (810 runs published; reduced extension to 870 running above). This plan owns the candidate dispositions, implementation
+reference (870 runs published; original 810 preserved). This plan owns the candidate dispositions, implementation
 contracts, PI questions, and execution gates for the next executor; the
 roadmap remains the release tracker and `dev/golden/README.md` describes the
 reference. Update this plan during execution; do not create a parallel worklog.
 
-The earlier extension to 810 runs is complete; its sidecars, summary and
-validation records are published. The approved 150-run addition below is
-pending. The NPZ traces remain local/gitignored; release-asset
+The earlier extension to 810 runs and the reduced 60-run noisy addition are
+complete; all 870 sidecars, the summary and validation records are published.
+The original 150-run proposal below is superseded. The NPZ traces remain local/gitignored; release-asset
 publication is pending. No jobs or watchers need
 reattaching. Preserve `reference/stage3-20260906` at `7314a6a`, all reference
 sidecars and NPZ traces, and their recorded provenance. Never regenerate the
@@ -147,8 +173,8 @@ that design's questions.
 Noise shaping, `compute_var == 2`, log-space mixture sums, and new acquisition
 or optimizer algorithms stay deferred. Approval of this plan authorizes the
 accepted repairs and short gates, not an unspecified population campaign,
-release, merge, or publication. The PI separately approved the 150-run noisy
-reference extension below for tonight. The final 960-run candidate campaign is prepared here and runs
+release, merge, or publication. The PI separately approved completing and
+publishing the reduced 60-run noisy reference extension. The final 870-run candidate campaign is prepared here and runs
 only on explicit PI instruction after the remaining release code is settled.
 
 ## Investigation and candidate dispositions
@@ -307,7 +333,7 @@ boost objective. Include metric checks of accepted and rejected candidates:
 lumpy_D10 seed 11 is already a known case where rejection sacrifices a small
 improvement in the two posterior accuracy metrics despite a score decrease.
 
-**Approved reference extension (PI, 2026-09-07; current task: prepare only):**
+**Historical original approval (PI, 2026-09-07; superseded by the completed 60-run extension):**
 add rosenbrock_D2_noise3 (isolate noise level), student_D8_noise3
 (higher-dimensional broad tails), and lumpy_D10_noise3 (higher-dimensional
 mixture structure), each at seeds 0–49, using the existing target wrapper and
@@ -653,7 +679,7 @@ trace-validation and task-tag corrections. No numerical suite, replay,
 oracle, population run, Q1/Q4 experiment, or PyTorch work was performed.
 The broader phases below remain pending; launching is a separate next action.
 
-**Preparation and future commands (PowerShell, repository root):**
+**Historical 150-run preparation commands (superseded; do not execute):**
 
 ```powershell
 .venv/Scripts/python.exe dev/scripts/reference_noisy_extension.py prepare `
@@ -918,7 +944,7 @@ validation before finalizing the production option value.
    float64 checks. Add the new directory's JSON/NPZ patterns to MANIFEST.in
    and document capture/replay in the existing oracle plan. Hash-check old
    fixture files unchanged by the additive capture; this extends coverage,
-   not the 810-run reference or its saved histories.
+   not the 870-run reference or its saved histories.
 7. Exact-check unrelated stage outputs and replay this group before any
    acquisition or stop repair. Record its own first divergence and metrics.
 
@@ -1056,7 +1082,7 @@ a justified treatment; empirical success alone does not validate the formula.
   differently penalized training objectives. Follow promising local results
   with a bounded paired set of whole trajectories and available ground-truth
   posterior/evidence metrics. Scope that set explicitly before launch; this
-  is not authorization to rerun the 810-run population. Analyze pre-boost
+  is not authorization to rerun the 870-run population. Analyze pre-boost
   outcomes separately, holding any boost treatment identical across arms.
 - If (c) reproducibly outperforms both (a) and (b), investigate before choosing
   a replacement: separate mutation effects from the erroneous gradient,
@@ -1148,19 +1174,19 @@ with a broken path rather than regenerate MATLAB data or loosen tolerances.
 After the accepted fixes, integration/compatibility work with the existing
 S-VBMC package, and the remaining PyTorch release decisions and resulting work
 are complete, freeze the final candidate and prepare a single-worker campaign
-matching **19 configurations × seeds 0–49 plus cigar_D15_exhaust × 0–9**
-after the approved noisy reference extension is validated.
+matching **16 configurations × seeds 0–49, cigar_D15_exhaust × 0–9,
+and rosenbrock_D2_noise3 and student_D8_noise3 × seeds 0–29 each**.
 Use explicit `vectorized_target=False`, the allocation in
-`dev/golden/extension_20260907/README.md`, and fresh output directories.
+`dev/golden/noisy_extension_20260907/README.md`, and fresh output directories.
 Do not use `regenerate_baseline.sh` or overwrite reference pairs. The
 rough 12-hour estimate is historical, not a promised runtime after fixes.
 
-On explicit PI launch instruction, run and validate 960 complete readable
+On explicit PI launch instruction, run and validate 870 complete readable
 JSON/NPZ pairs, no errors, finite metrics, correct configuration/seed coverage,
 750 evaluations for every exhaust run, and truthful SHA/options/dependency/
 thread metadata. Check convergence statuses of the other runs and investigate
 changes. Compare with `golden_trace.py compare dev/golden/baseline <new_dir>`
-(80 KS tests, Holm alpha 0.05) and run an even/odd null comparison. Examine
+(76 KS tests, Holm alpha 0.05) and run an even/odd null comparison. Examine
 accuracy, usability and evaluation counts; a statistical flag requires
 investigation, not automatic rejection or approval, and no flag is not proof
 of equivalence. Record guard rejection counts and pre/post scores separately.
@@ -1170,7 +1196,7 @@ Hand off roadmap pickup 8 explicitly: at release, archive the NPZ traces of
 the PI-designated reference used to validate that release, one zip per
 reference, attach the archive(s) as release assets, and update the golden
 README with the asset names and extraction path. Retain clear identities for
-the expanded 960-run reference and the new candidate population; do not
+the expanded 870-run reference and the new candidate population; do not
 silently substitute either for the other. Packaging/publication is a later
 release action, not authorized by this planning task.
 
@@ -1180,7 +1206,8 @@ D1–D5 were approved by the PI on 2026-09-07. The agreed order is neutral
 ("no-op" for existing reference runs) fixes first, then the boost guard once
 its rule is settled, then the other trajectory-moving fixes. Q2 and Q3 were
 subsequently approved. Q1's treatment and Q4's default await the agreed
-experiments; the comparison designs and 150-run reference addition are settled.
+experiments; the comparison designs are settled and the reduced 60-run
+reference addition is complete.
 
 - **D1: Neutral fixes first, then boost after settling its rule, then broad
   trajectory changes.** The boost's effect can be

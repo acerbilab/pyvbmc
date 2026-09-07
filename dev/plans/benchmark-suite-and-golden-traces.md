@@ -19,20 +19,26 @@ mathematics + feasibility); every finding is folded in below.
 
 ## Summary
 
-**Coverage addition, 2026-09-07 (reduced launch authorized):** the
-approved batch uses `rosenbrock_D2_noise3` and `student_D8_noise3`,
-seeds 0–29, with the existing noise wrapper and paper budgets 200 and 500.
-Two seed-0 timing runs are validated and will be reused; 58 remain.
-`lumpy_D10_noise3` (budget 600) remains registered but is deferred from this
-batch. This supersedes the original three-configuration, 150-run allocation.
-The published reference remains 810 runs across 17 configurations until
-validation and integration; the expanded reference will contain 870 runs
-across 19 configurations (160 noisy runs across four configurations),
-with 76 KS tests in the population comparison.
-Historical results below retain their original coverage and provenance.
-The active preparation checklist, pinned-source details, and future launch
-and validation procedure are in [latent-bug-fixes.md](latent-bug-fixes.md),
-Phase 0 and its reduced-batch execution checklist.
+**Current coverage, 2026-09-07:** `reference_870_20260907` contains 870 runs
+across 19 configurations, including 160 noisy runs across four configurations,
+with 76 KS tests in the population comparison. The addition is 30 seeds each
+of `rosenbrock_D2_noise3` and `student_D8_noise3`, using the existing noise
+wrapper and paper budgets 200 and 500. All 60 additions produced complete
+pairs; 53 converged and seven noisy Rosenbrock runs reached their evaluation
+budget. They were generated from pinned source `623f5cd` and gpyreg `a2f8ddc`.
+The pre-existing 810 pairs remain byte-identical. `lumpy_D10_noise3` (budget
+600) remains registered but was deferred from this batch, which supersedes
+the original three-configuration, 150-run allocation. The reference-quality
+limitations and integration evidence are recorded in
+[`noisy_extension_20260907`](../golden/noisy_extension_20260907/README.md).
+All 870 archives passed integrity checks; the 76-test even/odd comparison had
+no flags, and the default five-case replay matched every stored loop and final
+value plus each initial design, with zero flags. Historical returned-posterior
+transformers were not stored and remain explicitly uncertifiable.
+
+Historical results below retain their original coverage and provenance. The
+preparation and implementation checklist remains in
+[latent-bug-fixes.md](latent-bug-fixes.md), Phase 0.
 
 Build one shared module of benchmark targets under `dev/scripts/`, make the
 existing profiler use it, profile the harder targets the devlog asked for and

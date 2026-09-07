@@ -1,0 +1,198 @@
+{
+ "label": "student_D8_noise3",
+ "seed": 27,
+ "problem": "student",
+ "D": 8,
+ "noise_sd": 3.0,
+ "requested_options": {
+  "specify_target_noise": true,
+  "max_fun_evals": 500,
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false,
+  "vectorized_target": false
+ },
+ "effective_options": {
+  "max_fun_evals": 500,
+  "max_iter": 500,
+  "tol_stable_count": 90,
+  "tol_stable_excpt_frac": 0.2,
+  "specify_target_noise": true,
+  "search_acq_fcn": [
+   "<pyvbmc.acquisition_functions.acq_fcn_viqr.AcqFcnVIQR object at 0x0000021AD1730F80>"
+  ],
+  "active_sample_gp_update": true,
+  "active_sample_vp_update": true,
+  "min_final_components": 50,
+  "do_final_boost": true,
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false,
+  "vectorized_target": false
+ },
+ "timer_keys": [
+  "active_sampling",
+  "finalize",
+  "fun_time",
+  "gp_train",
+  "variational_fit",
+  "warping"
+ ],
+ "ln_Z": -19.603520158198055,
+ "true_mean": [
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ]
+ ],
+ "true_cov": [
+  [
+   2.382379205925162,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   1.8804775313871402,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   1.642539721073319,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   1.4997712821091969,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1.403656523202549,
+   0.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1.334254536885767,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1.2816906265029977,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1.240465245389219
+  ]
+ ],
+ "plb": [
+  -6.708203932499369,
+  -5.196152422706632,
+  -4.582575694955841,
+  -4.242640687119286,
+  -4.024922359499621,
+  -3.872983346207417,
+  -3.760699023168052,
+  -3.674234614174767
+ ],
+ "pub": [
+  6.708203932499369,
+  5.196152422706632,
+  4.582575694955841,
+  4.242640687119286,
+  4.024922359499621,
+  3.872983346207417,
+  3.760699023168052,
+  3.674234614174767
+ ],
+ "notes": "product of t(nu), nu = [2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0], unit scale, times the papers' prior N(0, (3 sd_t)^2); truth by per-coordinate quadrature; box = prior mean -+ 1 prior SD",
+ "final": {
+  "elbo": -19.93886980171309,
+  "elbo_sd": 0.28917645210019277,
+  "best_iter": 69,
+  "iterations": 70,
+  "func_count": 340,
+  "final_K": 50,
+  "final_N": 340,
+  "min_Ns_gp": 0,
+  "n_warps": 4,
+  "success_flag": true,
+  "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+  "wall_s": 358.59407220000867,
+  "target_eval_s": 0.09906673431396484,
+  "elbo_err": 0.33534964351503405,
+  "gskl": 0.4046681514687198,
+  "mmtv": 0.1109396438499445,
+  "rmse": 0.2384187378211403,
+  "moment_method": "affine",
+  "peak_rss_mb": 305.33984375
+ },
+ "meta": {
+  "git": {
+   "sha": "623f5cd",
+   "dirty": false
+  },
+  "python": "3.12.6",
+  "numpy": "2.5.2",
+  "scipy": "1.18.1",
+  "pyvbmc": "1.0.5.dev159+g4bff1a5b9",
+  "gpyreg": "1.1.0",
+  "cma": "4.4.4",
+  "threads": {
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1",
+   "MKL_NUM_THREADS": "1"
+  },
+  "started": "2026-09-07 20:46:43",
+  "finished": "2026-09-07 20:52:43",
+  "pid": 32160
+ }
+}

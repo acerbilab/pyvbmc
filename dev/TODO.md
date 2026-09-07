@@ -1,63 +1,37 @@
 Pickup (2026-09-07): resume dev/plans/latent-bug-fixes.md with $task.
-Latest PI update after CI 135: reduce the noisy reference addition because
-the estimated day-long 150-run batch is infeasible. The reduced proposal is
-30 seeds each of noisy Rosenbrock D2 and Student D8 (60 additions, 870 total).
-The PI authorized one timed seed-0 run of each on pinned reference code,
-then explicitly authorized launching the remaining 58 runs. The prepared
-150-run manifest/launch command below are superseded for future execution.
-The two timed seed-0 runs are now complete and validated: Rosenbrock 201.96 s
-(190/200 evaluations), Student 344.74 s (255/500), both converged. Including
-worker startup, these observations extrapolate to 4.600 h for all 60, or
-4.447 h for the remaining 58; one seed per target does not measure seed
-variability. Reusable traces, runtime records and validation are under
-`dev/scripts/runs/noisy_reference_20260907/timing_20260907/`. All 1,620
-original files remain byte-identical; published reference count is still 810.
-RUNNING since 17:02:17 UTC+03, 2026-09-07: the reduced frozen launcher
-reported 2 complete/58 pending and began Rosenbrock seed 1 with verified
-imports. Canonical manifest/logs/output are under
-`dev/scripts/runs/noisy_reference_20260907/reduced_60/`; launcher PID 6380
-(venv shim PID 3712), stdout `run.stdout.log`, stderr `run.stderr.log`.
-The development branch remains `dev-latent-neutral-fixes`; workers use source
-`623f5cd` and gpyreg `a2f8ddc`. Seven focused tests and independent review passed.
-Only one heavy computation: no tests/replays or CI-triggering push during
-the batch. Push the pending launcher/test changes after the worker finishes.
-Next: inspect completion, run the frozen launcher's `validate` with its
-manifest, then combined-reference checks before publishing 870. Exact
-resume/validation instructions are in the plan's reduced-batch launch record.
-Astra orchestrates scientific decisions; Sol implements and reviews bounded
-groups. The agreed fixes and experiment designs are approved; Q1's final
-main-loop penalty treatment and Q4's final default remain evidence-dependent.
-The approved 150-run reference addition is prepared, but NOT RUN
-(explicit PI instruction, 2026-09-07). Phase 0's preparation subset is complete
-on `dev-noisy-reference-prep`: pinned source `623f5cd` over `7314a6a`, isolated
-gpyreg, imports verified, 7 focused tests passed, independent Sol review clear.
-Canonical manifest: `dev/scripts/runs/noisy_reference_20260907/preparation.json`.
-The plan has exact future launch/validation commands. All 810 original pairs
-remain byte-identical; the extension directory is empty. No launch or scheduling
-was performed. Phase 0's regression gate and Phase 1's approved neutral fixes
-are complete on `dev-latent-neutral-fixes` (PI resumed with $task). Commits:
-`ae5d871` replay gate, `c8a284e` neutral state/dtype, `3e67d9e` utility/API.
-Exact oracles passed all eight fixtures before and after; both five-case
-replays match every stored loop/final output under the stronger comparator.
-Focused tests, SciPy 1.15/current prior checks, docs/examples and independent
-Sol review passed. Historical returned transformers remain uncertifiable.
-CI follow-up is complete: `514bad7` preserves the live transformer after
-variational optimization; `686a75f` also restores sharing after active-sampling
-rollback. CI run 135 passed (1,043 passed, 49 skipped, one separate acquisition
-test retry); both previously failing integration cases passed first attempt.
-The affected 25 local tests passed with retries disabled, with eight exact
-oracles and five unchanged replays. Details and retry limitations are in the
-plan's CI follow-up. Current Phase 0/1 work is complete.
-Next development group: Phase 2's approved boost comparison; final Q1/Q4
-choices remain evidence-dependent. No moving production fix was applied.
-Evidence: `dev/scripts/runs/latent_fixes/neutral_20260907/` and the active
-execution checklist in the plan. The 150-run extension remains parked.
-Reference preparation and developer notes accompany the implementation commits.
-The PI authorized committing the remaining files and pushing this branch on
-2026-09-07; this does not authorize launching the parked 150-run batch.
-Parallel development on isolated checkouts is approved; verify actual imports
-and run only one heavy computation at a time. No job/watcher needs reattaching.
-The broader calibration proposal is in roadmap pickup 12, outside this plan.
+The reduced noisy reference extension is complete and integrated: 870 pairs
+across 19 configurations, including 160 noisy runs across four configurations.
+Allocation: original 16 x 50 plus D15 exhaust x 10, with noisy Rosenbrock D2
+and Student D8 x 30 each. This supersedes the abandoned 150-run proposal;
+no noisy Lumpy runs were included. The two timing seeds were reused.
+
+All 60 additions passed validation; all 1,620 original files and the 810
+historical baseline sidecars remain byte-identical. All 870 archives passed
+integrity checks. The 76-test even/odd comparison had no flags; the final
+five-case replay matched stored loop/final values and initial designs exactly.
+Historical returned transformers remain uncertifiable. New runs: 53 converged,
+7 Rosenbrock budget terminations; usability is 23/30 Rosenbrock and 14/30
+Student, distinct from convergence. No run was discarded or rerun.
+
+Current reference traces: dev/scripts/runs/golden/reference_870_20260907/.
+Tracked sidecars/summary: dev/golden/baseline/.
+Completion, validation, hash manifest and reports:
+dev/golden/noisy_extension_20260907/README.md.
+The historical 810 execution record and input population remain unchanged.
+Workers used isolated reference 623f5cd over 7314a6a, gpyreg a2f8ddc,
+original Python 3.12.6/NumPy 2.5.2/SciPy 1.18.1, and one BLAS thread.
+The remaining 58 ran 17:02:17-21:08:49 UTC+03; no worker or watcher remains.
+
+Development branch: dev-latent-neutral-fixes. Phase 0's stronger replay gate
+and Phase 1's neutral fixes are complete (including CI 135's transformer
+sharing corrections). Reference-publication commit/push and CI acceptance
+are being finalized; do not overlap CI with local heavy computation.
+Next numerical work is Phase 2's approved boost comparison. It was not run
+as part of this reference completion. Final Q1 treatment and Q4's 0.1/0.2
+choice remain evidence-dependent; preserve existing PyTorch feasibility
+and modernization decisions. Astra orchestrates; Sol implements/reviews.
+
+Historical pickup notes follow; current reference paths/counts above govern.
 
 Earlier reference extension complete and verified (2026-09-07, 08:55 UTC+03).
 Results and documentation are committed and pushed in 2a09fcd.
@@ -169,7 +143,7 @@ the outcomes; no old job needs reattachment. The new 150-run addition above
 is prepared; launching remains a separate next action.
 
 The full NPZ traces remain gitignored on this laptop under
-C:/Users/luigi/Documents/GitHub/pyvbmc/dev/scripts/runs/golden/item7_20260906/.
+C:/Users/luigi/Documents/GitHub/pyvbmc/dev/scripts/runs/golden/reference_870_20260907/.
 Copy that directory for exact replay elsewhere; publish the traces as a 1.5
 release asset later. The original .venv is the reference environment:
 Python 3.12.6, NumPy 2.5.2, SciPy 1.18.1, gpyreg 1.1.0, cma 4.4.4.
@@ -182,7 +156,8 @@ Read first: dev/plans/latent-bug-fixes.md, this reminder,
 dev/2026-09-06-pyvbmc-1.5-overview.md, dev/golden/README.md, and roadmap
 pickups 3f, 9, 10, 11, 12.
 For bug work also read dev/2026-09-02-modernization-discussion.md section 9.
-Use dev/golden/extension_20260907/README.md for execution/provenance details.
+Use dev/golden/noisy_extension_20260907/README.md for current execution/provenance
+details; dev/golden/extension_20260907/README.md preserves the earlier 810-run record.
 Keep dev/golden/README.md a human-facing description of the current runs
 (purpose, coverage, metrics, files and usage); batch chronology and release
 stage history belong in the execution record, not that README (PI request).

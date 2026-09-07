@@ -1,0 +1,291 @@
+{
+  "combined_path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\golden\\reference_870_20260907",
+  "pairs": 870,
+  "configs": {
+    "banana_D10": 50,
+    "banana_D2": 50,
+    "banana_D6": 50,
+    "cigar_D15_exhaust": 10,
+    "cigar_D4": 50,
+    "cigar_D8": 50,
+    "corr_D5": 50,
+    "halfnormal_D2": 50,
+    "logreg_D5_noise3": 50,
+    "logreg_D5": 50,
+    "lumpy_D10": 50,
+    "lumpy_D4": 50,
+    "normal_D5": 50,
+    "rosenbrock_D2_noise1": 50,
+    "rosenbrock_D2_noise3": 30,
+    "rosenbrock_D2": 50,
+    "student_D4": 50,
+    "student_D8_noise3": 30,
+    "student_D8": 50
+  },
+  "historical_raw_files_unchanged": 1620,
+  "all_combined_files_byte_identical_to_sources": true,
+  "npz_zip_integrity_passed": 870,
+  "statuses": [
+    {
+      "success": true,
+      "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+      "count": 853
+    },
+    {
+      "success": false,
+      "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+      "count": 17
+    }
+  ],
+  "provenance": [
+    {
+      "sha": "18a236c",
+      "dirty": false,
+      "count": 280
+    },
+    {
+      "sha": "7314a6a",
+      "dirty": false,
+      "count": 420
+    },
+    {
+      "sha": "7314a6a",
+      "dirty": true,
+      "count": 110
+    },
+    {
+      "sha": "623f5cd",
+      "dirty": false,
+      "count": 60
+    }
+  ],
+  "population": "reference_870_20260907",
+  "new_pairs": 60,
+  "noisy_pairs": 160,
+  "new_configs": {
+    "rosenbrock_D2_noise3": {
+      "problem": "rosenbrock",
+      "D": 2,
+      "noise_sd": 3.0,
+      "max_fun_evals": 200
+    },
+    "student_D8_noise3": {
+      "problem": "student",
+      "D": 8,
+      "noise_sd": 3.0,
+      "max_fun_evals": 500
+    }
+  },
+  "new_seed_range": [
+    0,
+    29
+  ],
+  "new_source_sha": "623f5cd91925c6e6b6a23d2985a66bcb1d6bea86",
+  "reference_numerical_base": "7314a6afe158c5673775ca79601b88b3913ae383",
+  "gpyreg_sha": "a2f8ddce867f502e29717959cf0ff3529f598618",
+  "runtime_contract": {
+    "execution_options": {
+      "vectorized_target": false,
+      "workers": 1
+    },
+    "gpyreg": {
+      "clean": true,
+      "head": "a2f8ddce867f502e29717959cf0ff3529f598618"
+    },
+    "interpreter": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Scripts\\python.exe",
+    "modules": {
+      "benchmark_targets": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_reference_20260907\\source\\dev\\scripts\\benchmark_targets.py",
+      "cma": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Lib\\site-packages\\cma\\__init__.py",
+      "golden_trace": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_reference_20260907\\source\\dev\\scripts\\golden_trace.py",
+      "gpyreg": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_reference_20260907\\gpyreg\\gpyreg\\__init__.py",
+      "numpy": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Lib\\site-packages\\numpy\\__init__.py",
+      "profile_run": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_reference_20260907\\source\\dev\\scripts\\profile_run.py",
+      "pyvbmc": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_reference_20260907\\source\\pyvbmc\\__init__.py",
+      "scipy": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Lib\\site-packages\\scipy\\__init__.py"
+    },
+    "reference": {
+      "base": "7314a6afe158c5673775ca79601b88b3913ae383",
+      "changed_files": [
+        "dev/scripts/benchmark_targets.py"
+      ],
+      "clean": true,
+      "head": "623f5cd91925c6e6b6a23d2985a66bcb1d6bea86"
+    },
+    "threads": {
+      "MKL_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "versions": {
+      "cma": "4.4.4",
+      "gpyreg": "1.1.0",
+      "numpy": "2.5.2",
+      "python": "3.12.6",
+      "pyvbmc": "1.0.5.dev159+g4bff1a5b9",
+      "scipy": "1.18.1"
+    }
+  },
+  "supporting_source_sha256": {
+    "dev/scripts/benchmark_targets.py": "51b128c950e6f399488b337574f435a305c974f4f60b281d6db1c99b75557b50",
+    "dev/scripts/golden_trace.py": "5f3ad9d585893b8efa82d809ccdbf2ead58aee5f5f915bba08b35d6cb52dfa4e",
+    "dev/scripts/profile_run.py": "4742bf6b47997d579a1e01ae46f42a34801174a6be4a0ab94844fa722124ba60"
+  },
+  "launcher_sha256": "42bd393db941a6d29bf659ebf9e9e532ad34fa73d9a88dc23620dd85c6b91748",
+  "extension_runtime_sha256": {
+    "rosenbrock_D2_noise3_seed0": "37f95418be61cf31b6a1b1afac7f325460016de0de52e93f94bb75ceec5eace4",
+    "rosenbrock_D2_noise3_seed1": "2e86dc95939606f0aaea367a568879c39c2dff669f659ad051e561c0f857f1ba",
+    "rosenbrock_D2_noise3_seed10": "f84ce69392102fbe7a93484e7996ad55cdf404ba1249b4f65ba53a4576b95e75",
+    "rosenbrock_D2_noise3_seed11": "368f3074d0025adb861b8ede827dc996ab8f534cba8cb86595038f19dc3df039",
+    "rosenbrock_D2_noise3_seed12": "a94acb5f8142de1081b9a9cdc1e8fa607a80cb2de280838d55dbc4018b604873",
+    "rosenbrock_D2_noise3_seed13": "869604092a087045f59217f41e48925b02ba103c2d428fbb96d290d6ba6b6a54",
+    "rosenbrock_D2_noise3_seed14": "2a671ae52a75f1074004d416e45b83b54cf8795076a18f89dd8bad77431f75f6",
+    "rosenbrock_D2_noise3_seed15": "51b4a2492b54bdc1eaf6a26b83c35461c5eb5ef097c29e745023358d4cc2cac6",
+    "rosenbrock_D2_noise3_seed16": "099e897c689c5478a894357b1875eb2c2ed83440e8396c78443a570e9c753724",
+    "rosenbrock_D2_noise3_seed17": "90597e75d5a6934fc73f94d470581d38193b7a4f523455f281feca8b4b77e95e",
+    "rosenbrock_D2_noise3_seed18": "4b5975454c8dc18f17f877402010bfbee18f61220b4af9dcc633d3d62c38dfa8",
+    "rosenbrock_D2_noise3_seed19": "8ce98dd2a9c03c2a52e33612279855381f3965b32ddbd23e6aef79f16d633aec",
+    "rosenbrock_D2_noise3_seed2": "12c616b55efa61cd6eba58bb80078af06f3e7f2baba4db308863b32105046a26",
+    "rosenbrock_D2_noise3_seed20": "5a81972e6125e3e12b788966d1ccba4e5184f5f420601a0cad3f26a46d4f4849",
+    "rosenbrock_D2_noise3_seed21": "1632bc5f429b6378a2e9abe6c42421a2a8b5784161b04408fff27dbbebc40ba6",
+    "rosenbrock_D2_noise3_seed22": "b49a9cd161263862fc1c60e2c26b26dc1663318e38c97d06b15111dca0acd017",
+    "rosenbrock_D2_noise3_seed23": "7cc08037ea76c759e6d9eb5e0f86013a1aa408d94d06b60499f06923d8d4ccd8",
+    "rosenbrock_D2_noise3_seed24": "0b9882ad096a2b5e6c5a33d116ad5f0281784276b57a4c4d37c92a0e2e8ce09a",
+    "rosenbrock_D2_noise3_seed25": "3354077475394d86b9fd8b9e8360f0cc3077108ea0e5f30464bf13e75f4df336",
+    "rosenbrock_D2_noise3_seed26": "6f64d8adcd5fa3553855d4a57e00f0052afc123333811e4266f79b064ce8a1a5",
+    "rosenbrock_D2_noise3_seed27": "6001b26914a72bcba63fcf9785ab062d8f8164a1b9920f7ba12b2b4db76201af",
+    "rosenbrock_D2_noise3_seed28": "fcc9e2410da7994e3fecf634282bb198f5eea2495788e4c4b0d585309a650d2e",
+    "rosenbrock_D2_noise3_seed29": "b495c205fd25ef1f385cd13029ea9913e22b784f8cf0e2d176680e3d37139276",
+    "rosenbrock_D2_noise3_seed3": "666900962006f885806c8201ec72da94c49e338ac1dabecbed2a097e1364870d",
+    "rosenbrock_D2_noise3_seed4": "f6cc97d86f512b469860d1467b6f102c93f968639a2c1e0c6e4ee47d0c1ffa0d",
+    "rosenbrock_D2_noise3_seed5": "45e4fc5995dacb02ef94ed34eed9120964f9493791ea80aaaa610d4db8f7d10b",
+    "rosenbrock_D2_noise3_seed6": "d5c767dc72479debdb3e82232e9011cc577ff2dd797f3f1d794ff4f437dee465",
+    "rosenbrock_D2_noise3_seed7": "bd26f459296ae930569e03ed136d5a797e9f17084432711af6f1ac4bba228dea",
+    "rosenbrock_D2_noise3_seed8": "674b362a02d8c338c6caef013046edcef8c89db80af1787c7d081f7a9110bae7",
+    "rosenbrock_D2_noise3_seed9": "51ae299ea12cf222480c451ea3011dea2430412beb34bfbc2ce0a37c73897420",
+    "student_D8_noise3_seed0": "b1639d9ab8799e0716486aa7736fbfbc2a004bb88d3ea36206795d92cea42cf7",
+    "student_D8_noise3_seed1": "81314586aab939bd47b079c3b6a233c60852a005ec0a13c7420a58c5c1e7aa32",
+    "student_D8_noise3_seed10": "437c1a9c9e39de4e1f5268c8e2006e633057ad35445e8db12ab953bbb2d5f732",
+    "student_D8_noise3_seed11": "458585ccc12998b8a32a7328c598503937f9206c6367410293648a2e52b98083",
+    "student_D8_noise3_seed12": "f4a6d9fa5878c6fb958fa62033e4bf516981b264300c36a4aded5c43979b16ee",
+    "student_D8_noise3_seed13": "1d30283abfe772af3b6db3f455910b6234ba4b78e9a37ed9adfa487ff143fc19",
+    "student_D8_noise3_seed14": "e2ccb13f8ff23d61012f007a6f64796c0ef172d5da8304a2d0c1c37d9f7bc99c",
+    "student_D8_noise3_seed15": "afd8d3e553bc2fca8712bd3f7c13fddce74814a6411c09e51ed8f1758e56b644",
+    "student_D8_noise3_seed16": "136e3f626a0e8982291e201a8593a2bb0206f8e0d494c4cb110cf45c3c751aec",
+    "student_D8_noise3_seed17": "46580fadec3948fe10d5cf00dcdf9a7a75762b7dbd7570e17e3126a764640c12",
+    "student_D8_noise3_seed18": "97a5782a6829f01fa15bc8a955dfa19c1e8700c7e3dfe82eae2bc57bbe325be7",
+    "student_D8_noise3_seed19": "bd4c74eb43efd78f9a0c30d94b4c66f20c5a7c92bf774bb91ebf0179bb8b1b25",
+    "student_D8_noise3_seed2": "f19bd89e275b8c985599a9436ffd54c554130e8c19d5597858962c92949594a5",
+    "student_D8_noise3_seed20": "d48beea87a836338261373db8a9d313973ef35a837662f8466d2a50ff57c4859",
+    "student_D8_noise3_seed21": "0be21728e0bc6e138ad7071483b9d148131cb1a5381b9b02f0f72d2a7bab8d9d",
+    "student_D8_noise3_seed22": "57e459d758e2f1f4b5f3373b589b6ea9c3fcf0536110fa368570789c63b96489",
+    "student_D8_noise3_seed23": "c7cb8a248c0457b7a9cab5f93362009d8930fce39154cf22d28f3bb60b7df17d",
+    "student_D8_noise3_seed24": "8472dbbfd721e6b15cd63c59f1ed3386ff61e4eaaff8ebc02f61aceaba7614e0",
+    "student_D8_noise3_seed25": "7a11b1635a35ccc0d8697215181f1e0bdba47fbbb3d4fe273215e45e0b489b0f",
+    "student_D8_noise3_seed26": "4e8a2064302f1ab50ef3bd8266e0bab8243bdb9c79c247df94ecc11a1f370948",
+    "student_D8_noise3_seed27": "8e50a905b0d71b1839730370945a7186bcbd2e951ca424575f8f98de5cf844ea",
+    "student_D8_noise3_seed28": "c6bf9b70f6beb54267b6f9e660ac8992e1901122ab66dc0b8117411e0026665c",
+    "student_D8_noise3_seed29": "b70773602c7c301e4db5421b3480e9f64379b63879ce3da9bc552fcaa272c115",
+    "student_D8_noise3_seed3": "56061cde5909e28a06b7277c3cb9a0910e73c166758aa3e784e1912b809e3ff7",
+    "student_D8_noise3_seed4": "29e7aba51ced729de7c25338c0dabb2a5fabec9622f05e14ac5aa2adba65da7f",
+    "student_D8_noise3_seed5": "bb629b7bc199fcd28603f48f4379bd0f40c96eb5126732ac9cc6c4fffcca35b6",
+    "student_D8_noise3_seed6": "9894d9d920053652380cab2bcf1aba338bfefb748d8ad9aa7d18a15071259973",
+    "student_D8_noise3_seed7": "3810161a2d586b63d918aa951bd7cc8befb8b07868b7f58b052e37fc28969da0",
+    "student_D8_noise3_seed8": "3f051f1911486331d296d8ddec99a12feb103c1d350181a440d1a4af06ae7dd4",
+    "student_D8_noise3_seed9": "13e71b43e2659f6998ca7907f756dc91a23de7488888d96f77570e5111c94755"
+  },
+  "historical_manifest": "dev/golden/extension_20260907/sha256_manifest.json",
+  "historical_manifest_sha256": "b6f49dc22915fbf61fe8d229f1e446cda9500bf3a7504e8a3de9deb7b5d11bb8",
+  "historical_manifest_entries_preserved": 810,
+  "published_sidecars": 870,
+  "historical_baseline_sidecars_byte_identical": 810,
+  "null_check": {
+    "ks_tests": 76,
+    "holm_alpha": 0.05,
+    "flagged_configs": 0,
+    "report": "even_vs_odd.md"
+  },
+  "final_replay": {
+    "cases": 5,
+    "stored_loop_and_final_exact": 5,
+    "initial_designs_exact": 5,
+    "flagged": 0,
+    "returned_transformers_certifiable": 0,
+    "minutes": 4.741415500640869,
+    "git": {
+      "sha": "623f5cd",
+      "dirty": false
+    },
+    "runtime": {
+      "interpreter": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Scripts\\python.exe",
+      "versions": {
+        "python": "3.12.6",
+        "numpy": "2.5.2",
+        "scipy": "1.18.1",
+        "gpyreg": "1.1.0",
+        "cma": "4.4.4",
+        "pyvbmc": "1.0.5.dev159+g4bff1a5b9"
+      },
+      "modules": {
+        "pyvbmc": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_reference_20260907\\source\\pyvbmc\\__init__.py",
+        "benchmark_targets": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_reference_20260907\\source\\dev\\scripts\\benchmark_targets.py",
+        "golden_trace": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_reference_20260907\\source\\dev\\scripts\\golden_trace.py",
+        "profile_run": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_reference_20260907\\source\\dev\\scripts\\profile_run.py",
+        "gpyreg": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_reference_20260907\\gpyreg\\gpyreg\\__init__.py",
+        "numpy": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Lib\\site-packages\\numpy\\__init__.py",
+        "scipy": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Lib\\site-packages\\scipy\\__init__.py",
+        "cma": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Lib\\site-packages\\cma\\__init__.py"
+      },
+      "reference": {
+        "head": "623f5cd91925c6e6b6a23d2985a66bcb1d6bea86",
+        "clean": true,
+        "base": "7314a6afe158c5673775ca79601b88b3913ae383",
+        "changed_files": [
+          "dev/scripts/benchmark_targets.py"
+        ]
+      },
+      "gpyreg": {
+        "head": "a2f8ddce867f502e29717959cf0ff3529f598618",
+        "clean": true
+      },
+      "threads": {
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1"
+      },
+      "execution_options": {
+        "vectorized_target": false,
+        "workers": 1
+      },
+      "comparator_sha256": "6800a7ebde7184804f6c16f07ea307327887170e34964fd405d677f3fcbe1a90"
+    },
+    "report": "final_replay.json"
+  },
+  "new_results": {
+    "completed_pairs": 60,
+    "original_files_byte_identical": 1620,
+    "last_finished": "2026-09-07 21:08:49",
+    "configs": {
+      "rosenbrock_D2_noise3": {
+        "complete": 30,
+        "converged": 23,
+        "mean_minutes": 2.262439837055604
+      },
+      "student_D8_noise3": {
+        "complete": 30,
+        "converged": 30,
+        "mean_minutes": 6.180423265055579
+      }
+    },
+    "errors": []
+  },
+  "npz_bytes": 65352918,
+  "completed_steps": [
+    "validated_60_pairs",
+    "original_810_raw_hash_check",
+    "combined_870_copy_and_zip_integrity",
+    "combined_summary",
+    "even_vs_odd_null_check",
+    "final_five_case_reference_replay",
+    "published_sidecars_summary_and_hash_manifest"
+  ]
+}

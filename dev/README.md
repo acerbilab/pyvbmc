@@ -54,11 +54,10 @@ status and next steps never go into the devlogs.
 - [plans/latent-bug-fixes.md](plans/latent-bug-fixes.md) — partially approved pickup 9
   implementation plan: verified candidate dispositions, numerical and
   compatibility contracts, open PI questions, and regression gates against
-  the completed 810-run reference and approved expansion to 960. D1–D5,
+  the completed 870-run reference. D1–D5,
   Q2/Q3 and the experiment designs are approved; final Q1/Q4 choices await evidence.
-  Phase 0 tracks preparation of the 150-run noisy extension without launching
-  it; `scripts/reference_noisy_extension.py` checks pinned imports and hashes
-  and provides a separate explicit launch command.
+  Phase 0 records the reduced 60-run noisy extension; the original 150-run
+  preparation remains as historical evidence.
 - `plans/profile-and-gradient-checks.md` — dev environment, baseline test
   run, first measured profile (D=5, D=10) and the first Stage 0
   finite-difference gradient checks, which found the reshape-order bug in
@@ -161,19 +160,25 @@ checks, but timings collected under mixed use are not controlled speed
 benchmarks. Short gates (oracles, a module's tests, the replay) can run at
 any time as one process.
 
-The current golden reference is `item7_20260906`, extended on 2026-09-07:
-**810 runs, 16 configurations at 50 seeds and the D15 exhaust at 10**.
-Its JSON sidecars (2.42 MiB) and `summary.md` live under `golden/baseline/`,
+The current golden reference is `reference_870_20260907`: **870 runs across
+19 configurations, including 160 noisy runs, with 76 population KS tests**.
+Its JSON sidecars and `summary.md` live under `golden/baseline/`,
 so `python dev/scripts/golden_trace.py compare dev/golden/baseline <new_dir>`
-works from a fresh checkout. Full traces (55.9 MiB of `.npz`) stay gitignored
-under `scripts/runs/golden/item7_20260906/` until release-asset publication.
-The original 280 pairs retain `18a236c`; 530 new runs record frozen `7314a6a`
-with explicit `vectorized_target=False`. All pairs are complete, all three
-null comparisons passed, and both default five-case replays were identical.
-The two batches ran as one authorized chain in 12 h 54 min including checks;
-see [the extension record](golden/extension_20260907/README.md) for commands,
-provenance, comparison reports and file hashes. The reference boundary is
-complete; planned latent fixes are next (roadmap pickup 9).
+works from a fresh checkout. Full `.npz` traces stay gitignored
+under `scripts/runs/golden/reference_870_20260907/` until release-asset
+publication. The historical 810 pairs remain unchanged: the original 280
+retain `18a236c`, and 530 record frozen `7314a6a`. The 60 additions were made
+from pinned source `623f5cd` with gpyreg `a2f8ddc`, 30 seeds each for
+`rosenbrock_D2_noise3` and `student_D8_noise3`; 53 converged and seven noisy
+Rosenbrock runs reached their evaluation budget. See the historical
+[810-run extension record](golden/extension_20260907/README.md) and the
+[870-run integration record](golden/noisy_extension_20260907/README.md) for
+commands, provenance, hashes and validation reports. All 870 archives passed
+integrity checks, the 76-test even/odd population check had no flags, and the
+default five-case replay matched every stored loop and final value plus each
+initial design, with zero flags. The historical traces do not store the
+returned posterior's transformer, so that field remains explicitly
+uncertifiable.
 
 [`golden/README.md`](golden/README.md) is the human-facing description of the
 current golden runs: purpose, target coverage, metrics, files and usage. Keep
@@ -244,8 +249,8 @@ reason.
   the horizons (finals only without them); `--report-only` re-renders a
   finished run. Flags: `--configs`, `--seeds`
   (default seed 0 only), `--baseline` (the traces directory; the default
-  `scripts/runs/golden/item7_20260906/`, the reference population since
-  2026-09-06, exists only on the machine that made it), `--sidecars`,
+  `scripts/runs/golden/reference_870_20260907/`, the current reference
+  population, exists only on the machine that made it), `--sidecars`,
   `--out`, `--threads` (1, as the baseline). Exit code 1 if anything is
   flagged or nothing was compared.
 - `scripts/regenerate_baseline.sh` — the whole benchmark regeneration as
