@@ -4,7 +4,10 @@ Created: 2026-09-07
 Status: PARTIALLY APPROVED — D1–D5, Q2/Q3, Q1/Q4 comparison designs,
 the 150-run reference addition and parallel development approved on
 2026-09-07; final Q1 treatment and Q4 default remain open.
-Implementation has not started.
+Reference-extension preparation is complete (2026-09-07). The PI resumed
+Phase 0 and the approved Phase 1 neutral fixes later that day; both are now
+complete and verified. The 150-run noisy extension remains parked and must
+not be launched or scheduled without a separate PI instruction.
 Base inspected: `dev-next`, `edb59700bbb77034c877c71f8475994abfd40f66`.
 
 ## Purpose and boundaries
@@ -201,7 +204,7 @@ boost objective. Include metric checks of accepted and rejected candidates:
 lumpy_D10 seed 11 is already a known case where rejection sacrifices a small
 improvement in the two posterior accuracy metrics despite a score decrease.
 
-**Approved reference extension (PI, 2026-09-07; intended start tonight):**
+**Approved reference extension (PI, 2026-09-07; current task: prepare only):**
 add rosenbrock_D2_noise3 (isolate noise level), student_D8_noise3
 (higher-dimensional broad tails), and lumpy_D10_noise3 (higher-dimensional
 mixture structure), each at seeds 0–49, using the existing target wrapper and
@@ -294,6 +297,266 @@ to the PI, while independent authorized fixes may continue.
 ### Phase 0 — Establish the execution gates
 
 **Executor:** Astra orchestrator, with Sol for bounded harness changes.
+
+#### Active execution: regression gate and neutral fixes (2026-09-07)
+
+Work on `dev-latent-neutral-fixes`, preserving the completed, uncommitted
+reference preparation inherited from `dev-noisy-reference-prep`. The pinned
+reference checkouts, manifest, and original 810 pairs remain untouched.
+
+- [x] Record development imports/environment; run exact existing oracles and
+  one fresh default five-case preflight before any numerical edit. Evidence
+  goes under `dev/scripts/runs/latent_fixes/neutral_20260907/`.
+- [x] Sol: repair the existing replay comparison to the Phase 0 contract below,
+  with synthetic field-mutation coverage. Change only the existing replay
+  tooling and its focused tests; no new supervisor or launch framework.
+- [x] Re-render the saved preflight through the stronger comparison, preserving
+  its original run provenance, and obtain independent static review.
+- [x] Implement Phase 1 in bounded Sol-owned groups, starting with boundary
+  float64 casts and floating variance outputs; preserve the detailed ten-step
+  contracts below and keep Q1/Q4/PyTorch decisions unchanged.
+- [x] Run the relevant focused checks, neutral exact-oracle/replay gates and
+  independent review; record completed groups and any remaining requirements.
+
+The preflight completed before numerical edits. Sol owns disjoint state/dtype
+and utility/API groups; Astra runs all numerical checks sequentially.
+
+Initial evidence: development imports resolve to this checkout and sibling
+gpyreg `a2f8ddc`; original Python 3.12.6 / NumPy 2.5.2 / SciPy 1.18.1 /
+gpyreg 1.1.0 / cma 4.4.4, all three BLAS thread settings 1, recorded in
+`neutral_20260907/environment.json`. `make_oracle_fixtures.py --check --exact`
+exited 0: all eight fixtures exact (`oracles_before.log`). The fresh preflight
+executes the original `HEAD:dev/scripts/golden_replay.py` text with its normal
+`__file__` and fresh `--out .../preflight`, so concurrent comparator edits
+cannot change the baseline comparison midway through the five runs.
+It exited 0: all five cases identical under the original comparison, zero
+flags, 4.5 minutes (`preflight.log`).
+The repaired comparator then passed 57 synthetic tests (`replay_tests.log`)
+and `--report-only --out .../preflight` exited 0 with all five stored loops
+and finals exact (`preflight_stronger.log`). Original code, elapsed time and
+thread provenance were retained. Both historical and fresh traces omit the
+returned VP transformer, explicitly reported as not certifiable; no reference
+schema or files were changed. Independent review remains pending.
+The separate Python 3.12 environment installed successfully with NumPy 2.2.6,
+SciPy 1.15.0 and gpyreg 1.1.0 (`scipy115_install.log`). The original interpreter
+was not modified.
+
+Phase 1 validation so far: `pytest pyvbmc/testing/priors -q --reruns=5 -x`
+passed 46 tests in the original SciPy 1.18.1 environment and 46 in the separate
+SciPy 1.15.0 / NumPy 2.2.6 environment, without reruns (`priors_current.log`,
+`priors_scipy115.log`). Both runs used workspace-local pytest temp/cache paths
+and single-threaded BLAS. The remote CI matrix was inspected, not rerun here.
+After the final frozen-univariate type check, the minimum-version run again
+passed all 46 (`priors_scipy115_final.log`); current-version priors passed in
+the 74-test GP-training/gradient/seed group (`remaining_tests.log`).
+State/init, single-sample variance, oracle, logger, variational-optimization
+and mocked-result coverage passed 251 tests, 15 skipped (`state_tests.log`).
+Transformer/KL/posterior and posterior-FD coverage passed 293 tests, 18 skipped
+(`utilities_tests3.log`), after correcting a new test's stale scale and updating
+the old original-space-gradient expectation to Q2. No new full optimize test
+was added. Example 1 quadrature gives -2.2598471241723845; example 6 returns
+matching `(N,)` values/noise for N=1 and N=4 (`examples_checks.json`). Both
+scripts were regenerated from notebook code cells with the Makefile-equivalent
+source export/path rewrite and in-process isort/Black; they match exactly.
+The complete Sphinx HTML build, including the Makefile's example-copy step,
+exited 0 (`sphinx_with_examples.log`); its sole warning is the existing example
+2 Plotly MIME output. The temporary copied examples were removed afterward.
+
+Independent Sol review found three issues, now corrected: cast narrow inputs
+before inferred-bound arithmetic; use the matching baseline sidecar for custom
+replays; explicitly flag nonfinite returned values even when accuracy metrics
+are finite. Review uses the two available Sol agents on each other's work;
+the runtime's thread limit prevents additional fresh reviewer threads. No agent
+reviews its own implementation. The corrected constructor passed all 66 init
+tests (`bounds_final_tests.log`); the final replay harness passed 67 synthetic
+tests (`replay_tests_closed.log`), including custom-baseline missing-sidecar
+uncertainty, and re-rendered all five preflight cases exactly with zero flags.
+Post-fix exact oracles passed all eight fixtures (`oracles_after.log`), with
+no fixture changes. The post-fix five-case replay exited 0 in 3.3 minutes:
+all stored loop/final outputs and initial designs exact, zero flags
+(`postfix.log`, `postfix/replay.json`, `postfix/replay.md`). Final report-only
+passes on both preflight and post-fix artifacts retained their original run
+provenance (`preflight_closed.log`, `postfix_closed.log`). Historical returned
+transformers remain explicitly uncertifiable; this is not a full-state claim
+about information absent from the traces.
+
+Reference preservation rechecked: all 1,620 original raw files are byte-identical,
+the frozen launcher hash is unchanged, and the 150-run extension output directory
+is empty (`reference_preservation.json`). Q1/Q4 and PyTorch decisions are unchanged.
+
+**Outcome:** Phase 0's regression gate and all ten Phase 1 steps are accepted.
+Boundary/floating variance, transformer, KL, cubic, both-axis pruning, Q3 fixed
+widths, optional truth diagnostics, logger finalization, returned RNG snapshots,
+Q2, public SciPy compatibility, examples and option comments are complete.
+The already-repaired `optimize_lambd` item is closed by inspection and frozen-
+sigma coverage; D5 hooks/serialized keys remain intact with honest comments.
+No Phase 2–6 trajectory-moving production treatment was applied. The next
+development group is Phase 2's approved boost comparison; final Q1 treatment
+and Q4 tolerance still require their specified evidence.
+
+Independent `$doublecheck` is complete: each Sol reviewed the other's code,
+all confirmed findings were fixed and rechecked, with no remaining findings.
+No fresh third reviewer could be spawned because of the runtime thread limit.
+Checks were sequential in the parent; reviews were static. The three accepted
+implementation commits on `dev-latent-neutral-fixes` are `ae5d871` (replay),
+`c8a284e` (state/dtype) and `3e67d9e` (utility/API). Repository-pinned Black 23.3.0
+was run in-process on all 29 changed Python/notebook files to avoid the known
+Windows multiprocessing hang; syntax equivalence was checked for Python
+formatting changes. The commit hooks for whitespace, final newlines, isort and
+pycln passed; only the already-run Black hook was skipped. The PI subsequently
+authorized committing the remaining reference-preparation files and developer
+notes and pushing `dev-latent-neutral-fixes` (2026-09-07). The parked 150-run
+batch remains a separate future action.
+
+#### Active subset: prepare the noisy reference extension (2026-09-07)
+
+This subset implements the approved allocation above without running it.
+The remaining numerical phases and scientific decisions stay pending.
+
+- [x] Read the governing records, inspect the clean checkout, and create
+  `dev-noisy-reference-prep` from `a165626ef7b0284b866ab0e27d9a8a764f912758`.
+- [x] Sol: add the three golden configurations using the existing noisy
+  wrapper and explicit paper budgets (200, 500, 600); prepare a safe command
+  manifest/launcher and lightweight checks under `dev/scripts/`. Verify
+  allocation, pinned source and dependency imports in a spawned worker,
+  one-worker/thread settings, and preservation of the existing 810 pairs.
+  Default invocation must not run optimization; launching requires an
+  explicit separate invocation. Do not modify numerical source or the tracker.
+- [x] Astra: prepare a dedicated local checkout with a benchmark-only commit
+  based on `7314a6a`, retain the original environment without reinstalling,
+  record its exact SHA/diff, and verify actual imports and original hashes.
+  Isolated base and gpyreg checkouts are created under the ignored
+  `dev/scripts/runs/noisy_reference_20260907/` directory; original 810 pairs
+  and all published sidecars match the historical manifest. Raw hashes of
+  the 1,620 original files are saved there for the final preservation check.
+- [x] Update benchmark coverage and pickup documents, recording exact future
+  launch/validation commands and distinguishing the current 810 from the
+  pending 960 runs. Preserve the historical completion record.
+- [x] Run lightweight preparation checks only, then a fresh-context Sol
+  review through `$doublecheck`; record results here. No benchmark, replay,
+  oracle regeneration, watcher, scheduler, or full test suite in this task.
+
+Acceptance: a reviewable, pinned, import-verified 3 × 50 allocation with
+explicit `vectorized_target=False`, one worker and single-threaded BLAS;
+the existing 810 reference pairs unchanged; zero new optimization runs.
+
+**Prepared source identity:** local `reference/noisy-20260907` is
+`623f5cd91925c6e6b6a23d2985a66bcb1d6bea86`, a single benchmark-only commit
+on `7314a6afe158c5673775ca79601b88b3913ae383`. Its entire diff changes
+`dev/scripts/benchmark_targets.py` only (three golden registrations and their
+comments); the profile suite and all numerical source remain unchanged.
+The original `reference/stage3-20260906` still points to `7314a6a`.
+The dedicated checkout is detached at the new pin in
+`dev/scripts/runs/noisy_reference_20260907/source/`; its isolated gpyreg
+neighbor is detached at `a2f8ddce867f502e29717959cf0ff3529f598618`.
+Both checkouts are clean. Local Git bundles in their parent directory retain
+both sources; no remote publication was performed.
+
+An independent isolated-interpreter probe used the original
+`.venv/Scripts/python.exe -I` with those source paths inserted before imports.
+It verified `pyvbmc.__file__`, `gpyreg.__file__`, `benchmark_targets`,
+`golden_trace`, and `profile_run` all resolve inside the pinned checkouts,
+Python 3.12.6 / NumPy 2.5.2 / SciPy 1.18.1 / gpyreg 1.1.0 / cma 4.4.4,
+and OMP/OPENBLAS/MKL thread environment values of 1. The golden registry has
+20 configurations, with the three new noise-SD-3 budgets 200/500/600.
+The probe made no target calls or optimizations. Its initial attempt to
+inspect loaded thread pools found `threadpoolctl` absent; it was rerun
+successfully checking the configured thread environment without installing
+anything. Evidence: ignored `independent_import_probe.json` in the preparation
+directory. The launcher will repeat its own worker checks before any future run.
+
+The first end-to-end `prepare` tooling check exited 0 and produced all 150
+tasks with correct isolated-worker provenance; its extension directory was
+empty. This was preparation only, not an end-to-end solver test. It used
+temporary `checks/prepare_probe/` artifacts. The canonical manifest below is
+now frozen from the final reviewed helper; its `prepare` command exited 0.
+
+**Outcome: preparation complete; nothing launched or scheduled.** The
+canonical `preparation.json` contains all 150 tasks and actual worker import
+provenance. Its frozen launcher SHA256 is
+`c4a7f2381913debbe20c9c1afc602f4bb0a5a7cc36b68fee80d16e876b32e3a1`.
+The new `extension/` directory is empty, no launch lock exists, and a final
+raw-byte check confirms all 1,620 original JSON/NPZ files unchanged.
+
+Verification: seven focused tests passed without reruns (final run 1.32 s):
+`python -m pytest pyvbmc/testing/test_reference_noisy_extension.py -q`, using
+the original venv, single-threaded BLAS, and workspace-local `--basetemp`
+and `cache_dir` under `checks/`. The first attempt hit existing system-temp
+ACL restrictions during four fixture setups; the workspace-temp run passed.
+The schema validator accepted all 810 existing traces without optimization.
+The worker environment also returned truthful pinned `profile_run.git_info()`
+metadata (`623f5cd`, dirty=false). Syntax and sequential in-process Black
+checks passed for the new helper/tests. Stalled multiprocessing Black checks
+were stopped; the newer installed formatter's unrelated legacy benchmark
+linewrap was left unchanged. Fresh-context Sol `$doublecheck` finished with
+no remaining findings after source/manifest, worker authorization, resume,
+trace-validation and task-tag corrections. No numerical suite, replay,
+oracle, population run, Q1/Q4 experiment, or PyTorch work was performed.
+The broader phases below remain pending; launching is a separate next action.
+
+**Preparation and future commands (PowerShell, repository root):**
+
+```powershell
+.venv/Scripts/python.exe dev/scripts/reference_noisy_extension.py prepare `
+  --python .venv/Scripts/python.exe `
+  --reference-checkout dev/scripts/runs/noisy_reference_20260907/source `
+  --expected-sha 623f5cd91925c6e6b6a23d2985a66bcb1d6bea86 `
+  --gpyreg-checkout dev/scripts/runs/noisy_reference_20260907/gpyreg `
+  --expected-gpyreg-sha a2f8ddce867f502e29717959cf0ff3529f598618 `
+  --population dev/scripts/runs/golden/item7_20260906 `
+  --historical-manifest dev/golden/extension_20260907/sha256_manifest.json `
+  --out dev/scripts/runs/noisy_reference_20260907/extension `
+  --manifest dev/scripts/runs/noisy_reference_20260907/preparation.json
+```
+
+`prepare` checks sources, allocation, original hashes, and actual imports in
+an isolated child interpreter, then freezes the launcher beside its manifest.
+It performs no optimization. The manifest and launcher paths above are
+machine-local; retain the dedicated source checkouts and original environment.
+The default invocation prints help. Re-preparation refuses to overwrite its
+existing manifest or frozen launcher; use a fresh manifest directory if
+preparation inputs must change after investigating the reason.
+
+**Future launch, only after a separate PI instruction; not run in this task:**
+
+At that point perform any reference preflight replay before this command,
+using the pinned imports and fresh output paths. Numerical replay has been
+deliberately excluded from preparation; no new replay pass is claimed here.
+
+```powershell
+.venv/Scripts/python.exe dev/scripts/runs/noisy_reference_20260907/reference_noisy_extension_frozen.py run `
+  --manifest dev/scripts/runs/noisy_reference_20260907/preparation.json `
+  --confirm-run-150
+```
+
+Each task uses the original interpreter in isolation, pinned source imports,
+one BLAS thread, and explicit `vectorized_target=False`. Output goes into the
+separate `extension/` directory; the 810-run source population is untouched.
+No scheduler, background watcher, keep-awake request, or launch time is set.
+Do not run a test suite, replay, or any other heavy computation alongside it.
+
+**After all 150 runs, before appending or publishing anything:**
+
+```powershell
+.venv/Scripts/python.exe dev/scripts/runs/noisy_reference_20260907/reference_noisy_extension_frozen.py validate `
+  --manifest dev/scripts/runs/noisy_reference_20260907/preparation.json
+```
+
+Investigate any integrity/provenance failures and convergence changes. Build
+a fresh combined directory by copying the verified 810 and 150 JSON/NPZ pairs;
+verify its exact allocation (19 × 50 plus exhaust × 10), readable traces,
+finite metrics, and unchanged historical hashes. Against that combined set,
+run `golden_trace.py summary <combined>` and
+`golden_trace.py compare --split <combined>` using the pinned source and
+reference interpreter: 80 KS tests, Holm alpha 0.05, with failures surfaced.
+Perform the final reference replay when numerical runs are authorized,
+recording its actual coverage; the stronger replay-harness work below has
+not been implemented by this preparation subset.
+Only after the checks and any flagged-outcome investigation, append the
+validated new pairs to the local reference and extend the tracked sidecars,
+summary, and reference hash manifest. Retain the historical 810-run execution
+record unchanged and describe 960 as current only after that publication.
+The final 960-run release-candidate comparison remains a separate later task.
 
 - D1–D5, Q2 and Q3 are approved. The agreed Q1/Q4 experiments and isolated
   preparation may proceed; settle their final scientific choices before

@@ -25,11 +25,14 @@ use seeds 0–49; the 15-dimensional budget-exhaustion case uses seeds 0–9.
 The [results summary](baseline/summary.md) gives the measured outcomes for
 every configuration.
 
-**Approved next extension (2026-09-07; not yet run):** add
+**Prepared next extension (2026-09-07; not yet run):** add
 `rosenbrock_D2_noise3`, `student_D8_noise3`, and `lumpy_D10_noise3` to the
 standard benchmark set, each at seeds 0–49. These 150 runs will extend this
 reference to 960 runs across 20 configurations, including 250 noisy runs
 across five configurations. Existing reference pairs remain unchanged.
+The new configurations use noise SD 3 and explicit evaluation budgets of
+200, 500, and 600 respectively. They are registered for future golden runs;
+the current reference and its 68-test comparison still cover 810 runs.
 Preparation and validation are recorded in
 [`latent-bug-fixes.md`](../plans/latent-bug-fixes.md).
 

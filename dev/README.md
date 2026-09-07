@@ -56,6 +56,9 @@ status and next steps never go into the devlogs.
   compatibility contracts, open PI questions, and regression gates against
   the completed 810-run reference and approved expansion to 960. D1–D5,
   Q2/Q3 and the experiment designs are approved; final Q1/Q4 choices await evidence.
+  Phase 0 tracks preparation of the 150-run noisy extension without launching
+  it; `scripts/reference_noisy_extension.py` checks pinned imports and hashes
+  and provides a separate explicit launch command.
 - `plans/profile-and-gradient-checks.md` — dev environment, baseline test
   run, first measured profile (D=5, D=10) and the first Stage 0
   finite-difference gradient checks, which found the reshape-order bug in
@@ -220,9 +223,13 @@ reason.
 - `scripts/golden_replay.py` — the per-change trajectory gate of Stage 2:
   replays a few golden configurations in-process with the current code
   (about 7 minutes for the default set) and compares each run with its
-  stored trace: the first iteration at which the ELBO path parts, the live
-  points identical, the initial design (see below), and the finals against
-  the baseline population's `Q3 + 3 IQR` envelope.
+  stored trace: exact shapes and values of every non-timer NPZ array and
+  all semantic final-result fields, the ELBO/live-point agreement horizons,
+  the initial design (see below), and final accuracy against the baseline
+  population's `Q3 + 3 IQR` envelope. It reports "same loop, changed final"
+  separately and applies the accuracy fences to that case. Old traces omit
+  the returned posterior's transformer; that state is explicitly reported
+  as not certifiable. Sidecar counts must agree with their NPZ arrays.
   An arithmetic-preserving change is expected to part once a CMA-ES
   ranking flips (a change to the ELBO arithmetic parts at iteration 0);
   a parted run's finals must stay inside the envelope (an identical run

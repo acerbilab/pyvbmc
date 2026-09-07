@@ -19,6 +19,19 @@ mathematics + feasibility); every finding is folded in below.
 
 ## Summary
 
+**Coverage addition, 2026-09-07 (prepared separately; no new runs):** the
+approved noisy extension registers `rosenbrock_D2_noise3`,
+`student_D8_noise3`, and `lumpy_D10_noise3` in the standard golden suite,
+using the existing noise wrapper and paper budgets 200, 500, and 600.
+Each will use seeds 0–49. The existing reference remains 810 runs across
+17 configurations until all 150 new pairs pass validation; the expanded
+reference will contain 960 runs across 20 configurations (250 noisy runs
+across five configurations), with 80 KS tests in the population comparison.
+Historical results below retain their original coverage and provenance.
+The active preparation checklist, pinned-source details, and future launch
+and validation procedure are in [latent-bug-fixes.md](latent-bug-fixes.md),
+Phase 0. No launch or scheduling is part of this preparation task.
+
 Build one shared module of benchmark targets under `dev/scripts/`, make the
 existing profiler use it, profile the harder targets the devlog asked for and
 apply its decision rule to fix the Stage 2 priority order. Then build the

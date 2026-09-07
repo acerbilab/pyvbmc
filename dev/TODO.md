@@ -2,9 +2,27 @@ Pickup (2026-09-07): resume dev/plans/latent-bug-fixes.md with $task.
 Astra orchestrates scientific decisions; Sol implements and reviews bounded
 groups. The agreed fixes and experiment designs are approved; Q1's final
 main-loop penalty treatment and Q4's final default remain evidence-dependent.
-First prepare the approved 150-run reference addition for the night of
-2026-09-07 (no exact start time was selected). It has not been launched or
-scheduled, and no latent fixes or benchmark registrations have been implemented.
+The approved 150-run reference addition is prepared, but NOT RUN
+(explicit PI instruction, 2026-09-07). Phase 0's preparation subset is complete
+on `dev-noisy-reference-prep`: pinned source `623f5cd` over `7314a6a`, isolated
+gpyreg, imports verified, 7 focused tests passed, independent Sol review clear.
+Canonical manifest: `dev/scripts/runs/noisy_reference_20260907/preparation.json`.
+The plan has exact future launch/validation commands. All 810 original pairs
+remain byte-identical; the extension directory is empty. No launch or scheduling
+was performed. Phase 0's regression gate and Phase 1's approved neutral fixes
+are complete on `dev-latent-neutral-fixes` (PI resumed with $task). Commits:
+`ae5d871` replay gate, `c8a284e` neutral state/dtype, `3e67d9e` utility/API.
+Exact oracles passed all eight fixtures before and after; both five-case
+replays match every stored loop/final output under the stronger comparator.
+Focused tests, SciPy 1.15/current prior checks, docs/examples and independent
+Sol review passed. Historical returned transformers remain uncertifiable.
+Next development group: Phase 2's approved boost comparison; final Q1/Q4
+choices remain evidence-dependent. No moving production fix was applied.
+Evidence: `dev/scripts/runs/latent_fixes/neutral_20260907/` and the active
+execution checklist in the plan. The 150-run extension remains parked.
+Reference preparation and developer notes accompany the implementation commits.
+The PI authorized committing the remaining files and pushing this branch on
+2026-09-07; this does not authorize launching the parked 150-run batch.
 Parallel development on isolated checkouts is approved; verify actual imports
 and run only one heavy computation at a time. No job/watcher needs reattaching.
 The broader calibration proposal is in roadmap pickup 12, outside this plan.
@@ -64,7 +82,7 @@ settling the default. The existing 100 noisy runs cover only two configurations
 and none would be rejected at either threshold; 15 of the full 810 would be
 rejected at 0.1 and seven at 0.2.
 The PI approved extending the reference
-itself tonight with rosenbrock_D2_noise3, student_D8_noise3 and lumpy_D10_noise3,
+itself with rosenbrock_D2_noise3, student_D8_noise3 and lumpy_D10_noise3,
 each at seeds 0–49 (150 new runs, directly superseding the 10/20-seed pilot).
 All three join the standard benchmark set: 960 reference runs across 20
 configurations, including 250 noisy runs across five configurations, once
@@ -76,8 +94,9 @@ import paths. Neutral fixes and boost/test tooling preparation can proceed
 while the reference runs; only one heavy compute process runs at a time.
 The numbered phases describe dependencies and validation order, not a serial
 development schedule. Scientific choices still await their evidence.
-The plan records preparation and validation requirements. No new campaign
-has been launched or scheduled yet.
+The plan's Phase 0 checklist records preparation, pinned checkout locations,
+verification evidence, and the separate future launch/validation procedure.
+No new campaign has been launched or scheduled.
 Verify claims against current source and the existing derivation/bug notes,
 separate trajectory-neutral from trajectory-moving changes, define the gates,
 and surface unresolved bug-versus-algorithm decisions for the PI. The existing
@@ -115,7 +134,7 @@ Local operational state/logs: dev/scripts/runs/reference_extension_20260906/,
 dev/scripts/runs/golden_{grow,extend}_20260906.log and
 .venv/reference_extension_20260906.*.log. The permanent reports above contain
 the outcomes; no old job needs reattachment. The new 150-run addition above
-still needs preparing and launching.
+is prepared; launching remains a separate next action.
 
 The full NPZ traces remain gitignored on this laptop under
 C:/Users/luigi/Documents/GitHub/pyvbmc/dev/scripts/runs/golden/item7_20260906/.

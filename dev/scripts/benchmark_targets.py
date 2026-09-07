@@ -939,8 +939,11 @@ def _paper_budget(D):
 
 # Noisy configs: rosenbrock_D2 at sigma = 1 reproduces the 2020 paper's
 # Fig. 1 toy problem (Rosenbrock + N(0, 3^2), LML -2.27, sigma_obs = 1);
+# sigma = 3 isolates the effect of stronger noise on the same target.
 # logreg_D5 at sigma = 3 is a bounded problem at the top of the 2020
-# benchmark's noise range (1.3-3.2) on the probit-transformed path.
+# benchmark's noise range (1.3-3.2) on the probit-transformed path. The
+# student_D8 and lumpy_D10 sigma = 3 entries add broad-tailed and mixture
+# structure at higher dimension. Every noisy entry uses the paper budget.
 # The budget-exhausting configuration: 750 evaluations at D = 15 with early
 # termination disabled, the one run that spends long in the optimize-only
 # regime (a single GP hyperparameter sample from N >= 350, K around 30, the
@@ -989,11 +992,14 @@ SUITES = {
         Config("student", 4),
         Config("logreg", 5),
         Config("rosenbrock", 2, noise_sd=1.0, options=_paper_budget(2)),
+        Config("rosenbrock", 2, noise_sd=3.0, options=_paper_budget(2)),
         Config("logreg", 5, noise_sd=3.0, options=_paper_budget(5)),
         # The two hard shapes (ill-conditioned, heavy-tailed) at an
         # intermediate-high dimension; the other shapes cover D = 6 and 10.
         Config("cigar", 8),
         Config("student", 8),
+        Config("student", 8, noise_sd=3.0, options=_paper_budget(8)),
+        Config("lumpy", 10, noise_sd=3.0, options=_paper_budget(10)),
         _EXHAUST,
     ],
 }

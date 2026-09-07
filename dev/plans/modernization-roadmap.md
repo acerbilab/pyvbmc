@@ -607,9 +607,12 @@ anything that changes numerics lands.
    rosenbrock_D2_noise3, student_D8_noise3 and lumpy_D10_noise3, each at seeds
    0–49, to the standard benchmark set. The resulting reference will have
    960 runs across 20 configurations (250 noisy runs across five configs).
-   Prepare those runs for the night of 2026-09-07 on frozen reference
-   numerics plus benchmark registrations, retaining the existing 810 pairs.
-   No new batch is launched or scheduled. The plan owns exact preparation,
+   Preparation completed on 2026-09-07 with isolated reference source at
+   `623f5cd` (benchmark-only addition to `7314a6a`), verified worker imports,
+   a frozen 150-task manifest, seven passing focused tests, and independent
+   Sol review. The existing 810 pairs remain byte-identical.
+   The PI explicitly limited this task to preparation: no new batch is
+   launched or scheduled. The plan's Phase 0 checklist owns exact preparation,
    source isolation, verification, experiment and per-change gate details.
    The reference boundary was completed on
    2026-09-07 (pickup 3f); this work is next. The agreed boundary was:
