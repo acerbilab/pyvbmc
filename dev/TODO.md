@@ -1,4 +1,5 @@
 Reference extension complete and verified (2026-09-07, 08:55 UTC+03).
+Results and documentation are committed and pushed in 2a09fcd.
 The checkout is back on dev-next, preserving its newer release decisions.
 Frozen reference/stage3-20260906 remains at 7314a6a; it was used with the
 original .venv for all 530 new runs, with explicit vectorized_target=False.
@@ -21,6 +22,13 @@ publication changed baseline documentation. Numerical source stayed frozen.
 
 Next: prepare the latent-fix implementation plan required by roadmap pickup 9,
 then carry out its approved fixes and replay each trajectory-moving change.
+Fresh-session scope: use the plan skill to investigate the listed candidates
+and write the implementation plan under dev/plans/. No latent-fix plan has
+yet been drafted or approved; start with planning, not numerical edits.
+Verify claims against current source and the existing derivation/bug notes,
+separate trajectory-neutral from trajectory-moving changes, define the gates,
+and surface unresolved bug-versus-algorithm decisions for the PI. The existing
+final-boost decision is in dev/2026-09-04-final-boost-failure.md and pickup 9.
 Complete S-VBMC integration and connections to upcoming extensions (pickup 10),
 resolve the PyTorch feasibility decision below, and validate the final 1.5 code
 as a population against this extended reference before dev-next -> main.
@@ -57,5 +65,9 @@ that checkout. Stage 3 integration and CI evidence remain in
 plans/stage3-pipeline-features.md.
 
 Read first: dev/2026-09-06-pyvbmc-1.5-overview.md, this reminder,
-dev/golden/extension_20260907/README.md, and roadmap pickups 3f, 9, 10, 11.
+dev/golden/README.md, and roadmap pickups 3f, 9, 10, 11.
 For bug work also read dev/2026-09-02-modernization-discussion.md section 9.
+Use dev/golden/extension_20260907/README.md for execution/provenance details.
+Keep dev/golden/README.md a human-facing description of the current runs
+(purpose, coverage, metrics, files and usage); batch chronology and release
+stage history belong in the execution record, not that README (PI request).

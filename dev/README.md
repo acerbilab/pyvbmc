@@ -167,6 +167,11 @@ see [the extension record](golden/extension_20260907/README.md) for commands,
 provenance, comparison reports and file hashes. The reference boundary is
 complete; planned latent fixes are next (roadmap pickup 9).
 
+[`golden/README.md`](golden/README.md) is the human-facing description of the
+current golden runs: purpose, target coverage, metrics, files and usage. Keep
+it about the current snapshot; batch chronology, launch details and release
+stage history belong in the separate execution records.
+
 `scripts/regenerate_baseline.sh` is the legacy whole-campaign helper. Its
 seed allocation differs from the extended reference and it masks comparison
 failures, so it must not be used to republish this reference. Follow the
