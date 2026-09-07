@@ -533,7 +533,7 @@ as one sequential chain, with phase 2 gated on phase 1 and its checks.
 - [x] Fast-forwarded clean dev-next to 4bff1a5; editable install refreshed with --no-deps and isolated build tools, reference numerical dependencies retained, pip check clean.
 - [x] Integrated exact oracles passed (8/8); all five replay cases identical (3.8 min); full local suite: 858 passed, 35 skipped, 2 xfailed, 346.59 s.
 - [x] Independent integration review findings reconciled; verified records and frozen reference snapshot preserved.
-- [ ] Later: start the reference campaign on explicit instruction, which may authorize both batches as one chain.
+- [x] Reference campaign authorized and completed as one chain, 2026-09-06/07: 530 new runs, 810 complete pairs, all null checks passed and final replay identical on all five cases; see `../golden/extension_20260907/README.md`.
 
 Integration preflight: original dev-next is clean at `4d91a5e`, fast-forward
 merge is available, and no Python jobs were running. Its own editable
@@ -602,3 +602,17 @@ against Git history, all 280 sidecars and runner behavior: explicit batching
 option, fail-fast comparisons, complete pair counts and frozen-SHA checks.
 The final status sweep replaces transient pending-CI/merge statements.
 Local logs: `.venv/stage3-integrated-{oracles,replay,pytest,ci}.log`.
+
+### Reference extension completed (2026-09-07)
+
+The PI authorized both batches; the chain completed at 08:55 (UTC+03) on
+frozen `7314a6a` with the original reference environment and batching=false.
+All 530 new runs completed, bringing the reference to 810 pairs. Both
+first-batch null checks (56 KS tests each) and the final even/odd check
+(68 tests) passed. Fresh preflight and final replays were identical on all
+five cases. Historical 280 pairs were unchanged by SHA256 verification.
+The 110 second-batch sidecars truthfully record dirty=true for first-batch
+baseline publication; HEAD and numerical source stayed frozen. Permanent
+results and provenance: `../golden/extension_20260907/README.md`.
+The checkout returned to the latest dev-next, preserving the subsequent
+PyTorch feasibility decisions; no campaign process remains.

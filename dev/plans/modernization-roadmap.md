@@ -56,8 +56,10 @@ anything that changes numerics lands.
     on the end-of-Stage-2 code `bdaf322`, after it passed against the
     first (pickup 5); sidecars and `summary.md` in git under
     `dev/golden/baseline/`, traces gitignored under
-    `dev/scripts/runs/golden/item7_20260906/`; expand to 50 seeds and add
-    the exhaust config)
+    `dev/scripts/runs/golden/item7_20260906/`. Extended 2026-09-07 on
+    frozen `7314a6a`: 810 pairs, 16 configs at 50 seeds plus the D15
+    exhaust at 10, all null checks passed and final replay identical
+    on all five cases; `dev/golden/extension_20260907/README.md`)
   - [x] dtype canary (`plans/stage0-dtype-canary.md`, 2026-09-06 midday;
     tests only: every raw oracle output and every rebuilt oracle state
     checked for float64 inside `test_oracles.py`, a walk of a live run in
@@ -79,8 +81,9 @@ anything that changes numerics lands.
   at D = 2 and 6), two noisy VIQR targets (Rosenbrock σ = 1, bounded logreg
   σ = 3), a bounded logistic regression, a 15-D cigar budget-exhausting run;
   profiled 2026-09-03 (`plans/benchmark-suite-and-golden-traces.md`
-  §Results (regenerated)). Still to add: D = 6–8 for cigar and Student-t,
-  the exhaust config in the golden set.
+  §Results (regenerated)). D8 cigar and Student-t and the D15 exhaust
+  are now in the golden set; their reference runs completed 2026-09-07
+  (pickup 3f).
 - [~] **Stage 2 — NumPy vectorization + memory fix.** Order measured
   2026-09-02 on the first suite and **confirmed 2026-09-03/04 on the
   regenerated suite** (papers' procedure; the shares below are the
@@ -221,8 +224,8 @@ anything that changes numerics lands.
   the core Python floor is deferred to Stage 4. Ships in 1.5 with Stages
   0–2 (PI decision 2026-09-06: the whole body of work in one release, for
   visibility, rather than a 1.5 followed by a 1.6 within days). Both
-  trajectory-neutral and trajectory-moving latent bug fixes remain behind
-  the reference-night boundary; pickup 9 fixes land only after both nights.
+  trajectory-neutral and trajectory-moving latent bug fixes were held behind
+  the reference boundary, completed on 2026-09-07 (pickup 3f); pickup 9 is next.
 - [ ] **Stage 4 — PyTorch feasibility prototype, then a port decision**
   (preferred for 1.5 if feasible;
   PI decision, 2026-09-06). The purpose combines future method development,
@@ -494,89 +497,48 @@ anything that changes numerics lands.
    bullet and pickup points 3c–3e; `plans/stage2-memory.md` (§Summary,
    §Decisions, §Results, the tracker's doublecheck entry); the population
    reports above.
-3f. **Next: reference extension; integration complete** (PI sequence
-   revision, 2026-09-06). Stage 3 was fast-forwarded into `dev-next` at
-   `4bff1a5`. Branch smoke 34043031387, all nine jobs of full matrix
-   34043071150, and integrated smoke 34043979358 passed.
-   (i) **Integrated and frozen before either batch.** Exact oracles passed
-   8/8, all five replay cases were identical, and the base-install suite
-   passed: 858 passed, 35 skipped, 2 xfailed. The exact final checkout is
-   named by non-moving branch `reference/stage3-20260906`; only
-   verification records changed after tested commit `4bff1a5`. Preserve
-   this commit and the reference dependencies for both batches. No run
-   has been launched or scheduled.
-   Keep `vectorized_target=False`. Pass shared `--options` JSON
-   {"vectorized_target": false} to all three `golden_trace.py run`
-   invocations below, so new sidecars record it; on Windows use a Python
-   subprocess argument list to preserve JSON quoting. Existing 280
-   JSON/NPZ pairs retain recorded `18a236c`, dirty false, provenance
-   (numerical code `bdaf322`); do not rewrite them. New sidecars record
-   the actual frozen commit. Integrated replay output:
-   `dev/scripts/runs/stage3_integrated_replay_20260906`.
-   (ii) **Night 1, only on the PI's explicit word that the laptop is free
-   (about 7 h)**: grow the 14 original configurations of the reference to
-   50 seeds in the reference's existing run directory. Immediately before
-   starting, rerun `python dev/scripts/golden_replay.py` with defaults; it
-   must still report `identical` on all five configs and the checkout must
-   be the recorded freeze commit. Then, as one chained script logging to
-   `runs/golden_grow_20260906.log`: `python -u dev/scripts/golden_trace.py
-   run --suite golden --only normal_D5,corr_D5,halfnormal_D2,
-   rosenbrock_D2,banana_D2,banana_D6,banana_D10,cigar_D4,lumpy_D4,
-   lumpy_D10,student_D4,logreg_D5,rosenbrock_D2_noise1,logreg_D5_noise3
-   --seeds 20-49 --workers 1 --out dev/scripts/runs/golden/item7_20260906`
-   (the `--only` keeps the three new configurations for night 2; the run
-   skips the 280 records already there), `golden_trace.py summary <out>`,
-   `golden_trace.py compare --split <out>` (even against odd seeds), a
-   second null check of seeds 0–19 against 20–49 (copy the sidecars of each
-   half into a temporary directory and `compare` the two), and the publish
-   step of `regenerate_baseline.sh` (`rm -f
-   dev/golden/baseline/*.json dev/golden/baseline/summary.md; cp
-   <out>/*.json <out>/summary.md dev/golden/baseline/`). Expected: 420 of
-   420 new runs succeed, no config flagged in either null check.
-   The chain must check each command exit status and the expected run
-   counts before publishing: 700 JSON/NPZ pairs after batch 1 and 810
-   after batch 2, no error files, and new sidecars naming the frozen SHA.
-   The runner skips existing NPZs, so an orphan NPZ must not count as a
-   complete run. Call `compare` directly: it exits nonzero on
-   flags; do not copy the failure-masking `|| true` from
-   `regenerate_baseline.sh`. `summary` alone does not certify completeness.
-   (iii) **Night 2, on the same frozen commit (about 5 h)**:
-   `--only cigar_D8,student_D8 --seeds 0-49`, then
-   `--only cigar_D15_exhaust --seeds 0-9`, same out directory, then
-   summary, the even-vs-odd null check and the publish step. The exhaust
-   configuration's evaluation count is always 750, so only its three
-   quality metrics carry information; its 10 seeds are regime coverage.
-   The two batches may be one explicitly authorized chain; batch 2 starts
-   only if every batch-1 run and its summary, null checks and publication
-   step succeed; no extra approval is needed between the two batches of an
-   authorized chain. The whole
-   chain is about 12–13 h plus check and publication overhead. Keep the
-   laptop plugged in and awake, with no competing heavy numerical job.
-   Light browsing and documentation work before or after dinner are fine,
-   but wall times under mixed use are not a clean speed benchmark
-   (`wall_s` is recorded, but it is not a result-gate metric). The proposed
-   approximately 20:00 start is not scheduled or authorized; wait for the
-   PI's explicit word before launching the chain.
-   (iv) **After both nights**: commit the republished sidecars and
-   `summary.md` (810 run sidecars plus the summary, 811 files), update
-   `dev/golden/README.md` (17
-   configurations; 50 seeds, the exhaust 10; mixed historical and frozen
-   code provenance), this file's Stage 0 bullet and `dev/README.md` where
-   they say 14 configurations × 20 seeds, and run the replay once with
-   defaults (the fences tighten with 50 seeds). Only then land pickup 9 fixes:
-   trajectory-neutral fixes first or alongside its planned sequence, and
-   trajectory-moving fixes each replayed, followed by the population night
-   on the final 1.5 code. Then open the PR `dev-next` → `main` (pickup 8)
-   with the release note that files saved by this code hold lean GP records
-   an older PyVBMC cannot resume. The dtype canary
-   (`plans/stage0-dtype-canary.md`) is done, tests only; its production
-   widening of float32 and float16 constructor inputs is a latent fix and
-   therefore also waits until both nights finish.
-   Reading list for a fresh session: `dev/README.md`; this file's Stage 0
-   and Stage 2 bullets and pickup points 5, 3e and 3f;
-   `dev/golden/README.md`; `plans/stage2-memory.md` §Summary and
-   §Decisions; devlog §9's 2026-09-06 entries (the incidental findings
-   left unfixed).
+3f. **Reference extension complete, 2026-09-07.** The PI authorized both
+   batches as a sequential chain on September 6. The chain ran 20:01–08:55
+   (UTC+03), including preflight/final replays and checks, on detached
+   `7314a6a` (`reference/stage3-20260906`) and the original reference `.venv`.
+   Stage 3's prior integrated exact oracles, replay, local suite and CI
+   gates remain recorded in `plans/stage3-pipeline-features.md`.
+
+   - Batch 1: 420 new runs, original 14 configurations at seeds 20–49,
+     completed 20:04–03:26; 700 complete pairs. Summary and both null
+     checks passed (even/odd; seeds 0–19 versus 20–49), 56 KS tests each,
+     before baseline publication and batch 2 started.
+   - Batch 2: `cigar_D8` and `student_D8` at seeds 0–49, then
+     `cigar_D15_exhaust` at seeds 0–9; 110 new runs, completed 03:26–08:52.
+     Final total 810 JSON/NPZ pairs; no errors, final even/odd null check
+     passed over 68 KS tests (Holm alpha 0.05). The exhaust configuration
+     reaches its intended 750 evaluations; its 10 seeds cover that regime.
+   - Fresh preflight and final default five-case replays were identical,
+     including initial designs; the final replay used the expanded fences.
+     Completeness, NPZ integrity, finite metrics, sidecar SHA/options,
+     dependency/thread metadata and publication copies were checked.
+     SHA256 checks verified all 280 historical JSON/NPZ pairs unchanged.
+   - Historical sidecars retain `18a236c`, dirty=false (numerical `bdaf322`).
+     New records retain `7314a6a`: 420 dirty=false, 110 dirty=true because
+     first-batch baseline publication changed tracked documentation.
+     HEAD and numerical source stayed frozen; every population command
+     explicitly passed `{"vectorized_target": false}`, with one worker and
+     single-threaded BLAS. Light laptop use makes wall times observational.
+   - All 810 sidecars plus `summary.md` are published under
+     `dev/golden/baseline/`. Reports, provenance, exact command allocation,
+     validation metadata and the full file-hash manifest are under
+     `dev/golden/extension_20260907/`; traces remain local/gitignored under
+     `dev/scripts/runs/golden/item7_20260906/`. The checkout returned to
+     current `dev-next`, preserving the newer PyTorch feasibility decisions.
+     The frozen reference branch is unchanged. No campaign process remains.
+
+   **Next:** prepare the pickup 9 latent-fix plan and implement its approved
+   sequence, with each trajectory-moving fix replayed against this reference.
+   Complete the remaining S-VBMC/extension and PyTorch feasibility scope,
+   then validate the final release code as a population before the 1.5 PR.
+   Read `dev/golden/extension_20260907/README.md`, pickups 9–11, and devlog
+   §9 before starting correctness work. Neither a latent fix nor a solver
+   implementation was made as part of the reference extension.
 4. ~~Run the `tests` workflow on `dev-next` for the package fix~~ done
    2026-09-03 (full matrix green, run 33715620257); pushes to `dev*` now
    run a smoke automatically.
@@ -588,35 +550,13 @@ anything that changes numerics lands.
    `dev/golden/baseline/`, the comparison reports under
    `dev/golden/promotion_20260906/`, the replay's default trace directory
    moved to it (`golden_replay.py`), `dev/golden/README.md` updated.
-   **Extension sequence revised with the PI 2026-09-06: two nights on one
-   frozen `dev-next` commit after Stage 3 is merged and the integrated exact
-   oracles, identical replay and full local suite pass.** Keep
-   `vectorized_target=False` in all reference configurations. The original
-   seeds 0–19 preserve their `18a236c` sidecars and stored traces; the new
-   runs record the actual frozen integrated code in their sidecars. The
-   replay establishes numerical identity across that provenance boundary;
-   neither the historical records nor their code SHA are rewritten.
-   The `golden` suite now holds 17 configurations (`benchmark_targets.py`:
-   `cigar_D8` and `student_D8`, the two hard shapes at an intermediate-high
-   dimension, ground truth checked; and `cigar_D15_exhaust`, shared with
-   the profile suite, for coverage of the optimize-only regime).
-   Night 1: grow the 14 existing configurations to 50 seeds,
-   `golden_trace.py run --suite golden --only <the 14 labels> --seeds
-   20-49 --workers 1 --out dev/scripts/runs/golden/item7_20260906`
-   (about 7 h at 285 min per 20 seeds), then `summary`, the even-vs-odd
-   null check and a second null check of seeds 0–19 against 20–49,
-   then publish the sidecars and `summary.md` to `dev/golden/baseline/`.
-   Night 2: `--only cigar_D8,student_D8 --seeds 0-49` (1.2 and 2.0 min per
-   seed, about 2.7 h) and `--only cigar_D15_exhaust --seeds 0-9` (10 seeds,
-   about 13 min each, 2.2 h; regime coverage rather than statistics, its
-   evaluation count is always 750), then summary, null checks, publish.
-   The family becomes 17 × 4 = 68 KS tests. One explicit start authorization may cover both
-   batches as a chain, with batch 2 gated on batch 1 and its checks. Both
-   run on the same frozen commit. Afterwards: `dev/golden/README.md`,
-   this file's Stage 0 bullet and `dev/README.md` describe the population
-   as 14 configurations × 20 seeds and need the new counts. The reference
-   sidecars live in git under `dev/golden/baseline/` (PI decision
-   2026-09-03); copy them over after every extension.
+   **Extension completed 2026-09-07** after Stage 3 integration, on frozen
+   `7314a6a` (pickup 3f): 16 configurations at 50 seeds plus the D15 exhaust
+   at 10, 810 complete pairs and 811 baseline files. Original seeds 0–19
+   retain `18a236c` and unchanged traces; 530 new runs record the frozen
+   integrated SHA with explicit batching=false. Both first-batch null
+   checks and the final 68-test null check passed; both five-case replays
+   were identical. Records and commands: `dev/golden/extension_20260907/`.
 6. ~~Stage 0 remaining after the oracles: finite-difference checks for the
    transformer Jacobian and the gpyreg derivatives (`compute_vargrad`
    dropped from the list: the path was deleted with Stage 2 item 1); retire
@@ -641,8 +581,9 @@ anything that changes numerics lands.
    With the 1.5 release that follows it, attach the reference population's
    `.npz` traces as a release asset (PI decision 2026-09-06): one zip per
    reference, made from the traces of the population the released code
-   was validated against (about 45 MB for 17 configurations at 50 seeds,
-   the exhaust at 10), unpacked to `dev/scripts/runs/golden/<population>/`
+   was validated against (currently 55.9 MiB of NPZ traces for 16
+   configurations at 50 seeds and the exhaust at 10), unpacked to
+   `dev/scripts/runs/golden/<population>/`
    for `golden_replay.py`'s per-iteration verdict; `dev/golden/README.md`
    names the asset. The sidecars stay in git, the traces stay out of it,
    and anyone working on the numerics can fetch them. Until the release
@@ -651,7 +592,8 @@ anything that changes numerics lands.
    12 h); a copy on the lab server is cheap insurance.
 9. **Latent bug fixes for 1.5** (PI decision 2026-09-06: 1.5 does not
    change the VBMC algorithm, but it fixes the latent bugs; own plan under
-   `plans/` before it starts). The integration boundary is now explicit:
+   `plans/` before it starts). The reference boundary was completed on
+   2026-09-07 (pickup 3f); this work is next. The agreed boundary was:
    Stage 3 merges first and that integrated code is frozen for both
    reference-extension nights. No latent fix lands before or between those
    nights, whether classified trajectory-neutral or trajectory-moving.

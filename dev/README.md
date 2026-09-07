@@ -147,29 +147,30 @@ heavy process at a time** on a laptop (`golden_trace.py run --workers 1`,
 the default; eight concurrent VBMC processes hard-crashed the machine on
 2026-09-02) and export `OMP_NUM_THREADS=OPENBLAS_NUM_THREADS=MKL_NUM_THREADS=1`
 before profiling if wall times are to be compared with the golden baseline,
-which was made single-threaded. The long runs (a profile campaign, about
-an hour; a golden population, about 6.5 h) measure absolute time, so
-desktop use distorts them (item 8 reran three configs for that reason):
-they start only when the PI has said the laptop is free, never on a
-timer or a guess; short gates (oracles, a module's tests, the replay)
-can run at any time as one process. The golden reference population's sidecars
-(JSON only, under 1 MB) live under `golden/baseline/` together with its
-`summary.md`, so `python dev/scripts/golden_trace.py compare
-dev/golden/baseline <new_dir>` works from a fresh checkout; the full traces
-(`.npz`) stay gitignored under `scripts/runs/golden/`. For the current
-two-night extension, first merge Stage 3 into `dev-next`, pass the exact
-oracles, identical replay and full local suite on the integrated tree, then
-freeze that code for both nights. Keep `vectorized_target=False` in every
-reference configuration. Preserve the existing `18a236c` sidecars and
-traces; new sidecars record the actual frozen integrated SHA. Neither
-trajectory-neutral nor trajectory-moving latent fixes land until both
-nights have finished. The nights may be one explicitly authorized chain
-(about 7 h and 5 h, plus check overhead); its second batch starts only after
-the first and its checks succeed.
-`scripts/regenerate_baseline.sh` regenerates everything (target checks,
-profile campaign plain and cProfile, golden sweep, summary, null check,
-publishing the sidecars) as one sequential process, about 10–12 hours;
-see `golden/README.md` for the population's status. The benchmark follows
+which was made single-threaded. Long campaigns start only on explicit PI
+instruction. Light browser/email use is compatible with reference-quality
+checks, but timings collected under mixed use are not controlled speed
+benchmarks. Short gates (oracles, a module's tests, the replay) can run at
+any time as one process.
+
+The current golden reference is `item7_20260906`, extended on 2026-09-07:
+**810 runs, 16 configurations at 50 seeds and the D15 exhaust at 10**.
+Its JSON sidecars (2.42 MiB) and `summary.md` live under `golden/baseline/`,
+so `python dev/scripts/golden_trace.py compare dev/golden/baseline <new_dir>`
+works from a fresh checkout. Full traces (55.9 MiB of `.npz`) stay gitignored
+under `scripts/runs/golden/item7_20260906/` until release-asset publication.
+The original 280 pairs retain `18a236c`; 530 new runs record frozen `7314a6a`
+with explicit `vectorized_target=False`. All pairs are complete, all three
+null comparisons passed, and both default five-case replays were identical.
+The two batches ran as one authorized chain in 12 h 54 min including checks;
+see [the extension record](golden/extension_20260907/README.md) for commands,
+provenance, comparison reports and file hashes. The reference boundary is
+complete; planned latent fixes are next (roadmap pickup 9).
+
+`scripts/regenerate_baseline.sh` is the legacy whole-campaign helper. Its
+seed allocation differs from the extended reference and it masks comparison
+failures, so it must not be used to republish this reference. Follow the
+extension record's commands and fail-fast checks instead. The benchmark follows
 the VBMC papers' procedure: each run's start point is drawn uniformly inside
 the plausible box from a stream spawned off the run seed, and the plausible
 box is the papers' prior box (family mean ± 3 marginal SD); see the audit

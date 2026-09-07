@@ -1,0 +1,128 @@
+{
+ "label": "student_D4",
+ "seed": 46,
+ "problem": "student",
+ "D": 4,
+ "noise_sd": null,
+ "requested_options": {
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false,
+  "vectorized_target": false
+ },
+ "effective_options": {
+  "max_fun_evals": 300,
+  "max_iter": 300,
+  "tol_stable_count": 60,
+  "tol_stable_excpt_frac": 0.2,
+  "specify_target_noise": false,
+  "search_acq_fcn": [
+   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x00000298F17C2F00>"
+  ],
+  "active_sample_gp_update": false,
+  "active_sample_vp_update": false,
+  "min_final_components": 50,
+  "do_final_boost": true,
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false,
+  "vectorized_target": false
+ },
+ "timer_keys": [
+  "active_sampling",
+  "finalize",
+  "fun_time",
+  "gp_train",
+  "variational_fit",
+  "warping"
+ ],
+ "ln_Z": -10.358109218644737,
+ "true_mean": [
+  [
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ]
+ ],
+ "true_cov": [
+  [
+   2.382379205925162,
+   0.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   1.8804775313871402,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   1.642539721073319,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   1.4997712821091969
+  ]
+ ],
+ "plb": [
+  -6.708203932499369,
+  -5.196152422706632,
+  -4.582575694955841,
+  -4.242640687119286
+ ],
+ "pub": [
+  6.708203932499369,
+  5.196152422706632,
+  4.582575694955841,
+  4.242640687119286
+ ],
+ "notes": "product of t(nu), nu = [2.5, 3.0, 3.5, 4.0], unit scale, times the papers' prior N(0, (3 sd_t)^2); truth by per-coordinate quadrature; box = prior mean -+ 1 prior SD",
+ "final": {
+  "elbo": -10.385006180087286,
+  "elbo_sd": 0.023898820541783383,
+  "best_iter": 15,
+  "iterations": 16,
+  "func_count": 85,
+  "final_K": 50,
+  "final_N": 85,
+  "min_Ns_gp": 8,
+  "n_warps": 1,
+  "success_flag": true,
+  "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+  "wall_s": 20.399642499978654,
+  "target_eval_s": 0.017016172409057617,
+  "elbo_err": 0.026896961442549383,
+  "gskl": 0.04143696987482637,
+  "mmtv": 0.048755685709701464,
+  "rmse": 0.04232894361198499,
+  "moment_method": "affine",
+  "peak_rss_mb": 403.71484375
+ },
+ "meta": {
+  "git": {
+   "sha": "7314a6a",
+   "dirty": false
+  },
+  "python": "3.12.6",
+  "numpy": "2.5.2",
+  "scipy": "1.18.1",
+  "pyvbmc": "1.0.5.dev159+g4bff1a5b9",
+  "gpyreg": "1.1.0",
+  "cma": "4.4.4",
+  "threads": {
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1",
+   "MKL_NUM_THREADS": "1"
+  },
+  "started": "2026-09-07 02:37:06",
+  "finished": "2026-09-07 02:37:26",
+  "pid": 29812
+ }
+}

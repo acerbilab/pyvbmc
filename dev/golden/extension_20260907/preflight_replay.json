@@ -1,0 +1,265 @@
+{
+ "git": {
+  "sha": "7314a6a",
+  "dirty": false
+ },
+ "threads": 1,
+ "minutes": 2.8241978526115417,
+ "rows": [
+  {
+   "label": "normal_D5",
+   "seed": 0,
+   "ok": true,
+   "final_new": {
+    "elbo_err": 0.00030716286743537324,
+    "gskl": 0.00010470676027796166,
+    "mmtv": 0.007826355149647064,
+    "func_count": 70,
+    "iterations": 13,
+    "final_K": 50,
+    "wall_s": 20.566591200011317
+   },
+   "final_ref": {
+    "elbo_err": 0.00030716286743537324,
+    "gskl": 0.00010470676027796166,
+    "mmtv": 0.007826355149647064,
+    "func_count": 70,
+    "iterations": 13,
+    "final_K": 50,
+    "wall_s": 21.15260999999009
+   },
+   "X_orig_exact": 69,
+   "X_orig_close": 69,
+   "y_orig_exact": 69,
+   "y_orig_close": 69,
+   "n_live_ref": 69,
+   "n_live_new": 69,
+   "elbo_exact_iter": 13,
+   "elbo_iter": 13,
+   "func_count_iter": 13,
+   "K_iter": 13,
+   "Ns_gp_iter": 13,
+   "n_iter_ref": 13,
+   "n_iter_new": 13,
+   "identical": true,
+   "design": "identical (X_init in both traces)",
+   "initial_design_ok": true,
+   "pop_fence": {
+    "elbo_err": 0.03053649234510969,
+    "gskl": 0.00040538855916227856,
+    "mmtv": 0.012516923636695841
+   },
+   "pop_evals": [
+    70,
+    80
+   ],
+   "outside": [],
+   "flagged": false,
+   "verdict": "identical; initial design identical (X_init in both traces)"
+  },
+  {
+   "label": "banana_D2",
+   "seed": 0,
+   "ok": true,
+   "final_new": {
+    "elbo_err": 0.043020908860625484,
+    "gskl": 0.14954170495847474,
+    "mmtv": 0.039184161850603264,
+    "func_count": 80,
+    "iterations": 15,
+    "final_K": 50,
+    "wall_s": 13.455278300039936
+   },
+   "final_ref": {
+    "elbo_err": 0.043020908860625484,
+    "gskl": 0.14954170495847474,
+    "mmtv": 0.039184161850603264,
+    "func_count": 80,
+    "iterations": 15,
+    "final_K": 50,
+    "wall_s": 13.596019599994179
+   },
+   "X_orig_exact": 74,
+   "X_orig_close": 74,
+   "y_orig_exact": 74,
+   "y_orig_close": 74,
+   "n_live_ref": 74,
+   "n_live_new": 74,
+   "elbo_exact_iter": 15,
+   "elbo_iter": 15,
+   "func_count_iter": 15,
+   "K_iter": 15,
+   "Ns_gp_iter": 15,
+   "n_iter_ref": 15,
+   "n_iter_new": 15,
+   "identical": true,
+   "design": "identical (X_init in both traces)",
+   "initial_design_ok": true,
+   "pop_fence": {
+    "elbo_err": 0.13542883522848304,
+    "gskl": 0.4574275006207808,
+    "mmtv": 0.09379771300577269
+   },
+   "pop_evals": [
+    70,
+    115
+   ],
+   "outside": [],
+   "flagged": false,
+   "verdict": "identical; initial design identical (X_init in both traces)"
+  },
+  {
+   "label": "halfnormal_D2",
+   "seed": 0,
+   "ok": true,
+   "final_new": {
+    "elbo_err": 0.008999342990695824,
+    "gskl": 0.0003182040753378912,
+    "mmtv": 0.0212818117580093,
+    "func_count": 65,
+    "iterations": 12,
+    "final_K": 50,
+    "wall_s": 10.662861700053327
+   },
+   "final_ref": {
+    "elbo_err": 0.008999342990695824,
+    "gskl": 0.0003182040753378912,
+    "mmtv": 0.0212818117580093,
+    "func_count": 65,
+    "iterations": 12,
+    "final_K": 50,
+    "wall_s": 10.415516300010495
+   },
+   "X_orig_exact": 65,
+   "X_orig_close": 65,
+   "y_orig_exact": 65,
+   "y_orig_close": 65,
+   "n_live_ref": 65,
+   "n_live_new": 65,
+   "elbo_exact_iter": 12,
+   "elbo_iter": 12,
+   "func_count_iter": 12,
+   "K_iter": 12,
+   "Ns_gp_iter": 12,
+   "n_iter_ref": 12,
+   "n_iter_new": 12,
+   "identical": true,
+   "design": "identical (X_init in both traces)",
+   "initial_design_ok": true,
+   "pop_fence": {
+    "elbo_err": 0.024990721027183915,
+    "gskl": 0.0008518489655991862,
+    "mmtv": 0.03075594157408331
+   },
+   "pop_evals": [
+    65,
+    75
+   ],
+   "outside": [],
+   "flagged": false,
+   "verdict": "identical; initial design identical (X_init in both traces)"
+  },
+  {
+   "label": "cigar_D4",
+   "seed": 0,
+   "ok": true,
+   "final_new": {
+    "elbo_err": 0.0017389290198659424,
+    "gskl": 0.00042168632374939286,
+    "mmtv": 0.008798360412957628,
+    "func_count": 130,
+    "iterations": 26,
+    "final_K": 50,
+    "wall_s": 47.54767260001972
+   },
+   "final_ref": {
+    "elbo_err": 0.0017389290198659424,
+    "gskl": 0.00042168632374939286,
+    "mmtv": 0.008798360412957628,
+    "func_count": 130,
+    "iterations": 26,
+    "final_K": 50,
+    "wall_s": 46.66208080004435
+   },
+   "X_orig_exact": 114,
+   "X_orig_close": 114,
+   "y_orig_exact": 114,
+   "y_orig_close": 114,
+   "n_live_ref": 114,
+   "n_live_new": 114,
+   "elbo_exact_iter": 26,
+   "elbo_iter": 26,
+   "func_count_iter": 26,
+   "K_iter": 26,
+   "Ns_gp_iter": 26,
+   "n_iter_ref": 26,
+   "n_iter_new": 26,
+   "identical": true,
+   "design": "identical (X_init in both traces)",
+   "initial_design_ok": true,
+   "pop_fence": {
+    "elbo_err": 0.042236156978923134,
+    "gskl": 0.008273048262913973,
+    "mmtv": 0.0497762400215699
+   },
+   "pop_evals": [
+    120,
+    155
+   ],
+   "outside": [],
+   "flagged": false,
+   "verdict": "identical; initial design identical (X_init in both traces)"
+  },
+  {
+   "label": "rosenbrock_D2_noise1",
+   "seed": 0,
+   "ok": true,
+   "final_new": {
+    "elbo_err": 0.026695124383754987,
+    "gskl": 0.0634802603571391,
+    "mmtv": 0.045491413927900105,
+    "func_count": 115,
+    "iterations": 22,
+    "final_K": 50,
+    "wall_s": 75.19966779998504
+   },
+   "final_ref": {
+    "elbo_err": 0.026695124383754987,
+    "gskl": 0.0634802603571391,
+    "mmtv": 0.045491413927900105,
+    "func_count": 115,
+    "iterations": 22,
+    "final_K": 50,
+    "wall_s": 73.482107000018
+   },
+   "X_orig_exact": 108,
+   "X_orig_close": 108,
+   "y_orig_exact": 108,
+   "y_orig_close": 108,
+   "n_live_ref": 108,
+   "n_live_new": 108,
+   "elbo_exact_iter": 22,
+   "elbo_iter": 22,
+   "func_count_iter": 22,
+   "K_iter": 22,
+   "Ns_gp_iter": 22,
+   "n_iter_ref": 22,
+   "n_iter_new": 22,
+   "identical": true,
+   "design": "identical (X_init in both traces)",
+   "initial_design_ok": true,
+   "pop_fence": {
+    "elbo_err": 0.47613003745660165,
+    "gskl": 0.13553299974114735,
+    "mmtv": 0.1002899131410232
+   },
+   "pop_evals": [
+    105,
+    150
+   ],
+   "outside": [],
+   "flagged": false,
+   "verdict": "identical; initial design identical (X_init in both traces)"
+  }
+ ]
+}
