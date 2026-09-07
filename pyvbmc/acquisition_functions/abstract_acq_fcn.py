@@ -16,6 +16,7 @@ class AbstractAcqFcn(ABC):
 
     def __init__(self):
         self.acq_info = {}
+        # Custom-acquisition hook; built-in acquisitions leave this disabled.
         self.acq_info["compute_var_log_joint"] = False
         # Whether the function value is in log space
         self.acq_info["log_flag"] = False

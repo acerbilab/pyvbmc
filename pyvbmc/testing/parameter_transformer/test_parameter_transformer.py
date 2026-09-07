@@ -194,6 +194,52 @@ def test_init_bounds_check():
         )
 
 
+def test_init_rotation_matrix_validation():
+    reflected = np.diag([-1.0, 1.0, 1.0])
+    transformer = ParameterTransformer(D=D, rotation_matrix=reflected)
+    assert np.array_equal(transformer.R_mat, reflected)
+
+    rng = np.random.default_rng(1234)
+    near_orthogonal, __, __ = np.linalg.svd(rng.standard_normal((D, D)))
+    transformer = ParameterTransformer(D=D, rotation_matrix=near_orthogonal)
+    assert np.array_equal(transformer.R_mat, near_orthogonal)
+
+    invalid_rotations = [
+        np.eye(D - 1),
+        np.full((D, D), np.nan),
+        np.eye(D, dtype=complex),
+        np.diag([1.0, 1.0, 0.0]),
+        np.diag([1.0, 1.0, 2.0]),
+    ]
+    for rotation_matrix in invalid_rotations:
+        with pytest.raises(ValueError):
+            ParameterTransformer(D=D, rotation_matrix=rotation_matrix)
+
+
+def test_equality_handles_optional_arrays_and_shapes():
+    first = ParameterTransformer(D=D)
+    second = ParameterTransformer(D=D)
+    assert first == second
+    assert not (first == object())
+
+    first.scale = np.ones(D)
+    assert first != second
+    second.scale = np.ones((1, D))
+    assert first != second
+    second.scale = np.ones(D)
+    assert first == second
+    second.scale[-1] = 2.0
+    assert first != second
+    second.scale = np.ones(D)
+
+    first.R_mat = np.eye(D)
+    assert first != second
+    second.R_mat = np.eye(D)
+    assert first == second
+    second.R_mat[[0, 1]] = second.R_mat[[1, 0]]
+    assert first != second
+
+
 def test_init_mu_inf_bounds():
     parameter_transformer = ParameterTransformer(D=D)
     assert np.all(parameter_transformer.mu == np.zeros(D))
@@ -585,6 +631,25 @@ def test_log_abs_det_jacobian_type3_within_negative():
     log_j = parameter_transformer.log_abs_det_jacobian(U)
     log_j2 = np.ones((10)) * -3.1217
     assert np.all(np.isclose(log_j, log_j2))
+
+
+def test_log_abs_det_jacobian_logit_extreme_tails():
+    parameter_transformer = ParameterTransformer(
+        D=1, lb_orig=np.zeros((1, 1)), ub_orig=np.ones((1, 1))
+    )
+    ordinary = np.array([[-100.0], [-1.0], [0.0], [1.0], [100.0]])
+    legacy = -ordinary[:, 0] + 2 * (-np.log1p(np.exp(-ordinary[:, 0])))
+    assert np.array_equal(
+        parameter_transformer.log_abs_det_jacobian(ordinary), legacy
+    )
+
+    tails = np.array([[-1000.0], [-710.0], [710.0], [1000.0]])
+    log_j = parameter_transformer.log_abs_det_jacobian(tails)
+    expected = -np.abs(tails[:, 0]) - 2 * np.log1p(
+        np.exp(-np.abs(tails[:, 0]))
+    )
+    assert np.all(np.isfinite(log_j))
+    assert np.array_equal(log_j, expected)
 
 
 def test_log_abs_det_jacobian_type0():

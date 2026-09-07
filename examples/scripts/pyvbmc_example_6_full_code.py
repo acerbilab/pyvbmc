@@ -26,13 +26,13 @@ def log_likelihood(theta):
     n, D = theta.shape
 
     # Standard deviation of synthetic noise:
-    noise_sd = np.sqrt(1.0 + 0.5 * np.linalg.norm(theta) ** 2)
+    noise_sd = np.sqrt(1.0 + 0.5 * np.linalg.norm(theta, axis=1) ** 2)
 
     # Rosenbrock likelihood:
     x, y = theta[:, :-1], theta[:, 1:]
     base_density = -np.sum((x**2 - y) ** 2 + (x - 1) ** 2 / 100, axis=1)
 
-    noisy_estimate = base_density + noise_sd * np.random.normal(size=(n, 1))
+    noisy_estimate = base_density + noise_sd * np.random.normal(size=n)
     return noisy_estimate, noise_sd
 
 

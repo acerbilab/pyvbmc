@@ -1,16 +1,33 @@
 from textwrap import indent
 
 import numpy as np
-from scipy.stats import multivariate_normal
-from scipy.stats._distn_infrastructure import rv_continuous_frozen
-from scipy.stats._multivariate import (
-    multivariate_normal_frozen,
-    multivariate_t_frozen,
+from scipy.stats import (
+    multivariate_normal,
+    multivariate_t,
+    norm,
+    rv_continuous,
 )
 
 from pyvbmc.formatting import full_repr
 from pyvbmc.priors import Prior
 from pyvbmc.rng import get_rng
+
+_MULTIVARIATE_FROZEN_TYPES = (
+    type(multivariate_normal()),
+    type(multivariate_t()),
+)
+_UNIVARIATE_FROZEN_TYPE = type(norm())
+
+
+def _scipy_distribution_kind(distribution):
+    """Classify the supported frozen SciPy distributions."""
+    if isinstance(distribution, _MULTIVARIATE_FROZEN_TYPES):
+        return "multivariate"
+    if isinstance(distribution, _UNIVARIATE_FROZEN_TYPE) and isinstance(
+        distribution.dist, rv_continuous
+    ):
+        return "univariate"
+    return None
 
 
 class SciPy(Prior):
@@ -20,10 +37,9 @@ class SciPy(Prior):
     ----------
     D : int
         The dimension of the prior distribution.
-    distribution : scipy.stats._multivariate.multivariate_normal_frozen\
-            or scipy.stats._multivariate.multivariate_t_frozen\
-            or scipy.stats._distn_infrastructure.rv_continuous_frozen
-        The underlying `scipy.stats` distributions.
+    distribution : frozen scipy.stats distribution
+        The underlying continuous univariate, multivariate normal, or
+        multivariate t distribution.
     """
 
     def __init__(self, distribution):
@@ -43,14 +59,12 @@ class SciPy(Prior):
         TypeError
             If the provided distribution is not of the appropriate type.
         """
-        if isinstance(distribution, multivariate_normal_frozen) or isinstance(
-            distribution, multivariate_t_frozen
-        ):
-            x = np.atleast_1d(distribution.rvs(1))
-            self.D = len(x)
+        distribution_kind = _scipy_distribution_kind(distribution)
+        if distribution_kind == "multivariate":
+            self.D = int(distribution.dim)
             self.a = np.full(self.D, -np.inf)
             self.b = np.full(self.D, np.inf)
-        elif isinstance(distribution, rv_continuous_frozen):
+        elif distribution_kind == "univariate":
             self.D = 1
             self.a = np.atleast_1d(distribution.a)
             self.b = np.atleast_1d(distribution.b)
@@ -180,8 +194,4 @@ def is_valid_scipy_dist(obj):
     -------
     is_valid : bool
     """
-    return (
-        isinstance(obj, multivariate_normal_frozen)
-        or isinstance(obj, multivariate_t_frozen)
-        or isinstance(obj, rv_continuous_frozen)
-    )
+    return _scipy_distribution_kind(obj) is not None

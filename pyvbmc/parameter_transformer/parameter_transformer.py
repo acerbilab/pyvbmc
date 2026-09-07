@@ -32,6 +32,13 @@ class ParameterTransformer:
         The plausible upper bounds such that ``lb_orig < plb_orig < pub_orig <
         ub_orig``. ``plb_orig`` and ``pub_orig`` represent a "plausible" range
         for each parameter, given in the original space. By default `None`.
+    scale : np.ndarray, optional
+        Per-coordinate scale applied after transforming and rotating the
+        parameters. By default `None`.
+    rotation_matrix : np.ndarray, optional
+        A finite orthogonal matrix of shape ``(D, D)`` applied after the
+        coordinate-wise transformation. Reflections are accepted. By default
+        `None`.
     bounded_transform_type : str, optional
         A string indicating the type of transform for bounded variables: one of
         ["logit", ("norminv" || "probit"), "student4"]. Default "logit".
@@ -48,6 +55,27 @@ class ParameterTransformer:
         rotation_matrix: np.ndarray = None,
         transform_type="logit",
     ):
+        if rotation_matrix is not None:
+            rotation_matrix = np.asarray(rotation_matrix)
+            if rotation_matrix.shape != (D, D):
+                raise ValueError(
+                    f"`rotation_matrix` must have shape ({D}, {D})."
+                )
+            if not np.isrealobj(rotation_matrix):
+                raise ValueError("`rotation_matrix` must be real-valued.")
+            if not np.all(np.isfinite(rotation_matrix)):
+                raise ValueError(
+                    "`rotation_matrix` must contain finite values."
+                )
+            orthogonality_tolerance = 100 * np.finfo(float).eps * max(1, D)
+            if not np.allclose(
+                rotation_matrix.T @ rotation_matrix,
+                np.eye(D),
+                rtol=orthogonality_tolerance,
+                atol=orthogonality_tolerance,
+            ):
+                raise ValueError("`rotation_matrix` must be orthogonal.")
+
         self.scale = scale
         self.R_mat = rotation_matrix
 
@@ -312,8 +340,12 @@ class ParameterTransformer:
                 def bounded_jacobian(self, u, mask):
                     j1 = np.log(self.ub_orig[:, mask] - self.lb_orig[:, mask])
                     y = _uncenter(u[:, mask], self.mu[mask], self.delta[mask])
-                    z = -np.log1p(np.exp(-y))
-                    j2 = -y + 2 * z
+                    tail = y < -np.log(np.finfo(float).max)
+                    j2 = np.empty_like(y)
+                    ordinary = ~tail
+                    z = -np.log1p(np.exp(-y[ordinary]))
+                    j2[ordinary] = -y[ordinary] + 2 * z
+                    j2[tail] = y[tail] - 2 * np.log1p(np.exp(y[tail]))
                     j3 = np.log(self.delta[mask])
                     return j1 + j2 + j3
 
@@ -403,19 +435,25 @@ class ParameterTransformer:
                 raise NotImplementedError
 
     def __eq__(self, other):
+        if not isinstance(other, ParameterTransformer):
+            return False
+
+        def equal_optional_arrays(first, second):
+            if first is None or second is None:
+                return first is second
+            return np.array_equal(first, second)
+
         return (
-            np.all(self.scale == self.scale)
-            and np.all(self.R_mat == other.R_mat)
-            and np.all(self.lb_orig == other.lb_orig)
-            and np.all(self.ub_orig == other.ub_orig)
-            and np.all(self.bounded_types == other.bounded_types)
-            and np.all(
-                self._bounded_transforms.keys()
-                == other._bounded_transforms.keys()
-            )
-            and np.all(self.type == other.type)
-            and np.all(self.mu == other.mu)
-            and np.all(self.delta == other.delta)
+            equal_optional_arrays(self.scale, other.scale)
+            and equal_optional_arrays(self.R_mat, other.R_mat)
+            and np.array_equal(self.lb_orig, other.lb_orig)
+            and np.array_equal(self.ub_orig, other.ub_orig)
+            and self.bounded_types == other.bounded_types
+            and self._bounded_transforms.keys()
+            == other._bounded_transforms.keys()
+            and np.array_equal(self.type, other.type)
+            and np.array_equal(self.mu, other.mu)
+            and np.array_equal(self.delta, other.delta)
         )
 
     def __str__(self):

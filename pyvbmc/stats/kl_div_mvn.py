@@ -1,12 +1,6 @@
 import numpy as np
 
-from pyvbmc.decorators import handle_0D_1D_input
 
-
-@handle_0D_1D_input(
-    patched_kwargs=["mu1", "sigma1", "mu2", "sigma2"],
-    patched_argpos=[0, 1, 2, 3],
-)
 def kl_div_mvn(mu1, sigma1, mu2, sigma2):
     """
     Compute the analytical Kullback-Leibler divergence between two multivariate
@@ -28,13 +22,18 @@ def kl_div_mvn(mu1, sigma1, mu2, sigma2):
     kl_div : np.array
         The computed Kullback-Leibler divergence.
     """
+    mu1 = np.asarray(mu1)
+    sigma1 = np.atleast_2d(sigma1)
+    mu2 = np.asarray(mu2)
+    sigma2 = np.atleast_2d(sigma2)
+
     D = mu1.size
     mu1 = mu1.reshape(-1, 1)
     mu2 = mu2.reshape(-1, 1)
     dmu = mu2 - mu1
     detq1 = np.linalg.det(sigma1)
     detq2 = np.linalg.det(sigma2)
-    if (detq1 == 0 or detq2 == 0):
+    if detq1 == 0 or detq2 == 0:
         # KL divergence is infinite
         return np.concatenate((np.inf, np.inf), axis=None)
     lndet = np.log(detq2 / detq1)

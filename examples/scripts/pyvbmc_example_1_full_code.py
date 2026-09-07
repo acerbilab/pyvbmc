@@ -55,7 +55,7 @@ vbmc = VBMC(log_joint, x0, LB, UB, PLB, PUB)
 vp, results = vbmc.optimize()
 
 
-lml_true = -2.272  # ground truth, which we know for this toy scenario
+lml_true = -2.2598  # ground truth, which we know for this toy scenario
 
 print("The true log model evidence is:", lml_true)
 print("The obtained ELBO is:", format(results["elbo"], ".3f"))

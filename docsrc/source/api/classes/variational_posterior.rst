@@ -24,6 +24,10 @@
 
   See below for the full ``VariationalPosterior`` class methods and interface.
 
+  Density gradients from ``pdf`` and ``log_pdf`` are available in transformed
+  coordinates (``orig_flag=False``). Requests for gradients in the original
+  parameter space raise ``NotImplementedError``.
+
 
 .. autoclass:: pyvbmc.variational_posterior.VariationalPosterior
    :exclude-members: kl_div, log_pdf, load, moments, mtv, pdf, plot, sample, save, to_arviz, to_torch

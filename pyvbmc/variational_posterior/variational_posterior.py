@@ -582,7 +582,8 @@ class VariationalPosterior:
             by default ``False``.
         grad_flag : bool, optional
             If ``True`` the gradient of the pdf is returned as a second output,
-            by default ``False``.
+            by default ``False``. Gradients are available only in transformed
+            space (``orig_flag=False``).
         df : float, optional
             Compute the pdf of a heavy-tailed version of the variational
             posterior, in which the multivariate normal components
@@ -604,10 +605,14 @@ class VariationalPosterior:
             Raised if `df` is non-zero and finite and `grad_flag` = ``True``
             (Gradient of heavy-tailed pdf not supported yet).
         NotImplementedError
-            Raised if `orig_flag` = ``True`` and `log_flag` = ``True`` and
-            `grad_flag` = ``True`` (gradient computation of the log-pdf in the
-            original space is not supported yet).
+            Raised if `orig_flag` = ``True`` and `grad_flag` = ``True``
+            (gradient computation in the original space is not supported).
         """
+        if orig_flag and grad_flag:
+            raise NotImplementedError(
+                "Gradient computation in original space is not supported."
+            )
+
         x = x.copy()
         N, D = x.shape
 
@@ -746,11 +751,6 @@ class VariationalPosterior:
                 y[mask] -= self.parameter_transformer.log_abs_det_jacobian(
                     x[mask]
                 )[:, np.newaxis]
-                if grad_flag:
-                    raise NotImplementedError(
-                        """vbmc_pdf:NoOriginalGrad: Gradient computation
-                         in original space not supported yet."""
-                    )
             else:
                 y[mask] /= np.exp(
                     self.parameter_transformer.log_abs_det_jacobian(x[mask])[
@@ -793,7 +793,8 @@ class VariationalPosterior:
             `orig_flag` is `False`.
         grad_flag : bool, optional
             If ``True`` the gradient of the log-pdf is returned as a second
-            output, by default ``False``.
+            output, by default ``False``. Gradients are available only in
+            transformed space (``orig_flag=False``).
         df : float, optional
             Compute the log-pdf of a heavy-tailed version of the variational
             posterior, in which the multivariate normal components have been
@@ -816,7 +817,7 @@ class VariationalPosterior:
             (Gradient of heavy-tailed pdf not supported yet).
         NotImplementedError
             Raised if `orig_flag` = ``True`` and `grad_flag` = ``True``
-            (gradient computation in original space not supported yet).
+            (gradient computation in original space is not supported).
         """
         return self.pdf(*args, **kwargs, log_flag=True)
 

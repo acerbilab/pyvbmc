@@ -207,30 +207,22 @@ def test_pdf_grad_log_flag_no_orig_flag():
     assert np.all(dlog_y_2 == dlog_y)
 
 
-def test_pdf_grad_orig_flag():
+def test_pdf_grad_orig_flag(mocker):
     N = 20
     D = 3
     vp = VariationalPosterior(D, 2, np.array([[5]]))
     vp.mu = np.ones((3, 2)) * 5
     x = np.ones((N, D)) * 4.996
-    y, dy = vp.pdf(x, grad_flag=True)
-    assert y.shape == (N, 1)
-    assert np.isscalar(y[0, 0])
-    assert np.all(
-        np.isclose(
-            y, 0.002396970183585 * np.ones((N, 1)), rtol=1e-12, atol=1e-14
-        )
+    transform = mocker.patch.object(
+        ParameterTransformer,
+        "__call__",
+        side_effect=AssertionError("the transform should not be called"),
     )
-    assert dy.shape == x.shape
-    assert np.isscalar(dy[0, 0])
-    assert np.all(
-        np.isclose(
-            dy, 9.58788073433898 * np.ones((N, 3)), rtol=1e-12, atol=1e-14
-        )
-    )
-    with pytest.raises(NotImplementedError) as err:
-        log_y, dlog_y = vp.log_pdf(x, grad_flag=True)
-    assert "vbmc_pdf:NoOriginalGrad" in err.value.args[0]
+    with pytest.raises(NotImplementedError, match="original space"):
+        vp.pdf(x, grad_flag=True)
+    with pytest.raises(NotImplementedError, match="original space"):
+        vp.log_pdf(x, grad_flag=True)
+    transform.assert_not_called()
 
 
 def test_pdf_df_real_positive():
@@ -290,14 +282,6 @@ def test_pdf_heavy_tailed_pdf_gradient():
         vp.log_pdf(x, df=300, grad_flag=True)
     with pytest.raises(NotImplementedError):
         vp.log_pdf(x, df=-300, grad_flag=True)
-
-
-def test_pdf_orig_flag_gradient():
-    vp = VariationalPosterior(3, 2, np.array([[5]]))
-    with pytest.raises(NotImplementedError):
-        vp.pdf(vp.mu.T, orig_flag=True, log_flag=True, grad_flag=True)
-    with pytest.raises(NotImplementedError):
-        vp.log_pdf(vp.mu.T, orig_flag=True, grad_flag=True)
 
 
 def test_pdf_outside_bounds():

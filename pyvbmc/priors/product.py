@@ -1,10 +1,6 @@
-from collections.abc import Iterable
 from textwrap import indent
 
 import numpy as np
-from scipy.stats._distn_infrastructure import (
-    rv_continuous_frozen as scipy_univariate,
-)
 
 from pyvbmc.formatting import full_repr
 from pyvbmc.priors import (

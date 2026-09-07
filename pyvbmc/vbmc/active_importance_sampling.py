@@ -82,6 +82,7 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
 
         f_mu, f_s2 = gp.predict(Xa, separate_samples=True)
 
+        # Retained custom-acquisition hook; built-ins do not enable this path.
         if acq_fcn.acq_info.get("mcmc_importance_sampling"):
             # Compute fractional effective sample size (ESS)
             fESS = fess(vp, f_mu, Xa)
