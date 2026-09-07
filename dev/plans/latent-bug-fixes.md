@@ -2,7 +2,7 @@
 
 Created: 2026-09-07
 Status: PARTIALLY APPROVED — D1–D5, Q2/Q3, Q1/Q4 comparison designs,
-the 150-run reference addition and parallel development approved on
+the reduced 60-run reference addition and parallel development approved on
 2026-09-07; final Q1 treatment and Q4 default remain open.
 Reference-extension preparation is complete (2026-09-07). The PI resumed
 Phase 0 and the approved Phase 1 neutral fixes later that day; both are now
@@ -13,18 +13,27 @@ infeasible; reduce the reference addition. The 150-run allocation and launch
 command below are historical preparation, superseded for future execution.
 The PI selected 30 seeds each of `rosenbrock_D2_noise3` and
 `student_D8_noise3` for the reduced proposal (60 additions, 870 combined).
-Its runtime remains unmeasured: the earlier 5–6.5 hour estimate was an
+Its runtime was initially unmeasured: the earlier 5–6.5 hour estimate was an
 extrapolation from other targets, not a Student D8 noisy measurement.
 The PI subsequently authorized a couple of timed runs: exactly seed 0 of
 each selected configuration, sequentially, on the pinned reference code.
-This timing check does not launch the remaining 58 runs or the old 150.
+That timing check did not launch the remaining 58 runs or the old 150.
+The PI has now authorized starting the remaining 58 runs (2026-09-07),
+reusing both validated seed-0 pairs. The development branch remains
+`dev-latent-neutral-fixes`; workers import isolated reference `623f5cd` and
+gpyreg `a2f8ddc`. The old 150-task manifest remains historical and unused.
 
 - [x] Select a smaller allocation: 30 seeds each of noisy Rosenbrock D2 and
   Student D8; preserve pinned numerical source and original 810.
 - [x] Measure one full seed-0 reference run of each selected configuration,
   verifying actual imports and retaining reusable JSON/NPZ results; report
   measured runtimes, termination and a revised batch estimate.
-- [ ] Update the existing preparation and coverage records for that allocation.
+- [x] Update the existing preparation and coverage records for that allocation;
+  create `reduced_60/preparation.json` and adopt the two validated seed-0 pairs.
+- [x] Start the remaining 58 runs, confirm the first worker's pinned imports,
+  and record the background PID, log paths and exact resume/validation commands.
+- [ ] After completion, validate all 60 pairs and original hashes, then perform
+  the combined-reference checks before publishing 870 as the current count.
 
 Timing evidence: `dev/scripts/runs/noisy_reference_20260907/timing_20260907/`.
 The ignored one-off driver reuses the frozen launcher's isolation and
@@ -50,7 +59,7 @@ Multiplying the measured subprocess times by 30 gives 4.600 h for the
 proposed 60 runs, or 4.447 h for the remaining 58 if these two are reused.
 This replaces the earlier cross-target extrapolation but is still based
 on only one seed per configuration; it is not a measured population mean
-or a runtime guarantee. No further runs are queued or running.
+or a runtime guarantee. No further runs were launched during that timing check.
 Both standard JSON/NPZ pairs and per-worker import records remain under
 `timing_20260907/output/`, with `timing.json` there and `validation.json`
 one level above. Actual imports matched the canonical preparation;
@@ -60,13 +69,55 @@ hash checks. The obsolete 150-run `extension/` remains empty. The two
 timing pairs are retained for validation/adoption into the reduced batch;
 the published reference remains 810 until that integration is performed.
 
+**Reduced batch running (2026-09-07, 17:02:17 UTC+03):** seven focused
+preparation tests passed with retries disabled (1.60 s); independent Sol
+review found no issues in the helper/tests, new manifest, adopted timing
+artifacts or exact launch command. The new canonical manifest is
+`dev/scripts/runs/noisy_reference_20260907/reduced_60/preparation.json`.
+Its frozen launcher SHA256 is
+`42bd393db941a6d29bf659ebf9e9e532ad34fa73d9a88dc23620dd85c6b91748`.
+Both timing JSON/NPZ/runtime triplets were copied byte-identically into
+`reduced_60/extension/`, validated and recorded in `adoption.json`.
+The launcher reported `58 pending, 2 complete` and began Rosenbrock seed 1;
+that child's actual imports exactly matched the prepared runtime record.
+No numerical core or reference source was changed. The source keeps the
+unused lumpy registration; launch allocation includes only the two targets.
+
+The hidden launcher is PID **6380** (the venv executable shim is PID 3712).
+`reduced_60/launch.json` and `launch_verification.json` record the invocation
+and initial live-worker check. Logs are `reduced_60/run.stdout.log` and
+`run.stderr.log`; lock state is `preparation.json.run.lock`. AC power was
+connected and automatic AC sleep disabled at launch. One heavy worker runs;
+do not start local suites, replays, other numerical jobs, or trigger CI while
+it is active. Push the launcher/test changes after this worker finishes,
+because this branch's test-file changes trigger CI on push.
+
+Exact command already launched (also resumes completed pairs after a stopped
+launcher has been inspected; do not run a second copy while it is active):
+
+```powershell
+.venv/Scripts/python.exe -u dev/scripts/runs/noisy_reference_20260907/reduced_60/reference_noisy_extension_frozen.py run `
+  --manifest dev/scripts/runs/noisy_reference_20260907/reduced_60/preparation.json `
+  --confirm-run-60
+```
+
+The existing launcher validates each completed pair and rechecks the original
+810 at the end. After it exits successfully, run its `validate` command with
+the same manifest, then perform the combined-reference checks before publication.
+The intended combined allocation is 16 configurations × 50 seeds, the original
+exhaust configuration × 10, and the two additions × 30: 870 total, 160 noisy,
+19 configurations and 76 KS tests. Preserve the historical 810 record.
+Older 150/960 commands and counts below describe superseded preparation;
+this reduced launch record governs current execution. Q1/Q4 and PyTorch
+decisions are unchanged.
+
 Base inspected: `dev-next`, `edb59700bbb77034c877c71f8475994abfd40f66`.
 
 ## Purpose and boundaries
 
 Repair the remaining implementation defects in modernization-roadmap pickup 9,
 with each numerical change attributable and checked against the completed
-reference (810 runs complete; extension to 960 approved below). This plan owns the candidate dispositions, implementation
+reference (810 runs published; reduced extension to 870 running above). This plan owns the candidate dispositions, implementation
 contracts, PI questions, and execution gates for the next executor; the
 roadmap remains the release tracker and `dev/golden/README.md` describes the
 reference. Update this plan during execution; do not create a parallel worklog.

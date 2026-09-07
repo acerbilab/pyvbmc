@@ -25,14 +25,16 @@ use seeds 0–49; the 15-dimensional budget-exhaustion case uses seeds 0–9.
 The [results summary](baseline/summary.md) gives the measured outcomes for
 every configuration.
 
-**Prepared next extension (2026-09-07; not yet run):** add
-`rosenbrock_D2_noise3`, `student_D8_noise3`, and `lumpy_D10_noise3` to the
-standard benchmark set, each at seeds 0–49. These 150 runs will extend this
-reference to 960 runs across 20 configurations, including 250 noisy runs
-across five configurations. Existing reference pairs remain unchanged.
-The new configurations use noise SD 3 and explicit evaluation budgets of
-200, 500, and 600 respectively. They are registered for future golden runs;
-the current reference and its 68-test comparison still cover 810 runs.
+**Reduced next extension (PI launch authorized 2026-09-07):** add
+`rosenbrock_D2_noise3` and `student_D8_noise3`, each at seeds 0–29.
+These 60 runs will extend the reference to 870 runs across 19 configurations,
+including 160 noisy runs across four configurations. Existing reference
+pairs remain unchanged. Both seed-0 timing runs are validated and will be
+reused, leaving 58 runs to execute sequentially. Noise SD is 3 and evaluation
+budgets are 200 and 500. `lumpy_D10_noise3` remains registered but is deferred
+from this batch. This supersedes the original 150-run/960-total allocation.
+The published reference and its 68-test comparison still cover 810 runs;
+the 870-run combined population will have 76 KS tests after validation.
 Preparation and validation are recorded in
 [`latent-bug-fixes.md`](../plans/latent-bug-fixes.md).
 

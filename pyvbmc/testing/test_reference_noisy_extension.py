@@ -123,13 +123,17 @@ def test_golden_extension_registration_and_unchanged_profile_suite():
 def test_extension_allocation_and_run_gate():
     extension = _load_script("reference_noisy_extension")
     tasks = extension._tasks()
-    assert len(tasks) == 150
+    assert len(tasks) == 60
     assert {(task["label"], task["seed"]) for task in tasks} == {
-        (label, seed) for label in extension.CONFIGS for seed in range(50)
+        (label, seed) for label in extension.CONFIGS for seed in range(30)
     }
+    assert tuple(extension.CONFIGS) == (
+        "rosenbrock_D2_noise3",
+        "student_D8_noise3",
+    )
 
-    args = type("Args", (), {"confirm_run_150": False})()
-    with pytest.raises(extension.PreparationError, match="--confirm-run-150"):
+    args = type("Args", (), {"confirm_run_60": False})()
+    with pytest.raises(extension.PreparationError, match="--confirm-run-60"):
         extension.cmd_run(args)
 
     corrupted = [dict(task) for task in tasks]

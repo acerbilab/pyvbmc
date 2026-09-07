@@ -611,8 +611,13 @@ anything that changes numerics lands.
    `623f5cd` (benchmark-only addition to `7314a6a`), verified worker imports,
    a frozen 150-task manifest, seven passing focused tests, and independent
    Sol review. The existing 810 pairs remain byte-identical.
-   The PI explicitly limited this task to preparation: no new batch is
-   launched or scheduled. The plan's Phase 0 checklist owns exact preparation,
+   This original preparation was superseded later that day: after timing one
+   seed each, the PI selected and authorized launching 30 seeds each of noisy
+   Rosenbrock D2 and Student D8, reusing the two timing pairs (58 new runs).
+   The reduced reference will have 870 runs across 19 configurations,
+   including 160 noisy runs across four configurations, with 76 KS tests.
+   No noisy lumpy runs are included. The published reference remains 810
+   until the expanded set is validated and integrated. The plan owns preparation,
    source isolation, verification, experiment and per-change gate details.
    The reference boundary was completed on
    2026-09-07 (pickup 3f); this work is next. The agreed boundary was:

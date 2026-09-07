@@ -1,10 +1,10 @@
-"""Prepare and verify the approved 150-run noisy reference extension.
+"""Prepare and verify the approved 60-run noisy reference extension.
 
 The default invocation only prints help. ``prepare`` performs fail-closed
 source, dependency, historical-population, allocation, and spawned-import
 checks, then writes a launch manifest. PyVBMC is imported only in the isolated
 probe; no optimization is run. A future run requires the frozen launcher's explicit
-``run --confirm-run-150`` command. ``validate`` checks the isolated extension
+``run --confirm-run-60`` command. ``validate`` checks the isolated extension
 output without publishing or changing the historical population.
 """
 
@@ -51,14 +51,8 @@ CONFIGS = {
         "noise_sd": 3.0,
         "max_fun_evals": 500,
     },
-    "lumpy_D10_noise3": {
-        "problem": "lumpy",
-        "D": 10,
-        "noise_sd": 3.0,
-        "max_fun_evals": 600,
-    },
 }
-SEEDS = tuple(range(50))
+SEEDS = tuple(range(30))
 SOURCE_FILES = (
     "dev/scripts/benchmark_targets.py",
     "dev/scripts/golden_trace.py",
@@ -494,7 +488,7 @@ def _verify_task_allocation(tasks):
     if tasks != _tasks():
         raise PreparationError(
             "preparation manifest allocation, order, or canonical task tag "
-            "is not the approved 3 x 50"
+            "is not the approved 2 x 30"
         )
 
 
@@ -553,7 +547,7 @@ def cmd_prepare(args):
             "workers": 1,
             "threads": THREADS,
             "options": {"vectorized_target": False},
-            "launcher": "run --manifest <path> --confirm-run-150",
+            "launcher": "run --manifest <path> --confirm-run-60",
         },
     }
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
@@ -562,7 +556,7 @@ def cmd_prepare(args):
         json.dumps(data, indent=2) + "\n", encoding="utf-8"
     )
     print(
-        f"prepared 150 tasks; zero optimizations run\nmanifest: {manifest_path}"
+        f"prepared 60 tasks; zero optimizations run\nmanifest: {manifest_path}"
     )
     return 0
 
@@ -587,9 +581,9 @@ def _extension_state(out, expected_tags):
 
 
 def cmd_run(args):
-    if not args.confirm_run_150:
+    if not args.confirm_run_60:
         raise PreparationError(
-            "run requires the literal --confirm-run-150 flag"
+            "run requires the literal --confirm-run-60 flag"
         )
     manifest_path, data, paths = _load_manifest(args.manifest)
     lock_path = manifest_path.with_suffix(manifest_path.suffix + ".run.lock")
@@ -663,7 +657,7 @@ def _run_locked(manifest_path, data, paths, launch_token):
     _verify_historical(
         paths["historical_population"], paths["historical_manifest"]
     )
-    print("150 extension tasks complete; run validate before any publication")
+    print("60 extension tasks complete; run validate before any publication")
     return 0
 
 
@@ -981,10 +975,10 @@ def build_parser():
     prepare.set_defaults(func=cmd_prepare)
 
     run = sub.add_parser(
-        "run", help="future explicit execution of exactly 150 tasks"
+        "run", help="future explicit execution of exactly 60 tasks"
     )
     run.add_argument("--manifest", required=True)
-    run.add_argument("--confirm-run-150", action="store_true")
+    run.add_argument("--confirm-run-60", action="store_true")
     run.set_defaults(func=cmd_run)
 
     validate = sub.add_parser(
