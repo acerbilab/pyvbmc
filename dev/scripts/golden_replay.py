@@ -17,6 +17,13 @@ with one BLAS thread (as the baseline was run), writes the new trace under
 ``--out`` and reports, against the stored trace of the same (config, seed)
 under ``--baseline``:
 
+- exact stored-state identity: every non-timer NPZ array (including its
+  shape), separated into main-loop and returned-final state, plus the
+  semantic final fields in the JSON sidecar.  The report distinguishes
+  ``same loop, changed final`` from a main-loop difference.  Historical
+  traces which do not store the returned posterior's transformer say that
+  this part is not certifiable; they are never credited with equality for
+  state they do not contain;
 - the agreement horizon: the first iteration at which the ELBO path
   differs (exactly, and beyond 1e-6), and how many leading *live* evaluated
   points are identical. The trace stores only the rows that survive
@@ -37,6 +44,11 @@ under ``--baseline``:
   (Tukey far-out fence, ``Q3 + 3 IQR`` over the seeds' sidecars under
   ``--sidecars``, in git; the plain maximum is vacuous where a seed is a
   known failure, e.g. ``student_D4`` seed 19).
+
+The exact verdict excludes only the NPZ ``timer`` array and timing, memory,
+and provenance fields in the sidecar.  The toleranced horizons and population
+accuracy fences are separate diagnostics.  In particular, a run with the same
+loop but a changed returned final is subject to the accuracy fences.
 
 An arithmetic-preserving refactor is expected to *part* from the stored
 trajectory at some point: a few-ulp change in an acquisition value flips a
@@ -81,7 +93,54 @@ DEFAULT_CONFIGS = (
     "rosenbrock_D2_noise1",
 )
 ACCURACY = ("elbo_err", "gskl", "mmtv")
-FINAL_KEYS = ACCURACY + ("func_count", "iterations", "final_K", "wall_s")
+DISPLAY_FINAL_KEYS = ACCURACY + (
+    "func_count",
+    "iterations",
+    "final_K",
+    "wall_s",
+)
+SEMANTIC_FINAL_KEYS = (
+    "elbo",
+    "elbo_sd",
+    "final_K",
+    "best_iter",
+    "success_flag",
+    "message",
+    "iterations",
+    "func_count",
+    "final_N",
+    "min_Ns_gp",
+    "n_warps",
+)
+FINAL_KEYS = tuple(dict.fromkeys(DISPLAY_FINAL_KEYS + SEMANTIC_FINAL_KEYS))
+FINAL_ARRAY_KEYS = {
+    "final_w",
+    "final_mu",
+    "final_sigma",
+    "final_lambd",
+    "post_mean",
+    "post_cov",
+}
+RETURNED_TRANSFORMER_KEYS = {
+    "final_pt_mu",
+    "final_pt_delta",
+    "final_pt_scale",
+    "final_pt_R",
+}
+# ``golden_trace.col`` encodes absent iteration-history scalars as NaN for
+# these arrays.  NaNs elsewhere are data, not missing-value sentinels, and
+# therefore cannot establish exact equality.
+NAN_PERMITTED_ARRAYS = {
+    "elbo",
+    "elbo_sd",
+    "sKL",
+    "r_index",
+    "Ns_gp",
+    "func_count",
+    "n_eff",
+    "pruned",
+    "N",
+}
 RTOL_CLOSE = 1e-6
 ATOL_ELBO = 1e-6
 FENCE_IQR = 3.0  # Tukey far-out fence: Q3 + 3 IQR
@@ -128,11 +187,87 @@ def _horizon(a, b, rtol, atol):
     return int(bad[0]) if len(bad) else n
 
 
+def _archive_keys(archive):
+    """Return keys from an NPZ archive or a synthetic dict-like archive."""
+    return set(getattr(archive, "files", archive.keys()))
+
+
+def _array_difference(key, ref_value, new_value):
+    """Describe an exact shape/value difference, or return ``None``."""
+    import numpy as np
+
+    ref_value = np.asarray(ref_value)
+    new_value = np.asarray(new_value)
+    if ref_value.shape != new_value.shape:
+        return f"shape {ref_value.shape} -> {new_value.shape}"
+    equal_nan = key in NAN_PERMITTED_ARRAYS
+    if not np.array_equal(ref_value, new_value, equal_nan=equal_nan):
+        return "value"
+    return None
+
+
+def _is_final_array(key):
+    return (
+        key in FINAL_ARRAY_KEYS
+        or key in RETURNED_TRANSFORMER_KEYS
+        or key.startswith("final_pt_")
+    )
+
+
+def _returned_transformer_coverage(ref_keys, new_keys):
+    """Describe whether the returned VP transformer can be compared."""
+    ref_have = RETURNED_TRANSFORMER_KEYS & ref_keys
+    new_have = RETURNED_TRANSFORMER_KEYS & new_keys
+    if (
+        ref_have == RETURNED_TRANSFORMER_KEYS
+        and new_have == RETURNED_TRANSFORMER_KEYS
+    ):
+        return True, "compared"
+    missing = []
+    if ref_have != RETURNED_TRANSFORMER_KEYS:
+        missing.append("reference")
+    if new_have != RETURNED_TRANSFORMER_KEYS:
+        missing.append("new trace")
+    return (
+        False,
+        "returned transformer not certifiable (absent from "
+        + " and ".join(missing)
+        + ")",
+    )
+
+
 def compare_traces(ref, new):
-    """Agreement horizons between two trace archives (dict-like)."""
+    """Exact stored-state comparison and separate agreement diagnostics."""
     import numpy as np
 
     out = {}
+    ref_keys = _archive_keys(ref)
+    new_keys = _archive_keys(new)
+    compared_keys = (ref_keys | new_keys) - {"timer"}
+    loop_differences = {}
+    final_differences = {}
+    for key in sorted(compared_keys):
+        destination = (
+            final_differences if _is_final_array(key) else loop_differences
+        )
+        if key not in ref_keys:
+            destination[key] = "absent from reference"
+        elif key not in new_keys:
+            destination[key] = "absent from new trace"
+        else:
+            difference = _array_difference(key, ref[key], new[key])
+            if difference is not None:
+                destination[key] = difference
+    out["loop_differences"] = loop_differences
+    out["final_array_differences"] = final_differences
+    out["loop_identical"] = not loop_differences
+    out["final_arrays_identical"] = not final_differences
+    transformer_ok, transformer_coverage = _returned_transformer_coverage(
+        ref_keys, new_keys
+    )
+    out["returned_transformer_certifiable"] = transformer_ok
+    out["returned_transformer_coverage"] = transformer_coverage
+
     for key in ("X_orig", "y_orig"):
         out[f"{key}_exact"] = _horizon(ref[key], new[key], 0.0, 0.0)
         out[f"{key}_close"] = _horizon(ref[key], new[key], RTOL_CLOSE, 0.0)
@@ -144,12 +279,8 @@ def compare_traces(ref, new):
         out[f"{key}_iter"] = _horizon(ref[key], new[key], 0.0, 0.0)
     out["n_iter_ref"] = int(len(ref["elbo"]))
     out["n_iter_new"] = int(len(new["elbo"]))
-    out["identical"] = bool(
-        out["n_live_ref"] == out["n_live_new"]
-        and out["X_orig_exact"] == out["n_live_ref"]
-        and out["y_orig_exact"] == out["n_live_ref"]  # noisy targets
-        and out["n_iter_ref"] == out["n_iter_new"]
-        and out["elbo_exact_iter"] == out["n_iter_ref"]
+    out["stored_arrays_identical"] = bool(
+        out["loop_identical"] and out["final_arrays_identical"]
     )
     # The initial design (every evaluation before the first GP fit) is
     # drawn from the generator before any numerics run, so it must be
@@ -200,6 +331,105 @@ def compare_traces(ref, new):
     return out
 
 
+def _semantic_final_differences(ref, new):
+    """Compare the final fields whose values describe solver semantics."""
+    differences = {}
+    for key in SEMANTIC_FINAL_KEYS:
+        if key not in ref:
+            differences[key] = "absent from reference"
+        elif key not in new:
+            differences[key] = "absent from new sidecar"
+        elif type(ref[key]) is not type(new[key]) or ref[key] != new[key]:
+            differences[key] = "value"
+    return differences
+
+
+def _trace_consistency_issues(trace, final):
+    """Cross-check duplicated sidecar counts against the NPZ schema."""
+    import numpy as np
+
+    issues = {}
+
+    def require_equal(key, actual):
+        expected = final.get(key)
+        if expected is None or expected != actual:
+            issues[key] = f"sidecar {expected!r}, NPZ {actual!r}"
+
+    keys = _archive_keys(trace)
+    if "iter" in keys:
+        n_iter = len(trace["iter"])
+        require_equal("iterations", n_iter)
+        if n_iter and not np.array_equal(trace["iter"], np.arange(n_iter)):
+            issues["iter"] = "not the stored 0..iterations-1 mapping"
+        best_iter = final.get("best_iter")
+        if type(best_iter) is not int or best_iter < 0 or best_iter >= n_iter:
+            issues[
+                "best_iter"
+            ] = f"sidecar {best_iter!r}, outside NPZ iteration mapping"
+    if "func_count" in keys and len(trace["func_count"]):
+        require_equal("func_count", int(trace["func_count"][-1]))
+    if "N" in keys and len(trace["N"]):
+        require_equal("final_N", int(trace["N"][-1]))
+    if "Ns_gp" in keys and len(trace["Ns_gp"]):
+        require_equal("min_Ns_gp", int(np.nanmin(trace["Ns_gp"])))
+    if "warped" in keys:
+        require_equal("n_warps", int(np.nansum(trace["warped"])))
+
+    final_shape_keys = FINAL_ARRAY_KEYS & keys
+    if {"final_w", "final_sigma", "final_mu"} <= final_shape_keys:
+        final_w = np.asarray(trace["final_w"])
+        final_sigma = np.asarray(trace["final_sigma"])
+        final_mu = np.asarray(trace["final_mu"])
+        final_k = final.get("final_K")
+        if (
+            final_w.ndim != 1
+            or final_sigma.ndim != 1
+            or final_mu.ndim != 2
+            or final_w.shape[0] != final_k
+            or final_sigma.shape[0] != final_k
+            or final_mu.shape[1] != final_k
+        ):
+            issues["final_K"] = (
+                f"sidecar {final_k!r}, final_w {final_w.shape}, "
+                f"final_sigma {final_sigma.shape}, final_mu {final_mu.shape}"
+            )
+    return issues
+
+
+def _final_validity_issues(trace, final):
+    """Return non-finite semantic scalars and returned-array fields."""
+    import numpy as np
+
+    issues = {}
+    for key in ("elbo", "elbo_sd"):
+        value = final.get(key)
+        try:
+            valid = (
+                not isinstance(value, bool)
+                and np.isscalar(value)
+                and bool(np.isreal(value))
+                and bool(np.isfinite(value))
+            )
+        except TypeError:
+            valid = False
+        if not valid:
+            issues[key] = f"non-finite or non-numeric value {value!r}"
+
+    keys = _archive_keys(trace)
+    returned_array_keys = (FINAL_ARRAY_KEYS | RETURNED_TRANSFORMER_KEYS) & keys
+    returned_array_keys |= {key for key in keys if key.startswith("final_pt_")}
+    for key in sorted(returned_array_keys):
+        value = np.asarray(trace[key])
+        try:
+            finite = np.isfinite(value)
+        except TypeError:
+            issues[key] = "non-numeric returned array"
+            continue
+        if not np.all(finite):
+            issues[key] = "non-finite returned array"
+    return issues
+
+
 def envelope(values):
     """Tukey far-out fence ``Q3 + 3 IQR`` of the finite values."""
     import numpy as np
@@ -223,17 +453,78 @@ def compare_run(label, seed, out_dir, baseline, sidecars, pop):
     fin_new = side_new["final"]
     row["final_new"] = {k: fin_new.get(k) for k in FINAL_KEYS}
 
-    ref_json = sidecars / f"{tag}.json"
-    if not ref_json.exists():
-        ref_json = baseline / f"{tag}.json"
+    ref_npz, new_npz = baseline / f"{tag}.npz", out_dir / f"{tag}.npz"
+    baseline_json = baseline / f"{tag}.json"
+    population_json = sidecars / f"{tag}.json"
+    # Bind semantic finals to the trace selected by --baseline. The tracked
+    # --sidecars population supplies accuracy fences, and is only a semantic
+    # fallback when the selected baseline has no trace/sidecar pair.
+    ref_json = baseline_json if ref_npz.exists() else population_json
+    if not ref_npz.exists() and not ref_json.exists():
+        ref_json = baseline_json
     if ref_json.exists():
         fin_ref = json.loads(ref_json.read_text())["final"]
         row["final_ref"] = {k: fin_ref.get(k) for k in FINAL_KEYS}
+        semantic_differences = _semantic_final_differences(fin_ref, fin_new)
+        row["semantic_final_certifiable"] = True
+        row["semantic_final_differences"] = semantic_differences
+        row["semantic_final_identical"] = not semantic_differences
+    else:
+        fin_ref = None
+        row["semantic_final_certifiable"] = False
+        row["semantic_final_differences"] = {}
+        row["semantic_final_identical"] = None
 
-    ref_npz, new_npz = baseline / f"{tag}.npz", out_dir / f"{tag}.npz"
     if ref_npz.exists() and new_npz.exists():
         with np.load(ref_npz) as ref, np.load(new_npz) as new:
             row.update(compare_traces(ref, new))
+            consistency = {
+                "reference": (
+                    _trace_consistency_issues(ref, fin_ref)
+                    if fin_ref is not None
+                    else {}
+                ),
+                "new": _trace_consistency_issues(new, fin_new),
+            }
+            row["consistency_issues"] = {
+                side: issues for side, issues in consistency.items() if issues
+            }
+            validity = {
+                "reference": (
+                    _final_validity_issues(ref, fin_ref)
+                    if fin_ref is not None
+                    else {}
+                ),
+                "new": _final_validity_issues(new, fin_new),
+            }
+            row["final_validity_issues"] = {
+                side: issues for side, issues in validity.items() if issues
+            }
+        row["final_identical"] = bool(
+            row["final_arrays_identical"]
+            and row["semantic_final_identical"] is True
+        )
+        row["identical"] = bool(
+            row["loop_identical"] and row["final_identical"]
+        )
+        not_certifiable = []
+        if not row["returned_transformer_certifiable"]:
+            not_certifiable.append(row["returned_transformer_coverage"])
+        if not row["semantic_final_certifiable"]:
+            not_certifiable.append("semantic reference sidecar absent")
+        row["identity_not_certifiable"] = not_certifiable
+    else:
+        # Even a finals-only comparison must reject an invalid returned
+        # result. Inspect the new arrays when that archive is available and
+        # always validate the semantic ELBO scalars from its sidecar.
+        if new_npz.exists():
+            with np.load(new_npz) as new:
+                new_validity = _final_validity_issues(new, fin_new)
+        else:
+            new_validity = _final_validity_issues({}, fin_new)
+        row["final_validity_issues"] = (
+            {"new": new_validity} if new_validity else {}
+        )
 
     outside = []
     pop_ok = label in pop and np.isfinite(pop[label]["func_count"]).any()
@@ -258,13 +549,26 @@ def compare_run(label, seed, out_dir, baseline, sidecars, pop):
     row["outside"] = outside
 
     if row.get("identical"):
-        verdict = "identical"
+        verdict = "identical stored loop and final"
+    elif row.get("loop_identical") and "elbo_exact_iter" in row:
+        verdict = "same loop, changed final"
+        changed = sorted(
+            set(row.get("final_array_differences", {}))
+            | set(row.get("semantic_final_differences", {}))
+        )
+        if changed:
+            verdict += ": " + ", ".join(changed)
     elif "elbo_exact_iter" in row:
         # Iterations are 0-based: "parted at iteration i" means iterations
         # 0..i-1 are bit-identical and iteration i is the first to differ.
-        verdict = f"parted at iteration {row['elbo_exact_iter']}"
-        if row["elbo_iter"] > row["elbo_exact_iter"]:
-            verdict += f" (beyond 1e-6 at {row['elbo_iter']})"
+        if row["elbo_exact_iter"] < min(row["n_iter_ref"], row["n_iter_new"]):
+            verdict = f"parted at iteration {row['elbo_exact_iter']}"
+            if row["elbo_iter"] > row["elbo_exact_iter"]:
+                verdict += f" (beyond 1e-6 at {row['elbo_iter']})"
+        elif row["n_iter_ref"] != row["n_iter_new"]:
+            verdict = "loop state differs: ELBO length changed"
+        else:
+            verdict = "loop state differs: ELBO path identical"
         verdict += f"; live points identical: {row['X_orig_exact']}"
     else:
         verdict = "finals only"
@@ -277,8 +581,17 @@ def compare_run(label, seed, out_dir, baseline, sidecars, pop):
             verdict = "INITIAL DESIGN DIFFERS; " + verdict
     if outside:
         verdict += "; OUTSIDE envelope: " + ", ".join(outside)
-    row["flagged"] = bool(outside) or (
-        row.get("initial_design_ok", True) is False
+    if row.get("identity_not_certifiable"):
+        verdict += "; " + "; ".join(row["identity_not_certifiable"])
+    if row.get("consistency_issues"):
+        verdict += "; INCONSISTENT sidecar/NPZ counts"
+    if row.get("final_validity_issues"):
+        verdict += "; NONFINITE final output"
+    row["flagged"] = (
+        bool(outside)
+        or row.get("initial_design_ok", True) is False
+        or bool(row.get("consistency_issues"))
+        or bool(row.get("final_validity_issues"))
     )
     row["verdict"] = verdict
     return row
@@ -352,18 +665,24 @@ def render(rows, git, args, minutes):
     lines.append("")
     lines.append(
         f"{n_flag} flagged of {len(rows)}."
-        " `identical` = same live points and ELBO path. `parted at"
-        " iteration i` (0-based) = iterations 0..i−1 are bit-identical and"
-        " iteration i is the first to differ (expected for an"
-        " arithmetic-preserving change once a CMA-ES ranking flips); the"
-        " live-point count is a lower bound on the evaluation horizon"
-        " because warm-up trimming removes rows. Flags: a run failed,"
+        " `identical stored loop and final` = exact shape and value equality"
+        " for every stored non-timer NPZ array and all 11 semantic final"
+        " sidecar fields. `same loop, changed final` separates a returned"
+        " posterior/result change from the main loop. A historical trace"
+        " without the returned posterior's transformer is explicitly not"
+        " certifiable for that state. `parted at iteration i` (0-based) ="
+        " iterations 0..i−1 are bit-identical and iteration i is the first"
+        " ELBO difference; the JSON report lists every differing loop and"
+        " final array. Toleranced horizons are diagnostics only. The"
+        " live-point count is a lower bound on the evaluation horizon because"
+        " warm-up trimming removes rows. Flags: a run failed,"
         " the initial design differs (exact where both traces store it,"
         " else a generator-drawn design point of the new run found live in"
         " the reference; where none is live, e.g. cigar, the trace cannot"
         " certify the design and no flag is raised),"
-        " a final is not finite, or a parted run's"
-        " ΔLML/gsKL/MMTV exceeds the population's Q3 + 3 IQR fence."
+        " a sidecar count contradicts its NPZ, a final is not finite, or a"
+        " changed loop/final's ΔLML/gsKL/MMTV exceeds the population's"
+        " Q3 + 3 IQR fence."
     )
     return "\n".join(lines) + "\n", n_flag
 
