@@ -16,6 +16,13 @@ Exact oracles passed all eight fixtures before and after; both five-case
 replays match every stored loop/final output under the stronger comparator.
 Focused tests, SciPy 1.15/current prior checks, docs/examples and independent
 Sol review passed. Historical returned transformers remain uncertifiable.
+CI follow-up is complete: `514bad7` preserves the live transformer after
+variational optimization; `686a75f` also restores sharing after active-sampling
+rollback. CI run 135 passed (1,043 passed, 49 skipped, one separate acquisition
+test retry); both previously failing integration cases passed first attempt.
+The affected 25 local tests passed with retries disabled, with eight exact
+oracles and five unchanged replays. Details and retry limitations are in the
+plan's CI follow-up. Current Phase 0/1 work is complete.
 Next development group: Phase 2's approved boost comparison; final Q1/Q4
 choices remain evidence-dependent. No moving production fix was applied.
 Evidence: `dev/scripts/runs/latent_fixes/neutral_20260907/` and the active

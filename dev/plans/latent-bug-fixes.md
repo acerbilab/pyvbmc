@@ -418,7 +418,7 @@ batch remains a separate future action.
   posterior deepcopy/history isolation; Sol implements, Astra runs checks.
 - [x] Run the affected end-to-end module, focused regression and numerical gate;
   independently review the correction.
-- [~] Commit/push the correction and verify its CI result.
+- [x] Commit/push the correction and verify its CI result.
 
 The reference extension remains parked. Evidence is under
 `dev/scripts/runs/latent_fixes/neutral_20260907/ci_133*`.
@@ -441,7 +441,7 @@ push and cannot be dismissed as statistical failures.
 
 - [x] Preserve transformer identity when active sampling restores the old VP;
   cover that rollback deterministically without weakening the integration test.
-- [~] Validate with reruns disabled first, inspect any rerun reasons explicitly,
+- [x] Validate with reruns disabled first, inspect any rerun reasons explicitly,
   independently review, then push and verify the replacement CI run.
 
 The second correction synchronizes the VP at `active_sample`'s sole return
@@ -454,7 +454,15 @@ Independent Sol static review found no issues and checked the other live-loop
 replacement paths. All eight exact oracles passed (`ci_134_oracles.log`), and
 all five replay cases matched every stored loop/final output and initial
 design with zero flags (`ci_134_replay.log`). No references changed.
-Replacement CI acceptance is pending.
+The correction was pushed as `686a75f`. [CI run 135](https://github.com/acerbilab/pyvbmc/actions/runs/34124719311)
+passed the Ubuntu/Python 3.12 suite: 1,043 passed, 49 skipped, one rerun,
+629.41 s (`ci_135.log`). Both previously failing integration tests and the new
+rollback regression passed on their first attempts. The sole retry was
+`test_acq_fcn_imiqr.py::test_complex__call__`, which then passed; the workflow's
+pytest flags do not retain its retry traceback, so its exact cause is
+unconfirmed. It is a separate acquisition test, not another observed live
+transformer assertion failure. The current Phase 0/1 scope is complete;
+the 150-run reference extension remains parked and later phases remain pending.
 
 #### Active subset: prepare the noisy reference extension (2026-09-07)
 
