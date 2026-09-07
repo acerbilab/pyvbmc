@@ -37,7 +37,7 @@ gpyreg `a2f8ddc`. The old 150-task manifest remains historical and unused.
 - [x] After completion, validate all 60 pairs and original hashes.
 - [x] Perform the combined-reference checks before publishing 870 as the
   current count.
-- [~] Publish the validated 870-run sidecars, summaries and provenance;
+- [x] Publish the validated 870-run sidecars, summaries and provenance;
   independently review, commit/push and verify CI. No boost experiment is
   included in this reference-completion task (PI, 2026-09-07).
 
@@ -93,7 +93,10 @@ live at `dev/scripts/runs/golden/reference_870_20260907/`; the new tracked
 summary, 60 added sidecars, full 870-pair hash manifest and reports are
 published locally. Independent Sol final review passed with no remaining
 findings; 74 focused harness tests passed with retries disabled (11.69 s).
-Commit/push and CI acceptance are pending.
+Publication commit `b2ea859` is pushed on `dev-latent-neutral-fixes`.
+[CI 136](https://github.com/acerbilab/pyvbmc/actions/runs/34153489140)
+passed: 1,043 tests, 49 skipped, no retries; job time 10m27s, test time 558s.
+The reference-extension scope is complete. No boost experiment was run.
 
 **Launch record (2026-09-07, 17:02:17 UTC+03):** seven focused
 preparation tests passed with retries disabled (1.60 s); independent Sol

@@ -24,8 +24,9 @@ The remaining 58 ran 17:02:17-21:08:49 UTC+03; no worker or watcher remains.
 
 Development branch: dev-latent-neutral-fixes. Phase 0's stronger replay gate
 and Phase 1's neutral fixes are complete (including CI 135's transformer
-sharing corrections). Reference-publication commit/push and CI acceptance
-are being finalized; do not overlap CI with local heavy computation.
+sharing corrections). Reference publication is committed and pushed in
+b2ea859. CI 136 passed: 1,043 tests, 49 skipped, no retries (10m27s job).
+Independent Sol review passed; all reference-extension checklist items are complete.
 Next numerical work is Phase 2's approved boost comparison. It was not run
 as part of this reference completion. Final Q1 treatment and Q4's 0.1/0.2
 choice remain evidence-dependent; preserve existing PyTorch feasibility

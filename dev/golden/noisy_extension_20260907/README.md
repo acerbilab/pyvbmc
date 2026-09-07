@@ -93,6 +93,10 @@ The focused harness tests (`test_golden_replay.py` and
 23.3.0 formatting verification.
 Independent Sol review of the publication and provenance passed with no
 remaining findings; the review was static and did not duplicate numerical runs.
+Publication commit `b2ea859` was pushed to `dev-latent-neutral-fixes`.
+[CI 136](https://github.com/acerbilab/pyvbmc/actions/runs/34153489140) passed
+on Ubuntu/Python 3.12: 1,043 tests, 49 skipped, no retries, 558 seconds of
+tests (10m27s for the job).
 
 The canonical local traces are under
 `dev/scripts/runs/golden/reference_870_20260907/`. The previous
