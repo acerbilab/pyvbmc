@@ -682,6 +682,9 @@ def active_sample(
                 if elbo0 > vp.stats["elbo"]:
                     vp = vp0
 
+    # A rejected full update restores an isolated deepcopy. Reattach the
+    # posterior returned to the live solver to the logger's shared transform.
+    vp.parameter_transformer = parameter_transformer
     return function_logger, optim_state, vp, gp
 
 

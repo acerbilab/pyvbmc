@@ -1,3 +1,4 @@
+import copy
 import logging
 
 import numpy as np
@@ -90,6 +91,73 @@ def test_active_uncertainty_sampling(mocker):
         function_logger.X[N_init : N_init + sample_count, :], 1, atol=0.001
     )
     return
+
+
+def test_active_sample_rollback_preserves_live_transformer(mocker):
+    vbmc = create_vbmc(1, 0, -np.inf, np.inf, -2, 2)
+    transformer = vbmc.function_logger.parameter_transformer
+    for key, value in {
+        "active_sample_vp_update": True,
+        "active_sample_gp_update": False,
+        "search_optimizer": "none",
+        "ns_search": 1,
+    }.items():
+        vbmc.options.__setitem__(key, value, force=True)
+    vbmc.optim_state["iter"] = 0
+    vbmc.optim_state["last_warmup"] = 0
+    vbmc.optim_state["hyp_dict"] = {}
+
+    acq = mocker.Mock()
+    acq.acq_info = {}
+    acq.return_value = np.array([0.0])
+    vbmc.options.__setitem__("search_acq_fcn", [acq], force=True)
+    mocker.patch(
+        "pyvbmc.vbmc.active_sample._get_search_points",
+        side_effect=[
+            (np.array([[0.1]]), np.array([np.nan])),
+            (np.array([[0.2]]), np.array([np.nan])),
+        ],
+    )
+
+    gp = mocker.Mock()
+    gp.D = 1
+    gp.X = np.array([[0.0]])
+    gp.y = np.array([[0.0]])
+    gp.posteriors = [mocker.Mock(hyp=np.zeros(2))]
+    gp.covariance.hyperparameter_count.return_value = 1
+    gp.noise.hyperparameter_count.return_value = 1
+    gp.noise.compute.return_value = np.ones(1)
+    gp.temporary_data = {}
+    mocker.patch("pyvbmc.vbmc.active_sample.reupdate_gp", return_value=gp)
+
+    old_parameters = vbmc.vp.get_parameters().copy()
+    updated_vp = copy.deepcopy(vbmc.vp)
+    assert updated_vp.parameter_transformer is not transformer
+    assert updated_vp.rng is vbmc.vp.rng
+    updated_vp.parameter_transformer = transformer
+    updated_vp.mu += 1.0
+    updated_vp.stats = {"elbo": -1.0}
+    mocker.patch(
+        "pyvbmc.vbmc.active_sample.optimize_vp",
+        return_value=(updated_vp, 0.0, 0),
+    )
+    old_score = mocker.patch(
+        "pyvbmc.vbmc.active_sample._neg_elcbo", return_value=(-0.0,)
+    )
+
+    _, _, returned_vp, _ = active_sample(
+        gp,
+        2,
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+
+    old_score.assert_called_once()
+    assert np.array_equal(returned_vp.get_parameters(), old_parameters)
+    assert returned_vp.parameter_transformer is transformer
 
 
 def test_active_sample_initial_sample_no_y_values():

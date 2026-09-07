@@ -432,7 +432,29 @@ deepcopy test passed: 12 tests, five reruns (312.28 s; `ci_133_after.log`).
 All eight exact oracles passed (`ci_133_oracles.log`); all five replay cases
 matched every stored loop/final output and initial design with zero flags
 (3.0 minutes; `ci_133_replay.log`). No oracle or baseline references changed.
-Post-push CI verification remains pending.
+The correction was pushed as `514bad7`. CI run 134 passed the original case
+but failed the same identity assertion in noisy half-normal active sampling
+(1,016 passed, 49 skipped). The first correction was incomplete: accepting
+the pre-update VP rollback in `active_sample` also adopts a deep-copied
+transformer. The local module's five reruns were not investigated before
+push and cannot be dismissed as statistical failures.
+
+- [x] Preserve transformer identity when active sampling restores the old VP;
+  cover that rollback deterministically without weakening the integration test.
+- [~] Validate with reruns disabled first, inspect any rerun reasons explicitly,
+  independently review, then push and verify the replacement CI run.
+
+The second correction synchronizes the VP at `active_sample`'s sole return
+with the logger's transformer. The deterministic regression forces a rejected
+full update and verifies the restored parameters, shared live transformer,
+and ordinary deepcopy isolation/shared RNG. It passed alone; the complete
+active-sampling test module plus the failing noisy half-normal integration
+test passed with retries disabled: 25 tests, 66.29 s (`ci_134_after.log`).
+Independent Sol static review found no issues and checked the other live-loop
+replacement paths. All eight exact oracles passed (`ci_134_oracles.log`), and
+all five replay cases matched every stored loop/final output and initial
+design with zero flags (`ci_134_replay.log`). No references changed.
+Replacement CI acceptance is pending.
 
 #### Active subset: prepare the noisy reference extension (2026-09-07)
 
