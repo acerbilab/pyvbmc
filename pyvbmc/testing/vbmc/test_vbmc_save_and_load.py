@@ -1,3 +1,4 @@
+import copy
 from pathlib import Path
 
 import dill
@@ -233,6 +234,39 @@ def test_vbmc_load_defaults_missing_vectorized_flags_to_false(tmp_path):
 
     assert loaded.options["vectorized_target"] is False
     assert loaded.function_logger.vectorized_target is False
+
+
+def test_vbmc_load_backfills_missing_N_history(tmp_path):
+    path = _save_load_vbmc(np.sum, tmp_path, vectorized=False)
+    with open(path.with_suffix(".pkl"), "rb") as file:
+        vbmc = dill.load(file)
+    del vbmc.iteration_history["N"]
+    vbmc.iteration = 2
+    for iteration in range(3):
+        optim_state = copy.deepcopy(vbmc.optim_state)
+        optim_state["iter"] = iteration
+        function_logger = copy.deepcopy(vbmc.function_logger)
+        if iteration == 0:
+            optim_state["N"] = 5
+            function_logger.Xn = 99
+        elif iteration == 1:
+            function_logger.Xn = 7
+        else:
+            function_logger.Xn = np.nan
+        vbmc.iteration_history.record_iteration(
+            {
+                "optim_state": optim_state,
+                "function_logger": function_logger,
+            },
+            iteration,
+        )
+    vbmc.save(path, overwrite=True)
+
+    loaded = VBMC.load(path)
+
+    assert "N" in loaded.iteration_history
+    assert list(loaded.iteration_history["N"][:2]) == [5, 8]
+    assert loaded.iteration_history["N"][2] is None
 
 
 def test_vbmc_load_mode_override_requires_likelihood_provenance(tmp_path):

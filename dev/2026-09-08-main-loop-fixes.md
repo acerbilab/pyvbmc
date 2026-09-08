@@ -21,9 +21,9 @@ incompatible model dimensions are skipped. History decay uses
 `sKL / (tol_skl * fun_evals_per_iter)`. Undefined covariance falls back to
 the existing default sampler widths.
 
-The legacy `gp_fit` oracle will explicitly disable history-derived widths
+The legacy `gp_fit` oracle explicitly disables history-derived widths
 to preserve its previous numerical contract. Separate controlled-history
-and authentic-history tests will exercise the corrected estimator and the
+and authentic-history tests exercise the corrected estimator and the
 widths actually supplied to the sampler.
 
 Before edits, `make_oracle_fixtures.py --check --exact` passed all eight
@@ -122,10 +122,62 @@ Cigar seed 0 is back within the population fences: evidence error 0.00775,
 gsKL 0.000887, MMTV 0.0157, and 130 target evaluations. This cumulative
 result does not erase the separately recorded covariance-only seed-0 flag.
 
-## GP sampling termination (Phase 5, in progress)
+## GP sampling termination (Phase 5 complete)
 
-The isolated implementation is ready for integration after the Phase 4 gate.
+The implementation is integrated after the Phase 4 gate.
 It restores the existing variance criterion, records logged distinct-location
 counts in history, and backfills compatible old histories on load or direct
 continuation. Missing counts or variances do not trigger this optional stop.
 The existing hard N/K stops and configured threshold remain the contract.
+
+The 38 focused loop-termination, save/load and legacy-acquisition tests pass,
+as do all 11 exact fixtures, without reference changes. The first focused
+run exposed a NumPy boolean return where the existing private method returned
+a Python bool; the final result is explicitly converted. Five setup errors
+were Windows permissions on pytest's default temporary directory, resolved
+by using a workspace `--basetemp`. Logs are retained under
+`dev/scripts/runs/latent_fixes/sampling_termination_20260908/`.
+
+The five-case replay against Phase 4 takes 5.1 minutes and passes with zero
+flags: all stored loops, initial designs and semantic final fields are exact.
+The observer records 52 real criterion calls, all false. Independently
+recomputing their weighted variances confirms that none crosses the default
+`1e-4`; this check therefore does not demonstrate a default trajectory change
+or a speed improvement. Missing historical returned transformers still limit
+what the compact traces can certify.
+
+A separate bounded normal D5 seed-0 run forces the criterion with a high
+finite tolerance (`1e6`), disables the hard N/K stops, and caps the run at
+11 iterations. The real loop sets `stop_sampling=50` at iteration 8; the
+next GP fit switches from 11 samples to the configured stable count of zero,
+and the following iteration also uses zero. Every recorded N equals that
+iteration's `optim_state["N"]`. Full trace, options and transition assertions
+are under `forced_crossing_11iters/`. This is an integration check with custom
+options, not a quality benchmark or proposed threshold change. The initial
+eight-iteration attempt ended in warmup before the criterion could run; its
+trace and failed assertion remain under `forced_crossing/`.
+
+Independent Sol review found a unit-test gap: manually setting the stopping
+flag bypassed the actual loop assignment. The guarded transition is now a
+small private method called by both the loop and test; the test asserts the
+flag before checking the subsequent `_gp_hyp` sample count. Guard cases also
+assert that state stays unchanged. Follow-up review has no remaining findings.
+
+After that extraction and repository formatting, the combined focused gate
+passes **296 tests, 15 skipped** in 72 seconds (`integrated_focused.log`).
+It covers GP training, initialization, loop termination, save/load, the whole
+acquisition test directory and numerical oracles. All 11 fixtures also pass
+the separate exact comparison (`final_exact.log`). No Phase 5 references
+were changed. The full pytest suite, CI and integrated population assessment
+remain final-integration work; these focused gates do not replace them.
+
+## Next pickup
+
+Phases 3-5 are implemented and independently reviewed on `dev-main-loop-fixes`.
+Keep the covariance-only Cigar seed-0 adverse result in the population analysis,
+alongside its passing cumulative result after acquisition regularization.
+Next unresolved work is the Phase 6 eta-bound comparison and PI choice,
+the Phase 7 upstream gpyreg step-out repair and final integration gates,
+and the explicitly parked paired boost campaign. Q1/Q4 and PyTorch decisions
+have not been selected or revised by this work. No population campaign was
+started, and no numerical job remains attached to this task.

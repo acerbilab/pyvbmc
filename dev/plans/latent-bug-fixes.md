@@ -11,7 +11,7 @@ configurations. Checks and provenance are in
 Phase 0's regression gate and Phase 1's neutral fixes are also complete and
 verified. The original 150-run proposal is superseded; do not launch it.
 
-**Current execution (2026-09-08): Phase 2 parked; start main-loop fixes.**
+**Current execution (2026-09-08): Phase 2 parked; Phases 3-5 complete.**
 The PI explicitly deferred the full paired boost experiment and authorized
 proceeding with Phases 3-5. Phase 2 is checkpointed at `764a177` on
 `dev-final-boost` (local, not pushed). Main-loop development is on
@@ -34,9 +34,15 @@ open; main-loop development does not require either decision.
   checks passed, 34 stored acquisition computations match the formula,
   targeted reference updates and all 11 exact fixtures passed. Five-case
   replay against Phase 3 has zero flags; independent review complete.
-- [~] Phase 5: sampling-termination repair prepared in the isolated checkout;
-  integrate now that Phase 4's separate gate passes, then validate separately.
+- [x] Phase 5: sampling termination repaired and independently reviewed.
+  Five default replays are exact against Phase 4 (zero flags); a forced
+  crossing switches the next GP fit to stable samples. Final combined gate:
+  296 tests passed/15 skipped and all 11 exact fixtures passed.
 - [ ] Return to the parked paired boost campaign when the PI schedules it.
+
+This completes the authorized main-loop repair group. Phase 6's eta-bound
+choice, Phase 7's upstream repair/final integration and population assessment
+remain open. Full suite and CI have not run on this local feature branch.
 
 **Historical Phase 2 execution follows.**
 PI authorization (2026-09-08): run a bounded timing pilot of paired boosts

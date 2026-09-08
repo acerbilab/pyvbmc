@@ -1,6 +1,6 @@
 Pickup (2026-09-08): resume dev/plans/latent-bug-fixes.md with $task.
 Current PI direction: PARK Phase 2's full paired boost campaign until later;
-start main-loop fixes on a separate branch from dev-next 3e879b6, in order:
+main-loop fixes started from dev-next 3e879b6 and completed in order:
 weighted GP covariance (Phase 3), acquisition regularization (Phase 4),
 GP sampling termination (Phase 5), with separate numerical gates.
 Current branch: dev-main-loop-fixes. Boost code is preserved at local commit
@@ -16,8 +16,13 @@ seed 1 and the other four default cases pass. Keep this flag for population
 assessment, not a claim of all-green covariance-only trajectories. Phase 4
 is now integrated at 90d08d3 and verified: 34 acquisition formula checks,
 11 exact fixtures and a five-case replay against Phase 3 with zero flags.
-Cumulative Cigar seed 0 is back inside every fence. Phase 5 is ready in the
-isolated checkout; integrate and run its own gate next.
+Cumulative Cigar seed 0 is back inside every fence. Phase 5 is complete:
+five default replays are exact against Phase 4; a forced threshold crossing
+switches the next GP fit to stable samples. Independent review passed.
+Final combined gate: 296 tests passed, 15 skipped, all 11 fixtures exact.
+Next unresolved items: Phase 6 eta-bound comparison/PI choice, Phase 7
+upstream gpyreg repair and final integration/population gates, and the parked
+boost campaign when scheduled. Full suite/CI have not run on this local branch.
 See dev/2026-09-08-main-loop-fixes.md.
 
 Historical Phase 2 progress follows:

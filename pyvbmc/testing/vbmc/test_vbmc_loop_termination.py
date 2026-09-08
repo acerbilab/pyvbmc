@@ -1,6 +1,12 @@
+import copy
+from types import SimpleNamespace
+
+import gpyreg as gpr
 import numpy as np
+import pytest
 
 from pyvbmc import VBMC
+from pyvbmc.vbmc.gaussian_process_train import _gp_hyp
 
 fun = lambda x: np.sum(x + 2)
 
@@ -203,33 +209,188 @@ def test_vbmc_compute_reliability_index():
     assert np.isclose(ELCBO_improvement, 1)
 
 
-def test_is_gp_sampling_finished():
-    options = {"tol_gp_var_mcmc": 1e-4}
-    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
-    vbmc.optim_state["N"] = 300
-    vbmc.optim_state["iter"] = 9
+def _set_gp_sampling_history(vbmc, N, var_ss):
+    for iteration, (N_i, var_ss_i) in enumerate(zip(N, var_ss)):
+        optim_state = copy.deepcopy(vbmc.optim_state)
+        optim_state["iter"] = iteration
+        optim_state["N"] = N_i
+        function_logger = copy.deepcopy(vbmc.function_logger)
+        function_logger.Xn = N_i - 1
+        vbmc.iteration_history.record_iteration(
+            {
+                "N": N_i,
+                "var_ss": var_ss_i,
+                "optim_state": optim_state,
+                "function_logger": function_logger,
+            },
+            iteration,
+        )
+    vbmc.optim_state["N"] = N[-1]
+    vbmc.optim_state["iter"] = len(N) - 1
     vbmc.optim_state["warmup"] = False
-    vbmc.iteration_history = dict()
-    vbmc.iteration_history["N"] = np.ones(10)
+    vbmc.optim_state["stop_sampling"] = 0
 
-    # all variances low
-    vbmc.iteration_history["gp_sample_var"] = np.ones(10) * 1e-5
-    vbmc.optim_state["stop_gp_sampling"] = 0
-    vbmc._is_gp_sampling_finished()
+
+@pytest.mark.parametrize(
+    ("N", "var_ss", "tol_gp_var_mcmc", "expected"),
+    [
+        ([10, 20, 30], [1e-5, 1e-5, 1e-5], 1e-4, True),
+        ([10, 20, 30], [1.0, 1.0, 1.0], 1e-4, False),
+        ([10, 10, 10], [0.0, 0.0, 1.2e-4], 1e-4, True),
+        ([10, 20, 30], [1e-10, 1e-10, 1e-2], 1e-4, False),
+        ([10, 10, 10], [0.125, 0.125, 0.125], 0.125, False),
+        ([10, 20, 30], [1e-8, None, 1e-8], 1e-4, False),
+    ],
+)
+def test_is_gp_sampling_finished(N, var_ss, tol_gp_var_mcmc, expected):
+    vbmc = create_vbmc(
+        3,
+        3,
+        1,
+        5,
+        2,
+        4,
+        {"tol_gp_var_mcmc": tol_gp_var_mcmc},
+    )
+    _set_gp_sampling_history(vbmc, N, var_ss)
+
+    assert vbmc._is_gp_sampling_finished() is expected
+
+
+@pytest.mark.parametrize(
+    ("iteration", "warmup", "stop_sampling", "tol_gp_var_mcmc"),
+    [
+        (1, False, 0, 1e-4),
+        (2, True, 0, 1e-4),
+        (2, False, 20, 1e-4),
+        (2, False, 0, 0.0),
+    ],
+)
+def test_is_gp_sampling_finished_guards(
+    iteration, warmup, stop_sampling, tol_gp_var_mcmc
+):
+    vbmc = create_vbmc(
+        3,
+        3,
+        1,
+        5,
+        2,
+        4,
+        {"tol_gp_var_mcmc": tol_gp_var_mcmc},
+    )
+    _set_gp_sampling_history(vbmc, [10, 20, 30], [1e-8, 1e-8, 1e-8])
+    vbmc.optim_state["iter"] = iteration
+    vbmc.optim_state["warmup"] = warmup
+    vbmc.optim_state["stop_sampling"] = stop_sampling
+
+    assert not vbmc._is_gp_sampling_finished()
+    vbmc._check_gp_sampling_stop()
+    assert vbmc.optim_state["stop_sampling"] == stop_sampling
+
+
+def test_gp_sampling_history_compatibility_and_stable_weights():
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, {"tol_gp_var_mcmc": 1e-4})
+    del vbmc.iteration_history["N"]
+    N_sources = [1_000_000, 500_000, 10]
+    for iteration, N_i in enumerate(N_sources):
+        optim_state = copy.deepcopy(vbmc.optim_state)
+        optim_state["iter"] = iteration
+        if iteration == 0:
+            optim_state["N"] = N_i
+        function_logger = copy.deepcopy(vbmc.function_logger)
+        function_logger.Xn = N_i - 1
+        function_logger.X_flag[:] = False
+        function_logger.X_flag[:2] = True
+        function_logger.n_evals[:2] = 20
+        vbmc.iteration_history.record_iteration(
+            {
+                "var_ss": 1e-8,
+                "optim_state": optim_state,
+                "function_logger": function_logger,
+            },
+            iteration,
+        )
+
+    vbmc.optim_state.update(
+        {"N": N_sources[-1], "iter": 2, "warmup": False, "stop_sampling": 0}
+    )
+    vbmc.gp = SimpleNamespace(X=np.zeros((2, vbmc.D)))
+
     assert vbmc._is_gp_sampling_finished()
+    assert np.array_equal(vbmc.iteration_history["N"], N_sources)
+    current_logger = vbmc.iteration_history["function_logger"][-1]
+    assert vbmc.iteration_history["N"][-1] > vbmc.gp.X.shape[0]
+    assert vbmc.iteration_history["N"][-1] > np.count_nonzero(
+        current_logger.X_flag
+    )
+    assert np.sum(current_logger.n_evals) > vbmc.iteration_history["N"][-1]
 
-    # all variances high
-    vbmc.iteration_history["gp_sample_var"] = np.ones(10)
-    vbmc.optim_state["stop_gp_sampling"] = 0
-    vbmc._is_gp_sampling_finished()
-    assert not vbmc._is_gp_sampling_finished()
 
-    # last variance high
-    vbmc.iteration_history["gp_sample_var"] = np.ones(10) * 1e-10
-    vbmc.iteration_history["gp_sample_var"][-1] = 1e-2
-    vbmc.optim_state["stop_gp_sampling"] = 0
-    vbmc._is_gp_sampling_finished()
+def test_gp_sampling_history_missing_data_does_not_stop():
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, {"tol_gp_var_mcmc": 1e-4})
+    del vbmc.iteration_history["N"]
+    for iteration in range(3):
+        optim_state = copy.deepcopy(vbmc.optim_state)
+        optim_state["iter"] = iteration
+        optim_state["N"] = 10 * (iteration + 1)
+        function_logger = copy.deepcopy(vbmc.function_logger)
+        function_logger.Xn = optim_state["N"] - 1
+        if iteration == 1:
+            optim_state.pop("N")
+            function_logger.Xn = np.nan
+        vbmc.iteration_history.record_iteration(
+            {
+                "var_ss": 1e-8,
+                "optim_state": optim_state,
+                "function_logger": function_logger,
+            },
+            iteration,
+        )
+    vbmc.optim_state.update(
+        {"N": 30, "iter": 2, "warmup": False, "stop_sampling": 0}
+    )
+
     assert not vbmc._is_gp_sampling_finished()
+    assert vbmc.iteration_history["N"][1] is None
+
+
+def test_gp_sampling_stop_drives_next_gp_hyp_to_stable_samples():
+    options = {
+        "tol_gp_var_mcmc": 1e-4,
+        "stable_gp_samples": 3,
+        "stable_gp_sampling": np.inf,
+    }
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
+    _set_gp_sampling_history(vbmc, [10, 20, 30], [1e-8, 1e-8, 1e-8])
+    vbmc._check_gp_sampling_stop()
+    assert vbmc.optim_state["stop_sampling"] == vbmc.optim_state["N"]
+
+    X = np.array(
+        [
+            [-1.0, -0.5, 0.0],
+            [0.0, 0.5, 1.0],
+            [1.0, -1.0, 0.5],
+            [0.5, 1.0, -0.5],
+        ]
+    )
+    y = -np.sum(X**2, axis=1, keepdims=True)
+    gp = gpr.GP(
+        D=vbmc.D,
+        covariance=gpr.covariance_functions.SquaredExponential(),
+        mean=gpr.mean_functions.NegativeQuadratic(),
+        noise=gpr.noise_functions.GaussianNoise(constant_add=True),
+    )
+    __, __, gp_s_N = _gp_hyp(
+        vbmc.optim_state,
+        vbmc.options,
+        vbmc.optim_state["plb_tran"],
+        vbmc.optim_state["pub_tran"],
+        gp,
+        X,
+        y,
+    )
+
+    assert gp_s_N == vbmc.options["stable_gp_samples"]
 
 
 def test_check_warmup_end_conditions_false():

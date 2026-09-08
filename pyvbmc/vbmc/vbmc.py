@@ -344,6 +344,7 @@ class VBMC:
                 "sKL_true",
                 "pruned",
                 "var_ss",
+                "N",
                 "func_count",
                 "n_eff",
                 "logging_action",
@@ -916,6 +917,7 @@ class VBMC:
         """
         # Initialize main logger with potentially new options:
         self.logger = self._init_logger()
+        self._ensure_gp_sampling_history()
         # set up strings for logging of the iteration
         display_format = self._setup_logging_display_format()
 
@@ -1335,6 +1337,7 @@ class VBMC:
                 "elbo": elbo,
                 "elbo_sd": elbo_sd,
                 "var_ss": var_ss,
+                "N": self.optim_state["N"],
                 "sKL": sKL,
                 "sKL_true": sKL_true,
                 "gp": _lean_gp(self.gp),
@@ -1352,16 +1355,8 @@ class VBMC:
                 iteration_values,
                 self.iteration,
             )
-            # Check warmup
-            if (
-                self.optim_state.get("iter") > 1
-                and self.optim_state.get("stop_gp_sampling") == 0
-                and not self.optim_state.get("warmup")
-            ):
-                if self._is_gp_sampling_finished():
-                    self.optim_state[
-                        "stop_gp_sampling"
-                    ] = self.optim_state.get("N")
+            # Check whether GP sampling can enter its stable regime.
+            self._check_gp_sampling_stop()
 
             # Check termination conditions
             (
@@ -1974,31 +1969,142 @@ class VBMC:
         )[0]
         return np.mean(r_index_vec), ELCBO_improvement
 
+    def _check_gp_sampling_stop(self):
+        """Apply the variance-based transition to stable GP sampling."""
+        if (
+            self.optim_state.get("iter") > 1
+            and self.optim_state.get("stop_sampling") == 0
+            and not self.optim_state.get("warmup")
+        ):
+            if self._is_gp_sampling_finished():
+                self.optim_state["stop_sampling"] = self.optim_state.get("N")
+
     def _is_gp_sampling_finished(self):
         """
         Private function to check if the MCMC sampling of the Gaussian Process
         is finished.
         """
-        finished_flag = False
         # Stop sampling after sample variance has stabilized below ToL
-        iteration = self.optim_state.get("iter")
+        iteration = self.optim_state.get("iter", -1)
+        tol_gp_var_mcmc = self.options.get("tol_gp_var_mcmc")
+        if (
+            iteration < 2
+            or self.optim_state.get("warmup")
+            or self.optim_state.get("stop_sampling") != 0
+            or not np.isfinite(tol_gp_var_mcmc)
+            or tol_gp_var_mcmc <= 0
+        ):
+            return False
 
-        w1 = np.zeros((iteration + 1))
-        w1[iteration] = 1
-        w2 = np.exp(
-            -(
-                self.iteration_history.get("N")[-1]
-                - self.iteration_history.get("N") / 10
-            )
+        self._ensure_gp_sampling_history()
+        N_history = self.iteration_history.get("N")
+        var_ss_history = self.iteration_history.get("var_ss")
+        if (
+            N_history is None
+            or var_ss_history is None
+            or len(N_history) <= iteration
+            or len(var_ss_history) <= iteration
+        ):
+            return False
+
+        try:
+            N = np.asarray(N_history[: iteration + 1], dtype=float)
+            var_ss = np.asarray(var_ss_history[: iteration + 1], dtype=float)
+        except (TypeError, ValueError):
+            return False
+        if (
+            N.shape != (iteration + 1,)
+            or var_ss.shape != (iteration + 1,)
+            or not np.all(np.isfinite(N))
+            or not np.all(np.isfinite(var_ss))
+        ):
+            return False
+
+        log_weights = -(N[-1] - N) / 10
+        log_weights -= np.max(log_weights)
+        history_weights = np.exp(log_weights)
+        weight_sum = np.sum(history_weights)
+        if not np.isfinite(weight_sum) or weight_sum <= 0:
+            return False
+        history_weights /= weight_sum
+        weights = 0.5 * history_weights
+        weights[-1] += 0.5
+        weighted_var_ss = np.sum(weights * var_ss)
+        return bool(
+            np.isfinite(weighted_var_ss) and weighted_var_ss < tol_gp_var_mcmc
         )
-        w2 = w2 / np.sum(w2)
-        w = 0.5 * w1 + 0.5 * w2
-        if np.sum(
-            w * self.iteration_history.get("gp_sample_var")
-        ) < self.options.get("tol_gp_var_mcmc"):
-            finished_flag = True
 
-        return finished_flag
+    def _ensure_gp_sampling_history(self):
+        """Register and backfill ``N`` in histories saved by older versions."""
+        iteration_history = getattr(self, "iteration_history", None)
+        if iteration_history is None:
+            return
+
+        if "N" not in iteration_history:
+            check_keys = getattr(iteration_history, "check_keys", None)
+            if check_keys is not None:
+                iteration_history.check_keys = False
+            try:
+                iteration_history["N"] = None
+            finally:
+                if check_keys is not None:
+                    iteration_history.check_keys = check_keys
+
+        sources = [
+            iteration_history.get("N"),
+            iteration_history.get("optim_state"),
+            iteration_history.get("function_logger"),
+        ]
+        lengths = [len(source) for source in sources if source is not None]
+        if not lengths:
+            return
+
+        history_length = max(lengths)
+        existing = iteration_history.get("N")
+        N_history = np.full(history_length, None, dtype=object)
+        if existing is not None:
+            N_history[: min(len(existing), history_length)] = existing[
+                :history_length
+            ]
+
+        optim_states = iteration_history.get("optim_state")
+        function_loggers = iteration_history.get("function_logger")
+        for i in range(history_length):
+            try:
+                N_is_finite = np.size(N_history[i]) == 1 and np.isfinite(
+                    N_history[i]
+                )
+            except TypeError:
+                N_is_finite = False
+            if N_is_finite:
+                continue
+
+            N = None
+            if optim_states is not None and i < len(optim_states):
+                optim_state = optim_states[i]
+                if isinstance(optim_state, dict):
+                    N = optim_state.get("N")
+            try:
+                N_is_finite = np.size(N) == 1 and np.isfinite(N)
+            except TypeError:
+                N_is_finite = False
+            if (
+                not N_is_finite
+                and function_loggers is not None
+                and i < len(function_loggers)
+            ):
+                function_logger = function_loggers[i]
+                if function_logger is not None and hasattr(
+                    function_logger, "Xn"
+                ):
+                    N = function_logger.Xn + 1
+            try:
+                N_is_finite = np.size(N) == 1 and np.isfinite(N)
+            except TypeError:
+                N_is_finite = False
+            N_history[i] = N if N_is_finite else None
+
+        iteration_history["N"] = N_history
 
     def _recompute_lcb_max(self):
         """
@@ -2394,6 +2500,7 @@ class VBMC:
                     vbmc.iteration_history[k] = vbmc.iteration_history[k][
                         : (iteration + 1)
                     ]
+            vbmc._ensure_gp_sampling_history()
 
         # Update with new options (e.g. higher number of max iterations)
         if new_options is not None:
