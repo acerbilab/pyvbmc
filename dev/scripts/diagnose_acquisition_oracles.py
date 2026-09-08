@@ -29,6 +29,7 @@ from pyvbmc.testing.oracles._oracles import (
     ORACLES,
     cast_outputs,
     compare,
+    oracle_error_scale,
     prepare_gp_for_acq,
 )
 from pyvbmc.testing.oracles._state import (
@@ -109,7 +110,8 @@ def _environment():
 def _evaluate_all():
     actuals = {}
     print(
-        "snapshot                     oracle           max_abs      scaled   ok"
+        "snapshot                     oracle           max_abs raw_scaled "
+        "conditioned   ok"
     )
     for name in snapshot_names(FIXTURES):
         snap = load_snapshot(FIXTURES / name)
@@ -122,13 +124,20 @@ def _evaluate_all():
             actual = cast_outputs(
                 oracle.fn(state, snap["meta"]["oracle_seed"])
             )
-            row = compare(
+            raw_row = compare(
                 snap["ref"][oracle_name], actual, oracle.rtol, oracle.atol
+            )[0]
+            row = compare(
+                snap["ref"][oracle_name],
+                actual,
+                oracle.rtol,
+                oracle.atol,
+                error_scale=oracle_error_scale(snap, oracle_name),
             )[0]
             actuals[(name, oracle_name)] = actual["acq"]
             print(
                 f"{name:28s} {acq_name:14s} {row[1]:10.3g}"
-                f" {row[2]:11.3g} {str(row[3]):>4s}"
+                f" {raw_row[2]:10.3g} {row[2]:11.3g} {str(row[3]):>4s}"
             )
     return actuals
 
@@ -195,6 +204,9 @@ def _corr_details(actuals):
     )
     scale = np.maximum(np.abs(reference), floor)
     scaled = np.abs(actual - reference) / scale
+    condition = oracle_error_scale(snap, "acq_AcqFcn")["acq"]
+    conditioned_scale = scale * condition
+    conditioned_error = np.abs(actual - reference) / conditioned_scale
     worst = np.argsort(scaled)[-DETAIL_COUNT:][::-1]
 
     variance_only = reference_raw * (cur_var / ref_var) * cur_penalty
@@ -221,6 +233,9 @@ def _corr_details(actuals):
                 "absolute_error": abs(actual[i] - reference[i]),
                 "comparison_scale": scale[i],
                 "scaled_error": scaled[i],
+                "condition_factor": condition[i],
+                "conditioned_comparison_scale": conditioned_scale[i],
+                "conditioned_scaled_error": conditioned_error[i],
                 "reference_fmu_samples": ref_mu[i],
                 "current_fmu_samples": cur_mu[i],
                 "reference_fs2_samples": ref_s2[i],
@@ -256,14 +271,16 @@ def _corr_details(actuals):
     return {
         "snapshot": DETAIL_SNAPSHOT,
         "limitations": (
-            "variance_only_acq holds reference mean/PDF fixed; its residual may "
-            "contain mean, PDF, and operation-order differences. Exp/log identity "
-            "is reported only where neither PDF path is floored and neither "
-            "acquisition underflows."
+            "variance_only_acq holds reference mean/PDF fixed; its residual "
+            "may contain mean, PDF, and operation-order differences. Exp/log "
+            "identity is reported only where neither PDF path is floored and "
+            "neither acquisition underflows."
         ),
         "summary": {
             "candidate_count": len(reference),
             "comparison_floor": floor,
+            "raw_max_scaled_error": np.max(scaled),
+            "conditioned_max_scaled_error": np.max(conditioned_error),
             "regularized_reference_count": int(np.sum(ref_var < tol_var)),
             "production_penalty_exact": bool(
                 np.array_equal(actual, expected_current)

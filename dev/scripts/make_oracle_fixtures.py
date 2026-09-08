@@ -90,6 +90,7 @@ from pyvbmc.testing.oracles._oracles import (  # noqa: E402
     applicable,
     compare,
     format_rows,
+    oracle_error_scale,
 )
 from pyvbmc.testing.oracles._state import (  # noqa: E402
     _files,
@@ -428,7 +429,13 @@ def check_one(path, fun, exact=False, verbose=False, reference=None, skip=()):
             continue
         out = orc(state, snap["meta"]["oracle_seed"])
         rtol, atol = (0.0, 0.0) if exact else (orc.rtol, orc.atol)
-        rows = compare(ref, out, rtol, atol)
+        rows = compare(
+            ref,
+            out,
+            rtol,
+            atol,
+            error_scale=None if exact else oracle_error_scale(snap, name),
+        )
         if verbose or not all(r[3] for r in rows):
             print(f"  [{path.stem}] {name}\n{format_rows(rows)}", flush=True)
         if not all(r[3] for r in rows):
@@ -936,7 +943,13 @@ def rebaseline(names, oracle_name, reason, expect_moving=()):
                     f"{name}: {oracle_name}/{key} changed shape"
                     f" {np.shape(old[key])} -> {np.shape(val)}"
                 )
-        rows = compare(old, out, orc.rtol, orc.atol)
+        rows = compare(
+            old,
+            out,
+            orc.rtol,
+            orc.atol,
+            error_scale=oracle_error_scale(snap, oracle_name),
+        )
         print(f"  [{name}] {oracle_name} old vs new\n{format_rows(rows)}")
         pending.append((name, path, fun, arrays, tree, out, rows))
 

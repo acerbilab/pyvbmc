@@ -15,6 +15,10 @@ would be committed, and anything that was would be published to the docs site.
 
 ## Index
 
+- [2026-09-08-acquisition-oracle-conditioning.md](2026-09-08-acquisition-oracle-conditioning.md) -
+  Cross-platform variance-penalty amplification and the reference-conditioned
+  acquisition oracle comparison, with nine-environment diagnostic evidence.
+
 For the release overview, start with
 [PyVBMC 1.5: the big picture](2026-09-06-pyvbmc-1.5-overview.md).
 

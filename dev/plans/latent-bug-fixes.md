@@ -13,13 +13,27 @@ OS/Python matrix on integrated `dev-next`.
   The other eight jobs were cancelled by matrix fail-fast, so none is a
   passing matrix result. Investigate platform conditioning before choosing
   a remedy; do not loosen tolerances or rebaseline solely to obtain a pass.
-- [~] Collect acquisition/GP-variance diagnostics on all nine stacks with
+- [x] Collect acquisition/GP-variance diagnostics on all nine stacks with
   fail-fast disabled; verify the active regularization formula and numerical
   conditioning before choosing a production or oracle correction.
   The bounded diagnostic reconstructs stored states only: local single-thread
   run completes in 1.90 s, all 32 acquisition comparisons exact, production
   and reference penalty-formula errors zero. No solver, fixture or tolerance
   changes. Branch `fix-macos-oracle-check` avoids a duplicate automatic smoke.
+- [x] Diagnose completed matrix 34259734758 at `0370c5b`: Windows/Python 3.12
+  passed, the other eight stacks failed the same corr acquisition oracle.
+  Stored-variance conditioning explains the amplification; see
+  [the evidence and comparison design](../2026-09-08-acquisition-oracle-conditioning.md).
+- [x] Implement and independently review the reference-conditioned oracle
+  comparison; run focused regressions and all 11 fixtures exactly. Preserve
+  solver/reference values and the base tolerances. Remove the temporary CI
+  diagnostic step, retain fail-fast false, then rerun the full matrix.
+- Focused oracle directory: 143 passed, 15 platform-gated skips (21.53 s).
+  All 11 fixtures pass `--check --exact`; updated diagnostic completes with
+  all 32 comparisons exact locally. The final strengthened comparison tests
+  pass separately (9 tests). Independent Sol static review has no findings;
+  formatting hooks pass. No production or reference changes.
+- [ ] Confirm all nine corrected jobs green, integrate into `dev-next` and push.
 
 **Integration pickup (2026-09-08):** PI approved merging the completed
 latent-fix branch into `dev-next` after feature-branch CI passed.

@@ -1,8 +1,10 @@
 Pickup (2026-09-08): resume dev/plans/latent-bug-fixes.md with $task.
 
 Remaining-work map (2026-09-08; roadmap is authoritative):
-- Current gate: diagnose the macOS acquisition-oracle failure in full-matrix
-  run 34251746916; its eight other jobs were cancelled, not passed.
+- Current gate: validate the reference-conditioned acquisition oracle fix.
+  Diagnostic matrix 34259734758 reproduced the roundoff amplification on
+  eight stacks; Windows/Python 3.12 passed. See
+  dev/2026-09-08-acquisition-oracle-conditioning.md. Corrected matrix pending.
 - Release work: S-VBMC compatibility/integration and connections to upcoming
   extensions; PyTorch CPU/GPU float64 feasibility, then the explicit port
   decision and resulting dependency/Python-floor/NumPy-transition work.

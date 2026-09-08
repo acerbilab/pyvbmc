@@ -44,6 +44,7 @@ from pyvbmc.testing.oracles._oracles import (
     cast_outputs,
     compare,
     format_rows,
+    oracle_error_scale,
 )
 from pyvbmc.testing.oracles._state import (
     build_state,
@@ -127,7 +128,13 @@ def test_oracle(snapshots, name, oracle):
     walked = {k: state[k] for k in STATE_KEYS}
     assert_float64(walked, f"{name}/{oracle} state", STATE_MIN_LEAVES)
     out = cast_outputs(raw)
-    rows = compare(snap["ref"][oracle], out, orc.rtol, orc.atol)
+    rows = compare(
+        snap["ref"][oracle],
+        out,
+        orc.rtol,
+        orc.atol,
+        error_scale=oracle_error_scale(snap, oracle),
+    )
     assert all(r[3] for r in rows), f"{name}/{oracle}:\n{format_rows(rows)}"
 
 

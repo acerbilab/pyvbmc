@@ -54,6 +54,17 @@ bit-identical ones are effectively exact. Each tolerance leaves at least
 30x over its measured floor; if a platform exceeds one, re-measure there
 (``make_oracle_fixtures --check --verbose``) rather than guess.
 
+After Phase 4 activated variance regularization, the four simple acquisition
+oracles scale their per-point comparison denominator by their variance
+sensitivity. ``1 + tol_gp_var / var`` is the local relative condition for
+``AcqFcn`` and ``AcqFcnVanilla`` and a conservative allowance for
+``AcqFcnLog``; ``AcqFcnNoisy`` conservatively uses
+``2 + tol_gp_var / var`` because its raw acquisition carries another variance
+factor. This applies only below the stored positive variance threshold when
+regularization is active. The stored ``rtol`` / ``atol``, unregularized
+points, exact zeros, non-finite patterns, and same-machine exact checks are
+unchanged.
+
 Two combinations here are not what production runs, on purpose: the
 ``entmc`` oracle and the first ``neg_elcbo`` call use ``ceil(ns_ent(K)/K)``
 Monte Carlo samples even at ``K = 1``, where the sieve would switch to the
@@ -691,10 +702,81 @@ def gp_fit_history(state, seed):
 # --------------------------------------------------------------------------
 
 
-def compare(reference, output, rtol, atol):
+_CONDITIONED_ACQUISITIONS = {
+    "acq_AcqFcn": 1.0,
+    "acq_AcqFcnVanilla": 1.0,
+    "acq_AcqFcnNoisy": 2.0,
+    "acq_AcqFcnLog": 1.0,
+}
+
+
+def oracle_error_scale(snapshot, oracle_name):
+    """Return the reference-conditioned error scale for an acquisition.
+
+    The exact local relative condition for ``AcqFcn`` and ``AcqFcnVanilla``
+    is ``1 + tol_gp_var / var``. The same factor is a conservative allowance
+    for ``AcqFcnLog``; ``AcqFcnNoisy`` conservatively uses a base of two
+    because its raw acquisition carries an extra variance factor. Other
+    oracles, disabled regularization, unregularized points, exact zeros, and
+    non-finite values retain the ordinary comparison scale.
+    """
+    base = _CONDITIONED_ACQUISITIONS.get(oracle_name)
+    if base is None:
+        return None
+    optim_state = snapshot["optim_state"]
+    if "variance_regularized_acq_fcn" in optim_state:
+        enabled = optim_state["variance_regularized_acq_fcn"]
+    else:
+        enabled = optim_state.get("variance_regularized_acqfcn", False)
+    if not enabled:
+        return None
+
+    tol_var = float(optim_state["tol_gp_var"])
+    if not np.isfinite(tol_var) or tol_var <= 0:
+        raise ValueError(
+            "active acquisition regularization needs finite tol_gp_var > 0"
+        )
+    gp_ref = snapshot["ref"]["gp_predict"]
+    f_mu = np.asarray(gp_ref["fmu_samples"], dtype=float)
+    f_s2 = np.asarray(gp_ref["fs2_samples"], dtype=float)
+    if f_mu.ndim != 2 or f_s2.shape != f_mu.shape or f_mu.shape[1] == 0:
+        raise ValueError(
+            "stored GP prediction samples must have matching (M, Ns) shapes"
+        )
+    ns = f_mu.shape[1]
+    f_bar = np.sum(f_mu, axis=1, keepdims=True) / ns
+    var_tot = np.sum(f_s2, axis=1, keepdims=True) / ns
+    if ns > 1:
+        var_tot += np.sum((f_mu - f_bar) ** 2, axis=1, keepdims=True) / (
+            ns - 1
+        )
+    var_tot = np.ravel(var_tot)
+
+    acq_ref = np.asarray(snapshot["ref"][oracle_name]["acq"], dtype=float)
+    if acq_ref.shape != var_tot.shape:
+        raise ValueError(
+            f"{oracle_name}/acq shape {acq_ref.shape} does not match "
+            f"stored GP predictions {var_tot.shape}"
+        )
+    scale = np.ones_like(acq_ref)
+    conditioned = (
+        np.isfinite(acq_ref)
+        & (acq_ref != 0)
+        & np.isfinite(var_tot)
+        & (var_tot > 0)
+        & (var_tot < tol_var)
+    )
+    scale[conditioned] = base + tol_var / var_tot[conditioned]
+    return {"acq": scale}
+
+
+def compare(reference, output, rtol, atol, *, error_scale=None):
     """Compare two oracle output dicts; returns a list of
     ``(key, max_abs_err, max_scaled_err, ok)`` rows, one per key.
     ``rtol`` / ``atol`` may be floats or per-key dicts (see :class:`Oracle`).
+    ``error_scale`` may map an output key to an array of additional finite
+    factors greater than or equal to one. Missing keys use one. Exact
+    comparisons (zero relative and absolute tolerance) ignore it.
 
     Per element, ``|out - ref| <= rtol * denom + atol`` with ``denom =
     max(|ref|, floor)`` and ``floor`` the lower quartile of ``|ref|`` over
@@ -733,6 +815,21 @@ def compare(reference, output, rtol, atol):
             diff = np.abs(out[finite] - ref[finite])
             floor = max(float(np.quantile(a, 0.25)), np.finfo(float).tiny)
             denom = np.maximum(a, floor)
+            if not (rtol_k == 0 and atol_k == 0) and error_scale is not None:
+                scale = error_scale.get(key)
+                if scale is not None:
+                    scale = np.asarray(scale, dtype=float)
+                    if scale.shape != ref.shape:
+                        raise ValueError(
+                            f"error scale for {key!r} has shape "
+                            f"{scale.shape}; "
+                            f"expected {ref.shape}"
+                        )
+                    if np.any(~np.isfinite(scale)) or np.any(scale < 1):
+                        raise ValueError(
+                            f"error scale for {key!r} must be finite and >= 1"
+                        )
+                    denom = denom * scale[finite]
             abs_err = float(np.max(diff))
             scaled_err = float(np.max(diff / denom))
             within = bool(np.all(diff <= rtol_k * denom + atol_k))
