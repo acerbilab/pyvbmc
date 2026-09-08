@@ -10,4 +10,6 @@ include pyvbmc/testing/vbmc/compare_MATLAB/*
 include pyvbmc/testing/vbmc/test_vbmc_save_static.pkl
 include pyvbmc/testing/oracles/fixtures/*.npz
 include pyvbmc/testing/oracles/fixtures/*.json
+include pyvbmc/testing/oracles/fixtures/gp_fit_history/*.npz
+include pyvbmc/testing/oracles/fixtures/gp_fit_history/*.json
 prune docsrc

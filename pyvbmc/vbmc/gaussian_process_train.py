@@ -116,7 +116,12 @@ def train_gp(
 
     # Get GP training options.
     gp_train = _get_gp_training_options(
-        optim_state, iteration_history, options, hyp_dict, gp_s_N
+        optim_state,
+        iteration_history,
+        options,
+        hyp_dict,
+        gp_s_N,
+        hyp_n=np.size(hyp0),
     )
 
     # In some cases the model can change so be careful.
@@ -492,6 +497,7 @@ def _get_gp_training_options(
     options: Options,
     hyp_dict: dict,
     gp_s_N: int,
+    hyp_n: int = None,
 ):
     """
     Get options for training GP hyperparameters.
@@ -508,6 +514,9 @@ def _get_gp_training_options(
         Hyperparameter summary statistic dictionary.
     gp_s_N : int
         Number of samples for the GP fitting.
+    hyp_n : int, optional
+        Number of hyperparameters in the current GP model. When supplied,
+        this is authoritative over the possibly stale value in ``hyp_dict``.
 
     Returns
     =======
@@ -535,7 +544,13 @@ def _get_gp_training_options(
     gp_train["widths"] = None
 
     # Get hyperparameter posterior covariance from previous iterations
-    hyp_cov = _get_hyp_cov(optim_state, iteration_history, options, hyp_dict)
+    hyp_cov = _get_hyp_cov(
+        optim_state,
+        iteration_history,
+        options,
+        hyp_dict,
+        hyp_n=hyp_n,
+    )
 
     # Setup MCMC sampler
     if options["gp_hyp_sampler"] == "slicesample":
@@ -667,6 +682,7 @@ def _get_hyp_cov(
     iteration_history: IterationHistory,
     options: Options,
     hyp_dict: dict,
+    hyp_n: int = None,
 ):
     """
     Get hyperparameter posterior covariance.
@@ -681,6 +697,9 @@ def _get_hyp_cov(
         Options from the VBMC instance we are calling this from.
     hyp_dict : dict
         Hyperparameter summary statistic dictionary.
+    hyp_n : int, optional
+        Number of hyperparameters in the current GP model. When supplied,
+        this is authoritative over the possibly stale value in ``hyp_dict``.
 
     Returns
     =======
@@ -688,61 +707,77 @@ def _get_hyp_cov(
         The hyperparameter posterior covariance if it can be computed.
     """
 
-    if optim_state["iter"] > 0:
-        if options["weighted_hyp_cov"]:
-            w_list = []
-            hyp_list = []
-            w = 1
-            for i in range(0, optim_state["iter"]):
-                if i > 0:
-                    # Be careful with off-by-ones compared to MATLAB here
-                    diff_mult = max(
-                        1,
-                        np.log(
-                            iteration_history["sKL"][optim_state["iter"] - i]
-                            / options["tol_skl"]
-                            * options["fun_evals_per_iter"]
-                        ),
-                    )
-                    w *= options["hyp_run_weight"] ** (
-                        options["fun_evals_per_iter"] * diff_mult
-                    )
-                # Check if weight is getting too small.
-                if w < options["tol_cov_weight"]:
-                    break
-
-                hyp = iteration_history["gp_hyp_full"][
-                    optim_state["iter"] - 1 - i
-                ]
-                hyp_n = hyp.shape[1]
-                if len(hyp_list) == 0 or np.shape(hyp_list)[2] == hyp.shape[0]:
-                    hyp_list.append(hyp.T)
-                    w_list.append(w * np.ones((hyp_n, 1)) / hyp_n)
-
-            w_list = np.concatenate(w_list)
-            hyp_list = np.concatenate(hyp_list)
-
-            # Normalize weights
-            w_list /= np.sum(w_list, axis=0)
-            # Weighted mean
-            mu_star = np.sum(hyp_list * w_list, axis=0)
-
-            # Weighted covariance matrix
-            hyp_n = np.shape(hyp_list)[1]
-            hyp_cov = np.zeros((hyp_n, hyp_n))
-            for j in range(0, np.shape(hyp_list)[0]):
-                hyp_cov += np.dot(
-                    w_list[j],
-                    np.dot((hyp_list[j] - mu_star).T, hyp_list[j] - mu_star),
-                )
-
-            hyp_cov /= 1 - np.sum(w_list**2)
-
-            return hyp_cov
-
+    if optim_state["iter"] <= 0:
+        return None
+    if not options["weighted_hyp_cov"]:
         return hyp_dict["run_cov"]
 
-    return None
+    if hyp_n is None:
+        current_hyp = hyp_dict.get("hyp")
+        if current_hyp is None:
+            return None
+        current_hyp = np.asarray(current_hyp)
+        if current_hyp.ndim == 1:
+            hyp_n = current_hyp.size
+        elif current_hyp.ndim == 2 and current_hyp.shape[0] > 0:
+            hyp_n = current_hyp.shape[1]
+        else:
+            return None
+    if not np.isscalar(hyp_n) or int(hyp_n) != hyp_n or hyp_n <= 0:
+        return None
+    hyp_n = int(hyp_n)
+
+    sample_blocks = []
+    weight_blocks = []
+    iteration_weight = 1.0
+    for i in range(optim_state["iter"]):
+        if i > 0:
+            # Be careful with off-by-ones compared to MATLAB here.
+            skl_index = optim_state["iter"] - i
+            diff_mult = max(
+                1,
+                np.log(
+                    iteration_history["sKL"][skl_index]
+                    / (options["tol_skl"] * options["fun_evals_per_iter"])
+                ),
+            )
+            iteration_weight *= options["hyp_run_weight"] ** (
+                options["fun_evals_per_iter"] * diff_mult
+            )
+        if iteration_weight < options["tol_cov_weight"]:
+            break
+
+        history_index = optim_state["iter"] - 1 - i
+        historical_hyp = iteration_history["gp_hyp_full"]
+        if history_index >= len(historical_hyp):
+            continue
+        hyp = np.asarray(historical_hyp[history_index])
+        if hyp.ndim != 2 or hyp.shape[0] == 0 or hyp.shape[1] != hyp_n:
+            continue
+        sample_blocks.append(hyp)
+        weight_blocks.append(
+            np.full(hyp.shape[0], iteration_weight / hyp.shape[0])
+        )
+
+    if not sample_blocks:
+        return None
+
+    samples = np.concatenate(sample_blocks, axis=0)
+    weights = np.concatenate(weight_blocks)
+    total_weight = np.sum(weights)
+    if not np.isfinite(total_weight) or total_weight <= 0:
+        return None
+    weights /= total_weight
+
+    correction = 1 - np.sum(weights**2)
+    if not np.isfinite(correction) or correction <= 0:
+        return None
+
+    mean = np.sum(samples * weights[:, None], axis=0)
+    centered = samples - mean
+    hyp_cov = (centered * weights[:, None]).T @ centered
+    hyp_cov /= correction
+    return hyp_cov
 
 
 def _get_training_data(function_logger: FunctionLogger):

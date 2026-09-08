@@ -1,4 +1,59 @@
-Pickup (2026-09-07): resume dev/plans/latent-bug-fixes.md with $task.
+Pickup (2026-09-08): resume dev/plans/latent-bug-fixes.md with $task.
+Current PI direction: PARK Phase 2's full paired boost campaign until later;
+start main-loop fixes on a separate branch from dev-next 3e879b6, in order:
+weighted GP covariance (Phase 3), acquisition regularization (Phase 4),
+GP sampling termination (Phase 5), with separate numerical gates.
+Current branch: dev-main-loop-fixes. Boost code is preserved at local commit
+764a177 on dev-final-boost (not pushed). Its exact restart scope, local
+artifact paths and remaining harness work are in
+dev/2026-09-08-boost-penalty-pilot.md, "Parked experiment restart".
+No boost job/watcher is running or scheduled. Q1/Q4 remain evidence-dependent.
+
+Phase 3 covariance implementation and independent review complete: 146 tests
+passed, 15 skipped, 11 exact fixtures passed. All six replay initial designs
+match. Cigar seed 0 is worse and exceeds accuracy fences (still usable);
+seed 1 and the other four default cases pass. Keep this flag for population
+assessment, not a claim of all-green trajectories. Next integrate and gate
+Phase 4 checkpoint 1ec320e from isolated dev-acq-regularization-stage; Phase 5
+is being prepared there separately. See dev/2026-09-08-main-loop-fixes.md.
+
+Historical Phase 2 progress follows:
+Paired penalty timing pilot complete: seed 0 of noisy Student D8, Lumpy D10
+and Cigar D15 exhaust; six boosts took 24.10 seconds and the complete pilot
+32.018 seconds. Both arms started from identical reconstructed states/RNGs;
+actual penalties 0.1/0 and disabled pruning/guard were verified. Full paired
+captures are saved. Estimate about 3 hours for 870 pairs, with a 4-hour
+planning allowance; see dev/2026-09-08-boost-penalty-pilot.md. Independent
+review passed. The full population campaign has not been launched.
+
+Reconstruction check completed numerically: all 870 traces are structurally eligible;
+nine exact snapshots and three common-RNG boost pairs were compared. Normal
+reproduces exactly, Logistic nearly matches, and noisy Rosenbrock seed 7
+changes materially. An all-870 GP/SD screen took 17.6 seconds and found four
+absolute SD differences above 0.001 nats (descriptive, not a validity gate).
+See dev/2026-09-08-boost-reconstruction.md; independent artifact review is complete.
+No full population optimization has been launched.
+The PI deferred the acceptance threshold: retain both full VPs and ELBO/SD,
+then assess acceptance rules post hoc. Rejected improvements are a tradeoff,
+not grounds by themselves to disqualify a threshold. A paired penalty-on/off
+boost experiment is the proposed next step, subject to reconstruction results.
+
+Initial Phase 2 findings (2026-09-07):
+Current work: Phase 2's initial final-boost comparison is implemented and
+evaluated on dev-final-boost, based on 3e879b6. The completed neutral/reference work was
+fast-forwarded into dev-next; CI 137 passed (1,043 tests, 49 skipped, no retries).
+118 focused tests and eight exact oracle fixtures passed. All nine revised
+trajectories (seven specified plus two targeted noisy counterexamples)
+preserved exact main loops and initial designs, with raw restart state and
+candidates retained. Both tolerances made identical decisions on those nine.
+The guard fixes the severe logistic case but worsens noisy Rosenbrock seed17
+from reference gsKL 0.352 to 6.402 by rejecting an improved candidate.
+The production default remains deferred pending the broader comparison;
+None retains legacy behavior on this experimental branch. Q1 is unchanged.
+Evidence: dev/2026-09-07-final-boost-comparison.md and
+dev/scripts/runs/latent_fixes/boost_20260907/.
+Phase 2's live checklist is at the top of the latent-bug plan.
+
 The reduced noisy reference extension is complete and integrated: 870 pairs
 across 19 configurations, including 160 noisy runs across four configurations.
 Allocation: original 16 x 50 plus D15 exhaust x 10, with noisy Rosenbrock D2
@@ -22,14 +77,14 @@ Workers used isolated reference 623f5cd over 7314a6a, gpyreg a2f8ddc,
 original Python 3.12.6/NumPy 2.5.2/SciPy 1.18.1, and one BLAS thread.
 The remaining 58 ran 17:02:17-21:08:49 UTC+03; no worker or watcher remains.
 
-Development branch: dev-latent-neutral-fixes. Phase 0's stronger replay gate
+Completed development branch: dev-latent-neutral-fixes. Phase 0's stronger replay gate
 and Phase 1's neutral fixes are complete (including CI 135's transformer
 sharing corrections). Reference publication is committed and pushed in
 b2ea859. CI 136 passed: 1,043 tests, 49 skipped, no retries (10m27s job).
 Independent Sol review passed; all reference-extension checklist items are complete.
-Next numerical work is Phase 2's approved boost comparison. It was not run
-as part of this reference completion. Final Q1 treatment and Q4's 0.1/0.2
-choice remain evidence-dependent; preserve existing PyTorch feasibility
+Phase 2 followed the reference completion; its current findings are above.
+Final Q1 treatment and Q4's acceptance rule/default remain evidence-dependent;
+preserve existing PyTorch feasibility
 and modernization decisions. Astra orchestrates; Sol implements/reviews.
 
 Historical pickup notes follow; current reference paths/counts above govern.

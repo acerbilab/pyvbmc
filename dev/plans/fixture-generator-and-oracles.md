@@ -12,6 +12,44 @@ Roadmap pickup point 1 (`plans/modernization-roadmap.md`); rationale in
 tolerances", "randomness injected, not drawn"). This file is the plan now
 and the worklog afterwards.
 
+## Phase 3 GP-history coverage (2026-09-08, in progress)
+
+The weighted GP covariance repair has its own oracle contract. The existing
+`gp_fit` uses private options with `weighted_hyp_cov=False`,
+`gp_sample_widths=0`, and a private `hyp_dict["run_cov"]=None`; its stored
+fit outputs must remain exact. A separate `gp_fit_history` oracle uses
+explicit deterministic synthetic ragged history. It is controlled test
+input, not a reconstruction of the snapshot's actual past.
+
+Three authentic pre-`train_gp` captures supplement these controlled tests:
+`early_sampled`, `later_changing_ns`, and `noisy_nonuniform_weights`.
+The new subset lives in `fixtures/gp_fit_history/` as plain JSON/NPZ.
+Capture copies the logger, transformer, optimization state, consumed options,
+hyperparameter summary, consumed historical hyperparameters/reliability/sKL,
+and Generator state before the fit mutates them. It records widths actually
+handed to `gpyreg.GP.fit`, the resulting GP/summary/predictions, source hashes,
+versions, seed, iteration and platform. Historical GP factors are omitted:
+warm starts need only their stored hyperparameter matrices.
+
+The bounded development command stops after finding the requested sampled
+regimes; it adds no full `optimize()` tests and does not touch the golden
+population. Existing top-level fixture file hashes must be unchanged by this
+additive capture. These commands are for deliberate fixture creation and
+checking, with single-threaded BLAS:
+
+```powershell
+.venv/Scripts/python.exe dev/scripts/make_oracle_fixtures.py --capture-gp-fit-history
+.venv/Scripts/python.exe dev/scripts/make_oracle_fixtures.py --check-gp-fit-history --exact
+.venv/Scripts/python.exe -m pytest pyvbmc/testing/oracles/test_gp_fit_history.py -q
+```
+
+Covariance and width comparisons run across platforms; stochastic fit outputs
+use the existing generating-platform policy. Raw state and outputs are checked
+for float64. The main `--check` also includes the authentic subset. Capture
+refuses existing destination pairs: a deliberate refresh requires inspecting
+and preserving the existing evidence first. Execution results are recorded
+in [the main-loop work note](../2026-09-08-main-loop-fixes.md).
+
 ## Summary
 
 A generator script runs a handful of short, seeded VBMC runs with

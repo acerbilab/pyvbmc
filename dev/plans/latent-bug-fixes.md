@@ -10,6 +10,162 @@ configurations. Checks and provenance are in
 [`noisy_extension_20260907`](../golden/noisy_extension_20260907/README.md).
 Phase 0's regression gate and Phase 1's neutral fixes are also complete and
 verified. The original 150-run proposal is superseded; do not launch it.
+
+**Current execution (2026-09-08): Phase 2 parked; start main-loop fixes.**
+The PI explicitly deferred the full paired boost experiment and authorized
+proceeding with Phases 3-5. Phase 2 is checkpointed at `764a177` on
+`dev-final-boost` (local, not pushed). Main-loop development is on
+`dev-main-loop-fixes`, separately based on validated `dev-next` (`3e879b6`),
+without the experimental boost core changes. The checkpoint's pre-commit
+hooks passed; formatting changed script source hashes from the measured
+pilot, whose original provenance remains in its artifacts.
+The boost restart contract is in
+[the pilot note](../2026-09-08-boost-penalty-pilot.md#parked-experiment-restart).
+No boost batch, watcher or automatic restart is scheduled. Q1 and Q4 remain
+open; main-loop development does not require either decision.
+
+- [x] Park the boost comparison with its code, evidence paths and restart scope.
+- [x] Phase 3: weighted covariance repaired, independent review complete;
+  146 tests passed/15 skipped and 11 exact fixtures passed. Five-case replay
+  retains all initial designs; Cigar seed 0 exceeds accuracy fences, with
+  the seed-1 follow-up passing. Preserve that adverse result for integrated
+  population assessment; see [the evidence](../2026-09-08-main-loop-fixes.md).
+- [~] Phase 4: implementation checkpoint `1ec320e` in isolated
+  `dev-acq-regularization-stage`; integrate and validate only after Phase 3's
+  separate gate. Formatting hooks passed; numerical checks pending.
+- [~] Phase 5: prepare sampling-termination repair in that isolated checkout
+  on top of `1ec320e`; integrate and validate after Phase 4's separate gate.
+- [ ] Return to the parked paired boost campaign when the PI schedules it.
+
+**Historical Phase 2 execution follows.**
+PI authorization (2026-09-08): run a bounded timing pilot of paired boosts
+with weight penalty 0.1 versus 0, starting from the same reconstructed
+VP/GP and fresh RNG state. The reconstructed state is shared by both arms;
+historical reproduction is not the objective of this paired experiment.
+
+- [x] Run seed 0 of `student_D8_noise3`, `lumpy_D10`, and
+  `cigar_D15_exhaust`, sequentially, with both penalty settings and no guard;
+  retain complete pre/candidate state, actual optimizer settings and separate
+  optimization/diagnostics/serialization timings. No main-loop runs.
+- [x] Independently review the pairing/timings and report a revised cost
+  estimate for the proposed 870-pair campaign. This pilot does not launch it.
+
+Pilot complete: six boosts took 24.10 seconds; all diagnostics and captures
+brought the three pairs to 32.018 seconds. Straight-line extrapolation gives
+2.58 hours for 870 pairs; plan about 3 hours with a 4-hour allowance, not a
+formal bound. Independent review passed. Full states/candidates and the
+[pilot evidence](../2026-09-08-boost-penalty-pilot.md) are retained.
+
+PI update (2026-09-08): acceptance criteria may be selected post hoc when
+both complete candidate VPs and scores are retained. Individual rejected
+improvements quantify a tradeoff and do not by themselves disqualify a rule.
+Before scheduling a paired penalty-on/off population experiment, check whether
+compact golden traces can reconstruct boost inputs without main-loop reruns.
+
+- [x] Check population data recoverability: all 870 have no repeated
+  evaluations and no warmup/trimming after the selected iteration; 13 select
+  an earlier iteration. Its GP training data are the corresponding live prefix.
+- [x] Reconstruct boost inputs from compact traces and compare with the nine
+  exact pre-boost snapshots; distinguish missing historical RNG from missing
+  scientific state. No full benchmark run is authorized by this check.
+- [x] Compare three authentic/reconstructed boost pairs with a common RNG,
+  including the numerically sensitive case. Normal is exact, Logistic nearly
+  matches, and noisy Rosenbrock seed 7 changes materially. A 17.6-second
+  population GP/SD screen found four SD differences above 0.001 nats, including
+  seed 7 at 0.03924 nats; these are descriptive bins, not validity cutoffs.
+- [x] Independently review reconstruction coverage, record limitations and
+  report feasibility and measured cost for a subsequent paired campaign.
+
+Reconstruction evidence: [2026-09-08 check](../2026-09-08-boost-reconstruction.md).
+It supports a paired penalty experiment conditional on shared reconstructed
+states, not universal exact historical substitution. Use authentic snapshots
+where available. Historical pre-boost scores must remain separate from any
+rescoring under a reconstructed GP for later acceptance-rule comparisons.
+
+Base `3e879b6` was fast-forwarded into `dev-next`; CI 137 passed with
+1,043 tests, 49 skipped and no retries. The reference remains immutable.
+This branch implements and evaluates the approved boost comparison; the
+production tolerance still requires the PI's evidence-based selection.
+
+- [x] Create a fresh Phase 2 branch from the validated `dev-next` tip.
+- [x] Establish the unchanged pre-change numerical gate and implement the
+  boost-only objective/acceptance changes with focused mocked tests.
+- [x] Analyze both thresholds on all 870 stored candidates, including the
+  60 new noisy runs; retain score and posterior-accuracy evidence separately.
+- [x] Run the specified seven trajectory checks, retaining raw boosted
+  candidates and comparing both thresholds without rerunning boost per threshold.
+- [x] Follow up the two newly identified stored-score counterexamples with
+  targeted revised-objective runs: `rosenbrock_D2_noise3` seeds 7 and 17.
+  Keep these separate from the seven original cases. They diagnose selected
+  counterexamples, not population rejection rates or default calibration.
+- [x] Assess expanded noisy coverage for the revised objective and document
+  any remaining experiment needed before a default can be selected.
+- [x] Complete independent review and report results for the PI's Q4 decision.
+- [!] PI reconsideration of Q4 is needed before choosing a production
+  acceptance rule/default; the tested opt-in implementation remains experimental.
+
+**Phase 2 evidence: the tested rule is not accepted for production.**
+The seven specified runs and two targeted noisy counterexamples completed
+(4.6 and 4.5 minutes). All nine retained exact main loops and initial
+designs; both tolerances accepted six candidates and rejected three.
+The logistic seed-5 guard repairs a severe failure, but noisy Rosenbrock
+seed 17 regresses from reference gsKL 0.352 to 6.402 because the guard rejects
+a revised candidate with gsKL 0.352. Seed 7 also loses improvements in all
+three accuracy metrics. These counterexamples persist without boost weight
+shrinkage. The logistic run's small residual MMTV fence miss is explained
+by retaining its much-improved pre-boost VP; Rosenbrock seed 17's gsKL flag
+is an adverse effect of the tested guard. Both flags are retained.
+See the [paired evidence](../2026-09-07-final-boost-comparison.md).
+No full noisy population rerun is needed to establish these counterexamples;
+they do not estimate prevalence. Reconsider Q4's acceptance rule with the PI
+before selecting a default or promoting this opt-in implementation. The
+original implementation contract below remains the rule that was tested.
+Independent Sol implementation/scientific review finished with no remaining
+code or reporting findings. This does not constitute scientific acceptance
+of the tested rule. All 1,740 reference files still match the published
+870-run manifest (`reference_preservation.json`); no computation is running.
+
+Pre-change gate passed on `3e879b6` (only task documentation dirty):
+`make_oracle_fixtures.py --check --exact` passed all eight fixtures; the
+default five-case replay matched all stored loop/final arrays, semantic
+final fields and initial designs, with zero flags. Commands used the
+original `.venv/Scripts/python.exe`, explicit `vectorized_target=False`
+and single-threaded BLAS. Actual imports resolved to this development
+checkout and sibling gpyreg `a2f8ddc`. Evidence and environment record:
+`dev/scripts/runs/latent_fixes/boost_20260907/{oracles_before.log,preflight.log,
+preflight/,environment.json}`. Historical returned transformers remain
+uncertifiable.
+
+Implementation staging while Q4 is open: `tol_elcbo_boost=None` retains
+legacy refinement; an explicit finite nonnegative tolerance activates both
+the guard and zero boost weight penalty. Experiments pass 0.1 explicitly
+and evaluate 0.2 on the same raw candidate. This temporary opt-in state
+keeps ordinary calls usable without choosing an unapproved production
+default. The final numeric default will activate the approved behavior
+after the PI selects it from the evidence.
+
+The 870 compact traces do not contain complete pre-boost GP, optimizer
+or RNG state, so they cannot provide exact boost-only restarts. The
+2026-09-08 reconstruction check above qualifies this: the required scientific
+inputs can be rebuilt, but floating-point round trips can materially alter
+ill-conditioned GPs. The nine post-change trajectories retained authentic
+restart state and raw candidates. No additional noisy population optimization
+was launched by this initial Phase 2 task.
+
+Implementation verification: 118 focused tests passed with retries disabled
+(3.46 s): `test_vbmc_finalboost.py`, `test_options.py`, `test_vbmc_init.py`
+and `test_boost_comparison.py`. The post-change exact oracle gate passed
+all eight fixtures. Logs are `focused_tests.log` and `oracles_after.log`
+under the Phase 2 evidence directory. The stored-data scan and 83 paired
+metric reconstructions are complete; findings and limitations are recorded
+in [the Phase 2 evidence note](../2026-09-07-final-boost-comparison.md).
+Independent Sol review cleared the seven-case launch after the driver began
+recording its own source hash. The two targeted noisy follow-ups were added
+because both proposed thresholds reject stored candidates with improved
+posterior shape. The reviewer confirmed their diagnostic purpose and the
+limits of selecting cases based on their observed outcomes. They run only
+after the original seven finish; no full noisy population rerun is scheduled.
+
 PI update (2026-09-07, after CI 135): the estimated day-long runtime is
 infeasible; reduce the reference addition. The 150-run allocation and launch
 command below are historical preparation, superseded for future execution.

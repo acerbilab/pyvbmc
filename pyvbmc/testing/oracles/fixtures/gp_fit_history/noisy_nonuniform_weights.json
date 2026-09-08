@@ -1,0 +1,299 @@
+{
+ "meta": {
+  "capture_iteration": 3,
+  "config": "rosenbrock_D2_noise1",
+  "generated": "2026-09-08 08:35:47",
+  "git": {
+   "dirty": true,
+   "sha": "3e879b6"
+  },
+  "gp_s_N": 8,
+  "history": {
+   "indices": [
+    2,
+    1,
+    0
+   ],
+   "sample_counts": [
+    8,
+    8,
+    8
+   ],
+   "weights": [
+    1.0,
+    0.5904900000000001,
+    0.06801079334386105
+   ]
+  },
+  "hyp_n": 9,
+  "iteration": 3,
+  "platform": "Windows-11-10.0.26200-SP0",
+  "problem": "rosenbrock",
+  "problem_seed": 0,
+  "python": "3.12.6",
+  "role": "noisy_nonuniform_weights",
+  "seed": 0,
+  "sources": {
+   "capture_helper": {
+    "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc\\testing\\oracles\\_gp_fit_history.py",
+    "sha256": "285a831b0de5e7095a8ae5203c3257626fac197b72a553d596bc2ecc92129854"
+   },
+   "capture_script": {
+    "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\make_oracle_fixtures.py",
+    "sha256": "da54e53db1af31249e4efd900746e2b5f366fa450fcd53ef8f5aad44d6207fca"
+   },
+   "gpyreg.GP.fit": {
+    "path": "C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\gaussian_process.py",
+    "sha256": "2feefb0fd73156cce5f0e88c5acca4978b398ef2ebbe6eec34373f4b4028caad"
+   },
+   "train_gp": {
+    "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc\\vbmc\\gaussian_process_train.py",
+    "sha256": "a26894a12da126d6ed96e48b0261032a2cc79064dd128191d7e9f189de6a7d3b"
+   }
+  },
+  "versions": {
+   "gpyreg": "1.1.0",
+   "numpy": "2.5.2",
+   "pyvbmc": "1.0.5.dev159+g4bff1a5b9",
+   "scipy": "1.18.1"
+  },
+  "widths_source": {
+   "default": "gpyreg.GP.fit caller local widths_default",
+   "effective": "gpyreg.gaussian_process.SliceSampler argument",
+   "proposed": "gpyreg.GP.fit options"
+  }
+ },
+ "pre": {
+  "history": {
+   "gp": [
+    "@@npz:capture/pre/history/gp/0",
+    "@@npz:capture/pre/history/gp/1",
+    "@@npz:capture/pre/history/gp/2"
+   ],
+   "gp_hyp_full": [
+    "@@npz:capture/pre/history/gp_hyp_full/0",
+    "@@npz:capture/pre/history/gp_hyp_full/1",
+    "@@npz:capture/pre/history/gp_hyp_full/2"
+   ],
+   "r_index": [
+    {
+     "@float": "inf"
+    },
+    {
+     "@float": "inf"
+    },
+    2.5691626157969125
+   ],
+   "sKL": [
+    995462.067736372,
+    4.278021849742254,
+    0.07448163682239572
+   ]
+  },
+  "hyp_dict": {
+   "full": "@@npz:capture/pre/hyp_dict/full",
+   "hyp": "@@npz:capture/pre/hyp_dict/hyp",
+   "logp": "@@npz:capture/pre/hyp_dict/logp",
+   "run_cov": "@@npz:capture/pre/hyp_dict/run_cov",
+   "warp": null
+  },
+  "logger": {
+   "D": 2,
+   "S": "@@npz:capture/pre/logger/S",
+   "X": "@@npz:capture/pre/logger/X",
+   "X_flag": "@@npz:capture/pre/logger/X_flag",
+   "X_orig": "@@npz:capture/pre/logger/X_orig",
+   "Xn": 24,
+   "cache_count": 0,
+   "cache_size": 500,
+   "fun_eval_time": "@@npz:capture/pre/logger/fun_eval_time",
+   "func_count": 25,
+   "n_evals": "@@npz:capture/pre/logger/n_evals",
+   "noise_flag": true,
+   "total_fun_eval_time": 0.015666484832763672,
+   "uncertainty_handling_level": 2,
+   "y": "@@npz:capture/pre/logger/y",
+   "y_max": 0.9005576766618679,
+   "y_orig": "@@npz:capture/pre/logger/y_orig"
+  },
+  "optim_state": {
+   "H": -1.746753975534288,
+   "N": 25,
+   "N_eff": "@@npz:capture/pre/optim_state/N_eff",
+   "R": 2.5691626157969125,
+   "active_importance_sampling": {
+    "C_tmp": "@@npz:capture/pre/optim_state/active_importance_sampling/C_tmp",
+    "K_Xa_X": "@@npz:capture/pre/optim_state/active_importance_sampling/K_Xa_X",
+    "X": "@@npz:capture/pre/optim_state/active_importance_sampling/X",
+    "f_s2": "@@npz:capture/pre/optim_state/active_importance_sampling/f_s2",
+    "ln_weights": "@@npz:capture/pre/optim_state/active_importance_sampling/ln_weights"
+   },
+   "cache": {
+    "x_orig": "@@npz:capture/pre/optim_state/cache/x_orig",
+    "y_orig": "@@npz:capture/pre/optim_state/cache/y_orig"
+   },
+   "cache_active": false,
+   "data_trim_list": [],
+   "entropy_alpha": 0,
+   "entropy_switch": false,
+   "gp_cov_fun": 1,
+   "gp_length_scale": "@@npz:capture/pre/optim_state/gp_length_scale",
+   "gp_mean_fun": "negquad",
+   "gp_noise_fun": [
+    1,
+    1,
+    0
+   ],
+   "hyp_dict": {
+    "full": "@@npz:capture/pre/optim_state/hyp_dict/full",
+    "hyp": "@@npz:capture/pre/optim_state/hyp_dict/hyp",
+    "logp": "@@npz:capture/pre/optim_state/hyp_dict/logp",
+    "run_cov": "@@npz:capture/pre/optim_state/hyp_dict/run_cov",
+    "warp": null
+   },
+   "int_mean_fun": 0,
+   "integer_vars": "@@npz:capture/pre/optim_state/integer_vars",
+   "iter": 3,
+   "iter_list": {
+    "f_sd": [],
+    "f_val": [],
+    "fhyp": [],
+    "u": []
+   },
+   "last_run_avg": 20,
+   "last_successful_warping": {
+    "@float": "-inf"
+   },
+   "last_warmup": {
+    "@float": "inf"
+   },
+   "last_warping": {
+    "@float": "-inf"
+   },
+   "lb_eps_orig": "@@npz:capture/pre/optim_state/lb_eps_orig",
+   "lb_orig": "@@npz:capture/pre/optim_state/lb_orig",
+   "lb_search": "@@npz:capture/pre/optim_state/lb_search",
+   "lb_tran": "@@npz:capture/pre/optim_state/lb_tran",
+   "lcb_max": -1.5035489053818896,
+   "lcb_max_vec": "@@npz:capture/pre/optim_state/lcb_max_vec",
+   "max_fun_evals": 200,
+   "n_eff": 25,
+   "out_warp_delta": [],
+   "plb_orig": "@@npz:capture/pre/optim_state/plb_orig",
+   "plb_tran": "@@npz:capture/pre/optim_state/plb_tran",
+   "proposal_fcn": "@(x)proposal_vbmc",
+   "pruned": 0,
+   "pub_orig": "@@npz:capture/pre/optim_state/pub_orig",
+   "pub_tran": "@@npz:capture/pre/optim_state/pub_tran",
+   "recompute_var_post": false,
+   "redo_roto_scaling": false,
+   "repeated_observations_streak": 0,
+   "run_cov": "@@npz:capture/pre/optim_state/run_cov",
+   "run_mean": "@@npz:capture/pre/optim_state/run_mean",
+   "search_cache": [],
+   "skip_active_sampling": false,
+   "sn2_hpd": 1.0000666523565143,
+   "stop_sampling": 0,
+   "tol_gp_var": 0.0001,
+   "ub_eps_orig": "@@npz:capture/pre/optim_state/ub_eps_orig",
+   "ub_orig": "@@npz:capture/pre/optim_state/ub_orig",
+   "ub_search": "@@npz:capture/pre/optim_state/ub_search",
+   "ub_tran": "@@npz:capture/pre/optim_state/ub_tran",
+   "uncertainty_handling_level": 2,
+   "variance_regularized_acqfcn": true,
+   "vp_K": 2,
+   "vp_repo": [
+    "@@npz:capture/pre/optim_state/vp_repo/0"
+   ],
+   "warmup": true,
+   "warmup_stable_count": 0,
+   "warping_count": 0
+  },
+  "options": {
+   "bounded_transform": "probit",
+   "cov_sample_thresh": 10,
+   "fun_eval_start": 10,
+   "fun_evals_per_iter": 5,
+   "gp_hyp_sampler": "slicesample",
+   "gp_length_prior_mean": 0.5773502691896257,
+   "gp_length_prior_std": 3.4538776394910684,
+   "gp_quadratic_mean_bound": true,
+   "gp_retrain_threshold": 1,
+   "gp_sample_thin": 5,
+   "gp_sample_widths": 5,
+   "gp_tol_opt": 1e-05,
+   "gp_tol_opt_mcmc": 0.01,
+   "gp_train_init_method": "rand",
+   "gp_train_n_init": 1024,
+   "gp_train_n_init_final": 64,
+   "hpd_frac": 0.8,
+   "hyp_run_weight": 0.9,
+   "max_fun_evals": 200,
+   "noise_size": [],
+   "ns_gp_max": 80,
+   "ns_gp_max_main": {
+    "@float": "inf"
+   },
+   "ns_gp_max_warmup": 8,
+   "stable_gp_samples": 0,
+   "stable_gp_sampling": 220,
+   "stable_gp_vp_k": {
+    "@float": "inf"
+   },
+   "tol_cov_weight": 0,
+   "tol_gp_noise": 0.0031622776601683794,
+   "tol_sd": 0.1,
+   "tol_skl": 0.014142135623730952,
+   "upper_gp_length_factor": 0,
+   "weighted_hyp_cov": true
+  },
+  "plb_tran": "@@npz:capture/pre/plb_tran",
+  "pt": {
+   "D": 2,
+   "R_mat": null,
+   "delta": "@@npz:capture/pre/pt/delta",
+   "lb_orig": "@@npz:capture/pre/pt/lb_orig",
+   "mu": "@@npz:capture/pre/pt/mu",
+   "plb_orig": "@@npz:capture/pre/pt/plb_orig",
+   "pub_orig": "@@npz:capture/pre/pt/pub_orig",
+   "scale": null,
+   "transform_type": "probit",
+   "type": "@@npz:capture/pre/pt/type",
+   "ub_orig": "@@npz:capture/pre/pt/ub_orig"
+  },
+  "pub_tran": "@@npz:capture/pre/pub_tran",
+  "rng": {
+   "bit_generator": "PCG64",
+   "state": {
+    "bit_generator": "PCG64",
+    "has_uint32": 0,
+    "state": {
+     "inc": 87136372517582989555478159403783844777,
+     "state": 220456643765075426278406937374174901697
+    },
+    "uinteger": 3300669392
+   }
+  }
+ },
+ "ref": {
+  "fit": {
+   "gp_hyp": "@@npz:capture/ref/fit/gp_hyp",
+   "gp_s_N": "@@npz:capture/ref/fit/gp_s_N",
+   "hyp_dict_full": "@@npz:capture/ref/fit/hyp_dict_full",
+   "hyp_dict_hyp": "@@npz:capture/ref/fit/hyp_dict_hyp",
+   "hyp_dict_logp": "@@npz:capture/ref/fit/hyp_dict_logp",
+   "hyp_dict_run_cov": "@@npz:capture/ref/fit/hyp_dict_run_cov",
+   "prediction_mean": "@@npz:capture/ref/fit/prediction_mean",
+   "prediction_variance": "@@npz:capture/ref/fit/prediction_variance",
+   "sn2_hpd": "@@npz:capture/ref/fit/sn2_hpd"
+  },
+  "portable": {
+   "covariance": "@@npz:capture/ref/portable/covariance",
+   "gp_fit_widths": "@@npz:capture/ref/portable/gp_fit_widths"
+  },
+  "sampler_widths": {
+   "effective_widths": "@@npz:capture/ref/sampler_widths/effective_widths",
+   "widths_default": "@@npz:capture/ref/sampler_widths/widths_default"
+  }
+ }
+}

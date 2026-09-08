@@ -103,6 +103,30 @@
      ]
     },
     "reason": "Stage 2 item 8: pin one train_gp call (space-filling design, L-BFGS-B, slice sampler) from the stored state under a seeded legacy stream before the gpyreg refactor; platform-bound"
+   },
+   {
+    "date": "2026-09-08 08:28:24",
+    "git": {
+     "dirty": true,
+     "sha": "3e879b6"
+    },
+    "oracle": "gp_fit_history",
+    "outputs": {
+     "gp_s_N": [
+      1
+     ],
+     "hyp": [
+      4,
+      18
+     ],
+     "sn2_hpd": [
+      1
+     ],
+     "widths": [
+      18
+     ]
+    },
+    "reason": "Phase 3: add controlled ragged GP history covariance and sampler widths; preserve all existing states and oracle references"
    }
   ],
   "pick": "last_warped",
@@ -411,6 +435,12 @@
    "gp_s_N": "@@npz:ref/gp_fit/gp_s_N",
    "hyp": "@@npz:ref/gp_fit/hyp",
    "sn2_hpd": "@@npz:ref/gp_fit/sn2_hpd"
+  },
+  "gp_fit_history": {
+   "gp_s_N": "@@npz:ref/gp_fit_history/gp_s_N",
+   "hyp": "@@npz:ref/gp_fit_history/hyp",
+   "sn2_hpd": "@@npz:ref/gp_fit_history/sn2_hpd",
+   "widths": "@@npz:ref/gp_fit_history/widths"
   },
   "gp_log_joint": {
    "G": "@@npz:ref/gp_log_joint/G",

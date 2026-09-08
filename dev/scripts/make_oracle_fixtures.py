@@ -18,6 +18,8 @@ outputs as the reference next to the state. Fixtures land in
         --reason "..."                     # a new oracle, from the stored state
     python dev/scripts/make_oracle_fixtures.py --dump-outputs DIR   # current outputs
     python dev/scripts/make_oracle_fixtures.py --check --exact --against DIR
+    python dev/scripts/make_oracle_fixtures.py --capture-gp-fit-history
+    python dev/scripts/make_oracle_fixtures.py --check-gp-fit-history --exact
 
 Regenerating **replaces the references**: do it only when the current code
 is the one the references should pin (a fresh baseline), never to make a
@@ -36,10 +38,18 @@ outputs have since moved within tolerance, Stage 2 items 1–3), so the gate
 for an identity-preserving refactor is ``--dump-outputs DIR`` on the code
 just before it and ``--check --exact --against DIR`` after. Plan and
 worklog: ``dev/plans/fixture-generator-and-oracles.md``.
+
+The authentic GP-history capture mode runs only until it has observed an
+early sampled fit, a later fit whose stored sample counts differ, and a noisy
+fit with unequal history weights. It writes a separate additive subdirectory,
+refuses to replace an existing capture, and hash-checks the legacy fixtures.
 """
 
 import argparse
 import copy
+import hashlib
+import importlib
+import inspect
 import json
 import os
 import platform
@@ -51,6 +61,7 @@ for _k in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS"):
     os.environ.setdefault(_k, "1")
 os.environ.setdefault("MPLBACKEND", "Agg")
 
+import gpyreg as gpr  # noqa: E402
 import numpy as np  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
@@ -62,6 +73,16 @@ from benchmark_targets import find_config  # noqa: E402
 from profile_run import git_info, pkg_version  # noqa: E402
 
 from pyvbmc import VBMC  # noqa: E402
+from pyvbmc.testing.oracles._gp_fit_history import (
+    capture_inputs,
+    fit_outputs,
+    history_block_summary,
+    portable_outputs,
+)
+from pyvbmc.testing.oracles._gp_fit_history import (  # noqa: E402
+    replay as replay_gp_fit_history,
+)
+from pyvbmc.testing.oracles._gp_fit_history import run_observed, same_platform
 from pyvbmc.testing.oracles._oracles import (  # noqa: E402
     DEFAULT_SEED,
     ORACLES,
@@ -83,6 +104,7 @@ from pyvbmc.variational_posterior import VariationalPosterior  # noqa: E402
 from pyvbmc.vbmc.active_sample import _get_search_points  # noqa: E402
 
 FIXTURES = REPO_ROOT / "pyvbmc" / "testing" / "oracles" / "fixtures"
+GP_HISTORY_FIXTURES = FIXTURES / "gp_fit_history"
 PROBLEM_SEED = 0
 N_CAND = 512
 SIEVE = 2**13
@@ -200,6 +222,10 @@ RECIPES = [
 # --------------------------------------------------------------------------
 
 _RUNS = {}
+
+
+class _CaptureComplete(Exception):
+    pass
 
 
 def run_config(config, options):
@@ -480,6 +506,245 @@ def load_dump(out_dir, name):
     return reference
 
 
+def _top_level_fixture_hashes():
+    return {
+        p.name: hashlib.sha256(p.read_bytes()).hexdigest()
+        for p in sorted(FIXTURES.glob("*.*"))
+        if p.suffix in (".json", ".npz")
+    }
+
+
+def _source_record(train):
+    sources = {
+        "train_gp": inspect.getsourcefile(train),
+        "gpyreg.GP.fit": inspect.getsourcefile(gpr.GP.fit),
+        "capture_helper": inspect.getsourcefile(capture_inputs),
+        "capture_script": __file__,
+    }
+    return {
+        name: {
+            "path": str(Path(path).resolve()),
+            "sha256": hashlib.sha256(Path(path).read_bytes()).hexdigest(),
+        }
+        for name, path in sources.items()
+    }
+
+
+def _write_gp_history_fixture(role, pre, result, observation, meta):
+    hyp_n = result[0].get_hyperparameters(as_array=True).shape[1]
+    gp_s_N = result[1]
+    portable = portable_outputs(pre, hyp_n, gp_s_N)
+    proposed = observation["gp_fit_widths"]
+    if portable["gp_fit_widths"] is None or proposed is None:
+        raise RuntimeError(f"{role}: fit did not receive history widths")
+    if not np.array_equal(portable["gp_fit_widths"], proposed):
+        raise RuntimeError(
+            f"{role}: reconstructed and GP.fit proposed widths differ"
+        )
+    portable["gp_fit_widths"] = np.array(proposed, copy=True)
+    summary = history_block_summary(pre, hyp_n)
+    raw = {
+        "meta": {
+            **meta,
+            "role": role,
+            "capture_iteration": int(pre["optim_state"]["iter"]),
+            "hyp_n": int(hyp_n),
+            "gp_s_N": int(gp_s_N),
+            "history": summary,
+            "widths_source": {
+                "proposed": "gpyreg.GP.fit options",
+                "effective": "gpyreg.gaussian_process.SliceSampler argument",
+                "default": "gpyreg.GP.fit caller local widths_default",
+            },
+        },
+        "pre": pre,
+        "ref": {
+            "portable": portable,
+            "fit": fit_outputs(result),
+            "sampler_widths": {
+                "effective_widths": observation["effective_widths"],
+                "widths_default": observation["widths_default"],
+            },
+        },
+    }
+    arrays = {}
+    tree = encode(raw, "capture", arrays)
+    path = GP_HISTORY_FIXTURES / role
+    if any(p.exists() for p in _files(path)):
+        raise RuntimeError(f"refusing to overwrite existing fixture {path}")
+    save_snapshot(path, arrays, tree)
+    print(f"[gp-fit-history] wrote {role} at iteration {meta['iteration']}")
+
+
+def _capture_run(config, options, wanted):
+    """Run until all requested authentic fit roles have been captured."""
+    cfg = find_config(config)
+    prob = cfg.make(seed=PROBLEM_SEED)
+    args, opts = prob.vbmc_args()
+    opts.update(display="off", plot=False, print_iteration_header=False)
+    opts.update(options)
+    vbmc = VBMC(*args, options=opts, seed=PROBLEM_SEED)
+    vbmc_module = importlib.import_module("pyvbmc.vbmc.vbmc")
+    original = vbmc_module.train_gp
+    captured = set()
+
+    def wrapped(*fit_args, **fit_kwargs):
+        rng = fit_kwargs.get("rng")
+        pre = capture_inputs(*fit_args, rng)
+        result, observation = run_observed(original, (*fit_args, rng))
+        hyp_n = result[0].get_hyperparameters(as_array=True).shape[1]
+        proposed = observation["gp_fit_widths"]
+        effective = observation["effective_widths"]
+        widths_default = observation["widths_default"]
+        history_influences_sampler = (
+            proposed is not None
+            and np.all(np.isfinite(proposed))
+            and effective is not None
+            and widths_default is not None
+            and np.any(effective < widths_default)
+        )
+        summary = history_block_summary(pre, hyp_n)
+        role = None
+        if (
+            "early_sampled" in wanted
+            and "early_sampled" not in captured
+            and pre["optim_state"]["iter"] > 0
+            and result[1] > 0
+            and history_influences_sampler
+        ):
+            role = "early_sampled"
+        elif (
+            "later_changing_ns" in wanted
+            and "later_changing_ns" not in captured
+            and result[1] > 0
+            and history_influences_sampler
+            and len(set(summary["sample_counts"])) > 1
+        ):
+            role = "later_changing_ns"
+        elif (
+            "noisy_nonuniform_weights" in wanted
+            and "noisy_nonuniform_weights" not in captured
+            and pre["logger"]["noise_flag"]
+            and result[1] > 0
+            and history_influences_sampler
+            and len(summary["weights"]) > 1
+            and not np.allclose(summary["weights"], summary["weights"][0])
+        ):
+            role = "noisy_nonuniform_weights"
+        if role:
+            meta = {
+                "config": config,
+                "problem": prob.name,
+                "problem_seed": PROBLEM_SEED,
+                "seed": PROBLEM_SEED,
+                "iteration": int(pre["optim_state"]["iter"]),
+                "platform": platform.platform(),
+                "python": platform.python_version(),
+                "git": git_info(),
+                "sources": _source_record(original),
+                "versions": {
+                    p: pkg_version(p)
+                    for p in ("pyvbmc", "gpyreg", "numpy", "scipy")
+                },
+                "generated": time.strftime("%Y-%m-%d %H:%M:%S"),
+            }
+            _write_gp_history_fixture(role, pre, result, observation, meta)
+            captured.add(role)
+            if captured == set(wanted):
+                raise _CaptureComplete
+        return result
+
+    vbmc_module.train_gp = wrapped
+    try:
+        vbmc.optimize()
+    except _CaptureComplete:
+        pass
+    finally:
+        vbmc_module.train_gp = original
+    missing = set(wanted) - captured
+    if missing:
+        raise RuntimeError(
+            f"{config}: did not find captures {sorted(missing)}"
+        )
+
+
+def capture_gp_fit_history():
+    """Add the three approved authentic history fixtures, leaving old ones."""
+    before = _top_level_fixture_hashes()
+    GP_HISTORY_FIXTURES.mkdir(parents=True, exist_ok=True)
+    _capture_run(
+        "normal_D2",
+        {"max_iter": 30, "min_iter": 0, "min_fun_evals": 0},
+        ("early_sampled", "later_changing_ns"),
+    )
+    _capture_run(
+        "rosenbrock_D2_noise1",
+        {"max_iter": 12, "min_iter": 0, "min_fun_evals": 0},
+        ("noisy_nonuniform_weights",),
+    )
+    after = _top_level_fixture_hashes()
+    if before != after:
+        raise RuntimeError("an existing top-level oracle fixture changed")
+
+
+def _arrays_close(expected, actual, exact=False):
+    if set(expected) != set(actual):
+        return False
+    for key in expected:
+        a, b = np.asarray(expected[key]), np.asarray(actual[key])
+        if a.shape != b.shape:
+            return False
+        if exact:
+            if not np.array_equal(a, b, equal_nan=True):
+                return False
+        elif not np.allclose(a, b, rtol=1e-10, atol=1e-12, equal_nan=True):
+            return False
+    return True
+
+
+def check_gp_fit_history(exact=False, verbose=False):
+    failures = {}
+    names = snapshot_names(GP_HISTORY_FIXTURES)
+    expected_names = {
+        "early_sampled",
+        "later_changing_ns",
+        "noisy_nonuniform_weights",
+    }
+    if set(names) != expected_names:
+        return {
+            "fixtures": f"found {names}, expected {sorted(expected_names)}"
+        }
+    for name in names:
+        snap = load_snapshot(GP_HISTORY_FIXTURES / name)
+        portable = portable_outputs(
+            snap["pre"], snap["meta"]["hyp_n"], snap["meta"]["gp_s_N"]
+        )
+        bad = []
+        if not _arrays_close(snap["ref"]["portable"], portable, exact=exact):
+            bad.append("portable covariance/widths")
+        if same_platform(snap) or os.environ.get("PYVBMC_ORACLES_ALL"):
+            fit, observation = replay_gp_fit_history(snap)
+            if not _arrays_close(snap["ref"]["fit"], fit, exact=exact):
+                bad.append("platform-bound fit")
+            if not _arrays_close(
+                snap["ref"]["sampler_widths"],
+                {
+                    "effective_widths": observation["effective_widths"],
+                    "widths_default": observation["widths_default"],
+                },
+                exact=exact,
+            ):
+                bad.append("effective/default sampler widths")
+        elif verbose:
+            print(f"  [{name}] platform-bound fit skipped", flush=True)
+        print(
+            f"[check] gp_fit_history/{name:25s} {'ok' if not bad else 'FAIL'}"
+        )
+        if bad:
+            failures[name] = bad
+    return failures
+
+
 def check(names, verbose, exact=False, against=None):
     failures = {}
     for name in names:
@@ -708,6 +973,8 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--list", action="store_true")
     ap.add_argument("--check", action="store_true")
+    ap.add_argument("--capture-gp-fit-history", action="store_true")
+    ap.add_argument("--check-gp-fit-history", action="store_true")
     ap.add_argument(
         "--only", default=None, help="comma-separated recipe names"
     )
@@ -755,14 +1022,22 @@ def main(argv=None):
     ap.add_argument("--verbose", action="store_true")
     args = ap.parse_args(argv)
     targeted = [m for m in (args.rebaseline, args.add_oracle) if m]
-    modes = len(targeted) + args.list + args.check + bool(args.dump_outputs)
+    modes = (
+        len(targeted)
+        + args.list
+        + args.check
+        + args.capture_gp_fit_history
+        + args.check_gp_fit_history
+        + bool(args.dump_outputs)
+    )
     if modes > 1:
         sys.exit(
-            "--list, --check, --rebaseline, --add-oracle and --dump-outputs"
-            " are mutually exclusive"
+            "capture/check/list/rebaseline/add/dump modes are mutually exclusive"
         )
-    if (args.exact or args.against) and not args.check:
-        sys.exit("--exact and --against only apply to --check")
+    if args.exact and not (args.check or args.check_gp_fit_history):
+        sys.exit("--exact applies only to a check mode")
+    if args.against and not args.check:
+        sys.exit("--against only applies to --check")
     if args.expect_moving and not targeted:
         sys.exit("--expect-moving only applies to --rebaseline / --add-oracle")
     if args.list:
@@ -773,6 +1048,12 @@ def main(argv=None):
             print(f"{'':28s} {r.note}")
         print("oracles:", ", ".join(ORACLES))
         return 0
+    if args.capture_gp_fit_history:
+        capture_gp_fit_history()
+        return 0
+    if args.check_gp_fit_history:
+        failures = check_gp_fit_history(exact=args.exact, verbose=args.verbose)
+        return 1 if failures else 0
     wanted = set(args.only.split(",")) if args.only else None
     if wanted:
         unknown = wanted - {r.name for r in RECIPES}
@@ -789,10 +1070,18 @@ def main(argv=None):
         failures = check(
             names, args.verbose, exact=args.exact, against=args.against
         )
+        history_failures = check_gp_fit_history(
+            exact=args.exact, verbose=args.verbose
+        )
+        failures.update(
+            {f"gp_fit_history/{k}": v for k, v in history_failures.items()}
+        )
+        history_count = len(snapshot_names(GP_HISTORY_FIXTURES))
+        total = len(names) + history_count
         print(
             f"[check{' --exact' if args.exact else ''}"
             f"{' --against ' + args.against if args.against else ''}]"
-            f" {len(names) - len(failures)} of {len(names)} fixtures ok"
+            f" {total - len(failures)} of {total} fixtures ok"
         )
         return 1 if failures else 0
     if args.dump_outputs:

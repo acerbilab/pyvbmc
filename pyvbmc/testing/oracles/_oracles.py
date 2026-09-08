@@ -60,13 +60,15 @@ Monte Carlo samples even at ``K = 1``, where the sieve would switch to the
 deterministic entropy (the ``*_detent`` outputs cover that path), and the
 ``K = 1`` snapshot is synthetic. Both are extra coverage, not behaviour.
 
-Two oracles pin the GP training side of gpyreg (added 2026-09-05 for Stage
+Three oracles pin the GP training side of gpyreg (added 2026-09-05 for Stage
 2 item 8, ``dev/plans/stage2-gpyreg-predict-and-sampler.md``): ``gp_nlZ``,
 the log marginal likelihood and the log posterior under PyVBMC's hyperprior
 with their gradients at the stored hyperparameter samples (GP-solve class),
-and ``gp_fit``, one ``train_gp`` call from the stored state under a seeded
-legacy stream, exact and platform-bound like ``active_sample_step`` (a
-slice-sampling chain turns BLAS rounding into different decisions).
+``gp_fit``, one ``train_gp`` call with its legacy no-history-width contract,
+and ``gp_fit_history``, a separate controlled fit whose deterministic ragged
+synthetic history supplies sampler widths. Both fits use a seeded legacy
+stream and are platform-bound like ``active_sample_step`` (a slice-sampling
+chain turns BLAS rounding into different decisions).
 """
 
 import contextlib
@@ -96,7 +98,7 @@ DEFAULT_SEED = 20260904
 # chain) amplifies BLAS rounding differences into different outcomes. The
 # tests skip them off ``meta["platform"]`` unless ``PYVBMC_ORACLES_ALL`` is
 # set; the generator's targeted modes refuse to rewrite them elsewhere.
-PLATFORM_BOUND = frozenset({"active_sample_step", "gp_fit"})
+PLATFORM_BOUND = frozenset({"active_sample_step", "gp_fit", "gp_fit_history"})
 
 
 def cast_outputs(out):
@@ -538,35 +540,25 @@ def gp_fit(state, seed):
     optim_state = copy.deepcopy(state["optim_state"])
     fl = copy.deepcopy(state["logger"])
     hyp_dict = copy.deepcopy(optim_state["hyp_dict"])
-    options = state["options"]
+    options = copy.deepcopy(state["options"])
+    options.__setitem__("weighted_hyp_cov", False, force=True)
+    options.__setitem__("gp_sample_widths", 0, force=True)
+    hyp_dict["run_cov"] = None
     hyp_prev = state["gp"].get_hyperparameters(as_array=True)
     n = max(int(optim_state["iter"]), 1)
-    # `train_gp` indexes the history at `iter - 1` (reliability index) and,
-    # with the default `weighted_hyp_cov`, over every past iteration (`sKL`,
-    # `gp_hyp_full`) to build sampler widths; with `init_N > 0` it also
-    # warm-starts from past GPs. The snapshot holds one iteration, so the
-    # history is a stand-in: the current reliability index, unit weights,
-    # the current hyperparameters and no past GPs (the warm start then
-    # reduces to the stored `hyp_dict["hyp"]`, `np.unique`-sorted).
+    # `train_gp` indexes the history at `iter - 1` for the reliability index
+    # and, with `init_N > 0`, warm-starts from past GPs. The snapshot holds
+    # one iteration, so the history is a stand-in: the current reliability
+    # index and no past GPs (the warm start then reduces to the stored
+    # `hyp_dict["hyp"]`, `np.unique`-sorted). History covariance and widths
+    # are disabled explicitly above: this preserves the original `gp_fit`
+    # contract independently of the production weighted estimator.
     history = {
         "r_index": np.full(n, float(state["meta"]["r_index"])),
         "sKL": np.full(n + 1, float(options["tol_skl"])),
         "gp_hyp_full": [hyp_prev] * n,
         "gp": np.array([], dtype=object),
     }
-    # The stand-in cannot influence the fit: `_get_hyp_cov`'s weighted
-    # branch builds an `(Ns, Ns)` covariance from `gp_hyp_full` (a shape
-    # slip, devlog §9), so `train_gp` discards the widths whenever `Ns !=
-    # hyp_N`, which holds in every production run and on every snapshot.
-    # Asserted, so that fixing the slip is noticed here (this oracle would
-    # then need a real history and a re-baseline).
-    widths = _get_gp_training_options(
-        optim_state, history, options, hyp_dict, hyp_prev.shape[0]
-    )["widths"]
-    assert widths is None or np.size(widths) != hyp_prev.shape[1], (
-        "train_gp would keep the sampler widths built from the stand-in"
-        " history; the gp_fit oracle assumes it drops them"
-    )
     # Every draw of the fit (the space-filling design, the slice sampler,
     # the warm-start subsample) comes from `rng` since 2026-09-05, when
     # `train_gp` started handing its generator to `gpyreg.GP.fit`; the
@@ -588,6 +580,109 @@ def gp_fit(state, seed):
         "hyp": gp.get_hyperparameters(as_array=True),
         "sn2_hpd": np.array([sn2_hpd], dtype=float),
         "gp_s_N": np.array([gp_s_N], dtype=float),
+    }
+
+
+def _gp_fit_history_inputs(state):
+    """Build the controlled synthetic history used by gp_fit_history.
+
+    The three blocks contain 2, 3 and 4 sample rows in oldest-to-newest
+    order. Each starts at the mean of the snapshot GP hyperparameters and
+    adds fixed asymmetric offsets. The two sKL gaps give decay multipliers
+    1 and 2, so the blocks carry unequal iteration weights. This is an
+    explicit controlled input, not the history of the fit in the snapshot.
+    """
+    optim_state = copy.deepcopy(state["optim_state"])
+    options = copy.deepcopy(state["options"])
+    hyp_dict = copy.deepcopy(optim_state["hyp_dict"])
+    hyp_prev = state["gp"].get_hyperparameters(as_array=True)
+    base = np.mean(hyp_prev, axis=0)
+    hyp_n = hyp_prev.shape[1]
+
+    scale = np.linspace(0.2, 1.0, hyp_n)
+    reverse = scale[::-1]
+    alternating = scale * np.where(np.arange(hyp_n) % 2 == 0, 1.0, -1.0)
+    history = {
+        "gp_hyp_full": [
+            np.vstack((base - 0.30 * scale, base + 0.10 * reverse)),
+            np.vstack(
+                (
+                    base + 0.20 * scale,
+                    base - 0.15 * reverse,
+                    base + 0.05 * alternating,
+                )
+            ),
+            np.vstack(
+                (
+                    base - 0.05 * scale,
+                    base + 0.25 * reverse,
+                    base + 0.12 * alternating,
+                    base - 0.18 * (scale + reverse),
+                )
+            ),
+        ],
+        "gp": np.array([], dtype=object),
+        "r_index": np.array([0.5, 0.75, 1.0]),
+    }
+
+    optim_state["iter"] = 3
+    optim_state["stop_sampling"] = 0
+    options.__setitem__("weighted_hyp_cov", True, force=True)
+    options.__setitem__("gp_sample_widths", 2, force=True)
+    options.__setitem__("hyp_run_weight", 0.8, force=True)
+    options.__setitem__("fun_evals_per_iter", 2, force=True)
+    options.__setitem__("tol_skl", 0.25, force=True)
+    options.__setitem__("tol_cov_weight", 0, force=True)
+    options.__setitem__("stable_gp_sampling", np.inf, force=True)
+    options.__setitem__("stable_gp_vp_k", np.inf, force=True)
+    options.__setitem__("ns_gp_max", 4 * np.sqrt(optim_state["N"]), force=True)
+    options.__setitem__("ns_gp_max_warmup", 4, force=True)
+    options.__setitem__("ns_gp_max_main", 4, force=True)
+    skl_scale = options["tol_skl"] * options["fun_evals_per_iter"]
+    history["sKL"] = skl_scale * np.array([1.0, np.exp(0.5), np.exp(2.0), 1.0])
+    return optim_state, history, options, hyp_dict
+
+
+@oracle("gp_fit_history", rtol=0.0, atol=1e-8)
+def gp_fit_history(state, seed):
+    """Fit with deterministic ragged synthetic history-derived widths.
+
+    Sampling is forced to four hyperparameter draws on every snapshot. The
+    returned ``widths`` are the proposal passed to ``gpyreg.GP.fit``;
+    gpyreg may cap them before constructing its slice sampler. The stochastic
+    fit outputs remain platform-bound.
+    """
+    optim_state, history, options, hyp_dict = _gp_fit_history_inputs(state)
+    hyp_n = state["gp"].get_hyperparameters(as_array=True).shape[1]
+    gp_train = _get_gp_training_options(
+        optim_state,
+        history,
+        options,
+        hyp_dict,
+        gp_s_N=4,
+        hyp_n=hyp_n,
+    )
+    widths = gp_train["widths"]
+    assert widths is not None and np.size(widths) == hyp_n
+
+    fl = copy.deepcopy(state["logger"])
+    with legacy_seed(seed):
+        gp, gp_s_N, sn2_hpd, _ = train_gp(
+            hyp_dict,
+            optim_state,
+            fl,
+            history,
+            options,
+            optim_state["plb_tran"],
+            optim_state["pub_tran"],
+            rng=np.random.default_rng(seed),
+        )
+    assert gp_s_N == 4
+    return {
+        "hyp": gp.get_hyperparameters(as_array=True),
+        "sn2_hpd": np.array([sn2_hpd], dtype=float),
+        "gp_s_N": np.array([gp_s_N], dtype=float),
+        "widths": np.asarray(widths, dtype=float),
     }
 
 

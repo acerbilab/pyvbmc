@@ -15,11 +15,11 @@ present and float64 on every rebuilt state (the dtype canary,
 baseline), regenerate the fixtures with the generator; never loosen a
 tolerance to make a refactor pass. The ``active_sample_step`` oracle needs
 the benchmark targets in ``dev/scripts`` (a repository checkout). It and
-``gp_fit`` run only on the platform that generated the fixture (a CMA-ES
-search or a slice-sampling chain turns BLAS rounding differences into
-different decisions; set ``PYVBMC_ORACLES_ALL=1`` to force them
-elsewhere); the ``entmc`` and ``neg_elcbo`` oracles depend on the order of
-the Monte Carlo draws and are re-baselined deliberately when that order
+``gp_fit`` and ``gp_fit_history`` run only on the platform that generated
+the fixture (a CMA-ES search or a slice-sampling chain turns BLAS rounding
+differences into different decisions; set ``PYVBMC_ORACLES_ALL=1`` to force
+them elsewhere); the ``entmc`` and ``neg_elcbo`` oracles depend on the order
+of the Monte Carlo draws and are re-baselined deliberately when that order
 changes (see the plan in ``dev/plans/``).
 """
 
@@ -39,6 +39,7 @@ from pyvbmc.testing import (
 from pyvbmc.testing.oracles._oracles import (
     ORACLES,
     PLATFORM_BOUND,
+    _gp_fit_history_inputs,
     applicable,
     cast_outputs,
     compare,
@@ -48,6 +49,10 @@ from pyvbmc.testing.oracles._state import (
     build_state,
     load_snapshot,
     snapshot_names,
+)
+from pyvbmc.vbmc.gaussian_process_train import (
+    _get_gp_training_options,
+    _get_hyp_cov,
 )
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -133,6 +138,50 @@ def test_fixture_complete(snapshots):
         needed = set(applicable(build_state(snap)))
         missing = needed - set(snap["ref"])
         assert not missing, f"{name}: no reference for {sorted(missing)}"
+
+
+def test_gp_fit_history_construction(snapshots):
+    """The controlled history has the documented ragged covariance."""
+    state = build_state(snapshots["normal_D2_warmup"])
+    optim_state, history, options, hyp_dict = _gp_fit_history_inputs(state)
+    blocks = history["gp_hyp_full"]
+    assert [block.shape[0] for block in blocks] == [2, 3, 4]
+
+    q = options["hyp_run_weight"]
+    n = options["fun_evals_per_iter"]
+    iteration_weights = np.array([q ** (3 * n), q ** (2 * n), 1.0])
+    row_weights = np.concatenate(
+        [
+            np.full(block.shape[0], weight / block.shape[0])
+            for block, weight in zip(blocks, iteration_weights)
+        ]
+    )
+    samples = np.concatenate(blocks, axis=0)
+    expected = np.cov(samples, rowvar=False, aweights=row_weights, ddof=1)
+    hyp_n = samples.shape[1]
+
+    actual = _get_hyp_cov(
+        optim_state,
+        history,
+        options,
+        hyp_dict,
+        hyp_n=hyp_n,
+    )
+
+    np.testing.assert_allclose(actual, expected, rtol=1e-14, atol=1e-14)
+    np.testing.assert_allclose(actual, actual.T, rtol=0, atol=1e-15)
+    gp_train = _get_gp_training_options(
+        optim_state,
+        history,
+        options,
+        hyp_dict,
+        gp_s_N=4,
+        hyp_n=hyp_n,
+    )
+    expected_widths = np.sqrt(np.diag(expected)) * 2
+    np.testing.assert_allclose(
+        gp_train["widths"], expected_widths, rtol=1e-14, atol=1e-14
+    )
 
 
 def test_rebuilt_state_arrays_are_float64(snapshots):

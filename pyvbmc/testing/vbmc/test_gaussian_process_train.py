@@ -3,6 +3,7 @@ import numpy as np
 import pytest
 from scipy.stats import norm
 
+import pyvbmc.vbmc.gaussian_process_train as gp_train_module
 from pyvbmc import VBMC
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc.gaussian_process_train import (
@@ -189,38 +190,216 @@ def test_cov_identifier_to_covariance_function():
         c7 = _cov_identifier_to_covariance_function(2)
 
 
+def _weighted_hyp_cov_inputs():
+    """Asymmetric ragged history with one incompatible middle block."""
+    history = {
+        "gp_hyp_full": [
+            np.array([[0.0, 0.0]]),
+            np.array([[1.0, 3.0], [4.0, 2.0], [2.0, 5.0]]),
+            np.array([[7.0, 8.0, 9.0]]),
+            np.array([[10.0, 1.0], [12.0, 4.0]]),
+        ],
+        # For iter=4 the decay reads entries 3, 2, 1 in that order.
+        # With tol_skl * fun_evals_per_iter = 1, these give decay
+        # multipliers 2, 1 and 1.5.
+        "sKL": np.array([1.0, np.exp(1.5), np.exp(0.2), np.exp(2), 1.0]),
+        "r_index": np.ones(4),
+    }
+    options = {
+        "weighted_hyp_cov": True,
+        "hyp_run_weight": 0.5,
+        "fun_evals_per_iter": 2,
+        "tol_skl": 0.5,
+        "tol_cov_weight": 0.0,
+    }
+    return {"iter": 4}, history, options, {"hyp": np.zeros(2)}
+
+
 def test_get_hyp_cov():
-    D = 3
-    lb = np.ones((1, D)) * 1
-    ub = np.ones((1, D)) * 5
-    x0 = np.ones((2, D)) * 3
-    plb = np.ones((1, D)) * 2
-    pub = np.ones((1, D)) * 4
+    optim_state, history, options, hyp_dict = _weighted_hyp_cov_inputs()
+    expected = np.array(
+        [
+            [4.580701754385967, 2.717885869909433],
+            [2.717885869909433, 4.36639432516309],
+        ]
+    )
+
+    result = _get_hyp_cov(optim_state, history, options, hyp_dict)
+
+    np.testing.assert_allclose(result, expected, rtol=1e-14, atol=1e-14)
+    np.testing.assert_allclose(result, result.T, rtol=0, atol=1e-15)
+    assert result.shape == (2, 2)
+    sampled_hyp_dict = {"hyp": np.zeros((3, 2))}
+    np.testing.assert_allclose(
+        _get_hyp_cov(optim_state, history, options, sampled_hyp_dict),
+        expected,
+        rtol=1e-14,
+        atol=1e-14,
+    )
+
+    # The current GP model count is authoritative when the summary holds a
+    # stale hyperparameter vector from a differently shaped model.
+    stale_hyp_dict = {"hyp": np.zeros(3)}
+    result_from_model_count = _get_hyp_cov(
+        optim_state, history, options, stale_hyp_dict, hyp_n=2
+    )
+    np.testing.assert_allclose(
+        result_from_model_count, expected, rtol=1e-14, atol=1e-14
+    )
+    assert _get_hyp_cov(optim_state, history, options, stale_hyp_dict) is None
+
+
+def test_get_hyp_cov_cutoff_and_degenerate_history():
+    optim_state, history, options, hyp_dict = _weighted_hyp_cov_inputs()
+    options["tol_cov_weight"] = 0.02
+    expected_newest = np.array([[2.0, 3.0], [3.0, 4.5]])
+    result = _get_hyp_cov(optim_state, history, options, hyp_dict)
+    np.testing.assert_allclose(result, expected_newest, rtol=0, atol=0)
+
+    one_sample_history = {
+        "gp_hyp_full": [np.array([[1.0, 2.0]])],
+        "sKL": np.ones(2),
+    }
+    assert (
+        _get_hyp_cov(
+            {"iter": 1}, one_sample_history, options, hyp_dict, hyp_n=2
+        )
+        is None
+    )
+    assert (
+        _get_hyp_cov(
+            {"iter": 1}, one_sample_history, options, hyp_dict, hyp_n=3
+        )
+        is None
+    )
+
+    newer_incompatible = {
+        "gp_hyp_full": [
+            np.array([[1.0, 2.0], [3.0, 5.0]]),
+            np.array([[7.0, 8.0, 9.0]]),
+        ],
+        "sKL": np.ones(3),
+    }
+    compatible_result = _get_hyp_cov(
+        {"iter": 2}, newer_incompatible, options, hyp_dict, hyp_n=2
+    )
+    np.testing.assert_allclose(
+        compatible_result, np.array([[2.0, 3.0], [3.0, 4.5]])
+    )
+
+    empty_history = {"gp_hyp_full": [], "sKL": np.ones(2)}
+    assert (
+        _get_hyp_cov({"iter": 1}, empty_history, options, hyp_dict, hyp_n=2)
+        is None
+    )
+    malformed_hyp_dict = {"hyp": np.zeros((2, 2, 1))}
+    assert (
+        _get_hyp_cov(
+            {"iter": 1}, one_sample_history, options, malformed_hyp_dict
+        )
+        is None
+    )
+
+    options["weighted_hyp_cov"] = False
+    hyp_dict["run_cov"] = 42
+    assert _get_hyp_cov({"iter": 1}, history, options, hyp_dict) == 42
+    assert _get_hyp_cov({"iter": 0}, history, options, hyp_dict) is None
+
+
+def test_weighted_hyp_cov_delivers_sampler_widths():
+    D = 2
     f = lambda x: np.sum(x + 2)
-    vbmc = VBMC(f, x0, lb, ub, plb, pub)
-    hyp_dict = {"run_cov": 42}
+    vbmc = VBMC(
+        f,
+        np.full((2, D), 3.0),
+        np.full((1, D), 1.0),
+        np.full((1, D), 5.0),
+        np.full((1, D), 2.0),
+        np.full((1, D), 4.0),
+    )
+    optim_state, history, settings, hyp_dict = _weighted_hyp_cov_inputs()
+    vbmc.optim_state["iter"] = optim_state["iter"]
+    vbmc.optim_state["n_eff"] = 10
+    for key, value in settings.items():
+        vbmc.options.__setitem__(key, value, force=True)
 
-    res1 = _get_hyp_cov(
-        vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict
+    gp_train = _get_gp_training_options(
+        vbmc.optim_state,
+        history,
+        vbmc.options,
+        hyp_dict,
+        gp_s_N=3,
+        hyp_n=2,
     )
 
-    assert res1 is None
-
-    vbmc.optim_state["iter"] = 1
-    vbmc.options.__setitem__("weighted_hyp_cov", False, force=True)
-    res2 = _get_hyp_cov(
-        vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict
+    expected_cov = np.array(
+        [
+            [4.580701754385967, 2.717885869909433],
+            [2.717885869909433, 4.36639432516309],
+        ]
+    )
+    expected_widths = np.sqrt(np.diag(expected_cov)) * 5
+    np.testing.assert_allclose(
+        gp_train["widths"], expected_widths, rtol=1e-14, atol=1e-14
     )
 
-    assert res2 == 42
 
-    # TODO: figure out some sort of a set-up for testing this.
-    #       currently I don't have reference values
-    #       maybe something like checking whether the returned thing is
-    #       a covariance matrix?
-    # vbmc.options.__setitem__("weighted_hyp_cov", True, force=True)
-    # res3 = _get_hyp_cov(vbmc.optim_state, vbmc.iteration_history,
-    #                       vbmc.options, hyp_dict)
+def test_train_gp_passes_current_hyp_count(monkeypatch):
+    D = 2
+    vbmc = VBMC(
+        lambda x: np.sum(x, axis=1),
+        np.zeros((1, D)),
+        None,
+        None,
+        -np.ones((1, D)),
+        np.ones((1, D)),
+    )
+    x_train = np.array([[-1.0, -0.5], [0.0, 0.5], [1.0, 0.25]])
+    y_train = np.sum(x_train, axis=1, keepdims=True)
+    monkeypatch.setattr(
+        gp_train_module,
+        "_get_training_data",
+        lambda logger: (x_train, y_train, None, np.zeros((3, 1))),
+    )
+
+    captured = {}
+
+    def fake_training_options(
+        optim_state,
+        iteration_history,
+        options,
+        hyp_dict,
+        gp_s_N,
+        hyp_n=None,
+    ):
+        captured["hyp_n"] = hyp_n
+        return {"widths": None, "init_N": 0, "sampler": "slicesample"}
+
+    def fake_fit(gp, x, y, s2, hyp0=None, options=None, rng=None):
+        return np.zeros(np.size(gp.hyper_priors["mu"])), None, None
+
+    monkeypatch.setattr(
+        gp_train_module, "_get_gp_training_options", fake_training_options
+    )
+    monkeypatch.setattr(gpr.GP, "fit", fake_fit)
+    monkeypatch.setattr(gp_train_module, "_estimate_noise", lambda gp: 0.0)
+    vbmc.optim_state["N"] = 3
+    vbmc.optim_state["n_eff"] = 3
+    stale_hyp_dict = {"hyp": np.zeros(99)}
+
+    gp, _, _, _ = train_gp(
+        stale_hyp_dict,
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.iteration_history,
+        vbmc.options,
+        vbmc.plausible_lower_bounds,
+        vbmc.plausible_upper_bounds,
+        rng=np.random.default_rng(1),
+    )
+
+    assert captured["hyp_n"] == np.size(gp.hyper_priors["mu"])
+    assert captured["hyp_n"] != 99
 
 
 def test_get_gp_training_options_samplers():

@@ -36,6 +36,10 @@ For the release overview, start with
   Human-readable release outline: benefits, scope, validation, and the path
   to 1.5. A dated overview of the agreed direction, not an execution checklist.
 
+- [2026-09-08-main-loop-fixes.md](2026-09-08-main-loop-fixes.md) —
+  Main-loop covariance, acquisition and GP-sampling repairs, their separate
+  numerical gates, and the parked final-boost experiment's restart pointer.
+
 `TODO.md` is a scratch reminder of the ongoing work and the current pickup
 point, rewritten at each handoff. It is not a record: the roadmap and the
 plans are.
@@ -225,6 +229,27 @@ reason.
   `.npz` trace and a JSON sidecar per run; `summary` a population; `compare`
   two populations with KS tests under a Holm family correction (`--split`
   for a null check). Populations live under `scripts/runs/golden/`.
+- `scripts/boost_comparison.py` (parked at `764a177` on `dev-final-boost`) — reads stored pre/final boost scores and
+  compares tolerances 0.1/0.2 without optimization. Optional
+  `--metrics-tags selected` reconstructs paired accuracy diagnostics for
+  rejected/near-threshold candidates and the new noisy configurations.
+- `scripts/boost_replay.py` (parked at `764a177` on `dev-final-boost`) — runs Phase 2's seven specified trajectories,
+  with explicit `--out`, one worker and one BLAS thread. Each trajectory
+  generates one unpenalized boost candidate; both tolerances are evaluated
+  on it. Authentic restart state and raw candidates are retained under
+  `captures/`. Results and limitations are in the
+  [Phase 2 evidence note](2026-09-07-final-boost-comparison.md).
+- `scripts/boost_reconstruction.py` (parked at `764a177` on `dev-final-boost`) — rebuilds boost inputs from compact
+  traces and compares them with authentic restart captures. Optional
+  `--population-numerics` checks all stored pre-boost SDs; `--replay TAG...`
+  compares authentic/reconstructed boosts with a common RNG. These are
+  reconstruction checks, not a penalty-on/off campaign. See the
+  [reconstruction findings](2026-09-08-boost-reconstruction.md).
+- `scripts/boost_penalty_pilot.py` (parked at `764a177` on `dev-final-boost`) — times three fixed seed-0 pairs with
+  weight penalty 0.1 versus zero, starting from identical reconstructed
+  states and fresh RNGs. Requires `--out`; retains full paired captures and
+  separate optimization/diagnostic/save timings. See the
+  [pilot results](2026-09-08-boost-penalty-pilot.md).
 - `scripts/golden_replay.py` — the per-change trajectory gate of Stage 2:
   replays a few golden configurations in-process with the current code
   (about 7 minutes for the default set) and compares each run with its

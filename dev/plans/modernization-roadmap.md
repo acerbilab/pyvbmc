@@ -614,7 +614,14 @@ anything that changes numerics lands.
    1,043 tests with 49 skipped. The exact oracles and five-case replay retained
    their reference outputs. Q1 and Q4 remain open, and the boost and other
    trajectory-moving groups have not been selected by this result. The
-   validation sequence remains neutral fixes, boost, then other moving groups.
+   original validation sequence was neutral fixes, boost, then other moving
+   groups. PI update (2026-09-08): park the boost experiment at `764a177`
+   on `dev-final-boost` and proceed independently with weighted GP covariance,
+   acquisition regularization and GP sampling termination on
+   `dev-main-loop-fixes`. The boost restart instructions are in
+   [the pilot note](../2026-09-08-boost-penalty-pilot.md#parked-experiment-restart).
+   Each moving group still receives its own numerical gate; no boost batch
+   is scheduled, and final Q1/Q4 choices remain evidence-dependent.
    The PI originally approved extending the reference itself by 150 runs: add
    rosenbrock_D2_noise3, student_D8_noise3 and lumpy_D10_noise3, each at seeds
    0–49, to the standard benchmark set. That proposal would have produced
