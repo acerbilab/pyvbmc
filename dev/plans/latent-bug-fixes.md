@@ -1,5 +1,19 @@
 # Plan: PyVBMC 1.5 latent bug fixes
 
+**Full-matrix pickup (2026-09-08):** PI authorized the full supported
+OS/Python matrix on integrated `dev-next`.
+
+- [x] Run [CI 34251746916](https://github.com/acerbilab/pyvbmc/actions/runs/34251746916)
+  on `c05145d`: Ubuntu, Windows and macOS × Python 3.10, 3.11 and 3.12,
+  using the existing pinned gpyreg dependency. No concurrent local numerical
+  work or final population launch.
+- [!] Full-matrix gate failed: macOS/Python 3.11 fails the
+  `corr_D5_warped/acq_AcqFcn` oracle (max absolute discrepancy 1.38e-14,
+  scaled 1.49e-3 against rtol 1e-3, atol 0). Five reruns reproduce it.
+  The other eight jobs were cancelled by matrix fail-fast, so none is a
+  passing matrix result. Investigate platform conditioning before choosing
+  a remedy; do not loosen tolerances or rebaseline solely to obtain a pass.
+
 **Integration pickup (2026-09-08):** PI approved merging the completed
 latent-fix branch into `dev-next` after feature-branch CI passed.
 

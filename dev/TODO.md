@@ -1,4 +1,28 @@
 Pickup (2026-09-08): resume dev/plans/latent-bug-fixes.md with $task.
+
+Remaining-work map (2026-09-08; roadmap is authoritative):
+- Current gate: diagnose the macOS acquisition-oracle failure in full-matrix
+  run 34251746916; its eight other jobs were cancelled, not passed.
+- Release work: S-VBMC compatibility/integration and connections to upcoming
+  extensions; PyTorch CPU/GPU float64 feasibility, then the explicit port
+  decision and resulting dependency/Python-floor/NumPy-transition work.
+- User-facing agent skill: skills/pyvbmc/SKILL.md with FAQ/reference material,
+  helpers and packaging/installation design, once the API settles.
+- Proposed improvement, release placement open: machine-local calibration
+  of kernel chunk sizes, caching and explicit recalibration (roadmap 12).
+- Final validation/release: freeze the final candidate, run the 870-case
+  population with retained boost candidates and compare accuracy/usability;
+  complete supported-matrix gates, final docs/release records, one PR to main,
+  and publish identifiable reference NPZ archives as release assets.
+  Release notes must explain changed RNG streams and compact-history save
+  compatibility. A lab-server backup of the local reference traces was
+  suggested as optional insurance; it is not recorded as completed.
+- Deferred research: variational stopping rules; per-component lambda;
+  gradient acquisition optimization; parallel target acquisition; multi-chain
+  GP sampling; larger-N inference; log-space mixture sums; diagonal log-joint
+  variance/gradient (compute_var == 2); noise shaping. gpyreg #44 is separate
+  deferred maintenance. These are not current release prerequisites.
+
 CI follow-up: e2639a1 was pushed, but run 34240597505 collected historical
 eta-experiment tests against changed production code. Package test discovery
 is corrected, with the historical source guard intact. Full local suite:
@@ -14,6 +38,11 @@ The final 870-run population follows the remaining S-VBMC compatibility/
 integration work and the agreed PyTorch feasibility decision and resulting
 release work; do not launch it prematurely. Next bounded validation is the
 full supported OS/Python matrix; the next broader workstream is S-VBMC.
+Also retain the user-facing coding-agent skill in the remaining work:
+dev/2026-09-02-user-agent-skill.md proposes skills/pyvbmc/SKILL.md, supporting
+references/helpers and distribution with the library. Prepare the guidance
+after the 1.5 user-facing API settles; FAQ/reference drafting can start
+earlier. See the remaining-work map above.
 PI-selected A is implemented on dev-eta-bound-fix: no eta-bound penalty or
 caller-theta mutation. Other regularizers and optimizer settings remain.
 64 focused tests pass; all 11 numerical fixtures exact. Six paired replays
