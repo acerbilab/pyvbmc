@@ -14,7 +14,12 @@ guards intact.
   35 skipped, no reruns, 320.64 s. A workspace-local basetemp avoids the
   sandbox's default temporary-directory permission error. Independent Sol
   review passes; the production source and historical guard are unchanged.
-- [~] Commit, push and confirm CI on the repair.
+- [x] Commit, push and confirm CI on the repair.
+  Repair `96a8e3a` pushed to `dev-eta-bound-fix`;
+  [CI 34246862361](https://github.com/acerbilab/pyvbmc/actions/runs/34246862361)
+  passed on Ubuntu/Python 3.12: 1,122 passed, 60 skipped, no reruns,
+  574.40 s. Next integration step: merge into `dev-next`, push and check
+  its CI before the separate Phase7 gpyreg repair.
 
 **Completed pickup (2026-09-08): PI selected production treatment A.**
 Remove eta-bound loss and gradient and avoid caller-theta mutation in

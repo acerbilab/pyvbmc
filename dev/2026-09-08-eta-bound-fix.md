@@ -148,5 +148,8 @@ The first local full-suite attempt reached 602 passed and 35 skipped before
 a sandbox permission error creating pytest's temporary directory. The retry
 uses a fresh workspace-local temporary directory and passes: **1,049 passed,
 35 skipped, no reruns, 320.64 s**, using bare pytest with CI's rerun/stop
-flags and one BLAS thread. Independent Sol review passed. Replacement CI
-results follow in the task tracker.
+flags and one BLAS thread. Independent Sol review passed. Repair `96a8e3a`
+was pushed and [replacement CI](https://github.com/acerbilab/pyvbmc/actions/runs/34246862361)
+passed on Ubuntu/Python 3.12: **1,122 passed, 60 skipped, no reruns,
+574.40 s** (whole job 10m41s). The noisy half-normal end-to-end test passed.
+Next integration step is merging into `dev-next` and checking its CI.
