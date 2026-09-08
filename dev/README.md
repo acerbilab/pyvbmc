@@ -44,6 +44,10 @@ For the release overview, start with
   Approved bounded comparison of three main-loop eta-bound treatments,
   shared saved inputs, mathematical checks and paired local-fit evidence.
 
+- [2026-09-08-boost-campaign.md](2026-09-08-boost-campaign.md) -
+  Resumed 870-endpoint paired boost campaign, isolated code, retained evidence
+  and launch/progress details.
+
 `TODO.md` is a scratch reminder of the ongoing work and the current pickup
 point, rewritten at each handoff. It is not a record: the roadmap and the
 plans are.

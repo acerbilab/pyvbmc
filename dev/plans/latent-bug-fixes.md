@@ -1,5 +1,35 @@
 # Plan: PyVBMC 1.5 latent bug fixes
 
+**Active pickup (2026-09-08): full paired boost campaign authorized.**
+Resume the parked experiment on isolated `dev-boost-campaign` from `764a177`.
+Redo both penalty settings (0.1 and 0) for all 870 stored endpoints, with
+identical paired states/RNGs, pruning and acceptance guard disabled. Use
+authentic captures where available and otherwise the approved reconstruction.
+Retain raw candidates plus independent common-GP pre/candidate scores so
+acceptance rules remain an offline decision. One sequential worker only;
+no main-loop reruns, reference changes, or production default selection.
+
+- [x] Sol extends the existing pilot into a resumable population runner;
+  root verifies isolated imports, 870 eligible traces and nine authentic inputs.
+- [x] Independent review, source/import gates and repository hooks pass.
+  Two campaign pairs/four boosts pass (12.48 s); resume skips both. Injected
+  diagnostic failure recovers saved candidates with zero new optimizer fits.
+- [x] Start detached single worker; record command, PID, logs and progress.
+  Launched 08:38:54 UTC, runner `8c7919f`, worker PID 14272 (launcher 31008).
+  See [campaign note](../2026-09-08-boost-campaign.md) for exact resume details.
+  Initial health check at 08:41:11 UTC: worker alive, 19 complete pairs
+  including the two smoke pairs, zero errors. Campaign remains running.
+- [ ] On completion, validate all pairs and analyze penalty/acceptance outcomes.
+
+Implementation contract: reuse `boost_penalty_pilot.py` and
+`boost_reconstruction.py`, take explicit source/artifact paths, preserve each
+completed pair atomically and skip verified completions on resume. Record
+actual options and independent RNGs; score pre and both candidates on their
+shared GP with a separate diagnostic stream. Extend only the campaign runner;
+leave the pinned numerical source and original reference untouched. Three-case
+pilot pairs are historical timing evidence; new scoring protocol requires
+fresh campaign pairs. Final treatment and threshold require PI discussion.
+
 **Completed pickup (2026-09-08): bounded Phase 6 experiment.**
 Run on `dev-eta-bound-comparison` from validated main-loop tip `03650a2`.
 Scope: mathematical checks, one timed three-arm pilot, then at most eight

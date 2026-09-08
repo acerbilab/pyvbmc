@@ -1,4 +1,12 @@
 Pickup (2026-09-08): resume dev/plans/latent-bug-fixes.md with $task.
+Active: full 870-endpoint paired boost campaign RUNNING since 08:38:54 UTC.
+Isolated dev-boost-campaign runner `8c7919f`, numerical base `764a177`.
+Worker PID 14272 (launcher 31008). Two smoke pairs, source/import checks,
+independent review and no-new-fit resume/recovery tests passed. Paired
+penalties 0.1/0, pruning/guard disabled, common-GP pre/candidate rescoring,
+retained VPs. See dev/2026-09-08-boost-campaign.md for execution and evidence.
+Historical parked status below is superseded by this explicit restart.
+
 Completed: Phase 6 bounded local eta-bound experiment on dev-eta-bound-comparison,
 based on 03650a2. Approved mathematical checks, a timed three-arm pilot,
 then at most 72 local fits (8 saved states x 3 treatments x 3 paired RNGs).

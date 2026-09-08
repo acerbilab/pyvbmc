@@ -1,5 +1,9 @@
 # Paired boost timing pilot
 
+Update 2026-09-08: the PI has now authorized the full paired campaign.
+Current execution is recorded in [the campaign note](2026-09-08-boost-campaign.md).
+The parked instructions below preserve the original restart contract.
+
 ## Parked experiment restart
 
 **PI direction, 2026-09-08: defer the full boost experiment; proceed with
