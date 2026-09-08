@@ -51,7 +51,10 @@ OS/Python matrix on integrated `dev-next`.
   [34263042113](https://github.com/acerbilab/pyvbmc/actions/runs/34263042113)
   passed all nine jobs on `24cf369`, confirming both corrections across the
   full Ubuntu/Windows/macOS and Python 3.10/3.11/3.12 matrix.
-- [~] Integrate the validated fixes and evidence into `dev-next` and push.
+- [x] Fast-forward `dev-next` from `131b4c0` to `41055c6` and push. Only
+  development records differ from the full-matrix-tested commit `24cf369`.
+  The automatic integration smoke is additional validation of this same
+  tested code; its status is separate from the completed nine-job gate.
 
 **Integration pickup (2026-09-08):** PI approved merging the completed
 latent-fix branch into `dev-next` after feature-branch CI passed.
