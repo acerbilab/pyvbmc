@@ -48,6 +48,10 @@ For the release overview, start with
   Resumed 870-endpoint paired boost campaign, isolated code, retained evidence
   and launch/progress details.
 
+- [2026-09-08-boost-analysis.md](2026-09-08-boost-analysis.md) -
+  Paired penalty effects, golden comparison, offline acceptance tradeoffs,
+  every rejected case and diagnostic Monte Carlo sensitivity across 870 pairs.
+
 `TODO.md` is a scratch reminder of the ongoing work and the current pickup
 point, rewritten at each handoff. It is not a record: the roadmap and the
 plans are.

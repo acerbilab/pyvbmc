@@ -1,0 +1,24 @@
+{
+  "checked_utc": "2026-09-08T10:43:07.075969+00:00",
+  "config_sha256": "5ce46aba0e6123a9b9bc9d367fbbf7231348c8a97168f6f3a9ed8a00b7f30e20",
+  "validated_pairs": 870,
+  "validated_optimizer_calls": 1740,
+  "capture_bytes_rehashed": 1627534889,
+  "checks": [
+    "all source and input hashes",
+    "all capture hashes independently rehashed",
+    "recomputed paired numeric entry hashes from saved full pre-state",
+    "two distinct candidate RNGs and matching common entry states",
+    "one optimizer call per arm with exact options",
+    "finite normalized K50 raw and returned candidates",
+    "diagnostic raw/report score equality and antithetic draw accounting"
+  ],
+  "elapsed_seconds": 5.599229600047693,
+  "raw_evidence": "dev/scripts/runs/latent_fixes/boost_campaign_20260908/analysis/capture_validation.json",
+  "analysis_sanity_checks": [
+    "Holm step-down known p-value example",
+    "constant paired bootstrap interval collapses to exact constant",
+    "strict rejection at equality and acceptance one float above threshold"
+  ],
+  "independent_review": "Sol independently recomputed all paired deltas, 57 summaries and bootstrap intervals, equal-config intervals, Holm set, and rejection rows; no discrepancies."
+}

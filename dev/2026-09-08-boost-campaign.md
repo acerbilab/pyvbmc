@@ -1,6 +1,7 @@
 # Paired final-boost campaign
 
-Status: computation complete, 2026-09-08 at 10:11:53 UTC; analysis pending.
+Status: computation complete, 2026-09-08 at 10:11:53 UTC;
+[paired analysis](2026-09-08-boost-analysis.md) now available.
 This resumes the [parked experiment](2026-09-08-boost-penalty-pilot.md),
 after the bounded eta-bound comparison completed. The
 [live plan](plans/latent-bug-fixes.md) owns execution tracking.
@@ -21,8 +22,8 @@ diagnostic ELBO/SD/ELCBO values. The runner verified all capture hashes at
 completion; this lightweight status audit did not independently rehash the
 large dill files. Evidence: `summary.json` and `completion_status_check.json`.
 
-Scientific paired-effect analysis and acceptance-rule comparisons remain
-pending. Successful computation does not select a penalty or threshold.
+Scientific paired-effect analysis and acceptance-rule comparisons are in
+the linked analysis report. They do not select a penalty or threshold.
 The following launch record is retained for provenance and possible resume.
 
 ## Protocol and scope
@@ -152,8 +153,7 @@ $env:MPLBACKEND = 'Agg'
 .venv/Scripts/python.exe -u dev/scripts/runs/latent_fixes/boost_campaign_worktree/dev/scripts/boost_penalty_campaign.py --reference dev/scripts/runs/golden/reference_870_20260907 --capture-root dev/scripts/runs/latent_fixes/boost_20260907 --out dev/scripts/runs/latent_fixes/boost_campaign_20260908
 ```
 
-On completion, require 870 verified complete pairs (1,740 optimizer calls),
-inspect any errors, and compare paired penalty effects by configuration.
-Historical golden outcomes remain separate context. Acceptance-rule analysis,
-production penalty choice and the eta-bound follow-up remain future work;
-starting this campaign makes none of those decisions.
+The subsequent full capture audit and paired analysis are complete; see the
+linked report. Historical golden outcomes remain separate context. Production
+penalty choice and the eta-bound follow-up remain future work; this campaign
+makes none of those decisions.

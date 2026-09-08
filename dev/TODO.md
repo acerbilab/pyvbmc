@@ -1,5 +1,12 @@
 Pickup (2026-09-08): resume dev/plans/latent-bug-fixes.md with $task.
-Active: full 870-endpoint paired boost computation COMPLETE; analysis pending.
+Completed pickup: paired boost analysis on dev-boost-analysis; statistical
+and scientific independent review passed. See dev/2026-09-08-boost-analysis.md and
+dev/experiments/boost_campaign_20260908/ for full effects, all rejected cases,
+golden comparison and scoring sensitivity. The penalty has mostly tiny
+directional effects plus large tail exceptions; guard choice changes the
+returned comparison. Production penalty and threshold remain undecided.
+
+Completed: full 870-endpoint paired boost computation and analysis.
 Finished 10:11:53 UTC (13:11:53 local), 870 pairs / 1,740 arms, zero errors;
 worker invocation 1h32m57s. Worker/launcher exited and lock removed. Report
 audit confirms actual options, 861 reconstructed/9 authentic inputs and finite

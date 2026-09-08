@@ -1,6 +1,32 @@
 # Plan: PyVBMC 1.5 latent bug fixes
 
-**Active pickup (2026-09-08): paired boost computation complete; analysis pending.**
+**Completed pickup (2026-09-08): paired boost computation and analysis.**
+PI now authorizes analysis, on fresh `dev-boost-analysis`. Use all 870 paired
+results and the untouched golden sidecars. Root owns scientific interpretation
+and numerical work; Sol implements the offline summarizer and independent review.
+
+- [x] Prepare per-endpoint tables and paired, per-configuration penalty-effect
+  summaries, with effect sizes, paired uncertainty and multiplicity-aware tests.
+  Compare golden outcomes separately because reconstruction/fresh RNG differ.
+- [x] Root independently rehashed and loaded all 870 captures (1.63 GB),
+  verified all input/source hashes, recomputed paired entry hashes from full
+  pre-state, checked distinct RNGs, 1,740 actual optimizer calls/options and
+  raw/report score equality. All checks pass in 5.60 s.
+- [x] Evaluate offline acceptance rules using shared-GP pre/candidate scores;
+  retain all rejected cases and their with/without-boost quality metrics.
+  Additional diagnostic-only check: 12 stored cases, 10 fresh scoring RNGs
+  each (360 VP scores), 62.13 s, zero new boosts. Original results unchanged;
+  near-threshold MC sensitivity and stable large counterexamples retained.
+- [x] Record conclusions, limitations and PI decisions still needed; review
+  scientific claims independently and commit the analysis artifacts.
+  [Analysis report](../2026-09-08-boost-analysis.md): 11/57 Holm-adjusted
+  directional tests detect mostly tiny changes (10 favor OFF, one favors ON).
+  Large raw candidate exceptions favor the penalty; joint guards change the
+  returned comparison. Raw usability is 828 ON / 827 OFF; joint 0.1 or 0.2
+  yields 828 for either. No neutral-removal claim or default choice is made.
+  Independent statistical and scientific review passed; analysis artifacts
+  are committed on `dev-boost-analysis`. Q1/Q4 policy decisions remain open.
+
 Resume the parked experiment on isolated `dev-boost-campaign` from `764a177`.
 Redo both penalty settings (0.1 and 0) for all 870 stored endpoints, with
 identical paired states/RNGs, pruning and acceptance guard disabled. Use
@@ -23,7 +49,7 @@ no main-loop reruns, reference changes, or production default selection.
   1h32m57s worker invocation. Runner verified all capture hashes. Status audit
   checks manifest identities, actual options and finite scores in all reports.
   Worker/launcher exited; no lock or partial generated pair remains.
-- [ ] Independently validate completed evidence and analyze paired penalty
+- [x] Independently validate completed evidence and analyze paired penalty
   effects and acceptance outcomes; final penalty/threshold remain undecided.
 
 Implementation contract: reuse `boost_penalty_pilot.py` and
