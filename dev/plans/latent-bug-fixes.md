@@ -33,7 +33,19 @@ OS/Python matrix on integrated `dev-next`.
   all 32 comparisons exact locally. The final strengthened comparison tests
   pass separately (9 tests). Independent Sol static review has no findings;
   formatting hooks pass. No production or reference changes.
-- [ ] Confirm all nine corrected jobs green, integrate into `dev-next` and push.
+- [~] Confirm all nine corrected jobs green, integrate into `dev-next` and push.
+  Correction `fe7b304` is pushed; full matrix
+  [34261973325](https://github.com/acerbilab/pyvbmc/actions/runs/34261973325)
+  is running. No concurrent local numerical work.
+- [x] Correct a separate Python 3.10 mock-target failure exposed after the
+  oracle gate passes: `test_active_sample_rollback_preserves_live_transformer`
+  resolves the exported `active_sample` function instead of its module.
+  Patch explicit module objects, preserving the test's rollback assertions.
+  The current matrix's Python 3.10 jobs fail here; macOS/Python 3.12 passes.
+  Explicit `importlib.import_module` plus four `patch.object` calls preserve
+  the test behavior. Independent Sol static review passes; the single light,
+  mocked regression passes locally (1.22 s). Python 3.10 validation will use
+  CI; only Python 3.12 is installed locally. No local heavy computation.
 
 **Integration pickup (2026-09-08):** PI approved merging the completed
 latent-fix branch into `dev-next` after feature-branch CI passed.

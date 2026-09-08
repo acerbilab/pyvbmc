@@ -4,7 +4,10 @@ Remaining-work map (2026-09-08; roadmap is authoritative):
 - Current gate: validate the reference-conditioned acquisition oracle fix.
   Diagnostic matrix 34259734758 reproduced the roundoff amplification on
   eight stacks; Windows/Python 3.12 passed. See
-  dev/2026-09-08-acquisition-oracle-conditioning.md. Corrected matrix pending.
+  dev/2026-09-08-acquisition-oracle-conditioning.md. Corrected matrix
+  34261973325 passes the oracle gate, exposes a separate Python 3.10 mock
+  target ambiguity; its test-only correction is reviewed and locally checked.
+  Final full-matrix confirmation remains pending.
 - Release work: S-VBMC compatibility/integration and connections to upcoming
   extensions; PyTorch CPU/GPU float64 feasibility, then the explicit port
   decision and resulting dependency/Python-floor/NumPy-transition work.

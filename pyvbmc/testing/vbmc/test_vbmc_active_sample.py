@@ -1,4 +1,5 @@
 import copy
+import importlib
 import logging
 
 import numpy as np
@@ -94,6 +95,7 @@ def test_active_uncertainty_sampling(mocker):
 
 
 def test_active_sample_rollback_preserves_live_transformer(mocker):
+    active_sample_module = importlib.import_module("pyvbmc.vbmc.active_sample")
     vbmc = create_vbmc(1, 0, -np.inf, np.inf, -2, 2)
     transformer = vbmc.function_logger.parameter_transformer
     for key, value in {
@@ -111,8 +113,9 @@ def test_active_sample_rollback_preserves_live_transformer(mocker):
     acq.acq_info = {}
     acq.return_value = np.array([0.0])
     vbmc.options.__setitem__("search_acq_fcn", [acq], force=True)
-    mocker.patch(
-        "pyvbmc.vbmc.active_sample._get_search_points",
+    mocker.patch.object(
+        active_sample_module,
+        "_get_search_points",
         side_effect=[
             (np.array([[0.1]]), np.array([np.nan])),
             (np.array([[0.2]]), np.array([np.nan])),
@@ -128,7 +131,7 @@ def test_active_sample_rollback_preserves_live_transformer(mocker):
     gp.noise.hyperparameter_count.return_value = 1
     gp.noise.compute.return_value = np.ones(1)
     gp.temporary_data = {}
-    mocker.patch("pyvbmc.vbmc.active_sample.reupdate_gp", return_value=gp)
+    mocker.patch.object(active_sample_module, "reupdate_gp", return_value=gp)
 
     old_parameters = vbmc.vp.get_parameters().copy()
     updated_vp = copy.deepcopy(vbmc.vp)
@@ -137,12 +140,13 @@ def test_active_sample_rollback_preserves_live_transformer(mocker):
     updated_vp.parameter_transformer = transformer
     updated_vp.mu += 1.0
     updated_vp.stats = {"elbo": -1.0}
-    mocker.patch(
-        "pyvbmc.vbmc.active_sample.optimize_vp",
+    mocker.patch.object(
+        active_sample_module,
+        "optimize_vp",
         return_value=(updated_vp, 0.0, 0),
     )
-    old_score = mocker.patch(
-        "pyvbmc.vbmc.active_sample._neg_elcbo", return_value=(-0.0,)
+    old_score = mocker.patch.object(
+        active_sample_module, "_neg_elcbo", return_value=(-0.0,)
     )
 
     _, _, returned_vp, _ = active_sample(
