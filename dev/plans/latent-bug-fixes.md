@@ -1,5 +1,32 @@
 # Plan: PyVBMC 1.5 latent bug fixes
 
+**Completed pickup (2026-09-08): bounded Phase 6 experiment.**
+Run on `dev-eta-bound-comparison` from validated main-loop tip `03650a2`.
+Scope: mathematical checks, one timed three-arm pilot, then at most eight
+saved states x three variants x three paired optimizer RNG replicates (72
+local fits). No whole trajectories or production penalty selection in this
+pickup. Boost remains parked. Reuse saved state and existing optimization
+code; root runs the single heavy computation, Sol implements/reviews.
+
+- [x] Implement isolated A/B/C variants and verify mathematical contracts;
+  35 gradient/mutation/diagnostic tests passed (1.93 s), independent variant
+  review complete. Eight saved states inventoried
+  with source hashes and natural raw-eta bound coverage.
+- [x] Prepare paired local-fit runner and independent common-draw scoring;
+  eight-state input gate and repeated instrumentation parity/restoration pass.
+- [x] Run gradient/mutation checks and one timed three-arm pilot;
+  Normal D2 three-arm comparison completes in 0.471 s excluding startup.
+- [x] Complete the bounded local comparison: all 72 fits, 24 paired records,
+  zero failures; 22.12 s including preparation/scoring, excluding startup.
+  Paired inputs, candidates, diagnostics and timings retained; resume verifies
+  all 24 completions without new fits.
+- [x] Independent artifact and scientific reviews complete; no remaining
+  findings. [Results and next experiment](../2026-09-08-eta-bound-comparison.md):
+  B's noisy score gains coincide with longer optimization; C's penalty never
+  activates naturally here. Production choice remains open. Next scope is an
+  equal-iteration/eta-offset comparison with repeated diagnostic scoring;
+  no further fits or whole trajectories are scheduled.
+
 Created: 2026-09-07
 Status: PARTIALLY APPROVED — D1–D5, Q2/Q3, Q1/Q4 comparison designs,
 the reduced 60-run reference addition and parallel development approved on

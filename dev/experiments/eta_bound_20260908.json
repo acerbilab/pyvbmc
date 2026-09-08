@@ -1,0 +1,239 @@
+{
+  "version": 1,
+  "seed_base": 2026090800,
+  "diagnostic_seed_base": 2026090900,
+  "diagnostic_samples": 100000,
+  "source_base_commit": "03650a2",
+  "protocol": "Paired incremental fixed-K local refits; shared C-sieve candidate pool; fresh paired optimizer RNG, separate paired unpenalized scoring; 3 replicates per 8 states. Historic states, not exact historical continuations.",
+  "states": [
+    {
+      "label": "normal_D2_warmup",
+      "source_kind": "oracle",
+      "path": "pyvbmc/testing/oracles/fixtures/normal_D2_warmup",
+      "options": {},
+      "fast_opts_N": 10,
+      "slow_opts_N": 1,
+      "notes": "warm-up iteration: K = 2, Ns = 8, no warp; the baseline state",
+      "source_sha256": {
+        "pyvbmc/testing/oracles/fixtures/normal_D2_warmup.json": "86e7a35ee1e7ae6f6d9a9b15a849a44678383b70501641710696e005a4149956",
+        "pyvbmc/testing/oracles/fixtures/normal_D2_warmup.npz": "42320412eb72fba47c031257f470bd3c3726882732b33f06b085a5600c160836"
+      },
+      "coverage": {
+        "D": 2,
+        "K": 2,
+        "N_gp": 20,
+        "Ns_gp": 8,
+        "iteration": 2,
+        "warmup": true,
+        "optimize_weights": false,
+        "raw_eta_lower_violations": 0,
+        "relative_eta_lower_violations": 0,
+        "raw_eta_min": null,
+        "eta_lower_bound": -5.298317366548036,
+        "max_iter_stochastic": 400,
+        "tol_weight": 0.01,
+        "weight_penalty": 0.1
+      }
+    },
+    {
+      "label": "normal_D2_singlesample",
+      "source_kind": "oracle",
+      "path": "pyvbmc/testing/oracles/fixtures/normal_D2_singlesample",
+      "options": {},
+      "fast_opts_N": 25,
+      "slow_opts_N": 1,
+      "notes": "GP hyperparameter sampling switched off from the first fit: a single posterior (the Ns = 1 squeeze regime)",
+      "source_sha256": {
+        "pyvbmc/testing/oracles/fixtures/normal_D2_singlesample.json": "71b391dde49348c42aae694aa043d755634dea10f51fdd8b8cf6ee40ea8fcb08",
+        "pyvbmc/testing/oracles/fixtures/normal_D2_singlesample.npz": "7baca88203434d760426878afd90062980d94133e71832898aa10cc867eebd42"
+      },
+      "coverage": {
+        "D": 2,
+        "K": 5,
+        "N_gp": 65,
+        "Ns_gp": 1,
+        "iteration": 11,
+        "warmup": false,
+        "optimize_weights": true,
+        "raw_eta_lower_violations": 0,
+        "relative_eta_lower_violations": 0,
+        "raw_eta_min": -2.068113120540815,
+        "eta_lower_bound": -5.298317366548036,
+        "max_iter_stochastic": 400,
+        "tol_weight": 0.01,
+        "weight_penalty": 0.1
+      }
+    },
+    {
+      "label": "cigar_D4_largeK",
+      "source_kind": "oracle",
+      "path": "pyvbmc/testing/oracles/fixtures/cigar_D4_largeK",
+      "options": {},
+      "fast_opts_N": 70,
+      "slow_opts_N": 1,
+      "notes": "last iteration of a correlated, ill-conditioned target: large K, warped transformer",
+      "source_sha256": {
+        "pyvbmc/testing/oracles/fixtures/cigar_D4_largeK.json": "ba05fbb38f5c94ae82f638a33dac1413e5f77276e70e527fa2a227268fba4321",
+        "pyvbmc/testing/oracles/fixtures/cigar_D4_largeK.npz": "108d18c7ac0e2cc7bc5ae7d8e438dc007dbbe037432e3cbd7043c77e62f50fbd"
+      },
+      "coverage": {
+        "D": 4,
+        "K": 14,
+        "N_gp": 115,
+        "Ns_gp": 7,
+        "iteration": 26,
+        "warmup": false,
+        "optimize_weights": true,
+        "raw_eta_lower_violations": 0,
+        "relative_eta_lower_violations": 0,
+        "raw_eta_min": -4.557464140382491,
+        "eta_lower_bound": -5.298317366548036,
+        "max_iter_stochastic": 600,
+        "tol_weight": 0.01,
+        "weight_penalty": 0.1
+      }
+    },
+    {
+      "label": "corr_D5_warped",
+      "source_kind": "oracle",
+      "path": "pyvbmc/testing/oracles/fixtures/corr_D5_warped",
+      "options": {},
+      "fast_opts_N": 85,
+      "slow_opts_N": 1,
+      "notes": "last iteration with a rotoscale warp in place (R_mat, scale set) on a correlated 5-D Gaussian",
+      "source_sha256": {
+        "pyvbmc/testing/oracles/fixtures/corr_D5_warped.json": "8029a70b4fdc4dae48e447aeccac760226ca5e15dd2abd014fa9653c9afc3988",
+        "pyvbmc/testing/oracles/fixtures/corr_D5_warped.npz": "55d1d71644cb418c623a2dcc8c6a8a256694d0feb2d7443d79d72a7604ba599b"
+      },
+      "coverage": {
+        "D": 5,
+        "K": 17,
+        "N_gp": 100,
+        "Ns_gp": 8,
+        "iteration": 20,
+        "warmup": false,
+        "optimize_weights": true,
+        "raw_eta_lower_violations": 0,
+        "relative_eta_lower_violations": 0,
+        "raw_eta_min": -5.183882849565101,
+        "eta_lower_bound": -5.298317366548036,
+        "max_iter_stochastic": 700,
+        "tol_weight": 0.01,
+        "weight_penalty": 0.1
+      }
+    },
+    {
+      "label": "halfnormal_D2_bounded",
+      "source_kind": "oracle",
+      "path": "pyvbmc/testing/oracles/fixtures/halfnormal_D2_bounded",
+      "options": {},
+      "fast_opts_N": 45,
+      "slow_opts_N": 1,
+      "notes": "finite bounds: probit transform and a non-constant log-Jacobian",
+      "source_sha256": {
+        "pyvbmc/testing/oracles/fixtures/halfnormal_D2_bounded.json": "3a9a784023488c4d57c6d650b261a15f5dfa45a99ed567999253aab618a9814e",
+        "pyvbmc/testing/oracles/fixtures/halfnormal_D2_bounded.npz": "58bc804cc89046fcd91c47b243095dc0d3e8bbaa8e5afcf7c373ca9c96a25082"
+      },
+      "coverage": {
+        "D": 2,
+        "K": 9,
+        "N_gp": 70,
+        "Ns_gp": 10,
+        "iteration": 12,
+        "warmup": false,
+        "optimize_weights": true,
+        "raw_eta_lower_violations": 0,
+        "relative_eta_lower_violations": 0,
+        "raw_eta_min": -4.385349076275434,
+        "eta_lower_bound": -5.298317366548036,
+        "max_iter_stochastic": 400,
+        "tol_weight": 0.01,
+        "weight_penalty": 0.1
+      }
+    },
+    {
+      "label": "rosenbrock_D2_noise1_seed0_pre",
+      "source_kind": "boost_pre",
+      "path": "dev/scripts/runs/latent_fixes/boost_20260907/revised_seven/captures/rosenbrock_D2_noise1_seed0.boost_pre.dill",
+      "options": {},
+      "fast_opts_N": 95,
+      "slow_opts_N": 1,
+      "notes": "Authentic pre-boost VP and factorized GP; refit locally using captured main-loop options. No boost is run.",
+      "source_sha256": {
+        "dev/scripts/runs/latent_fixes/boost_20260907/revised_seven/captures/rosenbrock_D2_noise1_seed0.boost_pre.dill": "bcd449fa43d8d98ce613e6a900d781239f673cd11576e2ada7067dd877125c26"
+      },
+      "coverage": {
+        "D": 2,
+        "K": 19,
+        "N_gp": 108,
+        "Ns_gp": 7,
+        "iteration": 21,
+        "warmup": false,
+        "optimize_weights": true,
+        "raw_eta_lower_violations": 1,
+        "relative_eta_lower_violations": 0,
+        "raw_eta_min": -5.616399540269808,
+        "eta_lower_bound": -5.298317366548036,
+        "max_iter_stochastic": 400,
+        "tol_weight": 0.01,
+        "weight_penalty": 0.1
+      }
+    },
+    {
+      "label": "rosenbrock_D2_noise3_seed7_pre",
+      "source_kind": "boost_pre",
+      "path": "dev/scripts/runs/latent_fixes/boost_20260907/noisy_counterexamples/captures/rosenbrock_D2_noise3_seed7.boost_pre.dill",
+      "options": {},
+      "fast_opts_N": 105,
+      "slow_opts_N": 1,
+      "notes": "Authentic pre-boost VP and factorized GP; refit locally using captured main-loop options. No boost is run.",
+      "source_sha256": {
+        "dev/scripts/runs/latent_fixes/boost_20260907/noisy_counterexamples/captures/rosenbrock_D2_noise3_seed7.boost_pre.dill": "baa22d23765a3d079680e90107c912f16430da674bc76656d6d4fc20128d5a43"
+      },
+      "coverage": {
+        "D": 2,
+        "K": 21,
+        "N_gp": 174,
+        "Ns_gp": 6,
+        "iteration": 39,
+        "warmup": false,
+        "optimize_weights": true,
+        "raw_eta_lower_violations": 0,
+        "relative_eta_lower_violations": 0,
+        "raw_eta_min": -4.478388583629752,
+        "eta_lower_bound": -5.298317366548036,
+        "max_iter_stochastic": 400,
+        "tol_weight": 0.01,
+        "weight_penalty": 0.1
+      }
+    },
+    {
+      "label": "rosenbrock_D2_noise3_seed17_pre",
+      "source_kind": "boost_pre",
+      "path": "dev/scripts/runs/latent_fixes/boost_20260907/noisy_counterexamples/captures/rosenbrock_D2_noise3_seed17.boost_pre.dill",
+      "options": {},
+      "fast_opts_N": 70,
+      "slow_opts_N": 1,
+      "notes": "Authentic pre-boost VP and factorized GP; refit locally using captured main-loop options. No boost is run.",
+      "source_sha256": {
+        "dev/scripts/runs/latent_fixes/boost_20260907/noisy_counterexamples/captures/rosenbrock_D2_noise3_seed17.boost_pre.dill": "5ed857266e234bf6b2a652337276e621baf1bd506c15b131bf43b24d7c45e570"
+      },
+      "coverage": {
+        "D": 2,
+        "K": 14,
+        "N_gp": 149,
+        "Ns_gp": 6,
+        "iteration": 31,
+        "warmup": false,
+        "optimize_weights": true,
+        "raw_eta_lower_violations": 3,
+        "relative_eta_lower_violations": 0,
+        "raw_eta_min": -6.055709417222916,
+        "eta_lower_bound": -5.298317366548036,
+        "max_iter_stochastic": 400,
+        "tol_weight": 0.01,
+        "weight_penalty": 0.1
+      }
+    }
+  ]
+}

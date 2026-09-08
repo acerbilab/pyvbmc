@@ -1,4 +1,18 @@
 Pickup (2026-09-08): resume dev/plans/latent-bug-fixes.md with $task.
+Completed: Phase 6 bounded local eta-bound experiment on dev-eta-bound-comparison,
+based on 03650a2. Approved mathematical checks, a timed three-arm pilot,
+then at most 72 local fits (8 saved states x 3 treatments x 3 paired RNGs).
+All 72 fits completed in 22.12 s excluding interpreter startup; zero failures.
+Variants pass 35 mathematical/mutation/diagnostic checks; artifact audit,
+resume verification and independent scientific review pass. Production
+treatment remains open: B's noisy gains coincide with longer optimization;
+C's penalty never activates here. Proposed next scope is equal-iteration
+A/B fits with common eta shifts and repeated scoring; no new fits scheduled.
+Manifest: dev/experiments/eta_bound_20260908.json. Design and evidence:
+dev/2026-09-08-eta-bound-comparison.md. No full trajectories or production
+penalty choice in this pickup; boost remains parked.
+
+Completed Phases 3-5 follow:
 Current PI direction: PARK Phase 2's full paired boost campaign until later;
 main-loop fixes started from dev-next 3e879b6 and completed in order:
 weighted GP covariance (Phase 3), acquisition regularization (Phase 4),

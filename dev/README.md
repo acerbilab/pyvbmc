@@ -40,6 +40,10 @@ For the release overview, start with
   Main-loop covariance, acquisition and GP-sampling repairs, their separate
   numerical gates, and the parked final-boost experiment's restart pointer.
 
+- [2026-09-08-eta-bound-comparison.md](2026-09-08-eta-bound-comparison.md) —
+  Approved bounded comparison of three main-loop eta-bound treatments,
+  shared saved inputs, mathematical checks and paired local-fit evidence.
+
 `TODO.md` is a scratch reminder of the ongoing work and the current pickup
 point, rewritten at each handoff. It is not a record: the roadmap and the
 plans are.
