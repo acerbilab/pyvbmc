@@ -1,8 +1,8 @@
 Fresh-session pickup (2026-09-08): plan the Stage 4 PyTorch feasibility
-prototype using $task. Resume from `dev-svbmc-compat` (this branch carries
-the compatibility records and parked integration proposal); create a fresh
-Stage 4 feature branch from it so those records remain available. Production
-code is unchanged from `dev-next` at `feadf30`.
+prototype using $task. Resume from `dev-next`, which includes the S-VBMC
+compatibility records and parked integration proposal. Create a fresh
+Stage 4 feature branch from `dev-next`. Production code is unchanged from
+`feadf30`.
 
 Read first:
 
