@@ -1,5 +1,35 @@
 # Plan: PyVBMC 1.5 latent bug fixes
 
+**Completed pickup (2026-09-08): equal-iteration eta-bound experiment.**
+PI approved 12 local Adam fits: the saved Rosenbrock noise1 seed0 and noise3
+seed17 states, three existing paired optimizer RNG replicates, arms A/B.
+Reuse identical saved sieve-selected starts and post-sieve RNGs. Disable
+early stopping; run 400 iterations, keeping checkpoints at 40/100/200/400
+as means of the latest 20 parameter iterates. Compare before pruning with
+fixed K, unchanged other regularizers and independent common-draw unpenalized
+ELBO/SD/ELCBO scoring. Use ten diagnostic seeds per checkpoint pair to assess
+scoring sensitivity. This is conditional local evidence, not a population
+test or a production choice. Common-eta-offset experiments are a subsequent
+decision if B retains a meaningful advantage; no such fits in this pickup.
+
+- [x] Reuse the existing private variants and saved inputs in a compact
+  driver; independently check identical inputs, budgets and checkpoint rules.
+- [x] Time the first pair, then complete all 12 fits and repeated scoring
+  as one sequential numerical process; preserve original artifacts.
+  Completed: 12 fits, 4,800 objective calls, 48 checkpoints, 480 scores;
+  5.503 s pilot plus 19.757 s remaining successful invocation (25.261 s).
+  All 12 historical trajectory prefixes match exactly. Input, checkpoint,
+  paired RNG, source/output hash and scoring audits pass.
+- [x] Analyze equal-effort gains/noise, independently review, and record
+  the next decision without changing production or launching trajectories.
+  [Results](../2026-09-08-eta-equal-budget.md): the sizable apparent B gains
+  disappear at equal effort; residual ELBO changes are tiny and ELCBO mixed.
+  A is supported for PI consideration; no production or stopping-policy
+  change is selected. Independent scientific/artifact review reproduced all
+  24 checkpoint summaries exactly; no remaining findings. Hooks pass, and
+  resume verifies six skipped pairs with zero new fits. Results and driver
+  are committed on `dev-eta-equal-budget`; PI treatment selection is next.
+
 **Completed pickup (2026-09-08): PI selected final-boost defaults.**
 Remove the small-weight penalty only during final boost and use the strict
 joint ELBO/ELCBO(beta=5) guard with tolerance 0.1. On the paired unpenalized

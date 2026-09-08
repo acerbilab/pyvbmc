@@ -1,4 +1,15 @@
 Pickup (2026-09-08): resume dev/plans/latent-bug-fixes.md with $task.
+Completed: equal-iteration eta comparison on dev-eta-equal-budget;
+independent scientific/artifact review passed. Next: PI selection of A,
+then its targeted integration/replay gates. No production treatment changed.
+Two saved noisy states x three optimizer RNGs x A/B, 400 Adam iterations,
+checkpoints 40/100/200/400 before pruning, ten diagnostic scoring RNGs.
+See dev/2026-09-08-eta-equal-budget.md. No production selection or offset fits.
+All 12 fits / 480 scores complete in 25.261 s across successful invocations;
+all historical trajectory prefixes exact. At equal effort B's sizable gains
+disappear; remaining ELBO differences tiny, ELCBO mixed. A is supported for
+PI consideration; production and stopping-policy choices remain separate.
+
 Completed pickup on dev-final-boost-default: PI-selected final-boost defaults: zero boost-only
 weight penalty and joint ELBO/ELCBO(beta=5) tolerance 0.1. Main-loop penalty
 unchanged. Retest with the integrated final 870-run benchmark against the
@@ -7,6 +18,8 @@ the pending boost decision in historical records below.
 Validation: 125 focused tests passed, 11 exact numerical fixtures passed,
 independent Sol review and repository hooks passed. Final integrated suite
 and population validation remain pending.
+Boost-default commit 4ab2003 was pushed and CI passed:
+https://github.com/acerbilab/pyvbmc/actions/runs/34229085644
 
 Completed pickup: paired boost analysis on dev-boost-analysis; statistical
 and scientific independent review passed. See dev/2026-09-08-boost-analysis.md and

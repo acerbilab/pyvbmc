@@ -1,5 +1,9 @@
 # Main-loop eta-bound comparison
 
+Follow-up: the approved [equal-iteration comparison](2026-09-08-eta-equal-budget.md)
+is complete. It tests whether the initial gains below arose from longer
+optimization; the historical protocol and findings remain recorded here.
+
 Status: bounded experiment and independent reviews complete, 2026-09-08.
 Branch: `dev-eta-bound-comparison`, based on `03650a2`; its numerical code
 passed CI 138 at `b0d3437`. The [live plan](plans/latent-bug-fixes.md) owns
