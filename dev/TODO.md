@@ -1,4 +1,13 @@
 Pickup (2026-09-08): resume dev/plans/latent-bug-fixes.md with $task.
+Completed pickup on dev-final-boost-default: PI-selected final-boost defaults: zero boost-only
+weight penalty and joint ELBO/ELCBO(beta=5) tolerance 0.1. Main-loop penalty
+unchanged. Retest with the integrated final 870-run benchmark against the
+expanded reference; no population launch in this pickup. This supersedes
+the pending boost decision in historical records below.
+Validation: 125 focused tests passed, 11 exact numerical fixtures passed,
+independent Sol review and repository hooks passed. Final integrated suite
+and population validation remain pending.
+
 Completed pickup: paired boost analysis on dev-boost-analysis; statistical
 and scientific independent review passed. See dev/2026-09-08-boost-analysis.md and
 dev/experiments/boost_campaign_20260908/ for full effects, all rejected cases,

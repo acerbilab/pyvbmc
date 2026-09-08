@@ -3,7 +3,42 @@
 Status: analysis complete and independently reviewed (2026-09-08).
 Branch: `dev-boost-analysis`. The [campaign](2026-09-08-boost-campaign.md)
 contains 870 paired endpoints, 1,740 completed boosts, and zero failures.
-No production penalty or acceptance threshold is selected here.
+The analysis initially left production policy open. The subsequent PI
+decision below selects the defaults without changing the recorded experiment.
+
+## Subsequent PI decision (2026-09-08)
+
+Use zero small-weight penalty during final boost and the joint tolerance
+0.1 guard by default. Main-loop weight regularization is unchanged.
+The tiny typical penalty effects are practically negligible; significance
+alone is not an argument for retaining the penalty.
+
+Without the penalty, 0.1 accepts 859/870 saved candidates. The 0.1 and 0.2
+policies differ on eight endpoints: choosing 0.1 improves evidence error and
+MMTV in all eight and gsKL in seven. The sole gsKL tradeoff is Lumpy D10
+seed 15 (pre 0.365800, boost 0.353690), whose evidence error and MMTV worsen
+with the boost. Mean reductions across these eight cases are 0.101565 in
+evidence error, 0.023979 in gsKL and 0.017527 in MMTV. Both policies yield
+828/870 usable outcomes. These are exploratory saved-score comparisons.
+
+Retest the selected defaults in the final integrated 870-run benchmark
+against the expanded reference, including quality, usability, rejection
+counts and rejected improvements. Production uses its stored pre/candidate
+scores as specified by Phase 2; this campaign used independent common-GP
+diagnostic rescoring. Combined main-loop fixes also change endpoints, so
+859 accepted is campaign evidence, not a predicted final benchmark count.
+The full benchmark launch remains a later explicit PI instruction.
+
+Implementation on `dev-final-boost-default` reuses the previously reviewed
+guard and selects 0.1 as its default. Explicit `None`, or a missing option
+in an old save, retains legacy penalized unguarded behavior. The literal
+delta criterion is pinned at equality and adjacent floating-point values.
+Verification: 125 focused boost/options/init/save-load tests passed without
+reruns, all 11 stage fixtures remain exact, independent Sol review and
+repository hooks passed. The first sandboxed test invocation could not
+access pytest's temporary directory; rerunning with that access passed.
+No new whole trajectories or population runs were needed for this integration;
+the final integrated suite and benchmark remain the release validation gate.
 
 ## What the experiment establishes
 

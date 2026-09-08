@@ -1,5 +1,28 @@
 # Plan: PyVBMC 1.5 latent bug fixes
 
+**Completed pickup (2026-09-08): PI selected final-boost defaults.**
+Remove the small-weight penalty only during final boost and use the strict
+joint ELBO/ELCBO(beta=5) guard with tolerance 0.1. On the paired unpenalized
+campaign this accepts 859/870 candidates. Relative to tolerance 0.2, the
+eight additional fallbacks improve evidence error and MMTV in all eight,
+and gsKL in seven. This supersedes the pending boost policy decisions below;
+main-loop Q1/eta-bound treatment is separate. Retest the integrated defaults
+in the final full benchmark against the expanded reference; do not launch
+that population in this pickup.
+
+- [x] Integrate the previously implemented guard with the selected defaults,
+  preserving main-loop fixes and checking boost-only option scope.
+- [x] Run focused regression checks and independent review.
+  Final focused run: 125 tests passed without reruns; all 11 numerical
+  fixtures exact. Independent Sol review passed, including literal delta
+  arithmetic and strict boundary coverage. Repository hooks pass.
+- [x] Record the selected policy and final benchmark follow-up.
+  Implemented on `dev-final-boost-default`. Explicit `None` (and old saves
+  missing the option) retains legacy penalized, unguarded refinement.
+  No new trajectory or population run was launched in this pickup; the
+  original guard's nine reviewed replays and current exact stage gates are
+  retained evidence. Integrated full-suite and population gates remain later.
+
 **Completed pickup (2026-09-08): paired boost computation and analysis.**
 PI now authorizes analysis, on fresh `dev-boost-analysis`. Use all 870 paired
 results and the untouched golden sidecars. Root owns scientific interpretation
@@ -1446,6 +1469,10 @@ changes. Compare with `golden_trace.py compare dev/golden/baseline <new_dir>`
 accuracy, usability and evaluation counts; a statistical flag requires
 investigation, not automatic rejection or approval, and no flag is not proof
 of equivalence. Record guard rejection counts and pre/post scores separately.
+Retest the PI-selected zero boost weight penalty and joint 0.1 guard. Retain
+raw boosted candidates even when rejected, together with pre-boost VPs and
+the scores actually used by the production guard, so alternative thresholds
+can still be compared offline without regenerating boosts.
 Final comparison reports and PI disposition precede any reference promotion
 or release. Keep the reference used for release validation identifiable.
 Hand off roadmap pickup 8 explicitly: at release, archive the NPZ traces of

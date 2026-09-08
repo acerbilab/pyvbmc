@@ -5,6 +5,7 @@ import os
 import sys
 from collections.abc import Iterable
 from importlib.metadata import PackageNotFoundError, version
+from numbers import Real
 from pathlib import Path
 from textwrap import indent
 from typing import Union
@@ -231,6 +232,9 @@ class VBMC:
                 [basic_options_path, advanced_options_path]
             )
         self._validate_vectorized_target_option()
+        self._validate_final_boost_tolerance(
+            self.options.get("tol_elcbo_boost")
+        )
 
         # Create an initial logger for initialization messages:
         self.logger = self._init_logger("_init")
@@ -2137,9 +2141,20 @@ class VBMC:
             final boost.
         changed_flag : bool
            Indicates if the final boost has taken place or not.
+
+        Notes
+        -----
+        The guard compares the optimizer's stored pre- and post-boost ELBO
+        and GP-based ELBO SD. It performs no diagnostic rescoring, and the SD
+        does not include Monte Carlo uncertainty from the entropy estimate.
         """
 
-        vp = copy.deepcopy(vp)
+        tol_elcbo_boost = self.options.get("tol_elcbo_boost")
+        self._validate_final_boost_tolerance(tol_elcbo_boost)
+
+        # Preserve an independent copy of the pre-boost posterior.
+        pre_vp = copy.deepcopy(vp)
+        vp = pre_vp
         changed_flag = False
 
         K_new = max(vp.K, self.options.get("min_final_components"))
@@ -2177,6 +2192,13 @@ class VBMC:
         )
 
         if do_boost:
+            # Optimize a separate candidate so neither it nor its flag changes
+            # can modify the caller's posterior or the fallback posterior.
+            vp = copy.deepcopy(pre_vp)
+            pre_elbo = pre_vp.stats["elbo"]
+            pre_elbo_sd = pre_vp.stats["elbo_sd"]
+            stable_flag = copy.deepcopy(pre_vp.stats["stable"])
+
             # Last variational optimization with large number of components
             n_fast_opts = math.ceil(self.options.eval("ns_elbo", {"K": K_new}))
 
@@ -2188,6 +2210,10 @@ class VBMC:
             options = copy.deepcopy(self.options)
             # No pruning of components
             options.__setitem__("tol_weight", 0, force=True)
+            if tol_elcbo_boost is not None:
+                # A guarded boost removes boost-only weight shrinkage. None
+                # retains the historical penalized, unguarded refinement.
+                options.__setitem__("weight_penalty", 0, force=True)
 
             # End warmup
             self.optim_state["warmup"] = False
@@ -2200,7 +2226,6 @@ class VBMC:
             options.__setitem__("max_iter_stochastic", np.inf, force=True)
             self.optim_state["entropy_alpha"] = 0
 
-            stable_flag = np.copy(vp.stats["stable"])
             vp, __, __ = optimize_vp(
                 options,
                 self.optim_state,
@@ -2211,11 +2236,89 @@ class VBMC:
                 K_new,
             )
             vp.stats["stable"] = stable_flag
-            changed_flag = True
+
+            if tol_elcbo_boost is None:
+                changed_flag = True
+            else:
+                pre_valid = self._is_valid_final_boost_score(
+                    pre_elbo, pre_elbo_sd
+                )
+                candidate_elbo = vp.stats["elbo"]
+                candidate_elbo_sd = vp.stats["elbo_sd"]
+                candidate_valid = self._is_valid_final_boost_score(
+                    candidate_elbo, candidate_elbo_sd
+                )
+
+                if candidate_valid and (
+                    not pre_valid
+                    or self._accept_final_boost_candidate(
+                        pre_elbo,
+                        pre_elbo_sd,
+                        candidate_elbo,
+                        candidate_elbo_sd,
+                        tol_elcbo_boost,
+                    )
+                ):
+                    changed_flag = True
+                elif pre_valid:
+                    self.logger.warning(
+                        "Final boost rejected because its ELBO/SD score "
+                        "was invalid or decreased beyond the configured "
+                        "tolerance. Returning the pre-boost posterior."
+                    )
+                    vp = pre_vp
+                else:
+                    raise RuntimeError(
+                        "Final boost produced no posterior with a finite "
+                        "ELBO and a finite nonnegative ELBO SD."
+                    )
 
         elbo = vp.stats["elbo"]
         elbo_sd = vp.stats["elbo_sd"]
         return vp, elbo, elbo_sd, changed_flag
+
+    @staticmethod
+    def _validate_final_boost_tolerance(tolerance):
+        """Validate the optional final-boost score-loss tolerance."""
+        if tolerance is None:
+            return
+        if (
+            isinstance(tolerance, (bool, np.bool_))
+            or not isinstance(tolerance, Real)
+            or not np.isfinite(tolerance)
+            or tolerance < 0
+        ):
+            raise ValueError(
+                "tol_elcbo_boost must be None or a finite nonnegative "
+                "real scalar."
+            )
+
+    @staticmethod
+    def _is_valid_final_boost_score(elbo, elbo_sd):
+        """Whether stored ELBO statistics can be used for boost selection."""
+        values = (elbo, elbo_sd)
+        if any(
+            isinstance(value, (bool, np.bool_)) or not isinstance(value, Real)
+            for value in values
+        ):
+            return False
+        return bool(
+            np.isfinite(elbo) and np.isfinite(elbo_sd) and elbo_sd >= 0
+        )
+
+    @staticmethod
+    def _accept_final_boost_candidate(
+        pre_elbo,
+        pre_elbo_sd,
+        candidate_elbo,
+        candidate_elbo_sd,
+        tolerance,
+    ):
+        """Apply the continuum final-boost acceptance rule to valid scores."""
+        delta_elbo = candidate_elbo - pre_elbo
+        delta_sd = candidate_elbo_sd - pre_elbo_sd
+        worst_score_change = min(delta_elbo, delta_elbo - 5 * delta_sd)
+        return bool(worst_score_change > -tolerance)
 
     def determine_best_vp(
         self,
@@ -2511,6 +2614,9 @@ class VBMC:
         if "vectorized_target" not in vbmc.options:
             vbmc.options.__setitem__("vectorized_target", False, force=True)
         vbmc._validate_vectorized_target_option()
+        vbmc._validate_final_boost_tolerance(
+            vbmc.options.get("tol_elcbo_boost")
+        )
         vectorized_target = bool(vbmc.options["vectorized_target"])
         logger_vectorized = bool(
             getattr(vbmc.function_logger, "vectorized_target", False)
