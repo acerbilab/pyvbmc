@@ -42,7 +42,9 @@ open; main-loop development does not require either decision.
 
 This completes the authorized main-loop repair group. Phase 6's eta-bound
 choice, Phase 7's upstream repair/final integration and population assessment
-remain open. Full suite and CI have not run on this local feature branch.
+remain open. The branch is pushed; [CI 138](https://github.com/acerbilab/pyvbmc/actions/runs/34194796233)
+passed on `b0d3437`: full suite on Ubuntu/Python 3.12, 1,090 passed,
+60 skipped, no retries. The full OS/Python matrix remains pending.
 
 **Historical Phase 2 execution follows.**
 PI authorization (2026-09-08): run a bounded timing pilot of paired boosts

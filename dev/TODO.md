@@ -22,7 +22,9 @@ switches the next GP fit to stable samples. Independent review passed.
 Final combined gate: 296 tests passed, 15 skipped, all 11 fixtures exact.
 Next unresolved items: Phase 6 eta-bound comparison/PI choice, Phase 7
 upstream gpyreg repair and final integration/population gates, and the parked
-boost campaign when scheduled. Full suite/CI have not run on this local branch.
+boost campaign when scheduled. Branch pushed; CI 138 passed on b0d3437:
+full suite on Ubuntu/Python 3.12, 1,090 passed, 60 skipped, no retries.
+The full OS/Python matrix and integrated population assessment remain pending.
 See dev/2026-09-08-main-loop-fixes.md.
 
 Historical Phase 2 progress follows:

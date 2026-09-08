@@ -168,8 +168,13 @@ passes **296 tests, 15 skipped** in 72 seconds (`integrated_focused.log`).
 It covers GP training, initialization, loop termination, save/load, the whole
 acquisition test directory and numerical oracles. All 11 fixtures also pass
 the separate exact comparison (`final_exact.log`). No Phase 5 references
-were changed. The full pytest suite, CI and integrated population assessment
-remain final-integration work; these focused gates do not replace them.
+were changed. After pushing `dev-main-loop-fixes`,
+[CI 138](https://github.com/acerbilab/pyvbmc/actions/runs/34194796233) passed
+on `b0d3437`: the full pytest suite on Ubuntu/Python 3.12 completed with
+1,090 passed, 60 skipped and no retries in 509.76 seconds. The complete job
+took 9 minutes 38 seconds. The log is retained as `ci_138.log` in the Phase 5
+evidence directory. The full OS/Python matrix and integrated population
+assessment remain final-integration work.
 
 ## Next pickup
 
