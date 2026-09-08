@@ -701,8 +701,9 @@ anything that changes numerics lands.
    `_compare_matlab.rand_int`; `noisy_cigar`; notebook 1's `lml_true`
    and notebook 6's noise broadcast; the runtime dependencies in
    `pyproject.toml`; the scipy private imports in `priors/`; gpyreg's
-   `step_out` stale coordinates (inert for PyVBMC; a gpyreg PR with the
-   next pin bump).
+   `step_out` stale coordinates (inert for current PyVBMC; PI deferred to
+   [gpyreg #44](https://github.com/acerbilab/gpyreg/issues/44) on 2026-09-08;
+   no repair or pin bump required for this release).
    Stays deferred as algorithmic (devlog §12): `compute_var == 2`, noise
    shaping, log-space mixture sums.
 10. **S-VBMC integration and compatibility** (PI, 2026-09-06: part of the

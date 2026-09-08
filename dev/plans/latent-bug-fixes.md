@@ -1,5 +1,21 @@
 # Plan: PyVBMC 1.5 latent bug fixes
 
+**Integration pickup (2026-09-08):** PI approved merging the completed
+latent-fix branch into `dev-next` after feature-branch CI passed.
+
+- [x] Fast-forward `dev-next` from `3e879b6` to `89ac5f0` and push.
+  The integration tree exactly matches `dev-eta-bound-fix`.
+- [x] Confirm integration CI 34248221965: 1,122 passed, 60 skipped,
+  no reruns, 541.28 s on Ubuntu/Python 3.12.
+
+**PI scope update (2026-09-08):** defer the optional gpyreg step-out repair
+to [gpyreg #44](https://github.com/acerbilab/gpyreg/issues/44). PyVBMC's
+GP training does not enable step-out; MATLAB GPLite also leaves it off,
+and its per-dimension bracket initialization avoids this Python bug.
+No upstream implementation or dependency pin bump is required for this
+release. Phase7 now retains only the remaining integration/release gates;
+the full OS/Python matrix and final population assessment remain pending.
+
 **CI follow-up (2026-09-08):** run 34240597505 discovered the historical
 eta-variant experiment tests through bare pytest. Their pinned-source guard
 correctly rejects the new production source; default discovery needs to
@@ -1495,6 +1511,13 @@ gradient contract explicitly before delegating production implementation.
 ### Phase 7 — Upstream fix and final integration
 
 **Executor:** Sol for bounded gpyreg repair/docs; Astra for integration/gates.
+
+**Superseding PI decision (2026-09-08):** items 1–2 below are deferred to
+[gpyreg #44](https://github.com/acerbilab/gpyreg/issues/44), outside this
+release's prerequisites. Keep the current dependency pin. Their repair/test
+contract is retained for optional future work. Items 3–4 remain applicable;
+the local full suite and reduced `dev-next` CI already pass, while the full
+matrix and final population assessment remain later gates.
 
 1. On an isolated gpyreg feature branch, resync both step-out bracket vectors
    from accepted current coordinates before processing each dimension. Test

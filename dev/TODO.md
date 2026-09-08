@@ -4,8 +4,16 @@ eta-experiment tests against changed production code. Package test discovery
 is corrected, with the historical source guard intact. Full local suite:
 1,049 passed, 35 skipped, no reruns; independent review passes. Repair
 96a8e3a is pushed; CI 34246862361 passed (1,122 passed, 60 skipped, no reruns).
-Next: merge dev-eta-bound-fix into dev-next, push and check integration CI;
-then the separate Phase7 gpyreg repair.
+Merged and pushed to dev-next at 89ac5f0; integration CI 34248221965 passed
+(1,122 passed, 60 skipped, no reruns, 541.28 s).
+PI deferred the optional step-out repair to gpyreg issue #44:
+https://github.com/acerbilab/gpyreg/issues/44
+No gpyreg repair or pin bump is required for this release. Remaining
+latent-fix gates are integrated full-matrix and final population validation.
+The final 870-run population follows the remaining S-VBMC compatibility/
+integration work and the agreed PyTorch feasibility decision and resulting
+release work; do not launch it prematurely. Next bounded validation is the
+full supported OS/Python matrix; the next broader workstream is S-VBMC.
 PI-selected A is implemented on dev-eta-bound-fix: no eta-bound penalty or
 caller-theta mutation. Other regularizers and optimizer settings remain.
 64 focused tests pass; all 11 numerical fixtures exact. Six paired replays
@@ -13,8 +21,8 @@ converged and remained usable; retain one Normal D5 gsKL fence flag for
 the final population assessment. Independent core/artifact reviews pass;
 see dev/2026-09-08-eta-bound-fix.md.
 Stopping-rule investigation is deferred research/improvement outside this
-fix campaign, not a release blocker. Next implementation item is Phase7's
-upstream gpyreg step-out repair, followed by integrated validation.
+fix campaign, not a release blocker. The gpyreg step-out repair is likewise
+deferred; Phase7 retains the remaining integrated validation work.
 
 Completed: equal-iteration eta comparison on dev-eta-equal-budget;
 independent scientific/artifact review passed. The subsequent PI selection

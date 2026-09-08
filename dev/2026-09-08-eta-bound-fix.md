@@ -153,3 +153,15 @@ was pushed and [replacement CI](https://github.com/acerbilab/pyvbmc/actions/runs
 passed on Ubuntu/Python 3.12: **1,122 passed, 60 skipped, no reruns,
 574.40 s** (whole job 10m41s). The noisy half-normal end-to-end test passed.
 Next integration step is merging into `dev-next` and checking its CI.
+
+## Integration and deferred upstream issue
+
+`dev-next` was fast-forwarded to `89ac5f0` and pushed. Its
+[integration CI](https://github.com/acerbilab/pyvbmc/actions/runs/34248221965)
+passed: 1,122 passed, 60 skipped, no reruns, 541.28 s.
+
+The PI subsequently deferred the optional gpyreg step-out repair to
+[gpyreg #44](https://github.com/acerbilab/gpyreg/issues/44). It is not used
+by current PyVBMC GP training and is no longer a release prerequisite.
+This supersedes the upstream-repair-first sequencing above; keep the
+dependency pin unchanged. Full-matrix and final population gates remain.
