@@ -532,7 +532,8 @@ def test_vbmc_optimstate_constants():
     assert np.all(np.isnan(vbmc.optim_state["last_run_avg"]))
     assert np.all(vbmc.optim_state["vp_K"] == vbmc.vp.K)
     assert np.all(vbmc.optim_state["pruned"] == 0)
-    assert np.all(vbmc.optim_state["variance_regularized_acqfcn"] == True)
+    assert np.all(vbmc.optim_state["variance_regularized_acq_fcn"] == True)
+    assert "variance_regularized_acqfcn" not in vbmc.optim_state
     assert np.all(vbmc.optim_state["search_cache"] == [])
     assert np.all(vbmc.optim_state["repeated_observations_streak"] == 0)
     assert np.all(vbmc.optim_state["data_trim_list"] == [])

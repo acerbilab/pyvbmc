@@ -1,7 +1,9 @@
 import sys
+import warnings
 
 import gpyreg as gpr
 import numpy as np
+import pytest
 
 from pyvbmc.acquisition_functions import AbstractAcqFcn
 from pyvbmc.function_logger import FunctionLogger
@@ -40,6 +42,46 @@ def create_gp(D=3):
         noise=gpr.noise_functions.GaussianNoise(constant_add=True),
     )
     return gp
+
+
+class FixedOutputAcq(AbstractAcqFcn):
+    def __init__(self, output, log_flag=False):
+        super().__init__()
+        self.output = output
+        self.acq_info["log_flag"] = log_flag
+
+    def _compute_acquisition_function(
+        self,
+        Xs,
+        vp,
+        gp,
+        function_logger,
+        optim_state,
+        f_mu,
+        f_s2,
+        f_bar,
+        var_tot,
+    ):
+        return self.output
+
+
+def call_fixed_acq(mocker, output, f_s2, optim_state, log_flag=False):
+    M = f_s2.shape[0]
+    mocker.patch(
+        "gpyreg.GP.predict",
+        return_value=(np.zeros_like(f_s2), f_s2),
+    )
+    state = {
+        "integer_vars": None,
+        "lb_eps_orig": -np.inf,
+        "ub_eps_orig": np.inf,
+        **optim_state,
+    }
+    vp = VariationalPosterior(3)
+    logger = FunctionLogger(lambda x: x, 3, False, 0)
+    return FixedOutputAcq(output, log_flag)(
+        np.ones((M, 3)), create_gp(3), vp, logger, state
+    )
 
 
 def test__call__simple(mocker):
@@ -182,6 +224,115 @@ def test__call__regularization(mocker):
     acq = acq_fcn(Xs, create_gp(3), vp, function_logger, optim_state)
     assert acq.shape == (M,)
     assert np.all(acq == 2000)
+
+
+@pytest.mark.parametrize(
+    "output",
+    [
+        np.array([1.0, 2.0, 3.0]),
+        np.array([[1.0, 2.0, 3.0]]),
+        np.array([[1.0], [2.0], [3.0]]),
+    ],
+)
+def test__call__normalizes_vector_shapes_before_masks(mocker, output):
+    result = call_fixed_acq(
+        mocker,
+        output,
+        np.ones((3, 1)),
+        {"variance_regularized_acq_fcn": False},
+    )
+    assert result.shape == (3,)
+    assert np.array_equal(result, [1.0, 2.0, 3.0])
+
+
+def test__call__normalizes_row_before_bounds_mask(mocker):
+    result = call_fixed_acq(
+        mocker,
+        np.array([[1.0, 2.0, 3.0]]),
+        np.ones((3, 1)),
+        {
+            "variance_regularized_acq_fcn": False,
+            "lb_eps_orig": 2.0,
+            "ub_eps_orig": 3.0,
+        },
+    )
+    assert result.shape == (3,)
+    assert np.all(result == np.inf)
+
+
+@pytest.mark.parametrize(
+    "output",
+    [
+        np.ones((3, 2)),
+        np.ones(2),
+        np.array(1.0),
+        np.ones((3, 1, 1)),
+    ],
+)
+def test__call__rejects_invalid_acquisition_shapes(mocker, output):
+    with pytest.raises(ValueError, match="one value per input point"):
+        call_fixed_acq(
+            mocker,
+            output,
+            np.ones((3, 1)),
+            {"variance_regularized_acq_fcn": False},
+        )
+
+
+@pytest.mark.parametrize(
+    ("log_flag", "output", "expected"),
+    [
+        (
+            False,
+            np.array([np.inf, 3.0, 4.0]),
+            np.array([0.0, 3.0 * np.exp(-1.0), 4.0]),
+        ),
+        (
+            True,
+            np.array([-np.inf, 3.0, 4.0]),
+            np.array([np.inf, 4.0, 4.0]),
+        ),
+    ],
+)
+def test__call__regularization_mixed_and_zero_variance(
+    mocker, log_flag, output, expected
+):
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        result = call_fixed_acq(
+            mocker,
+            output.reshape(1, -1),
+            np.array([[0.0], [0.5], [2.0]]),
+            {
+                "variance_regularized_acq_fcn": True,
+                "tol_gp_var": 1.0,
+            },
+            log_flag=log_flag,
+        )
+    assert np.allclose(result, expected)
+
+
+@pytest.mark.parametrize(
+    ("state", "expected"),
+    [
+        ({"variance_regularized_acq_fcn": True}, np.exp(-1.0)),
+        ({"variance_regularized_acqfcn": True}, np.exp(-1.0)),
+        (
+            {
+                "variance_regularized_acq_fcn": False,
+                "variance_regularized_acqfcn": True,
+            },
+            1.0,
+        ),
+        ({"variance_regularized_acqfcn": False}, 1.0),
+        ({}, 1.0),
+    ],
+)
+def test__call__regularization_key_compatibility(mocker, state, expected):
+    state = {**state, "tol_gp_var": 1.0}
+    result = call_fixed_acq(mocker, np.array([1.0]), np.array([[0.5]]), state)
+    assert result.shape == (1,)
+    assert np.allclose(result, expected)
 
 
 def test__call__real_max(mocker):

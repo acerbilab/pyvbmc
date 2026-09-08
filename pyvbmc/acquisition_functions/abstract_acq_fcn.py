@@ -110,22 +110,52 @@ class AbstractAcqFcn(ABC):
             var_tot,
         )
 
+        # Normalize documented vector outputs before applying pointwise masks.
+        acq = np.asarray(acq)
+        M = Xs.shape[0]
+        if acq.ndim == 1:
+            valid_shape = acq.shape == (M,)
+        elif acq.ndim == 2:
+            valid_shape = acq.shape in ((1, M), (M, 1))
+        else:
+            valid_shape = False
+        if not valid_shape:
+            raise ValueError(
+                "Acquisition function should return a vector with one value "
+                "per input point, with shape (M,), (1, M), or (M, 1)."
+            )
+        acq = acq.reshape(-1)
+
         # Regularization: penalize points where GP uncertainty
         # is below threshold
-        if optim_state.get("variance_regularized_acq_fcn"):
+        if "variance_regularized_acq_fcn" in optim_state:
+            variance_regularized = optim_state["variance_regularized_acq_fcn"]
+        else:
+            variance_regularized = optim_state.get(
+                "variance_regularized_acqfcn", False
+            )
+        if variance_regularized:
             # Try not to go below this variance
             tol_var = optim_state.get("tol_gp_var")
             idx_gp_uncertainty = var_tot < tol_var
 
             if np.any(idx_gp_uncertainty):
+                idx_zero_variance = np.logical_and(
+                    idx_gp_uncertainty, var_tot == 0
+                )
+                idx_positive_variance = np.logical_and(
+                    idx_gp_uncertainty, var_tot > 0
+                )
                 if self.acq_info.get("log_flag"):
-                    acq[idx_gp_uncertainty] += (
-                        tol_var / var_tot[idx_gp_uncertainty] - 1
+                    acq[idx_positive_variance] += (
+                        tol_var / var_tot[idx_positive_variance] - 1
                     )
+                    acq[idx_zero_variance] = np.inf
                 else:
-                    acq[idx_gp_uncertainty] *= np.exp(
-                        -(tol_var / var_tot[idx_gp_uncertainty] - 1)
+                    acq[idx_positive_variance] *= np.exp(
+                        -(tol_var / var_tot[idx_positive_variance] - 1)
                     )
+                    acq[idx_zero_variance] = 0.0
 
         realmax = sys.float_info.max
         acq = np.maximum(acq, -realmax)
@@ -138,13 +168,6 @@ class AbstractAcqFcn(ABC):
         )
         acq[idx_bounds] = np.inf
 
-        # Re-shape to 1-D, if necessary (to avoid errors in cma.fmin)
-        if acq.ndim > 1:
-            if acq.shape[0] != acq.size and acq.shape[1] != acq.size:
-                raise ValueError(
-                    "Acquisition function should return a 1-D result (or a 2-D result which has size 1 along at least one axis)."
-                )
-            acq = acq.reshape(-1)
         return acq
 
     @abstractmethod
