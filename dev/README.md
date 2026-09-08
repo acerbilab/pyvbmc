@@ -15,6 +15,12 @@ would be committed, and anything that was would be published to the docs site.
 
 ## Index
 
+- [2026-09-08-noisy-acquisitions.md](2026-09-08-noisy-acquisitions.md) -
+  Where noisy (VIQR) runs spend their time, the VIQR loss variants, the EIG
+  port with a per-component variant, repeated-observation candidates and
+  an in-loop GP sample cap, with same-machine arms on the noisy Rosenbrock
+  configurations.
+
 - [2026-09-08-ecosystem-integration.md](2026-09-08-ecosystem-integration.md) -
   PI direction and proposal for delivering S-VBMC and related algorithms
   within PyVBMC, with shared posterior interfaces and optional dependencies.
