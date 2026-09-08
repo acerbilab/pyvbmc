@@ -15,6 +15,14 @@ would be committed, and anything that was would be published to the docs site.
 
 ## Index
 
+- [2026-09-08-ecosystem-integration.md](2026-09-08-ecosystem-integration.md) -
+  PI direction and proposal for delivering S-VBMC and related algorithms
+  within PyVBMC, with shared posterior interfaces and optional dependencies.
+
+- [2026-09-08-svbmc-compatibility.md](2026-09-08-svbmc-compatibility.md) -
+  S-VBMC's unchanged tests and 30 shipped posteriors checked against current
+  PyVBMC, with bounded real-posterior stacking and sampling checks.
+
 - [2026-09-08-acquisition-oracle-conditioning.md](2026-09-08-acquisition-oracle-conditioning.md) -
   Cross-platform variance-penalty amplification and the reference-conditioned
   acquisition oracle comparison, with nine-environment diagnostic evidence.

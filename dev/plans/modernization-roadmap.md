@@ -725,6 +725,38 @@ anything that changes numerics lands.
     `torch` dependency meets Stage 3's `vp.to_torch()`), and release it
     in step with 1.5: its `pyvbmc` pin bumped, its tests green against the
     released code, its pickles regenerated if the classes changed.
+
+    **Compatibility pickup (2026-09-08):** PI authorized the compatibility
+    check first, on `dev-svbmc-compat` from `dev-next` at `feadf30`.
+    PI clarification: favor making S-VBMC directly available in PyVBMC,
+    and establish a common delivery approach for ecosystem additions rather
+    than creating a separate package for each algorithm. The concrete API,
+    dependency treatment and migration remain design questions; see
+    [the integration proposal](../2026-09-08-ecosystem-integration.md).
+    PI subsequently endorsed this direction and parked implementation for
+    later; retain it in release planning. Stage 4 feasibility is the next
+    proposed workstream, not an authorization to begin the full port.
+    - [x] Pin an isolated S-VBMC checkout, inspect its test/load contracts,
+      and verify actual PyVBMC/gpyreg/Torch imports and versions.
+      S-VBMC `13a78f6`, PyVBMC `feadf30`, gpyreg `a2f8ddc`; local
+      Python 3.12.6, NumPy 2.5.2, SciPy 1.18.1, Torch 2.14.0+cpu.
+      Torch is isolated under the ignored compatibility run directory.
+    - [x] Run its existing suite against current PyVBMC and check all 30
+      shipped posterior pickles, including the operations stacking uses.
+      Existing upstream suite: 32 passed in 3.53 s; its VP interfaces are
+      mocks. All 30 real posteriors load/sample/evaluate densities; all three
+      groups retain 10/10 inputs and pass entropy gradients, a 3-step weight
+      optimization, sampling, and input parameter/transformer preservation.
+    - [x] Distinguish compatibility regressions from upstream/environment
+      issues; independently review and record findings and next steps.
+      See [the compatibility record](../2026-09-08-svbmc-compatibility.md).
+      Independent Sol review found no record/checker issues. The shipped
+      D=2 corpus is compatible; a separate D=1 probe confirms an existing
+      S-VBMC draw-shape bug to fix during integration. No core or pickle
+      changes were needed. Compatibility check complete; integration API
+      and ecosystem delivery design are the next work.
+    Root owns numerical execution and tracking; Sol may inspect compatibility
+    contracts read-only in parallel. Run one heavy computation at a time.
 11. **Stage 3 integrated before the reference extension** (PI,
     2026-09-06). Feature code `4ee612d` was fast-forwarded into `dev-next`
     at `4bff1a5`. Branch smoke 34043031387, all nine full-matrix jobs

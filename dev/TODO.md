@@ -1,4 +1,47 @@
-Pickup (2026-09-08): resume dev/plans/latent-bug-fixes.md with $task.
+Fresh-session pickup (2026-09-08): plan the Stage 4 PyTorch feasibility
+prototype using $task. Resume from `dev-svbmc-compat` (this branch carries
+the compatibility records and parked integration proposal); create a fresh
+Stage 4 feature branch from it so those records remain available. Production
+code is unchanged from `dev-next` at `feadf30`.
+
+Read first:
+
+- dev/plans/modernization-roadmap.md, Stage 4 and pickup 10
+- dev/2026-09-02-modernization-discussion.md
+- dev/2026-09-06-pyvbmc-1.5-overview.md
+- dev/2026-09-08-svbmc-compatibility.md
+- dev/2026-09-08-ecosystem-integration.md
+
+Astra orchestrates; Sol implements/reviews. Scope a complete variational
+optimization step (GP integrals, entropy, parameter handling, optimizer,
+including final-refinement sizes) against modernized NumPy. Preserve the
+agreed CPU/GPU float64 checks, gradients, numerical robustness, transfer and
+setup costs, installation concerns, and code-simplicity assessment. Around
+1.2x runtime is not an agreed cutoff; CPU acceptability still matters even
+if GPU is faster. Plan the bounded experiment first; the full port requires
+the explicit evidence-based decision. Stage 4 has not started.
+
+No jobs or watchers need reattaching. Only one heavy computation at a time.
+Local S-VBMC source, CPU Torch overlay, diagnostics and logs remain ignored
+under dev/scripts/runs/svbmc_compat_20260908/; retrieval/rebuild instructions
+are in the compatibility record. They are not required to plan Stage 4.
+The CPU-only Torch install provides no GPU feasibility evidence. S-VBMC
+integration is parked. Keep the final 870-case population run for after the
+remaining release changes; preserve the user-facing skill and calibration
+follow-ups in the remaining-work map below.
+
+Completed pickup: S-VBMC compatibility check on `dev-svbmc-compat`,
+tracked in dev/plans/modernization-roadmap.md pickup 10. All 32 upstream tests
+and 30 real-posterior checks pass; all three groups pass bounded stacking/
+optimization. Independent review passes. A separate D=1 probe confirms an
+existing S-VBMC shape bug for the integration fix list. See
+dev/2026-09-08-svbmc-compatibility.md.
+PI now favors direct inclusion of S-VBMC in PyVBMC and a common delivery
+approach for future algorithms. Concrete API/dependency/migration design
+is proposed in dev/2026-09-08-ecosystem-integration.md. PI endorsed the
+direction and parked implementation for later. Next proposed workstream:
+Stage 4 PyTorch feasibility prototype, preserving its evidence-based port
+decision and CPU/GPU float64 requirements; not launched yet.
 
 Remaining-work map (2026-09-08; roadmap is authoritative):
 - Full supported matrix: green, all nine jobs in 34263042113 at `24cf369`.
