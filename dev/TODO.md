@@ -1,13 +1,11 @@
 Pickup (2026-09-08): resume dev/plans/latent-bug-fixes.md with $task.
 
 Remaining-work map (2026-09-08; roadmap is authoritative):
-- Current gate: validate the reference-conditioned acquisition oracle fix.
-  Diagnostic matrix 34259734758 reproduced the roundoff amplification on
-  eight stacks; Windows/Python 3.12 passed. See
-  dev/2026-09-08-acquisition-oracle-conditioning.md. Corrected matrix
-  34261973325 passes the oracle gate, exposes a separate Python 3.10 mock
-  target ambiguity; its test-only correction is reviewed and locally checked.
-  Final full-matrix confirmation remains pending.
+- Full supported matrix: green, all nine jobs in 34263042113 at `24cf369`.
+  The acquisition oracle now accounts for variance-penalty conditioning;
+  a separate Python 3.10 test mock target is explicit. Both fixes preserve
+  production code and reference values. See
+  dev/2026-09-08-acquisition-oracle-conditioning.md and the live latent-fix plan.
 - Release work: S-VBMC compatibility/integration and connections to upcoming
   extensions; PyTorch CPU/GPU float64 feasibility, then the explicit port
   decision and resulting dependency/Python-floor/NumPy-transition work.
@@ -37,12 +35,13 @@ Merged and pushed to dev-next at 89ac5f0; integration CI 34248221965 passed
 (1,122 passed, 60 skipped, no reruns, 541.28 s).
 PI deferred the optional step-out repair to gpyreg issue #44:
 https://github.com/acerbilab/gpyreg/issues/44
-No gpyreg repair or pin bump is required for this release. Remaining
-latent-fix gates are integrated full-matrix and final population validation.
+No gpyreg repair or pin bump is required for this release. Final
+latent-fix population validation remains pending; the full supported matrix
+passed all nine jobs in 34263042113 after the two test corrections.
 The final 870-run population follows the remaining S-VBMC compatibility/
 integration work and the agreed PyTorch feasibility decision and resulting
-release work; do not launch it prematurely. Next bounded validation is the
-full supported OS/Python matrix; the next broader workstream is S-VBMC.
+release work; do not launch it prematurely. The next broader workstream is
+S-VBMC compatibility/integration.
 Also retain the user-facing coding-agent skill in the remaining work:
 dev/2026-09-02-user-agent-skill.md proposes skills/pyvbmc/SKILL.md, supporting
 references/helpers and distribution with the library. Prepare the guidance

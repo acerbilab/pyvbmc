@@ -7,7 +7,7 @@ OS/Python matrix on integrated `dev-next`.
   on `c05145d`: Ubuntu, Windows and macOS × Python 3.10, 3.11 and 3.12,
   using the existing pinned gpyreg dependency. No concurrent local numerical
   work or final population launch.
-- [!] Full-matrix gate failed: macOS/Python 3.11 fails the
+- [x] Record the initial full-matrix failure: macOS/Python 3.11 fails the
   `corr_D5_warped/acq_AcqFcn` oracle (max absolute discrepancy 1.38e-14,
   scaled 1.49e-3 against rtol 1e-3, atol 0). Five reruns reproduce it.
   The other eight jobs were cancelled by matrix fail-fast, so none is a
@@ -33,10 +33,11 @@ OS/Python matrix on integrated `dev-next`.
   all 32 comparisons exact locally. The final strengthened comparison tests
   pass separately (9 tests). Independent Sol static review has no findings;
   formatting hooks pass. No production or reference changes.
-- [~] Confirm all nine corrected jobs green, integrate into `dev-next` and push.
+- [x] Confirm all nine corrected jobs green.
   Correction `fe7b304` is pushed; full matrix
   [34261973325](https://github.com/acerbilab/pyvbmc/actions/runs/34261973325)
-  is running. No concurrent local numerical work.
+  completed: all six Python 3.11/3.12 jobs passed; the three Python 3.10
+  jobs passed oracles and failed the separate mock target below.
 - [x] Correct a separate Python 3.10 mock-target failure exposed after the
   oracle gate passes: `test_active_sample_rollback_preserves_live_transformer`
   resolves the exported `active_sample` function instead of its module.
@@ -46,6 +47,11 @@ OS/Python matrix on integrated `dev-next`.
   the test behavior. Independent Sol static review passes; the single light,
   mocked regression passes locally (1.22 s). Python 3.10 validation will use
   CI; only Python 3.12 is installed locally. No local heavy computation.
+  Fix `24cf369` is pushed; final full matrix
+  [34263042113](https://github.com/acerbilab/pyvbmc/actions/runs/34263042113)
+  passed all nine jobs on `24cf369`, confirming both corrections across the
+  full Ubuntu/Windows/macOS and Python 3.10/3.11/3.12 matrix.
+- [~] Integrate the validated fixes and evidence into `dev-next` and push.
 
 **Integration pickup (2026-09-08):** PI approved merging the completed
 latent-fix branch into `dev-next` after feature-branch CI passed.

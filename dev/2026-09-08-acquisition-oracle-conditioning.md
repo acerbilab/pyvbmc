@@ -68,6 +68,19 @@ cannot conceal the status of the others.
 
 ## Validation
 
-Focused regression checks, the exact fixture gate, independent review and
-the corrected nine-job matrix are the completion gates; results are recorded
-in the live [latent-fix plan](plans/latent-bug-fixes.md).
+The focused oracle suite passed (143 tests, 15 platform-gated skips), all
+11 fixtures passed `--check --exact`, and the strengthened comparison module
+passed its nine tests. Independent Sol review found no issues.
+
+Matrix 34261973325 at `fe7b304` passed all oracle gates and all six Python
+3.11/3.12 jobs. It exposed a separate Python 3.10 mock-resolution issue in
+the active-sampling rollback test: the package exports a function named
+`active_sample`, so dotted mock targets reached that function instead of
+the submodule. Commit `24cf369` uses `importlib.import_module` and four
+`patch.object` calls, preserving the test's behavior and assertions.
+The light mocked regression and independent review passed.
+
+The final [matrix 34263042113](https://github.com/acerbilab/pyvbmc/actions/runs/34263042113)
+at `24cf369` passed all nine OS/Python jobs. The live
+[latent-fix plan](plans/latent-bug-fixes.md) tracks integration and subsequent
+release work; no final population run was started.
