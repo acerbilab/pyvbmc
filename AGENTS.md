@@ -45,14 +45,21 @@ Extras: `test` (pytest, pytest-mock, pytest-rerunfailures; what the test
 workflows install), `examples` (plotly for notebook 2), `dev` (both plus
 docs and formatting tools).
 
-Tests (no pytest config, no conftest, no markers; discovery is plain
-`pyvbmc/testing/**/test_*.py`):
+Tests (no conftest or markers; `pyproject.toml` limits default pytest
+discovery to the shipped package suite under `pyvbmc/testing`):
 
 ```console
 python -m pytest --reruns=5 -x -vv                      # exactly what CI runs
 python -m pytest pyvbmc/testing/vbmc/test_options.py::test_del -vv
 pytest --reruns 5 --cov=. --cov-report html:cov_html    # coverage report
 ```
+
+Developer experiment checks under `dev/scripts/` are outside default
+discovery but remain runnable by explicit path. The eta-bound comparison is
+deliberately tied to its validated historical source, so run
+`python -m pytest dev/scripts/test_eta_bound_variants.py -vv` only from the
+historical checkout `c4c692c`, which includes the checks and retains the
+`03650a2` numerical source pinned in `dev/scripts/eta_bound_variants.py`.
 
 On the machine that generated the oracle fixtures, run the suite with
 BLAS single-threaded (`OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1

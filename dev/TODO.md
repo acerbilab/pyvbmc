@@ -1,4 +1,9 @@
 Pickup (2026-09-08): resume dev/plans/latent-bug-fixes.md with $task.
+CI follow-up: e2639a1 was pushed, but run 34240597505 collected historical
+eta-experiment tests against changed production code. Package test discovery
+is corrected, with the historical source guard intact. Full local suite:
+1,049 passed, 35 skipped, no reruns; independent review passes. Push and
+replacement CI verification are in progress before proceeding to Phase7.
 PI-selected A is implemented on dev-eta-bound-fix: no eta-bound penalty or
 caller-theta mutation. Other regularizers and optimizer settings remain.
 64 focused tests pass; all 11 numerical fixtures exact. Six paired replays

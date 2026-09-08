@@ -128,3 +128,25 @@ sidecars, all 12 trace/sidecar hashes and both metric tables; no findings remain
 The selected correction is implemented. Next is the upstream gpyreg
 step-out bracket repair, followed by integrated validation. Stopping-rule
 research stays deferred and is not a prerequisite for either step.
+
+## CI discovery follow-up
+
+The first pushed commit, `e2639a1`, failed CI run 34240597505 because bare
+pytest also collected `dev/scripts/test_eta_bound_variants.py`. Those
+historical experiment checks intentionally require the pre-fix source hash;
+the production correction changes that hash. The earlier focused checks
+did not exercise default discovery.
+
+The repair adds `testpaths = ["pyvbmc/testing"]` to pytest configuration.
+Default and explicit package collection now match all 1,082 locally available
+test cases exactly. Explicit historical collection still finds 35 checks;
+reproduction uses checkout `c4c692c`, which includes those checks and retains
+the pinned numerical source. No experiment guard, numerical implementation,
+accuracy fence or fixture is changed.
+
+The first local full-suite attempt reached 602 passed and 35 skipped before
+a sandbox permission error creating pytest's temporary directory. The retry
+uses a fresh workspace-local temporary directory and passes: **1,049 passed,
+35 skipped, no reruns, 320.64 s**, using bare pytest with CI's rerun/stop
+flags and one BLAS thread. Independent Sol review passed. Replacement CI
+results follow in the task tracker.

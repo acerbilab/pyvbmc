@@ -184,6 +184,14 @@ checks, but timings collected under mixed use are not controlled speed
 benchmarks. Short gates (oracles, a module's tests, the replay) can run at
 any time as one process.
 
+Default pytest discovery is limited by `pyproject.toml` to the shipped suite
+under `pyvbmc/testing`; developer experiment checks in this directory run
+only when named explicitly. In particular,
+`python -m pytest dev/scripts/test_eta_bound_variants.py -vv` must be run from
+historical checkout `c4c692c`, which contains the checks and retains the
+`03650a2` numerical source pinned by `scripts/eta_bound_variants.py`. Its
+source-digest guard is expected to reject later production changes.
+
 The current golden reference is `reference_870_20260907`: **870 runs across
 19 configurations, including 160 noisy runs, with 76 population KS tests**.
 Its JSON sidecars and `summary.md` live under `golden/baseline/`,

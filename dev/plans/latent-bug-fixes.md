@@ -1,5 +1,21 @@
 # Plan: PyVBMC 1.5 latent bug fixes
 
+**CI follow-up (2026-09-08):** run 34240597505 discovered the historical
+eta-variant experiment tests through bare pytest. Their pinned-source guard
+correctly rejects the new production source; default discovery needs to
+target the package tests. Keep explicit experiment checks and their source
+guards intact.
+
+- [x] Configure package test discovery and document explicit historical checks.
+  Default/explicit package collection match all 1,082 locally available
+  tests; explicit historical collection retains 35 checks.
+- [x] Verify collection, run the full package suite and independently review.
+  Bare pytest with CI's rerun/stop flags and one BLAS thread: 1,049 passed,
+  35 skipped, no reruns, 320.64 s. A workspace-local basetemp avoids the
+  sandbox's default temporary-directory permission error. Independent Sol
+  review passes; the production source and historical guard are unchanged.
+- [~] Commit, push and confirm CI on the repair.
+
 **Completed pickup (2026-09-08): PI selected production treatment A.**
 Remove eta-bound loss and gradient and avoid caller-theta mutation in
 `_neg_elcbo`; preserve stable private softmax, parameter layout, the separate
