@@ -352,8 +352,8 @@ def neg_elcbo(state, seed):
     theta = vp.get_parameters(raw_flag=True)
     theta_bnd = vp.get_bounds(gp.X, state["options"], vp.K)
     ns_ent_K = _ns_ent_K(state, vp.K)
-    # `_neg_elcbo` shifts the eta block of `theta` in place: every call
-    # gets its own copy, and the stored theta is the unshifted one.
+    # Keep oracle calls isolated with private parameter copies. `_neg_elcbo`
+    # preserves caller theta; its stable eta shift uses a private copy.
     # As Adam sees it: gradient, no variance (the variance gradient is
     # unimplemented for the full variance), Monte Carlo entropy.
     F, dF, G, H, _ = _neg_elcbo(

@@ -56,6 +56,10 @@ For the release overview, start with
   Equal-iteration local eta-bound comparison: 12 fits, fixed-step checkpoints
   and repeated scoring separate bound effects from longer optimization.
 
+- [2026-09-08-eta-bound-fix.md](2026-09-08-eta-bound-fix.md) -
+  PI-selected production treatment A, numerical/replay gates and explicitly
+  deferred stopping-rule research.
+
 `TODO.md` is a scratch reminder of the ongoing work and the current pickup
 point, rewritten at each handoff. It is not a record: the roadmap and the
 plans are.

@@ -393,9 +393,8 @@ def test_vp_bound_loss():
     theta[-1] = 1.0
     L, dL = _vp_bound_loss(vp, theta, theta_bnd, tol_con=0.01)
 
-    assert np.isclose(L, 178.1123635679098)
-    assert np.isclose(dL[-1], 356.2247271358195)
-    assert np.all(dL[:-1] == 0.0)
+    assert L == 0.0
+    assert np.all(dL == 0.0)
 
 
 def test_vp_optimize_1D_g_mixture():

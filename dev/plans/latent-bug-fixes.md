@@ -1,5 +1,36 @@
 # Plan: PyVBMC 1.5 latent bug fixes
 
+**Completed pickup (2026-09-08): PI selected production treatment A.**
+Remove eta-bound loss and gradient and avoid caller-theta mutation in
+`_neg_elcbo`; preserve stable private softmax, parameter layout, the separate
+small-weight penalty, pruning, location/scale bounds, and optimizer settings.
+The stopping-rule investigation is future research/improvement, explicitly
+outside this fix campaign and not a release blocker (PI, 2026-09-08).
+
+- [x] Sol implements A and focused deterministic/common-draw MC gradient,
+  common-eta-shift, input-nonmutation and retained-weight-penalty checks.
+- [x] Root runs focused tests and exact stage oracles, investigating any
+  intended differences without changing unrelated references.
+  64 focused tests pass without reruns (16.15 s); all 11 fixtures exact,
+  no rebaseline. Independent core review passed. The new weight-only test
+  caught integer bound arrays; private float copies resolve it.
+- [x] Run a bounded before/after trajectory check: normal_D5, cigar_D4 and
+  rosenbrock_D2_noise1, seed0, six runs total. Pin pre-change c4c692c in an
+  isolated checkout; both sides use the selected unpenalized joint0.1 boost.
+  Compare initial designs, pre-boost paths and final accuracy, documenting
+  expected moving trajectories and any accuracy-fence flags. One worker.
+  All six runs converged and remained usable (3.69 min before, 3.24 min
+  after). Initial designs match exactly. Before: zero flags; after: Normal
+  D5 gsKL 0.000491 exceeds the fixed 0.000429 fence. Retain that flag for
+  final population assessment; Cigar and noisy Rosenbrock pass all fences.
+  Normal's pre-boost gsKL improves; the new final refinement worsens it.
+  Full evidence: [production fix note](../2026-09-08-eta-bound-fix.md).
+- [x] Independently review, record Phase6 completion and the deferred
+  research question; next implementation work is the Phase7 gpyreg repair.
+  Independent core and artifact reviews pass, including all 12 evidence
+  hashes and both metric tables. Repository hooks pass. Phase6 production
+  work is complete; the retained accuracy flag remains a population follow-up.
+
 **Completed pickup (2026-09-08): equal-iteration eta-bound experiment.**
 PI approved 12 local Adam fits: the saved Rosenbrock noise1 seed0 and noise3
 seed17 states, three existing paired optimizer RNG replicates, arms A/B.
@@ -142,7 +173,8 @@ code; root runs the single heavy computation, Sol implements/reviews.
   no further fits or whole trajectories are scheduled.
 
 Created: 2026-09-07
-Status: PARTIALLY APPROVED — D1–D5, Q2/Q3, Q1/Q4 comparison designs,
+Original approval status (2026-09-07; later PI decisions above supersede it):
+D1–D5, Q2/Q3, Q1/Q4 comparison designs,
 the reduced 60-run reference addition and parallel development approved on
 2026-09-07; final Q1 treatment and Q4 default remain open.
 The reduced reference extension is complete and integrated (2026-09-07):
@@ -152,7 +184,8 @@ configurations. Checks and provenance are in
 Phase 0's regression gate and Phase 1's neutral fixes are also complete and
 verified. The original 150-run proposal is superseded; do not launch it.
 
-**Current execution (2026-09-08): Phase 2 parked; Phases 3-5 complete.**
+**Historical execution (2026-09-08, before boost restart): Phase 2 parked;
+Phases 3-5 complete.**
 The PI explicitly deferred the full paired boost experiment and authorized
 proceeding with Phases 3-5. Phase 2 is checkpointed at `764a177` on
 `dev-final-boost` (local, not pushed). Main-loop development is on
@@ -179,7 +212,9 @@ open; main-loop development does not require either decision.
   Five default replays are exact against Phase 4 (zero flags); a forced
   crossing switches the next GP fit to stable samples. Final combined gate:
   296 tests passed/15 skipped and all 11 exact fixtures passed.
-- [ ] Return to the parked paired boost campaign when the PI schedules it.
+- [x] Return to the parked paired boost campaign when the PI schedules it.
+  Completed later on 2026-09-08; see the campaign and selected-default
+  pickups above.
 
 This completes the authorized main-loop repair group. Phase 6's eta-bound
 choice, Phase 7's upstream repair/final integration and population assessment
@@ -1324,6 +1359,20 @@ validation before finalizing the production option value.
 
 **Executor:** Sol implementation; Astra mathematical review.
 
+**Production decision (PI, 2026-09-08): A is selected.** The eta-bound loss
+and its eta gradient are zero for every finite eta, including common shifts
+across historical bounds. Mu and scale losses/gradients and the separate
+normalized-weight shrinkage term are unchanged. `_neg_elcbo` copies eta
+before stable max-shifting; neither caller theta nor supplied bounds change.
+The investigation below is retained as history. Stopping-rule improvements
+are explicitly deferred research outside this fix campaign.
+
+**Production completion (2026-09-08):** A is implemented and independently
+reviewed; 64 focused tests pass and all 11 fixtures remain exact. Three
+before/after pairs converge and remain usable, with one Normal D5 gsKL
+fence flag retained for the final population gate. See the
+[production evidence](../2026-09-08-eta-bound-fix.md). Phase7 is next.
+
 **PI-selected investigation (2026-09-07):** compare (a) no eta-bound penalty,
 (b) MATLAB's historical formula with a consistent implementation, checked
 against the original paper where documented, and (c) current behavior.
@@ -1514,6 +1563,12 @@ silently substitute either for the other. Packaging/publication is a later
 release action, not authorized by this planning task.
 
 ## Approved decisions
+
+Current PI disposition (2026-09-08): Q1's main-loop eta treatment is A,
+retaining the separate capped-weight penalty; Q4 uses the joint 0.1 boost
+guard with boost-only weight shrinkage disabled. Both scientific choices
+are settled for implementation and final benchmark validation. The following
+discussion records how those choices were reached.
 
 D1–D5 were approved by the PI on 2026-09-07. The agreed order is neutral
 ("no-op" for existing reference runs) fixes first, then the boost guard once

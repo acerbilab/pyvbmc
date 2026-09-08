@@ -544,6 +544,18 @@ def _vp_bound_loss(
 
     """
 
+    # Mixture weights are controlled by the separate small-weight penalty
+    # below. Keep their parameters in the optimization vector, but exclude
+    # eta from the generic soft-bound loss.
+    if vp.optimize_weights:
+        bound_lb = np.array(theta_bnd["lb"], dtype=float, copy=True)
+        bound_ub = np.array(theta_bnd["ub"], dtype=float, copy=True)
+        bound_lb[-vp.K :] = -np.inf
+        bound_ub[-vp.K :] = np.inf
+    else:
+        bound_lb = theta_bnd["lb"]
+        bound_ub = theta_bnd["ub"]
+
     if vp.optimize_mu:
         mu = theta[: vp.D * vp.K]
         start_idx = vp.D * vp.K
@@ -578,8 +590,8 @@ def _vp_bound_loss(
     if compute_grad:
         L, dL = _soft_bound_loss(
             theta_ext,
-            theta_bnd["lb"].ravel(),
-            theta_bnd["ub"].ravel(),
+            bound_lb.ravel(),
+            bound_ub.ravel(),
             tol_con,
             compute_grad=True,
         )
@@ -613,8 +625,8 @@ def _vp_bound_loss(
 
     L = _soft_bound_loss(
         theta_ext,
-        theta_bnd["lb"].ravel(),
-        theta_bnd["ub"].ravel(),
+        bound_lb.ravel(),
+        bound_ub.ravel(),
         tol_con,
     )
 
@@ -1155,7 +1167,7 @@ def _neg_elcbo(
     vp.set_parameters(theta)
 
     if vp.optimize_weights:
-        vp.eta = theta[-K:]
+        vp.eta = theta[-K:].copy()
         vp.eta -= np.amax(vp.eta)
         vp.eta = np.reshape(vp.eta, (1, -1))
         # Doing the above is more numerically robust than

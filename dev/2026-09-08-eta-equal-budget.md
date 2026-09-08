@@ -5,6 +5,10 @@ Status: complete; artifact and independent scientific reviews passed
 Branch: `dev-eta-equal-budget`. Follow-up to the
 [initial comparison](2026-09-08-eta-bound-comparison.md).
 
+Subsequent PI decision (2026-09-08): select A for production; explicitly
+defer stopping-rule research outside the fix campaign. Implementation and
+verification are recorded in [the fix note](2026-09-08-eta-bound-fix.md).
+
 ## Question and scope
 
 The initial experiment's raw-eta-bound treatment B often optimized for

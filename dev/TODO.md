@@ -1,7 +1,17 @@
 Pickup (2026-09-08): resume dev/plans/latent-bug-fixes.md with $task.
+PI-selected A is implemented on dev-eta-bound-fix: no eta-bound penalty or
+caller-theta mutation. Other regularizers and optimizer settings remain.
+64 focused tests pass; all 11 numerical fixtures exact. Six paired replays
+converged and remained usable; retain one Normal D5 gsKL fence flag for
+the final population assessment. Independent core/artifact reviews pass;
+see dev/2026-09-08-eta-bound-fix.md.
+Stopping-rule investigation is deferred research/improvement outside this
+fix campaign, not a release blocker. Next implementation item is Phase7's
+upstream gpyreg step-out repair, followed by integrated validation.
+
 Completed: equal-iteration eta comparison on dev-eta-equal-budget;
-independent scientific/artifact review passed. Next: PI selection of A,
-then its targeted integration/replay gates. No production treatment changed.
+independent scientific/artifact review passed. The subsequent PI selection
+and production integration of A are recorded above.
 Two saved noisy states x three optimizer RNGs x A/B, 400 Adam iterations,
 checkpoints 40/100/200/400 before pruning, ten diagnostic scoring RNGs.
 See dev/2026-09-08-eta-equal-budget.md. No production selection or offset fits.

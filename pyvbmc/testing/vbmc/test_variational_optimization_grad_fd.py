@@ -251,11 +251,9 @@ def test_neg_elcbo_grad_fd_deterministic_entropy():
     with and without the soft-bound penalty, at a point where the penalty is
     active.
 
-    ``_neg_elcbo`` subtracts ``max(eta)`` from the eta block of ``theta`` in
-    place before calling ``_vp_bound_loss``, so the weight upper bound
-    (``ub = 0``) can never fire through this entry point; the violated bounds
-    here are on mu and on ln_scale. The wrappers pass copies so that in-place
-    shift does not leak into the finite-difference abscissae.
+    The bound-augmented case violates the mu and ln_scale bounds and shifts
+    eta above its historical bounds. Eta remains part of the full objective,
+    but is excluded from the generic soft-bound penalty.
     """
     gp, X = _fixture_gp()
     vp0 = VariationalPosterior(D, K)
@@ -266,16 +264,23 @@ def test_neg_elcbo_grad_fd_deterministic_entropy():
     theta_viol = theta0.copy()
     theta_viol[0] = theta_bnd["lb"][0] - 0.7  # mu below its bound
     theta_viol[D * K] = 1.0  # ln sigma_1: ln_scale[:, 0] above its bound
+    theta_viol[-K:] += 20.0  # cross the historical raw-eta upper bound
 
     for bnd, theta in ((None, theta0), (theta_bnd, theta_viol)):
 
         def f(th):
             vp = VariationalPosterior(D, K)
-            return _neg_elcbo(th.copy(), gp, vp, 0.0, 0, False, False, bnd)[0]
+            source = th.copy()
+            value = _neg_elcbo(th, gp, vp, 0.0, 0, False, False, bnd)[0]
+            assert np.array_equal(th, source)
+            return value
 
         def grad(th):
             vp = VariationalPosterior(D, K)
-            return _neg_elcbo(th.copy(), gp, vp, 0.0, 0, True, False, bnd)[1]
+            source = th.copy()
+            value = _neg_elcbo(th, gp, vp, 0.0, 0, True, False, bnd)[1]
+            assert np.array_equal(th, source)
+            return value
 
         if bnd is not None:
             L, dL = _vp_bound_loss(
@@ -283,6 +288,7 @@ def test_neg_elcbo_grad_fd_deterministic_entropy():
             )
             assert L > 0.0, "soft-bound penalty should be active"
             assert np.any(dL[D * K : D * K + K + D] != 0.0)
+            assert np.all(dL[-K:] == 0.0)
         assert grad(theta).shape == theta.shape
         assert check_grad(f, grad, theta, rtol=1e-5, atol=1e-8)
 
@@ -297,22 +303,46 @@ def test_neg_elcbo_grad_fd_mc_entropy():
     only up to Monte Carlo error (relative ~1e-3 at ``Ns = 1e4``). This
     still catches wrong signs, wrong Jacobians, or a missing block.
     """
-    gp, _ = _fixture_gp()
+    gp, X = _fixture_gp()
     Ns = int(1e4)
+    theta_bnd = VariationalPosterior(D, K).get_bounds(X, OPTIONS, K)
 
     # A fresh VP with the same generator seed per call gives the value and
     # gradient evaluations common random numbers.
     def f(th):
-        return _neg_elcbo(
-            th, gp, VariationalPosterior(D, K, rng=7), 0.0, Ns, False, False
+        source = th.copy()
+        value = _neg_elcbo(
+            th,
+            gp,
+            VariationalPosterior(D, K, rng=7),
+            0.0,
+            Ns,
+            False,
+            False,
+            theta_bnd,
         )[0]
+        assert np.array_equal(th, source)
+        return value
 
     def grad(th):
-        return _neg_elcbo(
-            th, gp, VariationalPosterior(D, K, rng=7), 0.0, Ns, True, False
+        source = th.copy()
+        value = _neg_elcbo(
+            th,
+            gp,
+            VariationalPosterior(D, K, rng=7),
+            0.0,
+            Ns,
+            True,
+            False,
+            theta_bnd,
         )[1]
+        assert np.array_equal(th, source)
+        return value
 
     theta0 = _raw_theta0(seed=2)
+    theta0[0] = theta_bnd["lb"][0] - 0.5
+    theta0[D * K] = 1.0
+    theta0[-K:] -= 20.0
     assert check_grad(f, grad, theta0, rtol=1e-2, atol=1e-2)
 
 
@@ -326,13 +356,25 @@ def test_vp_bound_loss_grad_fd():
     theta0 = vp.get_parameters()
     theta0[0] = theta_bnd["lb"][0] - 0.7  # mu below its bound
     theta0[D * K] = 1.0  # ln sigma_1: pushes ln_scale[:, 0] above its bound
-    theta0[-1] = theta_bnd["ub"][-1] + 1.0  # eta above its bound
+    theta0[-1] = theta_bnd["ub"][-1] + 1.0  # ignored eta bound
 
     L, dL = _vp_bound_loss(vp, theta0, theta_bnd, tol_con=0.01)
     assert L > 0.0
     assert dL.shape == theta0.shape
     assert np.any(dL[D * K : D * K + K] != 0.0)  # sigma block active
     assert np.any(dL[D * K + K : D * K + K + D] != 0.0)  # lambd block active
+    assert np.all(dL[-K:] == 0.0)
+
+    # Common eta shifts, including shifts far beyond the historical bounds,
+    # do not change this loss or its gradient.
+    for offset in (-20.0, 20.0):
+        shifted = theta0.copy()
+        shifted[-K:] += offset
+        shifted_L, shifted_dL = _vp_bound_loss(
+            vp, shifted, theta_bnd, tol_con=0.01
+        )
+        assert shifted_L == L
+        assert np.array_equal(shifted_dL, dL)
 
     def f(th):
         return _vp_bound_loss(
@@ -389,7 +431,7 @@ def test_vp_bound_loss_grad_fd_D_ne_K():
     theta0[1] = theta_bnd["lb"][1] - 0.5  # mu[1, 0] below its bound
     theta0[D3 * K2 + 1] = 1.0  # ln sigma_2: ln_scale[:, 1] above its bound
     theta0[D3 * K2 + K2] = 1.5  # ln lambd_1: makes ln_scale[0, 1] the worst
-    theta0[-1] = theta_bnd["ub"][-1] + 1.0  # eta above its bound
+    theta0[-1] = theta_bnd["ub"][-1] + 1.0  # ignored eta bound
 
     L, dL = _vp_bound_loss(vp, theta0, theta_bnd, tol_con=0.01)
     assert L > 0.0
@@ -398,6 +440,7 @@ def test_vp_bound_loss_grad_fd_D_ne_K():
     # lambd_d receive a nonzero penalty gradient; sigma_1 does not.
     assert dL[D3 * K2] == 0.0 and dL[D3 * K2 + 1] != 0.0
     assert np.all(dL[D3 * K2 + K2 : D3 * K2 + K2 + D3] != 0.0)
+    assert np.all(dL[-K2:] == 0.0)
 
     def f(th):
         return _vp_bound_loss(
@@ -408,3 +451,100 @@ def test_vp_bound_loss_grad_fd_D_ne_K():
         return _vp_bound_loss(vp, th, theta_bnd, tol_con=0.01)[1]
 
     assert check_grad(f, grad, theta0, rtol=1e-4, atol=1e-5)
+
+
+def test_vp_bound_loss_weight_flags():
+    """Eta bounds are inert for weight-only optimization, while bounds on
+    the remaining parameters still apply when weights are fixed."""
+    X = _load("X.txt")
+
+    weights_only = VariationalPosterior(D, K)
+    weights_only.optimize_mu = False
+    weights_only.optimize_sigma = False
+    weights_only.optimize_lambd = False
+    theta_bnd = weights_only.get_bounds(X, OPTIONS, K)
+    theta = np.array([-20.0, 20.0])
+    lb_before = theta_bnd["lb"].copy()
+    ub_before = theta_bnd["ub"].copy()
+
+    L, dL = _vp_bound_loss(weights_only, theta, theta_bnd)
+
+    assert L == 0.0
+    assert np.all(dL == 0.0)
+    assert np.array_equal(theta_bnd["lb"], lb_before)
+    assert np.array_equal(theta_bnd["ub"], ub_before)
+
+    fixed_weights = VariationalPosterior(D, K)
+    fixed_weights.optimize_weights = False
+    theta_bnd = fixed_weights.get_bounds(X, OPTIONS, K)
+    theta = fixed_weights.get_parameters()
+    theta[0] = theta_bnd["lb"][0] - 0.5
+
+    L, dL = _vp_bound_loss(fixed_weights, theta, theta_bnd)
+
+    assert L > 0.0
+    assert dL.shape == theta.shape
+    assert dL[0] < 0.0
+
+
+def test_neg_elcbo_retains_capped_small_weight_penalty():
+    """Removing eta bounds leaves the separate capped weight penalty."""
+    gp, X = _fixture_gp()
+    theta = _raw_theta0(seed=3)
+    theta[-K:] = (-8.0, 0.0)
+    theta_bnd = VariationalPosterior(D, K).get_bounds(X, OPTIONS, K)
+    no_weight_penalty = theta_bnd.copy()
+    no_weight_penalty["weight_penalty"] = 0.0
+
+    vp_penalty = VariationalPosterior(D, K)
+    F_penalty, dF_penalty, *_ = _neg_elcbo(
+        theta, gp, vp_penalty, 0.0, 0, True, False, theta_bnd
+    )
+    F_base, dF_base, *_ = _neg_elcbo(
+        theta,
+        gp,
+        VariationalPosterior(D, K),
+        0.0,
+        0,
+        True,
+        False,
+        no_weight_penalty,
+    )
+
+    expected = OPTIONS["weight_penalty"] * np.sum(
+        np.minimum(vp_penalty.w, theta_bnd["weight_threshold"])
+    )
+    assert np.isclose(F_penalty - F_base, expected)
+    assert np.allclose(dF_penalty[:-K], dF_base[:-K])
+    assert not np.allclose(dF_penalty[-K:], dF_base[-K:])
+
+
+@pytest.mark.parametrize("Ns", [0, 64])
+@pytest.mark.parametrize("offset", [-20.0, 20.0])
+def test_neg_elcbo_invariant_to_common_eta_shift(Ns, offset):
+    """The full bounded objective and gradient depend only on relative eta,
+    including with MC entropy and the capped small-weight penalty."""
+    gp, X = _fixture_gp()
+    theta = _raw_theta0(seed=4)
+    theta[-K:] = (-2.0, 0.0)
+    shifted = theta.copy()
+    shifted[-K:] += offset
+    theta_bnd = VariationalPosterior(D, K).get_bounds(X, OPTIONS, K)
+
+    def evaluate(parameters):
+        return _neg_elcbo(
+            parameters,
+            gp,
+            VariationalPosterior(D, K, rng=17),
+            0.0,
+            Ns,
+            True,
+            False,
+            theta_bnd,
+        )[:2]
+
+    F, dF = evaluate(theta)
+    shifted_F, shifted_dF = evaluate(shifted)
+
+    assert np.isclose(shifted_F, F, rtol=1e-12, atol=1e-12)
+    assert np.allclose(shifted_dF, dF, rtol=1e-12, atol=1e-12)

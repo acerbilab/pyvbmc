@@ -603,7 +603,17 @@ anything that changes numerics lands.
    a copy on the lab server is cheap insurance.
 9. **Latent bug fixes for 1.5** (PI decision 2026-09-06: 1.5 does not
    change the VBMC algorithm, but it fixes the latent bugs; own plan under
-   `plans/` before it starts). The [implementation plan](latent-bug-fixes.md)
+   `plans/` before it starts). PI update (2026-09-08): the boost default is
+   unpenalized final refinement with the joint ELBO/ELCBO(beta5) tolerance
+   0.1 guard (implemented, CI passed). The PI also selected eta treatment A:
+   remove eta bounds and caller-theta mutation, retaining the separate
+   main-loop small-weight penalty and other bounds. Production integration
+   passes 64 focused tests and all 11 exact fixtures. All six bounded paired
+   replays are usable; one Normal D5 gsKL fence flag is retained for final
+   population assessment. See [the fix note](../2026-09-08-eta-bound-fix.md).
+   Stopping-rule improvements are explicitly deferred research outside this
+   fix campaign. These decisions supersede the historical pending choices
+   below. The [implementation plan](latent-bug-fixes.md)
    is partially approved (2026-09-07): D1–D5 and Q2/Q3 settled; Q1/Q4
    comparison designs agreed, final scientific choices await evidence.
    Compare no eta-bound penalty, MATLAB's historical formula with consistent
@@ -817,6 +827,13 @@ anything that changes numerics lands.
     deciding the automatic default's scope.
 
 ## Deferred (devlog §12)
+
+Variational optimizer stopping-rule improvements (PI, 2026-09-08): the
+[equal-iteration eta experiment](../2026-09-08-eta-equal-budget.md) found
+that longer local fits improved surrogate scores on two saved noisy states.
+Investigating broader accuracy/runtime tradeoffs is future research, outside
+the latent-fix campaign and not a release blocker. Preserve current stopping
+settings for the accepted fixes; no additional stopping experiment is scheduled.
 
 Per-component `lambd`, gradient-based acquisition optimization, batched
 acquisition (parallel target evaluations within an iteration via local
