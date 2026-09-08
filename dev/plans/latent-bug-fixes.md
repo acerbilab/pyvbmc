@@ -13,6 +13,13 @@ OS/Python matrix on integrated `dev-next`.
   The other eight jobs were cancelled by matrix fail-fast, so none is a
   passing matrix result. Investigate platform conditioning before choosing
   a remedy; do not loosen tolerances or rebaseline solely to obtain a pass.
+- [~] Collect acquisition/GP-variance diagnostics on all nine stacks with
+  fail-fast disabled; verify the active regularization formula and numerical
+  conditioning before choosing a production or oracle correction.
+  The bounded diagnostic reconstructs stored states only: local single-thread
+  run completes in 1.90 s, all 32 acquisition comparisons exact, production
+  and reference penalty-formula errors zero. No solver, fixture or tolerance
+  changes. Branch `fix-macos-oracle-check` avoids a duplicate automatic smoke.
 
 **Integration pickup (2026-09-08):** PI approved merging the completed
 latent-fix branch into `dev-next` after feature-branch CI passed.

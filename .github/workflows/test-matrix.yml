@@ -34,6 +34,7 @@ env:
 jobs:
   tests:
     strategy:
+      fail-fast: false
       matrix:
         os: ${{ fromJSON(inputs.os) }}
         python-version: ${{ fromJSON(inputs.python-version) }}
@@ -96,6 +97,11 @@ jobs:
           cd ./gpyreg
           git log --oneline -1
           python -m pip install -e ".[test]"
+
+      - name: Diagnose acquisition oracle conditioning
+        run: |
+          cd ./pyvbmc
+          python dev/scripts/diagnose_acquisition_oracles.py
 
       - name: Run tests
         run: |
