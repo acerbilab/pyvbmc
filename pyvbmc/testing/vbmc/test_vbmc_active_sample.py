@@ -989,3 +989,174 @@ def test_get_search_points_more_points_randomly_than_requested():
         )
 
     assert "A maximum of 100 points" in execinfo.value.args[0]
+
+
+def test_repeated_observation_candidates(mocker):
+    """With observation noise and ``max_repeated_observations > 0``, the
+    training inputs are search candidates; a chosen repeat is pooled into
+    its row by the logger instead of adding one, and the streak cap
+    excludes the training inputs once reached."""
+    D = 2
+    rng = np.random.default_rng(0)
+
+    def noisy_target(x):
+        x = np.atleast_2d(x)
+        return -0.5 * np.sum(x**2) + rng.normal(), 1.0
+
+    vbmc = VBMC(
+        noisy_target,
+        np.zeros((1, D)),
+        -np.full((1, D), np.inf),
+        np.full((1, D), np.inf),
+        np.full((1, D), -3.0),
+        np.full((1, D), 3.0),
+        {
+            "specify_target_noise": True,
+            "max_repeated_observations": 2,
+            "search_optimizer": "none",
+            "active_sample_gp_update": False,
+            "active_sample_vp_update": False,
+        },
+    )
+
+    # An acquisition that prefers the training inputs (exact rows).
+    def prefer_training(self, Xs, gp, vp, function_logger, optim_state):
+        Xs = np.atleast_2d(Xs)
+        X_train = function_logger.X[function_logger.X_flag]
+        is_train = np.array([np.any(np.all(X_train == x, axis=1)) for x in Xs])
+        return np.where(is_train, 0.0, 1.0)
+
+    mocker.patch(
+        "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__",
+        prefer_training,
+    )
+    N_init = 10
+    function_logger, optim_state, _, _ = active_sample(
+        None,
+        N_init,
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+    optim_state["N"] = function_logger.Xn + 1
+    optim_state["n_eff"] = np.sum(
+        function_logger.n_evals[function_logger.X_flag]
+    )
+    gp, _, _, hyp_dict = train_gp(
+        {},
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.options,
+        vbmc.plausible_lower_bounds,
+        vbmc.plausible_upper_bounds,
+    )
+    optim_state["hyp_dict"] = hyp_dict
+    Xn0 = function_logger.Xn
+    evals0 = np.sum(function_logger.n_evals[function_logger.X_flag])
+
+    # Two picks: both repeats, no new row, the streak reaches the cap.
+    function_logger, optim_state, _, gp = active_sample(
+        gp,
+        2,
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+    assert function_logger.Xn == Xn0
+    assert (
+        np.sum(function_logger.n_evals[function_logger.X_flag]) == evals0 + 2
+    )
+    assert np.max(function_logger.n_evals[function_logger.X_flag]) >= 2
+    assert optim_state["repeated_observations_streak"] == 2
+
+    # At the cap the training inputs are not candidates: a new row, and the
+    # streak resets.
+    function_logger, optim_state, _, gp = active_sample(
+        gp,
+        1,
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+    assert function_logger.Xn == Xn0 + 1
+    assert optim_state["repeated_observations_streak"] == 0
+
+
+def test_repeated_observation_candidates_off_by_default(mocker):
+    """``max_repeated_observations = 0``: the training inputs are not
+    candidates even when the acquisition would prefer them."""
+    D = 2
+    rng = np.random.default_rng(0)
+
+    def noisy_target(x):
+        x = np.atleast_2d(x)
+        return -0.5 * np.sum(x**2) + rng.normal(), 1.0
+
+    vbmc = VBMC(
+        noisy_target,
+        np.zeros((1, D)),
+        -np.full((1, D), np.inf),
+        np.full((1, D), np.inf),
+        np.full((1, D), -3.0),
+        np.full((1, D), 3.0),
+        {
+            "specify_target_noise": True,
+            "search_optimizer": "none",
+            "active_sample_gp_update": False,
+            "active_sample_vp_update": False,
+        },
+    )
+    assert vbmc.options["max_repeated_observations"] == 0
+
+    def prefer_training(self, Xs, gp, vp, function_logger, optim_state):
+        Xs = np.atleast_2d(Xs)
+        X_train = function_logger.X[function_logger.X_flag]
+        is_train = np.array([np.any(np.all(X_train == x, axis=1)) for x in Xs])
+        return np.where(is_train, 0.0, 1.0)
+
+    mocker.patch(
+        "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__",
+        prefer_training,
+    )
+    function_logger, optim_state, _, _ = active_sample(
+        None,
+        10,
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+    optim_state["N"] = function_logger.Xn + 1
+    optim_state["n_eff"] = np.sum(
+        function_logger.n_evals[function_logger.X_flag]
+    )
+    gp, _, _, hyp_dict = train_gp(
+        {},
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.options,
+        vbmc.plausible_lower_bounds,
+        vbmc.plausible_upper_bounds,
+    )
+    optim_state["hyp_dict"] = hyp_dict
+    Xn0 = function_logger.Xn
+    function_logger, optim_state, _, _ = active_sample(
+        gp,
+        1,
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+    assert function_logger.Xn == Xn0 + 1
+    assert optim_state["repeated_observations_streak"] == 0

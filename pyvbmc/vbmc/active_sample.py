@@ -238,6 +238,15 @@ def active_sample(
             )
             options_update.__setitem__("tol_weight", 0, force=True)
             options_update.__setitem__(
+                "ns_gp_max",
+                min(
+                    options["ns_gp_max"],
+                    # Saved runs predate the option.
+                    options.get("ns_gp_max_active", np.inf),
+                ),
+                force=True,
+            )
+            options_update.__setitem__(
                 "ns_ent", options["ns_ent_active"], force=True
             )
             options_update.__setitem__(
@@ -324,6 +333,26 @@ def active_sample(
                 X_search, parameter_transformer, optim_state["integer_vars"]
             )
 
+            # Repeated observations: with observation noise the training
+            # inputs join the search set. An exact repeat is pooled into its
+            # row by the function logger (precision-weighted), so it sharpens
+            # the GP without adding a training point; a cap on consecutive
+            # repeats keeps a wrong belief from locking the search onto one
+            # input. The chosen repeat skips the local optimizer so that it
+            # stays an exact repeat.
+            n_train_cand = 0
+            repeat_cap = options["max_repeated_observations"]
+            if (
+                repeat_cap > 0
+                and function_logger.noise_flag
+                and optim_state.get("repeated_observations_streak", 0)
+                < repeat_cap
+            ):
+                X_train_cand = function_logger.X[function_logger.X_flag]
+                n_train_cand = X_train_cand.shape[0]
+                X_search = np.vstack([X_train_cand, X_search])
+                idx_cache = np.append(np.full(n_train_cand, np.nan), idx_cache)
+
             if type(SearchAcqFcn[idx_acq]) == str:
                 acq_eval = string_to_acq(SearchAcqFcn[idx_acq])
             else:
@@ -335,10 +364,13 @@ def active_sample(
                     "active_importance_sampling"
                 ] = active_importance_sampling(vp, gp, acq_eval, options)
 
-            # Re-evaluate variance of the log joint if requested
+            # Re-evaluate variance of the log joint if requested (per
+            # hyperparameter sample, with the covariance of the components'
+            # integrals for the per-component information gain).
             if acq_eval.acq_info.get("compute_var_log_joint"):
-                varF = _gp_log_joint(vp, gp, 0, 0, 0, 1)[2]
-                optim_state["var_log_joint_samples"] = varF
+                out = _gp_log_joint(vp, gp, 0, 0, 0, 1, separate_K=True)
+                optim_state["var_log_joint_samples"] = out[2]
+                optim_state["cov_log_joint_components"] = out[6]
 
             # Evaluate acquisition function
             acq_fast = acq_eval(X_search, gp, vp, function_logger, optim_state)
@@ -352,6 +384,7 @@ def active_sample(
 
             X_acq = X_search[[idx]]
             idx_cache_acq = idx_cache[idx]
+            repeat_flag = idx < n_train_cand
 
             # Remove selected points from search set
             X_search = np.delete(X_search, idx, 0)
@@ -382,7 +415,7 @@ def active_sample(
                 return acq.tolist()
 
             # Additional search via optimization
-            if options["search_optimizer"] != "none":
+            if options["search_optimizer"] != "none" and not repeat_flag:
                 if gp.D == 1:
                     # Use Nelder-Mead method for 1D optimization
                     options.__setitem__(
@@ -537,6 +570,13 @@ def active_sample(
                 s2new = function_logger.S[idx_new] ** 2
             else:
                 s2new = None
+
+            if repeat_flag:
+                optim_state["repeated_observations_streak"] = (
+                    optim_state.get("repeated_observations_streak", 0) + 1
+                )
+            else:
+                optim_state["repeated_observations_streak"] = 0
 
             ## Missing port: line 392-402 in matlab
 
