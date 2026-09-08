@@ -12,7 +12,7 @@ Roadmap pickup point 1 (`plans/modernization-roadmap.md`); rationale in
 tolerances", "randomness injected, not drawn"). This file is the plan now
 and the worklog afterwards.
 
-## Phase 3 GP-history coverage (2026-09-08, in progress)
+## Phase 3 GP-history coverage (2026-09-08, complete)
 
 The weighted GP covariance repair has its own oracle contract. The existing
 `gp_fit` uses private options with `weighted_hyp_cov=False`,
@@ -28,7 +28,13 @@ Capture copies the logger, transformer, optimization state, consumed options,
 hyperparameter summary, consumed historical hyperparameters/reliability/sKL,
 and Generator state before the fit mutates them. It records widths actually
 handed to `gpyreg.GP.fit`, the resulting GP/summary/predictions, source hashes,
-versions, seed, iteration and platform. Historical GP factors are omitted:
+versions, seed, iteration and platform. GP-fit proposals, gpyreg's default
+widths and the effective SliceSampler constructor widths are distinguished.
+Every selected capture has finite proposals and at least one effective width
+strictly below its default. The effective/default values come from a small
+constructor spy on pinned gpyreg source; this is fixture instrumentation,
+not a production dependency on a new public API.
+Historical GP factors are omitted:
 warm starts need only their stored hyperparameter matrices.
 
 The bounded development command stops after finding the requested sampled
@@ -49,6 +55,28 @@ for float64. The main `--check` also includes the authentic subset. Capture
 refuses existing destination pairs: a deliberate refresh requires inspecting
 and preserving the existing evidence first. Execution results are recorded
 in [the main-loop work note](../2026-09-08-main-loop-fixes.md).
+
+## Phase 4 acquisition references (2026-09-08)
+
+New VBMC state uses `variance_regularized_acq_fcn`. Existing snapshots and
+old saved runs carry `variance_regularized_acqfcn`, which now activates the
+same behavior when the canonical key is absent. Canonical False overrides
+the legacy value. The original typo is preserved in the stored snapshots;
+the compatibility path must remain covered.
+
+All 34 stored acquisition computations were checked independently against
+the original penalty formula, and their unregularized results matched the
+old references exactly. Four acquisition names changed on the seven
+noiseless snapshots: `acq_AcqFcn`, `acq_AcqFcnLog`, `acq_AcqFcnNoisy` and
+`acq_AcqFcnVanilla`. Only those named reference arrays were replaced, followed
+by the seven confirmed-moving `active_sample_step` outputs. The noisy
+snapshot's references were unchanged. Every stored state and unrelated
+reference remains intact, and the full 11-fixture exact check passes.
+
+Evidence: `dev/scripts/runs/latent_fixes/acquisition_20260908/`
+(`formula_check.json`, `moving_oracles.json`, `targeted_rebaseline.log`,
+`all_exact.log`). The trajectory check compares the acquisition change with
+the covariance-only runs, retaining the original population accuracy fences.
 
 ## Summary
 

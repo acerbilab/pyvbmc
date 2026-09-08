@@ -30,11 +30,12 @@ open; main-loop development does not require either decision.
   retains all initial designs; Cigar seed 0 exceeds accuracy fences, with
   the seed-1 follow-up passing. Preserve that adverse result for integrated
   population assessment; see [the evidence](../2026-09-08-main-loop-fixes.md).
-- [~] Phase 4: implementation checkpoint `1ec320e` in isolated
-  `dev-acq-regularization-stage`; integrate and validate only after Phase 3's
-  separate gate. Formatting hooks passed; numerical checks pending.
-- [~] Phase 5: prepare sampling-termination repair in that isolated checkout
-  on top of `1ec320e`; integrate and validate after Phase 4's separate gate.
+- [x] Phase 4: integrated as `90d08d3`; focused acquisition/init and old-save
+  checks passed, 34 stored acquisition computations match the formula,
+  targeted reference updates and all 11 exact fixtures passed. Five-case
+  replay against Phase 3 has zero flags; independent review complete.
+- [~] Phase 5: sampling-termination repair prepared in the isolated checkout;
+  integrate now that Phase 4's separate gate passes, then validate separately.
 - [ ] Return to the parked paired boost campaign when the PI schedules it.
 
 **Historical Phase 2 execution follows.**

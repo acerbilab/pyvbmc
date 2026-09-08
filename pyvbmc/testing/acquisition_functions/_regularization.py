@@ -70,9 +70,12 @@ def check_variance_regularization(acq_fcn, ns_gp, M):
     noise_N = gp.noise.hyperparameter_count()
     sn2_new = np.column_stack(
         [
-            gp.noise.compute(
-                posterior.hyp[cov_N : cov_N + noise_N], X, y
-            ).reshape(-1)
+            np.broadcast_to(
+                gp.noise.compute(
+                    posterior.hyp[cov_N : cov_N + noise_N], X, y
+                ).reshape(-1),
+                (X.shape[0],),
+            )
             for posterior in gp.posteriors
         ]
     )

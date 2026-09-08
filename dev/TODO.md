@@ -13,9 +13,12 @@ Phase 3 covariance implementation and independent review complete: 146 tests
 passed, 15 skipped, 11 exact fixtures passed. All six replay initial designs
 match. Cigar seed 0 is worse and exceeds accuracy fences (still usable);
 seed 1 and the other four default cases pass. Keep this flag for population
-assessment, not a claim of all-green trajectories. Next integrate and gate
-Phase 4 checkpoint 1ec320e from isolated dev-acq-regularization-stage; Phase 5
-is being prepared there separately. See dev/2026-09-08-main-loop-fixes.md.
+assessment, not a claim of all-green covariance-only trajectories. Phase 4
+is now integrated at 90d08d3 and verified: 34 acquisition formula checks,
+11 exact fixtures and a five-case replay against Phase 3 with zero flags.
+Cumulative Cigar seed 0 is back inside every fence. Phase 5 is ready in the
+isolated checkout; integrate and run its own gate next.
+See dev/2026-09-08-main-loop-fixes.md.
 
 Historical Phase 2 progress follows:
 Paired penalty timing pilot complete: seed 0 of noisy Student D8, Lumpy D10

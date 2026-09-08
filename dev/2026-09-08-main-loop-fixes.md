@@ -84,6 +84,48 @@ quality acceptance remains for the planned integrated population assessment.
 Neither fences nor reference outcomes were changed. Full results are in
 `replay/replay.md` and `cigar_followup/replay.md` under the evidence directory.
 
-No reference population is regenerated. Acquisition regularization is
-prepared independently at `1ec320e` in `dev-acq-regularization-stage`, under
-`dev/scripts/runs/latent_fixes/acq_worktree`; its separate gate follows.
+No reference population is regenerated. The Phase 3 checkpoint is `8f906d8`.
+Commit hooks reformatted several source files after capture; fixture source
+hashes retain the measured source's provenance. A fresh check of the committed
+code passes all 11 fixtures exactly (`committed_exact.log`).
+
+## Acquisition regularization (Phase 4 complete)
+
+The isolated implementation `1ec320e` was applied as `90d08d3`. New state
+uses the canonical key; old saves and snapshots activate the legacy alias
+only when the canonical key is absent. Results are normalized to one value
+per point before regularization and bounds masks. Zero variance uses the
+limiting penalty without a new variance floor.
+
+The first focused run passed 110 tests and found four failures in the new
+VIQR/IMIQR test fixture: constant GP noise returned one value, whereas the
+temporary nearest-training-point noise array needed one per training row.
+The fixture now broadcasts that value. All eight real VIQR/IMIQR cases and
+two actual old-save tests (latest state and iteration 0) pass. No production
+change was needed for those failures. Independent Sol review cleared the
+implementation and the two follow-up test changes.
+
+All 34 stored acquisition checks agree with the penalty formula. With
+regularization disabled, every result is exact against the old reference.
+Only four acquisition names and `active_sample_step` change, on the seven
+noiseless snapshots. Targeted updates preserve all other arrays, and the
+full 11-fixture exact check passes. Evidence is under
+`dev/scripts/runs/latent_fixes/acquisition_20260908/`.
+
+The separate five-case replay uses the Phase 3 traces as its comparison
+baseline and the unchanged golden population's accuracy fences. This
+isolates the acquisition change without rerunning the preceding phase.
+It completes in 3.1 minutes with zero flags and all initial designs exact.
+Normal, banana and halfnormal first differ at iteration 3; Cigar at 4.
+Noisy Rosenbrock retains its entire stored loop and final result exactly.
+Cigar seed 0 is back within the population fences: evidence error 0.00775,
+gsKL 0.000887, MMTV 0.0157, and 130 target evaluations. This cumulative
+result does not erase the separately recorded covariance-only seed-0 flag.
+
+## GP sampling termination (Phase 5, in progress)
+
+The isolated implementation is ready for integration after the Phase 4 gate.
+It restores the existing variance criterion, records logged distinct-location
+counts in history, and backfills compatible old histories on load or direct
+continuation. Missing counts or variances do not trigger this optional stop.
+The existing hard N/K stops and configured threshold remain the contract.
