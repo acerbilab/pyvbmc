@@ -787,7 +787,7 @@ class VBMC:
 
         # By default, apply variance-based regularization
         # to acquisition functions
-        optim_state["variance_regularized_acqfcn"] = True
+        optim_state["variance_regularized_acq_fcn"] = True
 
         # Setup search cache
         optim_state["search_cache"] = []

@@ -3,6 +3,7 @@ import os
 import gpyreg as gpr
 import matplotlib.pyplot as plt
 import numpy as np
+import pytest
 import scipy.stats as sps
 
 from pyvbmc.acquisition_functions import AcqFcnIMIQR
@@ -10,6 +11,14 @@ from pyvbmc.acquisition_functions.utilities import string_to_acq
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc import active_importance_sampling
 from pyvbmc.vbmc.options import Options
+
+from ._regularization import check_variance_regularization
+
+
+@pytest.mark.parametrize("ns_gp", [1, 2])
+@pytest.mark.parametrize("M", [1, 3])
+def test_imiqr_variance_regularization_batch_matches_pointwise(ns_gp, M):
+    check_variance_regularization(AcqFcnIMIQR(), ns_gp, M)
 
 
 def test_acq_info():
