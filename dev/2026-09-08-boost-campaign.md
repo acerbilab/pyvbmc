@@ -1,9 +1,29 @@
 # Paired final-boost campaign
 
-Status: running, launched 2026-09-08 at 08:38:54 UTC after PI authorization.
+Status: computation complete, 2026-09-08 at 10:11:53 UTC; analysis pending.
 This resumes the [parked experiment](2026-09-08-boost-penalty-pilot.md),
 after the bounded eta-bound comparison completed. The
 [live plan](plans/latent-bug-fixes.md) owns execution tracking.
+
+## Completion
+
+All **870 paired endpoints / 1,740 boost arms** completed with zero errors.
+The worker generated 868 pairs and reused the two smoke pairs. Its full
+invocation took **5,577.435 s (1h32m57s)**, including the final capture-hash
+verification; the earlier smoke invocation took 12.479 s. Completion was
+10:11:53 UTC (13:11:53 local). Both worker and environment launcher exited;
+no lock, pending generated-arm checkpoint or pair error file remains.
+
+The status audit checked all 870 reports against the immutable manifest:
+861 reconstructed and nine authentic inputs, both actual penalty settings,
+disabled guard/pruning, finite returned scores and finite common-GP
+diagnostic ELBO/SD/ELCBO values. The runner verified all capture hashes at
+completion; this lightweight status audit did not independently rehash the
+large dill files. Evidence: `summary.json` and `completion_status_check.json`.
+
+Scientific paired-effect analysis and acceptance-rule comparisons remain
+pending. Successful computation does not select a penalty or threshold.
+The following launch record is retained for provenance and possible resume.
 
 ## Protocol and scope
 

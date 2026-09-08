@@ -1,7 +1,11 @@
 Pickup (2026-09-08): resume dev/plans/latent-bug-fixes.md with $task.
-Active: full 870-endpoint paired boost campaign RUNNING since 08:38:54 UTC.
+Active: full 870-endpoint paired boost computation COMPLETE; analysis pending.
+Finished 10:11:53 UTC (13:11:53 local), 870 pairs / 1,740 arms, zero errors;
+worker invocation 1h32m57s. Worker/launcher exited and lock removed. Report
+audit confirms actual options, 861 reconstructed/9 authentic inputs and finite
+scores; runner verified all capture hashes. No penalty/threshold selected.
 Isolated dev-boost-campaign runner `8c7919f`, numerical base `764a177`.
-Worker PID 14272 (launcher 31008). Two smoke pairs, source/import checks,
+Former worker PID 14272 (launcher 31008). Two smoke pairs, source/import checks,
 independent review and no-new-fit resume/recovery tests passed. Paired
 penalties 0.1/0, pruning/guard disabled, common-GP pre/candidate rescoring,
 retained VPs. See dev/2026-09-08-boost-campaign.md for execution and evidence.

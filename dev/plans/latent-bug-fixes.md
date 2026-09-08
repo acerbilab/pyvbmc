@@ -1,6 +1,6 @@
 # Plan: PyVBMC 1.5 latent bug fixes
 
-**Active pickup (2026-09-08): full paired boost campaign authorized.**
+**Active pickup (2026-09-08): paired boost computation complete; analysis pending.**
 Resume the parked experiment on isolated `dev-boost-campaign` from `764a177`.
 Redo both penalty settings (0.1 and 0) for all 870 stored endpoints, with
 identical paired states/RNGs, pruning and acceptance guard disabled. Use
@@ -19,7 +19,12 @@ no main-loop reruns, reference changes, or production default selection.
   See [campaign note](../2026-09-08-boost-campaign.md) for exact resume details.
   Initial health check at 08:41:11 UTC: worker alive, 19 complete pairs
   including the two smoke pairs, zero errors. Campaign remains running.
-- [ ] On completion, validate all pairs and analyze penalty/acceptance outcomes.
+- [x] Computation completed 10:11:53 UTC: 870 pairs / 1,740 arms, zero errors,
+  1h32m57s worker invocation. Runner verified all capture hashes. Status audit
+  checks manifest identities, actual options and finite scores in all reports.
+  Worker/launcher exited; no lock or partial generated pair remains.
+- [ ] Independently validate completed evidence and analyze paired penalty
+  effects and acceptance outcomes; final penalty/threshold remain undecided.
 
 Implementation contract: reuse `boost_penalty_pilot.py` and
 `boost_reconstruction.py`, take explicit source/artifact paths, preserve each
