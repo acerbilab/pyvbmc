@@ -429,6 +429,77 @@ refinement).
   scales, which can be far larger than the posterior.
 - Caveat: one state per dimension, seed 0; the end-to-end arms decide.
 
+### Bumpiness and Monte Carlo overfitting of the refinement
+
+The PI's caution about generalizing from smooth synthetic states: checked
+on the three states above plus three built to be harder (`scratch:
+landscape.py`, `refine_na.py`): a noisy multimodal `lumpy_D4` (σ = 1), a
+correlated `banana_D6` (σ = 2), and the Student target late in its run
+(N = 325, one hyperparameter sample, K = 29).
+
+**Basins**, from L-BFGS-B started at 32 VP draws on one importance set:
+
+| state | GP length scale / VP width, min and median | distinct optima | starts within 5 % of the best |
+|---|---|---|---|
+| rosenbrock_D2_noise3 | 2.1, 8.3 | 2 | 59 % |
+| logreg_D5_noise3 | 5.0, 6.6 | 3 | 94 % |
+| student_D8_noise3, N = 200 | 4.1, 7.4 | 2 | 91 % |
+| student_D8_noise3, N = 325 | 3.6, 4.0 | 5 | 3 % |
+| banana_D6_noise2 | 1.8, 274 | 7 | 9 % |
+| lumpy_D4_noise1 | 0.05, 0.95 | 31 | 6 % |
+
+Once the length scales approach the posterior width, or N grows, the
+surface fragments and random starts land in poor basins. The earlier
+D = 5 and 8 states were the smooth end.
+
+**Monte Carlo overfitting.** Refine on the 100-sample importance set,
+judge the point on an independent 4000-sample set (median of five draws;
+the refined point's reduction over the sieve point's):
+
+| state | gain on its own 100-sample set | gain under 4000 samples | refined point worse than the sieve's |
+|---|---|---|---|
+| logreg_D5_noise3 | ×1.18 | ×1.06 | 2 / 5 |
+| student_D8_noise3, N = 200 | ×1.36 | ×0.96 | 3 / 5 |
+| student_D8_noise3, N = 325 | ×1.40 | ×0.82 | 3 / 5 |
+| banana_D6_noise2 | ×1.18 | ×1.16 | 1 / 5 |
+| lumpy_D4_noise1 | ×1.00 | ×1.00 | 0 / 5 |
+
+Per draw the judged gain ranges from ×0.57 to ×1.28 on the Student state.
+The "100 % of the reference" numbers of the two previous subsections were
+measured on the surface the optimizer climbed, so they measured how well
+L-BFGS-B fits the sampling noise of 100 importance points, not how much
+better the chosen point is. The coarse-to-fine resampling overfits the
+same way; the sieve is robust because it does not resolve the fine
+structure.
+
+**Refining on a larger set fixes it.** Sieve and one-start L-BFGS-B on a
+set of `Na` samples, judged on an independent 6400-sample set (median
+[min, max] over five draws):
+
+| state | Na = 100 | Na = 400 | Na = 1600 |
+|---|---|---|---|
+| logreg_D5_noise3 | ×1.02 [0.96, 1.26], worse 2/5 | ×1.22 [1.00, 1.35], worse 1/5 | ×1.21 [0.99, 1.24], worse 1/5 |
+| student_D8_noise3, N = 200 | ×0.90 [0.54, 1.27], worse 3/5 | ×1.22 [1.17, 1.38], worse 0/5 | ×1.27 [1.18, 1.31], worse 0/5 |
+| banana_D6_noise2 | ×1.21 [0.96, 1.25], worse 1/5 | ×1.20 [0.97, 1.25], worse 2/5 | ×1.24 [1.05, 1.34], worse 0/5 |
+| student_D8_noise3, N = 325 | ×0.87 [0.67, 1.16], worse 3/5 | ×1.07 [1.02, 1.11], worse 0/5 | ×1.08 [1.03, 1.09], worse 0/5 |
+
+Revised recommendation, replacing items 2–3 of the list above:
+
+1. The sieve stays the coarse selector, on the 100-sample set as now (its
+   choice was the best of the compared points under the judge in most
+   draws); its size can come down once a refinement follows.
+2. Refinement only on an importance set of at least 400, preferably 1600
+   samples (or a deterministic quadrature of that accuracy), which costs
+   little because the refinement makes tens of batched calls of D + 1
+   rows: re-evaluate the sieve's top few on the large set, then L-BFGS-B
+   on the log-reduction from the best of them, and keep the sieve point
+   if the large-set value does not improve. Judged independently this
+   gains ×1.07–1.27 over the sieve point on four states with no draw
+   worse at 1600 samples.
+3. The gain is modest and state-dependent; whether it is worth anything
+   end to end is still the open question, and the synthetic targets
+   remain the caveat.
+
 ## The combination and the harder configurations
 
 Same protocol; the harder configurations at seeds 0–5 only (4.5–12
