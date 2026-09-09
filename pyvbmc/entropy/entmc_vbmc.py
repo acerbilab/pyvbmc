@@ -1,26 +1,24 @@
+from numbers import Integral
+
 import numpy as np
 
 from pyvbmc.rng import get_rng
 from pyvbmc.variational_posterior import VariationalPosterior
 
-# Largest number of doubles in the ``(components, samples, D, K)`` tensor of
-# standardized distances that one block of the computation builds (0.5 MB),
-# unless a single sample's ``D x K`` slab already exceeds it. Blocks of this
-# size stay in cache and were measured fastest at both call shapes (the Adam
-# objective with ~100 K^(2/3) samples in total, and the full-ELCBO
-# evaluation with 4096 samples per component), where blocks of 2^18
-# elements and more are memory-bound and slower than evaluating one
-# component at a time. The block size only changes the order of the sums
-# over components and samples (see the tests).
-_MAX_TENSOR_ELEMENTS = 2**16
 
-
-def entmc_vbmc(
+# The explicit budget bounds the number of doubles in each
+# ``(components, samples, D, K)`` standardized-distance tensor unless one
+# sample's ``D x K`` slab already exceeds it. The historical default is 2^16
+# elements. The block size only changes the order of sums over components and
+# samples (see the tests).
+def _entmc_vbmc(
     vp: VariationalPosterior,
     Ns: int,
     grad_flags: tuple = tuple([True] * 4),
     jacobian_flag: bool = True,
     rng=None,
+    *,
+    budget: int,
 ):
     r"""Monte Carlo estimate of entropy of variational posterior.
 
@@ -63,13 +61,19 @@ def entmc_vbmc(
     generator exactly as ``K`` successive draws of ``(Ns / 2, D)`` would.
     The density and the gradient terms are computed as a broadcast over a
     ``(components, samples, D, K)`` tensor of standardized distances, in
-    blocks of at most ``_MAX_TENSOR_ELEMENTS`` elements (unless one
-    sample's ``D x K`` slab already exceeds it): blocks of components, and
+    blocks bounded by the fixed calibration profile (unless one sample's
+    ``D x K`` slab already exceeds it): blocks of components, and
     blocks of samples within a component when one component's tensor alone
     exceeds the budget. The mixture sum over the components is a
     matrix-vector product, so the estimate depends on the BLAS build at
     the level of its rounding.
     """
+    if (
+        isinstance(budget, (bool, np.bool_))
+        or not isinstance(budget, Integral)
+        or budget < 1
+    ):
+        raise ValueError("budget must be a positive integer.")
     rng = vp.rng if rng is None else get_rng(rng)
 
     D = int(vp.D)
@@ -113,7 +117,7 @@ def entmc_vbmc(
     lambd_acc = np.zeros(D) if grad_lambd else None
     w_acc = np.zeros(K) if grad_w else None
 
-    budget = _MAX_TENSOR_ELEMENTS
+    budget = int(budget)
     per_component = Ns * D * K
     g = int(max(1, min(K, budget // max(1, per_component))))
     if per_component <= budget:
@@ -179,3 +183,28 @@ def entmc_vbmc(
     dH = np.concatenate([mu_grad.ravel("F"), sigma_grad, lambd_grad, w_grad])
 
     return H, dH
+
+
+def entmc_vbmc(
+    vp: VariationalPosterior,
+    Ns: int,
+    grad_flags: tuple = tuple([True] * 4),
+    jacobian_flag: bool = True,
+    rng=None,
+):
+    profile = vp._resolve_calibration()
+    if any(bool(flag) for flag in grad_flags):
+        budget = profile.entropy_grad_chunk_elements
+    else:
+        budget = profile.entropy_value_chunk_elements
+    return _entmc_vbmc(
+        vp,
+        Ns,
+        grad_flags,
+        jacobian_flag,
+        rng,
+        budget=budget,
+    )
+
+
+entmc_vbmc.__doc__ = _entmc_vbmc.__doc__

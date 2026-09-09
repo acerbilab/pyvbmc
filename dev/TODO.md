@@ -1,10 +1,33 @@
-Next pickup (PI, 2026-09-09): **machine-local performance calibration**.
-The PI selected this as the next workstream. Start from roadmap pickup 12:
-inspect the existing PDF and entropy chunk budgets, then develop a bounded
-calibration prototype and establish useful speedups, startup cost and
-numerical behavior before choosing automatic defaults. No calibration code,
-active implementation plan or measurement campaign exists yet; API, cache,
-wall-time/memory budget and 1.5 placement remain open decisions.
+Pickup (PI, 2026-09-09): **machine-local calibration release validation**.
+Completed locally: approved package integration in
+`plans/machine-local-calibration.md`, tracked there with the task skill.
+Implementation is on `dev-machine-calibration`; planning/status updates did not
+create a branch. Package API, cache and fixed-run lifecycle are implemented.
+Two final campaigns took 42.39/43.53 s and retained all three 65,536 budgets.
+The full suite passed 1,140 tests with 35 skips; final calibration/seed checks
+passed 93 tests. Exact default oracles/replays, docs, wheel/sdist and isolated
+wheel checks pass. Sol review has no remaining findings. Retained evidence is
+in `experiments/machine_calibration/integrated/`; next release checks are the
+3-OS CI matrix and other-machine performance validation.
+The bounded first experiment is complete.
+Two balanced sweeps kept the existing 65,536-element budget in all nine
+PDF/entropy regimes. Discovery cost 15.01/27.14 s; complete measured work
+23.74/44.49 s after imports. PDF checks are exact; entropy differences are
+at rounding level (maximum 7.11e-15), with RNG/state preservation. A 2-second
+discovery allowance falls back to defaults, taking 3.20 s after imports
+because diagnostic batches can overrun the soft limit. See
+`results/2026-09-09-machine-local-calibration.md`, the reproducible artifacts
+under `experiments/machine_calibration/`, and `plans/machine-local-calibration.md`.
+PI clarifications: calibration belongs in PyVBMC; choices are fixed per run,
+including boost and save/resume; about 30 seconds is an indicative duration,
+not a limit. Complete the campaign; use a generous watchdog only for excessive
+runtime (e.g. five minutes). Give feedback and let users initiate/rerun it.
+The implementation provides
+`pyvbmc.calibrate()` to run a fresh campaign on every call, progress and a summary, a per-user
+machine/environment cache, and cache-or-default normal optimization with no
+surprise campaign. The approved API, helper dependencies and conservative
+campaign thresholds are implemented for 1.5. A cheaper proxy
+campaign is not a prerequisite. Other-machine measurements remain useful.
 
 Read first: this pickup; `plans/modernization-roadmap.md` pickup 12;
 `plans/stage2-batched-acquisition.md` (PDF chunk-size evidence);
@@ -16,7 +39,7 @@ Use synthetic inputs and a private RNG, preserve float64 and algorithmic
 budgets, measure cold setup separately from repeated kernel timings, and
 check values/gradients/RNG behavior. PDF rows are independent; entropy
 chunking changes reduction order and may move trajectories. Keep defaults
-and a reproducible fixed-settings path until the calibration policy is settled.
+and a reproducible fixed-settings path in the package integration.
 
 Astra orchestrates; Sol implements/reviews. Run only one heavy computation
 at a time. No jobs, watchers or agent sessions need reattachment. Existing
@@ -142,9 +165,10 @@ Remaining-work map (2026-09-09; roadmap is authoritative):
   ready for human review.
 - User-facing agent skill: skills/pyvbmc/SKILL.md with FAQ/reference material,
   helpers and packaging/installation design, once the API settles.
-- Proposed improvement: machine-local calibration of kernel chunk sizes.
-  Its API, cache and explicit recalibration behavior, wall-time and memory
-  budget, and release placement remain open (roadmap 12).
+- Machine-local chunk calibration: package integration plan ready for review
+  (roadmap 12); explicit ~30-second campaign with feedback, durable cache,
+  fixed per-run profiles and rerun controls. Initial measurements retain
+  current defaults on this machine; production integration is pending.
 - Final validation/release: freeze the final candidate, run the 870-case
   population with retained boost candidates and compare accuracy/usability;
   complete supported-matrix gates, final docs/release records, one PR to main,
@@ -423,12 +447,13 @@ resolve the PyTorch feasibility decision below, and validate the final 1.5 code
 as a population against this extended reference before dev-next -> main.
 No latent fix or solver implementation was made during the reference work.
 
-The PI's new broader proposal is recorded: machine-local calibration of
-implementation tuning knobs, cached
-after a short first-use sweep and explicitly rerunnable. Roadmap pickup 12
-records concrete PDF/entropy chunk-size candidates, timing evidence,
-reproducibility considerations and open cache/API/budget choices. This is
-outside the latent-fix plan; no calibration implementation has started.
+The PI's broader proposal is recorded: machine-local calibration of
+implementation tuning knobs, cached after an explicit campaign and rerunnable
+with feedback. The 2026-09-09 clarification replaces the initial automatic
+first-use suggestion: ~30 seconds is acceptable, settings stay fixed per run,
+and users control campaign timing. Roadmap pickup 12 links the package
+integration plan and initial PDF/entropy measurements. This is outside the
+latent-fix plan; no production calibration implementation has started.
 
 Historical Stage 4 direction (2026-09-06–07; superseded by the 2026-09-09
 decision): the first step was a PyTorch feasibility prototype tested on both

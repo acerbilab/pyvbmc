@@ -1,9 +1,9 @@
-import importlib
 from pathlib import Path
 
 import numpy as np
 
 from pyvbmc.entropy import entmc_vbmc
+from pyvbmc.entropy.entmc_vbmc import _entmc_vbmc
 from pyvbmc.testing import check_grad
 from pyvbmc.variational_posterior import VariationalPosterior
 
@@ -194,14 +194,10 @@ def test_entmc_vbmc_grad_flags():
     assert dH.shape == (K,)
 
 
-def test_entmc_vbmc_block_size_invariance(monkeypatch):
+def test_entmc_vbmc_block_size_invariance():
     """The computation runs in blocks of components (and of samples when
     one component's distance tensor exceeds the budget); the block size
     changes only the order of sums, not the estimate."""
-    # The package re-exports the function under the module's name, so the
-    # module itself is fetched from the import system.
-    mod = importlib.import_module("pyvbmc.entropy.entmc_vbmc")
-
     rs = np.random.default_rng(11)
     D, K = 3, 7
     vp = VariationalPosterior(D, K)
@@ -221,19 +217,28 @@ def test_entmc_vbmc_block_size_invariance(monkeypatch):
     H_ref, dH_ref = entmc_vbmc(vp, Ns, rng=5)
     _, dH_ref_raw = entmc_vbmc(vp, Ns, jacobian_flag=False, rng=5)
     for budget in (2600, 1000, 500, 100):
-        monkeypatch.setattr(mod, "_MAX_TENSOR_ELEMENTS", budget)
-        H, dH = entmc_vbmc(vp, Ns, rng=5)
+        H, dH = _entmc_vbmc(vp, Ns, rng=5, budget=budget)
         assert np.isclose(H, H_ref, rtol=1e-12, atol=0)
         assert np.allclose(dH, dH_ref, rtol=1e-12, atol=1e-14)
-        _, dH_raw = entmc_vbmc(vp, Ns, jacobian_flag=False, rng=5)
+        _, dH_raw = _entmc_vbmc(
+            vp, Ns, jacobian_flag=False, rng=5, budget=budget
+        )
         assert np.allclose(dH_raw, dH_ref_raw, rtol=1e-12, atol=1e-14)
         # Partial gradient requests: only the requested blocks, same values
-        _, dH_w = entmc_vbmc(
-            vp, Ns, grad_flags=(False, False, False, True), rng=5
+        _, dH_w = _entmc_vbmc(
+            vp,
+            Ns,
+            grad_flags=(False, False, False, True),
+            rng=5,
+            budget=budget,
         )
         assert np.allclose(dH_w, dH_ref[-K:], rtol=1e-12, atol=1e-14)
-        _, dH_s = entmc_vbmc(
-            vp, Ns, grad_flags=(False, True, False, False), rng=5
+        _, dH_s = _entmc_vbmc(
+            vp,
+            Ns,
+            grad_flags=(False, True, False, False),
+            rng=5,
+            budget=budget,
         )
         assert np.allclose(
             dH_s, dH_ref[D * K : D * K + K], rtol=1e-12, atol=1e-14

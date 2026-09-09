@@ -121,7 +121,12 @@ def run_task(label, seed, extra_options, out_dir):
         cfg = find_config(label)
         prob = cfg.make(seed=seed)
         args, options = prob.vbmc_args()
-        options.update(display="off", plot=False, print_iteration_header=False)
+        options.update(
+            display="off",
+            plot=False,
+            print_iteration_header=False,
+            performance_calibration="off",
+        )
         options.update(extra_options or {})
         requested = dict(options)
 

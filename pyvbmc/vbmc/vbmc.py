@@ -15,6 +15,7 @@ import gpyreg as gpr
 import matplotlib.pyplot as plt
 import numpy as np
 
+from pyvbmc.calibration.profile import CalibrationProfile
 from pyvbmc.formatting import full_repr, summarize
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.function_logger.function_logger import (
@@ -232,6 +233,9 @@ class VBMC:
                 [basic_options_path, advanced_options_path]
             )
         self._validate_vectorized_target_option()
+        self._validate_performance_calibration_option(
+            self.options.get("performance_calibration")
+        )
         self._validate_final_boost_tolerance(
             self.options.get("tol_elcbo_boost")
         )
@@ -289,7 +293,9 @@ class VBMC:
             x0=self.x0,
             parameter_transformer=self.parameter_transformer,
             rng=self.rng,
+            calibration=self.options.get("performance_calibration"),
         )
+        self.vp._calibration_display = self.options.get("display") != "off"
         if not self.options.get("warmup"):
             self.vp.optimize_mu = self.options.get("variable_means")
             self.vp.optimize_weights = self.options.get("variable_weights")
@@ -946,6 +952,22 @@ class VBMC:
             self.optim_state = copy.deepcopy(
                 self.iteration_history["optim_state"][-1]
             )
+        self.vp._calibration_display = self.options.get("display") != "off"
+        calibration_profile = self.vp._resolve_calibration(
+            display=self.vp._calibration_display
+        )
+        self.logger.info(
+            "Performance settings: %s.",
+            {
+                "default": "standard settings",
+                "off": "standard settings (calibration disabled)",
+                "legacy": "standard settings from the saved run",
+                "cache": "saved calibration",
+                "memory": "calibration from this Python session",
+                "explicit": "provided profile",
+                "calibrated": "provided calibration",
+            }.get(calibration_profile.source, "provided profile"),
+        )
         self._log_column_headers()
         while not self.is_finished:
             self.iteration += 1
@@ -2278,6 +2300,19 @@ class VBMC:
         return vp, elbo, elbo_sd, changed_flag
 
     @staticmethod
+    def _validate_performance_calibration_option(calibration):
+        """Validate the fixed calibration request stored in options."""
+        if isinstance(calibration, CalibrationProfile):
+            CalibrationProfile.from_dict(calibration.to_dict())
+            return
+        if isinstance(calibration, str) and calibration in {"cached", "off"}:
+            return
+        raise ValueError(
+            "performance_calibration must be 'cached', 'off', or a "
+            "CalibrationProfile."
+        )
+
+    @staticmethod
     def _validate_final_boost_tolerance(tolerance):
         """Validate the optional final-boost score-loss tolerance."""
         if tolerance is None:
@@ -2573,6 +2608,20 @@ class VBMC:
         with open(filepath, mode="rb") as f:
             vbmc = dill.load(f)
 
+        # Profiles are plain saved state. Migrate every historical posterior
+        # before choosing an iteration, without consulting the current
+        # machine or cache.
+        stored_vps = []
+        if hasattr(vbmc, "iteration_history"):
+            stored_vps = vbmc.iteration_history["vp"]
+            if stored_vps is None:
+                stored_vps = []
+        seen_vps = set()
+        for vp in [vbmc.vp, *stored_vps]:
+            if vp is not None and id(vp) not in seen_vps:
+                vp._ensure_calibration_state()
+                seen_vps.add(id(vp))
+
         # Set/check iteration
         if iteration is None:
             iteration = vbmc.iteration
@@ -2605,6 +2654,21 @@ class VBMC:
                     ]
             vbmc._ensure_gp_sampling_history()
 
+        if "performance_calibration" not in vbmc.options:
+            # A legacy run used the historical constants and must not adopt
+            # settings from the machine on which it happens to be loaded.
+            vbmc.options.__setitem__(
+                "performance_calibration", "off", force=True
+            )
+
+        calibration_override = None
+        has_calibration_override = (
+            new_options is not None
+            and "performance_calibration" in new_options
+        )
+        if has_calibration_override:
+            calibration_override = new_options["performance_calibration"]
+
         # Update with new options (e.g. higher number of max iterations)
         if new_options is not None:
             vbmc.options.is_initialized = False
@@ -2614,9 +2678,15 @@ class VBMC:
         if "vectorized_target" not in vbmc.options:
             vbmc.options.__setitem__("vectorized_target", False, force=True)
         vbmc._validate_vectorized_target_option()
+        vbmc._validate_performance_calibration_option(
+            vbmc.options.get("performance_calibration")
+        )
         vbmc._validate_final_boost_tolerance(
             vbmc.options.get("tol_elcbo_boost")
         )
+        if has_calibration_override:
+            vbmc.vp._apply_calibration_load_override(calibration_override)
+        vbmc.vp._calibration_display = vbmc.options.get("display") != "off"
         vectorized_target = bool(vbmc.options["vectorized_target"])
         logger_vectorized = bool(
             getattr(vbmc.function_logger, "vectorized_target", False)
@@ -2761,6 +2831,9 @@ class VBMC:
         output["overhead"] = np.nan
         output["rng_state"] = self._get_random_state()
         output["algorithm"] = "Variational Bayesian Monte Carlo"
+        output["performance_calibration"] = self.vp._resolve_calibration(
+            display=False
+        ).to_dict()
         try:
             __version__ = version("pyvbmc")
         except PackageNotFoundError:

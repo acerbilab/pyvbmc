@@ -51,6 +51,13 @@ plan and consolidated human summary.
 
 - `plans/modernization-roadmap.md` — living tracker of the staged plan in
   `2026-09-02-modernization-discussion.md` §10: stage status, pickup point.
+- [plans/machine-local-calibration.md](plans/machine-local-calibration.md) —
+  package integration plan for explicit PDF/entropy calibration with progress,
+  a machine/environment cache and fixed per-run settings (pending approval).
+  The [first results](results/2026-09-09-machine-local-calibration.md) retain
+  current defaults in both balanced sweeps and establish discovery costs;
+  normal runs are planned to use cache-or-defaults without starting campaigns;
+  inclusion in 1.5 is confirmed by the PI.
 - [plans/latent-bug-fixes.md](plans/latent-bug-fixes.md) — pickup 9
   implementation plan: verified candidate dispositions, numerical and
   compatibility contracts, PI-selected boost/eta fixes, and regression gates
@@ -295,7 +302,11 @@ reason.
   (default seed 0 only), `--baseline` (the traces directory; the default
   `scripts/runs/golden/reference_870_20260907/`, the current reference
   population, exists only on the machine that made it), `--sidecars`,
-  `--out`, `--threads` (1, as the baseline). Exit code 1 if anything is
+  `--out`, `--threads` (1, as the baseline), `--calibration-budget` (pin
+  all three chunk budgets to this integer for a nondefault-profile check;
+  omitted means historical defaults, independent of the local cache).
+  Replay reports retain this setting, including on `--report-only`.
+  Exit code 1 if anything is
   flagged or nothing was compared.
 - `scripts/regenerate_baseline.sh` — the whole benchmark regeneration as
   one sequential process (see above).

@@ -5,6 +5,11 @@ Getting started
 The best way to get started with PyVBMC is via the tutorials and worked examples.
 In particular, start with :ref:`PyVBMC Example 1: Basic usage` and continue from there.
 
+Optionally, run ``pyvbmc.calibrate()`` to tune performance for your machine;
+it takes tens of seconds and does not evaluate your model. Compatible saved
+settings are reused automatically by future runs (see the
+:doc:`calibration guide <api/functions/calibrate>`).
+
 If you are already familiar with approximate inference methods, you can find a summary usage below.
 
 Summary usage

@@ -158,6 +158,12 @@ def parse_args(argv=None):
     ap.add_argument("--sidecars", type=Path, default=DEFAULT_SIDECARS)
     ap.add_argument("--out", type=Path, default=None)
     ap.add_argument(
+        "--calibration-budget",
+        type=int,
+        default=None,
+        help="pin all three chunk budgets; omitted uses historical defaults",
+    )
+    ap.add_argument(
         "--threads",
         type=int,
         default=1,
@@ -612,12 +618,17 @@ def _fmt(v, nd=3):
 
 
 def render(rows, git, args, minutes):
+    calibration = (
+        "historical default budgets"
+        if args.calibration_budget is None
+        else f"all calibration budgets {args.calibration_budget}"
+    )
     lines = [
         f"# Golden replay {time.strftime('%Y-%m-%d %H:%M')}",
         "",
         f"Code `{git['sha']}`{' (dirty)' if git['dirty'] else ''};"
         f" baseline `{args.baseline.name}`; threads {args.threads};"
-        f" {minutes:.1f} min.",
+        f" {calibration}; {minutes:.1f} min.",
         "",
         "| config | seed | verdict | identical iterations / iters ref →"
         " new | live points identical / ref → new | ΔLML ref →"
@@ -725,6 +736,16 @@ def main(argv=None):
             flush=True,
         )
 
+    extra_options = {}
+    if args.calibration_budget is not None:
+        from pyvbmc import CalibrationProfile
+
+        extra_options["performance_calibration"] = CalibrationProfile(
+            pdf_chunk_elements=args.calibration_budget,
+            entropy_grad_chunk_elements=args.calibration_budget,
+            entropy_value_chunk_elements=args.calibration_budget,
+        )
+
     rows = []
     t_all = time.time()
     for label in labels:
@@ -735,7 +756,7 @@ def main(argv=None):
                     continue
             else:
                 print(f"[replay] {tag} ...", flush=True)
-                r = run_task(label, seed, {}, out_dir)
+                r = run_task(label, seed, extra_options, out_dir)
                 if not r["ok"]:
                     rows.append(
                         {
@@ -773,6 +794,8 @@ def main(argv=None):
             git = saved.get("git", git)
             minutes = saved.get("minutes", minutes)
             args.threads = saved.get("threads", args.threads)
+            if args.calibration_budget is None:
+                args.calibration_budget = saved.get("calibration_budget")
     report, n_flag = render(rows, git, args, minutes)
     (out_dir / "replay.md").write_text(report, encoding="utf-8")
     (out_dir / "replay.json").write_text(
@@ -780,6 +803,7 @@ def main(argv=None):
             {
                 "git": git,
                 "threads": args.threads,
+                "calibration_budget": args.calibration_budget,
                 "minutes": minutes,
                 "rows": rows,
             },

@@ -17,6 +17,8 @@ repos:
     rev: "23.3.0"
     hooks:
       - id: black-jupyter
+        # Preserve the exact historical runners referenced by measurement hashes.
+        exclude: ^(dev/scripts/calibrate_chunks\.py|dev/experiments/machine_calibration/initial_unbalanced_runner\.py)$
   - repo: https://github.com/hadialqattan/pycln
     rev: "v2.6.0"
     hooks:

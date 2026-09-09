@@ -1031,12 +1031,17 @@ def _vb_init(
 _CANDIDATE_ASSIGNED = ("w", "eta", "mu", "sigma", "lambd", "bounds", "stats")
 # Attributes shared with the base posterior instead of copied: the generator
 # (as `VariationalPosterior.__deepcopy__` shares it) and the parameter
-# transformer, which no code path mutates after construction (`whitening`
+# transformer and immutable calibration profile. No code path mutates the
+# transformer after construction (`whitening`
 # deep-copies it before changing the rotation), so every candidate can use
 # the base posterior's transformer object. Fine-optimization copies are
 # isolated while internal; `optimize_vp` reattaches the accepted posterior to
 # this shared transformer before returning it as live solver state.
-_CANDIDATE_SHARED = ("_rng", "parameter_transformer")
+_CANDIDATE_SHARED = (
+    "_rng",
+    "parameter_transformer",
+    "_calibration_profile",
+)
 
 
 def _candidate_vp(vp: VariationalPosterior):

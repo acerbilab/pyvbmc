@@ -851,65 +851,53 @@ anything that changes numerics lands.
     agree on a vectorizable target.
 
 12. **Machine-local performance calibration** (PI proposal, 2026-09-07;
-    broader modernization work, outside the pickup 9 latent-fix plan).
-    **Next workstream selected by the PI, 2026-09-09.** The handoff pickup
-    is at the top of `dev/TODO.md`. Begin with the existing PDF/entropy
-    chunk budgets and a bounded investigation of benefit, first-use cost
-    and numerical behavior. No calibration implementation or campaign has
-    started; the API, cache, budget, automatic policy and 1.5 placement below
-    remain to be settled. S-VBMC integration waits for its main developer's
-    review; the final 870-case benchmark remains deferred.
+    next workstream selected 2026-09-09, outside pickup 9's latent-fix plan).
+    Implementation of the approved [package integration plan](machine-local-calibration.md)
+    is locally verified on `dev-machine-calibration`. The full suite passed
+    1,140 tests (35 skips); docs/distributions and isolated wheel checks pass.
+    Two final campaigns took 42.39/43.53 s and retained all three defaults. Planning/status
+    updates stayed on `dev-next` without creating a branch.
+    Calibration is intended to ship in PyVBMC. The PI clarified that choices
+    stay fixed per run, including final boost and save/resume; about 30 seconds
+    for an occasional machine/configuration campaign is an acceptable estimate,
+    not a limit. Complete the campaign, with a generous watchdog only for
+    excessive runtime (e.g. five minutes). Users
+    receive feedback and explicitly initiate or rerun the campaign.
 
-    Some implementation choices were timed on the development laptop and
-    need not be optimal on another CPU, memory hierarchy or numerical stack.
-    The PI proposes short kernel parameter sweeps on the user's machine,
-    caching the chosen settings and providing an explicit recalibration
-    flag/API. Prefer automatic calibration on first relevant use when no
-    valid record exists, if measurement establishes that it fits within a
-    few seconds; subsequent uses load the record. This is a proposed design
-    direction, not an implemented feature or a measured startup-time claim.
+    Implemented workflow: every `pyvbmc.calibrate()` call requests a new bounded
+    campaign, with progress and a result summary. There is no `force` flag;
+    normal optimization loads compatible cached settings or
+    uses historical defaults and suggests calibration. It never starts a
+    surprise campaign after first use, cache loss or a software upgrade.
+    This supersedes the initial automatic-first-use/few-second suggestion.
 
-    Concrete starting points are `vp.pdf`'s `2**16`-element row-chunk budget
-    (`plans/stage2-batched-acquisition.md`, “vp.pdf chunk size”) and
-    `entmc_vbmc`'s `_MAX_TENSOR_ELEMENTS = 2**16`
-    (`plans/stage2-entmc.md`). The PDF sweep measured 159 ms at 2^16 versus
-    436 ms at 2^22 for D=15, K=26, N=100000 on this laptop. Broader choices
-    such as `_gp_log_joint` contraction strategy may be candidates later,
-    but need their own correctness and benefit checks. Tune execution
-    details, not algorithmic sample counts, evaluation budgets, or stopping
-    criteria. Cache capacity is one influence; BLAS implementation, thread
-    settings, array shapes, allocation costs and memory bandwidth also matter.
+    The plan specifies three fixed PDF/entropy budgets, a per-user JSON cache
+    keyed by machine and numerical environment, atomic writes, concurrency,
+    no-persistence fallback, numerical/RNG checks, conservative held-out
+    selection and run provenance. It maps the package/API/options/VP lifecycle
+    changes, docs and tests for Sol implementation with Astra orchestration.
+    The approved API, helper dependencies and campaign thresholds are implemented;
+    inclusion in 1.5 is confirmed by the PI. Another CPU/stack is useful validation,
+    but a cheaper proxy campaign is not a prerequisite for this design.
 
-    Explore a bounded sweep over a small set of representative shape regimes
-    (D, K, sample count, gradients on/off as relevant), with warmup, repeated
-    interleaved timings, and a conservative choice when differences are within
-    timing variability. Use synthetic inputs and a private RNG: no user-target
-    calls and no consumption of the solver's stream. Establish a measured
-    wall-time/memory budget and keep existing defaults if calibration cannot
-    complete reliably. First-use calibration should occur at relevant compute
-    use, not unconditionally on `import pyvbmc`.
+    The bounded developer prototype and [first measurements](../results/2026-09-09-machine-local-calibration.md)
+    are complete: two balanced sweeps retain 65,536 in all nine regimes.
+    Discovery costs 15.01/27.14 s; full measured work 23.74/44.49 s after imports.
+    PDF checks are exact; entropy differences are rounding-level with identical
+    RNG advancement. These pre-integration results inform the package feature;
+    its own measurements and verification are recorded in the linked plan.
 
-    Cache records need a versioned tuning schema and enough machine/software
-    identity to detect materially stale settings (CPU/architecture, numerical
-    backend and relevant library versions, effective threads, backend/device
-    and dtype as applicable). Record selected settings with run provenance;
-    allow explicit recalibration, disabling calibration, and fixed settings
-    for reproducibility and benchmark/oracle runs. Define atomic writes and
-    concurrent-start behavior, and work without persistence if the cache is
-    unwritable. The exact cache directory, invalidation policy, public API,
-    calibration budget and release placement remain to be discussed; a
-    per-user cache directory is a candidate, not a decided location.
-
-    Numerical equivalence must be established per knob. PDF row chunking
-    leaves independent row reductions unchanged; entropy chunking changes
-    accumulation order and can move results by rounding, potentially changing
-    optimizer trajectories. Do not promise seeded bit identity across tuning
-    choices without evidence. Validate values/gradients/RNG behavior, pin
-    settings for exact reference gates, and decide the policy for automatic
-    tuning of reduction-changing kernels before enabling them. This proposal
-    does not alter the frozen reference or existing PyTorch feasibility
-    decisions. Verify useful speedups and actual first-use cost before
-    deciding the automatic default's scope.
+    Starting knobs are `vp.pdf`'s `2**16` row budget and `entmc_vbmc`'s
+    `_MAX_TENSOR_ELEMENTS`. Historical PDF timings in
+    `stage2-batched-acquisition.md` favored 2^16 over 2^14 and 2^18 on this
+    laptop; `stage2-entmc.md` records component/sample tiling. Preserve
+    float64, sample counts and estimator semantics. PDF row chunks are
+    independent; entropy chunks change addition order. Check tight numerical
+    agreement and identical RNG advancement, pin settings for exact gates,
+    and preserve profiles across save/resume. Different profiles need not
+    produce identical seeded trajectories; no separate entropy policy gate
+    remains. S-VBMC awaits its main developer's review, and the final 870-case
+    benchmark remains deferred. Run only one heavy computation at a time.
 
 13. **Optional runtime hints** (PI, 2026-09-09; recorded for 1.5,
     implementation deferred). Occasionally show users a short, useful tip

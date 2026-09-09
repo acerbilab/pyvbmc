@@ -20,6 +20,7 @@ import numpy as np
 import pytest
 
 from pyvbmc import VBMC
+from pyvbmc.calibration.profile import CalibrationProfile
 from pyvbmc.testing import (
     assert_float64,
     assert_manifest_float64,
@@ -32,6 +33,12 @@ D = 2
 # Fewest dtype leaves the walk of a finished instance may find: half the
 # 394 measured on the shared run (dev/plans/stage0-dtype-canary.md).
 LIVE_MIN_LEAVES = 197
+TEST_CALIBRATION_PROFILE = CalibrationProfile(
+    pdf_chunk_elements=2**14,
+    entropy_grad_chunk_elements=2**14,
+    entropy_value_chunk_elements=2**14,
+    source="test",
+)
 
 
 @pytest.fixture(autouse=True)
@@ -48,7 +55,12 @@ def _log_density(x):
 
 
 def _make_vbmc(seed, **options):
-    opts = {"max_iter": 2, "display": "off", "do_final_boost": False}
+    opts = {
+        "max_iter": 2,
+        "display": "off",
+        "do_final_boost": False,
+        "performance_calibration": TEST_CALIBRATION_PROFILE,
+    }
     opts.update(options)
     return VBMC(
         _log_density,
@@ -151,6 +163,22 @@ def test_seed_fixes_optimization(seeded_run):
     )
     # The returned posterior keeps sharing the instance's generator.
     assert vp_1.rng is vbmc_1.rng
+
+
+def test_seeded_run_preserves_nondefault_calibration(seeded_run):
+    vbmc, vp, results = seeded_run
+
+    assert vp.calibration_profile is TEST_CALIBRATION_PROFILE
+    assert vbmc.vp.calibration_profile is TEST_CALIBRATION_PROFILE
+    stored_vps = vbmc.iteration_history["vp"]
+    assert all(
+        stored.calibration_profile is TEST_CALIBRATION_PROFILE
+        for stored in stored_vps
+        if stored is not None
+    )
+    assert results["performance_calibration"]["settings"] == (
+        TEST_CALIBRATION_PROFILE.settings
+    )
 
 
 def test_seeded_run_state_is_float64(seeded_run):

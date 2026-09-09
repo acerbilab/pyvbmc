@@ -12,4 +12,5 @@ include pyvbmc/testing/oracles/fixtures/*.npz
 include pyvbmc/testing/oracles/fixtures/*.json
 include pyvbmc/testing/oracles/fixtures/gp_fit_history/*.npz
 include pyvbmc/testing/oracles/fixtures/gp_fit_history/*.json
+recursive-include pyvbmc/testing/calibration *.py
 prune docsrc

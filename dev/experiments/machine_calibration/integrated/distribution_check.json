@@ -1,0 +1,23 @@
+{
+  "wheel": "pyvbmc-1.0.5.dev210+gf7f0ce1af.d20260909-py3-none-any.whl",
+  "sdist": "pyvbmc-1.0.5.dev210+gf7f0ce1af.d20260909.tar.gz",
+  "clean_install": {
+    "source": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\calibration_integration_20260909\\wheel_site\\pyvbmc\\__init__.py",
+    "calibrate_signature": "(*, verbose=True)",
+    "profile": {
+      "schema_version": 1,
+      "settings": {
+        "pdf_chunk_elements": 16384,
+        "entropy_grad_chunk_elements": 16384,
+        "entropy_value_chunk_elements": 16384
+      },
+      "source": "explicit",
+      "status": "complete",
+      "fingerprint": null,
+      "provenance": {},
+      "cache_path": null
+    },
+    "kernel_import_check": "passed"
+  },
+  "status": "passed"
+}
