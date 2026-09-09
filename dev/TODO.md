@@ -10,6 +10,13 @@ Next: choose S-VBMC's backend from this evidence, then resume API/integration
 design when authorized. Integration remains parked; no final 870-case
 population benchmark is authorized. No computation or watcher remains.
 
+Small follow-up proposed: `torch.compile` on the existing Stage 4 prototype,
+with cold/warm complete-fit CPU/GPU timings and the same numerical gates.
+The completed comparison was eager-only; compiled performance is untested.
+See [bounded scope](plans/stage4-torch-feasibility.md#compiled-torch-follow-up-2026-09-09).
+Write-up requested; execution not yet authorized. NumPy/SciPy remains the
+PyVBMC 1.5 solver.
+
 Completed Stage 4 bounded prototype and measurements:
 final evidence/review is recorded in dev/plans/stage4-torch-feasibility.md.
 Branch `dev-stage4-torch-feasibility` starts from `dev-next` at `bf43c20`.

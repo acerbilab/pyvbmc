@@ -753,6 +753,54 @@ open follow-up, including API, cache, budget and release placement. The final
 settled and still requires explicit launch authorization.
 
 
+### Compiled-Torch follow-up (2026-09-09)
+
+**Proposed; write-up requested, execution not yet authorized.** The completed
+comparison used eager Torch. Compilation was explicitly deferred in the
+design choices above, but that limitation should have been more prominent
+in the recommendation. The measured slowdown does not establish whether
+compiled Torch can be competitive. The NumPy/SciPy decision for 1.5 stands.
+
+Question: does compiling the existing variational objective and backward
+pass materially improve complete-fit performance after accounting for
+compilation, host orchestration and transfers? This concerns `torch.compile`
+on our tensor functions, not rebuilding PyTorch. Reuse the Stage 4 prototype
+and fixtures; preserve the method, optimizer policy, float64 arithmetic and
+common entropy draws.
+
+- First check CPU and CUDA compiler availability in the existing isolated
+  Windows environments. Record compiler/backend versions, additional tools,
+  installation size and setup time. Preserve failures and unsupported paths;
+  a platform/toolchain failure is not a numerical performance result.
+- Start with the existing objective and gradient boundary. Verify that the
+  backward pass is compiled too; record graph breaks, eager fallbacks and
+  recompilation when component counts or entropy batch shapes change. Keep
+  any adapter changes small and reviewable; no custom kernels or broad tuning.
+- Use four existing workloads: deterministic K=1, warped, sampled-GP boost
+  K=50 and synthetic D=15/N=750/K=50. Compare modernized NumPy CPU, eager and
+  compiled Torch CPU, and eager and compiled CUDA. Use matched seeds and
+  balanced run order, with three clean measured repetitions per arm/case.
+  Reuse resident kernel checks to explain the complete-fit measurements.
+- Report cold compilation/first-fit cost, warm complete-fit distributions,
+  shape-triggered recompilation and cache assumptions separately. Include
+  preparation, parameter handling, optimizer, scoring and required transfers
+  in complete-fit walls; synchronize GPU work. Show how many repeated fits,
+  if any, amortize compilation. Do not hide setup in an unreported warmup.
+- Reapply value/gradient and complete-fit reliability checks, including
+  returned state, stopping decisions, common-stream rescoring and the known
+  eager drift. Report code complexity and installation requirements alongside
+  performance. CPU acceptance remains necessary; GPU gains cannot replace it,
+  and 1.2x runtime is not an agreed cutoff.
+
+Astra orchestrates; Sol implements and independently reviews. Run only one
+heavy computation at a time. Agree a compilation/time cap before execution;
+stop and record blockers rather than expanding into a compiler engineering
+project. Put the detailed report in `dev/results/`, compact evidence in
+`dev/experiments/`, and summarize the outcome in the existing 1.5 overview.
+This follow-up does not include S-VBMC, GP training, a full solver port or the
+final 870-case benchmark. Any full port requires a new explicit decision
+based on the evidence.
+
 ### Final verification (2026-09-09)
 
 Two independent Sol reviewers completed the final numerical and measurement

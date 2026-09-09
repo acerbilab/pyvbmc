@@ -281,6 +281,11 @@ anything that changes numerics lands.
   1.5; do not undertake a full Torch solver port for this release.** Optional
   Torch and ArviZ exports remain and the existing Python floors are unchanged.
   No full port or final population run was launched or authorized.
+  A small [compiled-Torch follow-up](stage4-torch-feasibility.md#compiled-torch-follow-up-2026-09-09)
+  is now proposed: the completed study was eager-only and does not settle
+  compiled performance. Reuse its prototype for cold/warm CPU/GPU complete-fit
+  comparisons and numerical gates. Write-up requested, execution not yet
+  authorized; the 1.5 NumPy decision stands.
 
 ## Pickup point
 
