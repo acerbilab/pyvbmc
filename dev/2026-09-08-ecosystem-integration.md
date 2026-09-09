@@ -2,6 +2,10 @@
 
 *Revised 9 September 2026; proposal for human review.*
 
+Status (PI, 2026-09-09): awaiting review from S-VBMC's main developer.
+Integration stays on hold pending that review; the recommendations below
+remain proposals.
+
 The PI direction is to make the existing S-VBMC
 implementation directly available from PyVBMC and, more generally, to avoid a
 separate distribution for every closely related VBMC method. This note defines

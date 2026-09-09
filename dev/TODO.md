@@ -6,8 +6,9 @@ fit pairs, eighteen shared-preparation control pairs and six diagnostic
 pairs pass; ten focused tests pass. NumPy is 2.47x faster than unchanged
 upstream. Sharing its preparation improvements with Torch narrows this to
 1.06x median paired speedup (1.15x aggregate); most gains are shared work.
-Next: review the revised
+Awaiting review from S-VBMC's main developer (PI, 2026-09-09):
 [S-VBMC integration proposal](2026-09-08-ecosystem-integration.md).
+Keep integration on hold pending that review.
 The PI requested a human-facing proposal for bringing the existing S-VBMC
 implementation into PyVBMC. Retaining Torch and the current object workflow
 is the proposed direction; the algorithm already exists in its own repo.

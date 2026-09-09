@@ -795,8 +795,9 @@ anything that changes numerics lands.
     [proposal](../2026-09-08-ecosystem-integration.md) recommends retaining
     Torch and the current object workflow, optional imports/dependencies and
     a legacy migration route. Targeted fixes and preparation optimizations
-    remain separate changes. Review these choices before implementation;
-    integration code remains parked and no production port is authorized.
+    remain separate changes. PI clarification (2026-09-09): await review
+    from S-VBMC's main developer before proceeding. Integration code remains
+    parked and no production port is authorized.
     Root owns numerical execution and tracking; Sol may inspect compatibility
     contracts read-only in parallel. Run one heavy computation at a time.
 11. **Stage 3 integrated before the reference extension** (PI,
