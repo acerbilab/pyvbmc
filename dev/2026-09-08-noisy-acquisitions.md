@@ -536,6 +536,57 @@ Revised recommendation: pipeline B, or C where the set-up matters
 (large N with several hyperparameter samples); the set-up cost scales as
 Ns · N², so B's grows toward the end of a long run while Ns shrinks.
 
+### Sizing the refinement set as a function of N
+
+Two measurements set the rule (`scratch: pipeline_cost.py`, the CV probe
+and the candidate-side timing in the session log).
+
+**How many samples the refinement needs.** The per-sample interquantile
+reduction at the sieve's best point, on a 1600-sample set, first
+hyperparameter sample:
+
+| state | N | Ns | CV of the per-sample reduction | Na for a 5 % standard error | share of the reduction in the top 10 % of samples |
+|---|---|---|---|---|---|
+| rosenbrock_D2_noise3 | 86 | 8 | 1.26 | 638 | 36 % |
+| logreg_D5_noise3 | 139 | 7 | 0.87 | 302 | 29 % |
+| student_D8_noise3 | 200 | 6 | 1.34 | 720 | 42 % |
+| student_D8_noise3, N = 325 | 325 | 1 | 1.84 | 1358 | 55 % |
+| banana_D6_noise2 | 158 | 6 | 8.31 | 27624 | 98 % |
+| lumpy_D4_noise1 | 110 | 8 | 4.20 | 7061 | 98 % |
+
+On the smooth states a 5 % standard error needs 300–1400 samples, the
+range that worked; on the bumpy ones the reduction is carried by a few
+importance points and no affordable Na fixes that by brute force. The CV
+is free to compute from the sieve's own 100-sample evaluation (the
+spread of the per-sample terms at its best candidate), so it can gate
+the refinement: `Na_refine = clip((CV / 0.05)^2, 400, Na_cap)`, and skip
+the refinement when `(CV / 0.05)^2` exceeds the cap, since a gradient
+step on an estimate that noisy climbs the sample (the overfitting above).
+
+**What the set costs, and a formulation that removes the N² term.**
+Today's set-up (`active_importance_sampling`) precomputes
+`(K + Σ)^-1 k(X, Xa)`: two triangular solves with Na right-hand sides
+per hyperparameter sample, about 7e-7 ms × Ns · N² · Na on this machine
+(267–281 ms at N = 200, Ns = 6, Na = 1600). The refinement evaluates D + 1
+points per call, so it can instead solve candidate-side, `(K + Σ)^-1
+k(X, x)` for the D + 1 points (what `predict` does anyway) and contract
+with `k(X, Xa)` formed once (Ns · N · Na · D):
+
+| state | Na | today: set-up + 60 calls | candidate-side: `k(X, Xa)` + 60 calls |
+|---|---|---|---|
+| student_D8_noise3, N = 200, Ns = 6 | 1600 | 281 + 60 × 8.9 = 815 ms | 29 + 60 × 4.4 = 291 ms |
+| student_D8_noise3, N = 200, Ns = 6 | 6400 | 1140 + 60 × 23 = 2526 ms | 58 + 60 × 12 = 775 ms |
+| student_D8_noise3, N = 325, Ns = 1 | 1600 | 83 + 60 × 2.5 = 232 ms | 3 + 60 × 1.3 = 78 ms |
+| logreg_D5_noise3, N = 139, Ns = 7 | 1600 | 91 + 60 × 8.0 = 570 ms | 9 + 60 × 3.0 = 190 ms |
+
+With the candidate-side evaluation the refinement's cost is
+`Ns · (D + 1) · (N² + N · Na)` per call and linear in N in the Na term, so
+the cap is on the per-call budget rather than on a set-up:
+`Na_cap = clip(B / (max(Ns, 1) · N), 400, 6400)` with B = 1.9e6 giving 1600
+at N = 200, Ns = 6 (1370 at N = 350, Ns = 4; 1900 at N = 500, Ns = 2). With
+today's route the same cap reads `B' / (max(Ns, 1) · N²)`, B' = 3.8e8.
+Either way the sieve stays on the 100-sample set and at 1024 candidates.
+
 ## The combination and the harder configurations
 
 Same protocol; the harder configurations at seeds 0–5 only (4.5–12
