@@ -39,8 +39,9 @@ For the release overview, start with
   links to completed compatibility and backend evidence. Production
   integration remains parked.
 
-`TODO.md` is the current pickup reminder. The roadmap and plans retain
-execution status; the summaries above retain the human discussion and decisions.
+`TODO.md` contains only current actions, constraints and links. Do not
+accumulate completed handoffs there; the roadmap and plans retain execution
+status, and the summaries above retain the human discussion and decisions.
 
 ## Plans, worklogs and task files
 
@@ -52,12 +53,12 @@ plan and consolidated human summary.
 - `plans/modernization-roadmap.md` — living tracker of the staged plan in
   `2026-09-02-modernization-discussion.md` §10: stage status, pickup point.
 - [plans/machine-local-calibration.md](plans/machine-local-calibration.md) —
-  package integration plan for explicit PDF/entropy calibration with progress,
-  a machine/environment cache and fixed per-run settings (pending approval).
+  implemented package integration for explicit PDF/entropy calibration with
+  progress, a machine/environment cache and fixed per-run settings. Local
+  numerical, lifecycle, documentation and distribution validation is complete;
+  delivery status and remaining CI gates are tracked in the plan and `TODO.md`.
   The [first results](results/2026-09-09-machine-local-calibration.md) retain
-  current defaults in both balanced sweeps and establish discovery costs;
-  normal runs are planned to use cache-or-defaults without starting campaigns;
-  inclusion in 1.5 is confirmed by the PI.
+  current defaults in both balanced sweeps and establish discovery costs.
 - [plans/latent-bug-fixes.md](plans/latent-bug-fixes.md) — pickup 9
   implementation plan: verified candidate dispositions, numerical and
   compatibility contracts, PI-selected boost/eta fixes, and regression gates

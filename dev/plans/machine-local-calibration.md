@@ -19,9 +19,16 @@ aggregation/held-out/control rules.
 - [x] Independent Sol cross-component double-check; all findings resolved and checked.
 - [x] Finalize package/full-suite evidence and durable status records.
 - [x] Apply PI-approved user-facing wording; completion explicitly names the saved JSON path.
-- [~] Commit/push all work and verify feature-branch CI (PI-requested delivery).
-- [ ] Merge into `dev-next`, push, and delete the merged feature branch locally/remotely.
+- [x] Commit/push all work and verify feature-branch CI (PI-requested delivery).
+- [x] Reduce `dev/TODO.md` to current pickup/actions; keep history in the existing plans/reports.
+- [~] Merge into `dev-next`, push, and delete the merged feature branch locally/remotely.
 - [ ] Run the full three-OS/three-Python CI matrix on `dev-next` and record its outcome.
+
+Delivery: feature commit `f2f99e3` passed [branch CI](https://github.com/acerbilab/pyvbmc/actions/runs/34397131792)
+(1,215 passed, 60 skipped). Repository hooks passed; formatting changes preserve
+Python syntax trees, and historical measurement runners are excluded from Black
+to retain their recorded source. TODO now contains current pickup/actions only;
+the prior accumulated handoffs remain in git history and linked durable records.
 
 UX follow-up (PI): routine messages use plain-language outcomes and the actual
 absolute saved-report path, including cache-root overrides. Detailed budgets
