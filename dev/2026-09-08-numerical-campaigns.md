@@ -253,5 +253,5 @@ instruction before launch.
 S-VBMC compatibility and future algorithm delivery are discussed separately in
 the [ecosystem proposal](2026-09-08-ecosystem-integration.md). The completed
 [Stage 4 PyTorch feasibility prototype](plans/stage4-torch-feasibility.md)
-recommends retaining NumPy for this release; the explicit backend decision
-remains pending.
+led to the 2026-09-09 PI decision to retain the modernized NumPy/SciPy solver
+for 1.5 and not undertake a full Torch solver port for this release.

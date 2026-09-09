@@ -228,15 +228,15 @@ anything that changes numerics lands.
   take the fitted posterior into torch as a distribution or ArviZ as
   samples. The plan is `plans/stage3-pipeline-features.md` on
   `dev-next-stage3`. Current ArviZ DataTree support is agreed; the core
-  stays Python >=3.10, the ArviZ export requires >=3.12, and reconsidering
-  the core Python floor is deferred to Stage 4. Ships in 1.5 with Stages
+  stays Python >=3.10 and the ArviZ export requires >=3.12. Stage 4 later
+  retained those version floors. Ships in 1.5 with Stages
   0–2 (PI decision 2026-09-06: the whole body of work in one release, for
   visibility, rather than a 1.5 followed by a 1.6 within days). Both
   trajectory-neutral and trajectory-moving latent bug fixes were held behind
   the reference boundary. That boundary completed on 2026-09-07 (pickup 3f).
   Pickup 9 is in progress: Phase 1 neutral fixes are complete; Q1/Q4 decisions
   and moving groups remain open.
-- [ ] **Stage 4 — PyTorch feasibility prototype, then a port decision**
+- [x] **Stage 4 — PyTorch feasibility prototype, then a port decision**
   (preferred for 1.5 if feasible;
   PI decision, 2026-09-06). The purpose combines future method development,
   participation in the modern ML ecosystem, and performance opportunities.
@@ -277,8 +277,10 @@ anything that changes numerics lands.
   show Torch CPU at 2.12-6.26x NumPy and synchronized CUDA at 3.35-23.34x on
   the tested laptop (one clean observation per workload/arm; 72 additional
   instrumented fits retained). Recommendation: retain NumPy for this release.
-  The explicit PI backend decision remains open; no full port or final
-  population run was launched.
+  **PI decision (2026-09-09): retain the modernized NumPy/SciPy solver for
+  1.5; do not undertake a full Torch solver port for this release.** Optional
+  Torch and ArviZ exports remain and the existing Python floors are unchanged.
+  No full port or final population run was launched or authorized.
 
 ## Pickup point
 
@@ -794,7 +796,8 @@ anything that changes numerics lands.
     extra is absent, and the Ubuntu newest-Python leg of CI installs both,
     torch from the CPU wheel index; conda-forge has no extras, so the
     install docs name the conda packages. Torch as a hard dependency of
-    the core remains Stage 4's question (devlog §13).
+    the core was Stage 4's question (devlog §13); the 2026-09-09 decision
+    retains the NumPy core and keeps Torch optional for 1.5.
     (b) `vp.to_torch()` builds and returns a torch distribution; nothing
     torch is stored on a PyVBMC object, so the dtype canary stays as it is
     (its Decision 5; Stage 4 revises the canary when the state itself

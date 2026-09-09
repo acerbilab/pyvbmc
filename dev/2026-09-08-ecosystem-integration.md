@@ -10,6 +10,11 @@ provides the starting evidence.
 PI follow-up: the direction sounds good; implementation is parked for
 later. Preserve this proposal and the compatibility findings for resumption.
 
+Separate PyVBMC backend decision (2026-09-09): retain the modernized
+NumPy/SciPy solver for 1.5 and do not undertake a full Torch solver port for
+this release. That decision does not choose S-VBMC's backend or authorize its
+parked integration or the possible NumPy weight-optimization comparison.
+
 ## Proposed delivery model
 
 Maintain closely related VBMC methods in the PyVBMC repository and Python

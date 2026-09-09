@@ -6,12 +6,13 @@ Sol implemented and reviewed; computation ran serially in the main thread.
 96 complete fits (72 instrumented plus 24 tracing-free controls), float64
 CPU/CUDA diagnostics and focused tests are retained. Clean CPU timings are
 2.12-6.26x NumPy; synchronized CUDA timings are 3.35-23.34x on this laptop.
-Recommendation: retain NumPy for this release; an explicit PI decision is
-still required before any full port or separately bounded optimization work.
+PI decision (2026-09-09): retain the modernized NumPy/SciPy solver for 1.5;
+do not undertake a full Torch solver port for this release. Optional Torch and
+ArviZ exports and the existing Python floors remain unchanged.
 No final 870-case population, full port, job or watcher was launched.
 PI follow-up: inspect S-VBMC and possibly port its weights-only optimization
 to NumPy. Initial static scope is recorded in the ecosystem integration
-proposal; direct S-VBMC timings and a backend decision remain pending.
+proposal; direct S-VBMC timings and its separate backend decision remain pending.
 Compatibility is complete and full integration remains parked.
 
 Read first:
@@ -22,14 +23,16 @@ Read first:
 - dev/2026-09-08-numerical-campaigns.md
 - dev/2026-09-08-ecosystem-integration.md (links to completed compatibility details)
 
-Astra orchestrates; Sol implements/reviews. Scope a complete variational
-optimization step (GP integrals, entropy, parameter handling, optimizer,
-including final-refinement sizes) against modernized NumPy. Preserve the
-agreed CPU/GPU float64 checks, gradients, numerical robustness, transfer and
-setup costs, installation concerns, and code-simplicity assessment. Around
+Astra orchestrated; Sol implemented/reviewed. The completed prototype scoped
+a complete variational optimization step (GP integrals, entropy, parameter
+handling, optimizer, including final-refinement sizes) against modernized
+NumPy. It preserved the agreed CPU/GPU float64 checks, gradients, numerical
+robustness, transfer and setup costs, installation concerns, and
+code-simplicity assessment. Around
 1.2x runtime is not an agreed cutoff; CPU acceptability still matters even
-if GPU is faster. The bounded experiment is complete; the full port still
-requires the explicit evidence-based decision. Results and limitations are in the plan.
+if GPU is faster. The bounded experiment and decision are complete; NumPy is
+retained for 1.5 and no full Torch solver port is planned. Results and
+limitations are in the plan.
 
 No jobs or watchers need reattaching. Only one heavy computation at a time.
 Local S-VBMC source, CPU Torch overlay, diagnostics and logs remain ignored
@@ -51,7 +54,7 @@ PI now favors direct inclusion of S-VBMC in PyVBMC and a common delivery
 approach for future algorithms. Concrete API/dependency/migration design
 is proposed in dev/2026-09-08-ecosystem-integration.md. PI endorsed the
 direction and parked implementation for later. The Stage 4 prototype is now
-complete; review its evidence and decide the backend direction explicitly.
+complete, and the PI selected the NumPy/SciPy solver for 1.5.
 
 Remaining-work map (2026-09-09; roadmap is authoritative):
 - Full supported matrix: green, all nine jobs in 34263042113 at `24cf369`.
@@ -60,9 +63,10 @@ Remaining-work map (2026-09-09; roadmap is authoritative):
   production code and reference values. See
   dev/results/2026-09-08-acquisition-oracle-conditioning.md and the live latent-fix plan.
 - Release work: S-VBMC compatibility complete, integration parked, with
-  connections to upcoming extensions retained; decide the backend direction
-  from the completed CPU/GPU float64 feasibility results. Any dependency,
-  Python-floor or NumPy-transition work depends on that explicit decision.
+  connections to upcoming extensions retained. The PyVBMC backend is settled:
+  retain NumPy/SciPy for 1.5, keep optional exports and the existing Python
+  floors, and do not undertake a full Torch solver port. The S-VBMC backend
+  remains a separate open design choice.
 - User-facing agent skill: skills/pyvbmc/SKILL.md with FAQ/reference material,
   helpers and packaging/installation design, once the API settles.
 - Proposed improvement: machine-local calibration of kernel chunk sizes.
@@ -93,10 +97,10 @@ https://github.com/acerbilab/gpyreg/issues/44
 No gpyreg repair or pin bump is required for this release. Final
 latent-fix population validation remains pending; the full supported matrix
 passed all nine jobs in 34263042113 after the two test corrections.
-The final 870-run population follows the remaining S-VBMC compatibility/
-integration work and the agreed PyTorch feasibility decision and resulting
-release work; do not launch it prematurely. S-VBMC compatibility is complete
-and integration remains parked; the current pickup is the backend decision.
+The final 870-run population follows the remaining S-VBMC integration and
+other release work; do not launch it prematurely. S-VBMC compatibility is
+complete and integration remains parked. A bounded S-VBMC NumPy comparison
+may be planned next, but no experiment or integration work is authorized.
 Also retain the user-facing coding-agent skill in the remaining work:
 dev/2026-09-02-user-agent-skill.md proposes skills/pyvbmc/SKILL.md, supporting
 references/helpers and distribution with the library. Prepare the guidance
@@ -353,19 +357,19 @@ records concrete PDF/entropy chunk-size candidates, timing evidence,
 reproducibility considerations and open cache/API/budget choices. This is
 outside the latent-fix plan; no calibration implementation has started.
 
-The first Stage 4 step is a PyTorch feasibility prototype tested on both CPU
-and GPU in float64 against the modernized NumPy CPU baseline, including
-transfer costs, followed by an explicit decision on the full port
-(PI decision, 2026-09-06). Inclusion in 1.5 is preferred if feasible, subject
+Historical Stage 4 direction (2026-09-06–07; superseded by the 2026-09-09
+decision): the first step was a PyTorch feasibility prototype tested on both
+CPU and GPU in float64 against the modernized NumPy CPU baseline, including
+transfer costs, followed by an explicit decision on the full port. Inclusion
+in 1.5 was preferred if feasible, subject
 to numerical reliability, acceptable CPU performance, manageable installation
 friction, and simpler future method development. Immediate speedup is not
 required. PI clarification (2026-09-07): 3× runtime was an example of clearly
 unacceptable performance; concern starts at substantially smaller slowdowns.
 Around 1.2× runtime may be acceptable given the other benefits, but is not
-an agreed cutoff. The full port is not yet a
-commitment. Settle the NumPy transition, core dependencies, and Python floor
-in the design. Algorithmic extensions remain separate from the port. See
-the roadmap Stage 4 entry and the 1.5 overview.
+an agreed cutoff. On 2026-09-09 the PI retained NumPy/SciPy for 1.5 and ruled
+out a full Torch solver port for this release. See the roadmap Stage 4 entry
+and the 1.5 overview.
 
 No campaign process, scheduler, or session-bound watcher remains. The launcher
 finished both batches, published the local baseline, passed final replay,

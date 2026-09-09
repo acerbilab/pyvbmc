@@ -137,8 +137,9 @@ plan and consolidated human summary.
 - [plans/stage4-torch-feasibility.md](plans/stage4-torch-feasibility.md) -
   Completed bounded PyTorch feasibility prototype: complete variational fits,
   current estimator/optimizer semantics, float64 CPU/GPU evidence,
-  final-boost workloads, setup/transfer costs, the recommendation to retain
-  NumPy and the pending explicit backend decision.
+  final-boost workloads and setup/transfer costs. The PI accepted the
+  recommendation to retain the NumPy/SciPy solver for 1.5; no full Torch
+  solver port is planned for this release.
 
 Naming: `plans/` files are named by slug only, never by date (the date is in
 the file header), so that they cannot be mistaken for copies of the dated

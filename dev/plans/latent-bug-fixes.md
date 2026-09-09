@@ -597,15 +597,21 @@ S-VBMC is already implemented in the separate `acerbilab/svbmc` repository.
 Roadmap pickup 10 covers integration and compatibility of that existing
 package with PyVBMC 1.5; it remains separate from this pickup 9 latent-bug
 plan. Upcoming method extensions and tensor-solver work also have their own
-scope. Preserve the existing PyTorch decision: first a float64 CPU/GPU
+scope. The original PyTorch decision was: first a float64 CPU/GPU
 feasibility prototype against modernized NumPy CPU, including transfer costs;
 then a PI decision on the full port, preferably for 1.5 if feasible. CPU
 performance, numerical reliability, installation friction, and extensibility
 matter. PI clarification (2026-09-07): 3× runtime was an example of clearly
 unacceptable performance; concern starts at substantially smaller slowdowns.
 Around 1.2× runtime may be acceptable given the other benefits, but is not
-an agreed cutoff. Dependencies, Python floor, and the NumPy transition remain
+an agreed cutoff. Dependencies, Python floor, and the NumPy transition were
 that design's questions.
+
+Superseding PI decision (2026-09-09): retain the modernized NumPy/SciPy solver
+for 1.5 and do not undertake a full Torch solver port for this release. The
+optional Torch and ArviZ exports and existing Python floors remain unchanged.
+This does not decide S-VBMC's backend or authorize its parked integration or
+the proposed NumPy weight-optimization comparison.
 
 Noise shaping, `compute_var == 2`, log-space mixture sums, and new acquisition
 or optimizer algorithms stay deferred. Approval of this plan authorizes the

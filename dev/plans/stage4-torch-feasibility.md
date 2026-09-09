@@ -1,7 +1,8 @@
 # Stage 4: bounded PyTorch variational-step feasibility
 
 Created: 2026-09-08
-Status: COMPLETE; independent review passed. PI backend decision pending.
+Status: COMPLETE; independent review passed. PI decision on 2026-09-09:
+retain the modernized NumPy/SciPy solver for 1.5; no full Torch solver port.
 User approval: 2026-09-08, "sounds good - go ahead"; deliver prototype results.
 Planning branch: `dev-stage4-torch-feasibility`, created from `dev-next` at
 `bf43c20327f5684e6a22e801f4e6f3964a23cd98`.
@@ -26,6 +27,7 @@ Production numerical source matches `feadf30`; no solver code changed here.
   72 traced fits plus 24 lean controls completed; auxiliary recovery retained.
 - [x] Phase 5: independent Sol review, reconciled evidence and recommendation.
   Final numerical and measurement reviews report no remaining must-fix.
+- [x] PI backend decision: retain NumPy/SciPy for 1.5; no full Torch port.
 - [x] Record results, limitations and remaining release work; no full port.
 
 ## Purpose and authority
@@ -734,20 +736,21 @@ including final-boost sizes. Installation footprint and the remaining
 estimator/host-bridge complexity reinforce the lack of a case for a full
 port from this evidence.
 
-PI decision: **pending**. This recommendation does not implement a backend
-or release decision. A further investigation, if desired, needs a separately
-bounded purpose and acceptance check (for example, reducing eager CPU
-objective overhead while preserving these estimators and rerunning the
-complete-step CPU gate). Compilation, custom kernels, native Torch RNG or a
-GP-training port were not tested and are not assumed to erase the observed
-costs. No additional experiment or full port is launched automatically.
+PI decision (2026-09-09): **retain the modernized NumPy/SciPy solver for
+PyVBMC 1.5; do not undertake a full Torch solver port for this release.** The
+optional Torch and ArviZ posterior exports remain, and the existing Python
+version floors do not change. A further investigation, if proposed later,
+needs a separately bounded purpose and acceptance check. Compilation, custom
+kernels, native Torch RNG and a GP-training port were not tested and are not
+assumed to erase the observed costs. No additional experiment or port was
+launched or authorized by this decision.
 
 S-VBMC compatibility remains complete and integration parked. The user-facing
 `skills/pyvbmc/SKILL.md`, FAQ/reference/helpers and packaging follow-up remain
 recorded for after the API settles. Machine-local calibration remains an
 open follow-up, including API, cache, budget and release placement. The final
-870-case population remains deferred until the final release changes and
-explicit backend decision are settled.
+870-case population remains deferred until the final release changes are
+settled and still requires explicit launch authorization.
 
 
 ### Final verification (2026-09-09)
