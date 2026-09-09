@@ -500,6 +500,42 @@ Revised recommendation, replacing items 2–3 of the list above:
    end to end is still the open question, and the synthetic targets
    remain the caveat.
 
+### Measured cost of the search pipelines
+
+Per new point, on the four states, one BLAS thread with four processes
+sharing four cores (`scratch: pipeline_cost.py`); the chosen point judged
+on an independent 6400-sample set, gain relative to today's pipeline A,
+median [min, max] over five draws. Set-up is `active_importance_sampling`
+(one GP prediction on the Na points and two triangular solves with Na
+right-hand sides per hyperparameter sample, so it scales as Ns · N² · Na):
+Na = 100: 5–12 ms, Na = 400: 18–43 ms, Na = 1600: 83–267 ms on these
+states (N = 139–325, Ns = 1–7).
+
+| pipeline | logreg D = 5 | Student D = 8, N = 200 | banana D = 6 | Student D = 8, N = 325 |
+|---|---|---|---|---|
+| A: today, sieve 8192 on Na = 100 | ×1.00, 601 ms | ×1.00, 834 ms | ×1.00, 766 ms | ×1.00, 234 ms |
+| B: sieve 1024 on Na = 100; top 8 re-scored and L-BFGS-B on Na = 1600 | ×1.42 [1.31, 2.41], 365 ms | ×1.84 [1.17, 2.57], 535 ms | ×1.26 [1.05, 2.79], 571 ms | ×1.95 [1.31, 2.34], 164 ms |
+| C: one set Na = 400, sieve 1024, L-BFGS-B | ×1.39 [1.00, 2.40], 349 ms | ×1.53 [1.17, 2.49], 321 ms | ×1.22 [0.99, 5.23], 435 ms | ×1.76 [1.23, 2.20], 91 ms |
+| D: one set Na = 1600, sieve 1024, L-BFGS-B | ×1.41 [1.30, 1.88], 930 ms | ×1.85 [1.21, 2.36], 925 ms | ×1.28 [1.06, 5.67], 1024 ms | ×1.87 [1.25, 2.33], 263 ms |
+| E: sieve 8192 on Na = 400, no refinement | ×1.31 [1.00, 1.95], 1822 ms | ×1.24 [0.99, 2.15], 1822 ms | ×1.00 [1.00, 5.40], 1617 ms | ×1.72 [1.11, 2.09], 1061 ms |
+| F: one set Na = 400, sieve 2048, L-BFGS-B from top 4 | ×1.39, 694 ms | ×1.53, 856 ms | ×1.22, 1159 ms | ×1.76, 220 ms |
+
+Reading: today's pipeline loses a third to a half of the achievable
+reduction to the Monte Carlo noise of its 100-sample set (its sieve pick
+overfits that set as much as a refinement would) and to the missing
+refinement. The 1600-sample set-up is a real cost, about a third of
+today's sieve call, but pipeline B still comes in at 0.6–0.7× today's
+time because the sieve shrinks eightfold, and its judged gain is
+×1.26–1.95 with no draw below ×1.05. Pipeline C (a single 400-sample set)
+is cheaper still, 0.4–0.6×, with slightly smaller gains and one draw at
+×0.99. Sieving on a 1600-sample set (D) or a larger sieve on a better set
+without refinement (E) cost more than today for no more gain. Four
+restarts (F) added nothing over one on these states.
+
+Revised recommendation: pipeline B, or C where the set-up matters
+(large N with several hyperparameter samples); the set-up cost scales as
+Ns · N², so B's grows toward the end of a long run while Ns shrinks.
+
 ## The combination and the harder configurations
 
 Same protocol; the harder configurations at seeds 0–5 only (4.5–12
