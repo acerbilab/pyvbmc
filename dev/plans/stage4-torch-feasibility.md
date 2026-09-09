@@ -755,7 +755,8 @@ settled and still requires explicit launch authorization.
 
 ### Compiled-Torch follow-up (2026-09-09)
 
-**Proposed; write-up requested, execution not yet authorized.** The completed
+**Execution complete (2026-09-09) on
+`dev-torch-compile-prototype`, from `dev-next` at `e0ca4e6`.** The completed
 comparison used eager Torch. Compilation was explicitly deferred in the
 design choices above, but that limitation should have been more prominent
 in the recommendation. The measured slowdown does not establish whether
@@ -776,6 +777,11 @@ common entropy draws.
   backward pass is compiled too; record graph breaks, eager fallbacks and
   recompilation when component counts or entropy batch shapes change. Keep
   any adapter changes small and reviewable; no custom kernels or broad tuning.
+  Execution refinement: full-variance/per-component fine scoring remains
+  eager, with explicit call counts and its costs inside complete-fit walls.
+  Its existing memory-bounded entropy loop would otherwise unroll about
+  2,400 chunks at D=15/K=50/4096 draws per component. Ordinary optimization
+  and sieve objective calls are compiled; errors are not silently masked.
 - Use four existing workloads: deterministic K=1, warped, sampled-GP boost
   K=50 and synthetic D=15/N=750/K=50. Compare modernized NumPy CPU, eager and
   compiled Torch CPU, and eager and compiled CUDA. Use matched seeds and
@@ -793,13 +799,31 @@ common entropy draws.
   and 1.2x runtime is not an agreed cutoff.
 
 Astra orchestrates; Sol implements and independently reviews. Run only one
-heavy computation at a time. Agree a compilation/time cap before execution;
+heavy computation at a time. Initial caps: ten minutes per toolchain smoke,
+thirty minutes per workload/backend worker, three hours total campaign wall;
 stop and record blockers rather than expanding into a compiler engineering
 project. Put the detailed report in `dev/results/`, compact evidence in
 `dev/experiments/`, and summarize the outcome in the existing 1.5 overview.
 This follow-up does not include S-VBMC, GP training, a full solver port or the
 final 870-case benchmark. Any full port requires a new explicit decision
 based on the evidence.
+
+The campaign completed all 20 workers / 80 fits serially. Fixed-input float64
+value/gradient checks passed, compiled backward was observed on both devices,
+and none of the 24 warm compiled fits recompiled. Warm compiled CUDA beats NumPy on the
+two boost shapes (1.28x/1.54x median paired speedups); compiled CPU remains
+roughly 2-4x the NumPy runtime by per-arm medians. Cold compiled fits take 23-444 s CPU and
+12-122 s CUDA. Complete-fit endpoint and rescore drift remain explicitly
+reported, including one sampled-boost seed with parameter differences.
+
+The [detailed report](../results/2026-09-09-torch-compile-follow-up.md) owns the
+follow-up findings; the [artifact archive](../experiments/stage4_torch_compile/README.md)
+retains all raw outcomes, source bytes and setup failures. The raw campaign's
+boost identity predicate was wrong; its failure statuses are preserved and
+narrowly reclassified by the reporter. Only that future-runner predicate was
+corrected after measurement. All 80 archived fit summaries pass the corrected
+predicate without numerical reruns. Three adapter lifecycle tests pass.
+NumPy/SciPy remains the 1.5 solver; no full port or final benchmark was launched.
 
 ### Final verification (2026-09-09)
 

@@ -10,12 +10,16 @@ Next: choose S-VBMC's backend from this evidence, then resume API/integration
 design when authorized. Integration remains parked; no final 870-case
 population benchmark is authorized. No computation or watcher remains.
 
-Small follow-up proposed: `torch.compile` on the existing Stage 4 prototype,
-with cold/warm complete-fit CPU/GPU timings and the same numerical gates.
-The completed comparison was eager-only; compiled performance is untested.
-See [bounded scope](plans/stage4-torch-feasibility.md#compiled-torch-follow-up-2026-09-09).
-Write-up requested; execution not yet authorized. NumPy/SciPy remains the
-PyVBMC 1.5 solver.
+The bounded **compiled-Torch follow-up is complete** on
+`dev-torch-compile-prototype`, from `e0ca4e6`: 80 complete fits, all fixed-input
+float64 value/gradient gates passed, and no recompilation in the 24 warm compiled fits.
+Compiled CUDA is about 1.28x/1.54x NumPy on the two boost workloads (median
+paired warm speedups), but compiled CPU remains roughly 2-4x the NumPy runtime by per-arm
+medians. Cold compiled fits cost 23-444 s on CPU and 12-122 s on CUDA;
+one sampled-boost seed shows endpoint parameter drift. See the
+[results](results/2026-09-09-torch-compile-follow-up.md) and
+[scope](plans/stage4-torch-feasibility.md#compiled-torch-follow-up-2026-09-09).
+NumPy/SciPy remains the PyVBMC 1.5 solver. No computation or watcher remains.
 
 Completed Stage 4 bounded prototype and measurements:
 final evidence/review is recorded in dev/plans/stage4-torch-feasibility.md.

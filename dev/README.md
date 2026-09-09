@@ -26,7 +26,9 @@ For the release overview, start with
 - [User-facing agent skill proposal](2026-09-02-user-agent-skill.md) —
   Guidance, FAQ/reference material, helpers and packaging after the API settles.
 - [PyVBMC 1.5 overview](2026-09-06-pyvbmc-1.5-overview.md) —
-  Human-readable release scope, benefits and validation approach.
+  Human-readable release scope, benefits and validation approach. Includes the
+  [compiled-Torch follow-up](results/2026-09-09-torch-compile-follow-up.md),
+  with cold/warm complete-fit timings and numerical limitations.
 - [Numerical campaigns](2026-09-08-numerical-campaigns.md) —
   Consolidated boost and eta evidence and PI decisions, main-loop repairs,
   and cross-platform validation. Links to the full September 4, 7 and 8

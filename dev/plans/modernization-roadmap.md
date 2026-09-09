@@ -281,11 +281,12 @@ anything that changes numerics lands.
   1.5; do not undertake a full Torch solver port for this release.** Optional
   Torch and ArviZ exports remain and the existing Python floors are unchanged.
   No full port or final population run was launched or authorized.
-  A small [compiled-Torch follow-up](stage4-torch-feasibility.md#compiled-torch-follow-up-2026-09-09)
-  is now proposed: the completed study was eager-only and does not settle
-  compiled performance. Reuse its prototype for cold/warm CPU/GPU complete-fit
-  comparisons and numerical gates. Write-up requested, execution not yet
-  authorized; the 1.5 NumPy decision stands.
+  The [compiled-Torch follow-up](../results/2026-09-09-torch-compile-follow-up.md)
+  is complete: 80 fits, fixed-input float64 gates passed, no warm recompilation.
+  CUDA gains about 1.28x/1.54x over NumPy on the two boost cases (paired warm
+  medians), while compiled CPU stays roughly 2-4x the NumPy runtime by per-arm medians.
+  Cold compilation costs and sampled-boost endpoint drift remain material.
+  The 1.5 NumPy decision stands; this did not authorize a full port.
 
 ## Pickup point
 
