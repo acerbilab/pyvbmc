@@ -144,7 +144,7 @@ container's four cores, the 10-D run then ran alone.
 Reading:
 
 - **The sieve call is the largest item on four of the five targets**
-  (47–70 % of wall, 62 % at D = 10) and second on `rosenbrock_D2_noise1` (32 %), where
+  (47–70 % of wall, 49 % at D = 10) and second on `rosenbrock_D2_noise1` (32 %), where
   the run never stabilizes and the in-loop GP refits run at N up to 190
   (40 %). A sieve call costs about 0.4 s and is nearly flat in N: the
   VIQR core is 26–54 ms per hyperparameter sample per call, dominated by
@@ -159,7 +159,7 @@ Reading:
   `lumpy_D10_noise3`).
 - **The GP fits are 17–60 %**, the slice sampler 71–94 % of them and the
   space-filling initial design (`f_min_fill`, 1024 random hyperparameter
-  vectors before every fit) 23–30 % on four targets: an avoidable
+  vectors before every fit) 23–26 % on four targets: an avoidable
   in-loop cost, since the refits could start from the previous samples.
   Per fit the cost spans 0.2–5 s depending on Ns and N.
 - **The in-loop VP optimizations are 1–2 %**: the "frequent retrain" is
