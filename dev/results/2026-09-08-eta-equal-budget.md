@@ -97,7 +97,7 @@ make it useful. Diagnostic variability is measured conditional on fixed
 candidates; it does not capture between-problem uncertainty or GP error.
 Complete per-checkpoint paired means, MC standard deviations/standard errors,
 ranges and absolute arm scores are retained in
-[checkpoints.csv](experiments/eta_equal_budget_20260908/checkpoints.csv).
+[checkpoints.csv](../experiments/eta_equal_budget_20260908/checkpoints.csv).
 
 ## Interpretation and next decision
 
@@ -150,7 +150,7 @@ No extra optimizer fit or discarded numerical run resulted.
 
 Raw trajectories, checkpoint VPs and scores are under
 `dev/scripts/runs/latent_fixes/eta_equal_budget_20260908/`.
-[results.json](experiments/eta_equal_budget_20260908/results.json) retains
+[results.json](../experiments/eta_equal_budget_20260908/results.json) retains
 all compact pair reports, the input/import/source configuration, summaries
 and audit evidence. Checkpoint VP statistics inherited from their templates
 are not the diagnostic scores; use the separately retained score records.

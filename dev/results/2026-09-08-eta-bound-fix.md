@@ -112,7 +112,7 @@ population testing.
 
 ## Evidence and next step
 
-[eta_bound_fix_20260908.json](experiments/eta_bound_fix_20260908.json) records
+[eta_bound_fix_20260908.json](../experiments/eta_bound_fix_20260908.json) records
 both replay reports, all six sidecars, pre-boost scores/quality, file hashes,
 validation and actual import/source provenance. Root verifies JSON/NPZ
 counts, initial designs, ELBO agreement horizons, finite/usable final metrics,

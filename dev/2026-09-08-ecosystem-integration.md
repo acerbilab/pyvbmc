@@ -4,7 +4,7 @@ PI direction (2026-09-08): make S-VBMC directly accessible from PyVBMC;
 in principle it should not require a separate package. More generally,
 avoid a separate distribution for every new algorithm. This note proposes
 an approach for discussion; it does not authorize or claim an implementation.
-The [initial S-VBMC compatibility check](2026-09-08-svbmc-compatibility.md)
+The [initial S-VBMC compatibility check](results/2026-09-08-svbmc-compatibility.md)
 provides the starting evidence.
 
 PI follow-up: the direction sounds good; implementation is parked for
@@ -17,9 +17,11 @@ distribution, with shared documentation, examples, CI and release version.
 Give each substantial method its own internal module and public entry point.
 Dependencies can remain optional without requiring separate algorithm
 packages: an extra installs dependencies, while the code lives in PyVBMC.
-For S-VBMC, use the existing Torch extra initially or an explicitly named
-stacking extra if that makes installation clearer. Keep imports lazy until
-the agreed PyTorch feasibility/port decision settles the core dependency.
+If S-VBMC retains its upstream Torch implementation, use the existing Torch
+extra or an explicitly named stacking extra if that makes installation
+clearer, with lazy imports. A NumPy implementation is now also a candidate
+(see the 2026-09-09 follow-up below); a Torch dependency for stacking has not
+been settled.
 
 Algorithms with distinct workflows should have distinct classes. For
 example, S-VBMC consumes multiple finished runs whereas VBMC consumes a
@@ -88,3 +90,61 @@ bounded integration plan covering source migration, real-object regression
 tests, dependency/import behavior, documentation and legacy import support.
 This becomes the worked example for future algorithm additions. The final
 population validation still follows the remaining release implementation.
+
+## NumPy alternative after the Stage 4 prototype (2026-09-09)
+
+PI follow-up: the poor eager-Torch feasibility results suggest inspecting
+S-VBMC and possibly porting it to NumPy. This records an investigation
+direction, not a decision to port or resume the parked integration. The
+[Stage 4 results](plans/stage4-torch-feasibility.md) concern PyVBMC's complete
+variational step and do not establish S-VBMC's performance.
+
+Static inspection of the pinned S-VBMC `13a78f6c4a3ffe9c4557fee4f4b8f67c98b29e01`
+used in the compatibility check shows a substantially narrower backend
+boundary (`src/svbmc/svbmc.py`):
+
+- Component means/scales and their individual transforms remain fixed. The
+  trainable variables are either all component-weight logits or one logit
+  per input posterior. S-VBMC reuses stored GP integrals; it does not refit
+  GPs or differentiate their integrals during stacking.
+- Component sampling, original/transformed-coordinate mappings, Jacobian
+  corrections and the component log-density matrix already use NumPy/SciPy
+  (`stacked_entropy`, lines 178-227). Torch begins at matrix conversion
+  (line 232), followed by weighted log-sum-exp, stratified entropy reduction,
+  the linear expected log joint, softmax and Adam/backpropagation.
+- A NumPy/SciPy implementation would need the gradient of this weight-only
+  sampled objective and both optimizer modes. The entropy gradient must
+  retain both the outer component-weight term and the mixture-density
+  derivative for the actual samples. Replacing the latter by its population
+  expectation would change the finite-sample estimator. Posterior-only
+  gradients sum the corresponding component-logit gradients by input run.
+- Removing Torch would reduce stacking's installation requirements even if
+  runtime gains are modest. Static code inspection cannot establish the
+  fraction of time spent in Torch: the existing NumPy transforms/density
+  construction may dominate. Different input transforms must still be kept.
+
+A useful next bounded comparison would first match objective values and
+weight/logit gradients on identical stored draws and density matrices, then
+compare complete stacking optimizations on the three shipped posterior
+groups in both weight modes. Preserve the current Adam update, initialization,
+rounded-loss stopping and best-iterate selection for that comparison;
+PyVBMC's existing Adam helper has different policies and is not an automatic
+replacement. Measure NumPy preparation, Torch conversion/reduction/backward,
+and complete CPU wall separately. Keep ordinary fresh sampling per iteration:
+caching one sample matrix for an entire fit changes the experiment.
+
+The public `stacked_ELBO` and `maximize_ELBO` methods currently return Torch
+tensors, and upstream tests assert that contract, although `optimize` stores
+NumPy weights and Python scalars. Removing the dependency therefore needs an
+intentional direct-method return-type/API decision as part of integration.
+Existing tests check gradient existence and broad optimization outcomes,
+not numerical gradient values or a matched optimizer trajectory.
+
+Make float64 explicit in both comparison arms. Upstream S-VBMC has mixed
+dtype paths and casts returned weights to Torch's default dtype before
+widening to NumPy float64, so distinguish arithmetic/backend parity from an
+intentional dtype-policy change. Include the established D=1 shape, exact
+sample-count, RNG and canonical VP-weight follow-ups in integration design.
+The already completed compatibility checks need not be repeated simply to
+inspect this alternative. No S-VBMC source change, timing run, port or full
+integration was performed for this static follow-up.

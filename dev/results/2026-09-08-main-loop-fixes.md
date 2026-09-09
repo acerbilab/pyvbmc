@@ -8,7 +8,7 @@ specifies the remaining experiment. No boost batch is scheduled.
 
 Main-loop work starts from validated `dev-next` commit `3e879b6` on
 `dev-main-loop-fixes`, without the experimental boost implementation.
-The [live plan](plans/latent-bug-fixes.md) owns the implementation checklist.
+The [live plan](../plans/latent-bug-fixes.md) owns the implementation checklist.
 Final Q1/Q4 choices and the existing PyTorch feasibility decisions are unchanged.
 
 ## Weighted GP covariance (Phase 3 complete; population assessment pending)

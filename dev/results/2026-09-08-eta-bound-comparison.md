@@ -6,7 +6,7 @@ optimization; the historical protocol and findings remain recorded here.
 
 Status: bounded experiment and independent reviews complete, 2026-09-08.
 Branch: `dev-eta-bound-comparison`, based on `03650a2`; its numerical code
-passed CI 138 at `b0d3437`. The [live plan](plans/latent-bug-fixes.md) owns
+passed CI 138 at `b0d3437`. The [live plan](../plans/latent-bug-fixes.md) owns
 the checklist. The paired boost experiment remains parked. No production
 penalty choice or whole-trajectory campaign is part of this pickup.
 
@@ -40,7 +40,7 @@ observe theta before C mutates it.
 
 ## Bounded design
 
-The [manifest](experiments/eta_bound_20260908.json) identifies eight authentic
+The [manifest](../experiments/eta_bound_20260908.json) identifies eight authentic
 saved GP/VP states and hashes every source file. Five are tracked numerical
 snapshots; three are local authentic pre-boost captures with original GP
 factors and main-loop options. They are historical states shared across arms,
@@ -143,7 +143,7 @@ diagnostics, scoring and capture writes, excluding interpreter startup.
 The saved comparison directory occupies 49,740,587 bytes. These timings are
 for one local incremental refit per state, not whole VBMC runs or boosts.
 
-The [complete compact results](experiments/eta_bound_20260908_results.json)
+The [complete compact results](../experiments/eta_bound_20260908_results.json)
 contain all 24 paired pre/A/B/C ELBO, GP SD and beta-5 ELCBO values, differences,
 pruning, iteration counts, penalty activation and draw-alignment diagnostics.
 Raw `comparison/pairs/<state>/replicate_<n>/` artifacts retain exact inputs,

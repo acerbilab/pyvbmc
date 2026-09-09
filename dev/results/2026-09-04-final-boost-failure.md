@@ -10,7 +10,7 @@ a porting bug.
 ## What was seen
 
 In the regenerated golden population
-(`plans/benchmark-suite-and-golden-traces.md` §Results (regenerated)),
+(`../plans/benchmark-suite-and-golden-traces.md` §Results (regenerated)),
 `student_D4` seed 19 is the one run of 280 whose posterior is wrong (ΔLML
 1.33, gsKL 53.8, MMTV 0.44; three noisy-logreg seeds also miss the papers'
 usability line, but only on MMTV by 0.00–0.05 and with correct ELBO and

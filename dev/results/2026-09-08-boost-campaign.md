@@ -4,7 +4,7 @@ Status: computation complete, 2026-09-08 at 10:11:53 UTC;
 [paired analysis](2026-09-08-boost-analysis.md) now available.
 This resumes the [parked experiment](2026-09-08-boost-penalty-pilot.md),
 after the bounded eta-bound comparison completed. The
-[live plan](plans/latent-bug-fixes.md) owns execution tracking.
+[live plan](../plans/latent-bug-fixes.md) owns execution tracking.
 
 ## Completion
 

@@ -266,9 +266,19 @@ anything that changes numerics lands.
   end-to-end runtime impact. Inclusion in 1.5 remains conditional on this
   decision and subsequent implementation and validation.
   Settle the NumPy transition, core dependencies, and Python floor in the
-  implementation design. JAX model adapters remain part of Stage 3; the
-  solver backend is PyTorch. Decision rationale: devlog §10 and the
+  implementation design. JAX model adapters remain part of Stage 3;
+  PyTorch is the candidate solver backend if a port is authorized. Decision
+  rationale: devlog §10 and the
   [1.5 overview](../2026-09-06-pyvbmc-1.5-overview.md).
+  Prototype completed (2026-09-09): the bounded
+  [variational-step feasibility results](stage4-torch-feasibility.md) are on
+  `dev-stage4-torch-feasibility`, from `dev-next` at `bf43c20`.
+  Float64 CPU/CUDA diagnostics pass. The 24 trace-disabled whole-fit controls
+  show Torch CPU at 2.12-6.26x NumPy and synchronized CUDA at 3.35-23.34x on
+  the tested laptop (one clean observation per workload/arm; 72 additional
+  instrumented fits retained). Recommendation: retain NumPy for this release.
+  The explicit PI backend decision remains open; no full port or final
+  population run was launched.
 
 ## Pickup point
 
@@ -278,7 +288,7 @@ anything that changes numerics lands.
    §Results (regenerated)). The Stage 2 order above is confirmed; committed
    and pushed as `9206738`. The one wrong posterior in the population,
    `student_D4` seed 19, is a final-boost failure, written up in
-   `2026-09-04-final-boost-failure.md`; the guard is a 1.5 fix (pickup
+   `../results/2026-09-04-final-boost-failure.md`; the guard is a 1.5 fix (pickup
    9, PI ruling 2026-09-06).
 1. ~~Stage 0 oracles first~~ done 2026-09-04 (PI: an arithmetic-preserving
    refactor is gated by fixed-state oracles, not by the 10-hour statistical
@@ -610,7 +620,7 @@ anything that changes numerics lands.
    main-loop small-weight penalty and other bounds. Production integration
    passes 64 focused tests and all 11 exact fixtures. All six bounded paired
    replays are usable; one Normal D5 gsKL fence flag is retained for final
-   population assessment. See [the fix note](../2026-09-08-eta-bound-fix.md).
+   population assessment. See [the fix note](../results/2026-09-08-eta-bound-fix.md).
    Stopping-rule improvements are explicitly deferred research outside this
    fix campaign. These decisions supersede the historical pending choices
    below. The [implementation plan](latent-bug-fixes.md)
@@ -629,7 +639,7 @@ anything that changes numerics lands.
    on `dev-final-boost` and proceed independently with weighted GP covariance,
    acquisition regularization and GP sampling termination on
    `dev-main-loop-fixes`. The boost restart instructions are in
-   [the pilot note](../2026-09-08-boost-penalty-pilot.md#parked-experiment-restart).
+   [the pilot note](../results/2026-09-08-boost-penalty-pilot.md#parked-experiment-restart).
    Each moving group still receives its own numerical gate; no boost batch
    is scheduled, and final Q1/Q4 choices remain evidence-dependent.
    The PI originally approved extending the reference itself by 150 runs: add
@@ -679,7 +689,7 @@ anything that changes numerics lands.
    misspelled `stop_gp_sampling` key (`_is_gp_sampling_finished` and
    `tol_gp_var_mcmc` are dead, and the method reads undeclared history
    keys, so it is an implementation, not a one-liner); the `final_boost`
-   guard (`2026-09-04-final-boost-failure.md`, option 1: keep the
+   guard (`../results/2026-09-04-final-boost-failure.md`, option 1: keep the
    pre-boost posterior when the boosted one's ELCBO is worse; PI ruling
    2026-09-06, a borderline bug rather than an algorithmic decision;
    alters one trace of the 280 in the reference). To verify against
@@ -749,12 +759,19 @@ anything that changes numerics lands.
       optimization, sampling, and input parameter/transformer preservation.
     - [x] Distinguish compatibility regressions from upstream/environment
       issues; independently review and record findings and next steps.
-      See [the compatibility record](../2026-09-08-svbmc-compatibility.md).
+      See [the compatibility record](../results/2026-09-08-svbmc-compatibility.md).
       Independent Sol review found no record/checker issues. The shipped
       D=2 corpus is compatible; a separate D=1 probe confirms an existing
       S-VBMC draw-shape bug to fix during integration. No core or pickle
       changes were needed. Compatibility check complete; integration API
       and ecosystem delivery design are the next work.
+    PI follow-up (2026-09-09): inspect S-VBMC and consider a NumPy port after
+    the poor eager-Torch Stage 4 results. Static inspection finds a narrow
+    weights-only Torch boundary; NumPy/SciPy already handle sampling,
+    transforms and density construction. Compare S-VBMC itself before making
+    performance claims or choosing its backend. See the NumPy alternative in
+    [the integration proposal](../2026-09-08-ecosystem-integration.md).
+    Integration remains parked; this is not port authorization.
     Root owns numerical execution and tracking; Sol may inspect compatibility
     contracts read-only in parallel. Run one heavy computation at a time.
 11. **Stage 3 integrated before the reference extension** (PI,
@@ -862,7 +879,7 @@ anything that changes numerics lands.
 ## Deferred (devlog §12)
 
 Variational optimizer stopping-rule improvements (PI, 2026-09-08): the
-[equal-iteration eta experiment](../2026-09-08-eta-equal-budget.md) found
+[equal-iteration eta experiment](../results/2026-09-08-eta-equal-budget.md) found
 that longer local fits improved surrogate scores on two saved noisy states.
 Investigating broader accuracy/runtime tradeoffs is future research, outside
 the latent-fix campaign and not a release blocker. Preserve current stopping
@@ -878,6 +895,6 @@ porting MATLAB's diagonal approximation of the log-joint variance and its
 gradient (`compute_var == 2` in `_gp_log_joint`, which raises "not
 implemented"; it would allow the ELCBO gradient with `beta ≠ 0`, which no
 option enables today; the dead accumulators were deleted 2026-09-04).
-The guard for `final_boost` (`2026-09-04-final-boost-failure.md`) left
+The guard for `final_boost` (`../results/2026-09-04-final-boost-failure.md`) left
 this list on 2026-09-06: the PI ruled it a borderline bug, and it is a
 1.5 fix (pickup 9).

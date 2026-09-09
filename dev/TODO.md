@@ -1,16 +1,26 @@
-Fresh-session pickup (2026-09-08): plan the Stage 4 PyTorch feasibility
-prototype using $task. Resume from `dev-next`, which includes the S-VBMC
-compatibility records and parked integration proposal. Create a fresh
-Stage 4 feature branch from `dev-next`. Production code is unchanged from
-`feadf30`.
+Current work (2026-09-09): Stage 4 bounded prototype and measurements complete;
+final evidence/review is recorded in dev/plans/stage4-torch-feasibility.md.
+Branch `dev-stage4-torch-feasibility` starts from `dev-next` at `bf43c20`.
+Production code remains unchanged from `feadf30`. Astra orchestrated;
+Sol implemented and reviewed; computation ran serially in the main thread.
+96 complete fits (72 instrumented plus 24 tracing-free controls), float64
+CPU/CUDA diagnostics and focused tests are retained. Clean CPU timings are
+2.12-6.26x NumPy; synchronized CUDA timings are 3.35-23.34x on this laptop.
+Recommendation: retain NumPy for this release; an explicit PI decision is
+still required before any full port or separately bounded optimization work.
+No final 870-case population, full port, job or watcher was launched.
+PI follow-up: inspect S-VBMC and possibly port its weights-only optimization
+to NumPy. Initial static scope is recorded in the ecosystem integration
+proposal; direct S-VBMC timings and a backend decision remain pending.
+Compatibility is complete and full integration remains parked.
 
 Read first:
 
 - dev/plans/modernization-roadmap.md, Stage 4 and pickup 10
 - dev/2026-09-02-modernization-discussion.md
 - dev/2026-09-06-pyvbmc-1.5-overview.md
-- dev/2026-09-08-svbmc-compatibility.md
-- dev/2026-09-08-ecosystem-integration.md
+- dev/2026-09-08-numerical-campaigns.md
+- dev/2026-09-08-ecosystem-integration.md (links to completed compatibility details)
 
 Astra orchestrates; Sol implements/reviews. Scope a complete variational
 optimization step (GP integrals, entropy, parameter handling, optimizer,
@@ -18,14 +28,15 @@ including final-refinement sizes) against modernized NumPy. Preserve the
 agreed CPU/GPU float64 checks, gradients, numerical robustness, transfer and
 setup costs, installation concerns, and code-simplicity assessment. Around
 1.2x runtime is not an agreed cutoff; CPU acceptability still matters even
-if GPU is faster. Plan the bounded experiment first; the full port requires
-the explicit evidence-based decision. Stage 4 has not started.
+if GPU is faster. The bounded experiment is complete; the full port still
+requires the explicit evidence-based decision. Results and limitations are in the plan.
 
 No jobs or watchers need reattaching. Only one heavy computation at a time.
 Local S-VBMC source, CPU Torch overlay, diagnostics and logs remain ignored
 under dev/scripts/runs/svbmc_compat_20260908/; retrieval/rebuild instructions
-are in the compatibility record. They are not required to plan Stage 4.
-The CPU-only Torch install provides no GPU feasibility evidence. S-VBMC
+are in the compatibility record. The Stage 4 CUDA overlay and raw results
+are separately retained under dev/scripts/runs/stage4_torch/. CPU and GPU
+evidence are reported independently in the feasibility plan. S-VBMC
 integration is parked. Keep the final 870-case population run for after the
 remaining release changes; preserve the user-facing skill and calibration
 follow-ups in the remaining-work map below.
@@ -35,27 +46,28 @@ tracked in dev/plans/modernization-roadmap.md pickup 10. All 32 upstream tests
 and 30 real-posterior checks pass; all three groups pass bounded stacking/
 optimization. Independent review passes. A separate D=1 probe confirms an
 existing S-VBMC shape bug for the integration fix list. See
-dev/2026-09-08-svbmc-compatibility.md.
+dev/results/2026-09-08-svbmc-compatibility.md.
 PI now favors direct inclusion of S-VBMC in PyVBMC and a common delivery
 approach for future algorithms. Concrete API/dependency/migration design
 is proposed in dev/2026-09-08-ecosystem-integration.md. PI endorsed the
-direction and parked implementation for later. Next proposed workstream:
-Stage 4 PyTorch feasibility prototype, preserving its evidence-based port
-decision and CPU/GPU float64 requirements; not launched yet.
+direction and parked implementation for later. The Stage 4 prototype is now
+complete; review its evidence and decide the backend direction explicitly.
 
-Remaining-work map (2026-09-08; roadmap is authoritative):
+Remaining-work map (2026-09-09; roadmap is authoritative):
 - Full supported matrix: green, all nine jobs in 34263042113 at `24cf369`.
   The acquisition oracle now accounts for variance-penalty conditioning;
   a separate Python 3.10 test mock target is explicit. Both fixes preserve
   production code and reference values. See
-  dev/2026-09-08-acquisition-oracle-conditioning.md and the live latent-fix plan.
-- Release work: S-VBMC compatibility/integration and connections to upcoming
-  extensions; PyTorch CPU/GPU float64 feasibility, then the explicit port
-  decision and resulting dependency/Python-floor/NumPy-transition work.
+  dev/results/2026-09-08-acquisition-oracle-conditioning.md and the live latent-fix plan.
+- Release work: S-VBMC compatibility complete, integration parked, with
+  connections to upcoming extensions retained; decide the backend direction
+  from the completed CPU/GPU float64 feasibility results. Any dependency,
+  Python-floor or NumPy-transition work depends on that explicit decision.
 - User-facing agent skill: skills/pyvbmc/SKILL.md with FAQ/reference material,
   helpers and packaging/installation design, once the API settles.
-- Proposed improvement, release placement open: machine-local calibration
-  of kernel chunk sizes, caching and explicit recalibration (roadmap 12).
+- Proposed improvement: machine-local calibration of kernel chunk sizes.
+  Its API, cache and explicit recalibration behavior, wall-time and memory
+  budget, and release placement remain open (roadmap 12).
 - Final validation/release: freeze the final candidate, run the 870-case
   population with retained boost candidates and compare accuracy/usability;
   complete supported-matrix gates, final docs/release records, one PR to main,
@@ -83,8 +95,8 @@ latent-fix population validation remains pending; the full supported matrix
 passed all nine jobs in 34263042113 after the two test corrections.
 The final 870-run population follows the remaining S-VBMC compatibility/
 integration work and the agreed PyTorch feasibility decision and resulting
-release work; do not launch it prematurely. The next broader workstream is
-S-VBMC compatibility/integration.
+release work; do not launch it prematurely. S-VBMC compatibility is complete
+and integration remains parked; the current pickup is the backend decision.
 Also retain the user-facing coding-agent skill in the remaining work:
 dev/2026-09-02-user-agent-skill.md proposes skills/pyvbmc/SKILL.md, supporting
 references/helpers and distribution with the library. Prepare the guidance
@@ -95,7 +107,7 @@ caller-theta mutation. Other regularizers and optimizer settings remain.
 64 focused tests pass; all 11 numerical fixtures exact. Six paired replays
 converged and remained usable; retain one Normal D5 gsKL fence flag for
 the final population assessment. Independent core/artifact reviews pass;
-see dev/2026-09-08-eta-bound-fix.md.
+see dev/results/2026-09-08-eta-bound-fix.md.
 Stopping-rule investigation is deferred research/improvement outside this
 fix campaign, not a release blocker. The gpyreg step-out repair is likewise
 deferred; Phase7 retains the remaining integrated validation work.
@@ -105,7 +117,7 @@ independent scientific/artifact review passed. The subsequent PI selection
 and production integration of A are recorded above.
 Two saved noisy states x three optimizer RNGs x A/B, 400 Adam iterations,
 checkpoints 40/100/200/400 before pruning, ten diagnostic scoring RNGs.
-See dev/2026-09-08-eta-equal-budget.md. No production selection or offset fits.
+See dev/results/2026-09-08-eta-equal-budget.md. No production selection or offset fits.
 All 12 fits / 480 scores complete in 25.261 s across successful invocations;
 all historical trajectory prefixes exact. At equal effort B's sizable gains
 disappear; remaining ELBO differences tiny, ELCBO mixed. A is supported for
@@ -123,7 +135,7 @@ Boost-default commit 4ab2003 was pushed and CI passed:
 https://github.com/acerbilab/pyvbmc/actions/runs/34229085644
 
 Completed pickup: paired boost analysis on dev-boost-analysis; statistical
-and scientific independent review passed. See dev/2026-09-08-boost-analysis.md and
+and scientific independent review passed. See dev/results/2026-09-08-boost-analysis.md and
 dev/experiments/boost_campaign_20260908/ for full effects, all rejected cases,
 golden comparison and scoring sensitivity. The penalty has mostly tiny
 directional effects plus large tail exceptions; guard choice changes the
@@ -138,7 +150,7 @@ Isolated dev-boost-campaign runner `8c7919f`, numerical base `764a177`.
 Former worker PID 14272 (launcher 31008). Two smoke pairs, source/import checks,
 independent review and no-new-fit resume/recovery tests passed. Paired
 penalties 0.1/0, pruning/guard disabled, common-GP pre/candidate rescoring,
-retained VPs. See dev/2026-09-08-boost-campaign.md for execution and evidence.
+retained VPs. See dev/results/2026-09-08-boost-campaign.md for execution and evidence.
 Historical parked status below is superseded by this explicit restart.
 
 Completed: Phase 6 bounded local eta-bound experiment on dev-eta-bound-comparison,
@@ -151,7 +163,7 @@ treatment remains open: B's noisy gains coincide with longer optimization;
 C's penalty never activates here. Proposed next scope is equal-iteration
 A/B fits with common eta shifts and repeated scoring; no new fits scheduled.
 Manifest: dev/experiments/eta_bound_20260908.json. Design and evidence:
-dev/2026-09-08-eta-bound-comparison.md. No full trajectories or production
+dev/results/2026-09-08-eta-bound-comparison.md. No full trajectories or production
 penalty choice in this pickup; boost remains parked.
 
 Completed Phases 3-5 follow:
@@ -162,7 +174,7 @@ GP sampling termination (Phase 5), with separate numerical gates.
 Current branch: dev-main-loop-fixes. Boost code is preserved at local commit
 764a177 on dev-final-boost (not pushed). Its exact restart scope, local
 artifact paths and remaining harness work are in
-dev/2026-09-08-boost-penalty-pilot.md, "Parked experiment restart".
+dev/results/2026-09-08-boost-penalty-pilot.md, "Parked experiment restart".
 No boost job/watcher is running or scheduled. Q1/Q4 remain evidence-dependent.
 
 Phase 3 covariance implementation and independent review complete: 146 tests
@@ -181,7 +193,7 @@ upstream gpyreg repair and final integration/population gates, and the parked
 boost campaign when scheduled. Branch pushed; CI 138 passed on b0d3437:
 full suite on Ubuntu/Python 3.12, 1,090 passed, 60 skipped, no retries.
 The full OS/Python matrix and integrated population assessment remain pending.
-See dev/2026-09-08-main-loop-fixes.md.
+See dev/results/2026-09-08-main-loop-fixes.md.
 
 Historical Phase 2 progress follows:
 Paired penalty timing pilot complete: seed 0 of noisy Student D8, Lumpy D10
@@ -189,7 +201,7 @@ and Cigar D15 exhaust; six boosts took 24.10 seconds and the complete pilot
 32.018 seconds. Both arms started from identical reconstructed states/RNGs;
 actual penalties 0.1/0 and disabled pruning/guard were verified. Full paired
 captures are saved. Estimate about 3 hours for 870 pairs, with a 4-hour
-planning allowance; see dev/2026-09-08-boost-penalty-pilot.md. Independent
+planning allowance; see dev/results/2026-09-08-boost-penalty-pilot.md. Independent
 review passed. The full population campaign has not been launched.
 
 Reconstruction check completed numerically: all 870 traces are structurally eligible;
@@ -197,7 +209,7 @@ nine exact snapshots and three common-RNG boost pairs were compared. Normal
 reproduces exactly, Logistic nearly matches, and noisy Rosenbrock seed 7
 changes materially. An all-870 GP/SD screen took 17.6 seconds and found four
 absolute SD differences above 0.001 nats (descriptive, not a validity gate).
-See dev/2026-09-08-boost-reconstruction.md; independent artifact review is complete.
+See dev/results/2026-09-08-boost-reconstruction.md; independent artifact review is complete.
 No full population optimization has been launched.
 The PI deferred the acceptance threshold: retain both full VPs and ELBO/SD,
 then assess acceptance rules post hoc. Rejected improvements are a tradeoff,
@@ -216,7 +228,7 @@ The guard fixes the severe logistic case but worsens noisy Rosenbrock seed17
 from reference gsKL 0.352 to 6.402 by rejecting an improved candidate.
 The production default remains deferred pending the broader comparison;
 None retains legacy behavior on this experimental branch. Q1 is unchanged.
-Evidence: dev/2026-09-07-final-boost-comparison.md and
+Evidence: dev/results/2026-09-07-final-boost-comparison.md and
 dev/scripts/runs/latent_fixes/boost_20260907/.
 Phase 2's live checklist is at the top of the latent-bug plan.
 
@@ -328,7 +340,7 @@ No new campaign has been launched or scheduled.
 Verify claims against current source and the existing derivation/bug notes,
 separate trajectory-neutral from trajectory-moving changes, define the gates,
 and surface unresolved bug-versus-algorithm decisions for the PI. The existing
-final-boost decision is in dev/2026-09-04-final-boost-failure.md and pickup 9.
+final-boost decision is in dev/results/2026-09-04-final-boost-failure.md and pickup 9.
 Complete S-VBMC integration and connections to upcoming extensions (pickup 10),
 resolve the PyTorch feasibility decision below, and validate the final 1.5 code
 as a population against this extended reference before dev-next -> main.

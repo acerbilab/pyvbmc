@@ -9,7 +9,7 @@ across the population; reconstruction of boost inputs from compact traces is
 being checked before scheduling main-loop reruns.
 
 Phase 2 started on `dev-final-boost`, based on validated `dev-next` commit
-`3e879b6`. The [latent-bug plan](plans/latent-bug-fixes.md) owns execution
+`3e879b6`. The [latent-bug plan](../plans/latent-bug-fixes.md) owns execution
 and the PI's decisions. The production tolerance remains open. The tested
 rule catches the severe logistic failure but produces a clear posterior-shape
 regression on noisy Rosenbrock seed 17, so neither tolerance is recommended

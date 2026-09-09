@@ -261,7 +261,7 @@ Full results for both single-score rules and the joint grid are retained.
 Values in the quality columns are **pre -> boost**. Lower is better, so an
 increase means fallback improves that metric. Absolute pre/boost scores, GP
 SD, both deltas, golden metrics and all 0.2 rejections are also retained in
-[acceptance_cases.csv](experiments/boost_campaign_20260908/acceptance_cases.csv).
+[acceptance_cases.csv](../experiments/boost_campaign_20260908/acceptance_cases.csv).
 
 Penalty ON (0.1):
 
@@ -333,9 +333,9 @@ other case's classification or estimate an entropy standard error.
 
 ## Files, reproduction and remaining decision
 
-[analysis.json](experiments/boost_campaign_20260908/analysis.json) records
+[analysis.json](../experiments/boost_campaign_20260908/analysis.json) records
 methods, versions, input configuration and analyzer source hash.
-[paired_effects.csv](experiments/boost_campaign_20260908/paired_effects.csv)
+[paired_effects.csv](../experiments/boost_campaign_20260908/paired_effects.csv)
 has one row per statistical unit (870); `endpoints.csv` has one row per arm
 (1,740), with all source/pre/post/golden metrics and every tested decision.
 `grouped_stats.json`/`.csv` contain full per-config effects and policy returns;

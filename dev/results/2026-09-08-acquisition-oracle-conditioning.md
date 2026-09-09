@@ -82,5 +82,5 @@ The light mocked regression and independent review passed.
 
 The final [matrix 34263042113](https://github.com/acerbilab/pyvbmc/actions/runs/34263042113)
 at `24cf369` passed all nine OS/Python jobs. The live
-[latent-fix plan](plans/latent-bug-fixes.md) tracks integration and subsequent
+[latent-fix plan](../plans/latent-bug-fixes.md) tracks integration and subsequent
 release work; no final population run was started.
