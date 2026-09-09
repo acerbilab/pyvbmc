@@ -773,7 +773,16 @@ anything that changes numerics lands.
     transforms and density construction. Compare S-VBMC itself before making
     performance claims or choosing its backend. See the NumPy alternative in
     [the integration proposal](../2026-09-08-ecosystem-integration.md).
-    Integration remains parked; this is not port authorization.
+    The PI then authorized a bounded optimized NumPy prototype, now complete:
+    eighteen primary fit pairs, eighteen shared-preparation control pairs,
+    six diagnostic pairs and ten focused tests pass. NumPy is 2.47x faster
+    than unchanged upstream; with preparation improvements shared with Torch,
+    its median paired speedup is 1.06x (1.15x aggregate). Most of the original
+    gain comes from preparation, while the remaining advantage depends on
+    the workload. See the
+    [results](../results/2026-09-09-svbmc-numpy-prototype.md) and
+    [plan](svbmc-numpy-prototype.md). Choose S-VBMC's backend from this evidence;
+    integration remains parked and no production port is authorized.
     Root owns numerical execution and tracking; Sol may inspect compatibility
     contracts read-only in parallel. Run one heavy computation at a time.
 11. **Stage 3 integrated before the reference extension** (PI,

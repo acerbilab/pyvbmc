@@ -12,8 +12,9 @@ later. Preserve this proposal and the compatibility findings for resumption.
 
 Separate PyVBMC backend decision (2026-09-09): retain the modernized
 NumPy/SciPy solver for 1.5 and do not undertake a full Torch solver port for
-this release. That decision does not choose S-VBMC's backend or authorize its
-parked integration or the possible NumPy weight-optimization comparison.
+this release. That decision does not choose S-VBMC's backend. The PI later
+authorized the bounded optimized NumPy weight-optimization comparison below;
+production integration remains parked.
 
 ## Proposed delivery model
 
@@ -90,7 +91,8 @@ agreed PyTorch feasibility criteria and make that decision separately.
 
 ## Next concrete design step
 
-Agree the S-VBMC public API and posterior/result contracts, then prepare a
+Choose S-VBMC's backend using the prototype evidence below. Agree the public
+API and posterior/result contracts, then prepare a
 bounded integration plan covering source migration, real-object regression
 tests, dependency/import behavior, documentation and legacy import support.
 This becomes the worked example for future algorithm additions. The final
@@ -103,6 +105,13 @@ S-VBMC and possibly porting it to NumPy. This records an investigation
 direction, not a decision to port or resume the parked integration. The
 [Stage 4 results](plans/stage4-torch-feasibility.md) concern PyVBMC's complete
 variational step and do not establish S-VBMC's performance.
+
+The PI subsequently authorized the bounded prototype described below,
+explicitly requesting optimized NumPy rather than a naive transcription.
+The prototype is now complete. Execution and checks are tracked in the
+[prototype plan](plans/svbmc-numpy-prototype.md); the
+[full results](results/2026-09-09-svbmc-numpy-prototype.md) include a Torch
+control sharing the optimized preparation. S-VBMC integration remains parked.
 
 Static inspection of the pinned S-VBMC `13a78f6c4a3ffe9c4557fee4f4b8f67c98b29e01`
 used in the compatibility check shows a substantially narrower backend
@@ -128,15 +137,15 @@ boundary (`src/svbmc/svbmc.py`):
   fraction of time spent in Torch: the existing NumPy transforms/density
   construction may dominate. Different input transforms must still be kept.
 
-A useful next bounded comparison would first match objective values and
-weight/logit gradients on identical stored draws and density matrices, then
-compare complete stacking optimizations on the three shipped posterior
-groups in both weight modes. Preserve the current Adam update, initialization,
-rounded-loss stopping and best-iterate selection for that comparison;
-PyVBMC's existing Adam helper has different policies and is not an automatic
-replacement. Measure NumPy preparation, Torch conversion/reduction/backward,
-and complete CPU wall separately. Keep ordinary fresh sampling per iteration:
-caching one sample matrix for an entire fit changes the experiment.
+The completed comparison matched objective values and weight/logit gradients
+on identical draws and density matrices, then compared complete stacking
+optimizations on the three shipped posterior groups in both weight modes.
+It preserved upstream Adam, initialization, rounded-loss stopping and
+best-iterate selection; PyVBMC's existing Adam helper has different policies
+and was not substituted. Preparation, Torch conversion/reduction/backward,
+and complete CPU wall were measured separately. Complete fits retained
+ordinary fresh sampling per iteration; fixed matrices were only used for
+the derivative checks and kernel timings.
 
 The public `stacked_ELBO` and `maximize_ELBO` methods currently return Torch
 tensors, and upstream tests assert that contract, although `optimize` stores
@@ -145,11 +154,32 @@ intentional direct-method return-type/API decision as part of integration.
 Existing tests check gradient existence and broad optimization outcomes,
 not numerical gradient values or a matched optimizer trajectory.
 
-Make float64 explicit in both comparison arms. Upstream S-VBMC has mixed
+The comparison made float64 explicit in both arms. Upstream S-VBMC has mixed
 dtype paths and casts returned weights to Torch's default dtype before
 widening to NumPy float64, so distinguish arithmetic/backend parity from an
 intentional dtype-policy change. Include the established D=1 shape, exact
 sample-count, RNG and canonical VP-weight follow-ups in integration design.
 The already completed compatibility checks need not be repeated simply to
-inspect this alternative. No S-VBMC source change, timing run, port or full
-integration was performed for this static follow-up.
+inspect this alternative. The experiment leaves upstream and PyVBMC
+production sources unchanged; the NumPy implementation is developer tooling.
+
+### Prototype result
+
+All eighteen primary fit pairs and eighteen shared-preparation control pairs
+pass numerical and RNG comparisons. Six separate diagnostic pairs also
+agree on stopping and best iterations. The largest returned-weight
+difference is 5.9e-16.
+
+| Complete-fit comparison | NumPy result on this CPU |
+| --- | --- |
+| Against unchanged upstream S-VBMC | 2.47x aggregate speedup; individual pairs 2.08-2.68x |
+| Against Torch with the same optimized preparation | 1.06x median paired speedup; 1.15x aggregate |
+
+Most of the upstream gain comes from preparation improvements usable by
+either backend. With those shared, the Gaussian-mixture examples are close
+to parity and Ring shows a clearer NumPy advantage (1.21-1.30x across pairs).
+The small study includes timing variation and an outlier; it does not
+establish a universal backend ranking. NumPy is a viable implementation
+with fewer numerical dependencies, at the cost of maintaining the analytic
+weight gradient and Adam update. Review this evidence and choose S-VBMC's
+backend before resuming the parked API and integration work.

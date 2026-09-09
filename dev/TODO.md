@@ -1,4 +1,16 @@
-Current work (2026-09-09): Stage 4 bounded prototype and measurements complete;
+Current work (2026-09-09): the bounded **optimized S-VBMC NumPy prototype is
+complete**, on `dev-svbmc-numpy-prototype` from `dev-next` at `48ed027`.
+See dev/results/2026-09-09-svbmc-numpy-prototype.md for results and
+dev/plans/svbmc-numpy-prototype.md for scope and checks. Eighteen primary
+fit pairs, eighteen shared-preparation control pairs and six diagnostic
+pairs pass; ten focused tests pass. NumPy is 2.47x faster than unchanged
+upstream. Sharing its preparation improvements with Torch narrows this to
+1.06x median paired speedup (1.15x aggregate); most gains are shared work.
+Next: choose S-VBMC's backend from this evidence, then resume API/integration
+design when authorized. Integration remains parked; no final 870-case
+population benchmark is authorized. No computation or watcher remains.
+
+Completed Stage 4 bounded prototype and measurements:
 final evidence/review is recorded in dev/plans/stage4-torch-feasibility.md.
 Branch `dev-stage4-torch-feasibility` starts from `dev-next` at `bf43c20`.
 Production code remains unchanged from `feadf30`. Astra orchestrated;
@@ -12,7 +24,8 @@ ArviZ exports and the existing Python floors remain unchanged.
 No final 870-case population, full port, job or watcher was launched.
 PI follow-up: inspect S-VBMC and possibly port its weights-only optimization
 to NumPy. Initial static scope is recorded in the ecosystem integration
-proposal; direct S-VBMC timings and its separate backend decision remain pending.
+proposal; direct S-VBMC timings are now complete, and its separate backend
+decision remains pending.
 Compatibility is complete and full integration remains parked.
 
 Read first:
@@ -99,8 +112,8 @@ latent-fix population validation remains pending; the full supported matrix
 passed all nine jobs in 34263042113 after the two test corrections.
 The final 870-run population follows the remaining S-VBMC integration and
 other release work; do not launch it prematurely. S-VBMC compatibility is
-complete and integration remains parked. A bounded S-VBMC NumPy comparison
-may be planned next, but no experiment or integration work is authorized.
+complete and integration remains parked. The bounded S-VBMC NumPy comparison
+is complete (2026-09-09); production integration remains separate.
 Also retain the user-facing coding-agent skill in the remaining work:
 dev/2026-09-02-user-agent-skill.md proposes skills/pyvbmc/SKILL.md, supporting
 references/helpers and distribution with the library. Prepare the guidance

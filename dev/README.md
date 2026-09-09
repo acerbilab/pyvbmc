@@ -33,7 +33,7 @@ For the release overview, start with
   reports in `results/`; the final integrated population remains pending.
 - [Ecosystem integration proposal](2026-09-08-ecosystem-integration.md) —
   High-level delivery/API discussion for S-VBMC and related methods, completed
-  compatibility evidence, and the subsequent NumPy investigation direction.
+  compatibility evidence, and the optimized NumPy prototype and timing evidence.
   Integration remains parked.
 
 `TODO.md` is the current pickup reminder. The roadmap and plans retain
@@ -140,6 +140,13 @@ plan and consolidated human summary.
   final-boost workloads and setup/transfer costs. The PI accepted the
   recommendation to retain the NumPy/SciPy solver for 1.5; no full Torch
   solver port is planned for this release.
+
+- [plans/svbmc-numpy-prototype.md](plans/svbmc-numpy-prototype.md) -
+  Completed optimized NumPy stacking prototype, actual upstream comparison,
+  shared-preparation Torch control and matched float64 optimization checks.
+  Detailed findings are in
+  [results/2026-09-09-svbmc-numpy-prototype.md](results/2026-09-09-svbmc-numpy-prototype.md).
+  S-VBMC's backend decision and parked integration remain separate.
 
 Naming: `plans/` files are named by slug only, never by date (the date is in
 the file header), so that they cannot be mistaken for copies of the dated
