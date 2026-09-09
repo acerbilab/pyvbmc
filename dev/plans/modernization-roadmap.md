@@ -852,6 +852,14 @@ anything that changes numerics lands.
 
 12. **Machine-local performance calibration** (PI proposal, 2026-09-07;
     broader modernization work, outside the pickup 9 latent-fix plan).
+    **Next workstream selected by the PI, 2026-09-09.** The handoff pickup
+    is at the top of `dev/TODO.md`. Begin with the existing PDF/entropy
+    chunk budgets and a bounded investigation of benefit, first-use cost
+    and numerical behavior. No calibration implementation or campaign has
+    started; the API, cache, budget, automatic policy and 1.5 placement below
+    remain to be settled. S-VBMC integration waits for its main developer's
+    review; the final 870-case benchmark remains deferred.
+
     Some implementation choices were timed on the development laptop and
     need not be optimal on another CPU, memory hierarchy or numerical stack.
     The PI proposes short kernel parameter sweeps on the user's machine,

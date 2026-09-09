@@ -1,4 +1,39 @@
-Current work (2026-09-09): the bounded **optimized S-VBMC NumPy prototype is
+Next pickup (PI, 2026-09-09): **machine-local performance calibration**.
+The PI selected this as the next workstream. Start from roadmap pickup 12:
+inspect the existing PDF and entropy chunk budgets, then develop a bounded
+calibration prototype and establish useful speedups, startup cost and
+numerical behavior before choosing automatic defaults. No calibration code,
+active implementation plan or measurement campaign exists yet; API, cache,
+wall-time/memory budget and 1.5 placement remain open decisions.
+
+Read first: this pickup; `plans/modernization-roadmap.md` pickup 12;
+`plans/stage2-batched-acquisition.md` (PDF chunk-size evidence);
+`plans/stage2-entmc.md`; and `2026-09-06-pyvbmc-1.5-overview.md`.
+The current knobs are the `2**16` row budget in
+`pyvbmc/variational_posterior/variational_posterior.py` and
+`_MAX_TENSOR_ELEMENTS` in `pyvbmc/entropy/entmc_vbmc.py`.
+Use synthetic inputs and a private RNG, preserve float64 and algorithmic
+budgets, measure cold setup separately from repeated kernel timings, and
+check values/gradients/RNG behavior. PDF rows are independent; entropy
+chunking changes reduction order and may move trajectories. Keep defaults
+and a reproducible fixed-settings path until the calibration policy is settled.
+
+Astra orchestrates; Sol implements/reviews. Run only one heavy computation
+at a time. No jobs, watchers or agent sessions need reattachment. Existing
+ignored environments, compiler caches and raw runs are local conveniences;
+the linked reports retain evidence and reproduction instructions. Calibration
+can start from current source and synthetic inputs without those raw runs.
+S-VBMC integration awaits its main developer's review. NumPy/SciPy remains
+the 1.5 solver; hints and the user-facing skill remain recorded follow-ups.
+Do not launch the final 870-case benchmark.
+
+Git workflow clarification (PI, 2026-09-09): make handoff, proposal and status
+documentation updates directly on `dev-next`; do not create or push branches
+for these updates. Remove completed feature branches after merging. Branch
+names in completed records below are historical; their merged commits remain
+available in `dev-next` without keeping the branch references.
+
+Completed work (2026-09-09): the bounded **optimized S-VBMC NumPy prototype is
 complete**, on `dev-svbmc-numpy-prototype` from `dev-next` at `48ed027`.
 See dev/results/2026-09-09-svbmc-numpy-prototype.md for results and
 dev/plans/svbmc-numpy-prototype.md for scope and checks. Eighteen primary
