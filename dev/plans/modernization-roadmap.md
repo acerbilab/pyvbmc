@@ -894,6 +894,26 @@ anything that changes numerics lands.
     decisions. Verify useful speedups and actual first-use cost before
     deciding the automatic default's scope.
 
+13. **Optional runtime hints** (PI, 2026-09-09; recorded for 1.5,
+    implementation deferred). Occasionally show users a short, useful tip
+    when optimization starts. This records release work, not authorization
+    to implement it now.
+
+    Start with a small, curated collection drawn from the FAQ and planned
+    user-facing skill: comparing multiple seeded runs and their diagnostics,
+    interpreting `elbo_sd`, and discovering S-VBMC when available. Keep shared
+    guidance consistent across hints, documentation and the skill; link to
+    fuller explanations where useful.
+
+    Show at most one hint per optimization start, with conservative frequency
+    and repetition suppression. Prefer relevant guidance when the current
+    configuration supplies enough context. Respect `display="off"` and
+    provide a separate way to disable hints. Selection must not consume the
+    inference RNG or change numerical results. Use the existing startup
+    logging path. The exact option, frequency, repetition-tracking scope and
+    any persistence remain open design choices. No hint implementation or
+    change to the final benchmark schedule is authorized by this entry.
+
 ## Deferred (devlog §12)
 
 Variational optimizer stopping-rule improvements (PI, 2026-09-08): the

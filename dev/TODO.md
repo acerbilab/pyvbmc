@@ -81,6 +81,11 @@ direction and parked implementation for later. The Stage 4 prototype is now
 complete, and the PI selected the NumPy/SciPy solver for 1.5.
 
 Remaining-work map (2026-09-09; roadmap is authoritative):
+- Runtime hints (PI, 2026-09-09): add optional, occasional short tips at
+  optimization startup to the 1.5 work list; implementation is deferred.
+  Respect quiet mode, offer a separate disable option, suppress repetition,
+  and leave inference randomness/results unchanged. Reuse FAQ and user-facing
+  skill guidance. See roadmap pickup 13 for scope and open design choices.
 - Full supported matrix: green, all nine jobs in 34263042113 at `24cf369`.
   The acquisition oracle now accounts for variance-penalty conditioning;
   a separate Python 3.10 test mock target is explicit. Both fixes preserve
