@@ -301,6 +301,96 @@ of 3 (0–5) of 145 evaluations at σ = 1 and 7 (3–11) of 200 at σ = 3, so th
 GP had 3 and 10 fewer rows than evaluations; every other arm made none.
 
 
+## Acquisition optimization: the sieve and CMA-ES (2026-09-09)
+
+The PI recalled that CMA-ES did poorly on the acquisition and that a larger
+sieve kept helping, which is why `ns_search` is 8192. Measured on saved
+mid-run states (seed 0, budget-limited, no final boost) at D = 2 (N = 86),
+5 (N = 139), 8 (N = 200) and 10 (N = 246), one fixed VIQR surface per state
+(same GP, VP and importance set), `scratch: acq_opt_bench.py`. The score is
+the integrated-IQR *reduction* at the returned point as a fraction of the
+best any method found (a 65536-point sieve, then L-BFGS-B from eight
+mutually distant tops and from every strategy's result); the cost is
+acquisition evaluations (points) and batched calls.
+
+| strategy | D = 2 | D = 5 | D = 8 | points D = 2 / 5 / 8 |
+|---|---|---|---|---|
+| sieve of 8192, no refinement (production without CMA-ES) | 100 % | 77 % | 60 % | 8192 |
+| CMA-ES as in production (log post-IQR, `tolfun` 1e-2, noise handler, sigma0 = VP sd) | 100 % | 77 % | 60 % | 10 / 12 / 15 |
+| CMA-ES on the log-reduction, `tolfun` 1e-3, no noise handler, sigma0 = VP sd | 100 % | 100 % | 100 % | 158 / 442 / 1012 |
+| same, sigma0 = 0.3 length scales | 100 % | 77 % | 73 % | 236 / 626 / 1172 |
+| L-BFGS-B from the sieve best, batched finite-difference gradient | 100 % | 100 % | 100 % | 18 / 72 / 279 |
+| L-BFGS-B from 8 mutually distant sieve tops | 100 % | 100 % | 100 % | 270 / 786 / 2142 |
+| coarse-to-fine resampling around the top 32, 4 rounds of 1024 | 100 % | 99 % | 97 % | 4096 |
+
+The sieve alone, median best reduction over five draws as a fraction of
+the reference:
+
+| `ns_search` | D = 2 | D = 5 | D = 8 |
+|---|---|---|---|
+| 512 | 99.9 % | 60 % | 59 % |
+| 2048 | 100 % | 61 % | 60 % |
+| 8192 | 100 % | 72 % | 63 % |
+| 32768 | 100 % | 76 % | 68 % |
+
+Reading:
+
+- **At D = 2 the sieve is the optimizer and it is enough**: 512 points
+  already sit at the optimum, so nothing downstream can matter, which is
+  why the CMA-ES diagnostics on the D = 2 snapshot showed no gain.
+- **At D = 5 and 8 the sieve leaves 25–40 % of the achievable reduction
+  on the table and grows only logarithmically with its size** (D = 8:
+  59 % at 512, 68 % at 32768). That is the "bigger sieve keeps helping"
+  memory: the sieve has been doing the optimizer's job.
+- **Production CMA-ES never improves on the sieve point**: it stops on
+  `tolfun` after two generations (10–15 evaluations) on every state. Two
+  compounding causes. The objective is the log of the *residual*
+  interquantile range, which varies by 5e-3 across the whole candidate set
+  (the reduction is 1e-3 of the range) against an absolute `tolfun` of
+  1e-2; and `sigma0` is the VP's largest standard deviation, so the first
+  generations sample the whole posterior width around the sieve point and
+  find nothing better. (The noise handler is pointless on a deterministic
+  objective but was not isolated as a cause.)
+- **A local gradient step from the sieve point recovers the whole gap at
+  1–3 % of a sieve's cost**: L-BFGS-B with a forward-difference gradient
+  from one batched call of D + 1 rows reaches the reference in 72 (D = 5)
+  and 279 (D = 8) evaluations, 12 and 31 calls, 0.02 and 0.07 s. Eight
+  restarts found nothing better on these states. CMA-ES also gets there
+  once it optimizes the log-reduction without the noise handler, at 3–4×
+  the evaluations, and only with the wide `sigma0` (the length scales here
+  are far larger than the posterior width, so 0.3 ℓ is not a local step).
+- **`lumpy_D10_noise3` at N = 246 is a different failure and is excluded**:
+  the GP's length scales collapse in two dimensions (per-sample minima of
+  1e-4 and 0 against a posterior width of order 1), the surface is flat to
+  8e-13 across the sieve and the best reduction is 1.5e-13 of the range,
+  ten orders of magnitude below D = 5 and 8. No optimizer can act on that;
+  the GP hyperparameter fit under heavy noise is the problem there.
+
+What to do, in order:
+
+1. **Optimize the log-reduction, not the log residual.** Same minimizer,
+   O(1) dynamic range, so any tolerance means what it says. Available as
+   `AcqFcnVIQR(loss="iqr_reduction")`; the search stage should use it as
+   the optimizer's objective while the sieve can keep either.
+2. **Replace CMA-ES by L-BFGS-B from the sieve's best point (optionally a
+   few mutually distant tops), with the gradient from one batched
+   acquisition call of D + 1 rows.** The batched objective already exists
+   for CMA-ES. This is the standard recipe of modern BO libraries (raw
+   samples, top-k restarts, L-BFGS-B). Analytic gradients (every operation
+   in the VIQR core is closed form) or autodiff in the torch port would
+   halve the cost and remove the finite-difference step.
+3. **Then shrink the sieve.** With refinement in place, 2048 candidates
+   plus L-BFGS-B should match 8192 plus nothing on these states; the
+   remaining role of the sieve is coverage of separate basins, which eight
+   restarts did not find here. To be confirmed end to end, since the
+   `ns_search = 2048` arm lost accuracy at σ = 3 without refinement.
+4. If CMA-ES stays: log-reduction objective, `tolfun` 1e-3 or relative, no
+   noise handler, `sigma0` from the VP width, a minimum number of
+   generations before `tolfun` can fire.
+5. The coarse-to-fine batched resampling (97–99 %) is the gradient-free
+   fallback where the surface is not smooth (integer variables, the
+   piecewise-constant nearest-neighbour noise estimate).
+
 ## The combination and the harder configurations
 
 Same protocol; the harder configurations at seeds 0–5 only (4.5–12
@@ -393,6 +483,9 @@ distributions.
 - Oracle entries for the new acquisitions (`--add-oracle`) and API docs
   beyond the automodule page, pending a decision on which of these to
   keep.
+- The L-BFGS-B search stage (item 2 of the acquisition-optimization
+  section) as a `search_optimizer` option, and the end-to-end arms with a
+  smaller sieve.
 - A noise-adaptive policy for the frequent retrain and the sieve size:
   at σ = 1 both can be cut for half the wall time at no cost, at σ = 3
   neither can. Keying `active_sample_gp_update`, `active_sample_vp_update`
