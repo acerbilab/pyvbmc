@@ -6,9 +6,15 @@ fit pairs, eighteen shared-preparation control pairs and six diagnostic
 pairs pass; ten focused tests pass. NumPy is 2.47x faster than unchanged
 upstream. Sharing its preparation improvements with Torch narrows this to
 1.06x median paired speedup (1.15x aggregate); most gains are shared work.
-Next: choose S-VBMC's backend from this evidence, then resume API/integration
-design when authorized. Integration remains parked; no final 870-case
-population benchmark is authorized. No computation or watcher remains.
+Next: review the revised
+[S-VBMC integration proposal](2026-09-08-ecosystem-integration.md).
+The PI requested a human-facing proposal for bringing the existing S-VBMC
+implementation into PyVBMC. Retaining Torch and the current object workflow
+is the proposed direction; the algorithm already exists in its own repo.
+Review code placement, optional imports/dependencies and migration before
+implementation. Targeted fixes and preparation optimizations are separate
+changes. Integration code remains parked; no final 870-case population
+benchmark is authorized. No computation or watcher remains.
 
 The bounded **compiled-Torch follow-up is complete** on
 `dev-torch-compile-prototype`, from `e0ca4e6`: 80 complete fits, all fixed-input
@@ -77,7 +83,8 @@ dev/results/2026-09-08-svbmc-compatibility.md.
 PI now favors direct inclusion of S-VBMC in PyVBMC and a common delivery
 approach for future algorithms. Concrete API/dependency/migration design
 is proposed in dev/2026-09-08-ecosystem-integration.md. PI endorsed the
-direction and parked implementation for later. The Stage 4 prototype is now
+direction and requested the revised integration proposal for human review;
+production integration remains parked. The Stage 4 prototype is now
 complete, and the PI selected the NumPy/SciPy solver for 1.5.
 
 Remaining-work map (2026-09-09; roadmap is authoritative):
@@ -94,8 +101,9 @@ Remaining-work map (2026-09-09; roadmap is authoritative):
 - Release work: S-VBMC compatibility complete, integration parked, with
   connections to upcoming extensions retained. The PyVBMC backend is settled:
   retain NumPy/SciPy for 1.5, keep optional exports and the existing Python
-  floors, and do not undertake a full Torch solver port. The S-VBMC backend
-  remains a separate open design choice.
+  floors, and do not undertake a full Torch solver port. The revised S-VBMC
+  proposal recommends retaining Torch; backend and integration choices are
+  ready for human review.
 - User-facing agent skill: skills/pyvbmc/SKILL.md with FAQ/reference material,
   helpers and packaging/installation design, once the API settles.
 - Proposed improvement: machine-local calibration of kernel chunk sizes.

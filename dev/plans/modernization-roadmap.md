@@ -787,8 +787,16 @@ anything that changes numerics lands.
     gain comes from preparation, while the remaining advantage depends on
     the workload. See the
     [results](../results/2026-09-09-svbmc-numpy-prototype.md) and
-    [plan](svbmc-numpy-prototype.md). Choose S-VBMC's backend from this evidence;
-    integration remains parked and no production port is authorized.
+    [plan](svbmc-numpy-prototype.md).
+    **Integration proposal (PI, 2026-09-09):** write the proposal for a human
+    reviewer, assuming familiarity with both methods and briefly explaining
+    concrete technical seams. S-VBMC already exists in its own repository;
+    this is integration work, not algorithm implementation. The revised
+    [proposal](../2026-09-08-ecosystem-integration.md) recommends retaining
+    Torch and the current object workflow, optional imports/dependencies and
+    a legacy migration route. Targeted fixes and preparation optimizations
+    remain separate changes. Review these choices before implementation;
+    integration code remains parked and no production port is authorized.
     Root owns numerical execution and tracking; Sol may inspect compatibility
     contracts read-only in parallel. Run one heavy computation at a time.
 11. **Stage 3 integrated before the reference extension** (PI,

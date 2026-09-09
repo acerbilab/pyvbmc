@@ -34,9 +34,10 @@ For the release overview, start with
   and cross-platform validation. Links to the full September 4, 7 and 8
   reports in `results/`; the final integrated population remains pending.
 - [Ecosystem integration proposal](2026-09-08-ecosystem-integration.md) —
-  High-level delivery/API discussion for S-VBMC and related methods, completed
-  compatibility evidence, and the optimized NumPy prototype and timing evidence.
-  Integration remains parked.
+  Human-review proposal for integrating the existing S-VBMC implementation:
+  preserved workflow, optional Torch, code placement and migration, with
+  links to completed compatibility and backend evidence. Production
+  integration remains parked.
 
 `TODO.md` is the current pickup reminder. The roadmap and plans retain
 execution status; the summaries above retain the human discussion and decisions.
@@ -148,7 +149,8 @@ plan and consolidated human summary.
   shared-preparation Torch control and matched float64 optimization checks.
   Detailed findings are in
   [results/2026-09-09-svbmc-numpy-prototype.md](results/2026-09-09-svbmc-numpy-prototype.md).
-  S-VBMC's backend decision and parked integration remain separate.
+  The [integration proposal](2026-09-08-ecosystem-integration.md) uses this
+  evidence to recommend retaining Torch and the existing S-VBMC workflow.
 
 Naming: `plans/` files are named by slug only, never by date (the date is in
 the file header), so that they cannot be mistaken for copies of the dated
