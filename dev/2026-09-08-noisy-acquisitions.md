@@ -1,8 +1,9 @@
 # Noisy-target acquisition functions: analysis and prototypes
 
-Status: prototypes, unit tests and same-machine experiments on the two
-noisy Rosenbrock configurations complete; the combination arm and the
-harder configurations running (2026-09-08). No default changed.
+Status: prototypes, unit tests and same-machine experiments complete
+(2026-09-08/09): nine arms on the two noisy Rosenbrock configurations, then
+the two candidates and their combination on `logreg_D5_noise3` and
+`student_D8_noise3`. No default changed; recommendations at the end.
 Branch: `claude/pyvbmc-noisy-acq-funcs-9kwdny`.
 
 ## Question
@@ -173,6 +174,49 @@ of 3 (0–5) of 145 evaluations at σ = 1 and 7 (3–11) of 200 at σ = 3, so th
 GP had 3 and 10 fewer rows than evaluations; every other arm made none.
 
 
+## The combination and the harder configurations
+
+Same protocol; the harder configurations at seeds 0–5 only (4.5–12
+minutes per run here). The reference population's medians for the
+defaults are gsKL 0.42 and 0.55 on these two configs (50 and 30 seeds), so
+the six-seed baselines here sit on the accurate side of their
+distributions.
+**rosenbrock_D2_noise1** (seeds 0–9; paired columns against the defaults on the same seeds)
+
+| arm | n | gsKL | MMTV | ELBO err | usable | evals | GP rows | wall min | gsKL ratio | wins | wall ratio |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| defaults | 10 | 0.023 | 0.038 | 0.087 | 0.90 | 138 | 138 | 3.4 | | | |
+| `var_reduction` | 10 | 0.017 | 0.028 | 0.061 | 1.00 | 140 | 140 | 1.8 | 0.44 | 6/10 | 0.55 |
+| repeats, cap 3 | 10 | 0.021 | 0.038 | 0.134 | 1.00 | 145 | 142 | 2.1 | 1.04 | 4/10 | 0.57 |
+| `var_reduction` + repeats | 10 | 0.032 | 0.040 | 0.104 | 1.00 | 152 | 146 | 2.1 | 0.57 | 5/10 | 0.69 |
+
+**rosenbrock_D2_noise3** (seeds 0–9; paired columns against the defaults on the same seeds)
+
+| arm | n | gsKL | MMTV | ELBO err | usable | evals | GP rows | wall min | gsKL ratio | wins | wall ratio |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| defaults | 10 | 0.076 | 0.066 | 0.196 | 0.90 | 198 | 198 | 3.2 | | | |
+| `var_reduction` | 10 | 0.035 | 0.073 | 0.150 | 0.90 | 190 | 190 | 2.8 | 0.93 | 5/10 | 0.88 |
+| repeats, cap 3 | 10 | 0.031 | 0.039 | 0.253 | 0.90 | 200 | 190 | 2.9 | 0.48 | 7/10 | 0.93 |
+| `var_reduction` + repeats | 10 | 0.073 | 0.081 | 0.368 | 0.90 | 188 | 176 | 2.8 | 1.48 | 4/10 | 0.84 |
+
+**logreg_D5_noise3** (seeds 0–5; paired columns against the defaults on the same seeds)
+
+| arm | n | gsKL | MMTV | ELBO err | usable | evals | GP rows | wall min | gsKL ratio | wins | wall ratio |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| defaults | 6 | 0.312 | 0.114 | 0.086 | 0.83 | 262 | 262 | 5.7 | | | |
+| `var_reduction` | 6 | 0.554 | 0.184 | 0.131 | 0.67 | 220 | 220 | 5.3 | 1.88 | 0/6 | 0.99 |
+| repeats, cap 3 | 6 | 0.355 | 0.129 | 0.169 | 0.83 | 270 | 268 | 6.0 | 0.94 | 3/6 | 1.03 |
+| `var_reduction` + repeats | 6 | 0.486 | 0.174 | 0.142 | 0.83 | 228 | 226 | 5.2 | 1.50 | 0/6 | 1.02 |
+
+**student_D8_noise3** (seeds 0–5; paired columns against the defaults on the same seeds)
+
+| arm | n | gsKL | MMTV | ELBO err | usable | evals | GP rows | wall min | gsKL ratio | wins | wall ratio |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| defaults | 6 | 0.487 | 0.134 | 0.541 | 0.67 | 342 | 342 | 8.8 | | | |
+| `var_reduction` | 6 | 0.864 | 0.140 | 1.029 | 0.50 | 360 | 360 | 11.5 | 2.26 | 0/6 | 1.29 |
+| repeats, cap 3 | 6 | 0.421 | 0.130 | 0.763 | 0.67 | 348 | 346 | 9.3 | 0.96 | 4/6 | 1.02 |
+| `var_reduction` + repeats | 6 | 0.928 | 0.145 | 1.130 | 0.17 | 362 | 362 | 11.1 | 2.47 | 0/6 | 1.25 |
+
 ## Conclusions
 
 1. **The frequent retrain earns its cost at σ = 3, not at σ = 1.** Without
@@ -187,16 +231,25 @@ GP had 3 and 10 fewer rows than evaluations; every other arm made none.
    σ = 1 (wall 0.30×) and 2.1× in gsKL at σ = 3. CMA-ES never improves on
    the sieve's point on this path (flat log surface, `tolfun` at 1e-2), so
    the reduction losses' better-conditioned surface changes nothing there.
-3. **`loss="var_reduction"` ties VIQR at σ = 3 (0.93, 5/10) and beats it at
-   σ = 1 (0.44, 6/10), at 0.88× and 0.55× the wall time.** The cheapest
-   member of the family is at least as good as the interquantile range on
-   these targets. Candidate noisy default, pending the harder
-   configurations.
-4. **Repeated observations halve gsKL at σ = 3 (0.48, 7/10; MMTV 0.039
-   against 0.066) and are neutral at σ = 1**, from a handful of repeats
-   per run. Candidate noisy default (`max_repeated_observations = 3`),
-   pending the harder configurations; the ELBO error moved the other way
-   (0.253 against 0.196), to be watched.
+3. **`loss="var_reduction"` ties VIQR at D = 2 and loses at D = 5 and 8.**
+   On the Rosenbrock configs it is at least as accurate (0.44 at σ = 1,
+   0.93 at σ = 3) at 0.55× and 0.88× the wall time; on `logreg_D5_noise3`
+   and `student_D8_noise3` it is 1.9× and 2.3× worse in gsKL with no win
+   in twelve paired runs, and on the Student target it runs longer (1.29×,
+   more evaluations before stability). The interquantile range's
+   exponential weighting of high-variance regions is doing real work on
+   the harder targets; the cheapest member of the family is not a
+   replacement. Not a candidate default.
+4. **Repeated observations never hurt and help once.** gsKL 0.48 (7/10) at
+   σ = 3 on the Rosenbrock, 1.04 at σ = 1, 0.94 (3/6) and 0.96 (4/6) on the
+   two harder configs, at 0.93–1.03× the wall time, from a handful of
+   repeats per run (2–10 fewer GP rows than evaluations). The ELBO error
+   moves the other way in three of four configs (0.253 against 0.196,
+   0.169 against 0.086, 0.763 against 0.541 medians), which the small
+   samples cannot separate from noise but is consistent in sign. Safe to
+   enable on noisy runs; the evidence for a gain is confined to the
+   low-dimensional high-noise case. The combination with `var_reduction`
+   inherits the loss's failure.
 5. **The scalar EIG is unusable here** (0/10 usable at σ = 3, 24× the gsKL
    at σ = 1), worse than the 2020 paper's "reasonable" verdict. The
    per-component variant is competitive at σ = 1 (0.54, 7/10) and 2.6×
@@ -205,16 +258,22 @@ GP had 3 and 10 fewer rows than evaluations; every other arm made none.
    now; the σ = 1 result says the criterion is not wrong, only weaker than
    the look-ahead losses under noise.
 
-The combination `var_reduction` + repeats on the Rosenbrock configs and
-the four arms (defaults, `var_reduction`, repeats, both) on
-`logreg_D5_noise3` and `student_D8_noise3` (seeds 0–5) are running; their
-results are appended below when done.
 
 
 ## Not done
 
 - Deterministic quadrature for the VP integral (second order, see above).
-- Oracle entries for the new acquisitions (`--add-oracle`), API docs
-  beyond the automodule page, and the harder configurations
-  (`logreg_D5_noise3`, `student_D8_noise3`), pending a decision on which
-  of these to keep.
+- Oracle entries for the new acquisitions (`--add-oracle`) and API docs
+  beyond the automodule page, pending a decision on which of these to
+  keep.
+- A noise-adaptive policy for the frequent retrain and the sieve size:
+  at σ = 1 both can be cut for half the wall time at no cost, at σ = 3
+  neither can. Keying `active_sample_gp_update`, `active_sample_vp_update`
+  and `ns_search` to the estimated noise at the high-posterior-density
+  region (`sn2_hpd`, already computed each iteration) is the one speed
+  lever these experiments leave open that does not trade accuracy; the
+  threshold needs a sweep over noise levels.
+- `sd_reduction` and `iqr_reduction` end to end (dropped as redundant
+  once CMA-ES proved a no-op on this path; `sd_reduction` is the
+  untested middle ground between the variance and the interquantile
+  range).
