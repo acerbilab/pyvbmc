@@ -57,8 +57,8 @@ sampler and the space-filling design inside them, both VP optimizations,
 the sieve call against the CMA-ES calls, `GP.predict` inside each, and
 the VIQR core split into its operations; the instrumented core performs
 the original operations in the original order, so the trajectory is the
-default one). Seed 0 of four configurations, four processes sharing the
-container's four cores.
+default one). Seed 0 of five configurations; four processes shared the
+container's four cores, the 10-D run then ran alone.
 
 **Run summary** (seed 0, defaults, one BLAS thread, four processes sharing four cores)
 
@@ -68,52 +68,53 @@ container's four cores.
 | rosenbrock_D2_noise3 | 1.7 | 200 | 192 | 39 | 0.136 | 41 / 44 | 190 |
 | logreg_D5_noise3 | 2.8 | 230 | 222 | 47 | 0.524 | 50 / 64 | 220 |
 | student_D8_noise3 | 5.2 | 350 | 350 | 69 | 0.447 | 72 / 104 | 340 |
+| lumpy_D10_noise3 | 8.9 | 450 | 448 | 89 | 0.392 | 92 / 120 | 440 |
 
 **Share of wall time by top-level bucket** (nesting removed: the GP fits include their slice sampler, the sieve and CMA-ES buckets include their GP predictions and the VIQR core)
 
-| bucket | rosenbrock_D2_noise1 | rosenbrock_D2_noise3 | logreg_D5_noise3 | student_D8_noise3 |
-|---|---|---|---|---|
-| GP fit, main loop | 19.7 % | 8.8 % | 14.4 % | 17.4 % |
-| GP fit, in-loop refits | 40.3 % | 8.8 % | 14.0 % | 20.6 % |
-| VP optimization, main loop | 3.1 % | 5.7 % | 9.6 % | 7.1 % |
-| VP optimization, in-loop refits | 1.7 % | 1.1 % | 1.1 % | 1.7 % |
-| acquisition: sieve call | 31.8 % | 70.2 % | 53.6 % | 46.7 % |
-| acquisition: CMA-ES (calls + overhead) | 2.3 % | 2.8 % | 3.8 % | 3.4 % |
-| importance-sample set-up | 0.3 % | 0.8 % | 0.6 % | 0.7 % |
-| GP posterior re-update between points | 0.1 % | 0.2 % | 0.2 % | 0.2 % |
-| final boost | 0.6 % | 1.3 % | 1.1 % | 0.5 % |
-| everything else (warping, bookkeeping, target) | 0.1 % | 0.3 % | 1.5 % | 1.9 % |
+| bucket | rosenbrock_D2_noise1 | rosenbrock_D2_noise3 | logreg_D5_noise3 | student_D8_noise3 | lumpy_D10_noise3 |
+|---|---|---|---|---|---|
+| GP fit, main loop | 19.7 % | 8.8 % | 14.4 % | 17.4 % | 23.2 % |
+| GP fit, in-loop refits | 40.3 % | 8.8 % | 14.0 % | 20.6 % | 17.3 % |
+| VP optimization, main loop | 3.1 % | 5.7 % | 9.6 % | 7.1 % | 4.7 % |
+| VP optimization, in-loop refits | 1.7 % | 1.1 % | 1.1 % | 1.7 % | 1.0 % |
+| acquisition: sieve call | 31.8 % | 70.2 % | 53.6 % | 46.7 % | 49.2 % |
+| acquisition: CMA-ES (calls + overhead) | 2.3 % | 2.8 % | 3.8 % | 3.4 % | 1.3 % |
+| importance-sample set-up | 0.3 % | 0.8 % | 0.6 % | 0.7 % | 0.8 % |
+| GP posterior re-update between points | 0.1 % | 0.2 % | 0.2 % | 0.2 % | 0.3 % |
+| final boost | 0.6 % | 1.3 % | 1.1 % | 0.5 % | 0.4 % |
+| everything else (warping, bookkeeping, target) | 0.1 % | 0.3 % | 1.5 % | 1.9 % | 1.7 % |
 
 **Inside the GP fits** (share of the fit time)
 
-| part | rosenbrock_D2_noise1 | rosenbrock_D2_noise3 | logreg_D5_noise3 | student_D8_noise3 |
-|---|---|---|---|---|
-| slice sampler | 94 % | 71 % | 75 % | 73 % |
-| space-filling initial design | 4 % | 26 % | 23 % | 23 % |
-| optimizer, posterior, rest | 1 % | 3 % | 2 % | 4 % |
+| part | rosenbrock_D2_noise1 | rosenbrock_D2_noise3 | logreg_D5_noise3 | student_D8_noise3 | lumpy_D10_noise3 |
+|---|---|---|---|---|---|
+| slice sampler | 94 % | 71 % | 75 % | 73 % | 50 % |
+| space-filling initial design | 4 % | 26 % | 23 % | 23 % | 26 % |
+| optimizer, posterior, rest | 1 % | 3 % | 2 % | 4 % | 23 % |
 
 **Inside one sieve call** (share of the sieve time; ms per call in the last column group)
 
-| operation | rosenbrock_D2_noise1 | rosenbrock_D2_noise3 | logreg_D5_noise3 | student_D8_noise3 |
-|---|---|---|---|---|
-| GP prediction at the candidates | 31 % | 33 % | 36 % | 41 % |
-| nearest-neighbour noise | 1 % | 2 % | 2 % | 3 % |
-| kernel matrices (cdist, exp) | 21 % | 21 % | 22 % | 23 % |
-| matrix product (Nx x N)(N x Na) | 11 % | 12 % | 11 % | 10 % |
-| tau2 and sqrt | 10 % | 11 % | 9 % | 7 % |
-| sinh in log form (exp, log1p) | 15 % | 13 % | 12 % | 10 % |
-| log-sum-exp (max, exp, sum, log) | 9 % | 8 % | 7 % | 5 % |
-| wrapper rest (bounds, transform, mask) | 1 % | 1 % | 1 % | 1 % |
-| **ms per sieve call** | **407** | **387** | **415** | **430** |
+| operation | rosenbrock_D2_noise1 | rosenbrock_D2_noise3 | logreg_D5_noise3 | student_D8_noise3 | lumpy_D10_noise3 |
+|---|---|---|---|---|---|
+| GP prediction at the candidates | 31 % | 33 % | 36 % | 41 % | 47 % |
+| nearest-neighbour noise | 1 % | 2 % | 2 % | 3 % | 3 % |
+| kernel matrices (cdist, exp) | 21 % | 21 % | 22 % | 23 % | 25 % |
+| matrix product (Nx x N)(N x Na) | 11 % | 12 % | 11 % | 10 % | 12 % |
+| tau2 and sqrt | 10 % | 11 % | 9 % | 7 % | 4 % |
+| sinh in log form (exp, log1p) | 15 % | 13 % | 12 % | 10 % | 6 % |
+| log-sum-exp (max, exp, sum, log) | 9 % | 8 % | 7 % | 5 % | 3 % |
+| wrapper rest (bounds, transform, mask) | 1 % | 1 % | 1 % | 1 % | 1 % |
+| **ms per sieve call** | **407** | **387** | **415** | **430** | **595** |
 
 **Inside the CMA-ES stage** (share of the CMA-ES time)
 
-| part | rosenbrock_D2_noise1 | rosenbrock_D2_noise3 | logreg_D5_noise3 | student_D8_noise3 |
-|---|---|---|---|---|
-| acquisition calls | 60 % | 55 % | 59 % | 61 % |
-| of which GP prediction | 30 % | 35 % | 30 % | 33 % |
-| of which VIQR core | 31 % | 28 % | 30 % | 33 % |
-| acquisition calls per new point | 17 | 9 | 18 | 16 |
+| part | rosenbrock_D2_noise1 | rosenbrock_D2_noise3 | logreg_D5_noise3 | student_D8_noise3 | lumpy_D10_noise3 |
+|---|---|---|---|---|---|
+| acquisition calls | 60 % | 55 % | 59 % | 61 % | 53 % |
+| of which GP prediction | 30 % | 35 % | 30 % | 33 % | 53 % |
+| of which VIQR core | 31 % | 28 % | 30 % | 33 % | 26 % |
+| acquisition calls per new point | 17 | 9 | 18 | 16 | 9 |
 
 **Scaling with the training-set size** (sieve call and GP fit, by quartile of N within each run)
 
@@ -135,11 +136,15 @@ container's four cores.
 | student_D8_noise3 | 94–179 | 465 (189 / 272) | 0.8 | 0.9 |
 | student_D8_noise3 | 179–264 | 586 (292 / 290) | - | 1.2 |
 | student_D8_noise3 | 264–349 | 267 (143 / 121) | - | 0.5 |
+| lumpy_D10_noise3 | 10–117 | 487 (138 / 346) | 0.6 | 0.6 |
+| lumpy_D10_noise3 | 117–227 | 884 (408 / 472) | 1.1 | 1.4 |
+| lumpy_D10_noise3 | 227–337 | 750 (418 / 329) | 1.0 | 1.9 |
+| lumpy_D10_noise3 | 337–447 | 259 (157 / 100) | 1.1 | 1.4 |
 
 Reading:
 
-- **The sieve call is the largest item on three of the four targets**
-  (47–70 % of wall) and second on `rosenbrock_D2_noise1` (32 %), where
+- **The sieve call is the largest item on four of the five targets**
+  (47–70 % of wall, 62 % at D = 10) and second on `rosenbrock_D2_noise1` (32 %), where
   the run never stabilizes and the in-loop GP refits run at N up to 190
   (40 %). A sieve call costs about 0.4 s and is nearly flat in N: the
   VIQR core is 26–54 ms per hyperparameter sample per call, dominated by
@@ -150,10 +155,11 @@ Reading:
   prediction at the candidates is the other third and is the part that
   grows with N (45 ms at N < 50, 210–250 ms at N > 150). The call halves
   once hyperparameter sampling stops (`student_D8_noise3` at N ≥ 280):
-  the cost is proportional to Ns.
+  the cost is proportional to Ns (the same halving at N ≥ 300 on
+  `lumpy_D10_noise3`).
 - **The GP fits are 17–60 %**, the slice sampler 71–94 % of them and the
   space-filling initial design (`f_min_fill`, 1024 random hyperparameter
-  vectors before every fit) 23–26 % on three targets: an avoidable
+  vectors before every fit) 23–30 % on four targets: an avoidable
   in-loop cost, since the refits could start from the previous samples.
   Per fit the cost spans 0.2–5 s depending on Ns and N.
 - **The in-loop VP optimizations are 1–2 %**: the "frequent retrain" is
@@ -167,8 +173,7 @@ sum and one `log` (two transcendental sweeps instead of four, about 15 %
 of the sieve), reuse the cross-kernel from the prediction (about 20 %),
 and start the in-loop refits from the previous hyperparameters instead
 of the space-filling design (about a quarter of the fit time). Together
-that is roughly a third of the wall time of these runs. `lumpy_D10_noise3`
-is running and is appended when done.
+that is roughly a third of the wall time of these runs.
 
 ## The family view, and why pointwise acquisitions fail
 
