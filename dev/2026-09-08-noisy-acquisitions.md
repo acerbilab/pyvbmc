@@ -391,6 +391,44 @@ What to do, in order:
    fallback where the surface is not smooth (integer variables, the
    piecewise-constant nearest-neighbour noise estimate).
 
+### Sieve size before L-BFGS-B
+
+Same states and scoring (`scratch: sieve_size_lbfgs.py`): a sieve of
+`n` candidates, then L-BFGS-B from its best point or from 2, 4 or 8
+mutually distant tops; five draws each; median [min] of the reduction as
+a fraction of the reference, and the median total evaluations (sieve plus
+refinement).
+
+| state | sieve n | sieve alone | 1 start, evals | 4 starts, evals | 8 starts, evals |
+|---|---|---|---|---|---|
+| D = 2 | 128 | 99.6 % [99.0] | 100 % [100], 156 | 100 % [100], 258 | 100 % [100], 447 |
+| D = 2 | 1024 | 100 % [99.8] | 100 % [100], 1043 | 100 % [100], 1154 | 100 % [100], 1307 |
+| D = 5 | 128 | 59 % [58] | 74.5 % [70], 231 | 100 % [74.5], 681 | 100 % [100], 1209 |
+| D = 5 | 256 | 60 % [59] | 74.5 % [60], 383 | 100 % [100], 701 | 100 % [100], 1295 |
+| D = 5 | 512 | 60 % [59] | 74.5 % [60], 597 | 100 % [100], 1005 | 100 % [100], 1551 |
+| D = 5 | 1024 | 61 % [60] | 70 % [70], 1115 | 100 % [100], 1487 | 100 % [100], 2009 |
+| D = 5 | 8192 | 72 % [66] | 100 % [70], 8277 | 100 % [100], 8595 | 100 % [100], 9009 |
+| D = 8 | 128 | 52 % [51] | 100 % [100], 363 | 100 % [100], 1056 | 100 % [100], 2073 |
+| D = 8 | 256 | 54 % [52] | 100 % [100], 500 | 100 % [100], 1148 | 100 % [100], 2183 |
+| D = 8 | 1024 | 57 % [53] | 100 % [100], 1241 | 100 % [100], 1934 | 100 % [100], 2933 |
+| D = 8 | 8192 | 63 % [61] | 100 % [100], 8409 | 100 % [100], 9084 | 100 % [100], 10002 |
+
+- The sieve size barely matters once a local optimizer follows: at D = 8
+  a 128-point sieve and one start reach the optimum every time (363
+  evaluations against 8192 for a sieve that reaches 63 %).
+- The number of restarts matters where the surface has several basins:
+  the D = 5 state has a second basin at 74.5 % that catches a single start
+  in most draws whatever the sieve size (even the 8192 sieve's own best
+  point sits in it in some draws); four mutually distant starts reach the
+  optimum from every sieve of 256 points or more.
+- A defensible default is therefore a sieve of 512–1024 candidates and
+  four restarts from mutually distant tops, about 1000–2000 evaluations at
+  D = 5–8, a fifth of the present sieve, reaching the optimum where the
+  present search stops at 60–75 %. The distance criterion for "mutually
+  distant" should be scaled by the VP width rather than the GP length
+  scales, which can be far larger than the posterior.
+- Caveat: one state per dimension, seed 0; the end-to-end arms decide.
+
 ## The combination and the harder configurations
 
 Same protocol; the harder configurations at seeds 0–5 only (4.5–12
