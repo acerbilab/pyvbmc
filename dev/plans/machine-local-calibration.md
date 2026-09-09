@@ -1,8 +1,8 @@
 # Machine-local calibration integrated into PyVBMC
 
 Created/updated: 2026-09-09, roadmap pickup 12.
-Status: **IMPLEMENTED — local verification complete** (PI: go ahead, use task skill).
-Implementation branch: `dev-machine-calibration`; planning was on `dev-next`.
+Status: **DELIVERED — merged, pushed, full CI matrix passed**.
+Integrated into `dev-next` at `46c16b7`; `dev-machine-calibration` is deleted.
 Release scope: **include in PyVBMC 1.5**, confirmed by the PI.
 Astra orchestrates design and integration; Sol implements and reviews.
 Plan review: independent Sol static double-check complete; no findings remain.
@@ -21,14 +21,23 @@ aggregation/held-out/control rules.
 - [x] Apply PI-approved user-facing wording; completion explicitly names the saved JSON path.
 - [x] Commit/push all work and verify feature-branch CI (PI-requested delivery).
 - [x] Reduce `dev/TODO.md` to current pickup/actions; keep history in the existing plans/reports.
-- [~] Merge into `dev-next`, push, and delete the merged feature branch locally/remotely.
-- [ ] Run the full three-OS/three-Python CI matrix on `dev-next` and record its outcome.
+- [x] Merge into `dev-next`, push, and delete the merged feature branch locally/remotely.
+- [x] Run the full three-OS/three-Python CI matrix on `dev-next` and record its outcome.
 
 Delivery: feature commit `f2f99e3` passed [branch CI](https://github.com/acerbilab/pyvbmc/actions/runs/34397131792)
 (1,215 passed, 60 skipped). Repository hooks passed; formatting changes preserve
 Python syntax trees, and historical measurement runners are excluded from Black
 to retain their recorded source. TODO now contains current pickup/actions only;
 the prior accumulated handoffs remain in git history and linked durable records.
+Full [three-OS/three-Python matrix](https://github.com/acerbilab/pyvbmc/actions/runs/34398191188)
+passed all nine jobs on `46c16b7`. The automatic integration smoke run was cancelled in
+favor of this full matrix, which includes the same Ubuntu/Python 3.12 job.
+Ubuntu/Python 3.12 passed 1,215 tests with 60 skips (optional exports included);
+the other eight jobs each passed 1,116 tests with 61 skips. Three existing
+statistical tests each passed on one retry: mixture optimization on macOS 3.12,
+uncertainty sampling on Windows 3.12, and noisy Adam on Ubuntu 3.12.
+No calibration test required a retry. The final delivery-record commit changes
+developer documentation only; runtime, tests and workflows remain those tested.
 
 UX follow-up (PI): routine messages use plain-language outcomes and the actual
 absolute saved-report path, including cache-root overrides. Detailed budgets
@@ -85,8 +94,9 @@ Build a user-facing calibration facility shipped with PyVBMC. It measures
 PDF and Monte Carlo entropy chunk budgets on the user's machine, stores a
 reusable profile, and applies fixed settings to subsequent runs. This file
 owns the integration design; the completed developer experiment is evidence,
-not the finished feature. Package implementation is locally verified. Other-platform CI and another
-CPU/stack remain release follow-ups; neither was available/run locally.
+not the finished feature. Package implementation and the full three-OS CI matrix
+are verified. Performance on another CPU/stack remains unmeasured; the CI suite
+checks correctness and does not run calibration performance campaigns.
 This durable plan remains the task record; no transient TASK file was created.
 
 ## User decisions and public workflow

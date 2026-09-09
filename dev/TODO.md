@@ -3,22 +3,9 @@
 Updated 2026-09-09. This file records only current actions and constraints;
 completed work and evidence remain in the linked plans and reports.
 
-## Deliver machine-local calibration
-
-- Implementation commit `f2f99e3` is pushed on `dev-machine-calibration`.
-- Feature CI run `34397131792` passed.
-- Next, merge into `dev-next`, push, and delete the merged feature branch
-  locally and remotely.
-- Then run the full three-OS/three-Python matrix on `dev-next` and record the
-  result. Another-machine calibration measurement is useful but not a blocker.
-- Do not rerun completed local campaigns or validation unless a new failure or
-  source change requires it.
-
-Authoritative records:
-
-- [Calibration plan and live checklist](plans/machine-local-calibration.md)
-- [Calibration measurement report](results/2026-09-09-machine-local-calibration.md)
-- [Calibration artifacts](experiments/machine_calibration/README.md)
+Calibration is delivered on `dev-next`; all nine CI matrix jobs passed.
+See the [completed plan and CI evidence](plans/machine-local-calibration.md).
+Another-machine performance measurement remains useful; no campaign is scheduled.
 
 ## Work awaiting a separate decision
 

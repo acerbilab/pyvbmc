@@ -853,8 +853,10 @@ anything that changes numerics lands.
 12. **Machine-local performance calibration** (PI proposal, 2026-09-07;
     next workstream selected 2026-09-09, outside pickup 9's latent-fix plan).
     Implementation of the approved [package integration plan](machine-local-calibration.md)
-    is locally verified on `dev-machine-calibration`. The full suite passed
+    is merged into `dev-next`; the feature branch is deleted. The local suite passed
     1,140 tests (35 skips); docs/distributions and isolated wheel checks pass.
+    The [full CI matrix](https://github.com/acerbilab/pyvbmc/actions/runs/34398191188)
+    passed all nine OS/Python jobs on `46c16b7`.
     Two final campaigns took 42.39/43.53 s and retained all three defaults. Planning/status
     updates stayed on `dev-next` without creating a branch.
     Calibration is intended to ship in PyVBMC. The PI clarified that choices
