@@ -48,6 +48,128 @@ work, but the two items are the same. So "VIQR is slow" is two things:
 
 Noisy runs also get 1.5× the budget and stability count, so N is larger.
 
+### Operation-level timers on four targets (2026-09-09)
+
+The cProfile above covers one D = 2 target and carries profiler overhead
+on the elementwise work. `scratch: profile_ops.py` wraps the default run
+with `perf_counter` timers instead (GP fits by call site, the slice
+sampler and the space-filling design inside them, both VP optimizations,
+the sieve call against the CMA-ES calls, `GP.predict` inside each, and
+the VIQR core split into its operations; the instrumented core performs
+the original operations in the original order, so the trajectory is the
+default one). Seed 0 of four configurations, four processes sharing the
+container's four cores.
+
+**Run summary** (seed 0, defaults, one BLAS thread, four processes sharing four cores)
+
+| config | wall min | evals | final N | iterations | gsKL | GP fits main / in-loop | sieve calls |
+|---|---|---|---|---|---|---|---|
+| rosenbrock_D2_noise1 | 4.1 | 200 | 191 | 40 | 0.257 | 43 / 72 | 190 |
+| rosenbrock_D2_noise3 | 1.7 | 200 | 192 | 39 | 0.136 | 41 / 44 | 190 |
+| logreg_D5_noise3 | 2.8 | 230 | 222 | 47 | 0.524 | 50 / 64 | 220 |
+| student_D8_noise3 | 5.2 | 350 | 350 | 69 | 0.447 | 72 / 104 | 340 |
+
+**Share of wall time by top-level bucket** (nesting removed: the GP fits include their slice sampler, the sieve and CMA-ES buckets include their GP predictions and the VIQR core)
+
+| bucket | rosenbrock_D2_noise1 | rosenbrock_D2_noise3 | logreg_D5_noise3 | student_D8_noise3 |
+|---|---|---|---|---|
+| GP fit, main loop | 19.7 % | 8.8 % | 14.4 % | 17.4 % |
+| GP fit, in-loop refits | 40.3 % | 8.8 % | 14.0 % | 20.6 % |
+| VP optimization, main loop | 3.1 % | 5.7 % | 9.6 % | 7.1 % |
+| VP optimization, in-loop refits | 1.7 % | 1.1 % | 1.1 % | 1.7 % |
+| acquisition: sieve call | 31.8 % | 70.2 % | 53.6 % | 46.7 % |
+| acquisition: CMA-ES (calls + overhead) | 2.3 % | 2.8 % | 3.8 % | 3.4 % |
+| importance-sample set-up | 0.3 % | 0.8 % | 0.6 % | 0.7 % |
+| GP posterior re-update between points | 0.1 % | 0.2 % | 0.2 % | 0.2 % |
+| final boost | 0.6 % | 1.3 % | 1.1 % | 0.5 % |
+| everything else (warping, bookkeeping, target) | 0.1 % | 0.3 % | 1.5 % | 1.9 % |
+
+**Inside the GP fits** (share of the fit time)
+
+| part | rosenbrock_D2_noise1 | rosenbrock_D2_noise3 | logreg_D5_noise3 | student_D8_noise3 |
+|---|---|---|---|---|
+| slice sampler | 94 % | 71 % | 75 % | 73 % |
+| space-filling initial design | 4 % | 26 % | 23 % | 23 % |
+| optimizer, posterior, rest | 1 % | 3 % | 2 % | 4 % |
+
+**Inside one sieve call** (share of the sieve time; ms per call in the last column group)
+
+| operation | rosenbrock_D2_noise1 | rosenbrock_D2_noise3 | logreg_D5_noise3 | student_D8_noise3 |
+|---|---|---|---|---|
+| GP prediction at the candidates | 31 % | 33 % | 36 % | 41 % |
+| nearest-neighbour noise | 1 % | 2 % | 2 % | 3 % |
+| kernel matrices (cdist, exp) | 21 % | 21 % | 22 % | 23 % |
+| matrix product (Nx x N)(N x Na) | 11 % | 12 % | 11 % | 10 % |
+| tau2 and sqrt | 10 % | 11 % | 9 % | 7 % |
+| sinh in log form (exp, log1p) | 15 % | 13 % | 12 % | 10 % |
+| log-sum-exp (max, exp, sum, log) | 9 % | 8 % | 7 % | 5 % |
+| wrapper rest (bounds, transform, mask) | 1 % | 1 % | 1 % | 1 % |
+| **ms per sieve call** | **407** | **387** | **415** | **430** |
+
+**Inside the CMA-ES stage** (share of the CMA-ES time)
+
+| part | rosenbrock_D2_noise1 | rosenbrock_D2_noise3 | logreg_D5_noise3 | student_D8_noise3 |
+|---|---|---|---|---|
+| acquisition calls | 60 % | 55 % | 59 % | 61 % |
+| of which GP prediction | 30 % | 35 % | 30 % | 33 % |
+| of which VIQR core | 31 % | 28 % | 30 % | 33 % |
+| acquisition calls per new point | 17 | 9 | 18 | 16 |
+
+**Scaling with the training-set size** (sieve call and GP fit, by quartile of N within each run)
+
+| config | N range | ms per sieve call (prediction / VIQR core) | s per GP fit (in-loop) | s per GP fit (main) |
+|---|---|---|---|---|
+| rosenbrock_D2_noise1 | 10–48 | 275 (44 / 229) | 0.2 | 0.2 |
+| rosenbrock_D2_noise1 | 48–95 | 375 (95 / 277) | 0.2 | 0.2 |
+| rosenbrock_D2_noise1 | 95–142 | 450 (163 / 285) | - | 0.6 |
+| rosenbrock_D2_noise1 | 142–190 | 528 (210 / 316) | 2.8 | 2.5 |
+| rosenbrock_D2_noise3 | 10–49 | 279 (45 / 232) | 0.2 | 0.2 |
+| rosenbrock_D2_noise3 | 49–96 | 403 (104 / 296) | 0.3 | 0.2 |
+| rosenbrock_D2_noise3 | 96–143 | 418 (160 / 255) | 0.2 | 0.2 |
+| rosenbrock_D2_noise3 | 143–191 | 450 (205 / 242) | - | 0.2 |
+| logreg_D5_noise3 | 10–58 | 301 (52 / 246) | 0.3 | 0.3 |
+| logreg_D5_noise3 | 58–111 | 408 (119 / 284) | 0.4 | 0.4 |
+| logreg_D5_noise3 | 111–166 | 425 (178 / 243) | - | 0.5 |
+| logreg_D5_noise3 | 166–221 | 528 (252 / 272) | - | 0.7 |
+| student_D8_noise3 | 10–94 | 404 (86 / 315) | 0.5 | 0.5 |
+| student_D8_noise3 | 94–179 | 465 (189 / 272) | 0.8 | 0.9 |
+| student_D8_noise3 | 179–264 | 586 (292 / 290) | - | 1.2 |
+| student_D8_noise3 | 264–349 | 267 (143 / 121) | - | 0.5 |
+
+Reading:
+
+- **The sieve call is the largest item on three of the four targets**
+  (47–70 % of wall) and second on `rosenbrock_D2_noise1` (32 %), where
+  the run never stabilizes and the in-loop GP refits run at N up to 190
+  (40 %). A sieve call costs about 0.4 s and is nearly flat in N: the
+  VIQR core is 26–54 ms per hyperparameter sample per call, dominated by
+  elementwise work on (8192 × 100) arrays (the log-form sinh, the
+  log-sum-exp, the square roots: about a third of the call) and the kernel
+  matrices (a fifth; `K(Xs, X)` is recomputed here although `predict`
+  just formed it), with the matrix product itself only a tenth. The GP
+  prediction at the candidates is the other third and is the part that
+  grows with N (45 ms at N < 50, 210–250 ms at N > 150). The call halves
+  once hyperparameter sampling stops (`student_D8_noise3` at N ≥ 280):
+  the cost is proportional to Ns.
+- **The GP fits are 17–60 %**, the slice sampler 71–94 % of them and the
+  space-filling initial design (`f_min_fill`, 1024 random hyperparameter
+  vectors before every fit) 23–26 % on three targets: an avoidable
+  in-loop cost, since the refits could start from the previous samples.
+  Per fit the cost spans 0.2–5 s depending on Ns and N.
+- **The in-loop VP optimizations are 1–2 %**: the "frequent retrain" is
+  expensive only through the GP hyperparameter refit.
+- CMA-ES is 2–4 % (9–18 batched acquisition calls per new point), the
+  importance-sample set-up under 1 %, the final boost about 1 %.
+
+What this says about speeding VIQR up without touching the algorithm:
+skip the log-form sinh and the log-sum-exp in favour of a direct `sinh`,
+sum and one `log` (two transcendental sweeps instead of four, about 15 %
+of the sieve), reuse the cross-kernel from the prediction (about 20 %),
+and start the in-loop refits from the previous hyperparameters instead
+of the space-filling design (about a quarter of the fit time). Together
+that is roughly a third of the wall time of these runs. `lumpy_D10_noise3`
+is running and is appended when done.
+
 ## The family view, and why pointwise acquisitions fail
 
 Every noise-capable acquisition here has three parts: a weight saying
