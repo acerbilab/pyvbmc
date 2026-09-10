@@ -1,5 +1,3 @@
-import os
-
 import gpyreg as gpr
 import numpy as np
 import pytest
@@ -9,9 +7,22 @@ from pyvbmc.acquisition_functions import AcqFcnVIQR
 from pyvbmc.acquisition_functions.utilities import string_to_acq
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc import active_importance_sampling
-from pyvbmc.vbmc.options import Options
 
+from ._look_ahead import gauss_hermite_reference, weighted_samples_reference
 from ._regularization import check_variance_regularization
+from .test_acq_fcn_imiqr import _options, _prepare_optim_state
+
+
+@pytest.fixture(autouse=True)
+def _seeded_global_rng():
+    """``VariationalPosterior.__init__`` derives ``vp.rng`` from the global
+    ``np.random`` state and the target of ``test_simple__call__`` draws
+    from it, so seed that stream for every test here and restore it
+    after, leaving later modules where they would have been."""
+    state = np.random.get_state()
+    np.random.seed(0)
+    yield
+    np.random.set_state(state)
 
 
 @pytest.mark.parametrize("ns_gp", [1, 2])
@@ -101,48 +112,8 @@ def test_simple__call__():
     ## Setup acquisition function and necessary preliminaries:
 
     acqviqr = AcqFcnVIQR()
-    optim_state = {
-        "lb_eps_orig": -np.inf,
-        "ub_eps_orig": np.inf,
-    }
-    Ns_gp = len(gp.posteriors)
-    ln_ell = np.zeros((D, Ns_gp))
-    for s in range(Ns_gp):
-        ln_ell[:, s] = gp.posteriors[s].hyp[:D]
-    optim_state["gp_length_scale"] = np.exp(ln_ell.mean(1))
-    gp.temporary_data["X_rescaled"] = gp.X / optim_state["gp_length_scale"]
-    sn2new = np.zeros((gp.X.shape[0], Ns_gp))
-
-    cov_N = gp.covariance.hyperparameter_count(gp.D)
-    noise_N = gp.noise.hyperparameter_count()
-    for s in range(Ns_gp):
-        hyp_noise = gp.posteriors[s].hyp[cov_N : cov_N + noise_N]
-        sn2new[:, s] = gp.noise.compute(hyp_noise, gp.X, gp.y, s2).reshape(
-            -1,
-        )
-    gp.temporary_data["sn2_new"] = sn2new.mean(1)
-
-    # load basic and advanced options and validate the names
-    pyvbmc_path = os.path.abspath(
-        os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            "..",
-            "..",
-            "vbmc",
-        )
-    )
-    basic_path = pyvbmc_path + "/option_configs/basic_vbmc_options.ini"
-    vbmc_options = Options(
-        basic_path,
-        evaluation_parameters={"D": D},
-        user_options={"active_importance_sampling_mcmc_samples": 100},
-    )
-    advanced_path = pyvbmc_path + "/option_configs/advanced_vbmc_options.ini"
-    vbmc_options.load_options_file(
-        advanced_path,
-        evaluation_parameters={"D": D},
-    )
-    vbmc_options.validate_option_names([basic_path, advanced_path])
+    optim_state = _prepare_optim_state(gp, s2)
+    vbmc_options = _options(D, 100)
 
     optim_state["active_importance_sampling"] = active_importance_sampling(
         vp, gp, acqviqr, vbmc_options
@@ -163,6 +134,21 @@ def test_simple__call__():
 
 
 def test_complex__call__():
+    """The VIQR of five candidates against its definition, on a GP whose
+    mean is the (standard normal) target exactly and whose predictive sd
+    is small on the half-plane observed with low noise and of order one on
+    the other.
+
+    Two checks. The acquisition's value is recomputed from its own
+    samples of the VP with the GP's full covariances, an exact check of
+    the look-ahead formula. Then the estimate is compared with the
+    integral under the VP, by Gauss-Hermite quadrature, at the precision
+    of plain Monte Carlo with 8000 VP samples: the integrand's coefficient
+    of variation under the VP is 1.1, so the standard error is 1.2 %, and
+    the 5 % tolerance is four standard errors. The run is seeded, so the
+    check is deterministic. (Before 2026-09-10 the reference was a 60x60
+    grid on [-30, 30] and the tolerance 3 %, two and a half standard
+    errors of an unseeded estimate.)"""
     D = 2
     epsilon = 1e-3
 
@@ -186,7 +172,6 @@ def test_complex__call__():
     for i in range(len(X), len(X) // 2, -1):
         if i % 2 == 0:
             X = np.delete(X, i, 0)
-    # X = np.array([[1.0, 1.0], [1.0, 0.0], [1.0, -1.0]])
     lls = np.array([ltarget(x) for x in X])
     y = lls[:, 0].reshape(-1, 1)
     s2 = lls[:, 1].reshape(-1, 1)
@@ -217,108 +202,22 @@ def test_complex__call__():
         noise=gpr.noise_functions.GaussianNoise(user_provided_add=True),
     )
     gp.update(X_new=X, y_new=y, s2_new=s2, hyp=hyp)
-    # gp.plot(lb=np.array([-5.0, -5.0]), ub=np.array([5.0, 5.0]))
-
-    ## Setup grid approximation of VIQR/IMIQR:
-
-    def s_xsi_new(theta, theta_new):
-        __, cov = gp.predict_full(np.vstack([theta, theta_new]))
-        c_xsi2_t_tn = np.mean(cov, axis=2)[0, 1]
-        # __, cov = gp.predict_full(np.atleast_2d(theta_new))
-        # c_xsi2_tn_tn = np.mean(cov, axis=2)[0, 0]
-        __, c_xsi2_tn_tn = gp.predict(np.atleast_2d(theta_new))
-        c_xsi2_tn_tn = c_xsi2_tn_tn[0, 0]
-        __, s_xsi2 = gp.predict(np.atleast_2d(theta))
-        s_xsi2 = s_xsi2[0, 0]
-        ret = s_xsi2 - c_xsi2_t_tn**2 / (
-            c_xsi2_tn_tn + np.linalg.norm(theta_new) + epsilon
-        )
-        return np.sqrt(max(ret, 0.0))
 
     u = sps.norm.ppf(0.75)
     vp = VariationalPosterior(D, 1)  # VP with one component
     vp.mu = np.zeros((D, 1))
     vp.sigma = np.ones((1, 1))  # VP is standard normal
-
-    def viqr_integrand(theta, theta_new):
-        return 2 * vp.pdf(theta) * np.sinh(u * s_xsi_new(theta, theta_new))
-
-    M = 60
-    t1 = t2 = np.linspace(-30, 30, M)
-    T1, T2 = np.meshgrid(t1, t2)
-    thetas = np.vstack([T1.ravel(), T2.ravel()]).T
+    vp.rng = np.random.default_rng(0)
 
     # Acquisition function evaluation points:
     N_eval = 5
-    X_eval = np.arange(-5, N_eval * D - 5).reshape(N_eval, D)
     X_eval = np.tile(np.linspace(-5, 5, N_eval).reshape((N_eval, 1)), (1, 2))
-
-    # VIQR (IMIQR) values by grid approximationL
-    viqrs = np.zeros((N_eval, M**2))
-    for i in range(N_eval):
-        x = X_eval[i, :]
-        v_int = np.array(
-            [viqr_integrand(theta, np.atleast_2d(x)) for theta in thetas]
-        )
-        viqrs[i, :] = v_int.reshape((M**2,))
-    # Rough approximation for missing tails of grid:
-    corrections = np.array(
-        [
-            sps.multivariate_normal.pdf(theta, mean=np.zeros((D,)))
-            for theta in thetas
-        ]
-    )
-    correction = np.sum(corrections * (60 / M) ** 2)
-    viqr_grid = (
-        np.sum(viqrs * (60 / M) ** 2, axis=1)  # Grid approx. of expectation
-        / correction
-    )
 
     ## Setup acquisition function and necessary preliminaries:
 
     acqviqr = AcqFcnVIQR()
-    optim_state = {
-        "lb_eps_orig": -np.inf,
-        "ub_eps_orig": np.inf,
-    }
-    Ns_gp = len(gp.posteriors)
-    ln_ell = np.zeros((D, Ns_gp))
-    for s in range(Ns_gp):
-        ln_ell[:, s] = gp.posteriors[s].hyp[:D]
-    optim_state["gp_length_scale"] = np.exp(ln_ell.mean(1))
-    gp.temporary_data["X_rescaled"] = gp.X / optim_state["gp_length_scale"]
-    sn2new = np.zeros((gp.X.shape[0], Ns_gp))
-
-    cov_N = gp.covariance.hyperparameter_count(gp.D)
-    noise_N = gp.noise.hyperparameter_count()
-    for s in range(Ns_gp):
-        hyp_noise = gp.posteriors[s].hyp[cov_N : cov_N + noise_N]
-        sn2new[:, s] = gp.noise.compute(hyp_noise, gp.X, gp.y, s2).reshape(
-            -1,
-        )
-    gp.temporary_data["sn2_new"] = sn2new.mean(1)
-
-    # load basic and advanced options and validate the names
-    pyvbmc_path = os.path.abspath(
-        os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            "..",
-            "..",
-            "vbmc",
-        )
-    )
-    basic_path = pyvbmc_path + "/option_configs/basic_vbmc_options.ini"
-    vbmc_options = Options(
-        basic_path,
-        evaluation_parameters={"D": D},
-        user_options={"active_importance_sampling_mcmc_samples": 8000},
-    )
-    advanced_path = pyvbmc_path + "/option_configs/advanced_vbmc_options.ini"
-    vbmc_options.load_options_file(
-        advanced_path,
-        evaluation_parameters={"D": D},
-    )
-    vbmc_options.validate_option_names([basic_path, advanced_path])
+    optim_state = _prepare_optim_state(gp, s2)
+    vbmc_options = _options(D, 8000)
 
     optim_state["active_importance_sampling"] = active_importance_sampling(
         vp, gp, acqviqr, vbmc_options
@@ -328,13 +227,24 @@ def test_complex__call__():
     log_result = acqviqr(
         X_eval, gp, vp, function_logger=None, optim_state=optim_state
     )
-    # Re-normalize:
-    log_result += -np.log(
-        optim_state["active_importance_sampling"]["X"].shape[0]
-    )
+    # Re-normalize (the acquisition sums over the samples):
+    Na = optim_state["active_importance_sampling"]["X"].shape[0]
+    log_result += -np.log(Na)
     result = np.exp(log_result).reshape((N_eval,))
-    # print(result)
-    # print(viqr_grid)
-    assert np.allclose(viqr_grid, result, rtol=0.03)
-    bias = np.mean(result - viqr_grid)
-    assert np.allclose(viqr_grid + bias, result, rtol=0.01)
+
+    # The noise the acquisition assumes for the hypothetical observation
+    # (from the nearest training inputs) enters the reference too.
+    sn2_new = acqviqr._estimate_observation_noise(X_eval, gp, optim_state)
+    viqr = lambda s: 2 * np.sinh(u * s)  # the interquantile range
+
+    # 1. Exact: the value from the stored VP samples (uniform weights).
+    active_is = optim_state["active_importance_sampling"]
+    assert active_is["X"].shape == (Na, D)
+    from_samples = weighted_samples_reference(
+        gp, active_is["X"], np.full(Na, 1 / Na), X_eval, sn2_new, viqr
+    )
+    assert np.allclose(result, from_samples, rtol=1e-10)
+
+    # 2. Statistical: the integral under the VP.
+    viqr_ref = gauss_hermite_reference(gp, vp, X_eval, sn2_new, viqr)
+    assert np.allclose(viqr_ref, result, rtol=0.05)
