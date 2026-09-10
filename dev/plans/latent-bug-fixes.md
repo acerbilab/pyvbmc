@@ -1635,22 +1635,28 @@ rebaseline, use audit reasons, and exact-check every unaffected reference.
 Existing MATLAB NPZ values are immutable; explain any intended disagreement
 with a broken path rather than regenerate MATLAB data or loosen tolerances.
 
-After the accepted fixes, integration/compatibility work with the existing
-S-VBMC package, and the remaining PyTorch release decisions and resulting work
-are complete, freeze the final candidate and prepare a single-worker campaign
-matching **16 configurations × seeds 0–49, cigar_D15_exhaust × 0–9,
-and rosenbrock_D2_noise3 and student_D8_noise3 × seeds 0–29 each**.
+Freeze the integrated numerical candidate and prepare an overnight first stage:
+**18 ordinary configurations × seeds 0–14 and cigar_D15_exhaust × seeds 0–2**,
+273 runs in total. Compare with all 870 existing reference cases, then decide
+whether additional sampling is useful. Matching the reference sample count
+is not a prerequisite for this staged assessment.
 Use explicit `vectorized_target=False`, the allocation in
 `dev/golden/noisy_extension_20260907/README.md`, and fresh output directories.
 Do not use `regenerate_baseline.sh` or overwrite reference pairs. The
-rough 12-hour estimate is historical, not a promised runtime after fixes.
+first-stage estimate is 8–10 hours elapsed; the selected reference cases
+record 7.139 optimizer hours. Preparation and
+artifact requirements are tracked in the
+[final population plan](final-population-benchmark.md). Skill work and
+S-VBMC integration that leaves ordinary inference unchanged do not delay
+this campaign.
 
-On explicit PI launch instruction, run and validate 870 complete readable
+On explicit PI launch instruction, run and validate 273 complete readable
 JSON/NPZ pairs, no errors, finite metrics, correct configuration/seed coverage,
 750 evaluations for every exhaust run, and truthful SHA/options/dependency/
 thread metadata. Check convergence statuses of the other runs and investigate
 changes. Compare with `golden_trace.py compare dev/golden/baseline <new_dir>`
-(76 KS tests, Holm alpha 0.05) and run an even/odd null comparison. Examine
+(76 KS tests, Holm alpha 0.05). An even/odd comparison is optional descriptive
+context for this smaller stage. Examine
 accuracy, usability and evaluation counts; a statistical flag requires
 investigation, not automatic rejection or approval, and no flag is not proof
 of equivalence. Record guard rejection counts and pre/post scores separately.

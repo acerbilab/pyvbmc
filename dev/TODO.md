@@ -3,8 +3,9 @@
 Updated 2026-09-10. This file records only current actions and constraints;
 completed work and evidence remain in the linked plans and reports.
 
-No active implementation task, CI run, or benchmark job. Remaining work
-awaits the separate decisions below.
+Prepare the [overnight population benchmark](plans/final-population-benchmark.md):
+15 seeds per ordinary configuration plus 3 exhaust cases, 273 runs in total.
+Review that first stage before deciding on further sampling. No campaign is running.
 
 ## Work awaiting a separate decision
 
@@ -20,8 +21,9 @@ awaits the separate decisions below.
 
 - After releasing 1.5, respond to issue #138 about explicit RNG control; see
   the [post-release follow-up](plans/modernization-roadmap.md#post-release-follow-up).
-- Launch the final 870-case population and perform release publication only
-  when separately authorized. Use the
+- Use a staged population assessment; a full 870-run candidate population
+  is not required before reviewing the first stage. Release publication
+  remains a separate action. Use the
   [current golden reference](golden/noisy_extension_20260907/README.md) and
   [latent-fix plan](plans/latent-bug-fixes.md) when that work starts.
 - Run at most one heavy computation at a time, normally in the main thread.

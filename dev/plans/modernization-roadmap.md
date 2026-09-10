@@ -14,6 +14,14 @@ anything that changes numerics lands.
 
 ## Stages
 
+**Population assessment, 2026-09-10:** prepare an overnight first stage of
+273 runs (15 seeds for each of 18 ordinary configurations, 3 exhaust cases)
+against all 870 golden reference cases. Review the results before deciding
+on further sampling; a full 870-run candidate population is optional.
+The [staged benchmark plan](final-population-benchmark.md) gives the allocation,
+8–10-hour estimate and remaining preparation, superseding earlier requirements
+below for a full candidate sweep before assessment.
+
 - [x] **Stage 0 — test oracle** (devlog §10)
   - [x] finite-difference checks: `entmc`, `entlb` (pre-existing),
     `_gp_log_joint`, `_neg_elcbo`, `_vp_bound_loss`, `_soft_bound_loss`,
