@@ -64,27 +64,38 @@ by topic rather than presentation order:
 1. `multiple_runs` (wording approved): "Tip: Run VBMC 3–4 times with different
    starting points. Compare the posterior plots across runs; large differences
    can indicate that a run missed part of the posterior."
-2. `evidence_uncertainty`: "Tip: elbo_sd describes uncertainty in the estimated
-   ELBO; it is not the error between the ELBO and the true log model evidence."
-3. `plausible_bounds`: "Tip: Plausible bounds should bracket a region of high
-   posterior density; use hard bounds for genuine limits on the parameters."
-4. `pybads` (low-frequency): "Tip: For a maximum-likelihood or MAP estimate,
-   PyBADS can minimize your negative log likelihood or negative log posterior."
-5. `posterior_plot`: "Tip: After fitting, use vp.plot() to inspect the posterior
-   marginals and dependence between parameters."
-6. `save_resume`: "Tip: Save the VBMC object with vbmc.save(...) if you may want
-   to resume optimization later."
-7. `noisy_target`: "Tip: If you can estimate the SD of a noisy log likelihood,
-   return it alongside the log likelihood and set specify_target_noise=True."
-8. `svbmc` (low-frequency): "Tip: After several VBMC runs, S-VBMC can
-   combine their fitted posteriors without new model evaluations."
+2. `evidence_uncertainty`: "Tip: Report results['elbo'] together with
+   results['elbo_sd']. The SD measures uncertainty in the estimated ELBO,
+   not its distance from the true log model evidence."
+3. `plausible_bounds`: "Tip: If you have no better estimate of where the
+   posterior lies, set PLB and PUB to the 15.9th and 84.1st percentiles of
+   each parameter's prior. For a Gaussian prior, these are its mean minus
+   and plus one standard deviation."
+4. `pybads` (low-frequency): "Tip: To find a maximum-likelihood estimate with
+   PyBADS, minimize -log_likelihood(x). For a MAP estimate, minimize
+   -(log_likelihood(x) + log_prior(x))."
+5. `posterior_plot`: "Tip: Call vp.plot() after fitting. The diagonal panels
+   show uncertainty in each parameter; the off-diagonal panels show how pairs
+   of parameters vary together."
+6. `save_resume`: "Tip: Save a resumable run with vbmc.save('fit.pkl'). To
+   continue it later, use vbmc = VBMC.load('fit.pkl'), then vbmc.optimize()."
+7. `noisy_target`: "Tip: For a noisy log likelihood, return (log_likelihood,
+   noise_sd) from your target and set options={'specify_target_noise': True}.
+   Supply the standard deviation of the log-likelihood estimate, not its variance."
+8. `svbmc` (low-frequency): "Tip: Combine the posteriors from your 3–4 runs
+   on the same model and data with S-VBMC. It reweights their mixture components
+   to produce one posterior without new model evaluations."
 
 Editorial requirement (PI): tips must be concrete, clear and actionable. Use
 specific quantities or useful ranges (such as 3–4), not vague quantities such
 as "a few". Avoid unnecessary seed-management language: independent runs do
 not require users to set seeds manually. The multiple-run wording above is
 approved and follows the [VBMC FAQ](https://github.com/acerbilab/vbmc/wiki#how-can-vbmc-fail-how-do-i-find-out-and-how-do-i-fix-it);
-the remaining messages still need wording review against this standard.
+the remaining messages above have been rewritten against this standard and
+remain proposed for wording approval. Each gives a specific action, an exact
+command/setting or useful quantity where relevant, and enough context to use it.
+The prior-percentile suggestion follows the FAQ's 15.87–84.13% interval,
+rounded for readability, and is conditional on having no better information.
 
 Append a short documentation URL to each complementary-method tip so the
 reader can act on it: [PyBADS](https://acerbilab.github.io/pybads/) and
