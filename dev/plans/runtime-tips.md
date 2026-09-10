@@ -61,8 +61,9 @@ Do not add tip history to the calibration store or create another persistent sto
 Keep a small catalog with stable internal IDs. Proposed messages, listed here
 by topic rather than presentation order:
 
-1. `multiple_runs`: "Tip: For important results, run VBMC with several different
-   seeds and compare the fitted posteriors and diagnostics."
+1. `multiple_runs` (wording approved): "Tip: Run VBMC 3–4 times with different
+   starting points. Compare the posterior plots across runs; large differences
+   can indicate that a run missed part of the posterior."
 2. `evidence_uncertainty`: "Tip: elbo_sd describes uncertainty in the estimated
    ELBO; it is not the error between the ELBO and the true log model evidence."
 3. `plausible_bounds`: "Tip: Plausible bounds should bracket a region of high
@@ -77,6 +78,13 @@ by topic rather than presentation order:
    return it alongside the log likelihood and set specify_target_noise=True."
 8. `svbmc` (low-frequency): "Tip: After several VBMC runs, S-VBMC can
    combine their fitted posteriors without new model evaluations."
+
+Editorial requirement (PI): tips must be concrete, clear and actionable. Use
+specific quantities or useful ranges (such as 3–4), not vague quantities such
+as "a few". Avoid unnecessary seed-management language: independent runs do
+not require users to set seeds manually. The multiple-run wording above is
+approved and follows the [VBMC FAQ](https://github.com/acerbilab/vbmc/wiki#how-can-vbmc-fail-how-do-i-find-out-and-how-do-i-fix-it);
+the remaining messages still need wording review against this standard.
 
 Append a short documentation URL to each complementary-method tip so the
 reader can act on it: [PyBADS](https://acerbilab.github.io/pybads/) and
