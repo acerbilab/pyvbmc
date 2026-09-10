@@ -137,7 +137,11 @@ class AcqFcnEIG(AbstractAcqFcn):
 
 def _quadratic_form(J, c):
     """``c_x^T J^{-1} c_x`` for every row of ``c``, through a Cholesky
-    factor of ``J`` regularized by a jitter relative to its trace."""
+    factor of ``J`` regularized by a jitter relative to its trace (at least
+    machine epsilon in absolute terms, so relatively large when the
+    covariance is far below one; safe here because ``c`` lies in the range
+    of ``J``, so a near-null direction carries no weight, and the caller
+    clips ``rho^2`` at one)."""
     K = J.shape[0]
     Js = 0.5 * (J + J.T)
     jitter = np.spacing(1) * max(np.trace(Js) / K, 1.0)

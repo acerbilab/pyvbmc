@@ -31,7 +31,7 @@ class AcqFcnVIQR(AbstractAcqFcn):
         does not depend on the value observed there.
 
         - ``"iqr"`` (default): the log integrated interquantile range after
-          the observation, :math:`\log \sum_a \sinh(u\, s_{\Xi \cup
+          the observation, :math:`\log \sum_a 2 \sinh(u\, s_{\Xi \cup
           \theta_*}(\theta_a))`, the VIQR of [1]_.
         - ``"iqr_reduction"``: minus the log of the integrated *reduction*
           of the interquantile range, :math:`-\log \sum_a w_a [\sinh(u\,
@@ -49,10 +49,13 @@ class AcqFcnVIQR(AbstractAcqFcn):
           the GP posterior standard deviation, :math:`-\log \sum_a w_a
           [s_\Xi(\theta_a) - s_{\Xi \cup \theta_*}(\theta_a)]`.
 
-        :math:`w_a` are the normalized importance weights, uniform under
-        the simple Monte Carlo of VIQR. The reductions are non-negative, so
-        the reduction acquisitions are ``+inf`` where the candidate reduces
-        the loss at no importance point.
+        :math:`w_a` are the importance weights, normalized over the
+        hyperparameter samples and the importance points together (so the
+        reduction acquisitions carry a constant :math:`\log N_s` that does
+        not move the minimizer) and uniform under the simple Monte Carlo of
+        VIQR. The reductions are non-negative, so the reduction
+        acquisitions are ``+inf`` where the candidate reduces the loss at
+        no importance point.
 
     References
     ----------

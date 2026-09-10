@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 
 from pyvbmc import VBMC
+from pyvbmc.acquisition_functions import AbstractAcqFcn, AcqFcnEIG
 from pyvbmc.stats import get_hpd
 from pyvbmc.vbmc import active_sample
 from pyvbmc.vbmc.active_sample import _get_search_points
@@ -1160,3 +1161,245 @@ def test_repeated_observation_candidates_off_by_default(mocker):
     )
     assert function_logger.Xn == Xn0 + 1
     assert optim_state["repeated_observations_streak"] == 0
+
+
+def _noisy_run(
+    mocker, user_options, acq=None, lower_bounds=None, upper_bounds=None
+):
+    """A noisy ``VBMC`` on a quadratic target with the given options, its
+    initial design drawn and a GP trained; ``acq`` replaces the
+    acquisition wrapper (``AbstractAcqFcn.__call__``) when given."""
+    D = 2
+    rng = np.random.default_rng(0)
+
+    def noisy_target(x):
+        x = np.atleast_2d(x)
+        return -0.5 * np.sum(x**2) + rng.normal(), 1.0
+
+    vbmc = VBMC(
+        noisy_target,
+        np.zeros((1, D)),
+        -np.full((1, D), np.inf) if lower_bounds is None else lower_bounds,
+        np.full((1, D), np.inf) if upper_bounds is None else upper_bounds,
+        np.full((1, D), -3.0),
+        np.full((1, D), 3.0),
+        {
+            "specify_target_noise": True,
+            "active_sample_gp_update": False,
+            "active_sample_vp_update": False,
+            **user_options,
+        },
+    )
+    if acq is not None:
+        mocker.patch(
+            "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", acq
+        )
+    function_logger, optim_state, _, _ = active_sample(
+        None,
+        10,
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+    optim_state["N"] = function_logger.Xn + 1
+    optim_state["n_eff"] = np.sum(
+        function_logger.n_evals[function_logger.X_flag]
+    )
+    gp, _, _, hyp_dict = train_gp(
+        {},
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.options,
+        vbmc.plausible_lower_bounds,
+        vbmc.plausible_upper_bounds,
+    )
+    optim_state["hyp_dict"] = hyp_dict
+    return vbmc, gp, function_logger, optim_state
+
+
+def _prefer_training(self, Xs, gp, vp, function_logger, optim_state):
+    """An acquisition that prefers the training inputs (exact rows)."""
+    Xs = np.atleast_2d(Xs)
+    X_train = function_logger.X[function_logger.X_flag]
+    is_train = np.array([np.any(np.all(X_train == x, axis=1)) for x in Xs])
+    return np.where(is_train, 0.0, 1.0)
+
+
+def test_repeated_observation_is_exact_with_integer_vars(mocker):
+    """With an integer variable the acquisition snaps its input in place
+    and a row of the initial design is not snapped, so the candidate that
+    scores as a repeat is a near-duplicate of the stored row; the
+    evaluated point must be the stored row itself, pooled by the logger,
+    not a new training input."""
+
+    def snapped(X, function_logger, optim_state):
+        return AbstractAcqFcn._real2int(
+            np.array(X, dtype=float),
+            function_logger.parameter_transformer,
+            optim_state["integer_vars"],
+        )
+
+    def snapping_prefer_target(self, Xs, gp, vp, function_logger, optim_state):
+        Xs = np.atleast_2d(Xs)
+        Xs = AbstractAcqFcn._real2int(  # in place, as the wrapper does
+            Xs,
+            function_logger.parameter_transformer,
+            optim_state["integer_vars"],
+        )
+        X_train = function_logger.X[function_logger.X_flag]
+        X_train_snapped = snapped(X_train, function_logger, optim_state)
+        unsnapped = np.any(X_train != X_train_snapped, axis=1)
+        target = X_train_snapped[unsnapped][:1]
+        return np.where(np.all(Xs == target, axis=1), 0.0, 1.0)
+
+    vbmc, gp, function_logger, optim_state = _noisy_run(
+        mocker,
+        {
+            "integer_vars": np.array([1, 0]),
+            "max_repeated_observations": 2,
+            "search_optimizer": "none",
+        },
+        snapping_prefer_target,
+        lower_bounds=np.array([[-10.5, -np.inf]]),
+        upper_bounds=np.array([[10.5, np.inf]]),
+    )
+    X_train = function_logger.X[function_logger.X_flag].copy()
+    assert np.any(X_train != snapped(X_train, function_logger, optim_state))
+    Xn0 = function_logger.Xn
+    evals0 = np.sum(function_logger.n_evals[function_logger.X_flag])
+
+    function_logger, optim_state, _, gp = active_sample(
+        gp,
+        1,
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+    assert function_logger.Xn == Xn0
+    assert (
+        np.sum(function_logger.n_evals[function_logger.X_flag]) == evals0 + 1
+    )
+    assert optim_state["repeated_observations_streak"] == 1
+    assert np.array_equal(function_logger.X[function_logger.X_flag], X_train)
+
+
+def test_repeated_observation_skips_search_optimizer(mocker):
+    """A chosen repeat skips the local optimizer (which would move it off
+    the stored row); once the cap excludes the training inputs the
+    optimizer runs again."""
+    vbmc, gp, function_logger, optim_state = _noisy_run(
+        mocker,
+        {"max_repeated_observations": 2, "search_optimizer": "cmaes"},
+        _prefer_training,
+    )
+    Xn0 = function_logger.Xn
+    fmin = mocker.patch(
+        "cma.fmin", side_effect=AssertionError("optimizer ran on a repeat")
+    )
+    function_logger, optim_state, _, gp = active_sample(
+        gp,
+        2,
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+    assert function_logger.Xn == Xn0
+    assert optim_state["repeated_observations_streak"] == 2
+    assert fmin.call_count == 0
+
+    # At the cap: a non-repeat, and the optimizer is called (its result
+    # is worse, so the sieve point stays).
+    fmin = mocker.patch(
+        "cma.fmin", side_effect=lambda f, x0, *a, **k: (x0, np.inf)
+    )
+    function_logger, optim_state, _, gp = active_sample(
+        gp,
+        1,
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+    assert function_logger.Xn == Xn0 + 1
+    assert fmin.call_count == 1
+
+
+def test_ns_gp_max_active_caps_the_in_loop_refits(mocker):
+    """``ns_gp_max_active`` caps the number of hyperparameter samples of
+    the GP refits within active sampling, as ``ns_gp_max_warmup`` and
+    ``ns_gp_max_main`` cap the main fit's, and leaves the main options
+    alone."""
+    vbmc, gp, function_logger, optim_state = _noisy_run(
+        mocker, {"search_optimizer": "none"}, _prefer_training
+    )
+    vbmc.options.__setitem__("active_sample_gp_update", True, force=True)
+    vbmc.options.__setitem__("ns_gp_max_active", 0, force=True)
+    seen = []
+
+    def recording_train_gp(
+        hyp_dict, optim_state, logger, history, options, *a, **k
+    ):
+        seen.append(
+            (
+                options["ns_gp_max_warmup"],
+                options["ns_gp_max_main"],
+                options["ns_gp_max"],
+            )
+        )
+        return train_gp(
+            hyp_dict, optim_state, logger, history, options, *a, **k
+        )
+
+    mocker.patch("pyvbmc.vbmc.active_sample.train_gp", recording_train_gp)
+    _, _, _, gp = active_sample(
+        gp,
+        2,
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+    assert len(seen) == 1  # one refit between the two points
+    assert all(caps[:2] == (0, 0) for caps in seen)
+    assert all(caps[2] == vbmc.options["ns_gp_max"] for caps in seen)
+    assert len(gp.posteriors) == 1  # the MAP fit
+    assert vbmc.options["ns_gp_max_warmup"] == 8
+    assert vbmc.options["ns_gp_max_main"] == np.inf
+
+
+def test_eig_through_active_sample(mocker):
+    """The expected information gain runs through ``active_sample``: the
+    ``compute_var_log_joint`` hook stores the variance of the expected
+    log joint per hyperparameter sample and the covariance of the
+    components' integrals, and points are acquired."""
+    vbmc, gp, function_logger, optim_state = _noisy_run(
+        mocker, {"search_optimizer": "none"}
+    )
+    vbmc.options.__setitem__(
+        "search_acq_fcn", [AcqFcnEIG(components=True)], force=True
+    )
+    Xn0 = function_logger.Xn
+    function_logger, optim_state, _, gp = active_sample(
+        gp,
+        2,
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+    Ns = len(gp.posteriors)
+    K = vbmc.vp.K
+    assert np.shape(optim_state["var_log_joint_samples"]) == (Ns,)
+    assert np.shape(optim_state["cov_log_joint_components"]) == (Ns, K, K)
+    assert np.all(np.isfinite(optim_state["cov_log_joint_components"]))
+    assert function_logger.Xn == Xn0 + 2

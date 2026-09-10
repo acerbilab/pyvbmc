@@ -679,7 +679,11 @@ class FunctionLogger:
             self.fun_eval_time[idx] = (
                 N * self.fun_eval_time[idx] + fun_eval_time
             ) / (N + 1)
+            if not np.isnan(fun_eval_time):
+                self.total_fun_eval_time += fun_eval_time
             self.n_evals[idx] += 1
+            # The pooled value can move the maximum either way.
+            self.y_max = np.nanmax(self.y[self.X_flag])
             return f_val, idx
         else:
             self.Xn += 1

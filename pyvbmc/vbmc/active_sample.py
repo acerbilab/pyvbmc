@@ -237,15 +237,16 @@ def active_sample(
                 force=True,
             )
             options_update.__setitem__("tol_weight", 0, force=True)
-            options_update.__setitem__(
-                "ns_gp_max",
-                min(
-                    options["ns_gp_max"],
-                    # Saved runs predate the option.
-                    options.get("ns_gp_max_active", np.inf),
-                ),
-                force=True,
-            )
+            # A cap on the number of hyperparameter samples of the in-loop
+            # refits: `ns_gp_max` is a coefficient (samples = ns_gp_max /
+            # sqrt(N)), `ns_gp_max_warmup` and `ns_gp_max_main` the caps on
+            # the count, so the option joins the caps. Saved runs predate
+            # the option.
+            ns_gp_cap = options.get("ns_gp_max_active", np.inf)
+            for key in ("ns_gp_max_warmup", "ns_gp_max_main"):
+                options_update.__setitem__(
+                    key, min(options[key], ns_gp_cap), force=True
+                )
             options_update.__setitem__(
                 "ns_ent", options["ns_ent_active"], force=True
             )
@@ -341,6 +342,7 @@ def active_sample(
             # input. The chosen repeat skips the local optimizer so that it
             # stays an exact repeat.
             n_train_cand = 0
+            X_train_cand = None
             repeat_cap = options["max_repeated_observations"]
             if (
                 repeat_cap > 0
@@ -385,6 +387,13 @@ def active_sample(
             X_acq = X_search[[idx]]
             idx_cache_acq = idx_cache[idx]
             repeat_flag = idx < n_train_cand
+            if repeat_flag:
+                # The stored row itself: the acquisition snaps its input to
+                # the integer grid in place, and a row of the initial design
+                # was never snapped, so the snapped copy in `X_search` could
+                # be a near-duplicate rather than the exact repeat the
+                # logger pools.
+                X_acq = X_train_cand[[idx]].copy()
 
             # Remove selected points from search set
             X_search = np.delete(X_search, idx, 0)
