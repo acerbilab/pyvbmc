@@ -27,7 +27,8 @@ Preserve quiet mode, all inference settings and both instance/global RNG
 states. No target evaluation, timing campaign or dependency is introduced.
 Implementation authorized on 2026-09-10 after the PI edited the messages below.
 The authorization includes the recorded defaults, cadence and first-start policy.
-Implementation branch: `feat/runtime-tips`.
+Implementation branch: `feat/runtime-tips`, merged to `dev-next` as `fc64381`
+and removed after the merge.
 
 ## Live implementation checklist
 
@@ -44,10 +45,20 @@ Implementation branch: `feat/runtime-tips`.
 Commit/push, CI-gated merge to `dev-next`, and a post-merge full matrix were
 authorized by the PI on 2026-09-10.
 
-- [~] Commit and push `feat/runtime-tips`.
-- [ ] Run the feature branch test matrix and package build; require green CI before merging.
-- [ ] Merge to `dev-next`, push, and remove the merged feature branch.
-- [ ] Run and monitor the full matrix on the merged `dev-next` commit.
+- [x] Commit and push `feat/runtime-tips` (`1c3d4f2`; all pre-commit hooks passed).
+- [x] Run the feature branch test matrix and package build; require green CI before merging.
+- [x] Merge to `dev-next`, push, and remove the merged feature branch.
+- [x] Run and monitor the full matrix on the merged `dev-next` commit.
+
+Feature CI: [test matrix](https://github.com/acerbilab/pyvbmc/actions/runs/34474881485)
+and [package build](https://github.com/acerbilab/pyvbmc/actions/runs/34474884265)
+both passed for `1c3d4f2`; all nine OS/Python combinations were green before merge.
+
+Post-merge [full matrix](https://github.com/acerbilab/pyvbmc/actions/runs/34476040012)
+passed all nine OS/Python combinations on `fc64381` on `dev-next`. The automatic
+[smoke check](https://github.com/acerbilab/pyvbmc/actions/runs/34476039794) also
+passed. The merge tree exactly matches the feature tree tested before merge.
+Delivery is complete; subsequent tracker updates change only developer Markdown.
 
 Catalog verification: all eight message strings and URL tuples exactly match
 the PI-edited wording below (checked by extracting the plan entries and comparing
@@ -79,7 +90,7 @@ isort and compilation checks; `git diff --check` is clean.
 Independent fresh-context Sol review completed with no findings. The feature
 preserves the approved messages and URLs, calibration priority, quiet/resume
 behavior, and inference randomness. All in-scope implementation and verification
-work is complete; changes remain on `feat/runtime-tips` for integration.
+work is complete; changes are merged to `dev-next`. Delivery CI is tracked above.
 
 ## Approved user experience
 

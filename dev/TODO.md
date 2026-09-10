@@ -3,10 +3,8 @@
 Updated 2026-09-10. This file records only current actions and constraints;
 completed work and evidence remain in the linked plans and reports.
 
-Current work: commit and push `feat/runtime-tips`, require green branch CI,
-then merge to `dev-next` and run the full matrix, as authorized on 2026-09-10.
-Implementation, local verification and independent review are complete; the
-[plan](plans/runtime-tips.md) tracks delivery. No benchmark jobs are in progress.
+No active implementation task, CI run, or benchmark job. Remaining work
+awaits the separate decisions below.
 
 ## Work awaiting a separate decision
 

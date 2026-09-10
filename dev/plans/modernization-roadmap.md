@@ -930,8 +930,10 @@ anything that changes numerics lands.
     provide a separate way to disable hints. Selection must not consume the
     inference RNG or change numerical results. Use the existing startup
     output location. The approved option is `show_tips=True`, with tips on eligible
-    first starts 1/4/7 and no repeats within a Python session. Changes are ready
-    for integration on `feat/runtime-tips`; the final benchmark schedule remains unchanged.
+    first starts 1/4/7 and no repeats within a Python session. Merged to `dev-next`
+    as `fc64381` after a green nine-job feature matrix and package build; the
+    post-merge full matrix and automatic smoke check both passed. The merged
+    feature branch has been removed. The final benchmark schedule remains unchanged.
 
 ## Post-release follow-up
 
