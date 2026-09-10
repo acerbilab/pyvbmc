@@ -18,10 +18,11 @@ from ._regularization import check_variance_regularization
 @pytest.fixture(autouse=True)
 def _seeded_global_rng():
     """``VariationalPosterior.__init__`` derives ``vp.rng`` from the global
-    ``np.random`` state and the MCMC step of ``active_importance_sampling``
-    (the slice sampler, called without a generator) draws from it, so seed
-    that stream for every test here and restore it after, leaving later
-    modules where they would have been."""
+    ``np.random`` state and the target of ``test_simple__call__`` draws
+    from it, so seed that stream for every test here and restore it
+    after, leaving later modules where they would have been. (The MCMC
+    step of ``active_importance_sampling`` drew from it too until
+    2026-09-10; it now draws from ``vp.rng``.)"""
     state = np.random.get_state()
     np.random.seed(0)
     yield

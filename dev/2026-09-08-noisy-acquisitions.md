@@ -179,4 +179,8 @@ weights are large and the integrand small, in correlated stretches; more
 samples do not remove the offset. Both tests are now seeded, check the
 acquisition's formula exactly against a recomputation from its own
 samples, and compare with a converged Gauss-Hermite reference at a
-tolerance set from the measured spread.
+tolerance set from the measured spread. Fixing them showed that the MCMC
+step of `active_importance_sampling` (IMIQR only; VIQR samples the VP
+directly) still drew from NumPy's global state, the one remaining
+exception to the generator: it now receives `vp.rng`, and the
+`acq_AcqFcnIMIQR` oracle was re-baselined from the stored states.

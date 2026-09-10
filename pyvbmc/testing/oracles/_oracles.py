@@ -210,14 +210,16 @@ def _ns_ent_fine_K(state, K):
 def prepare_importance_sampling(state, acq, seed):
     """Draw the importance samples the VIQR/IMIQR acquisitions read from
     ``optim_state["active_importance_sampling"]``, from the rebuilt state
-    with a seeded generator. The recorded ones belong to the GP *before*
-    the iteration's last evaluation and do not match the recorded GP."""
+    with a seeded generator (every draw, the MCMC step's included, comes
+    from ``vp.rng`` since 2026-09-10; before, the slice sampler drew from
+    the legacy state, seeded here too). The recorded ones belong to the GP
+    *before* the iteration's last evaluation and do not match the recorded
+    GP."""
     vp = state["vp"]
     vp.rng = np.random.default_rng(seed)
-    with legacy_seed(seed):  # the MCMC branch draws from the legacy state
-        state["optim_state"][
-            "active_importance_sampling"
-        ] = active_importance_sampling(vp, state["gp"], acq, state["options"])
+    state["optim_state"][
+        "active_importance_sampling"
+    ] = active_importance_sampling(vp, state["gp"], acq, state["options"])
 
 
 def _is_noisy(state):

@@ -272,6 +272,18 @@
     },
     "oracle": "entmc",
     "reason": "Stage 2 item 5 (2026-09-05): entmc_vbmc vectorized over components and samples with the same draws; rounding-level moves. Re-baselined 2026-09-06 at the end of Stage 2, after the 20-seed population of that night passed (280 of 280, no config flagged over 56 KS tests), so that --check --exact against the committed references is the identity gate; PI decision (Open question 8 of plans/stage2-gpyreg-predict-and-sampler.md)."
+   },
+   {
+    "date": "2026-09-10 20:29:09",
+    "git": {
+     "dirty": true,
+     "sha": "87ef53a"
+    },
+    "max_abs_change": {
+     "acq": 0.33475224167545425
+    },
+    "oracle": "acq_AcqFcnIMIQR",
+    "reason": "active_importance_sampling passes vp.rng to the slice sampler (2026-09-10): the MCMC step's draws moved from the legacy global state to the VBMC generator"
    }
   ],
   "recipe": "rosenbrock_D2_noise1_viqr",

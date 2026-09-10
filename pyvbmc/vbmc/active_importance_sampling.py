@@ -39,7 +39,7 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
 
     Notes
     -----
-    Random draws use ``vp.rng``.
+    Every random draw, the MCMC step's included, comes from ``vp.rng``.
     """
     rng = vp.rng
     # Do we simply sample from the variational posterior?
@@ -104,7 +104,13 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
                 # Better (e.g. ensemble slice) sampling methods could
                 # later be implemented.
                 sampler = gpr.slice_sample.SliceSampler(
-                    log_p_fun, Xa, widths, lb_tran, ub_tran, sampler_opts
+                    log_p_fun,
+                    Xa,
+                    widths,
+                    lb_tran,
+                    ub_tran,
+                    sampler_opts,
+                    rng=rng,
                 )
                 results = sampler.sample(Nmcmc_samples, thin, burn_in)
                 Xa = results["samples"]
@@ -251,7 +257,13 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
                 # Better (e.g. ensemble slice) sampling methods could
                 # later be implemented.
                 sampler = gpr.slice_sample.SliceSampler(
-                    log_p_fun, x0, widths, lb_tran, ub_tran, sampler_opts
+                    log_p_fun,
+                    x0,
+                    widths,
+                    lb_tran,
+                    ub_tran,
+                    sampler_opts,
+                    rng=rng,
                 )
                 results = sampler.sample(Nmcmc_samples, thin, burn_in)
                 Xa, log_p = results["samples"], results["f_vals"]

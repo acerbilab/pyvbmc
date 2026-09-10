@@ -209,10 +209,12 @@ Things you must hold in your head across files:
   (`train_gp(rng=)` → `gpyreg.GP.fit(rng=)`, which covers the space-filling
   design and the slice sampler; needs the gpyreg commit pinned in
   `test-matrix.yml` or later) and the CMA-ES noise-handler subclass in
-  `active_sample.py` draws its re-evaluation count from `vp.rng`, so a run
-  never reads or writes NumPy's global state (since 2026-09-05; before, a
-  seeded instance reseeded the global state and the per-iteration
-  `random_state` also held the legacy tuple, which
+  `active_sample.py` draws its re-evaluation count from `vp.rng`, and
+  `active_importance_sampling` passes `vp.rng` to the slice sampler of its
+  MCMC step (IMIQR; since 2026-09-10, when the `acq_AcqFcnIMIQR` oracle was
+  re-baselined), so a run never reads or writes NumPy's global state (since
+  2026-09-05; before, a seeded instance reseeded the global state and the
+  per-iteration `random_state` also held the legacy tuple, which
   `load(set_random_state=True)` now ignores). `test_vbmc_seed.py`
   deliberately holds three short (2 iteration, `D=2`) `optimize()` runs:
   the end-to-end reproducibility checks, one of them shared through a

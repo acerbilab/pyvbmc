@@ -3,6 +3,7 @@ from sys import float_info
 
 import gpyreg as gpr
 import numpy as np
+import pytest
 import scipy.stats as sps
 
 from pyvbmc.acquisition_functions import AcqFcnIMIQR, AcqFcnVIQR
@@ -15,7 +16,10 @@ from pyvbmc.vbmc.active_importance_sampling import (
 from pyvbmc.vbmc.options import Options
 
 
-def test_active_importance_sampling():
+def _scenario():
+    """A two-component VP, a two-sample GP on 15 points and options with
+    small sample counts (thinned MCMC), as ``test_active_importance_sampling``
+    has always used."""
     D = 3
     K = 2
     vp = VariationalPosterior(D=D, K=K)
@@ -88,6 +92,12 @@ def test_active_importance_sampling():
         evaluation_parameters={"D": D},
         user_options=user_options,
     )
+    return vp, gp, vbmc_options
+
+
+def test_active_importance_sampling():
+    vp, gp, vbmc_options = _scenario()
+    D = vp.D
     active_is_viqr = active_importance_sampling(
         vp, gp, AcqFcnVIQR(), vbmc_options
     )
@@ -107,6 +117,29 @@ def test_active_importance_sampling():
         == active_is_imiqr["f_s2"].T.shape
         == (2, 10)
     )
+
+
+@pytest.mark.parametrize("acq_fcn", [AcqFcnVIQR(), AcqFcnIMIQR()])
+def test_draws_come_from_vp_rng_only(acq_fcn):
+    """Every draw, the MCMC step's included, comes from ``vp.rng``: the
+    same generator seed gives the same samples whatever the global state
+    holds, and the global state is left as it was (until 2026-09-10 the
+    slice sampler of the IMIQR branch drew from it)."""
+    vp, gp, vbmc_options = _scenario()
+    keys = ("X", "ln_weights", "f_s2", "K_Xa_X", "C_tmp")
+    outs = []
+    for global_seed in (1, 2):
+        np.random.seed(global_seed)
+        before = np.random.get_state()
+        vp.rng = np.random.default_rng(3)
+        outs.append(active_importance_sampling(vp, gp, acq_fcn, vbmc_options))
+        after = np.random.get_state()
+        assert after[2] == before[2] and np.array_equal(after[1], before[1])
+    for key in keys:
+        assert np.array_equal(outs[0][key], outs[1][key])
+    vp.rng = np.random.default_rng(4)
+    other = active_importance_sampling(vp, gp, acq_fcn, vbmc_options)
+    assert not np.array_equal(other["X"], outs[0]["X"])
 
 
 def test_fess():

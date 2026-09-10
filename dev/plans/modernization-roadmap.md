@@ -82,7 +82,12 @@ anything that changes numerics lands.
   2026-09-05 with Stage 2 item 8: gpyreg's `fit` takes `rng=`
   (acerbilab/gpyreg#43), the noise-handler subclass draws from `vp.rng`,
   and a run never reads or writes NumPy's global state; the per-iteration
-  `random_state` holds only the generator state.
+  `random_state` holds only the generator state. One call site had been
+  missed: the slice sampler of the MCMC step in
+  `active_importance_sampling` (IMIQR only) drew from the global state
+  until 2026-09-10, when it received `vp.rng` and the `acq_AcqFcnIMIQR`
+  oracle was re-baselined from the stored state
+  ([noisy-target acquisitions](../2026-09-08-noisy-acquisitions.md)).
 - [x] **Benchmark target suite** (`dev/scripts/benchmark_targets.py`,
   2026-09-02/03, corrected to the papers' procedure 2026-09-03): banana,
   cigar, lumpy, Student-t at D = 4 (lumpy and banana also at D = 10, banana
