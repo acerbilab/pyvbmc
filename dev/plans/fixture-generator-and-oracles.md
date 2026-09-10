@@ -54,7 +54,7 @@ use the existing generating-platform policy. Raw state and outputs are checked
 for float64. The main `--check` also includes the authentic subset. Capture
 refuses existing destination pairs: a deliberate refresh requires inspecting
 and preserving the existing evidence first. Execution results are recorded
-in [the main-loop work note](../2026-09-08-main-loop-fixes.md).
+in [the main-loop work note](../results/2026-09-08-main-loop-fixes.md).
 
 ## Phase 4 acquisition references (2026-09-08)
 

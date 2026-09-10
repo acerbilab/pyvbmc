@@ -1,0 +1,27 @@
+{
+  "focused_tests": {
+    "passed": 74,
+    "junit": "dev/scripts/runs/stage4_torch/final-focused-tests.xml"
+  },
+  "artifact_reader_tests": {
+    "passed": 4,
+    "junit": "dev/scripts/runs/stage4_torch/report-tests.xml"
+  },
+  "independent_reviews": {
+    "numerical": "passed; no remaining must-fix",
+    "measurement": "passed; no remaining must-fix or should-fix"
+  },
+  "scope": {
+    "complete_fits": 96,
+    "corrected_kernel_records": 28,
+    "full_port": false,
+    "final_870_case_campaign": false,
+    "production_diff": false
+  },
+  "artifact_sha256": {
+    "results.json": "465884c93ec379e0f7bd8fc3d1a6e54e34762af9367d5995f64750ee2b61b323",
+    "timings.csv": "6de2cf42e1ae809a504fedeabcad09fc8f9a67d9205339785ab6ea6b679bb2f1",
+    "tables.md": "f25860bef4dc67ebbf31deaec074d9d5f7d71533d14aa0dc3db475e379b23c5d",
+    "complete-fit-timings.png": "15c2d86a7368190879c5e9cb63fceb64860dbb6a1f4fae31b4a727901a8a99cd"
+  }
+}

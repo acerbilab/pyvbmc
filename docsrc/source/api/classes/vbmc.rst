@@ -20,6 +20,32 @@
 
   The iteration history (``vbmc.iteration_history``) keeps each iteration's Gaussian process surrogate as its training data and hyperparameters, without the posterior factors; ``vbmc.get_gp(iteration)`` returns the surrogate of an iteration with its posterior restored, ready for prediction.
 
+Performance calibration
+-----------------------
+
+New runs reuse compatible machine-local chunk settings produced by an
+explicit :doc:`../functions/calibrate` campaign. If no compatible record
+exists, they use historical defaults. Optimization never starts a campaign.
+Use the ``performance_calibration`` option to select ``"cached"`` (default),
+``"off"``, or an explicit :doc:`calibration_profile`.
+
+Settings are fixed before the first relevant kernel call and survive final
+boost and save/resume. A resolved save rejects load-time ``"cached"`` or
+different explicit settings; start a new run to use a different profile.
+
+Startup tips
+------------
+
+With ``show_tips=True`` (default), a new run may print one tip before the
+iteration headings. Tips appear on the first eligible start and every third
+eligible start thereafter, in shuffled order, with no repeats within a Python
+session. Resumed or continued runs do not show another tip. A calibration
+reminder takes priority, including one already shown by an early call on that
+run's ``vbmc.vp``. Quiet starts, disabled tips and calibration reminders do
+not advance the tip cadence. Set ``show_tips=False`` to disable tips, or
+``display="off"`` to suppress both tips and calibration reminders. These
+settings belong in the ``options`` dictionary passed to ``VBMC``.
+
 .. autoclass:: pyvbmc.VBMC
    :exclude-members: optimize, save, load
    :members:

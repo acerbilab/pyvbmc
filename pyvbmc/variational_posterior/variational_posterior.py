@@ -16,6 +16,7 @@ from scipy.interpolate import interp1d
 from scipy.optimize import minimize
 from scipy.special import gammaln
 
+from pyvbmc.calibration.profile import CalibrationProfile, default_profile
 from pyvbmc.decorators import handle_0D_1D_input
 from pyvbmc.formatting import format_dict, full_repr, summarize
 from pyvbmc.parameter_transformer import ParameterTransformer
@@ -53,6 +54,10 @@ class VariationalPosterior:
         ``Generator`` is used as is, so it can be shared with a ``VBMC``
         instance. By default a generator is derived from NumPy's global random
         state, so that ``np.random.seed`` still gives reproducible results.
+    calibration : CalibrationProfile, {"cached", "off"}, or None, optional
+        Fixed numerical chunk settings. ``None`` and ``"off"`` use the
+        historical defaults. ``"cached"`` defers a machine-local cache lookup
+        until the first density or Monte Carlo entropy evaluation.
 
     Attributes
     ----------
@@ -84,6 +89,9 @@ class VariationalPosterior:
     stats : dict
         A dictionary of statistics and other relevant info computed during
         optimization.
+    calibration_profile : CalibrationProfile or None
+        The fixed numerical chunk settings, or ``None`` while an explicitly
+        requested cache lookup remains pending.
 
     Notes
     -----
@@ -115,6 +123,7 @@ class VariationalPosterior:
         x0=None,
         parameter_transformer=None,
         rng=None,
+        calibration=None,
     ):
         self.D = D  # number of dimensions
         self.K = K  # number of components
@@ -150,6 +159,109 @@ class VariationalPosterior:
         self.bounds = None
         self.stats = None
         self._mode = None
+        self._calibration_hint_emitted = False
+        self._set_calibration(calibration)
+
+    def _set_calibration(self, calibration):
+        """Set a resolved profile or a pending cache request."""
+        if calibration is None:
+            self._calibration_profile = default_profile()
+            self._calibration_request = None
+        elif isinstance(calibration, CalibrationProfile):
+            # Round-trip validation also protects against malformed instances
+            # reconstructed outside the normal frozen-dataclass constructor.
+            CalibrationProfile.from_dict(calibration.to_dict())
+            self._calibration_profile = calibration
+            self._calibration_request = None
+        elif isinstance(calibration, str) and calibration == "cached":
+            self._calibration_profile = None
+            self._calibration_request = "cached"
+        elif isinstance(calibration, str) and calibration == "off":
+            self._calibration_profile = default_profile(source="off")
+            self._calibration_request = None
+        else:
+            raise ValueError(
+                "calibration must be None, 'cached', 'off', or a "
+                "CalibrationProfile."
+            )
+
+    def _ensure_calibration_state(self):
+        """Migrate a posterior saved before calibration profiles existed."""
+        if "_calibration_hint_emitted" not in self.__dict__:
+            self._calibration_hint_emitted = False
+        if "_calibration_profile" not in self.__dict__:
+            self._calibration_profile = default_profile(
+                source="legacy", status="complete"
+            )
+            self._calibration_request = None
+        elif "_calibration_request" not in self.__dict__:
+            self._calibration_request = None
+
+    @property
+    def calibration_profile(self) -> Optional[CalibrationProfile]:
+        """The fixed profile, or ``None`` before a cached request resolves."""
+        self._ensure_calibration_state()
+        return self._calibration_profile
+
+    def _resolve_calibration(self, *, display=None) -> CalibrationProfile:
+        """Resolve this posterior's pending cache request at most once."""
+        profile = self.__dict__.get("_calibration_profile")
+        if profile is not None:
+            return profile
+        if "_calibration_profile" not in self.__dict__:
+            self._ensure_calibration_state()
+            return self._calibration_profile
+
+        from pyvbmc.calibration._cache import (
+            resolve_cached_profile,
+            suggest_calibration_once,
+        )
+
+        profile = resolve_cached_profile()
+        self._calibration_profile = profile
+        self._calibration_request = None
+        if display is None:
+            display = self.__dict__.get("_calibration_display", True)
+        if profile.source == "default" and profile.status != "complete":
+            reason = profile.provenance.get("reason")
+            emitted = suggest_calibration_once(reason, display=bool(display))
+            self._calibration_hint_emitted = bool(
+                getattr(self, "_calibration_hint_emitted", False) or emitted
+            )
+        return profile
+
+    def _apply_calibration_load_override(self, calibration):
+        """Apply an override without consulting the machine-local cache."""
+        self._ensure_calibration_state()
+        if calibration is None:
+            return
+        if self._calibration_profile is None:
+            self._set_calibration(calibration)
+            return
+        if isinstance(calibration, str) and calibration == "cached":
+            raise ValueError(
+                "Cannot apply 'cached' to an already resolved calibration "
+                "profile; start a new run to select new settings."
+            )
+        if isinstance(calibration, str) and calibration == "off":
+            if not self._calibration_profile.uses_historical_defaults:
+                raise ValueError(
+                    "Cannot apply 'off' to a resolved nondefault calibration "
+                    "profile; start a new run to change settings."
+                )
+            return
+        if isinstance(calibration, CalibrationProfile):
+            CalibrationProfile.from_dict(calibration.to_dict())
+            if calibration.settings != self._calibration_profile.settings:
+                raise ValueError(
+                    "Calibration override settings conflict with the saved "
+                    "resolved profile; start a new run to change settings."
+                )
+            return
+        raise ValueError(
+            "calibration must be None, 'cached', 'off', or a "
+            "CalibrationProfile."
+        )
 
     @property
     def rng(self) -> np.random.Generator:
@@ -608,6 +720,33 @@ class VariationalPosterior:
             Raised if `orig_flag` = ``True`` and `grad_flag` = ``True``
             (gradient computation in the original space is not supported).
         """
+        profile = self._resolve_calibration()
+        return self._pdf(
+            x,
+            orig_flag,
+            log_flag,
+            grad_flag,
+            df,
+            chunk_elements=profile.pdf_chunk_elements,
+        )
+
+    def _pdf(
+        self,
+        x: np.ndarray,
+        orig_flag: bool = True,
+        log_flag: bool = False,
+        grad_flag: bool = False,
+        df: float = np.inf,
+        *,
+        chunk_elements: int,
+    ):
+        """PDF implementation with an explicit temporary-array budget."""
+        if (
+            isinstance(chunk_elements, (bool, np.bool_))
+            or not isinstance(chunk_elements, Integral)
+            or chunk_elements < 1
+        ):
+            raise ValueError("chunk_elements must be a positive integer.")
         if orig_flag and grad_flag:
             raise NotImplementedError(
                 "Gradient computation in original space is not supported."
@@ -643,16 +782,14 @@ class VariationalPosterior:
             # accumulated y and dy one component at a time). Each
             # component's term is computed with the same products in the
             # same order as before; only the summation over K changes
-            # order. Rows are chunked so that no (n, K, D) temporary
-            # exceeds 2^16 elements (0.5 MB): the temporaries then stay in
-            # cache, which makes the broadcast faster than the loop at
-            # every size measured (1e5 rows: 1.2-1.9x; a CMA-ES batch of
-            # 8 rows: 5-10x), whereas 2^22-element chunks were
-            # memory-bound and slower than the loop for large inputs.
+            # order. Rows are chunked so that no (n, K, D) temporary exceeds
+            # the profile's fixed element budget (unless one row is already
+            # larger). The historical default is 2^16 elements.
             # Rows are independent, so the chunk size does not affect
             # the result.
             # `K` is a NumPy integer in some stored VPs (uint8 in the
-            # MATLAB fixtures), and NumPy 2 refuses `2**16 // uint8`.
+            # MATLAB fixtures), and NumPy 2 refuses division of a Python
+            # integer by a uint8 here.
             K = int(self.K)
             mu_k = self.mu.T[np.newaxis, :, :]  # (1, K, D)
             sigma_k = self.sigma.reshape(1, K, 1)
@@ -661,7 +798,7 @@ class VariationalPosterior:
             w_k = (nf * self.w / self.sigma**D).reshape(1, K)
             if grad_flag:
                 scale2 = lambd_d**2 * sigma_k**2
-            step = max(1, 2**16 // max(1, K * D))
+            step = max(1, int(chunk_elements) // max(1, K * D))
             for i0 in range(0, N, step):
                 rows = slice(i0, min(N, i0 + step))
                 diff = x[rows, np.newaxis, :] - mu_k  # (n, K, D)
@@ -1518,13 +1655,17 @@ class VariationalPosterior:
             dill.dump(self, f, recurse=True)
 
     @classmethod
-    def load(cls, file):
+    def load(cls, file, *, calibration=None):
         """Load a VP from a file.
 
         Parameters
         ----------
         file : path-like
             The file name or path to write to.
+        calibration : CalibrationProfile, {"cached", "off"}, or None, optional
+            Optional pending-mode/profile override. Resolved saved settings
+            cannot be changed; a matching explicit profile is accepted while
+            retaining the saved provenance.
 
         Returns
         -------
@@ -1543,6 +1684,8 @@ class VariationalPosterior:
         with open(filepath, mode="rb") as f:
             vp = dill.load(f)
 
+        vp._ensure_calibration_state()
+        vp._apply_calibration_load_override(calibration)
         return vp
 
     def __str__(self, arr_size_thresh=10):

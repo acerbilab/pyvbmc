@@ -10,23 +10,30 @@ dependencies = [
     "cma >= 3.4.0",
     "corner >= 2.2.1",
     "dill >= 0.3.5.1",
+    "filelock >= 3.12.1",
     "gpyreg >= 1.1.0",
     "imageio >= 2.13.5",
     "matplotlib >= 3.9.0",
     "numpy >= 2.0.0",
+    "platformdirs >= 3.0.0",
     "scipy >= 1.15.0",
+    "threadpoolctl >= 3.2.0",
 ]
 requires-python = ">=3.10"
 
 [tool.setuptools]
 include-package-data = true
 # Include examples in binary/wheel distribution:
-packages = ["pyvbmc", "pyvbmc.examples"]
+packages = ["pyvbmc", "pyvbmc.calibration", "pyvbmc.examples"]
 package-dir = { "pyvbmc.examples" = "examples" }
 
 [tool.setuptools.package-data]
 # Make sure to include example Notebooks:
 "pyvbmc.examples" = ["*.ipynb"]
+
+[tool.setuptools.exclude-package-data]
+# Tests and reference fixtures ship in the sdist, not the runtime wheel.
+"pyvbmc" = ["testing/*", "testing/**/*"]
 
 [project.optional-dependencies]
 # Posterior exports; both are imported only when requested.

@@ -15,6 +15,7 @@ import gpyreg as gpr
 import matplotlib.pyplot as plt
 import numpy as np
 
+from pyvbmc.calibration.profile import CalibrationProfile
 from pyvbmc.formatting import full_repr, summarize
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.function_logger.function_logger import (
@@ -29,6 +30,7 @@ from pyvbmc.timer import main_timer as timer
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.whitening import warp_gp_and_vp, warp_input
 
+from ._runtime_tips import consider_runtime_tip
 from .active_sample import active_sample
 from .gaussian_process_train import (
     _lean_gp,
@@ -232,6 +234,10 @@ class VBMC:
                 [basic_options_path, advanced_options_path]
             )
         self._validate_vectorized_target_option()
+        self._validate_show_tips_option()
+        self._validate_performance_calibration_option(
+            self.options.get("performance_calibration")
+        )
         self._validate_final_boost_tolerance(
             self.options.get("tol_elcbo_boost")
         )
@@ -289,7 +295,9 @@ class VBMC:
             x0=self.x0,
             parameter_transformer=self.parameter_transformer,
             rng=self.rng,
+            calibration=self.options.get("performance_calibration"),
         )
+        self.vp._calibration_display = self.options.get("display") != "off"
         if not self.options.get("warmup"):
             self.vp.optimize_mu = self.options.get("variable_means")
             self.vp.optimize_weights = self.options.get("variable_weights")
@@ -302,6 +310,7 @@ class VBMC:
 
         # Optimization of vbmc starts from iteration 0
         self.iteration = -1
+        self._runtime_tip_handled = False
         # Whether the optimization has finished
         self.is_finished = False
 
@@ -915,9 +924,9 @@ class VBMC:
 
         Notes
         -----
-        Every random draw of the run comes from ``vbmc.rng`` (see the
+        Every inference draw of the run comes from ``vbmc.rng`` (see the
         ``seed`` parameter); NumPy's global random state is neither read nor
-        written.
+        written. Optional startup tips use a separate private random stream.
         """
         # Initialize main logger with potentially new options:
         self.logger = self._init_logger()
@@ -945,6 +954,32 @@ class VBMC:
             self.vp = copy.deepcopy(self.iteration_history["vp"][-1])
             self.optim_state = copy.deepcopy(
                 self.iteration_history["optim_state"][-1]
+            )
+        self.vp._calibration_display = self.options.get("display") != "off"
+        calibration_profile = self.vp._resolve_calibration(
+            display=self.vp._calibration_display
+        )
+        self.logger.info(
+            "Performance settings: %s.",
+            {
+                "default": "standard settings",
+                "off": "standard settings (calibration disabled)",
+                "legacy": "standard settings from the saved run",
+                "cache": "saved calibration",
+                "memory": "calibration from this Python session",
+                "explicit": "provided profile",
+                "calibrated": "provided calibration",
+            }.get(calibration_profile.source, "provided profile"),
+        )
+        self._ensure_runtime_tip_state()
+        if not self._runtime_tip_handled:
+            self._runtime_tip_handled = True
+            consider_runtime_tip(
+                display=self.options.get("display"),
+                enabled=bool(self.options.get("show_tips")),
+                calibration_reminder_emitted=bool(
+                    getattr(self.vp, "_calibration_hint_emitted", False)
+                ),
             )
         self._log_column_headers()
         while not self.is_finished:
@@ -2278,6 +2313,19 @@ class VBMC:
         return vp, elbo, elbo_sd, changed_flag
 
     @staticmethod
+    def _validate_performance_calibration_option(calibration):
+        """Validate the fixed calibration request stored in options."""
+        if isinstance(calibration, CalibrationProfile):
+            CalibrationProfile.from_dict(calibration.to_dict())
+            return
+        if isinstance(calibration, str) and calibration in {"cached", "off"}:
+            return
+        raise ValueError(
+            "performance_calibration must be 'cached', 'off', or a "
+            "CalibrationProfile."
+        )
+
+    @staticmethod
     def _validate_final_boost_tolerance(tolerance):
         """Validate the optional final-boost score-loss tolerance."""
         if tolerance is None:
@@ -2573,6 +2621,20 @@ class VBMC:
         with open(filepath, mode="rb") as f:
             vbmc = dill.load(f)
 
+        # Profiles are plain saved state. Migrate every historical posterior
+        # before choosing an iteration, without consulting the current
+        # machine or cache.
+        stored_vps = []
+        if hasattr(vbmc, "iteration_history"):
+            stored_vps = vbmc.iteration_history["vp"]
+            if stored_vps is None:
+                stored_vps = []
+        seen_vps = set()
+        for vp in [vbmc.vp, *stored_vps]:
+            if vp is not None and id(vp) not in seen_vps:
+                vp._ensure_calibration_state()
+                seen_vps.add(id(vp))
+
         # Set/check iteration
         if iteration is None:
             iteration = vbmc.iteration
@@ -2605,6 +2667,23 @@ class VBMC:
                     ]
             vbmc._ensure_gp_sampling_history()
 
+        if "performance_calibration" not in vbmc.options:
+            # A legacy run used the historical constants and must not adopt
+            # settings from the machine on which it happens to be loaded.
+            vbmc.options.__setitem__(
+                "performance_calibration", "off", force=True
+            )
+        if "show_tips" not in vbmc.options:
+            vbmc.options.__setitem__("show_tips", True, force=True)
+
+        calibration_override = None
+        has_calibration_override = (
+            new_options is not None
+            and "performance_calibration" in new_options
+        )
+        if has_calibration_override:
+            calibration_override = new_options["performance_calibration"]
+
         # Update with new options (e.g. higher number of max iterations)
         if new_options is not None:
             vbmc.options.is_initialized = False
@@ -2614,9 +2693,16 @@ class VBMC:
         if "vectorized_target" not in vbmc.options:
             vbmc.options.__setitem__("vectorized_target", False, force=True)
         vbmc._validate_vectorized_target_option()
+        vbmc._validate_show_tips_option()
+        vbmc._validate_performance_calibration_option(
+            vbmc.options.get("performance_calibration")
+        )
         vbmc._validate_final_boost_tolerance(
             vbmc.options.get("tol_elcbo_boost")
         )
+        if has_calibration_override:
+            vbmc.vp._apply_calibration_load_override(calibration_override)
+        vbmc.vp._calibration_display = vbmc.options.get("display") != "off"
         vectorized_target = bool(vbmc.options["vectorized_target"])
         logger_vectorized = bool(
             getattr(vbmc.function_logger, "vectorized_target", False)
@@ -2624,6 +2710,7 @@ class VBMC:
         if vectorized_target != logger_vectorized:
             vbmc._rebuild_log_joint(vectorized_target)
         vbmc.function_logger.vectorized_target = vectorized_target
+        vbmc._ensure_runtime_tip_state()
 
         # Instances saved before the generator existed have no `rng`. Give
         # them a fresh one (without touching NumPy's global state) and share
@@ -2761,6 +2848,9 @@ class VBMC:
         output["overhead"] = np.nan
         output["rng_state"] = self._get_random_state()
         output["algorithm"] = "Variational Bayesian Monte Carlo"
+        output["performance_calibration"] = self.vp._resolve_calibration(
+            display=False
+        ).to_dict()
         try:
             __version__ = version("pyvbmc")
         except PackageNotFoundError:
@@ -3002,6 +3092,17 @@ class VBMC:
         value = self.options.get("vectorized_target", False)
         if not isinstance(value, (bool, np.bool_)):
             raise ValueError("The option 'vectorized_target' must be boolean.")
+
+    def _validate_show_tips_option(self):
+        """Validate whether optional startup tips are enabled."""
+        value = self.options.get("show_tips", True)
+        if not isinstance(value, (bool, np.bool_)):
+            raise ValueError("The option 'show_tips' must be boolean.")
+
+    def _ensure_runtime_tip_state(self):
+        """Migrate the first-start flag from VBMC saves without runtime tips."""
+        if not hasattr(self, "_runtime_tip_handled"):
+            self._runtime_tip_handled = self.iteration >= 0
 
     def _rebuild_log_joint(self, vectorized_target):
         """Rebuild a saved likelihood/prior wrapper for a target mode change."""

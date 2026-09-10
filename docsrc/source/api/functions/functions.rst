@@ -8,6 +8,7 @@ Functions
    :caption: Functions:
 
    active_sample
+   calibrate
    create_vbmc_animation
    decorators
    entropy

@@ -1,0 +1,449 @@
+{
+  "note": "Composed evidence: NumPy success copied unchanged from aux_recovery; the two Torch arms completed in aux_recovery_completed after eta shape validation was corrected. The initial aux_recovery summary preserves NumPy success and two pre-numerical Torch failures. The completed summary describes only the two Torch workers. No primary fit was rerun.",
+  "runs": [
+    {
+      "arm": "numpy_cpu",
+      "status": "ok",
+      "candidate_reconstruction": {
+        "checks": [
+          {
+            "K": 17,
+            "candidate_id": "selected_start:0",
+            "kind": "selected_start",
+            "rebuilt_theta_shape": [
+              124
+            ],
+            "stored_theta_shape": [
+              124
+            ],
+            "theta_max_abs": 0.0,
+            "theta_shape_match": true
+          },
+          {
+            "K": 17,
+            "candidate_id": "midpoint:0",
+            "kind": "midpoint",
+            "rebuilt_theta_shape": [
+              124
+            ],
+            "stored_theta_shape": [
+              124
+            ],
+            "theta_max_abs": 0.0,
+            "theta_shape_match": true
+          },
+          {
+            "K": 17,
+            "candidate_id": "endpoint:1",
+            "kind": "endpoint",
+            "rebuilt_theta_shape": [
+              124
+            ],
+            "stored_theta_shape": [
+              124
+            ],
+            "theta_max_abs": 0.0,
+            "theta_shape_match": true
+          },
+          {
+            "K": 16,
+            "candidate_id": "prune_attempt:2",
+            "kind": "prune_attempt",
+            "rebuilt_theta_shape": [
+              117
+            ],
+            "stored_theta_shape": [
+              117
+            ],
+            "theta_max_abs": 0.0,
+            "theta_shape_match": true
+          },
+          {
+            "K": 15,
+            "candidate_id": "prune_attempt:3",
+            "kind": "prune_attempt",
+            "rebuilt_theta_shape": [
+              110
+            ],
+            "stored_theta_shape": [
+              110
+            ],
+            "theta_max_abs": 0.0,
+            "theta_shape_match": true
+          },
+          {
+            "K": 16,
+            "candidate_id": "final:0",
+            "kind": "final",
+            "rebuilt_theta_shape": [
+              117
+            ],
+            "stored_theta_shape": [
+              117
+            ],
+            "theta_max_abs": 0.0,
+            "theta_shape_match": true
+          }
+        ],
+        "loaded_array_descriptors": 739,
+        "retained_count": 6,
+        "saved_count": 91
+      },
+      "source_primary": {
+        "fingerprints_after": {
+          "failure.json": {
+            "bytes": 919,
+            "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\stage4_torch\\campaign\\runs\\numpy_cpu_warped_seed1703\\failure.json",
+            "sha256": "365099a6209a292c8e256510eb19c5e6f0a66cd62ac31a5f5e65f459fdc146de"
+          },
+          "raw_primary.npz": {
+            "bytes": 622780,
+            "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\stage4_torch\\campaign\\runs\\numpy_cpu_warped_seed1703\\raw_primary.npz",
+            "sha256": "54cf720e5651b8a8b49a15bab78d36bf6084b3261f8ac6daeaa11437f976d404"
+          },
+          "result.json": {
+            "bytes": 775748,
+            "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\stage4_torch\\campaign\\runs\\numpy_cpu_warped_seed1703\\result.json",
+            "sha256": "7eabd94f4d6d1f85a008480f8ab65785702b0dbdba557cd981d182469b101870"
+          }
+        },
+        "fingerprints_before": {
+          "failure.json": {
+            "bytes": 919,
+            "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\stage4_torch\\campaign\\runs\\numpy_cpu_warped_seed1703\\failure.json",
+            "sha256": "365099a6209a292c8e256510eb19c5e6f0a66cd62ac31a5f5e65f459fdc146de"
+          },
+          "raw_primary.npz": {
+            "bytes": 622780,
+            "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\stage4_torch\\campaign\\runs\\numpy_cpu_warped_seed1703\\raw_primary.npz",
+            "sha256": "54cf720e5651b8a8b49a15bab78d36bf6084b3261f8ac6daeaa11437f976d404"
+          },
+          "result.json": {
+            "bytes": 775748,
+            "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\stage4_torch\\campaign\\runs\\numpy_cpu_warped_seed1703\\result.json",
+            "sha256": "7eabd94f4d6d1f85a008480f8ab65785702b0dbdba557cd981d182469b101870"
+          }
+        },
+        "phase": "complete_fit_saved",
+        "preserved": true,
+        "run_dir": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\stage4_torch\\campaign\\runs\\numpy_cpu_warped_seed1703",
+        "saved_source_hashes": {
+          "dev/plans/stage4-torch-feasibility.md": "19f2a98714630bbf17b31cc54c57cb623683dc98e5a5600ac58437eb63a94919",
+          "dev/scripts/torch_vi_benchmark.py": "1aa1d16ad3c81396a3892f6ec7d4a844c10a6720cb569caa56366ef0dbbdbb3d",
+          "dev/scripts/torch_vi_core.py": "9b6bb0ed347e8b92d96d6bd9de92eaa039d83e5c07fe11f4fd3a0a4994df8f9b",
+          "dev/scripts/torch_vi_fixtures.py": "3d2294da45b3720aa8ff0b44d0fea78f2e081dd37a57fffaa7b8c55c9c1e1cc5",
+          "dev/scripts/torch_vi_step.py": "4416ee2f4732a237d64179cd25ded2920df990e8002c666939d522d188a88c2b",
+          "pyvbmc/entropy/entlb_vbmc.py": "eaaefa1002ad453b8710e042bc190122ac23b5481ef193206fc783ffd540d2f0",
+          "pyvbmc/entropy/entmc_vbmc.py": "a2d20d790d2eab8dc4261970eef3986c219c95d33b91e99eb498873cd4b2c981",
+          "pyvbmc/testing/oracles/_state.py": "77a19865a8337d514538fde92ae17b32b290a4deff3a835a5d31ff5379b019e1",
+          "pyvbmc/variational_posterior/variational_posterior.py": "66d8f06fbb32bcfd829c782f20bfe9b3a85fd480fa3f4ec202725c48eff691c1",
+          "pyvbmc/vbmc/minimize_adam.py": "3ae07d534b63aaabdb50c42c5bdfa96ed506ee6ae784573eb3c514d59fe6dbe0",
+          "pyvbmc/vbmc/variational_optimization.py": "bb4a7329322528a872e0d4027cf91e55618f14ddc5022ae158b81660c78c6289",
+          "pyvbmc/vbmc/vbmc.py": "3ca87b15b1193746fc6abdf698a25a62006b71abab233b2618ae8235c2ff7170"
+        },
+        "status": "failed_after_complete"
+      },
+      "kernel_all_pass": true,
+      "result_sha256": "8b90ec336005b27d3a06d81d706c6d7f7837bb9b2bb91d6afde98d45d97165bc",
+      "raw_archives": {
+        "raw.npz": "256d6325f7b4dfa6abd7a17c35576ea26dd2b78aa3d597d332c00efa563098ed"
+      }
+    },
+    {
+      "arm": "torch_cpu",
+      "status": "ok",
+      "candidate_reconstruction": {
+        "checks": [
+          {
+            "K": 17,
+            "candidate_id": "selected_start:0",
+            "kind": "selected_start",
+            "rebuilt_theta_shape": [
+              124
+            ],
+            "stored_theta_shape": [
+              124
+            ],
+            "theta_max_abs": 0.0,
+            "theta_shape_match": true
+          },
+          {
+            "K": 17,
+            "candidate_id": "midpoint:0",
+            "kind": "midpoint",
+            "rebuilt_theta_shape": [
+              124
+            ],
+            "stored_theta_shape": [
+              124
+            ],
+            "theta_max_abs": 0.0,
+            "theta_shape_match": true
+          },
+          {
+            "K": 17,
+            "candidate_id": "endpoint:1",
+            "kind": "endpoint",
+            "rebuilt_theta_shape": [
+              124
+            ],
+            "stored_theta_shape": [
+              124
+            ],
+            "theta_max_abs": 0.0,
+            "theta_shape_match": true
+          },
+          {
+            "K": 16,
+            "candidate_id": "prune_attempt:2",
+            "kind": "prune_attempt",
+            "rebuilt_theta_shape": [
+              117
+            ],
+            "stored_theta_shape": [
+              117
+            ],
+            "theta_max_abs": 0.0,
+            "theta_shape_match": true
+          },
+          {
+            "K": 15,
+            "candidate_id": "prune_attempt:3",
+            "kind": "prune_attempt",
+            "rebuilt_theta_shape": [
+              110
+            ],
+            "stored_theta_shape": [
+              110
+            ],
+            "theta_max_abs": 0.0,
+            "theta_shape_match": true
+          },
+          {
+            "K": 16,
+            "candidate_id": "final:0",
+            "kind": "final",
+            "rebuilt_theta_shape": [
+              117
+            ],
+            "stored_theta_shape": [
+              117
+            ],
+            "theta_max_abs": 0.0,
+            "theta_shape_match": true
+          }
+        ],
+        "loaded_array_descriptors": 739,
+        "retained_count": 6,
+        "saved_count": 91
+      },
+      "source_primary": {
+        "fingerprints_after": {
+          "failure.json": {
+            "bytes": 919,
+            "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\stage4_torch\\campaign\\runs\\torch_cpu_warped_seed1703\\failure.json",
+            "sha256": "139209427bbe262daa4fbe4b065b27df2d275647dcc455c1d679dc918a85d144"
+          },
+          "raw_primary.npz": {
+            "bytes": 610857,
+            "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\stage4_torch\\campaign\\runs\\torch_cpu_warped_seed1703\\raw_primary.npz",
+            "sha256": "de1c79fe60618bbc6144ba20ee43d9cde5ffff3fd6d15a3754f38a5d2bdf1b9c"
+          },
+          "result.json": {
+            "bytes": 779992,
+            "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\stage4_torch\\campaign\\runs\\torch_cpu_warped_seed1703\\result.json",
+            "sha256": "9cf55cb12bdd3ea787feba5054de5029642435c4ba7d07f969792b8961dc3fc5"
+          }
+        },
+        "fingerprints_before": {
+          "failure.json": {
+            "bytes": 919,
+            "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\stage4_torch\\campaign\\runs\\torch_cpu_warped_seed1703\\failure.json",
+            "sha256": "139209427bbe262daa4fbe4b065b27df2d275647dcc455c1d679dc918a85d144"
+          },
+          "raw_primary.npz": {
+            "bytes": 610857,
+            "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\stage4_torch\\campaign\\runs\\torch_cpu_warped_seed1703\\raw_primary.npz",
+            "sha256": "de1c79fe60618bbc6144ba20ee43d9cde5ffff3fd6d15a3754f38a5d2bdf1b9c"
+          },
+          "result.json": {
+            "bytes": 779992,
+            "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\stage4_torch\\campaign\\runs\\torch_cpu_warped_seed1703\\result.json",
+            "sha256": "9cf55cb12bdd3ea787feba5054de5029642435c4ba7d07f969792b8961dc3fc5"
+          }
+        },
+        "phase": "complete_fit_saved",
+        "preserved": true,
+        "run_dir": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\stage4_torch\\campaign\\runs\\torch_cpu_warped_seed1703",
+        "saved_source_hashes": {
+          "dev/plans/stage4-torch-feasibility.md": "19f2a98714630bbf17b31cc54c57cb623683dc98e5a5600ac58437eb63a94919",
+          "dev/scripts/torch_vi_benchmark.py": "1aa1d16ad3c81396a3892f6ec7d4a844c10a6720cb569caa56366ef0dbbdbb3d",
+          "dev/scripts/torch_vi_core.py": "9b6bb0ed347e8b92d96d6bd9de92eaa039d83e5c07fe11f4fd3a0a4994df8f9b",
+          "dev/scripts/torch_vi_fixtures.py": "3d2294da45b3720aa8ff0b44d0fea78f2e081dd37a57fffaa7b8c55c9c1e1cc5",
+          "dev/scripts/torch_vi_step.py": "4416ee2f4732a237d64179cd25ded2920df990e8002c666939d522d188a88c2b",
+          "pyvbmc/entropy/entlb_vbmc.py": "eaaefa1002ad453b8710e042bc190122ac23b5481ef193206fc783ffd540d2f0",
+          "pyvbmc/entropy/entmc_vbmc.py": "a2d20d790d2eab8dc4261970eef3986c219c95d33b91e99eb498873cd4b2c981",
+          "pyvbmc/testing/oracles/_state.py": "77a19865a8337d514538fde92ae17b32b290a4deff3a835a5d31ff5379b019e1",
+          "pyvbmc/variational_posterior/variational_posterior.py": "66d8f06fbb32bcfd829c782f20bfe9b3a85fd480fa3f4ec202725c48eff691c1",
+          "pyvbmc/vbmc/minimize_adam.py": "3ae07d534b63aaabdb50c42c5bdfa96ed506ee6ae784573eb3c514d59fe6dbe0",
+          "pyvbmc/vbmc/variational_optimization.py": "bb4a7329322528a872e0d4027cf91e55618f14ddc5022ae158b81660c78c6289",
+          "pyvbmc/vbmc/vbmc.py": "3ca87b15b1193746fc6abdf698a25a62006b71abab233b2618ae8235c2ff7170"
+        },
+        "status": "failed_after_complete"
+      },
+      "kernel_all_pass": true,
+      "result_sha256": "088e766d29575f2faf7fc558be8499e1a1d6faf20e2755c64ab32159e025a659",
+      "raw_archives": {
+        "raw.npz": "6d7c09c56237859411ad02a317e0cda6b546b394d89700e1af7b87a1ec5de1ba"
+      }
+    },
+    {
+      "arm": "torch_cuda",
+      "status": "ok",
+      "candidate_reconstruction": {
+        "checks": [
+          {
+            "K": 17,
+            "candidate_id": "selected_start:0",
+            "kind": "selected_start",
+            "rebuilt_theta_shape": [
+              124
+            ],
+            "stored_theta_shape": [
+              124
+            ],
+            "theta_max_abs": 0.0,
+            "theta_shape_match": true
+          },
+          {
+            "K": 17,
+            "candidate_id": "midpoint:0",
+            "kind": "midpoint",
+            "rebuilt_theta_shape": [
+              124
+            ],
+            "stored_theta_shape": [
+              124
+            ],
+            "theta_max_abs": 0.0,
+            "theta_shape_match": true
+          },
+          {
+            "K": 17,
+            "candidate_id": "endpoint:1",
+            "kind": "endpoint",
+            "rebuilt_theta_shape": [
+              124
+            ],
+            "stored_theta_shape": [
+              124
+            ],
+            "theta_max_abs": 0.0,
+            "theta_shape_match": true
+          },
+          {
+            "K": 16,
+            "candidate_id": "prune_attempt:2",
+            "kind": "prune_attempt",
+            "rebuilt_theta_shape": [
+              117
+            ],
+            "stored_theta_shape": [
+              117
+            ],
+            "theta_max_abs": 0.0,
+            "theta_shape_match": true
+          },
+          {
+            "K": 15,
+            "candidate_id": "prune_attempt:3",
+            "kind": "prune_attempt",
+            "rebuilt_theta_shape": [
+              110
+            ],
+            "stored_theta_shape": [
+              110
+            ],
+            "theta_max_abs": 0.0,
+            "theta_shape_match": true
+          },
+          {
+            "K": 16,
+            "candidate_id": "final:0",
+            "kind": "final",
+            "rebuilt_theta_shape": [
+              117
+            ],
+            "stored_theta_shape": [
+              117
+            ],
+            "theta_max_abs": 0.0,
+            "theta_shape_match": true
+          }
+        ],
+        "loaded_array_descriptors": 739,
+        "retained_count": 6,
+        "saved_count": 91
+      },
+      "source_primary": {
+        "fingerprints_after": {
+          "failure.json": {
+            "bytes": 921,
+            "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\stage4_torch\\campaign\\runs\\torch_cuda_warped_seed1703\\failure.json",
+            "sha256": "6928f824b951fbe75b6a2072803cb7256ff9b4c7e4f91da19dc378ba8e1de08f"
+          },
+          "raw_primary.npz": {
+            "bytes": 610775,
+            "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\stage4_torch\\campaign\\runs\\torch_cuda_warped_seed1703\\raw_primary.npz",
+            "sha256": "ed5aed91379b6d1e6e2e58bb2ae037f1e456b4d1e6b7ba9359de753a3b6c5302"
+          },
+          "result.json": {
+            "bytes": 780178,
+            "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\stage4_torch\\campaign\\runs\\torch_cuda_warped_seed1703\\result.json",
+            "sha256": "9387ba7c21cb3a2bcd82d22267a557ea4b5582cf273967abce5dfd1802987582"
+          }
+        },
+        "fingerprints_before": {
+          "failure.json": {
+            "bytes": 921,
+            "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\stage4_torch\\campaign\\runs\\torch_cuda_warped_seed1703\\failure.json",
+            "sha256": "6928f824b951fbe75b6a2072803cb7256ff9b4c7e4f91da19dc378ba8e1de08f"
+          },
+          "raw_primary.npz": {
+            "bytes": 610775,
+            "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\stage4_torch\\campaign\\runs\\torch_cuda_warped_seed1703\\raw_primary.npz",
+            "sha256": "ed5aed91379b6d1e6e2e58bb2ae037f1e456b4d1e6b7ba9359de753a3b6c5302"
+          },
+          "result.json": {
+            "bytes": 780178,
+            "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\stage4_torch\\campaign\\runs\\torch_cuda_warped_seed1703\\result.json",
+            "sha256": "9387ba7c21cb3a2bcd82d22267a557ea4b5582cf273967abce5dfd1802987582"
+          }
+        },
+        "phase": "complete_fit_saved",
+        "preserved": true,
+        "run_dir": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\stage4_torch\\campaign\\runs\\torch_cuda_warped_seed1703",
+        "saved_source_hashes": {
+          "dev/plans/stage4-torch-feasibility.md": "19f2a98714630bbf17b31cc54c57cb623683dc98e5a5600ac58437eb63a94919",
+          "dev/scripts/torch_vi_benchmark.py": "1aa1d16ad3c81396a3892f6ec7d4a844c10a6720cb569caa56366ef0dbbdbb3d",
+          "dev/scripts/torch_vi_core.py": "9b6bb0ed347e8b92d96d6bd9de92eaa039d83e5c07fe11f4fd3a0a4994df8f9b",
+          "dev/scripts/torch_vi_fixtures.py": "3d2294da45b3720aa8ff0b44d0fea78f2e081dd37a57fffaa7b8c55c9c1e1cc5",
+          "dev/scripts/torch_vi_step.py": "4416ee2f4732a237d64179cd25ded2920df990e8002c666939d522d188a88c2b",
+          "pyvbmc/entropy/entlb_vbmc.py": "eaaefa1002ad453b8710e042bc190122ac23b5481ef193206fc783ffd540d2f0",
+          "pyvbmc/entropy/entmc_vbmc.py": "a2d20d790d2eab8dc4261970eef3986c219c95d33b91e99eb498873cd4b2c981",
+          "pyvbmc/testing/oracles/_state.py": "77a19865a8337d514538fde92ae17b32b290a4deff3a835a5d31ff5379b019e1",
+          "pyvbmc/variational_posterior/variational_posterior.py": "66d8f06fbb32bcfd829c782f20bfe9b3a85fd480fa3f4ec202725c48eff691c1",
+          "pyvbmc/vbmc/minimize_adam.py": "3ae07d534b63aaabdb50c42c5bdfa96ed506ee6ae784573eb3c514d59fe6dbe0",
+          "pyvbmc/vbmc/variational_optimization.py": "bb4a7329322528a872e0d4027cf91e55618f14ddc5022ae158b81660c78c6289",
+          "pyvbmc/vbmc/vbmc.py": "3ca87b15b1193746fc6abdf698a25a62006b71abab233b2618ae8235c2ff7170"
+        },
+        "status": "failed_after_complete"
+      },
+      "kernel_all_pass": true,
+      "result_sha256": "c1cb843d185caa1502f72b7bc74703f0cf8997d91b1b15212f077d517e16190d",
+      "raw_archives": {
+        "raw.npz": "416522b8b2ddc0eb0dbcf0c48dd481cefe6078b43f5bbf593f610b41041eb873"
+      }
+    }
+  ]
+}

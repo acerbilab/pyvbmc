@@ -1,0 +1,10 @@
+{
+  "archive": "dev\\scripts\\runs\\stage4_torch\\controls\\measured_source.zip",
+  "sha256": "e8563f6b36d2e2d6889811c4f481cd867ee872bba0a071c7b7eee6bc74c18b1d",
+  "files": {
+    "dev\\scripts\\torch_vi_core.py": "9b6bb0ed347e8b92d96d6bd9de92eaa039d83e5c07fe11f4fd3a0a4994df8f9b",
+    "dev\\scripts\\torch_vi_step.py": "2731f5cfcd48a39a5fbfa936ff1c54256bdef252ded34f352d6cb8c884ff41c4",
+    "dev\\scripts\\torch_vi_fixtures.py": "647a137fc9d3baca91436439bda33a7a08689535e137aea7e41557ae83a56b16",
+    "dev\\scripts\\torch_vi_benchmark.py": "71133b6461cccd86b0d651ee790dd979ed6afe5498d7bef2f0ca2c9250e3d82a"
+  }
+}

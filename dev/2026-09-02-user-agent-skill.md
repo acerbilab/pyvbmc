@@ -1,106 +1,218 @@
 # 2026-09-02 — A PyVBMC skill for users' coding agents
 
-**Status:** idea recorded, deferred. Build after the 1.5 work in
-`2026-09-02-modernization-discussion.md` has stabilised the user-facing API
-(seed argument, batched evaluation, `to_torch`), so the skill documents the
-API we want rather than the one we are about to change.
+**Status:** proposal refreshed on 2026-09-10 against the implemented 1.5 API.
+The proposed skill covers RNG control, vectorized initial evaluation,
+posterior exports, machine-local calibration and runtime tips alongside the
+core inference workflow.
 
-## The idea
+## Purpose
 
-Many PyVBMC users will be writing their inference scripts with a coding agent,
-if they aren't already. A skill in the open Agent Skills format (a folder with
-`SKILL.md` plus optional `references/` and `scripts/`, loaded by Claude Code,
-Codex, Gemini CLI, Cursor and others) lets that agent set up and troubleshoot
-a PyVBMC run using our own guidance instead of guessing from docstrings.
+Help a user's coding agent turn a model into a sensible PyVBMC analysis:
+choose the target and bounds, run within the intended evaluation budget,
+check the fitted posterior, and explain what the results support. When the
+user brings an existing script or failed run, enter at the relevant step and
+preserve sound existing choices.
 
-A good chunk of the content already exists. The VBMC wiki FAQ
-(https://github.com/acerbilab/vbmc/wiki, ~8,500 words, ~40 questions,
-algorithm-general but MATLAB-flavoured) is mostly about setup and
-interpretation: hard bounds used where plausible bounds were meant, plausible
-bounds far too wide, a target returning `-inf`/NaN, noisy targets without
-`specify_target_noise` and an SD estimate, `elbo_sd` read as the gap to the
-true evidence, a non-monotone ELBO trace read as failure, a single run trusted
-without diagnostics. An agent won't apply these rules unless told, which is
-also the case BayesFlow makes for its skill.
+The useful content is the judgment between API calls. An MLE or MAP estimate
+can give PyVBMC a good starting point; a precise estimate of a lower bound can
+still be far below the true evidence. Connect each recommendation to its
+purpose and link to the relevant example or explanation. Introductory advice
+should be understandable without knowledge of Gaussian processes or Bayesian
+quadrature.
 
-## What BayesFlow did (checked 2026-09-02)
+The [baygent-skills project](https://github.com/Learning-Bayesian-Statistics/baygent-skills)
+provides a useful precedent: workflow instructions, references and examples
+in skill folders. Use that structure, while deriving scientific guidance from
+PyVBMC's own documentation and reviewed tips.
 
-- Not in the library repo. The BayesFlow README has a one-line "Agentic AI
-  Workflows" section pointing to a separate repo,
-  https://github.com/Learning-Bayesian-Statistics/baygent-skills (Alexandre
-  Andorra, with Stefan Radev as co-author; MIT). Three skills:
-  `bayesian-workflow` (PyMC/ArviZ), `causal-inference`, `amortized-workflow`
-  (BayesFlow).
-- Installation is copying the folder into `~/.claude/skills/` (or the
-  equivalent for other agents).
-- `amortized-workflow/SKILL.md` is an opinionated workflow, not documentation:
-  a ten-step pipeline; eleven MUST/NEVER rules described as "critical
-  guardrails that agents will usually not apply unprompted"; a complete
-  runnable template (~150 lines); anti-patterns; verification gates
-  (diagnostics before proceeding); a troubleshooting table mapping failure
-  modes to causes and fixes; seven `references/*.md` files loaded on demand;
-  two `scripts/` (`inspect_training.py`, `check_diagnostics.py`) the agent
-  runs. The `description` field is long and keyword-dense, so the skill
-  triggers on mentions of the library or of SBI concepts.
-- Weakness: `SKILL.md` is ~850 lines. The spec recommends under 500 lines /
-  ~5,000 tokens for the always-loaded part, with detail in `references/`.
-  No documented mechanism keeps the skill in sync with library versions.
+## Proposed first version
 
-Spec essentials (https://agentskills.io/specification): frontmatter `name`
-(lowercase, hyphens, must match the folder), `description` (≤1024 chars, say
-what and when), optional `license`, `compatibility`, `metadata`,
-`allowed-tools`. Progressive disclosure: metadata always loaded (~100 tokens),
-body on activation, references on demand. Validate with `skills-ref validate`.
+Maintain one source folder, `skills/pyvbmc/`, in this repository. Use the
+[Agent Skills format](https://agentskills.io/specification): `SKILL.md` with
+`name: pyvbmc` and a description explaining when to use it, plus resources
+loaded as needed. Keep the main instructions comfortably below 500 lines.
+Avoid assuming a particular agent's tools or configuration paths.
 
-## Design for PyVBMC
+Deliver:
 
-Differences from the BayesFlow approach:
+- A short `SKILL.md` covering applicability, the workflow below, common
+  failure modes and links to further guidance.
+- Focused references for setup and priors, noisy targets, validation and
+  evidence, and optional 1.5 integrations. Adapt relevant FAQ material to
+  Python names; a complete FAQ port is not needed for the first version.
+- One small runnable deterministic example with a known posterior and log
+  evidence, with instructions for adapting it to a user's model. Keep the
+  model definition and inference steps visible.
+- Installation and compatibility instructions linked from the README and
+  user documentation, with focused validation of the delivered artifacts.
 
-- **In this repo, under `skills/pyvbmc/`, and shipped inside the wheel**, with
-  a one-line installer (e.g. `python -m pyvbmc install-skill`) that copies it
-  to the agent's skills directory. The skill version then always matches the
-  installed library; CI validates the frontmatter and smoke-tests the template
-  with a tiny budget; the options reference is generated from the `.ini` files
-  rather than maintained by hand. A README "Agentic AI Workflows" section
-  points to it, as BayesFlow's does.
-- **Short, opinionated `SKILL.md` (<500 lines):**
-  - when to use PyVBMC vs MCMC/PyMC, PyBADS, or SBI, and the dimension/cost
-    regime it is designed for;
-  - the four-step workflow with a runnable template;
-  - hard rules: target always finite; prior included in the target; hard
-    bounds = support, plausible bounds ≈ the 68% prior interval, and the two
-    must differ; no integer parameters; noisy targets need
-    `specify_target_noise=True` and an approximately unbiased SD estimate
-    (ideally SD ≈ 1, at most ~3); run more than once; check convergence
-    diagnostics before trusting anything;
-  - a table for reading `results` (`elbo`, `elbo_sd` is GP uncertainty, not
-    the variational gap; `success_flag`; `r_index`; `sKL`; `K`);
-  - a troubleshooting table (non-convergence warning, wild ELBO oscillation,
-    non-finite values, run-to-run variability).
-- **`references/`:** the FAQ ported to Python names and PyVBMC options;
-  noisy targets; priors (`pyvbmc.priors` and `convert_to_prior`);
-  diagnostics; the `VariationalPosterior` API with array shapes and
-  `orig_flag`; the generated options reference; pointers to the example
-  notebooks.
-- **`scripts/`:** a pre-flight check that validates shapes and bounds and
-  probes the target at a few points inside the plausible box (finite? noise
-  tuple shape right?); a results summariser that reads `results` and the
-  iteration history and states in plain words whether the run converged and
-  what to try next.
+Executable helpers are optional. A results summarizer may help interpret
+existing outputs. Start setup checks in the workflow and example; add a
+standalone validator only if it provides value beyond PyVBMC's own checks.
+Any helper that probes a user's model must state its evaluation count and
+stay within the user's intended budget. Reading results needs no new model
+evaluations.
 
-## Interaction with the 1.5 plan
+## The workflow to teach
 
-- The skill is one more reason to settle the user-facing API surface before
-  release; every API change means a skill change.
-- `seed=` becomes a hard rule in the skill ("always pass a seed") rather than
-  a workaround, and batched evaluation of the initial design becomes a
-  recommendation for GPU/vectorised targets.
-- The FAQ port is independent of the code and could start earlier if someone
-  has time; it is also useful as a plain documentation page.
+### 1. Establish the inference problem
+
+Check suitability: continuous parameters, typically up to roughly 10–20
+dimensions, and an evaluable, potentially expensive or noisy log density.
+Explain alternatives when relevant; an optimization-only request may call
+for PyBADS. Do not silently round integer parameters or invent a likelihood
+for a simulator.
+
+Identify parameter order, data, prior, support and desired outputs
+(posterior estimates, model evidence, or both). Inspect the installed PyVBMC
+version before using a 1.5-specific feature. Core PyVBMC requires Python 3.10+;
+export dependencies are needed only for their respective workflows.
+
+### 2. Construct the target and starting region
+
+- Include the prior exactly once: pass a log joint directly, or pass a
+  log-likelihood with `prior=` or `log_prior=`. Explain the chosen convention.
+  For model evidence, retain likelihood normalization constants and use a
+  normalized proper prior: constants irrelevant to posterior shape still
+  affect evidence.
+- The default target accepts one parameter vector in original coordinates
+  and returns one finite real scalar. Diagnose non-finite values where PyVBMC
+  can evaluate the target. Check numerical stability, support and
+  parameterization instead of substituting arbitrary finite penalties.
+- Hard bounds encode support; finite plausible bounds guide the initial
+  search without restricting the posterior. Use `LB < PLB < PUB < UB`.
+  Without better information, each prior's **16th and 84th percentiles** are
+  a useful starting choice, roughly mean minus and plus one SD for a Gaussian
+  prior. Prefer a better-informed region when available; see the
+  [plausible-bounds FAQ](https://github.com/acerbilab/vbmc/wiki#how-do-i-choose-plb-and-pub).
+- Choose `x0` near plausible high density. An MLE or MAP estimate found with
+  [PyBADS](https://acerbilab.github.io/pybads/) can provide a good starting
+  point for PyVBMC. Optimization is an optional aid, not a required first fit.
+- For simulated log-likelihoods, set `specify_target_noise=True` and return
+  `(log_density, noise_sd)` with a finite, positive SD. It describes noise in
+  that log-density evaluation, not observation noise, posterior uncertainty,
+  or a variance.
+  Approximate unbiasedness and normality assumptions concern the
+  **log-likelihood estimates**; a useful estimate of their SD is also needed.
+  Discuss noise levels as practical guidance rather than universal thresholds;
+  see the [noisy-target FAQ](https://github.com/acerbilab/vbmc/wiki#noisy-target-function)
+  and [Python tutorial](../examples/pyvbmc_example_6_noisy_likelihoods.ipynb).
+
+### 3. Run and preserve the analysis
+
+Set a budget appropriate to model cost, construct `VBMC(...)` and call
+`optimize()`. Probes, preliminary optimization and repeated fits belong in
+the overall cost estimate.
+
+Explicit seeds are optional, useful when reproducibility is needed. Document
+`seed=` and generator support in a reference without making seed management
+part of every example or the repeated-run advice. PyVBMC's generator does not
+control randomness inside a user's stochastic target. Do not reset that
+target's seed on every evaluation to disguise its noise as determinism.
+
+Offer `pyvbmc.calibrate()` when machine-specific performance tuning is useful:
+it takes tens of seconds, evaluates no user model, and compatible saved
+settings are reused automatically. It is optional performance tuning, not
+statistical validation of a posterior. Link to the
+[calibration guide](../docsrc/source/api/functions/calibrate.rst).
+
+Save expensive runs with `vbmc.save(...)`. To extend a run, use
+`VBMC.load(..., new_options={"max_fun_evals": N})` and call `optimize()`;
+`N` is the larger **total** evaluation budget. See the
+[diagnostics and saving tutorial](../examples/pyvbmc_example_3_diagnostics_and_saving.ipynb).
+
+### 4. Validate and interpret
+
+Read the termination message and diagnostics, plot the posterior, and assess
+agreement across runs. Recommend **3–4 runs with different starting points**,
+comparing posterior plots and estimated evidence, as in the
+[validation tutorial](../examples/pyvbmc_example_4_validation.ipynb).
+Agreement increases confidence but cannot prove that every run captured the
+true posterior. A small demonstration budget exercises the interface; it
+does not establish convergence.
+
+Use the actual Python outputs:
+
+| Output | What the skill should explain |
+| --- | --- |
+| `results["success_flag"]`, `results["message"]` | Whether PyVBMC reports successful termination and why it stopped. Success still needs posterior validation. |
+| `results["elbo"]`, `results["elbo_sd"]` | Estimated evidence lower bound and uncertainty in estimating that bound. The fitted posterior introduces a separate, generally unknown gap between the bound and the true log evidence. Estimating the bound precisely does not close that gap. |
+| `results["r_index"]` | A convergence diagnostic to interpret alongside termination and stability, not an accuracy certificate. |
+| `results["components"]` or `vp.K` | The mixture component count, not a quality score by itself. |
+| `vbmc.iteration_history["sKL"]` | Changes between successive variational posteriors; a history diagnostic, not a `results["sKL"]` field or a comparison between independent fits. |
+
+Troubleshooting should connect symptoms to useful checks: non-finite values
+to support and numerics; budget exhaustion to setup, noise and stability
+before extending the run; persistent late ELBO oscillations to fit diagnostics;
+disagreement across runs to missed posterior structure or local solutions.
+An occasional ELBO decrease alone is expected as PyVBMC updates its estimate.
+Do not mechanically loosen stopping tolerances until a run reports success.
+
+## Optional 1.5 workflows
+
+Make these discoverable from `SKILL.md` and explain them in a reference when
+needed. Use the [quickstart](../docsrc/source/quickstart.rst) for interfaces.
+
+| Feature | Guidance to preserve |
+| --- | --- |
+| `vectorized_target=True` | Batches missing initial-design evaluations. Later calls contain one point with shape `(1, D)`. NumPy inputs are `(N, D)`; outputs are `(N,)` or `(N, 1)`, including when `N=1`. Noisy outputs are a pair of arrays. Separate priors keep their scalar interface. |
+| Torch/JAX targets | Adapt the existing model to NumPy inputs and outputs and preserve float64 where supported. The solver remains NumPy/SciPy; initial batching does not move inference onto a GPU. |
+| `vp.to_torch()` | An independent distribution snapshot, by default CPU float64 in original coordinates. Exported samples use torch's RNG. Install the optional `torch` extra when needed. |
+| `vp.to_arviz()` | Independent draws from the variational approximation in a one-chain DataTree, advancing `vp.rng`. Requires the `arviz` extra and Python 3.12+. MCMC convergence diagnostics on these draws do not validate the approximation. |
+| Runtime tips | Leave defaults unless the user wants different output. `show_tips=False` disables tips; `display="off"` also suppresses the calibration reminder and ordinary optimization output. |
+| S-VBMC | Link to the [S-VBMC tutorial](https://github.com/acerbilab/svbmc#how-to-use-s-vbmc) for combining independent runs on the same model and data without new model evaluations. |
+
+## Distribution and maintenance
+
+Retain the goal of shipping the skill with the library so users can obtain
+guidance for their installed release. The implementation plan must settle
+how the single source under `skills/pyvbmc/` enters both wheel and sdist, and
+how users copy it to a supported agent's skill location. Test built artifacts,
+not just a checkout.
+
+A dedicated installer, such as `python -m pyvbmc install-skill`, is one
+possible addition. First establish whether documented folder copying suffices.
+If an installer is justified, use an explicit destination
+and defined replacement behavior rather than guessing the active agent or
+overwriting a user's edited skill. Keep general agent management out of scope.
+
+Bundling does **not** guarantee that an installed copy stays current. Record
+the supported PyVBMC release in the skill, explain updating, and check
+compatibility before applying version-specific advice. A copied folder must
+work outside this checkout: bundle its focused references and use public
+documentation links for further reading. Relative source links in this
+proposal are for maintainers, not links to copy unchanged into the skill.
+
+Keep options guidance tied to the maintained
+[options reference](../docsrc/source/api/options/vbmc_options.rst). If an
+offline options list is needed, generate it from the `.ini` files instead of
+maintaining another default-value table. Keep advanced option changes out of
+the basic workflow.
+
+## Acceptance checks for implementation
+
+- Validate frontmatter and local resource links against the
+  [format specification](https://agentskills.io/specification). Check that
+  the installed folder is self-contained and version information is accurate.
+- Check examples and named outputs against the public API. Exercise the small
+  example with a bounded budget; reuse existing inference tests for algorithm
+  correctness instead of adding several full fits.
+- Review representative requests: a first fit, a supplied prior, a noisy
+  likelihood, non-convergence, conflicting repeated fits, small ELBO SD,
+  save/resume, and a vectorized target. Each should lead to a concrete next
+  action with its reason and a useful supporting link.
+- Check optional integrations with their dependencies installed. Basic skill
+  use and the deterministic example must work with core PyVBMC alone.
+- Verify delivery from wheel and sdist, working references and a documented
+  update path. Add the README/docs entry when installation instructions work.
 
 ## Sources
 
-- https://github.com/bayesflow-org/bayesflow (README, "Agentic AI Workflows")
-- https://github.com/Learning-Bayesian-Statistics/baygent-skills
-- https://agentskills.io/specification
-- https://github.com/acerbilab/vbmc/wiki
+Use the [1.5 overview](2026-09-06-pyvbmc-1.5-overview.md),
+[quickstart](../docsrc/source/quickstart.rst),
+[VBMC API](../docsrc/source/api/classes/vbmc.rst),
+[prior documentation](../docsrc/source/api/classes/priors.rst), examples and
+reviewed [runtime-tip catalog](../pyvbmc/vbmc/_tip_catalog.py) together.
+The [VBMC FAQ](https://github.com/acerbilab/vbmc/wiki) supplies supporting
+explanations; translate MATLAB interfaces and check scientific wording against
+the current Python implementation.

@@ -1,90 +1,203 @@
-# Delivering algorithms within the PyVBMC ecosystem
+# Integrating S-VBMC into PyVBMC
 
-PI direction (2026-09-08): make S-VBMC directly accessible from PyVBMC;
-in principle it should not require a separate package. More generally,
-avoid a separate distribution for every new algorithm. This note proposes
-an approach for discussion; it does not authorize or claim an implementation.
-The [initial S-VBMC compatibility check](2026-09-08-svbmc-compatibility.md)
-provides the starting evidence.
+*Revised 9 September 2026; proposal for human review.*
 
-PI follow-up: the direction sounds good; implementation is parked for
-later. Preserve this proposal and the compatibility findings for resumption.
+Status (PI, 2026-09-09): awaiting review from S-VBMC's main developer.
+Integration stays on hold pending that review; the recommendations below
+remain proposals.
 
-## Proposed delivery model
+The PI direction is to make the existing S-VBMC
+implementation directly available from PyVBMC and, more generally, to avoid a
+separate distribution for every closely related VBMC method. This note defines
+a migration of the pinned S-VBMC 0.1.1 source (`13a78f6`) that preserves its
+algorithm and existing user workflow. Production integration remains parked.
 
-Maintain closely related VBMC methods in the PyVBMC repository and Python
-distribution, with shared documentation, examples, CI and release version.
-Give each substantial method its own internal module and public entry point.
-Dependencies can remain optional without requiring separate algorithm
-packages: an extra installs dependencies, while the code lives in PyVBMC.
-For S-VBMC, use the existing Torch extra initially or an explicitly named
-stacking extra if that makes installation clearer. Keep imports lazy until
-the agreed PyTorch feasibility/port decision settles the core dependency.
+The unchanged S-VBMC suite and checks of all thirty shipped PyVBMC posterior
+files passed on Windows/Python 3.12 against the modernized PyVBMC code. The
+[compatibility report](results/2026-09-08-svbmc-compatibility.md) records that
+evidence and the known edge cases. The integration should preserve this tested
+workflow while moving its ownership, documentation, and release process into
+PyVBMC.
 
-Algorithms with distinct workflows should have distinct classes. For
-example, S-VBMC consumes multiple finished runs whereas VBMC consumes a
-target function. Keep those differences explicit rather than adding modes
-to the main optimization loop. Small variations such as acquisitions can
-continue using the existing extension points.
+As a delivery principle, closely related methods should live in one
+distribution with distinct classes, shared documentation, tests, and releases.
+Method-specific dependencies can remain optional extras. Concrete methods can
+establish common contracts as needed; no plugin registry or general algorithm
+framework is required now.
 
-Use common input/output contracts where they improve composition: targets,
-parameter bounds/transforms, explicit RNGs, posterior operations and result
-diagnostics. Establish these from concrete methods, beginning with VBMC and
-S-VBMC; a general plugin registry or framework is not needed at this stage.
-Research additions can initially live under an experimental namespace with
-documented stability, then move into the supported API after validation.
+## Proposed code and API boundary
 
-## S-VBMC as the first integration
-
-A proposed user interface, following VBMC's return convention:
+Move the existing `SVBMC` class into `pyvbmc/svbmc/svbmc.py`, with a small
+`pyvbmc/svbmc/__init__.py` as its canonical public import. Proposed usage
+after integration:
 
 ```python
-from pyvbmc import SVBMC
+from pyvbmc.svbmc import SVBMC
 
-stacker = SVBMC(posteriors, seed=123)
-posterior, results = stacker.optimize()
-samples, _ = posterior.sample(1000)
+stacked = SVBMC(vp_list)  # Existing fitted posteriors from the same problem.
+stacked.optimize()
+samples = stacked.sample(1000)
+print(stacked.elbo["estimated"])
 ```
 
-This is an API proposal, not currently executable PyVBMC syntax. Users
-should pass posterior objects directly; saving and loading files remains
-optional. A later convenience layer may orchestrate multiple VBMC runs,
-but stacking existing runs should remain independently accessible.
+Also expose `SVBMC` lazily at the package root for discoverability, so
+`from pyvbmc import SVBMC` loads the optional implementation only when it is
+requested. Importing core PyVBMC must not import Torch. Requesting `SVBMC`
+without the Torch extra should produce a concise installation error.
 
-The integration needs more than moving source files:
+Keep the present class contract. Construction accepts finished
+`VariationalPosterior` objects, filters unstable or excessively uncertain
+runs, and extracts their component weights and stored expected-log-joint
+terms. `optimize()` operates in place and returns `None`; it stores the final
+NumPy weights in `stacked.w`, the entropy in `stacked.entropy`, and estimated
+and debiased ELBO values in `stacked.elbo`. `sample(n)` returns an original-
+space NumPy array, and `plot()` returns a Matplotlib figure. The direct
+`stacked_ELBO()` and `maximize_ELBO()` methods retain their current Torch
+tensor returns. Optimization retains the `all-weights`, `posterior-only`,
+and `ns` modes, including their existing defaults and stopping policy.
 
-- Return a posterior with the familiar sampling, density, moments, plotting,
-  serialization and optional export interface, and separate optimization
-  diagnostics. Specify which methods are supported before shipping.
-- Preserve each input posterior's transform. S-VBMC can combine runs with
-  different transforms, so flattening everything into the current single-
-  transformer `VariationalPosterior` is generally invalid. A stacked
-  posterior can implement the common interface while retaining its inputs.
-- Give stacking an explicit RNG contract, exact requested sample counts,
-  float64 numerical behavior and tests with real PyVBMC objects. The current
-  implementation rounds sample allocation independently and its sampling
-  can advance input generators; those need intentional integrated semantics.
-- Correct the confirmed D=1 component-draw shape defect, retain canonical
-  VP weight shapes, and validate that inputs describe the same parameter
-  space/problem. The current mock suite does not cover these contracts.
-- Replace reliance on an undocumented collection of `vp.stats` keys with
-  validated, documented stacking inputs. Keep uncertainty/filtering and
-  debiased ELBO diagnostics visible. Validate algorithm behavior separately
-  from API changes.
-- Coordinate migration of the existing `svbmc` import and distribution,
-  potentially through a compatibility shim, retaining attribution and
-  existing saved-object support where applicable.
+This deliberately does not make `SVBMC.optimize()` imitate
+`VBMC.optimize()`'s `(posterior, results)` return. It also does not require the
+stacked object to implement the full `VariationalPosterior` surface (`pdf`,
+`moments`, `mode`, exports, or `save`/`load`). Those methods do not exist in
+S-VBMC 0.1.1 and are not needed to integrate the implemented algorithm. They
+can be proposed later from demonstrated user needs.
 
-The old S-VBMC requirements are higher than core PyVBMC's Python/NumPy/SciPy
-floors. Determine actual language/API needs before deciding whether optional
-stacking can support core's floor; its current dependency declarations alone
-are not a reason to raise the core requirements. Preserve the previously
-agreed PyTorch feasibility criteria and make that decision separately.
+The stacked posterior should remain a composite over its input posteriors.
+Each VBMC run can have a different parameter transform, so its components do
+not share one valid transformed coordinate system. The current implementation
+handles that correctly by retaining the input objects and sampling each one
+through its own transform. Flattening the components into one ordinary
+`VariationalPosterior` would lose that information and would require a broad
+posterior redesign without improving the existing S-VBMC workflow.
 
-## Next concrete design step
+## Backend recommendation
 
-Agree the S-VBMC public API and posterior/result contracts, then prepare a
-bounded integration plan covering source migration, real-object regression
-tests, dependency/import behavior, documentation and legacy import support.
-This becomes the worked example for future algorithm additions. The final
-population validation still follows the remaining release implementation.
+S-VBMC holds component locations, scales and stored GP integrals fixed while
+optimizing weights. Its sampling, transforms and component-density preparation
+already use NumPy/SciPy; Torch evaluates the weight-dependent objective and
+provides its gradients and Adam updates.
+
+Retain the upstream Torch weight optimizer for the first integration, using
+PyVBMC's existing `torch` extra (`torch>=2.7`) and lazy imports. This is the
+smallest path from the validated source to a supported feature and preserves
+the public tensor-returning numerical methods. Reviewer assent is required:
+the earlier decision to retain NumPy/SciPy for PyVBMC's main solver did not
+settle S-VBMC's backend.
+
+The optimized NumPy prototype shows that a later backend change is feasible,
+but does not compel it:
+
+| Complete-fit comparison | NumPy result on the study CPU |
+| --- | --- |
+| Unchanged upstream Torch | 2.47x aggregate speedup |
+| Torch with shared preparation and vectorized entropy reduction | 1.06x median paired; 1.15x aggregate |
+
+Most of the first comparison's gain came from reusable sample and density
+preparation that benefits either backend. The [full prototype results](results/2026-09-09-svbmc-numpy-prototype.md)
+cover numerical parity, timing limits, and the additional maintenance implied
+by an analytic gradient and a separate Adam implementation. Apply the shared
+preparation and tested Torch reduction improvements in a separate performance
+change after the source move; replacing Torch can remain a later API and
+maintenance decision.
+
+## Packaging and legacy imports
+
+PyVBMC should own the implementation and must not depend on the standalone
+`svbmc` distribution. It should not install a second top-level `svbmc`
+package: two distributions owning the same import files would make upgrades
+and uninstalls unreliable.
+
+Instead, prepare a separate, temporary compatibility release of `svbmc` that
+depends on `pyvbmc[torch]>=1.5`. It should forward both `svbmc.SVBMC` and the
+documented `svbmc.svbmc.SVBMC` path to PyVBMC. The current package also
+publicly exposes `svbmc.targets` (`GMM`, `Ring`) and `svbmc.utils`
+(`overlay_corner_plot`, `find_init_bounds`), and its examples import them.
+For a bounded transition, move those small modules to `pyvbmc.svbmc.targets`
+and `pyvbmc.svbmc.utils`, keep them out of the PyVBMC root namespace, and
+forward the old module paths from the compatibility release. This defines the
+initial public support scope without preserving every incidental package
+attribute. Preserve the explicitly exported `svbmc.__version__`, reporting
+the compatibility distribution's own version; the integrated implementation
+follows PyVBMC's release version.
+
+Publish the forwarding release after the PyVBMC version it requires is
+available. Coordinate both repositories' release notes and document the
+migration and support window for existing users.
+
+The thirty compatibility fixtures are input `VariationalPosterior` pickles.
+They encode the existing
+`pyvbmc.variational_posterior.variational_posterior.VariationalPosterior`
+module path, which this migration does not change, and all loaded without
+regeneration. They do not test pickled `SVBMC` instances. S-VBMC supplies no
+`save`/`load` API or corpus of serialized stacked objects, so the integration
+must not promise transparent migration of arbitrary pickled `SVBMC` objects.
+The forwarding package may preserve imports needed by such objects, but that
+behavior needs a dedicated fixture before it becomes a compatibility claim.
+
+Both projects use BSD-3-Clause, with separate copyright notices. Retain the
+S-VBMC 2025 copyright and license notice in the migrated source and source
+distribution. Align the PyVBMC documentation, citation guidance, changelog,
+and version metadata with the S-VBMC paper and original package rather than
+silently absorbing its provenance.
+
+## Behavioral fixes and policies
+
+The source move does not depend on a new architecture, but reviewers should
+choose which of these observable semantics to preserve for the first release:
+
+- Canonicalize component draws to `(n_samples, D)` so D=1 and single-draw
+  entropy calculations work. Preserve copied VP weights as `(1, K)`. These are
+  narrow shape fixes; the D=1 failure was reproduced in the compatibility
+  study and was already present upstream.
+- Decide whether `sample(n)` must return exactly `n` rows. The current method
+  rounds each posterior's allocation independently and can return a nearby
+  count (65 for a request of 64 in the compatibility study). An exact
+  allocation is preferable, but it changes existing behavior and needs a
+  deterministic allocation rule.
+- Document and decide RNG ownership. Entropy currently uses SciPy/NumPy's
+  ambient state outside test mode. Sampling deep-copies input VPs, but PyVBMC
+  deep copies intentionally share the VP generator, so sampling advances the
+  input posteriors' streams. A local generator would improve isolation, but a
+  new constructor `seed` argument is not required for migration and should not
+  be added incidentally.
+- Make the arithmetic policy explicit. Upstream mixes NumPy float64 with
+  Torch's default float32 in some input and return paths, then widens final
+  weights to NumPy float64. PyVBMC otherwise protects float64 numerics. Choose
+  and test a consistent S-VBMC policy rather than describing the current cast
+  sequence as guaranteed precision. Use explicit tensor dtypes if changing
+  this policy, so S-VBMC does not change the application's global Torch default.
+
+Input validation can be hardened alongside these fixes: reject an empty list,
+inconsistent dimensions, malformed component shapes, and missing or nonfinite
+`stable`, `elbo`, `I_sk`, or `J_sjk` statistics with useful messages. Users
+must still attest that runs describe the same target and original parameter
+space; object structure alone cannot establish that fact.
+
+The standalone package declares Python >=3.11, NumPy >=2.3, SciPy >=1.16,
+Matplotlib >=3.10, and older PyVBMC/gpyreg floors. PyVBMC currently supports
+Python >=3.10, NumPy >=2.0, SciPy >=1.15, and Matplotlib >=3.9. Check the
+migrated class and helper modules across these lower core floors and remove
+declarations made redundant by integration. Do not raise PyVBMC's core floors
+or claim the lower stack until that check passes.
+
+## Review and validation scope
+
+Reviewers need to decide: (1) whether to retain Torch for the initial merge;
+(2) exact-count and RNG semantics; (3) the float64 policy; and (4) whether the
+temporary forwarding release is maintained for one release or a stated time
+window. The class location, preserved in-place workflow, composite posterior
+representation, lazy optional dependency, forwarded helper modules, and
+absence of a new general framework are proposed defaults.
+
+Implementation validation can stay bounded: first check the moved code against
+the pinned upstream outputs with matched random draws, independently of any
+behavioral or performance changes. Port the upstream unit suite;
+add real PyVBMC regressions for construction, all three optimization modes,
+D=1, sampling count/RNG decisions, dtype, and heterogeneous transforms; load
+and stack the thirty shipped input posteriors; and test imports both with and
+without the Torch extra. Add focused tests for the compatibility package's
+forwarded imports and version metadata, and
+one deliberately serialized `SVBMC` fixture only if serialized-object support
+is claimed. Update API documentation and one example, then coordinate the two
+release notes and dependency metadata before any publication.

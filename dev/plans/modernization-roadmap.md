@@ -228,15 +228,15 @@ anything that changes numerics lands.
   take the fitted posterior into torch as a distribution or ArviZ as
   samples. The plan is `plans/stage3-pipeline-features.md` on
   `dev-next-stage3`. Current ArviZ DataTree support is agreed; the core
-  stays Python >=3.10, the ArviZ export requires >=3.12, and reconsidering
-  the core Python floor is deferred to Stage 4. Ships in 1.5 with Stages
+  stays Python >=3.10 and the ArviZ export requires >=3.12. Stage 4 later
+  retained those version floors. Ships in 1.5 with Stages
   0–2 (PI decision 2026-09-06: the whole body of work in one release, for
   visibility, rather than a 1.5 followed by a 1.6 within days). Both
   trajectory-neutral and trajectory-moving latent bug fixes were held behind
   the reference boundary. That boundary completed on 2026-09-07 (pickup 3f).
   Pickup 9 is in progress: Phase 1 neutral fixes are complete; Q1/Q4 decisions
   and moving groups remain open.
-- [ ] **Stage 4 — PyTorch feasibility prototype, then a port decision**
+- [x] **Stage 4 — PyTorch feasibility prototype, then a port decision**
   (preferred for 1.5 if feasible;
   PI decision, 2026-09-06). The purpose combines future method development,
   participation in the modern ML ecosystem, and performance opportunities.
@@ -266,9 +266,27 @@ anything that changes numerics lands.
   end-to-end runtime impact. Inclusion in 1.5 remains conditional on this
   decision and subsequent implementation and validation.
   Settle the NumPy transition, core dependencies, and Python floor in the
-  implementation design. JAX model adapters remain part of Stage 3; the
-  solver backend is PyTorch. Decision rationale: devlog §10 and the
+  implementation design. JAX model adapters remain part of Stage 3;
+  PyTorch is the candidate solver backend if a port is authorized. Decision
+  rationale: devlog §10 and the
   [1.5 overview](../2026-09-06-pyvbmc-1.5-overview.md).
+  Prototype completed (2026-09-09): the bounded
+  [variational-step feasibility results](stage4-torch-feasibility.md) are on
+  `dev-stage4-torch-feasibility`, from `dev-next` at `bf43c20`.
+  Float64 CPU/CUDA diagnostics pass. The 24 trace-disabled whole-fit controls
+  show Torch CPU at 2.12-6.26x NumPy and synchronized CUDA at 3.35-23.34x on
+  the tested laptop (one clean observation per workload/arm; 72 additional
+  instrumented fits retained). Recommendation: retain NumPy for this release.
+  **PI decision (2026-09-09): retain the modernized NumPy/SciPy solver for
+  1.5; do not undertake a full Torch solver port for this release.** Optional
+  Torch and ArviZ exports remain and the existing Python floors are unchanged.
+  No full port or final population run was launched or authorized.
+  The [compiled-Torch follow-up](../results/2026-09-09-torch-compile-follow-up.md)
+  is complete: 80 fits, fixed-input float64 gates passed, no warm recompilation.
+  CUDA gains about 1.28x/1.54x over NumPy on the two boost cases (paired warm
+  medians), while compiled CPU stays roughly 2-4x the NumPy runtime by per-arm medians.
+  Cold compilation costs and sampled-boost endpoint drift remain material.
+  The 1.5 NumPy decision stands; this did not authorize a full port.
 
 ## Pickup point
 
@@ -278,7 +296,7 @@ anything that changes numerics lands.
    §Results (regenerated)). The Stage 2 order above is confirmed; committed
    and pushed as `9206738`. The one wrong posterior in the population,
    `student_D4` seed 19, is a final-boost failure, written up in
-   `2026-09-04-final-boost-failure.md`; the guard is a 1.5 fix (pickup
+   `../results/2026-09-04-final-boost-failure.md`; the guard is a 1.5 fix (pickup
    9, PI ruling 2026-09-06).
 1. ~~Stage 0 oracles first~~ done 2026-09-04 (PI: an arithmetic-preserving
    refactor is gated by fixed-state oracles, not by the 10-hour statistical
@@ -610,7 +628,7 @@ anything that changes numerics lands.
    main-loop small-weight penalty and other bounds. Production integration
    passes 64 focused tests and all 11 exact fixtures. All six bounded paired
    replays are usable; one Normal D5 gsKL fence flag is retained for final
-   population assessment. See [the fix note](../2026-09-08-eta-bound-fix.md).
+   population assessment. See [the fix note](../results/2026-09-08-eta-bound-fix.md).
    Stopping-rule improvements are explicitly deferred research outside this
    fix campaign. These decisions supersede the historical pending choices
    below. The [implementation plan](latent-bug-fixes.md)
@@ -629,7 +647,7 @@ anything that changes numerics lands.
    on `dev-final-boost` and proceed independently with weighted GP covariance,
    acquisition regularization and GP sampling termination on
    `dev-main-loop-fixes`. The boost restart instructions are in
-   [the pilot note](../2026-09-08-boost-penalty-pilot.md#parked-experiment-restart).
+   [the pilot note](../results/2026-09-08-boost-penalty-pilot.md#parked-experiment-restart).
    Each moving group still receives its own numerical gate; no boost batch
    is scheduled, and final Q1/Q4 choices remain evidence-dependent.
    The PI originally approved extending the reference itself by 150 runs: add
@@ -679,7 +697,7 @@ anything that changes numerics lands.
    misspelled `stop_gp_sampling` key (`_is_gp_sampling_finished` and
    `tol_gp_var_mcmc` are dead, and the method reads undeclared history
    keys, so it is an implementation, not a one-liner); the `final_boost`
-   guard (`2026-09-04-final-boost-failure.md`, option 1: keep the
+   guard (`../results/2026-09-04-final-boost-failure.md`, option 1: keep the
    pre-boost posterior when the boosted one's ELCBO is worse; PI ruling
    2026-09-06, a borderline bug rather than an algorithmic decision;
    alters one trace of the 280 in the reference). To verify against
@@ -749,12 +767,37 @@ anything that changes numerics lands.
       optimization, sampling, and input parameter/transformer preservation.
     - [x] Distinguish compatibility regressions from upstream/environment
       issues; independently review and record findings and next steps.
-      See [the compatibility record](../2026-09-08-svbmc-compatibility.md).
+      See [the compatibility record](../results/2026-09-08-svbmc-compatibility.md).
       Independent Sol review found no record/checker issues. The shipped
       D=2 corpus is compatible; a separate D=1 probe confirms an existing
       S-VBMC draw-shape bug to fix during integration. No core or pickle
       changes were needed. Compatibility check complete; integration API
       and ecosystem delivery design are the next work.
+    PI follow-up (2026-09-09): inspect S-VBMC and consider a NumPy port after
+    the poor eager-Torch Stage 4 results. Static inspection finds a narrow
+    weights-only Torch boundary; NumPy/SciPy already handle sampling,
+    transforms and density construction. Compare S-VBMC itself before making
+    performance claims or choosing its backend. See the NumPy alternative in
+    [the integration proposal](../2026-09-08-ecosystem-integration.md).
+    The PI then authorized a bounded optimized NumPy prototype, now complete:
+    eighteen primary fit pairs, eighteen shared-preparation control pairs,
+    six diagnostic pairs and ten focused tests pass. NumPy is 2.47x faster
+    than unchanged upstream; with preparation improvements shared with Torch,
+    its median paired speedup is 1.06x (1.15x aggregate). Most of the original
+    gain comes from preparation, while the remaining advantage depends on
+    the workload. See the
+    [results](../results/2026-09-09-svbmc-numpy-prototype.md) and
+    [plan](svbmc-numpy-prototype.md).
+    **Integration proposal (PI, 2026-09-09):** write the proposal for a human
+    reviewer, assuming familiarity with both methods and briefly explaining
+    concrete technical seams. S-VBMC already exists in its own repository;
+    this is integration work, not algorithm implementation. The revised
+    [proposal](../2026-09-08-ecosystem-integration.md) recommends retaining
+    Torch and the current object workflow, optional imports/dependencies and
+    a legacy migration route. Targeted fixes and preparation optimizations
+    remain separate changes. PI clarification (2026-09-09): await review
+    from S-VBMC's main developer before proceeding. Integration code remains
+    parked and no production port is authorized.
     Root owns numerical execution and tracking; Sol may inspect compatibility
     contracts read-only in parallel. Run one heavy computation at a time.
 11. **Stage 3 integrated before the reference extension** (PI,
@@ -777,7 +820,8 @@ anything that changes numerics lands.
     extra is absent, and the Ubuntu newest-Python leg of CI installs both,
     torch from the CPU wheel index; conda-forge has no extras, so the
     install docs name the conda packages. Torch as a hard dependency of
-    the core remains Stage 4's question (devlog §13).
+    the core was Stage 4's question (devlog §13); the 2026-09-09 decision
+    retains the NumPy core and keeps Torch optional for 1.5.
     (b) `vp.to_torch()` builds and returns a torch distribution; nothing
     torch is stored on a PyVBMC object, so the dtype canary stays as it is
     (its Decision 5; Stage 4 revises the canary when the state itself
@@ -807,62 +851,109 @@ anything that changes numerics lands.
     agree on a vectorizable target.
 
 12. **Machine-local performance calibration** (PI proposal, 2026-09-07;
-    broader modernization work, outside the pickup 9 latent-fix plan).
-    Some implementation choices were timed on the development laptop and
-    need not be optimal on another CPU, memory hierarchy or numerical stack.
-    The PI proposes short kernel parameter sweeps on the user's machine,
-    caching the chosen settings and providing an explicit recalibration
-    flag/API. Prefer automatic calibration on first relevant use when no
-    valid record exists, if measurement establishes that it fits within a
-    few seconds; subsequent uses load the record. This is a proposed design
-    direction, not an implemented feature or a measured startup-time claim.
+    next workstream selected 2026-09-09, outside pickup 9's latent-fix plan).
+    Implementation of the approved [package integration plan](machine-local-calibration.md)
+    is merged into `dev-next`; the feature branch is deleted. The local suite passed
+    1,140 tests (35 skips); docs/distributions and isolated wheel checks pass.
+    The [full CI matrix](https://github.com/acerbilab/pyvbmc/actions/runs/34398191188)
+    passed all nine OS/Python jobs on `46c16b7`.
+    Two final campaigns took 42.39/43.53 s and retained all three defaults. Planning/status
+    updates stayed on `dev-next` without creating a branch.
+    Calibration is intended to ship in PyVBMC. The PI clarified that choices
+    stay fixed per run, including final boost and save/resume; about 30 seconds
+    for an occasional machine/configuration campaign is an acceptable estimate,
+    not a limit. Complete the campaign, with a generous watchdog only for
+    excessive runtime (e.g. five minutes). Users
+    receive feedback and explicitly initiate or rerun the campaign.
 
-    Concrete starting points are `vp.pdf`'s `2**16`-element row-chunk budget
-    (`plans/stage2-batched-acquisition.md`, “vp.pdf chunk size”) and
-    `entmc_vbmc`'s `_MAX_TENSOR_ELEMENTS = 2**16`
-    (`plans/stage2-entmc.md`). The PDF sweep measured 159 ms at 2^16 versus
-    436 ms at 2^22 for D=15, K=26, N=100000 on this laptop. Broader choices
-    such as `_gp_log_joint` contraction strategy may be candidates later,
-    but need their own correctness and benefit checks. Tune execution
-    details, not algorithmic sample counts, evaluation budgets, or stopping
-    criteria. Cache capacity is one influence; BLAS implementation, thread
-    settings, array shapes, allocation costs and memory bandwidth also matter.
+    Implemented workflow: every `pyvbmc.calibrate()` call requests a new bounded
+    campaign, with progress and a result summary. There is no `force` flag;
+    normal optimization loads compatible cached settings or
+    uses historical defaults and suggests calibration. It never starts a
+    surprise campaign after first use, cache loss or a software upgrade.
+    This supersedes the initial automatic-first-use/few-second suggestion.
 
-    Explore a bounded sweep over a small set of representative shape regimes
-    (D, K, sample count, gradients on/off as relevant), with warmup, repeated
-    interleaved timings, and a conservative choice when differences are within
-    timing variability. Use synthetic inputs and a private RNG: no user-target
-    calls and no consumption of the solver's stream. Establish a measured
-    wall-time/memory budget and keep existing defaults if calibration cannot
-    complete reliably. First-use calibration should occur at relevant compute
-    use, not unconditionally on `import pyvbmc`.
+    The plan specifies three fixed PDF/entropy budgets, a per-user JSON cache
+    keyed by machine and numerical environment, atomic writes, concurrency,
+    no-persistence fallback, numerical/RNG checks, conservative held-out
+    selection and run provenance. It maps the package/API/options/VP lifecycle
+    changes, docs and tests for Sol implementation with Astra orchestration.
+    The approved API, helper dependencies and campaign thresholds are implemented;
+    inclusion in 1.5 is confirmed by the PI. Another CPU/stack is useful validation,
+    but a cheaper proxy campaign is not a prerequisite for this design.
 
-    Cache records need a versioned tuning schema and enough machine/software
-    identity to detect materially stale settings (CPU/architecture, numerical
-    backend and relevant library versions, effective threads, backend/device
-    and dtype as applicable). Record selected settings with run provenance;
-    allow explicit recalibration, disabling calibration, and fixed settings
-    for reproducibility and benchmark/oracle runs. Define atomic writes and
-    concurrent-start behavior, and work without persistence if the cache is
-    unwritable. The exact cache directory, invalidation policy, public API,
-    calibration budget and release placement remain to be discussed; a
-    per-user cache directory is a candidate, not a decided location.
+    The bounded developer prototype and [first measurements](../results/2026-09-09-machine-local-calibration.md)
+    are complete: two balanced sweeps retain 65,536 in all nine regimes.
+    Discovery costs 15.01/27.14 s; full measured work 23.74/44.49 s after imports.
+    PDF checks are exact; entropy differences are rounding-level with identical
+    RNG advancement. These pre-integration results inform the package feature;
+    its own measurements and verification are recorded in the linked plan.
 
-    Numerical equivalence must be established per knob. PDF row chunking
-    leaves independent row reductions unchanged; entropy chunking changes
-    accumulation order and can move results by rounding, potentially changing
-    optimizer trajectories. Do not promise seeded bit identity across tuning
-    choices without evidence. Validate values/gradients/RNG behavior, pin
-    settings for exact reference gates, and decide the policy for automatic
-    tuning of reduction-changing kernels before enabling them. This proposal
-    does not alter the frozen reference or existing PyTorch feasibility
-    decisions. Verify useful speedups and actual first-use cost before
-    deciding the automatic default's scope.
+    Starting knobs are `vp.pdf`'s `2**16` row budget and `entmc_vbmc`'s
+    `_MAX_TENSOR_ELEMENTS`. Historical PDF timings in
+    `stage2-batched-acquisition.md` favored 2^16 over 2^14 and 2^18 on this
+    laptop; `stage2-entmc.md` records component/sample tiling. Preserve
+    float64, sample counts and estimator semantics. PDF row chunks are
+    independent; entropy chunks change addition order. Check tight numerical
+    agreement and identical RNG advancement, pin settings for exact gates,
+    and preserve profiles across save/resume. Different profiles need not
+    produce identical seeded trajectories; no separate entropy policy gate
+    remains. S-VBMC awaits its main developer's review, and the final 870-case
+    benchmark remains deferred. Run only one heavy computation at a time.
+
+13. **Optional runtime hints — implemented and verified** (2026-09-10).
+    The [runtime-tips plan](runtime-tips.md) owns the approved policy, PI-edited
+    wording and completed acceptance checks. Focused verification passed
+    (151 tests), the full suite passed (1170 passed, 35 skipped), the docs built,
+    and independent Sol review found no issues. Occasional startup tips now
+    provide useful guidance with links.
+
+    Start with a small, curated collection drawn from the FAQ and planned
+    user-facing skill: comparing multiple runs and their diagnostics,
+    interpreting `elbo_sd`, and discovering S-VBMC when available. Keep shared
+    guidance consistent across hints, documentation and the skill; link to
+    fuller explanations where useful.
+
+    A limited share (PI suggests no more than 25-30%) may introduce complementary
+    methods such as S-VBMC or PyBADS, explaining a useful task rather than promoting
+    the software. Use a factual low-frequency category, which can hold other tips
+    too. Shuffle so short sessions can encounter these tips; prefer an ordinary
+    tip after a low-frequency tip, but make progress if only low-frequency tips
+    remain. The initial catalog contains six ordinary and two low-frequency tips.
+
+    Show at most one hint per optimization start, with conservative frequency
+    and repetition suppression. PI decisions (2026-09-10): a calibration reminder
+    takes the shared hint slot, so skip the tip when it is shown; tip history
+    stays within the Python session, with no new persistent store. Reuse a small
+    shared hint-output helper for calibration and tips. Prefer relevant guidance
+    when the current configuration supplies enough context. Respect `display="off"` and
+    provide a separate way to disable hints. Selection must not consume the
+    inference RNG or change numerical results. Use the existing startup
+    output location. The approved option is `show_tips=True`, with tips on eligible
+    first starts 1/4/7 and no repeats within a Python session. Merged to `dev-next`
+    as `fc64381` after a green nine-job feature matrix and package build; the
+    post-merge full matrix and automatic smoke check both passed. The merged
+    feature branch has been removed. The final benchmark schedule remains unchanged.
+
+## Post-release follow-up
+
+- [ ] After PyVBMC 1.5 is released, respond to
+  [issue #138: finer control over random variate generation](https://github.com/acerbilab/pyvbmc/issues/138)
+  with the released API/docs. The RNG modernization addresses its core request:
+  `VBMC(seed=generator)` accepts a NumPy `Generator`, shared through inference,
+  GP fitting and posterior operations; standalone VPs and built-in prior sampling
+  also accept generators. Point to the reproducibility/global-state tests and
+  saved generator state. Explain that `seed=None` derives a generator from the
+  global legacy state for compatibility, while legacy `RandomState` objects
+  are not directly accepted. User-supplied stochastic callbacks remain responsible
+  for their own RNGs, and not every statistical test is deterministic. See
+  [Stage 1 RNG work](stage1-rng-generator.md) and Stage 2 item 8 above.
+  This is a post-release response reminder; no issue comment has been posted.
 
 ## Deferred (devlog §12)
 
 Variational optimizer stopping-rule improvements (PI, 2026-09-08): the
-[equal-iteration eta experiment](../2026-09-08-eta-equal-budget.md) found
+[equal-iteration eta experiment](../results/2026-09-08-eta-equal-budget.md) found
 that longer local fits improved surrogate scores on two saved noisy states.
 Investigating broader accuracy/runtime tradeoffs is future research, outside
 the latent-fix campaign and not a release blocker. Preserve current stopping
@@ -878,6 +969,6 @@ porting MATLAB's diagonal approximation of the log-joint variance and its
 gradient (`compute_var == 2` in `_gp_log_joint`, which raises "not
 implemented"; it would allow the ELCBO gradient with `beta ≠ 0`, which no
 option enables today; the dead accumulators were deleted 2026-09-04).
-The guard for `final_boost` (`2026-09-04-final-boost-failure.md`) left
+The guard for `final_boost` (`../results/2026-09-04-final-boost-failure.md`) left
 this list on 2026-09-06: the PI ruled it a borderline bug, and it is a
 1.5 fix (pickup 9).

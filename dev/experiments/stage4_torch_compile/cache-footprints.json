@@ -1,0 +1,98 @@
+{
+  "02-deterministic-compiled_cpu": {
+    "inductor_cache": {
+      "bytes": 7286421,
+      "files": 51,
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\tcc\\ed50b450a40b\\i"
+    },
+    "triton_cache": {
+      "bytes": 0,
+      "files": 0,
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\tcc\\ed50b450a40b\\t"
+    }
+  },
+  "04-deterministic-compiled_cuda": {
+    "inductor_cache": {
+      "bytes": 16016397,
+      "files": 83,
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\tcc\\378b5cd9c4b3\\i"
+    },
+    "triton_cache": {
+      "bytes": 11163953,
+      "files": 569,
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\tcc\\378b5cd9c4b3\\t"
+    }
+  },
+  "06-warped-compiled_cpu": {
+    "inductor_cache": {
+      "bytes": 7675063,
+      "files": 46,
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\tcc\\945b7d3f6469\\i"
+    },
+    "triton_cache": {
+      "bytes": 0,
+      "files": 0,
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\tcc\\945b7d3f6469\\t"
+    }
+  },
+  "08-warped-compiled_cuda": {
+    "inductor_cache": {
+      "bytes": 42228817,
+      "files": 170,
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\tcc\\2ac607af27d2\\i"
+    },
+    "triton_cache": {
+      "bytes": 36152066,
+      "files": 1457,
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\tcc\\2ac607af27d2\\t"
+    }
+  },
+  "10-boost_sampled-compiled_cpu": {
+    "inductor_cache": {
+      "bytes": 12669986,
+      "files": 59,
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\tcc\\6578abcde776\\i"
+    },
+    "triton_cache": {
+      "bytes": 0,
+      "files": 0,
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\tcc\\6578abcde776\\t"
+    }
+  },
+  "12-boost_sampled-compiled_cuda": {
+    "inductor_cache": {
+      "bytes": 86195765,
+      "files": 243,
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\tcc\\8e94befd8dc1\\i"
+    },
+    "triton_cache": {
+      "bytes": 75086081,
+      "files": 2025,
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\tcc\\8e94befd8dc1\\t"
+    }
+  },
+  "16-boost_single-compiled_cuda": {
+    "inductor_cache": {
+      "bytes": 112649455,
+      "files": 267,
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\tcc\\f24ba47f7180\\i"
+    },
+    "triton_cache": {
+      "bytes": 96688474,
+      "files": 2489,
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\tcc\\f24ba47f7180\\t"
+    }
+  },
+  "19-boost_single-compiled_cpu": {
+    "inductor_cache": {
+      "bytes": 19112837,
+      "files": 55,
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\tcc\\03157db79aca\\i"
+    },
+    "triton_cache": {
+      "bytes": 0,
+      "files": 0,
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\tcc\\03157db79aca\\t"
+    }
+  }
+}

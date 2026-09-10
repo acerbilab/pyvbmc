@@ -1,0 +1,15 @@
+{
+  "archive": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\torch_compile\\campaign\\source\\measured-source.zip",
+  "archive_sha256": "cbc626c7fad0dbbc01da9fd3808903efa28898e9612fed2243eb3c4f55fe1d01",
+  "files": {
+    "dev/scripts/torch_compile_toolchain.py": "4ab5f7ae155ac73fd4727f485c705650164ae128c213e1f94b7852a16b8ed443",
+    "dev/scripts/torch_vi_benchmark.py": "c4f2cb92c6d90e8a312424d7cbf782453fc41c47ff92a9a77b5d2329990660d0",
+    "dev/scripts/torch_vi_compile.py": "3c2935f695d0897b6c063799e05635cb4779dde4911b902296889a607229187b",
+    "dev/scripts/torch_vi_compile_benchmark.py": "2a597bce291304c13761ebfc4b9f5eb14f0acf0fc9ea7b708fd3d9f1709bcff7",
+    "dev/scripts/torch_vi_core.py": "a31b8a22f55dbf0ddedb675e08116236d19bdb3c16abe9e2722f3328e2c9aee9",
+    "dev/scripts/torch_vi_fixtures.py": "647a137fc9d3baca91436439bda33a7a08689535e137aea7e41557ae83a56b16",
+    "dev/scripts/torch_vi_step.py": "80caac8fcd7e515c2e9e2591433ec84aec7ce2640057bce9cb2af926c920ffb1"
+  },
+  "git_branch": "dev-torch-compile-prototype",
+  "git_commit": "e0ca4e61da973f605b914f3b05794107402f794f"
+}

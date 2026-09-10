@@ -1,0 +1,876 @@
+[
+  {
+    "artifact": "primary.json",
+    "sha256": "ac6f878d00854f2c0bdf9bdf232a7ad37a1d081489afd64c914fb015909e9aef",
+    "script_sha256": "156008d9e59b269876e7f4fb1a3cbaa2edd972a53898ce565cdb00ed1a590938",
+    "timings_seconds": {
+      "calibration": 15.008871400146745,
+      "imports": 1.2368691000156105,
+      "setup": 0.029957600054331124,
+      "total": 23.738965199911036,
+      "validation": 8.616197399795055
+    },
+    "rows": [
+      {
+        "kernel": "entropy",
+        "name": "adam",
+        "shape_D_K_count": [
+          4,
+          20,
+          38
+        ],
+        "requested_count": 37,
+        "count_unit": "per_component",
+        "tentative_budget": 65536,
+        "final_budget": 65536,
+        "candidate_median_ms": {
+          "131072": 0.3703000256791711,
+          "16384": 0.4599000094458461,
+          "262144": 0.3703000256791711,
+          "32768": 0.40479993913322687,
+          "65536": 0.3703000256791711
+        },
+        "heldout_default_ms": 0.3689999575726688,
+        "heldout_selected_ms": 0.3802499850280583,
+        "heldout_paired_median_speedup": 0.9668525848511019,
+        "same_budget_controls": {
+          "default": {
+            "median_ratio": 1.020588247248623,
+            "range": [
+              0.888251719659994,
+              1.1090672394117125
+            ]
+          },
+          "selected": {
+            "median_ratio": 1.0083971648398893,
+            "range": [
+              0.9642244645065884,
+              1.3251176323615936
+            ]
+          }
+        },
+        "discovery_wall_seconds_excluding_diagnostics": 0.009857999975793064,
+        "selection_warmups_and_rounds_seconds": 0.00805689999833703,
+        "first_default_call_ms": 0.42799999937415123,
+        "synthetic_setup_seconds": 0.00021139997988939285,
+        "diagnostic_seconds": 0.0033448999747633934,
+        "discovery_only_amortization_calls": null,
+        "maximum_absolute_error": 3.3306690738754696e-16,
+        "traced_peak_mib": 1.043060302734375
+      },
+      {
+        "kernel": "entropy",
+        "name": "boost",
+        "shape_D_K_count": [
+          4,
+          50,
+          56
+        ],
+        "requested_count": 55,
+        "count_unit": "per_component",
+        "tentative_budget": 65536,
+        "final_budget": 65536,
+        "candidate_median_ms": {
+          "131072": 3.578400006517768,
+          "16384": 3.4067999804392457,
+          "262144": 4.231999977491796,
+          "32768": 2.862400026060641,
+          "65536": 2.5955999735742807
+        },
+        "heldout_default_ms": 2.595249970909208,
+        "heldout_selected_ms": 2.535849984269589,
+        "heldout_paired_median_speedup": 1.0301515781508082,
+        "same_budget_controls": {
+          "default": {
+            "median_ratio": 1.0999140044824829,
+            "range": [
+              1.038998381021368,
+              1.2187211797106798
+            ]
+          },
+          "selected": {
+            "median_ratio": 0.9223898284021014,
+            "range": [
+              0.5254059053043136,
+              1.0999218342637365
+            ]
+          }
+        },
+        "discovery_wall_seconds_excluding_diagnostics": 0.12292310001794249,
+        "selection_warmups_and_rounds_seconds": 0.10563130001537502,
+        "first_default_call_ms": 3.180400002747774,
+        "synthetic_setup_seconds": 0.00018879992421716452,
+        "diagnostic_seconds": 0.020221099955961108,
+        "discovery_only_amortization_calls": null,
+        "maximum_absolute_error": 5.551115123125783e-16,
+        "traced_peak_mib": 1.680999755859375
+      },
+      {
+        "kernel": "entropy",
+        "name": "boost_high_d",
+        "shape_D_K_count": [
+          15,
+          50,
+          56
+        ],
+        "requested_count": 55,
+        "count_unit": "per_component",
+        "tentative_budget": 65536,
+        "final_budget": 65536,
+        "candidate_median_ms": {
+          "131072": 7.178599946200848,
+          "16384": 9.756100014783442,
+          "262144": 12.14449992403388,
+          "32768": 8.143299957737327,
+          "65536": 6.806800025515258
+        },
+        "heldout_default_ms": 6.7610000260174274,
+        "heldout_selected_ms": 6.8403000477701426,
+        "heldout_paired_median_speedup": 1.0043649024387018,
+        "same_budget_controls": {
+          "default": {
+            "median_ratio": 0.9614192795385605,
+            "range": [
+              0.7188449597771781,
+              0.9807997996336272
+            ]
+          },
+          "selected": {
+            "median_ratio": 0.998881769875849,
+            "range": [
+              0.9591477853546813,
+              1.0172964999311767
+            ]
+          }
+        },
+        "discovery_wall_seconds_excluding_diagnostics": 0.3191258000442758,
+        "selection_warmups_and_rounds_seconds": 0.2722199000418186,
+        "first_default_call_ms": 7.088999962434173,
+        "synthetic_setup_seconds": 0.0002615000121295452,
+        "diagnostic_seconds": 0.05551819992251694,
+        "discovery_only_amortization_calls": null,
+        "maximum_absolute_error": 6.661338147750939e-16,
+        "traced_peak_mib": 1.4253921508789062
+      },
+      {
+        "kernel": "entropy",
+        "name": "fine",
+        "shape_D_K_count": [
+          4,
+          20,
+          4096
+        ],
+        "requested_count": 4096,
+        "count_unit": "per_component",
+        "tentative_budget": 65536,
+        "final_budget": 65536,
+        "candidate_median_ms": {
+          "131072": 39.87249999772757,
+          "16384": 27.507599908858538,
+          "262144": 38.91300002578646,
+          "32768": 24.683999945409596,
+          "65536": 23.181899916380644
+        },
+        "heldout_default_ms": 24.251599970739335,
+        "heldout_selected_ms": 23.20704999146983,
+        "heldout_paired_median_speedup": 1.036111043661076,
+        "same_budget_controls": {
+          "default": {
+            "median_ratio": 1.020926006690813,
+            "range": [
+              0.9838201458338214,
+              1.0553547115649828
+            ]
+          },
+          "selected": {
+            "median_ratio": 0.9415877605534648,
+            "range": [
+              0.8783561187162728,
+              1.0620843870782835
+            ]
+          }
+        },
+        "discovery_wall_seconds_excluding_diagnostics": 1.0893332000123337,
+        "selection_warmups_and_rounds_seconds": 0.9333829999668524,
+        "first_default_call_ms": 24.899099953472614,
+        "synthetic_setup_seconds": 0.0001954999752342701,
+        "diagnostic_seconds": 0.17793799994979054,
+        "discovery_only_amortization_calls": null,
+        "maximum_absolute_error": 8.881784197001252e-16,
+        "traced_peak_mib": 5.0037078857421875
+      },
+      {
+        "kernel": "entropy",
+        "name": "fine_high_d",
+        "shape_D_K_count": [
+          15,
+          26,
+          4096
+        ],
+        "requested_count": 4096,
+        "count_unit": "per_component",
+        "tentative_budget": 65536,
+        "final_budget": 65536,
+        "candidate_median_ms": {
+          "131072": 238.3577999426052,
+          "16384": 127.07770010456443,
+          "262144": 224.61489995475858,
+          "32768": 112.7495999680832,
+          "65536": 105.09460000321269
+        },
+        "heldout_default_ms": 103.26110001187772,
+        "heldout_selected_ms": 104.37920002732426,
+        "heldout_paired_median_speedup": 0.9975287919452217,
+        "same_budget_controls": {
+          "default": {
+            "median_ratio": 1.005801840411471,
+            "range": [
+              0.9520806849219007,
+              1.0527710831477972
+            ]
+          },
+          "selected": {
+            "median_ratio": 1.0016602024420487,
+            "range": [
+              0.9881605049392579,
+              1.017911654219216
+            ]
+          }
+        },
+        "discovery_wall_seconds_excluding_diagnostics": 5.644581099972129,
+        "selection_warmups_and_rounds_seconds": 4.836102099972777,
+        "first_default_call_ms": 107.51980007626116,
+        "synthetic_setup_seconds": 0.0002256000880151987,
+        "diagnostic_seconds": 0.9191796000814065,
+        "discovery_only_amortization_calls": null,
+        "maximum_absolute_error": 7.105427357601002e-15,
+        "traced_peak_mib": 24.383529663085938
+      },
+      {
+        "kernel": "entropy",
+        "name": "active",
+        "shape_D_K_count": [
+          4,
+          20,
+          200
+        ],
+        "requested_count": 200,
+        "count_unit": "per_component",
+        "tentative_budget": 65536,
+        "final_budget": 65536,
+        "candidate_median_ms": {
+          "131072": 2.3008999414741993,
+          "16384": 2.1232999861240387,
+          "262144": 2.8930000262334943,
+          "32768": 1.8901999574154615,
+          "65536": 1.694299979135394
+        },
+        "heldout_default_ms": 1.706100010778755,
+        "heldout_selected_ms": 1.690249948296696,
+        "heldout_paired_median_speedup": 1.0143504855684733,
+        "same_budget_controls": {
+          "default": {
+            "median_ratio": 0.9950072019181124,
+            "range": [
+              0.9626789726416775,
+              1.035098428492092
+            ]
+          },
+          "selected": {
+            "median_ratio": 1.0132129782197252,
+            "range": [
+              0.9815146071034868,
+              1.1119100992084372
+            ]
+          }
+        },
+        "discovery_wall_seconds_excluding_diagnostics": 0.0793363000266254,
+        "selection_warmups_and_rounds_seconds": 0.06759029999375343,
+        "first_default_call_ms": 1.88589992467314,
+        "synthetic_setup_seconds": 0.00021169998217374086,
+        "diagnostic_seconds": 0.014967800001613796,
+        "discovery_only_amortization_calls": null,
+        "maximum_absolute_error": 1.3322676295501878e-15,
+        "traced_peak_mib": 1.9801483154296875
+      },
+      {
+        "kernel": "pdf",
+        "name": "small_batch",
+        "shape_D_K_count": [
+          4,
+          10,
+          8
+        ],
+        "requested_count": 8,
+        "count_unit": "rows",
+        "tentative_budget": 65536,
+        "final_budget": 65536,
+        "candidate_median_ms": {
+          "131072": 0.022600055672228336,
+          "16384": 0.022600055672228336,
+          "262144": 0.022600055672228336,
+          "32768": 0.022600055672228336,
+          "65536": 0.022600055672228336
+        },
+        "heldout_default_ms": 0.023799948394298553,
+        "heldout_selected_ms": 0.0247000134550035,
+        "heldout_paired_median_speedup": 0.8999183995751965,
+        "same_budget_controls": {
+          "default": {
+            "median_ratio": 1.0433440024626406,
+            "range": [
+              0.6923054879948992,
+              1.1068386698772164
+            ]
+          },
+          "selected": {
+            "median_ratio": 1.1221699554356874,
+            "range": [
+              0.9647575285139903,
+              1.2862869723185828
+            ]
+          }
+        },
+        "discovery_wall_seconds_excluding_diagnostics": 0.00039430009201169014,
+        "selection_warmups_and_rounds_seconds": 0.0001724000321701169,
+        "first_default_call_ms": 0.06560003384947777,
+        "synthetic_setup_seconds": 0.00012159999459981918,
+        "diagnostic_seconds": 0.0005910999607294798,
+        "discovery_only_amortization_calls": null,
+        "maximum_absolute_error": 0.0,
+        "traced_peak_mib": 0.013153076171875
+      },
+      {
+        "kernel": "pdf",
+        "name": "sieve_8192",
+        "shape_D_K_count": [
+          4,
+          20,
+          8192
+        ],
+        "requested_count": 8192,
+        "count_unit": "rows",
+        "tentative_budget": 65536,
+        "final_budget": 65536,
+        "candidate_median_ms": {
+          "131072": 6.908399984240532,
+          "16384": 4.208400030620396,
+          "262144": 6.692100083455443,
+          "32768": 3.938400070182979,
+          "65536": 4.084200016222894
+        },
+        "heldout_default_ms": 4.066749941557646,
+        "heldout_selected_ms": 3.896450041793287,
+        "heldout_paired_median_speedup": 1.0508902895506416,
+        "same_budget_controls": {
+          "default": {
+            "median_ratio": 1.0419568557806134,
+            "range": [
+              0.7910678416248756,
+              1.1853387852406208
+            ]
+          },
+          "selected": {
+            "median_ratio": 0.9308747121891822,
+            "range": [
+              0.7003392120607222,
+              0.9827804346311388
+            ]
+          }
+        },
+        "discovery_wall_seconds_excluding_diagnostics": 0.1844775000354275,
+        "selection_warmups_and_rounds_seconds": 0.15574840002227575,
+        "first_default_call_ms": 4.199399962089956,
+        "synthetic_setup_seconds": 0.0005368000129237771,
+        "diagnostic_seconds": 0.03188359993509948,
+        "discovery_only_amortization_calls": null,
+        "maximum_absolute_error": 0.0,
+        "traced_peak_mib": 2.0735015869140625
+      },
+      {
+        "kernel": "pdf",
+        "name": "large_export",
+        "shape_D_K_count": [
+          15,
+          26,
+          100000
+        ],
+        "requested_count": 100000,
+        "count_unit": "rows",
+        "tentative_budget": 65536,
+        "final_budget": 65536,
+        "candidate_median_ms": {
+          "131072": 326.8644999479875,
+          "16384": 150.52689996082336,
+          "262144": 316.2165000103414,
+          "32768": 140.698799979873,
+          "65536": 136.92550000268966
+        },
+        "heldout_default_ms": 135.1737999357283,
+        "heldout_selected_ms": 134.01325000450015,
+        "heldout_paired_median_speedup": 1.0061283152522988,
+        "same_budget_controls": {
+          "default": {
+            "median_ratio": 1.0015472385909474,
+            "range": [
+              0.9732912311333581,
+              1.0402751260157452
+            ]
+          },
+          "selected": {
+            "median_ratio": 0.971721532560337,
+            "range": [
+              0.9549445816887425,
+              1.038053495117175
+            ]
+          }
+        },
+        "discovery_wall_seconds_excluding_diagnostics": 7.558842099970207,
+        "selection_warmups_and_rounds_seconds": 6.457950899959542,
+        "first_default_call_ms": 140.13690000865608,
+        "synthetic_setup_seconds": 0.01771440007723868,
+        "diagnostic_seconds": 1.2260021000402048,
+        "discovery_only_amortization_calls": null,
+        "maximum_absolute_error": 0.0,
+        "traced_peak_mib": 13.874221801757812
+      }
+    ]
+  },
+  {
+    "artifact": "repeat.json",
+    "sha256": "d45fd0ef1af70da1f8b7a940a86e1011ed77442f4d21fa9bdf5c191e4ec99556",
+    "script_sha256": "156008d9e59b269876e7f4fb1a3cbaa2edd972a53898ce565cdb00ed1a590938",
+    "timings_seconds": {
+      "calibration": 27.1435820000479,
+      "imports": 1.2267636000178754,
+      "setup": 0.029998900019563735,
+      "total": 44.48891140008345,
+      "validation": 17.232554599992
+    },
+    "rows": [
+      {
+        "kernel": "entropy",
+        "name": "adam",
+        "shape_D_K_count": [
+          4,
+          20,
+          38
+        ],
+        "requested_count": 37,
+        "count_unit": "per_component",
+        "tentative_budget": 65536,
+        "final_budget": 65536,
+        "candidate_median_ms": {
+          "131072": 0.3682500100694597,
+          "16384": 0.44329999946057796,
+          "262144": 0.3682500100694597,
+          "32768": 0.3930500242859125,
+          "65536": 0.3682500100694597
+        },
+        "heldout_default_ms": 0.3726499271579087,
+        "heldout_selected_ms": 0.3713499754667282,
+        "heldout_paired_median_speedup": 1.0020352935861636,
+        "same_budget_controls": {
+          "default": {
+            "median_ratio": 0.9720391409162981,
+            "range": [
+              0.9113302229984519,
+              1.1009671789379507
+            ]
+          },
+          "selected": {
+            "median_ratio": 0.9918263383686423,
+            "range": [
+              0.42346583166576635,
+              2.4313877724779105
+            ]
+          }
+        },
+        "discovery_wall_seconds_excluding_diagnostics": 0.016070700017735362,
+        "selection_warmups_and_rounds_seconds": 0.014193400042131543,
+        "first_default_call_ms": 0.5678000161424279,
+        "synthetic_setup_seconds": 0.00020779995247721672,
+        "diagnostic_seconds": 0.003685500007122755,
+        "discovery_only_amortization_calls": null,
+        "maximum_absolute_error": 3.3306690738754696e-16,
+        "traced_peak_mib": 1.043060302734375
+      },
+      {
+        "kernel": "entropy",
+        "name": "boost",
+        "shape_D_K_count": [
+          4,
+          50,
+          56
+        ],
+        "requested_count": 55,
+        "count_unit": "per_component",
+        "tentative_budget": 65536,
+        "final_budget": 65536,
+        "candidate_median_ms": {
+          "131072": 2.646450011525303,
+          "16384": 3.45445005223155,
+          "262144": 4.116999974939972,
+          "32768": 2.8021999751217663,
+          "65536": 2.5251000188291073
+        },
+        "heldout_default_ms": 2.4223499931395054,
+        "heldout_selected_ms": 2.406249986961484,
+        "heldout_paired_median_speedup": 0.9975060330443053,
+        "same_budget_controls": {
+          "default": {
+            "median_ratio": 0.9875969669983167,
+            "range": [
+              0.6273784351551933,
+              1.7892649518661363
+            ]
+          },
+          "selected": {
+            "median_ratio": 1.0036291139536746,
+            "range": [
+              0.8473943504299619,
+              1.5641884183546377
+            ]
+          }
+        },
+        "discovery_wall_seconds_excluding_diagnostics": 0.1945479999994859,
+        "selection_warmups_and_rounds_seconds": 0.17796480003744364,
+        "first_default_call_ms": 2.8098999755457044,
+        "synthetic_setup_seconds": 0.00017709995154291391,
+        "diagnostic_seconds": 0.0199183999793604,
+        "discovery_only_amortization_calls": null,
+        "maximum_absolute_error": 5.551115123125783e-16,
+        "traced_peak_mib": 1.680999755859375
+      },
+      {
+        "kernel": "entropy",
+        "name": "boost_high_d",
+        "shape_D_K_count": [
+          15,
+          50,
+          56
+        ],
+        "requested_count": 55,
+        "count_unit": "per_component",
+        "tentative_budget": 65536,
+        "final_budget": 65536,
+        "candidate_median_ms": {
+          "131072": 7.307300053071231,
+          "16384": 9.77935001719743,
+          "262144": 12.02245004242286,
+          "32768": 8.421349979471415,
+          "65536": 7.023350044619292
+        },
+        "heldout_default_ms": 7.124700059648603,
+        "heldout_selected_ms": 7.081800024025142,
+        "heldout_paired_median_speedup": 1.007423318023767,
+        "same_budget_controls": {
+          "default": {
+            "median_ratio": 1.0032907161838294,
+            "range": [
+              0.9715217348493654,
+              1.1632764895140102
+            ]
+          },
+          "selected": {
+            "median_ratio": 0.9873776127504126,
+            "range": [
+              0.46707108077298953,
+              1.035439233214283
+            ]
+          }
+        },
+        "discovery_wall_seconds_excluding_diagnostics": 0.5499685000395402,
+        "selection_warmups_and_rounds_seconds": 0.5034814999671653,
+        "first_default_call_ms": 6.888799951411784,
+        "synthetic_setup_seconds": 0.00018179998733103275,
+        "diagnostic_seconds": 0.054436199949122965,
+        "discovery_only_amortization_calls": null,
+        "maximum_absolute_error": 6.661338147750939e-16,
+        "traced_peak_mib": 1.4253921508789062
+      },
+      {
+        "kernel": "entropy",
+        "name": "fine",
+        "shape_D_K_count": [
+          4,
+          20,
+          4096
+        ],
+        "requested_count": 4096,
+        "count_unit": "per_component",
+        "tentative_budget": 65536,
+        "final_budget": 65536,
+        "candidate_median_ms": {
+          "131072": 39.40105001674965,
+          "16384": 27.02204999513924,
+          "262144": 42.08874999312684,
+          "32768": 25.879049964714795,
+          "65536": 23.74129998497665
+        },
+        "heldout_default_ms": 35.56760004721582,
+        "heldout_selected_ms": 34.65439996216446,
+        "heldout_paired_median_speedup": 1.0361698838855427,
+        "same_budget_controls": {
+          "default": {
+            "median_ratio": 0.9784892359893902,
+            "range": [
+              0.9046709632475812,
+              1.0438242916574638
+            ]
+          },
+          "selected": {
+            "median_ratio": 0.9838988942520921,
+            "range": [
+              0.9157727113096613,
+              1.0695643286176908
+            ]
+          }
+        },
+        "discovery_wall_seconds_excluding_diagnostics": 1.921666600042954,
+        "selection_warmups_and_rounds_seconds": 1.7598216000478715,
+        "first_default_call_ms": 27.894499944522977,
+        "synthetic_setup_seconds": 0.00020410004071891308,
+        "diagnostic_seconds": 0.17915510002058,
+        "discovery_only_amortization_calls": null,
+        "maximum_absolute_error": 8.881784197001252e-16,
+        "traced_peak_mib": 5.0037078857421875
+      },
+      {
+        "kernel": "entropy",
+        "name": "fine_high_d",
+        "shape_D_K_count": [
+          15,
+          26,
+          4096
+        ],
+        "requested_count": 4096,
+        "count_unit": "per_component",
+        "tentative_budget": 65536,
+        "final_budget": 65536,
+        "candidate_median_ms": {
+          "131072": 275.29330004472286,
+          "16384": 138.98859999608248,
+          "262144": 300.13960000360385,
+          "32768": 142.32564996927977,
+          "65536": 111.60935001680627
+        },
+        "heldout_default_ms": 193.30630003241822,
+        "heldout_selected_ms": 194.660350040067,
+        "heldout_paired_median_speedup": 0.996905162374083,
+        "same_budget_controls": {
+          "default": {
+            "median_ratio": 0.9890224702926971,
+            "range": [
+              0.8426480916311405,
+              1.0062501067054288
+            ]
+          },
+          "selected": {
+            "median_ratio": 0.9860234305675197,
+            "range": [
+              0.8026073447012695,
+              1.0087734537960031
+            ]
+          }
+        },
+        "discovery_wall_seconds_excluding_diagnostics": 11.341091600013897,
+        "selection_warmups_and_rounds_seconds": 10.530603000079282,
+        "first_default_call_ms": 102.73290006443858,
+        "synthetic_setup_seconds": 0.00020499993115663528,
+        "diagnostic_seconds": 0.9255446000024676,
+        "discovery_only_amortization_calls": null,
+        "maximum_absolute_error": 7.105427357601002e-15,
+        "traced_peak_mib": 24.383529663085938
+      },
+      {
+        "kernel": "entropy",
+        "name": "active",
+        "shape_D_K_count": [
+          4,
+          20,
+          200
+        ],
+        "requested_count": 200,
+        "count_unit": "per_component",
+        "tentative_budget": 65536,
+        "final_budget": 65536,
+        "candidate_median_ms": {
+          "131072": 2.5351999793201685,
+          "16384": 2.411650028079748,
+          "262144": 2.9670000076293945,
+          "32768": 1.9024499342776835,
+          "65536": 1.9494500011205673
+        },
+        "heldout_default_ms": 1.7520999535918236,
+        "heldout_selected_ms": 1.7451000167056918,
+        "heldout_paired_median_speedup": 1.012184301345159,
+        "same_budget_controls": {
+          "default": {
+            "median_ratio": 1.015257473352226,
+            "range": [
+              0.9294137251111246,
+              1.4056224008382376
+            ]
+          },
+          "selected": {
+            "median_ratio": 0.9349624475996816,
+            "range": [
+              0.566281829590575,
+              1.0782492338304341
+            ]
+          }
+        },
+        "discovery_wall_seconds_excluding_diagnostics": 0.1527747999643907,
+        "selection_warmups_and_rounds_seconds": 0.13968859997112304,
+        "first_default_call_ms": 1.9927999237552285,
+        "synthetic_setup_seconds": 0.0003510999958962202,
+        "diagnostic_seconds": 0.014677300001494586,
+        "discovery_only_amortization_calls": null,
+        "maximum_absolute_error": 1.3322676295501878e-15,
+        "traced_peak_mib": 1.9801483154296875
+      },
+      {
+        "kernel": "pdf",
+        "name": "small_batch",
+        "shape_D_K_count": [
+          4,
+          10,
+          8
+        ],
+        "requested_count": 8,
+        "count_unit": "rows",
+        "tentative_budget": 65536,
+        "final_budget": 65536,
+        "candidate_median_ms": {
+          "131072": 0.0219999928958714,
+          "16384": 0.0219999928958714,
+          "262144": 0.0219999928958714,
+          "32768": 0.0219999928958714,
+          "65536": 0.0219999928958714
+        },
+        "heldout_default_ms": 0.023399945348501205,
+        "heldout_selected_ms": 0.02319994382560253,
+        "heldout_paired_median_speedup": 0.9893252385778057,
+        "same_budget_controls": {
+          "default": {
+            "median_ratio": 1.0092870192824268,
+            "range": [
+              0.9288488261873867,
+              1.1249956093473232
+            ]
+          },
+          "selected": {
+            "median_ratio": 1.009370656729647,
+            "range": [
+              0.9230761979723902,
+              1.5789452185590065
+            ]
+          }
+        },
+        "discovery_wall_seconds_excluding_diagnostics": 0.000498899957165122,
+        "selection_warmups_and_rounds_seconds": 0.0002807000419124961,
+        "first_default_call_ms": 0.05709996912628412,
+        "synthetic_setup_seconds": 0.0001270999200642109,
+        "diagnostic_seconds": 0.0005934999790042639,
+        "discovery_only_amortization_calls": null,
+        "maximum_absolute_error": 0.0,
+        "traced_peak_mib": 0.013153076171875
+      },
+      {
+        "kernel": "pdf",
+        "name": "sieve_8192",
+        "shape_D_K_count": [
+          4,
+          20,
+          8192
+        ],
+        "requested_count": 8192,
+        "count_unit": "rows",
+        "tentative_budget": 65536,
+        "final_budget": 65536,
+        "candidate_median_ms": {
+          "131072": 6.8383500329218805,
+          "16384": 4.192399966996163,
+          "262144": 7.012049958575517,
+          "32768": 3.989649994764477,
+          "65536": 4.0480000898242
+        },
+        "heldout_default_ms": 4.1127000586129725,
+        "heldout_selected_ms": 4.013999947346747,
+        "heldout_paired_median_speedup": 1.0225492036061388,
+        "same_budget_controls": {
+          "default": {
+            "median_ratio": 1.0227367628995574,
+            "range": [
+              0.967994068287037,
+              1.3670034603537984
+            ]
+          },
+          "selected": {
+            "median_ratio": 0.9966140282117365,
+            "range": [
+              0.7160887385912499,
+              1.028011905674212
+            ]
+          }
+        },
+        "discovery_wall_seconds_excluding_diagnostics": 0.31972779997158796,
+        "selection_warmups_and_rounds_seconds": 0.292685899999924,
+        "first_default_call_ms": 4.164299927651882,
+        "synthetic_setup_seconds": 0.0005324999801814556,
+        "diagnostic_seconds": 0.03166640002746135,
+        "discovery_only_amortization_calls": null,
+        "maximum_absolute_error": 0.0,
+        "traced_peak_mib": 2.0735015869140625
+      },
+      {
+        "kernel": "pdf",
+        "name": "large_export",
+        "shape_D_K_count": [
+          15,
+          26,
+          100000
+        ],
+        "requested_count": 100000,
+        "count_unit": "rows",
+        "tentative_budget": 65536,
+        "final_budget": 65536,
+        "candidate_median_ms": {
+          "131072": 318.71220003813505,
+          "16384": 150.57250001700595,
+          "262144": 310.4928999673575,
+          "32768": 137.88520003436133,
+          "65536": 134.91424993844703
+        },
+        "heldout_default_ms": 139.35080001829192,
+        "heldout_selected_ms": 139.65749996714294,
+        "heldout_paired_median_speedup": 1.0012619616700627,
+        "same_budget_controls": {
+          "default": {
+            "median_ratio": 1.0029798387591224,
+            "range": [
+              0.9712230262732042,
+              1.1588415324822536
+            ]
+          },
+          "selected": {
+            "median_ratio": 0.9810946500681983,
+            "range": [
+              0.8435149299529587,
+              1.0410723044804615
+            ]
+          }
+        },
+        "discovery_wall_seconds_excluding_diagnostics": 12.647235100041144,
+        "selection_warmups_and_rounds_seconds": 11.574537500040606,
+        "first_default_call_ms": 131.36729993857443,
+        "synthetic_setup_seconds": 0.01984210009686649,
+        "diagnostic_seconds": 1.2151605000253767,
+        "discovery_only_amortization_calls": null,
+        "maximum_absolute_error": 0.0,
+        "traced_peak_mib": 13.874221801757812
+      }
+    ]
+  }
+]

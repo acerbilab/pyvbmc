@@ -1261,7 +1261,7 @@ Package (devlog §9; none fixed here except the Ns = 1 crash):
   draw from `vp.rng`; `kl_div_mvn`'s `mu1` promotion; `noisy_cigar` dead
   test code; notebook 6's noise shapes.
 - **`student_D4` seed 19 is a final-boost failure, not a convergence
-  failure** (investigated 2026-09-04; `dev/2026-09-04-final-boost-failure.md`
+  failure** (investigated 2026-09-04; `dev/results/2026-09-04-final-boost-failure.md`
   holds the evidence, the mechanism, the MATLAB parity check, the options
   and the reproduction). In short: the main loop ended with a good
   posterior (ELBO within 0.02 of ln Z, gsKL 0.06); `final_boost` returned
@@ -1457,7 +1457,7 @@ Phase 4 — records
 - [x] **`student_D4` seed 19 investigated (2026-09-04, PI's request)**:
   a final-boost failure under a flat GP mean, 4 of 6 boost reruns fail from
   the same state, MATLAB behaves the same; written up as its own devlog,
-  `dev/2026-09-04-final-boost-failure.md` (pointers in §Follow-ups and the
+  `dev/results/2026-09-04-final-boost-failure.md` (pointers in §Follow-ups and the
   modernization devlog §9). Decision on a guard deferred (PI).
 - [x] **CI discussion (PI, 07:20)**: the `tests` workflow ran only on
   manual dispatch and twice a month on `main`, so 17 pushes to `dev-next`

@@ -23,7 +23,7 @@ OS/Python matrix on integrated `dev-next`.
 - [x] Diagnose completed matrix 34259734758 at `0370c5b`: Windows/Python 3.12
   passed, the other eight stacks failed the same corr acquisition oracle.
   Stored-variance conditioning explains the amplification; see
-  [the evidence and comparison design](../2026-09-08-acquisition-oracle-conditioning.md).
+  [the evidence and comparison design](../results/2026-09-08-acquisition-oracle-conditioning.md).
 - [x] Implement and independently review the reference-conditioned oracle
   comparison; run focused regressions and all 11 fixtures exactly. Preserve
   solver/reference values and the base tolerances. Remove the temporary CI
@@ -117,7 +117,7 @@ outside this fix campaign and not a release blocker (PI, 2026-09-08).
   D5 gsKL 0.000491 exceeds the fixed 0.000429 fence. Retain that flag for
   final population assessment; Cigar and noisy Rosenbrock pass all fences.
   Normal's pre-boost gsKL improves; the new final refinement worsens it.
-  Full evidence: [production fix note](../2026-09-08-eta-bound-fix.md).
+  Full evidence: [production fix note](../results/2026-09-08-eta-bound-fix.md).
 - [x] Independently review, record Phase6 completion and the deferred
   research question; next implementation work is the Phase7 gpyreg repair.
   Independent core and artifact reviews pass, including all 12 evidence
@@ -146,7 +146,7 @@ decision if B retains a meaningful advantage; no such fits in this pickup.
   paired RNG, source/output hash and scoring audits pass.
 - [x] Analyze equal-effort gains/noise, independently review, and record
   the next decision without changing production or launching trajectories.
-  [Results](../2026-09-08-eta-equal-budget.md): the sizable apparent B gains
+  [Results](../results/2026-09-08-eta-equal-budget.md): the sizable apparent B gains
   disappear at equal effort; residual ELBO changes are tiny and ELCBO mixed.
   A is supported for PI consideration; no production or stopping-policy
   change is selected. Independent scientific/artifact review reproduced all
@@ -196,7 +196,7 @@ and numerical work; Sol implements the offline summarizer and independent review
   near-threshold MC sensitivity and stable large counterexamples retained.
 - [x] Record conclusions, limitations and PI decisions still needed; review
   scientific claims independently and commit the analysis artifacts.
-  [Analysis report](../2026-09-08-boost-analysis.md): 11/57 Holm-adjusted
+  [Analysis report](../results/2026-09-08-boost-analysis.md): 11/57 Holm-adjusted
   directional tests detect mostly tiny changes (10 favor OFF, one favors ON).
   Large raw candidate exceptions favor the penalty; joint guards change the
   returned comparison. Raw usability is 828 ON / 827 OFF; joint 0.1 or 0.2
@@ -219,7 +219,7 @@ no main-loop reruns, reference changes, or production default selection.
   diagnostic failure recovers saved candidates with zero new optimizer fits.
 - [x] Start detached single worker; record command, PID, logs and progress.
   Launched 08:38:54 UTC, runner `8c7919f`, worker PID 14272 (launcher 31008).
-  See [campaign note](../2026-09-08-boost-campaign.md) for exact resume details.
+  See [campaign note](../results/2026-09-08-boost-campaign.md) for exact resume details.
   Initial health check at 08:41:11 UTC: worker alive, 19 complete pairs
   including the two smoke pairs, zero errors. Campaign remains running.
 - [x] Computation completed 10:11:53 UTC: 870 pairs / 1,740 arms, zero errors,
@@ -259,7 +259,7 @@ code; root runs the single heavy computation, Sol implements/reviews.
   Paired inputs, candidates, diagnostics and timings retained; resume verifies
   all 24 completions without new fits.
 - [x] Independent artifact and scientific reviews complete; no remaining
-  findings. [Results and next experiment](../2026-09-08-eta-bound-comparison.md):
+  findings. [Results and next experiment](../results/2026-09-08-eta-bound-comparison.md):
   B's noisy score gains coincide with longer optimization; C's penalty never
   activates naturally here. Production choice remains open. Next scope is an
   equal-iteration/eta-offset comparison with repeated diagnostic scoring;
@@ -287,7 +287,7 @@ without the experimental boost core changes. The checkpoint's pre-commit
 hooks passed; formatting changed script source hashes from the measured
 pilot, whose original provenance remains in its artifacts.
 The boost restart contract is in
-[the pilot note](../2026-09-08-boost-penalty-pilot.md#parked-experiment-restart).
+[the pilot note](../results/2026-09-08-boost-penalty-pilot.md#parked-experiment-restart).
 No boost batch, watcher or automatic restart is scheduled. Q1 and Q4 remain
 open; main-loop development does not require either decision.
 
@@ -296,7 +296,7 @@ open; main-loop development does not require either decision.
   146 tests passed/15 skipped and 11 exact fixtures passed. Five-case replay
   retains all initial designs; Cigar seed 0 exceeds accuracy fences, with
   the seed-1 follow-up passing. Preserve that adverse result for integrated
-  population assessment; see [the evidence](../2026-09-08-main-loop-fixes.md).
+  population assessment; see [the evidence](../results/2026-09-08-main-loop-fixes.md).
 - [x] Phase 4: integrated as `90d08d3`; focused acquisition/init and old-save
   checks passed, 34 stored acquisition computations match the formula,
   targeted reference updates and all 11 exact fixtures passed. Five-case
@@ -332,7 +332,7 @@ Pilot complete: six boosts took 24.10 seconds; all diagnostics and captures
 brought the three pairs to 32.018 seconds. Straight-line extrapolation gives
 2.58 hours for 870 pairs; plan about 3 hours with a 4-hour allowance, not a
 formal bound. Independent review passed. Full states/candidates and the
-[pilot evidence](../2026-09-08-boost-penalty-pilot.md) are retained.
+[pilot evidence](../results/2026-09-08-boost-penalty-pilot.md) are retained.
 
 PI update (2026-09-08): acceptance criteria may be selected post hoc when
 both complete candidate VPs and scores are retained. Individual rejected
@@ -354,7 +354,7 @@ compact golden traces can reconstruct boost inputs without main-loop reruns.
 - [x] Independently review reconstruction coverage, record limitations and
   report feasibility and measured cost for a subsequent paired campaign.
 
-Reconstruction evidence: [2026-09-08 check](../2026-09-08-boost-reconstruction.md).
+Reconstruction evidence: [2026-09-08 check](../results/2026-09-08-boost-reconstruction.md).
 It supports a paired penalty experiment conditional on shared reconstructed
 states, not universal exact historical substitution. Use authentic snapshots
 where available. Historical pre-boost scores must remain separate from any
@@ -393,7 +393,7 @@ three accuracy metrics. These counterexamples persist without boost weight
 shrinkage. The logistic run's small residual MMTV fence miss is explained
 by retaining its much-improved pre-boost VP; Rosenbrock seed 17's gsKL flag
 is an adverse effect of the tested guard. Both flags are retained.
-See the [paired evidence](../2026-09-07-final-boost-comparison.md).
+See the [paired evidence](../results/2026-09-07-final-boost-comparison.md).
 No full noisy population rerun is needed to establish these counterexamples;
 they do not estimate prevalence. Reconsider Q4's acceptance rule with the PI
 before selecting a default or promoting this opt-in implementation. The
@@ -436,7 +436,7 @@ and `test_boost_comparison.py`. The post-change exact oracle gate passed
 all eight fixtures. Logs are `focused_tests.log` and `oracles_after.log`
 under the Phase 2 evidence directory. The stored-data scan and 83 paired
 metric reconstructions are complete; findings and limitations are recorded
-in [the Phase 2 evidence note](../2026-09-07-final-boost-comparison.md).
+in [the Phase 2 evidence note](../results/2026-09-07-final-boost-comparison.md).
 Independent Sol review cleared the seven-case launch after the driver began
 recording its own source hash. The two targeted noisy follow-ups were added
 because both proposed thresholds reject stored candidates with improved
@@ -597,15 +597,21 @@ S-VBMC is already implemented in the separate `acerbilab/svbmc` repository.
 Roadmap pickup 10 covers integration and compatibility of that existing
 package with PyVBMC 1.5; it remains separate from this pickup 9 latent-bug
 plan. Upcoming method extensions and tensor-solver work also have their own
-scope. Preserve the existing PyTorch decision: first a float64 CPU/GPU
+scope. The original PyTorch decision was: first a float64 CPU/GPU
 feasibility prototype against modernized NumPy CPU, including transfer costs;
 then a PI decision on the full port, preferably for 1.5 if feasible. CPU
 performance, numerical reliability, installation friction, and extensibility
 matter. PI clarification (2026-09-07): 3× runtime was an example of clearly
 unacceptable performance; concern starts at substantially smaller slowdowns.
 Around 1.2× runtime may be acceptable given the other benefits, but is not
-an agreed cutoff. Dependencies, Python floor, and the NumPy transition remain
+an agreed cutoff. Dependencies, Python floor, and the NumPy transition were
 that design's questions.
+
+Superseding PI decision (2026-09-09): retain the modernized NumPy/SciPy solver
+for 1.5 and do not undertake a full Torch solver port for this release. The
+optional Torch and ArviZ exports and existing Python floors remain unchanged.
+This does not decide S-VBMC's backend or authorize its parked integration or
+the proposed NumPy weight-optimization comparison.
 
 Noise shaping, `compute_var == 2`, log-space mixture sums, and new acquisition
 or optimizer algorithms stay deferred. Approval of this plan authorizes the
@@ -1464,7 +1470,7 @@ are explicitly deferred research outside this fix campaign.
 reviewed; 64 focused tests pass and all 11 fixtures remain exact. Three
 before/after pairs converge and remain usable, with one Normal D5 gsKL
 fence flag retained for the final population gate. See the
-[production evidence](../2026-09-08-eta-bound-fix.md). Phase7 is next.
+[production evidence](../results/2026-09-08-eta-bound-fix.md). Phase7 is next.
 
 **PI-selected investigation (2026-09-07):** compare (a) no eta-bound penalty,
 (b) MATLAB's historical formula with a consistent implementation, checked

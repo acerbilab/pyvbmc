@@ -29,6 +29,15 @@
   parameter space raise ``NotImplementedError``.
 
 
+Performance settings
+--------------------
+
+A fitted posterior retains the fixed :doc:`calibration_profile` used by its
+VBMC run. Standalone posteriors use historical defaults; pass
+``calibration=profile`` or ``calibration="cached"`` to opt in. A cache lookup
+never initiates a campaign. See :doc:`../functions/calibrate` for measuring
+settings and the reproducibility contract.
+
 .. autoclass:: pyvbmc.variational_posterior.VariationalPosterior
    :exclude-members: kl_div, log_pdf, load, moments, mtv, pdf, plot, sample, save, to_arviz, to_torch
    :members:

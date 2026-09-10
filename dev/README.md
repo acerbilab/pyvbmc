@@ -1,103 +1,75 @@
 # Developer notes
 
-Dated developer logs for PyVBMC. One file per working session or decision,
-named `YYYY-MM-DD-short-slug.md`, newest at the bottom of the list below.
+`dev/` is for human review: major findings, proposals, discussions and
+consolidated decisions. Use dated names (`YYYY-MM-DD-short-slug.md`) for
+these notes. Update or consolidate a related narrative instead of creating
+a top-level file for each agent, working session or experiment phase.
+Separate notes are appropriate for genuinely separate topics.
 
-These are working notes for maintainers, not user documentation. They record
-what was investigated, what was decided and why, and what was deliberately
-left open, so that a future contributor (or the same person six months later)
-can reconstruct the reasoning without re-deriving it.
+Detailed findings and experiment writeups belong directly in `results/`,
+with no additional date or campaign subdirectory. A top-level summary should
+explain the important evidence and decisions and link to those full reports.
+Keep execution plans, checklists and ongoing status in `plans/`, updating
+existing files in place. Machine-readable evidence belongs in `experiments/`;
+ignored raw runs and logs remain under `scripts/runs/`.
 
-Why `dev/` and not `docs/dev/`: `docs/` is the Sphinx HTML build output
-directory. It is gitignored and its contents are copied verbatim to the
-`gh-pages` branch by `.github/workflows/docs.yml`, so nothing placed there
-would be committed, and anything that was would be published to the docs site.
+These are maintainer records, not user documentation. `docs/` is gitignored
+Sphinx HTML output published to `gh-pages`, so it cannot hold source notes.
 
 ## Index
-
-- [2026-09-08-noisy-acquisitions.md](2026-09-08-noisy-acquisitions.md) -
-  Where noisy (VIQR) runs spend their time, the VIQR loss variants, the EIG
-  port with a per-component variant, repeated-observation candidates and
-  an in-loop GP sample cap, with same-machine arms on the noisy Rosenbrock
-  configurations.
-
-- [2026-09-08-ecosystem-integration.md](2026-09-08-ecosystem-integration.md) -
-  PI direction and proposal for delivering S-VBMC and related algorithms
-  within PyVBMC, with shared posterior interfaces and optional dependencies.
-
-- [2026-09-08-svbmc-compatibility.md](2026-09-08-svbmc-compatibility.md) -
-  S-VBMC's unchanged tests and 30 shipped posteriors checked against current
-  PyVBMC, with bounded real-posterior stacking and sampling checks.
-
-- [2026-09-08-acquisition-oracle-conditioning.md](2026-09-08-acquisition-oracle-conditioning.md) -
-  Cross-platform variance-penalty amplification and the reference-conditioned
-  acquisition oracle comparison, with nine-environment diagnostic evidence.
 
 For the release overview, start with
 [PyVBMC 1.5: the big picture](2026-09-06-pyvbmc-1.5-overview.md).
 
-- `2026-09-02-modernization-discussion.md` — Assessment of porting the
-  numerical core from NumPy to a tensor backend. Hot-path analysis, gradient
-  inventory, gpyreg audit, backend decision (PyTorch), staged plan, repo
-  process decisions, list of latent bugs found along the way.
-- `2026-09-02-user-agent-skill.md` — Deferred idea: ship an Agent Skills
-  folder so users' coding agents set up and troubleshoot PyVBMC correctly.
-  What BayesFlow did, the spec, and a design that lives in-repo and ships in
-  the wheel. Build after the 1.5 API settles.
-- `2026-09-04-final-boost-failure.md` — `final_boost` can turn a converged
-  posterior into an unusable one when the GP mean function has gone flat
-  (golden population, `student_D4` seed 19; 4 of 6 boost reruns fail;
-  inherited from MATLAB). Mechanism, evidence, three candidate guards,
-  reproduction; decision deferred.
+- [Modernization discussion](2026-09-02-modernization-discussion.md) —
+  Hot paths, gradient inventory, latent bugs, backend direction and staged plan.
+- [User-facing agent skill proposal](2026-09-02-user-agent-skill.md) —
+  Guidance, FAQ/reference material, helpers and packaging after the API settles.
+- [PyVBMC 1.5 overview](2026-09-06-pyvbmc-1.5-overview.md) —
+  Human-readable release scope, benefits and validation approach. Includes the
+  [compiled-Torch follow-up](results/2026-09-09-torch-compile-follow-up.md),
+  with cold/warm complete-fit timings and numerical limitations.
+- [Numerical campaigns](2026-09-08-numerical-campaigns.md) —
+  Consolidated boost and eta evidence and PI decisions, main-loop repairs,
+  and cross-platform validation. Links to the full September 4, 7 and 8
+  reports in `results/`; the final integrated population remains pending.
+- [Ecosystem integration proposal](2026-09-08-ecosystem-integration.md) —
+  Human-review proposal for integrating the existing S-VBMC implementation:
+  preserved workflow, optional Torch, code placement and migration, with
+  links to completed compatibility and backend evidence. Production
+  integration remains parked.
+- [Noisy-target acquisitions](2026-09-08-noisy-acquisitions.md) —
+  Where noisy (VIQR) runs spend their time, the VIQR loss variants, the EIG
+  port, repeated-observation candidates and an in-loop GP sample cap with
+  same-machine arms; the acquisition-search analysis (sieve, CMA-ES,
+  gradient refinement, Monte Carlo overfitting of the importance set, the
+  measured cost of the search pipelines and the sizing rule).
 
-- [2026-09-06-pyvbmc-1.5-overview.md](2026-09-06-pyvbmc-1.5-overview.md) —
-  Human-readable release outline: benefits, scope, validation, and the path
-  to 1.5. A dated overview of the agreed direction, not an execution checklist.
-
-- [2026-09-08-main-loop-fixes.md](2026-09-08-main-loop-fixes.md) —
-  Main-loop covariance, acquisition and GP-sampling repairs, their separate
-  numerical gates, and the parked final-boost experiment's restart pointer.
-
-- [2026-09-08-eta-bound-comparison.md](2026-09-08-eta-bound-comparison.md) —
-  Approved bounded comparison of three main-loop eta-bound treatments,
-  shared saved inputs, mathematical checks and paired local-fit evidence.
-
-- [2026-09-08-boost-campaign.md](2026-09-08-boost-campaign.md) -
-  Resumed 870-endpoint paired boost campaign, isolated code, retained evidence
-  and launch/progress details.
-
-- [2026-09-08-boost-analysis.md](2026-09-08-boost-analysis.md) -
-  Paired penalty effects, golden comparison, offline acceptance tradeoffs,
-  every rejected case and diagnostic Monte Carlo sensitivity across 870 pairs.
-
-- [2026-09-08-eta-equal-budget.md](2026-09-08-eta-equal-budget.md) -
-  Equal-iteration local eta-bound comparison: 12 fits, fixed-step checkpoints
-  and repeated scoring separate bound effects from longer optimization.
-
-- [2026-09-08-eta-bound-fix.md](2026-09-08-eta-bound-fix.md) -
-  PI-selected production treatment A, numerical/replay gates and explicitly
-  deferred stopping-rule research.
-
-`TODO.md` is a scratch reminder of the ongoing work and the current pickup
-point, rewritten at each handoff. It is not a record: the roadmap and the
-plans are.
+`TODO.md` contains only current actions, constraints and links. Do not
+accumulate completed handoffs there; the roadmap and plans retain execution
+status, and the summaries above retain the human discussion and decisions.
 
 ## Plans, worklogs and task files
 
-Devlogs (above) are the record of discussions and decisions that involved a
-person, most often the PI. Everything an agent produces on its own along the
-way lives in `plans/`: plans, checklists and status trackers, worklogs of a
-work session, measurement reports, task files. They are updated in place
-while the work is open and kept afterwards as the record of what was done;
-status and next steps never go into the devlogs.
+`plans/` holds implementation plans, checklists and execution worklogs.
+Keep these current while work is open and retain them afterwards. Detailed
+standalone measurement reports belong in `results/`, linked from the relevant
+plan and consolidated human summary.
 
 - `plans/modernization-roadmap.md` — living tracker of the staged plan in
   `2026-09-02-modernization-discussion.md` §10: stage status, pickup point.
-- [plans/latent-bug-fixes.md](plans/latent-bug-fixes.md) — partially approved pickup 9
+- [plans/machine-local-calibration.md](plans/machine-local-calibration.md) —
+  implemented package integration for explicit PDF/entropy calibration with
+  progress, a machine/environment cache and fixed per-run settings. Local
+  numerical, lifecycle, documentation and distribution validation is complete;
+  delivery status and remaining CI gates are tracked in the plan and `TODO.md`.
+  The [first results](results/2026-09-09-machine-local-calibration.md) retain
+  current defaults in both balanced sweeps and establish discovery costs.
+- [plans/latent-bug-fixes.md](plans/latent-bug-fixes.md) — pickup 9
   implementation plan: verified candidate dispositions, numerical and
-  compatibility contracts, open PI questions, and regression gates against
-  the completed 870-run reference. D1–D5,
-  Q2/Q3 and the experiment designs are approved; final Q1/Q4 choices await evidence.
+  compatibility contracts, PI-selected boost/eta fixes, and regression gates
+  against the completed 870-run reference. Final integrated population
+  validation remains pending.
   Phase 0 records the reduced 60-run noisy extension; the original 150-run
   preparation remains as historical evidence.
 - `plans/profile-and-gradient-checks.md` — dev environment, baseline test
@@ -178,6 +150,21 @@ status and next steps never go into the devlogs.
   (records/docs `285cd74`); merged into `dev-next` at `4bff1a5`, with
   branch/full-matrix/integrated CI and all local integration checks passed.
   Reference snapshot: `reference/stage3-20260906`.
+
+- [plans/stage4-torch-feasibility.md](plans/stage4-torch-feasibility.md) -
+  Completed bounded PyTorch feasibility prototype: complete variational fits,
+  current estimator/optimizer semantics, float64 CPU/GPU evidence,
+  final-boost workloads and setup/transfer costs. The PI accepted the
+  recommendation to retain the NumPy/SciPy solver for 1.5; no full Torch
+  solver port is planned for this release.
+
+- [plans/svbmc-numpy-prototype.md](plans/svbmc-numpy-prototype.md) -
+  Completed optimized NumPy stacking prototype, actual upstream comparison,
+  shared-preparation Torch control and matched float64 optimization checks.
+  Detailed findings are in
+  [results/2026-09-09-svbmc-numpy-prototype.md](results/2026-09-09-svbmc-numpy-prototype.md).
+  The [integration proposal](2026-09-08-ecosystem-integration.md) uses this
+  evidence to recommend retaining Torch and the existing S-VBMC workflow.
 
 Naming: `plans/` files are named by slug only, never by date (the date is in
 the file header), so that they cannot be mistaken for copies of the dated
@@ -284,18 +271,18 @@ reason.
   generates one unpenalized boost candidate; both tolerances are evaluated
   on it. Authentic restart state and raw candidates are retained under
   `captures/`. Results and limitations are in the
-  [Phase 2 evidence note](2026-09-07-final-boost-comparison.md).
+  [Phase 2 evidence note](results/2026-09-07-final-boost-comparison.md).
 - `scripts/boost_reconstruction.py` (parked at `764a177` on `dev-final-boost`) — rebuilds boost inputs from compact
   traces and compares them with authentic restart captures. Optional
   `--population-numerics` checks all stored pre-boost SDs; `--replay TAG...`
   compares authentic/reconstructed boosts with a common RNG. These are
   reconstruction checks, not a penalty-on/off campaign. See the
-  [reconstruction findings](2026-09-08-boost-reconstruction.md).
+  [reconstruction findings](results/2026-09-08-boost-reconstruction.md).
 - `scripts/boost_penalty_pilot.py` (parked at `764a177` on `dev-final-boost`) — times three fixed seed-0 pairs with
   weight penalty 0.1 versus zero, starting from identical reconstructed
   states and fresh RNGs. Requires `--out`; retains full paired captures and
   separate optimization/diagnostic/save timings. See the
-  [pilot results](2026-09-08-boost-penalty-pilot.md).
+  [pilot results](results/2026-09-08-boost-penalty-pilot.md).
 - `scripts/golden_replay.py` — the per-change trajectory gate of Stage 2:
   replays a few golden configurations in-process with the current code
   (about 7 minutes for the default set) and compares each run with its
@@ -322,7 +309,11 @@ reason.
   (default seed 0 only), `--baseline` (the traces directory; the default
   `scripts/runs/golden/reference_870_20260907/`, the current reference
   population, exists only on the machine that made it), `--sidecars`,
-  `--out`, `--threads` (1, as the baseline). Exit code 1 if anything is
+  `--out`, `--threads` (1, as the baseline), `--calibration-budget` (pin
+  all three chunk budgets to this integer for a nondefault-profile check;
+  omitted means historical defaults, independent of the local cache).
+  Replay reports retain this setting, including on `--report-only`.
+  Exit code 1 if anything is
   flagged or nothing was compared.
 - `scripts/regenerate_baseline.sh` — the whole benchmark regeneration as
   one sequential process (see above).
