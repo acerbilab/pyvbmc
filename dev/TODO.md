@@ -1,6 +1,6 @@
 # Current pickup
 
-Updated 2026-09-09. This file records only current actions and constraints;
+Updated 2026-09-10. This file records only current actions and constraints;
 completed work and evidence remain in the linked plans and reports.
 
 Calibration is delivered on `dev-next`; all nine CI matrix jobs passed.
@@ -22,6 +22,8 @@ Another-machine performance measurement remains useful; no campaign is scheduled
 
 ## Release boundary and working rules
 
+- After releasing 1.5, respond to issue #138 about explicit RNG control; see
+  the [post-release follow-up](plans/modernization-roadmap.md#post-release-follow-up).
 - Launch the final 870-case population and perform release publication only
   when separately authorized. Use the
   [current golden reference](golden/noisy_extension_20260907/README.md) and

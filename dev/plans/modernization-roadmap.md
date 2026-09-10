@@ -921,6 +921,21 @@ anything that changes numerics lands.
     any persistence remain open design choices. No hint implementation or
     change to the final benchmark schedule is authorized by this entry.
 
+## Post-release follow-up
+
+- [ ] After PyVBMC 1.5 is released, respond to
+  [issue #138: finer control over random variate generation](https://github.com/acerbilab/pyvbmc/issues/138)
+  with the released API/docs. The RNG modernization addresses its core request:
+  `VBMC(seed=generator)` accepts a NumPy `Generator`, shared through inference,
+  GP fitting and posterior operations; standalone VPs and built-in prior sampling
+  also accept generators. Point to the reproducibility/global-state tests and
+  saved generator state. Explain that `seed=None` derives a generator from the
+  global legacy state for compatibility, while legacy `RandomState` objects
+  are not directly accepted. User-supplied stochastic callbacks remain responsible
+  for their own RNGs, and not every statistical test is deterministic. See
+  [Stage 1 RNG work](stage1-rng-generator.md) and Stage 2 item 8 above.
+  This is a post-release response reminder; no issue comment has been posted.
+
 ## Deferred (devlog §12)
 
 Variational optimizer stopping-rule improvements (PI, 2026-09-08): the
