@@ -15,6 +15,12 @@ awaits the separate decisions below.
   release work; keep it aligned with the settled 1.5 API and guidance.
 - NumPy/SciPy is the settled PyVBMC 1.5 solver. Do not start a full Torch solver
   port; optional Torch and ArviZ exports remain.
+- The noisy-target acquisition search (a smaller sieve with a gated gradient
+  refinement on a larger importance set) and the operation-level savings in
+  the VIQR sieve call and the in-loop GP refits await a decision; see the
+  [noisy-target acquisitions note](2026-09-08-noisy-acquisitions.md). The
+  VIQR loss variants and the EIG acquisitions on that branch are documented
+  options with no default changed.
 
 ## Release boundary and working rules
 

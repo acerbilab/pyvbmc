@@ -39,11 +39,11 @@ For the release overview, start with
   links to completed compatibility and backend evidence. Production
   integration remains parked.
 - [Noisy-target acquisitions](2026-09-08-noisy-acquisitions.md) —
-  Where noisy (VIQR) runs spend their time, the VIQR loss variants, the EIG
-  port, repeated-observation candidates and an in-loop GP sample cap with
-  same-machine arms; the acquisition-search analysis (sieve, CMA-ES,
-  gradient refinement, Monte Carlo overfitting of the importance set, the
-  measured cost of the search pipelines and the sizing rule).
+  Where noisy (VIQR) runs spend their time, what was tried on the
+  acquisition, where the acquisition search loses evaluations, and the
+  interim conclusions and suggestions; the evidence is in the
+  [acquisition experiments](results/2026-09-08-noisy-acquisition-experiments.md)
+  and the [search analysis](results/2026-09-09-acquisition-search-analysis.md).
 
 `TODO.md` contains only current actions, constraints and links. Do not
 accumulate completed handoffs there; the roadmap and plans retain execution
