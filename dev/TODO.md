@@ -3,14 +3,10 @@
 Updated 2026-09-10. This file records only current actions and constraints;
 completed work and evidence remain in the linked plans and reports.
 
-Current work: plan optional runtime tips; see the
-[draft design](plans/runtime-tips.md). Next: review the seven rewritten tip
-messages and settle cadence/option defaults, then obtain implementation approval.
-Only the 3–4-run message is approved. Tips must be concrete, clear and actionable.
-Developers must be able to edit either category in one catalog; any tip can show URLs.
-Shared calibration priority, session-only history, shuffled selection and
-best-effort low-frequency spacing are settled. Astra orchestrates; Sol implements
-and reviews after approval. No source implementation or jobs are in progress.
+Current work: commit and push `feat/runtime-tips`, require green branch CI,
+then merge to `dev-next` and run the full matrix, as authorized on 2026-09-10.
+Implementation, local verification and independent review are complete; the
+[plan](plans/runtime-tips.md) tracks delivery. No benchmark jobs are in progress.
 
 ## Work awaiting a separate decision
 

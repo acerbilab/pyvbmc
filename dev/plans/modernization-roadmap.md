@@ -901,14 +901,15 @@ anything that changes numerics lands.
     remains. S-VBMC awaits its main developer's review, and the final 870-case
     benchmark remains deferred. Run only one heavy computation at a time.
 
-13. **Optional runtime hints** (PI, 2026-09-09; recorded for 1.5,
-    planning selected 2026-09-10). The [runtime-tips plan](runtime-tips.md)
-    owns the proposed policy, wording and integration; implementation awaits
-    approval. Occasionally show users a short, useful tip when optimization
-    starts.
+13. **Optional runtime hints — implemented and verified** (2026-09-10).
+    The [runtime-tips plan](runtime-tips.md) owns the approved policy, PI-edited
+    wording and completed acceptance checks. Focused verification passed
+    (151 tests), the full suite passed (1170 passed, 35 skipped), the docs built,
+    and independent Sol review found no issues. Occasional startup tips now
+    provide useful guidance with links.
 
     Start with a small, curated collection drawn from the FAQ and planned
-    user-facing skill: comparing multiple seeded runs and their diagnostics,
+    user-facing skill: comparing multiple runs and their diagnostics,
     interpreting `elbo_sd`, and discovering S-VBMC when available. Keep shared
     guidance consistent across hints, documentation and the skill; link to
     fuller explanations where useful.
@@ -918,7 +919,7 @@ anything that changes numerics lands.
     the software. Use a factual low-frequency category, which can hold other tips
     too. Shuffle so short sessions can encounter these tips; prefer an ordinary
     tip after a low-frequency tip, but make progress if only low-frequency tips
-    remain. The draft catalog contains six ordinary and two low-frequency tips.
+    remain. The initial catalog contains six ordinary and two low-frequency tips.
 
     Show at most one hint per optimization start, with conservative frequency
     and repetition suppression. PI decisions (2026-09-10): a calibration reminder
@@ -928,9 +929,9 @@ anything that changes numerics lands.
     when the current configuration supplies enough context. Respect `display="off"` and
     provide a separate way to disable hints. Selection must not consume the
     inference RNG or change numerical results. Use the existing startup
-    output location. The exact option, frequency and wording remain proposed
-    choices in the plan. No hint implementation or change to the final benchmark
-    schedule is authorized by this entry.
+    output location. The approved option is `show_tips=True`, with tips on eligible
+    first starts 1/4/7 and no repeats within a Python session. Changes are ready
+    for integration on `feat/runtime-tips`; the final benchmark schedule remains unchanged.
 
 ## Post-release follow-up
 

@@ -30,6 +30,7 @@ from pyvbmc.timer import main_timer as timer
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.whitening import warp_gp_and_vp, warp_input
 
+from ._runtime_tips import consider_runtime_tip
 from .active_sample import active_sample
 from .gaussian_process_train import (
     _lean_gp,
@@ -233,6 +234,7 @@ class VBMC:
                 [basic_options_path, advanced_options_path]
             )
         self._validate_vectorized_target_option()
+        self._validate_show_tips_option()
         self._validate_performance_calibration_option(
             self.options.get("performance_calibration")
         )
@@ -308,6 +310,7 @@ class VBMC:
 
         # Optimization of vbmc starts from iteration 0
         self.iteration = -1
+        self._runtime_tip_handled = False
         # Whether the optimization has finished
         self.is_finished = False
 
@@ -921,9 +924,9 @@ class VBMC:
 
         Notes
         -----
-        Every random draw of the run comes from ``vbmc.rng`` (see the
+        Every inference draw of the run comes from ``vbmc.rng`` (see the
         ``seed`` parameter); NumPy's global random state is neither read nor
-        written.
+        written. Optional startup tips use a separate private random stream.
         """
         # Initialize main logger with potentially new options:
         self.logger = self._init_logger()
@@ -968,6 +971,16 @@ class VBMC:
                 "calibrated": "provided calibration",
             }.get(calibration_profile.source, "provided profile"),
         )
+        self._ensure_runtime_tip_state()
+        if not self._runtime_tip_handled:
+            self._runtime_tip_handled = True
+            consider_runtime_tip(
+                display=self.options.get("display"),
+                enabled=bool(self.options.get("show_tips")),
+                calibration_reminder_emitted=bool(
+                    getattr(self.vp, "_calibration_hint_emitted", False)
+                ),
+            )
         self._log_column_headers()
         while not self.is_finished:
             self.iteration += 1
@@ -2660,6 +2673,8 @@ class VBMC:
             vbmc.options.__setitem__(
                 "performance_calibration", "off", force=True
             )
+        if "show_tips" not in vbmc.options:
+            vbmc.options.__setitem__("show_tips", True, force=True)
 
         calibration_override = None
         has_calibration_override = (
@@ -2678,6 +2693,7 @@ class VBMC:
         if "vectorized_target" not in vbmc.options:
             vbmc.options.__setitem__("vectorized_target", False, force=True)
         vbmc._validate_vectorized_target_option()
+        vbmc._validate_show_tips_option()
         vbmc._validate_performance_calibration_option(
             vbmc.options.get("performance_calibration")
         )
@@ -2694,6 +2710,7 @@ class VBMC:
         if vectorized_target != logger_vectorized:
             vbmc._rebuild_log_joint(vectorized_target)
         vbmc.function_logger.vectorized_target = vectorized_target
+        vbmc._ensure_runtime_tip_state()
 
         # Instances saved before the generator existed have no `rng`. Give
         # them a fresh one (without touching NumPy's global state) and share
@@ -3075,6 +3092,17 @@ class VBMC:
         value = self.options.get("vectorized_target", False)
         if not isinstance(value, (bool, np.bool_)):
             raise ValueError("The option 'vectorized_target' must be boolean.")
+
+    def _validate_show_tips_option(self):
+        """Validate whether optional startup tips are enabled."""
+        value = self.options.get("show_tips", True)
+        if not isinstance(value, (bool, np.bool_)):
+            raise ValueError("The option 'show_tips' must be boolean.")
+
+    def _ensure_runtime_tip_state(self):
+        """Migrate the first-start flag from VBMC saves without runtime tips."""
+        if not hasattr(self, "_runtime_tip_handled"):
+            self._runtime_tip_handled = self.iteration >= 0
 
     def _rebuild_log_joint(self, vectorized_target):
         """Rebuild a saved likelihood/prior wrapper for a target mode change."""

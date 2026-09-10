@@ -159,6 +159,7 @@ class VariationalPosterior:
         self.bounds = None
         self.stats = None
         self._mode = None
+        self._calibration_hint_emitted = False
         self._set_calibration(calibration)
 
     def _set_calibration(self, calibration):
@@ -186,6 +187,8 @@ class VariationalPosterior:
 
     def _ensure_calibration_state(self):
         """Migrate a posterior saved before calibration profiles existed."""
+        if "_calibration_hint_emitted" not in self.__dict__:
+            self._calibration_hint_emitted = False
         if "_calibration_profile" not in self.__dict__:
             self._calibration_profile = default_profile(
                 source="legacy", status="complete"
@@ -221,7 +224,10 @@ class VariationalPosterior:
             display = self.__dict__.get("_calibration_display", True)
         if profile.source == "default" and profile.status != "complete":
             reason = profile.provenance.get("reason")
-            suggest_calibration_once(reason, display=bool(display))
+            emitted = suggest_calibration_once(reason, display=bool(display))
+            self._calibration_hint_emitted = bool(
+                getattr(self, "_calibration_hint_emitted", False) or emitted
+            )
         return profile
 
     def _apply_calibration_load_override(self, calibration):

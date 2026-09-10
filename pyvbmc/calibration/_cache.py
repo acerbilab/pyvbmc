@@ -29,6 +29,8 @@ from filelock import FileLock, Timeout
 from platformdirs import user_cache_dir
 from threadpoolctl import threadpool_info
 
+from pyvbmc._user_hints import emit_user_hint
+
 from .profile import CalibrationProfile, default_profile
 
 CACHE_SCHEMA_VERSION = 1
@@ -1002,12 +1004,12 @@ def suggest_calibration_once(
             return False
         _SUGGESTED_FINGERPRINTS.add(current_fingerprint)
     del reason
-    print(
+    return emit_user_hint(
         "PyVBMC is using standard performance settings. You can optionally "
         "tune these for your machine by running pyvbmc.calibrate(). "
-        "Calibration takes tens of seconds and does not evaluate your model."
+        "Calibration takes tens of seconds and does not evaluate your model.",
+        display=display,
     )
-    return True
 
 
 def write_record(record: Mapping[str, Any]) -> Path:
