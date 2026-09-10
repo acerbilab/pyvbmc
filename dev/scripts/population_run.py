@@ -442,11 +442,7 @@ def run(args, manifest):
         if failed:
             return 1
     if len(completed) == len(tasks):
-        from contextlib import redirect_stdout
-
-        with (out / "summary.md").open("w", encoding="utf-8") as stream:
-            with redirect_stdout(stream):
-                golden_trace.cmd_summary(argparse.Namespace(dir=str(out)))
+        golden_trace.cmd_summary(argparse.Namespace(dir=str(out)))
         text, flagged = golden_trace.compare_populations(
             golden_trace.load_population(ROOT / "dev/golden/baseline"),
             golden_trace.load_population(out),

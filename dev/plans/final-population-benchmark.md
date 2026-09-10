@@ -187,3 +187,9 @@ restoration after exceptions, and invalid resume artifacts. A live paired
 `normal_D5` seed-0 run has identical non-timer trace arrays, semantic final
 fields and post-optimization RNG state with and without recording. Evidence:
 `dev/scripts/runs/population_capture_preflight_20260910/verification.json`.
+
+Independent Sol static review found no remaining launch blockers after
+corrections to helper-import provenance, dependency recording, boost-report
+validation, exclusive locking and comparison error handling. The summary
+uses the golden harness's single writer. The runtime manifest records
+`filelock==3.32.5` and `dill==0.4.1` alongside the numerical stack.

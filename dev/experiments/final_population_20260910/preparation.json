@@ -425,14 +425,14 @@
     "gpyreg": "1.1.0",
     "cma": "4.4.4",
     "psutil": "7.2.2",
-    "dill": "0.4.1"
+    "dill": "0.4.1",
+    "filelock": "3.32.5"
   },
   "gpyreg_commit": "a2f8ddce867f502e29717959cf0ff3529f598618",
   "launch_ready": false,
   "remaining_preparation": [
-    "independent launcher review",
-    "freeze and verify worker source imports in an isolated checkout",
-    "record first campaign timing cases"
+    "independent review conclusion",
+    "first campaign worker artifact check"
   ],
   "reference_allocation": [
     {
@@ -1430,10 +1430,11 @@
     "follow_up": "Review first-stage results before selecting additional sampling or repairs. Full reference-sized replication is optional."
   },
   "verification": {
-    "focused_tests_passed": 10,
+    "focused_tests_passed": 13,
     "live_case": "normal_D5_seed0",
     "live_non_timer_traces_exact": true,
     "live_semantic_final_fields_exact": true,
-    "live_rng_after_optimize_exact": true
+    "live_rng_after_optimize_exact": true,
+    "frozen_worker_source_imports_verified": true
   }
 }
