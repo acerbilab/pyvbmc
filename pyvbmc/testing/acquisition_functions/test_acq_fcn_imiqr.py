@@ -1,5 +1,3 @@
-import os
-
 import gpyreg as gpr
 import numpy as np
 import pytest
@@ -9,10 +7,10 @@ from pyvbmc.acquisition_functions import AcqFcnIMIQR
 from pyvbmc.acquisition_functions.utilities import string_to_acq
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc import active_importance_sampling
-from pyvbmc.vbmc.options import Options
 
 from ._look_ahead import gauss_hermite_reference, weighted_samples_reference
 from ._regularization import check_variance_regularization
+from ._scenario import look_ahead_scenario, options, prepare_optim_state
 
 
 @pytest.fixture(autouse=True)
@@ -52,58 +50,6 @@ def test_acq_info():
     acqf6 = string_to_acq("AcqFcnIMIQR(0.666)")
     assert acqf4.u == acqf5.u == acqf6.u
     assert np.isclose(sps.norm.cdf(acqf4.u), 0.666)
-
-
-def _prepare_optim_state(gp, s2):
-    """What ``active_sample`` stores before the acquisition is evaluated."""
-    D = gp.D
-    optim_state = {
-        "lb_eps_orig": -np.inf,
-        "ub_eps_orig": np.inf,
-    }
-    Ns_gp = len(gp.posteriors)
-    ln_ell = np.zeros((D, Ns_gp))
-    for s in range(Ns_gp):
-        ln_ell[:, s] = gp.posteriors[s].hyp[:D]
-    optim_state["gp_length_scale"] = np.exp(ln_ell.mean(1))
-    gp.temporary_data["X_rescaled"] = gp.X / optim_state["gp_length_scale"]
-    sn2new = np.zeros((gp.X.shape[0], Ns_gp))
-
-    cov_N = gp.covariance.hyperparameter_count(gp.D)
-    noise_N = gp.noise.hyperparameter_count()
-    for s in range(Ns_gp):
-        hyp_noise = gp.posteriors[s].hyp[cov_N : cov_N + noise_N]
-        sn2new[:, s] = gp.noise.compute(hyp_noise, gp.X, gp.y, s2).reshape(
-            -1,
-        )
-    gp.temporary_data["sn2_new"] = sn2new.mean(1)
-    return optim_state
-
-
-def _options(D, mcmc_samples):
-    """The default options with the MCMC sample count of the importance
-    sampler overridden, names validated."""
-    pyvbmc_path = os.path.abspath(
-        os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            "..",
-            "..",
-            "vbmc",
-        )
-    )
-    basic_path = pyvbmc_path + "/option_configs/basic_vbmc_options.ini"
-    vbmc_options = Options(
-        basic_path,
-        evaluation_parameters={"D": D},
-        user_options={"active_importance_sampling_mcmc_samples": mcmc_samples},
-    )
-    advanced_path = pyvbmc_path + "/option_configs/advanced_vbmc_options.ini"
-    vbmc_options.load_options_file(
-        advanced_path,
-        evaluation_parameters={"D": D},
-    )
-    vbmc_options.validate_option_names([basic_path, advanced_path])
-    return vbmc_options
 
 
 def test_simple__call__():
@@ -167,8 +113,8 @@ def test_simple__call__():
     ## Setup acquisition function and necessary preliminaries:
 
     acqimiqr = AcqFcnIMIQR()
-    optim_state = _prepare_optim_state(gp, s2)
-    vbmc_options = _options(D, 100)
+    optim_state = prepare_optim_state(gp, s2)
+    vbmc_options = options(D, 100)
 
     optim_state["active_importance_sampling"] = active_importance_sampling(
         vp, gp, acqimiqr, vbmc_options
@@ -188,10 +134,10 @@ def test_simple__call__():
 
 
 def test_complex__call__():
-    """The IMIQR of five candidates against its definition, on a GP whose
-    mean is the (standard normal) target exactly and whose predictive sd
-    is small on the half-plane observed with low noise and of order one on
-    the other.
+    """The IMIQR of five candidates against its definition on the shared
+    scenario (``_scenario.look_ahead_scenario``), whose GP mean is the
+    standard-normal target exactly, so that the density IMIQR integrates
+    against, exp(f_mu), is the VP.
 
     Two checks. The acquisition's value is recomputed from its own
     importance samples and normalized weights with the GP's full
@@ -201,100 +147,37 @@ def test_complex__call__():
     here: with 8000 MCMC samples the effective sample size is about 3300,
     but the samples that carry the weight (the low-noise half, where the
     sampler's sinh factor is small and the weight 1/sinh large) are
-    visited in correlated stretches of the single slice-sampling chain, so
-    the self-normalized estimate scatters by 2 % across seeds, with single
-    seeds off by 7 %, and sits about 2 % above the integral on average
-    (under-visiting that half, where the integrand is small, raises the
-    ratio); 32000 samples do not remove the offset (twelve and five seeds,
-    measured 2026-09-10). The run is seeded, so the check is deterministic
-    on a platform; the 10 % tolerance covers the whole measured spread so
-    that a platform whose rounding sends the chain elsewhere passes too.
-    (Before 2026-09-10 the reference was a 40x40 grid on [-30, 30] whose
-    error, +3 to +4 %, hid the offset and left a 5 % tolerance to a
-    coin toss.)"""
-    D = 2
-    epsilon = 1e-3
-
-    def ltarget(theta):  # Standard MVN with s2 est. propto dist. from origin
-        ll = sps.multivariate_normal(
-            mean=np.zeros((D,)), cov=np.eye(D)
-        ).logpdf(theta)
-        if theta[0] < 0:
-            return ll, epsilon
-        else:
-            return ll, np.linalg.norm(theta) + epsilon
-
-    # GP training data
-    M = 17  # Number of training points = M^2
-    x1 = x2 = np.linspace(-5, 5, M)
-    X1, X2 = np.meshgrid(x1, x2)
-    X = np.vstack([X1.ravel(), X2.ravel()]).T
-    # Delete every other point on half of the plane, to create some variation
-    # in the expected posterior covariance, but leave the points dense enough
-    # that _estimate_observation_noise() is accurate:
-    for i in range(len(X), len(X) // 2, -1):
-        if i % 2 == 0:
-            X = np.delete(X, i, 0)
-    lls = np.array([ltarget(x) for x in X])
-    y = lls[:, 0].reshape(-1, 1)
-    s2 = lls[:, 1].reshape(-1, 1)
-
-    # Fixed GP hyperparameters
-    hyp = np.array(
-        [
-            [
-                # Covariance
-                1.0,
-                1.0,  # log ell
-                1.0,  # log sf2
-                # Noise
-                -10.0,  # log std. dev. of noise
-                # Mean
-                -(D / 2) * np.log(2 * np.pi),  # MVN mode
-                0.0,
-                0.0,  # Mode location
-                0.0,
-                0.0,  # log scale
-            ]
-        ]
-    )
-    gp = gpr.GP(
-        D,
-        covariance=gpr.covariance_functions.SquaredExponential(),
-        mean=gpr.mean_functions.NegativeQuadratic(),
-        noise=gpr.noise_functions.GaussianNoise(user_provided_add=True),
-    )
-    gp.update(X_new=X, y_new=y, s2_new=s2, hyp=hyp)
-
-    u = sps.norm.ppf(0.75)
-    vp = VariationalPosterior(D, 1)  # VP with one component
-    vp.mu = np.zeros((D, 1))
-    vp.sigma = np.ones((1, 1))  # VP is standard normal
-    vp.rng = np.random.default_rng(0)
-
-    # Acquisition function evaluation points:
-    N_eval = 5
-    X_eval = np.tile(np.linspace(-5, 5, N_eval).reshape((N_eval, 1)), (1, 2))
-
-    ## Setup acquisition function and necessary preliminaries:
+    visited in correlated stretches of the single slice-sampling chain,
+    so the self-normalized estimate scatters by 2 % across seeds (twelve
+    seeds: mean +0.7 %, largest error 4.3 %, measured 2026-09-10). The
+    run is seeded, so the check is deterministic on a platform; the 10 %
+    tolerance covers the measured spread with margin so that a platform
+    whose rounding sends the chain elsewhere passes too. (Before
+    2026-09-10 the reference was a 40x40 grid on [-30, 30],
+    3 to 4 % high, and the GP's hyperparameter array was laid out for a
+    noise hyperparameter its noise function did not have, so the mean was
+    not the target; the two together left a 5 % tolerance to a coin
+    toss.)"""
+    gp, s2, vp, X_eval, u = look_ahead_scenario()
+    D = gp.D
+    N_eval = X_eval.shape[0]
 
     acqimiqr = AcqFcnIMIQR()
-    optim_state = _prepare_optim_state(gp, s2)
-    vbmc_options = _options(D, 8000)
-
+    optim_state = prepare_optim_state(gp, s2)
+    vbmc_options = options(D, 8000)
     optim_state["active_importance_sampling"] = active_importance_sampling(
         vp, gp, acqimiqr, vbmc_options
     )
 
-    # IMIQR Acquisition Function Values:
     result = np.exp(
         acqimiqr(X_eval, gp, vp, function_logger=None, optim_state=optim_state)
     ).reshape((N_eval,))
 
     # The noise the acquisition assumes for the hypothetical observation
-    # (from the nearest training inputs) enters the reference too.
+    # (from the nearest training inputs) enters the reference too; the
+    # estimator itself is not what these checks pin.
     sn2_new = acqimiqr._estimate_observation_noise(X_eval, gp, optim_state)
-    imiqr = lambda s: 2 * np.sinh(u * s)
+    imiqr = lambda s: 2 * np.sinh(u * s)  # the interquantile range
 
     # 1. Exact: the value from the stored importance samples and weights.
     active_is = optim_state["active_importance_sampling"]

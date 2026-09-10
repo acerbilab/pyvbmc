@@ -285,7 +285,12 @@ Things you must hold in your head across files:
   reference bit-identical (`dev/plans/stage2-batched-acquisition.md`);
   the same holds for `gp_fit` (a slice-sampling chain), and a change to
   the random stream moves both, so `--expect-moving` names the second
-  while the first is re-baselined. A new oracle is added to the existing
+  while the first is re-baselined. The `acq_AcqFcnIMIQR` reference moves
+  when the importance sampler's random stream changes and was re-baselined
+  that way on 2026-09-10, on the Linux container rather than the
+  generating machine: it reads bit-identical there and at rounding level
+  on the generating machine, where `--check --exact` flags it until it is
+  re-baselined there from the stored state. A new oracle is added to the existing
   fixtures with `--add-oracle NAME --reason "..."` (never by rerunning the
   recipes, which would move every snapshot). The committed references
   equal the current numerics on the generating machine (re-baselined at

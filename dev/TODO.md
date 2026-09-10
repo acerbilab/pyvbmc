@@ -9,7 +9,13 @@ that AGENTS.md already describes as landed (the `vp.rng` fix for the
 IMIQR importance sampler with the re-baselined `acq_AcqFcnIMIQR` oracle,
 and the deterministic VIQR/IMIQR definition tests) alongside the
 acquisition prototypes listed below; merge it into `dev-next` and remove
-the branch. Remaining work awaits the separate decisions below.
+the branch. After the merge, re-baseline `acq_AcqFcnIMIQR` on the machine
+that generated the oracle fixtures (`python
+dev/scripts/make_oracle_fixtures.py --rebaseline acq_AcqFcnIMIQR --reason
+...`, from the stored state): the 2026-09-10 re-baseline ran on the Linux
+container, so `--check --exact` on the generating machine flags that one
+reference at rounding level until then. Remaining work awaits the separate
+decisions below.
 
 ## Work awaiting a separate decision
 

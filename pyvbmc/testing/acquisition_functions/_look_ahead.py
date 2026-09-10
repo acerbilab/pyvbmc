@@ -36,8 +36,8 @@ def look_ahead_sd(gp, thetas, x, sn2_new, chunk=2000):
 def gauss_hermite_reference(gp, vp, X_eval, sn2_new, transform, n_nodes=30):
     """``E_vp[transform(s_new(theta; x))]`` for every row of ``X_eval`` by
     tensor Gauss-Hermite quadrature under the single-component Gaussian
-    ``vp`` (``n_nodes`` nodes per axis; 30 is converged to 1e-5 on the
-    scenarios of the tests, 20 to 1e-4)."""
+    ``vp`` (``n_nodes`` nodes per axis; on the scenario of the tests 30
+    nodes agree with 50 to 4e-5 relative, 20 to 2e-4)."""
     assert vp.K == 1
     D = vp.D
     nodes, weights = np.polynomial.hermite.hermgauss(n_nodes)

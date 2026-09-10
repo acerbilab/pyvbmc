@@ -195,13 +195,18 @@ The definition tests of VIQR and IMIQR (`test_complex__call__` in both
 modules) were unseeded, and the IMIQR one failed about one run in ten:
 its reference was a coarse grid 3 to 4 % high, and the acquisition's
 self-normalized importance-sampling estimate scatters by 2 % across seeds
-on that scenario and sits 2 % above the integral on average, because the
-single slice-sampling chain visits the low-noise half-plane, where the
-weights are large and the integrand small, in correlated stretches; more
-samples do not remove the offset. Both tests are now seeded, check the
-acquisition's formula exactly against a recomputation from its own
-samples, and compare with a converged Gauss-Hermite reference at a
-tolerance set from the measured spread. Fixing them showed that the MCMC
+on that scenario (single seeds 4 % off), because the single slice-sampling
+chain visits the low-noise half-plane, where the weights are large and
+the integrand small, in correlated stretches. A 2 % offset first
+attributed to the sampler was the test's own GP: its hyperparameter
+array was laid out for a noise hyperparameter the noise function did not
+carry, so the mean function read shifted entries and was not the target,
+and IMIQR's importance-sampling target exp(f_mu) differed from the VP by
+2.6 %; with the array aligned the estimate is unbiased within its scatter
+(mean +0.7 % over twelve seeds). Both tests are now seeded, share one
+scenario helper, check the acquisition's formula exactly against a
+recomputation from its own samples, and compare with a converged
+Gauss-Hermite reference at a tolerance set from the measured spread. Fixing them showed that the MCMC
 step of `active_importance_sampling` (IMIQR only; VIQR samples the VP
 directly) still drew from NumPy's global state, the one remaining
 exception to the generator: it now receives `vp.rng`, and the

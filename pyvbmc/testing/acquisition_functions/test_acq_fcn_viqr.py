@@ -10,7 +10,7 @@ from pyvbmc.vbmc import active_importance_sampling
 
 from ._look_ahead import gauss_hermite_reference, weighted_samples_reference
 from ._regularization import check_variance_regularization
-from .test_acq_fcn_imiqr import _options, _prepare_optim_state
+from ._scenario import look_ahead_scenario, options, prepare_optim_state
 
 
 @pytest.fixture(autouse=True)
@@ -112,8 +112,8 @@ def test_simple__call__():
     ## Setup acquisition function and necessary preliminaries:
 
     acqviqr = AcqFcnVIQR()
-    optim_state = _prepare_optim_state(gp, s2)
-    vbmc_options = _options(D, 100)
+    optim_state = prepare_optim_state(gp, s2)
+    vbmc_options = options(D, 100)
 
     optim_state["active_importance_sampling"] = active_importance_sampling(
         vp, gp, acqviqr, vbmc_options
@@ -134,96 +134,31 @@ def test_simple__call__():
 
 
 def test_complex__call__():
-    """The VIQR of five candidates against its definition, on a GP whose
-    mean is the (standard normal) target exactly and whose predictive sd
-    is small on the half-plane observed with low noise and of order one on
-    the other.
+    """The VIQR of five candidates against its definition on the shared
+    scenario (``_scenario.look_ahead_scenario``). VIQR integrates against
+    the VP itself, from which it draws its samples.
 
     Two checks. The acquisition's value is recomputed from its own
     samples of the VP with the GP's full covariances, an exact check of
     the look-ahead formula. Then the estimate is compared with the
     integral under the VP, by Gauss-Hermite quadrature, at the precision
     of plain Monte Carlo with 8000 VP samples: the integrand's coefficient
-    of variation under the VP is 1.1, so the standard error is 1.2 %, and
+    of variation under the VP is 1.07, so the standard error is 1.2 %, and
     the 5 % tolerance is four standard errors. The run is seeded, so the
     check is deterministic. (Before 2026-09-10 the reference was a 60x60
     grid on [-30, 30] and the tolerance 3 %, two and a half standard
     errors of an unseeded estimate.)"""
-    D = 2
-    epsilon = 1e-3
-
-    def ltarget(theta):  # Standard MVN with s2 est. propto dist. from origin
-        ll = sps.multivariate_normal(
-            mean=np.zeros((D,)), cov=np.eye(D)
-        ).logpdf(theta)
-        if theta[0] < 0:
-            return ll, epsilon
-        else:
-            return ll, np.linalg.norm(theta) + epsilon
-
-    # GP training data
-    M = 17  # Number of training points = M^2
-    x1 = x2 = np.linspace(-5, 5, M)
-    X1, X2 = np.meshgrid(x1, x2)
-    X = np.vstack([X1.ravel(), X2.ravel()]).T
-    # Delete every other point on half of the plane, to create some variation
-    # in the expected posterior covariance, but leave the points dense enough
-    # that _estimate_observation_noise() is accurate:
-    for i in range(len(X), len(X) // 2, -1):
-        if i % 2 == 0:
-            X = np.delete(X, i, 0)
-    lls = np.array([ltarget(x) for x in X])
-    y = lls[:, 0].reshape(-1, 1)
-    s2 = lls[:, 1].reshape(-1, 1)
-
-    # Fixed GP hyperparameters
-    hyp = np.array(
-        [
-            [
-                # Covariance
-                1.0,
-                1.0,  # log ell
-                1.0,  # log sf2
-                # Noise
-                -10.0,  # log std. dev. of noise
-                # Mean
-                -(D / 2) * np.log(2 * np.pi),  # MVN mode
-                0.0,
-                0.0,  # Mode location
-                0.0,
-                0.0,  # log scale
-            ]
-        ]
-    )
-    gp = gpr.GP(
-        D,
-        covariance=gpr.covariance_functions.SquaredExponential(),
-        mean=gpr.mean_functions.NegativeQuadratic(),
-        noise=gpr.noise_functions.GaussianNoise(user_provided_add=True),
-    )
-    gp.update(X_new=X, y_new=y, s2_new=s2, hyp=hyp)
-
-    u = sps.norm.ppf(0.75)
-    vp = VariationalPosterior(D, 1)  # VP with one component
-    vp.mu = np.zeros((D, 1))
-    vp.sigma = np.ones((1, 1))  # VP is standard normal
-    vp.rng = np.random.default_rng(0)
-
-    # Acquisition function evaluation points:
-    N_eval = 5
-    X_eval = np.tile(np.linspace(-5, 5, N_eval).reshape((N_eval, 1)), (1, 2))
-
-    ## Setup acquisition function and necessary preliminaries:
+    gp, s2, vp, X_eval, u = look_ahead_scenario()
+    D = gp.D
+    N_eval = X_eval.shape[0]
 
     acqviqr = AcqFcnVIQR()
-    optim_state = _prepare_optim_state(gp, s2)
-    vbmc_options = _options(D, 8000)
-
+    optim_state = prepare_optim_state(gp, s2)
+    vbmc_options = options(D, 8000)
     optim_state["active_importance_sampling"] = active_importance_sampling(
         vp, gp, acqviqr, vbmc_options
     )
 
-    # VIQR Acquisition Function Values:
     log_result = acqviqr(
         X_eval, gp, vp, function_logger=None, optim_state=optim_state
     )
@@ -233,7 +168,8 @@ def test_complex__call__():
     result = np.exp(log_result).reshape((N_eval,))
 
     # The noise the acquisition assumes for the hypothetical observation
-    # (from the nearest training inputs) enters the reference too.
+    # (from the nearest training inputs) enters the reference too; the
+    # estimator itself is not what these checks pin.
     sn2_new = acqviqr._estimate_observation_noise(X_eval, gp, optim_state)
     viqr = lambda s: 2 * np.sinh(u * s)  # the interquantile range
 

@@ -16,6 +16,17 @@ from pyvbmc.vbmc.active_importance_sampling import (
 from pyvbmc.vbmc.options import Options
 
 
+@pytest.fixture(autouse=True)
+def _restore_global_rng():
+    """``VariationalPosterior.__init__`` draws its seed from the global
+    ``np.random`` state and ``test_draws_come_from_vp_rng_only`` seeds that
+    state; leave it as each test found it, so later modules see the
+    stream they would have seen."""
+    state = np.random.get_state()
+    yield
+    np.random.set_state(state)
+
+
 def _scenario():
     """A two-component VP, a two-sample GP on 15 points and options with
     small sample counts (thinned MCMC), as ``test_active_importance_sampling``
