@@ -1,11 +1,9 @@
 # 2026-09-02 — A PyVBMC skill for users' coding agents
 
 **Status:** proposal refreshed on 2026-09-10 against the implemented 1.5 API.
-Ready for implementation planning; the skill and its distribution mechanism
-have not been built. RNG control, vectorized initial evaluation, posterior
-exports, machine-local calibration and runtime tips are now settled. The
-NumPy/SciPy solver is the release baseline. S-VBMC integration awaits its main
-developer's review; it need not block the core skill.
+The proposed skill covers RNG control, vectorized initial evaluation,
+posterior exports, machine-local calibration and runtime tips alongside the
+core inference workflow.
 
 ## Purpose
 
@@ -25,8 +23,7 @@ quadrature.
 The [baygent-skills project](https://github.com/Learning-Bayesian-Statistics/baygent-skills)
 provides a useful precedent: workflow instructions, references and examples
 in skill folders. Use that structure, while deriving scientific guidance from
-PyVBMC's own documentation and reviewed tips. The earlier inventory of that
-project's file sizes and rules is unnecessary for this design.
+PyVBMC's own documentation and reviewed tips.
 
 ## Proposed first version
 
@@ -105,8 +102,7 @@ export dependencies are needed only for their respective workflows.
 
 Set a budget appropriate to model cost, construct `VBMC(...)` and call
 `optimize()`. Probes, preliminary optimization and repeated fits belong in
-the overall cost estimate. Use existing authorization for the work; the skill
-should not add confirmation steps to ordinary execution already requested.
+the overall cost estimate.
 
 Explicit seeds are optional, useful when reproducibility is needed. Document
 `seed=` and generator support in a reference without making seed management
@@ -164,7 +160,7 @@ needed. Use the [quickstart](../docsrc/source/quickstart.rst) for interfaces.
 | `vp.to_torch()` | An independent distribution snapshot, by default CPU float64 in original coordinates. Exported samples use torch's RNG. Install the optional `torch` extra when needed. |
 | `vp.to_arviz()` | Independent draws from the variational approximation in a one-chain DataTree, advancing `vp.rng`. Requires the `arviz` extra and Python 3.12+. MCMC convergence diagnostics on these draws do not validate the approximation. |
 | Runtime tips | Leave defaults unless the user wants different output. `show_tips=False` disables tips; `display="off"` also suppresses the calibration reminder and ordinary optimization output. |
-| S-VBMC | Link to the existing [S-VBMC tutorial](https://github.com/acerbilab/svbmc#how-to-use-s-vbmc) for combining independent runs on the same model and data without new model evaluations. Do not invent a PyVBMC integration API while its placement remains under review. |
+| S-VBMC | Link to the [S-VBMC tutorial](https://github.com/acerbilab/svbmc#how-to-use-s-vbmc) for combining independent runs on the same model and data without new model evaluations. |
 
 ## Distribution and maintenance
 
@@ -174,9 +170,9 @@ how the single source under `skills/pyvbmc/` enters both wheel and sdist, and
 how users copy it to a supported agent's skill location. Test built artifacts,
 not just a checkout.
 
-A dedicated `python -m pyvbmc install-skill` command was an earlier suggestion,
-not an existing or settled API. First establish whether documented folder
-copying suffices. If an installer is justified, use an explicit destination
+A dedicated installer, such as `python -m pyvbmc install-skill`, is one
+possible addition. First establish whether documented folder copying suffices.
+If an installer is justified, use an explicit destination
 and defined replacement behavior rather than guessing the active agent or
 overwriting a user's edited skill. Keep general agent management out of scope.
 
@@ -210,7 +206,7 @@ the basic workflow.
 - Verify delivery from wheel and sdist, working references and a documented
   update path. Add the README/docs entry when installation instructions work.
 
-## Sources and release boundary
+## Sources
 
 Use the [1.5 overview](2026-09-06-pyvbmc-1.5-overview.md),
 [quickstart](../docsrc/source/quickstart.rst),
@@ -219,10 +215,4 @@ Use the [1.5 overview](2026-09-06-pyvbmc-1.5-overview.md),
 reviewed [runtime-tip catalog](../pyvbmc/vbmc/_tip_catalog.py) together.
 The [VBMC FAQ](https://github.com/acerbilab/vbmc/wiki) supplies supporting
 explanations; translate MATLAB interfaces and check scientific wording against
-the current Python implementation. External format and precedent links were
-rechecked for this refresh.
-
-This update changes no runtime behavior. Implementation is the next separate
-task. S-VBMC integration still requires its developer review; the final
-870-case population and release publication retain the authorization
-boundaries in [TODO.md](TODO.md).
+the current Python implementation.
