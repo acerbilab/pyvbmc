@@ -1,0 +1,10 @@
+state lumpy_D4_noise1.pkl: D=4 N=110 Ns=8 K=12
+  GP length scale / VP sd per dimension: min 0.05, median 0.95, max 3.17; noise sd 1.00
+  basins from 32 VP-drawn starts: 31 distinct optima; values as % of the best: [100, 94, 70, 65, 59, 56, 50, 49] ...; starts within 5% of the best: 0.06
+  draw | gain of L-BFGS-B (1 start) over the sieve: on its own 100-sample set -> under 4000 samples | 4 starts | coarse-to-fine | sieve % of truth-best
+     0 | x1.00 -> x1.00 | x1.00 -> x1.00 | x1.06 -> x0.99 | 100%
+     1 | x1.00 -> x1.00 | x1.00 -> x1.00 | x1.05 -> x1.37 | 73%
+     2 | x1.00 -> x1.00 | x1.00 -> x1.00 | x1.19 -> x2.08 | 48%
+     3 | x1.00 -> x1.00 | x1.00 -> x1.00 | x1.14 -> x1.23 | 81%
+     4 | x1.00 -> x1.00 | x1.15 -> x0.52 | x1.12 -> x0.47 | 100%
+  median | x1.00 -> x1.00 | x1.00 -> x1.00 | x1.12 -> x1.23 | refined point worse than the sieve under the truth in 0/5 (1 start), 1/5 (4 starts) draws

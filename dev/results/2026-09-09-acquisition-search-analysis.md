@@ -125,9 +125,11 @@ refinement).
   evaluations against 8192 for a sieve that reaches 63 %).
 - The number of restarts matters where the surface has several basins:
   the D = 5 state has a second basin at 74.5 % that catches a single start
-  in most draws whatever the sieve size (even the 8192 sieve's own best
-  point sits in it in some draws); four mutually distant starts reach the
-  optimum from every sieve of 256 points or more.
+  in most draws from sieves of up to 1024 points (from the 8192 sieve a
+  single start reaches the optimum in the median, though that sieve's own
+  best point sits in the second basin in some draws); four mutually
+  distant starts reach the optimum from every sieve of 256 points or
+  more.
 - A defensible default is therefore a sieve of 512–1024 candidates and
   four restarts from mutually distant tops, about 1000–2000 evaluations at
   D = 5–8, a fifth of the present sieve, reaching the optimum where the
@@ -176,8 +178,9 @@ The "100 % of the reference" numbers of the two subsections above were
 measured on the surface the optimizer climbed, so they measured how well
 L-BFGS-B fits the sampling noise of 100 importance points, not how much
 better the chosen point is. The coarse-to-fine resampling overfits the
-same way; the sieve is robust because it does not resolve the fine
-structure.
+same way. The sieve does not resolve the fine structure, but its pick is
+fitted to the same set: the same sieve on a 400-sample set gains
+×1.0–1.7 under the judge (arm E in the pipeline table below).
 
 **Refining on a larger set fixes it.** Sieve and one-start L-BFGS-B on a
 set of `Na` samples, judged on an independent 6400-sample set (median
@@ -201,8 +204,8 @@ Revised recommendation (superseding the search items in the companion report's c
    rows: re-evaluate the sieve's top few on the large set, then L-BFGS-B
    on the log-reduction from the best of them, and keep the sieve point
    if the large-set value does not improve. Judged independently this
-   gains ×1.07–1.27 over the sieve point on four states with no draw
-   worse at 1600 samples.
+   gains ×1.07–1.27 in the median over the sieve point on four states,
+   worse in one draw of twenty at 1600 samples.
 3. The gain is modest and state-dependent; whether it is worth anything
    end to end is still the open question, and the synthetic targets
    remain the caveat.
@@ -227,12 +230,12 @@ states (N = 139–325, Ns = 1–7).
 | E: sieve 8192 on Na = 400, no refinement | ×1.31 [1.00, 1.95], 1822 ms | ×1.24 [0.99, 2.15], 1822 ms | ×1.00 [1.00, 5.40], 1617 ms | ×1.72 [1.11, 2.09], 1061 ms |
 | F: one set Na = 400, sieve 2048, L-BFGS-B from top 4 | ×1.39, 694 ms | ×1.53, 856 ms | ×1.22, 1159 ms | ×1.76, 220 ms |
 
-Reading: today's pipeline loses a third to a half of the achievable
-reduction to the Monte Carlo noise of its 100-sample set (its sieve pick
-overfits that set as much as a refinement would) and to the missing
-refinement. The 1600-sample set-up is a real cost, about a third of
-today's sieve call, but pipeline B still comes in at 0.6–0.7× today's
-time because the sieve shrinks eightfold, and its judged gain is
+Reading: today's pipeline loses a fifth to a half of the reduction
+pipeline B reaches, to the Monte Carlo noise of its 100-sample set (arm
+E, the same sieve on 400 samples, recovers part of it) and to the
+missing refinement. The 1600-sample set-up is a real cost, about a third
+of today's sieve call, but pipeline B still comes in at 0.61–0.75×
+today's time because the sieve shrinks eightfold, and its judged gain is
 ×1.26–1.95 with no draw below ×1.05. Pipeline C (a single 400-sample set)
 is cheaper still, 0.4–0.6×, with slightly smaller gains and one draw at
 ×0.99. Sieving on a 1600-sample set (D) or a larger sieve on a better set
@@ -245,8 +248,10 @@ Ns · N², so B's grows toward the end of a long run while Ns shrinks.
 
 ### Sizing the refinement set as a function of N
 
-Two measurements set the rule (`scratch: pipeline_cost.py`, the CV probe
-and the candidate-side timing in the session log).
+Two measurements set the rule (`scratch: pipeline_cost.py` for the
+pipeline costs above; the CV probe and the candidate-side timing were
+printed in the session and their outputs not saved, so the tables below
+are their record).
 
 **How many samples the refinement needs.** The per-sample interquantile
 reduction at the sieve's best point, on a 1600-sample set, first

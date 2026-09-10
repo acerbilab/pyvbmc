@@ -1,0 +1,10 @@
+state student_D8_noise3.pkl: D=8 N=200 Ns=6 K=11
+  GP length scale / VP sd per dimension: min 4.14, median 7.43, max 28.49; noise sd 3.00
+  basins from 32 VP-drawn starts: 2 distinct optima; values as % of the best: [100, 86]; starts within 5% of the best: 0.91
+  draw | gain of L-BFGS-B (1 start) over the sieve: on its own 100-sample set -> under 4000 samples | 4 starts | coarse-to-fine | sieve % of truth-best
+     0 | x1.71 -> x0.57 | x1.71 -> x0.57 | x1.56 -> x0.66 | 100%
+     1 | x1.36 -> x0.96 | x1.36 -> x0.96 | x1.24 -> x0.96 | 100%
+     2 | x1.26 -> x1.28 | x1.26 -> x1.28 | x1.23 -> x1.20 | 78%
+     3 | x1.24 -> x1.18 | x1.26 -> x1.03 | x1.24 -> x0.96 | 85%
+     4 | x1.79 -> x0.69 | x1.79 -> x0.69 | x1.69 -> x0.65 | 100%
+  median | x1.36 -> x0.96 | x1.36 -> x0.96 | x1.24 -> x0.96 | refined point worse than the sieve under the truth in 3/5 (1 start), 3/5 (4 starts) draws

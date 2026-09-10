@@ -21,7 +21,7 @@ companion report on the acquisition search is
 | `optimize_vp` | 5 % | 116 |
 | `cma.fmin` | 2.7 % | 190 |
 
-The laptop profile of 2026-09-02 (`plans/benchmark-suite-and-golden-traces.md`,
+The laptop profile of 2026-09-02 (`../plans/benchmark-suite-and-golden-traces.md`,
 `banana_D2_noise1`) had the acquisition at 50 % and the fits at 25 %; the
 machines differ in the relative cost of a Cholesky and of elementwise
 work, but the two items are the same. So "VIQR is slow" is two things:
@@ -34,8 +34,8 @@ work, but the two items are the same. So "VIQR is slow" is two things:
 2. **The sieve.** One VIQR call per new point on `ns_search = 8192`
    candidates: an (8192 × N) by (N × 100) product per hyperparameter sample
    plus a sqrt, exp, log1p, exp, log sweep over 8192 × 100 values per
-   sample. The CMA-ES refinement is nearly free (about 26 acquisition calls
-   per point on this path).
+   sample. The CMA-ES refinement is nearly free (about 17 acquisition calls
+   per point in this profile, 9–18 in the operation-level timers below).
 
 Noisy runs also get 1.5× the budget and stability count, so N is larger.
 
@@ -149,8 +149,9 @@ Reading:
   the cost is proportional to Ns (the same halving at N ≥ 300 on
   `lumpy_D10_noise3`).
 - **The GP fits are 17–60 %**, the slice sampler 71–94 % of them and the
-  space-filling initial design (`f_min_fill`, 1024 random hyperparameter
-  vectors before every fit) 23–26 % on four targets: an avoidable
+  space-filling initial design (`f_min_fill`, up to 1024 random
+  hyperparameter vectors, fewer as the training set grows, before a fit
+  that starts from scratch) 23–26 % on four targets: an avoidable
   in-loop cost, since the refits could start from the previous samples.
   Per fit the cost spans 0.2–5 s depending on Ns and N.
 - **The in-loop VP optimizations are 1–2 %**: the "frequent retrain" is
@@ -161,10 +162,16 @@ Reading:
 What this says about speeding VIQR up without touching the algorithm:
 skip the log-form sinh and the log-sum-exp in favour of a direct `sinh`,
 sum and one `log` (two transcendental sweeps instead of four, about 15 %
-of the sieve), reuse the cross-kernel from the prediction (about 20 %),
-and start the in-loop refits from the previous hyperparameters instead
-of the space-filling design (about a quarter of the fit time). Together
-that is roughly a third of the wall time of these runs.
+of the sieve), reuse the cross-kernel against the training inputs from
+the prediction (part of the 21–25 % kernel share, which also holds the
+block against the importance points), and start the in-loop refits from
+the previous hyperparameters instead of the space-filling design (about
+a quarter of the fit time on four targets, 4 % on the fifth). Together
+that is a fifth to a third of the wall time of these runs, least where
+the fits dominate. The first two change no numerics beyond rounding; the
+warm start changes which hyperparameters a refit returns and how many
+draws it consumes, so it moves the golden traces and the `gp_fit` oracle
+and needs their gate.
 
 ## The family view, and why pointwise acquisitions fail
 
@@ -295,11 +302,13 @@ GP had 3 and 10 fewer rows than evaluations; every other arm made none.
 
 ## The combination and the harder configurations
 
-Same protocol; the harder configurations at seeds 0–5 only (4.5–12
-minutes per run here). The reference population's medians for the
-defaults are gsKL 0.42 and 0.55 on these two configs (50 and 30 seeds), so
-the six-seed baselines here sit on the accurate side of their
-distributions.
+Same protocol. The two-dimensional tables repeat the two arms concerned
+with the GP-row count and add the combination; the harder configurations
+ran at seeds 0–5 only (4.5–12 minutes per run here). The reference
+population's medians for the defaults are gsKL 0.42 and 0.55 on these two
+configs (50 and 30 seeds), so the six-seed baselines here sit on the
+accurate side of their distributions.
+
 **rosenbrock_D2_noise1** (seeds 0–9; paired columns against the defaults on the same seeds)
 
 | arm | n | gsKL | MMTV | ELBO err | usable | evals | GP rows | wall min | gsKL ratio | wins | wall ratio |
@@ -362,14 +371,15 @@ distributions.
    replacement. Not a candidate default.
 4. **Repeated observations never hurt and help once.** gsKL 0.48 (7/10) at
    σ = 3 on the Rosenbrock, 1.04 at σ = 1, 0.94 (3/6) and 0.96 (4/6) on the
-   two harder configs, at 0.93–1.03× the wall time, from a handful of
+   two harder configs, at 0.57–1.03× the wall time, from a handful of
    repeats per run (2–10 fewer GP rows than evaluations). The ELBO error
-   moves the other way in three of four configs (0.253 against 0.196,
-   0.169 against 0.086, 0.763 against 0.541 medians), which the small
-   samples cannot separate from noise but is consistent in sign. Safe to
-   enable on noisy runs; the evidence for a gain is confined to the
-   low-dimensional high-noise case. The combination with `var_reduction`
-   inherits the loss's failure.
+   moves the other way in all four configs (0.134 against 0.087, 0.253
+   against 0.196, 0.169 against 0.086, 0.763 against 0.541 medians), which
+   the small samples cannot separate from noise but is consistent in
+   sign. Not a default yet: the evidence for a gain is confined to the
+   low-dimensional high-noise case, and the evidence-error trend needs
+   more seeds. The combination with `var_reduction` inherits the loss's
+   failure.
 5. **The scalar EIG is unusable here** (0/10 usable at σ = 3, 24× the gsKL
    at σ = 1), worse than the 2020 paper's "reasonable" verdict. The
    per-component variant is competitive at σ = 1 (0.54, 7/10) and 2.6×
@@ -378,5 +388,23 @@ distributions.
    now; the σ = 1 result says the criterion is not wrong, only weaker than
    the look-ahead losses under noise.
 
+## Not done
 
-
+- `sd_reduction` and `iqr_reduction` end to end (dropped as redundant
+  once CMA-ES proved a no-op on this path; `sd_reduction` is the untested
+  middle ground between the variance and the interquantile range).
+- Deterministic quadrature for the VP integral in place of the
+  importance samples.
+- Oracle entries for the new acquisitions (`--add-oracle`) and API pages
+  beyond the automodule listing, pending a decision on which of them to
+  keep.
+- The L-BFGS-B search stage as a `search_optimizer` option and the
+  end-to-end arms with a smaller sieve (the companion
+  [search analysis](2026-09-09-acquisition-search-analysis.md)).
+- A noise-adaptive policy for the frequent retrain and the sieve size: at
+  σ = 1 both can be cut for half the wall time at no cost, at σ = 3
+  neither can. Keying `active_sample_gp_update`, `active_sample_vp_update`
+  and `ns_search` to the noise estimate at the high-posterior-density
+  region (`sn2_hpd`, computed each iteration) is the one speed lever
+  these experiments leave open that does not trade accuracy; the
+  threshold needs a sweep over noise levels.

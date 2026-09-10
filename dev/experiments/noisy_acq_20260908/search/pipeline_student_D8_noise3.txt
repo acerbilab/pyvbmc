@@ -1,0 +1,9 @@
+state student_D8_noise3.pkl: D=8 N=200 Ns=6 K=11
+  importance-set set-up (ms): Na=100: 12, Na=400: 41, Na=1600: 267
+  pipeline                                                                       | judged gain over A: median [min, max] | ms per new point: set-up + sieve + refine = total
+  A  today: sieve 8192 on Na=100, no refinement                                  | x1.00 [x1.00, x1.00] |    12 +   822 +     0 =   834
+  B  sieve 1024 on Na=100; top 8 re-scored on Na=1600; L-BFGS-B on Na=1600       | x1.84 [x1.17, x2.57] |   179 +    84 +   253 =   535
+  C  one set Na=400: sieve 1024, L-BFGS-B                                        | x1.53 [x1.17, x2.49] |    43 +   169 +   116 =   321
+  D  one set Na=1600: sieve 1024, L-BFGS-B                                       | x1.85 [x1.21, x2.36] |   164 +   548 +   222 =   925
+  E  sieve 8192 on Na=400, no refinement                                         | x1.24 [x0.99, x2.15] |    42 +  1781 +     0 =  1822
+  F  one set Na=400: sieve 2048, L-BFGS-B from top 4                             | x1.53 [x1.17, x2.52] |    41 +   310 +   505 =   856

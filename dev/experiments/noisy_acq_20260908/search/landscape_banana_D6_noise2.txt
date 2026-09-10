@@ -1,0 +1,10 @@
+state banana_D6_noise2.pkl: D=6 N=158 Ns=6 K=18
+  GP length scale / VP sd per dimension: min 1.84, median 273.54, max 311.26; noise sd 2.00
+  basins from 32 VP-drawn starts: 7 distinct optima; values as % of the best: [100, 72, 61, 50, 49, 48, 45]; starts within 5% of the best: 0.09
+  draw | gain of L-BFGS-B (1 start) over the sieve: on its own 100-sample set -> under 4000 samples | 4 starts | coarse-to-fine | sieve % of truth-best
+     0 | x1.13 -> x0.93 | x1.13 -> x0.93 | x1.02 -> x0.80 | 100%
+     1 | x1.18 -> x1.05 | x1.18 -> x1.05 | x1.02 -> x0.93 | 95%
+     2 | x1.16 -> x1.16 | x1.16 -> x1.16 | x1.00 -> x1.00 | 86%
+     3 | x1.44 -> x1.18 | x1.44 -> x1.18 | x1.34 -> x1.10 | 85%
+     4 | x1.25 -> x1.25 | x1.46 -> x1.25 | x1.44 -> x1.24 | 80%
+  median | x1.18 -> x1.16 | x1.18 -> x1.16 | x1.02 -> x1.00 | refined point worse than the sieve under the truth in 1/5 (1 start), 1/5 (4 starts) draws

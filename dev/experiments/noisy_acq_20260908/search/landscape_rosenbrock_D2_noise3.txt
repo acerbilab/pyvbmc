@@ -1,0 +1,10 @@
+state rosenbrock_D2_noise3.pkl: D=2 N=86 Ns=8 K=8
+  GP length scale / VP sd per dimension: min 2.05, median 8.26, max 14.47; noise sd 3.00
+  basins from 32 VP-drawn starts: 2 distinct optima; values as % of the best: [100, 90]; starts within 5% of the best: 0.59
+  draw | gain of L-BFGS-B (1 start) over the sieve: on its own 100-sample set -> under 4000 samples | 4 starts | coarse-to-fine | sieve % of truth-best
+     0 | x1.00 -> x0.99 | x1.00 -> x0.99 | x1.00 -> x1.00 | 100%
+     1 | x1.00 -> x1.00 | x1.00 -> x1.00 | x1.00 -> x1.00 | 100%
+     2 | x1.00 -> x1.01 | x1.00 -> x1.01 | x1.00 -> x1.01 | 99%
+     3 | x1.00 -> x1.00 | x1.00 -> x1.00 | x1.00 -> x1.00 | 100%
+     4 | x1.00 -> x0.99 | x1.00 -> x0.99 | x1.00 -> x0.99 | 100%
+  median | x1.00 -> x1.00 | x1.00 -> x1.00 | x1.00 -> x1.00 | refined point worse than the sieve under the truth in 3/5 (1 start), 3/5 (4 starts) draws

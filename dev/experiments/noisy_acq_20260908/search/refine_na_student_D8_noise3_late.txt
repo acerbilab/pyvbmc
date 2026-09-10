@@ -1,0 +1,5 @@
+state student_D8_noise3_late.pkl: D=8 N=325 Ns=1 K=29
+  Na of the set used for the sieve and the refinement | gain of the refined point over the same set's sieve point, judged on an independent 6400-sample set: median [min, max] over 5 draws | sieve point as % of the best of the four points under the judge
+  Na =   100 | x0.87 [x0.67, x1.16] | worse than the sieve in 3/5 draws
+  Na =   400 | x1.07 [x1.02, x1.11] | worse than the sieve in 0/5 draws
+  Na =  1600 | x1.08 [x1.03, x1.09] | worse than the sieve in 0/5 draws

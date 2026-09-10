@@ -1,0 +1,9 @@
+state banana_D6_noise2.pkl: D=6 N=158 Ns=6 K=18
+  importance-set set-up (ms): Na=100: 8, Na=400: 32, Na=1600: 192
+  pipeline                                                                       | judged gain over A: median [min, max] | ms per new point: set-up + sieve + refine = total
+  A  today: sieve 8192 on Na=100, no refinement                                  | x1.00 [x1.00, x1.00] |     9 +   756 +     0 =   766
+  B  sieve 1024 on Na=100; top 8 re-scored on Na=1600; L-BFGS-B on Na=1600       | x1.26 [x1.05, x2.79] |   133 +    67 +   370 =   571
+  C  one set Na=400: sieve 1024, L-BFGS-B                                        | x1.22 [x0.99, x5.23] |    30 +   154 +   234 =   435
+  D  one set Na=1600: sieve 1024, L-BFGS-B                                       | x1.28 [x1.06, x5.67] |   125 +   658 +   268 =  1024
+  E  sieve 8192 on Na=400, no refinement                                         | x1.00 [x1.00, x5.40] |    29 +  1585 +     0 =  1617
+  F  one set Na=400: sieve 2048, L-BFGS-B from top 4                             | x1.22 [x0.99, x5.23] |    30 +   299 +   823 =  1159

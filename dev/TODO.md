@@ -3,8 +3,13 @@
 Updated 2026-09-10. This file records only current actions and constraints;
 completed work and evidence remain in the linked plans and reports.
 
-No active implementation task, CI run, or benchmark job. Remaining work
-awaits the separate decisions below.
+No CI run or benchmark job. One merge is pending: the branch
+`claude/pyvbmc-noisy-acq-funcs-9kwdny` carries two production changes
+that AGENTS.md already describes as landed (the `vp.rng` fix for the
+IMIQR importance sampler with the re-baselined `acq_AcqFcnIMIQR` oracle,
+and the deterministic VIQR/IMIQR definition tests) alongside the
+acquisition prototypes listed below; merge it into `dev-next` and remove
+the branch. Remaining work awaits the separate decisions below.
 
 ## Work awaiting a separate decision
 
@@ -19,8 +24,9 @@ awaits the separate decisions below.
   refinement on a larger importance set) and the operation-level savings in
   the VIQR sieve call and the in-loop GP refits await a decision; see the
   [noisy-target acquisitions note](2026-09-08-noisy-acquisitions.md). The
-  VIQR loss variants and the EIG acquisitions on that branch are documented
-  options with no default changed.
+  VIQR loss variants and the EIG acquisitions on that branch are options
+  with no default changed; keeping any of them needs the hand-written API
+  page AGENTS.md requires for a public class.
 
 ## Release boundary and working rules
 
