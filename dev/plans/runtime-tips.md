@@ -244,7 +244,17 @@ Acceptance checks:
 - Approve or adjust cadence, option name/default and wording. Shared-slot priority,
   session-only history, code reuse, shuffling and best-effort low-frequency spacing are
   settled; the six/two catalog is proposed within the PI's suggested ceiling.
-- Independent Sol plan review complete; no findings remain. Review clarified
+- Independent Sol structural plan review complete; no findings remain. Review clarified
   legacy option-override ordering and removed unnecessary future applicability
   cases. The final shuffled, best-effort spacing policy was reviewed separately.
-  No source implementation has begun.
+  The subsequent wording rewrite is proposed for PI review; only `multiple_runs`
+  has explicit wording approval. No source implementation has begun.
+
+Pickup: review the seven remaining proposed messages above, then settle
+`show_tips=True`, the 1/4/7 cadence and first-start-only behavior before approving
+implementation. Keep the settled shared slot, session history and shuffled,
+best-effort low-frequency spacing; do not restore deterministic catalog order
+or a requirement for three ordinary tips before a low-frequency one. Concrete
+commands and quantities/ranges are preferred to vague advice. The source
+locations and implementation/test steps above are sufficient to resume from a
+clean checkout; no ignored calibration artifacts or session jobs are needed.

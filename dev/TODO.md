@@ -4,9 +4,12 @@ Updated 2026-09-10. This file records only current actions and constraints;
 completed work and evidence remain in the linked plans and reports.
 
 Current work: plan optional runtime tips; see the
-[draft design](plans/runtime-tips.md). Calibration reminders take the shared
-hint slot, and tip history stays within the Python session. Implementation
-awaits plan approval.
+[draft design](plans/runtime-tips.md). Next: review the seven rewritten tip
+messages and settle cadence/option defaults, then obtain implementation approval.
+Only the 3–4-run message is approved. Tips must be concrete, clear and actionable.
+Shared calibration priority, session-only history, shuffled selection and
+best-effort low-frequency spacing are settled. Astra orchestrates; Sol implements
+and reviews after approval. No source implementation or jobs are in progress.
 
 ## Work awaiting a separate decision
 
