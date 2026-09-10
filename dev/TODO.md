@@ -3,18 +3,16 @@
 Updated 2026-09-10. This file records only current actions and constraints;
 completed work and evidence remain in the linked plans and reports.
 
-Calibration is delivered on `dev-next`; all nine CI matrix jobs passed.
-See the [completed plan and CI evidence](plans/machine-local-calibration.md).
-Another-machine performance measurement remains useful; no campaign is scheduled.
+Current work: plan optional runtime tips; see the
+[draft design](plans/runtime-tips.md). Calibration reminders take the shared
+hint slot, and tip history stays within the Python session. Implementation
+awaits plan approval.
 
 ## Work awaiting a separate decision
 
 - S-VBMC integration is parked pending review by its main developer. Do not
   implement it before that review; use the
   [integration proposal](2026-09-08-ecosystem-integration.md).
-- Optional runtime hints remain roadmap pickup 13. Preserve quiet mode, use no
-  inference RNG, suppress repetition, and settle the open UX choices before
-  implementation.
 - The [user-facing agent skill proposal](2026-09-02-user-agent-skill.md) remains
   release work; keep it aligned with the settled 1.5 API and guidance.
 - NumPy/SciPy is the settled PyVBMC 1.5 solver. Do not start a full Torch solver

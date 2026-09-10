@@ -902,9 +902,10 @@ anything that changes numerics lands.
     benchmark remains deferred. Run only one heavy computation at a time.
 
 13. **Optional runtime hints** (PI, 2026-09-09; recorded for 1.5,
-    implementation deferred). Occasionally show users a short, useful tip
-    when optimization starts. This records release work, not authorization
-    to implement it now.
+    planning selected 2026-09-10). The [runtime-tips plan](runtime-tips.md)
+    owns the proposed policy, wording and integration; implementation awaits
+    approval. Occasionally show users a short, useful tip when optimization
+    starts.
 
     Start with a small, curated collection drawn from the FAQ and planned
     user-facing skill: comparing multiple seeded runs and their diagnostics,
@@ -912,14 +913,24 @@ anything that changes numerics lands.
     guidance consistent across hints, documentation and the skill; link to
     fuller explanations where useful.
 
+    A limited share (PI suggests no more than 25-30%) may introduce complementary
+    methods such as S-VBMC or PyBADS, explaining a useful task rather than promoting
+    the software. Use a factual low-frequency category, which can hold other tips
+    too. Shuffle so short sessions can encounter these tips; prefer an ordinary
+    tip after a low-frequency tip, but make progress if only low-frequency tips
+    remain. The draft catalog contains six ordinary and two low-frequency tips.
+
     Show at most one hint per optimization start, with conservative frequency
-    and repetition suppression. Prefer relevant guidance when the current
-    configuration supplies enough context. Respect `display="off"` and
+    and repetition suppression. PI decisions (2026-09-10): a calibration reminder
+    takes the shared hint slot, so skip the tip when it is shown; tip history
+    stays within the Python session, with no new persistent store. Reuse a small
+    shared hint-output helper for calibration and tips. Prefer relevant guidance
+    when the current configuration supplies enough context. Respect `display="off"` and
     provide a separate way to disable hints. Selection must not consume the
     inference RNG or change numerical results. Use the existing startup
-    logging path. The exact option, frequency, repetition-tracking scope and
-    any persistence remain open design choices. No hint implementation or
-    change to the final benchmark schedule is authorized by this entry.
+    output location. The exact option, frequency and wording remain proposed
+    choices in the plan. No hint implementation or change to the final benchmark
+    schedule is authorized by this entry.
 
 ## Post-release follow-up
 
