@@ -159,9 +159,11 @@ affected results accordingly.
 - [x] Implement complete boost capture and validated resume behavior.
 - [x] Check capture against ordinary execution for identical outputs and RNG
   state, covering accepted, rejected and skipped boosts.
-- [~] Freeze the launcher and verify actual worker imports in isolation.
-- [ ] Run bounded timing/recording checks and update the estimate.
-- [ ] Start the authorized overnight first stage after preparation passes.
+- [x] Freeze the launcher and verify actual worker imports in isolation.
+- [x] Run a bounded recording/timing check using the first Gaussian case;
+  retain its artifacts as part of the population. Noisy and exhaust timing
+  cases run next in the same campaign.
+- [x] Start the authorized overnight first stage after preparation passes.
 - [ ] Assess the completed first stage and decide whether further sampling
   is useful.
 
@@ -193,3 +195,31 @@ corrections to helper-import provenance, dependency recording, boost-report
 validation, exclusive locking and comparison error handling. The summary
 uses the golden harness's single writer. The runtime manifest records
 `filelock==3.32.5` and `dill==0.4.1` alongside the numerical stack.
+
+### Overnight launch — 2026-09-10
+
+The supervisor started at **22:59:07 UTC+03**, Windows launcher PID **26080**,
+supervisor PID **18876**. One Gaussian case completed and passed full artifact
+validation before unattended launch; it is reused. The next case is
+`rosenbrock_D2_noise1_seed0`, followed by the seed-0 D15 exhaust case.
+
+Campaign root: `dev/scripts/runs/population_overnight_20260910/`.
+The frozen PyVBMC/tooling checkout is `source/` at `68a43db`; numerical code
+is unchanged from `de686f7`. The separate `gpyreg/` checkout is at `a2f8ddc`.
+`launch_manifest.json` contains the ready, fixed 273-case manifest and
+verified dependency versions. `source_verification.json` records the actual
+import paths. `process.json` records the Windows launcher.
+
+Read `results/status.json` for the active case, completed list and failures;
+`launcher.stdout.log` and `launcher.stderr.log` hold supervisor output, with
+one log per case under `results/`. Completion produces `results/finished.json`,
+`results/summary.md` and `results/comparison.md`. The job requests idle-sleep
+prevention for its lifetime; normal display sleep remains available.
+
+To resume an interrupted job after confirming that no supervisor remains,
+use the main repository's `.venv/Scripts/python.exe`, set
+`PYVBMC_GPYREG_SOURCE` to the absolute campaign `gpyreg/` path, and invoke
+the frozen `source/dev/scripts/population_run.py run` with `--manifest`
+pointing to `launch_manifest.json` and `--out` pointing to `results/`.
+Preserve these files and source checkouts. The launcher verifies complete
+cases before skipping them and stops on partial attempts for inspection.

@@ -3,9 +3,13 @@
 Updated 2026-09-10. This file records only current actions and constraints;
 completed work and evidence remain in the linked plans and reports.
 
-Prepare the [overnight population benchmark](plans/final-population-benchmark.md):
-15 seeds per ordinary configuration plus 3 exhaust cases, 273 runs in total.
-Review that first stage before deciding on further sampling. No campaign is running.
+The [overnight population benchmark](plans/final-population-benchmark.md) is
+running: 273 cases, one numerical worker. It started 2026-09-10 at 22:59
+UTC+03 from frozen source `68a43db`. The supervisor PID is 18876
+(Windows launcher PID 26080). Check
+`dev/scripts/runs/population_overnight_20260910/results/status.json` and
+`launcher.stdout.log` in the campaign directory. Do not start other heavy
+computation while it runs. Review its results before selecting more seeds.
 
 ## Work awaiting a separate decision
 
@@ -27,7 +31,9 @@ Review that first stage before deciding on further sampling. No campaign is runn
   [current golden reference](golden/noisy_extension_20260907/README.md) and
   [latent-fix plan](plans/latent-bug-fixes.md) when that work starts.
 - Run at most one heavy computation at a time, normally in the main thread.
-- No old process, watcher, job, or agent session needs reattachment.
+- The active job owns its frozen PyVBMC and gpyreg checkouts under
+  `dev/scripts/runs/population_overnight_20260910/`; leave them fixed while
+  it runs. No old agent session needs reattachment.
 - Make planning, proposal, handoff, and status-only edits directly on
   `dev-next`; do not create branches for them. Remove completed feature
   branches after merging.
