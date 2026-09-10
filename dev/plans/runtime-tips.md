@@ -1,6 +1,6 @@
 # Optional runtime tips
 
-Created: 2026-09-10. Status: **DRAFT — pending approval**.
+Created: 2026-09-10. Status: **COMPLETE — implemented and verified**.
 Astra owns design/integration; Sol implements and independently reviews.
 This plan owns the tip policy, wording, startup integration and acceptance
 checks for maintainers. Roadmap pickup 13 links here; no separate worklog.
@@ -25,10 +25,63 @@ to scheduling or rendering code. Any tip may include documentation URLs.
 
 Preserve quiet mode, all inference settings and both instance/global RNG
 states. No target evaluation, timing campaign or dependency is introduced.
-Only planning is authorized so far. Work on this plan directly on `dev-next`;
-create a source feature branch only after implementation approval.
+Implementation authorized on 2026-09-10 after the PI edited the messages below.
+The authorization includes the recorded defaults, cadence and first-start policy.
+Implementation branch: `feat/runtime-tips`.
 
-## Proposed user experience
+## Live implementation checklist
+
+- [x] Sol: implement the catalog, shared emitter, selector, lifecycle integration,
+  option validation and focused tests (phase 1 below).
+- [x] Astra: update Quickstart, VBMC API guidance and the 1.5 overview; verify
+  that the catalog preserves the PI's edited messages and useful links.
+- [x] Astra: run focused tests, the required package suite and the docs build.
+- [x] Independent Sol review via doublecheck; resolve findings and rerun affected checks.
+- [x] Reconcile acceptance checks and update this plan, TODO and roadmap with the outcome.
+
+## Delivery checklist
+
+Commit/push, CI-gated merge to `dev-next`, and a post-merge full matrix were
+authorized by the PI on 2026-09-10.
+
+- [~] Commit and push `feat/runtime-tips`.
+- [ ] Run the feature branch test matrix and package build; require green CI before merging.
+- [ ] Merge to `dev-next`, push, and remove the merged feature branch.
+- [ ] Run and monitor the full matrix on the merged `dev-next` commit.
+
+Catalog verification: all eight message strings and URL tuples exactly match
+the PI-edited wording below (checked by extracting the plan entries and comparing
+them with `_tip_catalog.TIPS`). The linked official guidance was checked during
+the wording review in this session.
+
+Docs build: `.venv/Scripts/python.exe -m sphinx -M html source _build`
+from `docsrc`, with the example notebooks copied in as for `make github`,
+succeeded. The sole warning is the existing notebook-2 Plotly MIME warning.
+The rendered Quickstart, VBMC API and basic-options reference include the new
+guidance. Local HTML output is in ignored `docs/`; copied source examples were removed.
+
+Focused verification: runtime tips, calibration, options, VBMC save/load and
+existing seeded-run modules passed: **151 passed in 11.35 s**, with no reruns.
+The first attempt hit sandbox restrictions in pytest's default temp/cache
+directories; using task-specific paths inside `.venv` resolved that environment
+issue. BLAS was single-threaded. The seeded comparison printed a real tip in
+one existing run and matched the tips-disabled run exactly.
+
+Full package suite: **1170 passed, 35 skipped, 3 warnings in 367.46 s**, with
+no failures or reruns. Command: `.venv/Scripts/python.exe -m pytest --reruns=5
+-x -vv --basetemp=.venv/runtime-tips-pytest-full -o
+cache_dir=.venv/runtime-tips-pytest-cache`, with BLAS single-threaded. The three
+warnings are the existing VP gradient division warnings from oracle cases.
+Optional torch/ArviZ dependencies are absent in this environment. New modules
+and focused tests also pass Black formatting, and changed Python files pass
+isort and compilation checks; `git diff --check` is clean.
+
+Independent fresh-context Sol review completed with no findings. The feature
+preserves the approved messages and URLs, calibration priority, quiet/resume
+behavior, and inference randomness. All in-scope implementation and verification
+work is complete; changes remain on `feat/runtime-tips` for integration.
+
+## Approved user experience
 
 - Basic option `show_tips=True`; `options={"show_tips": False}` disables tips.
   This option does not disable the calibration reminder. `display="off"`
@@ -36,7 +89,7 @@ create a source feature branch only after implementation approval.
 - Consider tips only on the first `optimize()` entry for a new run, after
   calibration resolution and the performance-settings summary, before the
   iteration headings. Resumed/continued runs do not show another tip.
-- Proposed frequency: first eligible new run, then every third eligible run
+- Frequency: first eligible new run, then every third eligible run
   (opportunities 1, 4, 7, ...). Eligibility requires tips enabled, nonquiet
   startup, an available unseen tip, and no calibration reminder for this run.
   Suppressed runs do not advance the counter or consume a tip.
@@ -56,7 +109,7 @@ create a source feature branch only after implementation approval.
   Explain the disable option in the options reference and a brief Quickstart
   note, rather than attaching boilerplate to every tip.
 
-Session-only history is settled. The cadence remains a recommendation for review.
+Session-only history and the cadence are approved.
 Do not add tip history to the calibration store or create another persistent store.
 
 ## Developer-editable catalog and URLs
@@ -70,11 +123,11 @@ For example, one entry would contain:
 ```python
 Tip(
     id="posterior_plot",
-    text="Call vp.plot() after fitting. The diagonal panels show uncertainty "
-         "in each parameter; the off-diagonal panels show how pairs of "
-         "parameters vary together.",
+    text="Use vp.plot() to inspect parameter uncertainty and trade-offs "
+         "after fitting. Broad marginal distributions indicate uncertainty; "
+         "tilted or curved joint contours can reveal parameter trade-offs.",
     frequency="normal",
-    urls=(),
+    urls=("https://acerbilab.github.io/pyvbmc/api/classes/variational_posterior.html",),
 )
 ```
 
@@ -95,46 +148,71 @@ add HTML, terminal hyperlink escapes or a display dependency for this feature.
 The same optional URL support belongs in the shared emitter; calibration can
 continue calling it without URLs and retain its existing output exactly.
 
-## Initial wording for review
+## Approved initial wording
 
-Keep a small catalog with stable internal IDs. Proposed messages, listed here
-by topic rather than presentation order:
+Keep a small catalog with stable internal IDs. Messages are listed here by
+topic rather than presentation order. The linked guidance following each message
+is its `urls` content: render the full URL on a separate line at runtime,
+using the shared emitter. These are reader-facing links, not just sources for
+maintainers. All eight messages below are approved following the PI's edits
+and instruction to implement. Preserve this wording in the initial catalog.
 
 1. `multiple_runs` (wording approved): "Tip: Run VBMC 3–4 times with different
    starting points. Compare the posterior plots across runs; large differences
    can indicate that a run missed part of the posterior."
-2. `evidence_uncertainty`: "Tip: Report results['elbo'] together with
-   results['elbo_sd']. The SD measures uncertainty in the estimated ELBO,
-   not its distance from the true log model evidence."
-3. `plausible_bounds`: "Tip: If you have no better estimate of where the
-   posterior lies, set PLB and PUB to the 15.9th and 84.1st percentiles of
-   each parameter's prior. For a Gaussian prior, these are its mean minus
-   and plus one standard deviation."
-4. `pybads` (low-frequency): "Tip: To find a maximum-likelihood estimate with
-   PyBADS, minimize -log_likelihood(x). For a MAP estimate, minimize
-   -(log_likelihood(x) + log_prior(x))."
-5. `posterior_plot`: "Tip: Call vp.plot() after fitting. The diagonal panels
-   show uncertainty in each parameter; the off-diagonal panels show how pairs
-   of parameters vary together."
-6. `save_resume`: "Tip: Save a resumable run with vbmc.save('fit.pkl'). To
-   continue it later, use vbmc = VBMC.load('fit.pkl'), then vbmc.optimize()."
-7. `noisy_target`: "Tip: For a noisy log likelihood, return (log_likelihood,
-   noise_sd) from your target and set options={'specify_target_noise': True}.
-   Supply the standard deviation of the log-likelihood estimate, not its variance."
-8. `svbmc` (low-frequency): "Tip: Combine the posteriors from your 3–4 runs
-   on the same model and data with S-VBMC. It reweights their mixture components
-   to produce one posterior without new model evaluations."
+   [Multiple-run validation tutorial](https://acerbilab.github.io/pyvbmc/_examples/pyvbmc_example_4_validation.html)
+2. `evidence_uncertainty`: "Tip: When comparing models, report results['elbo']
+   together with results['elbo_sd']. The ELBO is a lower bound on the true log
+   model evidence; its SD measures uncertainty in estimating that bound. A small
+   SD does not guarantee that the bound is close to the true evidence!"
+   [Interpreting the ELBO and its uncertainty](https://acerbilab.github.io/pyvbmc/quickstart.html)
+3. `plausible_bounds`: "Tip: Use PLB and PUB to guide PyVBMC's initial search
+   toward likely parameter values. If you have no better information, use each
+   prior's 16th and 84th percentiles: roughly mean minus and plus one SD for a
+   Gaussian prior. These guide the search without restricting the posterior."
+   [Choosing plausible bounds](https://github.com/acerbilab/vbmc/wiki#how-do-i-choose-plb-and-pub)
+4. `pybads` (low-frequency, wording approved): "Tip: A maximum-likelihood (MLE)
+   or maximum a posteriori (MAP) estimate can provide a good starting point for
+   PyVBMC. You can use PyBADS to find one, then pass it as x0."
+   [PyBADS](https://acerbilab.github.io/pybads/)
+5. `posterior_plot`: "Tip: Use vp.plot() to inspect parameter uncertainty and
+   trade-offs after fitting. Broad marginal distributions indicate uncertainty;
+   tilted or curved joint contours can reveal parameter trade-offs."
+   [Posterior plotting and other methods](https://acerbilab.github.io/pyvbmc/api/classes/variational_posterior.html)
+6. `save_resume`: "Tip: Save your run with vbmc.save('fit.pkl') so you can
+   continue later without starting over. If it needs more evaluations, load it
+   with VBMC.load('fit.pkl', new_options={'max_fun_evals': N}), then call
+   optimize() on the loaded object. Set N to the larger total evaluation budget."
+   [Saving and continuing a run](https://acerbilab.github.io/pyvbmc/api/classes/vbmc.html)
+7. `noisy_target`: "Tip: PyVBMC can account for noise in simulated log-likelihood
+   estimates if you supply its size. Set options={'specify_target_noise': True}
+   and return (log_density, noise_sd) from your target, where noise_sd estimates
+   the standard deviation of the noise in that log-density evaluation."
+   [Noisy-likelihood tutorial](https://acerbilab.github.io/pyvbmc/_examples/pyvbmc_example_6_noisy_likelihoods.html)
+8. `svbmc` (low-frequency): "Tip: Using S-VBMC, you can improve your posterior
+   estimates by combining multiple independent PyVBMC runs on the same model and
+   data. S-VBMC re-optimizes mixture weights to form a combined posterior without
+   new model evaluations. See the tutorial to combine your runs and draw samples."
+   [S-VBMC usage and posterior sampling](https://github.com/acerbilab/svbmc#how-to-use-s-vbmc)
 
-Editorial requirement (PI): tips must be concrete, clear and actionable. Use
+Editorial requirement (PI): a tip must help the reader make a useful choice in
+their PyVBMC workflow, explain why it helps, and link to guidance when useful.
+A command alone, a description of an API, or instructions for another tool do
+not meet that standard without the connection to the reader's task. In
+particular, the PyBADS tip is about finding a good PyVBMC starting point; the
+optimization recipe belongs in the linked documentation. Keep messages
+concrete, clear and actionable. Use
 specific quantities or useful ranges (such as 3–4), not vague quantities such
 as "a few". Avoid unnecessary seed-management language: independent runs do
 not require users to set seeds manually. The multiple-run wording above is
 approved and follows the [VBMC FAQ](https://github.com/acerbilab/vbmc/wiki#how-can-vbmc-fail-how-do-i-find-out-and-how-do-i-fix-it);
-the remaining messages above have been rewritten against this standard and
-remain proposed for wording approval. Each gives a specific action, an exact
-command/setting or useful quantity where relevant, and enough context to use it.
+the revised PyBADS message was accepted in the subsequent wording discussion.
+The remaining six messages were edited and approved by the PI before
+implementation. Each connects a useful action to its
+purpose in PyVBMC and includes a link for the next step.
 The prior-percentile suggestion follows the FAQ's 15.87–84.13% interval,
-rounded for readability, and is conditional on having no better information.
+rounded to 16th and 84th at the PI's request, and is conditional on having no
+better information. Prefer useful rounded quantities to unnecessary precision.
 
 Populate the URL field for each complementary-method tip so the
 reader can act on it: [PyBADS](https://acerbilab.github.io/pybads/) and
@@ -147,8 +225,15 @@ mentioning it, but the tip/link must describe the interface actually released.
 
 These tips give general or explicitly conditional guidance without inspecting
 the target or guessing model intent. The Quickstart already explains plausible
-bounds and `elbo_sd`; the VP API describes plotting. Check the multiple-run
-and noisy-target wording against the existing FAQ/examples before shipping.
+bounds and `elbo_sd`; the VP API describes plotting. The linked multiple-run
+and noisy-target examples were checked during this wording pass. `log_density`
+in the noisy tip means the log joint, or the log likelihood when the prior is
+supplied separately, as explained in Example 6; it must not suggest dropping
+the prior. `N` in the resume tip is the total evaluation budget, not the number
+of additional evaluations, and `new_options` is the supported load-time override.
+The S-VBMC link explains its separate object and sampling interface; do not
+promise a PyVBMC `VariationalPosterior` return value. Recheck released guidance
+and links before shipping.
 Context-dependent selection can be added when there is a clear applicability
 rule; do not build a recommendation system now.
 Keep wording consistent with the future user-agent skill.
@@ -221,30 +306,30 @@ Keep wording consistent with the future user-agent skill.
 
 Acceptance checks:
 
-- [ ] First/fourth/seventh eligible starts, reproducible shuffled ordering with
+- [x] First/fourth/seventh eligible starts, reproducible shuffled ordering with
   an injected RNG, exhausted catalog, and no repeated IDs in a process; inference,
   NumPy global and stdlib module-level RNG states remain unchanged.
-- [ ] Every catalog entry can be emitted exactly once, a low-frequency tip can
+- [x] Every catalog entry can be emitted exactly once, a low-frequency tip can
   appear first, and consecutive low-frequency tips are avoided whenever an
   ordinary entry remains. Verify progress with empty, single-entry, all-ordinary,
   all-low-frequency and exhausted-ordinary lists without statistical tolerances;
   quiet, cadence and calibration skips leave
   the next entry and last-emitted category unchanged.
-- [ ] Real calibration reminder at optimize startup excludes a tip; an early
+- [x] Real calibration reminder at optimize startup excludes a tip; an early
   `vbmc.vp.pdf()` reminder also excludes it; a silent cache miss, cached profile,
   explicit profile or calibration-off mode does not by itself exclude tips.
-- [ ] Quiet, disabled tips and calibration-occupied slots do not consume cadence
+- [x] Quiet, disabled tips and calibration-occupied slots do not consume cadence
   or catalog entries. Disabling tips leaves calibration feedback unchanged.
-- [ ] First start only, repeated optimize, completed/unfinished resume, current
+- [x] First start only, repeated optimize, completed/unfinished resume, current
   pre-run saves and legacy saves; load overrides validate and do not emit text.
-- [ ] Shared emitter's enabled/disabled return, unchanged calibration text,
+- [x] Shared emitter's enabled/disabled return, unchanged calibration text,
   `iter` and `full` display, captured notebook-style stdout, and log-file exclusion;
   no new calls to target functions, numerical kernels or cache reads. Importing
   the helper introduces no cache I/O or heavy dependency imports.
-- [ ] Catalog edits need no selector changes: test adding, replacing and removing
+- [x] Catalog edits need no selector changes: test adding, replacing and removing
   records of either frequency with small injected catalogs. Check unique IDs,
   nonempty text and recognized categories without fixing the catalog size or wording.
-- [ ] Normal and low-frequency tips render correctly with zero, one or multiple
+- [x] Normal and low-frequency tips render correctly with zero, one or multiple
   URLs; preserve each URL in full on its own line. Quiet output suppresses the
   message and URLs together. No network access, automatic opening or rich-output
   dependency is introduced; frontend clickability is not a test requirement.
@@ -267,7 +352,7 @@ Acceptance checks:
    findings and rerun only affected checks. No calibration campaign or population
    benchmark is needed for this presentation feature.
 
-## Decisions for approval
+## Approved decisions
 
 - **Session shuffle with best-effort spacing:** follows the PI's choice and gives
   short sessions access to low-frequency tips. A private RNG keeps presentation
@@ -288,22 +373,23 @@ Acceptance checks:
   other tips; it describes frequency, not promotion. Prefer separation when an
   ordinary tip remains, with no prefix quota or retry loop.
 
-## Open questions and review
+## Approval and review
 
-- Approve or adjust cadence, option name/default and wording. Shared-slot priority,
-  session-only history, code reuse, shuffling and best-effort low-frequency spacing are
-  settled; the six/two catalog is proposed within the PI's suggested ceiling.
+- The PI authorized implementation after editing the messages on 2026-09-10.
+  Cadence, option name/default, first-start-only behavior and the current wording
+  are approved alongside shared-slot priority, session-only history, code reuse,
+  shuffling and best-effort low-frequency spacing.
 - Independent Sol structural plan review complete; no findings remain. Review clarified
   legacy option-override ordering and removed unnecessary future applicability
   cases. The final shuffled, best-effort spacing policy was reviewed separately.
-  The subsequent wording rewrite is proposed for PI review; only `multiple_runs`
-  has explicit wording approval. No source implementation has begun.
+  The PI's final wording edits are reflected above. Source implementation and
+  verification are complete; the editorial pass did not change the reviewed
+  scheduling or integration design.
   The subsequent catalog-editability/URL requirements are recorded above;
   they extend the planned catalog and emitter without changing startup policy.
 
-Pickup: review the seven remaining proposed messages above, then settle
-`show_tips=True`, the 1/4/7 cadence and first-start-only behavior before approving
-implementation. Keep the settled shared slot, session history and shuffled,
+Implementation is complete with `show_tips=True`, the 1/4/7 cadence and
+first-start-only behavior. Future edits should keep the shared slot, session history and shuffled,
 best-effort low-frequency spacing; do not restore deterministic catalog order
 or a requirement for three ordinary tips before a low-frequency one. Concrete
 commands and quantities/ranges are preferred to vague advice. The source

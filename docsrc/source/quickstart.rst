@@ -50,6 +50,12 @@ The ``vp`` object can be manipulated in various ways, see the :ref:`\`\`Variatio
 
 See the examples for more detailed information. The :ref:`Basic options` may also be useful.
 
+PyVBMC occasionally prints a tip when a new run starts. Tips appear at most
+once each within a Python session; restarting Python resets their history.
+Pass ``options={"show_tips": False}`` to ``VBMC`` to disable tips. This leaves
+the performance-calibration reminder enabled; ``options={"display": "off"}``
+suppresses both along with ordinary optimization output.
+
 Bring a torch or JAX model into PyVBMC
 ======================================
 

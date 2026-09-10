@@ -14,6 +14,7 @@ it rather than adding a run.
 
 import copy
 import logging
+import random
 from pathlib import Path
 
 import numpy as np
@@ -27,6 +28,7 @@ from pyvbmc.testing import (
     load_bearing_arrays,
 )
 from pyvbmc.variational_posterior import VariationalPosterior
+from pyvbmc.vbmc import _runtime_tips
 
 base_path = Path(__file__).parent
 D = 2
@@ -81,7 +83,7 @@ def seeded_run():
     Module-scoped, so it runs outside the per-test snapshot of the global
     random state and takes its own."""
     state = np.random.get_state()
-    vbmc = _make_vbmc(42)
+    vbmc = _make_vbmc(42, show_tips=False)
     vp, results = vbmc.optimize()
     np.random.set_state(state)
     return vbmc, vp, results
@@ -142,16 +144,47 @@ def test_vp_sample_reproducible_with_seed():
     assert np.array_equal(x_1, x_2)
 
 
-def test_seed_fixes_optimization(seeded_run):
+def test_seed_fixes_optimization(seeded_run, capsys):
     """Two short runs with the same seed are identical: the shared run,
     and a second one with the global random state reseeded before its
     construction and again between construction and optimization."""
     vbmc_1, vp_1, results_1 = seeded_run
 
     np.random.seed(12345)
-    vbmc_2 = _make_vbmc(42)
+    # The second existing run emits a deterministically selected tip while the
+    # shared run has tips disabled, checking both settings without adding a
+    # full optimize run. Preserve the process-local presentation state around
+    # this test just as the autouse fixture preserves NumPy's global state.
+    tip_state = (
+        _runtime_tips._RNG,
+        _runtime_tips._RNG.getstate(),
+        copy.copy(_runtime_tips._ORDER),
+        _runtime_tips._SEEN_IDS.copy(),
+        _runtime_tips._ELIGIBLE_STARTS,
+        _runtime_tips._LAST_FREQUENCY,
+    )
+    _runtime_tips._reset_runtime_tip_state(rng=random.Random(123))
+    vbmc_2 = _make_vbmc(42, display="iter")
     np.random.seed(999)
-    vp_2, results_2 = vbmc_2.optimize()
+    try:
+        vp_2, results_2 = vbmc_2.optimize()
+        assert "Tip:" in capsys.readouterr().out
+    finally:
+        (
+            saved_rng,
+            saved_rng_state,
+            saved_order,
+            saved_seen,
+            saved_starts,
+            saved_last,
+        ) = tip_state
+        saved_rng.setstate(saved_rng_state)
+        _runtime_tips._RNG = saved_rng
+        _runtime_tips._ORDER = saved_order
+        _runtime_tips._SEEN_IDS.clear()
+        _runtime_tips._SEEN_IDS.update(saved_seen)
+        _runtime_tips._ELIGIBLE_STARTS = saved_starts
+        _runtime_tips._LAST_FREQUENCY = saved_last
 
     assert results_1["elbo"] == results_2["elbo"]
     assert results_1["elbo_sd"] == results_2["elbo_sd"]
