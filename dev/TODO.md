@@ -7,6 +7,7 @@ Current work: plan optional runtime tips; see the
 [draft design](plans/runtime-tips.md). Next: review the seven rewritten tip
 messages and settle cadence/option defaults, then obtain implementation approval.
 Only the 3–4-run message is approved. Tips must be concrete, clear and actionable.
+Developers must be able to edit either category in one catalog; any tip can show URLs.
 Shared calibration priority, session-only history, shuffled selection and
 best-effort low-frequency spacing are settled. Astra orchestrates; Sol implements
 and reviews after approval. No source implementation or jobs are in progress.

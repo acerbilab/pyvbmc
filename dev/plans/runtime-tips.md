@@ -19,6 +19,9 @@ The PI suggested at most roughly 25-30% of the catalog for these recommendations
 Use a factual **low-frequency** category, also available for other tips we want
 to appear less often. Shuffle so short sessions can encounter them too; avoid
 consecutive low-frequency tips when possible, without blocking progress.
+Developer editability and URL support are essential requirements: changing,
+replacing or adding either category of tip must be a catalog edit, not a change
+to scheduling or rendering code. Any tip may include documentation URLs.
 
 Preserve quiet mode, all inference settings and both instance/global RNG
 states. No target evaluation, timing campaign or dependency is introduced.
@@ -55,6 +58,42 @@ create a source feature branch only after implementation approval.
 
 Session-only history is settled. The cadence remains a recommendation for review.
 Do not add tip history to the calibration store or create another persistent store.
+
+## Developer-editable catalog and URLs
+
+Keep all tip content in one data-only module, `pyvbmc/vbmc/_tip_catalog.py`,
+separate from scheduling in `_runtime_tips.py`. Each record has a stable `id`,
+message `text`, `frequency` (`"normal"` or `"low_frequency"`), and optional
+`urls` (an empty tuple when there are none). Both categories use the same format.
+For example, one entry would contain:
+
+```python
+Tip(
+    id="posterior_plot",
+    text="Call vp.plot() after fitting. The diagonal panels show uncertainty "
+         "in each parameter; the off-diagonal panels show how pairs of "
+         "parameters vary together.",
+    frequency="normal",
+    urls=(),
+)
+```
+
+Developers edit the text or URLs in place, replace an entry, or add/remove a
+record. Keep its ID for wording edits; use a new ID for a different topic.
+Changing frequency is a field edit. Catalog length, IDs and category membership
+must not be hard-coded in the selector or tests. The six/two split is only the
+initial proposed content, not a fixed requirement on future catalog edits.
+Add a short maintenance comment above the catalog explaining these operations.
+Ordinary source edits take effect in a fresh Python process; live reloading or
+user-supplied catalogs are not required.
+
+Render `Tip: <text>` and, when present, each full URL on its own following line.
+Keep URLs separate from prose so they are easy to replace and never manually
+split or truncated. Plain stdout is the supported output: a terminal or notebook
+may make the URL clickable, but clickability depends on that frontend. Do not
+add HTML, terminal hyperlink escapes or a display dependency for this feature.
+The same optional URL support belongs in the shared emitter; calibration can
+continue calling it without URLs and retain its existing output exactly.
 
 ## Initial wording for review
 
@@ -97,7 +136,7 @@ command/setting or useful quantity where relevant, and enough context to use it.
 The prior-percentile suggestion follows the FAQ's 15.87–84.13% interval,
 rounded for readability, and is conditional on having no better information.
 
-Append a short documentation URL to each complementary-method tip so the
+Populate the URL field for each complementary-method tip so the
 reader can act on it: [PyBADS](https://acerbilab.github.io/pybads/) and
 [S-VBMC](https://github.com/acerbilab/svbmc). Official documentation confirms
 PyBADS minimizes objectives and S-VBMC combines VBMC posteriors without new
@@ -116,9 +155,9 @@ Keep wording consistent with the future user-agent skill.
 
 ## Integration findings and design
 
-- Add a lightweight `pyvbmc/_user_hints.py::emit_user_hint(message, *, display)`
-  that prints the supplied complete message once if enabled and returns whether
-  it emitted text. It must not import calibration, VBMC or RNG machinery. Both
+- Add a lightweight `pyvbmc/_user_hints.py::emit_user_hint(message, *, display, urls=())`
+  that prints the supplied complete message and optional URL lines once if enabled
+  and returns whether it emitted text. It must not import calibration, VBMC or RNG machinery. Both
   calibration's existing suggestion function and the tip selector use it.
   Preserve calibration's exact message, boolean return, fingerprint suppression
   and stdout behavior; this is an extraction of shared output, not a redesign of
@@ -142,8 +181,8 @@ Keep wording consistent with the future user-agent skill.
   already started; legacy pre-run saves remain eligible. Loading alone emits
   nothing. Do not add catalog/cadence data or new result/history fields; the
   VP's calibration-emission marker naturally follows its existing copies.
-- Add a small private `pyvbmc/vbmc/_runtime_tips.py` holding the immutable
-  catalog (with an ordinary/low-frequency classification), process-local
+- Add a small private `pyvbmc/vbmc/_runtime_tips.py` importing the immutable
+  catalog from `_tip_catalog.py` and holding the process-local
   counter/seen IDs, last-emitted category and selector. Keep all process state
   out of pickles; only the small VBMC/VP flags travel with a save.
   The selector should accept explicit eligibility inputs and be testable
@@ -170,7 +209,8 @@ Keep wording consistent with the future user-agent skill.
 
 1. Read the relevant startup, VP resolver and save/load paths above. Extract the
    shared emitter into `pyvbmc/_user_hints.py`; use it in the calibration reminder
-   and tip selector. Add the catalog/selector in `vbmc/_runtime_tips.py` and
+   and tip selector. Add the catalog in `vbmc/_tip_catalog.py`, the selector in
+   `vbmc/_runtime_tips.py`, and
    the basic option in `vbmc/option_configs/basic_vbmc_options.ini`.
 2. Propagate the actual reminder outcome to the private VP marker. Integrate
    the VBMC first-start flag and selector without changing calibration caching,
@@ -187,8 +227,8 @@ Acceptance checks:
 - [ ] Every catalog entry can be emitted exactly once, a low-frequency tip can
   appear first, and consecutive low-frequency tips are avoided whenever an
   ordinary entry remains. Verify progress with empty, single-entry, all-ordinary,
-  all-low-frequency and exhausted-ordinary lists. Check the six/two catalog split
-  without statistical tolerances; quiet, cadence and calibration skips leave
+  all-low-frequency and exhausted-ordinary lists without statistical tolerances;
+  quiet, cadence and calibration skips leave
   the next entry and last-emitted category unchanged.
 - [ ] Real calibration reminder at optimize startup excludes a tip; an early
   `vbmc.vp.pdf()` reminder also excludes it; a silent cache miss, cached profile,
@@ -201,6 +241,13 @@ Acceptance checks:
   `iter` and `full` display, captured notebook-style stdout, and log-file exclusion;
   no new calls to target functions, numerical kernels or cache reads. Importing
   the helper introduces no cache I/O or heavy dependency imports.
+- [ ] Catalog edits need no selector changes: test adding, replacing and removing
+  records of either frequency with small injected catalogs. Check unique IDs,
+  nonempty text and recognized categories without fixing the catalog size or wording.
+- [ ] Normal and low-frequency tips render correctly with zero, one or multiple
+  URLs; preserve each URL in full on its own line. Quiet output suppresses the
+  message and URLs together. No network access, automatic opening or rich-output
+  dependency is introduced; frontend clickability is not a test requirement.
 
 ### 2. Public guidance and review — Sol implementation/review; Astra integration
 
@@ -234,6 +281,8 @@ Acceptance checks:
   preserving the existing calibration behavior. Quiet mode suppresses both.
 - **Shared stdout emitter:** reuse calibration's current output behavior for
   both hints. Avoid a generic notification system or a second persistence layer.
+- **Separate data-only catalog:** one place to edit text, categories and URLs,
+  with scheduling and formatting independent of the current catalog contents.
 - **Small low-frequency group:** the initial six/two catalog puts complementary
   methods at 25%, within the PI's suggested ceiling. The category can also hold
   other tips; it describes frequency, not promotion. Prefer separation when an
@@ -249,6 +298,8 @@ Acceptance checks:
   cases. The final shuffled, best-effort spacing policy was reviewed separately.
   The subsequent wording rewrite is proposed for PI review; only `multiple_runs`
   has explicit wording approval. No source implementation has begun.
+  The subsequent catalog-editability/URL requirements are recorded above;
+  they extend the planned catalog and emitter without changing startup policy.
 
 Pickup: review the seven remaining proposed messages above, then settle
 `show_tips=True`, the 1/4/7 cadence and first-start-only behavior before approving
