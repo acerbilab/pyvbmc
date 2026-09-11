@@ -13,20 +13,21 @@ of one frozen treatment. The pooled assessment finds 287 usable runs versus
 the 95-test paired family, and the seeds 0–14 shifts in the two noisy
 configurations did not replicate on seeds 15–29: none of the eight
 confirmatory tests rejects, and every Rosenbrock metric moved in the
-candidate's favor. Decide whether to accept this evidence and promote the
-candidate population to the new reference, following the
-[population plan](plans/final-population-benchmark.md#assessment); no
-further sampling is recommended for that decision. Under consideration,
-not decided and not to be started without an explicit go-ahead: completing
-the remaining 567 seeds of the same frozen treatment and promoting the
-full candidate population to the new golden reference, with the conditions
-and cost recorded in the plan's
-[direction under consideration](plans/final-population-benchmark.md#direction-under-consideration--2026-09-11);
-the shipping defaults, including the pending noisy-acquisition decisions,
-must be settled before such a run. Current `dev-next` also includes the
-later noisy-acquisition changes, which leave the default noisy path
-unchanged. Reference promotion has not been selected. No benchmark process
-remains active.
+candidate's favor. The PI accepts this evidence tentatively (2026-09-11):
+the frozen treatment stands as the numerics of 1.5, and the confirmation
+at equal sample sizes comes from the planned extension rather than from a
+separate decision now. That extension, completing the remaining 567 seeds
+of the same frozen treatment and then promoting the full 870-run candidate
+population to the new golden reference in place of the current one, is
+agreed in principle but not to be started without an explicit go-ahead;
+its conditions and cost are in the plan's
+[direction under consideration](plans/final-population-benchmark.md#direction-under-consideration--2026-09-11).
+The shipping defaults, including the pending noisy-acquisition decisions,
+must be settled first, because the reference is only bit-exact for the
+replay gate when generated from the shipping numerics. Current `dev-next`
+also includes the later noisy-acquisition changes, which leave the default
+noisy path unchanged, so if no option becomes a default the frozen
+checkout remains the right generator. No benchmark process remains active.
 
 S-VBMC is integrated as `pyvbmc.svbmc` (merged into `dev-next` at
 `0b5af29` on 2026-09-11); the [integration plan](plans/svbmc-integration.md)

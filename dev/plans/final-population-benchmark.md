@@ -333,9 +333,12 @@ reference promotion remains the PI's decision.
 Since the integrated changes look likely to stay, the PI is considering
 completing the remaining 567 seeds of the same frozen treatment (the full
 870-run allocation) and promoting that candidate population to the new
-golden reference in place of `reference_870_20260907`. This is not decided
-and is not to be started without an explicit go-ahead. Recorded for that
-decision:
+golden reference in place of `reference_870_20260907`. PI position
+(2026-09-11): the first-stage evidence is accepted tentatively, with the
+confirmation at equal sample sizes to come from this extension itself; the
+extension is agreed in principle but is not to be started without an
+explicit go-ahead, and the shipping defaults (the noisy-acquisition
+decisions) must be settled before it runs. Recorded for that decision:
 
 - A reference generated from the shipping code makes the golden replay
   gate (`golden_replay.py`) bit-exact again; against the current reference
