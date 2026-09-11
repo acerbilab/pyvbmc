@@ -24,12 +24,14 @@ requires-python = ">=3.10"
 [tool.setuptools]
 include-package-data = true
 # Include examples in binary/wheel distribution:
-packages = ["pyvbmc", "pyvbmc.calibration", "pyvbmc.examples"]
+packages = ["pyvbmc", "pyvbmc.calibration", "pyvbmc.examples", "pyvbmc.svbmc"]
 package-dir = { "pyvbmc.examples" = "examples" }
 
 [tool.setuptools.package-data]
 # Make sure to include example Notebooks:
 "pyvbmc.examples" = ["*.ipynb"]
+# S-VBMC license notice ships with its subpackage.
+"pyvbmc.svbmc" = ["LICENSE.txt"]
 
 [tool.setuptools.exclude-package-data]
 # Tests and reference fixtures ship in the sdist, not the runtime wheel.

@@ -89,17 +89,17 @@ added there, and the fixture globs go into `MANIFEST.in`.
 
 ### Phase 0: record the decision (on `dev-next`)
 
-- [ ] This plan; status lines in `TODO.md`, the proposal header, roadmap
+- [x] This plan; status lines in `TODO.md`, the proposal header, roadmap
   item 10, the 1.5 overview and the `dev/README.md` index.
-- [ ] Commit on `dev-next`; branch `dev-svbmc-integration`.
+- [x] Commit on `dev-next` (`e2bc670`); branch `dev-svbmc-integration`.
 
 ### Phase 1: source move
 
-- [ ] Copy `svbmc.py` and `utils.py` from the pinned checkout into
+- [x] Copy `svbmc.py` and `utils.py` from the pinned checkout into
   `pyvbmc/svbmc/`; keep the upstream copyright and license notice; drop
   the module `__version__`; lazy Torch and corner imports; package
   `__init__`; lazy `pyvbmc.SVBMC`; `pyproject.toml` packages entry.
-- [ ] Formatting hooks pass; `import pyvbmc` still imports no Torch.
+- [x] Formatting hooks pass; `import pyvbmc` still imports no Torch.
 
 ### Phase 2: parity gate (before any behavioral change)
 
