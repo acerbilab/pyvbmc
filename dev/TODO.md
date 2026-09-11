@@ -28,12 +28,16 @@ later noisy-acquisition changes, which leave the default noisy path
 unchanged. Reference promotion has not been selected. No benchmark process
 remains active.
 
-S-VBMC integration is in progress on `dev-svbmc-integration` after the PI
-go-ahead of 2026-09-11. The [integration plan](plans/svbmc-integration.md)
-records the settled decisions, the phased checklist and the worklog; the
-[integration proposal](2026-09-08-ecosystem-integration.md) holds the
-design. The forwarding release of the standalone `svbmc` package waits for
-the PyVBMC 1.5 publication.
+S-VBMC is integrated as `pyvbmc.svbmc` (merged into `dev-next` at
+`0b5af29` on 2026-09-11); the [integration plan](plans/svbmc-integration.md)
+records the decisions, the worklog and the verification. Two items remain
+from it, neither to be started now: the forwarding release of the
+standalone `svbmc` package (depending on `pyvbmc[torch]>=1.5`, forwarding
+the class and helpers, mapping `testing=True` to a seed with a deprecation
+warning) once PyVBMC 1.5 is on PyPI, and the deferred preparation and
+entropy speedups measured in the
+[NumPy prototype](results/2026-09-09-svbmc-numpy-prototype.md), gated by the
+regression references in `pyvbmc/testing/svbmc/`.
 
 ## Work awaiting a separate decision
 

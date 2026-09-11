@@ -2,12 +2,13 @@
 
 *Revised 9 September 2026; proposal for human review.*
 
-Status (PI, 2026-09-11): approved for implementation. The open questions
-below are settled and recorded, with the execution checklist, in the
+Status (PI, 2026-09-11): approved and implemented the same day; the code
+is `pyvbmc/svbmc/`. The open questions below were settled and are recorded,
+with the execution record, in the
 [integration plan](plans/svbmc-integration.md). Where the plan and this
 proposal differ (independent sampling with a balanced option, a `seed`
-argument replacing `testing`, the toy targets staying upstream), the plan
-is current.
+argument replacing `testing`, the toy targets staying upstream, `ValueError`
+for an unknown mode), the plan and the code are current.
 
 The PI direction is to make the existing S-VBMC
 implementation directly available from PyVBMC and, more generally, to avoid a

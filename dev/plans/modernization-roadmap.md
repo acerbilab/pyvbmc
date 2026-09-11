@@ -825,6 +825,21 @@ superseding earlier requirements below for a full sweep before assessment.
     snapshots plus a generated D=1, bounded and warped set. Execution and
     worklog: [svbmc-integration.md](svbmc-integration.md). The forwarding
     `svbmc` release waits for the 1.5 publication.
+    **Delivered (2026-09-11, merged into `dev-next` at `0b5af29`):**
+    `pyvbmc.svbmc` with `SVBMC` and the `utils` helpers (the toy targets
+    stay in the standalone package), `pyvbmc.SVBMC` resolved lazily so
+    importing PyVBMC never imports Torch; the moved code checked bit for
+    bit against upstream 0.1.1 before the behavioral changes (`seed`
+    argument, independent multinomial sampling with a balanced option,
+    explicit float64, input validation, warnings and logging); plain-array
+    fixtures (the thirty upstream posteriors converted, plus nine generated
+    D=1, bounded and warped ones) with regression references; 133 tests
+    (Torch cell) of which 17 run without Torch; the API page, the
+    installation note and Example 7. Two further upstream defects fixed on
+    the way: `find_init_bounds` rejected `(1, D)` bounds, and
+    `stacked_ELBO` left tensor weights unnormalized. Branch smoke: run
+    34632149372. Remaining: the forwarding `svbmc` release after the 1.5
+    publication, and the deferred preparation/entropy speedups.
 11. **Stage 3 integrated before the reference extension** (PI,
     2026-09-06). Feature code `4ee612d` was fast-forwarded into `dev-next`
     at `4bff1a5`. Branch smoke 34043031387, all nine full-matrix jobs

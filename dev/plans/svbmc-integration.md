@@ -159,16 +159,18 @@ added there, and the fixture globs go into `MANIFEST.in`.
 
 ### Phase 8: records, CI, merge
 
-- [~] Roadmap item 10, `TODO.md`, overview, `dev/README.md` (after the
-  merge); the S-VBMC row of the user-agent skill note is updated.
+- [x] Roadmap item 10, `TODO.md`, overview, `dev/README.md` and the
+  proposal header updated after the merge; the S-VBMC row of the
+  user-agent skill note points at the integrated API.
 - [x] Branch pushed; `dev*` smoke (the Torch cell) green (run
   34629017199); full suite locally (1422 passed).
-- [ ] Merge into `dev-next`; branch removed.
+- [x] Merged into `dev-next` (fast-forward to `0b5af29`); branch removed.
 
 ### Phase 9: verification
 
-- [~] `/doublecheck` review (three read-only Opus reviewers); findings
-  folded in, see the record.
+- [x] `/doublecheck` review (three read-only Opus reviewers); findings
+  folded in, see the record; the smoke on the folded-in commit is run
+  34632149372 (green).
 
 ## Execution record
 
@@ -247,3 +249,11 @@ added there, and the fixture globs go into `MANIFEST.in`.
   run and stacked ELBOs, labels runs by input index, and its execution
   timing metadata is stripped; `dev/README.md` lists the two scripts; the
   CI step names cover S-VBMC; AGENTS.md gains an S-VBMC bullet.
+- 2026-09-11: review fixes committed (`0b5af29`), smoke run 34632149372
+  green, branch fast-forwarded into `dev-next` and deleted. Docs built
+  with the notebooks copied in as the `github` target does: the API page
+  and the Example 7 page render without warnings; the `:ref:` to the
+  example renders as text in a local build, exactly as the existing
+  Example 6 reference on the `VBMC` page does. Remaining from this plan:
+  the forwarding `svbmc` release after the 1.5 publication, and the
+  deferred speedups gated by `references.npz`.

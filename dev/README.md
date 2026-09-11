@@ -36,8 +36,9 @@ For the release overview, start with
 - [Ecosystem integration proposal](2026-09-08-ecosystem-integration.md) —
   Human-review proposal for integrating the existing S-VBMC implementation:
   preserved workflow, optional Torch, code placement and migration, with
-  links to completed compatibility and backend evidence. Approved
-  2026-09-11; execution in [plans/svbmc-integration.md](plans/svbmc-integration.md).
+  links to completed compatibility and backend evidence. Approved and
+  implemented 2026-09-11; record in
+  [plans/svbmc-integration.md](plans/svbmc-integration.md).
 - [Noisy-target acquisitions](2026-09-08-noisy-acquisitions.md) —
   Where noisy (VIQR) runs spend their time, what was tried on the
   acquisition, where the acquisition search loses evaluations, and the
@@ -73,10 +74,11 @@ plan and consolidated human summary.
   Phase 0 records the reduced 60-run noisy extension; the original 150-run
   preparation remains as historical evidence.
 - [plans/svbmc-integration.md](plans/svbmc-integration.md) — S-VBMC
-  integration: the settled decisions (Torch retained, independent sampling
-  with a balanced option, `seed`, float64, snapshot fixtures plus a
-  generated D=1, bounded and warped set), layout, phased checklist and
-  worklog.
+  integration (complete): the settled decisions (Torch retained,
+  independent sampling with a balanced option, `seed`, float64, snapshot
+  fixtures plus a generated D=1, bounded and warped set), layout, the
+  parity gate against upstream, the test suite, verification and the two
+  remaining follow-ups (forwarding release after 1.5, deferred speedups).
 - `plans/profile-and-gradient-checks.md` — dev environment, baseline test
   run, first measured profile (D=5, D=10) and the first Stage 0
   finite-difference gradient checks, which found the reshape-order bug in
