@@ -16,11 +16,18 @@ process remains active.
 The noisy-acquisition branch `claude/pyvbmc-noisy-acq-funcs-9kwdny` is merged
 into local `dev-next`. Its IMIQR oracle has been re-baselined on the original
 Windows generating machine; all 11 fixtures pass `--check --exact`.
-Commit the fixture and tracker updates, push `dev-next`, and remove the
-merged branch. Remaining work awaits the separate decisions below.
+The merge and rebaseline are pushed to `dev-next`; remove the merged branch.
+Remaining work awaits the separate decisions below.
 
 ## Work awaiting a separate decision
 
+- Extend the core benchmark with at least one realistic noiseless target
+  and 2–3 realistic noisy targets, drawing candidates from the lab-private
+  [benchflow repository](https://github.com/acerbilab/benchflow). Choose the
+  targets and which can move into public tests later. Also improve Slurm HPC
+  support for benchmark runs. These are follow-up tasks before the final
+  documentation review; see
+  [benchmark coverage and HPC support](plans/modernization-roadmap.md#benchmark-coverage-and-hpc-support).
 - S-VBMC integration is parked pending review by its main developer. Do not
   implement it before that review; use the
   [integration proposal](2026-09-08-ecosystem-integration.md).
@@ -46,8 +53,11 @@ merged branch. Remaining work awaits the separate decisions below.
   [pre-release documentation review](plans/modernization-roadmap.md#pre-release-documentation-review).
 - After releasing 1.5, respond to issue #138 about explicit RNG control; see
   the [post-release follow-up](plans/modernization-roadmap.md#post-release-follow-up).
-- Use a staged population assessment; a full 870-run candidate population
-  is not required before reviewing the first stage. Release publication
+- Golden reference generation can involve many runs and substantial compute;
+  checking a candidate against that reference can use fewer runs. Choose
+  candidate coverage and seed counts for the question and available budget,
+  and extend them when useful. A full 870-run candidate population is not
+  required before reviewing the first stage. Release publication
   remains a separate action. Use the
   [current golden reference](golden/noisy_extension_20260907/README.md) and
   [latent-fix plan](plans/latent-bug-fixes.md) when that work starts.

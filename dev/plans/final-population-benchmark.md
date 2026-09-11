@@ -16,6 +16,13 @@ assessment with decisions informed by earlier results; subsequent reports
 should identify each stage and the data used for its decisions. A full
 870-run candidate population is an available extension, not a prerequisite.
 
+Generating a golden reference and checking a candidate against it have
+separate compute budgets. A large reference can take a long time to build
+and then support many smaller candidate checks. Choose each check's target
+coverage and seed count for its scientific question and available compute;
+retain paired comparisons for overlapping seeds and add runs when useful.
+The reference size does not set a minimum candidate run count.
+
 Promotion of the candidate population to a new reference follows assessment
 and an explicit scientific decision. Preserve the previous population and its
 identity so the release comparison remains reproducible.

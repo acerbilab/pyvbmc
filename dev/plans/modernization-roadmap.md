@@ -952,6 +952,29 @@ superseding earlier requirements below for a full sweep before assessment.
     post-merge full matrix and automatic smoke check both passed. The merged
     feature branch has been removed. The final benchmark schedule remains unchanged.
 
+## Benchmark coverage and HPC support
+
+Complete these follow-up tasks before the final pre-release documentation
+review. Target selection, public inclusion and the Slurm design remain open.
+
+- [ ] Extend the core benchmark with at least one more realistic noiseless
+  target and 2–3 more realistic noisy targets. Look for candidates in the
+  lab-private [benchflow repository](https://github.com/acerbilab/benchflow).
+  Decide which targets and associated material are suitable for inclusion
+  in PyVBMC's public tests, and adapt the selected targets.
+- [ ] Improve support for running benchmarks on Slurm HPC systems, including
+  submission, resource configuration, resumption and collection of results
+  with reproducible run provenance. Choose the execution design when this
+  work starts.
+- [ ] Make the distinction between reference generation and candidate
+  checking explicit in benchmark workflows and documentation. A golden
+  reference may contain many traces and require a long campaign to generate.
+  Candidate checks can use a smaller allocation against that existing
+  reference; they need not repeat its full run count. Select coverage and
+  seeds for the question and compute budget, retain paired comparisons where
+  seeds overlap, and extend the candidate sample when the evidence warrants it.
+  See the [staged benchmark plan](final-population-benchmark.md).
+
 ## Pre-release documentation review
 
 Run this review after all other 1.5 implementation and validation work is
