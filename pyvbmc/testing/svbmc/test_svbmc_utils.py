@@ -45,6 +45,19 @@ def test_find_init_bounds_without_hard_bounds():
     np.testing.assert_array_equal(ub, [2, 2])
 
 
+def test_find_init_bounds_accepts_row_vectors():
+    """PyVBMC passes bounds as ``(1, D)`` arrays; the result is flat."""
+    lb, ub = find_init_bounds(
+        np.full((1, 2), -10.0),
+        np.full((1, 2), 10.0),
+        np.full((1, 2), -5.0),
+        np.full((1, 2), 5.0),
+    )
+    np.testing.assert_array_equal(lb, [-5.0, -5.0])
+    np.testing.assert_array_equal(ub, [5.0, 5.0])
+    assert lb.shape == (2,) and ub.shape == (2,)
+
+
 def test_find_init_bounds_broadcasts_scalars():
     lb, ub = find_init_bounds(LB=-2, UB=2, PLB=[-1, -1], PUB=[1, 1])
     np.testing.assert_array_equal(lb, [-1, -1])

@@ -274,8 +274,8 @@ def find_init_bounds(
         if arr.ndim == 0:
             return np.full(D, arr.item())
 
-        if arr.size == D:  # correct length
-            return arr
+        if arr.size == D:  # correct length, in any layout such as (1, D)
+            return arr.ravel()
 
         raise ValueError(
             f"{name} has length {arr.size}, expected a scalar or {D}."
