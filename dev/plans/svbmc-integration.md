@@ -131,12 +131,12 @@ added there, and the fixture globs go into `MANIFEST.in`.
 
 ### Phase 5: tests (`pyvbmc/testing/svbmc/`)
 
-- [ ] Upstream mock-based tests ported and adapted (float64, seed, warnings).
-- [ ] Real-fixture regressions: construction and filters, three modes,
+- [x] Upstream mock-based tests ported and adapted (float64, seed, warnings).
+- [x] Real-fixture regressions: construction and filters, three modes,
   D=1, bounded and warped runs, sample count and reproducibility,
   balanced mode within one draw of quota, input posteriors' generators
   untouched, dtype canary on outputs, heterogeneous transforms.
-- [ ] Import without Torch: `pyvbmc.svbmc.utils` usable, `SVBMC(...)`
+- [x] Import without Torch: `pyvbmc.svbmc.utils` usable, `SVBMC(...)`
   raises naming `pyvbmc[torch]`; `import pyvbmc` imports no Torch.
 - [x] Regression references generated (`references.npz`); the comparison
   test is part of the suite below.
@@ -151,14 +151,14 @@ added there, and the fixture globs go into `MANIFEST.in`.
 - [x] `svbmc.rst` (composite-posterior caveat, Torch extra, sampling
   semantics), listed in `classes.rst` and `documentation.rst`;
   `installation.rst` section.
-- [ ] Example 7 notebook (inline target, several VBMC runs, stacking,
+- [x] Example 7 notebook (inline target, several VBMC runs, stacking,
   sampling, overlay plot), executed once locally; script regenerated via
   the Makefile; docs build.
 
 ### Phase 8: records, CI, merge
 
-- [ ] Roadmap item 10, `TODO.md`, overview, `dev/README.md`, the S-VBMC row
-  of the user-agent skill note updated to the integrated API.
+- [~] Roadmap item 10, `TODO.md`, overview, `dev/README.md` (after the
+  merge); the S-VBMC row of the user-agent skill note is updated.
 - [ ] Branch pushed; `dev*` smoke (the Torch cell) green; full suite locally.
 - [ ] Merge into `dev-next`; branch removed.
 
@@ -195,3 +195,25 @@ added there, and the fixture globs go into `MANIFEST.in`.
   target's standard deviations (0.98, 2.01, 0.50 for 1, 2, 0.5) and the
   0.85 correlation from 2000 draws. Static floor check: Python 3.10 syntax
   and only long-standing NumPy, SciPy, Matplotlib and Torch calls.
+- 2026-09-11: test suite written by an Opus agent from a brief and
+  committed with two fixes it exposed (`8677835`): `stacked_ELBO` now
+  normalizes a tensor input like arrays and lists (the references were
+  regenerated; the change is in the last bits), and `max_steps < 1` raises
+  `ValueError`. 130 tests pass with the Torch overlay in about 45 s; without
+  Torch the import and utils modules pass (16 tests) and the other three
+  skip. Docs build clean for the new page (`da3c0d2`).
+- 2026-09-11: Example 7 executed and committed (`9a4bb17`) with the plain
+  script and the Makefile entry. Executing it found a third upstream
+  defect, fixed in `5f63bec`: `find_init_bounds` kept `(1, D)` bounds in
+  that layout and indexed their first axis. The notebook needed a
+  temporary kernelspec bound to the venv interpreter with the overlay in
+  its environment (the default `python3` spec resolves `python` through
+  `PATH`); it was removed after the run, and the notebook's kernel
+  metadata is the standard `python3`. In the executed run three of the
+  four VBMC runs capture one mode (ELBO near log 0.5) and one captures
+  both; the stacked ELBO is 0.046 (0.019 debiased) for a true log
+  evidence of 0, and the stacked samples match the ground truth in the
+  overlay plot.
+- 2026-09-11: full local suite with the Torch overlay and single-threaded
+  BLAS: 1422 passed, 35 skipped, 1 rerun, 598 s (`dev/scripts/runs/`
+  log, ignored). Branch pushed for the `dev*` smoke.
