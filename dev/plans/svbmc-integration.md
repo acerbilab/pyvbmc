@@ -117,14 +117,17 @@ added there, and the fixture globs go into `MANIFEST.in`.
   options recorded; all runs `stable` with finite statistics.
 - [ ] `MANIFEST.in` entries; snapshots load with `allow_pickle=False`.
 
-### Phase 4: behavioral changes (one commit each, with tests)
+### Phase 4: behavioral changes (one rewrite commit; the tests follow in Phase 5)
 
-- [ ] `(n_samples, D)` draws; `(1, K)` copied weights.
-- [ ] `seed=` replaces `testing`; generator plumbing.
-- [ ] Multinomial sampling with permutation; `balance_flag`.
-- [ ] Explicit float64 policy.
-- [ ] Input validation; warnings and logging replace prints.
-- [ ] Numpydoc docstrings following `VariationalPosterior`.
+- [x] `(n_samples, D)` draws; `(1, K)` copied weights.
+- [x] `seed=` replaces `testing`; generator plumbing.
+- [x] Multinomial sampling with permutation; `balance_flag`.
+- [x] Explicit float64 policy.
+- [x] Input validation; warnings and logging replace prints. An unknown
+  `version` raises `ValueError` (upstream: `AttributeError`); an
+  unsupported `w` type in `stacked_ELBO` raises `TypeError` (upstream fell
+  back to the stored weights silently).
+- [x] Numpydoc docstrings following `VariationalPosterior`.
 
 ### Phase 5: tests (`pyvbmc/testing/svbmc/`)
 
