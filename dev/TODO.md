@@ -44,11 +44,14 @@ regression references in `pyvbmc/testing/svbmc/`.
 
 ## Work awaiting a separate decision
 
-- Extend the core benchmark with at least one realistic noiseless target
+- Next work item (order set 2026-09-11, tentatively before the golden run):
+  extend the core benchmark with at least one realistic noiseless target
   and 2–3 realistic noisy targets, drawing candidates from the lab-private
-  [benchflow repository](https://github.com/acerbilab/benchflow). Choose the
-  targets and which can move into public tests later. Also improve Slurm HPC
-  support for benchmark runs. These are follow-up tasks before the final
+  [benchflow repository](https://github.com/acerbilab/benchflow). No local
+  clone exists; clone it as a sibling of this repository first and survey
+  its targets for candidates. The PI chooses the targets and which can
+  move into public tests later. Also improve Slurm HPC support for
+  benchmark runs. These are follow-up tasks before the final
   documentation review; see
   [benchmark coverage and HPC support](plans/modernization-roadmap.md#benchmark-coverage-and-hpc-support).
 - The [user-facing agent skill proposal](2026-09-02-user-agent-skill.md) remains
