@@ -103,7 +103,7 @@ added there, and the fixture globs go into `MANIFEST.in`.
 
 ### Phase 2: parity gate (before any behavioral change)
 
-- [ ] `dev/scripts/svbmc_parity_check.py`: moved class vs upstream on the
+- [x] `dev/scripts/svbmc_parity_check.py`: moved class vs upstream on the
   thirty posteriors, both `testing=True` with matched seeds, all three
   optimization modes and a short fixed-step run; weights, ELBO and entropy
   compared to ~1e-15; result recorded below.
@@ -169,3 +169,14 @@ added there, and the fixture globs go into `MANIFEST.in`.
   questions (Torch retained; multinomial sampling with a balanced option;
   `seed` replaces `testing`; float64; toy targets stay upstream; fixtures
   as snapshots with a supplementary generated set).
+- 2026-09-11: source move committed (`a8ae260`). Parity gate: the moved
+  class and upstream 0.1.1, both in `testing=True` mode, on all three
+  upstream groups and all three modes for 25 fixed steps, plus one direct
+  `stacked_ELBO` evaluation and a seeded `sample(256)`: every difference
+  is exactly 0.0 (`dev/scripts/runs/svbmc_parity_20260911_195037.json`,
+  Torch 2.14.0 CPU, NumPy 2.5.2, one thread). The same run shows the
+  upstream sampling defect: 255 to 260 rows returned for 256 requested.
+  A first attempt with upstream's 500-step cap ran for minutes without
+  stopping, because the fixed per-call draws of `testing=True` make the
+  objective deterministic and the five-non-improvement stop never fires;
+  the script's default is therefore 25 steps.
