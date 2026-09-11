@@ -264,8 +264,8 @@ reason.
   MAP), Geyer's estimator of the log normalizing constant against a
   variational Gaussian mixture proposal with a broad defensive component,
   importance-sampling and Laplace cross-checks, ESS and R-hat; `--check`
-  verifies stored files. Resumable; run overnight (timing costs about
-  48 ms per evaluation).
+  verifies stored files. Resumable per chain; run overnight (timing costs
+  about 40 to 50 ms per evaluation).
 - `scripts/profile_run.py` — run VBMC on one target or suite config under a
   fixed seed and report per-stage timers, truth-based metrics and, with
   `--cprofile`, a cProfile attribution of the hot paths.

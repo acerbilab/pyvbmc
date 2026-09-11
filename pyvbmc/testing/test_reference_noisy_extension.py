@@ -99,6 +99,10 @@ def test_golden_extension_registration_and_unchanged_profile_suite():
         "student_D8",
         "student_D8_noise3",
         "lumpy_D10_noise3",
+        "multisensory_s1_D6",
+        "timing_D5_noise2.2",
+        "multisensory_s1_D6_noise1.3",
+        "multisensory_s2_D6_noise1.3",
         "cigar_D15_exhaust",
     )
 

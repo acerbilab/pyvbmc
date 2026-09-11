@@ -160,3 +160,6 @@ docsrc/_build/
 
 # profiling output from dev/scripts/profile_run.py
 dev/scripts/runs/
+# intermediate chain files of dev/scripts/make_benchmark_truths.py (the
+# truths themselves, data/truths/*.npz and *.json, are tracked)
+dev/scripts/data/truths/chains/

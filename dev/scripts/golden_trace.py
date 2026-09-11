@@ -341,7 +341,7 @@ def parse_seeds(spec):
 
 
 def cmd_run(args):
-    from benchmark_targets import suite_configs
+    from benchmark_targets import missing_truths, suite_configs
 
     try:  # fail fast in the parent, not as 220 per-task error files
         import psutil  # noqa: F401
@@ -359,6 +359,13 @@ def cmd_run(args):
     if args.only:
         wanted = set(args.only.split(","))
         cfgs = [c for c in cfgs if c.label in wanted]
+    missing = missing_truths(cfgs)
+    if missing:  # a population without a truth has NaN metrics: no gate
+        sys.exit(
+            "no ground truth for "
+            + ", ".join(missing)
+            + "; generate it with dev/scripts/make_benchmark_truths.py"
+        )
     extra = json.loads(args.options) if args.options else {}
     seeds = parse_seeds(args.seeds)
     tasks = [

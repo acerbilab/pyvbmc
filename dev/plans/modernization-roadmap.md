@@ -978,18 +978,18 @@ superseding earlier requirements below for a full sweep before assessment.
 ## Benchmark coverage and HPC support
 
 Complete these follow-up tasks before the final pre-release documentation
-review. Target selection, public inclusion and the Slurm design remain open.
+review. Public inclusion of the real-data targets and the Slurm design
+remain open.
 
-- [ ] Extend the core benchmark with at least one more realistic noiseless
-  target and 2–3 more realistic noisy targets. Look for candidates in the
-  lab-private [benchflow repository](https://github.com/acerbilab/benchflow).
-  Decide which targets and associated material are suitable for inclusion
-  in PyVBMC's public tests, and adapt the selected targets. Targets and
-  method chosen 2026-09-11 (Bayesian timing; multisensory causal inference
-  on two subjects; Goris deferred), with the definitions, ground-truth
-  method, campaigns and evidence in
-  [benchmark-realistic-targets.md](benchmark-realistic-targets.md);
-  public inclusion is decided at the documentation review.
+- [ ] Extend the core benchmark with real-data targets: the Bayesian timing
+  model and the multisensory causal-inference model on two subjects,
+  chosen on 2026-09-11 from the lab-private
+  [benchflow repository](https://github.com/acerbilab/benchflow) (the
+  Goris neuronal model deferred). Definitions, ground-truth method,
+  reference campaigns, status and evidence are in
+  [benchmark-realistic-targets.md](benchmark-realistic-targets.md). Which
+  targets and data move into PyVBMC's public tests is decided at the
+  documentation review.
 - [ ] Improve support for running benchmarks on Slurm HPC systems, including
   submission, resource configuration, resumption and collection of results
   with reproducible run provenance. Choose the execution design when this

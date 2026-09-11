@@ -12,33 +12,12 @@ Usage::
 
     python dev/scripts/export_benchflow_data.py [--benchflow ../benchflow]
 
-``timing.npz`` (Bayesian time-interval reproduction, Acerbi, Wolpert &
-Vijayakumar 2012; subject 2 of Experiment 3, 1512 trials):
-
-``stim_index``     int64 (1512,)  0-based index of the trial's interval
-``response``       float64 (1512,)  reproduced interval (s), binned at
-                   ``bin_size``
-``stimuli``        float64 (6,)  the six intervals (s)
-``bin_size``       float64 ()  response discretization (s)
-``lb, ub, plb, pub``  float64 (5,)  the paper's bounds (Table S2 of the
-                   2020 paper), parameters ``(w_s, w_m, mu_p, sigma_p,
-                   lambda)``
-``paper_*``        the 2020 paper's ground truth for the uniform prior:
-                   ``paper_ln_z`` (), ``paper_post_mean`` (5,),
-                   ``paper_post_cov`` (5, 5), ``paper_post_mode`` (5,),
-                   ``paper_post_mode_val`` (), ``paper_marginal_bounds``
-                   (2, 5), ``paper_marginal_pdf`` (5, 8192), ``paper_mle``
-                   (5,), ``paper_mle_val`` (). Kept for comparison; the
-                   suite's truth is regenerated under its own prior.
-
-``multisensory.npz`` (visuo-vestibular unity judgments, Acerbi, Dokka,
-Angelaki & Ma 2018; subjects 1 and 2 of the 2020 paper, benchflow indices
-0 and 1), for ``s`` in ``1, 2`` and coherence level ``c`` in ``1, 2, 3``:
-
-``s{s}_c{c}_stim``  float64 (n, 2)  vestibular and visual directions (deg)
-``s{s}_c{c}_resp``  int64 (n,)  response code as benchflow's likelihood
-                    reads it: 2 when the subject judged the cues to come
-                    from different sources, 1 otherwise
+Writes ``timing.npz`` (the Bayesian timing data of one subject with the
+paper's bounds and the paper's uniform-prior truth, kept for comparison)
+and ``multisensory.npz`` (the unity judgments of two subjects at three
+coherence levels); the key-by-key layout is the table in
+``data/README.md``. Benchflow's stimulus indices are 1-based and are
+exported 0-based.
 """
 
 from __future__ import annotations

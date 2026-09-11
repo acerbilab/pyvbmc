@@ -37,7 +37,7 @@ trapezoidal prior with pivots at the plausible bounds:
 ``timing``      Bayesian time-interval reproduction (Acerbi, Wolpert &
                 Vijayakumar 2012), D = 5, 1512 trials of one subject; the
                 observer's response distribution is integrated numerically,
-                about 40 ms per evaluation
+                about 40 to 50 ms per evaluation
 ``multisensory_s1``, ``multisensory_s2``
                 visuo-vestibular causal inference (Acerbi, Dokka, Angelaki &
                 Ma 2018), D = 6, one target per subject; analytic likelihood,
@@ -74,6 +74,9 @@ Command line::
 ``--check`` verifies each implementation against an independent reference
 density, against the moments of exact samples and against the pinned values,
 and integrates numerically only where ln Z is not analytic by construction.
+For the real-data targets the moments and the sampler both come from the
+stored MCMC draws, so that comparison only checks the truth file against
+itself; the pins and the generator's own ``--check`` are the real gates.
 ``--smoke`` runs every config of a suite through two VBMC iterations. Both
 take ``--only``, a comma-separated list of target names or config labels.
 """
@@ -83,6 +86,7 @@ from __future__ import annotations
 import argparse
 import copy
 import dataclasses
+import json
 import sys
 import time
 from pathlib import Path
@@ -216,8 +220,12 @@ class Config:
 
 
 def _row(v, D):
+    # always a fresh array: a view of a module-level constant or of a cached
+    # data archive would let one in-place write reach every problem
     return (
-        np.full((1, D), float(v)) if np.ndim(v) == 0 else np.reshape(v, (1, D))
+        np.full((1, D), float(v))
+        if np.ndim(v) == 0
+        else np.array(v, dtype=float).reshape(1, D)
     )
 
 
@@ -961,10 +969,12 @@ def _spline_trapezoid_logpdf(X, a, u, v, b):
     plateau = (X >= u) & (X < v)
     right = (X >= v) & (X <= b)
     z = np.zeros(X.shape)
-    z[left] = ((X - a) / (u - a))[left]
-    z[right] = (1.0 - (X - v) / (b - v))[right]
-    with np.errstate(divide="ignore"):  # z = 0 at a and b: log(0) = -inf
-        taper = np.log(3.0 * z**2 - 2.0 * z**3)
+    # the quotients are formed on the whole array and masked afterwards, so
+    # a degenerate box (a == u or v == b) only produces discarded values
+    with np.errstate(divide="ignore", invalid="ignore"):
+        z[left] = ((X - a) / (u - a))[left]
+        z[right] = (1.0 - (X - v) / (b - v))[right]
+        taper = np.log(3.0 * z**2 - 2.0 * z**3)  # z = 0 at a and b
     # each taper integrates to half its width, so before normalization the
     # marginal integrates to (v - u) + (u - a) / 2 + (b - v) / 2
     log_norm = np.log(0.5 * (v - u + b - a))
@@ -994,29 +1004,79 @@ def _bounded_log_joint(log_likelihood_vec, a, u, v, b):
     return logp
 
 
+_TRUTH_CACHE = {}
+
+
+def _load_truth(name, D, lb, ub):
+    """The arrays of ``data/truths/{name}.npz`` plus the effective sample
+    size of its draws from the JSON sidecar, read once per process and
+    checked against the target: draws ``(n, D)`` inside the hard bounds
+    (so in the original space), moments of matching shape."""
+    if name in _TRUTH_CACHE:
+        return _TRUTH_CACHE[name]
+    path = TRUTH_DIR / f"{name}.npz"
+    if not path.is_file():
+        _TRUTH_CACHE[name] = None
+        return None
+    with np.load(path, allow_pickle=False) as z:
+        truth = {k: np.asarray(z[k], dtype=float) for k in z.files}
+    samples = truth["samples"]
+    if samples.ndim != 2 or samples.shape[1] != D:
+        raise ValueError(f"{path}: samples must be (n, {D})")
+    if not np.all((samples >= lb) & (samples <= ub)):
+        raise ValueError(f"{path}: draws outside the hard bounds")
+    if truth["mean"].shape != (D,) or truth["cov"].shape != (D, D):
+        raise ValueError(f"{path}: mean must be ({D},) and cov ({D}, {D})")
+    if truth["ln_z"].shape != ():
+        raise ValueError(f"{path}: ln_z must be a scalar")
+    n_eff = len(samples)
+    sidecar = path.with_suffix(".json")
+    if sidecar.is_file():
+        with open(sidecar, encoding="utf-8") as f:
+            ess = json.load(f).get("diagnostics", {}).get("ess")
+        if ess:
+            n_eff = int(min(min(ess), len(samples)))
+    truth["n_eff"] = n_eff
+    _TRUTH_CACHE[name] = truth
+    return truth
+
+
 def _attach_truth(prob):
     """Fill a real-data target's truth from ``data/truths/{name}.npz``, or
     record in its notes that the file is not there yet.
 
     The stored draws are an MCMC sample, so the sampler resamples them with
-    replacement and ``sampler_n_eff`` reports how many stored draws stand
-    behind it."""
-    path = TRUTH_DIR / f"{prob.name}.npz"
-    if not path.is_file():
+    replacement and ``sampler_n_eff`` is their effective sample size (the
+    smallest over dimensions, from the sidecar), not their count."""
+    truth = _load_truth(prob.name, prob.D, prob.lb, prob.ub)
+    if truth is None:
         prob.notes += (
             "; ground truth not generated yet (write it with"
             " dev/scripts/make_benchmark_truths.py): ln Z and the moments"
             " are unknown and the metrics that need them are NaN"
         )
         return prob
-    with np.load(path, allow_pickle=False) as z:
-        samples = z["samples"]
-        prob.ln_Z = float(z["ln_z"])
-        prob.true_mean = np.reshape(z["mean"], (1, prob.D))
-        prob.true_cov = np.asarray(z["cov"], dtype=float)
+    samples = truth["samples"]
+    prob.ln_Z = float(truth["ln_z"])
+    prob.true_mean = np.reshape(truth["mean"], (1, prob.D))
+    prob.true_cov = truth["cov"]
     prob.sampler = lambda n, rng: samples[rng.integers(len(samples), size=n)]
-    prob.sampler_n_eff = len(samples)
+    prob.sampler_n_eff = truth["n_eff"]
     return prob
+
+
+def missing_truths(configs):
+    """Labels of the configs whose target has no ground truth (a real-data
+    target whose truth file has not been generated), for harnesses that
+    must not record a population without one."""
+    missing, seen = [], set()
+    for cfg in configs:
+        if (cfg.name, cfg.D) in seen:
+            continue
+        seen.add((cfg.name, cfg.D))
+        if make_problem(cfg.name, cfg.D).ln_Z is None:
+            missing.append(cfg.label)
+    return missing
 
 
 # Bayesian time-interval reproduction (Acerbi, Wolpert & Vijayakumar 2012),
@@ -1150,9 +1210,18 @@ MULTISENSORY_S1_PIN_X = (
     0.02525963,
 )
 MULTISENSORY_S1_PIN_LOGP = -503.4863062430452
+# Regression pin for subject 2, which benchflow stores no value for: the
+# log-likelihood of this implementation at the same point on 2026-09-11,
+# when a transcription of benchflow's expression agreed with it bit for bit
+# on 200 random points of the plausible box.
+MULTISENSORY_S2_PIN_LOGLIK = -600.9543713193984
 # benchflow's stored log normalizing constant for subject 1 under this
-# prior: the cross-check of the ground-truth generator, unused by the
-# targets themselves.
+# prior. It is not a gate for the ground-truth generator: three estimators
+# sharing no code (Geyer's and importance sampling in the transformed
+# space, defensive importance sampling in the original space with an
+# effective sample size above 10^5) agree on -502.19 +- 0.01 on
+# 2026-09-11, while the log joint at benchflow's stored mode is reproduced
+# to 2e-10, so the stored constant is off by about 0.29.
 MULTISENSORY_S1_LN_Z_BENCHFLOW = -502.4790984812846
 
 
@@ -1160,6 +1229,10 @@ def _multisensory(D, subject):
     if D != 6:
         raise ValueError("multisensory is defined for D = 6 only")
     data = _load_data("multisensory")
+    # benchflow's three per-subject cells are taken in their stored order as
+    # the low, medium and high coherence levels; the source file does not
+    # label them, and the four noise parameters share one set of bounds, so
+    # the order only matters for naming the marginals
     trials = [
         (data[f"s{subject}_c{c}_stim"], data[f"s{subject}_c{c}_resp"] == 2)
         for c in (1, 2, 3)
@@ -1192,10 +1265,18 @@ def _multisensory(D, subject):
         return out
 
     name = f"multisensory_s{subject}"
-    pins = ()
     if subject == 1:
         pins = (
             (MULTISENSORY_S1_PIN_X, MULTISENSORY_S1_PIN_LOGP, "logp", PIN_TOL),
+        )
+    else:
+        pins = (
+            (
+                MULTISENSORY_S1_PIN_X,
+                MULTISENSORY_S2_PIN_LOGLIK,
+                "loglik",
+                PIN_TOL,
+            ),
         )
     return _attach_truth(
         Problem(
@@ -1496,8 +1577,12 @@ def check_problem(prob, n_ref=200, n_draws=2_000_000, seed=7):
         if d > 1e-6:
             res["ok"] = False
             res["msgs"].append(f"density differs from reference by {d:.2e}")
-    # (b) moments vs exact samples
+    # (b) moments vs exact samples (for a stored MCMC population, whose
+    # moments were computed from the same draws, a consistency check of the
+    # truth file: it cannot fail unless the file is inconsistent)
     if prob.sampler is not None and prob.true_mean is not None:
+        if prob.sampler_n_eff is not None:
+            n_draws = min(n_draws, 10 * prob.sampler_n_eff)
         S = prob.sampler(n_draws, rng)
         m = S.mean(0)
         c = np.cov(S.T)
@@ -1571,8 +1656,9 @@ def check_problem(prob, n_ref=200, n_draws=2_000_000, seed=7):
 
 
 def _selected(cfg, only):
-    """Whether a config passes an ``--only`` filter: a set of target names
-    or config labels, or ``None`` for everything."""
+    """Whether a config passes an ``--only`` filter: ``None`` for everything,
+    otherwise a set (not a string: ``in`` on a string matches substrings)
+    of target names or config labels."""
     return only is None or cfg.name in only or cfg.label in only
 
 
@@ -1715,6 +1801,14 @@ def main(argv=None):
         unknown = sorted(only - known)
         if unknown:
             ap.error(f"unknown --only entries: {', '.join(unknown)}")
+        for flag, suite in (
+            (args.check, args.suite or "all"),
+            (args.smoke, args.suite or "smoke"),
+        ):
+            if flag and not any(
+                _selected(c, only) for c in suite_configs(suite)
+            ):
+                ap.error(f"--only selects no config of suite {suite!r}")
     if args.list or not (args.check or args.smoke):
         for s, cfgs in SUITES.items():
             print(f"{s}:")

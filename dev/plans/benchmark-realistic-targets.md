@@ -73,7 +73,7 @@ responses discretized at 0.02 s. Parameters, in order: sensory Weber fraction
 `w_s`, motor Weber fraction `w_m`, prior mean `mu_p` (s), prior SD `sigma_p`
 (s), lapse rate `lambda`. The likelihood integrates the Bayesian observer's
 response distribution numerically per interval (grids of 101 by 401 points),
-about 48 ms per evaluation. Benchflow's Python port (`benchflow/tasks/timing.py`)
+about 40 to 50 ms per evaluation. Benchflow's Python port (`benchflow/tasks/timing.py`)
 is the source; its value at `(0.15, 0.15, 0.7875, 0.225, 0.035)`,
 −4586.122592352263, is checked against the original MATLAB code in
 benchflow's tests and pins our port.
@@ -85,11 +85,12 @@ benchflow's tests and pins our port.
 | PUB | 0.25 | 0.25 | 0.975 | 0.375 | 0.05 |
 | UB | 0.5 | 0.5 | 1.95 | 0.75 | 0.2 |
 
-Data to export from `timing.mat`: the trial matrix (1512 by 6; column 3 is
-the stimulus index), the responses, the six stimulus values, the bin size.
-The file also holds the paper's MCMC truth for the uniform prior (lnZ
-−3859.868, mean, covariance, marginals on 8192-point grids); it is exported
-for comparison, not used as the truth (see the evidence section).
+Data exported from `timing.mat` (layout in `dev/scripts/data/README.md`):
+the 0-based interval index of each trial, the responses, the six interval
+values, the bin size and the four bound vectors. The file also holds the
+paper's MCMC truth for the uniform prior (lnZ −3859.868, mean, covariance,
+marginals on 8192-point grids); it is exported for comparison, not used as
+the truth (see the evidence section).
 
 ### `multisensory_s1`, `multisensory_s2` (D = 6)
 
@@ -127,39 +128,63 @@ is an implementation choice.
 
 ## Ground-truth generation
 
-A new script beside `make_oracle_fixtures.py`, with a `--check` mode that
-verifies the pinned density values and the stored files' internal
-consistency. Per target:
+`dev/scripts/make_benchmark_truths.py` (its docstring is the usage
+reference) generates the truths; its `--check` mode reloads a target's
+files, verifies the stored moments against the stored draws, re-evaluates
+the target at a hundred stored draws against their stored log densities,
+and applies the diagnostic gates below. The pinned density values are
+checked by `benchmark_targets.py --check`. Per target:
 
-1. **Space.** PyVBMC's `ParameterTransformer` maps the box to unbounded
-   coordinates; the target there is the log joint plus the log-Jacobian,
-   which leaves the normalizing constant unchanged and makes the posterior
-   closest to a Gaussian mixture.
-2. **Samples.** gpyreg's slice sampler in those coordinates, whitened by
-   the covariance of a pilot run so the strong correlations (0.9 in timing,
-   0.8 in multisensory subject 1) do not stall coordinate-wise moves. Four
-   chains from dispersed starts, burn-in discarded, thinned to 50 000
-   stored draws in total; effective sample sizes and split R-hat recorded.
-   The chains' log-densities are kept for the estimator.
-3. **Proposal.** `BayesianGaussianMixture` fitted on the first half of the
-   draws, plus a broad component of weight 0.05 with the draws' mean and
-   an inflated covariance. Exact sampling and log-density implemented
-   locally.
-4. **lnZ.** Geyer's estimator between the second half of the chain and
-   20 000 proposal draws (the only new likelihood evaluations: 16 minutes
-   for timing, seconds for multisensory), standard error from the chain's
-   effective sample size (Frühwirth-Schnatter 2004). Cross-checks recorded
-   alongside: defensive importance sampling from the same proposal draws
-   with its effective sample size, and a Laplace approximation at the MAP
-   from a numerical Hessian (the 2018 paper found it within about one
-   point). For multisensory subject 1 the estimate must reproduce
-   benchflow's −502.479, which used the same prior and pivots.
-5. **Stored truth.** One `.npz` per target with the samples, mean,
-   covariance and lnZ, and a JSON sidecar with the standard errors, the
-   cross-check values, effective sample sizes, R-hat, seeds, chain lengths
-   and the generating commit. The `Problem.sampler` hook resamples from the
-   stored draws; `ln_Z`, `true_mean` and `true_cov` come from the file.
-   MMTV is a marginal metric, so 50 000 draws are ample.
+1. **Space.** PyVBMC's `ParameterTransformer` (probit, as VBMC uses) maps
+   the box to unbounded coordinates; the target there is the log joint
+   plus the log-Jacobian, which leaves the normalizing constant unchanged
+   and makes the posterior closest to a Gaussian mixture.
+2. **MAP, Laplace, whitening.** A multi-start search for the MAP in those
+   coordinates, a finite-difference Hessian there, the Laplace estimate of
+   lnZ from it, and the Cholesky factor of its inverse as the whitening of
+   the sampling coordinates, so the strong correlations (0.9 in timing,
+   0.8 in multisensory subject 1) do not stall coordinate-wise moves.
+3. **Samples.** gpyreg's slice sampler in the whitened coordinates. Four
+   chains from dispersed starts around the MAP, burn-in discarded,
+   thinned; effective sample sizes and split R-hat recorded; the chains'
+   log densities kept for the estimator. Each chain is saved to
+   `data/truths/chains/` (gitignored) in chunks as it runs; a completed
+   chain is reused by a rerun with the same settings, MAP and whitening,
+   an interrupted one is resampled, so the granularity of a resume is one
+   chain.
+4. **Proposal.** scikit-learn's `BayesianGaussianMixture` fitted on the
+   first half of the draws (components below weight 0.001 dropped), plus
+   a broad component of weight 0.05 with the draws' mean and four times
+   their covariance. Exact sampling and log-density implemented locally;
+   the mixture is used as a density over the unwhitened coordinates, so
+   the estimate is the target's own constant.
+5. **lnZ.** Geyer's estimator between the second half of the chains and
+   20 000 proposal draws (the only new likelihood evaluations), standard
+   error from the second half's effective sample size (Frühwirth-Schnatter
+   2004). Recorded alongside: defensive importance sampling from the same
+   proposal draws with its effective sample size, and the Laplace
+   estimate (the 2018 paper found it within about one point).
+6. **Stored truth.** One `.npz` per target with the draws in the original
+   space, their log densities, mean, covariance, lnZ and its standard
+   error, and a JSON sidecar with the settings, the cross-check values,
+   effective sample sizes, R-hat, seeds, the MAP, the proposal summary,
+   timings and the generating commit. Both files are tracked (about
+   2 MB per target; every tracked file also enters the sdist). The
+   `Problem.sampler` hook resamples from the stored draws; `ln_Z`,
+   `true_mean` and `true_cov` come from the file, and the effective sample
+   size from the sidecar. MMTV is a marginal metric, so tens of thousands
+   of draws are ample.
+
+Gates, checked by the generator: split R-hat below 1.01 on every
+dimension; Geyer's and the importance-sampling estimates within three
+combined standard errors; effective sample sizes in the hundreds at least.
+Benchflow's stored constant for multisensory subject 1 (−502.479) is
+reported but is not a gate: three estimators sharing no code (Geyer's and
+importance sampling in the transformed space, and a defensive importance
+sampler in the original space with an effective sample size above 10^5)
+agree on −502.19 ± 0.01, while the log joint at benchflow's stored mode
+is reproduced to 2e-10, so the stored constant is off by about 0.29 (the
+evidence section has the numbers).
 
 For timing, the new moments are also compared with the paper's stored
 uniform-prior truth. The smoke runs below suggest that truth's covariance
@@ -167,10 +192,15 @@ is inflated (the file records an IBS setup, so its MCMC may have run on the
 noisy likelihood); the regenerated truth settles whether that is so or
 VBMC is under-dispersed on this target.
 
-Cost: about 3 to 6 hours of slice sampling for timing, 30 minutes per
-multisensory subject, plus the proposal evaluations. One night sequentially
-on any machine; truth generation has no replay-baseline constraint, so the
-cluster can run the targets and chains in parallel.
+Cost, from the dry runs of 2026-09-11: a stored timing draw costs about
+0.33 s per unit of thinning (about seven evaluations per sweep), a
+multisensory draw about 8.5 ms. The overnight settings: the defaults for
+the two multisensory subjects (50 000 draws, thin 5, four chains, 20 000
+proposal draws: about 45 minutes each) and 24 000 draws at thin 2 for
+timing (5 to 6 hours, plus a minute of MAP search and 15 minutes of
+proposal evaluations). One night sequentially on any machine; truth
+generation has no replay-baseline constraint, so the cluster could run the
+targets and chains in parallel.
 
 ## Reference population
 
@@ -180,11 +210,15 @@ extension pattern of the
 per configuration on the benchmark machine with the campaign settings,
 then joined to the reference with their manifests, README and the even/odd
 null check. `population_run.py` pins the source checkout and refuses a
-`benchmark_targets.py` that differs from the prepared candidate, so these
-campaigns run from a new frozen checkout that contains the targets and
-whose `pyvbmc/` numerics equal the frozen treatment `68a43db`; the oracle
-`--check --exact` and `golden_replay.py` reporting `identical` on the
-existing configurations certify that before the campaign. Noiseless runs
+`benchmark_targets.py` or a `dev/scripts/data/` (the archives and the
+truths) that differs from the prepared candidate, and refuses an unclean
+checkout, so these campaigns run from a new frozen checkout that contains
+the targets and the committed truths and whose `pyvbmc/` numerics equal
+the frozen treatment `68a43db`; the oracle `--check --exact` and
+`golden_replay.py` reporting `identical` on the existing configurations
+certify that before the campaign. `golden_trace.py run` refuses a
+configuration whose target has no truth, so a population cannot be
+recorded with NaN metrics. Noiseless runs
 stop on stability at 130 to 200 evaluations; noisy runs spend the full
 budget, 2 to 3 minutes each for timing. Four configurations at 30 seeds
 are 4 to 6 hours.
@@ -200,14 +234,19 @@ Code work runs on `dev-benchmark-targets` (branched 2026-09-11 from
   `benchmark_targets.py`, with the pinned-value checks in `--check`, the
   plausible-box comment, and the suite entries; `--list` and `--smoke`
   pass (timing pin bit-exact against the MATLAB-derived value, the
-  multisensory log joint within 2e-10 of benchflow's mode value; `--only`
-  now filters `--smoke` too).
+  multisensory log joint within 2e-10 of benchflow's mode value, a
+  regression pin for subject 2; `--only` filters `--smoke` too and
+  rejects an empty selection). The shipped test that pins the golden
+  suite lists the four new labels; `golden_trace.py run` refuses targets
+  without a truth; `population_run.py` pins `dev/scripts/data/` as well.
 - [x] scikit-learn in the `dev` extra; AGENTS.md's extras sentence and
   `dev/README.md` updated.
-- [~] Truth generator with `--check`; overnight generation; validation
-  gates: subject-1 lnZ reproduces benchflow's value, the two estimators
-  agree within their standard errors, R-hat below 1.01, timing comparison
-  with the stored uniform-prior truth written up.
+- [~] Truth generator with `--check`: written and reviewed, reproduces the
+  logreg and halfnormal constants in quick mode, dry-run on the real
+  targets. Overnight generation and its gates (R-hat below 1.01, the two
+  estimators within three combined standard errors, effective sample
+  sizes recorded) pending; the timing comparison with the stored
+  uniform-prior truth is written up when the truth exists.
 - [ ] Reference campaigns for the four configurations from a certified
   frozen checkout; join to the reference.
 - [ ] Record the results and the pickup in the roadmap and `TODO.md`.
@@ -237,6 +276,17 @@ subject 2: benchflow's class stores subject 1's lnZ for every subject.
 
 Other observations from the same session:
 
+- The normalizing constant of multisensory subject 1 under the spline
+  prior, from the generator's quick run (2000 draws) and from a separate
+  original-space estimate: Geyer −502.194 ± 0.025; importance sampling
+  from the same proposal draws −502.158 ± 0.035; defensive importance
+  sampling in the original space (half a t(4) around the MAP, half uniform
+  over the box, 2·10^6 draws, effective sample size 137 000)
+  −502.186 ± 0.003; Laplace −502.815. Benchflow's stored −502.479 is 0.29
+  below all three, and sits where the ELBOs of the VBMC runs above land
+  (−502.51 to −502.99), which is what an ELBO recorded as a constant would
+  look like. Benchflow also stores that constant for every subject
+  although it can only describe subject 1.
 - Uniform against spline prior on subject 1, seed 0: means within 0.2 and
   SDs within 0.1 of each other in every dimension. The prior choice does
   not change difficulty.

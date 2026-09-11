@@ -25,7 +25,11 @@ configurations use seeds 0–49, two noisy additions use seeds 0–29, and the
 15-dimensional budget-exhaustion case uses seeds 0–9. The population includes
 160 noisy runs across four configurations and 76 KS tests. The
 [results summary](baseline/summary.md) gives the measured outcomes for every
-configuration.
+configuration. The golden suite of `benchmark_targets.py` also registers
+four real-data configurations (`multisensory_s1_D6`, `timing_D5_noise2.2`,
+`multisensory_s1_D6_noise1.3`, `multisensory_s2_D6_noise1.3`) that have no
+reference traces yet; their campaigns are planned in
+[benchmark-realistic-targets.md](../plans/benchmark-realistic-targets.md).
 
 The 60 additions are `rosenbrock_D2_noise3` and `student_D8_noise3`, each at
 seeds 0–29, with noise SD 3 and evaluation budgets 200 and 500. They were

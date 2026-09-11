@@ -42,25 +42,28 @@ entropy speedups measured in the
 [NumPy prototype](results/2026-09-09-svbmc-numpy-prototype.md), gated by the
 regression references in `pyvbmc/testing/svbmc/`.
 
+The benchmark extension with real-data targets (order set 2026-09-11,
+tentatively before the golden run) is in progress on
+`dev-benchmark-targets`; the decisions, definitions, method, status and
+evidence are in
+[benchmark-realistic-targets.md](plans/benchmark-realistic-targets.md).
+The targets are the Bayesian timing model and the multisensory
+causal-inference model on two subjects from the lab-private
+[benchflow repository](https://github.com/acerbilab/benchflow) (sibling
+checkout `../benchflow` at `5920788`), on plain `.npz` data, with
+spline-trapezoidal priors and the paper's plausible boxes; subject 1 runs
+noiseless and all three at the 2020 paper's noise levels. Done: data
+export, targets, truth generator (slice sampling and Geyer's estimator
+with a scikit-learn mixture proposal; scikit-learn is in the `dev` extra).
+Next: the overnight truth generation (about 7 hours on one machine), then
+the reference campaigns from a certified frozen checkout. Goris stays
+deferred; which targets move into the public tests is decided at the
+documentation review.
+
 ## Work awaiting a separate decision
 
-- Next work item (order set 2026-09-11, tentatively before the golden run):
-  extend the core benchmark with real-data targets. The targets and the
-  method are decided (PI, 2026-09-11) and recorded in
-  [benchmark-realistic-targets.md](plans/benchmark-realistic-targets.md):
-  the Bayesian timing model and the multisensory causal-inference model on
-  two subjects from the lab-private
-  [benchflow repository](https://github.com/acerbilab/benchflow) (sibling
-  checkout `../benchflow` at `5920788`), exported to plain `.npz` data,
-  spline-trapezoidal priors, the paper's plausible boxes, subject 1
-  noiseless plus all three at the 2020 paper's noise levels, ground truths
-  regenerated overnight by slice sampling and Geyer's estimator with a
-  scikit-learn mixture proposal (scikit-learn joins the `dev` extra), then
-  reference campaigns from a certified frozen checkout. Goris stays
-  deferred. Implementation has not started. Which targets move into the
-  public tests is decided at the documentation review. Also improve Slurm
-  HPC support for benchmark runs. These are follow-up tasks before the
-  final documentation review; see
+- Improve Slurm HPC support for benchmark runs, a follow-up task before
+  the final documentation review; see
   [benchmark coverage and HPC support](plans/modernization-roadmap.md#benchmark-coverage-and-hpc-support).
 - The [user-facing agent skill proposal](2026-09-02-user-agent-skill.md) remains
   release work; keep it aligned with the settled 1.5 API and guidance.
