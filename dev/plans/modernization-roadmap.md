@@ -984,7 +984,12 @@ review. Target selection, public inclusion and the Slurm design remain open.
   target and 2–3 more realistic noisy targets. Look for candidates in the
   lab-private [benchflow repository](https://github.com/acerbilab/benchflow).
   Decide which targets and associated material are suitable for inclusion
-  in PyVBMC's public tests, and adapt the selected targets.
+  in PyVBMC's public tests, and adapt the selected targets. Targets and
+  method chosen 2026-09-11 (Bayesian timing; multisensory causal inference
+  on two subjects; Goris deferred), with the definitions, ground-truth
+  method, campaigns and evidence in
+  [benchmark-realistic-targets.md](benchmark-realistic-targets.md);
+  public inclusion is decided at the documentation review.
 - [ ] Improve support for running benchmarks on Slurm HPC systems, including
   submission, resource configuration, resumption and collection of results
   with reproducible run provenance. Choose the execution design when this

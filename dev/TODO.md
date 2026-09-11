@@ -45,15 +45,22 @@ regression references in `pyvbmc/testing/svbmc/`.
 ## Work awaiting a separate decision
 
 - Next work item (order set 2026-09-11, tentatively before the golden run):
-  extend the core benchmark with at least one realistic noiseless target
-  and 2–3 realistic noisy targets, drawing candidates from the lab-private
-  [benchflow repository](https://github.com/acerbilab/benchflow), cloned as
-  a sibling of this repository (`../benchflow`, at `5920788` on
-  2026-09-11); survey its targets for candidates. The PI chooses the
-  targets and which can
-  move into public tests later. Also improve Slurm HPC support for
-  benchmark runs. These are follow-up tasks before the final
-  documentation review; see
+  extend the core benchmark with real-data targets. The targets and the
+  method are decided (PI, 2026-09-11) and recorded in
+  [benchmark-realistic-targets.md](plans/benchmark-realistic-targets.md):
+  the Bayesian timing model and the multisensory causal-inference model on
+  two subjects from the lab-private
+  [benchflow repository](https://github.com/acerbilab/benchflow) (sibling
+  checkout `../benchflow` at `5920788`), exported to plain `.npz` data,
+  spline-trapezoidal priors, the paper's plausible boxes, subject 1
+  noiseless plus all three at the 2020 paper's noise levels, ground truths
+  regenerated overnight by slice sampling and Geyer's estimator with a
+  scikit-learn mixture proposal (scikit-learn joins the `dev` extra), then
+  reference campaigns from a certified frozen checkout. Goris stays
+  deferred. Implementation has not started. Which targets move into the
+  public tests is decided at the documentation review. Also improve Slurm
+  HPC support for benchmark runs. These are follow-up tasks before the
+  final documentation review; see
   [benchmark coverage and HPC support](plans/modernization-roadmap.md#benchmark-coverage-and-hpc-support).
 - The [user-facing agent skill proposal](2026-09-02-user-agent-skill.md) remains
   release work; keep it aligned with the settled 1.5 API and guidance.

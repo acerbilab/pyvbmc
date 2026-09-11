@@ -79,6 +79,12 @@ plan and consolidated human summary.
   fixtures plus a generated D=1, bounded and warped set), layout, the
   parity gate against upstream, the test suite, verification and the two
   remaining follow-ups (forwarding release after 1.5, deferred speedups).
+- [plans/benchmark-realistic-targets.md](plans/benchmark-realistic-targets.md) —
+  the real-data benchmark targets from benchflow (Bayesian timing,
+  multisensory causal inference on two subjects): the decisions, the
+  target definitions and bounds, the ground-truth generation method
+  (slice sampling, Geyer's estimator with a mixture proposal), the
+  reference campaigns, the work breakdown and the smoke-run evidence.
 - `plans/profile-and-gradient-checks.md` — dev environment, baseline test
   run, first measured profile (D=5, D=10) and the first Stage 0
   finite-difference gradient checks, which found the reshape-order bug in
