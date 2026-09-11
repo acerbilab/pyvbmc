@@ -196,10 +196,12 @@ Code work runs on `dev-benchmark-targets` (branched 2026-09-11 from
 
 - [x] Export script and the two `.npz` data files with README (benchflow
   `5920788`): `dev/scripts/export_benchflow_data.py`, `dev/scripts/data/`.
-- [~] Spline-trapezoidal log-density and the three targets in
+- [x] Spline-trapezoidal log-density and the three targets in
   `benchmark_targets.py`, with the pinned-value checks in `--check`, the
   plausible-box comment, and the suite entries; `--list` and `--smoke`
-  pass.
+  pass (timing pin bit-exact against the MATLAB-derived value, the
+  multisensory log joint within 2e-10 of benchflow's mode value; `--only`
+  now filters `--smoke` too).
 - [x] scikit-learn in the `dev` extra; AGENTS.md's extras sentence and
   `dev/README.md` updated.
 - [~] Truth generator with `--check`; overnight generation; validation
