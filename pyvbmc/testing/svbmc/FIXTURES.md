@@ -77,9 +77,9 @@ are the gate for later performance changes to the entropy computation.
 
 | test module | reads | tolerance |
 | --- | --- | --- |
-| `test_svbmc.py` | the six groups via `load_group` | behavior and shape checks; sample statistics at loose tolerances |
+| `test_svbmc.py` | `upstream_GMM`, `normal_D1`, `bounded_D2`, `corr_D3` via `load_group(group, rng=0)` | shapes, dtypes and reproducibility exact; sample statistics loose (means within 0.25 or 0.5, standard deviations at `rtol=0.25`) |
 | `test_svbmc_filters.py` | synthetic posteriors and `upstream_GMM` | exact |
-| `test_svbmc_references.py` | every group and `references` | `rtol=1e-8`, `atol=1e-10` on `w`, `elbo` and `entropy` |
+| `test_svbmc_references.py` | every group via `load_group(group, rng=0)` and `references` | `rtol=1e-8`, `atol=1e-10` on `w`, the three `elbo` values and `entropy`; `M` and `K` exact |
 | `test_svbmc_imports.py`, `test_svbmc_utils.py` | none | run without torch |
 
 New fixture files or directories must be added to `MANIFEST.in`.

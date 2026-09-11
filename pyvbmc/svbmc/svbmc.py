@@ -437,6 +437,7 @@ Generator, optional
         torch = _import_torch()
         if isinstance(w, torch.Tensor):
             w = w.to(torch.float64)
+            w = w / w.sum()
         elif isinstance(w, (np.ndarray, list, tuple)):
             w_np = np.asarray(w, dtype=np.float64)
             w = torch.as_tensor(w_np / np.sum(w_np), dtype=torch.float64)
@@ -511,6 +512,8 @@ Generator, optional
                 f"Unknown S-VBMC version {version!r}; choose one of "
                 f"{', '.join(repr(v) for v in _VERSIONS)}."
             )
+        if int(max_steps) < 1:
+            raise ValueError("`max_steps` should be at least 1.")
         w_init = torch.as_tensor(self.w, dtype=torch.float64)
         log_w = torch.log(w_init)  # (1, K_total); optimize in log space
         repeats = torch.as_tensor(self.K)

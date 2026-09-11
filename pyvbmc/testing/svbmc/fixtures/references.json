@@ -11,7 +11,7 @@
     "elbo": {
      "debiased_E_median": 1.1256280005123922,
      "debiased_I_median": 1.090914774847687,
-     "estimated": 1.1272726223920522
+     "estimated": 1.1272726223920517
     },
     "entropy": 2.125525580137149,
     "w": "@@npz:bounded_D2/all-weights/w"
@@ -133,11 +133,11 @@
     ],
     "M": 3,
     "elbo": {
-     "debiased_E_median": 1.1098496972337595,
+     "debiased_E_median": 1.1098496972337593,
      "debiased_I_median": 1.1105283682614426,
      "estimated": 1.1105283682614426
     },
-    "entropy": 1.6074524429732626,
+    "entropy": 1.6074524429732624,
     "w": "@@npz:normal_D1/posterior-only/w"
    }
   },
@@ -157,11 +157,11 @@
     ],
     "M": 10,
     "elbo": {
-     "debiased_E_median": 2.9914054109115886,
-     "debiased_I_median": 2.9914054109115886,
-     "estimated": 2.9914054109115886
+     "debiased_E_median": 2.9914054109115877,
+     "debiased_I_median": 2.9914054109115877,
+     "estimated": 2.9914054109115877
     },
-    "entropy": 4.6446115631381275,
+    "entropy": 4.644611563138126,
     "w": "@@npz:upstream_GMM/all-weights/w"
    },
    "ns": {
@@ -179,9 +179,9 @@
     ],
     "M": 10,
     "elbo": {
-     "debiased_E_median": 2.9452872822107303,
+     "debiased_E_median": 2.9452872822107308,
      "debiased_I_median": 2.9418666554878996,
-     "estimated": 2.9452872822107303
+     "estimated": 2.9452872822107308
     },
     "entropy": 4.590060254532294,
     "w": "@@npz:upstream_GMM/ns/w"
@@ -201,11 +201,11 @@
     ],
     "M": 10,
     "elbo": {
-     "debiased_E_median": 2.9947567155678043,
-     "debiased_I_median": 2.9928268488812444,
-     "estimated": 2.9947567155678043
+     "debiased_E_median": 2.994756715567802,
+     "debiased_I_median": 2.9928268488812426,
+     "estimated": 2.994756715567802
     },
-    "entropy": 4.641020447925639,
+    "entropy": 4.641020447925637,
     "w": "@@npz:upstream_GMM/posterior-only/w"
    }
   },
@@ -351,7 +351,7 @@
   "generated": "2026-09-11",
   "max_steps": 3,
   "numpy": "2.5.2",
-  "pyvbmc_commit": "8c2412d8aa652de7549cf60a598a1efdd3713812",
+  "pyvbmc_commit": "da3c0d249c80ea768928e49d259599fcc2682fbf",
   "seed": 0,
   "torch": "2.14.0+cpu"
  }
