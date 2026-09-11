@@ -110,12 +110,12 @@ added there, and the fixture globs go into `MANIFEST.in`.
 
 ### Phase 3: fixtures
 
-- [ ] Converter: thirty upstream posteriors to snapshots, provenance (source
+- [x] Converter: thirty upstream posteriors to snapshots, provenance (source
   commit, file hashes) in `FIXTURES.md`; loader in the test package.
-- [ ] Supplementary runs: D=1 unbounded; D=2 bounded (probit) with two
+- [x] Supplementary runs: D=1 unbounded; D=2 bounded (probit) with two
   plausible boxes; D=3 with rotoscale warp; three runs each, seeds and
   options recorded; all runs `stable` with finite statistics.
-- [ ] `MANIFEST.in` entries; snapshots load with `allow_pickle=False`.
+- [x] `MANIFEST.in` entries; snapshots load with `allow_pickle=False`.
 
 ### Phase 4: behavioral changes (one rewrite commit; the tests follow in Phase 5)
 
@@ -138,17 +138,17 @@ added there, and the fixture globs go into `MANIFEST.in`.
   untouched, dtype canary on outputs, heterogeneous transforms.
 - [ ] Import without Torch: `pyvbmc.svbmc.utils` usable, `SVBMC(...)`
   raises naming `pyvbmc[torch]`; `import pyvbmc` imports no Torch.
-- [ ] Regression references generated and compared at loose float64
-  tolerance.
+- [x] Regression references generated (`references.npz`); the comparison
+  test is part of the suite below.
 
 ### Phase 6: floors
 
-- [ ] Static check against Python 3.10 syntax and the NumPy 2.0 / SciPy
+- [x] Static check against Python 3.10 syntax and the NumPy 2.0 / SciPy
   1.15 / Matplotlib 3.9 API for the moved modules; core floors unchanged.
 
 ### Phase 7: documentation and example
 
-- [ ] `svbmc.rst` (composite-posterior caveat, Torch extra, sampling
+- [x] `svbmc.rst` (composite-posterior caveat, Torch extra, sampling
   semantics), listed in `classes.rst` and `documentation.rst`;
   `installation.rst` section.
 - [ ] Example 7 notebook (inline target, several VBMC runs, stacking,
@@ -183,3 +183,15 @@ added there, and the fixture globs go into `MANIFEST.in`.
   stopping, because the fixed per-call draws of `testing=True` make the
   objective deterministic and the five-non-improvement stop never fires;
   the script's default is therefore 25 steps.
+- 2026-09-11: final implementation committed (`8c2412d`, log fix
+  `1577206`); smoke on the upstream GMM group passed for all modes, seeds,
+  sampling counts, dtype policy, validation and synthetic D=1 posteriors.
+  Fixtures committed (`93f4e91`): the thirty upstream pickles converted
+  (every rebuilt posterior identical to its pickle, `pdf` included) plus
+  nine generated posteriors (`normal_D1`, `bounded_D2`, `corr_D3`; seeds
+  100 to 102, every run stable, 4 to 27 s each; `corr_D3` seeds 101 and
+  102 warped, seed 100 not); `references.npz` from `SVBMC(seed=0)` with
+  three steps per mode on every group. Stacking `corr_D3` recovers the
+  target's standard deviations (0.98, 2.01, 0.50 for 1, 2, 0.5) and the
+  0.85 correlation from 2000 draws. Static floor check: Python 3.10 syntax
+  and only long-standing NumPy, SciPy, Matplotlib and Torch calls.

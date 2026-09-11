@@ -12,4 +12,5 @@ The main entry-points and features of PyVBMC are documented below. Advanced opti
    api/functions/calibrate
    api/options/vbmc_options
    api/classes/priors
+   api/classes/svbmc
    api/advanced_docs

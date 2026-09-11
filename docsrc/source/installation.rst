@@ -22,9 +22,11 @@ Optional integrations
 Torch
 -----
 
-The :meth:`~pyvbmc.VariationalPosterior.to_torch` export requires torch 2.7
-or newer. For a CPU-only installation, install torch from its official CPU
-wheel index first, then install the PyVBMC extra::
+The :meth:`~pyvbmc.VariationalPosterior.to_torch` export and the
+:doc:`SVBMC <api/classes/svbmc>` class (stacking the posteriors of several
+VBMC runs) require torch 2.7 or newer. For a CPU-only installation, install
+torch from its official CPU wheel index first, then install the PyVBMC
+extra::
 
   python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
   python -m pip install "pyvbmc[torch]"

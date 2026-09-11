@@ -160,7 +160,7 @@ needed. Use the [quickstart](../docsrc/source/quickstart.rst) for interfaces.
 | `vp.to_torch()` | An independent distribution snapshot, by default CPU float64 in original coordinates. Exported samples use torch's RNG. Install the optional `torch` extra when needed. |
 | `vp.to_arviz()` | Independent draws from the variational approximation in a one-chain DataTree, advancing `vp.rng`. Requires the `arviz` extra and Python 3.12+. MCMC convergence diagnostics on these draws do not validate the approximation. |
 | Runtime tips | Leave defaults unless the user wants different output. `show_tips=False` disables tips; `display="off"` also suppresses the calibration reminder and ordinary optimization output. |
-| S-VBMC | Link to the [S-VBMC tutorial](https://github.com/acerbilab/svbmc#how-to-use-s-vbmc) for combining independent runs on the same model and data without new model evaluations. |
+| S-VBMC | `pyvbmc.SVBMC` stacks the posteriors of independent runs on the same model and data without new model evaluations; needs the `torch` extra. `optimize()` works in place; use `sample()` for every estimate (the runs' components live in different transformed spaces). Point to Example 7 and the `SVBMC` API page. |
 
 ## Distribution and maintenance
 
