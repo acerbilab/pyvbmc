@@ -28,6 +28,13 @@ later noisy-acquisition changes, which leave the default noisy path
 unchanged. Reference promotion has not been selected. No benchmark process
 remains active.
 
+S-VBMC integration is in progress on `dev-svbmc-integration` after the PI
+go-ahead of 2026-09-11. The [integration plan](plans/svbmc-integration.md)
+records the settled decisions, the phased checklist and the worklog; the
+[integration proposal](2026-09-08-ecosystem-integration.md) holds the
+design. The forwarding release of the standalone `svbmc` package waits for
+the PyVBMC 1.5 publication.
+
 ## Work awaiting a separate decision
 
 - Extend the core benchmark with at least one realistic noiseless target
@@ -37,9 +44,6 @@ remains active.
   support for benchmark runs. These are follow-up tasks before the final
   documentation review; see
   [benchmark coverage and HPC support](plans/modernization-roadmap.md#benchmark-coverage-and-hpc-support).
-- S-VBMC integration is parked pending review by its main developer. Do not
-  implement it before that review; use the
-  [integration proposal](2026-09-08-ecosystem-integration.md).
 - The [user-facing agent skill proposal](2026-09-02-user-agent-skill.md) remains
   release work; keep it aligned with the settled 1.5 API and guidance.
 - NumPy/SciPy is the settled PyVBMC 1.5 solver. Do not start a full Torch solver

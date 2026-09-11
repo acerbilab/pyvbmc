@@ -2,15 +2,18 @@
 
 *Revised 9 September 2026; proposal for human review.*
 
-Status (PI, 2026-09-09): awaiting review from S-VBMC's main developer.
-Integration stays on hold pending that review; the recommendations below
-remain proposals.
+Status (PI, 2026-09-11): approved for implementation. The open questions
+below are settled and recorded, with the execution checklist, in the
+[integration plan](plans/svbmc-integration.md). Where the plan and this
+proposal differ (independent sampling with a balanced option, a `seed`
+argument replacing `testing`, the toy targets staying upstream), the plan
+is current.
 
 The PI direction is to make the existing S-VBMC
 implementation directly available from PyVBMC and, more generally, to avoid a
 separate distribution for every closely related VBMC method. This note defines
 a migration of the pinned S-VBMC 0.1.1 source (`13a78f6`) that preserves its
-algorithm and existing user workflow. Production integration remains parked.
+algorithm and existing user workflow.
 
 The unchanged S-VBMC suite and checks of all thirty shipped PyVBMC posterior
 files passed on Windows/Python 3.12 against the modernized PyVBMC code. The

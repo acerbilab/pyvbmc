@@ -817,6 +817,14 @@ superseding earlier requirements below for a full sweep before assessment.
     parked and no production port is authorized.
     Root owns numerical execution and tracking; Sol may inspect compatibility
     contracts read-only in parallel. Run one heavy computation at a time.
+    **Implementation (PI, 2026-09-11):** go-ahead given. The proposal's open
+    questions are settled: Torch retained behind the optional extra;
+    `sample` draws independently from the stacked mixture, with a balanced
+    option; a `seed` argument replaces `testing`; explicit float64; the toy
+    targets stay in the standalone package; fixtures as plain-array
+    snapshots plus a generated D=1, bounded and warped set. Execution and
+    worklog: [svbmc-integration.md](svbmc-integration.md). The forwarding
+    `svbmc` release waits for the 1.5 publication.
 11. **Stage 3 integrated before the reference extension** (PI,
     2026-09-06). Feature code `4ee612d` was fast-forwarded into `dev-next`
     at `4bff1a5`. Branch smoke 34043031387, all nine full-matrix jobs
@@ -915,8 +923,8 @@ superseding earlier requirements below for a full sweep before assessment.
     agreement and identical RNG advancement, pin settings for exact gates,
     and preserve profiles across save/resume. Different profiles need not
     produce identical seeded trajectories; no separate entropy policy gate
-    remains. S-VBMC awaits its main developer's review, and the final 870-case
-    benchmark remains deferred. Run only one heavy computation at a time.
+    remains. S-VBMC integration is in progress (item 10), and the final
+    870-case benchmark remains deferred. Run only one heavy computation at a time.
 
 13. **Optional runtime hints — implemented and verified** (2026-09-10).
     The [runtime-tips plan](runtime-tips.md) owns the approved policy, PI-edited
