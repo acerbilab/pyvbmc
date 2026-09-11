@@ -1,15 +1,17 @@
 # Current pickup
 
-Updated 2026-09-10. This file records only current actions and constraints;
+Updated 2026-09-11. This file records only current actions and constraints;
 completed work and evidence remain in the linked plans and reports.
 
-The [overnight population benchmark](plans/final-population-benchmark.md) is
-running: 273 cases, one numerical worker. It started 2026-09-10 at 22:59
-UTC+03 from frozen source `68a43db`. The supervisor PID is 18876
-(Windows launcher PID 26080). Check
-`dev/scripts/runs/population_overnight_20260910/results/status.json` and
-`launcher.stdout.log` in the campaign directory. Do not start other heavy
-computation while it runs. Review its results before selecting more seeds.
+The [overnight population benchmark](plans/final-population-benchmark.md)
+completed all 273 cases without execution errors. The
+[assessment](results/2026-09-11-overnight-population.md) finds 259 usable runs
+versus 253 on matching reference seeds, with no rejections in either the
+76-test KS screen or the 95-test paired analysis after Holm correction.
+Noisy Rosenbrock posterior errors increased; noisy logistic lost two usable
+runs. Decide whether to add seeds 15–29 for those two configurations
+(30 runs, approximately 80 minutes) before reference promotion. No benchmark
+process remains active.
 
 ## Work awaiting a separate decision
 
@@ -31,9 +33,9 @@ computation while it runs. Review its results before selecting more seeds.
   [current golden reference](golden/noisy_extension_20260907/README.md) and
   [latent-fix plan](plans/latent-bug-fixes.md) when that work starts.
 - Run at most one heavy computation at a time, normally in the main thread.
-- The active job owns its frozen PyVBMC and gpyreg checkouts under
-  `dev/scripts/runs/population_overnight_20260910/`; leave them fixed while
-  it runs. No old agent session needs reattachment.
+- Preserve benchmark artifacts and frozen source checkouts under
+  `dev/scripts/runs/population_overnight_20260910/` for the results review.
+  No process or old agent session needs reattachment.
 - Make planning, proposal, handoff, and status-only edits directly on
   `dev-next`; do not create branches for them. Remove completed feature
   branches after merging.

@@ -164,8 +164,10 @@ affected results accordingly.
   retain its artifacts as part of the population. Noisy and exhaust timing
   cases run next in the same campaign.
 - [x] Start the authorized overnight first stage after preparation passes.
-- [ ] Assess the completed first stage and decide whether further sampling
+- [x] Assess the completed first stage and recommend whether further sampling
   is useful.
+- [x] Independently verify the assessment and paired statistical analysis.
+- [ ] Select follow-up sampling or accept the evidence for reference promotion.
 
 ### Launcher and verification
 
@@ -223,3 +225,45 @@ the frozen `source/dev/scripts/population_run.py run` with `--manifest`
 pointing to `launch_manifest.json` and `--out` pointing to `results/`.
 Preserve these files and source checkouts. The launcher verifies complete
 cases before skipping them and stops on partial attempts for inspection.
+
+### Execution complete — 2026-09-11
+
+All 273 cases completed with validated completion records and no execution
+errors. The supervisor finished at **05:48:58 UTC+03**, after **6 h 49 min
+50 s**; summed optimizer time across the 273 cases was **6.555 h**. The
+supervisor is no longer running.
+
+The automatic comparison reports **no configurations flagged across 76 KS
+tests, Holm alpha 0.05**. Of the 273 runs, 266 reported convergence. The
+remaining seven reached their evaluation budget: all three deliberate D15
+exhaust cases and noisy Rosenbrock SD3 seeds 3, 5, 8 and 13. These budget
+terminations produced complete results, not execution errors.
+
+The completion record, summary and comparison are under `results/` at the
+campaign paths above.
+
+### Assessment — 2026-09-11
+
+The [results report](../results/2026-09-11-overnight-population.md) records
+artifact validation, accuracy, convergence, timing and boost decisions.
+Usability is 259/273 versus 253/273 on matching reference seeds and 825/870
+across the full reference. The final boost accepts 268 candidates and rejects
+five; all 273 decisions match the production guard. Usability increases from
+257 pre-boost to 259 returned, with no boost-induced usability losses.
+
+The supplementary within-configuration paired analysis uses exact signed-rank
+tests for the four continuous/count metrics and exact McNemar tests for
+usability. None of its 95 tests rejects after one Holm correction. All paired
+p-values were independently reproduced with discrete rank-sum enumeration
+and binomial arithmetic.
+
+Independent Sol review verified raw counts, matching, statistical methods,
+boost decisions and report interpretation with no material findings. The
+analysis script rejects Python's optimized mode so that its assertion-based
+artifact checks cannot be silently disabled.
+
+The recommended extension is 15 additional seeds (15–29) each for noisy
+Rosenbrock SD3 and noisy logistic SD3, approximately 80 minutes, to assess
+their posterior-error and usability shifts. Report seeds 15–29 separately
+alongside cumulative summaries of seeds 0–29. Further sampling and reference
+promotion remain open decisions.
