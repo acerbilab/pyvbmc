@@ -243,10 +243,16 @@ Code work runs on `dev-benchmark-targets` (branched 2026-09-11 from
   `dev/README.md` updated.
 - [~] Truth generator with `--check`: written and reviewed, reproduces the
   logreg and halfnormal constants in quick mode, dry-run on the real
-  targets. Overnight generation and its gates (R-hat below 1.01, the two
-  estimators within three combined standard errors, effective sample
-  sizes recorded) pending; the timing comparison with the stored
-  uniform-prior truth is written up when the truth exists.
+  targets. Overnight generation started 2026-09-11 at 23:56 on the
+  development machine as a detached process (launcher and log in the
+  ignored `dev/scripts/runs/truths_20260911/`; rerunning the launcher
+  reuses completed chains): the two multisensory subjects with the
+  defaults, then timing at 24 000 draws, thin 2, writing to
+  `dev/scripts/data/truths/`. Morning pickup: read the log's `WARN` and
+  gate lines, run `make_benchmark_truths.py --check` and
+  `benchmark_targets.py --check --only timing,multisensory_s1,multisensory_s2`,
+  write up the timing comparison with the stored uniform-prior truth,
+  commit the truths.
 - [ ] Reference campaigns for the four configurations from a certified
   frozen checkout; join to the reference.
 - [ ] Record the results and the pickup in the roadmap and `TODO.md`.
