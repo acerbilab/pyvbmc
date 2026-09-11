@@ -1,9 +1,19 @@
 # Current pickup
 
-Updated 2026-09-10. This file records only current actions and constraints;
+Updated 2026-09-11. This file records only current actions and constraints;
 completed work and evidence remain in the linked plans and reports.
 
-No CI run or benchmark job. One merge is pending: the branch
+The [overnight population benchmark](plans/final-population-benchmark.md)
+completed all 273 cases without execution errors. The
+[assessment](results/2026-09-11-overnight-population.md) finds 259 usable runs
+versus 253 on matching reference seeds, with no rejections in either the
+76-test KS screen or the 95-test paired analysis after Holm correction.
+Noisy Rosenbrock posterior errors increased; noisy logistic lost two usable
+runs. Decide whether to add seeds 15–29 for those two configurations
+(30 runs, approximately 80 minutes) before reference promotion. No benchmark
+process remains active.
+
+One merge is pending: the branch
 `claude/pyvbmc-noisy-acq-funcs-9kwdny` carries two production changes
 that AGENTS.md already describes as landed (the `vp.rng` fix for the
 IMIQR importance sampler with the re-baselined `acq_AcqFcnIMIQR` oracle,
@@ -38,12 +48,15 @@ decisions below.
 
 - After releasing 1.5, respond to issue #138 about explicit RNG control; see
   the [post-release follow-up](plans/modernization-roadmap.md#post-release-follow-up).
-- Launch the final 870-case population and perform release publication only
-  when separately authorized. Use the
+- Use a staged population assessment; a full 870-run candidate population
+  is not required before reviewing the first stage. Release publication
+  remains a separate action. Use the
   [current golden reference](golden/noisy_extension_20260907/README.md) and
   [latent-fix plan](plans/latent-bug-fixes.md) when that work starts.
 - Run at most one heavy computation at a time, normally in the main thread.
-- No old process, watcher, job, or agent session needs reattachment.
+- Preserve benchmark artifacts and frozen source checkouts under
+  `dev/scripts/runs/population_overnight_20260910/` for the results review.
+  No process or old agent session needs reattachment.
 - Make planning, proposal, handoff, and status-only edits directly on
   `dev-next`; do not create branches for them. Remove completed feature
   branches after merging.

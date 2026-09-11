@@ -14,6 +14,15 @@ anything that changes numerics lands.
 
 ## Stages
 
+**Population assessment, 2026-09-11:** all 273 first-stage runs completed.
+The [assessment](../results/2026-09-11-overnight-population.md) reports 259
+usable runs versus 253 on matching reference seeds, with no corrected KS or
+paired-test rejections. A focused 30-run extension of noisy Rosenbrock and
+logistic regression is recommended for their posterior-error and usability
+shifts. The [staged benchmark plan](final-population-benchmark.md) records
+execution and open decisions; a full 870-run candidate population is optional,
+superseding earlier requirements below for a full sweep before assessment.
+
 - [x] **Stage 0 — test oracle** (devlog §10)
   - [x] finite-difference checks: `entmc`, `entlb` (pre-existing),
     `_gp_log_joint`, `_neg_elcbo`, `_vp_bound_loss`, `_soft_bound_loss`,

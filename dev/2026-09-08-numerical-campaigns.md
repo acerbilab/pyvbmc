@@ -245,10 +245,11 @@ integrated, and the supported CI matrix is green. The optional gpyreg step-out
 repair is deferred to issue #44; current PyVBMC GP training does not enable that
 path, so it is not a release prerequisite and the dependency pin stays unchanged.
 
-The final integrated 870-run benchmark has **not** been run. It remains the gate
-for population-level quality, usability, boost acceptance and rejection
-tradeoffs after all endpoint-changing fixes, and requires a later explicit PI
-instruction before launch.
+The integrated population assessment starts with an
+[overnight first stage](plans/final-population-benchmark.md): 273 candidate
+runs compared with the existing 870-run reference. Assess quality, usability
+and boost acceptance/rejection tradeoffs, then decide whether further sampling
+is useful. A full 870-run candidate population is an optional extension.
 
 S-VBMC compatibility and future algorithm delivery are discussed separately in
 the [ecosystem proposal](2026-09-08-ecosystem-integration.md). The completed
