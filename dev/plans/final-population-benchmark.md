@@ -337,8 +337,12 @@ golden reference in place of `reference_870_20260907`. PI position
 (2026-09-11): the first-stage evidence is accepted tentatively, with the
 confirmation at equal sample sizes to come from this extension itself; the
 extension is agreed in principle but is not to be started without an
-explicit go-ahead, and the shipping defaults (the noisy-acquisition
-decisions) must be settled before it runs. Recorded for that decision:
+explicit go-ahead. Order set the same day: the benchmark extension with
+realistic targets tentatively first, then this run on the current
+defaults; the noisy-acquisition options are decided afterwards on the
+extended benchmark, and a noisy option that later becomes a default means
+regenerating the noisy configurations of the reference. Recorded for that
+decision:
 
 - A reference generated from the shipping code makes the golden replay
   gate (`golden_replay.py`) bit-exact again; against the current reference

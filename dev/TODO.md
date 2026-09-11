@@ -22,12 +22,14 @@ population to the new golden reference in place of the current one, is
 agreed in principle but not to be started without an explicit go-ahead;
 its conditions and cost are in the plan's
 [direction under consideration](plans/final-population-benchmark.md#direction-under-consideration--2026-09-11).
-The shipping defaults, including the pending noisy-acquisition decisions,
-must be settled first, because the reference is only bit-exact for the
-replay gate when generated from the shipping numerics. Current `dev-next`
-also includes the later noisy-acquisition changes, which leave the default
-noisy path unchanged, so if no option becomes a default the frozen
-checkout remains the right generator. No benchmark process remains active.
+Order set by the PI (2026-09-11): the benchmark extension with realistic
+noiseless and noisy targets comes first (tentatively), then the golden run
+on the current defaults; the noisy-acquisition options are taken up only
+after both, so they can be analyzed on the richer benchmark. The frozen
+checkout `68a43db` remains the generator as long as the defaults stay as
+they are; if a noisy option later becomes a default, the noisy
+configurations of the reference are regenerated from that code. No
+benchmark process remains active.
 
 S-VBMC is integrated as `pyvbmc.svbmc` (merged into `dev-next` at
 `0b5af29` on 2026-09-11); the [integration plan](plans/svbmc-integration.md)
@@ -55,11 +57,13 @@ regression references in `pyvbmc/testing/svbmc/`.
   port; optional Torch and ArviZ exports remain.
 - The noisy-target acquisition search (a smaller sieve with a gated gradient
   refinement on a larger importance set) and the operation-level savings in
-  the VIQR sieve call and the in-loop GP refits await a decision; see the
-  [noisy-target acquisitions note](2026-09-08-noisy-acquisitions.md). The
-  VIQR loss variants and the EIG acquisitions on that branch are options
-  with no default changed; keeping any of them needs the hand-written API
-  page AGENTS.md requires for a public class.
+  the VIQR sieve call and the in-loop GP refits are deferred until the
+  benchmark extension and the golden run are complete, so that they are
+  analyzed on the extended noisy benchmark against the new reference; see
+  the [noisy-target acquisitions note](2026-09-08-noisy-acquisitions.md).
+  The VIQR loss variants and the EIG acquisitions on that branch are
+  options with no default changed; keeping any of them needs the
+  hand-written API page AGENTS.md requires for a public class.
 
 ## Release boundary and working rules
 
