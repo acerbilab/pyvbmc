@@ -191,15 +191,18 @@ are 4 to 6 hours.
 
 ## Work breakdown
 
-- [ ] Export script and the two `.npz` data files with README (benchflow
-  `5920788`).
-- [ ] Spline-trapezoidal log-density and the three targets in
+Code work runs on `dev-benchmark-targets` (branched 2026-09-11 from
+`dev-next` at `f5764a5`).
+
+- [x] Export script and the two `.npz` data files with README (benchflow
+  `5920788`): `dev/scripts/export_benchflow_data.py`, `dev/scripts/data/`.
+- [~] Spline-trapezoidal log-density and the three targets in
   `benchmark_targets.py`, with the pinned-value checks in `--check`, the
   plausible-box comment, and the suite entries; `--list` and `--smoke`
   pass.
-- [ ] scikit-learn in the `dev` extra; AGENTS.md's extras sentence and
+- [x] scikit-learn in the `dev` extra; AGENTS.md's extras sentence and
   `dev/README.md` updated.
-- [ ] Truth generator with `--check`; overnight generation; validation
+- [~] Truth generator with `--check`; overnight generation; validation
   gates: subject-1 lnZ reproduces benchflow's value, the two estimators
   agree within their standard errors, R-hat below 1.01, timing comparison
   with the stored uniform-prior truth written up.
