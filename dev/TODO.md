@@ -10,14 +10,11 @@ versus 253 on matching reference seeds, with no rejections in either the
 76-test KS screen or the 95-test paired analysis after Holm correction.
 Noisy Rosenbrock posterior errors increased; noisy logistic lost two usable
 runs. Decide whether to add seeds 15–29 for those two configurations
-(30 runs, approximately 80 minutes) before reference promotion. No benchmark
-process remains active.
-
-The noisy-acquisition branch `claude/pyvbmc-noisy-acq-funcs-9kwdny` is merged
-into local `dev-next`. Its IMIQR oracle has been re-baselined on the original
-Windows generating machine; all 11 fixtures pass `--check --exact`.
-The merge and rebaseline are pushed to `dev-next`; remove the merged branch.
-Remaining work awaits the separate decisions below.
+(30 runs, approximately 80 minutes) before reference promotion. Use the
+campaign's frozen candidate for an extension of the same treatment; current
+`dev-next` also includes the later noisy-acquisition changes. No further
+sampling or reference promotion has been selected. No benchmark process
+remains active.
 
 ## Work awaiting a separate decision
 
@@ -63,8 +60,16 @@ Remaining work awaits the separate decisions below.
   [latent-fix plan](plans/latent-bug-fixes.md) when that work starts.
 - Run at most one heavy computation at a time, normally in the main thread.
 - Preserve benchmark artifacts and frozen source checkouts under
-  `dev/scripts/runs/population_overnight_20260910/` for the results review.
-  No process or old agent session needs reattachment.
+  `dev/scripts/runs/population_overnight_20260910/`. These and the full golden
+  traces in `dev/scripts/runs/golden/reference_870_20260907/` are gitignored
+  and available on the original Windows benchmark machine only. A fresh
+  clone has the tracked assessment JSON, comparison and report; to revalidate
+  the raw artifacts, copy the campaign directory from that machine and follow
+  the [population plan](plans/final-population-benchmark.md) for environment
+  and source setup. Run `python dev/scripts/analyze_population_run.py` in
+  that environment to reproduce the assessment. Frozen worktrees copied to
+  another checkout need their Git links repaired or recreation at the recorded
+  commits. No process or old agent session needs reattachment.
 - Make planning, proposal, handoff, and status-only edits directly on
   `dev-next`; do not create branches for them. Remove completed feature
   branches after merging.
