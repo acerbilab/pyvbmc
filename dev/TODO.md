@@ -4,16 +4,28 @@ Updated 2026-09-11. This file records only current actions and constraints;
 completed work and evidence remain in the linked plans and reports.
 
 The [overnight population benchmark](plans/final-population-benchmark.md)
-completed all 273 cases without execution errors. The
-[assessment](results/2026-09-11-overnight-population.md) finds 259 usable runs
-versus 253 on matching reference seeds, with no rejections in either the
-76-test KS screen or the 95-test paired analysis after Holm correction.
-Noisy Rosenbrock posterior errors increased; noisy logistic lost two usable
-runs. Decide whether to add seeds 15–29 for those two configurations
-(30 runs, approximately 80 minutes) before reference promotion. Use the
-campaign's frozen candidate for an extension of the same treatment; current
-`dev-next` also includes the later noisy-acquisition changes. No further
-sampling or reference promotion has been selected. No benchmark process
+(273 cases, seeds 0–14 of every configuration) and its
+[follow-up extension](results/2026-09-11-noisy-follow-up-seeds-15-29.md)
+(seeds 15–29 of noisy Rosenbrock SD3 and noisy logistic SD3, 30 cases)
+completed without execution errors, giving a 303-run candidate population
+of one frozen treatment. The pooled assessment finds 287 usable runs versus
+273 on matching reference seeds, no rejections in the 76-test KS screen or
+the 95-test paired family, and the seeds 0–14 shifts in the two noisy
+configurations did not replicate on seeds 15–29: none of the eight
+confirmatory tests rejects, and every Rosenbrock metric moved in the
+candidate's favor. Decide whether to accept this evidence and promote the
+candidate population to the new reference, following the
+[population plan](plans/final-population-benchmark.md#assessment); no
+further sampling is recommended for that decision. Under consideration,
+not decided and not to be started without an explicit go-ahead: completing
+the remaining 567 seeds of the same frozen treatment and promoting the
+full candidate population to the new golden reference, with the conditions
+and cost recorded in the plan's
+[direction under consideration](plans/final-population-benchmark.md#direction-under-consideration--2026-09-11);
+the shipping defaults, including the pending noisy-acquisition decisions,
+must be settled before such a run. Current `dev-next` also includes the
+later noisy-acquisition changes, which leave the default noisy path
+unchanged. Reference promotion has not been selected. No benchmark process
 remains active.
 
 ## Work awaiting a separate decision
@@ -60,16 +72,18 @@ remains active.
   [latent-fix plan](plans/latent-bug-fixes.md) when that work starts.
 - Run at most one heavy computation at a time, normally in the main thread.
 - Preserve benchmark artifacts and frozen source checkouts under
-  `dev/scripts/runs/population_overnight_20260910/`. These and the full golden
-  traces in `dev/scripts/runs/golden/reference_870_20260907/` are gitignored
-  and available on the original Windows benchmark machine only. A fresh
-  clone has the tracked assessment JSON, comparison and report; to revalidate
-  the raw artifacts, copy the campaign directory from that machine and follow
-  the [population plan](plans/final-population-benchmark.md) for environment
+  `dev/scripts/runs/population_overnight_20260910/` and the extension's
+  artifacts under `dev/scripts/runs/population_extension_20260911/`. These
+  and the full golden traces in `dev/scripts/runs/golden/reference_870_20260907/`
+  are gitignored and available on the original Windows benchmark machine
+  only. A fresh clone has the tracked assessment JSON, comparison, manifests
+  and reports; to revalidate the raw artifacts, copy both campaign
+  directories from that machine and follow the
+  [population plan](plans/final-population-benchmark.md) for environment
   and source setup. Run `python dev/scripts/analyze_population_run.py` in
-  that environment to reproduce the assessment. Frozen worktrees copied to
-  another checkout need their Git links repaired or recreation at the recorded
-  commits. No process or old agent session needs reattachment.
+  that environment to reproduce the pooled assessment. Frozen worktrees
+  copied to another checkout need their Git links repaired or recreation at
+  the recorded commits. No process or old agent session needs reattachment.
 - Make planning, proposal, handoff, and status-only edits directly on
   `dev-next`; do not create branches for them. Remove completed feature
   branches after merging.

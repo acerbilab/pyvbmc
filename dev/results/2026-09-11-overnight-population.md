@@ -216,9 +216,11 @@ posterior regression. Preserve the flag and its original threshold.
 
 ## Reproduction and artifacts
 
-Run `.venv/Scripts/python.exe dev/scripts/analyze_population_run.py` from the
-repository root. It reads the saved artifacts, verifies them, reconstructs the
-comparison and writes
+Run `.venv/Scripts/python.exe dev/scripts/analyze_population_run.py
+--extension --out dev/experiments/population_assessment_20260911` from the
+repository root; the flag without paths restricts the assessment to this
+first-stage campaign. It reads the saved artifacts, verifies them,
+reconstructs the comparison and writes
 [assessment.json](../experiments/population_assessment_20260911/assessment.json)
 and [comparison.md](../experiments/population_assessment_20260911/comparison.md).
 The JSON includes full-reference and matched summaries for every configuration,

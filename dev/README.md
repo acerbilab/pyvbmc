@@ -262,6 +262,27 @@ reason.
   `.npz` trace and a JSON sidecar per run; `summary` a population; `compare`
   two populations with KS tests under a Holm family correction (`--split`
   for a null check). Populations live under `scripts/runs/golden/`.
+- `scripts/population_run.py` — the staged population benchmark's
+  supervisor: runs a manifest's configuration/seed pairs one fresh process
+  at a time from a frozen checkout (`PYVBMC_GPYREG_SOURCE` names the frozen
+  gpyreg checkout), verifying before every case that imports, commits,
+  dependency versions and thread settings match the manifest, and wraps
+  the production final boost to retain the pre-boost posterior, the raw
+  candidate and the decision without changing the calculation or the
+  random stream. A hash-verified completion record per case permits
+  resumption; partial artifacts stop the run for inspection. `--limit N`
+  runs the first N cases. `test_population_run.py` checks the capture and
+  resume behavior.
+- `scripts/analyze_population_run.py` — assesses finished campaigns of one
+  treatment without inference: revalidates every case and the reference
+  sidecars, pools a first-stage campaign with its extensions, recomputes
+  the KS screen and a within-configuration paired family (exact signed-rank
+  tests by dynamic programming over midranks, exact McNemar tests of
+  usability), checks every boost decision against the guard, and reports
+  each extension on its own with the confirmatory family fixed in its
+  manifest. Writes `assessment.json`, `comparison.md` and the campaign
+  manifests under `--out`. `test_analyze_population_run.py` checks the
+  statistics.
 - `scripts/boost_comparison.py` (parked at `764a177` on `dev-final-boost`) — reads stored pre/final boost scores and
   compares tolerances 0.1/0.2 without optimization. Optional
   `--metrics-tags selected` reconstructs paired accuracy diagnostics for

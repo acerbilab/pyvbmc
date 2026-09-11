@@ -174,7 +174,10 @@ affected results accordingly.
 - [x] Assess the completed first stage and recommend whether further sampling
   is useful.
 - [x] Independently verify the assessment and paired statistical analysis.
-- [ ] Select follow-up sampling or accept the evidence for reference promotion.
+- [x] Run the recommended seeds 15–29 extension of the two noisy
+  configurations and assess it with the pooled population (2026-09-11).
+- [ ] Accept the evidence for reference promotion, or select further
+  sampling.
 
 ### Launcher and verification
 
@@ -274,3 +277,90 @@ Rosenbrock SD3 and noisy logistic SD3, approximately 80 minutes, to assess
 their posterior-error and usability shifts. Report seeds 15–29 separately
 alongside cumulative summaries of seeds 0–29. Further sampling and reference
 promotion remain open decisions.
+
+### Follow-up extension — 2026-09-11
+
+Seeds 15–29 of `logreg_D5_noise3` and `rosenbrock_D2_noise3` (30 cases) run
+as a separate campaign of the same treatment under
+`dev/scripts/runs/population_extension_20260911/`, reusing the overnight
+campaign's frozen `source/` (`68a43db`) and `gpyreg/` (`a2f8ddc`) checkouts
+unchanged. The launcher's recorded identity (commits, import paths,
+dependency versions, thread settings and options) is identical to the
+overnight campaign's, so the two campaigns pool as one candidate population.
+
+The manifest fixes the confirmatory analysis before the run: seeds 15–29
+paired by seed with the reference, exact two-sided signed-rank tests of
+evidence error, gsKL and MMTV and exact McNemar tests of usability for each
+configuration, eight tests under one Holm correction at alpha 0.05, with
+noisy Rosenbrock gsKL and MMTV as the primary outcomes. Seeds 0–14 generated
+the hypothesis; seeds 15–29 test it. The pooled seeds 0–29 are then reported
+with the recomputed 19-configuration KS screen and the 95-test paired family.
+
+The same reference seeds took **96.1 optimizer minutes**; the planning
+estimate is about 90 minutes elapsed. The supervisor started at
+**12:35:47 UTC+03**, PID **25292**, from the main repository's `.venv`
+with `PYVBMC_GPYREG_SOURCE` set to the frozen `gpyreg/` checkout.
+`process.json`, `launcher.*.log`, `results/status.json` and per-case logs
+follow the overnight layout. `dev/scripts/analyze_population_run.py` now
+pools the two campaigns (`--extension`), replaces the 20-seed cap on the
+exact signed-rank enumeration with a dynamic program over midranks that
+reproduces the committed first-stage results exactly, and reports the
+extension separately.
+
+#### Outcome
+
+All 30 cases completed with validated completion records and no execution
+errors; the supervisor finished at **14:41:23 UTC+03** after **2 h 5 min
+36 s**. The [follow-up report](../results/2026-09-11-noisy-follow-up-seeds-15-29.md)
+records the results: the seeds 0–14 shifts did not replicate (every
+Rosenbrock metric moved in the candidate's favor on seeds 15–29, and
+logistic gained five usable runs against one loss), none of the eight
+confirmatory tests rejects, and the pooled 303-run population has 287
+usable runs against 273 on matching reference seeds with no rejection in
+the 76-test KS screen or the 95-test paired family. The pooled assessment
+is under `dev/experiments/population_extension_20260911/`
+(`assessment.json`, `comparison.md`, both campaign manifests);
+`python dev/scripts/analyze_population_run.py` reproduces it.
+
+Summed optimizer time was 123.0 minutes against 96.1 for the same reference
+seeds: the machine ran slower throughout this campaign, including its last
+45 minutes when nothing else ran, so the timing is not a speed comparison
+and the trajectories are unaffected. No further sampling is recommended;
+reference promotion remains the PI's decision.
+
+#### Direction under consideration — 2026-09-11
+
+Since the integrated changes look likely to stay, the PI is considering
+completing the remaining 567 seeds of the same frozen treatment (the full
+870-run allocation) and promoting that candidate population to the new
+golden reference in place of `reference_870_20260907`. This is not decided
+and is not to be started without an explicit go-ahead. Recorded for that
+decision:
+
+- A reference generated from the shipping code makes the golden replay
+  gate (`golden_replay.py`) bit-exact again; against the current reference
+  every replay parts early because the numerics changed, and only the
+  accuracy envelopes remain.
+- The launcher, manifests and pooled assessment need no change: further
+  seeds are more campaigns against the same frozen checkouts, and the
+  exact signed-rank enumeration covers 50 pairs.
+- The shipping defaults must be settled first. The frozen candidate equals
+  current `dev-next` on the default path only because the noisy-acquisition
+  work is opt-in; a later default change would make the new reference
+  stale for the noisy configurations.
+- Run on the original benchmark machine: an exact replay baseline depends
+  on platform-bound BLAS rounding and CMA-ES decisions, so a cluster run
+  would give a valid population but not an exact replay baseline.
+- Preserve the previous reference with its identity and README, and run
+  the even/odd null check on the new population as previous references did.
+- New targets (the benchflow candidates, the unrun `lumpy_D10_noise3`) fit
+  the existing extension pattern later and need not block or wait for this.
+
+| Remaining 567 runs | Optimizer hours |
+| --- | ---: |
+| Reference time for the same seeds | 12.9 |
+| Candidate at first-stage speed (ratio 0.92) | 11.8 |
+| Candidate at follow-up speed (ratio 1.28) | 16.5 |
+
+Two overnight sessions, or one long unattended run, plus about 4%
+supervisor overhead.
