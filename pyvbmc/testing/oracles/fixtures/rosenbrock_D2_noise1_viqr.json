@@ -284,6 +284,18 @@
     },
     "oracle": "acq_AcqFcnIMIQR",
     "reason": "active_importance_sampling passes vp.rng to the slice sampler (2026-09-10): the MCMC step's draws moved from the legacy global state to the VBMC generator"
+   },
+   {
+    "date": "2026-09-11 07:42:42",
+    "git": {
+     "dirty": false,
+     "sha": "52804bf"
+    },
+    "max_abs_change": {
+     "acq": 1.1546319456101628e-14
+    },
+    "oracle": "acq_AcqFcnIMIQR",
+    "reason": "Recompute the IMIQR reference from its stored state on the original Windows generating platform after the vp.rng importance-sampler fix; the 2026-09-10 Linux reference differs here by 1.15e-14. All other oracles passed --check --exact before this targeted rebaseline."
    }
   ],
   "recipe": "rosenbrock_D2_noise1_viqr",

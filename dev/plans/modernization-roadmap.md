@@ -97,6 +97,9 @@ superseding earlier requirements below for a full sweep before assessment.
   until 2026-09-10, when it received `vp.rng` and the `acq_AcqFcnIMIQR`
   oracle was re-baselined from the stored state
   ([noisy-target acquisitions](../2026-09-08-noisy-acquisitions.md)).
+  On 2026-09-11 the reference was recomputed on the original Windows
+  generating machine: the Linux reference differed by at most 1.15e-14.
+  Every other stored array is unchanged; all 11 fixtures pass `--check --exact`.
 - [x] **Benchmark target suite** (`dev/scripts/benchmark_targets.py`,
   2026-09-02/03, corrected to the papers' procedure 2026-09-03): banana,
   cigar, lumpy, Student-t at D = 4 (lumpy and banana also at D = 10, banana
@@ -948,6 +951,24 @@ superseding earlier requirements below for a full sweep before assessment.
     as `fc64381` after a green nine-job feature matrix and package build; the
     post-merge full matrix and automatic smoke check both passed. The merged
     feature branch has been removed. The final benchmark schedule remains unchanged.
+
+## Pre-release documentation review
+
+Run this review after all other 1.5 implementation and validation work is
+complete, and before publishing the release, so the guidance describes the
+final API and behavior.
+
+- [ ] Refresh the stale main [README.md](../../README.md), including the
+  project overview, installation, quick start, capabilities and links.
+- [ ] Review the main documentation sources under `docsrc/`, tutorials and
+  examples for consistency with the completed 1.5 release. Check setup,
+  options, diagnostics and linked guidance against the final implementation.
+- [ ] Review references to the MATLAB VBMC wiki and assess which guidance
+  should be ported into the PyVBMC repository. Adapt retained material to
+  Python APIs, examples, defaults and terminology; update links to the
+  PyVBMC versions and make any remaining MATLAB-specific references clear.
+- [ ] Verify revised examples and links, build the documentation and check
+  the rendered pages before release.
 
 ## Post-release follow-up
 

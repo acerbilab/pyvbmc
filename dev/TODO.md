@@ -13,19 +13,11 @@ runs. Decide whether to add seeds 15–29 for those two configurations
 (30 runs, approximately 80 minutes) before reference promotion. No benchmark
 process remains active.
 
-One merge is pending: the branch
-`claude/pyvbmc-noisy-acq-funcs-9kwdny` carries two production changes
-that AGENTS.md already describes as landed (the `vp.rng` fix for the
-IMIQR importance sampler with the re-baselined `acq_AcqFcnIMIQR` oracle,
-and the deterministic VIQR/IMIQR definition tests) alongside the
-acquisition prototypes listed below; merge it into `dev-next` and remove
-the branch. After the merge, re-baseline `acq_AcqFcnIMIQR` on the machine
-that generated the oracle fixtures (`python
-dev/scripts/make_oracle_fixtures.py --rebaseline acq_AcqFcnIMIQR --reason
-...`, from the stored state): the 2026-09-10 re-baseline ran on the Linux
-container, so `--check --exact` on the generating machine flags that one
-reference at rounding level until then. Remaining work awaits the separate
-decisions below.
+The noisy-acquisition branch `claude/pyvbmc-noisy-acq-funcs-9kwdny` is merged
+into local `dev-next`. Its IMIQR oracle has been re-baselined on the original
+Windows generating machine; all 11 fixtures pass `--check --exact`.
+Commit the fixture and tracker updates, push `dev-next`, and remove the
+merged branch. Remaining work awaits the separate decisions below.
 
 ## Work awaiting a separate decision
 
@@ -46,6 +38,12 @@ decisions below.
 
 ## Release boundary and working rules
 
+- After all remaining 1.5 work is complete, but before release, review and
+  update the user-facing documentation, especially the stale main
+  [README.md](../README.md). Check the main docs and linked MATLAB VBMC wiki
+  guidance; assess porting relevant wiki material into the PyVBMC repository
+  with Python-specific adaptations. See the
+  [pre-release documentation review](plans/modernization-roadmap.md#pre-release-documentation-review).
 - After releasing 1.5, respond to issue #138 about explicit RNG control; see
   the [post-release follow-up](plans/modernization-roadmap.md#post-release-follow-up).
 - Use a staged population assessment; a full 870-run candidate population
