@@ -574,9 +574,11 @@ Generator, optional
             ELBO, H = self.stacked_ELBO(w, n_samples=n_samples)
 
             if step == 0:
-                self.logger.info("Initial elbo = %s", float(ELBO))
+                self.logger.info("Initial elbo = %s", ELBO.detach().item())
             if (step + 1) % 5 == 0:
-                self.logger.info("iter %d: elbo = %s", step + 1, float(ELBO))
+                self.logger.info(
+                    "iter %d: elbo = %s", step + 1, ELBO.detach().item()
+                )
 
             loss = -ELBO
             loss_new = torch.round(loss * 1e5) / 1e5

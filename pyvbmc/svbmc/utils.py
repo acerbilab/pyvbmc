@@ -50,7 +50,7 @@ def overlay_corner_plot(
     base : float, default 2.5
         Inches per variable when auto-sizing.
     **corner_kwargs
-        Extra keywords forwarded to :pyfunc:`corner.corner`
+        Extra keywords forwarded to :func:`corner.corner`
         (e.g. ``bins=40``, ``levels=(0.68, 0.95)``).
 
     Returns
