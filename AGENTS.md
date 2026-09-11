@@ -172,6 +172,18 @@ Things you must hold in your head across files:
   `vp.rng`. Extras are `torch` (torch >=2.7) and `arviz` (current API,
   Python >=3.12); core PyVBMC remains Python >=3.10. No exported objects are
   retained on the VP, so the dtype canary is unchanged.
+- **S-VBMC** (`pyvbmc/svbmc/`, the standalone `svbmc` package moved in at
+  0.1.1) stacks finished posteriors of several runs. It needs the `torch`
+  extra, imported lazily: `pyvbmc.SVBMC` resolves on request and
+  constructing without Torch raises naming the extra, so `import pyvbmc`
+  never imports Torch. `sample()` draws independently from the stacked
+  mixture through copies that use the object's generator (`seed=`), never
+  the inputs'. Its Torch-dependent tests run only where Torch is installed
+  (one CI cell); the fixtures are plain-array snapshots under
+  `pyvbmc/testing/svbmc/fixtures/` written by
+  `dev/scripts/make_svbmc_fixtures.py`, and `references.npz` there pins the
+  numerics of a seeded short optimization, the gate for changes to the
+  entropy code. `dev/plans/svbmc-integration.md` records the decisions.
 - **`FunctionLogger`** preallocates 500 rows and grows; `Xn` is the index of
   the last filled row, `X_flag` the boolean mask of live rows. Always index
   through `X_flag`; rows beyond `Xn` are NaN. `finalize()` trims.

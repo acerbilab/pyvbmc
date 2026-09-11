@@ -31,6 +31,14 @@ def make_vp(D=2, K=1, stable=True, J=0.01, elbo=0.0, Ns=3, seed=0):
 
 
 @pytest.fixture(autouse=True)
+def restore_global_random_state():
+    """Unseeded constructions draw their seed from NumPy's global state."""
+    state = np.random.get_state()
+    yield
+    np.random.set_state(state)
+
+
+@pytest.fixture(autouse=True)
 def quiet_logger():
     """Keep progress messages out of the report, except where tested."""
     logger = logging.getLogger("SVBMC")
@@ -133,6 +141,30 @@ def test_M_min_non_integer_count_warns_and_rounds():
 # --------------------------------------------------------------------- #
 # Input validation                                                      #
 # --------------------------------------------------------------------- #
+def test_unfinished_posterior_raises():
+    # A posterior VBMC has not finished has no statistics at all.
+    vp = VariationalPosterior(2, 1, np.zeros((1, 2)), rng=0)
+    assert vp.stats is None
+    with pytest.raises(ValueError, match="no statistics"):
+        SVBMC([make_vp(), vp], seed=0)
+
+
+def test_unstable_run_with_nonfinite_statistics_is_dropped():
+    bad = make_vp(stable=False, seed=3)
+    bad.stats["I_sk"][:] = np.nan
+    bad.stats["J_sjk"][:] = np.nan
+    bad.stats["elbo"] = np.nan
+    stacked = SVBMC([make_vp(seed=1), make_vp(seed=2), bad], M_min=2, seed=0)
+    assert stacked.M == 2
+
+
+def test_stable_run_with_nonfinite_statistics_raises():
+    bad = make_vp(seed=3)
+    bad.stats["I_sk"][0, 0] = np.nan
+    with pytest.raises(ValueError, match="nonfinite"):
+        SVBMC([make_vp(seed=1), bad], seed=0)
+
+
 def test_empty_list_raises():
     with pytest.raises(ValueError, match="is empty"):
         SVBMC([])

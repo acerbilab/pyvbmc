@@ -67,9 +67,9 @@ for m in range(stacked.M):
 n_samples = 5000
 samples = [sample_truth(n_samples, rng)]
 labels = ["Ground truth"]
-for m, vp in enumerate(stacked.vp_list):
+for vp in stacked.vp_list:  # the runs that passed the filters
     samples.append(vp.sample(n_samples)[0])
-    labels.append(f"Run {m}")
+    labels.append(f"Run {vps.index(vp)}")
 samples.append(stacked.sample(n_samples))
 labels.append("Stacked")
 

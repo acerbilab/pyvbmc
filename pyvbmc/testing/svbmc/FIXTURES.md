@@ -18,7 +18,10 @@ dictionary, including the `stable`, `elbo`, `elbo_sd`, `I_sk` and `J_sjk`
 entries that stacking reads). The plausible bounds in the `pt` block are
 placeholders that only make the rebuilt transformer's constructor valid;
 the stored `mu`, `delta` and `type` overwrite what the constructor derives
-from them.
+from them. `transform_type` holds the bounded transform's numeric code
+(12 for probit), so the rebuilt transformer dispatches the same transform
+as the original. Every file is rebuilt and compared with its source before
+the generator returns.
 
 ## Upstream corpus (`upstream_*`, 30 files)
 
@@ -31,12 +34,15 @@ file records the source path and the SHA-256 of the pickle.
 
 | group | files | D | K | transform | target (upstream description) |
 | --- | ---: | ---: | ---: | --- | --- |
-| `upstream_GMM` | `upstream_GMM_00` to `_09` | 2 | 50 | unbounded (identity) | `svbmc.targets.GMM`, noiseless |
-| `upstream_GMM_noisy` | `upstream_GMM_noisy_00` to `_09` | 2 | 50 | unbounded (identity) | `svbmc.targets.GMM`, noisy log-likelihood |
-| `upstream_Ring` | `upstream_Ring_00` to `_09` | 2 | 50 | unbounded (identity) | `svbmc.targets.Ring` |
+| `upstream_GMM` | `upstream_GMM_00` to `_09` | 2 | 50 | unbounded; `_01`, `_03`, `_05` warped | `svbmc.targets.GMM`, noiseless |
+| `upstream_GMM_noisy` | `upstream_GMM_noisy_00` to `_09` | 2 | 50 | unbounded, unwarped | `svbmc.targets.GMM`, noisy log-likelihood |
+| `upstream_Ring` | `upstream_Ring_00` to `_09` | 2 | 50 | unbounded; `_04`, `_08` warped | `svbmc.targets.Ring` |
 
-All thirty runs are `stable`. The corpus is entirely two-dimensional,
-unbounded and unwarped, which is why the supplementary set below exists.
+All thirty runs are `stable`. The corpus is entirely two-dimensional and
+unbounded (no bounded transform in any run); five runs end with a rotoscale
+warp in place (`R_mat` and `scale` set). The supplementary set below adds
+what it lacks: one dimension, bounded parameters with different transforms
+across runs, and three dimensions.
 
 ## Supplementary posteriors (9 files)
 
@@ -62,13 +68,15 @@ with two warped ones (`R_mat` and `scale` set, `delta` reset to one).
 ## Regression references (`references.npz` / `references.json`)
 
 `make_svbmc_fixtures.py references` (2026-09-11, Torch 2.14.0 CPU with one
-thread, NumPy 2.5.2, PyVBMC `8c2412d`): for every group above and every
-optimization mode, `SVBMC(vps, seed=0).optimize(max_steps=3, version=mode)`
+thread, NumPy 2.5.2; the PyVBMC commit is in `meta`): for every group
+above and every optimization mode,
+`SVBMC(vps, seed=0).optimize(n_samples=20, lr=0.1, max_steps=3, version=mode)`
 with `vps = load_group(group, rng=0)[0]`. The tree holds, under
 `groups/<group>/<mode>`, the optimized weights `w` (an array of shape
 `(1, K_total)`), the three `elbo` values (`estimated`,
 `debiased_I_median`, `debiased_E_median`), the `entropy`, `M` and `K`;
-`meta` records the environment. The references pin the numerics of the
+`meta` records the environment and every argument of the recipe, which
+the test passes explicitly. The references pin the numerics of the
 integrated class (the Monte Carlo draws come from the object's generator,
 so they cannot be compared with the upstream package draw for draw) and
 are the gate for later performance changes to the entropy computation.

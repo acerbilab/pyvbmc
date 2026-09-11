@@ -21,8 +21,12 @@ Three modes, each rewriting only its own files:
 ``references``
     Regression references for the integrated class: for every group and
     every optimization mode, the weights, ELBO values and entropy after a
-    seeded three-step optimization. Needs Torch (the compatibility
-    campaign's overlay on ``PYTHONPATH`` works).
+    seeded three-step optimization; the recipe (seed, steps, samples per
+    component, learning rate) is recorded in the sidecar. Needs Torch (the
+    compatibility campaign's overlay on ``PYTHONPATH`` works).
+
+Every posterior written by ``convert`` and ``generate`` is rebuilt from its
+files and compared with the original before the script returns.
 
 Run from the repository root, for example::
 
@@ -52,10 +56,11 @@ import numpy as np
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
 
-from pyvbmc.testing.oracles._state import save_snapshot  # noqa: E402
+from pyvbmc.testing.oracles._state import encode, save_snapshot  # noqa: E402
 from pyvbmc.testing.svbmc._fixtures import (  # noqa: E402
     FIXTURES_DIR,
     REFERENCES,
+    assert_roundtrip,
     fixture_names,
     group_names,
     load_group,
@@ -114,6 +119,7 @@ def convert(args):
                 "converted": time.strftime("%Y-%m-%d"),
             }
             save_vp(name, vp, meta)
+            assert_roundtrip(vp, name)
             written.append(name)
     print(f"converted {len(written)} posteriors from {source} @ {commit[:7]}")
 
@@ -234,8 +240,11 @@ def generate(args):
             vp, results = _run_vbmc(spec, box, seed, options)
             elapsed = time.perf_counter() - t0
             warped = vp.parameter_transformer.R_mat is not None
-            ok = bool(vp.stats["stable"]) and np.all(
-                np.isfinite(vp.stats["I_sk"])
+            ok = (
+                bool(vp.stats["stable"])
+                and np.all(np.isfinite(vp.stats["I_sk"]))
+                and np.all(np.isfinite(vp.stats["J_sjk"]))
+                and np.isfinite(float(vp.stats["elbo"]))
             )
             print(
                 f"{name} seed {seed}: stable={vp.stats['stable']} "
@@ -264,6 +273,7 @@ def generate(args):
                     "generated": time.strftime("%Y-%m-%d"),
                 }
                 save_vp(f"{name}_{idx:02d}", vp, meta)
+                assert_roundtrip(vp, f"{name}_{idx:02d}")
                 stable.append(vp)
             seed += 1
             attempts += 1
@@ -296,11 +306,14 @@ def references(args):
             "numpy": np.__version__,
             "seed": args.seed,
             "max_steps": args.steps,
+            "n_samples": args.n_samples,
+            "lr": args.lr,
             "generated": time.strftime("%Y-%m-%d"),
             "description": (
-                "SVBMC(vps, seed=seed).optimize(max_steps=steps, "
-                "version=mode) on every fixture group; the fixtures were "
-                "loaded with load_group(group, rng=0)"
+                "SVBMC(vps, seed=seed).optimize(n_samples=n_samples, "
+                "lr=lr, max_steps=max_steps, version=mode) on every fixture "
+                "group; the fixtures were loaded with load_group(group, "
+                "rng=0)"
             ),
         },
         "groups": {},
@@ -312,11 +325,15 @@ def references(args):
             quiet = io.StringIO()
             with contextlib.redirect_stdout(quiet):
                 stacked = SVBMC(vps, seed=args.seed)
-                stacked.optimize(max_steps=args.steps, version=mode)
+                stacked.optimize(
+                    n_samples=args.n_samples,
+                    lr=args.lr,
+                    max_steps=args.steps,
+                    version=mode,
+                )
             key = f"{group}/{mode}"
-            arrays[f"{key}/w"] = np.array(stacked.w)
             tree["groups"][group][mode] = {
-                "w": f"@@npz:{key}/w",
+                "w": encode(np.array(stacked.w), f"{key}/w", arrays),
                 "elbo": {k: float(v) for k, v in stacked.elbo.items()},
                 "entropy": float(stacked.entropy),
                 "M": int(stacked.M),
@@ -351,6 +368,8 @@ def main(argv=None):
     p = sub.add_parser("references")
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--steps", type=int, default=3)
+    p.add_argument("--n-samples", type=int, default=20)
+    p.add_argument("--lr", type=float, default=0.1)
     p.set_defaults(func=references)
 
     args = parser.parse_args(argv)

@@ -36,7 +36,7 @@
   "plb_orig": "@@npz:pt/plb_orig",
   "pub_orig": "@@npz:pt/pub_orig",
   "scale": "@@npz:pt/scale",
-  "transform_type": "probit",
+  "transform_type": 12,
   "type": "@@npz:pt/type",
   "ub_orig": "@@npz:pt/ub_orig"
  },

@@ -21,3 +21,7 @@ def __getattr__(name):
 
         return SVBMC
     raise AttributeError(f"module 'pyvbmc' has no attribute {name!r}")
+
+
+def __dir__():
+    return sorted(set(globals()) | {"SVBMC"})

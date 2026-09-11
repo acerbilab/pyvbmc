@@ -343,6 +343,22 @@ reason.
   flagged or nothing was compared.
 - `scripts/regenerate_baseline.sh` — the whole benchmark regeneration as
   one sequential process (see above).
+- `scripts/make_svbmc_fixtures.py` — writes the S-VBMC test fixtures under
+  `pyvbmc/testing/svbmc/fixtures/`: `convert` turns the thirty posteriors
+  shipped with S-VBMC 0.1.1 (pickles in the pinned, ignored checkout) into
+  plain-array snapshots with SHA-256 provenance; `generate` adds nine
+  posteriors from short seeded VBMC runs (D=1; bounded D=2 with a different
+  plausible box per run; correlated D=3 mixing warped and unwarped runs);
+  `references` records the seeded three-step optimization of every group
+  and mode as the regression gate (needs Torch). Every written posterior
+  is rebuilt and compared with its source. `pyvbmc/testing/svbmc/FIXTURES.md`
+  documents the files.
+- `scripts/svbmc_parity_check.py` — historical: the moved
+  `pyvbmc.svbmc.SVBMC` against the pinned upstream package on the thirty
+  posteriors with matched draws (upstream's `testing=True` mode). Runs only
+  from the source-move commit `a8ae260`, the last where the moved class
+  carries that flag; its result (every difference exactly zero) is in
+  `plans/svbmc-integration.md`.
 - `scripts/make_oracle_fixtures.py` — generates the stage-level oracle
   fixtures under `pyvbmc/testing/oracles/fixtures/`: short seeded runs on
   the benchmark targets with regime-forcing options, the state at chosen

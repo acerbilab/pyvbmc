@@ -347,11 +347,13 @@
   }
  },
  "meta": {
-  "description": "SVBMC(vps, seed=seed).optimize(max_steps=steps, version=mode) on every fixture group; the fixtures were loaded with load_group(group, rng=0)",
+  "description": "SVBMC(vps, seed=seed).optimize(n_samples=n_samples, lr=lr, max_steps=max_steps, version=mode) on every fixture group; the fixtures were loaded with load_group(group, rng=0)",
   "generated": "2026-09-11",
+  "lr": 0.1,
   "max_steps": 3,
+  "n_samples": 20,
   "numpy": "2.5.2",
-  "pyvbmc_commit": "da3c0d249c80ea768928e49d259599fcc2682fbf",
+  "pyvbmc_commit": "4ee8328e037d278ad7c65d3dcf9b4efdd8933780",
   "seed": 0,
   "torch": "2.14.0+cpu"
  }

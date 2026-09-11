@@ -42,10 +42,14 @@ and stack them:
    print(stacked.elbo["estimated"])         # optimized stacked ELBO
    print(stacked.elbo["debiased_I_median"]) # debiased estimate
 
+:ref:`PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)`
+walks through this on a bimodal target.
+
 Construction filters the input runs: a run is discarded when VBMC did not
 mark it as converged (``vp.stats["stable"]``) or when the standard deviation
 of the expected log-joint of one of its components reaches ``s_max``. An
-error is raised when fewer than ``M_min`` runs survive. ``optimize()`` works
+error is raised when fewer runs survive than ``M_min`` requires (a count
+when greater than 1, a proportion of the input runs otherwise). ``optimize()`` works
 in place and returns ``None``: the optimized weights are in ``stacked.w``,
 the entropy estimate in ``stacked.entropy`` and the estimated and debiased
 stacked ELBO values in ``stacked.elbo``. The ``version`` argument selects
@@ -72,8 +76,9 @@ the original space: the number of draws from each run is multinomial in the
 runs' total weights, the component within a run is chosen at random by
 weight, and the rows are shuffled, so any subset of rows is itself a valid
 sample. ``sample(n, balance_flag=True)`` instead splits the draws across
-runs and components in exact proportion to the weights, a stratified sample
-with lower variance for expectations that is not an independent sample.
+runs and components in proportion to the weights, every count within one
+draw of its exact share: a stratified sample with lower variance for
+expectations, not an independent one.
 
 All randomness of an ``SVBMC`` object comes from its own generator, set by
 the ``seed`` argument; the input posteriors are never modified or advanced.

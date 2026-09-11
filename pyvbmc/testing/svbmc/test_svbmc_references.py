@@ -1,8 +1,8 @@
 """Regression references of the stacked ELBO, group by group and mode.
 
 Every cell replays the recipe stored in ``references.json``:
-``SVBMC(load_group(group, rng=0)[0], seed=0).optimize(max_steps=3,
-version=mode)``. A failure means the numerics of the stacking moved (the
+``SVBMC(load_group(group, rng=0)[0], seed=0).optimize(n_samples=20, lr=0.1,
+max_steps=3, version=mode)``, every argument taken from the sidecar. A failure means the numerics of the stacking moved (the
 weights, the ELBO or the Monte Carlo entropy), or that its random stream
 did; ``FIXTURES.md`` records how the references were generated.
 """
@@ -23,6 +23,8 @@ from pyvbmc.testing.svbmc._fixtures import (  # noqa: E402
 REFERENCES = load_references()
 STEPS = int(REFERENCES["meta"]["max_steps"])
 SEED = int(REFERENCES["meta"]["seed"])
+N_SAMPLES = int(REFERENCES["meta"]["n_samples"])
+LR = float(REFERENCES["meta"]["lr"])
 CELLS = [
     (group, mode)
     for group in sorted(REFERENCES["groups"])
@@ -55,7 +57,7 @@ def test_matches_reference(group, mode):
 
     vps = load_group(group, rng=0)[0]
     stacked = SVBMC(vps, seed=SEED)
-    stacked.optimize(max_steps=STEPS, version=mode)
+    stacked.optimize(n_samples=N_SAMPLES, lr=LR, max_steps=STEPS, version=mode)
 
     assert stacked.M == reference["M"]
     assert list(stacked.K) == list(reference["K"])

@@ -11,6 +11,7 @@ holds and where it came from; ``dev/scripts/make_svbmc_fixtures.py``
 writes them.
 """
 
+import json
 from pathlib import Path
 
 import numpy as np
@@ -74,7 +75,9 @@ def vp_snapshot(vp, meta):
             "scale": None
             if pt.scale is None
             else encode(np.array(pt.scale), "pt/scale", arrays),
-            "transform_type": "probit",
+            # The bounded transform's numeric code (12 = probit), so the
+            # rebuilt transformer dispatches the same transform.
+            "transform_type": int(pt.bounded_types[0]),
         },
         "vp": {
             "D": D,
@@ -119,12 +122,17 @@ def fixture_names(fixtures_dir=FIXTURES_DIR):
     return [n for n in snapshot_names(fixtures_dir) if n != REFERENCES]
 
 
+def _group_of(name, fixtures_dir):
+    # The group is in the JSON sidecar; no need to decompress the arrays.
+    sidecar = Path(fixtures_dir) / (name + ".json")
+    return json.loads(sidecar.read_text(encoding="utf-8"))["meta"]["group"]
+
+
 def group_names(fixtures_dir=FIXTURES_DIR):
     """Distinct ``meta["group"]`` values, sorted."""
-    groups = set()
-    for name in fixture_names(fixtures_dir):
-        groups.add(load_snapshot(Path(fixtures_dir) / name)["meta"]["group"])
-    return sorted(groups)
+    return sorted(
+        {_group_of(n, fixtures_dir) for n in fixture_names(fixtures_dir)}
+    )
 
 
 def load_group(group, rng=None, fixtures_dir=FIXTURES_DIR):
@@ -135,15 +143,18 @@ def load_group(group, rng=None, fixtures_dir=FIXTURES_DIR):
     without the posteriors sharing one stream. A ``Generator`` passed as
     ``rng`` is shared by all of them instead.
     """
-    vps, metas = [], []
+    names = [
+        n
+        for n in fixture_names(fixtures_dir)
+        if _group_of(n, fixtures_dir) == group
+    ]
     seeds = None
     if not isinstance(rng, np.random.Generator):
         base = 0 if rng is None else rng
-        seeds = iter(np.random.SeedSequence(base).spawn(10_000))
-    for name in fixture_names(fixtures_dir):
+        seeds = iter(np.random.SeedSequence(base).spawn(len(names)))
+    vps, metas = [], []
+    for name in names:
         tree = load_snapshot(Path(fixtures_dir) / name)
-        if tree["meta"]["group"] != group:
-            continue
         pt = build_transformer(tree["pt"])
         this_rng = rng if seeds is None else np.random.default_rng(next(seeds))
         vps.append(build_vp(tree["vp"], pt, rng=this_rng))
@@ -151,6 +162,40 @@ def load_group(group, rng=None, fixtures_dir=FIXTURES_DIR):
     if not vps:
         raise KeyError(f"no fixtures in group {group!r} under {fixtures_dir}")
     return vps, metas
+
+
+def assert_roundtrip(vp, name, fixtures_dir=FIXTURES_DIR):
+    """Check that the saved fixture ``name`` rebuilds ``vp`` exactly.
+
+    Compares the transformer (``ParameterTransformer.__eq__`` covers the
+    bounds, the transform codes, ``mu``, ``delta``, ``R_mat`` and
+    ``scale``), the component parameters, the statistics stacking reads,
+    and the transform outputs at a fixed set of transformed-space points.
+    """
+    rebuilt, _ = load_vp(name, rng=0, fixtures_dir=fixtures_dir)
+    if rebuilt.parameter_transformer != vp.parameter_transformer:
+        raise AssertionError(f"{name}: the transformer did not round-trip")
+    for attr in ("w", "eta", "mu", "sigma", "lambd"):
+        if not np.array_equal(getattr(rebuilt, attr), getattr(vp, attr)):
+            raise AssertionError(f"{name}: `{attr}` did not round-trip")
+    for key in ("I_sk", "J_sjk"):
+        if not np.array_equal(rebuilt.stats[key], vp.stats[key]):
+            raise AssertionError(
+                f"{name}: `stats[{key!r}]` did not round-trip"
+            )
+    if bool(rebuilt.stats["stable"]) != bool(vp.stats["stable"]) or float(
+        rebuilt.stats["elbo"]
+    ) != float(vp.stats["elbo"]):
+        raise AssertionError(f"{name}: `stable` or `elbo` did not round-trip")
+    Z = np.random.default_rng(0).standard_normal((32, vp.D))
+    pt, pr = rebuilt.parameter_transformer, vp.parameter_transformer
+    for f in (
+        lambda t: t.inverse(Z),
+        lambda t: t.log_abs_det_jacobian(Z),
+        lambda t: t(t.inverse(Z)),
+    ):
+        if not np.array_equal(f(pt), f(pr)):
+            raise AssertionError(f"{name}: transform outputs differ")
 
 
 def load_references(fixtures_dir=FIXTURES_DIR):

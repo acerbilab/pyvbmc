@@ -84,6 +84,13 @@ def _validate_posteriors(vp_list):
                 f"`vp_list[{i}].lambd` should hold D = {d} scales, got "
                 f"{np.asarray(vp.lambd).size}."
             )
+        # A posterior VBMC has not finished (or an unfitted one) has no
+        # statistics at all.
+        if vp.stats is None or not hasattr(vp.stats, "__contains__"):
+            raise ValueError(
+                f"`vp_list[{i}]` has no statistics; stack only posteriors "
+                "returned by a completed VBMC run."
+            )
         for key in _REQUIRED_STATS:
             if key not in vp.stats:
                 raise ValueError(
@@ -102,14 +109,16 @@ def _validate_posteriors(vp_list):
                 f"`vp_list[{i}].stats['J_sjk']` should have shape (Ns, K, K) "
                 f"with K = {k}, got {J_sjk.shape}."
             )
-        if not (
+        # The filters discard a run VBMC did not mark as converged, so only
+        # a run that can be retained needs finite statistics.
+        if bool(vp.stats["stable"]) and not (
             np.all(np.isfinite(I_sk))
             and np.all(np.isfinite(J_sjk))
             and np.isfinite(float(vp.stats["elbo"]))
         ):
             raise ValueError(
-                f"`vp_list[{i}]` has nonfinite `elbo`, `I_sk` or `J_sjk` "
-                "statistics."
+                f"`vp_list[{i}]` is marked stable but has nonfinite `elbo`, "
+                "`I_sk` or `J_sjk` statistics."
             )
     return D
 
@@ -118,20 +127,22 @@ def _balanced_counts(n, omega, rng):
     """Split ``n`` draws across runs in proportion to ``omega`` exactly.
 
     Every run gets the integer part of its quota ``n * omega``; the
-    remaining draws go to runs chosen without replacement with probability
-    proportional to the fractional parts, the scheme
-    :meth:`VariationalPosterior.sample` uses across components.
+    remaining draws go to distinct runs chosen with probability
+    proportional to the fractional parts of their quotas, so every count is
+    within one draw of its quota. (The balanced mode of
+    :meth:`VariationalPosterior.sample` allocates its remainder across
+    components with replacement instead.)
     """
     quota = n * omega
     counts = np.floor(quota).astype(int)
     remainder = int(n - counts.sum())
     if remainder > 0:
+        # The fractional parts sum to the remainder and are each below one,
+        # so at least ``remainder`` of them are nonzero.
         frac = quota - counts
-        if np.count_nonzero(frac) >= remainder:
-            p = frac / frac.sum()
-            extra = rng.choice(omega.size, size=remainder, replace=False, p=p)
-        else:  # rounding left too few fractional parts: uniform fallback
-            extra = rng.choice(omega.size, size=remainder, replace=False)
+        extra = rng.choice(
+            omega.size, size=remainder, replace=False, p=frac / frac.sum()
+        )
         counts[extra] += 1
     return counts
 
@@ -208,11 +219,23 @@ Generator, optional
     entropy : float or None
         After :meth:`optimize`: the entropy estimate of the stacked
         posterior at the optimized weights.
+    I : np.ndarray, shape (1, K_total)
+        Expected log-joint of every component (the mean over the run's GP
+        hyperparameter samples of ``stats["I_sk"]``), in the run's own
+        transformed space.
+    individual_elbos : list of float
+        The ELBO of each retained run, used to initialize the weights.
+    I_corrected, E_corrected : np.ndarray
+        The expected log-joints corrected to the original space, per
+        component (shape ``(1, K_total)``) and per run (shape ``(M,)``),
+        fixed at the first ELBO evaluation (``None`` and zeros before it);
+        the debiased ELBO values cap the expected log-joint at their
+        medians.
     rng : np.random.Generator
         The object's random generator.
     logger : logging.Logger
-        Progress goes to the ``"SVBMC"`` logger at ``INFO`` level; lower its
-        level to quieten a run.
+        Progress goes to the ``"SVBMC"`` logger at ``INFO`` level; raise its
+        level (to ``WARNING``, say) to quieten a run.
     """
 
     def __init__(
@@ -270,9 +293,9 @@ Generator, optional
             M_min = int(M_min)
         if len(self.vp_list) < M_min:
             raise ValueError(
-                f"Expected at least {M_min} well-converged VBMC runs, but "
-                f"got {len(self.vp_list)}. Check your VBMC runs or change "
-                "the values of `s_max` and `M_min`."
+                f"Expected at least {int(np.ceil(M_min))} well-converged "
+                f"VBMC runs, but got {len(self.vp_list)}. Check your VBMC "
+                "runs or change the values of `s_max` and `M_min`."
             )
         self.logger.info(
             "Got %d well-converged runs after filters.", len(self.vp_list)
@@ -560,7 +583,7 @@ Generator, optional
 
         # Converged when the rounded ELBO has not improved for 5 steps.
         convergence_counter = 0
-        loss_old = 1e8
+        loss_old = np.inf
         elbo_best = None
         entropy_best = None
 
@@ -660,9 +683,9 @@ Generator, optional
         :meth:`VariationalPosterior.sample`) and the rows are shuffled, so
         the result is an independent sample of exactly ``n_samples`` rows.
         With ``balance_flag=True`` the draws are split across runs, and
-        across components within a run, in exact proportion to the weights
-        (a stratified sample with lower variance for expectations, not an
-        independent one). All randomness comes from this object's
+        across components within a run, in proportion to the weights, every
+        count within one draw of its exact share (a stratified sample with
+        lower variance for expectations, not an independent one). All randomness comes from this object's
         generator; the input posteriors are not touched.
 
         Parameters

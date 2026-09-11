@@ -221,6 +221,7 @@ def test_balanced_counts_are_exact_and_proportional(n, omega):
 # (e) the stacked posterior covers its target                           #
 # --------------------------------------------------------------------- #
 def test_bounded_samples_stay_inside_the_box(stacked_d2):
+    stacked_d2.rng = np.random.default_rng(11)  # independent of test order
     X = stacked_d2.sample(4000)
     assert np.all(X > -3.0) and np.all(X < 3.0)
     # The target is N((0.5, -0.5), diag(0.8^2, 0.6^2)) on the box.
@@ -228,6 +229,7 @@ def test_bounded_samples_stay_inside_the_box(stacked_d2):
 
 
 def test_correlated_samples_recover_scales_and_sign(stacked_d3):
+    stacked_d3.rng = np.random.default_rng(12)  # independent of test order
     X = stacked_d3.sample(4000)
     assert X.shape == (4000, 3)
     expected_sd = np.array([1.0, 2.0, 0.5])
@@ -236,6 +238,7 @@ def test_correlated_samples_recover_scales_and_sign(stacked_d3):
 
 
 def test_one_dimensional_samples_recover_the_mean(stacked_d1):
+    stacked_d1.rng = np.random.default_rng(13)  # independent of test order
     X = stacked_d1.sample(4000)
     assert X.shape == (4000, 1)
     assert abs(X.mean() - 0.5) < 0.5

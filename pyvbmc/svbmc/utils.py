@@ -98,9 +98,7 @@ def overlay_corner_plot(
     for idx, (samp_arr, col) in enumerate(zip(samples, colors)):
         # Area-normalise weights so each dataset carries equal influence
         weights = np.full(samp_arr.shape[0], 1.0 / samp_arr.shape[0])
-        # corner.corner **may** return None (e.g. when stubbed in tests);
-        # keep a stable handle to the original figure in that case.
-        _returned_fig = corner.corner(
+        corner.corner(
             samp_arr,
             labels=axis_labels,
             color=col,
@@ -110,50 +108,24 @@ def overlay_corner_plot(
             fig=fig,
             **corner_kwargs,
         )
-        if _returned_fig is not None:
-            fig = _returned_fig
 
-    # -----------------------------------------------------------------
-    # Fallback: if *corner* didn't create any axes (e.g. when the dependency
-    # is stubbed in a head-less test run), generate a minimal triangular grid
-    # so that subsequent legend code has at least one axis to attach to.
-    # -----------------------------------------------------------------
-    if len(fig.axes) == 0:
-        # Create a DxD grid of subplots
-        axes_grid = []
-        for r in range(D):
-            row_axes = []
-            for c in range(D):
-                ax = fig.add_subplot(D, D, r * D + c + 1)
-                row_axes.append(ax)
-            axes_grid.append(row_axes)
-
-        # Populate diagonal histograms and lower-triangle scatter plots
-        for samp_arr, col in zip(samples, colors):
-            # Diagonal: 1-D histograms
-            for d in range(D):
-                axes_grid[d][d].hist(
-                    samp_arr[:, d],
-                    bins=corner_kwargs.get("bins", 20),
-                    color=col,
-                    histtype="step",
-                    density=True,
-                )
-            # Lower-triangle: 2-D scatters
-            for i in range(1, D):
-                for j in range(i):
-                    axes_grid[i][j].scatter(
-                        samp_arr[:, j],
-                        samp_arr[:, i],
-                        s=10,
-                        alpha=0.3,
-                        color=col,
-                    )
-
-        # Hide the (unused) upper-triangle axes for clarity
-        for i in range(D):
-            for j in range(i + 1, D):
-                axes_grid[i][j].set_visible(False)
+    # corner sets the vertical range of each marginal panel from the first
+    # sample set; widen it so every overlaid histogram is fully visible.
+    axes = np.array(fig.axes[: D * D]).reshape(D, D)
+    for d in range(D):
+        ax = axes[d, d]
+        tops = [
+            np.max(line.get_ydata())
+            for line in ax.get_lines()
+            if line.get_ydata().size
+        ]
+        for patch in ax.patches:  # step histograms are polygons
+            if isinstance(patch, mpatches.Polygon) and len(patch.get_xy()):
+                tops.append(np.max(patch.get_xy()[:, 1]))
+            elif isinstance(patch, mpatches.Rectangle):  # bar histograms
+                tops.append(patch.get_y() + patch.get_height())
+        if tops:
+            ax.set_ylim(0, 1.1 * max(tops))
 
     # Legend positioned to the right
     patches = [
@@ -197,7 +169,10 @@ def find_init_bounds(
     plausible upper bounds (`PUB`) or upper bounds (`UB`).
 
     At least one of `LB`, `UB`, `PLB` and `PUB` must be specified as an
-    array with the same dimensionality of the inference problem.
+    array with the same dimensionality of the inference problem. Each bound
+    may be a scalar (broadcast to every dimension) or an array holding `D`
+    values in any layout, including the ``(1, D)`` rows PyVBMC uses; the
+    returned bounds are flat ``(D,)`` arrays.
 
     Parameters
     ----------
@@ -256,8 +231,8 @@ def find_init_bounds(
 
         Accepted inputs: true scalars (plain `int`/`float` or 0-D NumPy
         scalars), which are broadcast to the problem dimensionality `D`, and
-        arrays/vectors whose length exactly matches `D`. Any other length
-        (including a 1-element sequence such as ``[1]``) raises a
+        arrays holding exactly `D` values in any layout, returned flat. Any
+        other size (including a 1-element sequence such as ``[1]``) raises a
         ``ValueError`` to avoid hiding length mismatches such as
         ``LB=[-1, -1]`` with ``UB=[1]``.
         """
