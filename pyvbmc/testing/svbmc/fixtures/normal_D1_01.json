@@ -1,0 +1,64 @@
+{
+ "meta": {
+  "D": 1,
+  "K": 50,
+  "elbo": 1.1007388214755727,
+  "elbo_sd": 0.00033985375233395765,
+  "fun_evals": 65,
+  "generated": "2026-09-11",
+  "group": "normal_D1",
+  "options": {
+   "display": "off"
+  },
+  "origin": "pyvbmc",
+  "plausible_lower": [
+   -3.0
+  ],
+  "plausible_upper": [
+   4.0
+  ],
+  "pyvbmc_commit": "8c2412d8aa652de7549cf60a598a1efdd3713812",
+  "seed": 101,
+  "stable": true,
+  "target": "log N(x; 0.5, 1.2^2) up to a constant, unbounded",
+  "warped": false
+ },
+ "pt": {
+  "D": 1,
+  "R_mat": null,
+  "delta": "@@npz:pt/delta",
+  "lb_orig": "@@npz:pt/lb_orig",
+  "mu": "@@npz:pt/mu",
+  "plb_orig": "@@npz:pt/plb_orig",
+  "pub_orig": "@@npz:pt/pub_orig",
+  "scale": null,
+  "transform_type": "probit",
+  "type": "@@npz:pt/type",
+  "ub_orig": "@@npz:pt/ub_orig"
+ },
+ "vp": {
+  "D": 1,
+  "K": 50,
+  "bounds": null,
+  "eta": "@@npz:vp/eta",
+  "lambd": "@@npz:vp/lambd",
+  "mu": "@@npz:vp/mu",
+  "optimize_lambd": true,
+  "optimize_mu": true,
+  "optimize_sigma": true,
+  "optimize_weights": true,
+  "sigma": "@@npz:vp/sigma",
+  "stats": {
+   "I_sk": "@@npz:vp/stats/I_sk",
+   "J_sjk": "@@npz:vp/stats/J_sjk",
+   "e_log_joint": 1.4478860661271153,
+   "e_log_joint_sd": 0.00033985375233395765,
+   "elbo": 1.1007388214755727,
+   "elbo_sd": 0.00033985375233395765,
+   "entropy": -0.34714724465154256,
+   "entropy_sd": 0.0,
+   "stable": true
+  },
+  "w": "@@npz:vp/w"
+ }
+}

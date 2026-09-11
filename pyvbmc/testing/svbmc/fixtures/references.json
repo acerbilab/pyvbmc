@@ -1,0 +1,358 @@
+{
+ "groups": {
+  "bounded_D2": {
+   "all-weights": {
+    "K": [
+     50,
+     50,
+     50
+    ],
+    "M": 3,
+    "elbo": {
+     "debiased_E_median": 1.1256280005123922,
+     "debiased_I_median": 1.090914774847687,
+     "estimated": 1.1272726223920522
+    },
+    "entropy": 2.125525580137149,
+    "w": "@@npz:bounded_D2/all-weights/w"
+   },
+   "ns": {
+    "K": [
+     50,
+     50,
+     50
+    ],
+    "M": 3,
+    "elbo": {
+     "debiased_E_median": 1.0876046611516381,
+     "debiased_I_median": 1.053537949015554,
+     "estimated": 1.0876046611516381
+    },
+    "entropy": 2.088148754305016,
+    "w": "@@npz:bounded_D2/ns/w"
+   },
+   "posterior-only": {
+    "K": [
+     50,
+     50,
+     50
+    ],
+    "M": 3,
+    "elbo": {
+     "debiased_E_median": 1.1238811516806009,
+     "debiased_I_median": 1.0891679260158957,
+     "estimated": 1.128096050016545
+    },
+    "entropy": 2.1237787313053578,
+    "w": "@@npz:bounded_D2/posterior-only/w"
+   }
+  },
+  "corr_D3": {
+   "all-weights": {
+    "K": [
+     50,
+     50,
+     50
+    ],
+    "M": 3,
+    "elbo": {
+     "debiased_E_median": 1.382825239954078,
+     "debiased_I_median": 1.3537575120809522,
+     "estimated": 1.382825239954078
+    },
+    "entropy": 2.913276840582381,
+    "w": "@@npz:corr_D3/all-weights/w"
+   },
+   "ns": {
+    "K": [
+     50,
+     50,
+     50
+    ],
+    "M": 3,
+    "elbo": {
+     "debiased_E_median": 1.3595526035366796,
+     "debiased_I_median": 1.3255096299273799,
+     "estimated": 1.3595526035366796
+    },
+    "entropy": 2.8850289584288085,
+    "w": "@@npz:corr_D3/ns/w"
+   },
+   "posterior-only": {
+    "K": [
+     50,
+     50,
+     50
+    ],
+    "M": 3,
+    "elbo": {
+     "debiased_E_median": 1.386159911909528,
+     "debiased_I_median": 1.3487417074681334,
+     "estimated": 1.386159911909528
+    },
+    "entropy": 2.908261035969562,
+    "w": "@@npz:corr_D3/posterior-only/w"
+   }
+  },
+  "normal_D1": {
+   "all-weights": {
+    "K": [
+     50,
+     50,
+     50
+    ],
+    "M": 3,
+    "elbo": {
+     "debiased_E_median": 1.106800409584799,
+     "debiased_I_median": 1.107294151473742,
+     "estimated": 1.107294151473742
+    },
+    "entropy": 1.604403155324302,
+    "w": "@@npz:normal_D1/all-weights/w"
+   },
+   "ns": {
+    "K": [
+     50,
+     50,
+     50
+    ],
+    "M": 3,
+    "elbo": {
+     "debiased_E_median": 1.1067998665673335,
+     "debiased_I_median": 1.107293403468666,
+     "estimated": 1.107293403468666
+    },
+    "entropy": 1.6044026123068367,
+    "w": "@@npz:normal_D1/ns/w"
+   },
+   "posterior-only": {
+    "K": [
+     50,
+     50,
+     50
+    ],
+    "M": 3,
+    "elbo": {
+     "debiased_E_median": 1.1098496972337595,
+     "debiased_I_median": 1.1105283682614426,
+     "estimated": 1.1105283682614426
+    },
+    "entropy": 1.6074524429732626,
+    "w": "@@npz:normal_D1/posterior-only/w"
+   }
+  },
+  "upstream_GMM": {
+   "all-weights": {
+    "K": [
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50
+    ],
+    "M": 10,
+    "elbo": {
+     "debiased_E_median": 2.9914054109115886,
+     "debiased_I_median": 2.9914054109115886,
+     "estimated": 2.9914054109115886
+    },
+    "entropy": 4.6446115631381275,
+    "w": "@@npz:upstream_GMM/all-weights/w"
+   },
+   "ns": {
+    "K": [
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50
+    ],
+    "M": 10,
+    "elbo": {
+     "debiased_E_median": 2.9452872822107303,
+     "debiased_I_median": 2.9418666554878996,
+     "estimated": 2.9452872822107303
+    },
+    "entropy": 4.590060254532294,
+    "w": "@@npz:upstream_GMM/ns/w"
+   },
+   "posterior-only": {
+    "K": [
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50
+    ],
+    "M": 10,
+    "elbo": {
+     "debiased_E_median": 2.9947567155678043,
+     "debiased_I_median": 2.9928268488812444,
+     "estimated": 2.9947567155678043
+    },
+    "entropy": 4.641020447925639,
+    "w": "@@npz:upstream_GMM/posterior-only/w"
+   }
+  },
+  "upstream_GMM_noisy": {
+   "all-weights": {
+    "K": [
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50
+    ],
+    "M": 10,
+    "elbo": {
+     "debiased_E_median": 2.8459092319337427,
+     "debiased_I_median": 2.7981582982114674,
+     "estimated": 2.9317294079608103
+    },
+    "entropy": 4.41388297704771,
+    "w": "@@npz:upstream_GMM_noisy/all-weights/w"
+   },
+   "ns": {
+    "K": [
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50
+    ],
+    "M": 10,
+    "elbo": {
+     "debiased_E_median": 2.74973366242515,
+     "debiased_I_median": 2.7019827287028746,
+     "estimated": 2.7645802672712483
+    },
+    "entropy": 4.3177074075391175,
+    "w": "@@npz:upstream_GMM_noisy/ns/w"
+   },
+   "posterior-only": {
+    "K": [
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50
+    ],
+    "M": 10,
+    "elbo": {
+     "debiased_E_median": 2.836067793200176,
+     "debiased_I_median": 2.788316859477901,
+     "estimated": 2.9298265922249356
+    },
+    "entropy": 4.404041538314144,
+    "w": "@@npz:upstream_GMM_noisy/posterior-only/w"
+   }
+  },
+  "upstream_Ring": {
+   "all-weights": {
+    "K": [
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50
+    ],
+    "M": 10,
+    "elbo": {
+     "debiased_E_median": 2.257683041703025,
+     "debiased_I_median": 2.257683041703025,
+     "estimated": 2.257683041703025
+    },
+    "entropy": 3.087702669857081,
+    "w": "@@npz:upstream_Ring/all-weights/w"
+   },
+   "ns": {
+    "K": [
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50
+    ],
+    "M": 10,
+    "elbo": {
+     "debiased_E_median": 2.2278828796583396,
+     "debiased_I_median": 2.2306968170659793,
+     "estimated": 2.2306968170659793
+    },
+    "entropy": 3.0562639995201994,
+    "w": "@@npz:upstream_Ring/ns/w"
+   },
+   "posterior-only": {
+    "K": [
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50,
+     50
+    ],
+    "M": 10,
+    "elbo": {
+     "debiased_E_median": 2.253160878007386,
+     "debiased_I_median": 2.253160878007386,
+     "estimated": 2.253160878007386
+    },
+    "entropy": 3.0873403082351976,
+    "w": "@@npz:upstream_Ring/posterior-only/w"
+   }
+  }
+ },
+ "meta": {
+  "description": "SVBMC(vps, seed=seed).optimize(max_steps=steps, version=mode) on every fixture group; the fixtures were loaded with load_group(group, rng=0)",
+  "generated": "2026-09-11",
+  "max_steps": 3,
+  "numpy": "2.5.2",
+  "pyvbmc_commit": "8c2412d8aa652de7549cf60a598a1efdd3713812",
+  "seed": 0,
+  "torch": "2.14.0+cpu"
+ }
+}
