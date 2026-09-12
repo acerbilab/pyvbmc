@@ -1,7 +1,7 @@
 # S-VBMC ELBO corrections and reporting
 
-Created 2026-09-12. Status: implemented and verified on
-`dev-svbmc-elbo-reporting`.
+Created 2026-09-12. Status: implemented, verified and merged into `dev-next`
+at `954677a` (implementation commit `483a8da`).
 
 This is the execution record for Phase 1 of the
 [ELBO optimism note](../2026-09-12-svbmc-elbo-optimism.md). It owns the
@@ -202,3 +202,6 @@ to roll back; never rebaseline the VBMC core or golden traces for this work.
   output in Example 2.
 - Repository pre-commit hooks cover the changed Python files, notebook and
   documentation; the fixture writer uses the hook's Black formatting.
+- Integration (2026-09-12): merged at `954677a` with no conflicts. The merge
+  tree equals the verified feature tree at `483a8da`; subsequent integration
+  edits update status documentation only.
