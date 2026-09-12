@@ -277,8 +277,9 @@ integration; this note stays the narrative.
    errors, and with them the optimism, are small in the same proportion.
    It is a guess: only the recorded level settles it. A run is treated as
    noisy when its recorded level says so, or, absent a record, when the
-   proxy says so. The anomalous noiseless run in the table is a benchmark
-   matter, recorded in `dev/TODO.md`.
+   proxy says so. The anomalous noiseless run in the table is the historical
+   final-boost failure covered by the 1.5 joint guard and documented in the
+   [boost analysis](results/2026-09-08-boost-analysis.md#penalty-effects-before-any-guard).
 5. **Documentation.** The class docstring, `docsrc/source/api/classes/svbmc.rst`
    and Example 7 (`examples/pyvbmc_example_7_stacking.ipynb`, regenerated
    script) state the same guidance and name the values. The existing VBMC

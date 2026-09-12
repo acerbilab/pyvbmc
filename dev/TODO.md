@@ -79,11 +79,6 @@ decided at the documentation review.
 
 ## Work awaiting a separate decision
 
-- Look at golden run `logreg_D5` seed 5 of `reference_870_20260907`: a
-  converged noiseless run that ends with an ELBO standard deviation of
-  4.6 and an ELBO error of 2.7 while marked stable (noticed 2026-09-12
-  while aggregating the sidecars' final ELBO standard deviations for the
-  [S-VBMC ELBO optimism note](2026-09-12-svbmc-elbo-optimism.md)).
 - Improve Slurm HPC support for benchmark runs, a follow-up task before
   the final documentation review; see
   [benchmark coverage and HPC support](plans/modernization-roadmap.md#benchmark-coverage-and-hpc-support).
