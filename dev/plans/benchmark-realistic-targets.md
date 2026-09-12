@@ -330,10 +330,13 @@ Other observations from the same session:
   sampling in the original space (half a t(4) around the MAP, half uniform
   over the box, 2·10^6 draws, effective sample size 137 000)
   −502.186 ± 0.003; Laplace −502.815. Benchflow's stored −502.479 is 0.29
-  below all three, and sits where the ELBOs of the VBMC runs above land
-  (−502.51 to −502.99), which is what an ELBO recorded as a constant would
-  look like. Benchflow also stores that constant for every subject
-  although it can only describe subject 1.
+  below all three. Benchflow's README records that its constants were
+  estimated by Geyer's reverse logistic regression on emcee draws, so the
+  discrepancy points at those draws (its reference draws for the timing
+  model show the same under-dispersion). Under the uniform prior the
+  constant is −504.14 (the stored population reweighted), so the old
+  value is not that either. Benchflow stored the constant for every
+  subject until 2026-09-12; the correction is its pull request 1.
 - Uniform against spline prior on subject 1, seed 0: means within 0.2 and
   SDs within 0.1 of each other in every dimension. The prior choice does
   not change difficulty.
