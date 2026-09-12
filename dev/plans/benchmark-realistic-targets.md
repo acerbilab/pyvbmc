@@ -257,8 +257,18 @@ Code work runs on `dev-benchmark-targets` (branched 2026-09-11 from
   green; results and the timing comparison in the evidence section;
   truths committed under `dev/scripts/data/truths/`.
 - [ ] Reference campaigns for the four configurations from a certified
-  frozen checkout; join to the reference.
+  frozen checkout; join to the reference. Agreed 2026-09-12, to be run
+  from a fresh session; the steps are in `dev/TODO.md`.
 - [ ] Record the results and the pickup in the roadmap and `TODO.md`.
+
+Local-only artifacts on the development machine (gitignored): the chain
+files under `dev/scripts/data/truths/chains/`, which let a rerun of the
+generator with the same settings redo only the proposal stage (a fresh
+clone resamples the chains, about 7 hours), and the launcher, log and the
+superseded first-format truth files under `dev/scripts/runs/truths_20260911/`.
+The change to the importance-weighted population (loader, generator
+output contract, gates) was tested by both `--check` passes and the smoke
+of two configurations, but not by a second independent review round.
 
 ## Evidence: the overnight generation of 2026-09-11/12
 

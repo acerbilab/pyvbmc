@@ -58,10 +58,24 @@ with a scikit-learn mixture proposal; scikit-learn is in the `dev` extra),
 and the ground truths themselves, generated overnight on 2026-09-11/12
 and committed under `dev/scripts/data/truths/` (both check passes green;
 the population is the importance-weighted proposal draws, PI decision of
-2026-09-12). Next: the reference campaigns for the four configurations,
-from a certified frozen checkout on the benchmark machine, which need a
-go-ahead. Goris stays deferred; which targets move into the public tests
-is decided at the documentation review.
+2026-09-12). Next, agreed 2026-09-12 and to be run from a fresh session:
+the reference campaigns for the four configurations (`multisensory_s1_D6`,
+`timing_D5_noise2.2`, `multisensory_s1_D6_noise1.3`,
+`multisensory_s2_D6_noise1.3`), seeds 0–29 each, on the benchmark machine
+with the campaign settings of the
+[population plan](plans/final-population-benchmark.md), from a frozen
+checkout of `dev-next` certified first by the oracle `--check --exact` and
+by `golden_replay.py` reporting `identical` on the existing configurations
+(nothing under `pyvbmc/` changed except a test, so the numerics equal the
+frozen treatment `68a43db`); then the join to the reference with
+manifests, README and the even/odd null check, following the noisy
+extension of 2026-09-07 (`dev/golden/noisy_extension_20260907/README.md`,
+`dev/scripts/reference_noisy_extension.py`). About 4 to 5 hours in one
+process. One thing to look at in that population: the smoke runs put
+VBMC's timing posteriors about 30 % too narrow on `w_s` and `sigma_p`
+(plan, evidence section). No process is running. Goris stays deferred;
+which targets move into the public tests is decided at the documentation
+review.
 
 ## Work awaiting a separate decision
 
