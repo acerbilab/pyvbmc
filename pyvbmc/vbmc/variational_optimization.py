@@ -394,6 +394,10 @@ def optimize_vp(
     vp.stats["stable"] = False  # Unstable until proven otherwise
     vp.stats["I_sk"] = I_sk  # Expected log joint per component
     vp.stats["J_sjk"] = J_sjk  # Covariance of expected log joint
+    if "uncertainty_handling_level" in optim_state:
+        vp.stats["uncertainty_handling_level"] = optim_state[
+            "uncertainty_handling_level"
+        ]
     # The accepted posterior becomes live solver state, so retain the
     # transformer's shared identity from the input posterior. Fine and pruned
     # candidates remain ordinary isolated deep copies while they are internal.

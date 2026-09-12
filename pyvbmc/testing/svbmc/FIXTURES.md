@@ -67,19 +67,30 @@ with two warped ones (`R_mat` and `scale` set, `delta` reset to one).
 
 ## Regression references (`references.npz` / `references.json`)
 
-`make_svbmc_fixtures.py references` (2026-09-11, Torch 2.14.0 CPU with one
+`make_svbmc_fixtures.py references` (2026-09-12, Torch 2.14.0 CPU with one
 thread, NumPy 2.5.2; the PyVBMC commit is in `meta`): for every group
 above and every optimization mode,
-`SVBMC(vps, seed=0).optimize(n_samples=20, lr=0.1, max_steps=3, version=mode)`
+`SVBMC(vps, seed=0).optimize(n_samples=20, n_samples_final=100, lr=0.1,
+max_steps=3, version=mode)`
 with `vps = load_group(group, rng=0)[0]`. The tree holds, under
 `groups/<group>/<mode>`, the optimized weights `w` (an array of shape
-`(1, K_total)`), the three `elbo` values (`estimated`,
-`debiased_I_median`, `debiased_E_median`), the `entropy`, `M` and `K`;
-`meta` records the environment and every argument of the recipe, which
+`(1, K_total)`), scalar `elbo`, `elbo_sd`, the complete `elbo_details`
+report (raw, both capped estimates, naive baseline, headline method,
+uncertainty contributions, cap amount and noise provenance), `entropy`,
+`M` and `K`. `meta` records the environment, S-VBMC source hashes and
+every numerical argument of the recipe, which
 the test passes explicitly. The references pin the numerics of the
 integrated class (the Monte Carlo draws come from the object's generator,
 so they cannot be compared with the upstream package draw for draw) and
 are the gate for later performance changes to the entropy computation.
+
+The 2026-09-12 rebaseline is intentional and implements the PI-approved
+[ELBO reporting plan](../../../dev/plans/svbmc-elbo-reporting.md): Jacobian
+expectations are deterministic, final estimates use fresh samples at the
+returned weights, and the report includes uncertainty and the naive
+baseline. Both reported values and bounded-target optimization weights can
+therefore change. The 39 posterior snapshots remain unchanged. The plan
+records plausibility checks against the previous code's sampling variation.
 
 ## Tests
 
@@ -87,7 +98,9 @@ are the gate for later performance changes to the entropy computation.
 | --- | --- | --- |
 | `test_svbmc.py` | `upstream_GMM`, `normal_D1`, `bounded_D2`, `corr_D3` via `load_group(group, rng=0)` | shapes, dtypes and reproducibility exact; sample statistics loose (means within 0.25 or 0.5, standard deviations at `rtol=0.25`) |
 | `test_svbmc_filters.py` | synthetic posteriors and `upstream_GMM` | exact |
-| `test_svbmc_references.py` | every group via `load_group(group, rng=0)` and `references` | `rtol=1e-8`, `atol=1e-10` on `w`, the three `elbo` values and `entropy`; `M` and `K` exact |
+| `test_svbmc_references.py` | every group via `load_group(group, rng=0)` and `references` | `rtol=1e-8`, `atol=1e-10` on `w`, numerical ELBO diagnostics, SD and `entropy`; metadata exact |
+| `test_elbo_reporting.py` | synthetic posteriors and two legacy GMM fixtures | covariance and stratified variance algebra; noise inference, final evaluation and tips contracts |
+| `test_jacobian.py` | synthetic posteriors | analytic affine/probit expectations, independent integration, seeded broad/warped Monte Carlo checks and explicit nonconvergence |
 | `test_svbmc_imports.py`, `test_svbmc_utils.py` | none | run without torch |
 
 New fixture files or directories must be added to `MANIFEST.in`.

@@ -302,16 +302,24 @@ def references(args):
     tree = {
         "meta": {
             "pyvbmc_commit": _git_head(REPO),
+            "svbmc_source_sha256": {
+                path.relative_to(REPO)
+                .as_posix(): hashlib.sha256(path.read_bytes())
+                .hexdigest()
+                for path in sorted((REPO / "pyvbmc/svbmc").glob("*.py"))
+            },
             "torch": torch.__version__,
             "numpy": np.__version__,
             "seed": args.seed,
             "max_steps": args.steps,
             "n_samples": args.n_samples,
+            "n_samples_final": args.n_samples_final,
             "lr": args.lr,
             "generated": time.strftime("%Y-%m-%d"),
             "description": (
                 "SVBMC(vps, seed=seed).optimize(n_samples=n_samples, "
-                "lr=lr, max_steps=max_steps, version=mode) on every fixture "
+                "n_samples_final=n_samples_final, lr=lr, "
+                "max_steps=max_steps, version=mode) on every fixture "
                 "group; the fixtures were loaded with load_group(group, "
                 "rng=0)"
             ),
@@ -327,6 +335,7 @@ def references(args):
                 stacked = SVBMC(vps, seed=args.seed)
                 stacked.optimize(
                     n_samples=args.n_samples,
+                    n_samples_final=args.n_samples_final,
                     lr=args.lr,
                     max_steps=args.steps,
                     version=mode,
@@ -334,13 +343,18 @@ def references(args):
             key = f"{group}/{mode}"
             tree["groups"][group][mode] = {
                 "w": encode(np.array(stacked.w), f"{key}/w", arrays),
-                "elbo": {k: float(v) for k, v in stacked.elbo.items()},
+                "elbo": stacked.elbo,
+                "elbo_sd": stacked.elbo_sd,
+                "elbo_details": {
+                    **stacked.elbo_details,
+                    "noise_status_source": list(stacked.noise_status_source),
+                },
                 "entropy": float(stacked.entropy),
                 "M": int(stacked.M),
                 "K": [int(k) for k in stacked.K],
             }
             print(
-                f"{group:20s} {mode:15s} elbo={stacked.elbo['estimated']:.6f} "
+                f"{group:20s} {mode:15s} elbo={stacked.elbo:.6f} "
                 f"H={stacked.entropy:.6f}"
             )
     save_snapshot(FIXTURES_DIR / REFERENCES, arrays, tree)
@@ -369,6 +383,7 @@ def main(argv=None):
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--steps", type=int, default=3)
     p.add_argument("--n-samples", type=int, default=20)
+    p.add_argument("--n-samples-final", type=int, default=100)
     p.add_argument("--lr", type=float, default=0.1)
     p.set_defaults(func=references)
 

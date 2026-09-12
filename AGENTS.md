@@ -190,6 +190,15 @@ Things you must hold in your head across files:
   `dev/scripts/make_svbmc_fixtures.py`, and `references.npz` there pins the
   numerics of a seeded short optimization, the gate for changes to the
   entropy code. `dev/plans/svbmc-integration.md` records the decisions.
+  `elbo` is a scalar headline (component-median capped for noisy stacks,
+  raw for noiseless ones); `elbo_details` retains all estimates and noise
+  provenance. `elbo_sd` combines entropy sampling and GP quadrature
+  uncertainty for the raw evaluation at selected weights, excluding
+  selection bias and cap uncertainty. Jacobian expectations are computed
+  deterministically at construction; `optimize(n_samples_final=100)` uses
+  fresh final draws. VP stats record `uncertainty_handling_level`; old
+  posteriors use the `elbo_sd > 0.1` proxy unless `SVBMC(noisy=)` overrides
+  it. `dev/plans/svbmc-elbo-reporting.md` records this reporting contract.
 - **`FunctionLogger`** preallocates 500 rows and grows; `Xn` is the index of
   the last filled row, `X_flag` the boolean mask of live rows. Always index
   through `X_flag`; rows beyond `Xn` are NaN. `finalize()` trims.
