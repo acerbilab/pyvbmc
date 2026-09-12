@@ -1,7 +1,9 @@
 # S-VBMC's ELBO optimism: what ships, where it comes from, and a two-phase plan
 
-*Written 12 September 2026 from a discussion with the PI; the decisions are
-recorded at the end. Neither phase has started.*
+*Written 12 September 2026 from a discussion with the PI. The implementation
+survey describes the code before Phase 1. All five Phase 1 defaults were
+accepted later that day; the execution record is
+[plans/svbmc-elbo-reporting.md](plans/svbmc-elbo-reporting.md).*
 
 Stacking (Silvestrin, Li and Acerbi, 2025;
 [`papers/silvestrin2025stacking_main.md`](../papers/silvestrin2025stacking_main.md)
@@ -306,28 +308,36 @@ integration; this note stays the narrative.
    group is not). Rollback is the revert of the feature branch, which
    brings the old references back with it.
 
-Open decisions for the PI before this phase starts:
+Decisions accepted by the PI on 2026-09-12 (superseding the alternatives
+and open choices in the original Phase 1 proposal above):
 
-1. `elbo` stays a dictionary with added keys, or becomes a float with
-   separate attributes for the raw value, the standard deviation and the
-   naive-stacking value. Existing code reads the dictionary; the package is
-   new enough that either is defensible. With it: whether the run-median
-   cap `"debiased_E_median"` survives, and whether the naive-stacking
-   reference is computed by default (one more entropy evaluation at the
-   final sample count).
-2. Gauss-Hermite quadrature or many draws for the Jacobian term.
-3. How S-VBMC's tips are silenced: a `show_tips` constructor argument, the
-   logger level, or both.
-4. Whether the headline is the capped value for every stacking or only
-   when the runs were noisy, with the raw value as the headline otherwise.
-   The paper applied the cap to its noisy experiments only, and on a
-   noiseless target the cap can only lower a value that does not
-   overshoot; the recorded noise level makes the distinction possible.
-5. What the stacked `elbo_sd` contains: the entropy's Monte Carlo variance
-   alone, or that plus the runs' own quadrature uncertainty of the
-   expected log-joint at the stacked weights (the run blocks of
-   `stats["J_sjk"]`, independent across runs). A single run's `elbo_sd` is
-   mostly the latter, so only the second choice makes the two comparable.
+1. `elbo` becomes a float, paired with `elbo_sd`; `elbo_details` retains
+   raw, component-median capped, run-median capped and naive estimates,
+   headline method and diagnostics. Keep the run-median variant and compute
+   naive stacking by default. Document the dictionary-to-scalar migration.
+   The naive estimate still inherits individual runs' errors and is a
+   diagnostic baseline, not a guaranteed bound on the optimized ELBO.
+2. Compute Jacobian expectations once: analytic for affine and probit
+   coordinates, including whitening, and one-dimensional Gauss-Hermite
+   quadrature for logit and Student-t. Compare 32 and 64 nodes and increase
+   as needed, targeting 1e-8 nats per component's total correction subject
+   to validation. Use Monte Carlo as an independent check.
+3. `show_tips=True`, also gated by INFO logging. The switch suppresses tips
+   while leaving progress and applied-cap diagnostics available; a quiet
+   logger suppresses both progress and guidance.
+4. Select the component-median capped headline when any retained run is
+   noisy, raw otherwise. Record the noise level on new posteriors. Use
+   `elbo_sd > 0.1` for old posteriors with missing metadata, expose its
+   inferred provenance, and allow an explicit noise-status override. The
+   proxy can misclassify noiseless runs; it cannot guarantee that the noisy
+   tip never appears for an old noiseless posterior.
+5. Use fresh final draws, 100 per component by default. Combine stratified
+   entropy Monte Carlo variance with the GP contribution, preserving
+   within-run component covariance and between-hyperparameter variation
+   from `I_sk`. Keep the contributions separately accessible. `elbo_sd`
+   describes the uncapped evaluation at the selected weights; it does not
+   cover selection bias or propagate the heuristic cap, and does not make
+   a calibrated confidence interval for the capped result.
 
 What this phase does not do: it does not reduce the cross-run optimism. It
 removes Monte Carlo noise from the objective and from the inputs of the
@@ -446,4 +456,6 @@ back to Phase 1 behaviour.
   targets. When a posterior does not record whether its run was noisy, the
   stored ELBO standard deviation is the proxy. Recording the noise level on
   the posterior, and the threshold of 0.1, are the note's proposals.
-- Neither phase has started. Phase 1 waits on the five open decisions.
+- All five Phase 1 defaults are accepted. Execution and verification are
+  tracked in [the reporting plan](plans/svbmc-elbo-reporting.md). Phase 2
+  remains a separate exploration, with campaigns started on PI instruction.

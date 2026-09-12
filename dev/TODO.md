@@ -41,10 +41,11 @@ warning) once PyVBMC 1.5 is on PyPI, and the deferred preparation and
 entropy speedups measured in the
 [NumPy prototype](results/2026-09-09-svbmc-numpy-prototype.md), gated by the
 regression references in `pyvbmc/testing/svbmc/`.
-Separately, agreed 2026-09-12 and not started: the two-phase plan for
+Separately, agreed 2026-09-12: the two-phase plan for
 the stacked ELBO's optimism on noisy targets in the
-[S-VBMC ELBO optimism note](2026-09-12-svbmc-elbo-optimism.md), whose
-first phase waits on the five open decisions listed there. That phase
+[S-VBMC ELBO optimism note](2026-09-12-svbmc-elbo-optimism.md). All five
+Phase 1 defaults are accepted; implementation and verification are tracked
+in [svbmc-elbo-reporting.md](plans/svbmc-elbo-reporting.md). That phase
 regenerates the same regression references, so it is ordered before or
 together with the deferred speedups, never after them unnoticed.
 

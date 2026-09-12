@@ -50,8 +50,9 @@ For the release overview, start with
   on noisy targets is a cross-run selection effect, the decision to leave
   the objective alone, and the two agreed phases: corrections, reporting
   and tips from the stored posteriors alone, then an exploration of a
-  cross-run honest estimate using the runs' GPs. Neither phase has
-  started; the first waits on five open decisions listed in the note.
+  cross-run honest estimate using the runs' GPs. The Phase 1 defaults are
+  accepted; implementation is tracked in
+  [plans/svbmc-elbo-reporting.md](plans/svbmc-elbo-reporting.md).
 
 `TODO.md` contains only current actions, constraints and links. Do not
 accumulate completed handoffs there; the roadmap and plans retain execution

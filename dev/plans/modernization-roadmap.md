@@ -975,6 +975,17 @@ superseding earlier requirements below for a full sweep before assessment.
     post-merge full matrix and automatic smoke check both passed. The merged
     feature branch has been removed. The final benchmark schedule remains unchanged.
 
+## S-VBMC ELBO corrections and reporting
+
+Phase 1 defaults accepted and execution authorized on 2026-09-12:
+scalar headline with detailed estimates, deterministic Jacobian corrections,
+fresh final evaluation and combined uncertainty, noise-dependent capping,
+and optional runtime tips. The
+[execution plan](svbmc-elbo-reporting.md) owns status and verification;
+the [optimism note](../2026-09-12-svbmc-elbo-optimism.md) owns the rationale
+and the separate Phase 2 proposal. Phase 1 precedes the deferred S-VBMC
+entropy speedups because it deliberately regenerates their regression gate.
+
 ## Benchmark coverage and HPC support
 
 Complete these follow-up tasks before the final pre-release documentation
