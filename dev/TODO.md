@@ -16,12 +16,13 @@ confirmatory tests rejects, and every Rosenbrock metric moved in the
 candidate's favor. The PI accepts this evidence tentatively (2026-09-11):
 the frozen treatment stands as the numerics of 1.5, and the confirmation
 at equal sample sizes comes from the planned extension rather than from a
-separate decision now. That extension, completing the remaining 567 seeds
-of the same frozen treatment and then promoting the full 870-run candidate
-population to the new golden reference in place of the current one, is
-agreed in principle but not to be started without an explicit go-ahead;
-its conditions and cost are in the plan's
-[direction under consideration](plans/final-population-benchmark.md#direction-under-consideration--2026-09-11).
+separate decision now. The PI authorized the remaining 567-run completion
+on 2026-09-12. It is running under
+`dev/scripts/runs/population_completion_20260912/`, followed automatically
+by assessment of the pooled 870-case candidate population. Promotion
+follows assessment; the 120 real-data reference pairs are retained. The
+[population plan](plans/final-population-benchmark.md#full-allocation-completion--authorized-2026-09-12)
+records preparation, launch, status and the remaining gates.
 Order set by the PI (2026-09-11): the benchmark extension with realistic
 noiseless and noisy targets first (done 2026-09-12, see below), then the
 golden run on the current defaults; the noisy-acquisition options are taken
@@ -29,7 +30,7 @@ up only after both, so they can be analyzed on the richer benchmark. The frozen
 checkout `68a43db` remains the generator as long as the defaults stay as
 they are; if a noisy option later becomes a default, the noisy
 configurations of the reference are regenerated from that code. No
-benchmark process remains active.
+additional numerical worker may run alongside the active campaign.
 
 S-VBMC is integrated as `pyvbmc.svbmc` (merged into `dev-next` at
 `0b5af29` on 2026-09-11); the [integration plan](plans/svbmc-integration.md)
@@ -70,11 +71,10 @@ inside their budgets; noisy multisensory subject 1 has 5 of 30 usable runs
 (median gsKL 2.4); every real-data posterior is under-dispersed, timing's
 `w_s` and `sigma_p` by about 30 % over all 30 seeds. The frozen worktree
 and campaign artifacts are under
-`dev/scripts/runs/population_realdata_20260912/` (gitignored). No process
-is running. Next in the PI's order: the golden run on the current defaults
-(the 567-seed completion and promotion, not to be started without an
-explicit go-ahead; see the population plan), then the noisy-acquisition
-options. Goris stays deferred; which targets move into the public tests is
+`dev/scripts/runs/population_realdata_20260912/` (gitignored). That campaign
+is complete. The golden completion on the current defaults is running;
+the noisy-acquisition options follow its assessment and reference promotion.
+Goris stays deferred; which targets move into the public tests is
 decided at the documentation review.
 
 ## Work awaiting a separate decision

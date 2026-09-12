@@ -380,3 +380,78 @@ decision:
 
 Two overnight sessions, or one long unattended run, plus about 4%
 supervisor overhead.
+
+### Full-allocation completion — authorized 2026-09-12
+
+The PI authorized the remaining 567-run campaign on 2026-09-12. It reuses
+the frozen PyVBMC/tooling checkout `68a43db` and gpyreg `a2f8ddc` from
+`population_overnight_20260910`, with the same dependencies, options and
+single-worker, single-BLAS-thread execution. The 303 completed candidate
+cases and 120 real-data reference cases are retained. The allocation is the
+historical 870-pair manifest minus the 303 validated completed pairs.
+
+Campaign root: `dev/scripts/runs/population_completion_20260912/`.
+The launch manifest and preparation evidence are also tracked under
+`dev/experiments/population_completion_20260912/`.
+
+- [x] Validate existing artifacts, frozen imports and environment; derive
+  the exact missing allocation and obtain independent preflight review.
+- [x] Launch the sequential supervisor and verify its first completed case.
+- [~] Complete all 567 cases with validated records; preserve any failed
+  attempt and investigate before resuming.
+- [ ] Assess the full 870-case candidate population, keeping the earlier
+  hypothesis-generating and confirmatory stages identifiable. Report the
+  76-test KS screen, 95-test paired family, effect sizes, usability and
+  boost decisions; review adverse changes independently.
+- [ ] Prepare the 990-case reference from the 870 candidate pairs and the
+  unchanged 120 real-data pairs, preserve the previous reference, and run
+  artifact validation, the even/odd check and exact default replays.
+  Promotion follows the completed assessment and its scientific decision.
+
+Preparation validated the complete records of all 303 retained candidate
+cases, all 870 historical reference pairs, all 990 combined reference pairs
+and the 120 retained real-data cases. Frozen source imports, dependency
+versions, thread settings and requested options match the earlier candidate
+campaigns exactly. The post-run assessment setup reproduced the tracked
+303-case assessment JSON exactly using the preserved 870-sidecar baseline.
+The remaining historical cases total 12.897 optimizer hours; observed
+campaign speed ratios plus supervisor overhead give 12.34–17.17 hours
+elapsed. Disk headroom was 27.67 GB; projected new artifacts are 0.235 GB.
+
+The controller `supervise.py` runs the unchanged frozen launcher, then the
+archived `analyze_population_run.py` through `assess.py`. That wrapper
+selects the frozen launcher's 870-sidecar baseline and pools all three
+candidate campaigns. `controller_status.json` distinguishes running,
+stopped and assessment-ready states; `results/status.json` records the
+active case and completed cases. A failed worker stops the campaign.
+The controller writes `assessment/` and `assessment.log` on completion;
+it does not change the reference. Script hashes are in `tooling_sha256.json`.
+
+Independent Sol preflight review found no launch blockers. It independently
+reconstructed the disjoint 273 + 30 + 567 allocation and verified frozen
+source, options and sequential/resume behavior. Its reporting finding is
+handled in `assess.py`: the completion cohort's additional paired tests are
+labelled descriptive; only the earlier two-target follow-up retains its
+confirmatory label. On a resumed campaign, total elapsed time must be
+reconstructed from launch records because the frozen supervisor reports
+elapsed time for its latest invocation.
+
+Launch: 2026-09-12 at **17:46:25 UTC+03**, Windows launcher PID **29172**,
+controller PID **29536**, frozen supervisor PID **29932**. The first case
+is `banana_D10_seed15`. The unchanged supervisor prevents idle system
+sleep while allowing the display to sleep. `process.json` records the
+manifest hash and launch paths. The initial estimated finish window is
+2026-09-13 approximately 06:05–10:55 UTC+03.
+
+The first case completed successfully. Its completion identity matches
+preparation, all four artifact hashes were rechecked, and the supervisor
+advanced to `banana_D10_seed16` with no failures. Evidence is in
+`first_case_verification.json` alongside the tracked launch manifest.
+
+To resume after an interruption, first confirm that the recorded processes
+are no longer active and inspect any incomplete case. Run the main
+repository's `.venv/Scripts/python.exe -u` on the absolute campaign
+`supervise.py` path; it establishes the frozen environment and uses the
+same manifest and results directory. Preserve the prior process and log
+records when starting a new background controller. Do not remove partial
+attempts or alter seeds to make resumption pass.
