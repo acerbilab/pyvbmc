@@ -130,9 +130,9 @@ is an implementation choice.
 
 `dev/scripts/make_benchmark_truths.py` (its docstring is the usage
 reference) generates the truths; its `--check` mode reloads a target's
-files, verifies the stored moments against the stored draws, re-evaluates
-the target at a hundred stored draws against their stored log densities,
-and applies the diagnostic gates below. The pinned density values are
+files, verifies the stored moments against the stored weighted draws,
+re-evaluates the target at a hundred stored draws against their stored
+log densities, and applies the gates below. The pinned density values are
 checked by `benchmark_targets.py --check`. Per target:
 
 1. **Space.** PyVBMC's `ParameterTransformer` (probit, as VBMC uses) maps
@@ -164,20 +164,27 @@ checked by `benchmark_targets.py --check`. Per target:
    2004). Recorded alongside: defensive importance sampling from the same
    proposal draws with its effective sample size, and the Laplace
    estimate (the 2018 paper found it within about one point).
-6. **Stored truth.** One `.npz` per target with the draws in the original
-   space, their log densities, mean, covariance, lnZ and its standard
-   error, and a JSON sidecar with the settings, the cross-check values,
-   effective sample sizes, R-hat, seeds, the MAP, the proposal summary,
-   timings and the generating commit. Both files are tracked (about
-   2 MB per target; every tracked file also enters the sdist). The
-   `Problem.sampler` hook resamples from the stored draws; `ln_Z`,
-   `true_mean` and `true_cov` come from the file, and the effective sample
-   size from the sidecar. MMTV is a marginal metric, so tens of thousands
-   of draws are ample.
+6. **Stored truth.** The population is the importance-weighted proposal
+   draws, not the chains (PI, 2026-09-12): with the proposal fitted this
+   closely, importance sampling reaches effective sample sizes of 17 000
+   to 18 000 per 20 000 draws on every target, while the timing chains
+   reached 267 to 320 on three dimensions at a thousand times the cost
+   per effective draw. One `.npz` per target with the proposal draws in
+   the original space, their normalized log weights, their log densities,
+   the weighted mean and covariance, the weights' effective sample size,
+   lnZ and its standard error; a JSON sidecar with the settings, the
+   chains' moments, effective sample sizes and R-hat, the cross-check
+   values, seeds, the MAP, the proposal summary, timings and the
+   generating commit. Both files are tracked (about 1 MB per target;
+   every tracked file also enters the sdist). The `Problem.sampler` hook
+   resamples the population with its weights; `ln_Z`, `true_mean`,
+   `true_cov` and the effective sample size come from the file.
 
-Gates, checked by the generator: split R-hat below 1.01 on every
-dimension; Geyer's and the importance-sampling estimates within three
-combined standard errors; effective sample sizes in the hundreds at least.
+Gates, checked by the generator: the weights' effective sample size at
+least a quarter of the proposal draws; Geyer's and the importance-sampling
+estimates within three combined standard errors; the chains' split R-hat
+and effective sample sizes reported, with a warning above 1.01 or below
+400 (they no longer decide anything).
 Benchflow's stored constant for multisensory subject 1 (−502.479) is
 reported but is not a gate: three estimators sharing no code (Geyer's and
 importance sampling in the transformed space, and a defensive importance
@@ -241,21 +248,55 @@ Code work runs on `dev-benchmark-targets` (branched 2026-09-11 from
   without a truth; `population_run.py` pins `dev/scripts/data/` as well.
 - [x] scikit-learn in the `dev` extra; AGENTS.md's extras sentence and
   `dev/README.md` updated.
-- [~] Truth generator with `--check`: written and reviewed, reproduces the
-  logreg and halfnormal constants in quick mode, dry-run on the real
-  targets. Overnight generation started 2026-09-11 at 23:56 on the
-  development machine as a detached process (launcher and log in the
-  ignored `dev/scripts/runs/truths_20260911/`; rerunning the launcher
-  reuses completed chains): the two multisensory subjects with the
-  defaults, then timing at 24 000 draws, thin 2, writing to
-  `dev/scripts/data/truths/`. Morning pickup: read the log's `WARN` and
-  gate lines, run `make_benchmark_truths.py --check` and
-  `benchmark_targets.py --check --only timing,multisensory_s1,multisensory_s2`,
-  write up the timing comparison with the stored uniform-prior truth,
-  commit the truths.
+- [x] Truth generator with `--check`: written and reviewed, reproduces the
+  logreg and halfnormal constants in quick mode. Overnight generation ran
+  2026-09-11 23:56 to 2026-09-12 08:08 on the development machine
+  (launcher and log in the ignored `dev/scripts/runs/truths_20260911/`),
+  then the populations were regenerated as importance-weighted proposal
+  draws with the chains reused (08:22 to 08:37). Both `--check` passes
+  green; results and the timing comparison in the evidence section;
+  truths committed under `dev/scripts/data/truths/`.
 - [ ] Reference campaigns for the four configurations from a certified
   frozen checkout; join to the reference.
 - [ ] Record the results and the pickup in the roadmap and `TODO.md`.
+
+## Evidence: the overnight generation of 2026-09-11/12
+
+Settings: the two multisensory subjects with the defaults (50 000 draws,
+thin 5, four chains, 20 000 proposal draws), timing at 24 000 draws, thin
+2; seed 0; started 23:56, finished 08:08 on the development machine.
+
+| target | Geyer lnZ | importance sampling | Laplace | chains' max R-hat | chains' min ESS | IS ESS of 20 000 | wall |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| multisensory_s1 | −502.1859 ± 0.0027 | −502.1861 ± 0.0023 | −502.815 | 1.0008 | 8160 | 18 100 | 42 min |
+| multisensory_s2 | −444.4889 ± 0.0023 | −444.4899 ± 0.0027 | −444.969 | 1.0002 | 23 826 | 17 400 | 33 min |
+| timing | −3861.3093 ± 0.0027 | −3861.3096 ± 0.0023 | −3861.437 | 1.0159 | 267 | 18 100 | 6 h 57 min |
+
+The two estimators agree within a fraction of a standard error on every
+target. The timing chains cost 0.78 s per stored draw and mixed poorly on
+`w_s`, `w_m` and `sigma_p` (the three parameters with correlations of
+0.9), which is why the stored population is the importance-weighted one.
+Benchflow's constant for subject 1 is confirmed 0.293 below the estimate,
+at more than a hundred standard errors.
+
+The stored populations (regenerated from the same chains and proposal
+draws on 2026-09-12 at 08:22 to 08:37, chains reused) agree with the
+chains' own moments: largest mean discrepancy 2.5, 3.0 and 0.65 chain
+standard errors for subject 1, subject 2 and timing, SD ratios within
+1.2 %, 0.9 % and 2.1 %. No proposal draw fell where the target density is
+zero. Both `--check` passes are green.
+
+Timing against the paper's stored uniform-prior truth: the marginal SDs
+of `w_s`, `mu_p` and `sigma_p` are reproduced within 1 %, 4 % and 3 %
+(ratios 0.99, 0.96, 0.97); `w_m` is 15 % narrower and `lambda` 37 % wider,
+the two parameters the spline prior's taper acts on, and the means move
+by 0.5 SD on `w_m` and 1.5 SD on `lambda` for the same reason. So the
+paper's truth was not inflated. The VBMC posteriors of the smoke runs,
+with SDs of 0.0051 to 0.0054 on `w_s` and 0.0091 to 0.0096 on `sigma_p`
+against 0.0075 and 0.0126 here, are about 30 % under-dispersed on those
+two parameters, which accounts for their steady gsKL of 0.23 and ELBO gap
+of 0.2. That is a finding about VBMC on this target, to be examined on
+the reference population, not a defect of either truth.
 
 ## Evidence: smoke runs of 2026-09-11
 

@@ -56,18 +56,32 @@ whose integral over R^D is the normalizing constant of ``p`` over the box.
    effective sample size in place of its length. The proposal draws are
    the only new target evaluations: the chain term reuses the log
    densities the sampler already returned.
-6. **Cross-checks**, recorded but never asserted: defensive importance
+6. **The population.** The samples a benchmark is scored against are
+   those same proposal draws, carrying their normalized importance
+   weights ``p~/q``, and the stored mean and covariance are their
+   weighted moments. A mixture fitted to the posterior is usually close
+   enough that its weighted draws are nearly independent, where the
+   chains of a correlated posterior are far from it, so the weighted
+   population is at once the cheaper sample and the more effective one.
+   ``is_ess`` records how close, and a run warns when it falls below a
+   quarter of the draws. That leaves the chains two jobs and only these
+   two: the mixture is fitted to them, and they are the target-side term
+   of Geyer's estimator.
+7. **Cross-checks**, recorded but never asserted: defensive importance
    sampling from the same proposal draws with its effective sample size,
-   the Laplace estimate, the value benchflow stores for a target that has one,
-   and, for a target whose truth ``benchmark_targets.py`` already carries,
-   the differences and z-scores against it.
+   the Laplace estimate, the chains' own moments, the value benchflow
+   stores for a target that has one, and, for a target whose truth
+   ``benchmark_targets.py`` already carries, the differences and z-scores
+   against it.
 
-A run prints a ``WARN`` line, and carries on, when the chains missed
-R-hat 1.01 or 400 effective draws in some dimension, or when Geyer's
-estimate and the importance-sampling estimate disagree by more than three
-of their combined standard errors. These are the plan's acceptance
-conditions, made visible in the log; the decision to keep a truth is the
-reader's.
+A run prints a ``WARN`` line, and carries on, when the weighted
+population's effective size falls below a quarter of the draws, when the
+chains missed R-hat 1.01 or 400 effective draws in some dimension, or
+when Geyer's estimate and the importance-sampling estimate disagree by
+more than three of their combined standard errors. The log records how
+the run went and ``--check`` decides afterwards which of these is fatal;
+the chain diagnostics never are, since the chains no longer carry the
+population.
 
 Outputs
 -------
@@ -75,12 +89,18 @@ Under ``--out`` (default ``dev/scripts/data/truths``), per target, written
 through a temporary name and renamed into place:
 
 ``{name}.npz``
-    ``samples`` ``(n, D)``, all stored draws in the *original* parameter
-    space; ``sample_logp`` ``(n,)``, the original-space log density at each
-    draw; ``mean`` ``(D,)`` and ``cov`` ``(D, D)`` of those draws;
-    ``ln_z`` and ``ln_z_se``.
+    ``samples`` ``(n, D)``, the proposal draws in the *original* parameter
+    space, ``n`` being ``--n-proposal`` less any draw at which the target
+    returned NaN; ``log_weights`` ``(n,)``, their normalized log
+    importance weights, which sum to one and are ``-inf`` at a draw where
+    the target is zero; ``sample_logp`` ``(n,)``, the original-space log
+    density at each draw, which may be ``-inf``; ``mean`` ``(D,)`` and
+    ``cov`` ``(D, D)``, the weighted moments; ``is_ess``, the effective
+    size of the weighted population; ``ln_z`` and ``ln_z_se``. The MCMC
+    draws are not here; they stay in ``chains/``.
 ``{name}.json``
     settings and seeds, per-dimension R-hat and effective sample sizes,
+    the chains' own moments and how the weighted ones compare with them,
     the importance-sampling and Laplace cross-checks, the MAP, the
     proposal summary, the comparisons, target evaluation counts, the
     generating commit, timestamps and the elapsed seconds per stage.
@@ -103,10 +123,19 @@ Usage
 
 Progress lines carry a timestamp and are flushed, so the log of an
 overnight run can be followed. ``--quick`` shortens every stage for a
-smoke test; ``--check`` reloads the stored files, verifies that the stored
-moments are the moments of the stored draws and that the stored log
-densities are reproduced by the target, prints the diagnostics, and exits
-nonzero if any of that fails (it needs no scikit-learn).
+smoke test.
+
+``--check`` reloads the stored files and prints their diagnostics without
+generating anything (it needs no scikit-learn). It fails when the stored
+moments and ``is_ess`` are not what ``samples`` and ``log_weights`` give,
+when those weights do not sum to one, when ``ln_z`` or ``ln_z_se`` differ
+between the archive and the sidecar, when the target does not reproduce
+``sample_logp`` at a hundred of the draws, when the weighted population
+has less than a quarter of its draws' worth of effective size, or when
+Geyer's estimate and the importance-sampling one disagree by more than
+three of their combined standard errors. The last two are waived for a
+run the sidecar marks ``quick``, whose samples are too few to mean much;
+chain diagnostics are reported and never fatal.
 """
 
 from __future__ import annotations
@@ -178,7 +207,10 @@ BRIDGE_TOL = 1e-10
 BRIDGE_MAX_ITER = 1000
 CHUNKS_PER_CHAIN = 10  # progress reports and partial saves per chain
 
-# Conditions the plan asks a truth to meet, reported as WARN lines.
+# Conditions a run reports as WARN lines. --check makes the first and the
+# last of them fatal: they bear on the stored population, while the chain
+# diagnostics bear only on how the proposal was fitted.
+IS_ESS_FRACTION = 0.25  # of the proposal draws
 RHAT_GATE = 1.01
 ESS_GATE = 400
 AGREEMENT_SIGMAS = 3.0
@@ -186,6 +218,7 @@ AGREEMENT_SIGMAS = 3.0
 CHECK_N_DRAWS = 100  # stored draws re-evaluated by --check
 CHECK_LOGP_TOL = 1e-8  # absolute, plus 1e-12 of the stored value
 CHECK_MOMENT_RTOL = 1e-10
+CHECK_WEIGHT_TOL = 1e-8  # of logsumexp(log_weights), which must be zero
 CHECK_SCALAR_RTOL = 1e-12  # npz against sidecar
 
 
@@ -832,18 +865,77 @@ def geyer_ln_z(l1, l2, n1_eff):
 
 
 def importance_sampling_ln_z(l2):
-    """Defensive importance sampling from the same proposal draws."""
+    """Defensive importance sampling from the same proposal draws.
+
+    Returns the estimate, its standard error, the effective size of the
+    weighted population and the normalized log weights, which are also the
+    weights the stored population carries.
+    """
     n2 = int(l2.size)
-    ln_z = float(logsumexp(l2) - np.log(n2))
-    weights = np.exp(l2 - l2.max())
-    ess = float(weights.sum() ** 2 / np.sum(weights**2))
+    total = logsumexp(l2)
+    ln_z = float(total - np.log(n2))
+    log_weights = l2 - total
+    ess = weighted_ess(log_weights)
     se = float(np.sqrt(max(n2 / ess - 1.0, 0.0) / n2))
-    return ln_z, se, ess
+    return ln_z, se, ess, log_weights
+
+
+# --------------------------------------------------------------------------
+# The weighted population
+# --------------------------------------------------------------------------
+
+
+def _weights(log_weights):
+    w = np.exp(np.asarray(log_weights, dtype=np.float64))
+    return w / w.sum()
+
+
+def weighted_ess(log_weights):
+    """Effective size of a population carrying these log weights."""
+    w = _weights(log_weights)
+    return float(1.0 / np.sum(w**2))
+
+
+def weighted_moments(X, log_weights):
+    """Importance-weighted mean and covariance of the rows of ``X``.
+
+    The weights are normalized to sum one and the covariance carries no
+    bias correction. ``--check`` recomputes both through this function, so
+    what it compares against is the same arithmetic in the same order.
+    """
+    X = np.asarray(X, dtype=np.float64)
+    w = _weights(log_weights)
+    mean = w @ X
+    centered = X - mean
+    cov = (centered * w[:, None]).T @ centered
+    return mean, 0.5 * (cov + cov.T)
 
 
 # --------------------------------------------------------------------------
 # Comparisons with what is already known
 # --------------------------------------------------------------------------
+
+
+def compare_with_mcmc(mean, cov, mcmc_mean, mcmc_cov, mcmc_ess):
+    """The weighted population's moments against the chains' own.
+
+    Two populations of the same posterior, drawn and weighted differently:
+    the z-scores use the chains' standard error, the noisier of the two,
+    so a large one means the two disagree beyond what the chains' own
+    length explains.
+    """
+    sd = np.sqrt(np.diag(cov))
+    mcmc_sd = np.sqrt(np.diag(mcmc_cov))
+    se = mcmc_sd / np.sqrt(np.maximum(np.asarray(mcmc_ess, float), 1.0))
+    z = (mean - mcmc_mean) / se
+    ratio = sd / mcmc_sd
+    return {
+        "difference": (mean - mcmc_mean).tolist(),
+        "z_score": z.tolist(),
+        "max_abs_z": float(np.max(np.abs(z))),
+        "sd_ratio": ratio.tolist(),
+        "max_sd_ratio": float(np.max(ratio)),
+    }
 
 
 def compare_with_known(name, problem, ln_z, ln_z_se, mean, cov, ess):
@@ -915,7 +1007,9 @@ def generate(name, D, out_dir, settings):
     seeds = _target_seed_sequence(settings["seed"], name)
     map_seq, chain_seq, fit_seq, proposal_seq = seeds.spawn(4)
 
-    problem = make_problem(name, int(D))
+    # the truth file this run writes must not be read while building the
+    # target (it may not exist, or hold an older layout)
+    problem = make_problem(name, int(D), attach_truth=False)
     if int(problem.D) != int(D):
         raise ValueError(f"{name} was built at D = {problem.D}, not {D}")
     transformer = make_transformer(problem)
@@ -1034,20 +1128,22 @@ def generate(name, D, out_dir, settings):
     log_q_second = mixture.logpdf(Z_second) - log_det_L
     log_q_proposal = mixture.logpdf(Z_proposal) - log_det_L
     l1 = F_second - log_q_second
-    l2 = g_proposal - log_q_proposal
+    l2_all = g_proposal - log_q_proposal
 
     # A proposal draw where the target is zero contributes zero to every
     # sum below and still belongs in n2: dropping it would raise both
     # estimates by log(n2 / n2_kept). Only a NaN has to go.
-    n_zero = int(np.sum(np.isneginf(l2)))
-    n_nan = int(np.sum(np.isnan(l2)))
+    n_zero = int(np.sum(np.isneginf(l2_all)))
+    n_nan = int(np.sum(np.isnan(l2_all)))
     if n_zero or n_nan:
         _log(
             f"  proposal draws off the target: {n_zero} with zero density "
             f"(kept, they weigh nothing), {n_nan} returning NaN (dropped)"
         )
-    if n_nan:
-        l2 = l2[~np.isnan(l2)]
+    kept = ~np.isnan(l2_all)
+    l2 = l2_all[kept]
+    U_kept = U_proposal[kept]
+    g_kept = g_proposal[kept]
     proposal_draws = {
         "n": int(n_proposal),
         "zero_density": n_zero,
@@ -1058,7 +1154,7 @@ def generate(name, D, out_dir, settings):
     rhat_second, ess_second = split_rhat_ess(Z_chains[:, half:, :])
     n1_eff = float(min(np.min(ess_second), l1.size))
     ln_z, ln_z_se, iterations, final_delta = geyer_ln_z(l1, l2, n1_eff)
-    ln_z_is, ln_z_is_se, is_ess = importance_sampling_ln_z(l2)
+    ln_z_is, ln_z_is_se, is_ess, log_weights = importance_sampling_ln_z(l2)
     elapsed["geyer"] = time.perf_counter() - stage
     evals_proposal = target.n_rows - evals_before
 
@@ -1090,34 +1186,57 @@ def generate(name, D, out_dir, settings):
             f"their combined standard error {combined_se:.6f}"
         )
 
-    # --- Samples and moments in the original space ---------------------
+    # --- The weighted population in the original space -----------------
     stage = time.perf_counter()
-    Z_all = Z_chains.reshape(-1, D)
-    U_all = u_star + Z_all @ L.T
-    X_all = np.asarray(transformer.inverse(U_all), dtype=np.float64)
-    log_jacobian = np.asarray(
-        transformer.log_abs_det_jacobian(U_all), dtype=np.float64
+    X_proposal = np.asarray(transformer.inverse(U_kept), dtype=np.float64)
+    sample_logp = g_kept - np.asarray(
+        transformer.log_abs_det_jacobian(U_kept), dtype=np.float64
     )
-    sample_logp = F_chains.reshape(-1) - log_jacobian
-    mean = X_all.mean(axis=0)
-    cov = np.cov(X_all, rowvar=False)
+    mean, cov = weighted_moments(X_proposal, log_weights)
+    if is_ess < IS_ESS_FRACTION * l2.size:
+        _log(
+            f"  WARN: the weighted population's effective size "
+            f"{is_ess:.0f} is below {IS_ESS_FRACTION:g} of its "
+            f"{l2.size} draws; the proposal fits the posterior poorly"
+        )
+    _log(
+        f"  population: {l2.size} weighted draws, effective size "
+        f"{is_ess:.0f} ({is_ess / l2.size:.1%})"
+    )
     _log("  posterior mean " + np.array2string(mean, precision=6))
     _log(
         "  posterior sd   "
         + np.array2string(np.sqrt(np.diag(cov)), precision=6)
     )
 
+    # The chains' own moments, for the record and for the comparison: they
+    # are a second, independent sample of the same posterior.
+    X_chains = np.asarray(
+        transformer.inverse(u_star + Z_chains.reshape(-1, D) @ L.T),
+        dtype=np.float64,
+    )
+    mcmc_mean = X_chains.mean(axis=0)
+    mcmc_cov = np.cov(X_chains, rowvar=False)
+    mcmc_comparison = compare_with_mcmc(mean, cov, mcmc_mean, mcmc_cov, ess)
+    _log(
+        "  against the chains' own moments: max |z| "
+        f"{mcmc_comparison['max_abs_z']:.2f}, sd ratios "
+        + " ".join(f"{v:.3f}" for v in mcmc_comparison["sd_ratio"])
+    )
+
     comparisons = compare_with_known(
-        name, problem, ln_z, ln_z_se, mean, cov, ess
+        name, problem, ln_z, ln_z_se, mean, cov, np.full(D, is_ess)
     )
 
     _atomic_npz(
         out_dir / f"{name}.npz",
         {
-            "samples": X_all,
-            "sample_logp": sample_logp,
+            "samples": X_proposal,
+            "log_weights": np.asarray(log_weights, dtype=np.float64),
+            "sample_logp": np.asarray(sample_logp, dtype=np.float64),
             "mean": np.asarray(mean, dtype=np.float64),
             "cov": np.asarray(cov, dtype=np.float64),
+            "is_ess": np.float64(is_ess),
             "ln_z": np.float64(ln_z),
             "ln_z_se": np.float64(ln_z_se),
         },
@@ -1180,6 +1299,17 @@ def generate(name, D, out_dir, settings):
         },
         "proposal": proposal_summary,
         "proposal_draws": proposal_draws,
+        # The chains, which the stored population no longer comes from:
+        # what they say about the same posterior, and how far the weighted
+        # population is from them.
+        "mcmc": {
+            "n": int(X_chains.shape[0]),
+            "mean": mcmc_mean.tolist(),
+            "sd": np.sqrt(np.diag(mcmc_cov)).tolist(),
+            "ess": ess.tolist(),
+            "rhat": rhat.tolist(),
+            "comparison": mcmc_comparison,
+        },
         "comparisons": comparisons,
         "target_evaluations": {
             "map_and_hessian": int(evals_map),
@@ -1213,9 +1343,11 @@ def check_target(name, D, out_dir):
     try:
         with np.load(npz_path, allow_pickle=False) as f:
             samples = np.asarray(f["samples"])
+            log_weights = np.asarray(f["log_weights"])
             sample_logp = np.asarray(f["sample_logp"])
             mean = np.asarray(f["mean"])
             cov = np.asarray(f["cov"])
+            is_ess = float(f["is_ess"])
             ln_z = float(f["ln_z"])
             ln_z_se = float(f["ln_z_se"])
         with open(json_path, encoding="utf-8") as f:
@@ -1227,6 +1359,7 @@ def check_target(name, D, out_dir):
     ok = True
     for label, array in (
         ("samples", samples),
+        ("log_weights", log_weights),
         ("sample_logp", sample_logp),
         ("mean", mean),
         ("cov", cov),
@@ -1236,15 +1369,24 @@ def check_target(name, D, out_dir):
             ok = False
 
     n, stored_D = samples.shape
+    settings = sidecar.get("settings", {})
+    quick = bool(settings.get("quick", False))
     _log(
-        f"{name}: {n} draws in D = {stored_D}, ln_z = {_fmt(ln_z)} "
+        f"{name}: {n} weighted draws in D = {stored_D}, effective size "
+        f"{_fmt(is_ess, '.0f')} ({is_ess / n:.1%}), ln_z = {_fmt(ln_z)} "
         f"+- {_fmt(ln_z_se)}"
     )
 
-    mean_again = samples.mean(axis=0)
-    cov_again = np.cov(samples, rowvar=False)
+    total = float(logsumexp(log_weights))
+    if not abs(total) <= CHECK_WEIGHT_TOL:
+        _log(f"{name}: FAIL, the weights sum to exp({total:.3g}), not one")
+        ok = False
+
+    mean_again, cov_again = weighted_moments(samples, log_weights)
+    ess_again = weighted_ess(log_weights)
     mean_diff = float(np.max(np.abs(mean_again - mean)))
     cov_diff = float(np.max(np.abs(cov_again - cov)))
+    ess_diff = abs(ess_again - is_ess)
     scale = max(float(np.max(np.abs(mean))), 1.0)
     if mean_diff > CHECK_MOMENT_RTOL * scale:
         _log(f"{name}: FAIL, stored mean differs by {mean_diff:.3g}")
@@ -1253,35 +1395,65 @@ def check_target(name, D, out_dir):
     if cov_diff > CHECK_MOMENT_RTOL * scale:
         _log(f"{name}: FAIL, stored cov differs by {cov_diff:.3g}")
         ok = False
+    if ess_diff > CHECK_MOMENT_RTOL * max(is_ess, 1.0):
+        _log(
+            f"{name}: FAIL, stored is_ess {_fmt(is_ess, '.6f')} against "
+            f"{_fmt(ess_again, '.6f')} from the weights"
+        )
+        ok = False
     _log(
-        f"  moments reproduce the draws: max |mean diff| {mean_diff:.3g}, "
-        f"max |cov diff| {cov_diff:.3g}"
+        f"  weighted moments reproduce the draws: max |mean diff| "
+        f"{mean_diff:.3g}, max |cov diff| {cov_diff:.3g}, |is_ess diff| "
+        f"{ess_diff:.3g}, log weights sum to {total:+.3g}"
     )
 
-    index = np.unique(
-        np.linspace(0, n - 1, min(CHECK_N_DRAWS, n)).astype(np.int64)
-    )
+    if is_ess < IS_ESS_FRACTION * n and not quick:
+        _log(
+            f"{name}: FAIL, the effective size {_fmt(is_ess, '.0f')} is "
+            f"below {IS_ESS_FRACTION:g} of the {n} draws"
+        )
+        ok = False
+    elif is_ess < IS_ESS_FRACTION * n:
+        _log(
+            f"  effective size {_fmt(is_ess, '.0f')} is below "
+            f"{IS_ESS_FRACTION:g} of the {n} draws, tolerated because the "
+            "run was quick"
+        )
+
     problem = make_problem(name, int(stored_D))
     if int(problem.D) != int(D):
         _log(f"{name}: FAIL, stored D = {stored_D} but --D says {D}")
         ok = False
-    recomputed = np.asarray(
-        problem.log_density_vec(samples[index]), dtype=np.float64
-    ).ravel()
-    difference = np.abs(recomputed - sample_logp[index])
-    tolerance = CHECK_LOGP_TOL + 1e-12 * np.abs(sample_logp[index])
-    if np.any(difference > tolerance):
-        worst = int(np.argmax(difference - tolerance))
-        _log(
-            f"{name}: FAIL, the target does not reproduce sample_logp at "
-            f"draw {index[worst]}: {difference[worst]:.3g} > "
-            f"{tolerance[worst]:.3g}"
-        )
+    # A draw where the target is zero has nothing to compare.
+    finite = np.nonzero(np.isfinite(sample_logp))[0]
+    if finite.size == 0:
+        _log(f"{name}: FAIL, no stored draw has a finite log density")
         ok = False
-    _log(
-        f"  target reproduces sample_logp at {index.size} draws: "
-        f"max |difference| {np.max(difference):.3g}"
-    )
+    else:
+        index = finite[
+            np.unique(
+                np.linspace(
+                    0, finite.size - 1, min(CHECK_N_DRAWS, finite.size)
+                ).astype(np.int64)
+            )
+        ]
+        recomputed = np.asarray(
+            problem.log_density_vec(samples[index]), dtype=np.float64
+        ).ravel()
+        difference = np.abs(recomputed - sample_logp[index])
+        tolerance = CHECK_LOGP_TOL + 1e-12 * np.abs(sample_logp[index])
+        if np.any(difference > tolerance):
+            worst = int(np.argmax(difference - tolerance))
+            _log(
+                f"{name}: FAIL, the target does not reproduce sample_logp "
+                f"at draw {index[worst]}: {difference[worst]:.3g} > "
+                f"{tolerance[worst]:.3g}"
+            )
+            ok = False
+        _log(
+            f"  target reproduces sample_logp at {index.size} draws: "
+            f"max |difference| {np.max(difference):.3g}"
+        )
 
     # The npz carries the numbers a consumer reads; the sidecar carries the
     # same two for the record. A disagreement means one of the pair was
@@ -1300,9 +1472,7 @@ def check_target(name, D, out_dir):
             )
             ok = False
 
-    settings = sidecar.get("settings", {})
     diagnostics = sidecar.get("diagnostics", {})
-    quick = bool(settings.get("quick", False))
     _log(
         "  settings: {} chains x {}, thin {}, burn-in {} sweeps, {} "
         "proposal draws, seed {}{}".format(
@@ -1328,28 +1498,57 @@ def check_target(name, D, out_dir):
     ):
         if values:
             _log(f"    {label} " + " ".join(_fmt(v, spec) for v in values))
+    # The chains are how the proposal was fitted, not where the stored
+    # population comes from, so their mixing is reported and not fatal.
     if rhat_max is None:
-        _log(f"{name}: FAIL, the sidecar records no R-hat")
-        ok = False
-    elif float(rhat_max) > RHAT_GATE and not quick:
-        _log(
-            f"{name}: FAIL, max R-hat {_fmt(rhat_max, '.4f')} is above "
-            f"{RHAT_GATE}; the chains have not mixed"
-        )
-        ok = False
+        _log("  WARN: the sidecar records no R-hat")
     elif float(rhat_max) > RHAT_GATE:
         _log(
-            f"  max R-hat {_fmt(rhat_max, '.4f')} is above {RHAT_GATE}, "
-            "tolerated because the run was quick"
+            f"  WARN: max R-hat {_fmt(rhat_max, '.4f')} is above "
+            f"{RHAT_GATE}; the chains the proposal was fitted to had not "
+            "mixed"
         )
 
+    ln_z_is = sidecar.get("ln_z_is")
+    ln_z_is_se = sidecar.get("ln_z_is_se")
     _log(
         "  cross-checks: importance sampling "
-        f"{_fmt(sidecar.get('ln_z_is'))} +- "
-        f"{_fmt(sidecar.get('ln_z_is_se'))} "
+        f"{_fmt(ln_z_is)} +- {_fmt(ln_z_is_se)} "
         f"(ESS {_fmt(sidecar.get('is_ess'), '.0f')}), Laplace "
         f"{_fmt(sidecar.get('ln_z_laplace'))}"
     )
+    if ln_z_is is None or ln_z_is_se is None:
+        _log(
+            f"{name}: FAIL, the sidecar records no importance-sampling "
+            "estimate to compare with"
+        )
+        ok = False
+    else:
+        combined = float(np.hypot(ln_z_se, float(ln_z_is_se)))
+        gap = abs(ln_z - float(ln_z_is))
+        if gap > AGREEMENT_SIGMAS * combined and not quick:
+            _log(
+                f"{name}: FAIL, Geyer and importance sampling differ by "
+                f"{gap:.6f}, more than {AGREEMENT_SIGMAS:g} of their "
+                f"combined standard error {combined:.6f}"
+            )
+            ok = False
+        elif gap > AGREEMENT_SIGMAS * combined:
+            _log(
+                f"  the two estimates differ by {gap:.6f}, more than "
+                f"{AGREEMENT_SIGMAS:g} combined standard errors, tolerated "
+                "because the run was quick"
+            )
+
+    mcmc = sidecar.get("mcmc")
+    if mcmc:
+        _log(
+            f"  chains: {mcmc.get('n', '?')} draws, weighted moments "
+            f"against theirs: max |z| "
+            f"{_fmt(mcmc.get('comparison', {}).get('max_abs_z'), '.2f')}, "
+            f"max sd ratio "
+            f"{_fmt(mcmc.get('comparison', {}).get('max_sd_ratio'), '.3f')}"
+        )
     for key, value in sidecar.get("comparisons", {}).items():
         _log(f"  comparison {key}: {json.dumps(value)}")
     _log(f"{name}: {'OK' if ok else 'FAIL'}")
@@ -1364,8 +1563,9 @@ def check_target(name, D, out_dir):
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(
         description=(
-            "Generate the ground truth (MCMC samples, moments, ln Z) of a "
-            "benchmark target of dev/scripts/benchmark_targets.py."
+            "Generate the ground truth (a weighted sample population, its "
+            "moments and ln Z) of a benchmark target of "
+            "dev/scripts/benchmark_targets.py."
         )
     )
     parser.add_argument(
@@ -1431,8 +1631,9 @@ def parse_args(argv=None):
     parser.add_argument(
         "--check",
         action="store_true",
-        help="reload the stored files, verify their internal consistency "
-        "and print the diagnostics instead of generating",
+        help="instead of generating, reload the stored files, verify the "
+        "weighted population against its moments and against the target, "
+        "and print the diagnostics",
     )
     return parser.parse_args(argv)
 

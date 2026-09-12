@@ -75,8 +75,9 @@ Command line::
 density, against the moments of exact samples and against the pinned values,
 and integrates numerically only where ln Z is not analytic by construction.
 For the real-data targets the moments and the sampler both come from the
-stored MCMC draws, so that comparison only checks the truth file against
-itself; the pins and the generator's own ``--check`` are the real gates.
+stored importance-weighted population, so that comparison only checks the
+truth file against itself; the pins and the generator's own ``--check``
+are the real gates.
 ``--smoke`` runs every config of a suite through two VBMC iterations. Both
 take ``--only``, a comma-separated list of target names or config labels.
 """
@@ -86,7 +87,6 @@ from __future__ import annotations
 import argparse
 import copy
 import dataclasses
-import json
 import sys
 import time
 from pathlib import Path
@@ -932,6 +932,17 @@ def logreg_reference(
 DATA_DIR = Path(__file__).resolve().parent / "data"
 TRUTH_DIR = DATA_DIR / "truths"
 PIN_TOL = 1e-6  # tolerance of the pinned reference values in --check
+REAL_DATA_TARGETS = ("timing", "multisensory_s1", "multisensory_s2")
+TRUTH_KEYS = (
+    "samples",
+    "log_weights",
+    "sample_logp",
+    "mean",
+    "cov",
+    "is_ess",
+    "ln_z",
+    "ln_z_se",
+)
 
 _DATA_CACHE = {}
 
@@ -1008,10 +1019,11 @@ _TRUTH_CACHE = {}
 
 
 def _load_truth(name, D, lb, ub):
-    """The arrays of ``data/truths/{name}.npz`` plus the effective sample
-    size of its draws from the JSON sidecar, read once per process and
-    checked against the target: draws ``(n, D)`` inside the hard bounds
-    (so in the original space), moments of matching shape."""
+    """The arrays of ``data/truths/{name}.npz``, read once per process and
+    checked against the target: an importance-weighted population of draws
+    ``(n, D)`` inside the hard bounds (so in the original space) with
+    normalized log weights, moments of matching shape, a scalar ``ln_z``
+    and the weights' effective sample size ``is_ess``."""
     if name in _TRUTH_CACHE:
         return _TRUTH_CACHE[name]
     path = TRUTH_DIR / f"{name}.npz"
@@ -1020,23 +1032,27 @@ def _load_truth(name, D, lb, ub):
         return None
     with np.load(path, allow_pickle=False) as z:
         truth = {k: np.asarray(z[k], dtype=float) for k in z.files}
+    missing = [k for k in TRUTH_KEYS if k not in truth]
+    if missing:
+        raise ValueError(
+            f"{path} lacks {', '.join(missing)}: an older layout; regenerate"
+            " it with dev/scripts/make_benchmark_truths.py"
+        )
     samples = truth["samples"]
     if samples.ndim != 2 or samples.shape[1] != D:
         raise ValueError(f"{path}: samples must be (n, {D})")
     if not np.all((samples >= lb) & (samples <= ub)):
         raise ValueError(f"{path}: draws outside the hard bounds")
+    log_w = truth["log_weights"]
+    if log_w.shape != (len(samples),):
+        raise ValueError(f"{path}: log_weights must be (n,)")
+    if abs(logsumexp(log_w)) > 1e-8:
+        raise ValueError(f"{path}: log_weights are not normalized")
     if truth["mean"].shape != (D,) or truth["cov"].shape != (D, D):
         raise ValueError(f"{path}: mean must be ({D},) and cov ({D}, {D})")
-    if truth["ln_z"].shape != ():
-        raise ValueError(f"{path}: ln_z must be a scalar")
-    n_eff = len(samples)
-    sidecar = path.with_suffix(".json")
-    if sidecar.is_file():
-        with open(sidecar, encoding="utf-8") as f:
-            ess = json.load(f).get("diagnostics", {}).get("ess")
-        if ess:
-            n_eff = int(min(min(ess), len(samples)))
-    truth["n_eff"] = n_eff
+    if truth["ln_z"].shape != () or truth["is_ess"].shape != ():
+        raise ValueError(f"{path}: ln_z and is_ess must be scalars")
+    truth["weights"] = np.exp(log_w)
     _TRUTH_CACHE[name] = truth
     return truth
 
@@ -1045,9 +1061,10 @@ def _attach_truth(prob):
     """Fill a real-data target's truth from ``data/truths/{name}.npz``, or
     record in its notes that the file is not there yet.
 
-    The stored draws are an MCMC sample, so the sampler resamples them with
-    replacement and ``sampler_n_eff`` is their effective sample size (the
-    smallest over dimensions, from the sidecar), not their count."""
+    The stored population is importance-weighted (draws from the
+    generator's mixture proposal), so the sampler resamples it with its
+    weights and ``sampler_n_eff`` is the weights' effective sample size,
+    not the draw count."""
     truth = _load_truth(prob.name, prob.D, prob.lb, prob.ub)
     if truth is None:
         prob.notes += (
@@ -1056,12 +1073,14 @@ def _attach_truth(prob):
             " are unknown and the metrics that need them are NaN"
         )
         return prob
-    samples = truth["samples"]
+    samples, weights = truth["samples"], truth["weights"]
     prob.ln_Z = float(truth["ln_z"])
     prob.true_mean = np.reshape(truth["mean"], (1, prob.D))
     prob.true_cov = truth["cov"]
-    prob.sampler = lambda n, rng: samples[rng.integers(len(samples), size=n)]
-    prob.sampler_n_eff = truth["n_eff"]
+    prob.sampler = lambda n, rng: samples[
+        rng.choice(len(samples), size=n, p=weights)
+    ]
+    prob.sampler_n_eff = int(truth["is_ess"])
     return prob
 
 
@@ -1156,27 +1175,25 @@ def _timing(D):
         # what VBMC asks for anyway (one point per call)
         return np.array([loglik_one(row) for row in np.atleast_2d(X)])
 
-    return _attach_truth(
-        Problem(
-            name="timing",
-            D=D,
-            log_density_vec=_bounded_log_joint(loglik_vec, lb, plb, pub, ub),
-            log_likelihood_vec=loglik_vec,
-            pins=((TIMING_PIN_X, TIMING_PIN_LOGLIK, "loglik", PIN_TOL),),
-            x0=None,
-            lb=_row(lb, D),
-            ub=_row(ub, D),
-            plb=_row(plb, D),
-            pub=_row(pub, D),
-            notes=(
-                "Bayesian time-interval reproduction (Acerbi, Wolpert &"
-                f" Vijayakumar 2012), {n_trials} trials of one subject over"
-                f" {stimuli.size} intervals, responses binned at {dr:g} s;"
-                " the 2020 paper's problem and box, times a"
-                " spline-trapezoidal prior with the pivots at the plausible"
-                " bounds; likelihood ported from benchflow"
-            ),
-        )
+    return Problem(
+        name="timing",
+        D=D,
+        log_density_vec=_bounded_log_joint(loglik_vec, lb, plb, pub, ub),
+        log_likelihood_vec=loglik_vec,
+        pins=((TIMING_PIN_X, TIMING_PIN_LOGLIK, "loglik", PIN_TOL),),
+        x0=None,
+        lb=_row(lb, D),
+        ub=_row(ub, D),
+        plb=_row(plb, D),
+        pub=_row(pub, D),
+        notes=(
+            "Bayesian time-interval reproduction (Acerbi, Wolpert &"
+            f" Vijayakumar 2012), {n_trials} trials of one subject over"
+            f" {stimuli.size} intervals, responses binned at {dr:g} s;"
+            " the 2020 paper's problem and box, times a"
+            " spline-trapezoidal prior with the pivots at the plausible"
+            " bounds; likelihood ported from benchflow"
+        ),
     )
 
 
@@ -1278,34 +1295,32 @@ def _multisensory(D, subject):
                 PIN_TOL,
             ),
         )
-    return _attach_truth(
-        Problem(
-            name=name,
-            D=D,
-            log_density_vec=_bounded_log_joint(
-                loglik_vec,
-                MULTISENSORY_LB,
-                MULTISENSORY_PLB,
-                MULTISENSORY_PUB,
-                MULTISENSORY_UB,
-            ),
-            log_likelihood_vec=loglik_vec,
-            pins=pins,
-            x0=None,
-            lb=_row(MULTISENSORY_LB, D),
-            ub=_row(MULTISENSORY_UB, D),
-            plb=_row(MULTISENSORY_PLB, D),
-            pub=_row(MULTISENSORY_PUB, D),
-            notes=(
-                "visuo-vestibular causal inference (Acerbi, Dokka, Angelaki &"
-                f" Ma 2018), subject {subject} of the 2020 paper,"
-                f" {n_trials} unity judgments over three visual coherence"
-                " levels; the 'Fixed' rule with a lapse, parameters"
-                f" {', '.join(MULTISENSORY_PARAMS)}, times a"
-                " spline-trapezoidal prior with the pivots at the plausible"
-                " bounds; likelihood ported from benchflow"
-            ),
-        )
+    return Problem(
+        name=name,
+        D=D,
+        log_density_vec=_bounded_log_joint(
+            loglik_vec,
+            MULTISENSORY_LB,
+            MULTISENSORY_PLB,
+            MULTISENSORY_PUB,
+            MULTISENSORY_UB,
+        ),
+        log_likelihood_vec=loglik_vec,
+        pins=pins,
+        x0=None,
+        lb=_row(MULTISENSORY_LB, D),
+        ub=_row(MULTISENSORY_UB, D),
+        plb=_row(MULTISENSORY_PLB, D),
+        pub=_row(MULTISENSORY_PUB, D),
+        notes=(
+            "visuo-vestibular causal inference (Acerbi, Dokka, Angelaki &"
+            f" Ma 2018), subject {subject} of the 2020 paper,"
+            f" {n_trials} unity judgments over three visual coherence"
+            " levels; the 'Fixed' rule with a lapse, parameters"
+            f" {', '.join(MULTISENSORY_PARAMS)}, times a"
+            " spline-trapezoidal prior with the pivots at the plausible"
+            " bounds; likelihood ported from benchflow"
+        ),
     )
 
 
@@ -1335,7 +1350,9 @@ _REGISTRY = {
 TARGET_NAMES = tuple(_REGISTRY)
 
 
-def make_problem(name, D, noise_sd=None, seed=None, options=None):
+def make_problem(
+    name, D, noise_sd=None, seed=None, options=None, attach_truth=True
+):
     """Build a benchmark ``Problem``.
 
     ``noise_sd`` makes the target noisy (homoskedastic Gaussian noise on the
@@ -1343,11 +1360,15 @@ def make_problem(name, D, noise_sd=None, seed=None, options=None):
     set). ``seed`` seeds only that noise stream, through a spawned
     ``SeedSequence`` so it is not the same stream as ``VBMC(seed=seed)``;
     ``None`` means fresh entropy. ``options`` are merged into the problem's
-    VBMC options (caller wins).
+    VBMC options (caller wins). ``attach_truth=False`` leaves a real-data
+    target's stored truth file unread (the truth generator builds the
+    target it is about to write the truth for).
     """
     if name not in _REGISTRY:
         raise ValueError(f"unknown target {name!r}; known: {TARGET_NAMES}")
     prob = _REGISTRY[name](int(D))
+    if attach_truth and name in REAL_DATA_TARGETS:
+        prob = _attach_truth(prob)
     # Two streams spawned from the run seed: one for the noise, one for the
     # start point; neither is the stream VBMC(seed=seed) uses.
     ss = np.random.SeedSequence(seed) if seed is not None else None
@@ -1577,12 +1598,11 @@ def check_problem(prob, n_ref=200, n_draws=2_000_000, seed=7):
         if d > 1e-6:
             res["ok"] = False
             res["msgs"].append(f"density differs from reference by {d:.2e}")
-    # (b) moments vs exact samples (for a stored MCMC population, whose
-    # moments were computed from the same draws, a consistency check of the
-    # truth file: it cannot fail unless the file is inconsistent)
+    # (b) moments vs exact samples (for a stored importance-weighted
+    # population, whose moments were computed from the same draws, a
+    # consistency check of the truth file: it cannot fail unless the file
+    # is inconsistent)
     if prob.sampler is not None and prob.true_mean is not None:
-        if prob.sampler_n_eff is not None:
-            n_draws = min(n_draws, 10 * prob.sampler_n_eff)
         S = prob.sampler(n_draws, rng)
         m = S.mean(0)
         c = np.cov(S.T)

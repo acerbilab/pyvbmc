@@ -54,14 +54,14 @@ checkout `../benchflow` at `5920788`), on plain `.npz` data, with
 spline-trapezoidal priors and the paper's plausible boxes; subject 1 runs
 noiseless and all three at the 2020 paper's noise levels. Done: data
 export, targets, truth generator (slice sampling and Geyer's estimator
-with a scikit-learn mixture proposal; scikit-learn is in the `dev` extra).
-The overnight truth generation started 2026-09-11 at 23:56 on the
-development machine as a detached process (about 7 hours; launcher and
-log in the ignored `dev/scripts/runs/truths_20260911/`, resumable by
-rerunning the launcher). Next: check its gates and commit the truths (the
-plan's morning pickup), then the reference campaigns from a certified
-frozen checkout. Goris stays deferred; which targets move into the public
-tests is decided at the documentation review.
+with a scikit-learn mixture proposal; scikit-learn is in the `dev` extra),
+and the ground truths themselves, generated overnight on 2026-09-11/12
+and committed under `dev/scripts/data/truths/` (both check passes green;
+the population is the importance-weighted proposal draws, PI decision of
+2026-09-12). Next: the reference campaigns for the four configurations,
+from a certified frozen checkout on the benchmark machine, which need a
+go-ahead. Goris stays deferred; which targets move into the public tests
+is decided at the documentation review.
 
 ## Work awaiting a separate decision
 

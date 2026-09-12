@@ -261,11 +261,13 @@ reason.
 - `scripts/make_benchmark_truths.py` — regenerates the real-data targets'
   ground truths under `scripts/data/truths/`: slice sampling in the
   transformed space (four chains, whitened by the Laplace covariance at the
-  MAP), Geyer's estimator of the log normalizing constant against a
-  variational Gaussian mixture proposal with a broad defensive component,
-  importance-sampling and Laplace cross-checks, ESS and R-hat; `--check`
-  verifies stored files. Resumable per chain; run overnight (timing costs
-  about 40 to 50 ms per evaluation).
+  MAP), a variational Gaussian mixture proposal with a broad defensive
+  component fitted to the chains, Geyer's estimator of the log normalizing
+  constant against it, and the importance-weighted proposal draws as the
+  stored population (their effective sample size is far above the
+  chains'); importance-sampling and Laplace cross-checks, ESS and R-hat;
+  `--check` verifies stored files. Resumable per chain; run overnight
+  (timing costs about 40 to 50 ms per evaluation).
 - `scripts/profile_run.py` — run VBMC on one target or suite config under a
   fixed seed and report per-stage timers, truth-based metrics and, with
   `--cprofile`, a cProfile attribution of the hot paths.

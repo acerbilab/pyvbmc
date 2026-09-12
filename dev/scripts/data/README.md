@@ -56,14 +56,21 @@ the generator's per-chain resume files in its `chains/` subdirectory are
 gitignored. Until a target's files exist, `benchmark_targets.py` leaves
 its truth unset and the metrics that need it are NaN.
 
+The population is the generator's importance-weighted proposal draws
+(from a mixture fitted to the MCMC chains), whose effective sample size is
+far above the chains' own; the chains fit the proposal and feed the
+estimate of the normalizing constant.
+
 | key | dtype, shape | content |
 | --- | --- | --- |
-| `samples` | float64 (n, D) | MCMC draws in the original parameter space |
+| `samples` | float64 (n, D) | proposal draws in the original parameter space |
+| `log_weights` | float64 (n,) | normalized log importance weights of the draws (`logsumexp` is 0; `-inf` where the target density is zero) |
 | `sample_logp` | float64 (n,) | the target log density at each draw, for the generator's `--check` |
-| `mean`, `cov` | float64 (D,), (D, D) | posterior moments of the draws |
+| `mean`, `cov` | float64 (D,), (D, D) | importance-weighted posterior moments |
+| `is_ess` | float64 () | effective sample size of the weights |
 | `ln_z`, `ln_z_se` | float64 () | log normalizing constant by Geyer's estimator and its standard error |
 
 The JSON sidecar holds the diagnostics and settings: chains, burn-in,
-thinning, effective sample sizes, split R-hat, the importance-sampling and
-Laplace cross-checks, the MAP, the proposal mixture summary, seeds, the
-generating commit and the elapsed time.
+thinning, the chains' effective sample sizes, split R-hat and moments, the
+importance-sampling and Laplace cross-checks, the MAP, the proposal
+mixture summary, seeds, the generating commit and the elapsed time.
