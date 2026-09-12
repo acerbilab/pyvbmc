@@ -245,12 +245,29 @@ box is the papers' prior box (family mean ± 3 marginal SD); see the audit
 in `plans/benchmark-suite-and-golden-traces.md` for every deviation and its
 reason.
 
-- `scripts/benchmark_targets.py` — the benchmark target suite: nine targets
-  with ground truth (normal, corr, halfnormal, rosenbrock, banana, cigar,
-  lumpy, student, logreg), a generic noise wrapper, the `smoke` / `profile`
-  / `golden` suites, shared posterior-moment and metric helpers, and
-  `--list` / `--check` / `--smoke` self-tests. Every other script takes its
-  targets from here.
+- `scripts/benchmark_targets.py` — the benchmark target suite: nine
+  synthetic targets with ground truth (normal, corr, halfnormal,
+  rosenbrock, banana, cigar, lumpy, student, logreg), three real-data
+  targets (the Bayesian timing model and the multisensory causal-inference
+  model on two subjects, from the 2020 noisy-VBMC paper, with
+  spline-trapezoidal priors; see
+  [plans/benchmark-realistic-targets.md](plans/benchmark-realistic-targets.md)),
+  a generic noise wrapper, the `smoke` / `profile` / `golden` suites,
+  shared posterior-moment and metric helpers, and `--list` / `--check` /
+  `--smoke` self-tests. Every other script takes its targets from here.
+- `scripts/export_benchflow_data.py` — exports the real-data targets' data
+  from a benchflow checkout into the plain `.npz` archives under
+  `scripts/data/` (layout and provenance in `scripts/data/README.md`).
+- `scripts/make_benchmark_truths.py` — regenerates the real-data targets'
+  ground truths under `scripts/data/truths/`: slice sampling in the
+  transformed space (four chains, whitened by the Laplace covariance at the
+  MAP), a variational Gaussian mixture proposal with a broad defensive
+  component fitted to the chains, Geyer's estimator of the log normalizing
+  constant against it, and the importance-weighted proposal draws as the
+  stored population (their effective sample size is far above the
+  chains'); importance-sampling and Laplace cross-checks, ESS and R-hat;
+  `--check` verifies stored files. Resumable per chain; run overnight
+  (timing costs about 40 to 50 ms per evaluation).
 - `scripts/profile_run.py` — run VBMC on one target or suite config under a
   fixed seed and report per-stage timers, truth-based metrics and, with
   `--cprofile`, a cProfile attribution of the hot paths.

@@ -161,6 +161,7 @@ def identity(manifest):
         "--",
         "pyvbmc",
         "dev/scripts/benchmark_targets.py",
+        "dev/scripts/data",  # the real-data targets' data and truths
     ):
         raise RuntimeError(
             "Numerical source differs from the prepared candidate"

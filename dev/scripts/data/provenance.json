@@ -1,0 +1,18 @@
+{
+  "benchflow_commit": "59207886018f03445c7ddb02e03113a80ab73fd9",
+  "sources": {
+    "timing.npz": {
+      "path": "benchflow/tasks/task_info/timing/timing.mat",
+      "sha256": "dcb39035338f44329ed2112b3b551b89d161cd8580f601251257e678ec830ab2"
+    },
+    "multisensory.npz": {
+      "path": "benchflow/tasks/task_info/multisensory_6D/acerbidokka2018_data.mat",
+      "sha256": "c97256f1a509b02898645749721bcec08d508669ca730352a1dff994995e34ed"
+    }
+  },
+  "trials": {
+    "timing": 1512,
+    "multisensory_s1": 1069,
+    "multisensory_s2": 857
+  }
+}

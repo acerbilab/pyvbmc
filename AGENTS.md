@@ -6,12 +6,17 @@ possibly noisy, log-likelihoods with up to ~10–20 parameters. Plain NumPy/SciP
 no autodiff. The algorithm papers live in `papers/` (verified Markdown
 transcriptions); dated developer notes live in `dev/` (see `dev/README.md` for
 the convention). `pyvbmc/vbmc/README.md` is the MATLAB-to-Python porting log.
-`dev/scripts/` holds the benchmark target suite (`benchmark_targets.py`),
-the profiler (`profile_run.py`, `profile_suite.py`), the golden-trace
+`dev/scripts/` holds the benchmark target suite (`benchmark_targets.py`;
+its real-data targets read the plain `.npz` archives under
+`dev/scripts/data/`, exported from the lab-private benchflow repository by
+`export_benchflow_data.py`, and their regenerated ground truths under
+`dev/scripts/data/truths/`, written by `make_benchmark_truths.py`), the
+profiler (`profile_run.py`, `profile_suite.py`), the golden-trace
 regression harness (`golden_trace.py`) and its per-change replay gate
-(`golden_replay.py`); `dev/README.md` describes them and
+(`golden_replay.py`); `dev/README.md` describes them,
 `dev/plans/benchmark-suite-and-golden-traces.md` records how they were built
-and what they measured.
+and what they measured, and `dev/plans/benchmark-realistic-targets.md`
+records the real-data targets.
 
 Before touching the numerical core, read `dev/2026-09-02-modernization-discussion.md`:
 it maps the hot paths, catalogues every hand-derived gradient, lists known
@@ -43,7 +48,8 @@ gpyreg from PyPI over the checkout.
 
 Extras: `test` (pytest, pytest-mock, pytest-rerunfailures; what the test
 workflows install), `examples` (plotly for notebook 2), `dev` (both plus
-docs and formatting tools).
+docs and formatting tools, and scikit-learn for the mixture proposal of the
+benchmark ground-truth generator).
 
 Tests (no conftest or markers; `pyproject.toml` limits default pytest
 discovery to the shipped package suite under `pyvbmc/testing`):

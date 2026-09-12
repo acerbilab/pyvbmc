@@ -31,6 +31,26 @@ Extras, declared as such (not paper targets):
                 bounded with a uniform prior in the 2020 style; truth by
                 defensive importance sampling, stored as constants
 
+Real-data targets (problems of the 2020 noisy paper), bounded, spline-
+trapezoidal prior with pivots at the plausible bounds:
+
+``timing``      Bayesian time-interval reproduction (Acerbi, Wolpert &
+                Vijayakumar 2012), D = 5, 1512 trials of one subject; the
+                observer's response distribution is integrated numerically,
+                about 40 to 50 ms per evaluation
+``multisensory_s1``, ``multisensory_s2``
+                visuo-vestibular causal inference (Acerbi, Dokka, Angelaki &
+                Ma 2018), D = 6, one target per subject; analytic likelihood,
+                vectorized over rows, about 7 ms per 100 rows
+
+Their data are the plain archives under ``data/`` (layout and provenance in
+``data/README.md``), and their ground truths the files ``data/truths/``
+holds once ``make_benchmark_truths.py`` has run: until then ``ln_Z``, the
+moments and the sampler stay ``None`` and the metrics that need them are
+NaN. Both likelihoods are ports of the lab's benchflow implementations and
+are pinned in ``--check`` to values computed by those implementations (for
+timing, by the original MATLAB code).
+
 Smoke / legacy targets with the tests' and notebooks' boxes (not benchmark
 entries): ``normal`` (independent Gaussian, SDs 1..D), ``corr`` (rotated
 Gaussian), ``halfnormal`` (Gaussian on the negative orthant, bounded; ln Z =
@@ -52,9 +72,14 @@ Command line::
     python dev/scripts/benchmark_targets.py --smoke [--suite smoke]
 
 ``--check`` verifies each implementation against an independent reference
-density and against the moments of exact samples, and integrates numerically
-only where ln Z is not analytic by construction. ``--smoke`` runs every config
-of a suite through two VBMC iterations.
+density, against the moments of exact samples and against the pinned values,
+and integrates numerically only where ln Z is not analytic by construction.
+For the real-data targets the moments and the sampler both come from the
+stored importance-weighted population, so that comparison only checks the
+truth file against itself; the pins and the generator's own ``--check``
+are the real gates.
+``--smoke`` runs every config of a suite through two VBMC iterations. Both
+take ``--only``, a comma-separated list of target names or config labels.
 """
 
 from __future__ import annotations
@@ -99,6 +124,16 @@ class Problem:
     target's marginal SD, nothing else), and an ``x0`` drawn uniformly in
     that box by ``make_problem``; ``true_mean``, ``true_cov`` and ``ln_Z``
     are used only by the metrics.
+
+    Three fields serve targets whose truth is not analytic.
+    ``log_likelihood_vec`` is the likelihood alone, where the density is a
+    likelihood times an explicit prior. ``pins`` are reference values from
+    an independent implementation, ``(x, expected, which, tol)`` with
+    ``which`` naming the function evaluated at ``x`` (``"loglik"`` or
+    ``"logp"``); ``--check`` fails if any is off by more than ``tol``.
+    ``sampler_n_eff`` is the number of independent draws a resampling
+    ``sampler`` can offer, which is what the z-scores of ``--check`` must
+    use instead of the number of draws requested.
     """
 
     name: str
@@ -114,6 +149,9 @@ class Problem:
     true_cov: Optional[np.ndarray] = None
     sampler: Optional[Callable[[int, np.random.Generator], np.ndarray]] = None
     reference_logpdf: Optional[Callable[[np.ndarray], np.ndarray]] = None
+    log_likelihood_vec: Optional[Callable[[np.ndarray], np.ndarray]] = None
+    pins: tuple = ()
+    sampler_n_eff: Optional[int] = None
     options: dict = dataclasses.field(default_factory=dict)
     noise_sd: Optional[float] = None
     notes: str = ""
@@ -182,8 +220,12 @@ class Config:
 
 
 def _row(v, D):
+    # always a fresh array: a view of a module-level constant or of a cached
+    # data archive would let one in-place write reach every problem
     return (
-        np.full((1, D), float(v)) if np.ndim(v) == 0 else np.reshape(v, (1, D))
+        np.full((1, D), float(v))
+        if np.ndim(v) == 0
+        else np.array(v, dtype=float).reshape(1, D)
     )
 
 
@@ -881,6 +923,415 @@ def logreg_reference(
     return out
 
 
+# --------------------------------------------------------------------------
+# Real-data targets (the two problems of the 2020 noisy paper that are pure
+# NumPy/SciPy). Data in data/, ground truths in data/truths/; see
+# data/README.md for both layouts.
+# --------------------------------------------------------------------------
+
+DATA_DIR = Path(__file__).resolve().parent / "data"
+TRUTH_DIR = DATA_DIR / "truths"
+PIN_TOL = 1e-6  # tolerance of the pinned reference values in --check
+REAL_DATA_TARGETS = ("timing", "multisensory_s1", "multisensory_s2")
+TRUTH_KEYS = (
+    "samples",
+    "log_weights",
+    "sample_logp",
+    "mean",
+    "cov",
+    "is_ess",
+    "ln_z",
+    "ln_z_se",
+)
+
+_DATA_CACHE = {}
+
+
+def _load_data(name):
+    """The arrays of ``data/{name}.npz``, read once per process."""
+    if name not in _DATA_CACHE:
+        path = DATA_DIR / f"{name}.npz"
+        if not path.is_file():
+            raise FileNotFoundError(
+                f"{path} is missing; write it with"
+                " dev/scripts/export_benchflow_data.py"
+            )
+        with np.load(path, allow_pickle=False) as z:
+            _DATA_CACHE[name] = {k: z[k] for k in z.files}
+    return _DATA_CACHE[name]
+
+
+def _spline_trapezoid_logpdf(X, a, u, v, b):
+    """Log density of the spline-trapezoidal prior at the rows of ``X``.
+
+    Per dimension the density is uniform between the pivots ``u`` and ``v``
+    and tapers to zero at the hard bounds ``a`` and ``b`` as the cubic
+    ``3 z^2 - 2 z^3`` of the rescaled distance ``z`` from the bound, so that
+    both the density and its derivative are continuous; the marginals are
+    independent. ``X`` is ``(n, D)``, the four bound arrays are ``(D,)``, the
+    result ``(n,)``.
+
+    This is the density of ``pyvbmc.priors.SplineTrapezoidal``, written out
+    here so that the benchmark targets do not depend on the package under
+    test.
+    """
+    X = np.atleast_2d(X)
+    left = (X >= a) & (X < u)
+    plateau = (X >= u) & (X < v)
+    right = (X >= v) & (X <= b)
+    z = np.zeros(X.shape)
+    # the quotients are formed on the whole array and masked afterwards, so
+    # a degenerate box (a == u or v == b) only produces discarded values
+    with np.errstate(divide="ignore", invalid="ignore"):
+        z[left] = ((X - a) / (u - a))[left]
+        z[right] = (1.0 - (X - v) / (b - v))[right]
+        taper = np.log(3.0 * z**2 - 2.0 * z**3)  # z = 0 at a and b
+    # each taper integrates to half its width, so before normalization the
+    # marginal integrates to (v - u) + (u - a) / 2 + (b - v) / 2
+    log_norm = np.log(0.5 * (v - u + b - a))
+    log_pdf = np.where(
+        left | plateau | right,
+        np.where(plateau, 0.0, taper) - log_norm,
+        -np.inf,
+    )
+    return np.sum(log_pdf, axis=1)
+
+
+def _bounded_log_joint(log_likelihood_vec, a, u, v, b):
+    """Log joint of a real-data target: its likelihood times the
+    spline-trapezoidal prior on the box, and -inf wherever that prior
+    vanishes (the likelihoods are defined only inside the box, so they are
+    never called there)."""
+
+    def logp(X):
+        X = np.atleast_2d(X)
+        log_prior = _spline_trapezoid_logpdf(X, a, u, v, b)
+        out = np.full(X.shape[0], -np.inf)
+        inside = np.isfinite(log_prior)
+        if np.any(inside):
+            out[inside] = log_likelihood_vec(X[inside]) + log_prior[inside]
+        return out
+
+    return logp
+
+
+_TRUTH_CACHE = {}
+
+
+def _load_truth(name, D, lb, ub):
+    """The arrays of ``data/truths/{name}.npz``, read once per process and
+    checked against the target: an importance-weighted population of draws
+    ``(n, D)`` inside the hard bounds (so in the original space) with
+    normalized log weights, moments of matching shape, a scalar ``ln_z``
+    and the weights' effective sample size ``is_ess``."""
+    if name in _TRUTH_CACHE:
+        return _TRUTH_CACHE[name]
+    path = TRUTH_DIR / f"{name}.npz"
+    if not path.is_file():
+        _TRUTH_CACHE[name] = None
+        return None
+    with np.load(path, allow_pickle=False) as z:
+        truth = {k: np.asarray(z[k], dtype=float) for k in z.files}
+    missing = [k for k in TRUTH_KEYS if k not in truth]
+    if missing:
+        raise ValueError(
+            f"{path} lacks {', '.join(missing)}: an older layout; regenerate"
+            " it with dev/scripts/make_benchmark_truths.py"
+        )
+    samples = truth["samples"]
+    if samples.ndim != 2 or samples.shape[1] != D:
+        raise ValueError(f"{path}: samples must be (n, {D})")
+    if not np.all((samples >= lb) & (samples <= ub)):
+        raise ValueError(f"{path}: draws outside the hard bounds")
+    log_w = truth["log_weights"]
+    if log_w.shape != (len(samples),):
+        raise ValueError(f"{path}: log_weights must be (n,)")
+    if abs(logsumexp(log_w)) > 1e-8:
+        raise ValueError(f"{path}: log_weights are not normalized")
+    if truth["mean"].shape != (D,) or truth["cov"].shape != (D, D):
+        raise ValueError(f"{path}: mean must be ({D},) and cov ({D}, {D})")
+    if truth["ln_z"].shape != () or truth["is_ess"].shape != ():
+        raise ValueError(f"{path}: ln_z and is_ess must be scalars")
+    truth["weights"] = np.exp(log_w)
+    _TRUTH_CACHE[name] = truth
+    return truth
+
+
+def _attach_truth(prob):
+    """Fill a real-data target's truth from ``data/truths/{name}.npz``, or
+    record in its notes that the file is not there yet.
+
+    The stored population is importance-weighted (draws from the
+    generator's mixture proposal), so the sampler resamples it with its
+    weights and ``sampler_n_eff`` is the weights' effective sample size,
+    not the draw count."""
+    truth = _load_truth(prob.name, prob.D, prob.lb, prob.ub)
+    if truth is None:
+        prob.notes += (
+            "; ground truth not generated yet (write it with"
+            " dev/scripts/make_benchmark_truths.py): ln Z and the moments"
+            " are unknown and the metrics that need them are NaN"
+        )
+        return prob
+    samples, weights = truth["samples"], truth["weights"]
+    prob.ln_Z = float(truth["ln_z"])
+    prob.true_mean = np.reshape(truth["mean"], (1, prob.D))
+    prob.true_cov = truth["cov"]
+    prob.sampler = lambda n, rng: samples[
+        rng.choice(len(samples), size=n, p=weights)
+    ]
+    prob.sampler_n_eff = int(truth["is_ess"])
+    return prob
+
+
+def missing_truths(configs):
+    """Labels of the configs whose target has no ground truth (a real-data
+    target whose truth file has not been generated), for harnesses that
+    must not record a population without one."""
+    missing, seen = [], set()
+    for cfg in configs:
+        if (cfg.name, cfg.D) in seen:
+            continue
+        seen.add((cfg.name, cfg.D))
+        if make_problem(cfg.name, cfg.D).ln_Z is None:
+            missing.append(cfg.label)
+    return missing
+
+
+# Bayesian time-interval reproduction (Acerbi, Wolpert & Vijayakumar 2012),
+# one subject of Experiment 3. Parameters: the sensory and motor Weber
+# fractions w_s and w_m, the observer's prior mean mu_p and SD sigma_p (in
+# seconds), and the lapse rate. The likelihood below is a port of
+# benchflow's ``BayesianTiming.log_likelihood``, on the same grids and with
+# the same scipy calls.
+TIMING_N_S = 101  # points of the interval grid, over [0, 2] s
+TIMING_N_X = 401  # points of the measurement grid, one per interval
+TIMING_MAX_SD = 5  # half-width of the measurement grid, in sensory SDs
+# benchflow's test value, computed there with the original MATLAB code
+TIMING_PIN_X = (0.15, 0.15, 0.7875, 0.225, 0.035)
+TIMING_PIN_LOGLIK = -4586.122592352263
+
+
+def _timing(D):
+    if D != 5:
+        raise ValueError("timing is defined for D = 5 only")
+    data = _load_data("timing")
+    stim_index = data["stim_index"]
+    response = data["response"]
+    stimuli = data["stimuli"]
+    dr = float(data["bin_size"])  # responses are binned, so dr > 0
+    n_trials = response.size
+    # The paper's box, Table S2 of the 2020 paper, as exported. The
+    # plausible box is kept exactly as published although the posterior mass
+    # of the motor Weber fraction w_m (median 0.031) lies below its lower
+    # plausible bound of 0.05; benchflow lowered that bound to 0.02. This is
+    # the box an imperfect modeller would set, deliberately, and under the
+    # prior below it also shapes the prior's taper over that parameter.
+    lb, ub = data["lb"], data["ub"]
+    plb, pub = data["plb"], data["pub"]
+
+    def loglik_one(x):
+        ws, wm, mu_prior, sigma_prior, lambd = x
+        srange = np.linspace(0.0, 2.0, TIMING_N_S)[:, None]
+        ds = srange[1, 0] - srange[0, 0]
+        ll = np.zeros((n_trials, 1))
+        for i_stim, mu_s in enumerate(stimuli):
+            sigma_s = ws * mu_s
+            xrange = np.linspace(
+                max(0.0, mu_s - TIMING_MAX_SD * sigma_s),
+                mu_s + TIMING_MAX_SD * sigma_s,
+                TIMING_N_X,
+            )[None, :]
+            dx = xrange[0, 1] - xrange[0, 0]
+            xpdf = stats.norm.pdf(xrange, mu_s, sigma_s)
+            xpdf = xpdf / np.trapezoid(xpdf, dx=dx)
+            # the observer's posterior over the interval given each
+            # measurement, on the (interval, measurement) grid, and the
+            # estimate it produces: the posterior mean, shrunk by the motor
+            # noise (the model's optimal reproduction target)
+            like = stats.norm.pdf(
+                xrange, srange, ws * srange + np.finfo(float).eps
+            )
+            prior = stats.norm.pdf(srange, mu_prior, sigma_prior)
+            post = like * prior
+            post = post / np.trapezoid(post, axis=0, dx=ds)
+            s_hat = np.trapezoid(post * srange, axis=0, dx=ds) / (1 + wm**2)
+            s_hat = s_hat[None, :]
+            # probability of each observed response bin under motor noise,
+            # marginalized over the measurement
+            idx = stim_index == i_stim
+            sigma_m = wm * s_hat
+            r = response[idx][:, None]
+            pr = stats.norm.cdf(r + 0.5 * dr, s_hat, sigma_m) - stats.norm.cdf(
+                r - 0.5 * dr, s_hat, sigma_m
+            )
+            ll[idx] = np.trapezoid(xpdf * pr, axis=1, dx=dx)[:, None]
+        # a lapse responds uniformly over the bins of the interval grid
+        n_bins = (srange[-1, 0] - srange[0, 0]) / dr
+        return float(np.sum(np.log(ll * (1 - lambd) + lambd / n_bins)))
+
+    def loglik_vec(X):
+        # about 40 ms per row: the rows are evaluated one by one, which is
+        # what VBMC asks for anyway (one point per call)
+        return np.array([loglik_one(row) for row in np.atleast_2d(X)])
+
+    return Problem(
+        name="timing",
+        D=D,
+        log_density_vec=_bounded_log_joint(loglik_vec, lb, plb, pub, ub),
+        log_likelihood_vec=loglik_vec,
+        pins=((TIMING_PIN_X, TIMING_PIN_LOGLIK, "loglik", PIN_TOL),),
+        x0=None,
+        lb=_row(lb, D),
+        ub=_row(ub, D),
+        plb=_row(plb, D),
+        pub=_row(pub, D),
+        notes=(
+            "Bayesian time-interval reproduction (Acerbi, Wolpert &"
+            f" Vijayakumar 2012), {n_trials} trials of one subject over"
+            f" {stimuli.size} intervals, responses binned at {dr:g} s;"
+            " the 2020 paper's problem and box, times a"
+            " spline-trapezoidal prior with the pivots at the plausible"
+            " bounds; likelihood ported from benchflow"
+        ),
+    )
+
+
+# Visuo-vestibular unity judgments (Acerbi, Dokka, Angelaki & Ma 2018): the
+# observer reports one source when the two noisy measurements differ by less
+# than kappa, with a lapse, at three visual coherence levels. Parameters in
+# the paper's order, which the likelihood below remaps to the order of
+# benchflow's ``Multisensory_6D`` (sigma_vis x 3, sigma_vest, lambda, kappa),
+# the implementation it is ported from.
+MULTISENSORY_PARAMS = (
+    "sigma_vest",
+    "sigma_vis_low",
+    "sigma_vis_med",
+    "sigma_vis_high",
+    "kappa",
+    "lambda",
+)
+MULTISENSORY_LB = np.array([0.5, 0.5, 0.5, 0.5, 0.25, 0.005])
+MULTISENSORY_UB = np.array([80.0, 80.0, 80.0, 80.0, 180.0, 0.5])
+MULTISENSORY_PLB = np.array([1.0, 1.0, 1.0, 1.0, 1.0, 0.01])
+MULTISENSORY_PUB = np.array([40.0, 40.0, 40.0, 40.0, 45.0, 0.2])
+# benchflow's stored posterior mode of subject 1 under this prior, in the
+# paper's order, and the log joint there: it pins the likelihood and the
+# prior together.
+MULTISENSORY_S1_PIN_X = (
+    7.00615081,
+    2.3969857,
+    1.37271846,
+    8.43661978,
+    10.13859551,
+    0.02525963,
+)
+MULTISENSORY_S1_PIN_LOGP = -503.4863062430452
+# Regression pin for subject 2, which benchflow stores no value for: the
+# log-likelihood of this implementation at the same point on 2026-09-11,
+# when a transcription of benchflow's expression agreed with it bit for bit
+# on 200 random points of the plausible box.
+MULTISENSORY_S2_PIN_LOGLIK = -600.9543713193984
+# benchflow's stored log normalizing constant for subject 1 under this
+# prior. It is not a gate for the ground-truth generator: three estimators
+# sharing no code (Geyer's and importance sampling in the transformed
+# space, defensive importance sampling in the original space with an
+# effective sample size above 10^5) agree on -502.19 +- 0.01 on
+# 2026-09-11, while the log joint at benchflow's stored mode is reproduced
+# to 2e-10, so the stored constant is off by about 0.29.
+MULTISENSORY_S1_LN_Z_BENCHFLOW = -502.4790984812846
+
+
+def _multisensory(D, subject):
+    if D != 6:
+        raise ValueError("multisensory is defined for D = 6 only")
+    data = _load_data("multisensory")
+    # benchflow's three per-subject cells are taken in their stored order as
+    # the low, medium and high coherence levels; the source file does not
+    # label them, and the four noise parameters share one set of bounds, so
+    # the order only matters for naming the marginals
+    trials = [
+        (data[f"s{subject}_c{c}_stim"], data[f"s{subject}_c{c}_resp"] == 2)
+        for c in (1, 2, 3)
+    ]
+    n_trials = sum(len(report_two) for _, report_two in trials)
+
+    def loglik_vec(X):
+        X = np.atleast_2d(X)
+        sigma_vest = X[:, 0:1]
+        sigma_vis = X[:, 1:4]
+        kappa = X[:, 4:5]
+        lambd = X[:, 5:6]
+        out = np.zeros(X.shape[0])
+        for level, (stim, report_two) in enumerate(trials):
+            s_vest, s_vis = stim[:, 0], stim[:, 1]
+            sigma_v = sigma_vis[:, level : level + 1]
+            # the difference of the two measurements is Gaussian around the
+            # difference of the directions with SD sqrt(sigma_vest^2 +
+            # sigma_vis^2), written here in units of sigma_vis; p_one is the
+            # probability that it falls within -+ kappa, mixed with the lapse
+            scale = np.sqrt(1.0 + (sigma_vest / sigma_v) ** 2)
+            a_plus = (s_vest - s_vis + kappa) / sigma_v
+            a_minus = (s_vest - s_vis - kappa) / sigma_v
+            p_one = 0.5 * lambd + (1 - lambd) * (
+                stats.norm.cdf(a_plus / scale)
+                - stats.norm.cdf(a_minus / scale)
+            )
+            # the response is coded 2 when the subject reported two sources
+            out += stats.bernoulli.logpmf(report_two, p=1 - p_one).sum(1)
+        return out
+
+    name = f"multisensory_s{subject}"
+    if subject == 1:
+        pins = (
+            (MULTISENSORY_S1_PIN_X, MULTISENSORY_S1_PIN_LOGP, "logp", PIN_TOL),
+        )
+    else:
+        pins = (
+            (
+                MULTISENSORY_S1_PIN_X,
+                MULTISENSORY_S2_PIN_LOGLIK,
+                "loglik",
+                PIN_TOL,
+            ),
+        )
+    return Problem(
+        name=name,
+        D=D,
+        log_density_vec=_bounded_log_joint(
+            loglik_vec,
+            MULTISENSORY_LB,
+            MULTISENSORY_PLB,
+            MULTISENSORY_PUB,
+            MULTISENSORY_UB,
+        ),
+        log_likelihood_vec=loglik_vec,
+        pins=pins,
+        x0=None,
+        lb=_row(MULTISENSORY_LB, D),
+        ub=_row(MULTISENSORY_UB, D),
+        plb=_row(MULTISENSORY_PLB, D),
+        pub=_row(MULTISENSORY_PUB, D),
+        notes=(
+            "visuo-vestibular causal inference (Acerbi, Dokka, Angelaki &"
+            f" Ma 2018), subject {subject} of the 2020 paper,"
+            f" {n_trials} unity judgments over three visual coherence"
+            " levels; the 'Fixed' rule with a lapse, parameters"
+            f" {', '.join(MULTISENSORY_PARAMS)}, times a"
+            " spline-trapezoidal prior with the pivots at the plausible"
+            " bounds; likelihood ported from benchflow"
+        ),
+    )
+
+
+def _multisensory_s1(D):
+    return _multisensory(D, 1)
+
+
+def _multisensory_s2(D):
+    return _multisensory(D, 2)
+
+
 _REGISTRY = {
     "normal": _normal,
     "corr": _corr,
@@ -891,12 +1342,17 @@ _REGISTRY = {
     "lumpy": _lumpy,
     "student": _student,
     "logreg": _logreg,
+    "timing": _timing,
+    "multisensory_s1": _multisensory_s1,
+    "multisensory_s2": _multisensory_s2,
 }
 
 TARGET_NAMES = tuple(_REGISTRY)
 
 
-def make_problem(name, D, noise_sd=None, seed=None, options=None):
+def make_problem(
+    name, D, noise_sd=None, seed=None, options=None, attach_truth=True
+):
     """Build a benchmark ``Problem``.
 
     ``noise_sd`` makes the target noisy (homoskedastic Gaussian noise on the
@@ -904,11 +1360,15 @@ def make_problem(name, D, noise_sd=None, seed=None, options=None):
     set). ``seed`` seeds only that noise stream, through a spawned
     ``SeedSequence`` so it is not the same stream as ``VBMC(seed=seed)``;
     ``None`` means fresh entropy. ``options`` are merged into the problem's
-    VBMC options (caller wins).
+    VBMC options (caller wins). ``attach_truth=False`` leaves a real-data
+    target's stored truth file unread (the truth generator builds the
+    target it is about to write the truth for).
     """
     if name not in _REGISTRY:
         raise ValueError(f"unknown target {name!r}; known: {TARGET_NAMES}")
     prob = _REGISTRY[name](int(D))
+    if attach_truth and name in REAL_DATA_TARGETS:
+        prob = _attach_truth(prob)
     # Two streams spawned from the run seed: one for the noise, one for the
     # start point; neither is the stream VBMC(seed=seed) uses.
     ss = np.random.SeedSequence(seed) if seed is not None else None
@@ -943,7 +1403,13 @@ def _paper_budget(D):
 # logreg_D5 at sigma = 3 is a bounded problem at the top of the 2020
 # benchmark's noise range (1.3-3.2) on the probit-transformed path. The
 # student_D8 and lumpy_D10 sigma = 3 entries add broad-tailed and mixture
-# structure at higher dimension. Every noisy entry uses the paper budget.
+# structure at higher dimension. The three real-data entries carry the 2020
+# paper's own noise levels, the standard deviation of its IBS estimator at
+# the MAP: 2.2 for timing and 1.3 for both multisensory subjects. Of the
+# three, multisensory subject 1 is the hardest posterior (broad skewed
+# visual-noise marginals against their lower bound, correlations of 0.8),
+# and it is the one that also runs noiseless. Every noisy entry uses the
+# paper budget.
 # The budget-exhausting configuration: 750 evaluations at D = 15 with early
 # termination disabled, the one run that spends long in the optimize-only
 # regime (a single GP hyperparameter sample from N >= 350, K around 30, the
@@ -1000,6 +1466,11 @@ SUITES = {
         Config("student", 8),
         Config("student", 8, noise_sd=3.0, options=_paper_budget(8)),
         Config("lumpy", 10, noise_sd=3.0, options=_paper_budget(10)),
+        # The real-data problems of the 2020 paper, at its noise levels.
+        Config("multisensory_s1", 6),
+        Config("timing", 5, noise_sd=2.2, options=_paper_budget(5)),
+        Config("multisensory_s1", 6, noise_sd=1.3, options=_paper_budget(6)),
+        Config("multisensory_s2", 6, noise_sd=1.3, options=_paper_budget(6)),
         _EXHAUST,
     ],
 }
@@ -1127,14 +1598,22 @@ def check_problem(prob, n_ref=200, n_draws=2_000_000, seed=7):
         if d > 1e-6:
             res["ok"] = False
             res["msgs"].append(f"density differs from reference by {d:.2e}")
-    # (b) moments vs exact samples
+    # (b) moments vs exact samples (for a stored importance-weighted
+    # population, whose moments were computed from the same draws, a
+    # consistency check of the truth file: it cannot fail unless the file
+    # is inconsistent)
     if prob.sampler is not None and prob.true_mean is not None:
         S = prob.sampler(n_draws, rng)
         m = S.mean(0)
         c = np.cov(S.T)
         sd = np.sqrt(np.diag(prob.true_cov))
         n_eff = n_draws
-        if prob.name == "logreg":
+        if prob.sampler_n_eff is not None:
+            # resampling from a stored population: no more independent draws
+            # than the population holds
+            n_eff = min(n_draws, prob.sampler_n_eff)
+            res["sampler_n_eff"] = float(n_eff)
+        elif prob.name == "logreg":
             # importance *re*sampling: the draws are not independent; the
             # effective size is that of the cached weighted population
             _, wn = _LOGREG_IS_CACHE["pop"]
@@ -1178,7 +1657,29 @@ def check_problem(prob, n_ref=200, n_draws=2_000_000, seed=7):
             )
             d = max(d, abs(g2.ln_Z - gr.ln_Z))
         res["ln_Z_grid_refine_diff"] = float(d)
+    # (d) pinned values from the reference implementation
+    for i, (x, expected, which, tol) in enumerate(prob.pins):
+        X = np.reshape(np.asarray(x, dtype=float), (1, D))
+        f = prob.log_density_vec
+        if which == "loglik":
+            f = prob.log_likelihood_vec
+        elif which != "logp":
+            raise ValueError(f"unknown pin kind {which!r}")
+        d = abs(float(f(X)[0]) - expected)
+        res[f"pin{i}_{which}_diff"] = float(d)
+        if d > tol:
+            res["ok"] = False
+            res["msgs"].append(
+                f"pinned {which} differs by {d:.2e} (tolerance {tol:.0e})"
+            )
     return res
+
+
+def _selected(cfg, only):
+    """Whether a config passes an ``--only`` filter: ``None`` for everything,
+    otherwise a set (not a string: ``in`` on a string matches substrings)
+    of target names or config labels."""
+    return only is None or cfg.name in only or cfg.label in only
 
 
 def run_check(configs, only=None):
@@ -1186,7 +1687,7 @@ def run_check(configs, only=None):
     all_ok = True
     for cfg in configs:
         key = (cfg.name, cfg.D)
-        if key in seen or (only and cfg.name != only):
+        if key in seen or not _selected(cfg, only):
             continue
         seen.add(key)
         t0 = time.time()
@@ -1207,7 +1708,7 @@ def run_check(configs, only=None):
         print(f"        box plb={r['plb']} pub={r['pub']}", flush=True)
         for m in r["msgs"]:
             print(f"        ! {m}", flush=True)
-    if only in (None, "logreg"):
+    if _selected(Config("logreg", 5), only):
         t0 = time.time()
         ref = logreg_reference()
         print(
@@ -1234,7 +1735,7 @@ def run_check(configs, only=None):
     return all_ok
 
 
-def run_smoke(configs, seed=0):
+def run_smoke(configs, seed=0, only=None):
     import psutil
 
     from pyvbmc import VBMC
@@ -1242,6 +1743,8 @@ def run_smoke(configs, seed=0):
     proc = psutil.Process()
     all_ok = True
     for cfg in configs:
+        if not _selected(cfg, only):
+            continue
         prob = cfg.make(seed=seed)
         args, options = prob.vbmc_args()
         options.update(
@@ -1305,9 +1808,27 @@ def main(argv=None):
     ap.add_argument("--smoke", action="store_true", help="2-iteration runs")
     ap.add_argument("--suite", default=None, help="smoke|profile|golden|all")
     ap.add_argument(
-        "--only", default=None, help="restrict --check to a target"
+        "--only",
+        default=None,
+        help="restrict --check / --smoke to a comma-separated list of"
+        " target names or config labels",
     )
     args = ap.parse_args(argv)
+    only = None
+    if args.only:
+        only = {s.strip() for s in args.only.split(",") if s.strip()}
+        known = {c.label for c in suite_configs("all")} | set(TARGET_NAMES)
+        unknown = sorted(only - known)
+        if unknown:
+            ap.error(f"unknown --only entries: {', '.join(unknown)}")
+        for flag, suite in (
+            (args.check, args.suite or "all"),
+            (args.smoke, args.suite or "smoke"),
+        ):
+            if flag and not any(
+                _selected(c, only) for c in suite_configs(suite)
+            ):
+                ap.error(f"--only selects no config of suite {suite!r}")
     if args.list or not (args.check or args.smoke):
         for s, cfgs in SUITES.items():
             print(f"{s}:")
@@ -1316,9 +1837,9 @@ def main(argv=None):
         return 0
     ok = True
     if args.check:
-        ok &= run_check(suite_configs(args.suite or "all"), only=args.only)
+        ok &= run_check(suite_configs(args.suite or "all"), only=only)
     if args.smoke:
-        ok &= run_smoke(suite_configs(args.suite or "smoke"))
+        ok &= run_smoke(suite_configs(args.suite or "smoke"), only=only)
     print("[benchmark_targets]", "all ok" if ok else "FAILURES", flush=True)
     return 0 if ok else 1
 
