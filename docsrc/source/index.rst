@@ -45,7 +45,7 @@ PyVBMC is effective when:
 - the likelihood is at least moderately expensive to compute (say, half a second or more per evaluation);
 - the model has up to ``D = 10`` continuous parameters (maybe a few more, but no more than ``D = 20``);
 - the target posterior density is continuous and reasonably smooth;
-- the log-likelihood can be evaluated *exactly* (e.g., analytically or numerically, but without noise in the evaluation itself).
+- optionally, log-likelihood evaluations may be noisy (see the :ref:`FAQ <faq-noisy-target-function>`).
 
 Conversely, if your model can be written in closed form and is fast to evaluate, you should exploit the powerful machinery of probabilistic programming frameworks such as `Stan <https://mc-stan.org/>`_ or `PyMC <https://docs.pymc.io/>`_.
 
@@ -59,6 +59,7 @@ How-to
 
    installation
    quickstart
+   faq
    examples
    documentation
 

@@ -28,7 +28,7 @@ PyVBMC is effective when:
 - the model log-likelihood function is a black-box (e.g., the gradient is unavailable);
 - the likelihood is at least moderately expensive to compute (say, half a second or more per evaluation);
 - the model has up to `D = 10` continuous parameters (maybe a few more, but no more than `D = 20`);
-- the target posterior distribution is continuous and reasonably smooth (see [here](https://github.com/acerbilab/vbmc/wiki#general));
+- the target posterior distribution is continuous and reasonably smooth (see [here](https://acerbilab.github.io/pyvbmc/faq.html#faq-general));
 - optionally, log-likelihood evaluations may be noisy (e.g., estimated [via simulation](https://github.com/acerbilab/ibs)).
 
 Conversely, if your model can be written analytically, you should exploit the powerful machinery of probabilistic programming frameworks such as [Stan](http://mc-stan.org/) or [PyMC](https://docs.pymc.io/).
@@ -96,7 +96,7 @@ vbmc = VBMC(target, x0, LB, UB, PLB, PUB)
 vp, results = vbmc.optimize()
 ```
 with input arguments:
-- `target`: the target (unnormalized) log density — often an unnormalized log posterior. `target` is a callable that should take as input a parameter vector and return the log density at the point. The returned log density must return a *finite* real value, i.e. non `NaN` or `-inf`. See the [VBMC FAQ](https://github.com/acerbilab/vbmc/wiki#how-do-i-prevent-vbmc-from-evaluating-certain-inputs-or-regions-of-input-space) for more details;
+- `target`: the target (unnormalized) log density — often an unnormalized log posterior. `target` is a callable that should take as input a parameter vector and return the log density at the point. The returned log density must return a *finite* real value, i.e. non `NaN` or `-inf`. See the [PyVBMC FAQ](https://acerbilab.github.io/pyvbmc/faq.html#faq-how-do-i-prevent-vbmc-from-evaluating-certain-inputs-or-regions-of-input-space) for more details;
 - `x0`: an array representing the starting point of the inference in parameter space;
 - `LB` and `UB`: arrays of hard lower (resp. upper) bounds constraining the parameters (possibly `-/+np.inf` for unbounded parameters);
 - `PLB` and `PUB`: arrays of plausible lower (resp. upper) bounds: that is, a box that ideally brackets a high posterior density region of the target.
@@ -114,13 +114,13 @@ The `vp` object can be manipulated in various ways. For example, we can draw sam
 The quick start example above works for deterministic (noiseless) evaluations of the target log-density. Py(VBMC) also supports *noisy* evaluations of the target.
 Noisy evaluations often arise from simulation-based models, for which a direct expression of the (log) likelihood is not available.
 
-For information on how to run PyVBMC on a noisy target, see [this example notebook](examples/pyvbmc_example_6_noisy_likelihoods.ipynb) and the [VBMC FAQ](https://github.com/acerbilab/vbmc/wiki#noisy-target-function) (for MATLAB, but most concepts still apply).
+For information on how to run PyVBMC on a noisy target, see [this example notebook](examples/pyvbmc_example_6_noisy_likelihoods.ipynb) and the [PyVBMC FAQ](https://acerbilab.github.io/pyvbmc/faq.html#faq-noisy-target-function).
 
 ## Next steps
 
 Once installed, example Jupyter notebooks can be found in the `pyvbmc/examples` directory. They can also be [viewed statically](https://acerbilab.github.io/pyvbmc/index.html#examples) on the [main documentation pages](https://acerbilab.github.io/pyvbmc/index.html). These examples will walk you through the basic usage of PyVBMC as well as some if its more advanced features.
 
-For practical recommendations, such as how to set `LB` and `UB` and the plausible bounds, check out the FAQ on the [VBMC wiki](https://github.com/acerbilab/vbmc/wiki). The wiki was written with the MATLAB toolbox in mind, but the general advice applies to the Python version as well.
+For practical recommendations, such as how to set `LB` and `UB` and the plausible bounds, check out the [PyVBMC FAQ](https://acerbilab.github.io/pyvbmc/faq.html).
 
 ## How does it work?
 

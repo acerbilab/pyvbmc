@@ -58,7 +58,8 @@ TIPS = (
         ),
         frequency="normal",
         urls=(
-            "https://github.com/acerbilab/vbmc/wiki#how-do-i-choose-plb-and-pub",
+            "https://acerbilab.github.io/pyvbmc/faq.html"
+            "#faq-how-do-i-choose-plb-and-pub",
         ),
     ),
     Tip(
