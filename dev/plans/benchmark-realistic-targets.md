@@ -225,10 +225,19 @@ the frozen treatment `68a43db`; the oracle `--check --exact` and
 `golden_replay.py` reporting `identical` on the existing configurations
 certify that before the campaign. `golden_trace.py run` refuses a
 configuration whose target has no truth, so a population cannot be
-recorded with NaN metrics. Noiseless runs
-stop on stability at 130 to 200 evaluations; noisy runs spend the full
-budget, 2 to 3 minutes each for timing. Four configurations at 30 seeds
-are 4 to 6 hours.
+recorded with NaN metrics.
+
+Done 2026-09-12: the campaign ran from a detached worktree at `fc50ee1`
+(gpyreg `a2f8ddc`) after both gates passed from it (11 of 11 oracles
+bit-exact; the five default replays identical against the `68a43db`
+traces), 10:11 to 16:17 local, 6 h 05 min, and was joined as
+`reference_990_20260912` with `dev/scripts/reference_join.py`; the record
+with manifests, validation, null check and final replay is
+[realdata_extension_20260912](../golden/realdata_extension_20260912/README.md),
+the results are in the evidence section below. The noiseless runs stop on
+stability at a median of 162 evaluations and the noisy ones at 205 to 215,
+inside their budgets; a timing run takes about 4 minutes, of which 13
+seconds are target evaluations.
 
 ## Work breakdown
 
@@ -256,10 +265,10 @@ Code work runs on `dev-benchmark-targets` (branched 2026-09-11 from
   draws with the chains reused (08:22 to 08:37). Both `--check` passes
   green; results and the timing comparison in the evidence section;
   truths committed under `dev/scripts/data/truths/`.
-- [ ] Reference campaigns for the four configurations from a certified
-  frozen checkout; join to the reference. Agreed 2026-09-12, to be run
-  from a fresh session; the steps are in `dev/TODO.md`.
-- [ ] Record the results and the pickup in the roadmap and `TODO.md`.
+- [x] Reference campaigns for the four configurations from a certified
+  frozen checkout; join to the reference (2026-09-12, see the reference
+  population section and the evidence below).
+- [x] Record the results and the pickup in the roadmap and `TODO.md`.
 
 Local-only artifacts on the development machine (gitignored): the chain
 files under `dev/scripts/data/truths/chains/`, which let a rerun of the
@@ -307,6 +316,47 @@ against 0.0075 and 0.0126 here, are about 30 % under-dispersed on those
 two parameters, which accounts for their steady gsKL of 0.23 and ELBO gap
 of 0.2. That is a finding about VBMC on this target, to be examined on
 the reference population, not a defect of either truth.
+
+## Evidence: the reference campaign of 2026-09-12
+
+Seeds 0–29 of the four configurations, campaign settings of the population
+plan, one process on the benchmark machine; all 120 runs complete with
+finite metrics. "Usable" is evidence error < 1, gsKL < 1 and MMTV < 0.2;
+the medians are over the 30 seeds.
+
+| configuration | converged | usable | ELBO − lnZ | gsKL | MMTV | evaluations | optimizer time |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| multisensory_s1_D6 | 30/30 | 28/30 | −0.39 | 0.51 | 0.11 | 162 | 1.35 min |
+| multisensory_s1_D6_noise1.3 | 30/30 | 5/30 | −0.37 | 2.41 | 0.22 | 205 | 3.09 min |
+| multisensory_s2_D6_noise1.3 | 30/30 | 22/30 | −0.37 | 0.69 | 0.15 | 208 | 3.32 min |
+| timing_D5_noise2.2 | 29/30 | 28/30 | +0.08 | 0.39 | 0.14 | 215 | 4.10 min |
+
+The noisy runs terminate on the reliability index rather than spending
+their budgets (one timing run reached its 350). Noisy multisensory
+subject 1 is the least accurate configuration of the whole reference in
+posterior shape while its evidence error is ordinary; it and the two
+other noisy configurations are what the deferred noisy-acquisition work
+is assessed on.
+
+Posterior widths, as the ratio of VBMC's marginal SD to the truth's
+(median over seeds; quartiles for the two parameters the smoke runs had
+flagged):
+
+| configuration | parameters | SD ratio |
+| --- | --- | --- |
+| timing | w_s, w_m, mu_p, sigma_p, lambda | 0.68 [0.64, 0.78], 0.76, 0.85, 0.72 [0.66, 0.79], 0.91 |
+| multisensory_s1 | sigma_vest, sigma_vis (3), kappa, lambda | 0.65, 0.81, 0.83, 0.90, 0.94, 0.98 |
+| multisensory_s1 noisy | same | 0.38, 0.66, 0.63, 0.88, 0.94, 0.93 |
+| multisensory_s2 noisy | same | 0.76, 0.73, 0.92, 0.95, 0.81, 0.83 |
+
+So the 30 % under-dispersion of `w_s` and `sigma_p` seen in the smoke
+runs holds across the 30 seeds, with the ELBO at the true log evidence;
+on the multisensory subjects the ELBO sits about 0.4 below lnZ, and the
+noise narrows subject 1's vestibular-noise marginal to 0.38 of its true
+SD while shifting its mean by 0.6 SD. These are properties of the current
+defaults on these targets, recorded in the reference for later work, not
+defects of the truths (whose two estimators agree within a fraction of a
+standard error on every target).
 
 ## Evidence: smoke runs of 2026-09-11
 

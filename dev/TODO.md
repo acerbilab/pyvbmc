@@ -23,9 +23,9 @@ agreed in principle but not to be started without an explicit go-ahead;
 its conditions and cost are in the plan's
 [direction under consideration](plans/final-population-benchmark.md#direction-under-consideration--2026-09-11).
 Order set by the PI (2026-09-11): the benchmark extension with realistic
-noiseless and noisy targets comes first (tentatively), then the golden run
-on the current defaults; the noisy-acquisition options are taken up only
-after both, so they can be analyzed on the richer benchmark. The frozen
+noiseless and noisy targets first (done 2026-09-12, see below), then the
+golden run on the current defaults; the noisy-acquisition options are taken
+up only after both, so they can be analyzed on the richer benchmark. The frozen
 checkout `68a43db` remains the generator as long as the defaults stay as
 they are; if a noisy option later becomes a default, the noisy
 configurations of the reference are regenerated from that code. No
@@ -48,40 +48,34 @@ first phase waits on the five open decisions listed there. That phase
 regenerates the same regression references, so it is ordered before or
 together with the deferred speedups, never after them unnoticed.
 
-The benchmark extension with real-data targets (order set 2026-09-11,
-tentatively before the golden run) is in progress on
-`dev-benchmark-targets`; the decisions, definitions, method, status and
-evidence are in
+The benchmark extension with real-data targets is complete (2026-09-12);
+the decisions, definitions, method and evidence are in
 [benchmark-realistic-targets.md](plans/benchmark-realistic-targets.md).
 The targets are the Bayesian timing model and the multisensory
 causal-inference model on two subjects from the lab-private
-[benchflow repository](https://github.com/acerbilab/benchflow) (sibling
-checkout `../benchflow` at `5920788`), on plain `.npz` data, with
-spline-trapezoidal priors and the paper's plausible boxes; subject 1 runs
-noiseless and all three at the 2020 paper's noise levels. Done: data
-export, targets, truth generator (slice sampling and Geyer's estimator
-with a scikit-learn mixture proposal; scikit-learn is in the `dev` extra),
-and the ground truths themselves, generated overnight on 2026-09-11/12
-and committed under `dev/scripts/data/truths/` (both check passes green;
-the population is the importance-weighted proposal draws, PI decision of
-2026-09-12). Next, agreed 2026-09-12 and to be run from a fresh session:
-the reference campaigns for the four configurations (`multisensory_s1_D6`,
-`timing_D5_noise2.2`, `multisensory_s1_D6_noise1.3`,
-`multisensory_s2_D6_noise1.3`), seeds 0–29 each, on the benchmark machine
-with the campaign settings of the
-[population plan](plans/final-population-benchmark.md), from a frozen
-checkout of `dev-next` certified first by the oracle `--check --exact` and
-by `golden_replay.py` reporting `identical` on the existing configurations
-(nothing under `pyvbmc/` changed except a test, so the numerics equal the
-frozen treatment `68a43db`); then the join to the reference with
-manifests, README and the even/odd null check, following the noisy
-extension of 2026-09-07 (`dev/golden/noisy_extension_20260907/README.md`,
-`dev/scripts/reference_noisy_extension.py`). About 4 to 5 hours in one
-process. One thing to look at in that population: the smoke runs put
-VBMC's timing posteriors about 30 % too narrow on `w_s` and `sigma_p`
-(plan, evidence section). No process is running. Goris stays deferred;
-which targets move into the public tests is decided at the documentation
-review.
+[benchflow repository](https://github.com/acerbilab/benchflow), on plain
+`.npz` data with spline-trapezoidal priors and the paper's plausible boxes,
+with importance-weighted ground truths committed under
+`dev/scripts/data/truths/`. The reference campaign (four configurations,
+seeds 0–29, 6 h 05 min on the benchmark machine) ran from a frozen checkout
+at `fc50ee1` certified by the oracle `--check --exact` (11 of 11) and by
+`golden_replay.py` reporting `identical` on the five default cases against
+the `68a43db` traces, and was joined to the reference as
+`reference_990_20260912` (`dev/scripts/reference_join.py`; record in
+[realdata_extension_20260912](golden/realdata_extension_20260912/README.md)):
+92-test even/odd null check with no flags, seed-0 replays of the four new
+configurations identical. Findings to carry into the noisy-acquisition
+work: the noisy runs stop on stability at about 205 to 215 evaluations
+inside their budgets; noisy multisensory subject 1 has 5 of 30 usable runs
+(median gsKL 2.4); every real-data posterior is under-dispersed, timing's
+`w_s` and `sigma_p` by about 30 % over all 30 seeds. The frozen worktree
+and campaign artifacts are under
+`dev/scripts/runs/population_realdata_20260912/` (gitignored). No process
+is running. Next in the PI's order: the golden run on the current defaults
+(the 567-seed completion and promotion, not to be started without an
+explicit go-ahead; see the population plan), then the noisy-acquisition
+options. Goris stays deferred; which targets move into the public tests is
+decided at the documentation review.
 
 ## Work awaiting a separate decision
 
@@ -123,17 +117,20 @@ review.
   and extend them when useful. A full 870-run candidate population is not
   required before reviewing the first stage. Release publication
   remains a separate action. Use the
-  [current golden reference](golden/noisy_extension_20260907/README.md) and
+  [current golden reference](golden/realdata_extension_20260912/README.md) and
   [latent-fix plan](plans/latent-bug-fixes.md) when that work starts.
 - Run at most one heavy computation at a time, normally in the main thread.
 - Preserve benchmark artifacts and frozen source checkouts under
-  `dev/scripts/runs/population_overnight_20260910/` and the extension's
-  artifacts under `dev/scripts/runs/population_extension_20260911/`. These
-  and the full golden traces in `dev/scripts/runs/golden/reference_870_20260907/`
-  are gitignored and available on the original Windows benchmark machine
-  only. A fresh clone has the tracked assessment JSON, comparison, manifests
-  and reports; to revalidate the raw artifacts, copy both campaign
-  directories from that machine and follow the
+  `dev/scripts/runs/population_overnight_20260910/`, the extension's
+  artifacts under `dev/scripts/runs/population_extension_20260911/` and the
+  real-data reference campaign under
+  `dev/scripts/runs/population_realdata_20260912/`. These and the full
+  golden traces in `dev/scripts/runs/golden/reference_990_20260912/` (and
+  the previous `reference_870_20260907/`) are gitignored and available on
+  the original Windows benchmark machine only. A fresh clone has the
+  tracked assessment JSON, comparison, manifests and reports; to
+  revalidate the raw artifacts, copy the campaign directories from that
+  machine and follow the
   [population plan](plans/final-population-benchmark.md) for environment
   and source setup. Run `python dev/scripts/analyze_population_run.py` in
   that environment to reproduce the pooled assessment. Frozen worktrees

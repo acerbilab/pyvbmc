@@ -217,25 +217,33 @@ historical checkout `c4c692c`, which contains the checks and retains the
 `03650a2` numerical source pinned by `scripts/eta_bound_variants.py`. Its
 source-digest guard is expected to reject later production changes.
 
-The current golden reference is `reference_870_20260907`: **870 runs across
-19 configurations, including 160 noisy runs, with 76 population KS tests**.
+The current golden reference is `reference_990_20260912`: **990 runs across
+23 configurations, including 250 noisy runs, with 92 population KS tests**.
 Its JSON sidecars and `summary.md` live under `golden/baseline/`,
 so `python dev/scripts/golden_trace.py compare dev/golden/baseline <new_dir>`
 works from a fresh checkout. Full `.npz` traces stay gitignored
-under `scripts/runs/golden/reference_870_20260907/` until release-asset
-publication. The historical 810 pairs remain unchanged: the original 280
-retain `18a236c`, and 530 record frozen `7314a6a`. The 60 additions were made
-from pinned source `623f5cd` with gpyreg `a2f8ddc`, 30 seeds each for
-`rosenbrock_D2_noise3` and `student_D8_noise3`; 53 converged and seven noisy
-Rosenbrock runs reached their evaluation budget. See the historical
-[810-run extension record](golden/extension_20260907/README.md) and the
-[870-run integration record](golden/noisy_extension_20260907/README.md) for
-commands, provenance, hashes and validation reports. All 870 archives passed
-integrity checks, the 76-test even/odd population check had no flags, and the
-default five-case replay matched every stored loop and final value plus each
-initial design, with zero flags. The historical traces do not store the
-returned posterior's transformer, so that field remains explicitly
-uncertifiable.
+under `scripts/runs/golden/reference_990_20260912/` until release-asset
+publication. The 870 pairs of the previous reference remain unchanged: the
+original 280 retain `18a236c`, 530 record frozen `7314a6a`, and the 60 noisy
+additions of 2026-09-07 (`rosenbrock_D2_noise3` and `student_D8_noise3`, 30
+seeds each) record `623f5cd`. The 120 real-data additions of 2026-09-12 (the
+Bayesian timing model and the multisensory causal-inference model on two
+subjects, 30 seeds each of `multisensory_s1_D6`, `timing_D5_noise2.2`,
+`multisensory_s1_D6_noise1.3` and `multisensory_s2_D6_noise1.3`) were made
+from the frozen checkout `fc50ee1` with gpyreg `a2f8ddc`, whose default-path
+numerics equal the frozen treatment `68a43db` of the population campaigns;
+119 converged and one timing run reached its budget. See the
+[810-run extension record](golden/extension_20260907/README.md), the
+[870-run integration record](golden/noisy_extension_20260907/README.md) and
+the [990-run real-data record](golden/realdata_extension_20260912/README.md)
+for commands, provenance, hashes and validation reports. All 990 archives
+passed integrity checks and the 92-test even/odd population check had no
+flags. The real-data configurations replay bit-exactly with the current
+code (seed 0 of each, from the frozen checkout: every stored loop and final
+value and each initial design matched, zero flags); the older
+configurations' traces predate the 1.5 numerics, so their replays part
+early and only the accuracy envelopes apply. No trace stores the returned
+posterior's transformer, so that field remains explicitly uncertifiable.
 
 [`golden/README.md`](golden/README.md) is the human-facing description of the
 current golden runs: purpose, target coverage, metrics, files and usage. Keep
@@ -320,6 +328,18 @@ reason.
   manifest. Writes `assessment.json`, `comparison.md` and the campaign
   manifests under `--out`. `test_analyze_population_run.py` checks the
   statistics.
+- `scripts/reference_join.py` — joins a finished `population_run.py`
+  campaign to the golden reference as one command (`join`): it repeats the
+  launcher's completion check on every case, verifies the previous
+  reference against its tracked SHA256 manifest and the ZIP integrity of
+  every trace, refuses any overlap, copies both populations byte for byte
+  into a new combined directory, writes the combined summary, copies the
+  new sidecars and the summary into `golden/baseline/`, and writes the new
+  SHA256 manifest, the even/odd null check and a validation record under
+  the given record directory (nonzero exit if the null check flags a
+  configuration). `record-replay` adds a finished `golden_replay.py`
+  report of the new configurations against the combined traces to that
+  record. The README of the record is written by hand from its output.
 - `scripts/boost_comparison.py` (parked at `764a177` on `dev-final-boost`) — reads stored pre/final boost scores and
   compares tolerances 0.1/0.2 without optimization. Optional
   `--metrics-tags selected` reconstructs paired accuracy diagnostics for
@@ -365,7 +385,7 @@ reason.
   the horizons (finals only without them); `--report-only` re-renders a
   finished run. Flags: `--configs`, `--seeds`
   (default seed 0 only), `--baseline` (the traces directory; the default
-  `scripts/runs/golden/reference_870_20260907/`, the current reference
+  `scripts/runs/golden/reference_990_20260912/`, the current reference
   population, exists only on the machine that made it), `--sidecars`,
   `--out`, `--threads` (1, as the baseline), `--calibration-budget` (pin
   all three chunk budgets to this integer for a nondefault-profile check;

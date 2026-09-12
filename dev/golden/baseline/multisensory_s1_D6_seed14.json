@@ -1,0 +1,162 @@
+{
+ "label": "multisensory_s1_D6",
+ "seed": 14,
+ "problem": "multisensory_s1",
+ "D": 6,
+ "noise_sd": null,
+ "requested_options": {
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false,
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
+ },
+ "effective_options": {
+  "max_fun_evals": 400,
+  "max_iter": 400,
+  "tol_stable_count": 60,
+  "tol_stable_excpt_frac": 0.2,
+  "specify_target_noise": false,
+  "search_acq_fcn": [
+   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x000001CA20176150>"
+  ],
+  "active_sample_gp_update": false,
+  "active_sample_vp_update": false,
+  "min_final_components": 50,
+  "do_final_boost": true,
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false,
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
+ },
+ "timer_keys": [
+  "active_sampling",
+  "finalize",
+  "fun_time",
+  "gp_train",
+  "variational_fit",
+  "warping"
+ ],
+ "ln_Z": -502.1859097750721,
+ "true_mean": [
+  [
+   5.322603974785443,
+   4.540259934059212,
+   4.1467300114960155,
+   9.499721877425792,
+   10.192037627309793,
+   0.034490213003387414
+  ]
+ ],
+ "true_cov": [
+  [
+   3.3672951484153963,
+   -2.9958109374847925,
+   -3.030328194295628,
+   -1.5794210069410621,
+   0.08357397320619728,
+   -0.00246242355643049
+  ],
+  [
+   -2.9958109374847925,
+   4.00210114987284,
+   2.998355077859293,
+   1.6609365060704118,
+   0.08220329660441987,
+   -0.0014108246450986951
+  ],
+  [
+   -3.030328194295628,
+   2.998355077859293,
+   3.9211779722368925,
+   1.6376682345763063,
+   0.05428890724835683,
+   -0.001499728937309476
+  ],
+  [
+   -1.5794210069410621,
+   1.6609365060704118,
+   1.6376682345763063,
+   2.3078034751758136,
+   0.13645075544525231,
+   -0.002254155166822826
+  ],
+  [
+   0.08357397320619728,
+   0.08220329660441987,
+   0.05428890724835683,
+   0.13645075544525231,
+   0.19530676786057857,
+   -0.0012358596958048666
+  ],
+  [
+   -0.00246242355643049,
+   -0.0014108246450986951,
+   -0.001499728937309476,
+   -0.002254155166822826,
+   -0.0012358596958048666,
+   0.0003023504279351
+  ]
+ ],
+ "plb": [
+  1.0,
+  1.0,
+  1.0,
+  1.0,
+  1.0,
+  0.01
+ ],
+ "pub": [
+  40.0,
+  40.0,
+  40.0,
+  40.0,
+  45.0,
+  0.2
+ ],
+ "notes": "visuo-vestibular causal inference (Acerbi, Dokka, Angelaki & Ma 2018), subject 1 of the 2020 paper, 1069 unity judgments over three visual coherence levels; the 'Fixed' rule with a lapse, parameters sigma_vest, sigma_vis_low, sigma_vis_med, sigma_vis_high, kappa, lambda, times a spline-trapezoidal prior with the pivots at the plausible bounds; likelihood ported from benchflow",
+ "final": {
+  "elbo": -502.47650156376324,
+  "elbo_sd": 0.027451126815933296,
+  "best_iter": 34,
+  "iterations": 35,
+  "func_count": 170,
+  "final_K": 50,
+  "final_N": 170,
+  "min_Ns_gp": 6,
+  "n_warps": 2,
+  "success_flag": true,
+  "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+  "wall_s": 69.02912280001328,
+  "target_eval_s": 0.08904004096984863,
+  "elbo_err": 0.2905917886911311,
+  "gskl": 0.38362474330957874,
+  "mmtv": 0.09400696125877067,
+  "rmse": 0.2909664546563824,
+  "moment_method": "mc",
+  "peak_rss_mb": 232.20703125
+ },
+ "meta": {
+  "git": {
+   "sha": "fc50ee1",
+   "dirty": false
+  },
+  "python": "3.12.6",
+  "numpy": "2.5.2",
+  "scipy": "1.18.1",
+  "pyvbmc": "1.0.5.dev159+g4bff1a5b9",
+  "gpyreg": "1.1.0",
+  "cma": "4.4.4",
+  "threads": {
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1",
+   "MKL_NUM_THREADS": "1"
+  },
+  "started": "2026-09-12 10:30:53",
+  "finished": "2026-09-12 10:32:03",
+  "pid": 21372
+ }
+}

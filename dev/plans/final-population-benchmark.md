@@ -35,7 +35,11 @@ ordinary VBMC inference unchanged can proceed independently.
 
 Reference: [reference_870_20260907](../golden/noisy_extension_20260907/README.md).
 Tracked sidecars are in `dev/golden/baseline/`; complete local traces are in
-`dev/scripts/runs/golden/reference_870_20260907/`.
+`dev/scripts/runs/golden/reference_870_20260907/`. (Since 2026-09-12 the
+golden reference is `reference_990_20260912`, the same 870 pairs plus the
+120 real-data runs of
+[realdata_extension_20260912](../golden/realdata_extension_20260912/README.md);
+the assessment below compared against the 870.)
 
 | First-stage cohort | Seeds | Runs |
 | --- | --- | ---: |
@@ -333,7 +337,9 @@ reference promotion remains the PI's decision.
 Since the integrated changes look likely to stay, the PI is considering
 completing the remaining 567 seeds of the same frozen treatment (the full
 870-run allocation) and promoting that candidate population to the new
-golden reference in place of `reference_870_20260907`. PI position
+golden reference in place of the 870 pairs of `reference_870_20260907`
+(the 120 real-data pairs joined on 2026-09-12 come from the same numerics
+and stay). PI position
 (2026-09-11): the first-stage evidence is accepted tentatively, with the
 confirmation at equal sample sizes to come from this extension itself; the
 extension is agreed in principle but is not to be started without an
@@ -360,8 +366,11 @@ decision:
   would give a valid population but not an exact replay baseline.
 - Preserve the previous reference with its identity and README, and run
   the even/odd null check on the new population as previous references did.
-- New targets (the benchflow candidates, the unrun `lumpy_D10_noise3`) fit
-  the existing extension pattern later and need not block or wait for this.
+- New targets fit the existing extension pattern and need not block or
+  wait for this: the benchflow targets were joined on 2026-09-12 as
+  `reference_990_20260912` from a checkout whose default-path numerics equal
+  this treatment (`dev/scripts/reference_join.py` does the join);
+  `lumpy_D10_noise3` remains unrun.
 
 | Remaining 567 runs | Optimizer hours |
 | --- | ---: |

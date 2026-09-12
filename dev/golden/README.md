@@ -20,35 +20,52 @@ an intentional correctness fix may change its results.
 
 ## Current reference
 
-**`reference_870_20260907`: 870 runs across 19 configurations.** Sixteen
-configurations use seeds 0–49, two noisy additions use seeds 0–29, and the
+**`reference_990_20260912`: 990 runs across 23 configurations.** Sixteen
+configurations use seeds 0–49, six use seeds 0–29 (two noisy additions of
+2026-09-07 and four real-data configurations of 2026-09-12), and the
 15-dimensional budget-exhaustion case uses seeds 0–9. The population includes
-160 noisy runs across four configurations and 76 KS tests. The
+250 noisy runs across seven configurations and 92 KS tests. The
 [results summary](baseline/summary.md) gives the measured outcomes for every
-configuration. The golden suite of `benchmark_targets.py` also registers
-four real-data configurations (`multisensory_s1_D6`, `timing_D5_noise2.2`,
-`multisensory_s1_D6_noise1.3`, `multisensory_s2_D6_noise1.3`) that have no
-reference traces yet; their campaigns are planned in
-[benchmark-realistic-targets.md](../plans/benchmark-realistic-targets.md).
+configuration.
 
-The 60 additions are `rosenbrock_D2_noise3` and `student_D8_noise3`, each at
-seeds 0–29, with noise SD 3 and evaluation budgets 200 and 500. They were
-generated from pinned source `623f5cd` with gpyreg `a2f8ddc`; all 60 produced
-complete result pairs, 53 converged, and seven noisy Rosenbrock runs reached
-their evaluation budget. The Rosenbrock usable count is 23/30 and the Student
-usable count is 14/30; Student's median absolute ELBO error is 1.08. The
-reference records these outcomes rather than treating every completed run as
-an accurate fit. `lumpy_D10_noise3` remains registered but was deferred from
-this batch. This supersedes the original 150-run/960-total allocation.
+The four real-data configurations are the Bayesian timing model and the
+multisensory causal-inference model on two subjects from the 2020
+noisy-VBMC paper, on exported data with spline-trapezoidal priors and the
+paper's plausible boxes, defined in
+[benchmark-realistic-targets.md](../plans/benchmark-realistic-targets.md):
+subject 1 noiseless (`multisensory_s1_D6`) and all three at the paper's
+noise levels (`timing_D5_noise2.2`, `multisensory_s1_D6_noise1.3`,
+`multisensory_s2_D6_noise1.3`) with its budget of 50 (D + 2) evaluations.
+Their ground truths are importance-weighted populations under
+`dev/scripts/data/truths/`. The 120 runs were generated from the frozen
+checkout `fc50ee1` with gpyreg `a2f8ddc`, whose default-path numerics equal
+the frozen treatment `68a43db` of the population campaigns; all produced
+complete result pairs, 119 converged and one timing run reached its budget.
+Usable counts are 28/30 for noiseless subject 1, 5/30 and 22/30 for the
+noisy subjects 1 and 2, and 28/30 for timing; the returned posteriors are
+under-dispersed on every real-data target, timing's `w_s` and `sigma_p` by
+about 30 %. The record is
+[`realdata_extension_20260912`](realdata_extension_20260912/README.md).
+
+The 60 noisy additions of 2026-09-07 are `rosenbrock_D2_noise3` and
+`student_D8_noise3`, each at seeds 0–29, with noise SD 3 and evaluation
+budgets 200 and 500, generated from pinned source `623f5cd` with gpyreg
+`a2f8ddc`; 53 converged and seven noisy Rosenbrock runs reached their
+budget, with usable counts 23/30 and 14/30 and a median absolute ELBO error
+of 1.08 for Student. The reference records these outcomes rather than
+treating every completed run as an accurate fit. `lumpy_D10_noise3` remains
+registered but has no reference traces.
 
 The historical 810 pairs remain byte-identical. Their execution record is
-[`extension_20260907`](extension_20260907/README.md); the additions and combined
-reference are recorded in
-[`noisy_extension_20260907`](noisy_extension_20260907/README.md). All 870
-archives passed integrity checks, the 76-test even/odd comparison had no
-flags, and the default five-case replay matched stored loop and final values
-and initial designs with zero flags. Historical traces omit the returned
-posterior's transformer, so replay reports that field as uncertifiable.
+[`extension_20260907`](extension_20260907/README.md); the noisy additions
+and the 870-run reference are recorded in
+[`noisy_extension_20260907`](noisy_extension_20260907/README.md). All 990
+archives passed integrity checks and the 92-test even/odd comparison had no
+flags. The real-data configurations replay bit-exactly with the current
+code; the older configurations' traces predate the 1.5 numerics, so their
+replays part early and only the accuracy envelopes apply. No trace stores
+the returned posterior's transformer, so replay reports that field as
+uncertifiable.
 
 | Target | Dimensions | What it exercises |
 |---|---|---|
@@ -66,6 +83,9 @@ posterior's transformer, so replay reports that field as uncertifiable.
 | `rosenbrock_D2_noise3` | 2 | Harder noisy curved posterior, noise SD 3 |
 | `student_D8_noise3` | 8 | Heavy-tailed posterior and noisy evaluations, noise SD 3 |
 | `cigar_D15_exhaust` | 15 | The late GP regime under a fixed 750-evaluation budget |
+| `multisensory_s1` | 6 | Real-data causal-inference likelihood, subject 1: noiseless and with noise SD 1.3 |
+| `multisensory_s2` | 6 | The same model on subject 2, with noise SD 1.3 |
+| `timing` | 5 | Real-data Bayesian timing likelihood with noise SD 2.2 |
 
 A run's seed controls the solver and separate streams for the starting point
 and, where applicable, evaluation noise. Starting points are drawn uniformly
@@ -94,13 +114,13 @@ certifies its full joint shape. The summary also reports posterior-mean
 RMSE, iterations, mixture size, warps and wall time. `usable` is the fraction
 meeting all three accuracy thresholds: `elbo_err < 1`, `gskl < 1`, and
 `mmtv < 0.2`. `failed` counts execution failures, not unconverged or inaccurate
-fits. All 870 reference runs completed. Of these, 853 converged and 17 reached
-their budgets: the ten intentional D15 exhaust cases and seven noisy
-Rosenbrock additions.
+fits. All 990 reference runs completed. Of these, 972 converged and 18 reached
+their budgets: the ten intentional D15 exhaust cases, seven noisy Rosenbrock
+runs and one noisy timing run.
 
 The population check applies two-sample Kolmogorov–Smirnov tests to
 `elbo_err`, `gskl`, `mmtv` and evaluation count, with a Holm correction at
-alpha 0.05 across the family (76 tests for all 19 configurations). A flag
+alpha 0.05 across the family (92 tests for all 23 configurations). A flag
 means a distribution changed and needs investigation; it does not establish
 that the change is a regression. No flag is not proof of equivalence.
 Wall time is recorded but is not a pass/fail metric. These runs assess
@@ -108,11 +128,11 @@ inference behavior; controlled speed comparisons need dedicated benchmarks.
 
 ## Files and checks
 
-- [`baseline/`](baseline/) contains the 870 JSON sidecars and summary, tracked
+- [`baseline/`](baseline/) contains the 990 JSON sidecars and summary, tracked
   in Git. Each sidecar records the target, seed, requested/effective options,
   code and dependency versions, and final metrics.
 - Full `.npz` traces contain per-iteration data and final arrays. They remain
-  local under `dev/scripts/runs/golden/reference_870_20260907/` (gitignored). Copy that
+  local under `dev/scripts/runs/golden/reference_990_20260912/` (gitignored). Copy that
   directory from the generating laptop for exact replay elsewhere. Publishing
   a downloadable trace archive is planned for the 1.5 release.
 
@@ -145,8 +165,9 @@ dependency versions and numerical platform. These are part of the reference;
 matching the seed alone is insufficient.
 
 Exact environment information, reproduction commands, file hashes and
-validation reports are in the [810-run record](extension_20260907/README.md)
-and [60-run integration record](noisy_extension_20260907/README.md).
+validation reports are in the [810-run record](extension_20260907/README.md),
+the [60-run integration record](noisy_extension_20260907/README.md) and the
+[120-run real-data record](realdata_extension_20260912/README.md).
 The legacy `regenerate_baseline.sh` uses a different seed allocation and
 masks comparison failures; use the recorded procedure when reproducing this
 snapshot.

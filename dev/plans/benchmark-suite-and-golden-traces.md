@@ -19,22 +19,28 @@ mathematics + feasibility); every finding is folded in below.
 
 ## Summary
 
-**Current coverage, 2026-09-07:** `reference_870_20260907` contains 870 runs
-across 19 configurations, including 160 noisy runs across four configurations,
-with 76 KS tests in the population comparison. The addition is 30 seeds each
-of `rosenbrock_D2_noise3` and `student_D8_noise3`, using the existing noise
-wrapper and paper budgets 200 and 500. All 60 additions produced complete
-pairs; 53 converged and seven noisy Rosenbrock runs reached their evaluation
-budget. They were generated from pinned source `623f5cd` and gpyreg `a2f8ddc`.
-The pre-existing 810 pairs remain byte-identical. `lumpy_D10_noise3` (budget
-600) remains registered but was deferred from this batch, which supersedes
-the original three-configuration, 150-run allocation. The reference-quality
-limitations and integration evidence are recorded in
-[`noisy_extension_20260907`](../golden/noisy_extension_20260907/README.md).
-All 870 archives passed integrity checks; the 76-test even/odd comparison had
-no flags, and the default five-case replay matched every stored loop and final
-value plus each initial design, with zero flags. Historical returned-posterior
-transformers were not stored and remain explicitly uncertifiable.
+**Current coverage, 2026-09-12:** `reference_990_20260912` contains 990 runs
+across 23 configurations, including 250 noisy runs across seven
+configurations, with 92 KS tests in the population comparison. The latest
+addition is 30 seeds each of the four real-data configurations
+(`multisensory_s1_D6`, `timing_D5_noise2.2`, `multisensory_s1_D6_noise1.3`,
+`multisensory_s2_D6_noise1.3`; targets, truths and campaign in
+[benchmark-realistic-targets.md](benchmark-realistic-targets.md)), generated
+from the frozen checkout `fc50ee1` and gpyreg `a2f8ddc`; all 120 produced
+complete pairs, 119 converged and one timing run reached its budget. The
+2026-09-07 addition is 30 seeds each of `rosenbrock_D2_noise3` and
+`student_D8_noise3`, using the existing noise wrapper and paper budgets 200
+and 500, from pinned source `623f5cd`; 53 converged and seven noisy
+Rosenbrock runs reached their budget. The pre-existing 810 pairs remain
+byte-identical. `lumpy_D10_noise3` (budget 600) remains registered without
+reference traces. The records are
+[`noisy_extension_20260907`](../golden/noisy_extension_20260907/README.md)
+and [`realdata_extension_20260912`](../golden/realdata_extension_20260912/README.md).
+All 990 archives passed integrity checks and the 92-test even/odd comparison
+had no flags; the real-data configurations replay bit-exactly with the
+current code, while the older traces predate the 1.5 numerics and part
+early. Returned-posterior transformers are not stored and remain explicitly
+uncertifiable.
 
 Historical results below retain their original coverage and provenance. The
 preparation and implementation checklist remains in

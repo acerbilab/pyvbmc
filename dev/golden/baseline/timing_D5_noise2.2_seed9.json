@@ -1,0 +1,148 @@
+{
+ "label": "timing_D5_noise2.2",
+ "seed": 9,
+ "problem": "timing",
+ "D": 5,
+ "noise_sd": 2.2,
+ "requested_options": {
+  "specify_target_noise": true,
+  "max_fun_evals": 350,
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false,
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
+ },
+ "effective_options": {
+  "max_fun_evals": 350,
+  "max_iter": 350,
+  "tol_stable_count": 90,
+  "tol_stable_excpt_frac": 0.2,
+  "specify_target_noise": true,
+  "search_acq_fcn": [
+   "<pyvbmc.acquisition_functions.acq_fcn_viqr.AcqFcnVIQR object at 0x000001E2E4872E10>"
+  ],
+  "active_sample_gp_update": true,
+  "active_sample_vp_update": true,
+  "min_final_components": 50,
+  "do_final_boost": true,
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false,
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
+ },
+ "timer_keys": [
+  "active_sampling",
+  "finalize",
+  "fun_time",
+  "gp_train",
+  "variational_fit",
+  "warping"
+ ],
+ "ln_Z": -3861.309346138519,
+ "true_mean": [
+  [
+   0.08565275230423046,
+   0.036751360710635686,
+   0.7054712941454643,
+   0.13051993287057279,
+   0.013115612081205154
+  ]
+ ],
+ "true_cov": [
+  [
+   5.6163372566912404e-05,
+   -6.220216070893932e-05,
+   -5.3718115106222666e-05,
+   8.498861659957358e-05,
+   -4.406032836318654e-07
+  ],
+  [
+   -6.220216070893932e-05,
+   8.325014391673757e-05,
+   7.281701037388462e-05,
+   -0.00010291536749010966,
+   3.1797158771390824e-07
+  ],
+  [
+   -5.3718115106222666e-05,
+   7.281701037388462e-05,
+   0.00017374277881326453,
+   -0.00012167100064186999,
+   3.9142687930797426e-07
+  ],
+  [
+   8.498861659957358e-05,
+   -0.00010291536749010966,
+   -0.00012167100064186999,
+   0.00015825395707212312,
+   -6.903121291535419e-07
+  ],
+  [
+   -4.406032836318654e-07,
+   3.1797158771390824e-07,
+   3.9142687930797426e-07,
+   -6.903121291535419e-07,
+   2.8482209311614973e-06
+  ]
+ ],
+ "plb": [
+  0.05,
+  0.05,
+  0.6,
+  0.07499999999999996,
+  0.02
+ ],
+ "pub": [
+  0.25,
+  0.25,
+  0.975,
+  0.375,
+  0.05
+ ],
+ "notes": "Bayesian time-interval reproduction (Acerbi, Wolpert & Vijayakumar 2012), 1512 trials of one subject over 6 intervals, responses binned at 0.02 s; the 2020 paper's problem and box, times a spline-trapezoidal prior with the pivots at the plausible bounds; likelihood ported from benchflow",
+ "final": {
+  "elbo": -3860.9727168822633,
+  "elbo_sd": 0.26362699058970906,
+  "best_iter": 39,
+  "iterations": 40,
+  "func_count": 200,
+  "final_K": 50,
+  "final_N": 200,
+  "min_Ns_gp": 6,
+  "n_warps": 2,
+  "success_flag": true,
+  "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+  "wall_s": 165.1876534000039,
+  "target_eval_s": 7.937773704528809,
+  "elbo_err": 0.3366292562554918,
+  "gskl": 0.3967062673798649,
+  "mmtv": 0.1073909066488021,
+  "rmse": 0.0019058300107542218,
+  "moment_method": "mc",
+  "peak_rss_mb": 240.33203125
+ },
+ "meta": {
+  "git": {
+   "sha": "fc50ee1",
+   "dirty": false
+  },
+  "python": "3.12.6",
+  "numpy": "2.5.2",
+  "scipy": "1.18.1",
+  "pyvbmc": "1.0.5.dev159+g4bff1a5b9",
+  "gpyreg": "1.1.0",
+  "cma": "4.4.4",
+  "threads": {
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1",
+   "MKL_NUM_THREADS": "1"
+  },
+  "started": "2026-09-12 14:51:45",
+  "finished": "2026-09-12 14:54:31",
+  "pid": 26808
+ }
+}

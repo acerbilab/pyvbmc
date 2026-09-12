@@ -981,13 +981,17 @@ Complete these follow-up tasks before the final pre-release documentation
 review. Public inclusion of the real-data targets and the Slurm design
 remain open.
 
-- [ ] Extend the core benchmark with real-data targets: the Bayesian timing
+- [x] Extend the core benchmark with real-data targets: the Bayesian timing
   model and the multisensory causal-inference model on two subjects,
   chosen on 2026-09-11 from the lab-private
   [benchflow repository](https://github.com/acerbilab/benchflow) (the
   Goris neuronal model deferred). Definitions, ground-truth method,
   reference campaigns, status and evidence are in
-  [benchmark-realistic-targets.md](benchmark-realistic-targets.md). Which
+  [benchmark-realistic-targets.md](benchmark-realistic-targets.md).
+  Completed 2026-09-12: truths generated, the four configurations run at
+  seeds 0–29 from a certified frozen checkout and joined to the golden
+  reference as `reference_990_20260912`
+  ([record](../golden/realdata_extension_20260912/README.md)). Which
   targets and data move into PyVBMC's public tests is decided at the
   documentation review.
 - [ ] Improve support for running benchmarks on Slurm HPC systems, including
