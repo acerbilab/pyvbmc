@@ -8,12 +8,26 @@
      50
     ],
     "M": 3,
-    "elbo": {
-     "debiased_E_median": 1.1256280005123922,
-     "debiased_I_median": 1.090914774847687,
-     "estimated": 1.1272726223920517
+    "elbo": 1.1110179553537227,
+    "elbo_details": {
+     "cap_amount": 0.0,
+     "capped_E_median": 1.1094643414668985,
+     "capped_I_median": 1.076372818063778,
+     "entropy_sd": 0.01000068324105166,
+     "gp_sd": 0.00042725641109449876,
+     "headline_method": "raw",
+     "naive": 1.0917485548996657,
+     "noise_status_source": [
+      "inferred",
+      "inferred",
+      "inferred"
+     ],
+     "noisy": false,
+     "raw": 1.1110179553537227,
+     "raw_sd": 0.01000980585869041
     },
-    "entropy": 2.125525580137149,
+    "elbo_sd": 0.01000980585869041,
+    "entropy": 2.1092246318745804,
     "w": "@@npz:bounded_D2/all-weights/w"
    },
    "ns": {
@@ -23,12 +37,26 @@
      50
     ],
     "M": 3,
-    "elbo": {
-     "debiased_E_median": 1.0876046611516381,
-     "debiased_I_median": 1.053537949015554,
-     "estimated": 1.0876046611516381
+    "elbo": 1.0928166077647417,
+    "elbo_details": {
+     "cap_amount": 0.0,
+     "capped_E_median": 1.0921723384183848,
+     "capped_I_median": 1.0590808150152642,
+     "entropy_sd": 0.009481536999129016,
+     "gp_sd": 0.00042728864971127345,
+     "headline_method": "raw",
+     "naive": 1.0928166077647417,
+     "noise_status_source": [
+      "inferred",
+      "inferred",
+      "inferred"
+     ],
+     "noisy": false,
+     "raw": 1.0928166077647417,
+     "raw_sd": 0.00949116006903395
     },
-    "entropy": 2.088148754305016,
+    "elbo_sd": 0.00949116006903395,
+    "entropy": 2.0919326288260667,
     "w": "@@npz:bounded_D2/ns/w"
    },
    "posterior-only": {
@@ -38,12 +66,26 @@
      50
     ],
     "M": 3,
-    "elbo": {
-     "debiased_E_median": 1.1238811516806009,
-     "debiased_I_median": 1.0891679260158957,
-     "estimated": 1.128096050016545
+    "elbo": 1.1098341605821094,
+    "elbo_details": {
+     "cap_amount": 0.0,
+     "capped_E_median": 1.1083295518315952,
+     "capped_I_median": 1.0752380284284746,
+     "entropy_sd": 0.009824854860413417,
+     "gp_sd": 0.00042264646416570874,
+     "headline_method": "raw",
+     "naive": 1.0917485548996657,
+     "noise_status_source": [
+      "inferred",
+      "inferred",
+      "inferred"
+     ],
+     "noisy": false,
+     "raw": 1.1098341605821094,
+     "raw_sd": 0.009833941379826346
     },
-    "entropy": 2.1237787313053578,
+    "elbo_sd": 0.009833941379826346,
+    "entropy": 2.108089842239277,
     "w": "@@npz:bounded_D2/posterior-only/w"
    }
   },
@@ -55,12 +97,26 @@
      50
     ],
     "M": 3,
-    "elbo": {
-     "debiased_E_median": 1.382825239954078,
-     "debiased_I_median": 1.3537575120809522,
-     "estimated": 1.382825239954078
+    "elbo": 1.3639860680813745,
+    "elbo_details": {
+     "cap_amount": 0.0,
+     "capped_E_median": 1.3639860680813745,
+     "capped_I_median": 1.3349183402082485,
+     "entropy_sd": 0.011883893354614492,
+     "gp_sd": 0.0003448329212819379,
+     "headline_method": "raw",
+     "naive": 1.3745652308689897,
+     "noise_status_source": [
+      "inferred",
+      "inferred",
+      "inferred"
+     ],
+     "noisy": false,
+     "raw": 1.3639860680813745,
+     "raw_sd": 0.011888895281204655
     },
-    "entropy": 2.913276840582381,
+    "elbo_sd": 0.011888895281204655,
+    "entropy": 2.894437668709677,
     "w": "@@npz:corr_D3/all-weights/w"
    },
    "ns": {
@@ -70,12 +126,26 @@
      50
     ],
     "M": 3,
-    "elbo": {
-     "debiased_E_median": 1.3595526035366796,
-     "debiased_I_median": 1.3255096299273799,
-     "estimated": 1.3595526035366796
+    "elbo": 1.355851900923284,
+    "elbo_details": {
+     "cap_amount": 0.0,
+     "capped_E_median": 1.355851900923284,
+     "capped_I_median": 1.321808927313984,
+     "entropy_sd": 0.012590876160837457,
+     "gp_sd": 0.00034423841990434824,
+     "headline_method": "raw",
+     "naive": 1.355851900923284,
+     "noise_status_source": [
+      "inferred",
+      "inferred",
+      "inferred"
+     ],
+     "noisy": false,
+     "raw": 1.355851900923284,
+     "raw_sd": 0.012595581073824393
     },
-    "entropy": 2.8850289584288085,
+    "elbo_sd": 0.012595581073824393,
+    "entropy": 2.8813282558154123,
     "w": "@@npz:corr_D3/ns/w"
    },
    "posterior-only": {
@@ -85,12 +155,26 @@
      50
     ],
     "M": 3,
-    "elbo": {
-     "debiased_E_median": 1.386159911909528,
-     "debiased_I_median": 1.3487417074681334,
-     "estimated": 1.386159911909528
+    "elbo": 1.3634752462465467,
+    "elbo_details": {
+     "cap_amount": 0.0,
+     "capped_E_median": 1.3634752462465467,
+     "capped_I_median": 1.326057041805152,
+     "entropy_sd": 0.01200250511994773,
+     "gp_sd": 0.0003461044651899254,
+     "headline_method": "raw",
+     "naive": 1.3745652308689897,
+     "noise_status_source": [
+      "inferred",
+      "inferred",
+      "inferred"
+     ],
+     "noisy": false,
+     "raw": 1.3634752462465467,
+     "raw_sd": 0.012007494220493962
     },
-    "entropy": 2.908261035969562,
+    "elbo_sd": 0.012007494220493962,
+    "entropy": 2.8855763703065804,
     "w": "@@npz:corr_D3/posterior-only/w"
    }
   },
@@ -102,12 +186,26 @@
      50
     ],
     "M": 3,
-    "elbo": {
-     "debiased_E_median": 1.106800409584799,
-     "debiased_I_median": 1.107294151473742,
-     "estimated": 1.107294151473742
+    "elbo": 1.1037032642824995,
+    "elbo_details": {
+     "cap_amount": 0.0,
+     "capped_E_median": 1.103209522393557,
+     "capped_I_median": 1.1037032642824995,
+     "entropy_sd": 0.006325180546667911,
+     "gp_sd": 0.00023354259520651498,
+     "headline_method": "raw",
+     "naive": 1.0940832024646399,
+     "noise_status_source": [
+      "inferred",
+      "inferred",
+      "inferred"
+     ],
+     "noisy": false,
+     "raw": 1.1037032642824995,
+     "raw_sd": 0.006329490587063225
     },
-    "entropy": 1.604403155324302,
+    "elbo_sd": 0.006329490587063225,
+    "entropy": 1.6008122681330597,
     "w": "@@npz:normal_D1/all-weights/w"
    },
    "ns": {
@@ -117,12 +215,26 @@
      50
     ],
     "M": 3,
-    "elbo": {
-     "debiased_E_median": 1.1067998665673335,
-     "debiased_I_median": 1.107293403468666,
-     "estimated": 1.107293403468666
+    "elbo": 1.0993287390695203,
+    "elbo_details": {
+     "cap_amount": 0.0,
+     "capped_E_median": 1.0988352021681882,
+     "capped_I_median": 1.0993287390695203,
+     "entropy_sd": 0.006519412168741254,
+     "gp_sd": 0.0002335853059146348,
+     "headline_method": "raw",
+     "naive": 1.0993287390695203,
+     "noise_status_source": [
+      "inferred",
+      "inferred",
+      "inferred"
+     ],
+     "noisy": false,
+     "raw": 1.0993287390695203,
+     "raw_sd": 0.006523595413655784
     },
-    "entropy": 1.6044026123068367,
+    "elbo_sd": 0.006523595413655784,
+    "entropy": 1.596437947907691,
     "w": "@@npz:normal_D1/ns/w"
    },
    "posterior-only": {
@@ -132,12 +244,26 @@
      50
     ],
     "M": 3,
-    "elbo": {
-     "debiased_E_median": 1.1098496972337593,
-     "debiased_I_median": 1.1105283682614426,
-     "estimated": 1.1105283682614426
+    "elbo": 1.104632558700537,
+    "elbo_details": {
+     "cap_amount": 0.0,
+     "capped_E_median": 1.103953887672854,
+     "capped_I_median": 1.104632558700537,
+     "entropy_sd": 0.006480521404059912,
+     "gp_sd": 0.00020289666190442842,
+     "headline_method": "raw",
+     "naive": 1.0940832024646399,
+     "noise_status_source": [
+      "inferred",
+      "inferred",
+      "inferred"
+     ],
+     "noisy": false,
+     "raw": 1.104632558700537,
+     "raw_sd": 0.006483696840837842
     },
-    "entropy": 1.6074524429732624,
+    "elbo_sd": 0.006483696840837842,
+    "entropy": 1.6015566334123568,
     "w": "@@npz:normal_D1/posterior-only/w"
    }
   },
@@ -156,12 +282,33 @@
      50
     ],
     "M": 10,
-    "elbo": {
-     "debiased_E_median": 2.9914054109115877,
-     "debiased_I_median": 2.9914054109115877,
-     "estimated": 2.9914054109115877
+    "elbo": 3.002111027577782,
+    "elbo_details": {
+     "cap_amount": 0.0,
+     "capped_E_median": 3.002111027577782,
+     "capped_I_median": 3.002111027577782,
+     "entropy_sd": 0.006594084134048499,
+     "gp_sd": 0.002976773947063615,
+     "headline_method": "raw",
+     "naive": 2.9536297096896735,
+     "noise_status_source": [
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred"
+     ],
+     "noisy": false,
+     "raw": 3.002111027577782,
+     "raw_sd": 0.007234855126319174
     },
-    "entropy": 4.644611563138126,
+    "elbo_sd": 0.007234855126319174,
+    "entropy": 4.65531717980432,
     "w": "@@npz:upstream_GMM/all-weights/w"
    },
    "ns": {
@@ -178,12 +325,33 @@
      50
     ],
     "M": 10,
-    "elbo": {
-     "debiased_E_median": 2.9452872822107308,
-     "debiased_I_median": 2.9418666554878996,
-     "estimated": 2.9452872822107308
+    "elbo": 2.956994298068677,
+    "elbo_details": {
+     "cap_amount": 0.0,
+     "capped_E_median": 2.956994298068677,
+     "capped_I_median": 2.953573671345846,
+     "entropy_sd": 0.006148687447397256,
+     "gp_sd": 0.0022731746161370847,
+     "headline_method": "raw",
+     "naive": 2.956994298068677,
+     "noise_status_source": [
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred"
+     ],
+     "noisy": false,
+     "raw": 2.956994298068677,
+     "raw_sd": 0.006555431348220388
     },
-    "entropy": 4.590060254532294,
+    "elbo_sd": 0.006555431348220388,
+    "entropy": 4.601767270390241,
     "w": "@@npz:upstream_GMM/ns/w"
    },
    "posterior-only": {
@@ -200,12 +368,33 @@
      50
     ],
     "M": 10,
-    "elbo": {
-     "debiased_E_median": 2.994756715567802,
-     "debiased_I_median": 2.9928268488812426,
-     "estimated": 2.994756715567802
+    "elbo": 3.0044430185223017,
+    "elbo_details": {
+     "cap_amount": 0.0,
+     "capped_E_median": 3.0044430185223017,
+     "capped_I_median": 3.0025131518357417,
+     "entropy_sd": 0.00669961377796495,
+     "gp_sd": 0.002969035206015781,
+     "headline_method": "raw",
+     "naive": 2.9536297096896735,
+     "noise_status_source": [
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred"
+     ],
+     "noisy": false,
+     "raw": 3.0044430185223017,
+     "raw_sd": 0.007328028031364165
     },
-    "entropy": 4.641020447925637,
+    "elbo_sd": 0.007328028031364165,
+    "entropy": 4.650706750880136,
     "w": "@@npz:upstream_GMM/posterior-only/w"
    }
   },
@@ -224,12 +413,33 @@
      50
     ],
     "M": 10,
-    "elbo": {
-     "debiased_E_median": 2.8459092319337427,
-     "debiased_I_median": 2.7981582982114674,
-     "estimated": 2.9317294079608103
+    "elbo": 2.8179959689214997,
+    "elbo_details": {
+     "cap_amount": 0.13357110974934283,
+     "capped_E_median": 2.865746902643775,
+     "capped_I_median": 2.8179959689214997,
+     "entropy_sd": 0.011171083931609595,
+     "gp_sd": 0.10751423622933072,
+     "headline_method": "capped_I_median",
+     "naive": 2.770859254366841,
+     "noise_status_source": [
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred"
+     ],
+     "noisy": true,
+     "raw": 2.9515670786708426,
+     "raw_sd": 0.10809303450353958
     },
-    "entropy": 4.41388297704771,
+    "elbo_sd": 0.10809303450353958,
+    "entropy": 4.433720647757743,
     "w": "@@npz:upstream_GMM_noisy/all-weights/w"
    },
    "ns": {
@@ -246,12 +456,33 @@
      50
     ],
     "M": 10,
-    "elbo": {
-     "debiased_E_median": 2.74973366242515,
-     "debiased_I_median": 2.7019827287028746,
-     "estimated": 2.7645802672712483
+    "elbo": 2.7081300682190963,
+    "elbo_details": {
+     "cap_amount": 0.06259753856837369,
+     "capped_E_median": 2.7558810019413715,
+     "capped_I_median": 2.7081300682190963,
+     "entropy_sd": 0.008036576363087479,
+     "gp_sd": 0.09934201082056214,
+     "headline_method": "capped_I_median",
+     "naive": 2.77072760678747,
+     "noise_status_source": [
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred"
+     ],
+     "noisy": true,
+     "raw": 2.77072760678747,
+     "raw_sd": 0.09966655243115627
     },
-    "entropy": 4.3177074075391175,
+    "elbo_sd": 0.09966655243115627,
+    "entropy": 4.323854747055339,
     "w": "@@npz:upstream_GMM_noisy/ns/w"
    },
    "posterior-only": {
@@ -268,12 +499,33 @@
      50
     ],
     "M": 10,
-    "elbo": {
-     "debiased_E_median": 2.836067793200176,
-     "debiased_I_median": 2.788316859477901,
-     "estimated": 2.9298265922249356
+    "elbo": 2.772425682555838,
+    "elbo_details": {
+     "cap_amount": 0.14150973274703427,
+     "capped_E_median": 2.8201766162781134,
+     "capped_I_median": 2.772425682555838,
+     "entropy_sd": 0.01062550892263808,
+     "gp_sd": 0.10661836289007663,
+     "headline_method": "capped_I_median",
+     "naive": 2.770859254366841,
+     "noise_status_source": [
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred"
+     ],
+     "noisy": true,
+     "raw": 2.9139354153028725,
+     "raw_sd": 0.10714651998653588
     },
-    "entropy": 4.404041538314144,
+    "elbo_sd": 0.10714651998653588,
+    "entropy": 4.388150361392081,
     "w": "@@npz:upstream_GMM_noisy/posterior-only/w"
    }
   },
@@ -292,12 +544,33 @@
      50
     ],
     "M": 10,
-    "elbo": {
-     "debiased_E_median": 2.257683041703025,
-     "debiased_I_median": 2.257683041703025,
-     "estimated": 2.257683041703025
+    "elbo": 2.2502080500316985,
+    "elbo_details": {
+     "cap_amount": 0.0,
+     "capped_E_median": 2.2502080500316985,
+     "capped_I_median": 2.2502080500316985,
+     "entropy_sd": 0.0037458208282783656,
+     "gp_sd": 0.002250146275228765,
+     "headline_method": "raw",
+     "naive": 2.2359944272008443,
+     "noise_status_source": [
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred"
+     ],
+     "noisy": false,
+     "raw": 2.2502080500316985,
+     "raw_sd": 0.004369706161458675
     },
-    "entropy": 3.087702669857081,
+    "elbo_sd": 0.004369706161458675,
+    "entropy": 3.0802276781857545,
     "w": "@@npz:upstream_Ring/all-weights/w"
    },
    "ns": {
@@ -314,12 +587,33 @@
      50
     ],
     "M": 10,
-    "elbo": {
-     "debiased_E_median": 2.2278828796583396,
-     "debiased_I_median": 2.2306968170659793,
-     "estimated": 2.2306968170659793
+    "elbo": 2.2358538360508837,
+    "elbo_details": {
+     "cap_amount": 0.0,
+     "capped_E_median": 2.2330398986432436,
+     "capped_I_median": 2.2358538360508837,
+     "entropy_sd": 0.0038085835802034217,
+     "gp_sd": 0.0023006193087874763,
+     "headline_method": "raw",
+     "naive": 2.2358538360508837,
+     "noise_status_source": [
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred"
+     ],
+     "noisy": false,
+     "raw": 2.2358538360508837,
+     "raw_sd": 0.0044495121183519525
     },
-    "entropy": 3.0562639995201994,
+    "elbo_sd": 0.0044495121183519525,
+    "entropy": 3.0614210185051034,
     "w": "@@npz:upstream_Ring/ns/w"
    },
    "posterior-only": {
@@ -336,25 +630,55 @@
      50
     ],
     "M": 10,
-    "elbo": {
-     "debiased_E_median": 2.253160878007386,
-     "debiased_I_median": 2.253160878007386,
-     "estimated": 2.253160878007386
+    "elbo": 2.2447276047660654,
+    "elbo_details": {
+     "cap_amount": 0.0,
+     "capped_E_median": 2.2447276047660654,
+     "capped_I_median": 2.2447276047660654,
+     "entropy_sd": 0.003782132639823324,
+     "gp_sd": 0.002458125796766847,
+     "headline_method": "raw",
+     "naive": 2.2359944272008443,
+     "noise_status_source": [
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred",
+      "inferred"
+     ],
+     "noisy": false,
+     "raw": 2.2447276047660654,
+     "raw_sd": 0.004510754896682771
     },
-    "entropy": 3.0873403082351976,
+    "elbo_sd": 0.004510754896682771,
+    "entropy": 3.078907034993877,
     "w": "@@npz:upstream_Ring/posterior-only/w"
    }
   }
  },
  "meta": {
-  "description": "SVBMC(vps, seed=seed).optimize(n_samples=n_samples, lr=lr, max_steps=max_steps, version=mode) on every fixture group; the fixtures were loaded with load_group(group, rng=0)",
-  "generated": "2026-09-11",
+  "description": "SVBMC(vps, seed=seed).optimize(n_samples=n_samples, n_samples_final=n_samples_final, lr=lr, max_steps=max_steps, version=mode) on every fixture group; the fixtures were loaded with load_group(group, rng=0)",
+  "generated": "2026-09-12",
   "lr": 0.1,
   "max_steps": 3,
   "n_samples": 20,
+  "n_samples_final": 100,
   "numpy": "2.5.2",
-  "pyvbmc_commit": "4ee8328e037d278ad7c65d3dcf9b4efdd8933780",
+  "pyvbmc_commit": "f93cf01ab3ea00fe033f41625be58e4d36ab2356",
   "seed": 0,
+  "svbmc_source_sha256": {
+   "pyvbmc/svbmc/__init__.py": "a27adf91c62e3c93a966cea6c8474725950d9bd992e30c39ac30607b6799677d",
+   "pyvbmc/svbmc/_jacobian.py": "cb5821610fdef382e77bdea4311a218284847c3146938a1776bbd357a351d17b",
+   "pyvbmc/svbmc/_runtime_tips.py": "1a5608e0a7a049adb5f20520a7aa48d9d6451ce79e18be98f1143f430007cf02",
+   "pyvbmc/svbmc/_tip_catalog.py": "0a8603d38f2e84931f8fd7f1696914bff680031e60d61a313f5205c6673fe3e9",
+   "pyvbmc/svbmc/svbmc.py": "60c3eee410a0347be642b2284ebaaf06377cd3f433e8bb44e603b44f4cda83df",
+   "pyvbmc/svbmc/utils.py": "90e5d1da900d5bbd5cec6bc053f96dec367f759dea62205003f3c1545770ed18"
+  },
   "torch": "2.14.0+cpu"
  }
 }

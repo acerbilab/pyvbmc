@@ -85,6 +85,7 @@ def seeded_run():
     state = np.random.get_state()
     vbmc = _make_vbmc(42, show_tips=False)
     vp, results = vbmc.optimize()
+    assert vp.stats["uncertainty_handling_level"] == 0
     np.random.set_state(state)
     return vbmc, vp, results
 

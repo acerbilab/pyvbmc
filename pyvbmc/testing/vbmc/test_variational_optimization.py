@@ -648,8 +648,9 @@ def test_vb_init_type3_preserves_fixed_sigma_without_extra_draws(K, growth):
 
 
 @pytest.mark.parametrize("prune_expected", [False, True])
+@pytest.mark.parametrize("noise_level", [0, 1, 2])
 def test_optimize_vp_preserves_transformer_through_pruning(
-    mocker, prune_expected
+    mocker, prune_expected, noise_level
 ):
     D, K, Ns = 1, 3, 1
     vp = VariationalPosterior(D, K, rng=np.random.default_rng(4))
@@ -666,7 +667,7 @@ def test_optimize_vp_preserves_transformer_through_pruning(
     options = setup_options(D)
     options.__setitem__("tol_weight", 1e-3, force=True)
     options.__setitem__("tol_improvement", 1.0, force=True)
-    optim_state = {"warmup": False}
+    optim_state = {"warmup": False, "uncertainty_handling_level": noise_level}
     gp = mocker.Mock(X=np.array([[-1.0], [1.0]]), posteriors=[object()])
     mocker.patch(
         "pyvbmc.vbmc.variational_optimization._sieve",
@@ -714,6 +715,7 @@ def test_optimize_vp_preserves_transformer_through_pruning(
         expected_j = original_j
     assert pruned == int(prune_expected)
     assert optimized.parameter_transformer is parameter_transformer
+    assert optimized.stats["uncertainty_handling_level"] == noise_level
     expected_k = K - int(prune_expected)
     assert optimized.stats["J_sjk"].shape == (Ns, expected_k, expected_k)
     assert np.array_equal(optimized.stats["J_sjk"], expected_j)

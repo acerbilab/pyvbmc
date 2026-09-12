@@ -22,8 +22,24 @@ import scipy as sp
 
 from pyvbmc.rng import get_rng
 
+from ._jacobian import expected_log_jacobian
+from ._runtime_tips import consider_runtime_tip
+
 _REQUIRED_STATS = ("stable", "elbo", "I_sk", "J_sjk")
 _VERSIONS = ("all-weights", "posterior-only", "ns")
+
+
+def _validate_optimization(n_samples, max_steps, version):
+    """Validate optimization arguments before draws or user guidance."""
+    if version not in _VERSIONS:
+        raise ValueError(
+            f"Unknown S-VBMC version {version!r}; choose one of "
+            f"{', '.join(repr(v) for v in _VERSIONS)}."
+        )
+    if int(max_steps) < 1:
+        raise ValueError("`max_steps` should be at least 1.")
+    if int(n_samples) < 1:
+        raise ValueError("`n_samples` should be at least 1.")
 
 
 def _import_torch():
@@ -108,6 +124,11 @@ def _validate_posteriors(vp_list):
             raise ValueError(
                 f"`vp_list[{i}].stats['J_sjk']` should have shape (Ns, K, K) "
                 f"with K = {k}, got {J_sjk.shape}."
+            )
+        if I_sk.shape[0] < 1 or I_sk.shape[0] != J_sjk.shape[0]:
+            raise ValueError(
+                f"`vp_list[{i}]` needs matching, nonempty GP sample axes "
+                "in `I_sk` and `J_sjk`."
             )
         # The filters discard a run VBMC did not mark as converged, so only
         # a run that can be retained needs finite statistics.
@@ -194,6 +215,16 @@ Generator, optional
         Carlo entropy estimate and :meth:`sample`. ``None`` derives the
         generator from NumPy's global state, so ``np.random.seed`` before
         construction still fixes a run. Default ``None``.
+    show_tips : bool, optional
+        Show occasional guidance when INFO logging is enabled. Set to
+        ``False`` to suppress tips while keeping progress and cap messages.
+        Default ``True``.
+    noisy : bool or None, optional
+        Override the noise status of the whole stack. With ``None`` (the
+        default), read each retained run's ``uncertainty_handling_level``
+        statistic; when absent, infer noise from ``elbo_sd > 0.1``. This
+        inference can misclassify old posteriors. Any noisy retained run
+        selects the capped headline ELBO.
 
     Attributes
     ----------
@@ -210,12 +241,31 @@ Generator, optional
     w : np.ndarray, shape (1, K_total)
         Weights of all components, concatenated in run order and
         normalized. :meth:`optimize` replaces them with the optimized ones.
-    elbo : dict or None
-        After :meth:`optimize`: ``"estimated"`` (the optimized stacked
-        ELBO), ``"debiased_I_median"`` and ``"debiased_E_median"`` (the
-        same with the expected log-joint capped at the median component
-        and median run values, which counters the optimistic bias of
-        maximizing a noisy estimate).
+    elbo : float or None
+        After :meth:`optimize`: the component-median capped ELBO for noisy
+        runs, or the raw ELBO for noiseless runs, evaluated with fresh draws
+        at the returned weights. Capping is a heuristic correction for
+        optimistic expected log-joint estimates.
+    elbo_sd : float or None
+        Estimated uncertainty of the uncapped evaluation at the returned
+        weights: entropy Monte Carlo error and GP quadrature uncertainty,
+        treating runs as independent. It excludes selection bias and
+        uncertainty of the cap; it does not define a calibrated confidence
+        interval for the capped headline.
+    elbo_details : dict or None
+        After :meth:`optimize`: ``raw``, ``capped_I_median``,
+        ``capped_E_median`` and ``naive`` ELBO estimates; ``headline_method``
+        (``raw`` or ``capped_I_median``); ``cap_amount`` (the reduction
+        applied to the headline); ``entropy_sd``, ``gp_sd`` and ``raw_sd``
+        (equal to :attr:`elbo_sd`); ``noisy`` and ``noise_status_source``.
+        Naive stacking equally weights retained runs with their original
+        internal weights. Its estimate inherits the runs' errors and is
+        a diagnostic baseline, not a bound on the optimized ELBO.
+    noisy : bool
+        Whether the stack is treated as noisy.
+    noise_status_source : tuple of str
+        How each retained run's noise status was obtained: ``recorded``,
+        ``inferred`` or ``override``, in retained-run order.
     entropy : float or None
         After :meth:`optimize`: the entropy estimate of the stacked
         posterior at the optimized weights.
@@ -228,9 +278,8 @@ Generator, optional
     I_corrected, E_corrected : np.ndarray
         The expected log-joints corrected to the original space, per
         component (shape ``(1, K_total)``) and per run (shape ``(M,)``),
-        fixed at the first ELBO evaluation (``None`` and zeros before it);
-        the debiased ELBO values cap the expected log-joint at their
-        medians.
+        computed deterministically at construction. The capped ELBO
+        variants limit the expected log-joint to their medians.
     rng : np.random.Generator
         The object's random generator.
     logger : logging.Logger
@@ -244,9 +293,17 @@ Generator, optional
         s_max: float = np.sqrt(5),
         M_min: float | int = 2 / 3,
         seed=None,
+        *,
+        show_tips: bool = True,
+        noisy: bool | None = None,
     ):
         # Fail before any work if the optional dependency is missing.
         _import_torch()
+        if not isinstance(show_tips, (bool, np.bool_)):
+            raise TypeError("`show_tips` should be a boolean.")
+        if noisy is not None and not isinstance(noisy, (bool, np.bool_)):
+            raise TypeError("`noisy` should be a boolean or None.")
+        self.show_tips = bool(show_tips)
         # Root logger as in VBMC (a no-op if one is configured already).
         logging.basicConfig(stream=sys.stdout, format="%(message)s")
         self.logger = logging.getLogger("SVBMC")
@@ -301,6 +358,32 @@ Generator, optional
             "Got %d well-converged runs after filters.", len(self.vp_list)
         )
 
+        noise_flags, noise_sources = [], []
+        for vp in self.vp_list:
+            if noisy is not None:
+                noise_flags.append(bool(noisy))
+                noise_sources.append("override")
+            elif "uncertainty_handling_level" in vp.stats:
+                level = vp.stats["uncertainty_handling_level"]
+                if level not in (0, 1, 2):
+                    raise ValueError(
+                        "`uncertainty_handling_level` should be 0, 1 or 2."
+                    )
+                noise_flags.append(level > 0)
+                noise_sources.append("recorded")
+            else:
+                sd = vp.stats.get("elbo_sd")
+                if sd is None or not np.isfinite(sd) or sd < 0:
+                    raise ValueError(
+                        "A retained posterior without noise metadata needs "
+                        "a finite, nonnegative `elbo_sd`; set `noisy` "
+                        "explicitly when its noise status is known."
+                    )
+                noise_flags.append(sd > 0.1)
+                noise_sources.append("inferred")
+        self.noisy = bool(any(noise_flags))
+        self.noise_status_source = tuple(noise_sources)
+
         # Components per run, their weights (normalized over all runs) and
         # the posterior-mean expected log-joint of every component.
         self.K = [int(vp.mu.shape[1]) for vp in self.vp_list]
@@ -313,6 +396,9 @@ Generator, optional
             axis=1,
         )
         self.w = self.w / np.sum(self.w)
+        self._naive_weights = np.concatenate(
+            [np.ravel(vp.w) / np.sum(vp.w) / self.M for vp in self.vp_list]
+        ).astype(np.float64)
         self.I = np.concatenate(
             [
                 np.mean(
@@ -327,11 +413,23 @@ Generator, optional
         self.individual_elbos = [
             float(vp.stats["elbo"]) for vp in self.vp_list
         ]
-        # Jacobian-corrected expected log-joints, per component and per run,
-        # fixed at the first ELBO evaluation and used to debias the result.
-        self.I_corrected = None
-        self.E_corrected = np.zeros(self.M)
+        self._jacobian_corrections = np.concatenate(
+            [expected_log_jacobian(vp) for vp in self.vp_list]
+        )
+        self.I_corrected = self.I - self._jacobian_corrections
+        offsets = np.concatenate([[0], np.cumsum(self.K)])
+        self.E_corrected = np.array(
+            [
+                np.dot(
+                    self.I_corrected[0, offsets[m] : offsets[m + 1]],
+                    np.ravel(vp.w) / np.sum(vp.w),
+                )
+                for m, vp in enumerate(self.vp_list)
+            ]
+        )
         self.elbo = None
+        self.elbo_sd = None
+        self.elbo_details = None
         self.entropy = None
 
     def stacked_entropy(self, w, n_samples: int = 20):
@@ -358,11 +456,15 @@ Generator, optional
         H : torch.Tensor
             The entropy estimate (a float64 scalar).
         J_corrections : np.ndarray, shape (K_total,)
-            Per-component mean log-Jacobian of its run's transform at the
-            draws, which :meth:`stacked_ELBO` subtracts from the stored
-            expected log-joints so that both terms refer to the original
-            space.
+            Per-component expected log-Jacobian, computed deterministically
+            at construction, which :meth:`stacked_ELBO` subtracts from the
+            stored expected log-joints to express them in original space.
         """
+        H, corrections, _ = self._stacked_entropy(w, n_samples)
+        return H, corrections
+
+    def _stacked_entropy(self, w, n_samples, *, compute_variance=False):
+        """Evaluate entropy and optionally its stratified sampling variance."""
         torch = _import_torch()
         n_samples = int(n_samples)
         if n_samples < 1:
@@ -389,13 +491,9 @@ Generator, optional
         S = K_total * n_samples
         X_orig = np.zeros((S, self.D))
         comp_index = np.repeat(np.arange(K_total), n_samples)
-        J_corrections = np.zeros(K_total)
         for mk, (transform, mu, sigma) in enumerate(subcomps):
             z = self.rng.standard_normal((n_samples, self.D))
             x_mk_transform = z * sigma + mu  # (n_samples, D)
-            J_corrections[mk] = np.mean(
-                transform.log_abs_det_jacobian(x_mk_transform)
-            )
             rows = slice(mk * n_samples, (mk + 1) * n_samples)
             X_orig[rows, :] = transform.inverse(x_mk_transform)
 
@@ -419,16 +517,22 @@ Generator, optional
         # E_{q_mk}[log q(x)] for every component: mean over its draws.
         sum_logq = torch.zeros(K_total, dtype=dtype, device=device)
         count_logq = torch.zeros(K_total, dtype=dtype, device=device)
+        var_logq = torch.zeros(K_total, dtype=dtype, device=device)
         for mk in range(K_total):
             mask = comp_index == mk
             count_mk = mask.sum()
             if count_mk > 0:
                 sum_logq[mk] = logq_orig[mask].sum()
                 count_logq[mk] = count_mk
+                if compute_variance:
+                    var_logq[mk] = logq_orig[mask].var(unbiased=True)
         E_mk_logq = sum_logq / (count_logq + 1e-40)
 
         H = -w @ E_mk_logq
-        return H[0], J_corrections
+        varH = None
+        if compute_variance:
+            varH = float((w.square() @ (var_logq / n_samples)).item())
+        return H[0], self._jacobian_corrections.copy(), varH
 
     def stacked_ELBO(self, w, n_samples: int = 20):
         """
@@ -437,9 +541,8 @@ Generator, optional
         The expected log-joint is the weighted sum of the components' stored
         expected log-joints (from the runs' GP surrogates), corrected to the
         original space with the Jacobian terms of :meth:`stacked_entropy`;
-        the entropy is estimated by Monte Carlo. The first call fixes the
-        corrected expected log-joints used by :meth:`optimize` to debias
-        the result.
+        the entropy is estimated by Monte Carlo. The expected log-joints
+        are corrected deterministically during construction.
 
         Parameters
         ----------
@@ -470,20 +573,10 @@ Generator, optional
                 f"got {type(w).__name__}."
             )
 
-        H, J_corrections = self.stacked_entropy(w, n_samples)
-        I_corrected = self.I - J_corrections  # (1, K_total)
-
-        if self.I_corrected is None:
-            self.I_corrected = I_corrected
-            idx = 0
-            for m, (vp, k) in enumerate(zip(self.vp_list, self.K)):
-                self.E_corrected[m] = np.sum(
-                    I_corrected[0, idx : idx + k] * np.ravel(vp.w)
-                )
-                idx += k
+        H, _ = self.stacked_entropy(w, n_samples)
 
         I_corr_t = torch.as_tensor(
-            I_corrected, dtype=torch.float64, device=w.device
+            self.I_corrected, dtype=torch.float64, device=w.device
         )
         G = (w.reshape(1, -1) @ I_corr_t.T).squeeze()
         return G + H, H
@@ -525,18 +618,14 @@ Generator, optional
         w_final : torch.Tensor, shape (K_total,)
             The optimized weights (float64).
         elbo_best : torch.Tensor
-            The stacked ELBO at the returned weights (float64 scalar).
+            Optimization-time Monte Carlo ELBO from the selected iteration
+            (float64 scalar). :meth:`optimize` re-evaluates the returned
+            weights with fresh draws for the reported headline.
         entropy_best : torch.Tensor
             The entropy estimate at the returned weights (float64 scalar).
         """
         torch = _import_torch()
-        if version not in _VERSIONS:
-            raise ValueError(
-                f"Unknown S-VBMC version {version!r}; choose one of "
-                f"{', '.join(repr(v) for v in _VERSIONS)}."
-            )
-        if int(max_steps) < 1:
-            raise ValueError("`max_steps` should be at least 1.")
+        _validate_optimization(n_samples, max_steps, version)
         w_init = torch.as_tensor(self.w, dtype=torch.float64)
         log_w = torch.log(w_init)  # (1, K_total); optimize in log space
         repeats = torch.as_tensor(self.K)
@@ -575,7 +664,9 @@ Generator, optional
 
         else:  # "ns"
             self.logger.info("Naive stacking: averaging the VBMC posteriors.")
-            w_final = (w_init / w_init.sum()).flatten()
+            w_final = torch.as_tensor(
+                self._naive_weights.copy(), dtype=torch.float64
+            )
             elbo_best, entropy_best = self.stacked_ELBO(
                 w_final, n_samples=n_samples
             )
@@ -631,13 +722,16 @@ Generator, optional
         lr: float = 0.1,
         max_steps: int = 500,
         version: str = "all-weights",
+        *,
+        n_samples_final: int = 100,
     ):
         """
         Optimize the stacked posterior in place.
 
         Runs :meth:`maximize_ELBO`, stores the optimized weights in
         :attr:`w` (NumPy float64), the entropy estimate in :attr:`entropy`
-        and the estimated and debiased stacked ELBO values in :attr:`elbo`.
+        and a fresh final evaluation in :attr:`elbo`, :attr:`elbo_sd` and
+        :attr:`elbo_details`.
         Returns ``None``.
 
         Parameters
@@ -651,25 +745,96 @@ Generator, optional
         version : {"all-weights", "posterior-only", "ns"}, optional
             Optimization mode; see :meth:`maximize_ELBO`. Default
             ``"all-weights"``.
+        n_samples_final : int, optional
+            Fresh entropy draws per component at the returned weights and
+            at the naive-stacking weights. At least 2, to estimate sampling
+            variance. Default 100. Naive mode reuses one final evaluation.
         """
-        w, ELBO, H = self.maximize_ELBO(
+        if (
+            isinstance(n_samples_final, (bool, np.bool_))
+            or not isinstance(n_samples_final, (int, np.integer))
+            or n_samples_final < 2
+        ):
+            raise ValueError("`n_samples_final` should be an integer >= 2.")
+        _validate_optimization(n_samples, max_steps, version)
+        torch = _import_torch()
+        consider_runtime_tip(
+            enabled=self.show_tips,
+            display=self.logger.isEnabledFor(logging.INFO),
+            noisy=self.noisy,
+        )
+        w, _, _ = self.maximize_ELBO(
             n_samples=n_samples, lr=lr, max_steps=max_steps, version=version
         )
         self.w = w.detach().cpu().numpy().astype(np.float64).reshape(1, -1)
         self.w /= self.w.sum(dtype=np.float64)
-        self.entropy = float(H.detach().cpu().numpy())
-        ELBO = float(ELBO.detach().cpu().numpy())
+        with torch.no_grad():
+            final_w = torch.as_tensor(self.w, dtype=torch.float64)
+            H, _, varH = self._stacked_entropy(
+                final_w, n_samples_final, compute_variance=True
+            )
+            self.entropy = float(H.item())
+            G = float(np.dot(self.w.ravel(), self.I_corrected.ravel()))
+            raw = G + self.entropy
+            if version == "ns":
+                naive = raw
+            else:
+                naive_H, _, _ = self._stacked_entropy(
+                    torch.as_tensor(self._naive_weights, dtype=torch.float64),
+                    n_samples_final,
+                )
+                naive = float(
+                    np.dot(self._naive_weights, self.I_corrected.ravel())
+                    + naive_H.item()
+                )
 
         # Cap the expected log-joint at the median component / run value to
         # counter the optimistic bias of maximizing a noisy estimate.
         I_median = float(np.median(self.I_corrected))
         E_median = float(np.median(self.E_corrected))
-        G = ELBO - self.entropy
-        self.elbo = {
-            "estimated": ELBO,
-            "debiased_I_median": min(G, I_median) + self.entropy,
-            "debiased_E_median": min(G, E_median) + self.entropy,
+        method = "capped_I_median" if self.noisy else "raw"
+        varG = self._expected_log_joint_variance(self.w.ravel())
+        self.elbo_sd = float(np.sqrt(varG + varH))
+        capped_I = min(G, I_median) + self.entropy
+        self.elbo = float(capped_I if self.noisy else raw)
+        self.elbo_details = {
+            "raw": raw,
+            "capped_I_median": capped_I,
+            "capped_E_median": min(G, E_median) + self.entropy,
+            "naive": naive,
+            "headline_method": method,
+            "cap_amount": float(max(0.0, raw - self.elbo)),
+            "entropy_sd": float(np.sqrt(varH)),
+            "gp_sd": float(np.sqrt(varG)),
+            "raw_sd": self.elbo_sd,
+            "noisy": self.noisy,
+            "noise_status_source": self.noise_status_source,
         }
+        if self.elbo_details["cap_amount"] > 0:
+            self.logger.info(
+                "Expected log-joint capped by %.3g nats.",
+                self.elbo_details["cap_amount"],
+            )
+
+    def _expected_log_joint_variance(self, w):
+        """GP uncertainty at fixed weights, summed over independent runs."""
+        variance = 0.0
+        offset = 0
+        for vp, k in zip(self.vp_list, self.K):
+            weights = w[offset : offset + k]
+            I = np.asarray(vp.stats["I_sk"], dtype=np.float64)
+            J = np.array(vp.stats["J_sjk"], dtype=np.float64, copy=True)
+            diag = np.arange(k)
+            J[:, diag, diag] = np.maximum(np.spacing(1), J[:, diag, diag])
+            conditional = np.einsum("sjk,j,k->s", J, weights, weights)
+            if np.any(weights):
+                variance += float(
+                    np.mean(np.maximum(conditional, np.spacing(1)))
+                )
+                if I.shape[0] > 1:
+                    variance += float(np.var(I @ weights, ddof=1))
+            offset += k
+        return variance
 
     def sample(self, n_samples: int, balance_flag: bool = False):
         """

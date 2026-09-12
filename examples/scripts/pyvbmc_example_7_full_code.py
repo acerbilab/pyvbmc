@@ -50,12 +50,13 @@ for i in range(n_runs):
 
 
 stacked = SVBMC(vps, seed=0)
-stacked.optimize()
+stacked.optimize(n_samples_final=100)
 
-print("Stacked ELBO (estimated):", round(stacked.elbo["estimated"], 3))
-print(
-    "Stacked ELBO (debiased):  ", round(stacked.elbo["debiased_I_median"], 3)
-)
+print("Headline stacked ELBO:", round(stacked.elbo, 3))
+print("SD of the raw estimate: ", round(stacked.elbo_sd, 3))
+print("Headline method:        ", stacked.elbo_details["headline_method"])
+print("Raw ELBO:               ", round(stacked.elbo_details["raw"], 3))
+print("Noise status source:    ", stacked.noise_status_source)
 
 # Total weight assigned to each retained run:
 offsets = np.concatenate([[0], np.cumsum(stacked.K)])

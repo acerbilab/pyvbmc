@@ -72,7 +72,10 @@ def _stack(vp_list, seed=0, **kwargs):
     """A stacked posterior optimized with cheap settings."""
     stacked = SVBMC(vp_list, seed=seed)
     stacked.optimize(
-        n_samples=kwargs.pop("n_samples", 5), max_steps=3, **kwargs
+        n_samples=kwargs.pop("n_samples", 5),
+        max_steps=3,
+        n_samples_final=5,
+        **kwargs,
     )
     return stacked
 
@@ -102,21 +105,28 @@ def test_optimize_sets_weights_elbo_and_entropy(gmm_vps, version):
     assert stacked.K == [50] * 10
     assert stacked.elbo is None and stacked.entropy is None
 
-    assert stacked.optimize(n_samples=5, max_steps=3, version=version) is None
+    assert (
+        stacked.optimize(
+            n_samples=5, max_steps=3, version=version, n_samples_final=5
+        )
+        is None
+    )
 
     assert stacked.w.shape == (1, 500)
     assert stacked.w.dtype == np.float64
     assert np.all(stacked.w >= 0)
     assert stacked.w.sum() == pytest.approx(1.0)
-    assert set(stacked.elbo) == {
-        "estimated",
-        "debiased_I_median",
-        "debiased_E_median",
-    }
-    assert all(isinstance(v, float) for v in stacked.elbo.values())
-    assert all(np.isfinite(v) for v in stacked.elbo.values())
-    assert stacked.elbo["debiased_I_median"] <= stacked.elbo["estimated"]
-    assert stacked.elbo["debiased_E_median"] <= stacked.elbo["estimated"]
+    assert isinstance(stacked.elbo, float)
+    assert np.isfinite(stacked.elbo) and np.isfinite(stacked.elbo_sd)
+    for key in ("raw", "capped_I_median", "capped_E_median", "naive"):
+        assert isinstance(stacked.elbo_details[key], float)
+        assert np.isfinite(stacked.elbo_details[key])
+    assert (
+        stacked.elbo_details["capped_I_median"] <= stacked.elbo_details["raw"]
+    )
+    assert (
+        stacked.elbo_details["capped_E_median"] <= stacked.elbo_details["raw"]
+    )
     assert isinstance(stacked.entropy, float)
     assert np.isfinite(stacked.entropy)
 
@@ -277,7 +287,7 @@ def test_bounded_runs_have_different_transforms(d2_vps, stacked_d2):
     distinct = {(tuple(mu), tuple(delta)) for mu, delta in transforms}
     assert len(distinct) == len(d2_vps)
     assert stacked_d2.M == 3
-    assert np.isfinite(stacked_d2.elbo["estimated"])
+    assert np.isfinite(stacked_d2.elbo)
 
 
 def test_warped_and_unwarped_runs_stack(d3_vps, stacked_d3):
@@ -287,7 +297,7 @@ def test_warped_and_unwarped_runs_stack(d3_vps, stacked_d3):
     assert not np.array_equal(rotations[1], rotations[2])
     assert stacked_d3.M == 3
     assert stacked_d3.w.shape == (1, 150)
-    assert np.isfinite(stacked_d3.elbo["estimated"])
+    assert np.isfinite(stacked_d3.elbo)
 
 
 # --------------------------------------------------------------------- #
