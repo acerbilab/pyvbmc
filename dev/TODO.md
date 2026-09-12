@@ -1,6 +1,6 @@
 # Current pickup
 
-Updated 2026-09-11. This file records only current actions and constraints;
+Updated 2026-09-12. This file records only current actions and constraints;
 completed work and evidence remain in the linked plans and reports.
 
 The [overnight population benchmark](plans/final-population-benchmark.md)
@@ -41,6 +41,12 @@ warning) once PyVBMC 1.5 is on PyPI, and the deferred preparation and
 entropy speedups measured in the
 [NumPy prototype](results/2026-09-09-svbmc-numpy-prototype.md), gated by the
 regression references in `pyvbmc/testing/svbmc/`.
+Separately, agreed 2026-09-12 and not started: the two-phase plan for
+the stacked ELBO's optimism on noisy targets in the
+[S-VBMC ELBO optimism note](2026-09-12-svbmc-elbo-optimism.md), whose
+first phase waits on the five open decisions listed there. That phase
+regenerates the same regression references, so it is ordered before or
+together with the deferred speedups, never after them unnoticed.
 
 The benchmark extension with real-data targets (order set 2026-09-11,
 tentatively before the golden run) is in progress on
@@ -79,6 +85,11 @@ review.
 
 ## Work awaiting a separate decision
 
+- Look at golden run `logreg_D5` seed 5 of `reference_870_20260907`: a
+  converged noiseless run that ends with an ELBO standard deviation of
+  4.6 and an ELBO error of 2.7 while marked stable (noticed 2026-09-12
+  while aggregating the sidecars' final ELBO standard deviations for the
+  [S-VBMC ELBO optimism note](2026-09-12-svbmc-elbo-optimism.md)).
 - Improve Slurm HPC support for benchmark runs, a follow-up task before
   the final documentation review; see
   [benchmark coverage and HPC support](plans/modernization-roadmap.md#benchmark-coverage-and-hpc-support).
