@@ -23,8 +23,9 @@ For the release overview, start with
 
 - [Modernization discussion](2026-09-02-modernization-discussion.md) —
   Hot paths, gradient inventory, latent bugs, backend direction and staged plan.
-- [User-facing agent skill proposal](2026-09-02-user-agent-skill.md) —
-  Guidance, FAQ/reference material, helpers and packaging after the API settles.
+- [User-facing agent skill](2026-09-02-user-agent-skill.md) —
+  A thin wrapper pointing coding agents to the maintained documentation;
+  scope and maintenance of the first version.
 - [PyVBMC 1.5 overview](2026-09-06-pyvbmc-1.5-overview.md) —
   Human-readable release scope, benefits and validation approach. Includes the
   [compiled-Torch follow-up](results/2026-09-09-torch-compile-follow-up.md),

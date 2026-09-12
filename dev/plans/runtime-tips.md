@@ -247,7 +247,7 @@ promise a PyVBMC `VariationalPosterior` return value. Recheck released guidance
 and links before shipping.
 Context-dependent selection can be added when there is a clear applicability
 rule; do not build a recommendation system now.
-Keep wording consistent with the future user-agent skill.
+Keep wording consistent with the documentation linked by the user-agent skill.
 
 ## Integration findings and design
 

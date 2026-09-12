@@ -21,6 +21,11 @@ Extensive benchmarks on both artificial test problems and a large number of real
 
 The full documentation is available at: https://acerbilab.github.io/pyvbmc/
 
+For coding agents, the [PyVBMC skill](skills/pyvbmc/SKILL.md) points to the
+documentation relevant to each task. Give your agent that file, or copy the
+`skills/pyvbmc` folder into its skill directory. To update a copied skill,
+copy the folder again from the PyVBMC version you use.
+
 ### When should I use PyVBMC?
 
 PyVBMC is effective when:

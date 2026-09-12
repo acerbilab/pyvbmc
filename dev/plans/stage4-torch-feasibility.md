@@ -402,11 +402,9 @@ pickup. Prototype scripts/tests and recipes are tracked; raw arrays/logs are
 ignored, with identifying hashes and compact evidence in the manifest/plan.
 No public `.rst` is needed until public API work is authorized.
 
-S-VBMC compatibility is complete; integration remains parked (roadmap pickup
-10). Preserve the user-facing `skills/pyvbmc/SKILL.md`, FAQ/reference/helper
-and packaging follow-up after the API settles, and machine-local calibration
-(roadmap pickup 12; API/cache/budget/release placement still open). Neither is
-implemented here. The final 870-case population remains after release changes.
+The [current pickup](../TODO.md) tracks follow-up integration, calibration
+and population work. The [user-facing skill note](../2026-09-02-user-agent-skill.md)
+records the scope and maintenance of the documentation wrapper.
 
 ## Planning review and approval history
 
@@ -745,12 +743,8 @@ kernels, native Torch RNG and a GP-training port were not tested and are not
 assumed to erase the observed costs. No additional experiment or port was
 launched or authorized by this decision.
 
-S-VBMC compatibility remains complete and integration parked. The user-facing
-`skills/pyvbmc/SKILL.md`, FAQ/reference/helpers and packaging follow-up remain
-recorded for after the API settles. Machine-local calibration remains an
-open follow-up, including API, cache, budget and release placement. The final
-870-case population remains deferred until the final release changes are
-settled and still requires explicit launch authorization.
+Follow-up status is maintained in the [current pickup](../TODO.md) and
+[modernization roadmap](modernization-roadmap.md).
 
 
 ### Compiled-Torch follow-up (2026-09-09)

@@ -948,8 +948,8 @@ superseding earlier requirements below for a full sweep before assessment.
     and independent Sol review found no issues. Occasional startup tips now
     provide useful guidance with links.
 
-    Start with a small, curated collection drawn from the FAQ and planned
-    user-facing skill: comparing multiple runs and their diagnostics,
+    Start with a small, curated collection drawn from the FAQ:
+    comparing multiple runs and their diagnostics,
     interpreting `elbo_sd`, and discovering S-VBMC when available. Keep shared
     guidance consistent across hints, documentation and the skill; link to
     fuller explanations where useful.
@@ -1029,10 +1029,18 @@ final API and behavior.
 - [ ] Review the main documentation sources under `docsrc/`, tutorials and
   examples for consistency with the completed 1.5 release. Check setup,
   options, diagnostics and linked guidance against the final implementation.
-- [ ] Review references to the MATLAB VBMC wiki and assess which guidance
+- [x] Review references to the MATLAB VBMC wiki and assess which guidance
   should be ported into the PyVBMC repository. Adapt retained material to
   Python APIs, examples, defaults and terminology; update links to the
   PyVBMC versions and make any remaining MATLAB-specific references clear.
+  Completed 2026-09-12 in `a7b7cb9`: all 40 source questions ported into
+  `docsrc/source/faq.md`, with Python save/resume and S-VBMC additions.
+  The MATLAB source attribution remains; instructional links use the PyVBMC
+  FAQ. Independent review, snippet syntax checks and standalone rendering
+  passed; the full Sphinx build and inference-example checks remain below.
+- [x] Add a thin [agent skill](../../skills/pyvbmc/SKILL.md) directing users'
+  coding agents to existing documentation (2026-09-12). Scope and maintenance
+  are recorded in the [skill note](../2026-09-02-user-agent-skill.md).
 - [ ] Verify revised examples and links, build the documentation and check
   the rendered pages before release.
 
@@ -1065,7 +1073,7 @@ acquisition (parallel target evaluations within an iteration via local
 penalization or Kriging believer, a research item; not the batched
 acquisition *evaluation* of Stage 2 item 3), multi-chain slice sampling,
 scaling to `N ≈ 2k–5k`, log-space
-mixture sums, user-facing agent skill (`2026-09-02-user-agent-skill.md`),
+mixture sums,
 porting MATLAB's diagonal approximation of the log-joint variance and its
 gradient (`compute_var == 2` in `_gp_log_joint`, which raises "not
 implemented"; it would allow the ELCBO gradient with `beta ≠ 0`, which no

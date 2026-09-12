@@ -82,8 +82,6 @@ decided at the documentation review.
 - Improve Slurm HPC support for benchmark runs, a follow-up task before
   the final documentation review; see
   [benchmark coverage and HPC support](plans/modernization-roadmap.md#benchmark-coverage-and-hpc-support).
-- The [user-facing agent skill proposal](2026-09-02-user-agent-skill.md) remains
-  release work; keep it aligned with the settled 1.5 API and guidance.
 - NumPy/SciPy is the settled PyVBMC 1.5 solver. Do not start a full Torch solver
   port; optional Torch and ArviZ exports remain.
 - The noisy-target acquisition search (a smaller sieve with a gated gradient
@@ -100,9 +98,11 @@ decided at the documentation review.
 
 - After all remaining 1.5 work is complete, but before release, review and
   update the user-facing documentation, especially the stale main
-  [README.md](../README.md). Check the main docs and linked MATLAB VBMC wiki
-  guidance; assess porting relevant wiki material into the PyVBMC repository
-  with Python-specific adaptations. See the
+  [README.md](../README.md). The [FAQ](../docsrc/source/faq.md) port and
+  instructional link updates are complete; its full Sphinx build and
+  inference-example checks remain for after the active golden campaign.
+  Check the [agent skill](../skills/pyvbmc/SKILL.md) links against the
+  release documentation. See the
   [pre-release documentation review](plans/modernization-roadmap.md#pre-release-documentation-review).
 - After releasing 1.5, respond to issue #138 about explicit RNG control; see
   the [post-release follow-up](plans/modernization-roadmap.md#post-release-follow-up).
