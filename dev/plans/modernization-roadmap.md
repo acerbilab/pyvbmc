@@ -1012,9 +1012,9 @@ the staged execution. Previous references are preserved.
 
 ## Benchmark coverage and HPC support
 
-Complete these follow-up tasks before the final pre-release documentation
-review. Public inclusion of the real-data targets and the Slurm design
-remain open.
+These workstreams have no prescribed order relative to acquisition or
+S-VBMC work. Slurm support is needed for campaigns using that workflow;
+public inclusion of real-data targets and the Slurm design remain open.
 
 - [x] Extend the core benchmark with real-data targets: the Bayesian timing
   model and the multisensory causal-inference model on two subjects,
@@ -1044,9 +1044,9 @@ remain open.
 
 ## Pre-release documentation review
 
-Run this review after all other 1.5 implementation and validation work is
-complete, and before publishing the release, so the guidance describes the
-final API and behavior.
+Documentation review can proceed alongside implementation. The final
+validation pass must cover the settled release code, API and behavior
+before publication.
 
 - [x] Refresh the main [README.md](../../README.md), including the
   project overview, installation, quick start, capabilities and links.

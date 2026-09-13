@@ -1,152 +1,137 @@
-# Current pickup
+# PyVBMC 1.5: remaining work and scope
 
-Updated 2026-09-13. This file records only current actions and constraints;
-completed work and evidence remain in the linked plans and reports.
+Updated 2026-09-13. These lists describe scope, not priority or execution
+order. Independent workstreams can be picked up in any order: PyMC
+feasibility, for example, does not depend on acquisition-efficiency work.
+Inclusion in scope does not settle an implementation design or launch a
+campaign. No new campaign is in flight.
 
-The [population benchmark](plans/final-population-benchmark.md) is complete:
-870 candidate cases, no execution failures, independently reviewed assessment
-and targeted trajectory investigation. The PI accepted the evidence on
-2026-09-13: no convincing evidence of meaningful degradation, with existing
-occasional failures outside this campaign's correction scope. The promoted
-[current reference](golden/promotion_20260913/README.md) is
-`reference_990_20260913`: 870 candidate pairs plus 120 unchanged real-data
-pairs. All 990 archives validate, the 92-test even/odd check has no flags,
-and the five default replays match all non-timer NPZ arrays, semantic final
-results and initial designs. The previous references remain preserved.
+## In scope for 1.5
 
-The remaining numerical work for 1.5 is efficiency improvements to existing
-noisy acquisitions and evaluation/improvement of S-VBMC ELBO debiasing.
-Designing new acquisition functions or criteria is outside the 1.5 scope.
-Noisy-acquisition work covers the sieve/search, importance sampling and
-the cost of evaluating existing criteria and updating their GPs. Assess
-changes against the promoted reference; if a change alters default
-trajectories, regenerate the affected reference configurations after acceptance.
+- [ ] **Efficiency of existing noisy acquisitions.** Improve sieve/search,
+  importance sampling, criterion-evaluation costs and GP-update costs.
+  Separate changes to search behavior from computational optimizations;
+  assess them on noisy synthetic and real-data targets against the promoted
+  reference. Choose seed coverage for the experiment; a full reference-sized
+  campaign is unnecessary. **Designing new acquisition functions or criteria
+  is excluded.** Start from the
+  [investigation](2026-09-08-noisy-acquisitions.md) and
+  [search analysis](results/2026-09-09-acquisition-search-analysis.md).
+  Historical replacement-criterion experiments do not expand 1.5 scope.
 
-Recommended pickup: read the [noisy-acquisition investigation](2026-09-08-noisy-acquisitions.md)
-and prepare a scoped implementation and evaluation plan. Separate the
-optional smaller-sieve/gradient-refinement search from operation-level
-computational savings. Compare on a modest allocation of noisy targets,
-including the real-data configurations, and expand if the evidence warrants
-it. Defaults stay unchanged during evaluation. This plan, implementation
-and any new campaign await PI instruction; no new work has been launched.
+- [ ] **S-VBMC ELBO debiasing.** Evaluate raw, capped and proposed cross-run
+  GP estimates against ground truth, including noisy targets and different
+  numbers of stacked runs. The stacking objective stays unchanged. Phase 1
+  reporting/corrections are complete; Phase 2 is the remaining investigation.
+  Decide the reported estimator, fallback and interface from its results.
+  See the [ELBO optimism note](2026-09-12-svbmc-elbo-optimism.md) and
+  completed [Phase 1 plan](plans/svbmc-elbo-reporting.md).
 
-S-VBMC is integrated as `pyvbmc.svbmc` (merged into `dev-next` at
-`0b5af29` on 2026-09-11); the [integration plan](plans/svbmc-integration.md)
-records the decisions, the worklog and the verification. The forwarding
-release of the standalone `svbmc` package follows PyVBMC 1.5 on PyPI:
-it depends on `pyvbmc[torch]>=1.5` and forwards the old imports to the
-integrated class and helpers, with compatibility handling for `testing=True`.
-Separately, the preparation and entropy speedups measured in the
-[NumPy prototype](results/2026-09-09-svbmc-numpy-prototype.md) were deferred
-from the integration task. Their release placement is not settled; they
-require a separate decision and validation against the regression references
-in `pyvbmc/testing/svbmc/`. These performance changes are distinct from
-the ELBO-debiasing work.
-The [S-VBMC ELBO reporting work](plans/svbmc-elbo-reporting.md) (Phase 1)
-is complete and merged into `dev-next`; its regenerated regression
-references are the gate for the deferred speedups. Phase 2, evaluating
-stacked posteriors through other runs' GPs, remains a separate exploration
-in the [ELBO optimism note](2026-09-12-svbmc-elbo-optimism.md), with
-campaigns started on PI instruction.
+- [ ] **Slurm/HPC benchmark support.** Design reproducible submission,
+  resource settings, resumption and result collection. The implementation
+  design remains open. This is needed before relying on that workflow for
+  cluster campaigns, not before local experiments or unrelated integration.
+  See [HPC support](plans/modernization-roadmap.md#benchmark-coverage-and-hpc-support).
 
-The benchmark extension with real-data targets is complete (2026-09-12);
-the decisions, definitions, method and evidence are in
-[benchmark-realistic-targets.md](plans/benchmark-realistic-targets.md).
-The targets are the Bayesian timing model and the multisensory
-causal-inference model on two subjects from the lab-private
-[benchflow repository](https://github.com/acerbilab/benchflow), on plain
-`.npz` data with spline-trapezoidal priors and the paper's plausible boxes,
-with importance-weighted ground truths committed under
-`dev/scripts/data/truths/`. The reference campaign (four configurations,
-seeds 0–29, 6 h 05 min on the benchmark machine) ran from a frozen checkout
-at `fc50ee1` certified by the oracle `--check --exact` (11 of 11) and by
-`golden_replay.py` reporting `identical` on the five default cases against
-the `68a43db` traces, and was joined to the reference as
-`reference_990_20260912` (`dev/scripts/reference_join.py`; record in
-[realdata_extension_20260912](golden/realdata_extension_20260912/README.md)):
-92-test even/odd null check with no flags, seed-0 replays of the four new
-configurations identical. Findings to carry into the noisy-acquisition
-work: the noisy runs stop on stability at about 205 to 215 evaluations
-inside their budgets; noisy multisensory subject 1 has 5 of 30 usable runs
-(median gsKL 2.4); every real-data posterior is under-dispersed, timing's
-`w_s` and `sigma_p` by about 30 % over all 30 seeds. The frozen worktree
-and campaign artifacts are under
-`dev/scripts/runs/population_realdata_20260912/` (gitignored). That campaign
-is complete. Its 120 pairs are retained in the promoted reference;
-the noisy-acquisition options remain a separate task.
-Goris stays deferred; which targets move into the public tests is
-decided at the documentation review.
+- [ ] **Release documentation and validation.** Finish the API/tutorial
+  review; run examples, check links, build Sphinx and inspect rendered pages.
+  Check the [agent skill](../skills/pyvbmc/SKILL.md) against the release docs.
+  Run final integrated tests, the required CI matrix and package checks;
+  prepare the golden-trace release archive. Documentation can proceed
+  alongside implementation; final checks must cover settled release code.
+  See the [documentation checklist](plans/modernization-roadmap.md#pre-release-documentation-review)
+  and [reference record](golden/promotion_20260913/README.md).
 
-## Work awaiting a separate decision
+## Scope or disposition still to be decided
 
-- Assess a scoped PyMC integration for 1.5: structured ArviZ export, a
-  target-function adapter and a worked example. The
-  [proposal](2026-09-13-pymc-integration.md) records the comparison with
-  PR #73, effort estimates and the proposed feasibility check.
-- Improve Slurm HPC support for benchmark runs, a follow-up task before
-  the final documentation review; see
-  [benchmark coverage and HPC support](plans/modernization-roadmap.md#benchmark-coverage-and-hpc-support).
-- NumPy/SciPy is the settled PyVBMC 1.5 solver. Do not start a full Torch solver
-  port; optional Torch and ArviZ exports remain.
-- The noisy-target acquisition search (a smaller sieve with a gated gradient
-  refinement on a larger importance set) and the operation-level savings in
-  the VIQR sieve call and the in-loop GP refits are ready for a separate
-  assessment on the extended noisy benchmark against the promoted reference; see
-  the [noisy-target acquisitions note](2026-09-08-noisy-acquisitions.md).
-  Existing experimental VIQR loss variants and EIG options need a release
-  disposition (retain with documentation or remove). That cleanup does not
-  authorize further acquisition-function design for 1.5.
+- [ ] **PyMC integration: include what in 1.5?** A bounded feasibility check
+  can be the next task. The proposal covers structured ArviZ export, a
+  model-to-target adapter and a worked example with explicit initialization
+  and plausible bounds. Decide the supported model scope and inclusion
+  after the check. Automatic initialization and inference orchestration are
+  deferred in the proposal. See the [PyMC proposal](2026-09-13-pymc-integration.md).
 
-## Release boundary and working rules
+- [ ] **S-VBMC preparation/entropy speedups: 1.5 or later?** Reuse transforms
+  and density calculations and vectorize entropy computations during stacking.
+  These performance changes are distinct from debiasing and were deferred
+  from integration, without a settled release date. Validate any implementation
+  against the S-VBMC regression references. See the
+  [prototype measurements](results/2026-09-09-svbmc-numpy-prototype.md) and
+  [integration decisions](plans/svbmc-integration.md).
 
-- After all remaining 1.5 work is complete, but before release, review and
-  update the user-facing documentation. A focused
-  [README](../README.md), docs landing page, installation and quickstart
-  pass was reviewed and approved by the PI on 2026-09-13.
-  The [FAQ](../docsrc/source/faq.md) port and
-  instructional link updates are complete; its full Sphinx build and
-  inference-example checks remain to be run.
-  Check the [agent skill](../skills/pyvbmc/SKILL.md) links against the
-  release documentation. See the
-  [pre-release documentation review](plans/modernization-roadmap.md#pre-release-documentation-review).
-- After releasing 1.5, respond to issue #138 about explicit RNG control; see
-  the [post-release follow-up](plans/modernization-roadmap.md#post-release-follow-up).
-- Golden reference generation can involve many runs and substantial compute;
-  checking a candidate against that reference can use fewer runs. Choose
-  candidate coverage and seed counts for the question and available budget,
-  and extend them when useful. A full 870-run candidate population is not
-  required before reviewing the first stage. Release publication
-  remains a separate action. Use the
-  [current golden reference](golden/promotion_20260913/README.md) and
-  [latent-fix plan](plans/latent-bug-fixes.md) when that work starts.
-- Run at most one heavy computation at a time, normally in the main thread.
-- Preserve benchmark artifacts and frozen source checkouts under
-  `dev/scripts/runs/population_overnight_20260910/`, the extension's
-  artifacts under `dev/scripts/runs/population_extension_20260911/`, the
-  completion under `dev/scripts/runs/population_completion_20260912/`, and the
-  real-data reference campaign under
-  `dev/scripts/runs/population_realdata_20260912/`. These and the full
-  golden traces in `dev/scripts/runs/golden/reference_990_20260913/` (and
-  the previous `reference_990_20260912/` and `reference_870_20260907/`) are
-  gitignored and available on the original Windows benchmark machine only.
-  A fresh clone has the
-  tracked assessment JSON, comparison, manifests and reports; to
-  revalidate the raw artifacts, copy the campaign directories from that
-  machine and follow the
-  [population plan](plans/final-population-benchmark.md) for environment
-  and source setup. On that machine, reproduce the pooled assessment with
-  `.venv/Scripts/python.exe -u dev/scripts/runs/population_completion_20260912/assess.py`.
-  This archived wrapper selects the frozen classes and historical 870-case
-  baseline; the active baseline contains the promoted candidates.
-  The completed campaign and promotion replay require no reattachment.
-  `controller_status.json` ends at `assessment_ready_for_review`; the tracked
-  promotion record contains the subsequent acceptance and publication.
-  Frozen worktrees
-  copied to another checkout need their Git links repaired or recreation at
-  the recorded commits. No process or old agent session needs reattachment.
-- Make planning, proposal, handoff, and status-only edits directly on
-  `dev-next`; do not create branches for them. Remove completed feature
-  branches after merging.
-- The [modernization roadmap](plans/modernization-roadmap.md) is the complete
-  tracker; the [1.5 overview](2026-09-06-pyvbmc-1.5-overview.md) gives release
-  context. Do not copy completed handoffs back into this file.
+- [ ] **Existing experimental acquisition options: retain or remove?**
+  Decide the disposition of the VIQR loss variants and EIG options already
+  present. Retained public options need documentation and validation. This
+  is cleanup of the existing surface, not new acquisition-function design.
+  See [what is on the branch](2026-09-08-noisy-acquisitions.md#what-is-on-the-branch).
+
+- [ ] **Public inclusion of real-data benchmark targets/data.** The developer
+  benchmark and campaign are complete. Decide which targets and data, if any,
+  belong in the shipped testing package. See the
+  [real-data plan](plans/benchmark-realistic-targets.md).
+
+## Outside 1.5 scope
+
+- **New acquisition-function design.** Efficiency work uses existing criteria.
+- **A full Torch solver port.** NumPy/SciPy remains the 1.5 solver; optional
+  Torch and ArviZ exports remain available. See the
+  [backend decision](plans/stage4-torch-feasibility.md).
+- **Fixing existing occasional inference failures or redesigning convergence
+  rules as a research project.** The accepted assessment found no convincing
+  evidence of degradation. These questions do not block the release. See the
+  [assessment](golden/promotion_20260913/README.md) and
+  [deferred research](plans/modernization-roadmap.md#deferred-devlog-12).
+- **The Goris neuronal-model benchmark.** It remains deferred; see the
+  [target decisions](plans/benchmark-realistic-targets.md#decisions-pi-2026-09-11).
+
+## After PyVBMC 1.5 is published
+
+- [ ] **Standalone `svbmc` compatibility release.** It depends on
+  `pyvbmc[torch]>=1.5` and forwards old `svbmc` imports to the integrated
+  implementation. S-VBMC is already available through PyVBMC; this serves
+  users of the old package. See the [integration plan](plans/svbmc-integration.md).
+- [ ] **Respond to issue #138 about RNG control** with the released API/docs.
+  See the [post-release follow-up](plans/modernization-roadmap.md#post-release-follow-up).
+
+## Dependencies and working rules
+
+- Evaluate numerical proposals before choosing defaults or reported
+  estimators. If an accepted change moves default trajectories, update the
+  affected golden references after assessment and preserve the old ones.
+- Cross-run S-VBMC evaluation needs posteriors with their corresponding GPs.
+  Establish suitable retained inputs or an approved run allocation before
+  the experiment. Cluster execution additionally needs the Slurm workflow.
+- At most one heavy computation runs at a time. Read-only investigation
+  and documentation may proceed alongside it.
+- Final release checks depend on included changes being settled.
+  Publication and post-release tasks remain separate actions.
+- Use feature branches for implementation. Planning, proposal, handoff and
+  status edits belong on `dev-next`. Leave unrelated work intact.
+
+## Completed baseline and local artifacts
+
+Core modernization, S-VBMC integration and Phase 1 reporting, the real-data
+benchmark extension and the population assessment are complete. The active
+reference is **`reference_990_20260913`**: 870 candidate pairs plus 120
+unchanged real-data pairs. The [promotion record](golden/promotion_20260913/README.md)
+owns the assessment, independent review, hashes and passed gates;
+[the population plan](plans/final-population-benchmark.md) owns execution
+history. The [roadmap](plans/modernization-roadmap.md) retains completed work.
+
+Raw traces, boost captures, diagnostic scripts and frozen checkouts remain
+local and gitignored under `dev/scripts/runs/` on the original Windows
+benchmark machine: `population_overnight_20260910/`,
+`population_extension_20260911/`, `population_completion_20260912/`,
+`population_realdata_20260912/`, and `golden/reference_990_20260913/` with
+its previous references. A fresh clone has tracked sidecars, assessments,
+manifests and reports. Copy those directories to revalidate raw artifacts;
+follow the population plan for the environment and repair or recreate copied
+worktrees at their recorded commits.
+
+Reproduce the historical comparison on that machine with
+`.venv/Scripts/python.exe -u dev/scripts/runs/population_completion_20260912/assess.py`.
+This archived wrapper selects the frozen classes and historical 870-case
+baseline; the active baseline contains the promoted candidates. No completed
+campaign or replay needs reattachment. The controller's final
+`assessment_ready_for_review` state precedes the acceptance and publication
+recorded in the promotion record.
