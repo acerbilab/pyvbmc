@@ -18,7 +18,7 @@ Summary usage
 The typical usage pipeline of PyVBMC follows four steps:
 
 1. Define the model, which defines a target log density (i.e., an unnormalized log posterior density);
-2. Setup the parameters (parameter bounds, starting point);
+2. Set up the parameters (parameter bounds, starting point);
 3. Initialize and run the inference;
 4. Examine and visualize the results.
 
@@ -34,10 +34,15 @@ Running the inference in step 3 only involves a couple of lines of code:
 
 with input arguments:
 
-- ``target``: the target (unnormalized) log density — often an unnormalized log posterior. ``target`` takes as input a parameter vector and returns the log density at the point. The returned log density must return a *finite* real value, i.e. non `NaN` or `-inf`. See the :ref:`FAQ <faq-how-do-i-prevent-vbmc-from-evaluating-certain-inputs-or-regions-of-input-space>` for more details;
+- ``target``: the target (unnormalized) log density — often an unnormalized log posterior. ``target`` takes as input a parameter vector and returns the log density at the point. The returned log density must be a *finite* real value, i.e. neither ``NaN`` nor ``+/-inf``. See the :ref:`FAQ <faq-how-do-i-prevent-vbmc-from-evaluating-certain-inputs-or-regions-of-input-space>` for more details;
 - ``x0``: the starting point of the inference in parameter space;
 - ``LB`` and ``UB``: hard lower and upper bounds for the parameters (can be ``-inf`` and ``inf``, or bounded);
 - ``PLB`` and ``PUB``: *plausible* lower and upper bounds, that is a box that ideally brackets a region of high density of the target.
+
+You can also pass a log-likelihood as ``target`` and supply its prior
+separately with ``prior=`` or ``log_prior=``. For model evidence, include
+the likelihood's normalization constants and use a normalized prior; see
+the :ref:`FAQ <faq-how-do-i-specify-the-prior-to-vbmc>`.
 
 The outputs are:
 
@@ -50,11 +55,41 @@ The ``vp`` object can be manipulated in various ways, see the :ref:`\`\`Variatio
 
 See the examples for more detailed information. The :ref:`Basic options` may also be useful.
 
+For noisy likelihoods, see :ref:`PyVBMC Example 6: Noisy log-likelihood evaluations` and
+the :ref:`FAQ <faq-noisy-target-function>` for the target interface and
+noise options.
+
 PyVBMC occasionally prints a tip when a new run starts. Tips appear at most
 once each within a Python session; restarting Python resets their history.
 Pass ``options={"show_tips": False}`` to ``VBMC`` to disable tips. This leaves
 the performance-calibration reminder enabled; ``options={"display": "off"}``
 suppresses both along with ordinary optimization output.
+
+Reproducible runs
+=================
+
+Pass ``seed=`` to control the random generator used by a VBMC instance
+and its variational posterior. The same integer seed reproduces a run
+with the same target, setup and numerical environment. Reusing the same
+integer seed repeats PyVBMC's random stream. For independent runs, leave
+``seed`` unset or use different seeds; comparing their results helps assess convergence
+(see :ref:`PyVBMC Example 4: Multiple runs as validation`).
+
+The seed can also be a NumPy ``Generator``. PyVBMC advances that generator,
+so reusing it continues its random stream.
+
+If your likelihood function uses random simulations, ``VBMC(seed=...)``
+does not control the randomness inside that function. To reproduce the
+whole analysis, also set the simulator's seed before starting the run.
+For example, with NumPy, create ``sim_rng = np.random.default_rng(123)``
+once outside your target function, then use that generator for its random
+draws (e.g., ``sim_rng.normal(...)`` instead of ``np.random.normal(...)``).
+If you use another simulation library, use its seed or generator argument.
+Let the simulator draw fresh random numbers on each evaluation; do not
+reset its seed inside the target function.
+
+The :ref:`FAQ <faq-i-have-been-running-vbmc-from-the-same-starting-point-but-i-get-different-results-each-time-is-something-wrong>`
+explains reproducibility and the behavior when ``seed`` is omitted.
 
 Bring a torch or JAX model into PyVBMC
 ======================================
@@ -62,8 +97,9 @@ Bring a torch or JAX model into PyVBMC
 The default target interface calls one point at a time. It accepts a
 one-dimensional NumPy parameter vector and returns one finite scalar. A model
 implemented in torch can be adapted without adding torch objects to PyVBMC.
-PyVBMC does not install either modelling framework; install the one used by
-your model separately::
+The example below uses independent Gaussian observations with unit standard
+deviation and a Gaussian prior on their common mean. Install the modelling
+framework used by your model separately::
 
   import numpy as np
   import torch
@@ -77,13 +113,15 @@ your model separately::
 
   def torch_log_likelihood(x):
       theta_t = torch.as_tensor(x, dtype=torch.float64, device=device)
-      value_t = -0.5 * torch.sum((observations_t - theta_t[0]) ** 2)
+      value_t = -0.5 * torch.sum(
+          (observations_t - theta_t[0]) ** 2 + np.log(2 * np.pi)
+      )
       return np.asarray(
           value_t.detach().cpu().numpy(), dtype=np.float64
       ).item()
 
   x0 = np.array([0.0], dtype=np.float64)
-  lb, ub = np.array([-10.0]), np.array([10.0])
+  lb, ub = np.array([-np.inf]), np.array([np.inf])
   plb, pub = np.array([-2.0]), np.array([2.0])
   vbmc = VBMC(
       torch_log_likelihood,
@@ -114,7 +152,9 @@ to the host::
 
   def jax_log_likelihood(x):
       theta_j = jnp.asarray(x, dtype=jnp.float64)
-      value_j = -0.5 * jnp.sum((observations_j - theta_j[0]) ** 2)
+      value_j = -0.5 * jnp.sum(
+          (observations_j - theta_j[0]) ** 2 + jnp.log(2 * jnp.pi)
+      )
       return np.asarray(
           jax.device_get(value_j), dtype=np.float64
       ).item()
@@ -136,7 +176,9 @@ The torch adapter above becomes::
   def torch_vectorized_log_likelihood(x):
       theta_t = torch.as_tensor(x, dtype=torch.float64, device=device)
       values_t = -0.5 * torch.sum(
-          (observations_t[None, :] - theta_t[:, :1]) ** 2, dim=1
+          (observations_t[None, :] - theta_t[:, :1]) ** 2
+          + np.log(2 * np.pi),
+          dim=1,
       )
       return np.asarray(
           values_t.detach().cpu().numpy(), dtype=np.float64
@@ -158,7 +200,9 @@ The equivalent JAX adapter is::
   def jax_vectorized_log_likelihood(x):
       theta_j = jnp.asarray(x, dtype=jnp.float64)
       values_j = -0.5 * jnp.sum(
-          (observations_j[None, :] - theta_j[:, :1]) ** 2, axis=1
+          (observations_j[None, :] - theta_j[:, :1]) ** 2
+          + jnp.log(2 * jnp.pi),
+          axis=1,
       )
       return np.asarray(jax.device_get(values_j), dtype=np.float64)
 
@@ -199,11 +243,26 @@ order.
 Use a fitted posterior downstream
 =================================
 
+Stacking several runs
+---------------------
+
+:doc:`Stacking Variational Bayesian Monte Carlo (S-VBMC) <api/classes/svbmc>`
+(`Silvestrin et al., 2025 <https://arxiv.org/abs/2504.05004>`__) combines the posteriors of several completed
+VBMC runs on the same model and data into a stacked posterior, without
+further model evaluations. This often improves the approximation to the true posterior
+by leveraging information from independent runs. See
+:ref:`PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)`
+for a worked example. S-VBMC requires the optional ``torch`` extra; the
+:doc:`installation guide <installation>` also covers dependencies for
+the posterior exports below.
+
 Torch distribution
 ------------------
 
 :meth:`~pyvbmc.VariationalPosterior.to_torch` returns an independent torch
 distribution snapshot::
+
+  import torch
 
   posterior_t = vp.to_torch()
   torch.manual_seed(7)
@@ -236,7 +295,7 @@ the current ArviZ DataTree format::
   posterior_data = vp.to_arviz(
       n_samples=2000, var_names=["location"]
   )
-  summary = az.summary(posterior_data, group="posterior")
+  summary = az.summary(posterior_data, group="posterior", kind="stats")
   axes = az.plot_dist(posterior_data, group="posterior")
 
 The result contains one ``posterior`` group, one chain, and one scalar

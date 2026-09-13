@@ -1024,8 +1024,15 @@ Run this review after all other 1.5 implementation and validation work is
 complete, and before publishing the release, so the guidance describes the
 final API and behavior.
 
-- [ ] Refresh the stale main [README.md](../../README.md), including the
+- [x] Refresh the main [README.md](../../README.md), including the
   project overview, installation, quick start, capabilities and links.
+  A focused pass was reviewed and approved by the PI (2026-09-13), alongside the docs
+  landing page, installation and quickstart: S-VBMC and exports,
+  reproducibility guidance, installation/test guidance, links and example
+  normalization.
+  Independent review, standalone RST parsing, syntax checks for nine Python
+  snippets and local link checks passed. Full Sphinx rendering and runtime
+  example checks remain deferred during the golden campaign.
 - [ ] Review the main documentation sources under `docsrc/`, tutorials and
   examples for consistency with the completed 1.5 release. Check setup,
   options, diagnostics and linked guidance against the final implementation.

@@ -61,14 +61,13 @@ are not Conda package names. Both integrations are optional and loaded on demand
 Examples and tests
 ==================
 
-Install Jupyter to view the examples. You can skip this step if your Conda
-environment already has Jupyter, but an unrelated ``jupyter`` executable on
-your path can cause import errors::
+Install `Jupyter Notebook <https://jupyter.org/install>`_ to run the examples.
+You can skip this step if your environment already has Jupyter Notebook,
+but an unrelated ``jupyter`` executable on your path can cause import errors::
 
-  conda install jupyter
+  python -m pip install notebook
 
-If Python 3.11 produces an ``UnsatisfiableError``, install Jupyter from
-``conda-forge``::
+or, with Conda::
 
   conda install --channel=conda-forge jupyter
 
@@ -80,12 +79,13 @@ Example 2 uses ``plotly`` for one interactive figure. Install it with::
 
   python -m pip install "pyvbmc[examples]"
 
-Run PyVBMC's internal tests after installing the test dependencies with::
+The test suite is included in the source distribution and repository.
+To run it, follow the :ref:`installation instructions for developers`,
+then run this command from the PyVBMC repository root::
 
-  python -m pip install "pyvbmc[test]"
-  pytest --pyargs pyvbmc --reruns=3
+  python -m pytest --reruns=5 -x
 
-The ``--reruns=3`` argument retries a failed test up to three times because
+The ``--reruns=5`` argument retries a failed test up to five times because
 some tests are stochastic. The complete suite can take 20--30 minutes or
 longer, depending on the hardware.
 

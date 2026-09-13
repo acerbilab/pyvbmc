@@ -97,8 +97,10 @@ decided at the documentation review.
 ## Release boundary and working rules
 
 - After all remaining 1.5 work is complete, but before release, review and
-  update the user-facing documentation, especially the stale main
-  [README.md](../README.md). The [FAQ](../docsrc/source/faq.md) port and
+  update the user-facing documentation. A focused
+  [README](../README.md), docs landing page, installation and quickstart
+  pass was reviewed and approved by the PI on 2026-09-13.
+  The [FAQ](../docsrc/source/faq.md) port and
   instructional link updates are complete; its full Sphinx build and
   inference-example checks remain for after the active golden campaign.
   Check the [agent skill](../skills/pyvbmc/SKILL.md) links against the

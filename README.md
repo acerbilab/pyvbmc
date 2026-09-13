@@ -7,13 +7,13 @@
 <br />
 [![Discussion](https://img.shields.io/badge/-discussion-blue?logo=github)](https://github.com/orgs/acerbilab/discussions)
 [![tests](https://img.shields.io/github/actions/workflow/status/acerbilab/pyvbmc/tests.yml?branch=main&label=tests)](https://github.com/acerbilab/pyvbmc/actions/workflows/tests.yml)
-[![docs](https://img.shields.io/github/actions/workflow/status/acerbilab/pyvbmc/build.yml?branch=main&label=docs)](https://github.com/acerbilab/pyvbmc/actions/workflows/docs.yml)
-[![build](https://img.shields.io/github/actions/workflow/status/acerbilab/pyvbmc/docs.yml?branch=main&label=build)](https://github.com/acerbilab/pyvbmc/actions/workflows/build.yml)
+[![docs](https://img.shields.io/github/actions/workflow/status/acerbilab/pyvbmc/docs.yml?branch=main&label=docs)](https://github.com/acerbilab/pyvbmc/actions/workflows/docs.yml)
+[![build](https://img.shields.io/github/actions/workflow/status/acerbilab/pyvbmc/build.yml?branch=main&label=build)](https://github.com/acerbilab/pyvbmc/actions/workflows/build.yml)
 ### What is it?
 
 PyVBMC is a Python implementation of the Variational Bayesian Monte Carlo (VBMC) algorithm for posterior and model inference, previously implemented [in MATLAB](https://github.com/acerbilab/vbmc). VBMC is an approximate inference method designed to fit and evaluate Bayesian models with a limited budget of potentially noisy likelihood evaluations (e.g., for computationally expensive models). Specifically, VBMC simultaneously computes:
 - an approximate posterior distribution of the model parameters;
-- an approximation — technically, an approximate lower bound — of the log model evidence (also known as log marginal likelihood or log Bayes factor), a metric used for [Bayesian model selection](https://en.wikipedia.org/wiki/Bayes_factor).
+- an approximation — technically, an approximate lower bound — of the log model evidence (also known as log marginal likelihood), a metric used for [Bayesian model selection](https://en.wikipedia.org/wiki/Bayes_factor).
 
 Extensive benchmarks on both artificial test problems and a large number of real model-fitting problems from computational and cognitive neuroscience show that VBMC generally — and often vastly — outperforms alternative methods for sample-efficient Bayesian inference [[2,3](#references-and-citation)].
 
@@ -36,7 +36,7 @@ PyVBMC is effective when:
 - the target posterior distribution is continuous and reasonably smooth (see [here](https://acerbilab.github.io/pyvbmc/faq.html#faq-general));
 - optionally, log-likelihood evaluations may be noisy (e.g., estimated [via simulation](https://github.com/acerbilab/ibs)).
 
-Conversely, if your model can be written analytically, you should exploit the powerful machinery of probabilistic programming frameworks such as [Stan](http://mc-stan.org/) or [PyMC](https://docs.pymc.io/).
+Conversely, if your model can be written analytically and is fast to evaluate, you should exploit the powerful machinery of probabilistic programming frameworks such as [Stan](https://mc-stan.org/) or [PyMC](https://www.pymc.io/).
 
 Note: If you are interested in point estimates or in finding better starting points for PyVBMC, check out [Bayesian Adaptive Direct Search in Python (PyBADS)](https://github.com/acerbilab/pybads), our companion method for fast Bayesian optimization.
 
@@ -54,11 +54,11 @@ PyVBMC is available via `pip` and `conda-forge`.
     ```
     PyVBMC requires Python version 3.10 or newer.
 
-2. (Optional): Install Jupyter to view the example Notebooks. You can skip this step if you're working from a Conda environment which already has Jupyter, but be aware that if the wrong `jupyter` executable is found on your path then import errors may arise.
+2. (Optional): Install [Jupyter Notebook](https://jupyter.org/install) to run the examples. You can skip this step if your environment already has Jupyter Notebook, but be aware that if the wrong `jupyter` executable is found on your path then import errors may arise.
    ```console
-   conda install jupyter
+   python -m pip install notebook
    ```
-   If you are running Python 3.11 and get an `UnsatisfiableError` you may need to install Jupyter from `conda-forge`:
+   or, with Conda:
    ```console
    conda install --channel=conda-forge jupyter
    ```
@@ -67,7 +67,9 @@ PyVBMC is available via `pip` and `conda-forge`.
    python -m pyvbmc
    ```
 
-Optional integrations are installed separately. For a CPU-only torch setup,
+Optional integrations are installed separately. S-VBMC and the Torch posterior
+export ([see below](#combine-runs-and-use-the-posterior-downstream)) use the
+`torch` extra. For a CPU-only torch setup,
 install the official CPU wheel first, followed by the PyVBMC extra:
 ```console
 python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
@@ -89,7 +91,7 @@ If you wish to install directly from latest source code, please see the [instruc
 A typical PyVBMC workflow follows four steps:
 
 1. Define the model, which defines a target log density (i.e., an unnormalized log posterior density);
-2. Setup the parameters (parameter bounds, starting point);
+2. Set up the parameters (parameter bounds, starting point);
 3. Initialize and run the inference;
 4. Examine and visualize the results.
 
@@ -101,10 +103,13 @@ vbmc = VBMC(target, x0, LB, UB, PLB, PUB)
 vp, results = vbmc.optimize()
 ```
 with input arguments:
-- `target`: the target (unnormalized) log density — often an unnormalized log posterior. `target` is a callable that should take as input a parameter vector and return the log density at the point. The returned log density must return a *finite* real value, i.e. non `NaN` or `-inf`. See the [PyVBMC FAQ](https://acerbilab.github.io/pyvbmc/faq.html#faq-how-do-i-prevent-vbmc-from-evaluating-certain-inputs-or-regions-of-input-space) for more details;
+- `target`: the target (unnormalized) log density — often an unnormalized log posterior. `target` is a callable that should take as input a parameter vector and return the log density at the point. The returned log density must be a *finite* real value, i.e. neither `NaN` nor `+/-inf`. See the [PyVBMC FAQ](https://acerbilab.github.io/pyvbmc/faq.html#faq-how-do-i-prevent-vbmc-from-evaluating-certain-inputs-or-regions-of-input-space) for more details;
 - `x0`: an array representing the starting point of the inference in parameter space;
 - `LB` and `UB`: arrays of hard lower (resp. upper) bounds constraining the parameters (possibly `-/+np.inf` for unbounded parameters);
 - `PLB` and `PUB`: arrays of plausible lower (resp. upper) bounds: that is, a box that ideally brackets a high posterior density region of the target.
+
+The optional `seed` argument controls PyVBMC's internal random generator for reproducible runs.
+For independent runs, leave `seed` unset or use different seeds. See the [reproducibility guide](https://acerbilab.github.io/pyvbmc/quickstart.html#reproducible-runs) for more details.
 
 The outputs are:
 - `vp`: a `VariationalPosterior` object which approximates the true target density;
@@ -116,14 +121,32 @@ The `vp` object can be manipulated in various ways. For example, we can draw sam
 
 ### PyVBMC with noisy targets
 
-The quick start example above works for deterministic (noiseless) evaluations of the target log-density. Py(VBMC) also supports *noisy* evaluations of the target.
+The quick start example above works for deterministic (noiseless) evaluations of the target log-density. PyVBMC also supports *noisy* evaluations of the target.
 Noisy evaluations often arise from simulation-based models, for which a direct expression of the (log) likelihood is not available.
 
 For information on how to run PyVBMC on a noisy target, see [this example notebook](examples/pyvbmc_example_6_noisy_likelihoods.ipynb) and the [PyVBMC FAQ](https://acerbilab.github.io/pyvbmc/faq.html#faq-noisy-target-function).
 
+Note that `VBMC(seed=...)` only controls the internal random stream of PyVBMC and not
+that of your simulations. Reproducing the analysis also requires setting the
+simulator's seed before the run. See the [reproducibility guide](https://acerbilab.github.io/pyvbmc/quickstart.html#reproducible-runs) for how to do this.
+
+### Combine runs and use the posterior downstream
+
+Stacking Variational Bayesian Monte Carlo (S-VBMC; [Silvestrin et al., 2025](https://arxiv.org/abs/2504.05004)) is a technique to combine the
+posteriors of several completed PyVBMC runs on the same model and data into a stacked
+posterior. Stacking the posteriors almost always provides a better approximation
+of the true posterior (sometimes much better), and does not require further model
+evaluations. See [Example 7](examples/pyvbmc_example_7_stacking.ipynb) and the
+[`SVBMC` documentation](https://acerbilab.github.io/pyvbmc/api/classes/svbmc.html).
+
+A fitted `VariationalPosterior` can also be exported as a Torch distribution
+with `vp.to_torch()`, or as samples in an ArviZ DataTree with `vp.to_arviz()`.
+See the [posterior export guide](https://acerbilab.github.io/pyvbmc/quickstart.html#use-a-fitted-posterior-downstream)
+for examples and the optional dependencies listed above.
+
 ## Next steps
 
-Once installed, example Jupyter notebooks can be found in the `pyvbmc/examples` directory. They can also be [viewed statically](https://acerbilab.github.io/pyvbmc/index.html#examples) on the [main documentation pages](https://acerbilab.github.io/pyvbmc/index.html). These examples will walk you through the basic usage of PyVBMC as well as some if its more advanced features.
+Once installed, example Jupyter notebooks can be found in the `pyvbmc/examples` directory. They can also be [viewed statically](https://acerbilab.github.io/pyvbmc/examples.html) on the [main documentation pages](https://acerbilab.github.io/pyvbmc/index.html). These examples will walk you through the basic usage of PyVBMC as well as some of its more advanced features.
 
 For practical recommendations, such as how to set `LB` and `UB` and the plausible bounds, check out the [PyVBMC FAQ](https://acerbilab.github.io/pyvbmc/faq.html).
 
@@ -141,7 +164,7 @@ In each iteration, PyVBMC uses *active sampling* to select which points to evalu
 
 ![VBMC Demo](https://user-images.githubusercontent.com/70731267/225584285-5b90f78f-2ed9-4844-b0fa-ad5d4ab29923.gif)
 
-In the figure above, we show an example PyVBMC run on a [Rosenbrock "banana" function](https://en.wikipedia.org/wiki/Rosenbrock_function). The bottom-left panel shows PyVBMC at work: in grayscale are samples from the variational posterior (drawn as small points) and the corresponding estimated density (drawn as contours). The solid orange circles are the active sampling points chosen at each iteration, and the hollow blue circles are the previously sampled points. The topmost and rightnmost panels show histograms of the marginal densities along the $x_1$ and $x_2$ dimensions, respectively. PyVBMC converges to an excellent approximation of the true posterior with a few dozens evaluations of the target density.
+In the figure above, we show an example PyVBMC run on a [Rosenbrock "banana" function](https://en.wikipedia.org/wiki/Rosenbrock_function). The bottom-left panel shows PyVBMC at work: in grayscale are samples from the variational posterior (drawn as small points) and the corresponding estimated density (drawn as contours). The solid orange circles are the active sampling points chosen at each iteration, and the hollow blue circles are the previously sampled points. The topmost and rightmost panels show histograms of the marginal densities along the $x_1$ and $x_2$ dimensions, respectively. PyVBMC converges to an excellent approximation of the true posterior with a few dozen evaluations of the target density.
 
 See the VBMC papers [[1-3](#references-and-citation)] for more details.
 
@@ -162,7 +185,11 @@ If you have trouble doing something with PyVBMC, spot bugs or strange behavior, 
 
 Please cite all three references if you use PyVBMC in your work (the 2018 paper introduced the framework, and the 2020 paper includes a number of major improvements, including but not limited to support for noisy likelihoods). You can cite PyVBMC in your work with something along the lines of
 
-> We estimated approximate posterior distibutions and approximate lower bounds to the model evidence of our models using Variational Bayesian Monte Carlo (PyVBMC; Acerbi, 2018, 2020) via the PyVBMC software (Huggins et al., 2023). PyVBMC combines variational inference and active-sampling Bayesian quadrature to perform approximate Bayesian inference in a sample-efficient manner.
+> We estimated approximate posterior distributions and approximate lower bounds to the model evidence of our models using Variational Bayesian Monte Carlo (PyVBMC; Acerbi, 2018, 2020) via the PyVBMC software (Huggins et al., 2023). PyVBMC combines variational inference and active-sampling Bayesian quadrature to perform approximate Bayesian inference in a sample-efficient manner.
+
+If you use S-VBMC (see [Additional references](#additional-references)), please also add a sentence such as:
+
+> Posteriors from multiple PyVBMC runs on the same model and dataset were combined using S-VBMC (Silvestrin et al., 2025), which often improves the approximation to the true posterior by leveraging information from independent runs.
 
 Besides formal citations, you can demonstrate your appreciation for PyVBMC in the following ways:
 
@@ -176,6 +203,8 @@ You may also want to check out [Bayesian Adaptive Direct Search in Python (PyBAD
 ### Additional references
 
 4. Acerbi, L. (2019). An Exploration of Acquisition and Mean Functions in Variational Bayesian Monte Carlo. In *Proc. Machine Learning Research* 96: 1-10. 1st Symposium on Advances in Approximate Bayesian Inference, Montréal, Canada. ([paper in PMLR](http://proceedings.mlr.press/v96/acerbi19a.html))
+
+5. Silvestrin, F., Li, C., & Acerbi, L. (2025). Stacking Variational Bayesian Monte Carlo. *Transactions on Machine Learning Research*. ([paper + supplement on arXiv](https://arxiv.org/abs/2504.05004), [TMLR](https://openreview.net/forum?id=M2ilYAJdPe))
 
 ### BibTeX
 
@@ -211,6 +240,14 @@ You may also want to check out [Bayesian Adaptive Direct Search in Python (PyBAD
   year={2020}
 }
 
+@article{silvestrin2025stacking,
+  title={Stacking {V}ariational {B}ayesian {M}onte {C}arlo},
+  author={Silvestrin, Francesco and Li, Chengkun and Acerbi, Luigi},
+  journal={Transactions on Machine Learning Research},
+  year={2025},
+  url={https://openreview.net/forum?id=M2ilYAJdPe}
+}
+
 @article{acerbi2019exploration,
   title={An Exploration of Acquisition and Mean Functions in {V}ariational {B}ayesian {M}onte {C}arlo},
   author={Acerbi, Luigi},
@@ -227,4 +264,4 @@ PyVBMC is released under the terms of the [BSD 3-Clause License](LICENSE).
 
 ### Acknowledgments
 
-PyVBMC was developed by [members](https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence/people) (past and current) of the [Machine and Human Intelligence Lab](https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence/) at the University of Helsinki. Work on the PyVBMC package was supported by the Academy of Finland Flagship programme: [Finnish Center for Artificial Intelligence FCAI](https://fcai.fi/).
+PyVBMC was developed by [members](https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence/people) (past and current) of the [Machine and Human Intelligence Lab](https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence/) at the University of Helsinki and [ELLIS Institute Finland](https://www.ellisinstitute.fi/). Work on the PyVBMC package is supported by the Research Council of Finland (grants 356498 and 358980 to Luigi Acerbi) and its Flagship programme: [Finnish Center for Artificial Intelligence FCAI](https://fcai.fi/).
