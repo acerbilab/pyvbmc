@@ -95,8 +95,15 @@ plan and consolidated human summary.
   integration (complete): the settled decisions (Torch retained,
   independent sampling with a balanced option, `seed`, float64, snapshot
   fixtures plus a generated D=1, bounded and warped set), layout, the
-  parity gate against upstream, the test suite, verification and the two
-  remaining follow-ups (forwarding release after 1.5, deferred speedups).
+  parity gate against upstream, the test suite, verification and the
+  remaining follow-up (forwarding release after 1.5); the speedups have
+  their own plan below.
+- [plans/svbmc-speedups.md](plans/svbmc-speedups.md) — S-VBMC
+  preparation and entropy speedups: per-run transforms and Jacobians,
+  broadcast component densities, vectorized per-component reduction;
+  the numerical contract (references unchanged, equivalence tests at
+  1e-12), the paired before/after measurement and its evidence in
+  [results/2026-09-13-svbmc-speedups.md](results/2026-09-13-svbmc-speedups.md).
 - [plans/benchmark-realistic-targets.md](plans/benchmark-realistic-targets.md) —
   the real-data benchmark targets from benchflow (Bayesian timing,
   multisensory causal inference on two subjects): the decisions, the
@@ -407,6 +414,12 @@ reason.
   and mode as the regression gate (needs Torch). Every written posterior
   is rebuilt and compared with its source. `pyvbmc/testing/svbmc/FIXTURES.md`
   documents the files.
+- `scripts/svbmc_speedup_benchmark.py` — paired before/after timing of
+  complete S-VBMC fits from two source trees, each imported by its own
+  warmed single-threaded worker process, alternating order per cell;
+  checks weights, evaluation counts and generator states agree. Written
+  for `plans/svbmc-speedups.md`; the evidence is in
+  `experiments/svbmc_speedups/`.
 - `scripts/svbmc_parity_check.py` — historical: the moved
   `pyvbmc.svbmc.SVBMC` against the pinned upstream package on the thirty
   posteriors with matched draws (upstream's `testing=True` mode). Runs only
