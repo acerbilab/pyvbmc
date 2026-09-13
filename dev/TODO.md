@@ -22,8 +22,12 @@ and subsequent possibilities.
   Historical replacement-criterion experiments do not expand 1.5 scope.
   The [efficiency plan](plans/noisy-acquisition-efficiency.md) tracks the
   guarded standard-VIQR sum optimization, its measured gains and validation.
-  Subsequent possibilities include GP-kernel reuse and more efficient
-  integration of the same VIQR criterion (shared-weight Bayesian quadrature,
+  GP-kernel reuse has a positive
+  [feasibility probe](results/2026-09-13-viqr-kernel-reuse.md); its gpyreg
+  interface and temporary-memory policy remain to be implemented. Adaptive
+  sieve size, integration budgets and multistart L-BFGS-B remain main search
+  experiments. Another possibility is more efficient integration of the
+  same VIQR criterion (shared-weight Bayesian quadrature,
   compared with mixture-stratified randomized quasi-Monte Carlo).
   IMIQR cache reuse is optional cleanup; it does not accelerate VIQR.
   Keep standard VIQR (`loss="iqr"`). The `iqr_reduction` formulation may

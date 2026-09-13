@@ -64,8 +64,23 @@ Additional opportunities remain for subsequent steps:
   criterion and MCMC stream intact.
 - The base acquisition calls `gp.predict`, then VIQR/IMIQR recompute its
   training-to-candidate kernel. The installed gpyreg predictor does not
-  expose this intermediate. A supported reuse interface would cross the
-  package boundary; evaluate its benefit and design separately.
+  expose this intermediate. The
+  [kernel-reuse probe](../results/2026-09-13-viqr-kernel-reuse.md) finds exact
+  captured-state outputs and a 1.205x complete-sieve speedup on the late
+  noisy state, with smaller early gains. A supported gpyreg interface is
+  feasible within the lab's repositories. Production integration remains
+  open, including a policy for the additional temporary matrix memory.
+- Adaptive sieve/search remains a main efficiency experiment. Compare a
+  smaller coarse sieve, more accurate re-scoring, and L-BFGS-B from one or
+  several spatially separated candidates. Investigate sieve sizing and
+  uncertainty-based integration budgets/refinement gates; the initial
+  experimental sieve size is about 1024, not an established new default.
+  Judge candidates on independent integration points to detect Monte Carlo
+  overfitting, then validate inference end to end. The
+  [search analysis](../results/2026-09-09-acquisition-search-analysis.md)
+  records the mixed evidence on additional starts. Kernel reuse and
+  quadrature are independent opportunities, not prerequisites for this
+  experiment.
 - More efficient integration of the existing VIQR criterion, including
   shared-weight Bayesian quadrature (PI, 2026-09-13). For each fixed VP and
   quadrature kernel, prepare nodes and weights once and reuse them across
