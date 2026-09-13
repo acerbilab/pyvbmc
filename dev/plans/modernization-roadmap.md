@@ -25,8 +25,10 @@ reference size does not prescribe their run count.
 
 The remaining numerical work for 1.5 is improving the efficiency of existing
 noisy acquisitions (sieve/search, importance sampling, criterion evaluation
-and GP-update costs), checking/improving S-VBMC's reported ELBO debiasing,
-and S-VBMC preparation/entropy speedups that preserve the method.
+and GP-update costs) and checking/improving S-VBMC's reported ELBO
+debiasing. The S-VBMC preparation/entropy speedups that preserve the
+method are implemented and measured on `dev-svbmc-speedups`
+([svbmc-speedups.md](svbmc-speedups.md)), pending merge.
 Designing new acquisition functions or criteria is outside scope. Keep
 standard VIQR (`loss="iqr"`); evaluating `iqr_reduction` as a reformulation
 for numerical search is within the efficiency work and requires validation.
@@ -39,9 +41,11 @@ preservation remain to be done. The
 record scalar EIG's poor results and per-component EIG's mixed results on
 Rosenbrock D2 at two noise levels; neither demonstrated a robust advantage
 over default VIQR.
-S-VBMC preparation and entropy optimizations are in scope for 1.5 as a
-separate performance task, validated against the regression references. The
-standalone `svbmc` compatibility release follows PyVBMC 1.5 on PyPI.
+S-VBMC preparation and entropy optimizations are a separate performance
+task validated against the regression references;
+[svbmc-speedups.md](svbmc-speedups.md) records the implementation and
+measurement. The standalone `svbmc` compatibility release follows PyVBMC
+1.5 on PyPI.
 
 - [x] **Stage 0 — test oracle** (devlog §10)
   - [x] finite-difference checks: `entmc`, `entlb` (pre-existing),
@@ -859,7 +863,8 @@ standalone `svbmc` compatibility release follows PyVBMC 1.5 on PyPI.
     the way: `find_init_bounds` rejected `(1, D)` bounds, and
     `stacked_ELBO` left tensor weights unnormalized. Branch smoke: run
     34632149372. Remaining: the forwarding `svbmc` release after the 1.5
-    publication, and the deferred preparation/entropy speedups.
+    publication. The preparation/entropy speedups followed in
+    [svbmc-speedups.md](svbmc-speedups.md).
 11. **Stage 3 integrated before the reference extension** (PI,
     2026-09-06). Feature code `4ee612d` was fast-forwarded into `dev-next`
     at `4bff1a5`. Branch smoke 34043031387, all nine full-matrix jobs
@@ -1004,7 +1009,9 @@ and optional runtime tips. The
 [execution plan](svbmc-elbo-reporting.md) owns status and verification;
 the [optimism note](../2026-09-12-svbmc-elbo-optimism.md) owns the rationale
 and the separate Phase 2 proposal. The regenerated S-VBMC references are
-the regression gate for the preparation and entropy speedups included in 1.5.
+the regression gate for the preparation and entropy speedups included in 1.5,
+implemented and measured in [svbmc-speedups.md](svbmc-speedups.md) with the
+references passing unchanged.
 After the included S-VBMC changes are settled, a benchmark campaign against
 the original standalone S-VBMC is required before release, covering their
 combined effect on posterior quality, reported evidence accuracy and runtime.

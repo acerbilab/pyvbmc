@@ -52,7 +52,9 @@ campaign. No new campaign is in flight.
   objective, separate from ELBO debiasing. Validate against the S-VBMC
   regression references and measure performance on representative workloads.
   See the [prototype measurements](results/2026-09-09-svbmc-numpy-prototype.md)
-  and [integration decisions](plans/svbmc-integration.md).
+  and [integration decisions](plans/svbmc-integration.md). Implemented on
+  `dev-svbmc-speedups`; the [speedups plan](plans/svbmc-speedups.md)
+  tracks the numerical contract, gates, measurement and merge.
 
 - [ ] **S-VBMC benchmark campaign against the original implementation.**
   After the S-VBMC changes included in 1.5 are settled, assess their combined

@@ -72,6 +72,7 @@ adding Torch to the repository venv.
   1.5 as a separate change after integration. Preserve the method and sampled
   objective, validate against the S-VBMC regression references, and measure
   the speedup. This work is independent of the ELBO-debiasing investigation.
+  Execution record: [svbmc-speedups.md](svbmc-speedups.md).
 
 ## Benchmark campaign required for 1.5
 
