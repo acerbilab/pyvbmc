@@ -1342,6 +1342,7 @@ def test_ns_gp_max_active_caps_the_in_loop_refits(mocker):
     )
     vbmc.options.__setitem__("active_sample_gp_update", True, force=True)
     vbmc.options.__setitem__("ns_gp_max_active", 0, force=True)
+    active_sample_module = importlib.import_module("pyvbmc.vbmc.active_sample")
     seen = []
 
     def recording_train_gp(
@@ -1358,7 +1359,7 @@ def test_ns_gp_max_active_caps_the_in_loop_refits(mocker):
             hyp_dict, optim_state, logger, history, options, *a, **k
         )
 
-    mocker.patch("pyvbmc.vbmc.active_sample.train_gp", recording_train_gp)
+    mocker.patch.object(active_sample_module, "train_gp", recording_train_gp)
     _, _, _, gp = active_sample(
         gp,
         2,

@@ -1,0 +1,3989 @@
+{
+  "scope": "Guarded standard-VIQR sum; criterion, importance samples, RNG and search policy preserved",
+  "revisions": {
+    "before": "83692ac",
+    "replayed_guard": "0b3c7b8",
+    "test_only_correction": "b2d7d72",
+    "final_guard": "6734817",
+    "replay_sidecar_git_counts": {
+      "0b3c7b8": 9,
+      "b2d7d72": 9
+    }
+  },
+  "capture_manifest": {
+    "viqr_sha256": "39d9d40a7403c1869c1014d5fdd3c8d3219b2216344b5bc4c97d63623bc4f263",
+    "shared_source_hashes": {
+      "gaussian_process.py": "7865fcdff33c8054d9d788e35665c096b6f96ce05541ecc3fa684e4cc01795f6",
+      "covariance_functions.py": "9287439a694abf28b06e2d57bdfd5c79b6e06a3f64bff9288c85def389b1c16e",
+      "mean_functions.py": "71c2b353ce157b70ec37c2110ae807f6adea27146811744f591bf5b99acbfda6",
+      "noise_functions.py": "2bcbcb8d6b748b9470716d11bf242147eb92b442dda77c9b3e4b6502ef696d60",
+      "abstract_acq_fcn.py": "c1d6e33f34eff7df369ffc95f81d3cd52ed552dd405c61f77785ee570e372aea"
+    }
+  },
+  "replay": {
+    "git": {
+      "sha": "0b3c7b8",
+      "dirty": true
+    },
+    "threads": 1,
+    "calibration_budget": null,
+    "minutes": 49.005379664897916,
+    "rows": [
+      {
+        "label": "rosenbrock_D2_noise1",
+        "seed": 0,
+        "ok": true,
+        "final_new": {
+          "elbo_err": 0.007515201103664992,
+          "gskl": 0.010130934063931007,
+          "mmtv": 0.019986203845813715,
+          "func_count": 125,
+          "iterations": 24,
+          "final_K": 50,
+          "wall_s": 71.6618063999922,
+          "elbo": -2.2523319230687195,
+          "elbo_sd": 0.11475775791371369,
+          "best_iter": 23,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 125,
+          "min_Ns_gp": 7,
+          "n_warps": 1
+        },
+        "final_ref": {
+          "elbo_err": 0.007515201103664992,
+          "gskl": 0.010130934063931007,
+          "mmtv": 0.019986203845813715,
+          "func_count": 125,
+          "iterations": 24,
+          "final_K": 50,
+          "wall_s": 123.16316460000235,
+          "elbo": -2.2523319230687195,
+          "elbo_sd": 0.11475775791371369,
+          "best_iter": 23,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 125,
+          "min_Ns_gp": 7,
+          "n_warps": 1
+        },
+        "semantic_final_certifiable": true,
+        "semantic_final_differences": {},
+        "semantic_final_identical": true,
+        "loop_differences": {},
+        "final_array_differences": {},
+        "loop_identical": true,
+        "final_arrays_identical": true,
+        "returned_transformer_certifiable": false,
+        "returned_transformer_coverage": "returned transformer not certifiable (absent from reference and new trace)",
+        "X_orig_exact": 116,
+        "X_orig_close": 116,
+        "y_orig_exact": 116,
+        "y_orig_close": 116,
+        "n_live_ref": 116,
+        "n_live_new": 116,
+        "elbo_exact_iter": 24,
+        "elbo_iter": 24,
+        "func_count_iter": 24,
+        "K_iter": 24,
+        "Ns_gp_iter": 24,
+        "n_iter_ref": 24,
+        "n_iter_new": 24,
+        "stored_arrays_identical": true,
+        "design": "identical (X_init in both traces)",
+        "initial_design_ok": true,
+        "consistency_issues": {},
+        "final_validity_issues": {},
+        "final_identical": true,
+        "identical": true,
+        "identity_not_certifiable": [
+          "returned transformer not certifiable (absent from reference and new trace)"
+        ],
+        "pop_fence": {
+          "elbo_err": 0.4784551057993276,
+          "gskl": 0.14508667176131804,
+          "mmtv": 0.1182150214790117
+        },
+        "pop_evals": [
+          110,
+          165
+        ],
+        "outside": [],
+        "flagged": false,
+        "verdict": "identical stored loop and final; initial design identical (X_init in both traces); returned transformer not certifiable (absent from reference and new trace)"
+      },
+      {
+        "label": "rosenbrock_D2_noise1",
+        "seed": 1,
+        "ok": true,
+        "final_new": {
+          "elbo_err": 0.0790981429512132,
+          "gskl": 0.001033460131439623,
+          "mmtv": 0.02303550826824185,
+          "func_count": 150,
+          "iterations": 29,
+          "final_K": 50,
+          "wall_s": 92.05214849999174,
+          "elbo": -2.3389452671235977,
+          "elbo_sd": 0.09803154838133891,
+          "best_iter": 28,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 150,
+          "min_Ns_gp": 7,
+          "n_warps": 2
+        },
+        "final_ref": {
+          "elbo_err": 0.0790981429512132,
+          "gskl": 0.001033460131439623,
+          "mmtv": 0.02303550826824185,
+          "func_count": 150,
+          "iterations": 29,
+          "final_K": 50,
+          "wall_s": 97.76606590000301,
+          "elbo": -2.3389452671235977,
+          "elbo_sd": 0.09803154838133891,
+          "best_iter": 28,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 150,
+          "min_Ns_gp": 7,
+          "n_warps": 2
+        },
+        "semantic_final_certifiable": true,
+        "semantic_final_differences": {},
+        "semantic_final_identical": true,
+        "loop_differences": {},
+        "final_array_differences": {},
+        "loop_identical": true,
+        "final_arrays_identical": true,
+        "returned_transformer_certifiable": false,
+        "returned_transformer_coverage": "returned transformer not certifiable (absent from reference and new trace)",
+        "X_orig_exact": 146,
+        "X_orig_close": 146,
+        "y_orig_exact": 146,
+        "y_orig_close": 146,
+        "n_live_ref": 146,
+        "n_live_new": 146,
+        "elbo_exact_iter": 29,
+        "elbo_iter": 29,
+        "func_count_iter": 29,
+        "K_iter": 29,
+        "Ns_gp_iter": 29,
+        "n_iter_ref": 29,
+        "n_iter_new": 29,
+        "stored_arrays_identical": true,
+        "design": "identical (X_init in both traces)",
+        "initial_design_ok": true,
+        "consistency_issues": {},
+        "final_validity_issues": {},
+        "final_identical": true,
+        "identical": true,
+        "identity_not_certifiable": [
+          "returned transformer not certifiable (absent from reference and new trace)"
+        ],
+        "pop_fence": {
+          "elbo_err": 0.4784551057993276,
+          "gskl": 0.14508667176131804,
+          "mmtv": 0.1182150214790117
+        },
+        "pop_evals": [
+          110,
+          165
+        ],
+        "outside": [],
+        "flagged": false,
+        "verdict": "identical stored loop and final; initial design identical (X_init in both traces); returned transformer not certifiable (absent from reference and new trace)"
+      },
+      {
+        "label": "rosenbrock_D2_noise1",
+        "seed": 2,
+        "ok": true,
+        "final_new": {
+          "elbo_err": 0.02886893243372457,
+          "gskl": 0.02351336095171508,
+          "mmtv": 0.03768760976363926,
+          "func_count": 135,
+          "iterations": 26,
+          "final_K": 50,
+          "wall_s": 73.17321849998552,
+          "elbo": -2.23097819173866,
+          "elbo_sd": 0.11379758437801062,
+          "best_iter": 25,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 135,
+          "min_Ns_gp": 7,
+          "n_warps": 2
+        },
+        "final_ref": {
+          "elbo_err": 0.02886893243372457,
+          "gskl": 0.02351336095171508,
+          "mmtv": 0.03768760976363926,
+          "func_count": 135,
+          "iterations": 26,
+          "final_K": 50,
+          "wall_s": 85.67790370000148,
+          "elbo": -2.23097819173866,
+          "elbo_sd": 0.11379758437801062,
+          "best_iter": 25,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 135,
+          "min_Ns_gp": 7,
+          "n_warps": 2
+        },
+        "semantic_final_certifiable": true,
+        "semantic_final_differences": {},
+        "semantic_final_identical": true,
+        "loop_differences": {},
+        "final_array_differences": {},
+        "loop_identical": true,
+        "final_arrays_identical": true,
+        "returned_transformer_certifiable": false,
+        "returned_transformer_coverage": "returned transformer not certifiable (absent from reference and new trace)",
+        "X_orig_exact": 126,
+        "X_orig_close": 126,
+        "y_orig_exact": 126,
+        "y_orig_close": 126,
+        "n_live_ref": 126,
+        "n_live_new": 126,
+        "elbo_exact_iter": 26,
+        "elbo_iter": 26,
+        "func_count_iter": 26,
+        "K_iter": 26,
+        "Ns_gp_iter": 26,
+        "n_iter_ref": 26,
+        "n_iter_new": 26,
+        "stored_arrays_identical": true,
+        "design": "identical (X_init in both traces)",
+        "initial_design_ok": true,
+        "consistency_issues": {},
+        "final_validity_issues": {},
+        "final_identical": true,
+        "identical": true,
+        "identity_not_certifiable": [
+          "returned transformer not certifiable (absent from reference and new trace)"
+        ],
+        "pop_fence": {
+          "elbo_err": 0.4784551057993276,
+          "gskl": 0.14508667176131804,
+          "mmtv": 0.1182150214790117
+        },
+        "pop_evals": [
+          110,
+          165
+        ],
+        "outside": [],
+        "flagged": false,
+        "verdict": "identical stored loop and final; initial design identical (X_init in both traces); returned transformer not certifiable (absent from reference and new trace)"
+      },
+      {
+        "label": "rosenbrock_D2_noise3",
+        "seed": 0,
+        "ok": true,
+        "final_new": {
+          "elbo_err": 0.5912599002589349,
+          "gskl": 0.5384503261091502,
+          "mmtv": 0.10091068170318157,
+          "func_count": 165,
+          "iterations": 33,
+          "final_K": 50,
+          "wall_s": 96.00841229999787,
+          "elbo": -1.6685872239134496,
+          "elbo_sd": 0.4302384103984671,
+          "best_iter": 32,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 165,
+          "min_Ns_gp": 6,
+          "n_warps": 2
+        },
+        "final_ref": {
+          "elbo_err": 0.5912599002589349,
+          "gskl": 0.5384503261091502,
+          "mmtv": 0.10091068170318157,
+          "func_count": 165,
+          "iterations": 33,
+          "final_K": 50,
+          "wall_s": 126.8777654000005,
+          "elbo": -1.6685872239134496,
+          "elbo_sd": 0.4302384103984671,
+          "best_iter": 32,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 165,
+          "min_Ns_gp": 6,
+          "n_warps": 2
+        },
+        "semantic_final_certifiable": true,
+        "semantic_final_differences": {},
+        "semantic_final_identical": true,
+        "loop_differences": {},
+        "final_array_differences": {},
+        "loop_identical": true,
+        "final_arrays_identical": true,
+        "returned_transformer_certifiable": false,
+        "returned_transformer_coverage": "returned transformer not certifiable (absent from reference and new trace)",
+        "X_orig_exact": 157,
+        "X_orig_close": 157,
+        "y_orig_exact": 157,
+        "y_orig_close": 157,
+        "n_live_ref": 157,
+        "n_live_new": 157,
+        "elbo_exact_iter": 33,
+        "elbo_iter": 33,
+        "func_count_iter": 33,
+        "K_iter": 33,
+        "Ns_gp_iter": 33,
+        "n_iter_ref": 33,
+        "n_iter_new": 33,
+        "stored_arrays_identical": true,
+        "design": "identical (X_init in both traces)",
+        "initial_design_ok": true,
+        "consistency_issues": {},
+        "final_validity_issues": {},
+        "final_identical": true,
+        "identical": true,
+        "identity_not_certifiable": [
+          "returned transformer not certifiable (absent from reference and new trace)"
+        ],
+        "pop_fence": {
+          "elbo_err": 0.861776847350355,
+          "gskl": 2.0226405305579966,
+          "mmtv": 0.3695155851469893
+        },
+        "pop_evals": [
+          160,
+          200
+        ],
+        "outside": [],
+        "flagged": false,
+        "verdict": "identical stored loop and final; initial design identical (X_init in both traces); returned transformer not certifiable (absent from reference and new trace)"
+      },
+      {
+        "label": "rosenbrock_D2_noise3",
+        "seed": 1,
+        "ok": true,
+        "final_new": {
+          "elbo_err": 0.4452979647184119,
+          "gskl": 1.027093280978721,
+          "mmtv": 0.19424735815373273,
+          "func_count": 180,
+          "iterations": 37,
+          "final_K": 50,
+          "wall_s": 105.46030109998537,
+          "elbo": -2.7051450888907964,
+          "elbo_sd": 0.29790650407708685,
+          "best_iter": 36,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 180,
+          "min_Ns_gp": 6,
+          "n_warps": 3
+        },
+        "final_ref": {
+          "elbo_err": 0.45597331674480257,
+          "gskl": 0.07132118959118505,
+          "mmtv": 0.1122399325742365,
+          "func_count": 180,
+          "iterations": 37,
+          "final_K": 50,
+          "wall_s": 128.3664753999983,
+          "elbo": -2.715820440917187,
+          "elbo_sd": 0.2996384138133644,
+          "best_iter": 36,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 180,
+          "min_Ns_gp": 6,
+          "n_warps": 3
+        },
+        "semantic_final_certifiable": true,
+        "semantic_final_differences": {
+          "elbo": "value",
+          "elbo_sd": "value"
+        },
+        "semantic_final_identical": false,
+        "loop_differences": {
+          "K": "value",
+          "N": "value",
+          "Ns_gp": "value",
+          "X_orig": "shape (175, 2) -> (174, 2)",
+          "elbo": "value",
+          "elbo_sd": "value",
+          "func_count": "value",
+          "gp_hyp": "shape (282, 9) -> (289, 9)",
+          "gp_hyp_iter": "shape (282,) -> (289,)",
+          "n_eff": "value",
+          "pruned": "value",
+          "pt_R": "value",
+          "pt_delta": "value",
+          "pt_scale": "value",
+          "r_index": "value",
+          "sKL": "value",
+          "vp_iter": "shape (343,) -> (327,)",
+          "vp_lambd": "value",
+          "vp_mu": "shape (343, 2) -> (327, 2)",
+          "vp_sigma": "shape (343,) -> (327,)",
+          "vp_w": "shape (343,) -> (327,)",
+          "warmup": "value",
+          "warped": "value",
+          "y_orig": "shape (175,) -> (174,)"
+        },
+        "final_array_differences": {
+          "final_lambd": "value",
+          "final_mu": "value",
+          "final_sigma": "value",
+          "final_w": "value",
+          "post_cov": "value",
+          "post_mean": "value"
+        },
+        "loop_identical": false,
+        "final_arrays_identical": false,
+        "returned_transformer_certifiable": false,
+        "returned_transformer_coverage": "returned transformer not certifiable (absent from reference and new trace)",
+        "X_orig_exact": 10,
+        "X_orig_close": 10,
+        "y_orig_exact": 10,
+        "y_orig_close": 10,
+        "n_live_ref": 175,
+        "n_live_new": 174,
+        "elbo_exact_iter": 1,
+        "elbo_iter": 1,
+        "func_count_iter": 14,
+        "K_iter": 11,
+        "Ns_gp_iter": 9,
+        "n_iter_ref": 37,
+        "n_iter_new": 37,
+        "stored_arrays_identical": false,
+        "design": "identical (X_init in both traces)",
+        "initial_design_ok": true,
+        "consistency_issues": {},
+        "final_validity_issues": {},
+        "final_identical": false,
+        "identical": false,
+        "identity_not_certifiable": [
+          "returned transformer not certifiable (absent from reference and new trace)"
+        ],
+        "pop_fence": {
+          "elbo_err": 0.861776847350355,
+          "gskl": 2.0226405305579966,
+          "mmtv": 0.3695155851469893
+        },
+        "pop_evals": [
+          160,
+          200
+        ],
+        "outside": [],
+        "flagged": false,
+        "verdict": "parted at iteration 1; live points identical: 10; initial design identical (X_init in both traces); returned transformer not certifiable (absent from reference and new trace)"
+      },
+      {
+        "label": "rosenbrock_D2_noise3",
+        "seed": 2,
+        "ok": true,
+        "final_new": {
+          "elbo_err": 0.3253855228207563,
+          "gskl": 0.0021513783767745376,
+          "mmtv": 0.017800297965498958,
+          "func_count": 180,
+          "iterations": 35,
+          "final_K": 50,
+          "wall_s": 103.78537090000464,
+          "elbo": -1.9344616013516283,
+          "elbo_sd": 0.27064704062266076,
+          "best_iter": 34,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 180,
+          "min_Ns_gp": 6,
+          "n_warps": 2
+        },
+        "final_ref": {
+          "elbo_err": 0.3253855228207563,
+          "gskl": 0.0021513783767745376,
+          "mmtv": 0.017800297965498958,
+          "func_count": 180,
+          "iterations": 35,
+          "final_K": 50,
+          "wall_s": 118.57820999999967,
+          "elbo": -1.9344616013516283,
+          "elbo_sd": 0.27064704062266076,
+          "best_iter": 34,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 180,
+          "min_Ns_gp": 6,
+          "n_warps": 2
+        },
+        "semantic_final_certifiable": true,
+        "semantic_final_differences": {},
+        "semantic_final_identical": true,
+        "loop_differences": {},
+        "final_array_differences": {},
+        "loop_identical": true,
+        "final_arrays_identical": true,
+        "returned_transformer_certifiable": false,
+        "returned_transformer_coverage": "returned transformer not certifiable (absent from reference and new trace)",
+        "X_orig_exact": 174,
+        "X_orig_close": 174,
+        "y_orig_exact": 174,
+        "y_orig_close": 174,
+        "n_live_ref": 174,
+        "n_live_new": 174,
+        "elbo_exact_iter": 35,
+        "elbo_iter": 35,
+        "func_count_iter": 35,
+        "K_iter": 35,
+        "Ns_gp_iter": 35,
+        "n_iter_ref": 35,
+        "n_iter_new": 35,
+        "stored_arrays_identical": true,
+        "design": "identical (X_init in both traces)",
+        "initial_design_ok": true,
+        "consistency_issues": {},
+        "final_validity_issues": {},
+        "final_identical": true,
+        "identical": true,
+        "identity_not_certifiable": [
+          "returned transformer not certifiable (absent from reference and new trace)"
+        ],
+        "pop_fence": {
+          "elbo_err": 0.861776847350355,
+          "gskl": 2.0226405305579966,
+          "mmtv": 0.3695155851469893
+        },
+        "pop_evals": [
+          160,
+          200
+        ],
+        "outside": [],
+        "flagged": false,
+        "verdict": "identical stored loop and final; initial design identical (X_init in both traces); returned transformer not certifiable (absent from reference and new trace)"
+      },
+      {
+        "label": "logreg_D5_noise3",
+        "seed": 0,
+        "ok": true,
+        "final_new": {
+          "elbo_err": 0.029973390736216743,
+          "gskl": 0.28906590578829494,
+          "mmtv": 0.16923251901868422,
+          "func_count": 245,
+          "iterations": 49,
+          "final_K": 50,
+          "wall_s": 194.13207219998003,
+          "elbo": -34.86351660926378,
+          "elbo_sd": 0.31835503147272814,
+          "best_iter": 48,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 245,
+          "min_Ns_gp": 5,
+          "n_warps": 3
+        },
+        "final_ref": {
+          "elbo_err": 0.029973390736216743,
+          "gskl": 0.28906590578829494,
+          "mmtv": 0.16923251901868422,
+          "func_count": 245,
+          "iterations": 49,
+          "final_K": 50,
+          "wall_s": 211.09322839999368,
+          "elbo": -34.86351660926378,
+          "elbo_sd": 0.31835503147272814,
+          "best_iter": 48,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 245,
+          "min_Ns_gp": 5,
+          "n_warps": 3
+        },
+        "semantic_final_certifiable": true,
+        "semantic_final_differences": {},
+        "semantic_final_identical": true,
+        "loop_differences": {},
+        "final_array_differences": {},
+        "loop_identical": true,
+        "final_arrays_identical": true,
+        "returned_transformer_certifiable": false,
+        "returned_transformer_coverage": "returned transformer not certifiable (absent from reference and new trace)",
+        "X_orig_exact": 237,
+        "X_orig_close": 237,
+        "y_orig_exact": 237,
+        "y_orig_close": 237,
+        "n_live_ref": 237,
+        "n_live_new": 237,
+        "elbo_exact_iter": 49,
+        "elbo_iter": 49,
+        "func_count_iter": 49,
+        "K_iter": 49,
+        "Ns_gp_iter": 49,
+        "n_iter_ref": 49,
+        "n_iter_new": 49,
+        "stored_arrays_identical": true,
+        "design": "identical (X_init in both traces)",
+        "initial_design_ok": true,
+        "consistency_issues": {},
+        "final_validity_issues": {},
+        "final_identical": true,
+        "identical": true,
+        "identity_not_certifiable": [
+          "returned transformer not certifiable (absent from reference and new trace)"
+        ],
+        "pop_fence": {
+          "elbo_err": 1.7530973656290474,
+          "gskl": 1.4211156580775617,
+          "mmtv": 0.36970986409492707
+        },
+        "pop_evals": [
+          190,
+          310
+        ],
+        "outside": [],
+        "flagged": false,
+        "verdict": "identical stored loop and final; initial design identical (X_init in both traces); returned transformer not certifiable (absent from reference and new trace)"
+      },
+      {
+        "label": "logreg_D5_noise3",
+        "seed": 1,
+        "ok": true,
+        "final_new": {
+          "elbo_err": 0.17374801976425402,
+          "gskl": 0.4378081522759485,
+          "mmtv": 0.2109495116310871,
+          "func_count": 225,
+          "iterations": 45,
+          "final_K": 50,
+          "wall_s": 220.11575379999704,
+          "elbo": -35.067238019764254,
+          "elbo_sd": 0.34537703813684234,
+          "best_iter": 44,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 225,
+          "min_Ns_gp": 5,
+          "n_warps": 2
+        },
+        "final_ref": {
+          "elbo_err": 0.17374801976425402,
+          "gskl": 0.4378081522759485,
+          "mmtv": 0.2109495116310871,
+          "func_count": 225,
+          "iterations": 45,
+          "final_K": 50,
+          "wall_s": 196.66556649999984,
+          "elbo": -35.067238019764254,
+          "elbo_sd": 0.34537703813684234,
+          "best_iter": 44,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 225,
+          "min_Ns_gp": 5,
+          "n_warps": 2
+        },
+        "semantic_final_certifiable": true,
+        "semantic_final_differences": {},
+        "semantic_final_identical": true,
+        "loop_differences": {},
+        "final_array_differences": {},
+        "loop_identical": true,
+        "final_arrays_identical": true,
+        "returned_transformer_certifiable": false,
+        "returned_transformer_coverage": "returned transformer not certifiable (absent from reference and new trace)",
+        "X_orig_exact": 215,
+        "X_orig_close": 215,
+        "y_orig_exact": 215,
+        "y_orig_close": 215,
+        "n_live_ref": 215,
+        "n_live_new": 215,
+        "elbo_exact_iter": 45,
+        "elbo_iter": 45,
+        "func_count_iter": 45,
+        "K_iter": 45,
+        "Ns_gp_iter": 45,
+        "n_iter_ref": 45,
+        "n_iter_new": 45,
+        "stored_arrays_identical": true,
+        "design": "identical (X_init in both traces)",
+        "initial_design_ok": true,
+        "consistency_issues": {},
+        "final_validity_issues": {},
+        "final_identical": true,
+        "identical": true,
+        "identity_not_certifiable": [
+          "returned transformer not certifiable (absent from reference and new trace)"
+        ],
+        "pop_fence": {
+          "elbo_err": 1.7530973656290474,
+          "gskl": 1.4211156580775617,
+          "mmtv": 0.36970986409492707
+        },
+        "pop_evals": [
+          190,
+          310
+        ],
+        "outside": [],
+        "flagged": false,
+        "verdict": "identical stored loop and final; initial design identical (X_init in both traces); returned transformer not certifiable (absent from reference and new trace)"
+      },
+      {
+        "label": "logreg_D5_noise3",
+        "seed": 2,
+        "ok": true,
+        "final_new": {
+          "elbo_err": 0.03914491213480176,
+          "gskl": 0.3528646759497933,
+          "mmtv": 0.14034274654086154,
+          "func_count": 255,
+          "iterations": 52,
+          "final_K": 50,
+          "wall_s": 220.23009070000262,
+          "elbo": -34.9326349121348,
+          "elbo_sd": 0.33446687676032305,
+          "best_iter": 51,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 255,
+          "min_Ns_gp": 0,
+          "n_warps": 3
+        },
+        "final_ref": {
+          "elbo_err": 0.03914491213480176,
+          "gskl": 0.3528646759497933,
+          "mmtv": 0.14034274654086154,
+          "func_count": 255,
+          "iterations": 52,
+          "final_K": 50,
+          "wall_s": 221.26884839999548,
+          "elbo": -34.9326349121348,
+          "elbo_sd": 0.33446687676032305,
+          "best_iter": 51,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 255,
+          "min_Ns_gp": 0,
+          "n_warps": 3
+        },
+        "semantic_final_certifiable": true,
+        "semantic_final_differences": {},
+        "semantic_final_identical": true,
+        "loop_differences": {},
+        "final_array_differences": {},
+        "loop_identical": true,
+        "final_arrays_identical": true,
+        "returned_transformer_certifiable": false,
+        "returned_transformer_coverage": "returned transformer not certifiable (absent from reference and new trace)",
+        "X_orig_exact": 247,
+        "X_orig_close": 247,
+        "y_orig_exact": 247,
+        "y_orig_close": 247,
+        "n_live_ref": 247,
+        "n_live_new": 247,
+        "elbo_exact_iter": 52,
+        "elbo_iter": 52,
+        "func_count_iter": 52,
+        "K_iter": 52,
+        "Ns_gp_iter": 52,
+        "n_iter_ref": 52,
+        "n_iter_new": 52,
+        "stored_arrays_identical": true,
+        "design": "identical (X_init in both traces)",
+        "initial_design_ok": true,
+        "consistency_issues": {},
+        "final_validity_issues": {},
+        "final_identical": true,
+        "identical": true,
+        "identity_not_certifiable": [
+          "returned transformer not certifiable (absent from reference and new trace)"
+        ],
+        "pop_fence": {
+          "elbo_err": 1.7530973656290474,
+          "gskl": 1.4211156580775617,
+          "mmtv": 0.36970986409492707
+        },
+        "pop_evals": [
+          190,
+          310
+        ],
+        "outside": [],
+        "flagged": false,
+        "verdict": "identical stored loop and final; initial design identical (X_init in both traces); returned transformer not certifiable (absent from reference and new trace)"
+      },
+      {
+        "label": "student_D8_noise3",
+        "seed": 0,
+        "ok": true,
+        "final_new": {
+          "elbo_err": 1.6977344590673802,
+          "gskl": 0.5954641580449784,
+          "mmtv": 0.15811209319131458,
+          "func_count": 260,
+          "iterations": 53,
+          "final_K": 50,
+          "wall_s": 232.2353310000035,
+          "elbo": -21.301254617265435,
+          "elbo_sd": 0.3667828756875967,
+          "best_iter": 52,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 260,
+          "min_Ns_gp": 5,
+          "n_warps": 3
+        },
+        "final_ref": {
+          "elbo_err": 1.6977344590673802,
+          "gskl": 0.5954641580449784,
+          "mmtv": 0.15811209319131458,
+          "func_count": 260,
+          "iterations": 53,
+          "final_K": 50,
+          "wall_s": 251.15770820000034,
+          "elbo": -21.301254617265435,
+          "elbo_sd": 0.3667828756875967,
+          "best_iter": 52,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 260,
+          "min_Ns_gp": 5,
+          "n_warps": 3
+        },
+        "semantic_final_certifiable": true,
+        "semantic_final_differences": {},
+        "semantic_final_identical": true,
+        "loop_differences": {},
+        "final_array_differences": {},
+        "loop_identical": true,
+        "final_arrays_identical": true,
+        "returned_transformer_certifiable": false,
+        "returned_transformer_coverage": "returned transformer not certifiable (absent from reference and new trace)",
+        "X_orig_exact": 260,
+        "X_orig_close": 260,
+        "y_orig_exact": 260,
+        "y_orig_close": 260,
+        "n_live_ref": 260,
+        "n_live_new": 260,
+        "elbo_exact_iter": 53,
+        "elbo_iter": 53,
+        "func_count_iter": 53,
+        "K_iter": 53,
+        "Ns_gp_iter": 53,
+        "n_iter_ref": 53,
+        "n_iter_new": 53,
+        "stored_arrays_identical": true,
+        "design": "identical (X_init in both traces)",
+        "initial_design_ok": true,
+        "consistency_issues": {},
+        "final_validity_issues": {},
+        "final_identical": true,
+        "identical": true,
+        "identity_not_certifiable": [
+          "returned transformer not certifiable (absent from reference and new trace)"
+        ],
+        "pop_fence": {
+          "elbo_err": 2.7714886237320684,
+          "gskl": 1.635449573136306,
+          "mmtv": 0.2641636226722113
+        },
+        "pop_evals": [
+          250,
+          365
+        ],
+        "outside": [],
+        "flagged": false,
+        "verdict": "identical stored loop and final; initial design identical (X_init in both traces); returned transformer not certifiable (absent from reference and new trace)"
+      },
+      {
+        "label": "student_D8_noise3",
+        "seed": 1,
+        "ok": true,
+        "final_new": {
+          "elbo_err": 0.2576748178158006,
+          "gskl": 0.3643237427172479,
+          "mmtv": 0.09374274907566599,
+          "func_count": 285,
+          "iterations": 57,
+          "final_K": 50,
+          "wall_s": 260.71991260000505,
+          "elbo": -19.861194976013856,
+          "elbo_sd": 0.2938576787131913,
+          "best_iter": 56,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 285,
+          "min_Ns_gp": 0,
+          "n_warps": 3
+        },
+        "final_ref": {
+          "elbo_err": 0.2576748178158006,
+          "gskl": 0.3643237427172479,
+          "mmtv": 0.09374274907566599,
+          "func_count": 285,
+          "iterations": 57,
+          "final_K": 50,
+          "wall_s": 277.3651764000024,
+          "elbo": -19.861194976013856,
+          "elbo_sd": 0.2938576787131913,
+          "best_iter": 56,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 285,
+          "min_Ns_gp": 0,
+          "n_warps": 3
+        },
+        "semantic_final_certifiable": true,
+        "semantic_final_differences": {},
+        "semantic_final_identical": true,
+        "loop_differences": {},
+        "final_array_differences": {},
+        "loop_identical": true,
+        "final_arrays_identical": true,
+        "returned_transformer_certifiable": false,
+        "returned_transformer_coverage": "returned transformer not certifiable (absent from reference and new trace)",
+        "X_orig_exact": 285,
+        "X_orig_close": 285,
+        "y_orig_exact": 285,
+        "y_orig_close": 285,
+        "n_live_ref": 285,
+        "n_live_new": 285,
+        "elbo_exact_iter": 57,
+        "elbo_iter": 57,
+        "func_count_iter": 57,
+        "K_iter": 57,
+        "Ns_gp_iter": 57,
+        "n_iter_ref": 57,
+        "n_iter_new": 57,
+        "stored_arrays_identical": true,
+        "design": "identical (X_init in both traces)",
+        "initial_design_ok": true,
+        "consistency_issues": {},
+        "final_validity_issues": {},
+        "final_identical": true,
+        "identical": true,
+        "identity_not_certifiable": [
+          "returned transformer not certifiable (absent from reference and new trace)"
+        ],
+        "pop_fence": {
+          "elbo_err": 2.7714886237320684,
+          "gskl": 1.635449573136306,
+          "mmtv": 0.2641636226722113
+        },
+        "pop_evals": [
+          250,
+          365
+        ],
+        "outside": [],
+        "flagged": false,
+        "verdict": "identical stored loop and final; initial design identical (X_init in both traces); returned transformer not certifiable (absent from reference and new trace)"
+      },
+      {
+        "label": "student_D8_noise3",
+        "seed": 2,
+        "ok": true,
+        "final_new": {
+          "elbo_err": 1.5671281413821703,
+          "gskl": 0.9987307441370898,
+          "mmtv": 0.14229823922897136,
+          "func_count": 295,
+          "iterations": 60,
+          "final_K": 50,
+          "wall_s": 256.7771096000215,
+          "elbo": -21.170648299580225,
+          "elbo_sd": 0.31057167243085443,
+          "best_iter": 59,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 295,
+          "min_Ns_gp": 0,
+          "n_warps": 3
+        },
+        "final_ref": {
+          "elbo_err": 1.5671281413821703,
+          "gskl": 0.9987307441370898,
+          "mmtv": 0.14229823922897136,
+          "func_count": 295,
+          "iterations": 60,
+          "final_K": 50,
+          "wall_s": 274.26290139999765,
+          "elbo": -21.170648299580225,
+          "elbo_sd": 0.31057167243085443,
+          "best_iter": 59,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 295,
+          "min_Ns_gp": 0,
+          "n_warps": 3
+        },
+        "semantic_final_certifiable": true,
+        "semantic_final_differences": {},
+        "semantic_final_identical": true,
+        "loop_differences": {},
+        "final_array_differences": {},
+        "loop_identical": true,
+        "final_arrays_identical": true,
+        "returned_transformer_certifiable": false,
+        "returned_transformer_coverage": "returned transformer not certifiable (absent from reference and new trace)",
+        "X_orig_exact": 295,
+        "X_orig_close": 295,
+        "y_orig_exact": 295,
+        "y_orig_close": 295,
+        "n_live_ref": 295,
+        "n_live_new": 295,
+        "elbo_exact_iter": 60,
+        "elbo_iter": 60,
+        "func_count_iter": 60,
+        "K_iter": 60,
+        "Ns_gp_iter": 60,
+        "n_iter_ref": 60,
+        "n_iter_new": 60,
+        "stored_arrays_identical": true,
+        "design": "identical (X_init in both traces)",
+        "initial_design_ok": true,
+        "consistency_issues": {},
+        "final_validity_issues": {},
+        "final_identical": true,
+        "identical": true,
+        "identity_not_certifiable": [
+          "returned transformer not certifiable (absent from reference and new trace)"
+        ],
+        "pop_fence": {
+          "elbo_err": 2.7714886237320684,
+          "gskl": 1.635449573136306,
+          "mmtv": 0.2641636226722113
+        },
+        "pop_evals": [
+          250,
+          365
+        ],
+        "outside": [],
+        "flagged": false,
+        "verdict": "identical stored loop and final; initial design identical (X_init in both traces); returned transformer not certifiable (absent from reference and new trace)"
+      },
+      {
+        "label": "multisensory_s1_D6_noise1.3",
+        "seed": 0,
+        "ok": true,
+        "final_new": {
+          "elbo_err": 0.17206170174438284,
+          "gskl": 3.1482877140100447,
+          "mmtv": 0.23597287344394288,
+          "func_count": 200,
+          "iterations": 41,
+          "final_K": 50,
+          "wall_s": 165.40036070003407,
+          "elbo": -502.3579714768165,
+          "elbo_sd": 0.1989479619084523,
+          "best_iter": 40,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 200,
+          "min_Ns_gp": 6,
+          "n_warps": 2
+        },
+        "final_ref": {
+          "elbo_err": 0.17206170174438284,
+          "gskl": 3.1482877140100447,
+          "mmtv": 0.23597287344394288,
+          "func_count": 200,
+          "iterations": 41,
+          "final_K": 50,
+          "wall_s": 194.99823169998126,
+          "elbo": -502.3579714768165,
+          "elbo_sd": 0.1989479619084523,
+          "best_iter": 40,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 200,
+          "min_Ns_gp": 6,
+          "n_warps": 2
+        },
+        "semantic_final_certifiable": true,
+        "semantic_final_differences": {},
+        "semantic_final_identical": true,
+        "loop_differences": {},
+        "final_array_differences": {},
+        "loop_identical": true,
+        "final_arrays_identical": true,
+        "returned_transformer_certifiable": false,
+        "returned_transformer_coverage": "returned transformer not certifiable (absent from reference and new trace)",
+        "X_orig_exact": 181,
+        "X_orig_close": 181,
+        "y_orig_exact": 181,
+        "y_orig_close": 181,
+        "n_live_ref": 181,
+        "n_live_new": 181,
+        "elbo_exact_iter": 41,
+        "elbo_iter": 41,
+        "func_count_iter": 41,
+        "K_iter": 41,
+        "Ns_gp_iter": 41,
+        "n_iter_ref": 41,
+        "n_iter_new": 41,
+        "stored_arrays_identical": true,
+        "design": "identical (X_init in both traces)",
+        "initial_design_ok": true,
+        "consistency_issues": {},
+        "final_validity_issues": {},
+        "final_identical": true,
+        "identical": true,
+        "identity_not_certifiable": [
+          "returned transformer not certifiable (absent from reference and new trace)"
+        ],
+        "pop_fence": {
+          "elbo_err": 1.307129972457588,
+          "gskl": 9.356894980892084,
+          "mmtv": 0.3896017036571401
+        },
+        "pop_evals": [
+          165,
+          265
+        ],
+        "outside": [],
+        "flagged": false,
+        "verdict": "identical stored loop and final; initial design identical (X_init in both traces); returned transformer not certifiable (absent from reference and new trace)"
+      },
+      {
+        "label": "multisensory_s1_D6_noise1.3",
+        "seed": 1,
+        "ok": true,
+        "final_new": {
+          "elbo_err": 0.3133903450615776,
+          "gskl": 3.2493453131426016,
+          "mmtv": 0.24578194359432126,
+          "func_count": 200,
+          "iterations": 41,
+          "final_K": 50,
+          "wall_s": 159.13998609996634,
+          "elbo": -502.4993001201337,
+          "elbo_sd": 0.19197702755100446,
+          "best_iter": 40,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 200,
+          "min_Ns_gp": 6,
+          "n_warps": 3
+        },
+        "final_ref": {
+          "elbo_err": 0.3133903450615776,
+          "gskl": 3.2493453131426016,
+          "mmtv": 0.24578194359432126,
+          "func_count": 200,
+          "iterations": 41,
+          "final_K": 50,
+          "wall_s": 200.00723680001101,
+          "elbo": -502.4993001201337,
+          "elbo_sd": 0.19197702755100446,
+          "best_iter": 40,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 200,
+          "min_Ns_gp": 6,
+          "n_warps": 3
+        },
+        "semantic_final_certifiable": true,
+        "semantic_final_differences": {},
+        "semantic_final_identical": true,
+        "loop_differences": {},
+        "final_array_differences": {},
+        "loop_identical": true,
+        "final_arrays_identical": true,
+        "returned_transformer_certifiable": false,
+        "returned_transformer_coverage": "returned transformer not certifiable (absent from reference and new trace)",
+        "X_orig_exact": 181,
+        "X_orig_close": 181,
+        "y_orig_exact": 181,
+        "y_orig_close": 181,
+        "n_live_ref": 181,
+        "n_live_new": 181,
+        "elbo_exact_iter": 41,
+        "elbo_iter": 41,
+        "func_count_iter": 41,
+        "K_iter": 41,
+        "Ns_gp_iter": 41,
+        "n_iter_ref": 41,
+        "n_iter_new": 41,
+        "stored_arrays_identical": true,
+        "design": "identical (X_init in both traces)",
+        "initial_design_ok": true,
+        "consistency_issues": {},
+        "final_validity_issues": {},
+        "final_identical": true,
+        "identical": true,
+        "identity_not_certifiable": [
+          "returned transformer not certifiable (absent from reference and new trace)"
+        ],
+        "pop_fence": {
+          "elbo_err": 1.307129972457588,
+          "gskl": 9.356894980892084,
+          "mmtv": 0.3896017036571401
+        },
+        "pop_evals": [
+          165,
+          265
+        ],
+        "outside": [],
+        "flagged": false,
+        "verdict": "identical stored loop and final; initial design identical (X_init in both traces); returned transformer not certifiable (absent from reference and new trace)"
+      },
+      {
+        "label": "multisensory_s1_D6_noise1.3",
+        "seed": 2,
+        "ok": true,
+        "final_new": {
+          "elbo_err": 0.004298502145047678,
+          "gskl": 0.24642938556395166,
+          "mmtv": 0.11023217888695197,
+          "func_count": 260,
+          "iterations": 51,
+          "final_K": 50,
+          "wall_s": 209.01188700000057,
+          "elbo": -502.18161127292706,
+          "elbo_sd": 0.16088193501378673,
+          "best_iter": 50,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 260,
+          "min_Ns_gp": 0,
+          "n_warps": 2
+        },
+        "final_ref": {
+          "elbo_err": 0.004298502145047678,
+          "gskl": 0.24642938556395166,
+          "mmtv": 0.11023217888695197,
+          "func_count": 260,
+          "iterations": 51,
+          "final_K": 50,
+          "wall_s": 241.0880548999994,
+          "elbo": -502.18161127292706,
+          "elbo_sd": 0.16088193501378673,
+          "best_iter": 50,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 260,
+          "min_Ns_gp": 0,
+          "n_warps": 2
+        },
+        "semantic_final_certifiable": true,
+        "semantic_final_differences": {},
+        "semantic_final_identical": true,
+        "loop_differences": {},
+        "final_array_differences": {},
+        "loop_identical": true,
+        "final_arrays_identical": true,
+        "returned_transformer_certifiable": false,
+        "returned_transformer_coverage": "returned transformer not certifiable (absent from reference and new trace)",
+        "X_orig_exact": 231,
+        "X_orig_close": 231,
+        "y_orig_exact": 231,
+        "y_orig_close": 231,
+        "n_live_ref": 231,
+        "n_live_new": 231,
+        "elbo_exact_iter": 51,
+        "elbo_iter": 51,
+        "func_count_iter": 51,
+        "K_iter": 51,
+        "Ns_gp_iter": 51,
+        "n_iter_ref": 51,
+        "n_iter_new": 51,
+        "stored_arrays_identical": true,
+        "design": "identical (X_init in both traces)",
+        "initial_design_ok": true,
+        "consistency_issues": {},
+        "final_validity_issues": {},
+        "final_identical": true,
+        "identical": true,
+        "identity_not_certifiable": [
+          "returned transformer not certifiable (absent from reference and new trace)"
+        ],
+        "pop_fence": {
+          "elbo_err": 1.307129972457588,
+          "gskl": 9.356894980892084,
+          "mmtv": 0.3896017036571401
+        },
+        "pop_evals": [
+          165,
+          265
+        ],
+        "outside": [],
+        "flagged": false,
+        "verdict": "identical stored loop and final; initial design identical (X_init in both traces); returned transformer not certifiable (absent from reference and new trace)"
+      },
+      {
+        "label": "timing_D5_noise2.2",
+        "seed": 0,
+        "ok": true,
+        "final_new": {
+          "elbo_err": 0.0579130686192002,
+          "gskl": 0.15293026668673293,
+          "mmtv": 0.1362623506508688,
+          "func_count": 230,
+          "iterations": 47,
+          "final_K": 50,
+          "wall_s": 169.66956279997248,
+          "elbo": -3861.2514330698996,
+          "elbo_sd": 0.27110522188577446,
+          "best_iter": 46,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 230,
+          "min_Ns_gp": 5,
+          "n_warps": 3
+        },
+        "final_ref": {
+          "elbo_err": 0.0579130686192002,
+          "gskl": 0.15293026668673293,
+          "mmtv": 0.1362623506508688,
+          "func_count": 230,
+          "iterations": 47,
+          "final_K": 50,
+          "wall_s": 274.87232460000087,
+          "elbo": -3861.2514330698996,
+          "elbo_sd": 0.27110522188577446,
+          "best_iter": 46,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 230,
+          "min_Ns_gp": 5,
+          "n_warps": 3
+        },
+        "semantic_final_certifiable": true,
+        "semantic_final_differences": {},
+        "semantic_final_identical": true,
+        "loop_differences": {},
+        "final_array_differences": {},
+        "loop_identical": true,
+        "final_arrays_identical": true,
+        "returned_transformer_certifiable": false,
+        "returned_transformer_coverage": "returned transformer not certifiable (absent from reference and new trace)",
+        "X_orig_exact": 189,
+        "X_orig_close": 189,
+        "y_orig_exact": 189,
+        "y_orig_close": 189,
+        "n_live_ref": 189,
+        "n_live_new": 189,
+        "elbo_exact_iter": 47,
+        "elbo_iter": 47,
+        "func_count_iter": 47,
+        "K_iter": 47,
+        "Ns_gp_iter": 47,
+        "n_iter_ref": 47,
+        "n_iter_new": 47,
+        "stored_arrays_identical": true,
+        "design": "identical (X_init in both traces)",
+        "initial_design_ok": true,
+        "consistency_issues": {},
+        "final_validity_issues": {},
+        "final_identical": true,
+        "identical": true,
+        "identity_not_certifiable": [
+          "returned transformer not certifiable (absent from reference and new trace)"
+        ],
+        "pop_fence": {
+          "elbo_err": 1.0726714507977704,
+          "gskl": 1.1823139807345378,
+          "mmtv": 0.28200542228517744
+        },
+        "pop_evals": [
+          185,
+          350
+        ],
+        "outside": [],
+        "flagged": false,
+        "verdict": "identical stored loop and final; initial design identical (X_init in both traces); returned transformer not certifiable (absent from reference and new trace)"
+      },
+      {
+        "label": "timing_D5_noise2.2",
+        "seed": 1,
+        "ok": true,
+        "final_new": {
+          "elbo_err": 0.002094152310746722,
+          "gskl": 0.33635360749826226,
+          "mmtv": 0.08610360829897826,
+          "func_count": 215,
+          "iterations": 44,
+          "final_K": 50,
+          "wall_s": 166.62505370000144,
+          "elbo": -3861.3114402908295,
+          "elbo_sd": 0.25523506255723655,
+          "best_iter": 43,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 215,
+          "min_Ns_gp": 5,
+          "n_warps": 3
+        },
+        "final_ref": {
+          "elbo_err": 0.002094152310746722,
+          "gskl": 0.33635360749826226,
+          "mmtv": 0.08610360829897826,
+          "func_count": 215,
+          "iterations": 44,
+          "final_K": 50,
+          "wall_s": 300.28586659999564,
+          "elbo": -3861.3114402908295,
+          "elbo_sd": 0.25523506255723655,
+          "best_iter": 43,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 215,
+          "min_Ns_gp": 5,
+          "n_warps": 3
+        },
+        "semantic_final_certifiable": true,
+        "semantic_final_differences": {},
+        "semantic_final_identical": true,
+        "loop_differences": {},
+        "final_array_differences": {},
+        "loop_identical": true,
+        "final_arrays_identical": true,
+        "returned_transformer_certifiable": false,
+        "returned_transformer_coverage": "returned transformer not certifiable (absent from reference and new trace)",
+        "X_orig_exact": 197,
+        "X_orig_close": 197,
+        "y_orig_exact": 197,
+        "y_orig_close": 197,
+        "n_live_ref": 197,
+        "n_live_new": 197,
+        "elbo_exact_iter": 44,
+        "elbo_iter": 44,
+        "func_count_iter": 44,
+        "K_iter": 44,
+        "Ns_gp_iter": 44,
+        "n_iter_ref": 44,
+        "n_iter_new": 44,
+        "stored_arrays_identical": true,
+        "design": "identical (X_init in both traces)",
+        "initial_design_ok": true,
+        "consistency_issues": {},
+        "final_validity_issues": {},
+        "final_identical": true,
+        "identical": true,
+        "identity_not_certifiable": [
+          "returned transformer not certifiable (absent from reference and new trace)"
+        ],
+        "pop_fence": {
+          "elbo_err": 1.0726714507977704,
+          "gskl": 1.1823139807345378,
+          "mmtv": 0.28200542228517744
+        },
+        "pop_evals": [
+          185,
+          350
+        ],
+        "outside": [],
+        "flagged": false,
+        "verdict": "identical stored loop and final; initial design identical (X_init in both traces); returned transformer not certifiable (absent from reference and new trace)"
+      },
+      {
+        "label": "timing_D5_noise2.2",
+        "seed": 2,
+        "ok": true,
+        "final_new": {
+          "elbo_err": 0.08588196204891574,
+          "gskl": 0.5835086447183351,
+          "mmtv": 0.13739193401558109,
+          "func_count": 185,
+          "iterations": 37,
+          "final_K": 50,
+          "wall_s": 134.17813200003002,
+          "elbo": -3861.3952281005677,
+          "elbo_sd": 0.3039460812952619,
+          "best_iter": 36,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 185,
+          "min_Ns_gp": 6,
+          "n_warps": 2
+        },
+        "final_ref": {
+          "elbo_err": 0.08588196204891574,
+          "gskl": 0.5835086447183351,
+          "mmtv": 0.13739193401558109,
+          "func_count": 185,
+          "iterations": 37,
+          "final_K": 50,
+          "wall_s": 209.30659029999515,
+          "elbo": -3861.3952281005677,
+          "elbo_sd": 0.3039460812952619,
+          "best_iter": 36,
+          "success_flag": true,
+          "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+          "final_N": 185,
+          "min_Ns_gp": 6,
+          "n_warps": 2
+        },
+        "semantic_final_certifiable": true,
+        "semantic_final_differences": {},
+        "semantic_final_identical": true,
+        "loop_differences": {},
+        "final_array_differences": {},
+        "loop_identical": true,
+        "final_arrays_identical": true,
+        "returned_transformer_certifiable": false,
+        "returned_transformer_coverage": "returned transformer not certifiable (absent from reference and new trace)",
+        "X_orig_exact": 163,
+        "X_orig_close": 163,
+        "y_orig_exact": 163,
+        "y_orig_close": 163,
+        "n_live_ref": 163,
+        "n_live_new": 163,
+        "elbo_exact_iter": 37,
+        "elbo_iter": 37,
+        "func_count_iter": 37,
+        "K_iter": 37,
+        "Ns_gp_iter": 37,
+        "n_iter_ref": 37,
+        "n_iter_new": 37,
+        "stored_arrays_identical": true,
+        "design": "identical (X_init in both traces)",
+        "initial_design_ok": true,
+        "consistency_issues": {},
+        "final_validity_issues": {},
+        "final_identical": true,
+        "identical": true,
+        "identity_not_certifiable": [
+          "returned transformer not certifiable (absent from reference and new trace)"
+        ],
+        "pop_fence": {
+          "elbo_err": 1.0726714507977704,
+          "gskl": 1.1823139807345378,
+          "mmtv": 0.28200542228517744
+        },
+        "pop_evals": [
+          185,
+          350
+        ],
+        "outside": [],
+        "flagged": false,
+        "verdict": "identical stored loop and final; initial design identical (X_init in both traces); returned transformer not certifiable (absent from reference and new trace)"
+      }
+    ]
+  },
+  "full_call_timing": {
+    "rows": [
+      {
+        "snapshot": "logreg_D5_noise3_early",
+        "Nc": 1,
+        "N": 10,
+        "Ns": 8,
+        "milliseconds": {
+          "before": [
+            0.5651533332032462,
+            0.5205333329892406,
+            0.5491899986130496,
+            0.5260799992053459,
+            0.5585166664483646,
+            0.529580000632753,
+            0.5889466653267542
+          ],
+          "after": [
+            0.5232133339935293,
+            0.6236233341041952,
+            0.521616666810587,
+            0.5319799995049834,
+            0.543606667391335,
+            0.5585466666767994,
+            0.6567633342153082
+          ]
+        },
+        "median_ms": {
+          "before": 0.5491899986130496,
+          "after": 0.543606667391335
+        },
+        "speedup": 1.0102709027623005,
+        "max_abs_difference": 3.552713678800501e-15,
+        "setup_ms_unchanged_path": [
+          1.116400002501905,
+          0.8694999851286411,
+          0.8639000006951392,
+          0.8644000045023859,
+          0.8490000036545098
+        ],
+        "peak_traced_bytes_call": {
+          "before": 16936,
+          "after": 15984
+        },
+        "sum_rows": {
+          "total": 8,
+          "fallback": 0
+        }
+      },
+      {
+        "snapshot": "logreg_D5_noise3_early",
+        "Nc": 8,
+        "N": 10,
+        "Ns": 8,
+        "milliseconds": {
+          "before": [
+            0.8751400009108087,
+            0.7672633335459977,
+            0.7396899998032799,
+            0.7584700011648238,
+            0.7618533350372066,
+            0.8909666658534358,
+            0.7674133327479163
+          ],
+          "after": [
+            1.4788066677283496,
+            1.024270001410817,
+            0.6912766664754599,
+            0.7884833321440965,
+            0.7749700006873658,
+            0.7406133324063072,
+            0.7112100002511094
+          ]
+        },
+        "median_ms": {
+          "before": 0.7672633335459977,
+          "after": 0.7749700006873658
+        },
+        "speedup": 0.9900555284275101,
+        "max_abs_difference": 7.105427357601002e-15,
+        "setup_ms_unchanged_path": [
+          1.116400002501905,
+          0.8694999851286411,
+          0.8639000006951392,
+          0.8644000045023859,
+          0.8490000036545098
+        ],
+        "peak_traced_bytes_call": {
+          "before": 65896,
+          "after": 59288
+        },
+        "sum_rows": {
+          "total": 64,
+          "fallback": 0
+        }
+      },
+      {
+        "snapshot": "logreg_D5_noise3_early",
+        "Nc": 8192,
+        "N": 10,
+        "Ns": 8,
+        "milliseconds": {
+          "before": [
+            865.5280999955721,
+            684.5486999955028,
+            639.8803999763913,
+            752.4726999690756,
+            675.6963999941945,
+            713.8425000011921,
+            630.5783999850973
+          ],
+          "after": [
+            618.8490000204183,
+            653.2056000432931,
+            459.8740999936126,
+            542.226399993524,
+            428.4757999703288,
+            555.0044999690726,
+            488.1333999801427
+          ]
+        },
+        "median_ms": {
+          "before": 684.5486999955028,
+          "after": 542.226399993524
+        },
+        "speedup": 1.2624776292775097,
+        "max_abs_difference": 7.105427357601002e-15,
+        "setup_ms_unchanged_path": [
+          1.116400002501905,
+          0.8694999851286411,
+          0.8639000006951392,
+          0.8644000045023859,
+          0.8490000036545098
+        ],
+        "peak_traced_bytes_call": {
+          "before": 62787000,
+          "after": 49681152
+        },
+        "sum_rows": {
+          "total": 65536,
+          "fallback": 0
+        }
+      },
+      {
+        "snapshot": "multisensory_s1_D6_noise1.3_early",
+        "Nc": 1,
+        "N": 10,
+        "Ns": 8,
+        "milliseconds": {
+          "before": [
+            1.1950700000549357,
+            0.9187666660485169,
+            0.9123933326918632,
+            0.9665933321230114,
+            0.8648666669614613,
+            1.101090000399078,
+            1.7700466676615179
+          ],
+          "after": [
+            0.7579200008573631,
+            0.8612233330495656,
+            0.9296600008383393,
+            1.3262499996926636,
+            0.8365533334047844,
+            1.4862566662486643,
+            1.5890900006828208
+          ]
+        },
+        "median_ms": {
+          "before": 0.9665933321230114,
+          "after": 0.9296600008383393
+        },
+        "speedup": 1.0397277835459917,
+        "max_abs_difference": 0.0,
+        "setup_ms_unchanged_path": [
+          1.3573000323958695,
+          1.2522999895736575,
+          1.2721000239253044,
+          1.0261000134050846,
+          0.9303999831900001
+        ],
+        "peak_traced_bytes_call": {
+          "before": 18536,
+          "after": 17608
+        },
+        "sum_rows": {
+          "total": 8,
+          "fallback": 0
+        }
+      },
+      {
+        "snapshot": "multisensory_s1_D6_noise1.3_early",
+        "Nc": 9,
+        "N": 10,
+        "Ns": 8,
+        "milliseconds": {
+          "before": [
+            1.2661933336251725,
+            1.1230899991157155,
+            1.0159866670922686,
+            1.7966499998389434,
+            1.4885366661474109,
+            1.1931466656581808,
+            1.5796100002868723
+          ],
+          "after": [
+            1.339726666143785,
+            1.5050499991048127,
+            1.7155599993808817,
+            1.2890533350097637,
+            1.13931000038671,
+            0.9322633326519281,
+            0.7494633338258913
+          ]
+        },
+        "median_ms": {
+          "before": 1.2661933336251725,
+          "after": 1.2890533350097637
+        },
+        "speedup": 0.982266054659082,
+        "max_abs_difference": 0.0,
+        "setup_ms_unchanged_path": [
+          1.3573000323958695,
+          1.2522999895736575,
+          1.2721000239253044,
+          1.0261000134050846,
+          0.9303999831900001
+        ],
+        "peak_traced_bytes_call": {
+          "before": 73688,
+          "after": 66296
+        },
+        "sum_rows": {
+          "total": 72,
+          "fallback": 0
+        }
+      },
+      {
+        "snapshot": "multisensory_s1_D6_noise1.3_early",
+        "Nc": 8192,
+        "N": 10,
+        "Ns": 8,
+        "milliseconds": {
+          "before": [
+            645.7459999946877,
+            602.7845999924466,
+            699.4409000035375,
+            612.682799983304,
+            632.9433000064455,
+            620.9213000256568,
+            663.2885000435635
+          ],
+          "after": [
+            501.3876000302844,
+            483.54939999990165,
+            471.82759997667745,
+            495.6880999961868,
+            490.1420999667607,
+            479.0416000178084,
+            563.8636000221595
+          ]
+        },
+        "median_ms": {
+          "before": 632.9433000064455,
+          "after": 490.1420999667607
+        },
+        "speedup": 1.2913465300152118,
+        "max_abs_difference": 1.4210854715202004e-14,
+        "setup_ms_unchanged_path": [
+          1.3573000323958695,
+          1.2522999895736575,
+          1.2721000239253044,
+          1.0261000134050846,
+          0.9303999831900001
+        ],
+        "peak_traced_bytes_call": {
+          "before": 62918056,
+          "after": 49812232
+        },
+        "sum_rows": {
+          "total": 65536,
+          "fallback": 0
+        }
+      },
+      {
+        "snapshot": "rosenbrock_D2_noise1_early",
+        "Nc": 1,
+        "N": 10,
+        "Ns": 8,
+        "milliseconds": {
+          "before": [
+            1.8753233326909442,
+            1.5479633332385372,
+            1.703173331528281,
+            1.1912399999952565,
+            1.2920733327822138,
+            0.9450899999743948,
+            1.2828533343660335
+          ],
+          "after": [
+            1.7104733327869326,
+            1.2541099994753797,
+            1.582863333169371,
+            0.9374933336706212,
+            1.659786666277796,
+            1.4768399996683002,
+            1.125416667976727
+          ]
+        },
+        "median_ms": {
+          "before": 1.2920733327822138,
+          "after": 1.4768399996683002
+        },
+        "speedup": 0.874890531860198,
+        "max_abs_difference": 0.0,
+        "setup_ms_unchanged_path": [
+          5.736899969633669,
+          3.2223000307567418,
+          3.0178999877534807,
+          2.9630999779328704,
+          3.2099999953061342
+        ],
+        "peak_traced_bytes_call": {
+          "before": 12040,
+          "after": 11112
+        },
+        "sum_rows": {
+          "total": 8,
+          "fallback": 0
+        }
+      },
+      {
+        "snapshot": "rosenbrock_D2_noise1_early",
+        "Nc": 6,
+        "N": 10,
+        "Ns": 8,
+        "milliseconds": {
+          "before": [
+            1.88768000031511,
+            1.776169999114548,
+            1.4356400002725422,
+            1.4219600008800626,
+            1.3601766685800005,
+            1.70336666633375,
+            2.203060001678144
+          ],
+          "after": [
+            1.2439866666682065,
+            1.230369999151056,
+            1.2213566650946934,
+            1.128153334138915,
+            1.3637133330727618,
+            1.2182399999195088,
+            2.11044333409518
+          ]
+        },
+        "median_ms": {
+          "before": 1.70336666633375,
+          "after": 1.230369999151056
+        },
+        "speedup": 1.38443449328987,
+        "max_abs_difference": 0.0,
+        "setup_ms_unchanged_path": [
+          5.736899969633669,
+          3.2223000307567418,
+          3.0178999877534807,
+          2.9630999779328704,
+          3.2099999953061342
+        ],
+        "peak_traced_bytes_call": {
+          "before": 50232,
+          "after": 45264
+        },
+        "sum_rows": {
+          "total": 48,
+          "fallback": 0
+        }
+      },
+      {
+        "snapshot": "rosenbrock_D2_noise1_early",
+        "Nc": 8192,
+        "N": 10,
+        "Ns": 8,
+        "milliseconds": {
+          "before": [
+            548.7820000271313,
+            620.1565000228584,
+            581.319099990651,
+            542.971899965778,
+            488.4414999978617,
+            617.4191000172868,
+            562.9362000036053
+          ],
+          "after": [
+            458.19570001913235,
+            397.4756000097841,
+            474.31520000100136,
+            420.1155999908224,
+            366.22119997628033,
+            408.5903000086546,
+            416.49080003844574
+          ]
+        },
+        "median_ms": {
+          "before": 562.9362000036053,
+          "after": 416.49080003844574
+        },
+        "speedup": 1.3516173705436985,
+        "max_abs_difference": 1.7763568394002505e-15,
+        "setup_ms_unchanged_path": [
+          5.736899969633669,
+          3.2223000307567418,
+          3.0178999877534807,
+          2.9630999779328704,
+          3.2099999953061342
+        ],
+        "peak_traced_bytes_call": {
+          "before": 62393736,
+          "after": 49287912
+        },
+        "sum_rows": {
+          "total": 65536,
+          "fallback": 0
+        }
+      },
+      {
+        "snapshot": "rosenbrock_D2_noise3_early",
+        "Nc": 1,
+        "N": 10,
+        "Ns": 8,
+        "milliseconds": {
+          "before": [
+            0.8511666674166918,
+            0.6904166676880171,
+            0.6395599998844167,
+            1.4024433330632746,
+            1.102320000063628,
+            1.0392333342072864,
+            1.287366667141517
+          ],
+          "after": [
+            1.1166233336552978,
+            1.1009799995614837,
+            0.9562999999616295,
+            0.8924733323510736,
+            0.9536200008975962,
+            0.8208199986256659,
+            0.7027466665022075
+          ]
+        },
+        "median_ms": {
+          "before": 1.0392333342072864,
+          "after": 0.9536200008975962
+        },
+        "speedup": 1.0897771997536823,
+        "max_abs_difference": 0.0,
+        "setup_ms_unchanged_path": [
+          1.9708999898284674,
+          1.7263999907299876,
+          3.1716999947093427,
+          2.8560999780893326,
+          3.020100004505366
+        ],
+        "peak_traced_bytes_call": {
+          "before": 12040,
+          "after": 11112
+        },
+        "sum_rows": {
+          "total": 8,
+          "fallback": 0
+        }
+      },
+      {
+        "snapshot": "rosenbrock_D2_noise3_early",
+        "Nc": 6,
+        "N": 10,
+        "Ns": 8,
+        "milliseconds": {
+          "before": [
+            0.9472300007473677,
+            0.8666533336509019,
+            1.1413466670395185,
+            0.9128299988030145,
+            0.7767966657411307,
+            1.138439999582867,
+            1.7523466667626053
+          ],
+          "after": [
+            1.044593332335353,
+            0.8910966668433199,
+            1.1033766650749992,
+            0.8954466669820249,
+            0.9613766664794335,
+            1.294919999781996,
+            0.9637800006506344
+          ]
+        },
+        "median_ms": {
+          "before": 0.9472300007473677,
+          "after": 0.9637800006506344
+        },
+        "speedup": 0.98282803140541,
+        "max_abs_difference": 8.881784197001252e-16,
+        "setup_ms_unchanged_path": [
+          1.9708999898284674,
+          1.7263999907299876,
+          3.1716999947093427,
+          2.8560999780893326,
+          3.020100004505366
+        ],
+        "peak_traced_bytes_call": {
+          "before": 50232,
+          "after": 45264
+        },
+        "sum_rows": {
+          "total": 48,
+          "fallback": 0
+        }
+      },
+      {
+        "snapshot": "rosenbrock_D2_noise3_early",
+        "Nc": 8192,
+        "N": 10,
+        "Ns": 8,
+        "milliseconds": {
+          "before": [
+            485.761400021147,
+            527.5419999961741,
+            574.0852999733761,
+            639.4017999991775,
+            548.9735000301152,
+            566.774400009308,
+            532.3770999675617
+          ],
+          "after": [
+            400.42099996935576,
+            359.5832000137307,
+            392.39809999708086,
+            405.9431000496261,
+            505.9227999881841,
+            442.80800002161413,
+            399.2103000055067
+          ]
+        },
+        "median_ms": {
+          "before": 548.9735000301152,
+          "after": 400.42099996935576
+        },
+        "speedup": 1.3709907823818637,
+        "max_abs_difference": 1.7763568394002505e-15,
+        "setup_ms_unchanged_path": [
+          1.9708999898284674,
+          1.7263999907299876,
+          3.1716999947093427,
+          2.8560999780893326,
+          3.020100004505366
+        ],
+        "peak_traced_bytes_call": {
+          "before": 62393736,
+          "after": 49287912
+        },
+        "sum_rows": {
+          "total": 65536,
+          "fallback": 0
+        }
+      },
+      {
+        "snapshot": "rosenbrock_D2_noise3_late",
+        "Nc": 1,
+        "N": 150,
+        "Ns": 6,
+        "milliseconds": {
+          "before": [
+            1.1716966653087486,
+            1.0343966675767053,
+            0.7212533324491233,
+            0.6651300005614758,
+            1.4730000014727314,
+            1.068210000327478,
+            0.6233666654831419
+          ],
+          "after": [
+            1.3644466661692907,
+            1.0510666664534558,
+            0.8160899994739642,
+            0.9214766653409848,
+            1.6344566674282153,
+            0.8689066666799287,
+            1.1839233338832855
+          ]
+        },
+        "median_ms": {
+          "before": 1.0343966675767053,
+          "after": 1.0510666664534558
+        },
+        "speedup": 0.9841399224151985,
+        "max_abs_difference": 0.0,
+        "setup_ms_unchanged_path": [
+          11.484100017696619,
+          5.625899997539818,
+          10.501299984753132,
+          10.905600036494434,
+          10.383800021372736
+        ],
+        "peak_traced_bytes_call": {
+          "before": 15368,
+          "after": 14440
+        },
+        "sum_rows": {
+          "total": 6,
+          "fallback": 0
+        }
+      },
+      {
+        "snapshot": "rosenbrock_D2_noise3_late",
+        "Nc": 6,
+        "N": 150,
+        "Ns": 6,
+        "milliseconds": {
+          "before": [
+            2.4652533330178508,
+            1.3038466665117692,
+            1.4337700015554826,
+            1.5057033335324377,
+            1.3771233323495835,
+            1.4223733334802091,
+            1.2794400002652158
+          ],
+          "after": [
+            1.526396667274336,
+            1.1613499994079273,
+            1.669890000872935,
+            1.427973333435754,
+            1.1637266667094082,
+            1.1466433332922559,
+            1.1077666655182838
+          ]
+        },
+        "median_ms": {
+          "before": 1.4223733334802091,
+          "after": 1.1637266667094082
+        },
+        "speedup": 1.2222572311607836,
+        "max_abs_difference": 4.440892098500626e-16,
+        "setup_ms_unchanged_path": [
+          11.484100017696619,
+          5.625899997539818,
+          10.501299984753132,
+          10.905600036494434,
+          10.383800021372736
+        ],
+        "peak_traced_bytes_call": {
+          "before": 57824,
+          "after": 52856
+        },
+        "sum_rows": {
+          "total": 36,
+          "fallback": 0
+        }
+      },
+      {
+        "snapshot": "rosenbrock_D2_noise3_late",
+        "Nc": 8192,
+        "N": 150,
+        "Ns": 6,
+        "milliseconds": {
+          "before": [
+            1007.4361999868415,
+            1045.186300005298,
+            1086.4194000023417,
+            1064.3283000099473,
+            1028.067099978216,
+            1139.86890000524,
+            1073.6866000224836
+          ],
+          "after": [
+            796.3594000320882,
+            851.3451999751851,
+            856.2012999900617,
+            895.1030000462197,
+            876.9309999770485,
+            922.1747000119649,
+            921.3444999768399
+          ]
+        },
+        "median_ms": {
+          "before": 1064.3283000099473,
+          "after": 876.9309999770485
+        },
+        "speedup": 1.213696744712872,
+        "max_abs_difference": 8.881784197001252e-16,
+        "setup_ms_unchanged_path": [
+          11.484100017696619,
+          5.625899997539818,
+          10.501299984753132,
+          10.905600036494434,
+          10.383800021372736
+        ],
+        "peak_traced_bytes_call": {
+          "before": 74321248,
+          "after": 67701992
+        },
+        "sum_rows": {
+          "total": 49152,
+          "fallback": 0
+        }
+      },
+      {
+        "snapshot": "student_D8_noise3_early",
+        "Nc": 1,
+        "N": 10,
+        "Ns": 8,
+        "milliseconds": {
+          "before": [
+            1.047203332806627,
+            0.9500733324481795,
+            0.6382666664042821,
+            1.3379233326607693,
+            1.8558966674997162,
+            0.9974200006884834,
+            1.0598166651713352
+          ],
+          "after": [
+            1.7137633326152961,
+            1.8229166666666667,
+            0.9894033331268778,
+            0.8885033331656208,
+            1.6115666658151895,
+            1.2977733315589528,
+            1.2176899996120483
+          ]
+        },
+        "median_ms": {
+          "before": 1.047203332806627,
+          "after": 1.2977733315589528
+        },
+        "speedup": 0.806923140845152,
+        "max_abs_difference": 0.0,
+        "setup_ms_unchanged_path": [
+          2.605099987704307,
+          2.1572000114247203,
+          2.09349999204278,
+          2.0461000385694206,
+          1.9487999961711466
+        ],
+        "peak_traced_bytes_call": {
+          "before": 21784,
+          "after": 20856
+        },
+        "sum_rows": {
+          "total": 8,
+          "fallback": 0
+        }
+      },
+      {
+        "snapshot": "student_D8_noise3_early",
+        "Nc": 10,
+        "N": 10,
+        "Ns": 8,
+        "milliseconds": {
+          "before": [
+            2.6856100012082607,
+            1.376979999865095,
+            2.6778366668925933,
+            2.267809999951472,
+            1.613253333683436,
+            1.7009466653689742,
+            1.6744033336484183
+          ],
+          "after": [
+            1.783246665339296,
+            2.31643333293808,
+            3.153616665319229,
+            3.146066666037465,
+            1.3706566668891658,
+            2.1989433327689767,
+            1.8296600009004276
+          ]
+        },
+        "median_ms": {
+          "before": 1.7009466653689742,
+          "after": 2.1989433327689767
+        },
+        "speedup": 0.773529103738699,
+        "max_abs_difference": 4.440892098500626e-16,
+        "setup_ms_unchanged_path": [
+          2.605099987704307,
+          2.1572000114247203,
+          2.09349999204278,
+          2.0461000385694206,
+          1.9487999961711466
+        ],
+        "peak_traced_bytes_call": {
+          "before": 81704,
+          "after": 73504
+        },
+        "sum_rows": {
+          "total": 80,
+          "fallback": 0
+        }
+      },
+      {
+        "snapshot": "student_D8_noise3_early",
+        "Nc": 8192,
+        "N": 10,
+        "Ns": 8,
+        "milliseconds": {
+          "before": [
+            892.2961000353098,
+            749.2957999929786,
+            726.0452000191435,
+            742.9685000097379,
+            732.0152999600396,
+            612.0341999921948,
+            672.741899965331
+          ],
+          "after": [
+            705.4521000245586,
+            667.1716999844648,
+            695.0151000055484,
+            651.2208000058308,
+            570.030200004112,
+            528.1088000047021,
+            657.7140999725088
+          ]
+        },
+        "median_ms": {
+          "before": 732.0152999600396,
+          "after": 657.7140999725088
+        },
+        "speedup": 1.1129688416146717,
+        "max_abs_difference": 8.881784197001252e-16,
+        "setup_ms_unchanged_path": [
+          2.605099987704307,
+          2.1572000114247203,
+          2.09349999204278,
+          2.0461000385694206,
+          1.9487999961711466
+        ],
+        "peak_traced_bytes_call": {
+          "before": 63180240,
+          "after": 50074392
+        },
+        "sum_rows": {
+          "total": 65536,
+          "fallback": 0
+        }
+      },
+      {
+        "snapshot": "timing_D5_noise2.2_early",
+        "Nc": 1,
+        "N": 10,
+        "Ns": 8,
+        "milliseconds": {
+          "before": [
+            1.1714066669810563,
+            1.0890033328905702,
+            0.963923333135123,
+            0.8579199997863421,
+            0.7406000009117027,
+            1.6180700001617272,
+            1.2229933325822155
+          ],
+          "after": [
+            1.4412666651575516,
+            0.8634366657740126,
+            1.0077966668177396,
+            1.5137166677353282,
+            1.1113400008374203,
+            0.6987166668598851,
+            1.1075733326530706
+          ]
+        },
+        "median_ms": {
+          "before": 1.0890033328905702,
+          "after": 1.1075733326530706
+        },
+        "speedup": 0.9832336160369463,
+        "max_abs_difference": 0.0,
+        "setup_ms_unchanged_path": [
+          2.1850999910384417,
+          3.236500022467226,
+          0.8954000077210367,
+          0.90970000019297,
+          1.9528000266291201
+        ],
+        "peak_traced_bytes_call": {
+          "before": 16912,
+          "after": 15984
+        },
+        "sum_rows": {
+          "total": 8,
+          "fallback": 0
+        }
+      },
+      {
+        "snapshot": "timing_D5_noise2.2_early",
+        "Nc": 8,
+        "N": 10,
+        "Ns": 8,
+        "milliseconds": {
+          "before": [
+            1.2994666661446292,
+            2.1774166671093553,
+            1.4847533331097413,
+            1.1618100009703387,
+            1.6659099996710818,
+            1.3519699995716412,
+            1.4030866654744993
+          ],
+          "after": [
+            1.4230433327611536,
+            1.7267133322699617,
+            1.0844633332453668,
+            1.5113000001292676,
+            1.2595033350711067,
+            1.29005999964041,
+            1.8383333343081176
+          ]
+        },
+        "median_ms": {
+          "before": 1.4030866654744993,
+          "after": 1.4230433327611536
+        },
+        "speedup": 0.9859760649396867,
+        "max_abs_difference": 1.1368683772161603e-13,
+        "setup_ms_unchanged_path": [
+          2.1850999910384417,
+          3.236500022467226,
+          0.8954000077210367,
+          0.90970000019297,
+          1.9528000266291201
+        ],
+        "peak_traced_bytes_call": {
+          "before": 65872,
+          "after": 59288
+        },
+        "sum_rows": {
+          "total": 64,
+          "fallback": 0
+        }
+      },
+      {
+        "snapshot": "timing_D5_noise2.2_early",
+        "Nc": 8192,
+        "N": 10,
+        "Ns": 8,
+        "milliseconds": {
+          "before": [
+            614.8658000165597,
+            640.982500044629,
+            675.3424000344239,
+            686.603499983903,
+            558.5301000392064,
+            752.4678000481799,
+            533.8402999914251
+          ],
+          "after": [
+            555.3700999589637,
+            557.7348000369966,
+            538.1562000256963,
+            478.6348000052385,
+            465.5584000283852,
+            513.5943000204861,
+            541.7464000056498
+          ]
+        },
+        "median_ms": {
+          "before": 640.982500044629,
+          "after": 538.1562000256963
+        },
+        "speedup": 1.1910714770433246,
+        "max_abs_difference": 1.1368683772161603e-13,
+        "setup_ms_unchanged_path": [
+          2.1850999910384417,
+          3.236500022467226,
+          0.8954000077210367,
+          0.90970000019297,
+          1.9528000266291201
+        ],
+        "peak_traced_bytes_call": {
+          "before": 62786976,
+          "after": 49681152
+        },
+        "sum_rows": {
+          "total": 65536,
+          "fallback": 0
+        }
+      }
+    ],
+    "python": "3.12.6",
+    "numpy": "2.5.2",
+    "scipy": "1.18.1",
+    "gpyreg_path": "C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\__init__.py",
+    "threads": 1,
+    "before_source": "dev\\scripts\\runs\\viqr_sinh_20260913\\before",
+    "after_source": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc",
+    "viqr_sha256": {
+      "before": "e1c5bfe488784da9df25cfb68d4c5803be2a4eb0e08e7e8a97f5d59012a6cf01",
+      "after": "cb3b3bd5c62f677b0bbd17f04f09c37e779c4a43ea6a802817997f3019ee9551"
+    },
+    "capture_provenance": {
+      "manifest_version": 1,
+      "coverage": "VIQR and shared acquisition/gpyreg source hashes only",
+      "capture_viqr_sha256": "39d9d40a7403c1869c1014d5fdd3c8d3219b2216344b5bc4c97d63623bc4f263",
+      "equivalent_viqr_requested": true
+    },
+    "capture_status": [
+      {
+        "label": "logreg_D5_noise3",
+        "captured": [
+          "early"
+        ],
+        "late_checkpoint_reached": false,
+        "file_hashes": {
+          "logreg_D5_noise3_early.npz": "458d33a011a9532e406de86ce4db695109ef56defa0b53050b25b59cb23fe963",
+          "logreg_D5_noise3_early.json": "adcaf677a0ac7630f1b82ac7bd7ec58a7bedfc331d50ee670056bf9aab18b424"
+        }
+      },
+      {
+        "label": "multisensory_s1_D6_noise1.3",
+        "captured": [
+          "early"
+        ],
+        "late_checkpoint_reached": false,
+        "file_hashes": {
+          "multisensory_s1_D6_noise1.3_early.npz": "67f0047b14858237a40dd722bbdefd85eec5942423ca2a366f7f46a6cc94733a",
+          "multisensory_s1_D6_noise1.3_early.json": "05bd6b86d34caeba8c6c06f228ac9291def4bd88d5494a012a502a2122d8b073"
+        }
+      },
+      {
+        "label": "rosenbrock_D2_noise1",
+        "captured": [
+          "early"
+        ],
+        "late_checkpoint_reached": false,
+        "file_hashes": {
+          "rosenbrock_D2_noise1_early.npz": "596862197321f9d23627eb739a8430a0445206a0b48f5cf1e6350730f3f38d45",
+          "rosenbrock_D2_noise1_early.json": "c9e5c27385631abc95a5443559603700b24d1864a71d55d9fa997ebb39e683fe"
+        }
+      },
+      {
+        "label": "rosenbrock_D2_noise3",
+        "captured": [
+          "early",
+          "late"
+        ],
+        "late_checkpoint_reached": true,
+        "file_hashes": {
+          "rosenbrock_D2_noise3_early.npz": "2248cb0bfb586ba948e2ce0f889c83b7afca053c6d0b05c29cdc4da3db43fe97",
+          "rosenbrock_D2_noise3_early.json": "a93986c7fa699912dd373782ab4c9b0005941a66b73ab9339c839866165a70e5",
+          "rosenbrock_D2_noise3_late.npz": "aecfdf82185169c86cc2a87b1445c1e58e1909bad02ff9f597edbe0355a5ccc3",
+          "rosenbrock_D2_noise3_late.json": "58997690513696966348c7c3f63754f9cc61baa37acfdba3fd6ad7553d410b9a"
+        }
+      },
+      {
+        "label": "student_D8_noise3",
+        "captured": [
+          "early"
+        ],
+        "late_checkpoint_reached": false,
+        "file_hashes": {
+          "student_D8_noise3_early.npz": "c04711bea78ae811e83dd672eb142352b2e143a082a18af8d956eb4069d7939b",
+          "student_D8_noise3_early.json": "ffee718fc967124cc7e9152528f717b4e33652995d0c6e1a4d2f4d2a22301b1a"
+        }
+      },
+      {
+        "label": "timing_D5_noise2.2",
+        "captured": [
+          "early"
+        ],
+        "late_checkpoint_reached": false,
+        "file_hashes": {
+          "timing_D5_noise2.2_early.npz": "046d8e78093f9706b24ec3219d2ce7745813fa8eb5e43f8b44153bc1a525ad38",
+          "timing_D5_noise2.2_early.json": "d4b7f29932602f67ec3063843b6d698e3e72e7cf20424d552b9acf27d36ffa8a"
+        }
+      }
+    ]
+  },
+  "small_batch_paired_recheck": {
+    "purpose": "Alternating individual calls to reduce bias from changing laptop load",
+    "pairs_per_round": 101,
+    "source_hashes": {
+      "before": "e1c5bfe488784da9df25cfb68d4c5803be2a4eb0e08e7e8a97f5d59012a6cf01",
+      "campaign_guard": "39d9d40a7403c1869c1014d5fdd3c8d3219b2216344b5bc4c97d63623bc4f263",
+      "final": "cb3b3bd5c62f677b0bbd17f04f09c37e779c4a43ea6a802817997f3019ee9551"
+    },
+    "recipe_sha256": "dbe85a10be4e93027497fc35ae28d8113c206e820b3baf5dbb7fc3cf17664187",
+    "rows": [
+      {
+        "snapshot": "logreg_D5_noise3_early",
+        "Nc": 1,
+        "rounds": [
+          {
+            "median_ms": {
+              "before": 0.5108,
+              "after": 0.5103
+            },
+            "median_paired_speedup": 0.9987985582699239
+          },
+          {
+            "median_ms": {
+              "before": 0.5094,
+              "after": 0.5091
+            },
+            "median_paired_speedup": 0.9988276670574442
+          },
+          {
+            "median_ms": {
+              "before": 0.5081,
+              "after": 0.5084
+            },
+            "median_paired_speedup": 0.9971876255524307
+          },
+          {
+            "median_ms": {
+              "before": 0.5021,
+              "after": 0.5057
+            },
+            "median_paired_speedup": 0.9883498854087089
+          },
+          {
+            "median_ms": {
+              "before": 0.4953,
+              "after": 0.4986
+            },
+            "median_paired_speedup": 0.9920303605313093
+          },
+          {
+            "median_ms": {
+              "before": 0.5041,
+              "after": 0.5014
+            },
+            "median_paired_speedup": 1.0070380052282324
+          },
+          {
+            "median_ms": {
+              "before": 0.5083,
+              "after": 0.5044
+            },
+            "median_paired_speedup": 0.9993929583164711
+          },
+          {
+            "median_ms": {
+              "before": 0.5063,
+              "after": 0.5036
+            },
+            "median_paired_speedup": 1.0034392069593363
+          },
+          {
+            "median_ms": {
+              "before": 0.504,
+              "after": 0.5071
+            },
+            "median_paired_speedup": 0.9906486271388778
+          }
+        ],
+        "median_paired_speedup": 0.9987985582699239
+      },
+      {
+        "snapshot": "logreg_D5_noise3_early",
+        "Nc": 8,
+        "rounds": [
+          {
+            "median_ms": {
+              "before": 0.7167,
+              "after": 0.6802
+            },
+            "median_paired_speedup": 1.0528846153846154
+          },
+          {
+            "median_ms": {
+              "before": 0.7075,
+              "after": 0.6763
+            },
+            "median_paired_speedup": 1.0444444444444445
+          },
+          {
+            "median_ms": {
+              "before": 0.7074,
+              "after": 0.6806
+            },
+            "median_paired_speedup": 1.0426939266386048
+          },
+          {
+            "median_ms": {
+              "before": 0.7064,
+              "after": 0.6779
+            },
+            "median_paired_speedup": 1.0392388257855143
+          },
+          {
+            "median_ms": {
+              "before": 0.7172,
+              "after": 0.6899
+            },
+            "median_paired_speedup": 1.03878733838609
+          },
+          {
+            "median_ms": {
+              "before": 2.1761,
+              "after": 2.0588
+            },
+            "median_paired_speedup": 1.0375308641975307
+          },
+          {
+            "median_ms": {
+              "before": 1.2687,
+              "after": 1.2524
+            },
+            "median_paired_speedup": 1.0399474375821287
+          },
+          {
+            "median_ms": {
+              "before": 1.2612,
+              "after": 1.2163
+            },
+            "median_paired_speedup": 1.0411184210526316
+          },
+          {
+            "median_ms": {
+              "before": 1.6666,
+              "after": 1.6076
+            },
+            "median_paired_speedup": 1.0366618427399905
+          }
+        ],
+        "median_paired_speedup": 1.0399474375821287
+      },
+      {
+        "snapshot": "multisensory_s1_D6_noise1.3_early",
+        "Nc": 1,
+        "rounds": [
+          {
+            "median_ms": {
+              "before": 1.1514,
+              "after": 1.1755
+            },
+            "median_paired_speedup": 0.9906804401527061
+          },
+          {
+            "median_ms": {
+              "before": 1.0092,
+              "after": 1.0817
+            },
+            "median_paired_speedup": 0.9862623555034344
+          },
+          {
+            "median_ms": {
+              "before": 1.059,
+              "after": 1.0882
+            },
+            "median_paired_speedup": 0.9836671632731887
+          },
+          {
+            "median_ms": {
+              "before": 1.0614,
+              "after": 1.083
+            },
+            "median_paired_speedup": 0.9876055134095524
+          },
+          {
+            "median_ms": {
+              "before": 1.1764,
+              "after": 1.186
+            },
+            "median_paired_speedup": 0.9930236515228859
+          },
+          {
+            "median_ms": {
+              "before": 1.1873,
+              "after": 1.2054
+            },
+            "median_paired_speedup": 0.9909792767167819
+          },
+          {
+            "median_ms": {
+              "before": 1.0113,
+              "after": 0.9788
+            },
+            "median_paired_speedup": 0.9936881969282558
+          },
+          {
+            "median_ms": {
+              "before": 1.0115,
+              "after": 1.056
+            },
+            "median_paired_speedup": 0.9919906231685877
+          },
+          {
+            "median_ms": {
+              "before": 1.1505,
+              "after": 1.1331
+            },
+            "median_paired_speedup": 0.9954020410451945
+          }
+        ],
+        "median_paired_speedup": 0.9909792767167819
+      },
+      {
+        "snapshot": "multisensory_s1_D6_noise1.3_early",
+        "Nc": 9,
+        "rounds": [
+          {
+            "median_ms": {
+              "before": 1.479,
+              "after": 1.3808
+            },
+            "median_paired_speedup": 1.0352323360916613
+          },
+          {
+            "median_ms": {
+              "before": 1.669,
+              "after": 1.6674
+            },
+            "median_paired_speedup": 1.0300467856523998
+          },
+          {
+            "median_ms": {
+              "before": 1.7194,
+              "after": 1.6873
+            },
+            "median_paired_speedup": 1.0229116774493334
+          },
+          {
+            "median_ms": {
+              "before": 1.7223,
+              "after": 1.6011
+            },
+            "median_paired_speedup": 1.0406748159267996
+          },
+          {
+            "median_ms": {
+              "before": 1.5864,
+              "after": 1.6165
+            },
+            "median_paired_speedup": 1.0378571950595628
+          },
+          {
+            "median_ms": {
+              "before": 1.3957,
+              "after": 1.3446
+            },
+            "median_paired_speedup": 1.0342354333037562
+          },
+          {
+            "median_ms": {
+              "before": 1.8494,
+              "after": 2.0482
+            },
+            "median_paired_speedup": 1.0323309970608183
+          },
+          {
+            "median_ms": {
+              "before": 1.7133,
+              "after": 1.644
+            },
+            "median_paired_speedup": 1.0398693803159174
+          },
+          {
+            "median_ms": {
+              "before": 1.4637,
+              "after": 1.448
+            },
+            "median_paired_speedup": 1.0358338405356056
+          }
+        ],
+        "median_paired_speedup": 1.0352323360916613
+      },
+      {
+        "snapshot": "rosenbrock_D2_noise1_early",
+        "Nc": 1,
+        "rounds": [
+          {
+            "median_ms": {
+              "before": 0.9038,
+              "after": 0.8876
+            },
+            "median_paired_speedup": 1.0199833472106579
+          },
+          {
+            "median_ms": {
+              "before": 0.8934,
+              "after": 0.9018
+            },
+            "median_paired_speedup": 1.0006020469596628
+          },
+          {
+            "median_ms": {
+              "before": 1.1125,
+              "after": 1.1022
+            },
+            "median_paired_speedup": 0.9885518030910132
+          },
+          {
+            "median_ms": {
+              "before": 1.2607,
+              "after": 1.3092
+            },
+            "median_paired_speedup": 0.9956129661223494
+          },
+          {
+            "median_ms": {
+              "before": 1.1179,
+              "after": 1.0899
+            },
+            "median_paired_speedup": 0.9985364961278127
+          },
+          {
+            "median_ms": {
+              "before": 0.9787,
+              "after": 0.9271
+            },
+            "median_paired_speedup": 1.009599827418833
+          },
+          {
+            "median_ms": {
+              "before": 1.1229,
+              "after": 1.1073
+            },
+            "median_paired_speedup": 1.001092630812189
+          },
+          {
+            "median_ms": {
+              "before": 0.9041,
+              "after": 0.9036
+            },
+            "median_paired_speedup": 1.0003048966400392
+          },
+          {
+            "median_ms": {
+              "before": 0.8836,
+              "after": 0.8822
+            },
+            "median_paired_speedup": 0.9926228508718449
+          }
+        ],
+        "median_paired_speedup": 1.0003048966400392
+      },
+      {
+        "snapshot": "rosenbrock_D2_noise1_early",
+        "Nc": 6,
+        "rounds": [
+          {
+            "median_ms": {
+              "before": 2.1463,
+              "after": 2.051
+            },
+            "median_paired_speedup": 1.04743513567043
+          },
+          {
+            "median_ms": {
+              "before": 1.1537,
+              "after": 1.0848
+            },
+            "median_paired_speedup": 1.0661101516023797
+          },
+          {
+            "median_ms": {
+              "before": 1.1742,
+              "after": 1.1311
+            },
+            "median_paired_speedup": 1.0542874768661321
+          },
+          {
+            "median_ms": {
+              "before": 1.2074,
+              "after": 1.1441
+            },
+            "median_paired_speedup": 1.0618546935682485
+          },
+          {
+            "median_ms": {
+              "before": 1.1294,
+              "after": 1.0529
+            },
+            "median_paired_speedup": 1.0615615615615615
+          },
+          {
+            "median_ms": {
+              "before": 1.2201,
+              "after": 1.1072
+            },
+            "median_paired_speedup": 1.0661674816625917
+          },
+          {
+            "median_ms": {
+              "before": 1.1619,
+              "after": 1.1089
+            },
+            "median_paired_speedup": 1.0427450626747228
+          },
+          {
+            "median_ms": {
+              "before": 1.1779,
+              "after": 1.0986
+            },
+            "median_paired_speedup": 1.0595751742449384
+          },
+          {
+            "median_ms": {
+              "before": 1.7193,
+              "after": 1.6783
+            },
+            "median_paired_speedup": 1.047758731322761
+          }
+        ],
+        "median_paired_speedup": 1.0595751742449384
+      },
+      {
+        "snapshot": "rosenbrock_D2_noise3_early",
+        "Nc": 1,
+        "rounds": [
+          {
+            "median_ms": {
+              "before": 1.1048,
+              "after": 1.1003
+            },
+            "median_paired_speedup": 0.9963057030708844
+          },
+          {
+            "median_ms": {
+              "before": 1.023,
+              "after": 0.9758
+            },
+            "median_paired_speedup": 1.005679012345679
+          },
+          {
+            "median_ms": {
+              "before": 0.8912,
+              "after": 0.8846
+            },
+            "median_paired_speedup": 1.0050418242236736
+          },
+          {
+            "median_ms": {
+              "before": 0.6985,
+              "after": 0.7194
+            },
+            "median_paired_speedup": 0.9975298476739398
+          },
+          {
+            "median_ms": {
+              "before": 0.7702,
+              "after": 0.7429
+            },
+            "median_paired_speedup": 1.0038388885503626
+          },
+          {
+            "median_ms": {
+              "before": 0.5469,
+              "after": 0.5213
+            },
+            "median_paired_speedup": 1.0128287363694677
+          },
+          {
+            "median_ms": {
+              "before": 0.8635,
+              "after": 0.8597
+            },
+            "median_paired_speedup": 1.015586832616029
+          },
+          {
+            "median_ms": {
+              "before": 0.9259,
+              "after": 1.0936
+            },
+            "median_paired_speedup": 0.9901766402307138
+          },
+          {
+            "median_ms": {
+              "before": 0.8679,
+              "after": 0.8624
+            },
+            "median_paired_speedup": 1.0049142857142856
+          }
+        ],
+        "median_paired_speedup": 1.0049142857142856
+      },
+      {
+        "snapshot": "rosenbrock_D2_noise3_early",
+        "Nc": 6,
+        "rounds": [
+          {
+            "median_ms": {
+              "before": 1.432,
+              "after": 1.3279
+            },
+            "median_paired_speedup": 1.0430797433547205
+          },
+          {
+            "median_ms": {
+              "before": 1.1195,
+              "after": 1.0572
+            },
+            "median_paired_speedup": 1.0509140611652144
+          },
+          {
+            "median_ms": {
+              "before": 1.3772,
+              "after": 1.3179
+            },
+            "median_paired_speedup": 1.044037412314887
+          },
+          {
+            "median_ms": {
+              "before": 1.1427,
+              "after": 1.0948
+            },
+            "median_paired_speedup": 1.0401343408900083
+          },
+          {
+            "median_ms": {
+              "before": 1.2963,
+              "after": 1.2823
+            },
+            "median_paired_speedup": 1.0374111301789655
+          },
+          {
+            "median_ms": {
+              "before": 1.1411,
+              "after": 1.0997
+            },
+            "median_paired_speedup": 1.0355099293167285
+          },
+          {
+            "median_ms": {
+              "before": 1.156,
+              "after": 1.0924
+            },
+            "median_paired_speedup": 1.0378230114046483
+          },
+          {
+            "median_ms": {
+              "before": 1.7726,
+              "after": 1.5176
+            },
+            "median_paired_speedup": 1.0402916346891788
+          },
+          {
+            "median_ms": {
+              "before": 1.4332,
+              "after": 1.3102
+            },
+            "median_paired_speedup": 1.0498741706703272
+          }
+        ],
+        "median_paired_speedup": 1.0402916346891788
+      },
+      {
+        "snapshot": "rosenbrock_D2_noise3_late",
+        "Nc": 1,
+        "rounds": [
+          {
+            "median_ms": {
+              "before": 0.8929,
+              "after": 0.94
+            },
+            "median_paired_speedup": 1.0087310826542493
+          },
+          {
+            "median_ms": {
+              "before": 0.867,
+              "after": 0.848
+            },
+            "median_paired_speedup": 1.0015330188679246
+          },
+          {
+            "median_ms": {
+              "before": 0.87,
+              "after": 0.8908
+            },
+            "median_paired_speedup": 1.003681758039464
+          },
+          {
+            "median_ms": {
+              "before": 0.6039,
+              "after": 0.5819
+            },
+            "median_paired_speedup": 1.0056179775280898
+          },
+          {
+            "median_ms": {
+              "before": 1.0113,
+              "after": 0.9887
+            },
+            "median_paired_speedup": 1.0151515151515151
+          },
+          {
+            "median_ms": {
+              "before": 0.8796,
+              "after": 0.8531
+            },
+            "median_paired_speedup": 1.0024912168636217
+          },
+          {
+            "median_ms": {
+              "before": 0.8394,
+              "after": 0.8397
+            },
+            "median_paired_speedup": 1.0171541404418116
+          },
+          {
+            "median_ms": {
+              "before": 0.8131,
+              "after": 0.8221
+            },
+            "median_paired_speedup": 1.0091974868838656
+          },
+          {
+            "median_ms": {
+              "before": 0.8998,
+              "after": 0.8905
+            },
+            "median_paired_speedup": 1.011443661971831
+          }
+        ],
+        "median_paired_speedup": 1.0087310826542493
+      },
+      {
+        "snapshot": "rosenbrock_D2_noise3_late",
+        "Nc": 6,
+        "rounds": [
+          {
+            "median_ms": {
+              "before": 1.0032,
+              "after": 1.0024
+            },
+            "median_paired_speedup": 1.0379969803724207
+          },
+          {
+            "median_ms": {
+              "before": 1.3739,
+              "after": 1.3551
+            },
+            "median_paired_speedup": 1.0281021329596762
+          },
+          {
+            "median_ms": {
+              "before": 1.333,
+              "after": 1.2776
+            },
+            "median_paired_speedup": 1.0395292027537197
+          },
+          {
+            "median_ms": {
+              "before": 1.3453,
+              "after": 1.3288
+            },
+            "median_paired_speedup": 1.0192551505546752
+          },
+          {
+            "median_ms": {
+              "before": 1.4417,
+              "after": 1.3195
+            },
+            "median_paired_speedup": 1.0330015715034049
+          },
+          {
+            "median_ms": {
+              "before": 1.2741,
+              "after": 1.2354
+            },
+            "median_paired_speedup": 1.0377578824445308
+          },
+          {
+            "median_ms": {
+              "before": 1.1237,
+              "after": 1.2358
+            },
+            "median_paired_speedup": 1.049513330512061
+          },
+          {
+            "median_ms": {
+              "before": 1.7153,
+              "after": 1.7259
+            },
+            "median_paired_speedup": 1.0369291338582676
+          },
+          {
+            "median_ms": {
+              "before": 1.32,
+              "after": 1.3043
+            },
+            "median_paired_speedup": 1.017749092375958
+          }
+        ],
+        "median_paired_speedup": 1.0369291338582676
+      },
+      {
+        "snapshot": "student_D8_noise3_early",
+        "Nc": 1,
+        "rounds": [
+          {
+            "median_ms": {
+              "before": 0.9215,
+              "after": 0.9257
+            },
+            "median_paired_speedup": 0.9913359902963094
+          },
+          {
+            "median_ms": {
+              "before": 0.9512,
+              "after": 0.9962
+            },
+            "median_paired_speedup": 0.9917273872788035
+          },
+          {
+            "median_ms": {
+              "before": 1.1371,
+              "after": 1.1192
+            },
+            "median_paired_speedup": 0.9926347143243974
+          },
+          {
+            "median_ms": {
+              "before": 1.1701,
+              "after": 1.1773
+            },
+            "median_paired_speedup": 1.0002016129032258
+          },
+          {
+            "median_ms": {
+              "before": 0.9422,
+              "after": 0.9337
+            },
+            "median_paired_speedup": 0.9915156823033554
+          },
+          {
+            "median_ms": {
+              "before": 1.1291,
+              "after": 1.1169
+            },
+            "median_paired_speedup": 0.9941786328103343
+          },
+          {
+            "median_ms": {
+              "before": 1.6227,
+              "after": 1.4568
+            },
+            "median_paired_speedup": 0.9925156801770938
+          },
+          {
+            "median_ms": {
+              "before": 1.7652,
+              "after": 1.7743
+            },
+            "median_paired_speedup": 0.9984863773965691
+          },
+          {
+            "median_ms": {
+              "before": 0.9658,
+              "after": 0.9787
+            },
+            "median_paired_speedup": 0.9890762422273263
+          }
+        ],
+        "median_paired_speedup": 0.9925156801770938
+      },
+      {
+        "snapshot": "student_D8_noise3_early",
+        "Nc": 10,
+        "rounds": [
+          {
+            "median_ms": {
+              "before": 1.4682,
+              "after": 1.3985
+            },
+            "median_paired_speedup": 1.0518618918533313
+          },
+          {
+            "median_ms": {
+              "before": 1.5483,
+              "after": 1.4461
+            },
+            "median_paired_speedup": 1.046469347683805
+          },
+          {
+            "median_ms": {
+              "before": 1.4956,
+              "after": 1.451
+            },
+            "median_paired_speedup": 1.0474476680132208
+          },
+          {
+            "median_ms": {
+              "before": 1.7644,
+              "after": 1.6999
+            },
+            "median_paired_speedup": 1.0501619995371443
+          },
+          {
+            "median_ms": {
+              "before": 1.1026,
+              "after": 1.0839
+            },
+            "median_paired_speedup": 1.0326160161636895
+          },
+          {
+            "median_ms": {
+              "before": 1.4553,
+              "after": 1.4144
+            },
+            "median_paired_speedup": 1.046407624633431
+          },
+          {
+            "median_ms": {
+              "before": 1.797,
+              "after": 1.7144
+            },
+            "median_paired_speedup": 1.0475420677492835
+          },
+          {
+            "median_ms": {
+              "before": 1.8759,
+              "after": 1.8054
+            },
+            "median_paired_speedup": 1.0438797717781307
+          },
+          {
+            "median_ms": {
+              "before": 1.4399,
+              "after": 1.3725
+            },
+            "median_paired_speedup": 1.0487493619193466
+          }
+        ],
+        "median_paired_speedup": 1.0474476680132208
+      },
+      {
+        "snapshot": "timing_D5_noise2.2_early",
+        "Nc": 1,
+        "rounds": [
+          {
+            "median_ms": {
+              "before": 1.0537,
+              "after": 1.0983
+            },
+            "median_paired_speedup": 0.9848996622292867
+          },
+          {
+            "median_ms": {
+              "before": 0.9075,
+              "after": 0.9407
+            },
+            "median_paired_speedup": 0.9898919484140816
+          },
+          {
+            "median_ms": {
+              "before": 0.9251,
+              "after": 0.9365
+            },
+            "median_paired_speedup": 0.9930767899382681
+          },
+          {
+            "median_ms": {
+              "before": 0.9362,
+              "after": 0.9468
+            },
+            "median_paired_speedup": 0.9909111565553284
+          },
+          {
+            "median_ms": {
+              "before": 1.1718,
+              "after": 1.1673
+            },
+            "median_paired_speedup": 0.9941532901031147
+          },
+          {
+            "median_ms": {
+              "before": 0.9836,
+              "after": 0.9509
+            },
+            "median_paired_speedup": 1.0068412822517592
+          },
+          {
+            "median_ms": {
+              "before": 0.8849,
+              "after": 0.9052
+            },
+            "median_paired_speedup": 0.9797325532804011
+          },
+          {
+            "median_ms": {
+              "before": 0.9613,
+              "after": 0.9364
+            },
+            "median_paired_speedup": 1.0008
+          },
+          {
+            "median_ms": {
+              "before": 0.5665,
+              "after": 0.579
+            },
+            "median_paired_speedup": 0.9921273466562852
+          }
+        ],
+        "median_paired_speedup": 0.9921273466562852
+      },
+      {
+        "snapshot": "timing_D5_noise2.2_early",
+        "Nc": 8,
+        "rounds": [
+          {
+            "median_ms": {
+              "before": 1.0742,
+              "after": 1.0131
+            },
+            "median_paired_speedup": 1.0589235609216905
+          },
+          {
+            "median_ms": {
+              "before": 1.3508,
+              "after": 1.4139
+            },
+            "median_paired_speedup": 1.0369880563706244
+          },
+          {
+            "median_ms": {
+              "before": 1.2982,
+              "after": 1.2261
+            },
+            "median_paired_speedup": 1.0686174724342663
+          },
+          {
+            "median_ms": {
+              "before": 1.3206,
+              "after": 1.2492
+            },
+            "median_paired_speedup": 1.0505335212401852
+          },
+          {
+            "median_ms": {
+              "before": 1.3477,
+              "after": 1.3111
+            },
+            "median_paired_speedup": 1.0559154449369246
+          },
+          {
+            "median_ms": {
+              "before": 1.2559,
+              "after": 1.2036
+            },
+            "median_paired_speedup": 1.0746067415730338
+          },
+          {
+            "median_ms": {
+              "before": 1.5806,
+              "after": 1.5527
+            },
+            "median_paired_speedup": 1.050375403716287
+          },
+          {
+            "median_ms": {
+              "before": 1.4347,
+              "after": 1.4712
+            },
+            "median_paired_speedup": 1.0539578885679601
+          },
+          {
+            "median_ms": {
+              "before": 1.3069,
+              "after": 1.2169
+            },
+            "median_paired_speedup": 1.0518855985826372
+          }
+        ],
+        "median_paired_speedup": 1.0539578885679601
+      }
+    ]
+  },
+  "single_gp_sample": {
+    "origin": {
+      "kind": "supplementary oracle state, not a noisy replay checkpoint",
+      "fixture": "pyvbmc\\testing\\oracles\\fixtures\\normal_D2_singlesample",
+      "fixture_hashes": {
+        ".npz": "7baca88203434d760426878afd90062980d94133e71832898aa10cc867eebd42",
+        ".json": "5d5b0c3522b66ecfbe378a66ee008adb0ff9376754461823318ddc55f1cf42ff"
+      },
+      "recipe_sha256": "65ce48984afb44af1a99ce70658f010701e775b8764032f963db1a7ce9855a4c",
+      "importance_seed": 20260913,
+      "candidates": "8192 VP samples, continuing the importance-sampling stream"
+    },
+    "timing": {
+      "rows": [
+        {
+          "snapshot": "oracle_normal_D2_singlesample_early",
+          "Nc": 1,
+          "N": 65,
+          "Ns": 1,
+          "milliseconds": {
+            "before": [
+              0.1598800008650869,
+              0.15229666605591774,
+              0.16335666684123376,
+              0.15348666541588804,
+              0.19109333322073022,
+              0.1547200003794084,
+              0.13914333345989385
+            ],
+            "after": [
+              0.16199999954551458,
+              0.15562666618886092,
+              0.15650000035141906,
+              0.15461666819949946,
+              0.15349000071485838,
+              0.15346333190488318,
+              0.14324666699394584
+            ]
+          },
+          "median_ms": {
+            "before": 0.1547200003794084,
+            "after": 0.15461666819949946
+          },
+          "speedup": 1.000668312033316,
+          "max_abs_difference": 0.0,
+          "setup_ms_unchanged_path": [
+            0.5756000173278153,
+            0.38300000596791506,
+            0.3586999955587089,
+            0.3412999794818461,
+            0.3497999859973788
+          ],
+          "peak_traced_bytes_call": {
+            "before": 10432,
+            "after": 10792
+          },
+          "sum_rows": {
+            "total": 1,
+            "fallback": 0
+          }
+        },
+        {
+          "snapshot": "oracle_normal_D2_singlesample_early",
+          "Nc": 6,
+          "N": 65,
+          "Ns": 1,
+          "milliseconds": {
+            "before": [
+              0.2063566663612922,
+              0.19131999967309335,
+              0.1865666670103868,
+              0.18737666541710496,
+              0.22717000101692975,
+              0.18551333341747522,
+              0.18424333344834545
+            ],
+            "after": [
+              0.1802933324749271,
+              0.18780333339236677,
+              0.18958000000566244,
+              0.2611833333503455,
+              0.18662000074982643,
+              0.18543999952574572,
+              0.22402333367305496
+            ]
+          },
+          "median_ms": {
+            "before": 0.18737666541710496,
+            "after": 0.18780333339236677
+          },
+          "speedup": 0.9977281128744909,
+          "max_abs_difference": 4.547473508864641e-13,
+          "setup_ms_unchanged_path": [
+            0.5756000173278153,
+            0.38300000596791506,
+            0.3586999955587089,
+            0.3412999794818461,
+            0.3497999859973788
+          ],
+          "peak_traced_bytes_call": {
+            "before": 46352,
+            "after": 41912
+          },
+          "sum_rows": {
+            "total": 6,
+            "fallback": 0
+          }
+        },
+        {
+          "snapshot": "oracle_normal_D2_singlesample_early",
+          "Nc": 8192,
+          "N": 65,
+          "Ns": 1,
+          "milliseconds": {
+            "before": [
+              75.90419996995479,
+              77.46510003926232,
+              81.99750003404915,
+              74.4381999829784,
+              74.43039998179302,
+              70.82080002874136,
+              70.80670003779233
+            ],
+            "after": [
+              58.76340001123026,
+              62.96619999920949,
+              63.644600042607635,
+              62.13820003904402,
+              59.07019996084273,
+              54.622899973765016,
+              56.654500018339604
+            ]
+          },
+          "median_ms": {
+            "before": 74.4381999829784,
+            "after": 59.07019996084273
+          },
+          "speedup": 1.260165024535604,
+          "max_abs_difference": 4.547473508864641e-13,
+          "setup_ms_unchanged_path": [
+            0.5756000173278153,
+            0.38300000596791506,
+            0.3586999955587089,
+            0.3412999794818461,
+            0.3497999859973788
+          ],
+          "peak_traced_bytes_call": {
+            "before": 57543744,
+            "after": 50991608
+          },
+          "sum_rows": {
+            "total": 8192,
+            "fallback": 0
+          }
+        }
+      ],
+      "python": "3.12.6",
+      "numpy": "2.5.2",
+      "scipy": "1.18.1",
+      "gpyreg_path": "C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\__init__.py",
+      "threads": 1,
+      "before_source": "dev\\scripts\\runs\\viqr_sinh_20260913\\before",
+      "after_source": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc",
+      "viqr_sha256": {
+        "before": "e1c5bfe488784da9df25cfb68d4c5803be2a4eb0e08e7e8a97f5d59012a6cf01",
+        "after": "cb3b3bd5c62f677b0bbd17f04f09c37e779c4a43ea6a802817997f3019ee9551"
+      },
+      "capture_provenance": {
+        "manifest_version": 1,
+        "coverage": "VIQR and shared acquisition/gpyreg source hashes only",
+        "capture_viqr_sha256": "39d9d40a7403c1869c1014d5fdd3c8d3219b2216344b5bc4c97d63623bc4f263",
+        "equivalent_viqr_requested": true
+      },
+      "capture_status": [
+        {
+          "label": "oracle_normal_D2_singlesample",
+          "captured": [
+            "early"
+          ],
+          "late_checkpoint_reached": false,
+          "file_hashes": {
+            "oracle_normal_D2_singlesample_early.npz": "0d72d3d39b058f79585cfd9daa23c81f862d40a7d662836699e44b3da9a13bc8",
+            "oracle_normal_D2_singlesample_early.json": "30eabca51c896863b756c3866a0a1547f4ffbd75f9270f944ab67d60a5699c31"
+          }
+        }
+      ]
+    }
+  },
+  "guard_equivalence": {
+    "seed": 20260913,
+    "array_checks": 162,
+    "bitwise_equal": true,
+    "source_hashes": {
+      "before": "e1c5bfe488784da9df25cfb68d4c5803be2a4eb0e08e7e8a97f5d59012a6cf01",
+      "campaign_guard": "39d9d40a7403c1869c1014d5fdd3c8d3219b2216344b5bc4c97d63623bc4f263",
+      "final": "cb3b3bd5c62f677b0bbd17f04f09c37e779c4a43ea6a802817997f3019ee9551"
+    },
+    "recipe_sha256": "dbe85a10be4e93027497fc35ae28d8113c206e820b3baf5dbb7fc3cf17664187"
+  },
+  "verification": {
+    "initial_acquisition_and_importance_tests": {
+      "passed": 100
+    },
+    "initial_normal_oracle_suite": {
+      "passed": 143,
+      "skipped": 15
+    },
+    "before_to_first_guard_exact_comparison": {
+      "exact_fixture_groups": 10,
+      "total_fixture_groups": 11,
+      "only_changed_output": "rosenbrock_D2_noise1_viqr/acq_AcqFcnVIQR",
+      "max_absolute_difference": 8.881784197001252e-16
+    },
+    "first_to_final_guard_exact_comparison": {
+      "exact_fixture_groups": 11,
+      "total_fixture_groups": 11
+    },
+    "first_guard_full_suite": {
+      "passed": 1254,
+      "skipped": 39,
+      "seconds": 399.5
+    },
+    "final_guard_full_suite": {
+      "revision": "6734817",
+      "exit_code": 0,
+      "passed": 1254,
+      "skipped": 39,
+      "warnings": 3,
+      "seconds": 567.46,
+      "command": "python -m pytest --reruns=5 -x -q --basetemp=dev/scripts/runs/viqr_sinh_20260913/pytest_tmp_02 -o cache_dir=dev/scripts/runs/viqr_sinh_20260913/pytest_cache_final",
+      "blas_threads": 1
+    },
+    "final_guard_ci": {
+      "conclusion": "success",
+      "event": "workflow_dispatch",
+      "headSha": "6734817a867e2fd072024a12f23800a3bdae6e2a",
+      "jobs": [
+        {
+          "name": "tests / tests (macos-latest, 3.10)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/acerbilab/pyvbmc/actions/runs/34752259774/job/103710661709",
+          "startedAt": "2026-09-13T10:35:49Z",
+          "completedAt": "2026-09-13T10:41:33Z"
+        },
+        {
+          "name": "tests / tests (ubuntu-latest, 3.11)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/acerbilab/pyvbmc/actions/runs/34752259774/job/103710661769",
+          "startedAt": "2026-09-13T10:35:41Z",
+          "completedAt": "2026-09-13T10:44:08Z"
+        },
+        {
+          "name": "tests / tests (windows-latest, 3.11)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/acerbilab/pyvbmc/actions/runs/34752259774/job/103710661778",
+          "startedAt": "2026-09-13T10:35:41Z",
+          "completedAt": "2026-09-13T10:45:40Z"
+        },
+        {
+          "name": "tests / tests (macos-latest, 3.12)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/acerbilab/pyvbmc/actions/runs/34752259774/job/103710661790",
+          "startedAt": "2026-09-13T10:35:47Z",
+          "completedAt": "2026-09-13T10:41:40Z"
+        },
+        {
+          "name": "tests / tests (ubuntu-latest, 3.10)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/acerbilab/pyvbmc/actions/runs/34752259774/job/103710661791",
+          "startedAt": "2026-09-13T10:35:41Z",
+          "completedAt": "2026-09-13T10:44:19Z"
+        },
+        {
+          "name": "tests / tests (macos-latest, 3.11)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/acerbilab/pyvbmc/actions/runs/34752259774/job/103710661805",
+          "startedAt": "2026-09-13T10:35:47Z",
+          "completedAt": "2026-09-13T10:41:15Z"
+        },
+        {
+          "name": "tests / tests (windows-latest, 3.10)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/acerbilab/pyvbmc/actions/runs/34752259774/job/103710661806",
+          "startedAt": "2026-09-13T10:35:41Z",
+          "completedAt": "2026-09-13T10:46:27Z"
+        },
+        {
+          "name": "tests / tests (ubuntu-latest, 3.12)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/acerbilab/pyvbmc/actions/runs/34752259774/job/103710661833",
+          "startedAt": "2026-09-13T10:35:41Z",
+          "completedAt": "2026-09-13T10:48:12Z"
+        },
+        {
+          "name": "tests / tests (windows-latest, 3.12)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/acerbilab/pyvbmc/actions/runs/34752259774/job/103710661840",
+          "startedAt": "2026-09-13T10:35:41Z",
+          "completedAt": "2026-09-13T10:47:04Z"
+        }
+      ],
+      "status": "completed",
+      "url": "https://github.com/acerbilab/pyvbmc/actions/runs/34752259774"
+    },
+    "replay_report_only_exit_code": 0,
+    "manifest_checks": {
+      "manifest_version": 2,
+      "unchanged_resume_calls": 2,
+      "changed_cases_refused": [
+        "git_sha",
+        "viqr_sha256",
+        "allocation/seeds",
+        "source_hashes/pyvbmc/vbmc/vbmc.py",
+        "source_hashes/dev/scripts/validate_viqr_sinh.py",
+        "execution_inputs/environment/numpy",
+        "execution_inputs/gpyreg_package_hashes/slice_sample.py",
+        "execution_inputs/data_hashes/dev/scripts/data/multisensory.npz"
+      ],
+      "strict_successor_timing_refused": true,
+      "production_and_replay_source_files": 80,
+      "gpyreg_source_files": 23,
+      "data_archives": [
+        "dev/scripts/data/multisensory.npz",
+        "dev/scripts/data/timing.npz",
+        "dev/scripts/data/truths/multisensory_s1.npz",
+        "dev/scripts/data/truths/multisensory_s2.npz",
+        "dev/scripts/data/truths/timing.npz"
+      ]
+    },
+    "final_guard_smoke": {
+      "run_id": 34752255560,
+      "revision": "6734817",
+      "conclusion": "success",
+      "url": "https://github.com/acerbilab/pyvbmc/actions/runs/34752255560"
+    }
+  },
+  "limitations": [
+    "18-run regression screen, not a powered equivalence study.",
+    "Historical traces omit the returned posterior transformer; exact replay identity covers stored arrays and semantic final fields.",
+    "Six early noisy states and one late noisy state; the other five seed-0 runs did not reach the prescribed late checkpoint.",
+    "The single-GP-sample timing is a supplementary existing oracle, not a noisy campaign checkpoint.",
+    "Wall times between historical and candidate campaigns are not used to estimate whole-run speedup.",
+    "The original v1 manifest binds VIQR and shared acquisition/gpyreg source hashes; per-run Git/environment metadata supplies additional provenance. Future v2 manifests bind broader source, allocation, runtime and data inputs.",
+    "The final guard reuses the original campaign based on bitwise-equivalent arithmetic, exact oracle/helper checks, and exact reproduction of all captured public outputs.",
+    "Tracemalloc peaks are individual observations; timing speed claims use repeated matched calls."
+  ]
+}

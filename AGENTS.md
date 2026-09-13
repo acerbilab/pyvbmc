@@ -30,8 +30,9 @@ installs it from GitHub at the commit pinned in
 `.github/workflows/test-matrix.yml` (`GPYREG_PIN`); only the twice-monthly
 scheduled run tests against gpyreg `main`, so that is where a gpyreg change
 breaking PyVBMC shows up first. Bump the pin when gpyreg `main` moves and
-that run is green. PyVBMC requires gpyreg 1.1.0 or later (`GP.fit(rng=)`,
-acerbilab/gpyreg#43, released 2026-09-05); the sibling checkout below is
+that run is green. PyVBMC requires gpyreg 1.2.0 or later
+(`GP.predict(return_cross_covariance=True)` for VIQR kernel reuse,
+acerbilab/gpyreg#45); the sibling checkout below is
 for developing against gpyreg `main`.
 
 ```console

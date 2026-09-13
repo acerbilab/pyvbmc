@@ -4,7 +4,9 @@ Updated 2026-09-13. These lists describe scope, not priority or execution
 order. Independent workstreams can be picked up in any order: PyMC
 feasibility, for example, does not depend on acquisition-efficiency work.
 Inclusion in scope does not settle an implementation design or launch a
-campaign. No new campaign is in flight.
+campaign. The guarded-VIQR optimization's approved 18-run comparison passed;
+see the [efficiency plan](plans/noisy-acquisition-efficiency.md) for validation
+and subsequent possibilities.
 
 ## In scope for 1.5
 
@@ -18,9 +20,22 @@ campaign. No new campaign is in flight.
   [investigation](2026-09-08-noisy-acquisitions.md) and
   [search analysis](results/2026-09-09-acquisition-search-analysis.md).
   Historical replacement-criterion experiments do not expand 1.5 scope.
-  The [efficiency plan](plans/noisy-acquisition-efficiency.md) proposes a
-  guarded standard-VIQR sum optimization, with a bounded probe and separate
-  follow-ups for IMIQR cache reuse and GP-kernel reuse.
+  The [efficiency plan](plans/noisy-acquisition-efficiency.md) tracks the
+  guarded standard-VIQR sum optimization, its measured gains and validation.
+  GP-kernel reuse is implemented with a 128 MiB retained-payload cap and
+  gpyreg 1.2.0. Its [production validation](results/2026-09-13-viqr-kernel-production.md)
+  reports a 1.205x late-sieve speedup and 18/18 exact stored replays against
+  the guarded-sinh baseline. The optimization is integrated into `dev-next`;
+  the [execution plan](plans/noisy-acquisition-efficiency.md#kernel-reuse-implementation-plan)
+  records the completed dependency rollout. Adaptive sieve size, integration
+  budgets and multistart L-BFGS-B remain main search experiments. A controlled
+  whole-VBMC timing comparison for the combined guarded-sinh and kernel-reuse
+  changes is deferred; replay wall times do not establish that speedup. See
+  the [pickup point](plans/noisy-acquisition-efficiency.md#pickup-point-and-deferred-measurements).
+  Another possibility is more efficient integration of the
+  same VIQR criterion (shared-weight Bayesian quadrature,
+  compared with mixture-stratified randomized quasi-Monte Carlo).
+  IMIQR cache reuse is optional cleanup; it does not accelerate VIQR.
   Keep standard VIQR (`loss="iqr"`). The `iqr_reduction` formulation may
   be evaluated within search-efficiency work: it preserves the underlying
   criterion for fixed samples and weights, but can change numerical search
@@ -166,3 +181,14 @@ baseline; the active baseline contains the promoted candidates. No completed
 campaign or replay needs reattachment. The controller's final
 `assessment_ready_for_review` state precedes the acceptance and publication
 recorded in the promotion record.
+
+The completed VIQR campaigns additionally retain `viqr_sinh_20260913/` and
+`viqr_kernel_20260913/` under `dev/scripts/runs/`. They hold the raw replay
+traces, captured GP/VP states, before-source worktrees, oracle dumps and
+per-run logs. Their consolidated results, source/input hashes and validation
+records are tracked under `dev/experiments/noisy-acquisition-efficiency/`.
+For raw revalidation on another machine, copy both directories and recreate
+worktrees at the revisions in the
+[efficiency plan](plans/noisy-acquisition-efficiency.md); a fresh clone does
+not contain these ignored artifacts. They are not needed to read the results
+or choose the next experiment.
