@@ -18,6 +18,18 @@ campaign. No new campaign is in flight.
   [investigation](2026-09-08-noisy-acquisitions.md) and
   [search analysis](results/2026-09-09-acquisition-search-analysis.md).
   Historical replacement-criterion experiments do not expand 1.5 scope.
+  Keep standard VIQR (`loss="iqr"`). The `iqr_reduction` formulation may
+  be evaluated within search-efficiency work: it preserves the underlying
+  criterion for fixed samples and weights, but can change numerical search
+  behavior and needs end-to-end validation.
+
+- [ ] **Remove the experimental VIQR variance/SD alternatives from the 1.5
+  public interface.** The decision covers `var_reduction` and `sd_reduction`;
+  these change the criterion and are not needed for the efficiency work.
+  Preserve their implementation on a retained experimental development
+  branch when carrying out the cleanup, and keep the
+  [experiment records](results/2026-09-08-noisy-acquisition-experiments.md).
+  Code removal and branch preservation remain to be done.
 
 - [ ] **S-VBMC ELBO debiasing.** Evaluate raw, capped and proposed cross-run
   GP estimates against ground truth, including noisy targets and different
@@ -59,10 +71,10 @@ campaign. No new campaign is in flight.
   after the check. Automatic initialization and inference orchestration are
   deferred in the proposal. See the [PyMC proposal](2026-09-13-pymc-integration.md).
 
-- [ ] **Existing experimental acquisition options: retain or remove?**
-  Decide the disposition of the VIQR loss variants and EIG options already
-  present. Retained public options need documentation and validation. This
-  is cleanup of the existing surface, not new acquisition-function design.
+- [ ] **Existing EIG options: retain or remove?** EIG is a separate
+  acquisition; its disposition remains undecided. Retained public options
+  need documentation and validation. This is cleanup of the existing
+  surface, not new acquisition-function design.
   See [what is on the branch](2026-09-08-noisy-acquisitions.md#what-is-on-the-branch).
 
 ## Outside 1.5 scope

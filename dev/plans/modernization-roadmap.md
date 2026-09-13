@@ -27,9 +27,13 @@ The remaining numerical work for 1.5 is improving the efficiency of existing
 noisy acquisitions (sieve/search, importance sampling, criterion evaluation
 and GP-update costs), checking/improving S-VBMC's reported ELBO debiasing,
 and S-VBMC preparation/entropy speedups that preserve the method.
-Designing new acquisition functions or criteria is outside scope. Existing
-experimental acquisition options require a retain/document/remove decision;
-their presence does not expand the release's method-development scope.
+Designing new acquisition functions or criteria is outside scope. Keep
+standard VIQR (`loss="iqr"`); evaluating `iqr_reduction` as a reformulation
+for numerical search is within the efficiency work and requires validation.
+PI decision 2026-09-13: remove `var_reduction` and `sd_reduction` from the
+1.5 public interface, preserving their code on a retained experimental
+development branch during the later cleanup. This removal is planned,
+not implemented. EIG's release disposition remains a separate open decision.
 S-VBMC preparation and entropy optimizations are in scope for 1.5 as a
 separate performance task, validated against the regression references. The
 standalone `svbmc` compatibility release follows PyVBMC 1.5 on PyPI.
