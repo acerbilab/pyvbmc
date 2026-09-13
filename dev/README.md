@@ -73,6 +73,9 @@ plan and consolidated human summary.
 
 - `plans/modernization-roadmap.md` — living tracker of the staged plan in
   `2026-09-02-modernization-discussion.md` §10: stage status, pickup point.
+- [plans/noisy-acquisition-efficiency.md](plans/noisy-acquisition-efficiency.md)
+  — proposed computational optimizations of existing noisy acquisitions,
+  starting with standard VIQR's sum; bounded probe and validation plan.
 - [plans/machine-local-calibration.md](plans/machine-local-calibration.md) —
   implemented package integration for explicit PDF/entropy calibration with
   progress, a machine/environment cache and fixed per-run settings. Local
