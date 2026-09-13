@@ -96,7 +96,9 @@ These are temporary traced allocations, not process RSS measurements.
   gate before integration. No new golden campaign was launched for this
   feasibility probe.
 
-Production API integration and its memory policy remain to be implemented.
+The supported API and bounded VIQR integration are implemented; their
+[production validation](2026-09-13-viqr-kernel-production.md) records the
+separate package comparison, numerical checks and integration status.
 The adaptive sieve, integration-budget and multistart L-BFGS-B experiments
 remain independent work in the
 [efficiency plan](../plans/noisy-acquisition-efficiency.md).

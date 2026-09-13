@@ -342,17 +342,23 @@ Execution baseline: PyVBMC `15a14cc`, feature branch
 `dev-noisy-viqr-kernel`; gpyreg `a2f8ddc`/v1.1.0, feature branch
 `dev-predict-cross-covariance`. Isolated before checkouts and the gpyreg
 candidate are under `dev/scripts/runs/viqr_kernel_20260913/`.
-Before-source worktrees are frozen and the oracle-output dump completed
-successfully. The gpyreg API and PyVBMC hooks can be implemented in parallel
-against the agreed contract; numerical checks wait for both implementations.
+Before-source worktrees and oracle-output dumps are preserved. The candidate
+pair is PyVBMC `9e8d2f2` with gpyreg `355d754`; the dependency change is in
+[gpyreg PR #45](https://github.com/acerbilab/gpyreg/pull/45).
 
 Initial validation: gpyreg's full suite passed (198 tests); the focused API
 module then passed 50 tests after adding the independent review's missing-factor
 coverage. API coverage is consolidated in `test_predict_cross_covariance.py`.
 PyVBMC acquisition/importance checks passed (123 tests), the normal oracle
 suite passed (143 tests, 15 skips), and all 11 fixture groups passed the exact
-comparison against the frozen outputs. Production measurements, replay and CI
-remain open. Independent API review found no implementation defect.
+comparison against the frozen outputs. Independent code reviews found no
+implementation defect. Production measurements pass: all 96 comparisons are
+exact; the late sieve is 1.205x faster; no control or fallback exceeds the 5%
+slowdown threshold. Full details and raw measurements are in the
+[production report](../results/2026-09-13-viqr-kernel-production.md).
+Gpyreg's nine-cell candidate CI passed. The full local PyVBMC suite passed
+(1277 tests, 39 skips, 2 successful reruns); its candidate matrix is running.
+The bounded replay and release rollout remain open.
 
 ### Objective and boundaries
 
