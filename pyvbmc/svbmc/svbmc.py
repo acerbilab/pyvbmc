@@ -18,10 +18,10 @@ import sys
 import warnings
 
 import numpy as np
-import scipy as sp
 
 from pyvbmc.rng import get_rng
 
+from ._entropy import component_log_densities
 from ._jacobian import expected_log_jacobian
 from ._runtime_tips import consider_runtime_tip
 
@@ -440,7 +440,7 @@ Generator, optional
         contributes ``n_samples`` draws, taken in its own run's transformed
         space and mapped to the original space; the log density of the
         stacked mixture at every draw is then evaluated by mapping the draws
-        into each component's space with the matching Jacobian correction.
+        into each run's space with the matching Jacobian correction.
         The draws come from this object's generator.
 
         Parameters
@@ -478,59 +478,26 @@ Generator, optional
         w = w / w.sum()
         log_w = torch.log(w + 1e-40)
 
-        # One entry per component: its run's transform, location and scale.
-        subcomps = []
-        for vp in self.vp_list:
-            sigma = vp.lambd * vp.sigma
-            for k in range(vp.mu.shape[1]):
-                subcomps.append(
-                    (vp.parameter_transformer, vp.mu[:, k], sigma[:, k])
-                )
+        # Draws from every component and the log density of every component
+        # at every draw, in the original space; the weights play no part.
+        logq_matrix = component_log_densities(
+            self.vp_list, n_samples, self.rng
+        )
 
-        # Step 1: draws from every component, mapped to the original space.
-        S = K_total * n_samples
-        X_orig = np.zeros((S, self.D))
-        comp_index = np.repeat(np.arange(K_total), n_samples)
-        for mk, (transform, mu, sigma) in enumerate(subcomps):
-            z = self.rng.standard_normal((n_samples, self.D))
-            x_mk_transform = z * sigma + mu  # (n_samples, D)
-            rows = slice(mk * n_samples, (mk + 1) * n_samples)
-            X_orig[rows, :] = transform.inverse(x_mk_transform)
-
-        # Step 2: log q_mk(x) in the original space for every draw and
-        # component (diagonal normal in the component's space, Jacobian
-        # corrected).
-        logq_matrix = np.zeros((S, K_total))
-        for mk, (transform, mu, sigma) in enumerate(subcomps):
-            X_transform_mk = transform(X_orig)
-            jac_corr = transform.log_abs_det_jacobian(X_transform_mk)
-            logq_mk_transform = np.sum(
-                sp.stats.norm.logpdf(X_transform_mk, mu, sigma), axis=1
-            )
-            logq_matrix[:, mk] = logq_mk_transform - jac_corr
-
-        # Step 3: the weights enter here, so switch to torch for the
-        # gradient.
+        # The weights enter here, so switch to torch for the gradient.
         logq_matrix = torch.as_tensor(logq_matrix, dtype=dtype, device=device)
         logq_orig = torch.logsumexp(logq_matrix + log_w, dim=1)  # (S,)
 
-        # E_{q_mk}[log q(x)] for every component: mean over its draws.
-        sum_logq = torch.zeros(K_total, dtype=dtype, device=device)
-        count_logq = torch.zeros(K_total, dtype=dtype, device=device)
-        var_logq = torch.zeros(K_total, dtype=dtype, device=device)
-        for mk in range(K_total):
-            mask = comp_index == mk
-            count_mk = mask.sum()
-            if count_mk > 0:
-                sum_logq[mk] = logq_orig[mask].sum()
-                count_logq[mk] = count_mk
-                if compute_variance:
-                    var_logq[mk] = logq_orig[mask].var(unbiased=True)
-        E_mk_logq = sum_logq / (count_logq + 1e-40)
+        # E_{q_mk}[log q(x)] for every component: ``component_log_densities``
+        # lays the rows out by component, ``n_samples`` consecutive rows
+        # each, in the order of ``self.K``.
+        logq_by_component = logq_orig.reshape(K_total, n_samples)
+        E_mk_logq = logq_by_component.mean(dim=1)
 
         H = -w @ E_mk_logq
         varH = None
         if compute_variance:
+            var_logq = logq_by_component.var(dim=1, unbiased=True)
             varH = float((w.square() @ (var_logq / n_samples)).item())
         return H[0], self._jacobian_corrections.copy(), varH
 
