@@ -14,14 +14,14 @@ anything that changes numerics lands.
 
 ## Stages
 
-**Population assessment, 2026-09-11:** all 273 first-stage runs completed.
-The [assessment](../results/2026-09-11-overnight-population.md) reports 259
-usable runs versus 253 on matching reference seeds, with no corrected KS or
-paired-test rejections. A focused 30-run extension of noisy Rosenbrock and
-logistic regression is recommended for their posterior-error and usability
-shifts. The [staged benchmark plan](final-population-benchmark.md) records
-execution and open decisions; a full 870-run candidate population is optional,
-superseding earlier requirements below for a full sweep before assessment.
+**Population assessment, 2026-09-13:** the full 870-case candidate population
+is complete and accepted, with 837 usable runs versus 825 historical and
+no convincing evidence of meaningful degradation. The
+[promotion record](../golden/promotion_20260913/README.md) records the
+independent review and the validated `reference_990_20260913`, which retains
+120 real-data pairs. The [staged benchmark plan](final-population-benchmark.md)
+records execution. Future candidate checks may use smaller allocations;
+reference size does not prescribe their run count.
 
 - [x] **Stage 0 — test oracle** (devlog §10)
   - [x] finite-difference checks: `entmc`, `entlb` (pre-existing),
@@ -985,6 +985,20 @@ and optional runtime tips. The
 the [optimism note](../2026-09-12-svbmc-elbo-optimism.md) owns the rationale
 and the separate Phase 2 proposal. The regenerated S-VBMC references are
 the regression gate for the deferred entropy speedups.
+
+## Golden population acceptance
+
+The completed 870-case candidate assessment was accepted by the PI on
+2026-09-13. Independent statistical and artifact review, followed by
+Student D8 and Banana D10 trajectory investigation, found no convincing
+evidence of meaningful degradation. Existing occasional failure modes
+remain outside the correction scope. The promoted reference
+`reference_990_20260913` combines the 870 candidates with 120 unchanged
+real-data pairs. Artifact validation, the 92-test even/odd check and the
+five exact current-code default replays passed. The
+[promotion record](../golden/promotion_20260913/README.md) owns the evidence
+and provenance; the [population plan](final-population-benchmark.md) records
+the staged execution. Previous references are preserved.
 
 ## Benchmark coverage and HPC support
 

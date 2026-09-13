@@ -9,7 +9,10 @@
   "max_fun_evals": 350,
   "display": "off",
   "plot": false,
-  "print_iteration_header": false
+  "print_iteration_header": false,
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
  },
  "effective_options": {
   "max_fun_evals": 350,
@@ -18,7 +21,7 @@
   "tol_stable_excpt_frac": 0.2,
   "specify_target_noise": true,
   "search_acq_fcn": [
-   "<pyvbmc.acquisition_functions.acq_fcn_viqr.AcqFcnVIQR object at 0x000001B784986720>"
+   "<pyvbmc.acquisition_functions.acq_fcn_viqr.AcqFcnVIQR object at 0x000001D1CB3D4C20>"
   ],
   "active_sample_gp_update": true,
   "active_sample_vp_update": true,
@@ -26,7 +29,10 @@
   "do_final_boost": true,
   "display": "off",
   "plot": false,
-  "print_iteration_header": false
+  "print_iteration_header": false,
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
  },
  "timer_keys": [
   "active_sampling",
@@ -99,35 +105,35 @@
  ],
  "notes": "logistic regression, 50 trials, predictors 1-2 at rho 0.95, predictor 4 rare (6 ones, all successes: its coefficient is identified only by the bound); uniform prior on [-10, 10]^D (2020 style), plausible box -+5; not a paper problem",
  "final": {
-  "elbo": -34.74354299142723,
-  "elbo_sd": 0.30852231726770935,
-  "best_iter": 48,
-  "iterations": 49,
-  "func_count": 240,
+  "elbo": -35.29922912441846,
+  "elbo_sd": 0.3236434700110271,
+  "best_iter": 47,
+  "iterations": 48,
+  "func_count": 235,
   "final_K": 50,
-  "final_N": 240,
+  "final_N": 235,
   "min_Ns_gp": 5,
   "n_warps": 3,
   "success_flag": true,
   "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
-  "wall_s": 205.11743230000138,
-  "target_eval_s": 0.012009859085083008,
-  "elbo_err": 0.14994700857276655,
-  "gskl": 0.270190207221344,
-  "mmtv": 0.11185494661998645,
-  "rmse": 0.2589981649646005,
+  "wall_s": 205.60384899999917,
+  "target_eval_s": 0.007000446319580078,
+  "elbo_err": 0.40573912441846005,
+  "gskl": 0.49164059721717535,
+  "mmtv": 0.1384213561675563,
+  "rmse": 0.6712616524866994,
   "moment_method": "mc",
-  "peak_rss_mb": 401.78515625
+  "peak_rss_mb": 264.48046875
  },
  "meta": {
   "git": {
-   "sha": "18a236c",
+   "sha": "68a43db",
    "dirty": false
   },
   "python": "3.12.6",
   "numpy": "2.5.2",
   "scipy": "1.18.1",
-  "pyvbmc": "1.0.5.dev28+gdcfeba694",
+  "pyvbmc": "1.0.5.dev159+g4bff1a5b9",
   "gpyreg": "1.1.0",
   "cma": "4.4.4",
   "threads": {
@@ -135,8 +141,8 @@
    "OPENBLAS_NUM_THREADS": "1",
    "MKL_NUM_THREADS": "1"
   },
-  "started": "2026-09-06 02:04:19",
-  "finished": "2026-09-06 02:07:44",
-  "pid": 29876
+  "started": "2026-09-11 01:42:47",
+  "finished": "2026-09-11 01:46:13",
+  "pid": 20132
  }
 }

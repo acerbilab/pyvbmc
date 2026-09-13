@@ -9,7 +9,10 @@
   "max_fun_evals": 200,
   "display": "off",
   "plot": false,
-  "print_iteration_header": false
+  "print_iteration_header": false,
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
  },
  "effective_options": {
   "max_fun_evals": 200,
@@ -18,7 +21,7 @@
   "tol_stable_excpt_frac": 0.2,
   "specify_target_noise": true,
   "search_acq_fcn": [
-   "<pyvbmc.acquisition_functions.acq_fcn_viqr.AcqFcnVIQR object at 0x000001B786BB4CE0>"
+   "<pyvbmc.acquisition_functions.acq_fcn_viqr.AcqFcnVIQR object at 0x000001E98A15DDC0>"
   ],
   "active_sample_gp_update": true,
   "active_sample_vp_update": true,
@@ -26,7 +29,10 @@
   "do_final_boost": true,
   "display": "off",
   "plot": false,
-  "print_iteration_header": false
+  "print_iteration_header": false,
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
  },
  "timer_keys": [
   "active_sampling",
@@ -63,35 +69,35 @@
  ],
  "notes": "test/notebook Rosenbrock + N(0, 3^2) prior; truth by 1-D quadrature; notebook-1 box -+3",
  "final": {
-  "elbo": -2.400582296003839,
-  "elbo_sd": 0.11399556283131544,
-  "best_iter": 26,
-  "iterations": 27,
-  "func_count": 140,
+  "elbo": -2.2787501460405615,
+  "elbo_sd": 0.11831313016477663,
+  "best_iter": 22,
+  "iterations": 23,
+  "func_count": 120,
   "final_K": 50,
-  "final_N": 140,
+  "final_N": 120,
   "min_Ns_gp": 7,
   "n_warps": 2,
   "success_flag": true,
   "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
-  "wall_s": 91.8755441000103,
-  "target_eval_s": 0.009734630584716797,
-  "elbo_err": 0.14073517183145468,
-  "gskl": 0.008456399821684668,
-  "mmtv": 0.046458895081103097,
-  "rmse": 0.10314780809349426,
+  "wall_s": 76.79905580000195,
+  "target_eval_s": 0.014897346496582031,
+  "elbo_err": 0.01890302186817694,
+  "gskl": 0.012090206511618962,
+  "mmtv": 0.047822781964440085,
+  "rmse": 0.11691431099377293,
   "moment_method": "affine",
-  "peak_rss_mb": 401.78515625
+  "peak_rss_mb": 220.88671875
  },
  "meta": {
   "git": {
-   "sha": "18a236c",
+   "sha": "68a43db",
    "dirty": false
   },
   "python": "3.12.6",
   "numpy": "2.5.2",
   "scipy": "1.18.1",
-  "pyvbmc": "1.0.5.dev28+gdcfeba694",
+  "pyvbmc": "1.0.5.dev159+g4bff1a5b9",
   "gpyreg": "1.1.0",
   "cma": "4.4.4",
   "threads": {
@@ -99,8 +105,8 @@
    "OPENBLAS_NUM_THREADS": "1",
    "MKL_NUM_THREADS": "1"
   },
-  "started": "2026-09-06 03:25:44",
-  "finished": "2026-09-06 03:27:16",
-  "pid": 29876
+  "started": "2026-09-11 03:17:25",
+  "finished": "2026-09-11 03:18:42",
+  "pid": 16624
  }
 }

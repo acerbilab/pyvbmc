@@ -10,7 +10,9 @@
   "display": "off",
   "plot": false,
   "print_iteration_header": false,
-  "vectorized_target": false
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
  },
  "effective_options": {
   "max_fun_evals": 200,
@@ -19,7 +21,7 @@
   "tol_stable_excpt_frac": 0.2,
   "specify_target_noise": true,
   "search_acq_fcn": [
-   "<pyvbmc.acquisition_functions.acq_fcn_viqr.AcqFcnVIQR object at 0x0000021DEDCC76B0>"
+   "<pyvbmc.acquisition_functions.acq_fcn_viqr.AcqFcnVIQR object at 0x000002C58C1B2C00>"
   ],
   "active_sample_gp_update": true,
   "active_sample_vp_update": true,
@@ -28,7 +30,9 @@
   "display": "off",
   "plot": false,
   "print_iteration_header": false,
-  "vectorized_target": false
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
  },
  "timer_keys": [
   "active_sampling",
@@ -65,29 +69,29 @@
  ],
  "notes": "test/notebook Rosenbrock + N(0, 3^2) prior; truth by 1-D quadrature; notebook-1 box -+3",
  "final": {
-  "elbo": -2.3701721627445433,
-  "elbo_sd": 0.26420982767875545,
+  "elbo": -2.715820440917187,
+  "elbo_sd": 0.2996384138133644,
   "best_iter": 36,
   "iterations": 37,
-  "func_count": 190,
+  "func_count": 180,
   "final_K": 50,
-  "final_N": 190,
+  "final_N": 180,
   "min_Ns_gp": 6,
-  "n_warps": 2,
+  "n_warps": 3,
   "success_flag": true,
   "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
-  "wall_s": 139.61657550005475,
-  "target_eval_s": 0.024399757385253906,
-  "elbo_err": 0.1103250385721588,
-  "gskl": 0.01440030506957235,
-  "mmtv": 0.05617440606940891,
-  "rmse": 0.1317895891738245,
+  "wall_s": 128.3664753999983,
+  "target_eval_s": 0.01616382598876953,
+  "elbo_err": 0.45597331674480257,
+  "gskl": 0.07132118959118505,
+  "mmtv": 0.1122399325742365,
+  "rmse": 0.08854294298322044,
   "moment_method": "affine",
-  "peak_rss_mb": 253.828125
+  "peak_rss_mb": 244.6328125
  },
  "meta": {
   "git": {
-   "sha": "623f5cd",
+   "sha": "68a43db",
    "dirty": false
   },
   "python": "3.12.6",
@@ -101,8 +105,8 @@
    "OPENBLAS_NUM_THREADS": "1",
    "MKL_NUM_THREADS": "1"
   },
-  "started": "2026-09-07 17:02:19",
-  "finished": "2026-09-07 17:04:39",
-  "pid": 21528
+  "started": "2026-09-11 03:27:04",
+  "finished": "2026-09-11 03:29:12",
+  "pid": 17556
  }
 }

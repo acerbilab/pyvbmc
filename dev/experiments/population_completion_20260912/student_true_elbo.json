@@ -1,0 +1,146 @@
+{
+  "student_D8_seed12": {
+    "old_pre": {
+      "true_elbo_mc": -20.938929449879293,
+      "mc_se": 0.007321798235923337,
+      "draws": 100000,
+      "seed": 13092146,
+      "reported_elbo": -19.364010785228754,
+      "reported_minus_true": 1.5749186646505393,
+      "kl_q_to_true_posterior": 1.3354092916812377,
+      "ln_Z": -19.603520158198055
+    },
+    "new_pre": {
+      "true_elbo_mc": -19.819552927656186,
+      "mc_se": 0.001976250319116819,
+      "draws": 100000,
+      "seed": 13092147,
+      "reported_elbo": -19.621795654325446,
+      "reported_minus_true": 0.19775727333074045,
+      "kl_q_to_true_posterior": 0.2160327694581312,
+      "ln_Z": -19.603520158198055,
+      "log_joint_bias": 0.20265608634053933,
+      "entropy_bias": -0.004898813009804215
+    },
+    "new_returned": {
+      "true_elbo_mc": -19.809649791217808,
+      "mc_se": 0.0019245327958244784,
+      "draws": 100000,
+      "seed": 13092148,
+      "reported_elbo": -19.594147573876754,
+      "reported_minus_true": 0.21550221734105435,
+      "kl_q_to_true_posterior": 0.20612963301975284,
+      "ln_Z": -19.603520158198055,
+      "log_joint_bias": 0.20571465871516637,
+      "entropy_bias": 0.00978755862588443
+    }
+  },
+  "student_D8_seed15": {
+    "old_pre": {
+      "true_elbo_mc": -20.347536895439607,
+      "mc_se": 0.005744670302647379,
+      "draws": 100000,
+      "seed": 13092176,
+      "reported_elbo": -19.533077305320155,
+      "reported_minus_true": 0.8144595901194513,
+      "kl_q_to_true_posterior": 0.7440167372415516,
+      "ln_Z": -19.603520158198055
+    },
+    "new_pre": {
+      "true_elbo_mc": -19.907834372517964,
+      "mc_se": 0.003082567131690508,
+      "draws": 100000,
+      "seed": 13092177,
+      "reported_elbo": -19.671720949156494,
+      "reported_minus_true": 0.2361134233614699,
+      "kl_q_to_true_posterior": 0.3043142143199091,
+      "ln_Z": -19.603520158198055,
+      "log_joint_bias": 0.22217772510868627,
+      "entropy_bias": 0.013935698252776518
+    },
+    "new_returned": {
+      "true_elbo_mc": -19.9380981326899,
+      "mc_se": 0.0034355997828451395,
+      "draws": 100000,
+      "seed": 13092178,
+      "reported_elbo": -19.644825970131564,
+      "reported_minus_true": 0.29327216255833477,
+      "kl_q_to_true_posterior": 0.3345779744918431,
+      "ln_Z": -19.603520158198055,
+      "log_joint_bias": 0.280969257973787,
+      "entropy_bias": 0.012302904584544194
+    }
+  },
+  "student_D8_seed18": {
+    "old_pre": {
+      "true_elbo_mc": -19.922142108534466,
+      "mc_se": 0.0027089071307984324,
+      "draws": 100000,
+      "seed": 13092206,
+      "reported_elbo": -19.396977486417835,
+      "reported_minus_true": 0.5251646221166304,
+      "kl_q_to_true_posterior": 0.3186219503364107,
+      "ln_Z": -19.603520158198055
+    },
+    "new_pre": {
+      "true_elbo_mc": -26.532219749113676,
+      "mc_se": 0.021294835840026075,
+      "draws": 100000,
+      "seed": 13092207,
+      "reported_elbo": -19.22288905018459,
+      "reported_minus_true": 7.3093306989290845,
+      "kl_q_to_true_posterior": 6.92869959091562,
+      "ln_Z": -19.603520158198055,
+      "log_joint_bias": 7.29633179129997,
+      "entropy_bias": 0.012998907629114598
+    },
+    "new_returned": {
+      "true_elbo_mc": -25.442251072904952,
+      "mc_se": 0.021098937310889243,
+      "draws": 100000,
+      "seed": 13092208,
+      "reported_elbo": -19.14335775687441,
+      "reported_minus_true": 6.298893316030544,
+      "kl_q_to_true_posterior": 5.838730914706897,
+      "ln_Z": -19.603520158198055,
+      "log_joint_bias": 6.286039861340456,
+      "entropy_bias": 0.012853454690088029
+    }
+  },
+  "student_D8_seed44": {
+    "old_pre": {
+      "true_elbo_mc": -19.769408859094497,
+      "mc_se": 0.0013751999649197046,
+      "draws": 100000,
+      "seed": 13092466,
+      "reported_elbo": -19.8405545540342,
+      "reported_minus_true": -0.0711456949397018,
+      "kl_q_to_true_posterior": 0.16588870089644203,
+      "ln_Z": -19.603520158198055
+    },
+    "new_pre": {
+      "true_elbo_mc": -20.597642373340996,
+      "mc_se": 0.007480288907640067,
+      "draws": 100000,
+      "seed": 13092467,
+      "reported_elbo": -19.457768372910454,
+      "reported_minus_true": 1.1398740004305417,
+      "kl_q_to_true_posterior": 0.9941222151429407,
+      "ln_Z": -19.603520158198055,
+      "log_joint_bias": 1.0974516166976755,
+      "entropy_bias": 0.04242238373286433
+    },
+    "new_returned": {
+      "true_elbo_mc": -20.62932261441486,
+      "mc_se": 0.007804401450493115,
+      "draws": 100000,
+      "seed": 13092468,
+      "reported_elbo": -19.488728129361963,
+      "reported_minus_true": 1.1405944850528975,
+      "kl_q_to_true_posterior": 1.0258024562168053,
+      "ln_Z": -19.603520158198055,
+      "log_joint_bias": 1.1481924167953323,
+      "entropy_bias": -0.007597931742433062
+    }
+  }
+}

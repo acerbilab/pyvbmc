@@ -8,7 +8,9 @@
   "display": "off",
   "plot": false,
   "print_iteration_header": false,
-  "vectorized_target": false
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
  },
  "effective_options": {
   "max_fun_evals": 300,
@@ -17,7 +19,7 @@
   "tol_stable_excpt_frac": 0.2,
   "specify_target_noise": false,
   "search_acq_fcn": [
-   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x00000298F5017A70>"
+   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x000002EB7BF50170>"
   ],
   "active_sample_gp_update": false,
   "active_sample_vp_update": false,
@@ -26,7 +28,9 @@
   "display": "off",
   "plot": false,
   "print_iteration_header": false,
-  "vectorized_target": false
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
  },
  "timer_keys": [
   "active_sampling",
@@ -85,29 +89,29 @@
  ],
  "notes": "likelihood: SDs 0.01 on D-1 axes and 1 on one, mixed by a seeded orthogonal matrix (det -1), centred at linspace(-0.5, 0.5); times the papers' prior N(centre, (3 marginal SD)^2); box = prior mean -+ 1 prior SD",
  "final": {
-  "elbo": -3.505784055600693,
-  "elbo_sd": 0.0009399939142127187,
-  "best_iter": 25,
-  "iterations": 26,
-  "func_count": 130,
+  "elbo": -3.51504425547155,
+  "elbo_sd": 0.00036283687413713264,
+  "best_iter": 26,
+  "iterations": 27,
+  "func_count": 135,
   "final_K": 50,
-  "final_N": 130,
+  "final_N": 135,
   "min_Ns_gp": 7,
   "n_warps": 2,
   "success_flag": true,
   "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
-  "wall_s": 47.125092699949164,
-  "target_eval_s": 0.015469551086425781,
-  "elbo_err": 0.006965604700663874,
-  "gskl": 0.0004844471791903837,
-  "mmtv": 0.006795533929084484,
-  "rmse": 0.004928287336905422,
+  "wall_s": 49.777022499998566,
+  "target_eval_s": 0.044716835021972656,
+  "elbo_err": 0.0022945951701931477,
+  "gskl": 0.0012566844135289967,
+  "mmtv": 0.009902182743824655,
+  "rmse": 0.010562576193066463,
   "moment_method": "affine",
-  "peak_rss_mb": 403.71484375
+  "peak_rss_mb": 194.36328125
  },
  "meta": {
   "git": {
-   "sha": "7314a6a",
+   "sha": "68a43db",
    "dirty": false
   },
   "python": "3.12.6",
@@ -121,8 +125,8 @@
    "OPENBLAS_NUM_THREADS": "1",
    "MKL_NUM_THREADS": "1"
   },
-  "started": "2026-09-07 00:36:45",
-  "finished": "2026-09-07 00:37:32",
-  "pid": 29812
+  "started": "2026-09-12 22:09:06",
+  "finished": "2026-09-12 22:09:57",
+  "pid": 19808
  }
 }

@@ -7,7 +7,10 @@
  "requested_options": {
   "display": "off",
   "plot": false,
-  "print_iteration_header": false
+  "print_iteration_header": false,
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
  },
  "effective_options": {
   "max_fun_evals": 400,
@@ -16,7 +19,7 @@
   "tol_stable_excpt_frac": 0.2,
   "specify_target_noise": false,
   "search_acq_fcn": [
-   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x000001B786D6F0E0>"
+   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x00000180C38F3CE0>"
   ],
   "active_sample_gp_update": false,
   "active_sample_vp_update": false,
@@ -24,7 +27,10 @@
   "do_final_boost": true,
   "display": "off",
   "plot": false,
-  "print_iteration_header": false
+  "print_iteration_header": false,
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
  },
  "timer_keys": [
   "active_sampling",
@@ -113,8 +119,8 @@
  ],
  "notes": "z ~ N(0, diag(sig^2)), sig1=2.0, x2 = z2 + 0.5(z1^2 - sig1^2); unit Jacobian, no prior; not a paper target. The true cov is diagonal, so gsKL and RMSE cannot see the ridge; MMTV sees the skewed x2 marginal, only elbo_err sees the joint",
  "final": {
-  "elbo": -0.07103895742302502,
-  "elbo_sd": 0.003451774514261668,
+  "elbo": -0.1128150655676774,
+  "elbo_sd": 0.00315595382239423,
   "best_iter": 18,
   "iterations": 19,
   "func_count": 100,
@@ -124,24 +130,24 @@
   "n_warps": 1,
   "success_flag": true,
   "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
-  "wall_s": 32.467871900007594,
-  "target_eval_s": 0.0029990673065185547,
-  "elbo_err": 0.07103895742302502,
-  "gskl": 0.2186972310928792,
-  "mmtv": 0.023059495005120095,
-  "rmse": 0.2012789545660015,
+  "wall_s": 51.12602789999801,
+  "target_eval_s": 0.0025157928466796875,
+  "elbo_err": 0.1128150655676774,
+  "gskl": 0.2697360011987502,
+  "mmtv": 0.027269389678770763,
+  "rmse": 0.21457878625908433,
   "moment_method": "affine",
-  "peak_rss_mb": 401.78515625
+  "peak_rss_mb": 183.78125
  },
  "meta": {
   "git": {
-   "sha": "18a236c",
+   "sha": "68a43db",
    "dirty": false
   },
   "python": "3.12.6",
   "numpy": "2.5.2",
   "scipy": "1.18.1",
-  "pyvbmc": "1.0.5.dev28+gdcfeba694",
+  "pyvbmc": "1.0.5.dev159+g4bff1a5b9",
   "gpyreg": "1.1.0",
   "cma": "4.4.4",
   "threads": {
@@ -149,8 +155,8 @@
    "OPENBLAS_NUM_THREADS": "1",
    "MKL_NUM_THREADS": "1"
   },
-  "started": "2026-09-06 04:07:21",
-  "finished": "2026-09-06 04:07:54",
-  "pid": 29876
+  "started": "2026-09-12 19:06:27",
+  "finished": "2026-09-12 19:07:19",
+  "pid": 33456
  }
 }

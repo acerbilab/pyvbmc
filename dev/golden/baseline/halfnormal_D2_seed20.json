@@ -8,7 +8,9 @@
   "display": "off",
   "plot": false,
   "print_iteration_header": false,
-  "vectorized_target": false
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
  },
  "effective_options": {
   "max_fun_evals": 200,
@@ -17,7 +19,7 @@
   "tol_stable_excpt_frac": 0.2,
   "specify_target_noise": false,
   "search_acq_fcn": [
-   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x00000298F3D18AD0>"
+   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x0000024C938B3D10>"
   ],
   "active_sample_gp_update": false,
   "active_sample_vp_update": false,
@@ -26,7 +28,9 @@
   "display": "off",
   "plot": false,
   "print_iteration_header": false,
-  "vectorized_target": false
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
  },
  "timer_keys": [
   "active_sampling",
@@ -63,8 +67,8 @@
  ],
  "notes": "Gaussian (SDs 1..D) on the negative orthant, lb=-10D, ub=0; ln Z exact up to Phi(-10); legacy box [-6, -0.05]",
  "final": {
-  "elbo": -1.3852027801686226,
-  "elbo_sd": 0.0007424648748770053,
+  "elbo": -1.3919496972310168,
+  "elbo_sd": 0.0007681197636889665,
   "best_iter": 12,
   "iterations": 13,
   "func_count": 70,
@@ -74,18 +78,18 @@
   "n_warps": 1,
   "success_flag": true,
   "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
-  "wall_s": 12.531400899984874,
+  "wall_s": 12.080024199996842,
   "target_eval_s": 0.0,
-  "elbo_err": 0.0010915809512679342,
-  "gskl": 0.00015905199207250087,
-  "mmtv": 0.018310275437212527,
-  "rmse": 0.0084380256053936,
+  "elbo_err": 0.00565533611112623,
+  "gskl": 5.001365320883577e-05,
+  "mmtv": 0.016198957111829764,
+  "rmse": 0.0030930008751837304,
   "moment_method": "mc",
-  "peak_rss_mb": 403.71484375
+  "peak_rss_mb": 170.1328125
  },
  "meta": {
   "git": {
-   "sha": "7314a6a",
+   "sha": "68a43db",
    "dirty": false
   },
   "python": "3.12.6",
@@ -99,8 +103,8 @@
    "OPENBLAS_NUM_THREADS": "1",
    "MKL_NUM_THREADS": "1"
   },
-  "started": "2026-09-07 03:19:50",
-  "finished": "2026-09-07 03:20:03",
-  "pid": 29812
+  "started": "2026-09-12 23:24:35",
+  "finished": "2026-09-12 23:24:47",
+  "pid": 32184
  }
 }

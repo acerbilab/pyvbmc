@@ -1,36 +1,23 @@
 # Current pickup
 
-Updated 2026-09-12. This file records only current actions and constraints;
+Updated 2026-09-13. This file records only current actions and constraints;
 completed work and evidence remain in the linked plans and reports.
 
-The [overnight population benchmark](plans/final-population-benchmark.md)
-(273 cases, seeds 0–14 of every configuration) and its
-[follow-up extension](results/2026-09-11-noisy-follow-up-seeds-15-29.md)
-(seeds 15–29 of noisy Rosenbrock SD3 and noisy logistic SD3, 30 cases)
-completed without execution errors, giving a 303-run candidate population
-of one frozen treatment. The pooled assessment finds 287 usable runs versus
-273 on matching reference seeds, no rejections in the 76-test KS screen or
-the 95-test paired family, and the seeds 0–14 shifts in the two noisy
-configurations did not replicate on seeds 15–29: none of the eight
-confirmatory tests rejects, and every Rosenbrock metric moved in the
-candidate's favor. The PI accepts this evidence tentatively (2026-09-11):
-the frozen treatment stands as the numerics of 1.5, and the confirmation
-at equal sample sizes comes from the planned extension rather than from a
-separate decision now. The PI authorized the remaining 567-run completion
-on 2026-09-12. It is running under
-`dev/scripts/runs/population_completion_20260912/`, followed automatically
-by assessment of the pooled 870-case candidate population. Promotion
-follows assessment; the 120 real-data reference pairs are retained. The
-[population plan](plans/final-population-benchmark.md#full-allocation-completion--authorized-2026-09-12)
-records preparation, launch, status and the remaining gates.
-Order set by the PI (2026-09-11): the benchmark extension with realistic
-noiseless and noisy targets first (done 2026-09-12, see below), then the
-golden run on the current defaults; the noisy-acquisition options are taken
-up only after both, so they can be analyzed on the richer benchmark. The frozen
-checkout `68a43db` remains the generator as long as the defaults stay as
-they are; if a noisy option later becomes a default, the noisy
-configurations of the reference are regenerated from that code. No
-additional numerical worker may run alongside the active campaign.
+The [population benchmark](plans/final-population-benchmark.md) is complete:
+870 candidate cases, no execution failures, independently reviewed assessment
+and targeted trajectory investigation. The PI accepted the evidence on
+2026-09-13: no convincing evidence of meaningful degradation, with existing
+occasional failures outside this campaign's correction scope. The promoted
+[current reference](golden/promotion_20260913/README.md) is
+`reference_990_20260913`: 870 candidate pairs plus 120 unchanged real-data
+pairs. All 990 archives validate, the 92-test even/odd check has no flags,
+and the five default replays match all non-timer NPZ arrays, semantic final
+results and initial designs. The previous references remain preserved.
+
+The noisy-acquisition options can be assessed against this extended
+reference on PI instruction. The frozen treatment `68a43db` defines its
+synthetic-target numerics; if a noisy option becomes a default, regenerate
+the affected noisy configurations from that code.
 
 S-VBMC is integrated as `pyvbmc.svbmc` (merged into `dev-next` at
 `0b5af29` on 2026-09-11); the [integration plan](plans/svbmc-integration.md)
@@ -72,8 +59,8 @@ inside their budgets; noisy multisensory subject 1 has 5 of 30 usable runs
 `w_s` and `sigma_p` by about 30 % over all 30 seeds. The frozen worktree
 and campaign artifacts are under
 `dev/scripts/runs/population_realdata_20260912/` (gitignored). That campaign
-is complete. The golden completion on the current defaults is running;
-the noisy-acquisition options follow its assessment and reference promotion.
+is complete. Its 120 pairs are retained in the promoted reference;
+the noisy-acquisition options remain a separate task.
 Goris stays deferred; which targets move into the public tests is
 decided at the documentation review.
 
@@ -90,9 +77,8 @@ decided at the documentation review.
   port; optional Torch and ArviZ exports remain.
 - The noisy-target acquisition search (a smaller sieve with a gated gradient
   refinement on a larger importance set) and the operation-level savings in
-  the VIQR sieve call and the in-loop GP refits are deferred until the
-  benchmark extension and the golden run are complete, so that they are
-  analyzed on the extended noisy benchmark against the new reference; see
+  the VIQR sieve call and the in-loop GP refits are ready for a separate
+  assessment on the extended noisy benchmark against the promoted reference; see
   the [noisy-target acquisitions note](2026-09-08-noisy-acquisitions.md).
   The VIQR loss variants and the EIG acquisitions on that branch are
   options with no default changed; keeping any of them needs the
@@ -106,7 +92,7 @@ decided at the documentation review.
   pass was reviewed and approved by the PI on 2026-09-13.
   The [FAQ](../docsrc/source/faq.md) port and
   instructional link updates are complete; its full Sphinx build and
-  inference-example checks remain for after the active golden campaign.
+  inference-example checks remain to be run.
   Check the [agent skill](../skills/pyvbmc/SKILL.md) links against the
   release documentation. See the
   [pre-release documentation review](plans/modernization-roadmap.md#pre-release-documentation-review).
@@ -118,17 +104,19 @@ decided at the documentation review.
   and extend them when useful. A full 870-run candidate population is not
   required before reviewing the first stage. Release publication
   remains a separate action. Use the
-  [current golden reference](golden/realdata_extension_20260912/README.md) and
+  [current golden reference](golden/promotion_20260913/README.md) and
   [latent-fix plan](plans/latent-bug-fixes.md) when that work starts.
 - Run at most one heavy computation at a time, normally in the main thread.
 - Preserve benchmark artifacts and frozen source checkouts under
   `dev/scripts/runs/population_overnight_20260910/`, the extension's
-  artifacts under `dev/scripts/runs/population_extension_20260911/` and the
+  artifacts under `dev/scripts/runs/population_extension_20260911/`, the
+  completion under `dev/scripts/runs/population_completion_20260912/`, and the
   real-data reference campaign under
   `dev/scripts/runs/population_realdata_20260912/`. These and the full
-  golden traces in `dev/scripts/runs/golden/reference_990_20260912/` (and
-  the previous `reference_870_20260907/`) are gitignored and available on
-  the original Windows benchmark machine only. A fresh clone has the
+  golden traces in `dev/scripts/runs/golden/reference_990_20260913/` (and
+  the previous `reference_990_20260912/` and `reference_870_20260907/`) are
+  gitignored and available on the original Windows benchmark machine only.
+  A fresh clone has the
   tracked assessment JSON, comparison, manifests and reports; to
   revalidate the raw artifacts, copy the campaign directories from that
   machine and follow the

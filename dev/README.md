@@ -33,7 +33,8 @@ For the release overview, start with
 - [Numerical campaigns](2026-09-08-numerical-campaigns.md) —
   Consolidated boost and eta evidence and PI decisions, main-loop repairs,
   and cross-platform validation. Links to the full September 4, 7 and 8
-  reports in `results/`; the final integrated population remains pending.
+  reports in `results/`; the completed integrated population assessment is
+  in the [promotion record](golden/promotion_20260913/README.md).
 - [Ecosystem integration proposal](2026-09-08-ecosystem-integration.md) —
   Human-review proposal for integrating the existing S-VBMC implementation:
   preserved workflow, optional Torch, code placement and migration, with
@@ -82,8 +83,9 @@ plan and consolidated human summary.
 - [plans/latent-bug-fixes.md](plans/latent-bug-fixes.md) — pickup 9
   implementation plan: verified candidate dispositions, numerical and
   compatibility contracts, PI-selected boost/eta fixes, and regression gates
-  against the completed 870-run reference. Final integrated population
-  validation remains pending.
+  against the historical 870-run reference. Integrated population validation
+  is complete; the [promotion record](golden/promotion_20260913/README.md)
+  records acceptance and the active 990-run reference.
   Phase 0 records the reduced 60-run noisy extension; the original 150-run
   preparation remains as historical evidence.
 - [plans/svbmc-integration.md](plans/svbmc-integration.md) — S-VBMC
@@ -223,33 +225,24 @@ historical checkout `c4c692c`, which contains the checks and retains the
 `03650a2` numerical source pinned by `scripts/eta_bound_variants.py`. Its
 source-digest guard is expected to reject later production changes.
 
-The current golden reference is `reference_990_20260912`: **990 runs across
+The current golden reference is `reference_990_20260913`: **990 runs across
 23 configurations, including 250 noisy runs, with 92 population KS tests**.
-Its JSON sidecars and `summary.md` live under `golden/baseline/`,
-so `python dev/scripts/golden_trace.py compare dev/golden/baseline <new_dir>`
-works from a fresh checkout. Full `.npz` traces stay gitignored
-under `scripts/runs/golden/reference_990_20260912/` until release-asset
-publication. The 870 pairs of the previous reference remain unchanged: the
-original 280 retain `18a236c`, 530 record frozen `7314a6a`, and the 60 noisy
-additions of 2026-09-07 (`rosenbrock_D2_noise3` and `student_D8_noise3`, 30
-seeds each) record `623f5cd`. The 120 real-data additions of 2026-09-12 (the
-Bayesian timing model and the multisensory causal-inference model on two
-subjects, 30 seeds each of `multisensory_s1_D6`, `timing_D5_noise2.2`,
-`multisensory_s1_D6_noise1.3` and `multisensory_s2_D6_noise1.3`) were made
-from the frozen checkout `fc50ee1` with gpyreg `a2f8ddc`, whose default-path
-numerics equal the frozen treatment `68a43db` of the population campaigns;
-119 converged and one timing run reached its budget. See the
-[810-run extension record](golden/extension_20260907/README.md), the
-[870-run integration record](golden/noisy_extension_20260907/README.md) and
-the [990-run real-data record](golden/realdata_extension_20260912/README.md)
-for commands, provenance, hashes and validation reports. All 990 archives
-passed integrity checks and the 92-test even/odd population check had no
-flags. The real-data configurations replay bit-exactly with the current
-code (seed 0 of each, from the frozen checkout: every stored loop and final
-value and each initial design matched, zero flags); the older
-configurations' traces predate the 1.5 numerics, so their replays part
-early and only the accuracy envelopes apply. No trace stores the returned
-posterior's transformer, so that field remains explicitly uncertifiable.
+Its JSON sidecars and `summary.md` live under `golden/baseline/`, so
+`python dev/scripts/golden_trace.py compare dev/golden/baseline <new_dir>`
+works from a fresh checkout. Full `.npz` traces stay gitignored under
+`scripts/runs/golden/reference_990_20260913/` until release-asset publication.
+The 870 synthetic-target pairs use frozen treatment `68a43db`; the 120
+real-data pairs retain `fc50ee1` and are byte-identical to their previous
+reference. Both use gpyreg `a2f8ddc`. The previous 990- and 870-run references
+remain preserved for historical comparisons.
+
+The [promotion record](golden/promotion_20260913/README.md) contains the
+assessment, provenance, hashes and verification. All 990 archives passed
+integrity checks and the 92-test even/odd check had no flags. The five
+default cases replay exactly under current code in every non-timer NPZ
+loop/final array, semantic final-result field and initial design. The four real-data seed-0 replays
+retain their earlier exact certification. The returned posterior's
+transformer is absent from the traces and remains uncertifiable.
 
 [`golden/README.md`](golden/README.md) is the human-facing description of the
 current golden runs: purpose, target coverage, metrics, files and usage. Keep
@@ -391,7 +384,7 @@ reason.
   the horizons (finals only without them); `--report-only` re-renders a
   finished run. Flags: `--configs`, `--seeds`
   (default seed 0 only), `--baseline` (the traces directory; the default
-  `scripts/runs/golden/reference_990_20260912/`, the current reference
+  `scripts/runs/golden/reference_990_20260913/`, the current reference
   population, exists only on the machine that made it), `--sidecars`,
   `--out`, `--threads` (1, as the baseline), `--calibration-budget` (pin
   all three chunk budgets to this integer for a nondefault-profile check;

@@ -1,0 +1,82 @@
+{
+  "validated_candidate_cases": 870,
+  "validated_historical_pairs": 870,
+  "paired_pvalues_reproduced": 95,
+  "ks_statistics_and_pvalues_reproduced": 76,
+  "ks_rejections": [],
+  "paired_rejections": [
+    {
+      "label": "banana_D2",
+      "metric": "elbo_err",
+      "method": "exact signed-rank sign permutation",
+      "n_pairs": 50,
+      "improved": 36,
+      "worsened": 14,
+      "tied": 0,
+      "median_paired_change": -0.014772597598017634,
+      "statistic": 255.0,
+      "pvalue": 0.0001302957841744501,
+      "holm_adjusted_pvalue": 0.012117507928223858,
+      "holm_rejected": true
+    },
+    {
+      "label": "banana_D2",
+      "metric": "gskl",
+      "method": "exact signed-rank sign permutation",
+      "n_pairs": 50,
+      "improved": 38,
+      "worsened": 12,
+      "tied": 0,
+      "median_paired_change": -0.05641200624462231,
+      "statistic": 218.0,
+      "pvalue": 2.191284211150446e-05,
+      "holm_adjusted_pvalue": 0.0020817200005929237,
+      "holm_rejected": true
+    },
+    {
+      "label": "banana_D2",
+      "metric": "mmtv",
+      "method": "exact signed-rank sign permutation",
+      "n_pairs": 50,
+      "improved": 36,
+      "worsened": 14,
+      "tied": 0,
+      "median_paired_change": -0.008110141268252572,
+      "statistic": 230.0,
+      "pvalue": 4.011462634423424e-05,
+      "holm_adjusted_pvalue": 0.0037707748763580184,
+      "holm_rejected": true
+    },
+    {
+      "label": "rosenbrock_D2",
+      "metric": "mmtv",
+      "method": "exact signed-rank sign permutation",
+      "n_pairs": 50,
+      "improved": 34,
+      "worsened": 16,
+      "tied": 0,
+      "median_paired_change": -0.006017811449628511,
+      "statistic": 275.0,
+      "pvalue": 0.0003107899432901462,
+      "holm_adjusted_pvalue": 0.02859267478269345,
+      "holm_rejected": true
+    }
+  ],
+  "aggregates": {
+    "reference_all": {
+      "n": 870,
+      "usable": 825,
+      "converged": 853,
+      "evaluations": 131375,
+      "optimizer_seconds": 77896.52462059999
+    },
+    "candidate": {
+      "n": 870,
+      "usable": 837,
+      "converged": 855,
+      "evaluations": 131075,
+      "optimizer_seconds": 78697.6818135999
+    }
+  },
+  "assessment_sha256": "dd4b97cbe86fdd6bb5350ca8005d92237fdf451cad498e448073e3b82a9799fe"
+}

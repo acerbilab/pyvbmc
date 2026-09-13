@@ -6,8 +6,9 @@ Assess the integrated numerical changes against the existing 870-run golden
 population, starting with an overnight subset of its configurations' seeds.
 Compare posterior accuracy,
 evidence error, convergence, evaluation counts, runtime and final-boost
-decisions. Changes to the algorithm can legitimately move these quantities;
-the assessment must distinguish improvements, tradeoffs and regressions.
+decisions. The acceptance criterion is preservation of algorithmic behavior
+without evidence of meaningful degradation. Existing occasional inference
+failures are retained in the evidence; correcting them is outside scope.
 
 The first stage supplies evidence for deciding whether to accept the changes,
 investigate particular configurations, or collect more seeds. Equal sample
@@ -34,12 +35,12 @@ ordinary VBMC inference unchanged can proceed independently.
 ## Population and execution settings
 
 Reference: [reference_870_20260907](../golden/noisy_extension_20260907/README.md).
-Tracked sidecars are in `dev/golden/baseline/`; complete local traces are in
-`dev/scripts/runs/golden/reference_870_20260907/`. (Since 2026-09-12 the
-golden reference is `reference_990_20260912`, the same 870 pairs plus the
-120 real-data runs of
-[realdata_extension_20260912](../golden/realdata_extension_20260912/README.md);
-the assessment below compared against the 870.)
+Historical sidecars and complete local traces are preserved in
+`dev/scripts/runs/golden/reference_870_20260907/`; their tracked hashes are
+in the linked record. The assessment compares against these 870 pairs.
+The active `dev/golden/baseline/` contains the promoted
+[reference_990_20260913](../golden/promotion_20260913/README.md): the 870
+candidates plus 120 unchanged real-data pairs.
 
 | First-stage cohort | Seeds | Runs |
 | --- | --- | ---: |
@@ -180,8 +181,7 @@ affected results accordingly.
 - [x] Independently verify the assessment and paired statistical analysis.
 - [x] Run the recommended seeds 15–29 extension of the two noisy
   configurations and assess it with the pooled population (2026-09-11).
-- [ ] Accept the evidence for reference promotion, or select further
-  sampling.
+- [x] Accept the evidence for reference promotion (2026-09-13).
 
 ### Launcher and verification
 
@@ -397,13 +397,13 @@ The launch manifest and preparation evidence are also tracked under
 - [x] Validate existing artifacts, frozen imports and environment; derive
   the exact missing allocation and obtain independent preflight review.
 - [x] Launch the sequential supervisor and verify its first completed case.
-- [~] Complete all 567 cases with validated records; preserve any failed
+- [x] Complete all 567 cases with validated records; preserve any failed
   attempt and investigate before resuming.
-- [ ] Assess the full 870-case candidate population, keeping the earlier
+- [x] Assess the full 870-case candidate population, keeping the earlier
   hypothesis-generating and confirmatory stages identifiable. Report the
   76-test KS screen, 95-test paired family, effect sizes, usability and
   boost decisions; review adverse changes independently.
-- [ ] Prepare the 990-case reference from the 870 candidate pairs and the
+- [x] Prepare the 990-case reference from the 870 candidate pairs and the
   unchanged 120 real-data pairs, preserve the previous reference, and run
   artifact validation, the even/odd check and exact default replays.
   Promotion follows the completed assessment and its scientific decision.
@@ -455,3 +455,35 @@ repository's `.venv/Scripts/python.exe -u` on the absolute campaign
 same manifest and results directory. Preserve the prior process and log
 records when starting a new background controller. Do not remove partial
 attempts or alter seeds to make resumption pass.
+
+
+### Completion, assessment and promotion - 2026-09-13
+
+The 567-case completion finished at 07:40:50 UTC+03 after 13 h 54 min,
+with zero execution failures. The pooled assessment completed immediately
+afterwards. All 870 candidate cases and historical matches were validated;
+independent review reproduced the 76 KS and 95 paired results and every
+boost decision. The candidate has 837 usable runs versus 825 historical,
+with 33 paired gains and 21 losses. There are no Holm-rejected KS tests;
+four paired tests favor the candidate. The pooled results are descriptive
+following staged inspection; the earlier eight-test noisy follow-up remains
+the prespecified confirmatory family, with no rejections.
+
+The targeted Student D8 and Banana D10 investigation found existing failure
+patterns affecting different seeds. Student retains two failures in 50;
+Banana changes from four to seven in 50. The assessment provides no
+convincing evidence of an increased underlying failure probability or a
+new implementation defect. The severe Student seed-18 fit is retained.
+The PI accepted the evidence for preserving algorithmic behavior and
+explicitly authorized promotion; failure-mode research is outside scope.
+
+The promoted reference is `reference_990_20260913`, comprising the 870
+candidate pairs and 120 byte-identical real-data pairs. The previous
+990- and 870-run references are preserved. All 990 archives passed integrity
+checks, the 92-test even/odd check has no flags, and the five current-code
+default replays match all non-timer NPZ arrays, semantic final results and
+initial designs.
+The returned posterior's transformer is absent from the traces and remains
+uncertifiable. The [promotion record](../golden/promotion_20260913/README.md)
+links the durable assessment, diagnostic evidence, hashes, replay reports
+and assembly script. No solver numerics changed during promotion.

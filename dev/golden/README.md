@@ -20,7 +20,7 @@ an intentional correctness fix may change its results.
 
 ## Current reference
 
-**`reference_990_20260912`: 990 runs across 23 configurations.** Sixteen
+**`reference_990_20260913`: 990 runs across 23 configurations.** Sixteen
 configurations use seeds 0–49, six use seeds 0–29 (two noisy additions of
 2026-09-07 and four real-data configurations of 2026-09-12), and the
 15-dimensional budget-exhaustion case uses seeds 0–9. The population includes
@@ -47,25 +47,23 @@ under-dispersed on every real-data target, timing's `w_s` and `sigma_p` by
 about 30 %. The record is
 [`realdata_extension_20260912`](realdata_extension_20260912/README.md).
 
-The 60 noisy additions of 2026-09-07 are `rosenbrock_D2_noise3` and
-`student_D8_noise3`, each at seeds 0–29, with noise SD 3 and evaluation
-budgets 200 and 500, generated from pinned source `623f5cd` with gpyreg
-`a2f8ddc`; 53 converged and seven noisy Rosenbrock runs reached their
-budget, with usable counts 23/30 and 14/30 and a median absolute ELBO error
-of 1.08 for Student. The reference records these outcomes rather than
-treating every completed run as an accurate fit. `lumpy_D10_noise3` remains
-registered but has no reference traces.
+The 870 synthetic-target runs use frozen treatment `68a43db`, with gpyreg
+`a2f8ddc`. The 120 real-data runs retain `fc50ee1`, whose default-path
+numerics were certified against that treatment. The
+[promotion record](promotion_20260913/README.md) gives the assessment,
+provenance, hashes and validation. The assessment found no convincing
+evidence of degradation; existing occasional inaccurate fits remain
+represented in the reference. `lumpy_D10_noise3` remains registered but
+has no reference traces.
 
-The historical 810 pairs remain byte-identical. Their execution record is
-[`extension_20260907`](extension_20260907/README.md); the noisy additions
-and the 870-run reference are recorded in
-[`noisy_extension_20260907`](noisy_extension_20260907/README.md). All 990
-archives passed integrity checks and the 92-test even/odd comparison had no
-flags. The real-data configurations replay bit-exactly with the current
-code; the older configurations' traces predate the 1.5 numerics, so their
-replays part early and only the accuracy envelopes apply. No trace stores
-the returned posterior's transformer, so replay reports that field as
-uncertifiable.
+All 990 archives passed integrity checks and the 92-test even/odd comparison
+had no flags. The five default cases replay with identical non-timer NPZ
+arrays, semantic final results and initial designs under current code. The
+retained real-data cases also have exact replay certification in their
+execution record.
+No trace stores the returned posterior's transformer, so replay reports
+that field as uncertifiable. The previous `reference_990_20260912` is
+preserved with its [execution record](realdata_extension_20260912/README.md).
 
 | Target | Dimensions | What it exercises |
 |---|---|---|
@@ -114,8 +112,8 @@ certifies its full joint shape. The summary also reports posterior-mean
 RMSE, iterations, mixture size, warps and wall time. `usable` is the fraction
 meeting all three accuracy thresholds: `elbo_err < 1`, `gskl < 1`, and
 `mmtv < 0.2`. `failed` counts execution failures, not unconverged or inaccurate
-fits. All 990 reference runs completed. Of these, 972 converged and 18 reached
-their budgets: the ten intentional D15 exhaust cases, seven noisy Rosenbrock
+fits. All 990 reference runs completed. Of these, 974 converged and 16 reached
+their budgets: the ten intentional D15 exhaust cases, five noisy Rosenbrock
 runs and one noisy timing run.
 
 The population check applies two-sample Kolmogorov–Smirnov tests to
@@ -132,7 +130,7 @@ inference behavior; controlled speed comparisons need dedicated benchmarks.
   in Git. Each sidecar records the target, seed, requested/effective options,
   code and dependency versions, and final metrics.
 - Full `.npz` traces contain per-iteration data and final arrays. They remain
-  local under `dev/scripts/runs/golden/reference_990_20260912/` (gitignored). Copy that
+  local under `dev/scripts/runs/golden/reference_990_20260913/` (gitignored). Copy that
   directory from the generating laptop for exact replay elsewhere. Publishing
   a downloadable trace archive is planned for the 1.5 release.
 
@@ -165,9 +163,8 @@ dependency versions and numerical platform. These are part of the reference;
 matching the seed alone is insufficient.
 
 Exact environment information, reproduction commands, file hashes and
-validation reports are in the [810-run record](extension_20260907/README.md),
-the [60-run integration record](noisy_extension_20260907/README.md) and the
-[120-run real-data record](realdata_extension_20260912/README.md).
+validation reports are in the [promotion record](promotion_20260913/README.md)
+and the [120-run real-data record](realdata_extension_20260912/README.md).
 The legacy `regenerate_baseline.sh` uses a different seed allocation and
 masks comparison failures; use the recorded procedure when reproducing this
 snapshot.

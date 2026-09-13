@@ -8,7 +8,9 @@
   "display": "off",
   "plot": false,
   "print_iteration_header": false,
-  "vectorized_target": false
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
  },
  "effective_options": {
   "max_fun_evals": 600,
@@ -17,7 +19,7 @@
   "tol_stable_excpt_frac": 0.2,
   "specify_target_noise": false,
   "search_acq_fcn": [
-   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x00000298ED192000>"
+   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x00000289CACE3E90>"
   ],
   "active_sample_gp_update": false,
   "active_sample_vp_update": false,
@@ -26,7 +28,9 @@
   "display": "off",
   "plot": false,
   "print_iteration_header": false,
-  "vectorized_target": false
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
  },
  "timer_keys": [
   "active_sampling",
@@ -199,8 +203,8 @@
  ],
  "notes": "z ~ N(0, diag(sig^2)), sig1=2.0, x2 = z2 + 0.5(z1^2 - sig1^2); unit Jacobian, no prior; not a paper target. The true cov is diagonal, so gsKL and RMSE cannot see the ridge; MMTV sees the skewed x2 marginal, only elbo_err sees the joint",
  "final": {
-  "elbo": -0.06749859458076823,
-  "elbo_sd": 0.0086412138844745,
+  "elbo": -0.08247049621876723,
+  "elbo_sd": 0.009445767581968148,
   "best_iter": 21,
   "iterations": 22,
   "func_count": 115,
@@ -210,18 +214,18 @@
   "n_warps": 1,
   "success_flag": true,
   "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
-  "wall_s": 50.7727704999852,
-  "target_eval_s": 0.0,
-  "elbo_err": 0.06749859458076823,
-  "gskl": 0.18099103832741514,
-  "mmtv": 0.014883631928953603,
-  "rmse": 0.14710103331517307,
+  "wall_s": 86.12763420000556,
+  "target_eval_s": 0.00400233268737793,
+  "elbo_err": 0.08247049621876723,
+  "gskl": 0.22948868658331145,
+  "mmtv": 0.017976021617924724,
+  "rmse": 0.1677459755703931,
   "moment_method": "affine",
-  "peak_rss_mb": 403.71484375
+  "peak_rss_mb": 211.9765625
  },
  "meta": {
   "git": {
-   "sha": "7314a6a",
+   "sha": "68a43db",
    "dirty": false
   },
   "python": "3.12.6",
@@ -235,8 +239,8 @@
    "OPENBLAS_NUM_THREADS": "1",
    "MKL_NUM_THREADS": "1"
   },
-  "started": "2026-09-06 23:57:10",
-  "finished": "2026-09-06 23:58:02",
-  "pid": 29812
+  "started": "2026-09-12 18:05:51",
+  "finished": "2026-09-12 18:07:18",
+  "pid": 25220
  }
 }

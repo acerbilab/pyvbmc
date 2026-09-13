@@ -8,7 +8,9 @@
   "display": "off",
   "plot": false,
   "print_iteration_header": false,
-  "vectorized_target": false
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
  },
  "effective_options": {
   "max_fun_evals": 350,
@@ -17,7 +19,7 @@
   "tol_stable_excpt_frac": 0.2,
   "specify_target_noise": false,
   "search_acq_fcn": [
-   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x00000298F4F7D580>"
+   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x0000022687DD3C50>"
   ],
   "active_sample_gp_update": false,
   "active_sample_vp_update": false,
@@ -26,7 +28,9 @@
   "display": "off",
   "plot": false,
   "print_iteration_header": false,
-  "vectorized_target": false
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
  },
  "timer_keys": [
   "active_sampling",
@@ -99,29 +103,29 @@
  ],
  "notes": "logistic regression, 50 trials, predictors 1-2 at rho 0.95, predictor 4 rare (6 ones, all successes: its coefficient is identified only by the bound); uniform prior on [-10, 10]^D (2020 style), plausible box -+5; not a paper problem",
  "final": {
-  "elbo": -34.864393624012635,
-  "elbo_sd": 0.025106966400833507,
-  "best_iter": 28,
-  "iterations": 29,
-  "func_count": 145,
+  "elbo": -35.13521896333377,
+  "elbo_sd": 0.019223768468015007,
+  "best_iter": 29,
+  "iterations": 30,
+  "func_count": 150,
   "final_K": 50,
-  "final_N": 145,
+  "final_N": 150,
   "min_Ns_gp": 7,
   "n_warps": 2,
   "success_flag": true,
   "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
-  "wall_s": 50.144453899993096,
-  "target_eval_s": 0.0070078372955322266,
-  "elbo_err": 0.02909637598736481,
-  "gskl": 0.008975606715610152,
-  "mmtv": 0.018398407153901303,
-  "rmse": 0.02924338544835688,
+  "wall_s": 51.44893240000238,
+  "target_eval_s": 0.001583099365234375,
+  "elbo_err": 0.24172896333377025,
+  "gskl": 0.08070953454137375,
+  "mmtv": 0.06446950587099941,
+  "rmse": 0.04393072520120897,
   "moment_method": "mc",
-  "peak_rss_mb": 403.71484375
+  "peak_rss_mb": 212.39453125
  },
  "meta": {
   "git": {
-   "sha": "7314a6a",
+   "sha": "68a43db",
    "dirty": false
   },
   "python": "3.12.6",
@@ -135,8 +139,8 @@
    "OPENBLAS_NUM_THREADS": "1",
    "MKL_NUM_THREADS": "1"
   },
-  "started": "2026-09-07 01:49:54",
-  "finished": "2026-09-07 01:50:45",
-  "pid": 29812
+  "started": "2026-09-12 23:58:51",
+  "finished": "2026-09-12 23:59:43",
+  "pid": 2012
  }
 }

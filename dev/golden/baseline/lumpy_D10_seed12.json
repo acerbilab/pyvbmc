@@ -7,7 +7,10 @@
  "requested_options": {
   "display": "off",
   "plot": false,
-  "print_iteration_header": false
+  "print_iteration_header": false,
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
  },
  "effective_options": {
   "max_fun_evals": 600,
@@ -16,7 +19,7 @@
   "tol_stable_excpt_frac": 0.2,
   "specify_target_noise": false,
   "search_acq_fcn": [
-   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x000001B786D8E870>"
+   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x00000272811B0D40>"
   ],
   "active_sample_gp_update": false,
   "active_sample_vp_update": false,
@@ -24,7 +27,10 @@
   "do_final_boost": true,
   "display": "off",
   "plot": false,
-  "print_iteration_header": false
+  "print_iteration_header": false,
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
  },
  "timer_keys": [
   "active_sampling",
@@ -197,35 +203,35 @@
  ],
  "notes": "likelihood: 12 Gaussians, means U[0,1]^D, SDs U[0.2,0.6], Dirichlet(1) weights (top weight 0.20), Acerbi 2018 section 4.1; times the papers' prior N(0.5, (3 marginal SD)^2); box = prior mean -+ 1 prior SD",
  "final": {
-  "elbo": -14.344579760470703,
-  "elbo_sd": 0.03916632637098868,
-  "best_iter": 72,
-  "iterations": 73,
-  "func_count": 360,
+  "elbo": -14.32545515130094,
+  "elbo_sd": 0.044273898025824585,
+  "best_iter": 73,
+  "iterations": 74,
+  "func_count": 370,
   "final_K": 50,
-  "final_N": 360,
+  "final_N": 370,
   "min_Ns_gp": 0,
-  "n_warps": 4,
+  "n_warps": 3,
   "success_flag": true,
   "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
-  "wall_s": 285.4103334999527,
-  "target_eval_s": 0.08009743690490723,
-  "elbo_err": 0.6326571869974078,
-  "gskl": 0.3694513118295344,
-  "mmtv": 0.08314385911003938,
-  "rmse": 0.07933304578614567,
+  "wall_s": 264.0892215999993,
+  "target_eval_s": 0.0939638614654541,
+  "elbo_err": 0.6135325778276446,
+  "gskl": 0.37492350486964643,
+  "mmtv": 0.081471463937164,
+  "rmse": 0.08159701422758966,
   "moment_method": "affine",
-  "peak_rss_mb": 401.78515625
+  "peak_rss_mb": 299.0390625
  },
  "meta": {
   "git": {
-   "sha": "18a236c",
+   "sha": "68a43db",
    "dirty": false
   },
   "python": "3.12.6",
   "numpy": "2.5.2",
   "scipy": "1.18.1",
-  "pyvbmc": "1.0.5.dev28+gdcfeba694",
+  "pyvbmc": "1.0.5.dev159+g4bff1a5b9",
   "gpyreg": "1.1.0",
   "cma": "4.4.4",
   "threads": {
@@ -233,8 +239,8 @@
    "OPENBLAS_NUM_THREADS": "1",
    "MKL_NUM_THREADS": "1"
   },
-  "started": "2026-09-06 00:58:01",
-  "finished": "2026-09-06 01:02:47",
-  "pid": 29876
+  "started": "2026-09-11 02:35:26",
+  "finished": "2026-09-11 02:39:51",
+  "pid": 14096
  }
 }

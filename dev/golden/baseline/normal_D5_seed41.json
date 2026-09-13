@@ -8,7 +8,9 @@
   "display": "off",
   "plot": false,
   "print_iteration_header": false,
-  "vectorized_target": false
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
  },
  "effective_options": {
   "max_fun_evals": 350,
@@ -17,7 +19,7 @@
   "tol_stable_excpt_frac": 0.2,
   "specify_target_noise": false,
   "search_acq_fcn": [
-   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x00000298ED26D3D0>"
+   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x000002C5DEF03E60>"
   ],
   "active_sample_gp_update": false,
   "active_sample_vp_update": false,
@@ -26,7 +28,9 @@
   "display": "off",
   "plot": false,
   "print_iteration_header": false,
-  "vectorized_target": false
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
  },
  "timer_keys": [
   "active_sampling",
@@ -99,8 +103,8 @@
  ],
  "notes": "independent Gaussian, SDs 1..D; legacy box -+2D",
  "final": {
-  "elbo": 0.00178008948659647,
-  "elbo_sd": 0.00046093850687400337,
+  "elbo": -0.0033335540487171578,
+  "elbo_sd": 0.00030533455638845136,
   "best_iter": 12,
   "iterations": 13,
   "func_count": 70,
@@ -110,18 +114,18 @@
   "n_warps": 1,
   "success_flag": true,
   "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
-  "wall_s": 22.89487919997191,
+  "wall_s": 21.53073920001043,
   "target_eval_s": 0.0,
-  "elbo_err": 0.00178008948659647,
-  "gskl": 4.407750785917486e-05,
-  "mmtv": 0.006485662621664163,
-  "rmse": 0.0023416125145356227,
+  "elbo_err": 0.0033335540487171578,
+  "gskl": 8.457426210961572e-05,
+  "mmtv": 0.007004892275443877,
+  "rmse": 0.003037976516904629,
   "moment_method": "affine",
-  "peak_rss_mb": 403.71484375
+  "peak_rss_mb": 174.1015625
  },
  "meta": {
   "git": {
-   "sha": "7314a6a",
+   "sha": "68a43db",
    "dirty": false
   },
   "python": "3.12.6",
@@ -135,8 +139,8 @@
    "OPENBLAS_NUM_THREADS": "1",
    "MKL_NUM_THREADS": "1"
   },
-  "started": "2026-09-07 02:47:23",
-  "finished": "2026-09-07 02:47:46",
-  "pid": 29812
+  "started": "2026-09-13 03:32:33",
+  "finished": "2026-09-13 03:32:56",
+  "pid": 3092
  }
 }

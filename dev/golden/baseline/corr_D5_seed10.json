@@ -7,7 +7,10 @@
  "requested_options": {
   "display": "off",
   "plot": false,
-  "print_iteration_header": false
+  "print_iteration_header": false,
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
  },
  "effective_options": {
   "max_fun_evals": 350,
@@ -16,7 +19,7 @@
   "tol_stable_excpt_frac": 0.2,
   "specify_target_noise": false,
   "search_acq_fcn": [
-   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x000001B7811C5F40>"
+   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x000001F44CE94080>"
   ],
   "active_sample_gp_update": false,
   "active_sample_vp_update": false,
@@ -24,7 +27,10 @@
   "do_final_boost": true,
   "display": "off",
   "plot": false,
-  "print_iteration_header": false
+  "print_iteration_header": false,
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
  },
  "timer_keys": [
   "active_sampling",
@@ -97,35 +103,35 @@
  ],
  "notes": "rotated Gaussian, SDs linspace(0.2, 1); legacy box -+2.5",
  "final": {
-  "elbo": -0.0678607517952381,
-  "elbo_sd": 0.001102164628562515,
-  "best_iter": 20,
-  "iterations": 21,
-  "func_count": 105,
+  "elbo": -0.11451527224767233,
+  "elbo_sd": 0.000608854152336261,
+  "best_iter": 19,
+  "iterations": 20,
+  "func_count": 100,
   "final_K": 50,
-  "final_N": 105,
+  "final_N": 100,
   "min_Ns_gp": 8,
   "n_warps": 1,
   "success_flag": true,
   "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
-  "wall_s": 30.045691500010435,
-  "target_eval_s": 0.004627227783203125,
-  "elbo_err": 0.0678607517952381,
-  "gskl": 0.012537872805056027,
-  "mmtv": 0.018745665302606806,
-  "rmse": 0.014737714367326465,
+  "wall_s": 28.108837799998582,
+  "target_eval_s": 0.002002239227294922,
+  "elbo_err": 0.11451527224767233,
+  "gskl": 0.02962241204704119,
+  "mmtv": 0.023466130847172008,
+  "rmse": 0.031226814412781398,
   "moment_method": "affine",
-  "peak_rss_mb": 401.78515625
+  "peak_rss_mb": 183.00390625
  },
  "meta": {
   "git": {
-   "sha": "18a236c",
+   "sha": "68a43db",
    "dirty": false
   },
   "python": "3.12.6",
   "numpy": "2.5.2",
   "scipy": "1.18.1",
-  "pyvbmc": "1.0.5.dev28+gdcfeba694",
+  "pyvbmc": "1.0.5.dev159+g4bff1a5b9",
   "gpyreg": "1.1.0",
   "cma": "4.4.4",
   "threads": {
@@ -133,8 +139,8 @@
    "OPENBLAS_NUM_THREADS": "1",
    "MKL_NUM_THREADS": "1"
   },
-  "started": "2026-09-06 04:12:59",
-  "finished": "2026-09-06 04:13:29",
-  "pid": 29876
+  "started": "2026-09-11 00:46:58",
+  "finished": "2026-09-11 00:47:27",
+  "pid": 35060
  }
 }

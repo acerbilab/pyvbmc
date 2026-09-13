@@ -8,7 +8,9 @@
   "display": "off",
   "plot": false,
   "print_iteration_header": false,
-  "vectorized_target": false
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
  },
  "effective_options": {
   "max_fun_evals": 350,
@@ -17,7 +19,7 @@
   "tol_stable_excpt_frac": 0.2,
   "specify_target_noise": false,
   "search_acq_fcn": [
-   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x00000298ED0C8DA0>"
+   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x00000201670E7D70>"
   ],
   "active_sample_gp_update": false,
   "active_sample_vp_update": false,
@@ -26,7 +28,9 @@
   "display": "off",
   "plot": false,
   "print_iteration_header": false,
-  "vectorized_target": false
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
  },
  "timer_keys": [
   "active_sampling",
@@ -99,8 +103,8 @@
  ],
  "notes": "logistic regression, 50 trials, predictors 1-2 at rho 0.95, predictor 4 rare (6 ones, all successes: its coefficient is identified only by the bound); uniform prior on [-10, 10]^D (2020 style), plausible box -+5; not a paper problem",
  "final": {
-  "elbo": -34.97529008936356,
-  "elbo_sd": 0.027942682178587308,
+  "elbo": -35.04128760411536,
+  "elbo_sd": 0.01564598906495635,
   "best_iter": 25,
   "iterations": 26,
   "func_count": 135,
@@ -110,18 +114,18 @@
   "n_warps": 1,
   "success_flag": true,
   "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
-  "wall_s": 45.26337890001014,
-  "target_eval_s": 0.006994485855102539,
-  "elbo_err": 0.08180008936356131,
-  "gskl": 0.05133295282492156,
-  "mmtv": 0.05289341250772435,
-  "rmse": 0.10447288630654034,
+  "wall_s": 43.798893700004555,
+  "target_eval_s": 0.0,
+  "elbo_err": 0.14779760411536103,
+  "gskl": 0.05982575862008388,
+  "mmtv": 0.048592214164559625,
+  "rmse": 0.099325636168286,
   "moment_method": "mc",
-  "peak_rss_mb": 403.71484375
+  "peak_rss_mb": 214.5703125
  },
  "meta": {
   "git": {
-   "sha": "7314a6a",
+   "sha": "68a43db",
    "dirty": false
   },
   "python": "3.12.6",
@@ -135,8 +139,8 @@
    "OPENBLAS_NUM_THREADS": "1",
    "MKL_NUM_THREADS": "1"
   },
-  "started": "2026-09-07 01:44:08",
-  "finished": "2026-09-07 01:44:54",
-  "pid": 29812
+  "started": "2026-09-12 23:52:49",
+  "finished": "2026-09-12 23:53:34",
+  "pid": 17120
  }
 }
