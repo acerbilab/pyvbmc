@@ -127,4 +127,8 @@ cross-covariances. Its top-level package source files match the validated merge
 (excluding generated version metadata).
 PyVBMC requires gpyreg >=1.2.0 and pins CI to `39536b0`.
 The editable sibling reports 1.2.0 and PyVBMC's installed requirement agrees.
-The final PyVBMC matrix and development-branch integration remain open.
+The [final PyVBMC matrix](https://github.com/acerbilab/pyvbmc/actions/runs/34763665956)
+passed all nine OS/Python cells at `9c7d1b8` with this release pin and floor.
+Independent rollout review found no issues in release provenance, package
+contents, dependency setup or PR ancestry. Development-branch integration
+is tracked by [PR #174](https://github.com/acerbilab/pyvbmc/pull/174).
