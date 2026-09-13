@@ -1,11 +1,31 @@
 # Existing noisy-acquisition efficiency
 
-Created 2026-09-13. Status: guarded-sinh implementation, validation and
-independent review complete on `dev-noisy-viqr-sinh` (numerical revision
-`6734817`), from `83692ac`. Evidence is archived below. The
-[kernel-reuse implementation plan](#kernel-reuse-implementation-plan) is
-approved and in progress. Search and quadrature experiments remain independent
-possibilities in this workstream.
+Created 2026-09-13. Status: guarded-sinh and kernel-reuse implementation,
+validation, independent review and integration into `dev-next` are complete.
+The guarded-sinh numerical revision is `6734817`, from `83692ac`; the
+[kernel-reuse execution record](#kernel-reuse-implementation-plan) records
+its released gpyreg dependency and completed gates. Search and quadrature
+experiments remain independent possibilities in this workstream.
+
+## Pickup point and deferred measurements
+
+The completed computational optimizations require no further campaign or
+release action. Choose the next experiment from adaptive sieve/search,
+integration budgets and multistart L-BFGS-B, or integration of the existing
+VIQR criterion. These possibilities are not ordered by dependency and have
+no approved implementation or new run allocation yet. The completed kernel
+plan's approval does not select one of them.
+
+A controlled estimate of the combined **whole-VBMC runtime speedup** from
+guarded sinh and kernel reuse is deferred. The saved replay campaigns ran
+under different laptop loads; their elapsed times cannot isolate the effect
+of these changes. The validated speedups apply to matched acquisition calls.
+A later runtime comparison should pair repeated before/after runs on the same
+quiet machine and numerical environment, using identical configurations and
+seeds and checking evaluation counts and trajectories. Suitable frozen pairs
+are PyVBMC `83692ac` with gpyreg `a2f8ddc` before both changes and PyVBMC
+`9c7d1b8` with gpyreg `39536b0` after both changes. This measurement is an
+optional follow-up, not a prerequisite for the other experiments.
 
 ## Guarded-sinh execution checklist
 
@@ -57,6 +77,12 @@ early state; they do not estimate complete-run speedup. Exact timings,
 versions, hashes and limitations are in
 [the probe output](../experiments/noisy-acquisition-efficiency/viqr_sum_probe.json).
 
+Standard VIQR reuses prediction kernels through gpyreg 1.2.0, with a
+128 MiB retained-payload cap and ordinary-evaluation fallback. The
+[production report](../results/2026-09-13-viqr-kernel-production.md) records
+the measured 1.205x late-sieve speedup and numerical gates. IMIQR kernel
+reuse remains separate from this completed optimization.
+
 Additional opportunities remain for subsequent steps:
 
 - Optional IMIQR cleanup: it recomputes triangular solves in every acquisition call although
@@ -64,14 +90,6 @@ Additional opportunities remain for subsequent steps:
   requires checking both GP factor representations and the placement of
   the noise scaling, which can change rounding. Keep IMIQR's weighted
   criterion and MCMC stream intact.
-- The base acquisition calls `gp.predict`, then VIQR/IMIQR recompute its
-  training-to-candidate kernel. The installed gpyreg predictor does not
-  expose this intermediate. The
-  [kernel-reuse probe](../results/2026-09-13-viqr-kernel-reuse.md) finds exact
-  captured-state outputs and a 1.205x complete-sieve speedup on the late
-  noisy state, with smaller early gains. A supported gpyreg interface is
-  feasible within the lab's repositories. Production integration remains
-  open, including a policy for the additional temporary matrix memory.
 - Adaptive sieve/search remains a main efficiency experiment. Compare a
   smaller coarse sieve, more accurate re-scoring, and L-BFGS-B from one or
   several spatially separated candidates. Investigate sieve sizing and

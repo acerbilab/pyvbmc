@@ -27,8 +27,12 @@ and subsequent possibilities.
   reports a 1.205x late-sieve speedup and 18/18 exact stored replays against
   the guarded-sinh baseline. The optimization is integrated into `dev-next`;
   the [execution plan](plans/noisy-acquisition-efficiency.md#kernel-reuse-implementation-plan)
-  records the completed dependency rollout. Adaptive sieve size, integration budgets and multistart L-BFGS-B remain main search
-  experiments. Another possibility is more efficient integration of the
+  records the completed dependency rollout. Adaptive sieve size, integration
+  budgets and multistart L-BFGS-B remain main search experiments. A controlled
+  whole-VBMC timing comparison for the combined guarded-sinh and kernel-reuse
+  changes is deferred; replay wall times do not establish that speedup. See
+  the [pickup point](plans/noisy-acquisition-efficiency.md#pickup-point-and-deferred-measurements).
+  Another possibility is more efficient integration of the
   same VIQR criterion (shared-weight Bayesian quadrature,
   compared with mixture-stratified randomized quasi-Monte Carlo).
   IMIQR cache reuse is optional cleanup; it does not accelerate VIQR.
@@ -175,3 +179,14 @@ baseline; the active baseline contains the promoted candidates. No completed
 campaign or replay needs reattachment. The controller's final
 `assessment_ready_for_review` state precedes the acceptance and publication
 recorded in the promotion record.
+
+The completed VIQR campaigns additionally retain `viqr_sinh_20260913/` and
+`viqr_kernel_20260913/` under `dev/scripts/runs/`. They hold the raw replay
+traces, captured GP/VP states, before-source worktrees, oracle dumps and
+per-run logs. Their consolidated results, source/input hashes and validation
+records are tracked under `dev/experiments/noisy-acquisition-efficiency/`.
+For raw revalidation on another machine, copy both directories and recreate
+worktrees at the revisions in the
+[efficiency plan](plans/noisy-acquisition-efficiency.md); a fresh clone does
+not contain these ignored artifacts. They are not needed to read the results
+or choose the next experiment.
