@@ -124,8 +124,10 @@ equivalences.
   acquisition interval. Record the live acquisition outputs for validation.
   Rebuild the same snapshots under frozen before/after checkouts using
   `build_state` and `prepare_gp_for_acq`, without redrawing importance points.
-  Verify the before-code reconstruction against the captured live outputs;
-  resolve any missing factor/state information before accepting timings.
+  Verify the after-code reconstruction against the captured candidate-run
+  outputs. Then compare before and after on that same reconstructed state,
+  classifying the expected rounding differences. Resolve any missing
+  factor/state information before accepting timings.
 - Compare before and after on identical states, candidates and importance
   samples in alternating timing order, single BLAS thread and one heavy
   process. Require a repeatable public-call gain beyond timing variation
