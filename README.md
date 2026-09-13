@@ -17,6 +17,17 @@ PyVBMC is a Python implementation of the Variational Bayesian Monte Carlo (VBMC)
 
 Extensive benchmarks on both artificial test problems and a large number of real model-fitting problems from computational and cognitive neuroscience show that VBMC generally — and often vastly — outperforms alternative methods for sample-efficient Bayesian inference [[2,3](#references-and-citation)].
 
+### What's new in PyVBMC 1.5
+
+PyVBMC 1.5 is faster and more efficient, integrates better with the modern scientific computing ecosystem and our other tools, and provides more guidance for using it effectively. Highlights include:
+
+- **Faster inference and lower memory use**, with numerical improvements and more compact run histories. Optional [performance calibration](#optional-performance-calibration) tunes PyVBMC for your machine.
+- **Stacking Variational Bayesian Monte Carlo (S-VBMC)** is included in PyVBMC to combine posteriors from independent runs ([Silvestrin et al., 2025](https://arxiv.org/abs/2504.05004); [usage below](#combine-runs-and-use-the-posterior-downstream)).
+- **Explicit random seed control** for reproducing individual runs; see the [reproducibility guide](https://acerbilab.github.io/pyvbmc/quickstart.html#reproducible-runs).
+- **Torch and JAX model adapters**, with optional batch evaluation of the initial points; see the [model integration guide](https://acerbilab.github.io/pyvbmc/quickstart.html#bring-a-torch-or-jax-model-into-pyvbmc).
+- **Posterior exports to Torch and ArviZ** for further analysis; see the [export guide](https://acerbilab.github.io/pyvbmc/quickstart.html#use-a-fitted-posterior-downstream).
+- **More practical guidance**, with tips during runs, a [PyVBMC FAQ](https://acerbilab.github.io/pyvbmc/faq.html), and a [coding-agent skill](skills/pyvbmc/SKILL.md) that points agents to the relevant documentation.
+
 ### Documentation
 
 The full documentation is available at: https://acerbilab.github.io/pyvbmc/
@@ -86,6 +97,21 @@ dependency groups.
 
 If you wish to install directly from latest source code, please see the [instructions for developers and contributors](https://acerbilab.github.io/pyvbmc/development.html#installation-instructions-for-developers).
 
+### Optional performance calibration
+
+Optionally, we recommend running calibration once to tune performance for
+your machine (memory, processor, etc.):
+
+```python
+from pyvbmc import calibrate
+calibrate()
+```
+
+Run this when your machine is otherwise idle. It takes tens of seconds and
+can make PyVBMC run faster. The settings are saved and reused automatically
+by future runs with a compatible numerical environment. See the
+[calibration guide](https://acerbilab.github.io/pyvbmc/api/functions/calibrate.html)
+for details.
 
 ## Quick start
 A typical PyVBMC workflow follows four steps:
@@ -135,8 +161,8 @@ simulator's seed before the run. See the [reproducibility guide](https://acerbil
 Stacking Variational Bayesian Monte Carlo (S-VBMC; [Silvestrin et al., 2025](https://arxiv.org/abs/2504.05004)) is a technique to combine the
 posteriors of several completed PyVBMC runs on the same model and data into a stacked
 posterior. Stacking the posteriors almost always provides a better approximation
-of the true posterior (sometimes much better), and does not require further model
-evaluations. See [Example 7](examples/pyvbmc_example_7_stacking.ipynb) and the
+of the true posterior (sometimes much better), and it works as a post-processing step that
+does not require further model evaluations. See [Example 7](examples/pyvbmc_example_7_stacking.ipynb) and the
 [`SVBMC` documentation](https://acerbilab.github.io/pyvbmc/api/classes/svbmc.html).
 
 A fitted `VariationalPosterior` can also be exported as a Torch distribution

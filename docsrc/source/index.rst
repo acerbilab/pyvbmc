@@ -19,6 +19,30 @@ PyVBMC simultaneously computes:
 - an approximation — technically, an approximate lower bound — of the log model evidence (also known as log marginal likelihood), a metric used for Bayesian model selection.
 
 
+What's new in PyVBMC 1.5
+------------------------
+
+PyVBMC 1.5 is faster and more efficient, integrates better with the modern
+scientific computing ecosystem and our other tools, and provides more guidance
+for using it effectively. Highlights include:
+
+- **Faster inference and lower memory use**, with numerical improvements and more
+  compact run histories. Optional :doc:`performance calibration <api/functions/calibrate>`
+  tunes PyVBMC for your machine.
+- **Stacking Variational Bayesian Monte Carlo (S-VBMC)** is included in PyVBMC
+  to combine posteriors from independent runs
+  (`Silvestrin et al., 2025 <https://arxiv.org/abs/2504.05004>`__;
+  :doc:`usage <api/classes/svbmc>`).
+- **Explicit random seed control** for reproducing individual runs;
+  see :ref:`Reproducible runs`.
+- **Torch and JAX model adapters**, with optional batch evaluation of the
+  initial points; see :ref:`Bring a torch or JAX model into PyVBMC`.
+- **Posterior exports to Torch and ArviZ** for further analysis;
+  see :ref:`Use a fitted posterior downstream`.
+- **More practical guidance**, with tips during runs, a :doc:`PyVBMC FAQ <faq>`,
+  and a :mainbranch:`coding-agent skill <skills/pyvbmc/SKILL.md>` that points
+  agents to the relevant documentation.
+
 Example run
 -----------
 
@@ -57,7 +81,9 @@ How-to
 Start with the :doc:`quickstart` and :doc:`examples`, and consult the
 :doc:`FAQ <faq>` for practical advice on setting up and validating a run.
 The quickstart also covers reproducibility, vectorized targets and exporting
-a fitted posterior to Torch or ArviZ. To combine the posteriors of several
+a fitted posterior to Torch or ArviZ. Optional
+:doc:`performance calibration <api/functions/calibrate>` tunes PyVBMC for
+your machine. To combine the posteriors of several
 runs on the same model and data without further model evaluations, see
 :doc:`S-VBMC <api/classes/svbmc>` (`Silvestrin et al., 2025 <https://arxiv.org/abs/2504.05004>`__) and
 :ref:`PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)`.
