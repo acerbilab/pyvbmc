@@ -18,9 +18,12 @@ campaign. No new campaign is in flight.
   [investigation](2026-09-08-noisy-acquisitions.md) and
   [search analysis](results/2026-09-09-acquisition-search-analysis.md).
   Historical replacement-criterion experiments do not expand 1.5 scope.
-  The [efficiency plan](plans/noisy-acquisition-efficiency.md) proposes a
-  guarded standard-VIQR sum optimization, with a bounded probe and separate
-  follow-ups for IMIQR cache reuse and GP-kernel reuse.
+  The [efficiency plan](plans/noisy-acquisition-efficiency.md) tracks the
+  approved guarded standard-VIQR sum optimization and its validation.
+  Subsequent possibilities include GP-kernel reuse and more efficient
+  integration of the same VIQR criterion (shared-weight Bayesian quadrature,
+  compared with mixture-stratified randomized quasi-Monte Carlo).
+  IMIQR cache reuse is optional cleanup; it does not accelerate VIQR.
   Keep standard VIQR (`loss="iqr"`). The `iqr_reduction` formulation may
   be evaluated within search-efficiency work: it preserves the underlying
   criterion for fixed samples and weights, but can change numerical search

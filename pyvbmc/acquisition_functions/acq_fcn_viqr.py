@@ -10,6 +10,52 @@ from pyvbmc.variational_posterior import VariationalPosterior
 from .abstract_acq_fcn import AbstractAcqFcn
 
 
+def _log_viqr_sum(a):
+    r"""Compute ``log(2 * sum(sinh(a), axis=1))`` safely in float64.
+
+    The direct expression is faster for ordinary VIQR arguments and avoids
+    cancellation in ``1 - exp(-2a)`` for extremely small positive values.
+    Its upper bound leaves a factor-of-two margin below the largest float64
+    value after accounting for every term in the sum. Rows outside the safe
+    finite, nonnegative range retain the original log-space calculation.
+    """
+    a = np.asarray(a, dtype=np.float64)
+    n_terms = a.shape[1]
+    # For a >= 0, 2 * n_terms * sinh(a) <= n_terms * exp(a). Subtracting
+    # log(2) leaves a factor-of-two reserve for that complete quantity.
+    direct_limit = np.log(np.finfo(np.float64).max) - np.log(2 * n_terms)
+    row_min = np.min(a, axis=1)
+    row_max = np.max(a, axis=1)
+    safe = (
+        np.isfinite(row_min)
+        & np.isfinite(row_max)
+        & (row_min >= 0.0)
+        & (row_max <= direct_limit)
+    )
+
+    def direct(values):
+        with np.errstate(divide="ignore"):
+            return np.log(np.sum(np.sinh(values), axis=1)) + np.log(2.0)
+
+    if np.all(safe):
+        return direct(a)
+
+    result = np.empty(a.shape[0], dtype=np.float64)
+    if np.any(safe):
+        result[safe] = direct(a[safe])
+
+    # Original log-sinh followed by log-sum-exp. Besides avoiding overflow,
+    # this preserves the former handling of unsupported arguments.
+    fallback = a[~safe]
+    zz = fallback + np.log1p(-np.exp(-2 * fallback))
+    ln_max = np.amax(zz, axis=1)
+    ln_max[ln_max == -np.inf] = 0.0  # Avoid -inf + inf
+    result[~safe] = ln_max + np.log(
+        np.sum(np.exp(zz - ln_max.reshape(-1, 1)), axis=1)
+    )
+    return result
+
+
 class AcqFcnVIQR(AbstractAcqFcn):
     r"""
     Variational Interquantile Range (VIQR) acquisition function.
@@ -207,15 +253,8 @@ class AcqFcnVIQR(AbstractAcqFcn):
                 )
             )
 
-            # zz = ln(weights * sinh(u * s_pred)) + C
-            # (VIQR uses simple Monte Carlo, so weights are constant).
-            zz = self.u * s_pred + np.log1p(-np.exp(-2 * self.u * s_pred))
-            # logsumexp
-            ln_max = np.amax(zz, axis=1)
-            ln_max[ln_max == -np.inf] = 0.0  # Avoid -inf + inf
-            acq[:, s] = ln_max + np.log(
-                np.sum(np.exp(zz - ln_max.reshape(-1, 1)), axis=1)
-            )
+            # VIQR uses simple Monte Carlo, so the weights are constant.
+            acq[:, s] = _log_viqr_sum(self.u * s_pred)
 
         if Ns_gp > 1:
             if loss != "iqr":

@@ -1,8 +1,18 @@
 # Existing noisy-acquisition efficiency
 
-Created 2026-09-13. Status: exploration complete; implementation proposed.
-The user authorized investigating this workstream. Production changes and
-the replay allocation below are proposed for review.
+Created 2026-09-13. Status: approved; implementation in progress on
+`dev-noisy-viqr-sinh`, from `83692ac`. The user approved starting with the
+guarded sinh optimization and its proposed validation. Quadrature remains
+a possible subsequent experiment in this workstream.
+
+## Execution checklist
+
+- [x] Freeze before-change source and oracle outputs; implement guarded sum
+  and focused tests.
+- [x] Run numerical gates and classify changed outputs.
+- [ ] Capture matched states during the 18-run replay and assess results.
+- [ ] Measure complete acquisition calls against the frozen implementation.
+- [ ] Complete full tests, CI and independent review; record outcome.
 
 ## Goal and scope
 
@@ -42,9 +52,9 @@ early state; they do not estimate complete-run speedup. Exact timings,
 versions, hashes and limitations are in
 [the probe output](../experiments/noisy-acquisition-efficiency/viqr_sum_probe.json).
 
-Two additional opportunities remain for subsequent steps:
+Additional opportunities remain for subsequent steps:
 
-- IMIQR recomputes triangular solves in every acquisition call although
+- Optional IMIQR cleanup: it recomputes triangular solves in every acquisition call although
   `active_importance_sampling.py` already prepares `C_tmp`. Reusing it
   requires checking both GP factor representations and the placement of
   the noise scaling, which can change rounding. Keep IMIQR's weighted
@@ -53,6 +63,20 @@ Two additional opportunities remain for subsequent steps:
   training-to-candidate kernel. The installed gpyreg predictor does not
   expose this intermediate. A supported reuse interface would cross the
   package boundary; evaluate its benefit and design separately.
+- More efficient integration of the existing VIQR criterion, including
+  shared-weight Bayesian quadrature (PI, 2026-09-13). For each fixed VP and
+  quadrature kernel, prepare nodes and weights once and reuse them across
+  candidate locations. Gaussian-kernel means under the Gaussian-mixture VP
+  are analytic, but the nonlinear VIQR integrand itself remains numerical.
+  Compare with ordinary VP sampling and mixture-stratified randomized
+  quasi-Monte Carlo on matched saved states, measuring total preparation
+  and evaluation costs and candidate rankings under a larger independent
+  integration set. Investigate quadrature-kernel choice, negative weights,
+  positivity and difficult integrands before choosing an implementation.
+  This is a possible integration-efficiency experiment within this work,
+  preserving the VIQR criterion; it is not part of the guarded-sinh change.
+  See the [VIQR definition](../../papers/acerbi2020variational_main.md#33-integrated-median--variational-interquantile-range-imiqr--viqr)
+  and [Gaussian integration identities](../../papers/acerbi2019exploration_appendix.md#appendix-a-expected-log-joint-via-bayesian-quadrature).
 
 ## Phase 1: implement the VIQR sum optimization
 
@@ -133,7 +157,7 @@ equivalences.
   process. Require a repeatable public-call gain beyond timing variation
   and no material small-batch slowdown. Record ranges, allocation overhead
   and fallback frequency; do not extrapolate the D2 sum-only ratio to runs.
-- Proposed bounded replay allocation: seeds 0-2 for
+- Approved bounded replay allocation: seeds 0-2 for
   `rosenbrock_D2_noise1`, `rosenbrock_D2_noise3`, `logreg_D5_noise3`,
   `student_D8_noise3`, `multisensory_s1_D6_noise1.3`, and
   `timing_D5_noise2.2` (18 candidate runs). Use
@@ -181,5 +205,27 @@ Independent Sol doublecheck found no must-fix mathematical or scope defect.
 The plan incorporates its requested snapshot-capture procedure and explicit
 replay acceptance criteria. The bounded probe, provenance hashes, relative
 links and repository formatting hooks were checked during exploration.
-Implementation and the proposed 18-run allocation await user approval;
-no campaign has been launched.
+Implementation and the 18-run allocation were subsequently approved by the
+user. Execution status is tracked above.
+
+## Validation record
+
+- Before-change checkout: `dev/scripts/runs/viqr_sinh_20260913/before`,
+  detached at `83692ac`; oracle dump in the adjacent `oracles_before/`.
+- Acquisition and importance-sampling tests: 100 passed. Exact comparison
+  against the dump changed only `acq_AcqFcnVIQR` on the noisy Rosenbrock
+  fixture, by at most 8.88e-16. All other outputs, including the seeded
+  active-sampling step and GP fits, matched exactly (10/11 fixture groups
+  completely exact). The normal oracle suite passed: 143 passed, 15 skipped.
+- The developer capture preflight rebuilt an acquisition output exactly
+  after the live VP had been deliberately mutated, confirming snapshot
+  isolation. The runner retains live GP factors and temporary data as well
+  as the normal snapshot fields. Captured sets have per-file hashes;
+  timing uses only checkpoints declared by the current status record.
+- Independent Sol code review found no issues in the guarded calculation,
+  its integration or focused tests. A complete-call preflight on the early
+  noisy Rosenbrock state measured a 1.34x sieve speedup; single-point and
+  six-point calls were 1-3% slower in that measurement. Broader matched-state
+  timing remains required. Full-suite execution initially encountered an
+  inaccessible Windows temporary directory; a rerun uses a dedicated
+  workspace test directory.
