@@ -9,6 +9,9 @@ from pyvbmc.variational_posterior import VariationalPosterior
 
 from .abstract_acq_fcn import AbstractAcqFcn
 
+_LOG_2 = np.log(2.0)
+_LOG_FLOAT_MAX = np.log(np.finfo(np.float64).max)
+
 
 def _log_viqr_sum(a):
     r"""Compute ``log(2 * sum(sinh(a), axis=1))`` safely in float64.
@@ -23,7 +26,16 @@ def _log_viqr_sum(a):
     n_terms = a.shape[1]
     # For a >= 0, 2 * n_terms * sinh(a) <= n_terms * exp(a). Subtracting
     # log(2) leaves a factor-of-two reserve for that complete quantity.
-    direct_limit = np.log(np.finfo(np.float64).max) - np.log(2 * n_terms)
+    direct_limit = _LOG_FLOAT_MAX - np.log(2 * n_terms)
+
+    def direct(values):
+        with np.errstate(divide="ignore"):
+            return np.log(np.sum(np.sinh(values), axis=1)) + _LOG_2
+
+    # Scalar extrema avoid per-row allocations when every row is safe.
+    if a.size and np.min(a) >= 0.0 and np.max(a) <= direct_limit:
+        return direct(a)
+
     row_min = np.min(a, axis=1)
     row_max = np.max(a, axis=1)
     safe = (
@@ -32,10 +44,6 @@ def _log_viqr_sum(a):
         & (row_min >= 0.0)
         & (row_max <= direct_limit)
     )
-
-    def direct(values):
-        with np.errstate(divide="ignore"):
-            return np.log(np.sum(np.sinh(values), axis=1)) + np.log(2.0)
 
     if np.all(safe):
         return direct(a)
