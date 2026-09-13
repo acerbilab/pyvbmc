@@ -1,9 +1,10 @@
 # S-VBMC preparation and entropy speedups
 
-Created 2026-09-13. Status: implemented, reviewed and pushed on
+Created 2026-09-13. Status: complete. Implemented, reviewed and measured on
 `dev-svbmc-speedups` (worktree `../pyvbmc-stage3`, branched from `dev-next`
-at `83692ac`; code `985e670`, records `f40b4c4`); CI on the branch and the
-merge into `dev-next` remain.
+at `83692ac`; code `985e670`, records `f40b4c4`); branch CI green (run
+34764026039, the Torch cell); `dev-next` merged in at `3d159b0` without
+conflicts and the branch merged into `dev-next` on 2026-09-13.
 
 This plan owns the implementation contract, checks, measurement and worklog
 of the performance follow-up decided in
@@ -104,10 +105,11 @@ claim. Evidence goes to `dev/experiments/svbmc_speedups/` and the report to
 - [x] 5. Records: `FIXTURES.md` tests table, `dev/README.md`, `TODO.md`,
   the pointer in `svbmc-integration.md`, the roadmap and the 1.5
   overview.
-- [~] 6. Independent doublecheck completed 2026-09-13 (three static
+- [x] 6. Independent doublecheck completed 2026-09-13 (three static
   reviews: code and tests, records, benchmark and evidence; findings
-  applied, none blocking). Formatting hooks passed on both commits.
-  Remaining: the CI cell with Torch, merge into `dev-next`.
+  applied, none blocking). Formatting hooks passed on every commit; the
+  Torch CI cell ran the 18 reference cells and 19 equivalence tests
+  (1486 passed, 60 skipped); merged into `dev-next`.
 
 ## Decisions
 
@@ -154,3 +156,7 @@ or reference changes.
   identical outputs again, aggregate 2.06x on a slower machine state;
   both campaigns are kept as evidence. Final S-VBMC suite on the
   finished code: 192 passed in 33.6 s.
+- 2026-09-13: `dev-next` (with the VIQR kernel reuse and the gpyreg 1.2.0
+  floor) merged into the branch at `3d159b0` without conflicts; S-VBMC and
+  oracle suites green on the merged tree with gpyreg 1.2.0 (335 passed,
+  15 platform-bound skips); branch merged into `dev-next`.

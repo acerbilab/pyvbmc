@@ -61,15 +61,17 @@ and subsequent possibilities.
   See the [ELBO optimism note](2026-09-12-svbmc-elbo-optimism.md) and
   completed [Phase 1 plan](plans/svbmc-elbo-reporting.md).
 
-- [ ] **S-VBMC preparation and entropy speedups.** Reuse transforms and
-  density calculations and vectorize entropy computations during stacking.
-  These are implementation optimizations that preserve the method and sampled
-  objective, separate from ELBO debiasing. Validate against the S-VBMC
-  regression references and measure performance on representative workloads.
-  See the [prototype measurements](results/2026-09-09-svbmc-numpy-prototype.md)
-  and [integration decisions](plans/svbmc-integration.md). Implemented on
-  `dev-svbmc-speedups`; the [speedups plan](plans/svbmc-speedups.md)
-  tracks the numerical contract, gates, measurement and merge.
+- [x] **S-VBMC preparation and entropy speedups.** Transforms and density
+  calculations are reused per run and the entropy computations are
+  vectorized during stacking: implementation optimizations that preserve
+  the method and sampled objective, separate from ELBO debiasing. Merged
+  into `dev-next` on 2026-09-13 after the regression references passed
+  unchanged and two paired campaigns measured about 2x on the upstream
+  stacks with identical outputs. The [speedups plan](plans/svbmc-speedups.md)
+  records the contract and gates, the
+  [report](results/2026-09-13-svbmc-speedups.md) the measurement; the
+  [prototype measurements](results/2026-09-09-svbmc-numpy-prototype.md)
+  motivated the change.
 
 - [ ] **S-VBMC benchmark campaign against the original implementation.**
   After the S-VBMC changes included in 1.5 are settled, assess their combined
