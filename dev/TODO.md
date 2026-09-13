@@ -14,10 +14,13 @@ pairs. All 990 archives validate, the 92-test even/odd check has no flags,
 and the five default replays match all non-timer NPZ arrays, semantic final
 results and initial designs. The previous references remain preserved.
 
-The noisy-acquisition options can be assessed against this extended
-reference on PI instruction. The frozen treatment `68a43db` defines its
-synthetic-target numerics; if a noisy option becomes a default, regenerate
-the affected noisy configurations from that code.
+The remaining numerical work for 1.5 is efficiency improvements to existing
+noisy acquisitions and evaluation/improvement of S-VBMC ELBO debiasing.
+Designing new acquisition functions or criteria is outside the 1.5 scope.
+Noisy-acquisition work covers the sieve/search, importance sampling and
+the cost of evaluating existing criteria and updating their GPs. Assess
+changes against the promoted reference; if a change alters default
+trajectories, regenerate the affected reference configurations after acceptance.
 
 Recommended pickup: read the [noisy-acquisition investigation](2026-09-08-noisy-acquisitions.md)
 and prepare a scoped implementation and evaluation plan. Separate the
@@ -29,14 +32,16 @@ and any new campaign await PI instruction; no new work has been launched.
 
 S-VBMC is integrated as `pyvbmc.svbmc` (merged into `dev-next` at
 `0b5af29` on 2026-09-11); the [integration plan](plans/svbmc-integration.md)
-records the decisions, the worklog and the verification. Two items remain
-from it, neither to be started now: the forwarding release of the
-standalone `svbmc` package (depending on `pyvbmc[torch]>=1.5`, forwarding
-the class and helpers, mapping `testing=True` to a seed with a deprecation
-warning) once PyVBMC 1.5 is on PyPI, and the deferred preparation and
-entropy speedups measured in the
-[NumPy prototype](results/2026-09-09-svbmc-numpy-prototype.md), gated by the
-regression references in `pyvbmc/testing/svbmc/`.
+records the decisions, the worklog and the verification. The forwarding
+release of the standalone `svbmc` package follows PyVBMC 1.5 on PyPI:
+it depends on `pyvbmc[torch]>=1.5` and forwards the old imports to the
+integrated class and helpers, with compatibility handling for `testing=True`.
+Separately, the preparation and entropy speedups measured in the
+[NumPy prototype](results/2026-09-09-svbmc-numpy-prototype.md) were deferred
+from the integration task. Their release placement is not settled; they
+require a separate decision and validation against the regression references
+in `pyvbmc/testing/svbmc/`. These performance changes are distinct from
+the ELBO-debiasing work.
 The [S-VBMC ELBO reporting work](plans/svbmc-elbo-reporting.md) (Phase 1)
 is complete and merged into `dev-next`; its regenerated regression
 references are the gate for the deferred speedups. Phase 2, evaluating
@@ -88,9 +93,9 @@ decided at the documentation review.
   the VIQR sieve call and the in-loop GP refits are ready for a separate
   assessment on the extended noisy benchmark against the promoted reference; see
   the [noisy-target acquisitions note](2026-09-08-noisy-acquisitions.md).
-  The VIQR loss variants and the EIG acquisitions on that branch are
-  options with no default changed; keeping any of them needs the
-  hand-written API page AGENTS.md requires for a public class.
+  Existing experimental VIQR loss variants and EIG options need a release
+  disposition (retain with documentation or remove). That cleanup does not
+  authorize further acquisition-function design for 1.5.
 
 ## Release boundary and working rules
 

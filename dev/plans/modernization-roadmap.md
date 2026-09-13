@@ -23,6 +23,16 @@ independent review and the validated `reference_990_20260913`, which retains
 records execution. Future candidate checks may use smaller allocations;
 reference size does not prescribe their run count.
 
+The remaining numerical work for 1.5 is improving the efficiency of existing
+noisy acquisitions (sieve/search, importance sampling, criterion evaluation
+and GP-update costs) and checking/improving S-VBMC's reported ELBO debiasing.
+Designing new acquisition functions or criteria is outside scope. Existing
+experimental acquisition options require a retain/document/remove decision;
+their presence does not expand the release's method-development scope.
+S-VBMC preparation and entropy optimizations remain a separate performance
+task deferred from integration, with release placement undecided. The
+standalone `svbmc` compatibility release follows PyVBMC 1.5 on PyPI.
+
 - [x] **Stage 0 — test oracle** (devlog §10)
   - [x] finite-difference checks: `entmc`, `entlb` (pre-existing),
     `_gp_log_joint`, `_neg_elcbo`, `_vp_bound_loss`, `_soft_bound_loss`,
