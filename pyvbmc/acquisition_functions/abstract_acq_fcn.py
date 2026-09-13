@@ -74,10 +74,9 @@ class AbstractAcqFcn(ABC):
             Xs, vp.parameter_transformer, optim_state.get("integer_vars")
         )
 
-        # Compute GP posterior predictive mean and variance
-
-        # GP mean and variance for each hyperparameter sample
-        f_mu, f_s2 = gp.predict(x_star=Xs, separate_samples=True)
+        # Compute GP posterior predictive mean and variance, optionally with
+        # call-local information used by the acquisition implementation.
+        f_mu, f_s2, context = self._predict_with_context(Xs, gp)
 
         # Compute total variance
         Ns = f_mu.shape[1]
@@ -97,18 +96,24 @@ class AbstractAcqFcn(ABC):
         f_bar = np.ravel(f_bar)
         var_tot = np.ravel(var_f + var_bar)  # Total variance
 
-        # Compute acquisition function
-        acq = self._compute_acquisition_function(
-            Xs,
-            vp,
-            gp,
-            function_logger,
-            optim_state,
-            f_mu,
-            f_s2,
-            f_bar,
-            var_tot,
-        )
+        # Compute the acquisition function. The context is deliberately
+        # local to this call; in particular, it is not retained on any of
+        # the participating objects when evaluation succeeds or raises.
+        try:
+            acq = self._compute_acquisition_function_with_context(
+                Xs,
+                vp,
+                gp,
+                function_logger,
+                optim_state,
+                f_mu,
+                f_s2,
+                f_bar,
+                var_tot,
+                context,
+            )
+        finally:
+            context = None
 
         # Normalize documented vector outputs before applying pointwise masks.
         acq = np.asarray(acq)
@@ -169,6 +174,58 @@ class AbstractAcqFcn(ABC):
         acq[idx_bounds] = np.inf
 
         return acq
+
+    def _predict_with_context(self, Xs: np.ndarray, gp: gpr.GP):
+        """Predict at candidates and optionally return call-local context.
+
+        Subclasses may override this hook to request information produced
+        during GP prediction for use in acquisition evaluation. The default
+        preserves the ordinary prediction call and supplies no context.
+
+        Returns
+        -------
+        f_mu, f_s2 : np.ndarray
+            Per-hyperparameter-sample GP predictive means and variances.
+        context : object or None
+            Information passed to
+            :meth:`_compute_acquisition_function_with_context` for this call
+            only.
+        """
+        f_mu, f_s2 = gp.predict(x_star=Xs, separate_samples=True)
+        return f_mu, f_s2, None
+
+    def _compute_acquisition_function_with_context(
+        self,
+        Xs: np.ndarray,
+        vp: VariationalPosterior,
+        gp: gpr.GP,
+        function_logger: FunctionLogger,
+        optim_state: dict,
+        f_mu: np.ndarray,
+        f_s2: np.ndarray,
+        f_bar: np.ndarray,
+        var_tot: np.ndarray,
+        context,
+    ):
+        """Compute an acquisition with optional call-local prediction data.
+
+        The default delegates to :meth:`_compute_acquisition_function` with
+        its established signature. Existing subclasses therefore require no
+        changes. A subclass that consumes context should override this hook
+        while keeping its original acquisition method available as the
+        context-free implementation.
+        """
+        return self._compute_acquisition_function(
+            Xs,
+            vp,
+            gp,
+            function_logger,
+            optim_state,
+            f_mu,
+            f_s2,
+            f_bar,
+            var_tot,
+        )
 
     @abstractmethod
     def _compute_acquisition_function(

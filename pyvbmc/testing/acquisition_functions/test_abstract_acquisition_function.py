@@ -127,6 +127,68 @@ def test__call__simple(mocker):
     assert acq.shape == (M,)
 
 
+def test_context_hooks_preserve_old_acquisition_signature():
+    """A subclass implementing only the established method receives the
+    ordinary arguments even when its prediction hook supplies context."""
+
+    marker = object()
+
+    class OldSignatureAcq(AbstractAcqFcn):
+        def __init__(self):
+            super().__init__()
+            self.arguments = None
+
+        def _predict_with_context(self, Xs, gp):
+            shape = (Xs.shape[0], 1)
+            return np.zeros(shape), np.ones(shape), marker
+
+        def _compute_acquisition_function(
+            self,
+            Xs,
+            vp,
+            gp,
+            function_logger,
+            optim_state,
+            f_mu,
+            f_s2,
+            f_bar,
+            var_tot,
+        ):
+            self.arguments = (
+                Xs,
+                vp,
+                gp,
+                function_logger,
+                optim_state,
+                f_mu,
+                f_s2,
+                f_bar,
+                var_tot,
+            )
+            return np.arange(Xs.shape[0], dtype=np.float64)
+
+    acq_fcn = OldSignatureAcq()
+    vp = VariationalPosterior(3)
+    gp = create_gp(3)
+    logger = FunctionLogger(lambda x: x, 3, False, 0)
+    optim_state = {
+        "integer_vars": None,
+        "lb_eps_orig": -np.inf,
+        "ub_eps_orig": np.inf,
+    }
+    Xs = np.ones((3, 3))
+
+    actual = acq_fcn(Xs, gp, vp, logger, optim_state)
+
+    np.testing.assert_array_equal(actual, [0.0, 1.0, 2.0])
+    assert len(acq_fcn.arguments) == 9
+    for actual_arg, expected_arg in zip(
+        acq_fcn.arguments[:5], (Xs, vp, gp, logger, optim_state)
+    ):
+        assert actual_arg is expected_arg
+    assert all(argument is not marker for argument in acq_fcn.arguments)
+
+
 def test__call_constraints(mocker):
     """
     Test hard bound checking: discard points too close to bounds
