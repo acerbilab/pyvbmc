@@ -334,8 +334,8 @@ prototype measurements.
 
 - [x] K1: freeze before sources/oracles; implement and verify gpyreg API.
 - [x] K2: implement bounded VIQR reuse and compatibility checks.
-- [~] K3: numerical/performance gates, 18-run replay, full suites and CI.
-- [ ] K4: release validated gpyreg, update dependency/pin, integrate and archive.
+- [x] K3: numerical/performance gates, 18-run replay, full suites and CI.
+- [~] K4: release validated gpyreg, update dependency/pin, integrate and archive.
 - [ ] Final independent doublecheck and closeout.
 
 Execution baseline: PyVBMC `15a14cc`, feature branch
@@ -356,9 +356,14 @@ implementation defect. Production measurements pass: all 96 comparisons are
 exact; the late sieve is 1.205x faster; no control or fallback exceeds the 5%
 slowdown threshold. Full details and raw measurements are in the
 [production report](../results/2026-09-13-viqr-kernel-production.md).
-Gpyreg's nine-cell candidate CI passed. The full local PyVBMC suite passed
-(1277 tests, 39 skips, 2 successful reruns); its candidate matrix is running.
-The bounded replay and release rollout remain open.
+Both nine-cell candidate CI matrices passed. The full local PyVBMC suite
+passed (1277 tests, 39 skips, 2 successful reruns). The bounded 18-run replay
+passed in 45.9 minutes from `16dcc3f` (documentation successor of `9e8d2f2`)
+and gpyreg `355d754`: all 18 stored trajectories and final results are exact,
+all initial designs match, and no runs are flagged. Before/after source and
+input hashes match. Tracker edits during replay affect documentation only.
+The release rollout remains open. The draft integration is
+[PyVBMC PR #174](https://github.com/acerbilab/pyvbmc/pull/174), targeting `dev-next`.
 
 ### Objective and boundaries
 

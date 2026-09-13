@@ -4,7 +4,7 @@ The production implementation reuses gpyreg's training-to-candidate kernel
 matrices within a standard VIQR call. The captured late noisy sieve is
 1.205x faster, with exact acquisition outputs on this platform. The retained
 matrix payload is capped at 128 MiB; larger calls use ordinary evaluation.
-Replay and release validation are in progress in the
+The 18-run replay is exact; release validation is tracked in the
 [execution plan](../plans/noisy-acquisition-efficiency.md#kernel-reuse-implementation-plan).
 
 ## Sources and method
@@ -82,8 +82,27 @@ Local checks completed before replay:
 - Independent static reviews of the API, PyVBMC integration and comparison
   harness found no implementation defect. The missing-factor test gap was fixed.
 
-The [gpyreg candidate matrix](https://github.com/acerbilab/gpyreg/actions/runs/34759637059)
-passed all nine OS/Python cells. The
-[PyVBMC candidate matrix](https://github.com/acerbilab/pyvbmc/actions/runs/34759664051),
-bounded 18-run replay and release-backed dependency rollout remain required
-before integration. The promoted golden population remains the accuracy reference.
+Both the [gpyreg candidate matrix](https://github.com/acerbilab/gpyreg/actions/runs/34759637059)
+and [PyVBMC candidate matrix](https://github.com/acerbilab/pyvbmc/actions/runs/34759664051)
+passed all nine OS/Python cells. Gpyreg passed all 200 tests in every cell.
+
+## Bounded replay
+
+The six noisy configurations in the plan, seeds 0-2, completed in 45.9
+minutes with 18 successful finite results and zero flags. Every stored
+non-timer array and semantic final field equals the immediate guarded-sinh
+baseline exactly; all initial designs match. These historical traces omit
+the returned posterior's transformer, so equality of that omitted state is
+not certifiable. The promoted golden population remains the accuracy reference.
+
+Replay used PyVBMC `16dcc3f`, a documentation successor of the measured
+`9e8d2f2`, with gpyreg `355d754`. The wrapper required the measured production
+source hashes before launch; package, runner, target/data and baseline hashes
+match before and after replay. Documentation tracker edits during the campaign
+can make individual sidecars report a dirty checkout. The
+[validation artifact](../experiments/noisy-acquisition-efficiency/viqr_kernel_reuse_validation.json)
+contains all replay comparisons, the source/input manifest, output hashes,
+candidate CI records and local-check outcomes. Raw traces remain under
+`dev/scripts/runs/viqr_kernel_20260913/replay/`.
+
+The release-backed dependency rollout remains required before integration.
