@@ -65,14 +65,13 @@ campaign. No new campaign is in flight.
   is cleanup of the existing surface, not new acquisition-function design.
   See [what is on the branch](2026-09-08-noisy-acquisitions.md#what-is-on-the-branch).
 
-- [ ] **Public inclusion of real-data benchmark targets/data.** The developer
-  benchmark and campaign are complete. Decide which targets and data, if any,
-  belong in the shipped testing package. See the
-  [real-data plan](plans/benchmark-realistic-targets.md).
-
 ## Outside 1.5 scope
 
 - **New acquisition-function design.** Efficiency work uses existing criteria.
+- **Additional packaged regression tests using timing or multisensory.**
+  These targets and datasets remain in the developer benchmark suite; their
+  benchmark coverage is complete. See the
+  [real-data plan](plans/benchmark-realistic-targets.md).
 - **A full Torch solver port.** NumPy/SciPy remains the 1.5 solver; optional
   Torch and ArviZ exports remain available. See the
   [backend decision](plans/stage4-torch-feasibility.md).

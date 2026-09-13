@@ -1014,7 +1014,7 @@ the staged execution. Previous references are preserved.
 
 These workstreams have no prescribed order relative to acquisition or
 S-VBMC work. Slurm support is needed for campaigns using that workflow;
-public inclusion of real-data targets and the Slurm design remain open.
+its implementation design remains open.
 
 - [x] Extend the core benchmark with real-data targets: the Bayesian timing
   model and the multisensory causal-inference model on two subjects,
@@ -1026,9 +1026,9 @@ public inclusion of real-data targets and the Slurm design remain open.
   Completed 2026-09-12: truths generated, the four configurations run at
   seeds 0–29 from a certified frozen checkout and joined to the golden
   reference as `reference_990_20260912`
-  ([record](../golden/realdata_extension_20260912/README.md)). Which
-  targets and data move into PyVBMC's public tests is decided at the
-  documentation review.
+  ([record](../golden/realdata_extension_20260912/README.md)). PI decision
+  2026-09-13: these targets and datasets remain in the developer benchmark
+  suite; no additional packaged regression tests are needed for 1.5.
 - [ ] Improve support for running benchmarks on Slurm HPC systems, including
   submission, resource configuration, resumption and collection of results
   with reproducible run provenance. Choose the execution design when this

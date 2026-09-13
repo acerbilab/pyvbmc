@@ -58,9 +58,10 @@ recorded at the end of this file.
   provides the mixture and joins the `dev` extra; the estimator code takes
   any mixture with sampling and a log-density, so a Python port of the
   lab's `vbgmm` could replace it later without touching the estimator.
-- **Public tests.** Which of these targets and data move into
-  `pyvbmc/testing` is decided at the pre-release documentation review.
-  The `.npz` files and READMEs make that a copy plus `MANIFEST.in` lines.
+- **Benchmark coverage (settled 2026-09-13).** Timing and multisensory
+  remain developer benchmark targets with their committed datasets and
+  ground truths. No additional automated regression tests using these
+  targets are planned under `pyvbmc/testing` for 1.5.
 
 ## Targets
 
