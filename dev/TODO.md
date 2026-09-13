@@ -19,6 +19,14 @@ reference on PI instruction. The frozen treatment `68a43db` defines its
 synthetic-target numerics; if a noisy option becomes a default, regenerate
 the affected noisy configurations from that code.
 
+Recommended pickup: read the [noisy-acquisition investigation](2026-09-08-noisy-acquisitions.md)
+and prepare a scoped implementation and evaluation plan. Separate the
+optional smaller-sieve/gradient-refinement search from operation-level
+computational savings. Compare on a modest allocation of noisy targets,
+including the real-data configurations, and expand if the evidence warrants
+it. Defaults stay unchanged during evaluation. This plan, implementation
+and any new campaign await PI instruction; no new work has been launched.
+
 S-VBMC is integrated as `pyvbmc.svbmc` (merged into `dev-next` at
 `0b5af29` on 2026-09-11); the [integration plan](plans/svbmc-integration.md)
 records the decisions, the worklog and the verification. Two items remain
@@ -121,8 +129,14 @@ decided at the documentation review.
   revalidate the raw artifacts, copy the campaign directories from that
   machine and follow the
   [population plan](plans/final-population-benchmark.md) for environment
-  and source setup. Run `python dev/scripts/analyze_population_run.py` in
-  that environment to reproduce the pooled assessment. Frozen worktrees
+  and source setup. On that machine, reproduce the pooled assessment with
+  `.venv/Scripts/python.exe -u dev/scripts/runs/population_completion_20260912/assess.py`.
+  This archived wrapper selects the frozen classes and historical 870-case
+  baseline; the active baseline contains the promoted candidates.
+  The completed campaign and promotion replay require no reattachment.
+  `controller_status.json` ends at `assessment_ready_for_review`; the tracked
+  promotion record contains the subsequent acceptance and publication.
+  Frozen worktrees
   copied to another checkout need their Git links repaired or recreation at
   the recorded commits. No process or old agent session needs reattachment.
 - Make planning, proposal, handoff, and status-only edits directly on
