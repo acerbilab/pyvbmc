@@ -30,10 +30,15 @@ and S-VBMC preparation/entropy speedups that preserve the method.
 Designing new acquisition functions or criteria is outside scope. Keep
 standard VIQR (`loss="iqr"`); evaluating `iqr_reduction` as a reformulation
 for numerical search is within the efficiency work and requires validation.
-PI decision 2026-09-13: remove `var_reduction` and `sd_reduction` from the
-1.5 public interface, preserving their code on a retained experimental
-development branch during the later cleanup. This removal is planned,
-not implemented. EIG's release disposition remains a separate open decision.
+PI decision 2026-09-13: remove VIQR's `var_reduction` and `sd_reduction`,
+scalar `AcqFcnEIG()` and per-component `AcqFcnEIG(components=True)` from
+the 1.5 public interface, preserving their code on a retained experimental
+development branch during the later cleanup. Code removal and branch
+preservation remain to be done. The
+[acquisition experiments](../results/2026-09-08-noisy-acquisition-experiments.md)
+record scalar EIG's poor results and per-component EIG's mixed results on
+Rosenbrock D2 at two noise levels; neither demonstrated a robust advantage
+over default VIQR.
 S-VBMC preparation and entropy optimizations are in scope for 1.5 as a
 separate performance task, validated against the regression references. The
 standalone `svbmc` compatibility release follows PyVBMC 1.5 on PyPI.

@@ -23,9 +23,13 @@ campaign. No new campaign is in flight.
   criterion for fixed samples and weights, but can change numerical search
   behavior and needs end-to-end validation.
 
-- [ ] **Remove the experimental VIQR variance/SD alternatives from the 1.5
-  public interface.** The decision covers `var_reduction` and `sd_reduction`;
-  these change the criterion and are not needed for the efficiency work.
+- [ ] **Remove experimental acquisition alternatives from the 1.5 public
+  interface.** The decision covers VIQR's `var_reduction` and `sd_reduction`,
+  scalar `AcqFcnEIG()` and per-component `AcqFcnEIG(components=True)`.
+  The VIQR alternatives change the criterion. In the Rosenbrock D2
+  experiments, scalar EIG underperformed at both tested noise levels;
+  per-component EIG was competitive at low noise but worse at higher noise.
+  Neither EIG variant demonstrated a robust advantage over default VIQR.
   Preserve their implementation on a retained experimental development
   branch when carrying out the cleanup, and keep the
   [experiment records](results/2026-09-08-noisy-acquisition-experiments.md).
@@ -70,12 +74,6 @@ campaign. No new campaign is in flight.
   and plausible bounds. Decide the supported model scope and inclusion
   after the check. Automatic initialization and inference orchestration are
   deferred in the proposal. See the [PyMC proposal](2026-09-13-pymc-integration.md).
-
-- [ ] **Existing EIG options: retain or remove?** EIG is a separate
-  acquisition; its disposition remains undecided. Retained public options
-  need documentation and validation. This is cleanup of the existing
-  surface, not new acquisition-function design.
-  See [what is on the branch](2026-09-08-noisy-acquisitions.md#what-is-on-the-branch).
 
 ## Outside 1.5 scope
 
