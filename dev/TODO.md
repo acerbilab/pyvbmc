@@ -194,3 +194,13 @@ worktrees at the revisions in the
 [efficiency plan](plans/noisy-acquisition-efficiency.md); a fresh clone does
 not contain these ignored artifacts. They are not needed to read the results
 or choose the next experiment.
+
+The S-VBMC speedups measurement retains `svbmc_speedups_20260913/` under
+`dev/scripts/runs/`: the detached before-source worktree at `83692ac`
+(`before/`, registered with `git worktree`) and the raw outputs of both
+timing campaigns. Their tracked copies and provenance are under
+`dev/experiments/svbmc_speedups/`, and the
+[speedups plan](plans/svbmc-speedups.md) records the revision and the
+harness. The worktree is needed only to rerun the paired comparison;
+`git worktree remove` clears it. A fresh clone does not contain these
+ignored artifacts and does not need them to read the results.
