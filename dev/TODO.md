@@ -25,10 +25,9 @@ and subsequent possibilities.
   GP-kernel reuse is implemented with a 128 MiB retained-payload cap and
   gpyreg 1.2.0. Its [production validation](results/2026-09-13-viqr-kernel-production.md)
   reports a 1.205x late-sieve speedup and 18/18 exact stored replays against
-  the guarded-sinh baseline; final dependency integration is in progress in
-  the [execution plan](plans/noisy-acquisition-efficiency.md#kernel-reuse-implementation-plan).
-  Adaptive
-  sieve size, integration budgets and multistart L-BFGS-B remain main search
+  the guarded-sinh baseline. The optimization is integrated into `dev-next`;
+  the [execution plan](plans/noisy-acquisition-efficiency.md#kernel-reuse-implementation-plan)
+  records the completed dependency rollout. Adaptive sieve size, integration budgets and multistart L-BFGS-B remain main search
   experiments. Another possibility is more efficient integration of the
   same VIQR criterion (shared-weight Bayesian quadrature,
   compared with mixture-stratified randomized quasi-Monte Carlo).

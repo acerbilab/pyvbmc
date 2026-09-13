@@ -4624,7 +4624,7 @@
     "gpyreg_docs": "Sphinx HTML build passed; two existing numpydoc underline warnings."
   },
   "rollout": {
-    "status": "all validation passed; PR integration pending",
+    "status": "complete",
     "gpyreg_pr": 45,
     "gpyreg_merge_sha": "39536b000a8c8465133f4eaef625486991db8257",
     "merge_tree_equals_candidate": true,
@@ -6620,9 +6620,7 @@
         "merged-source nine-cell matrices",
         "PR ancestry and tracker accuracy"
       ],
-      "remaining_gates": [
-        "PR 174 integration"
-      ]
+      "remaining_gates": []
     },
     "wheel_check_script": {
       "source": "\"\"\"Check the published wheel's version, import origin and prediction API.\"\"\"\nimport argparse\nimport importlib.metadata\nimport inspect\nimport json\nimport os\nfrom pathlib import Path\nimport sys\n\nfor key in ('OMP_NUM_THREADS','OPENBLAS_NUM_THREADS','MKL_NUM_THREADS'):\n    os.environ[key] = '1'\np = argparse.ArgumentParser()\np.add_argument('wheel_root', type=Path)\np.add_argument('version')\na = p.parse_args()\nroot = a.wheel_root.resolve()\nsys.path.insert(0, str(root))\nimport gpyreg as gpr\nimport numpy as np\nassert Path(gpr.__file__).resolve().parent == root / 'gpyreg'\nassert importlib.metadata.version('GPyReg') == a.version\nparameter = inspect.signature(gpr.GP.predict).parameters['return_cross_covariance']\nassert parameter.kind is inspect.Parameter.KEYWORD_ONLY and parameter.default is False\nX = np.array([[-1.], [0.], [1.]])\ny = np.array([[0.1], [0.5], [-0.1]])\nxs = np.array([[-0.5], [0.5]])\ngp = gpr.GP(D=1, covariance=gpr.covariance_functions.SquaredExponential(), mean=gpr.mean_functions.ZeroMean(), noise=gpr.noise_functions.GaussianNoise(constant_add=True))\ngp.update(X_new=X, y_new=y, hyp=np.array([[0.,0.,-2.],[0.1,-0.1,-1.8]]))\nbefore = gp.predict(xs, separate_samples=True)\nafter = gp.predict(xs, separate_samples=True, return_cross_covariance=True)\nassert len(after)==3 and len(after[-1])==2\nfor b, c in zip(before, after):\n    np.testing.assert_array_equal(b,c)\nfor posterior,K in zip(gp.posteriors,after[-1]):\n    assert K.shape==(3,2) and K.dtype==np.float64\n    np.testing.assert_array_equal(K,gp.covariance.compute(posterior.hyp[:2],X,xs))\nprint(json.dumps({'version':a.version,'module_path':gpr.__file__,'signature':str(inspect.signature(gpr.GP.predict)),'default_outputs_exact':True,'cross_covariances_exact':True},indent=2))\n",
@@ -7742,6 +7740,11 @@
       ],
       "status": "completed",
       "url": "https://github.com/acerbilab/pyvbmc/actions/runs/34763665956"
-    }
+    },
+    "integration_merge_sha": "5a5c17c0ef2500d84fcc53eaf8c75e9f15c60287",
+    "integration_reviewed_head": "ec98057549db63ae2d7c384f57b679f0e985472e",
+    "integration_merge_tree_equals_reviewed_head": true,
+    "integration_branch": "dev-next",
+    "integration_merged_at": "2026-09-13T15:01:13Z"
   }
 }

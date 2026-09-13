@@ -324,7 +324,7 @@ shows each of the 18 comparisons.
 
 ## Kernel-reuse implementation plan
 
-Created 2026-09-13. **Status: APPROVED; IN PROGRESS.** This section owns the
+Created 2026-09-13. **Status: COMPLETE.** This section owns the
 cross-repository API, integration, validation and rollout decisions for
 kernel reuse. The
 [feasibility report](../results/2026-09-13-viqr-kernel-reuse.md) owns the
@@ -335,9 +335,9 @@ prototype measurements.
 - [x] K1: freeze before sources/oracles; implement and verify gpyreg API.
 - [x] K2: implement bounded VIQR reuse and compatibility checks.
 - [x] K3: numerical/performance gates, 18-run replay, full suites and CI.
-- [~] K4: release validated gpyreg, update dependency/pin, integrate and archive.
+- [x] K4: release validated gpyreg, update dependency/pin, integrate and archive.
 - [x] Final independent doublecheck.
-- [~] Closeout: all validation passed; development-branch integration pending.
+- [x] Closeout: evidence archived and implementation integrated into `dev-next`.
 
 Execution baseline: PyVBMC `15a14cc`, feature branch
 `dev-noisy-viqr-kernel`; gpyreg `a2f8ddc`/v1.1.0, feature branch
@@ -372,8 +372,10 @@ wheel passes API/version/source checks. The final dependency floor is 1.2.0
 and CI pin is `39536b0`. The independent rollout doublecheck found no issues
 in the release, dependency, provenance or integration ancestry.
 The [final PyVBMC matrix](https://github.com/acerbilab/pyvbmc/actions/runs/34763665956)
-passed all nine cells at `9c7d1b8` with the release pin and floor. The integration is
-[PyVBMC PR #174](https://github.com/acerbilab/pyvbmc/pull/174), targeting `dev-next`.
+passed all nine cells at `9c7d1b8` with the release pin and floor.
+[PyVBMC PR #174](https://github.com/acerbilab/pyvbmc/pull/174) integrated the
+implementation into `dev-next` at `5a5c17c`; the merge tree equals the reviewed
+PR head. PyVBMC 1.5 publication remains a separate release task.
 
 ### Objective and boundaries
 

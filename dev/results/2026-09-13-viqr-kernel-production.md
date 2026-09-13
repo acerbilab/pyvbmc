@@ -4,7 +4,7 @@ The production implementation reuses gpyreg's training-to-candidate kernel
 matrices within a standard VIQR call. The captured late noisy sieve is
 1.205x faster, with exact acquisition outputs on this platform. The retained
 matrix payload is capped at 128 MiB; larger calls use ordinary evaluation.
-The 18-run replay is exact; release validation is tracked in the
+The 18-run stored replay is exact; release and integration are complete in the
 [execution plan](../plans/noisy-acquisition-efficiency.md#kernel-reuse-implementation-plan).
 
 ## Sources and method
@@ -130,5 +130,7 @@ The editable sibling reports 1.2.0 and PyVBMC's installed requirement agrees.
 The [final PyVBMC matrix](https://github.com/acerbilab/pyvbmc/actions/runs/34763665956)
 passed all nine OS/Python cells at `9c7d1b8` with this release pin and floor.
 Independent rollout review found no issues in release provenance, package
-contents, dependency setup or PR ancestry. Development-branch integration
-is tracked by [PR #174](https://github.com/acerbilab/pyvbmc/pull/174).
+contents, dependency setup or PR ancestry.
+[PR #174](https://github.com/acerbilab/pyvbmc/pull/174) merged into `dev-next`
+as `5a5c17c`, with a tree identical to reviewed PR head `ec98057`.
+The validation artifacts and frozen before checkouts are preserved.
