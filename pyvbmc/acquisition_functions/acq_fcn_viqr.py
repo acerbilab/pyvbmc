@@ -11,6 +11,14 @@ from .abstract_acq_fcn import AbstractAcqFcn
 
 _LOG_2 = np.log(2.0)
 _LOG_FLOAT_MAX = np.log(np.finfo(np.float64).max)
+_VIQR_KERNEL_CACHE_MAX_BYTES = 128 * 1024**2
+
+# Eligibility is checked against these import-time implementations rather
+# than being inferred from class membership. This also detects methods
+# replaced on a class or an individual instance after import, without adding
+# anything to serialized acquisition or GP state.
+_ORIGINAL_GP_PREDICT = gpr.GP.predict
+_ORIGINAL_SE_COMPUTE = gpr.covariance_functions.SquaredExponential.compute
 
 
 def _log_viqr_sum(a):
@@ -135,6 +143,96 @@ class AcqFcnVIQR(AbstractAcqFcn):
 
         self.u = norm.ppf(quantile)
 
+    def _predict_with_context(self, Xs: np.ndarray, gp: gpr.GP):
+        """Request prediction kernels for compatible standard VIQR calls."""
+        if self._can_reuse_prediction_kernel(Xs, gp):
+            f_mu, f_s2, cross_covariance = gp.predict(
+                x_star=Xs,
+                separate_samples=True,
+                return_cross_covariance=True,
+            )
+            return f_mu, f_s2, cross_covariance
+        return super()._predict_with_context(Xs, gp)
+
+    def _compute_acquisition_function_with_context(
+        self,
+        Xs: np.ndarray,
+        vp: VariationalPosterior,
+        gp: gpr.GP,
+        function_logger: FunctionLogger,
+        optim_state: dict,
+        f_mu: np.ndarray,
+        f_s2: np.ndarray,
+        f_bar: np.ndarray,
+        var_tot: np.ndarray,
+        context,
+    ):
+        """Compute VIQR using prediction kernels when context provides them."""
+        if context is None:
+            return super()._compute_acquisition_function_with_context(
+                Xs,
+                vp,
+                gp,
+                function_logger,
+                optim_state,
+                f_mu,
+                f_s2,
+                f_bar,
+                var_tot,
+                context,
+            )
+        return self._compute_viqr(
+            Xs,
+            gp,
+            optim_state,
+            f_mu,
+            f_s2,
+            cross_covariance=context,
+        )
+
+    def _can_reuse_prediction_kernel(self, Xs: np.ndarray, gp: gpr.GP):
+        """Whether this call can safely retain predictor cross-kernels."""
+        if (
+            type(self) is not AcqFcnVIQR
+            or getattr(self, "loss", "iqr") != "iqr"
+        ):
+            return False
+        if (
+            type(gp.covariance)
+            is not gpr.covariance_functions.SquaredExponential
+        ):
+            return False
+        if not _is_original_bound_method(gp, "predict", _ORIGINAL_GP_PREDICT):
+            return False
+        if not _is_original_bound_method(
+            gp.covariance, "compute", _ORIGINAL_SE_COMPUTE
+        ):
+            return False
+        if not _is_original_bound_method(
+            self,
+            "_compute_acquisition_function",
+            _ORIGINAL_VIQR_COMPUTE_ACQUISITION,
+        ):
+            return False
+
+        # Untrained and empty states retain the established prediction path.
+        if (
+            getattr(gp, "y", None) is None
+            or getattr(gp, "X", None) is None
+            or gp.X.shape[0] == 0
+            or Xs.shape[0] == 0
+            or len(gp.posteriors) == 0
+        ):
+            return False
+
+        # Start with Python integers so unusually large shapes cannot overflow
+        # before comparison with the payload cap. Prediction and PyVBMC state
+        # are float64 on this supported path.
+        payload_bytes = (
+            8 * int(gp.X.shape[0]) * int(Xs.shape[0]) * int(len(gp.posteriors))
+        )
+        return payload_bytes <= _VIQR_KERNEL_CACHE_MAX_BYTES
+
     def _compute_acquisition_function(
         self,
         Xs: np.ndarray,
@@ -164,12 +262,12 @@ class AcqFcnVIQR(AbstractAcqFcn):
         optim_state : dict
             The dictionary describing PyVBMC's internal state.
         f_mu : np.ndarray
-            A ``(N, Ns_gp)`` array of GP predictive means at the importance
-            sampling points, where ``Ns_gp`` is the number of GP posterior
+            A ``(N, Ns_gp)`` array of GP predictive means at the candidate
+            points, where ``Ns_gp`` is the number of GP posterior
             hyperparameter samples.
         f_s2 : np.ndarray
-            A ``(N, Ns_gp)`` array of GP predictive variances at the importance
-            sampling points, where ``Ns_gp`` is the number of GP posterior
+            A ``(N, Ns_gp)`` array of GP predictive variances at the candidate
+            points, where ``Ns_gp`` is the number of GP posterior
             hyperparameter samples.
         f_bar : None
             Unused for this acquisition function.
@@ -181,6 +279,23 @@ class AcqFcnVIQR(AbstractAcqFcn):
         ValueError
             For choices of GP covariance function which are not implemented.
             Currently, only ``SquaredExponential`` covariance is implemented.
+        """
+        return self._compute_viqr(Xs, gp, optim_state, f_mu, f_s2)
+
+    def _compute_viqr(
+        self,
+        Xs: np.ndarray,
+        gp: gpr.GP,
+        optim_state: dict,
+        f_mu: np.ndarray,
+        f_s2: np.ndarray,
+        cross_covariance=None,
+    ):
+        """Shared VIQR arithmetic with optional predictor cross-kernels.
+
+        ``cross_covariance`` is a per-hyperparameter-sample tuple of latent
+        kernel matrices with shape ``(N_training, N_candidates)``. It is
+        consumed through transpose views during this call only.
         """
         # Missing port, integrated mean function, lines 49 to 57.
 
@@ -220,8 +335,11 @@ class AcqFcnVIQR(AbstractAcqFcn):
                 sf2 = np.exp(2 * hyp[D])
                 Xs_ell = Xs / ell
 
-                tmp = cdist(Xs_ell, gp.X / ell, "sqeuclidean")
-                K_Xs_X = sf2 * np.exp(-tmp / 2)
+                if cross_covariance is None:
+                    tmp = cdist(Xs_ell, gp.X / ell, "sqeuclidean")
+                    K_Xs_X = sf2 * np.exp(-tmp / 2)
+                else:
+                    K_Xs_X = cross_covariance[s].T
 
                 tmp = cdist(Xs_ell, Xa / ell, "sqeuclidean")
                 K_Xs_Xa = sf2 * np.exp(-tmp / 2)
@@ -419,3 +537,15 @@ class AcqFcnVIQR(AbstractAcqFcn):
             __, f_s2 = gp.predict(np.atleast_2d(x), add_noise=True)
         # base + added (base part is 0):
         return self.is_log_added(f_s2=f_s2, **kwargs)
+
+
+def _is_original_bound_method(instance, name, original):
+    """Return whether ``instance.name`` resolves to ``original``."""
+    method = getattr(instance, name)
+    return (
+        getattr(method, "__self__", None) is instance
+        and getattr(method, "__func__", None) is original
+    )
+
+
+_ORIGINAL_VIQR_COMPUTE_ACQUISITION = AcqFcnVIQR._compute_acquisition_function

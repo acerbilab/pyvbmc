@@ -24,8 +24,8 @@ and subsequent possibilities.
   guarded standard-VIQR sum optimization, its measured gains and validation.
   GP-kernel reuse has a positive
   [feasibility probe](results/2026-09-13-viqr-kernel-reuse.md) and a
-  [proposed implementation plan](plans/noisy-acquisition-efficiency.md#kernel-reuse-implementation-plan)
-  covering the gpyreg API, memory cap and validation, pending approval. Adaptive
+  [approved implementation plan](plans/noisy-acquisition-efficiency.md#kernel-reuse-implementation-plan)
+  covering the gpyreg API, memory cap and validation; implementation is in progress. Adaptive
   sieve size, integration budgets and multistart L-BFGS-B remain main search
   experiments. Another possibility is more efficient integration of the
   same VIQR criterion (shared-weight Bayesian quadrature,

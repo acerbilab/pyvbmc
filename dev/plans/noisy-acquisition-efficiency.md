@@ -4,7 +4,7 @@ Created 2026-09-13. Status: guarded-sinh implementation, validation and
 independent review complete on `dev-noisy-viqr-sinh` (numerical revision
 `6734817`), from `83692ac`. Evidence is archived below. The
 [kernel-reuse implementation plan](#kernel-reuse-implementation-plan) is
-pending approval. Search and quadrature experiments remain independent
+approved and in progress. Search and quadrature experiments remain independent
 possibilities in this workstream.
 
 ## Guarded-sinh execution checklist
@@ -324,11 +324,35 @@ shows each of the 18 comparisons.
 
 ## Kernel-reuse implementation plan
 
-Created 2026-09-13. **Status: PENDING APPROVAL.** This section owns the
+Created 2026-09-13. **Status: APPROVED; IN PROGRESS.** This section owns the
 cross-repository API, integration, validation and rollout decisions for
 kernel reuse. The
 [feasibility report](../results/2026-09-13-viqr-kernel-reuse.md) owns the
-prototype measurements. Implementation has not started.
+prototype measurements.
+
+### Kernel-reuse execution checklist
+
+- [x] K1: freeze before sources/oracles; implement and verify gpyreg API.
+- [x] K2: implement bounded VIQR reuse and compatibility checks.
+- [~] K3: numerical/performance gates, 18-run replay, full suites and CI.
+- [ ] K4: release validated gpyreg, update dependency/pin, integrate and archive.
+- [ ] Final independent doublecheck and closeout.
+
+Execution baseline: PyVBMC `15a14cc`, feature branch
+`dev-noisy-viqr-kernel`; gpyreg `a2f8ddc`/v1.1.0, feature branch
+`dev-predict-cross-covariance`. Isolated before checkouts and the gpyreg
+candidate are under `dev/scripts/runs/viqr_kernel_20260913/`.
+Before-source worktrees are frozen and the oracle-output dump completed
+successfully. The gpyreg API and PyVBMC hooks can be implemented in parallel
+against the agreed contract; numerical checks wait for both implementations.
+
+Initial validation: gpyreg's full suite passed (198 tests); the focused API
+module then passed 50 tests after adding the independent review's missing-factor
+coverage. API coverage is consolidated in `test_predict_cross_covariance.py`.
+PyVBMC acquisition/importance checks passed (123 tests), the normal oracle
+suite passed (143 tests, 15 skips), and all 11 fixture groups passed the exact
+comparison against the frozen outputs. Production measurements, replay and CI
+remain open. Independent API review found no implementation defect.
 
 ### Objective and boundaries
 
@@ -641,7 +665,7 @@ population as part of rollback.
 
 No scientific choice blocks this plan. API tuple semantics, the 128 MiB
 cap, the release-backed dependency floor and the bounded replay allocation
-are proposed defaults for approval. Exact release naming is confirmed
+were approved for execution on 2026-09-13. Exact release naming is confirmed
 against gpyreg's tags at execution time. Plan approval covers implementation,
 validation, the prerequisite gpyreg release and integration into the 1.5
 development branch; PyVBMC 1.5 publication remains separate.

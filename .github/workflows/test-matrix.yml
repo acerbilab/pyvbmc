@@ -23,13 +23,11 @@ on:
         default: ''
 
 env:
-  # Bump when gpyreg main moves and the scheduled run against it is green.
-  # a2f8ddc (2026-09-05): gpyreg main after the squash merge of
-  # acerbilab/gpyreg#43 (Stage 2 item 8; PyVBMC needs its GP.fit(rng=)).
-  # Released as gpyreg v1.1.0 the same day; pyproject.toml requires it.
-  # Previous pins: 79b4986 and 966414d (the PR branch),
-  # 236ddd7 (gpyreg v1.0.4 + 1, 2026-02-17).
-  GPYREG_PIN: a2f8ddce867f502e29717959cf0ff3529f598618
+  # Development candidate for GP.predict(return_cross_covariance=True).
+  # Replace with the validated released merge before integration; retain the
+  # published dependency floor until the additive gpyreg release is available.
+  # Previous pin: a2f8ddc (gpyreg v1.1.0, GP.fit(rng=)).
+  GPYREG_PIN: 355d75490b6c1f8979451ed0970b6cfeb98ccf57
 
 jobs:
   tests:
