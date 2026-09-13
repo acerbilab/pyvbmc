@@ -1,8 +1,8 @@
 # Existing noisy-acquisition efficiency
 
-Created 2026-09-13. Status: approved; implementation in progress on
-`dev-noisy-viqr-sinh`, from `83692ac`. The user approved starting with the
-guarded sinh optimization and its proposed validation. Quadrature remains
+Created 2026-09-13. Status: guarded-sinh implementation, validation and
+independent review complete on `dev-noisy-viqr-sinh` (numerical revision
+`6734817`), from `83692ac`. Evidence is archived below. Quadrature remains
 a possible subsequent experiment in this workstream.
 
 ## Execution checklist
@@ -10,9 +10,9 @@ a possible subsequent experiment in this workstream.
 - [x] Freeze before-change source and oracle outputs; implement guarded sum
   and focused tests.
 - [x] Run numerical gates and classify changed outputs.
-- [ ] Capture matched states during the 18-run replay and assess results.
-- [ ] Measure complete acquisition calls against the frozen implementation.
-- [ ] Complete full tests, CI and independent review; record outcome.
+- [x] Capture matched states during the 18-run replay and assess results.
+- [x] Measure complete acquisition calls against the frozen implementation.
+- [x] Complete full tests, CI and independent review; record outcome.
 
 ## Goal and scope
 
@@ -35,12 +35,15 @@ frequent GP training as the main costs. Their proposed search changes need
 separate validation: optimizing a small importance set more aggressively
 can overfit its Monte Carlo error. They do not establish a new default.
 
-Current source still performs a log-sinh followed by log-sum-exp over each
-candidate's importance points in
+Before this optimization, standard VIQR performed a log-sinh followed by
+log-sum-exp over each candidate's importance points in
 `pyvbmc/acquisition_functions/acq_fcn_viqr.py`. For finite nonnegative
 `a = u * s_pred`, this computes `log(2 * sum(sinh(a)))`. Evaluating that
 sum directly avoids two elementwise transcendental sweeps. An overflow
-guard is required; the current log-space calculation handles large values.
+guard is required; the log-space calculation supplies the fallback for
+large values.
+The direct expression also retains extremely small positive contributions
+that the old `1 - exp(-2a)` calculation can round to zero.
 
 The bounded [probe](../scripts/probe_viqr_sum.py) uses the committed
 `rosenbrock_D2_noise1_viqr` oracle state (D=2, N=25, eight GP samples,
@@ -210,6 +213,11 @@ user. Execution status is tracked above.
 
 ## Validation record
 
+The [validation artifact](../experiments/noisy-acquisition-efficiency/viqr_sinh_validation.json)
+contains replay results, matched timing repeats, source hashes, coverage and
+verification records. The [replay table](../experiments/noisy-acquisition-efficiency/viqr_sinh_replay.md)
+shows each of the 18 comparisons.
+
 - Before-change checkout: `dev/scripts/runs/viqr_sinh_20260913/before`,
   detached at `83692ac`; oracle dump in the adjacent `oracles_before/`.
 - Acquisition and importance-sampling tests: 100 passed. Exact comparison
@@ -225,7 +233,74 @@ user. Execution status is tracked above.
 - Independent Sol code review found no issues in the guarded calculation,
   its integration or focused tests. A complete-call preflight on the early
   noisy Rosenbrock state measured a 1.34x sieve speedup; single-point and
-  six-point calls were 1-3% slower in that measurement. Broader matched-state
-  timing remains required. Full-suite execution initially encountered an
-  inaccessible Windows temporary directory; a rerun uses a dedicated
-  workspace test directory.
+  six-point calls were 1-3% slower in that measurement. The broader timings
+  below informed the final guard refinement. Full-suite execution initially
+  encountered an inaccessible Windows temporary directory; a rerun used a dedicated
+  workspace test directory and passed.
+- Full suite passed on candidate `0b3c7b8`: 1254 passed, 39 skipped in
+  399.50 seconds. The approved replay ran via
+  `python -u dev/scripts/validate_viqr_sinh.py replay --out
+  dev/scripts/runs/viqr_sinh_20260913/replay`; raw logs, traces and snapshots
+  remain under the ignored run directory. The numerical source and runner
+  were frozen at `0b3c7b8` throughout replay. Uncommitted status documentation
+  accounts for the dirty-tree flag. The only intervening commit, `b2d7d72`,
+  corrects a test mock and changes no numerical or replay source.
+- Full-matrix run `34749673691` started after dispatch retries. Its three
+  Python 3.10 cells exposed a pre-existing ambiguous mock target in
+  `test_ns_gp_max_active_caps_the_in_loop_refits` (introduced in `5b857dde`):
+  Python 3.10 resolves the dotted path through the exported `active_sample`
+  function. Explicitly importing the module and using `patch.object`
+  corrects the test (`b2d7d72`), with independent static review and formatting
+  passed. Replacement full matrix `34750419101` passed all nine OS/Python
+  cells; smoke `34750413117` also passed. The final full-suite run includes
+  this corrected test.
+- Static review of the capture runner led to v2 manifests that bind the
+  runner, allocation, production/dependency sources, numerical-library
+  versions and benchmark data. These were introduced after the campaign;
+  its original v1 manifest remains intact.
+- The 18-run replay completed in 49.0 minutes: 17 exact stored-loop/final
+  matches and no flags. Every initial design matched, and all 18 runs
+  terminated successfully with finite, consistent final outputs. The sole
+  changed trajectory was noisy Rosenbrock (noise 3), seed 1: both versions
+  used 180 evaluations; its evidence error, gsKL and MMTV remained inside
+  the promoted population envelopes. This is a bounded regression screen.
+  The historical archives omit the returned transformer's state, so exact
+  identity applies to the recorded arrays and semantic final fields.
+- Capture coverage is six early states and one late state (Rosenbrock,
+  noise 3, N=150, six GP samples). The other five seed-0 runs converged
+  before the late checkpoint. The existing `normal_D2_singlesample` oracle
+  supplies a separate single-GP-sample timing check; it is not a noisy-run
+  checkpoint. No extra target evaluations were used for timing.
+- The first guard incurred single-point allocation overhead. Revision
+  `6734817` uses scalar extrema for an entirely safe array and caches the
+  logarithmic constants, retaining the same arithmetic and row fallback.
+  All 11 oracle fixtures matched the first guard exactly, as did 162
+  boundary/mixed/random helper arrays and every captured public output.
+  Independent review confirmed this preserves the completed campaign's
+  numerical behavior; a second campaign is unnecessary.
+- Complete 8192-candidate calls on the seven noisy states improved by
+  1.113-1.371x. The supplementary single-GP-sample sieve improved by 1.260x.
+  Short timing blocks showed substantial variation with laptop load, so
+  small calls were rechecked with nine rounds of 101 individually
+  interleaved before/after pairs. Singleton speedups were 0.991-1.009x;
+  CMA-population speedups were 1.035-1.060x. No material small-call slowdown
+  remains. Peak traced allocations and all raw timing repeats are recorded;
+  no fallback rows occurred in these measured states. These are acquisition
+  timings, not estimates of whole-run speedup.
+- The final full suite passed on `6734817`: 1254 passed, 39 skipped,
+  three existing warnings in 567.46 seconds. The
+  [full CI matrix](https://github.com/acerbilab/pyvbmc/actions/runs/34752259774)
+  passed all nine cells, and the
+  [smoke run](https://github.com/acerbilab/pyvbmc/actions/runs/34752255560)
+  passed. The runner's v2 manifests bind source,
+  allocation, environment and benchmark-data hashes. Existing v1 manifests
+  remain intact; explicit `--equivalent-viqr` timing records both the
+  capture and successor hashes and requires exact captured outputs.
+- The completed replay's report-only check exited 0 with no flags. Metadata
+  checks accepted an unchanged v2 resume and rejected eight changes covering
+  source revision, VIQR/runner/production code, seed allocation, numerical
+  dependency versions, GP sampler source and real-data archives. Default
+  timing rejected the successor source until equivalence mode was explicit.
+- Final independent Sol review of the source, recorded evidence and
+  documentation found no remaining issues. The review checked the revision
+  equivalence, timing claims, replay outcomes and stated coverage limits.

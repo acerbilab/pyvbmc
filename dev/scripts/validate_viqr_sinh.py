@@ -5,6 +5,10 @@ Run ``replay --out DIR`` for the 18-run allocation, or ``timing --out DIR
 The timing comparison loads only the original VIQR module from CHECKOUT;
 it verifies that the shared acquisition wrapper and GP code have not changed.
 No target is evaluated by the timing command.
+
+Use ``--equivalent-viqr`` to time an output-equivalent VIQR revision against
+existing captures. Both source hashes are recorded, and every captured
+public acquisition output must still match exactly.
 """
 
 import argparse
@@ -14,6 +18,8 @@ import importlib.util
 import json
 import os
 import pickle
+import platform
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -46,7 +52,16 @@ LABELS = (
     "multisensory_s1_D6_noise1.3",
     "timing_D5_noise2.2",
 )
+SEEDS = (0, 1, 2)
 FACTOR_FIELDS = ("alpha", "L", "L_chol", "sW", "sn2_mult")
+REPLAY_DEPENDENCIES = (
+    Path("dev/scripts/validate_viqr_sinh.py"),
+    Path("dev/scripts/golden_replay.py"),
+    Path("dev/scripts/golden_trace.py"),
+    Path("dev/scripts/benchmark_targets.py"),
+    Path("dev/scripts/profile_run.py"),
+    Path("pyvbmc/testing/oracles/_state.py"),
+)
 
 
 def digest(value):
@@ -77,6 +92,72 @@ def shared_source_hashes():
             path.read_text(encoding="utf-8").encode()
         ).hexdigest()
         for path in paths
+    }
+
+
+def replay_source_hashes():
+    """Hash production PyVBMC and the sources that define this replay."""
+    package = ROOT / "pyvbmc"
+    paths = [
+        path
+        for pattern in ("*.py", "*.ini")
+        for path in package.rglob(pattern)
+        if path.relative_to(package).parts[0] != "testing"
+    ]
+    paths.extend(ROOT / path for path in REPLAY_DEPENDENCIES)
+    return {
+        path.relative_to(ROOT).as_posix(): file_hash(path)
+        for path in sorted(paths, key=lambda value: value.as_posix())
+    }
+
+
+def execution_inputs():
+    """Describe installed numerical code and benchmark data inputs."""
+    from importlib.metadata import version
+
+    import cma
+    import gpyreg
+    import scipy
+
+    package = Path(gpyreg.__file__).resolve().parent
+    data = ROOT / "dev/scripts/data"
+    archives = list(data.glob("*.npz"))
+    archives.extend((data / "truths").glob("*.npz"))
+    return {
+        "environment": {
+            "python": platform.python_version(),
+            "platform": platform.platform(),
+            "numpy": np.__version__,
+            "scipy": scipy.__version__,
+            "cma": cma.__version__,
+            "gpyreg": version("gpyreg"),
+        },
+        "gpyreg_package_hashes": {
+            path.relative_to(package).as_posix(): file_hash(path)
+            for path in sorted(
+                package.rglob("*.py"), key=lambda value: value.as_posix()
+            )
+        },
+        "data_hashes": {
+            path.relative_to(ROOT).as_posix(): file_hash(path)
+            for path in sorted(archives, key=lambda value: value.as_posix())
+        },
+    }
+
+
+def replay_manifest():
+    return {
+        "manifest_version": 2,
+        "git_sha": subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True
+        ).strip(),
+        "allocation": {"labels": list(LABELS), "seeds": list(SEEDS)},
+        "viqr_sha256": file_hash(
+            ROOT / "pyvbmc/acquisition_functions/acq_fcn_viqr.py"
+        ),
+        "shared_source_hashes": shared_source_hashes(),
+        "source_hashes": replay_source_hashes(),
+        "execution_inputs": execution_inputs(),
     }
 
 
@@ -179,16 +260,11 @@ def replay(out):
     original_call = AcqFcnVIQR.__call__
     out.mkdir(parents=True, exist_ok=True)
     manifest_path = out / "run_manifest.json"
-    manifest = {
-        "viqr_sha256": file_hash(
-            ROOT / "pyvbmc/acquisition_functions/acq_fcn_viqr.py"
-        ),
-        "shared_source_hashes": shared_source_hashes(),
-    }
+    manifest = replay_manifest()
     if manifest_path.exists():
         assert (
             json.loads(manifest_path.read_text()) == manifest
-        ), "Resume source differs"
+        ), "Resume provenance differs"
     else:
         assert not list(
             out.glob("*_seed*.npz")
@@ -245,7 +321,7 @@ def replay(out):
                 "--configs",
                 ",".join(LABELS),
                 "--seeds",
-                "0-2",
+                ",".join(str(seed) for seed in SEEDS),
                 "--out",
                 str(out),
             ]
@@ -266,7 +342,7 @@ def restore(path):
     return state
 
 
-def timing(out, before):
+def timing(out, before, equivalent_viqr=False):
     import platform
     import tracemalloc
 
@@ -280,8 +356,41 @@ def timing(out, before):
 
     rel = Path("pyvbmc/acquisition_functions")
     manifest = json.loads((out / "run_manifest.json").read_text())
-    assert manifest["viqr_sha256"] == file_hash(ROOT / rel / "acq_fcn_viqr.py")
+    manifest_version = manifest.get("manifest_version", 1)
+    assert manifest_version in (1, 2), "Unknown replay manifest version"
+    if not equivalent_viqr:
+        assert manifest["viqr_sha256"] == file_hash(
+            ROOT / rel / "acq_fcn_viqr.py"
+        )
     assert manifest["shared_source_hashes"] == shared_source_hashes()
+    if manifest_version == 2:
+        current = replay_manifest()
+        assert manifest["allocation"] == current["allocation"]
+        expected_sources = manifest["source_hashes"].copy()
+        if equivalent_viqr:
+            key = "pyvbmc/acquisition_functions/acq_fcn_viqr.py"
+            expected_sources[key] = current["source_hashes"][key]
+        assert expected_sources == current["source_hashes"]
+        assert manifest["execution_inputs"] == current["execution_inputs"]
+        provenance = {
+            "manifest_version": 2,
+            "coverage": (
+                "Git SHA, labels/seeds, runner, production PyVBMC/options, "
+                "replay dependencies, full gpyreg package, runtime/library "
+                "versions, platform, data, and VIQR/shared source hashes"
+            ),
+            "git_sha": manifest["git_sha"],
+            "allocation": manifest["allocation"],
+        }
+    else:
+        provenance = {
+            "manifest_version": 1,
+            "coverage": (
+                "VIQR and shared acquisition/gpyreg source hashes only"
+            ),
+        }
+    provenance["capture_viqr_sha256"] = manifest["viqr_sha256"]
+    provenance["equivalent_viqr_requested"] = equivalent_viqr
     assert (before / rel / "abstract_acq_fcn.py").read_text(
         encoding="utf-8"
     ) == (ROOT / rel / "abstract_acq_fcn.py").read_text(encoding="utf-8")
@@ -427,6 +536,7 @@ def timing(out, before):
         "before_source": str(before),
         "after_source": str(ROOT),
         "viqr_sha256": viqr_hashes,
+        "capture_provenance": provenance,
         "capture_status": statuses,
     }
     (out / "timing.json").write_text(
@@ -440,12 +550,17 @@ def main():
     parser.add_argument("mode", choices=("replay", "timing"))
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--before-source", type=Path)
+    parser.add_argument(
+        "--equivalent-viqr",
+        action="store_true",
+        help="allow a changed VIQR source; every captured output must still match exactly",
+    )
     args = parser.parse_args()
     if args.mode == "replay":
         return replay(args.out)
     if args.before_source is None:
         parser.error("timing requires --before-source")
-    return timing(args.out, args.before_source)
+    return timing(args.out, args.before_source, args.equivalent_viqr)
 
 
 if __name__ == "__main__":

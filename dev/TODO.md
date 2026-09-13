@@ -4,7 +4,9 @@ Updated 2026-09-13. These lists describe scope, not priority or execution
 order. Independent workstreams can be picked up in any order: PyMC
 feasibility, for example, does not depend on acquisition-efficiency work.
 Inclusion in scope does not settle an implementation design or launch a
-campaign. No new campaign is in flight.
+campaign. The guarded-VIQR optimization's approved 18-run comparison passed;
+see the [efficiency plan](plans/noisy-acquisition-efficiency.md) for validation
+and subsequent possibilities.
 
 ## In scope for 1.5
 
@@ -19,7 +21,7 @@ campaign. No new campaign is in flight.
   [search analysis](results/2026-09-09-acquisition-search-analysis.md).
   Historical replacement-criterion experiments do not expand 1.5 scope.
   The [efficiency plan](plans/noisy-acquisition-efficiency.md) tracks the
-  approved guarded standard-VIQR sum optimization and its validation.
+  guarded standard-VIQR sum optimization, its measured gains and validation.
   Subsequent possibilities include GP-kernel reuse and more efficient
   integration of the same VIQR criterion (shared-weight Bayesian quadrature,
   compared with mixture-stratified randomized quasi-Monte Carlo).
