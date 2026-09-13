@@ -104,5 +104,27 @@ can make individual sidecars report a dirty checkout. The
 contains all replay comparisons, the source/input manifest, output hashes,
 candidate CI records and local-check outcomes. Raw traces remain under
 `dev/scripts/runs/viqr_kernel_20260913/replay/`.
+The editable gpyreg distribution's generated version label predates the
+candidate commit; the wrapper's imported path, Git revision and complete
+source hashes identify the actual `355d754` implementation.
 
-The release-backed dependency rollout remains required before integration.
+## Dependency rollout
+
+[Gpyreg PR #45](https://github.com/acerbilab/gpyreg/pull/45) is merged as
+`39536b0`, with the same Git tree as tested candidate `355d754`.
+The [merged gpyreg matrix](https://github.com/acerbilab/gpyreg/actions/runs/34762875948)
+and [PyVBMC integration matrix](https://github.com/acerbilab/pyvbmc/actions/runs/34762808101)
+passed all nine cells before release. The gpyreg test workflow was
+re-enabled after GitHub disabled it for inactivity. Its merged-source build
+and documentation workflows passed.
+
+[Gpyreg v1.2.0](https://github.com/acerbilab/gpyreg/releases/tag/v1.2.0)
+was published from `39536b0`; its
+[publication workflow](https://github.com/acerbilab/gpyreg/actions/runs/34763427520)
+passed. The downloaded PyPI wheel reports 1.2.0, exposes the keyword-only API,
+preserves ordinary prediction outputs in a focused check, and returns exact
+cross-covariances. Its top-level package source files match the validated merge
+(excluding generated version metadata).
+PyVBMC requires gpyreg >=1.2.0 and pins CI to `39536b0`.
+The editable sibling reports 1.2.0 and PyVBMC's installed requirement agrees.
+The final PyVBMC matrix and development-branch integration remain open.

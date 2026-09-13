@@ -4624,6 +4624,1989 @@
     "gpyreg_docs": "Sphinx HTML build passed; two existing numpydoc underline warnings."
   },
   "rollout": {
-    "status": "pending"
+    "status": "released; final PyVBMC dependency integration pending",
+    "gpyreg_pr": 45,
+    "gpyreg_merge_sha": "39536b000a8c8465133f4eaef625486991db8257",
+    "merge_tree_equals_candidate": true,
+    "merge_method": "squash using configured administrator exemption after independent reviews and candidate gates",
+    "gpyreg_workflow_reenabled": "tests.yml was disabled_inactivity; enabled for merged-source validation",
+    "merged_ci_ids": {
+      "gpyreg": 34762875948,
+      "pyvbmc": 34762808101
+    },
+    "integration_pr": 174,
+    "merged_ci": {
+      "gpyreg": {
+        "conclusion": "success",
+        "headSha": "39536b000a8c8465133f4eaef625486991db8257",
+        "jobs": [
+          {
+            "completedAt": "2026-09-13T14:34:56Z",
+            "conclusion": "success",
+            "databaseId": 103738657889,
+            "name": "tests (windows-latest, 3.9)",
+            "startedAt": "2026-09-13T14:30:49Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-13T14:30:50Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-13T14:30:50Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:59Z",
+                "conclusion": "success",
+                "name": "Checkout",
+                "number": 2,
+                "startedAt": "2026-09-13T14:30:50Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:31:44Z",
+                "conclusion": "success",
+                "name": "Setup Python",
+                "number": 3,
+                "startedAt": "2026-09-13T14:30:59Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:32:13Z",
+                "conclusion": "success",
+                "name": "Install GPyReg",
+                "number": 4,
+                "startedAt": "2026-09-13T14:31:44Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:34:52Z",
+                "conclusion": "success",
+                "name": "Run tests",
+                "number": 5,
+                "startedAt": "2026-09-13T14:32:13Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:34:52Z",
+                "conclusion": "success",
+                "name": "Post Setup Python",
+                "number": 9,
+                "startedAt": "2026-09-13T14:34:52Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:34:54Z",
+                "conclusion": "success",
+                "name": "Post Checkout",
+                "number": 10,
+                "startedAt": "2026-09-13T14:34:52Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:34:54Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 11,
+                "startedAt": "2026-09-13T14:34:54Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/acerbilab/gpyreg/actions/runs/34762875948/job/103738657889"
+          },
+          {
+            "completedAt": "2026-09-13T14:32:59Z",
+            "conclusion": "success",
+            "databaseId": 103738657994,
+            "name": "tests (ubuntu-latest, 3.9)",
+            "startedAt": "2026-09-13T14:30:50Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-13T14:30:51Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-13T14:30:51Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:53Z",
+                "conclusion": "success",
+                "name": "Checkout",
+                "number": 2,
+                "startedAt": "2026-09-13T14:30:51Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:31:02Z",
+                "conclusion": "success",
+                "name": "Setup Python",
+                "number": 3,
+                "startedAt": "2026-09-13T14:30:53Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:31:20Z",
+                "conclusion": "success",
+                "name": "Install GPyReg",
+                "number": 4,
+                "startedAt": "2026-09-13T14:31:02Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:32:57Z",
+                "conclusion": "success",
+                "name": "Run tests",
+                "number": 5,
+                "startedAt": "2026-09-13T14:31:20Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:32:57Z",
+                "conclusion": "success",
+                "name": "Post Setup Python",
+                "number": 9,
+                "startedAt": "2026-09-13T14:32:57Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:32:57Z",
+                "conclusion": "success",
+                "name": "Post Checkout",
+                "number": 10,
+                "startedAt": "2026-09-13T14:32:57Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:32:57Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 11,
+                "startedAt": "2026-09-13T14:32:57Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/acerbilab/gpyreg/actions/runs/34762875948/job/103738657994"
+          },
+          {
+            "completedAt": "2026-09-13T14:32:46Z",
+            "conclusion": "success",
+            "databaseId": 103738658036,
+            "name": "tests (macos-latest, 3.11)",
+            "startedAt": "2026-09-13T14:30:53Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-13T14:30:55Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-13T14:30:54Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:57Z",
+                "conclusion": "success",
+                "name": "Checkout",
+                "number": 2,
+                "startedAt": "2026-09-13T14:30:55Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:57Z",
+                "conclusion": "success",
+                "name": "Setup Python",
+                "number": 3,
+                "startedAt": "2026-09-13T14:30:57Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:31:08Z",
+                "conclusion": "success",
+                "name": "Install GPyReg",
+                "number": 4,
+                "startedAt": "2026-09-13T14:30:57Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:32:43Z",
+                "conclusion": "success",
+                "name": "Run tests",
+                "number": 5,
+                "startedAt": "2026-09-13T14:31:08Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:32:43Z",
+                "conclusion": "success",
+                "name": "Post Setup Python",
+                "number": 9,
+                "startedAt": "2026-09-13T14:32:43Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:32:44Z",
+                "conclusion": "success",
+                "name": "Post Checkout",
+                "number": 10,
+                "startedAt": "2026-09-13T14:32:43Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:32:44Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 11,
+                "startedAt": "2026-09-13T14:32:44Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/acerbilab/gpyreg/actions/runs/34762875948/job/103738658036"
+          },
+          {
+            "completedAt": "2026-09-13T14:34:03Z",
+            "conclusion": "success",
+            "databaseId": 103738658038,
+            "name": "tests (windows-latest, 3.11)",
+            "startedAt": "2026-09-13T14:30:49Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-13T14:30:50Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-13T14:30:49Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:56Z",
+                "conclusion": "success",
+                "name": "Checkout",
+                "number": 2,
+                "startedAt": "2026-09-13T14:30:50Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:56Z",
+                "conclusion": "success",
+                "name": "Setup Python",
+                "number": 3,
+                "startedAt": "2026-09-13T14:30:56Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:31:34Z",
+                "conclusion": "success",
+                "name": "Install GPyReg",
+                "number": 4,
+                "startedAt": "2026-09-13T14:30:56Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:34:00Z",
+                "conclusion": "success",
+                "name": "Run tests",
+                "number": 5,
+                "startedAt": "2026-09-13T14:31:34Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:34:00Z",
+                "conclusion": "success",
+                "name": "Post Setup Python",
+                "number": 9,
+                "startedAt": "2026-09-13T14:34:00Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:34:02Z",
+                "conclusion": "success",
+                "name": "Post Checkout",
+                "number": 10,
+                "startedAt": "2026-09-13T14:34:00Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:34:02Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 11,
+                "startedAt": "2026-09-13T14:34:02Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/acerbilab/gpyreg/actions/runs/34762875948/job/103738658038"
+          },
+          {
+            "completedAt": "2026-09-13T14:33:12Z",
+            "conclusion": "success",
+            "databaseId": 103738658054,
+            "name": "tests (ubuntu-latest, 3.11)",
+            "startedAt": "2026-09-13T14:30:49Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-13T14:30:51Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-13T14:30:50Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:52Z",
+                "conclusion": "success",
+                "name": "Checkout",
+                "number": 2,
+                "startedAt": "2026-09-13T14:30:51Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:52Z",
+                "conclusion": "success",
+                "name": "Setup Python",
+                "number": 3,
+                "startedAt": "2026-09-13T14:30:52Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:31:09Z",
+                "conclusion": "success",
+                "name": "Install GPyReg",
+                "number": 4,
+                "startedAt": "2026-09-13T14:30:52Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:33:08Z",
+                "conclusion": "success",
+                "name": "Run tests",
+                "number": 5,
+                "startedAt": "2026-09-13T14:31:09Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:33:09Z",
+                "conclusion": "success",
+                "name": "Post Setup Python",
+                "number": 9,
+                "startedAt": "2026-09-13T14:33:08Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:33:09Z",
+                "conclusion": "success",
+                "name": "Post Checkout",
+                "number": 10,
+                "startedAt": "2026-09-13T14:33:09Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:33:09Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 11,
+                "startedAt": "2026-09-13T14:33:09Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/acerbilab/gpyreg/actions/runs/34762875948/job/103738658054"
+          },
+          {
+            "completedAt": "2026-09-13T14:34:48Z",
+            "conclusion": "success",
+            "databaseId": 103738658058,
+            "name": "tests (windows-latest, 3.10)",
+            "startedAt": "2026-09-13T14:30:49Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-13T14:30:50Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-13T14:30:50Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:58Z",
+                "conclusion": "success",
+                "name": "Checkout",
+                "number": 2,
+                "startedAt": "2026-09-13T14:30:51Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:58Z",
+                "conclusion": "success",
+                "name": "Setup Python",
+                "number": 3,
+                "startedAt": "2026-09-13T14:30:58Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:31:42Z",
+                "conclusion": "success",
+                "name": "Install GPyReg",
+                "number": 4,
+                "startedAt": "2026-09-13T14:30:58Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:34:45Z",
+                "conclusion": "success",
+                "name": "Run tests",
+                "number": 5,
+                "startedAt": "2026-09-13T14:31:42Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:34:45Z",
+                "conclusion": "success",
+                "name": "Post Setup Python",
+                "number": 9,
+                "startedAt": "2026-09-13T14:34:45Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:34:47Z",
+                "conclusion": "success",
+                "name": "Post Checkout",
+                "number": 10,
+                "startedAt": "2026-09-13T14:34:45Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:34:47Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 11,
+                "startedAt": "2026-09-13T14:34:47Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/acerbilab/gpyreg/actions/runs/34762875948/job/103738658058"
+          },
+          {
+            "completedAt": "2026-09-13T14:32:47Z",
+            "conclusion": "success",
+            "databaseId": 103738658089,
+            "name": "tests (ubuntu-latest, 3.10)",
+            "startedAt": "2026-09-13T14:30:49Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-13T14:30:51Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-13T14:30:50Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:54Z",
+                "conclusion": "success",
+                "name": "Checkout",
+                "number": 2,
+                "startedAt": "2026-09-13T14:30:51Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:54Z",
+                "conclusion": "success",
+                "name": "Setup Python",
+                "number": 3,
+                "startedAt": "2026-09-13T14:30:54Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:31:19Z",
+                "conclusion": "success",
+                "name": "Install GPyReg",
+                "number": 4,
+                "startedAt": "2026-09-13T14:30:54Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:32:44Z",
+                "conclusion": "success",
+                "name": "Run tests",
+                "number": 5,
+                "startedAt": "2026-09-13T14:31:19Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:32:45Z",
+                "conclusion": "success",
+                "name": "Post Setup Python",
+                "number": 9,
+                "startedAt": "2026-09-13T14:32:44Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:32:45Z",
+                "conclusion": "success",
+                "name": "Post Checkout",
+                "number": 10,
+                "startedAt": "2026-09-13T14:32:45Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:32:45Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 11,
+                "startedAt": "2026-09-13T14:32:45Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/acerbilab/gpyreg/actions/runs/34762875948/job/103738658089"
+          },
+          {
+            "completedAt": "2026-09-13T14:34:12Z",
+            "conclusion": "success",
+            "databaseId": 103738658111,
+            "name": "tests (macos-latest, 3.10)",
+            "startedAt": "2026-09-13T14:30:56Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-13T14:30:58Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-13T14:30:57Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:31:01Z",
+                "conclusion": "success",
+                "name": "Checkout",
+                "number": 2,
+                "startedAt": "2026-09-13T14:30:58Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:31:27Z",
+                "conclusion": "success",
+                "name": "Setup Python",
+                "number": 3,
+                "startedAt": "2026-09-13T14:31:01Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:31:42Z",
+                "conclusion": "success",
+                "name": "Install GPyReg",
+                "number": 4,
+                "startedAt": "2026-09-13T14:31:27Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:34:07Z",
+                "conclusion": "success",
+                "name": "Run tests",
+                "number": 5,
+                "startedAt": "2026-09-13T14:31:42Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:34:08Z",
+                "conclusion": "success",
+                "name": "Post Setup Python",
+                "number": 9,
+                "startedAt": "2026-09-13T14:34:07Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:34:09Z",
+                "conclusion": "success",
+                "name": "Post Checkout",
+                "number": 10,
+                "startedAt": "2026-09-13T14:34:08Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:34:10Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 11,
+                "startedAt": "2026-09-13T14:34:09Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/acerbilab/gpyreg/actions/runs/34762875948/job/103738658111"
+          },
+          {
+            "completedAt": "2026-09-13T14:35:34Z",
+            "conclusion": "success",
+            "databaseId": 103738658167,
+            "name": "tests (macos-latest, 3.9)",
+            "startedAt": "2026-09-13T14:32:53Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-13T14:32:54Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-13T14:32:53Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:32:57Z",
+                "conclusion": "success",
+                "name": "Checkout",
+                "number": 2,
+                "startedAt": "2026-09-13T14:32:54Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:33:21Z",
+                "conclusion": "success",
+                "name": "Setup Python",
+                "number": 3,
+                "startedAt": "2026-09-13T14:32:57Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:33:39Z",
+                "conclusion": "success",
+                "name": "Install GPyReg",
+                "number": 4,
+                "startedAt": "2026-09-13T14:33:21Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:35:30Z",
+                "conclusion": "success",
+                "name": "Run tests",
+                "number": 5,
+                "startedAt": "2026-09-13T14:33:39Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:35:30Z",
+                "conclusion": "success",
+                "name": "Post Setup Python",
+                "number": 9,
+                "startedAt": "2026-09-13T14:35:30Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:35:31Z",
+                "conclusion": "success",
+                "name": "Post Checkout",
+                "number": 10,
+                "startedAt": "2026-09-13T14:35:30Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:35:33Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 11,
+                "startedAt": "2026-09-13T14:35:31Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/acerbilab/gpyreg/actions/runs/34762875948/job/103738658167"
+          }
+        ],
+        "status": "completed",
+        "url": "https://github.com/acerbilab/gpyreg/actions/runs/34762875948"
+      },
+      "pyvbmc": {
+        "conclusion": "success",
+        "headSha": "9d54ca3fbdc59aec86ebd01c0f9e21a8496aadfb",
+        "jobs": [
+          {
+            "completedAt": "2026-09-13T14:38:46Z",
+            "conclusion": "success",
+            "databaseId": 103738482264,
+            "name": "tests / tests (ubuntu-latest, 3.10)",
+            "startedAt": "2026-09-13T14:29:28Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-13T14:29:29Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-13T14:29:28Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:31Z",
+                "conclusion": "success",
+                "name": "Checkout PyVBMC",
+                "number": 2,
+                "startedAt": "2026-09-13T14:29:29Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:32Z",
+                "conclusion": "success",
+                "name": "Checkout GPyReg",
+                "number": 3,
+                "startedAt": "2026-09-13T14:29:31Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:32Z",
+                "conclusion": "success",
+                "name": "Setup Python",
+                "number": 4,
+                "startedAt": "2026-09-13T14:29:32Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:32Z",
+                "conclusion": "success",
+                "name": "Select optional torch coverage (posterior exports, S-VBMC)",
+                "number": 5,
+                "startedAt": "2026-09-13T14:29:32Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:32Z",
+                "conclusion": "skipped",
+                "name": "Install CPU torch",
+                "number": 6,
+                "startedAt": "2026-09-13T14:29:32Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:50Z",
+                "conclusion": "success",
+                "name": "Install PyVBMC",
+                "number": 7,
+                "startedAt": "2026-09-13T14:29:32Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:50Z",
+                "conclusion": "skipped",
+                "name": "Install optional torch features (posterior exports, S-VBMC)",
+                "number": 8,
+                "startedAt": "2026-09-13T14:29:50Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:54Z",
+                "conclusion": "success",
+                "name": "Install GPyReg",
+                "number": 9,
+                "startedAt": "2026-09-13T14:29:50Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:38:44Z",
+                "conclusion": "success",
+                "name": "Run tests",
+                "number": 10,
+                "startedAt": "2026-09-13T14:29:54Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:38:44Z",
+                "conclusion": "success",
+                "name": "Post Setup Python",
+                "number": 18,
+                "startedAt": "2026-09-13T14:38:44Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:38:44Z",
+                "conclusion": "success",
+                "name": "Post Checkout GPyReg",
+                "number": 19,
+                "startedAt": "2026-09-13T14:38:44Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:38:45Z",
+                "conclusion": "success",
+                "name": "Post Checkout PyVBMC",
+                "number": 20,
+                "startedAt": "2026-09-13T14:38:44Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:38:45Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 21,
+                "startedAt": "2026-09-13T14:38:45Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/acerbilab/pyvbmc/actions/runs/34762808101/job/103738482264"
+          },
+          {
+            "completedAt": "2026-09-13T14:40:38Z",
+            "conclusion": "success",
+            "databaseId": 103738482329,
+            "name": "tests / tests (windows-latest, 3.11)",
+            "startedAt": "2026-09-13T14:29:28Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-13T14:29:30Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-13T14:29:29Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:38Z",
+                "conclusion": "success",
+                "name": "Checkout PyVBMC",
+                "number": 2,
+                "startedAt": "2026-09-13T14:29:30Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:45Z",
+                "conclusion": "success",
+                "name": "Checkout GPyReg",
+                "number": 3,
+                "startedAt": "2026-09-13T14:29:38Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:45Z",
+                "conclusion": "success",
+                "name": "Setup Python",
+                "number": 4,
+                "startedAt": "2026-09-13T14:29:45Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:46Z",
+                "conclusion": "success",
+                "name": "Select optional torch coverage (posterior exports, S-VBMC)",
+                "number": 5,
+                "startedAt": "2026-09-13T14:29:45Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:46Z",
+                "conclusion": "skipped",
+                "name": "Install CPU torch",
+                "number": 6,
+                "startedAt": "2026-09-13T14:29:46Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:32Z",
+                "conclusion": "success",
+                "name": "Install PyVBMC",
+                "number": 7,
+                "startedAt": "2026-09-13T14:29:46Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:32Z",
+                "conclusion": "skipped",
+                "name": "Install optional torch features (posterior exports, S-VBMC)",
+                "number": 8,
+                "startedAt": "2026-09-13T14:30:32Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:38Z",
+                "conclusion": "success",
+                "name": "Install GPyReg",
+                "number": 9,
+                "startedAt": "2026-09-13T14:30:32Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:40:31Z",
+                "conclusion": "success",
+                "name": "Run tests",
+                "number": 10,
+                "startedAt": "2026-09-13T14:30:38Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:40:31Z",
+                "conclusion": "success",
+                "name": "Post Setup Python",
+                "number": 18,
+                "startedAt": "2026-09-13T14:40:31Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:40:34Z",
+                "conclusion": "success",
+                "name": "Post Checkout GPyReg",
+                "number": 19,
+                "startedAt": "2026-09-13T14:40:31Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:40:36Z",
+                "conclusion": "success",
+                "name": "Post Checkout PyVBMC",
+                "number": 20,
+                "startedAt": "2026-09-13T14:40:34Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:40:36Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 21,
+                "startedAt": "2026-09-13T14:40:36Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/acerbilab/pyvbmc/actions/runs/34762808101/job/103738482329"
+          },
+          {
+            "completedAt": "2026-09-13T14:36:08Z",
+            "conclusion": "success",
+            "databaseId": 103738482336,
+            "name": "tests / tests (macos-latest, 3.10)",
+            "startedAt": "2026-09-13T14:29:32Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-13T14:29:33Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-13T14:29:32Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:37Z",
+                "conclusion": "success",
+                "name": "Checkout PyVBMC",
+                "number": 2,
+                "startedAt": "2026-09-13T14:29:33Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:39Z",
+                "conclusion": "success",
+                "name": "Checkout GPyReg",
+                "number": 3,
+                "startedAt": "2026-09-13T14:29:37Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:08Z",
+                "conclusion": "success",
+                "name": "Setup Python",
+                "number": 4,
+                "startedAt": "2026-09-13T14:29:39Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:08Z",
+                "conclusion": "success",
+                "name": "Select optional torch coverage (posterior exports, S-VBMC)",
+                "number": 5,
+                "startedAt": "2026-09-13T14:30:08Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:08Z",
+                "conclusion": "skipped",
+                "name": "Install CPU torch",
+                "number": 6,
+                "startedAt": "2026-09-13T14:30:08Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:24Z",
+                "conclusion": "success",
+                "name": "Install PyVBMC",
+                "number": 7,
+                "startedAt": "2026-09-13T14:30:08Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:24Z",
+                "conclusion": "skipped",
+                "name": "Install optional torch features (posterior exports, S-VBMC)",
+                "number": 8,
+                "startedAt": "2026-09-13T14:30:24Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:27Z",
+                "conclusion": "success",
+                "name": "Install GPyReg",
+                "number": 9,
+                "startedAt": "2026-09-13T14:30:24Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:36:03Z",
+                "conclusion": "success",
+                "name": "Run tests",
+                "number": 10,
+                "startedAt": "2026-09-13T14:30:27Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:36:03Z",
+                "conclusion": "success",
+                "name": "Post Setup Python",
+                "number": 18,
+                "startedAt": "2026-09-13T14:36:03Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:36:04Z",
+                "conclusion": "success",
+                "name": "Post Checkout GPyReg",
+                "number": 19,
+                "startedAt": "2026-09-13T14:36:03Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:36:05Z",
+                "conclusion": "success",
+                "name": "Post Checkout PyVBMC",
+                "number": 20,
+                "startedAt": "2026-09-13T14:36:04Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:36:07Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 21,
+                "startedAt": "2026-09-13T14:36:05Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/acerbilab/pyvbmc/actions/runs/34762808101/job/103738482336"
+          },
+          {
+            "completedAt": "2026-09-13T14:36:20Z",
+            "conclusion": "success",
+            "databaseId": 103738482347,
+            "name": "tests / tests (ubuntu-latest, 3.12)",
+            "startedAt": "2026-09-13T14:29:28Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-13T14:29:29Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-13T14:29:28Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:32Z",
+                "conclusion": "success",
+                "name": "Checkout PyVBMC",
+                "number": 2,
+                "startedAt": "2026-09-13T14:29:29Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:34Z",
+                "conclusion": "success",
+                "name": "Checkout GPyReg",
+                "number": 3,
+                "startedAt": "2026-09-13T14:29:32Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:34Z",
+                "conclusion": "success",
+                "name": "Setup Python",
+                "number": 4,
+                "startedAt": "2026-09-13T14:29:34Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:34Z",
+                "conclusion": "success",
+                "name": "Select optional torch coverage (posterior exports, S-VBMC)",
+                "number": 5,
+                "startedAt": "2026-09-13T14:29:34Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:58Z",
+                "conclusion": "success",
+                "name": "Install CPU torch",
+                "number": 6,
+                "startedAt": "2026-09-13T14:29:34Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:14Z",
+                "conclusion": "success",
+                "name": "Install PyVBMC",
+                "number": 7,
+                "startedAt": "2026-09-13T14:29:58Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:24Z",
+                "conclusion": "success",
+                "name": "Install optional torch features (posterior exports, S-VBMC)",
+                "number": 8,
+                "startedAt": "2026-09-13T14:30:14Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:27Z",
+                "conclusion": "success",
+                "name": "Install GPyReg",
+                "number": 9,
+                "startedAt": "2026-09-13T14:30:24Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:36:17Z",
+                "conclusion": "success",
+                "name": "Run tests",
+                "number": 10,
+                "startedAt": "2026-09-13T14:30:27Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:36:18Z",
+                "conclusion": "success",
+                "name": "Post Setup Python",
+                "number": 18,
+                "startedAt": "2026-09-13T14:36:17Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:36:18Z",
+                "conclusion": "success",
+                "name": "Post Checkout GPyReg",
+                "number": 19,
+                "startedAt": "2026-09-13T14:36:18Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:36:18Z",
+                "conclusion": "success",
+                "name": "Post Checkout PyVBMC",
+                "number": 20,
+                "startedAt": "2026-09-13T14:36:18Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:36:18Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 21,
+                "startedAt": "2026-09-13T14:36:18Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/acerbilab/pyvbmc/actions/runs/34762808101/job/103738482347"
+          },
+          {
+            "completedAt": "2026-09-13T14:40:17Z",
+            "conclusion": "success",
+            "databaseId": 103738482362,
+            "name": "tests / tests (windows-latest, 3.10)",
+            "startedAt": "2026-09-13T14:29:28Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-13T14:29:29Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-13T14:29:28Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:37Z",
+                "conclusion": "success",
+                "name": "Checkout PyVBMC",
+                "number": 2,
+                "startedAt": "2026-09-13T14:29:29Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:40Z",
+                "conclusion": "success",
+                "name": "Checkout GPyReg",
+                "number": 3,
+                "startedAt": "2026-09-13T14:29:37Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:41Z",
+                "conclusion": "success",
+                "name": "Setup Python",
+                "number": 4,
+                "startedAt": "2026-09-13T14:29:40Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:41Z",
+                "conclusion": "success",
+                "name": "Select optional torch coverage (posterior exports, S-VBMC)",
+                "number": 5,
+                "startedAt": "2026-09-13T14:29:41Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:41Z",
+                "conclusion": "skipped",
+                "name": "Install CPU torch",
+                "number": 6,
+                "startedAt": "2026-09-13T14:29:41Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:22Z",
+                "conclusion": "success",
+                "name": "Install PyVBMC",
+                "number": 7,
+                "startedAt": "2026-09-13T14:29:41Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:22Z",
+                "conclusion": "skipped",
+                "name": "Install optional torch features (posterior exports, S-VBMC)",
+                "number": 8,
+                "startedAt": "2026-09-13T14:30:22Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:28Z",
+                "conclusion": "success",
+                "name": "Install GPyReg",
+                "number": 9,
+                "startedAt": "2026-09-13T14:30:22Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:40:11Z",
+                "conclusion": "success",
+                "name": "Run tests",
+                "number": 10,
+                "startedAt": "2026-09-13T14:30:28Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:40:11Z",
+                "conclusion": "success",
+                "name": "Post Setup Python",
+                "number": 18,
+                "startedAt": "2026-09-13T14:40:11Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:40:13Z",
+                "conclusion": "success",
+                "name": "Post Checkout GPyReg",
+                "number": 19,
+                "startedAt": "2026-09-13T14:40:11Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:40:15Z",
+                "conclusion": "success",
+                "name": "Post Checkout PyVBMC",
+                "number": 20,
+                "startedAt": "2026-09-13T14:40:13Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:40:16Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 21,
+                "startedAt": "2026-09-13T14:40:15Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/acerbilab/pyvbmc/actions/runs/34762808101/job/103738482362"
+          },
+          {
+            "completedAt": "2026-09-13T14:35:55Z",
+            "conclusion": "success",
+            "databaseId": 103738482374,
+            "name": "tests / tests (macos-latest, 3.11)",
+            "startedAt": "2026-09-13T14:29:33Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-13T14:29:35Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-13T14:29:34Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:38Z",
+                "conclusion": "success",
+                "name": "Checkout PyVBMC",
+                "number": 2,
+                "startedAt": "2026-09-13T14:29:35Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:40Z",
+                "conclusion": "success",
+                "name": "Checkout GPyReg",
+                "number": 3,
+                "startedAt": "2026-09-13T14:29:38Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:40Z",
+                "conclusion": "success",
+                "name": "Setup Python",
+                "number": 4,
+                "startedAt": "2026-09-13T14:29:40Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:40Z",
+                "conclusion": "success",
+                "name": "Select optional torch coverage (posterior exports, S-VBMC)",
+                "number": 5,
+                "startedAt": "2026-09-13T14:29:40Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:40Z",
+                "conclusion": "skipped",
+                "name": "Install CPU torch",
+                "number": 6,
+                "startedAt": "2026-09-13T14:29:40Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:01Z",
+                "conclusion": "success",
+                "name": "Install PyVBMC",
+                "number": 7,
+                "startedAt": "2026-09-13T14:29:40Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:01Z",
+                "conclusion": "skipped",
+                "name": "Install optional torch features (posterior exports, S-VBMC)",
+                "number": 8,
+                "startedAt": "2026-09-13T14:30:01Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:05Z",
+                "conclusion": "success",
+                "name": "Install GPyReg",
+                "number": 9,
+                "startedAt": "2026-09-13T14:30:01Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:35:49Z",
+                "conclusion": "success",
+                "name": "Run tests",
+                "number": 10,
+                "startedAt": "2026-09-13T14:30:05Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:35:50Z",
+                "conclusion": "success",
+                "name": "Post Setup Python",
+                "number": 18,
+                "startedAt": "2026-09-13T14:35:49Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:35:51Z",
+                "conclusion": "success",
+                "name": "Post Checkout GPyReg",
+                "number": 19,
+                "startedAt": "2026-09-13T14:35:50Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:35:51Z",
+                "conclusion": "success",
+                "name": "Post Checkout PyVBMC",
+                "number": 20,
+                "startedAt": "2026-09-13T14:35:51Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:35:54Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 21,
+                "startedAt": "2026-09-13T14:35:51Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/acerbilab/pyvbmc/actions/runs/34762808101/job/103738482374"
+          },
+          {
+            "completedAt": "2026-09-13T14:39:55Z",
+            "conclusion": "success",
+            "databaseId": 103738482402,
+            "name": "tests / tests (windows-latest, 3.12)",
+            "startedAt": "2026-09-13T14:29:28Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-13T14:29:29Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-13T14:29:28Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:36Z",
+                "conclusion": "success",
+                "name": "Checkout PyVBMC",
+                "number": 2,
+                "startedAt": "2026-09-13T14:29:29Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:40Z",
+                "conclusion": "success",
+                "name": "Checkout GPyReg",
+                "number": 3,
+                "startedAt": "2026-09-13T14:29:36Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:40Z",
+                "conclusion": "success",
+                "name": "Setup Python",
+                "number": 4,
+                "startedAt": "2026-09-13T14:29:40Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:41Z",
+                "conclusion": "success",
+                "name": "Select optional torch coverage (posterior exports, S-VBMC)",
+                "number": 5,
+                "startedAt": "2026-09-13T14:29:40Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:41Z",
+                "conclusion": "skipped",
+                "name": "Install CPU torch",
+                "number": 6,
+                "startedAt": "2026-09-13T14:29:41Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:30Z",
+                "conclusion": "success",
+                "name": "Install PyVBMC",
+                "number": 7,
+                "startedAt": "2026-09-13T14:29:41Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:30Z",
+                "conclusion": "skipped",
+                "name": "Install optional torch features (posterior exports, S-VBMC)",
+                "number": 8,
+                "startedAt": "2026-09-13T14:30:30Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:36Z",
+                "conclusion": "success",
+                "name": "Install GPyReg",
+                "number": 9,
+                "startedAt": "2026-09-13T14:30:30Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:39:49Z",
+                "conclusion": "success",
+                "name": "Run tests",
+                "number": 10,
+                "startedAt": "2026-09-13T14:30:36Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:39:49Z",
+                "conclusion": "success",
+                "name": "Post Setup Python",
+                "number": 18,
+                "startedAt": "2026-09-13T14:39:49Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:39:52Z",
+                "conclusion": "success",
+                "name": "Post Checkout GPyReg",
+                "number": 19,
+                "startedAt": "2026-09-13T14:39:49Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:39:54Z",
+                "conclusion": "success",
+                "name": "Post Checkout PyVBMC",
+                "number": 20,
+                "startedAt": "2026-09-13T14:39:52Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:39:54Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 21,
+                "startedAt": "2026-09-13T14:39:54Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/acerbilab/pyvbmc/actions/runs/34762808101/job/103738482402"
+          },
+          {
+            "completedAt": "2026-09-13T14:36:16Z",
+            "conclusion": "success",
+            "databaseId": 103738482404,
+            "name": "tests / tests (macos-latest, 3.12)",
+            "startedAt": "2026-09-13T14:29:34Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-13T14:29:35Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-13T14:29:34Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:39Z",
+                "conclusion": "success",
+                "name": "Checkout PyVBMC",
+                "number": 2,
+                "startedAt": "2026-09-13T14:29:35Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:41Z",
+                "conclusion": "success",
+                "name": "Checkout GPyReg",
+                "number": 3,
+                "startedAt": "2026-09-13T14:29:39Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:41Z",
+                "conclusion": "success",
+                "name": "Setup Python",
+                "number": 4,
+                "startedAt": "2026-09-13T14:29:41Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:41Z",
+                "conclusion": "success",
+                "name": "Select optional torch coverage (posterior exports, S-VBMC)",
+                "number": 5,
+                "startedAt": "2026-09-13T14:29:41Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:41Z",
+                "conclusion": "skipped",
+                "name": "Install CPU torch",
+                "number": 6,
+                "startedAt": "2026-09-13T14:29:41Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:00Z",
+                "conclusion": "success",
+                "name": "Install PyVBMC",
+                "number": 7,
+                "startedAt": "2026-09-13T14:29:41Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:00Z",
+                "conclusion": "skipped",
+                "name": "Install optional torch features (posterior exports, S-VBMC)",
+                "number": 8,
+                "startedAt": "2026-09-13T14:30:00Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:30:03Z",
+                "conclusion": "success",
+                "name": "Install GPyReg",
+                "number": 9,
+                "startedAt": "2026-09-13T14:30:00Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:36:10Z",
+                "conclusion": "success",
+                "name": "Run tests",
+                "number": 10,
+                "startedAt": "2026-09-13T14:30:03Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:36:10Z",
+                "conclusion": "success",
+                "name": "Post Setup Python",
+                "number": 18,
+                "startedAt": "2026-09-13T14:36:10Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:36:11Z",
+                "conclusion": "success",
+                "name": "Post Checkout GPyReg",
+                "number": 19,
+                "startedAt": "2026-09-13T14:36:10Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:36:12Z",
+                "conclusion": "success",
+                "name": "Post Checkout PyVBMC",
+                "number": 20,
+                "startedAt": "2026-09-13T14:36:11Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:36:13Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 21,
+                "startedAt": "2026-09-13T14:36:12Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/acerbilab/pyvbmc/actions/runs/34762808101/job/103738482404"
+          },
+          {
+            "completedAt": "2026-09-13T14:38:21Z",
+            "conclusion": "success",
+            "databaseId": 103738482405,
+            "name": "tests / tests (ubuntu-latest, 3.11)",
+            "startedAt": "2026-09-13T14:29:27Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-13T14:29:28Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-13T14:29:28Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:31Z",
+                "conclusion": "success",
+                "name": "Checkout PyVBMC",
+                "number": 2,
+                "startedAt": "2026-09-13T14:29:28Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:31Z",
+                "conclusion": "success",
+                "name": "Checkout GPyReg",
+                "number": 3,
+                "startedAt": "2026-09-13T14:29:31Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:32Z",
+                "conclusion": "success",
+                "name": "Setup Python",
+                "number": 4,
+                "startedAt": "2026-09-13T14:29:31Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:32Z",
+                "conclusion": "success",
+                "name": "Select optional torch coverage (posterior exports, S-VBMC)",
+                "number": 5,
+                "startedAt": "2026-09-13T14:29:32Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:32Z",
+                "conclusion": "skipped",
+                "name": "Install CPU torch",
+                "number": 6,
+                "startedAt": "2026-09-13T14:29:32Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:49Z",
+                "conclusion": "success",
+                "name": "Install PyVBMC",
+                "number": 7,
+                "startedAt": "2026-09-13T14:29:32Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:49Z",
+                "conclusion": "skipped",
+                "name": "Install optional torch features (posterior exports, S-VBMC)",
+                "number": 8,
+                "startedAt": "2026-09-13T14:29:49Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:29:52Z",
+                "conclusion": "success",
+                "name": "Install GPyReg",
+                "number": 9,
+                "startedAt": "2026-09-13T14:29:49Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:38:18Z",
+                "conclusion": "success",
+                "name": "Run tests",
+                "number": 10,
+                "startedAt": "2026-09-13T14:29:52Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:38:18Z",
+                "conclusion": "success",
+                "name": "Post Setup Python",
+                "number": 18,
+                "startedAt": "2026-09-13T14:38:18Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:38:18Z",
+                "conclusion": "success",
+                "name": "Post Checkout GPyReg",
+                "number": 19,
+                "startedAt": "2026-09-13T14:38:18Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:38:19Z",
+                "conclusion": "success",
+                "name": "Post Checkout PyVBMC",
+                "number": 20,
+                "startedAt": "2026-09-13T14:38:18Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-13T14:38:19Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 21,
+                "startedAt": "2026-09-13T14:38:19Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/acerbilab/pyvbmc/actions/runs/34762808101/job/103738482405"
+          }
+        ],
+        "status": "completed",
+        "url": "https://github.com/acerbilab/pyvbmc/actions/runs/34762808101"
+      }
+    },
+    "gpyreg_release": "https://github.com/acerbilab/gpyreg/releases/tag/v1.2.0",
+    "publication_ci": {
+      "conclusion": "success",
+      "headSha": "39536b000a8c8465133f4eaef625486991db8257",
+      "jobs": [
+        {
+          "completedAt": "2026-09-13T14:42:44Z",
+          "conclusion": "success",
+          "databaseId": 103740103048,
+          "name": "build / build",
+          "startedAt": "2026-09-13T14:42:17Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-09-13T14:42:19Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-09-13T14:42:18Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T14:42:20Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@v6",
+              "number": 2,
+              "startedAt": "2026-09-13T14:42:19Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T14:42:28Z",
+              "conclusion": "success",
+              "name": "Install Python",
+              "number": 3,
+              "startedAt": "2026-09-13T14:42:20Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T14:42:37Z",
+              "conclusion": "success",
+              "name": "Build sdist and wheel",
+              "number": 4,
+              "startedAt": "2026-09-13T14:42:28Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T14:42:41Z",
+              "conclusion": "success",
+              "name": "Verify package metadata",
+              "number": 5,
+              "startedAt": "2026-09-13T14:42:37Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T14:42:42Z",
+              "conclusion": "success",
+              "name": "Run actions/upload-artifact@v6",
+              "number": 6,
+              "startedAt": "2026-09-13T14:42:41Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T14:42:42Z",
+              "conclusion": "success",
+              "name": "Post Install Python",
+              "number": 11,
+              "startedAt": "2026-09-13T14:42:42Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T14:42:43Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@v6",
+              "number": 12,
+              "startedAt": "2026-09-13T14:42:42Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T14:42:43Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 13,
+              "startedAt": "2026-09-13T14:42:43Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/acerbilab/gpyreg/actions/runs/34763427520/job/103740103048"
+        },
+        {
+          "completedAt": "2026-09-13T14:43:07Z",
+          "conclusion": "success",
+          "databaseId": 103740161697,
+          "name": "upload_to_pypi",
+          "startedAt": "2026-09-13T14:42:46Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-09-13T14:42:49Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-09-13T14:42:47Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T14:42:50Z",
+              "conclusion": "success",
+              "name": "Download built package",
+              "number": 2,
+              "startedAt": "2026-09-13T14:42:49Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T14:43:05Z",
+              "conclusion": "success",
+              "name": "Upload to PyPI",
+              "number": 3,
+              "startedAt": "2026-09-13T14:42:50Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T14:43:05Z",
+              "conclusion": "success",
+              "name": "Post Upload to PyPI",
+              "number": 6,
+              "startedAt": "2026-09-13T14:43:05Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T14:43:05Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 7,
+              "startedAt": "2026-09-13T14:43:05Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/acerbilab/gpyreg/actions/runs/34763427520/job/103740161697"
+        }
+      ],
+      "status": "completed",
+      "url": "https://github.com/acerbilab/gpyreg/actions/runs/34763427520"
+    },
+    "wheel_check": {
+      "version": "1.2.0",
+      "module_path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\viqr_kernel_20260913\\published\\install\\gpyreg\\__init__.py",
+      "signature": "(self, x_star: numpy.ndarray, y_star: numpy.ndarray = None, s2_star: numpy.ndarray = None, add_noise: bool = False, separate_samples: bool = False, return_lpd: bool = False, *, return_cross_covariance: bool = False)",
+      "default_outputs_exact": true,
+      "cross_covariances_exact": true
+    },
+    "wheel_sha256": "f6d4ad49b333fde2a1d950fc3002486b81a44d3c7c6ebb3859f3db2daaac3d34",
+    "wheel_name": "gpyreg-1.2.0-py3-none-any.whl",
+    "wheel_source_files_match_merge": [
+      "covariance_functions.py",
+      "formatting.py",
+      "f_min_fill.py",
+      "gaussian_process.py",
+      "isotropic_covariance_functions.py",
+      "mean_functions.py",
+      "noise_functions.py",
+      "rng.py",
+      "slice_sample.py",
+      "__init__.py"
+    ],
+    "gpyreg_version": "1.2.0",
+    "editable_install": {
+      "gpyreg_version": "1.2.0",
+      "gpyreg_path": "C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\__init__.py",
+      "pyvbmc_path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc\\__init__.py",
+      "gpyreg_requirement": [
+        "gpyreg>=1.2.0"
+      ]
+    }
   }
 }

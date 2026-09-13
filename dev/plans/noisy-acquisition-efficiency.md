@@ -362,7 +362,13 @@ passed in 45.9 minutes from `16dcc3f` (documentation successor of `9e8d2f2`)
 and gpyreg `355d754`: all 18 stored trajectories and final results are exact,
 all initial designs match, and no runs are flagged. Before/after source and
 input hashes match. Tracker edits during replay affect documentation only.
-The release rollout remains open. The draft integration is
+Independent replay review confirmed all output/input hashes and reported no
+findings. Gpyreg PR #45 is merged as `39536b0`, whose tree equals `355d754`;
+both repositories' merged-source matrices passed all nine cells before release.
+Gpyreg's standalone tests workflow was re-enabled after GitHub disabled it
+for inactivity. Gpyreg v1.2.0 is published from the validated merge; its PyPI
+wheel passes API/version/source checks. The final dependency floor is 1.2.0
+and CI pin is `39536b0`; final PyVBMC CI and integration remain open. The integration is
 [PyVBMC PR #174](https://github.com/acerbilab/pyvbmc/pull/174), targeting `dev-next`.
 
 ### Objective and boundaries

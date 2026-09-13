@@ -23,11 +23,8 @@ on:
         default: ''
 
 env:
-  # Development candidate for GP.predict(return_cross_covariance=True).
-  # Replace with the validated released merge before integration; retain the
-  # published dependency floor until the additive gpyreg release is available.
-  # Previous pin: a2f8ddc (gpyreg v1.1.0, GP.fit(rng=)).
-  GPYREG_PIN: 355d75490b6c1f8979451ed0970b6cfeb98ccf57
+  # gpyreg v1.2.0: GP.predict(return_cross_covariance=True) for VIQR reuse.
+  GPYREG_PIN: 39536b000a8c8465133f4eaef625486991db8257
 
 jobs:
   tests:
