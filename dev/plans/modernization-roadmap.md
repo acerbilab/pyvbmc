@@ -1005,6 +1005,14 @@ and optional runtime tips. The
 the [optimism note](../2026-09-12-svbmc-elbo-optimism.md) owns the rationale
 and the separate Phase 2 proposal. The regenerated S-VBMC references are
 the regression gate for the preparation and entropy speedups included in 1.5.
+After the included S-VBMC changes are settled, a benchmark campaign against
+the original standalone S-VBMC is required before release, covering their
+combined effect on posterior quality, reported evidence accuracy and runtime.
+The existing numerical fixtures and parity checks do not provide a population
+benchmark reference comparable to VBMC's golden campaign. Establish and
+preserve that S-VBMC baseline; campaign allocation and acceptance criteria
+remain to be designed. See the
+[campaign requirement](svbmc-integration.md#benchmark-campaign-required-for-15).
 
 ## Golden population acceptance
 

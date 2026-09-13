@@ -51,6 +51,21 @@ campaign. No new campaign is in flight.
   See the [prototype measurements](results/2026-09-09-svbmc-numpy-prototype.md)
   and [integration decisions](plans/svbmc-integration.md).
 
+- [ ] **S-VBMC benchmark campaign against the original implementation.**
+  After the S-VBMC changes included in 1.5 are settled, assess their combined
+  effect against the original standalone S-VBMC, covering debiasing and
+  preparation/entropy speedups. Compare posterior quality, reported evidence
+  accuracy and runtime on matched input-run groups, including noisy targets
+  and different numbers of stacked runs. S-VBMC has numerical regression
+  fixtures and integration parity checks, but lacks a population benchmark
+  reference comparable to VBMC's golden campaign. Establish and preserve the
+  original S-VBMC baseline and reproducible campaign results. Target/seed
+  allocation and acceptance criteria remain to be designed. Reuse suitable
+  VBMC numerical fixtures and retained runs, prioritizing hard targets such
+  as noisy multisensory and Rosenbrock; check that the required posterior
+  and GP state is available. See the
+  [campaign requirement](plans/svbmc-integration.md#benchmark-campaign-required-for-15).
+
 - [ ] **Slurm/HPC benchmark support.** Design reproducible submission,
   resource settings, resumption and result collection. The implementation
   design remains open. This is needed before relying on that workflow for
@@ -113,6 +128,8 @@ campaign. No new campaign is in flight.
 - At most one heavy computation runs at a time. Read-only investigation
   and documentation may proceed alongside it.
 - Final release checks depend on included changes being settled.
+  S-VBMC changes require the comparison campaign against original S-VBMC
+  before release; baseline preparation can proceed before those changes.
   Publication and post-release tasks remain separate actions.
 - Use feature branches for implementation. Planning, proposal, handoff and
   status edits belong on `dev-next`. Leave unrelated work intact.

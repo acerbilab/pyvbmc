@@ -73,6 +73,40 @@ adding Torch to the repository venv.
   objective, validate against the S-VBMC regression references, and measure
   the speedup. This work is independent of the ELBO-debiasing investigation.
 
+## Benchmark campaign required for 1.5
+
+PI decision, 2026-09-13: after the S-VBMC changes included in 1.5 are
+settled, run a benchmark campaign comparing their combined effect against
+the original standalone S-VBMC. This validation is required for the
+debiasing and preparation/entropy work, regardless of the implementation
+chosen. The original implementation is pinned above at `13a78f6` (0.1.1);
+preserve its source revision, environment and campaign outputs as the
+comparison baseline.
+
+The existing fixtures and short integration parity checks establish
+numerical regression coverage. A population benchmark reference comparable
+to VBMC's golden campaign remains to be established for S-VBMC. Compare
+posterior quality, reported evidence accuracy and runtime using matched
+input-run groups, including noisy targets and different numbers of stacked
+runs. Record input provenance, seeds, settings and evaluation ground truths
+so the comparison can be reproduced. Document intended reporting/correction
+differences when assessing results against the original implementation.
+
+Reuse suitable VBMC numerical fixtures and retained benchmark runs as inputs
+to S-VBMC validation. Hard targets such as noisy multisensory and Rosenbrock
+are priority candidates (PI, 2026-09-13). Inventory the retained posteriors
+and corresponding GP state needed by the debiasing methods; trace summaries
+alone cannot reconstruct stacking inputs. Reuse compatible artifacts and
+generate any missing state as part of the campaign preparation. Applying
+original S-VBMC to these inputs establishes the S-VBMC comparison results;
+the existing VBMC results supply target coverage and input provenance.
+
+Target and seed allocation, metrics and acceptance criteria remain to be
+designed before execution. Baseline preparation can proceed independently;
+the final comparison must cover the settled S-VBMC release candidate and be
+assessed before the 1.5 release. Track execution in the
+[remaining-work checklist](../TODO.md).
+
 ## Layout
 
 ```
