@@ -79,6 +79,10 @@ decided at the documentation review.
 
 ## Work awaiting a separate decision
 
+- Assess a scoped PyMC integration for 1.5: structured ArviZ export, a
+  target-function adapter and a worked example. The
+  [proposal](2026-09-13-pymc-integration.md) records the comparison with
+  PR #73, effort estimates and the proposed feasibility check.
 - Improve Slurm HPC support for benchmark runs, a follow-up task before
   the final documentation review; see
   [benchmark coverage and HPC support](plans/modernization-roadmap.md#benchmark-coverage-and-hpc-support).
