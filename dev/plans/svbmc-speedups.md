@@ -1,7 +1,9 @@
 # S-VBMC preparation and entropy speedups
 
-Created 2026-09-13. Status: in progress on `dev-svbmc-speedups` (worktree
-`../pyvbmc-stage3`, branched from `dev-next` at `83692ac`).
+Created 2026-09-13. Status: implemented, reviewed and pushed on
+`dev-svbmc-speedups` (worktree `../pyvbmc-stage3`, branched from `dev-next`
+at `83692ac`; code `985e670`, records `f40b4c4`); CI on the branch and the
+merge into `dev-next` remain.
 
 This plan owns the implementation contract, checks, measurement and worklog
 of the performance follow-up decided in
@@ -104,8 +106,8 @@ claim. Evidence goes to `dev/experiments/svbmc_speedups/` and the report to
   overview.
 - [~] 6. Independent doublecheck completed 2026-09-13 (three static
   reviews: code and tests, records, benchmark and evidence; findings
-  applied, none blocking). Remaining: formatting hooks on commit, the CI
-  cell with Torch, merge into `dev-next`.
+  applied, none blocking). Formatting hooks passed on both commits.
+  Remaining: the CI cell with Torch, merge into `dev-next`.
 
 ## Decisions
 
