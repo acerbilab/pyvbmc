@@ -67,8 +67,11 @@ adding Torch to the repository venv.
   `svbmc.utils`, keeps its own `targets`, maps `testing=True` to a fixed
   seed with a deprecation warning, and reports its own `__version__`.
   Out of scope for this plan.
-- **Deferred.** The shared-preparation and vectorized-entropy speedups
-  measured in the prototype are a separate change after this plan.
+- **Performance follow-up (PI, 2026-09-13).** The shared-preparation and
+  vectorized-entropy speedups measured in the prototype are in scope for
+  1.5 as a separate change after integration. Preserve the method and sampled
+  objective, validate against the S-VBMC regression references, and measure
+  the speedup. This work is independent of the ELBO-debiasing investigation.
 
 ## Layout
 

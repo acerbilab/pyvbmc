@@ -25,12 +25,13 @@ reference size does not prescribe their run count.
 
 The remaining numerical work for 1.5 is improving the efficiency of existing
 noisy acquisitions (sieve/search, importance sampling, criterion evaluation
-and GP-update costs) and checking/improving S-VBMC's reported ELBO debiasing.
+and GP-update costs), checking/improving S-VBMC's reported ELBO debiasing,
+and S-VBMC preparation/entropy speedups that preserve the method.
 Designing new acquisition functions or criteria is outside scope. Existing
 experimental acquisition options require a retain/document/remove decision;
 their presence does not expand the release's method-development scope.
-S-VBMC preparation and entropy optimizations remain a separate performance
-task deferred from integration, with release placement undecided. The
+S-VBMC preparation and entropy optimizations are in scope for 1.5 as a
+separate performance task, validated against the regression references. The
 standalone `svbmc` compatibility release follows PyVBMC 1.5 on PyPI.
 
 - [x] **Stage 0 — test oracle** (devlog §10)
@@ -994,7 +995,7 @@ and optional runtime tips. The
 [execution plan](svbmc-elbo-reporting.md) owns status and verification;
 the [optimism note](../2026-09-12-svbmc-elbo-optimism.md) owns the rationale
 and the separate Phase 2 proposal. The regenerated S-VBMC references are
-the regression gate for the deferred entropy speedups.
+the regression gate for the preparation and entropy speedups included in 1.5.
 
 ## Golden population acceptance
 

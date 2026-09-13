@@ -27,6 +27,14 @@ campaign. No new campaign is in flight.
   See the [ELBO optimism note](2026-09-12-svbmc-elbo-optimism.md) and
   completed [Phase 1 plan](plans/svbmc-elbo-reporting.md).
 
+- [ ] **S-VBMC preparation and entropy speedups.** Reuse transforms and
+  density calculations and vectorize entropy computations during stacking.
+  These are implementation optimizations that preserve the method and sampled
+  objective, separate from ELBO debiasing. Validate against the S-VBMC
+  regression references and measure performance on representative workloads.
+  See the [prototype measurements](results/2026-09-09-svbmc-numpy-prototype.md)
+  and [integration decisions](plans/svbmc-integration.md).
+
 - [ ] **Slurm/HPC benchmark support.** Design reproducible submission,
   resource settings, resumption and result collection. The implementation
   design remains open. This is needed before relying on that workflow for
@@ -50,14 +58,6 @@ campaign. No new campaign is in flight.
   and plausible bounds. Decide the supported model scope and inclusion
   after the check. Automatic initialization and inference orchestration are
   deferred in the proposal. See the [PyMC proposal](2026-09-13-pymc-integration.md).
-
-- [ ] **S-VBMC preparation/entropy speedups: 1.5 or later?** Reuse transforms
-  and density calculations and vectorize entropy computations during stacking.
-  These performance changes are distinct from debiasing and were deferred
-  from integration, without a settled release date. Validate any implementation
-  against the S-VBMC regression references. See the
-  [prototype measurements](results/2026-09-09-svbmc-numpy-prototype.md) and
-  [integration decisions](plans/svbmc-integration.md).
 
 - [ ] **Existing experimental acquisition options: retain or remove?**
   Decide the disposition of the VIQR loss variants and EIG options already
