@@ -536,13 +536,22 @@ reason.
   weighting or mean, and every estimate (raw, the class's caps, honest
   under a grid of rules) is scored by its bias against the cell's
   `e_log_joint_mc`; the same draws give per-component truths,
-  calibration `z` statistics of the self-reported SDs, effective
-  training-point counts and own-run consistency checks. Writes
-  `results.json`, per-cell component arrays, summaries, figures and
-  `sources.json`; `--self-check` runs the run-level checks on a pool
-  without cells, `--summarize-only` rebuilds summaries and figures. Needs
-  no Torch. `test_svbmc_honest_elbo.py` checks the contracts on a
-  generated two-run pool; the first run, on the pilot artifacts, is
+  calibration `z` statistics of the self-reported SDs, and for every
+  evaluating run and component the data it had there (effective and
+  within-two-SD training-point counts, their offset from the truth, the
+  GP mean function), written out for every run's heaviest component as a
+  decomposition record, plus own-run consistency checks. Writes
+  `results.json`, `cells.jsonl` as the sweep goes (a failed cell is
+  recorded as skipped and the sweep continues), per-cell component
+  arrays, summaries with the decomposition tables, figures and
+  `sources.json` with the thread settings and the hashes of the script
+  and of the cells file; `--headline-ratio` moves the headline within
+  `--ratios`; `--self-check` runs the run-level checks on a pool without
+  cells; `--summarize-only` rebuilds summaries and figures. Needs no
+  Torch. `test_svbmc_honest_elbo.py` checks the contracts on a generated
+  two-run pool and, synthetically, the combination rules, the checks and
+  the mapping between two different transformers; the first run, on the
+  pilot artifacts, is
   [results/2026-09-14-svbmc-honest-elbo-pilot.md](results/2026-09-14-svbmc-honest-elbo-pilot.md).
 - `scripts/pymc_feasibility.py` — the bounded feasibility check of a PyMC
   model adapter (`2026-09-13-pymc-integration.md`): a PyMC model becomes a
