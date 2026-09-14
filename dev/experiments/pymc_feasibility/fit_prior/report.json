@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-14 14:31:57",
+ "generated": "2026-09-14 14:55:31",
  "environment": {
   "python": "3.12.6",
   "platform": "Windows-11-10.0.26200-SP0",
@@ -13,11 +13,11 @@
   "numpy": "2.5.3",
   "scipy": "1.18.1",
   "pyvbmc": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc",
-  "pyvbmc_commit": "04183511e508d6acc45dcc5cf0bad56bf597df70",
+  "pyvbmc_commit": "59e9a52cb5b967730cfa031299b9a14e23ff40bd",
   "pyvbmc_dirty": "M dev/scripts/pymc_feasibility.py",
   "gpyreg": "C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg",
   "gpyreg_commit": "9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b",
-  "script_sha256": "03b278f7faee9e052b3712a1ffc9f91dba6b4e52948fac04fd9bd6cbc0fa650c",
+  "script_sha256": "f2ade815a503db0b24f7e646a1fc046a63183de79b20b7ca6431bd0477460379",
   "executable": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\pymc_feasibility_20260914\\venv\\Scripts\\python.exe"
  },
  "seed": 0,
@@ -50,60 +50,60 @@
    "coords": {},
    "density": {
     "points": 25,
-    "max_abs_difference": 2.1762372170996969e-07,
-    "offset": 2.1762369470934572e-07,
-    "max_abs_deviation_from_offset": 2.984279489663025e-14,
+    "max_abs_difference": 2.176237359208244e-07,
+    "offset": 2.1762369954103632e-07,
+    "max_abs_deviation_from_offset": 3.637978807832867e-14,
     "outside_bounds_value": null,
     "passes": true
    },
    "jacobian": {
     "applicable": false
    },
-   "ms_per_call": 0.06085300003178418,
+   "ms_per_call": 0.12807899998733774,
    "fit": {
     "plausible": "prior",
     "laplace_fallback": {
      "curvature": [],
      "clipped": []
     },
-    "setup_seconds": 0.07473160000517964,
+    "setup_seconds": 0.12138740002410486,
     "plb": [
-     -4.953814266654245
+     -5.114228201860108
     ],
     "pub": [
-     4.769666256000443
+     4.793783723533911
     ],
     "x0": [
      0.0
     ],
     "log_joint_at_plb_pub_centre_x0": [
-     -190.7230494353833,
-     -102.69681637266142,
-     -40.345600245271655,
+     -199.31008441921105,
+     -103.53637522203553,
+     -40.98344196765445,
      -39.55020770572456
     ],
-    "seconds": 3.2113538999692537,
+    "seconds": 4.678971099958289,
     "func_count": 65,
     "iterations": 11,
     "success_flag": true,
-    "elbo": -35.97267781671991,
-    "elbo_sd": 5.434520442360779e-05,
+    "elbo": -35.97042680445899,
+    "elbo_sd": 0.00013665203438105374,
     "ln_Z": -35.97216327792224,
     "ln_Z_error": 0.0,
-    "elbo_minus_ln_Z": -0.0005145387976668303,
+    "elbo_minus_ln_Z": 0.0017364734632536738,
     "K": 50,
     "posterior_mean": {
-     "mu": 0.9270984524209617
+     "mu": 0.9196835339964146
     },
     "posterior_sd": {
-     "mu": 0.3398029738651813
+     "mu": 0.3282941817559002
     },
     "truth": {
      "mu_mean": 0.9138099001055898,
      "mu_sd": 0.3333333333333333
     },
-    "mu_mean_error": 0.013288552315371849,
-    "mu_sd_ratio": 1.019408921595544
+    "mu_mean_error": 0.0058736338908247365,
+    "mu_sd_ratio": 0.9848825452677006
    },
    "return_path": {
     "container": "DataTree",
@@ -138,8 +138,8 @@
   {
    "name": "positive",
    "reference": "one-dimensional quadrature over sigma",
-   "ln_Z": -20.982796103874524,
-   "ln_Z_error": 1.9722292276375146e-10,
+   "ln_Z": -19.94639648585764,
+   "ln_Z_error": 6.365895652828309e-10,
    "D": 1,
    "names": [
     "sigma"
@@ -166,7 +166,7 @@
     "points": 25,
     "max_abs_difference": 1.9046808574785246e-09,
     "offset": -1.904652151552e-09,
-    "max_abs_deviation_from_offset": 8.498091119705687e-14,
+    "max_abs_deviation_from_offset": 5.655920176665287e-14,
     "outside_bounds_value": null,
     "passes": true
    },
@@ -176,47 +176,47 @@
      "sigma": "LogTransform"
     },
     "checked": true,
-    "max_abs_difference": 1.5987211554602254e-14,
+    "max_abs_difference": 1.4210854715202004e-14,
     "passes": true
    },
-   "ms_per_call": 0.008631999953649938,
+   "ms_per_call": 0.026095999928656965,
    "fit": {
     "plausible": "prior",
     "laplace_fallback": {
      "curvature": [],
      "clipped": []
     },
-    "setup_seconds": 0.07360340002924204,
+    "setup_seconds": 0.11349660000996664,
     "plb": [
-     -2.141166538910382
+     -2.0979850348588482
     ],
     "pub": [
-     1.3827938894951788
+     1.3570480016870485
     ],
     "x0": [
      0.6931471805599453
     ],
     "log_joint_at_plb_pub_centre_x0": [
-     -389.71638766496943,
-     -36.4001993393847,
-     -21.392995437786258,
-     -26.305338925283586
+     -306.4000574683433,
+     -35.90838465880564,
+     -19.717345093041803,
+     -26.115583483627145
     ],
-    "seconds": 5.413481299998239,
+    "seconds": 4.409873399999924,
     "func_count": 65,
     "iterations": 11,
     "success_flag": true,
-    "elbo": -20.983684873975633,
-    "elbo_sd": 0.0008270385383871438,
-    "ln_Z": -20.982796103874524,
-    "ln_Z_error": 1.9722292276375146e-10,
-    "elbo_minus_ln_Z": -0.0008887701011097704,
+    "elbo": -19.947876814342813,
+    "elbo_sd": 0.0008371037950830172,
+    "ln_Z": -19.94639648585764,
+    "ln_Z_error": 6.365895652828309e-10,
+    "elbo_minus_ln_Z": -0.001480328485172322,
     "K": 50,
     "posterior_mean": {
-     "sigma": 0.9443390114576414
+     "sigma": 0.8664374848689306
     },
     "posterior_sd": {
-     "sigma": 0.1922608950296082
+     "sigma": 0.17751108736937607
     }
    },
    "return_path": {
@@ -252,8 +252,8 @@
   {
    "name": "vector",
    "reference": "beta marginalized analytically, quadrature over sigma",
-   "ln_Z": -40.093587510406955,
-   "ln_Z_error": 1.03178720139606e-09,
+   "ln_Z": -40.500750400169956,
+   "ln_Z_error": 2.7969358444196365e-09,
    "D": 3,
    "names": [
     "beta",
@@ -302,9 +302,9 @@
    },
    "density": {
     "points": 25,
-    "max_abs_difference": 6.204936653375626e-08,
-    "offset": -6.204456724390184e-08,
-    "max_abs_deviation_from_offset": 1.7028582988135963e-11,
+    "max_abs_difference": 6.205664249137044e-08,
+    "offset": -6.204494468420307e-08,
+    "max_abs_deviation_from_offset": 3.923389613191618e-11,
     "outside_bounds_value": null,
     "passes": true
    },
@@ -314,16 +314,16 @@
      "sigma": "LogTransform"
     },
     "checked": true,
-    "max_abs_difference": 8.659739592076221e-13,
+    "max_abs_difference": 8.608669332943464e-13,
     "passes": true
    },
-   "ms_per_call": 0.011653999972622842
+   "ms_per_call": 0.03392500017071143
   },
   {
    "name": "bounded",
    "reference": "u[0] integrated in closed form, quadrature over p, u[1]",
-   "ln_Z": -14.62254986972562,
-   "ln_Z_error": 1.6661667331422944e-14,
+   "ln_Z": -15.880803770528754,
+   "ln_Z_error": 1.6676902537635122e-14,
    "D": 3,
    "names": [
     "p",
@@ -362,31 +362,31 @@
    "density": {
     "points": 25,
     "max_abs_difference": 2.1738756572631246e-08,
-    "offset": 2.1738742432830803e-08,
-    "max_abs_deviation_from_offset": 1.413980044321418e-14,
+    "offset": 2.173874193545089e-08,
+    "max_abs_deviation_from_offset": 1.463718035705511e-14,
     "outside_bounds_value": -Infinity,
     "passes": true
    },
    "jacobian": {
     "applicable": false
    },
-   "ms_per_call": 0.09694499982288107,
+   "ms_per_call": 0.0927640000008978,
    "fit": {
     "plausible": "prior",
     "laplace_fallback": {
      "curvature": [],
      "clipped": []
     },
-    "setup_seconds": 0.11786060000304133,
+    "setup_seconds": 0.16323110001394525,
     "plb": [
-     0.13283405553860272,
-     -0.8501932353544478,
-     0.04903362191637222
+     0.13329638482678408,
+     -0.8588127733929203,
+     0.05536059315333386
     ],
     "pub": [
-     0.8609024087981778,
-     1.8489323064158139,
-     0.9474911391730454
+     0.8663959877173305,
+     1.8554039885057694,
+     0.9546777404551685
     ],
     "x0": [
      0.5,
@@ -394,33 +394,33 @@
      0.5
     ],
     "log_joint_at_plb_pub_centre_x0": [
-     -41.60832713144908,
-     -43.84551441209417,
-     -13.904597566210622,
-     -13.907633661965214
+     -39.081809829259335,
+     -49.96247098531806,
+     -15.411337237911349,
+     -15.403483036158974
     ],
-    "seconds": 16.29362549999496,
-    "func_count": 75,
-    "iterations": 14,
+    "seconds": 30.297692600055598,
+    "func_count": 80,
+    "iterations": 15,
     "success_flag": true,
-    "elbo": -14.64209542395746,
-    "elbo_sd": 0.002720653281159794,
-    "ln_Z": -14.62254986972562,
-    "ln_Z_error": 1.6661667331422944e-14,
-    "elbo_minus_ln_Z": -0.0195455542318399,
+    "elbo": -15.884320544458896,
+    "elbo_sd": 0.00305387781330463,
+    "ln_Z": -15.880803770528754,
+    "ln_Z_error": 1.6676902537635122e-14,
+    "elbo_minus_ln_Z": -0.0035167739301424916,
     "K": 50,
     "posterior_mean": {
-     "p": 0.498953826371534,
+     "p": 0.5029083318755628,
      "u": [
-      0.4575341005962634,
-      0.4996777437189929
+      0.29628127499099216,
+      0.49721585890767594
      ]
     },
     "posterior_sd": {
-     "p": 0.22476455129602788,
+     "p": 0.2258659524393259,
      "u": [
-      0.44650059321606045,
-      0.2887272323591059
+      0.4681716991641245,
+      0.28997572168176516
      ]
     }
    },
@@ -470,6 +470,144 @@
      ]
     }
    }
+  },
+  {
+   "name": "one_sided",
+   "reference": "two one-dimensional quadratures (t and v independent)",
+   "ln_Z": -25.24097666751248,
+   "ln_Z_error": 9.208467613905747e-09,
+   "D": 2,
+   "names": [
+    "t",
+    "v"
+   ],
+   "value_names": [
+    "t_interval__",
+    "v_interval__"
+   ],
+   "kept_transforms": {
+    "v": "Interval",
+    "t": "Interval"
+   },
+   "shapes": [
+    [],
+    []
+   ],
+   "support": {
+    "t": [
+     1.0,
+     Infinity
+    ],
+    "v": [
+     -Infinity,
+     -0.5
+    ]
+   },
+   "coordinates": "t_interval__ (Interval kept, unbounded); v_interval__ (Interval kept, unbounded)",
+   "dims": {},
+   "coords": {},
+   "density": {
+    "points": 25,
+    "max_abs_difference": 8.027789988318546e-09,
+    "offset": -8.027781746022811e-09,
+    "max_abs_deviation_from_offset": 8.242295734221592e-15,
+    "outside_bounds_value": null,
+    "passes": true
+   },
+   "jacobian": {
+    "applicable": true,
+    "kept": {
+     "v": "Interval",
+     "t": "Interval"
+    },
+    "checked": true,
+    "max_abs_difference": 6.217248937900877e-15,
+    "passes": true
+   },
+   "ms_per_call": 0.014658499858342111,
+   "fit": {
+    "plausible": "prior",
+    "laplace_fallback": {
+     "curvature": [],
+     "clipped": []
+    },
+    "setup_seconds": 4.278504199988674,
+    "plb": [
+     -2.409287394219856,
+     -2.4040615944710297
+    ],
+    "pub": [
+     1.2055887008125408,
+     1.273041350850268
+    ],
+    "x0": [
+     0.0,
+     0.0
+    ],
+    "log_joint_at_plb_pub_centre_x0": [
+     -42.00022926388448,
+     -65.0971570241308,
+     -31.341215545177548,
+     -26.736175524583196
+    ],
+    "seconds": 17.259939100011252,
+    "func_count": 65,
+    "iterations": 11,
+    "success_flag": true,
+    "elbo": -25.24524432427738,
+    "elbo_sd": 0.00071411535195213,
+    "ln_Z": -25.24097666751248,
+    "ln_Z_error": 9.208467613905747e-09,
+    "elbo_minus_ln_Z": -0.0042676567648989305,
+    "K": 50,
+    "posterior_mean": {
+     "t": 2.633621804672709,
+     "v": -1.3586625341896306
+    },
+    "posterior_sd": {
+     "t": 0.3466329412345642,
+     "v": 0.3394067031467683
+    }
+   },
+   "return_path": {
+    "container": "DataTree",
+    "variables": {
+     "t": {
+      "dims": [
+       "chain",
+       "draw"
+      ],
+      "shape": [
+       1,
+       2000
+      ]
+     },
+     "v": {
+      "dims": [
+       "chain",
+       "draw"
+      ],
+      "shape": [
+       1,
+       2000
+      ]
+     }
+    },
+    "coords": {},
+    "posterior_predictive": {
+     "name": "y_t",
+     "dims": [
+      "chain",
+      "draw",
+      "y_t_dim_0"
+     ],
+     "shape": [
+      1,
+      2000,
+      8
+     ]
+    }
+   }
   }
  ],
  "rejections": [
@@ -504,16 +642,16 @@
      "curvature": [],
      "clipped": []
     },
-    "setup_seconds": 0.16783819999545813,
+    "setup_seconds": 0.22516470000846311,
     "plb": [
-     -8.20201003323745,
-     -8.320048914579257,
-     -2.0003850210341514
+     -8.213450998360939,
+     -8.120748330780634,
+     -2.038767026688617
     ],
     "pub": [
-     8.334855409766911,
-     8.309412013519617,
-     1.362617713772141
+     8.443999714852756,
+     8.112010999543598,
+     1.3664816011298409
     ],
     "x0": [
      0.0,
@@ -521,13 +659,13 @@
      0.6931471805599453
     ],
     "log_joint_at_plb_pub_centre_x0": [
-     -117368.98206922936,
-     -241.99976900921317,
-     -65.92348299995568,
-     -59.786392195968496
+     -93826.45689869346,
+     -201.04937113089022,
+     -89.6607696514716,
+     -63.29352234618897
     ]
    },
-   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\pymc_feasibility.py\", line 925, in fit\n    vp, results = vbmc.optimize()\n                  ^^^^^^^^^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc\\vbmc\\vbmc.py\", line 1245, in optimize\n    self.gp, Ns_gp, sn2_hpd, self.hyp_dict = train_gp(\n                                             ^^^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc\\vbmc\\gaussian_process_train.py\", line 174, in train_gp\n    hyp_dict[\"hyp\"], _, res = gp.fit(\n                              ^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\gaussian_process.py\", line 1230, in fit\n    X0, y0 = f_min_fill(\n             ^^^^^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\f_min_fill.py\", line 185, in f_min_fill\n    y[i] = f(X[i, :])\n           ^^^^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\gaussian_process.py\", line 1218, in <lambda>\n    objective_f_1 = lambda hyp_: self.__gp_obj_fun(\n                                 ^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\gaussian_process.py\", line 1739, in __gp_obj_fun\n    nlZ = self.__compute_nlZ(\n          ^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\gaussian_process.py\", line 1717, in __compute_nlZ\n    nlZ = self.__core_computation(hyp, 1, compute_grad, cache)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\gaussian_process.py\", line 2771, in __core_computation\n    raise sp.linalg.LinAlgError(\nnumpy.linalg.LinAlgError: Singular matrix for L Cholesky decomposition\n"
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\pymc_feasibility.py\", line 1002, in fit\n    vp, results = vbmc.optimize()\n                  ^^^^^^^^^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc\\vbmc\\vbmc.py\", line 1245, in optimize\n    self.gp, Ns_gp, sn2_hpd, self.hyp_dict = train_gp(\n                                             ^^^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc\\vbmc\\gaussian_process_train.py\", line 174, in train_gp\n    hyp_dict[\"hyp\"], _, res = gp.fit(\n                              ^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\gaussian_process.py\", line 1230, in fit\n    X0, y0 = f_min_fill(\n             ^^^^^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\f_min_fill.py\", line 185, in f_min_fill\n    y[i] = f(X[i, :])\n           ^^^^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\gaussian_process.py\", line 1218, in <lambda>\n    objective_f_1 = lambda hyp_: self.__gp_obj_fun(\n                                 ^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\gaussian_process.py\", line 1739, in __gp_obj_fun\n    nlZ = self.__compute_nlZ(\n          ^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\gaussian_process.py\", line 1717, in __compute_nlZ\n    nlZ = self.__core_computation(hyp, 1, compute_grad, cache)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\gaussian_process.py\", line 2771, in __core_computation\n    raise sp.linalg.LinAlgError(\nnumpy.linalg.LinAlgError: Singular matrix for L Cholesky decomposition\n"
   }
  ]
 }
