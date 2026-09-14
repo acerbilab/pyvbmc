@@ -445,37 +445,35 @@ reason.
   `svbmc_pool` is the campaign's eight pool conditions, `POOL_LABELS`,
   with a first seed, a seed cap and a filtered target each; `--only`
   allocates a subset), the run options and the identity of the code the
-  pool is generated with, and `--ready --authorized-by NAME` records the
-  authorization; re-running it on a prepared directory is how the campaign
-  is marked ready and how its targets and seed caps are revised, the
-  previous allocation and its authorization kept in `allocation_history`,
-  and nothing else about the campaign can change; `run` is the laptop
-  supervisor, walking the conditions in manifest order, seeds upward, one
-  fresh worker process at a time, stopping each condition once its
-  filtered target or its seed cap is reached (`--pilot-seeds K` runs
-  exactly K seeds per condition instead; `--save-vbmc` also pickles the
-  whole `VBMC` object); `worker` is one run and is invocable on its own;
-  `cases` prints every `label seed` of the allocation, one per line, so a
-  Slurm array can map its index to one `worker` call (the plan's "Cluster
-  generation"; the docstring's sketch chunks the array around Slurm's
-  default `MaxArraySize` of 1001); `select` then defines the filtered pool
-  post hoc, per condition the lowest-seed runs that pass the filters up to
-  the target, in `selection.json`, which the comparison reads, and reports
-  its pass rate over the seeds it scanned before the target was met, which
-  is not `summarize`'s over every completed case; `summarize` writes the
+  pool is generated with; re-running it on a prepared directory is how its
+  targets and seed caps are revised, the previous allocation kept in
+  `allocation_history`, and nothing else about the campaign can change;
+  `run` is the laptop supervisor, walking the conditions in manifest
+  order, seeds upward, one fresh worker process at a time, stopping each
+  condition once its filtered target or its seed cap is reached
+  (`--pilot-seeds K` runs exactly K seeds per condition instead;
+  `--save-vbmc` also pickles the whole `VBMC` object); `worker` is one run
+  and is invocable on its own; `cases` prints every `label seed` of the
+  allocation, one per line, so a Slurm array can map its index to one
+  `worker` call (the plan's "Cluster generation"; the docstring's sketch
+  chunks the array around Slurm's default `MaxArraySize` of 1001);
+  `select` then defines the filtered pool post hoc, per condition the
+  lowest-seed runs that pass the filters up to the target, in
+  `selection.json`, which the comparison reads, and reports its pass rate
+  over the seeds it scanned before the target was met, which is not
+  `summarize`'s over every completed case; `summarize` writes the
   per-condition pass rates, wall times and metric quartiles from the cases
   the directory holds. gpyreg is pinned to a frozen worktree through
   `PYVBMC_GPYREG_SOURCE` as in `population_run.py`; the identity is split
   into a `source` half (commits, library versions, working-tree state and
   the hashes of the suite module and both pool scripts) that every process
   of one campaign must match and a `host` half that is recorded only, so
-  any node may run any case; the authorization gates `cases` and `worker`
-  as it gates `run`. Hash-verified completion records permit resumption; a
-  failing case leaves `<tag>.error.txt` and no artifact, written by the
-  worker itself so that an array task records its failure as a sweep does,
-  and is skipped by later sweeps; an artifact file without a completion
-  record or an error file stops the sweep for inspection (the log of an
-  interrupted case is not one).
+  any node may run any case. Hash-verified completion records permit
+  resumption; a failing case leaves `<tag>.error.txt` and no artifact,
+  written by the worker itself so that an array task records its failure
+  as a sweep does, and is skipped by later sweeps; an artifact file
+  without a completion record or an error file stops the sweep for
+  inspection (the log of an interrupted case is not one).
   `test_svbmc_pool_run.py` generates a short campaign and checks the
   artifact, resume, revision, selection and summary contracts.
 - `scripts/svbmc_pool_io.py` — the campaign's per-run artifact: `save_run`

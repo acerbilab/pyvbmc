@@ -28,7 +28,6 @@ GPYREG_SOURCE = runner.DEFAULT_GPYREG
 LABEL = "normal_D2"
 SEED_START = 4000
 TARGET, MAX_SEEDS = 2, 3
-AUTHORIZED_BY = "test_svbmc_pool_run"
 #: The checks `verify_run` runs against live objects, in order. The
 #: hashes of the completion record are not among them: the record is
 #: written after the artifact it describes.
@@ -68,7 +67,7 @@ def cli(*args):
     )
 
 
-def prepare(out, *extra, target=TARGET):
+def prepare(out, target=TARGET):
     return cli(
         "prepare",
         "--out",
@@ -86,7 +85,6 @@ def prepare(out, *extra, target=TARGET):
         # The pool scripts and the suite module are developed together, so
         # this campaign is generated from whatever the tree holds.
         "--allow-dirty",
-        *extra,
     )
 
 
@@ -95,13 +93,6 @@ def campaign(tmp_path_factory):
     """One generated pool directory, shared by every check below."""
     out = tmp_path_factory.mktemp("svbmc_pool")
     assert prepare(out).returncode == 0
-    unready = cli("run", "--out", str(out))
-    assert unready.returncode != 0
-    assert "not marked ready" in unready.stderr
-    assert (
-        prepare(out, "--ready", "--authorized-by", AUTHORIZED_BY).returncode
-        == 0
-    )
     result = cli("run", "--out", str(out))
     assert result.returncode == 0, result.stdout + result.stderr
     return out, result.stdout
@@ -120,11 +111,9 @@ def test_frozen_gpyreg_is_the_one_imported():
     assert Path(gpyreg.__file__).resolve().parent == GPYREG_SOURCE / "gpyreg"
 
 
-def test_manifest_and_authorization(campaign):
+def test_manifest_records_the_allocation_and_the_identity(campaign):
     out, _ = campaign
     manifest = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["launch_ready"] is True
-    assert manifest["authorized_by"] == AUTHORIZED_BY
     assert manifest["allocation"] == [
         {
             "label": LABEL,
@@ -491,20 +480,17 @@ def test_revised_history_guards_a_revision(campaign):
     lowered = [
         dict(entry, target_filtered=1) for entry in previous["allocation"]
     ]
-    with pytest.raises(RuntimeError, match="--authorized-by"):
-        runner.revised_history(out, previous, lowered, None)
-    history = runner.revised_history(out, previous, lowered, AUTHORIZED_BY)
+    history = runner.revised_history(out, previous, lowered)
     assert history[-1]["allocation"] == previous["allocation"]
-    assert history[-1]["authorized_by"] == AUTHORIZED_BY
     assert history[-1]["revised"]
     with pytest.raises(RuntimeError, match="cannot be dropped"):
-        runner.revised_history(out, previous, [], AUTHORIZED_BY)
+        runner.revised_history(out, previous, [])
     moved = [
         dict(entry, seed_start=entry["seed_start"] + 1)
         for entry in previous["allocation"]
     ]
     with pytest.raises(RuntimeError, match="first seed"):
-        runner.revised_history(out, previous, moved, AUTHORIZED_BY)
+        runner.revised_history(out, previous, moved)
 
 
 def test_revised_allocation_and_pilot_seeds(campaign, tmp_path):
@@ -517,7 +503,7 @@ def test_revised_allocation_and_pilot_seeds(campaign, tmp_path):
     out, _ = campaign
     copy = tmp_path / "revised"
     shutil.copytree(out, copy)
-    revision = prepare(copy, "--authorized-by", AUTHORIZED_BY, target=1)
+    revision = prepare(copy, target=1)
     assert revision.returncode == 0, revision.stdout + revision.stderr
     assert "allocation revised" in revision.stdout
     before = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
@@ -526,11 +512,9 @@ def test_revised_allocation_and_pilot_seeds(campaign, tmp_path):
     assert manifest["allocation_history"][-1] == {
         "allocation": before["allocation"],
         "revised": manifest["allocation_history"][-1]["revised"],
-        "authorized_by": AUTHORIZED_BY,
     }
     for key in ("campaign", "suite", "options", "identity", "created"):
         assert manifest[key] == before[key]
-    assert manifest["launch_ready"] is True
 
     result = cli("run", "--out", str(copy), "--pilot-seeds", "2")
     assert result.returncode == 0, result.stdout + result.stderr
@@ -559,10 +543,7 @@ def bogus_case(out, label="no_such_target_D2", seed=1):
 def test_a_failed_case_is_skipped_and_counted(tmp_path):
     """A case that failed earlier costs its seed and does not fail a sweep."""
     out = tmp_path / "failures"
-    assert (
-        prepare(out, "--ready", "--authorized-by", AUTHORIZED_BY).returncode
-        == 0
-    )
+    assert prepare(out).returncode == 0
     planted = [f"{LABEL}_seed{SEED_START + i}" for i in range(2)]
     for tag in planted:
         (out / f"{tag}.error.txt").write_text(
@@ -604,10 +585,7 @@ def test_a_failing_worker_records_the_case_and_exits_non_zero(tmp_path):
     failure. `select` and `summarize` then count the case as failed.
     """
     out = tmp_path / "array"
-    assert (
-        prepare(out, "--ready", "--authorized-by", AUTHORIZED_BY).returncode
-        == 0
-    )
+    assert prepare(out).returncode == 0
     label, tag = bogus_case(out)
     for suffix in runner.ARTIFACT_SUFFIXES:
         (out / f"{tag}{suffix}").write_text("partial", encoding="utf-8")
@@ -646,7 +624,7 @@ def test_a_successful_worker_clears_a_stale_error_file(tmp_path, monkeypatch):
     (tmp_path / f"{tag}.error.txt").write_text(
         "an attempt\n", encoding="utf-8"
     )
-    runner.write_json(tmp_path / "manifest.json", {"launch_ready": True})
+    runner.write_json(tmp_path / "manifest.json", {})
     monkeypatch.setattr(runner, "worker_case", lambda *args: None)
     assert (
         runner.main(
@@ -665,36 +643,21 @@ def test_a_successful_worker_clears_a_stale_error_file(tmp_path, monkeypatch):
     assert not (tmp_path / f"{tag}.error.txt").exists()
 
 
-def test_cases_and_worker_refuse_an_unready_manifest(tmp_path):
-    """The authorization gates the array path where it gates the sweep.
+def test_a_manifest_with_extra_keys_is_read(campaign, tmp_path):
+    """Every command reads a manifest by the keys it needs.
 
-    A refusal is not a failed case: neither command may leave an error
-    file, which a later sweep would read as a seed already spent.
+    Campaigns prepared by earlier versions of this harness carry fields
+    this one does not write, and the pools they generated are read here.
     """
-    out = tmp_path / "unready"
-    assert prepare(out).returncode == 0
-    tag = f"{LABEL}_seed{SEED_START}"
-    for command in (
-        ["cases", "--out", str(out)],
-        [
-            "worker",
-            "--out",
-            str(out),
-            "--label",
-            LABEL,
-            "--seed",
-            str(SEED_START),
-        ],
-    ):
-        result = cli(*command)
-        assert result.returncode != 0, result.stdout
-        assert "not marked ready" in result.stderr
-    assert not (out / f"{tag}.error.txt").exists()
-    assert (
-        prepare(out, "--ready", "--authorized-by", AUTHORIZED_BY).returncode
-        == 0
-    )
-    assert cli("cases", "--out", str(out)).returncode == 0
+    out, _ = campaign
+    copy = tmp_path / "extra_keys"
+    shutil.copytree(out, copy)
+    manifest = json.loads((copy / "manifest.json").read_text(encoding="utf-8"))
+    manifest.update({"released": True, "released_by": "an earlier harness"})
+    runner.write_json(copy / "manifest.json", manifest)
+    assert cli("cases", "--out", str(copy)).returncode == 0
+    assert cli("select", "--out", str(copy)).returncode == 0
+    assert cli("summarize", "--out", str(copy)).returncode == 0
 
 
 def test_prepare_allocates_the_whole_pool_suite(tmp_path):

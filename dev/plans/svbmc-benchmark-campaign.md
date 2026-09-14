@@ -296,9 +296,8 @@ and what the hand-over needs:
   and real repositories, not exported tarballs.
 - **`cases`** prints every `(label, seed)` of the allocation over the
   full seed range, one per line, so a Slurm array maps its index to one
-  `worker --out DIR --label L --seed S` call; it refuses a manifest that
-  has not been authorized with `--ready`, so the array path is gated
-  like the laptop path. The default allocation is 1100 cases and Slurm's
+  `worker --out DIR --label L --seed S` call. The default allocation is
+  1100 cases and Slurm's
   default `MaxArraySize` is 1001, so the array is submitted in two
   chunks or with a throttle. Each task sets
   `OMP_NUM_THREADS=OPENBLAS_NUM_THREADS=MKL_NUM_THREADS=1`,
@@ -756,13 +755,14 @@ artifact of the contract above and a summary, following
      has uncommitted changes; the gpyreg source directory from
      `--gpyreg-source DIR` (default the frozen worktree named under "GP
      library pin"), its commit and clean state; NumPy, SciPy, Python
-     versions; thread environment; hostname), and `launch_ready: false`;
-     `--ready --authorized-by NAME` flips it and records who authorized
-     the launch and when. This identity is a deliberate relaxation of
+     versions; thread environment; hostname) and the time it was
+     written. Whether a campaign may start is a decision recorded in this
+     plan, not a manifest field: the manifest carries provenance only.
+     This identity is a deliberate relaxation of
      `population_run.identity()`, which demands a frozen PyVBMC checkout
      as well; gpyreg is pinned the same way as there.
-   - `run --out DIR [--pilot-seeds K] [--save-vbmc]`: refuse without
-     `launch_ready` or when the package directory or the suite module
+   - `run --out DIR [--pilot-seeds K] [--save-vbmc]`: refuse when the
+     package directory or the suite module
      has uncommitted changes; set `PYVBMC_GPYREG_SOURCE` to the
      manifest's gpyreg source for itself and every child, prepend it to
      `sys.path` before importing PyVBMC, and refuse when
@@ -806,7 +806,7 @@ artifact of the contract above and a summary, following
    rerun silently.
 4. Manual gate, the one heavy process: `prepare` into a scratch
    directory for `rosenbrock_D2_noise3_svbmc` with
-   `--max-seeds 1 --target 1`, `--ready`, `run`, `summarize`; then
+   `--max-seeds 1 --target 1`, `run`, `summarize`; then
    `verify_run` post hoc on the artifact; then, with `PYTHONPATH` set to
    `TORCH_PATH`, rebuild the posterior with `load_run(path, rng=0)` and
    construct `pyvbmc.svbmc.SVBMC([vp, vp], noisy=True)` to confirm the
@@ -1390,6 +1390,19 @@ draft had left open:
   All eight conditions have now run end to end here. The hand-off note
   for the cluster developer is
   [2026-09-14-svbmc-pool-handoff.md](../2026-09-14-svbmc-pool-handoff.md).
+- 2026-09-14: the launch-authorization gate of the pool generator
+  (`launch_ready`, `--ready`, `--authorized-by`, and the refusals in
+  `run`, `cases` and `worker`) was removed (PI). It had grown out of the
+  laptop runner's guard against starting a half-written manifest and a
+  reviewer's request to record who flipped it, and on the cluster it
+  protected nothing: the person preparing the manifest is the person
+  submitting the array, and whether a campaign may start is a decision
+  recorded in this plan. The manifest keeps its provenance (identity,
+  allocation, timestamp); the source-identity comparison, the
+  clean-tree refusal, the hash-verified records, the partial-artifact
+  stop and the worker's error file stay, since they protect the data.
+  The pool archive comes back as a draft-release asset with its hash in
+  the PR, since the PI has no direct access to the cluster.
 
 ## Execution tracking
 

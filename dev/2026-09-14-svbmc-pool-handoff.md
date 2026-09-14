@@ -22,8 +22,7 @@ The design, decisions and status live in
 [plans/svbmc-benchmark-campaign.md](plans/svbmc-benchmark-campaign.md);
 the section **"Cluster generation"** there is the specification of this
 job, and the module docstring of `dev/scripts/svbmc_pool_run.py` carries
-the sbatch sketch. The campaign is authorized by the PI (decision 8 of the
-plan); you do not need a further go-ahead to run it.
+the sbatch sketch.
 
 ## What we need from you
 
@@ -40,8 +39,7 @@ plan); you do not need a further go-ahead to run it.
    `dev/scripts/runs/` (gitignored):
    ```
    python dev/scripts/svbmc_pool_run.py prepare --out dev/scripts/runs/svbmc_pool_<date> \
-       --suite svbmc_pool --gpyreg-source <path to the v1.2.1 checkout> \
-       --ready --authorized-by "Luigi Acerbi (PI, 2026-09-14)"
+       --suite svbmc_pool --gpyreg-source <path to the v1.2.1 checkout>
    ```
    The defaults are the approved allocation (100 filtered runs per noisy
    condition, 50 per noiseless control, seed caps 150, 200 for the ring,

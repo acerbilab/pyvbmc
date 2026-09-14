@@ -8,8 +8,8 @@ original standalone `svbmc` 0.1.1. Only curated, machine-readable
 artifacts live here — the pool manifests, selections and summaries, the
 comparison results and the identity records; the raw per-run artifacts
 stay gitignored under `dev/scripts/runs/`. A pool contributes its
-`manifest.json` (the allocation, the base options, the authorization and
-the identity of the code the pool was generated with), the
+`manifest.json` (the allocation, the base options and the identity of the
+code the pool was generated with), the
 `selection.json` that `svbmc_pool_run.py select` writes — per condition
 the lowest-seed runs that pass the filters, up to the filtered target,
 which is the authoritative definition of the filtered pool and the list
@@ -35,7 +35,7 @@ campaign's runs are in.
 
 `pilot/pool/` holds the campaign manifest of
 `dev/scripts/runs/svbmc_pool_20260913/pool/` (allocation, base options,
-identity with the pinned gpyreg worktree, authorization) and the
+identity with the pinned gpyreg worktree) and the
 `summarize` output after the pilot sweep of three seeds per condition:
 `summary.json` and `summary.md` give per condition the seeds run, the
 filtered count, pass rate, usable fraction, wall-time and evaluation

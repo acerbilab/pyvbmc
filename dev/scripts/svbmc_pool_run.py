@@ -15,8 +15,6 @@ Sub-commands::
 
     python dev/scripts/svbmc_pool_run.py prepare --out DIR \\
         --suite svbmc_pool
-    python dev/scripts/svbmc_pool_run.py prepare --out DIR ... \\
-        --ready --authorized-by NAME
     python -u dev/scripts/svbmc_pool_run.py run --out DIR --pilot-seeds 3
     python -u dev/scripts/svbmc_pool_run.py run --out DIR
     python dev/scripts/svbmc_pool_run.py cases --out DIR
@@ -24,12 +22,11 @@ Sub-commands::
     python dev/scripts/svbmc_pool_run.py select --out DIR
     python dev/scripts/svbmc_pool_run.py summarize --out DIR
 
-``prepare`` fixes the allocation, the run options and the identity of the
-code and environment the pool is generated with, and writes them unready;
-``prepare --ready --authorized-by NAME`` records who authorized the
-launch and when. It allocates every condition of the named suite, which
-for ``svbmc_pool`` is the campaign's eight pool conditions
-(``POOL_LABELS``); ``--only`` allocates a subset of them. The defaults are
+``prepare`` writes the manifest: the allocation, the run options and the
+identity of the code and environment the pool is generated with. It
+allocates every condition of the named suite, which for ``svbmc_pool`` is
+the campaign's eight pool conditions (``POOL_LABELS``); ``--only``
+allocates a subset of them. The defaults are
 the campaign's approved allocation, so the command above needs no
 allocation flags: 100 filtered runs per noisy condition and 50 per
 noiseless control, seed caps 150, 200 for the ring (``DEFAULT_SEED_CAPS``)
@@ -37,17 +34,17 @@ and 75 for the controls. The narrower the flag, the later it wins:
 ``--target`` and ``--max-seeds`` set every condition including the
 controls, ``--control-target`` and ``--control-max-seeds`` the controls
 alone, ``--allocation LABEL=TARGET/MAXSEEDS`` one condition.
-Run on a directory that already holds a manifest, ``prepare`` marks the
-campaign ready and revises its allocation; nothing else about it can
-change. Filtered targets and seed caps may be revised and a condition
-added, a condition that already has runs may neither be dropped nor
-given a different first seed, and the previous allocation, the time and
-``--authorized-by NAME`` are appended to ``allocation_history``, which is
-how the pilot's revision of the seed caps is recorded.
+Run on a directory that already holds a manifest, ``prepare`` revises the
+allocation; nothing else about the campaign can change. Filtered targets
+and seed caps may be revised and a condition added, a condition that
+already has runs may neither be dropped nor given a different first seed,
+and the previous allocation and the time are appended to
+``allocation_history``, which is how the pilot's revision of the seed caps
+is recorded.
 
-``run`` is the laptop supervisor: it refuses an unready manifest or a
-source identity that differs from the prepared one, takes the campaign
-lock, and walks the conditions in manifest order, seeds upward, one
+``run`` is the laptop supervisor: it refuses a source identity that
+differs from the prepared one, takes the campaign lock, and walks the
+conditions in manifest order, seeds upward, one
 worker subprocess at a time, stopping each condition at its filtered
 target or its seed cap. A failing case leaves ``<tag>.error.txt`` — the
 one its own worker wrote, or one the supervisor writes from the case log
@@ -66,7 +63,7 @@ full seed range, and ``worker`` runs one of them in one fresh process, so
 a cluster can generate the same pool as an array job, one task per case.
 The plan's section "Cluster generation" owns that hand-over; the shape of
 it is three separate pieces. On the login node, once the campaign is
-prepared and authorized, write the case list and submit the array::
+prepared, write the case list and submit the array::
 
     python dev/scripts/svbmc_pool_run.py cases --out $DIR > $DIR/cases.txt
     wc -l < $DIR/cases.txt      # 1100 for the campaign's allocation
@@ -104,11 +101,9 @@ stacking comparison reads. A task that fails leaves ``<tag>.error.txt``
 naming the case and carrying the end of its traceback, deletes whatever
 artifact files it had begun so that no truncated artifact is mistaken for
 a run, and exits non-zero, so Slurm records the failure too; the case is
-rerun or left out, and nothing else needs doing about it. ``cases`` and
-``worker`` refuse a manifest that ``prepare --ready --authorized-by NAME``
-has not released, as ``run`` does. ``run``'s campaign lock, its
-``status.json`` and its sequential stopping rule belong to the laptop
-sweep alone; no array task writes any of them.
+rerun or left out, and nothing else needs doing about it. ``run``'s
+campaign lock, its ``status.json`` and its sequential stopping rule belong
+to the laptop sweep alone; no array task writes any of them.
 
 gpyreg is pinned to the frozen worktree the manifest names: every
 process prepends it to ``sys.path`` before PyVBMC is imported (through
@@ -473,21 +468,6 @@ def read_manifest(out):
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def require_launch_ready(manifest):
-    """Refuse a campaign that nobody has released for launch.
-
-    The authorization gates every command that generates runs, the laptop
-    sweep and the array path alike, so that a prepared but unapproved
-    allocation cannot be launched by going one level down.
-    """
-    if not manifest.get("launch_ready"):
-        raise RuntimeError(
-            "manifest is not marked ready for launch "
-            "(prepare --ready --authorized-by NAME)"
-        )
-    return manifest
-
-
 def condition_runs(out, label):
     """The tags of one condition that left a completion record or an error."""
     out = Path(out)
@@ -502,20 +482,15 @@ def condition_runs(out, label):
     return sorted(tags, key=lambda tag: int(tag.rsplit("seed", 1)[1]))
 
 
-def revised_history(out, previous, current, authorized_by):
+def revised_history(out, previous, current):
     """Accept a revision of a prepared campaign's allocation, and log it.
 
     Filtered targets and seed caps may change and a condition may be
     added; a condition that already holds runs may neither be dropped nor
     given a different first seed. Returns the ``allocation_history`` to
-    store beside the new allocation: the previous one, the time and who
-    authorized the revision.
+    store beside the new allocation: the previous allocation and the time
+    it was replaced.
     """
-    if not authorized_by:
-        raise RuntimeError(
-            "revising the allocation of a prepared campaign needs "
-            "--authorized-by NAME"
-        )
     allocated = {entry["label"]: entry for entry in current}
     for entry in previous["allocation"]:
         label = entry["label"]
@@ -536,7 +511,6 @@ def revised_history(out, previous, current, authorized_by):
         {
             "allocation": previous["allocation"],
             "revised": time.strftime("%Y-%m-%d %H:%M:%S"),
-            "authorized_by": authorized_by,
         }
     ]
 
@@ -555,9 +529,6 @@ def cmd_prepare(args):
         "identity": identity(source),
         "allow_dirty": bool(args.allow_dirty),
         "created": time.strftime("%Y-%m-%d %H:%M:%S"),
-        "launch_ready": False,
-        "authorized_by": None,
-        "authorized_at": None,
         "allocation_history": [],
     }
     out = args.out.resolve()
@@ -571,27 +542,14 @@ def cmd_prepare(args):
                 "directory instead of changing a campaign in place"
             )
         manifest["created"] = previous["created"]
-        manifest["launch_ready"] = previous["launch_ready"]
-        manifest["authorized_by"] = previous["authorized_by"]
-        manifest["authorized_at"] = previous["authorized_at"]
         manifest["allocation_history"] = list(
             previous.get("allocation_history", [])
         )
         if manifest["allocation"] != previous["allocation"]:
             manifest["allocation_history"] = revised_history(
-                out, previous, manifest["allocation"], args.authorized_by
+                out, previous, manifest["allocation"]
             )
-            print(
-                f"{path}: allocation revised, authorized by "
-                f"{args.authorized_by}",
-                flush=True,
-            )
-    if args.ready:
-        if not args.authorized_by:
-            raise RuntimeError("--ready needs --authorized-by NAME")
-        manifest["launch_ready"] = True
-        manifest["authorized_by"] = args.authorized_by
-        manifest["authorized_at"] = time.strftime("%Y-%m-%d %H:%M:%S")
+            print(f"{path}: allocation revised", flush=True)
     write_json(path, manifest)
     print(f"{path}: {len(manifest['allocation'])} conditions", flush=True)
     for entry in manifest["allocation"]:
@@ -601,7 +559,6 @@ def cmd_prepare(args):
             f"target {entry['target_filtered']} filtered",
             flush=True,
         )
-    print(f"launch_ready: {manifest['launch_ready']}", flush=True)
     return 0
 
 
@@ -673,7 +630,7 @@ def condition_plan(entry, pilot_seeds):
 
 def cmd_run(args):
     out = args.out.resolve()
-    manifest = require_launch_ready(read_manifest(out))
+    manifest = read_manifest(out)
     source = activate_gpyreg(manifest["gpyreg_source"])
     expected = identity(source)
     check_tree(expected, manifest.get("allow_dirty"))
@@ -886,10 +843,9 @@ def cmd_worker(args):
     """
     out = args.out.resolve()
     tag = f"{args.label}_seed{args.seed}"
-    # Outside the guard below: the authorization gates the array path as
-    # it gates a sweep, and a campaign nobody released is not a case that
-    # failed, so refusing it must leave nothing behind.
-    manifest = require_launch_ready(read_manifest(out))
+    # Outside the guard below: a directory that holds no manifest is not a
+    # case that failed, so it must leave nothing behind.
+    manifest = read_manifest(out)
     try:
         worker_case(args, out, tag, manifest)
     except Exception as error:
@@ -1013,12 +969,10 @@ def cmd_cases(args):
     The line number is the array index: line ``i`` names the case that
     ``worker --out DIR --label L --seed S`` generates. The count goes to
     standard error, so that redirecting standard output yields exactly the
-    case list. An unready manifest is refused here as it is in ``run``:
-    the case list is what launches an array, so the authorization gates
-    the cluster path at the same point as the laptop one.
+    case list.
     """
     out = args.out.resolve()
-    manifest = require_launch_ready(read_manifest(out))
+    manifest = read_manifest(out)
     cases = manifest_cases(manifest)
     if args.format == "json":
         print(
@@ -1420,8 +1374,6 @@ def parse_args(argv=None):
         action="store_true",
         help="record that the pool may be generated from a dirty tree",
     )
-    prepare.add_argument("--ready", action="store_true")
-    prepare.add_argument("--authorized-by")
 
     runner = sub.add_parser("run", help="generate the pool")
     runner.add_argument("--out", type=Path, required=True)
