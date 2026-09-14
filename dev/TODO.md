@@ -208,6 +208,21 @@ worktrees at the revisions in the
 not contain these ignored artifacts. They are not needed to read the results
 or choose the next experiment.
 
+The S-VBMC run-pool campaign retains `svbmc_pool_20260913/` under
+`dev/scripts/runs/`: `pool/` (the three-seed pilot of five conditions, 15
+artifacts with their records, run against gpyreg 1.2.0), `pilot_stack/`
+(the `M = 3` two-arm comparison on those artifacts, final harness),
+`newconds_check/` (one seed each of the two conditions added later), the
+frozen gpyreg worktree `gpyreg_1.2.1/` (`git worktree` of `../gpyreg` at
+`v1.2.1`, the campaign's pin) and the run logs. Their tracked copies are
+under `dev/experiments/svbmc_pool/`, and the
+[campaign plan](plans/svbmc-benchmark-campaign.md) records how to recreate
+the worktrees. A fresh clone does not contain these ignored artifacts and
+does not need them to read the results; the campaign pools themselves are
+generated on the cluster per the
+[hand-off note](2026-09-14-svbmc-pool-handoff.md) and come back as a
+draft-release asset.
+
 The S-VBMC speedups measurement retains `svbmc_speedups_20260913/` under
 `dev/scripts/runs/`: the detached before-source worktree at `83692ac`
 (`before/`, registered with `git worktree`) and the raw outputs of both
