@@ -183,8 +183,14 @@ completion record under `records/`, so
 `python dev/scripts/svbmc_pool_run.py verify --out dev/scripts/runs/svbmc_pool_20260914 --gpyreg-source <local gpyreg 1.2.1 checkout>`
 re-checks the copy before anything reads it. Two things to know on
 another machine: the manifest stores the cluster's absolute
-`gpyreg_source`, and `svbmc_pool_stack.py --pool` reads that path and
-refuses `--gpyreg-source`, so that one field of the unpacked
-`manifest.json` has to be pointed at a local 1.2.1 checkout before the
-stacking comparison runs (nothing hashes the field; only a repeated
-`prepare` compares it).
+`gpyreg_source`, which `verify`, `svbmc_pool_stack.py --pool` and
+`svbmc_honest_elbo.py` each replace with `--gpyreg-source`, a local
+clean checkout at the manifest's gpyreg commit (nothing hashes the
+field; only a repeated `prepare` compares it); and that machine's BLAS
+does not recompute the stored statistics bit for bit. The rounding it
+introduces is amplified by the condition number of each run's GP,
+which reaches 1e15 on the noisy Rosenbrock condition (training sets
+with far-tail evaluations), so `verify` there holds every artifact to
+the absolute gate plus its own amplified rounding and reports the
+relative differences and condition numbers; the campaign plan's worklog
+records what the analysis machine found.

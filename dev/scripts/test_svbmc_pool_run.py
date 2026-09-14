@@ -981,6 +981,143 @@ def test_verify_flags_a_stray_artifact(campaign, tmp_path):
     assert "sacct" not in result.stdout and "cases.txt" not in result.stdout
 
 
+def copied_pool(out, tmp_path, name="pool"):
+    """A copy of the campaign whose manifest names a checkout not here.
+
+    What a pool copied from the machine that generated it looks like: the
+    manifest's ``gpyreg_source`` is an absolute path of that machine.
+    """
+    copy = tmp_path / name
+    shutil.copytree(out, copy)
+    (copy / "verification.json").unlink(missing_ok=True)
+    path = copy / "manifest.json"
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    manifest["gpyreg_source"] = str(tmp_path / "elsewhere" / "gpyreg_1.2.1")
+    runner.write_json(path, manifest)
+    return copy
+
+
+def test_verify_accepts_a_gpyreg_source_at_the_manifest_commit(
+    campaign, tmp_path
+):
+    """A copied pool is verified against a local checkout at the pin."""
+    out, _ = campaign
+    copy = copied_pool(out, tmp_path)
+    manifest = json.loads((copy / "manifest.json").read_text(encoding="utf-8"))
+    # Without the flag the manifest's path is used, and it is not here.
+    result = cli("verify", "--out", str(copy))
+    assert result.returncode != 0
+    assert "no gpyreg package under" in result.stderr
+    assert not (copy / "verification.json").exists()
+    assert runner.pinned_gpyreg_source(GPYREG_SOURCE, manifest) == str(
+        GPYREG_SOURCE.resolve()
+    )
+    result = cli(
+        "verify", "--out", str(copy), "--gpyreg-source", str(GPYREG_SOURCE)
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    report = verification(copy)
+    assert report["gpyreg_source"] == str(GPYREG_SOURCE.resolve())
+    assert report["rounding_factor"] == pool_io.ROUNDING_FACTOR
+    # The verifier's identity is recorded next to the pool's, its host
+    # half saying where it ran, its source half compared for the report
+    # only: this checkout generated the campaign, so nothing differs.
+    assert set(report["verifier"]) == {"source", "host"}
+    assert report["verifier"]["host"]["gpyreg_source"] == str(
+        GPYREG_SOURCE.resolve()
+    )
+    assert report["verifier_differs_in"] == []
+    for case in report["cases"]:
+        if case["status"] == "verified":
+            assert set(case["relative"]) == {"I_sk", "J_sjk"}
+            assert case["condition_number"] >= 1.0
+    (condition,) = report["conditions"]
+    assert condition["max_condition_number"] >= 1.0
+    assert condition["max_relative"] >= 0.0
+
+
+def perturbed_artifact(out, tmp_path, amount):
+    """A copy of the campaign with one stored `I_sk` entry moved.
+
+    The largest entry of the first completed run's ``I_sk`` is shifted by
+    ``amount`` in the ``.npz`` and the completion record's hashes are
+    rewritten to the new file, so that only the recomputation gate can
+    tell; returns the copy, the tag and the array's largest magnitude.
+    """
+    copy = tmp_path / "perturbed"
+    shutil.copytree(out, copy)
+    (copy / "verification.json").unlink(missing_ok=True)
+    tag = completed_tags(copy)[0]
+    npz = copy / f"{tag}.npz"
+    with np.load(npz, allow_pickle=False) as stored:
+        arrays = {k: stored[k] for k in stored.files}
+    stats = arrays["vp/stats/I_sk"].copy()
+    index = np.unravel_index(np.argmax(np.abs(stats)), stats.shape)
+    scale = float(np.abs(stats[index]))
+    stats[index] += amount
+    arrays["vp/stats/I_sk"] = stats
+    np.savez_compressed(npz, **arrays)
+    path = pool_io.record_path(copy, tag)
+    record = json.loads(path.read_text(encoding="utf-8"))
+    record["hashes"] = pool_io.artifact_hashes(copy, tag)
+    runner.write_json(path, record)
+    return copy, tag, scale
+
+
+def test_recomputation_gate_allows_amplified_rounding_only(campaign, tmp_path):
+    """The gate is the absolute tolerance plus each GP's own rounding.
+
+    On the machine that generated a run the recomputation is exact, so
+    the gate's allowance is measured here by moving one stored value: a
+    move beyond the allowance fails, whatever the factor below it, and a
+    factor sized to that move passes and reports it.
+    """
+    out, _ = campaign
+    tag = completed_tags(out)[0]
+    intact = pool_io.verify_run(out / tag)
+    assert intact["differences"]["I_sk"] == 0.0
+    assert intact["relative"]["I_sk"] == 0.0
+    assert intact["condition_number"] >= 1.0
+    assert intact["rounding_factor"] == pool_io.ROUNDING_FACTOR
+    allowance = intact["tolerance"]["I_sk"]
+    assert allowance >= pool_io.TOL_STATS
+    amount = 2.0 * allowance
+    copy, tag, scale = perturbed_artifact(out, tmp_path, amount)
+    with pytest.raises(RuntimeError, match="recomputed I_sk differs"):
+        pool_io.verify_run(copy / tag)
+    with pytest.raises(RuntimeError, match="recomputed I_sk differs"):
+        pool_io.verify_run(copy / tag, rounding_factor=0.0)
+    # A factor whose allowance covers the move: the gate's rounding term
+    # is factor * eps * cond(K) relative to the largest stored value.
+    eps = np.finfo(float).eps
+    factor = float(2.0 * amount / (eps * intact["condition_number"] * scale))
+    report = pool_io.verify_run(copy / tag, rounding_factor=factor)
+    assert report["differences"]["I_sk"] == pytest.approx(amount)
+    assert report["relative"]["I_sk"] == pytest.approx(amount / scale)
+    assert report["tolerance"]["I_sk"] >= amount
+    assert report["rounding_factor"] == factor
+    # The same through the command, which records the factor and the
+    # per-condition extremes of the gate.
+    result = cli("verify", "--out", str(copy))
+    assert result.returncode == 1, result.stdout + result.stderr
+    case = reported(verification(copy), tag)
+    assert case["status"] == "verify_failed"
+    assert "recomputed I_sk differs" in case["error"]
+    result = cli(
+        "verify", "--out", str(copy), "--rounding-factor", str(factor)
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    report = verification(copy)
+    assert report["rounding_factor"] == factor
+    case = reported(report, tag)
+    assert case["status"] == "verified"
+    assert case["relative"]["I_sk"] == pytest.approx(amount / scale)
+    (condition,) = report["conditions"]
+    assert condition["max_relative"] == pytest.approx(amount / scale)
+    assert condition["max_condition_number"] >= intact["condition_number"]
+    assert "max_relative" in result.stdout
+
+
 def test_verify_refuses_a_gpyreg_source_at_another_commit(campaign, tmp_path):
     """A copied pool is verified against the pinned library alone."""
     out, _ = campaign
