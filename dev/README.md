@@ -544,6 +544,20 @@ reason.
   no Torch. `test_svbmc_honest_elbo.py` checks the contracts on a
   generated two-run pool; the first run, on the pilot artifacts, is
   [results/2026-09-14-svbmc-honest-elbo-pilot.md](results/2026-09-14-svbmc-honest-elbo-pilot.md).
+- `scripts/pymc_feasibility.py` — the bounded feasibility check of a PyMC
+  model adapter (`2026-09-13-pymc-integration.md`): a PyMC model becomes a
+  box-bounded log joint for `VBMC` (a variable bounded on one side keeps
+  PyMC's transform and Jacobian, the others are handed over in their own
+  coordinates with their bounds), the fitted posterior is exported with
+  the model's names, shapes and coordinates, and PyMC computes
+  deterministics and posterior predictions on it; three models with
+  hand-written densities and evidences, two rejected ones, density and
+  Jacobian checks, and two routes to the starting point and plausible box
+  (`--plausible laplace|prior`). Needs a Python environment with PyMC and
+  ArviZ (the project venv has neither; the machine that ran it lists the
+  environment in its gitignored `scripts/runs/LOCAL.md`). Outputs under
+  `experiments/pymc_feasibility/`; the write-up is
+  [results/2026-09-14-pymc-feasibility.md](results/2026-09-14-pymc-feasibility.md).
 - `scripts/svbmc_parity_check.py` — historical: the moved
   `pyvbmc.svbmc.SVBMC` against the pinned upstream package on the thirty
   posteriors with matched draws (upstream's `testing=True` mode). Runs only

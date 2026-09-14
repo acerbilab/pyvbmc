@@ -127,11 +127,17 @@ and subsequent possibilities.
 
 ## Scope or disposition still to be decided
 
-- [ ] **PyMC integration: include what in 1.5?** A bounded feasibility check
-  can be the next task. The proposal covers structured ArviZ export, a
-  model-to-target adapter and a worked example with explicit initialization
-  and plausible bounds. Decide the supported model scope and inclusion
-  after the check. Automatic initialization and inference orchestration are
+- [ ] **PyMC integration: include what in 1.5?** The proposal covers
+  structured ArviZ export, a model-to-target adapter and a worked example
+  with explicit initialization and plausible bounds. The bounded
+  feasibility check is done (`dev/scripts/pymc_feasibility.py`, results in
+  the [feasibility report](results/2026-09-14-pymc-feasibility.md)): the
+  adapter works through public PyMC APIs on the three prototype models
+  when a variable bounded on one side keeps PyMC's transform, the
+  structured export and the return path work on ArviZ 1.x, and prior
+  quantiles are not a usable default for the plausible box while the mode's
+  Laplace box is. Decide the supported model scope and inclusion on that
+  record. Automatic initialization and inference orchestration are
   deferred in the proposal. See the [PyMC proposal](2026-09-13-pymc-integration.md).
 
 ## Outside 1.5 scope

@@ -135,3 +135,11 @@ Static design work can proceed during the active golden campaign.
 Compilation and execution checks should wait until they can respect the
 repository's one-heavy-computation constraint. The proposal requires no
 change to ordinary VBMC inference defaults.
+
+The prototype is `dev/scripts/pymc_feasibility.py`; its results, on PyMC
+6.3.2 and ArviZ 1.3.0, are in
+[results/2026-09-14-pymc-feasibility.md](results/2026-09-14-pymc-feasibility.md):
+the adapter is feasible through public APIs when a variable bounded on one
+side keeps PyMC's transform (VBMC takes no half-bounded box), the
+structured export and the return path work, and prior quantiles fail as a
+default plausible box where the mode's Laplace box succeeds.
