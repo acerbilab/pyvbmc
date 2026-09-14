@@ -116,7 +116,7 @@ noiseless ring (one synthetic control suffices).
 Noise is the suite's generic wrapper (homoskedastic Gaussian noise on the
 log density, known SD returned to VBMC, `specify_target_noise=True`), as
 in both papers. The paper's neuronal (NEURON) benchmark is not
-reproducible here and is not substituted. `dev/plans/benchmark-realistic-targets.md`
+reproducible from this repository and is not substituted. `dev/plans/benchmark-realistic-targets.md`
 lists a "bimodal ring" among rejected candidates; that rejection was about
 real-data coverage and does not bear on a synthetic pool target. Noisy
 runs at noise 1.3 terminate on the reliability index at about 205
@@ -1422,4 +1422,4 @@ Live status of the phases above (`[ ]` not started, `[~]` in progress,
 - [x] Doublecheck of the implemented phases (three fresh reviewers on 2026-09-14; every finding fixed and re-verified, see worklog)
 - [x] Evidence yardstick change (decision 7): `elbo_mc` with an arm-independent entropy reference, bias and KL-gap columns, criterion 3 gates, `--summarize-only`; reviewed, no must-fix (2026-09-14)
 - [x] Harness pass for the cluster (decisions 8–10): gpyreg default at the 1.2.1 worktree, source/host identity split, `select` and `cases` subcommands, approved defaults with an explicit precedence, the bias-review fixes; reviewed, every finding fixed; 38 + 16 tests pass; pilot comparison regenerated with the final harness (2026-09-14)
-- [ ] Hand-over of the pool generation to the cluster developer (the "Cluster generation" section and the runner docstring are the brief); stage D and the Phase 2 analyses run here once the pools are back
+- [ ] Hand-over of the pool generation to the cluster developer (the "Cluster generation" section and the runner docstring are the brief); stage D and the Phase 2 analyses run on the PI's laptop once the pools are back

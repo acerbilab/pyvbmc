@@ -78,8 +78,8 @@ the sbatch sketch.
    svbmc-pool-<date> --draft`, then `gh release upload svbmc-pool-<date>
    <archive>`; a draft is not public, and a single asset may be up to
    2 GiB) and record the asset's name, size and SHA-256 in the README of
-   your PR (below). It is downloaded here into `dev/scripts/runs/`,
-   where it stays gitignored; every artifact's hash is already in its
+   your PR (below). The PI downloads it into `dev/scripts/runs/` on the
+   analysis machine, where it stays gitignored; every artifact's hash is already in its
    completion record, so the copy is verified before anything runs on
    it. When the pool is promoted the draft is published, as the golden
    traces are. Second, a **pull request to
@@ -90,7 +90,7 @@ the sbatch sketch.
    `selection.json`, `selection.md`, `summary.json` and `summary.md` under
    `dev/experiments/svbmc_pool/pool_<date>/`, a short README there in the
    style of `dev/experiments/svbmc_pool/README.md`, and any fix to the
-   harness you needed, each with a test. We review the PR here. Do not
+   harness you needed, each with a test. The PI reviews the PR. Do not
    commit raw artifacts, and do not touch `pyvbmc/` or
    `dev/scripts/benchmark_targets.py` while the campaign runs (the
    identity check would refuse the later cases).
