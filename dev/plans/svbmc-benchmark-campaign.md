@@ -202,25 +202,37 @@ seed caps are about 120 MB, gitignored under
 comparison outputs are tracked under `dev/experiments/svbmc_pool/` with a
 README that explains every key.
 
-### Pool runtime estimate (before the pilot)
+### Pool runtime (measured in the pilot)
 
-Single-process medians of the `reference_990_20260913` sidecars, BLAS
-single-threaded, on this machine: 3.16 min for `multisensory_s1_D6_noise1.3`
-and 2.50 min for `rosenbrock_D2_noise3`, both at the pinned budget. The
-noise-3 multisensory, GMM and ring conditions have no measurement here;
-the paper's runs took about 4 min (GMM), 9 min (ring) and 14 min
-(multisensory) at noise 3 on its server, where the noise-1.3 multisensory
-comparison suggests this machine is faster. Provisional per-run
-assumptions: 5 min multisensory, 2.5 min Rosenbrock, 4 min GMM, 9 min
-ring, 1.5 min control. Totals: about 30 hours at the seed caps, about 22
-hours if the conditions reach their filtered targets at the paper's pass
-rates. The pilot replaces these guesses (Phase 4). Stages: A pilot (about
-one hour of pool runs plus the stacking timing), B conditions 1–3 (about
-12 hours expected, 17 at the caps), C conditions 4–5 (about 10 hours
-expected, 13 at the caps), D the comparison (about 5 hours, see below).
-Each stage is a separate PI authorization. The worker is invocable per
-case, so a later Slurm array job can reuse it unchanged if the HPC
-workflow lands first.
+Pilot of 2026-09-14, three seeds per condition, one process, BLAS
+single-threaded, harness commit `e2aaef5`, gpyreg at the pin. Every one
+of the 15 runs passed the filters and every artifact verified post hoc
+with exact zeros on the recomputation gate.
+
+| Condition | Wall per run (median) | Evaluations (median) | `K` | Single-run `elbo_err` / gsKL / MMTV (median) |
+|---|---|---|---|---|
+| `multisensory_s1_D6_noise3_svbmc` | 3.3 min | 265 | 50 | 0.72 / 5.85 / 0.343 |
+| `rosenbrock_D2_noise3_svbmc` | 1.6 min | 180 | 50 | 0.03 / 0.04 / 0.083 |
+| `gmm_D2_noise3_svbmc` | 1.5 min | 175 | 50 | 0.46 / 1.17 / 0.317 |
+| `ring_D2_noise3_svbmc` | 1.9 min | 170 | 50 | 1.91 / 154 / 0.651 |
+| `gmm_D2_svbmc` | 0.25 min | 75 | 50 | 0.71 / 11.0 / 0.363 |
+
+The single-run quality of the ring and the two GMM conditions is poor by
+construction (one run covers a piece of the ring or some of the four
+clusters), which is the regime stacking is for. Per-run costs are well
+below the paper's server timings (about 9 min for the ring and 14 min for
+multisensory at noise 3) and below the pre-pilot assumptions. Projected
+pool cost: about 8 hours if every condition reaches its filtered target
+at the pilot's pass rate (60 × 1.6 + 30 × 0.25 + 60 × 1.5 + 40 × 1.9 +
+60 × 3.3 min), about 12.5 hours at the seed caps. Stages: B conditions
+1–3 (about 6.5 hours expected, 9 at the caps), C conditions 4–5 (about
+1.5 hours expected, 2.7 at the caps), D the comparison (see below). Each
+stage is a separate PI authorization. The worker is invocable per case,
+so a later Slurm array job can reuse it unchanged if the HPC workflow
+lands first. The previous reference points were the
+`reference_990_20260913` sidecars (3.16 min for the noise-1.3 multisensory
+configuration and 2.50 min for noisy Rosenbrock, both at the pinned
+budget).
 
 ### GP library pin
 
@@ -318,21 +330,19 @@ arm's entropy estimate). The multisensory likelihood costs about
 filtered pool's own single-run metrics.
 
 **Cost.** The entropy Monte Carlo evaluates every component against every
-draw at every Adam step, so a cell costs about `M²`. The paper's timings
-for the original at `M = 40` are about 2300 s on multisensory (D = 6),
-450–540 s on the noisy D = 2 targets and 150 s on the noiseless GMM; the
-speedups campaign measured the integrated class at about half. With the
-paper's full protocol (`M` from 2 to 40, `R = 20`, six conditions) the
-comparison alone would have taken on the order of 100 hours here, most of
-it in the `M ≥ 32` cells and the D = 6 conditions. The approved grid
-(PI, 2026-09-13) is `M ∈ {2, 4, 8, 16}` with `R = 20, 20, 20, 10`, both
-arms on every cell of the five conditions, 700 cells in all: about 2.5
-hours for multisensory, half an hour per noisy D = 2 condition, a quarter
-of an hour for the control and about an hour of metrics, about 5 hours in
-all from the paper's timings. Phase 4 times both arms at `M = 3` on every
-condition and the estimate is replaced by the `M²` extrapolation before
-stage D is authorized; if it comes out too high, the original arm's
-repetitions are halved first.
+draw at every Adam step, so a cell costs about `M²`. Measured in the pilot
+(2026-09-14, `M = 3`, 500 Adam steps, five repetitions per condition,
+single-threaded): the integrated arm's `optimize` takes 0.5–0.7 s on every
+condition, the original's 1.1 s (noiseless GMM), 2.0–2.5 s (noisy D = 2)
+and 2.8 s (multisensory); the runtime ratio is 0.20–0.51. Extrapolating
+with `M²`, the approved grid (PI, 2026-09-13) of `M ∈ {2, 4, 8, 16}` with
+`R = 20, 20, 20, 10`, both arms on every cell of the five conditions (700
+cells), costs about 25 minutes of stacking plus about 10 minutes of
+metrics per condition, about 3 hours in all. The paper's timings (about
+2300 s at `M = 40` on multisensory for the original) had put the paper's
+full protocol near 100 hours here and the approved grid near 5; both were
+overestimates for this machine. Adding `M = 32` at `R = 10` would cost
+about an hour per condition more.
 
 Summaries report the median over repetitions with a 95 % bootstrap
 interval (10 000 resamples), the paired differences integrated minus
@@ -375,8 +385,20 @@ paper-comparable figures can be drawn; every figure names its convention.
    `debiased_I_median` within 0.25 `elbo_sd` on the one group where
    both caps were active; on `bounded_D2` and `corr_D3` only the
    original's cap is active (their `elbo_sd` is below the 0.1 proxy),
-   which is a reporting difference, not a disagreement. Phase 4 adds the
-   pilot posteriors of every condition at the full step count.
+   which is a reporting difference, not a disagreement. Phase 4
+   (2026-09-14, the three pilot posteriors of every condition at `M = 3`,
+   500 Adam steps, five cell seeds): paired `max |Δw|` 0.028–0.044
+   against within-arm spreads of 0.018–0.044 (integrated) and
+   0.027–0.048 (original); the paired difference is at most 1.3 times the
+   larger within-arm spread (rosenbrock 1.03, ring 1.29, the others
+   below 1). The raw stacked ELBO of the integrated class sits
+   0.04–0.19 nats below the original's on every condition, and its
+   entropy 0.02–0.16 nats below: the original reports the optimizer's
+   own 20-draw entropy at the selected weights, the integrated class a
+   fresh 100-draw evaluation, so the offset is the intended reporting
+   difference, not a disagreement of the posteriors. The capped headline
+   and `debiased_I_median` differ by 0.03–0.18 nats, within one
+   integrated `elbo_sd` (0.17–0.24) on every noisy condition.
 2. **Posterior quality (equivalence).** For every condition and `M`, the
    paired differences in MMTV and gsKL are not significantly worse for
    the integrated class (exact signed-rank tests, Holm-corrected across
@@ -732,27 +754,27 @@ and pass-rate assumption are revised before stage B.
 
 **Acceptance**:
 
-- [ ] 15 artifacts (three seeds of five conditions) verify post hoc, or
-      the failures are documented.
-- [ ] For every condition, the integrated class constructs and runs a
-      full `optimize` from the three rebuilt posteriors with
-      `seed=cell_seed`; the original does the same in `BASELINE_PATH`
-      with `np.random.seed(cell_seed)`; the paired `max |Δw|` and both
-      arms' within-arm spread over five seeds are recorded per condition
-      and appended to criterion 1's tolerance line; both arms' `optimize`
-      seconds at `M = 3` are recorded.
-- [ ] The pool runtime table and the comparison cost paragraph are
-      replaced by measured medians and the `M²` extrapolation; the seed
-      caps, stage split and comparison grid are revised; the worklog
-      records the pilot. A revised allocation is applied to the same
-      campaign directory by running `prepare` again with the new
-      `--allocation` values (the manifest accepts a change of the
+- [x] 15 artifacts (three seeds of five conditions) verify post hoc
+      (2026-09-14, exact zeros on the recomputation gate, 0.2 s in all).
+- [x] For every condition, both arms ran a full `optimize` at `M = 3`
+      from the rebuilt posteriors, five cell seeds each; the paired
+      `max |Δw|`, the within-arm spreads and both arms' seconds are
+      recorded under criterion 1 and in the cost paragraph
+      (`dev/scripts/runs/svbmc_pool_20260913/pilot_stack/`, copied to
+      `dev/experiments/svbmc_pool/pilot/`).
+- [x] The pool runtime table and the comparison cost paragraph carry
+      the measured values; every pilot run passed the filters, so the
+      seed caps and the stage split stand and no allocation revision is
+      needed. A revised allocation, if one is ever needed, is applied to
+      the same campaign directory by running `prepare` again with the
+      new `--allocation` values (the manifest accepts a change of the
       allocation alone and records the previous one in
-      `allocation_history`), so the pilot's artifacts are the first runs
-      of stages B and C.
-- [ ] The PI authorizes stage B, stage C, the comparison grid, or a
-      revised allocation in a dated worklog entry before any further
-      pool run starts.
+      `allocation_history`); the pilot's artifacts are the first runs of
+      stages B and C.
+- [ ] The PI authorizes stage B, stage C and the comparison grid in a
+      dated worklog entry before any further pool run starts. Open for
+      that decision: criterion 3's yardstick (see the worklog of
+      2026-09-14) and whether to add `M = 32` at `R = 10`.
 
 ### Phase 5: stacking comparison harness
 
@@ -1114,6 +1136,40 @@ draft had left open:
   and `metrics` now draw the same reference set by default.
   `baseline_environment.json`'s gpyreg note states the pin. Phase 4 was
   cleared to start once the tree is committed.
+- 2026-09-14: Phase 4, the pilot, complete (harness commit `e2aaef5`,
+  campaign directory `dev/scripts/runs/svbmc_pool_20260913/pool/`,
+  manifest authorized "Luigi Acerbi (PI, 2026-09-13)"). Fifteen runs in
+  27 minutes, every one passing the filters, every artifact verifying
+  post hoc with exact zeros; per-run wall times and single-run metrics
+  are in the pool runtime table, the projected pool cost is about 8
+  hours (12.5 at the seed caps). The `M = 3` stacking measurement
+  (`pilot_stack/`, 25 cells, five cell seeds per condition, 500 Adam
+  steps): runtime ratios 0.20–0.51, paired `max |Δw|` within 1.3 times
+  the within-arm spread, no equivalence flag on MMTV or gsKL, comparison
+  grid cost about 3 hours. Two observations for the PI's decision before
+  stage D: (1) **criterion 3's yardstick.** Its first clause compares
+  every estimate with `ln Z`, but a stack of three runs has a genuine
+  KL gap to the target (the Monte Carlo ELBO of the stacked posterior,
+  `elbo_mc`, sits 0.55 nats below `ln Z` on noisy GMM and 0.6–0.7 on
+  multisensory), and the raw estimates are already optimistic by
+  0.1–0.7 nats relative to `elbo_mc` at `M = 3` (largest on noisy GMM
+  and multisensory), so the raw error against `ln Z` is small by
+  cancellation while the capped headline, which removes most of the
+  optimism, lands 0.4–0.9 nats below `ln Z`. Measured against `elbo_mc`,
+  the capped headline is closer than the raw estimate on all four noisy
+  conditions (bias of at most ±0.33 nats against +0.11 to +0.67). The
+  clause as written would fail at `M = 3` on three noisy conditions for
+  the wrong reason. Proposed amendment: state criterion 3 as the bias of
+  each estimate relative to `elbo_mc` (the quantity Phase 2 compares
+  against), require `|headline − elbo_mc| ≤ |raw − elbo_mc|` in the
+  median at every `M`, keep the growth bound on the capped bias, and
+  add `bias_<variant> = elbo_<variant> − elbo_mc` columns to the
+  comparison summary (a small harness change, to be reviewed before
+  stage D). (2) **Grid.** The measured cost leaves room for `M = 32` at
+  `R = 10` (about an hour per condition more) if the paper's larger-`M`
+  regime is wanted; the pool of 60 supports it with less subset
+  diversity than the paper's 100. Stages B, C and D await the PI's
+  instruction.
 
 ## Execution tracking
 
@@ -1124,7 +1180,7 @@ Live status of the phases above (`[ ]` not started, `[~]` in progress,
 - [x] Phase 1: baseline environment, agreement spread, save-contract probe (Opus sub-agent; 2026-09-13, all checks pass; see worklog)
 - [x] Phase 2: targets (Opus sub-agent; 2026-09-13, all checks pass; ring ported without the log-radius term, see worklog)
 - [x] Phase 3: pool generator (Opus sub-agent; 2026-09-14, 16 tests pass, manual gate on `rosenbrock_D2_noise3_svbmc` verified and stacked; see worklog)
-- [ ] Phase 4: pilot (Fable; authorized by the PI on 2026-09-13 to start once Phases 1–3 are complete and verified)
+- [x] Phase 4: pilot (Fable; authorized by the PI on 2026-09-13; run 2026-09-14 from the harness commit `e2aaef5`, campaign directory `dev/scripts/runs/svbmc_pool_20260913/pool/`, three seeds per condition, `--save-vbmc`; 15/15 runs pass the filters, all artifacts verify, `M = 3` stacking measured in both arms; stages B–D await authorization)
 - [x] Phase 5: stacking comparison harness (Opus sub-agent; 2026-09-14, steps 1–3 and 5 done, 7 tests pass; step 4, the dry run on the pilot artifacts, waits for Phase 4)
 - [ ] Phase 6: campaign, comparison and report (waits for PI go per stage)
 - [ ] Documentation updates listed above
