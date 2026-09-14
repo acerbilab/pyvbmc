@@ -1764,16 +1764,19 @@ SUITES = {
     # and what users get, so no entry pins the 2020 paper's budget; the
     # `svbmc` tag gives them their own labels, so that `find_config` cannot
     # return a golden entry, which does pin that budget, for the same
-    # target, dimension and noise level. The last entry is the campaign's
-    # extension condition, the 2020 paper's IBS noise level for the
-    # multisensory model, and is not part of the pool allocation.
+    # target, dimension and noise level. Six noisy conditions (the
+    # multisensory model at the paper's noise 3 and at the 2020 paper's
+    # IBS level 1.3, noisy Rosenbrock, the paper's GMM and ring, and the
+    # heavy-tailed Student target at D = 8) and two noiseless controls.
     "svbmc_pool": [
         Config("multisensory_s1", 6, noise_sd=3.0, tag="svbmc"),
+        Config("multisensory_s1", 6, noise_sd=1.3, tag="svbmc"),
         Config("rosenbrock", 2, noise_sd=3.0, tag="svbmc"),
         Config("gmm", 2, noise_sd=3.0, tag="svbmc"),
         Config("ring", 2, noise_sd=3.0, tag="svbmc"),
+        Config("student", 8, noise_sd=3.0, tag="svbmc"),
         Config("gmm", 2, tag="svbmc"),
-        Config("multisensory_s1", 6, noise_sd=1.3, tag="svbmc"),
+        Config("multisensory_s1", 6, tag="svbmc"),
     ],
 }
 

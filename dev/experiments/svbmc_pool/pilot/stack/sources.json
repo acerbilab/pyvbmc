@@ -1,9 +1,9 @@
 {
   "campaign": "svbmc_pool",
-  "generated": "2026-09-14 04:15:09",
+  "generated": "2026-09-14 10:29:54",
   "harness": {
     "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\svbmc_pool_stack.py",
-    "sha256": "896e9f23dfa012ea56c36d022b556c2a8480086a7c591916d37a41085f72a3f4"
+    "sha256": "266f3166bae067ad834fdcebd6b187f6a09853687a345658945db541506c7689"
   },
   "settings": {
     "seed": 0,
@@ -20,6 +20,9 @@
     "n_samples_final": 100,
     "n_draws": 100000,
     "n_log_joint": 10000,
+    "n_entropy_ref": 200,
+    "n_entropy_batches": 8,
+    "growth_bound": 0.5,
     "bootstrap_resamples": 10000,
     "alpha": 0.05,
     "kind": "run"
@@ -28,28 +31,34 @@
   "arms": {
     "integrated": {
       "environment": {
-        "hostname": "ASUS-LUIGI",
-        "python": "3.12.6",
-        "pyvbmc_commit": "e2aaef507f0eedd38616a33563c5d95287d156b0",
-        "pyvbmc_import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc",
-        "pyvbmc_version": "1.0.5.dev317+g9d54ca3fb.d20260913",
-        "gpyreg_commit": "39536b000a8c8465133f4eaef625486991db8257",
-        "gpyreg_import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg\\gpyreg",
-        "gpyreg_version": "1.2.0",
-        "numpy": "2.5.2",
-        "scipy": "1.18.1",
-        "threads": {
-          "OMP_NUM_THREADS": "1",
-          "OPENBLAS_NUM_THREADS": "1",
-          "MKL_NUM_THREADS": "1"
+        "source": {
+          "python": "3.12.6",
+          "pyvbmc_commit": "1d1103fbfd89d741a9a149d8ea0207d4e6ea2a4e",
+          "gpyreg_commit": "39536b000a8c8465133f4eaef625486991db8257",
+          "numpy": "2.5.2",
+          "scipy": "1.18.1",
+          "pyvbmc_dirty": "M pyvbmc/testing/oracles/fixtures/rosenbrock_D2_noise1_viqr.json\n M pyvbmc/testing/oracles/fixtures/rosenbrock_D2_noise1_viqr.npz",
+          "gpyreg_clean": true,
+          "suite_module_dirty": "M dev/scripts/benchmark_targets.py",
+          "suite_module_sha256": "668d9af9d78280608a53c9dd0ba6afe929e28f78dd128bca8895bdf4b6889c86",
+          "io_module_sha256": "f7db8d37056f3027c5029271e5bf6839a05b41695c3665962dd60df8c988265e",
+          "runner_sha256": "62d90148f2b282fb3197af14a7a8dbb4236d2e82a8d4d1b3d350eda4cf0ec666"
         },
-        "gpyreg_source": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg",
-        "gpyreg_clean": true,
-        "pyvbmc_dirty": "",
-        "suite_module_dirty": "",
-        "suite_module_sha256": "98b1321193334f488a1352b01dc76fc353840cc486dbdb930288646cf77ec3dc",
-        "io_module_sha256": "7ab68d431b419f78d765e3e16224de7155c40b6763b36a4d27655c202e06f12c",
-        "runner_sha256": "e186c2aca2cf57544b49da37e58746fda7fcd3f81acfb109c1e6420140a1f41a"
+        "host": {
+          "hostname": "ASUS-LUIGI",
+          "platform": "Windows-11-10.0.26200-SP0",
+          "executable": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Scripts\\python.exe",
+          "pyvbmc_import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc",
+          "pyvbmc_version": "1.0.5.dev317+g9d54ca3fb.d20260913",
+          "gpyreg_import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg\\gpyreg",
+          "gpyreg_version": "1.2.1",
+          "threads": {
+            "OMP_NUM_THREADS": "1",
+            "OPENBLAS_NUM_THREADS": "1",
+            "MKL_NUM_THREADS": "1"
+          },
+          "gpyreg_source": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg"
+        }
       },
       "torch_version": "2.14.0+cpu",
       "torch_import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_compat_20260908\\deps\\torch\\__init__.py",
@@ -65,28 +74,34 @@
       "torch_threads": 1,
       "executable": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Scripts\\python.exe",
       "environment": {
-        "hostname": "ASUS-LUIGI",
-        "python": "3.12.6",
-        "pyvbmc_commit": "e2aaef507f0eedd38616a33563c5d95287d156b0",
-        "pyvbmc_import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc",
-        "pyvbmc_version": "1.0.5.dev317+g9d54ca3fb.d20260913",
-        "gpyreg_commit": "39536b000a8c8465133f4eaef625486991db8257",
-        "gpyreg_import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg\\gpyreg",
-        "gpyreg_version": "1.2.0",
-        "numpy": "2.5.2",
-        "scipy": "1.18.1",
-        "threads": {
-          "OMP_NUM_THREADS": "1",
-          "OPENBLAS_NUM_THREADS": "1",
-          "MKL_NUM_THREADS": "1"
+        "source": {
+          "python": "3.12.6",
+          "pyvbmc_commit": "1d1103fbfd89d741a9a149d8ea0207d4e6ea2a4e",
+          "gpyreg_commit": "39536b000a8c8465133f4eaef625486991db8257",
+          "numpy": "2.5.2",
+          "scipy": "1.18.1",
+          "pyvbmc_dirty": "M pyvbmc/testing/oracles/fixtures/rosenbrock_D2_noise1_viqr.json\n M pyvbmc/testing/oracles/fixtures/rosenbrock_D2_noise1_viqr.npz",
+          "gpyreg_clean": true,
+          "suite_module_dirty": "M dev/scripts/benchmark_targets.py",
+          "suite_module_sha256": "668d9af9d78280608a53c9dd0ba6afe929e28f78dd128bca8895bdf4b6889c86",
+          "io_module_sha256": "f7db8d37056f3027c5029271e5bf6839a05b41695c3665962dd60df8c988265e",
+          "runner_sha256": "62d90148f2b282fb3197af14a7a8dbb4236d2e82a8d4d1b3d350eda4cf0ec666"
         },
-        "gpyreg_source": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg",
-        "gpyreg_clean": true,
-        "pyvbmc_dirty": "",
-        "suite_module_dirty": "",
-        "suite_module_sha256": "98b1321193334f488a1352b01dc76fc353840cc486dbdb930288646cf77ec3dc",
-        "io_module_sha256": "7ab68d431b419f78d765e3e16224de7155c40b6763b36a4d27655c202e06f12c",
-        "runner_sha256": "e186c2aca2cf57544b49da37e58746fda7fcd3f81acfb109c1e6420140a1f41a"
+        "host": {
+          "hostname": "ASUS-LUIGI",
+          "platform": "Windows-11-10.0.26200-SP0",
+          "executable": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Scripts\\python.exe",
+          "pyvbmc_import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc",
+          "pyvbmc_version": "1.0.5.dev317+g9d54ca3fb.d20260913",
+          "gpyreg_import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg\\gpyreg",
+          "gpyreg_version": "1.2.1",
+          "threads": {
+            "OMP_NUM_THREADS": "1",
+            "OPENBLAS_NUM_THREADS": "1",
+            "MKL_NUM_THREADS": "1"
+          },
+          "gpyreg_source": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg"
+        }
       }
     }
   },
@@ -106,7 +121,7 @@
     },
     "torch_version": "2.14.0+cpu",
     "torch_import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_compat_20260908\\deps\\torch\\__init__.py",
-    "verified": "2026-09-14 04:13:22"
+    "verified": "2026-09-14 10:28:00"
   },
   "gpyreg_source": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg",
   "pools": [
@@ -142,6 +157,17 @@
         "plot": false,
         "print_iteration_header": false,
         "performance_calibration": "off"
+      },
+      "selection": {
+        "path": null,
+        "generated": null,
+        "conditions": {
+          "rosenbrock_D2_noise3_svbmc": "every passing record",
+          "gmm_D2_svbmc": "every passing record",
+          "gmm_D2_noise3_svbmc": "every passing record",
+          "ring_D2_noise3_svbmc": "every passing record",
+          "multisensory_s1_D6_noise3_svbmc": "every passing record"
+        }
       }
     }
   ],

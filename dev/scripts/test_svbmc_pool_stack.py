@@ -67,6 +67,13 @@ def _overlay():
 
 
 OVERLAY = _overlay()
+# Two checks below call the integrated class in this process, so the
+# overlay's Torch must be importable here whether or not pytest was
+# started with it on PYTHONPATH. Appended, not prepended: with PYTHONPATH
+# set this is a no-op, and without it nothing the venv provides is
+# shadowed.
+if OVERLAY is not None and str(OVERLAY) not in sys.path:
+    sys.path.append(str(OVERLAY))
 pytestmark = pytest.mark.skipif(
     OVERLAY is None or not (GPYREG_SOURCE / "gpyreg").is_dir(),
     reason="the baseline Torch overlay and the frozen gpyreg worktree of "
@@ -95,6 +102,13 @@ def run_script(*arguments):
         capture_output=True,
         text=True,
     )
+
+
+def dateless(text):
+    """The lines of a summary that do not carry the date it was built."""
+    return [
+        line for line in text.splitlines() if not line.startswith("Generated ")
+    ]
 
 
 def run_harness(out, *extra):
@@ -183,7 +197,7 @@ def test_cell_schema(comparison):
                 metrics["gskl"] / np.shape(metrics["post_cov"])[0],
             )
             assert np.isclose(
-                arm["elbo_mc"], arm["e_log_joint_mc"] + arm["entropy"]
+                arm["elbo_mc"], arm["e_log_joint_mc"] + arm["entropy_ref"]
             )
             for key in ("construction", "optimize", "sample"):
                 assert arm[f"{key}_seconds"] > 0
@@ -192,6 +206,105 @@ def test_cell_schema(comparison):
                 assert arm["elbo_sd"] > 0
             else:
                 assert {"estimated", "debiased_I_median"} <= set(elbos)
+
+
+def test_monte_carlo_elbo_reference(comparison):
+    """Criterion 3's yardstick: the reference, the biases and the KL gap.
+
+    ``elbo_mc`` adds an entropy the harness estimates itself, at the arm's
+    own weights, to the arm's Monte Carlo expected log joint, and every
+    other ELBO the arm reports is scored against it.
+    """
+    for cell in comparison["results"]["cells"]:
+        assert cell["reference_seconds"] > 0
+        for name, arm in cell["arms"].items():
+            for key in (
+                "entropy_ref",
+                "entropy_ref_sd",
+                "e_log_joint_mc",
+                "e_log_joint_mc_sd",
+                "elbo_mc",
+                "elbo_mc_sd",
+                "kl_gap",  # the fixture targets have a known ln Z
+            ):
+                assert np.isfinite(arm[key]), (name, key)
+            assert arm["entropy_ref_sd"] > 0
+            assert arm["e_log_joint_mc_sd"] > 0
+            assert len(arm["entropy_ref_batches"]) == (
+                harness.N_ENTROPY_BATCHES
+            )
+            assert np.isclose(
+                arm["entropy_ref"], np.mean(arm["entropy_ref_batches"])
+            )
+            assert np.isclose(
+                arm["elbo_mc_sd"],
+                np.hypot(arm["entropy_ref_sd"], arm["e_log_joint_mc_sd"]),
+            )
+            assert np.isclose(
+                arm["elbo_mc"], arm["e_log_joint_mc"] + arm["entropy_ref"]
+            )
+            assert np.isclose(arm["elbos"]["mc"], arm["elbo_mc"])
+            assert np.isclose(
+                arm["metrics"]["elbo_err_mc"], abs(arm["kl_gap"])
+            )
+            # Every variant but the reference itself carries its bias.
+            assert set(arm["bias"]) == set(arm["elbos"]) - {"mc"}
+            for variant, bias in arm["bias"].items():
+                assert np.isclose(bias, arm["elbos"][variant] - arm["elbo_mc"])
+            # Both estimate the entropy of the same mixture at the same
+            # weights, so a gross disagreement means the reference was
+            # taken at the wrong weights or on the wrong posteriors.
+            assert abs(arm["entropy_ref"] - arm["entropy"]) < 1.0, (
+                f"{name}: reference entropy {arm['entropy_ref']} against "
+                f"the arm's own {arm['entropy']}"
+            )
+
+
+def test_entropy_reference_moves_with_the_weights_alone():
+    """The reference of a cell, called directly on a two-posterior stack.
+
+    Both arms' references are drawn from equally seeded generators, so
+    they share their component draws and differ only through the weights;
+    that is what makes their biases comparable. The estimate is the mean
+    of its batches, its standard error the batches' standard error, and
+    the estimator's own generator is left where it was.
+    """
+    from pyvbmc.svbmc import SVBMC
+
+    entries = harness.fixture_conditions([GROUPS[1]])[GROUPS[1]][:2]
+    stacked = SVBMC(
+        [harness.load_entry(entry, rng=i) for i, entry in enumerate(entries)],
+        seed=0,
+    )
+    K_total = int(np.sum(stacked.K))
+    before = stacked.rng
+    equal = np.full(K_total, 1.0 / K_total)
+    tilted = np.linspace(1.0, 2.0, K_total)
+    tilted /= tilted.sum()
+
+    def reference(w):
+        return harness.entropy_reference(
+            stacked,
+            w,
+            np.random.default_rng([7, harness.ENTROPY_REF_STREAM]),
+        )
+
+    first, again, other = reference(equal), reference(equal), reference(tilted)
+    assert stacked.rng is before
+    # The same weights on the same seed give the same draws and the same
+    # number; different weights on those draws give a different one.
+    assert first == again
+    assert first["entropy_ref"] != other["entropy_ref"]
+    batches = first["entropy_ref_batches"]
+    assert len(batches) == harness.N_ENTROPY_BATCHES
+    assert np.isclose(first["entropy_ref"], np.mean(batches))
+    assert np.isclose(
+        first["entropy_ref_sd"],
+        np.std(batches, ddof=1) / np.sqrt(harness.N_ENTROPY_BATCHES),
+    )
+    with pytest.raises(RuntimeError, match="did not retain the same runs"):
+        reference(equal[:-1])
+    assert stacked.rng is before
 
 
 def test_weights_agree_between_the_arms(comparison):
@@ -247,6 +360,52 @@ def test_summary_reports_every_cell_set(comparison):
     )
 
 
+def test_summary_reports_the_biases_and_the_criterion_3_gates(comparison):
+    """Criterion 3 in the summary: medians, the gate per `M`, the growth."""
+    summary = comparison["summary"]
+    for condition in summary["conditions"]:
+        growth = condition["headline_bias_growth"]
+        assert (growth["M_min"], growth["M_max"]) == (min(GRID), max(GRID))
+        assert growth["bound"] == harness.GROWTH_BOUND
+        assert np.isfinite(growth["growth"])
+        assert growth["growth_within_bound"] in (True, False)
+        assert growth["growth_within_bound"] == (
+            growth["growth"] < growth["bound"]
+        )
+        for entry, repetitions in zip(condition["M"], REPETITIONS):
+            integrated = entry["arms"]["integrated"]
+            original = entry["arms"]["original"]
+            gate = entry["criterion3"]
+            assert gate["headline_bias_not_worse"] in (True, False)
+            assert gate["median_bias_headline"] == (
+                integrated["bias"]["headline"]["median"]
+            )
+            assert gate["median_bias_estimated"] == (
+                original["bias"]["estimated"]["median"]
+            )
+            assert gate["headline_bias_not_worse"] == (
+                abs(gate["median_bias_headline"])
+                <= abs(gate["median_bias_estimated"])
+            )
+            for interval in (
+                integrated["bias"]["raw"],
+                original["bias"]["debiased_I_median"],
+                integrated["kl_gap"],
+                original["kl_gap"],
+                integrated["entropy_ref"],
+                original["entropy_ref"],
+                integrated["elbo_mc_sd"],
+                entry["paired"]["bias_headline_minus_estimated"],
+            ):
+                assert interval["n"] == repetitions
+                assert interval["lo"] <= interval["median"] <= interval["hi"]
+    text = (comparison["out"] / "summary.md").read_text(encoding="utf-8")
+    assert "descriptive only" in text
+    # The bias against `elbo_mc` is the criterion; the error against ln Z
+    # is descriptive, and follows it.
+    assert text.index("bias headline int") < text.index("err int")
+
+
 def test_equivalence_tests_cover_every_cell_set(comparison):
     """Criterion 2: one Holm-corrected signed-rank family per metric."""
     summary = comparison["summary"]
@@ -272,6 +431,7 @@ def test_equivalence_tests_cover_every_cell_set(comparison):
 def test_summarize_only_rebuilds_the_summary(comparison):
     out = comparison["out"]
     before = json.loads((out / "summary.json").read_text(encoding="utf-8"))
+    before_text = (out / "summary.md").read_text(encoding="utf-8")
     completed = run_script("--summarize-only", "--out", str(out))
     assert completed.returncode == 0, completed.stdout + completed.stderr
     after = json.loads((out / "summary.json").read_text(encoding="utf-8"))
@@ -280,6 +440,82 @@ def test_summarize_only_rebuilds_the_summary(comparison):
     assert after["conditions"] == before["conditions"]
     assert after["equivalence_tests"] == before["equivalence_tests"]
     assert after["settings"] == before["settings"]
+    # And the same markdown, but for the line carrying the date it ran.
+    after_text = (out / "summary.md").read_text(encoding="utf-8")
+    assert dateless(after_text) == dateless(before_text)
+
+
+def test_summarize_only_describes_the_run_it_summarizes(comparison, tmp_path):
+    """An older comparison is described by its settings, not by today's.
+
+    Its draw counts, entropy reference, bootstrap and stacking call are
+    the ones it recorded; only a field a results file predating it does
+    not carry falls back to this module's constant.
+    """
+    results = json.loads(
+        (comparison["out"] / "results.json").read_text(encoding="utf-8")
+    )
+    settings = results["settings"]
+    for key in (
+        "n_samples",
+        "n_samples_final",
+        "n_log_joint",
+        "n_entropy_ref",
+        "n_entropy_batches",
+        "bootstrap_resamples",
+        "max_steps",
+        "seed",
+    ):
+        assert key in settings
+    settings["n_entropy_batches"] = settings["n_entropy_batches"] + 1
+    settings["n_samples_final"] = 17
+    del settings["n_samples"]
+    path = tmp_path / "results.json"
+    path.write_text(json.dumps(results), encoding="utf-8")
+    completed = run_script(
+        "--summarize-only",
+        "--out",
+        str(tmp_path),
+        "--from-results",
+        str(path),
+    )
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+    text = (tmp_path / "summary.md").read_text(encoding="utf-8")
+    assert f"in {settings['n_entropy_batches']} batches" in text
+    assert "a fresh 17 for the integrated class" in text
+    # The one field this file does not carry, and only that one.
+    assert f"`n_samples={harness.N_SAMPLES}`" in text
+    assert f"{harness.N_ENTROPY_BATCHES} batches" not in text
+
+
+def test_summarize_only_names_a_results_file_it_cannot_summarize(
+    comparison, tmp_path
+):
+    """A comparison run before the Monte Carlo ELBO reference existed.
+
+    Its cells carry no bias against `elbo_mc`, which every summary is
+    stated in and which cannot be recovered from the record, so the
+    rebuild must say which field is missing rather than fail on the first
+    lookup.
+    """
+    results = json.loads(
+        (comparison["out"] / "results.json").read_text(encoding="utf-8")
+    )
+    for arm in results["cells"][0]["arms"].values():
+        del arm["entropy_ref"]
+    path = tmp_path / "results.json"
+    path.write_text(json.dumps(results), encoding="utf-8")
+    completed = run_script(
+        "--summarize-only",
+        "--out",
+        str(tmp_path),
+        "--from-results",
+        str(path),
+    )
+    assert completed.returncode != 0
+    assert "entropy_ref" in completed.stderr
+    assert "predates" in completed.stderr
+    assert not (tmp_path / "summary.json").exists()
 
 
 def test_summarize_only_refuses_the_flags_it_cannot_use(tmp_path):
@@ -304,8 +540,14 @@ def test_sources_identify_both_arms(comparison):
     # Both arms must import the campaign's frozen gpyreg worktree, and only
     # the original arm may see the pinned upstream package.
     expected = str((GPYREG_SOURCE / "gpyreg").resolve())
-    assert integrated["environment"]["gpyreg_import"] == expected
-    assert original["environment"]["gpyreg_import"] == expected
+    assert integrated["environment"]["host"]["gpyreg_import"] == expected
+    assert original["environment"]["host"]["gpyreg_import"] == expected
+    # The arms differ in their import paths, which is the point of the
+    # worker, and in nothing the source half pins.
+    assert (
+        integrated["environment"]["source"]
+        == original["environment"]["source"]
+    )
     assert original["svbmc_version"] == "0.1.1"
     upstream = sources["path_sets"]["BASELINE_PATH"].split(os.pathsep)[-1]
     assert Path(original["svbmc_import"]).parent.parent == Path(upstream)

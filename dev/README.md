@@ -435,30 +435,43 @@ reason.
   `experiments/svbmc_speedups/`.
 - `scripts/svbmc_pool_run.py` — the run-pool generator of the S-VBMC
   benchmark campaign (`plans/svbmc-benchmark-campaign.md`): `prepare`
-  fixes the allocation (the campaign's five pool conditions, `POOL_LABELS`,
-  with a first seed, a seed cap and a filtered target each; the suite's
-  sixth entry is the extension condition and is allocated only when
-  `--only` names it), the run options and the identity of the code the
+  fixes the allocation (every condition of the named suite, which for
+  `svbmc_pool` is the campaign's eight pool conditions, `POOL_LABELS`,
+  with a first seed, a seed cap and a filtered target each; `--only`
+  allocates a subset), the run options and the identity of the code the
   pool is generated with, and `--ready --authorized-by NAME` records the
   authorization; re-running it on a prepared directory is how the campaign
   is marked ready and how its targets and seed caps are revised, the
   previous allocation and its authorization kept in `allocation_history`,
-  and nothing else about the campaign can change; `run` walks the
-  conditions in manifest order,
-  seeds upward, one fresh worker process at a time, stopping each
-  condition once its filtered target or its seed cap is reached
-  (`--pilot-seeds K` runs exactly K seeds per condition instead;
-  `--save-vbmc` also pickles the whole `VBMC` object); `worker` is one run
-  and is invocable on its own; `summarize` writes the per-condition pass
-  rates, wall times and metric quartiles from the cases the directory
-  holds. gpyreg is pinned to a frozen worktree through
-  `PYVBMC_GPYREG_SOURCE` as in `population_run.py`, the identity also
-  hashes the suite module and both pool scripts, hash-verified completion
-  records permit resumption, a failing case is recorded and skipped by
-  later sweeps, and an artifact file without a completion record or an
-  error file stops the sweep for inspection (the log of an interrupted
-  case is not one). `test_svbmc_pool_run.py` generates a short campaign
-  and checks the artifact, resume, revision and summary contracts.
+  and nothing else about the campaign can change; `run` is the laptop
+  supervisor, walking the conditions in manifest order, seeds upward, one
+  fresh worker process at a time, stopping each condition once its
+  filtered target or its seed cap is reached (`--pilot-seeds K` runs
+  exactly K seeds per condition instead; `--save-vbmc` also pickles the
+  whole `VBMC` object); `worker` is one run and is invocable on its own;
+  `cases` prints every `label seed` of the allocation, one per line, so a
+  Slurm array can map its index to one `worker` call (the plan's "Cluster
+  generation"; the docstring's sketch chunks the array around Slurm's
+  default `MaxArraySize` of 1001); `select` then defines the filtered pool
+  post hoc, per condition the lowest-seed runs that pass the filters up to
+  the target, in `selection.json`, which the comparison reads, and reports
+  its pass rate over the seeds it scanned before the target was met, which
+  is not `summarize`'s over every completed case; `summarize` writes the
+  per-condition pass rates, wall times and metric quartiles from the cases
+  the directory holds. gpyreg is pinned to a frozen worktree through
+  `PYVBMC_GPYREG_SOURCE` as in `population_run.py`; the identity is split
+  into a `source` half (commits, library versions, working-tree state and
+  the hashes of the suite module and both pool scripts) that every process
+  of one campaign must match and a `host` half that is recorded only, so
+  any node may run any case; the authorization gates `cases` and `worker`
+  as it gates `run`. Hash-verified completion records permit resumption; a
+  failing case leaves `<tag>.error.txt` and no artifact, written by the
+  worker itself so that an array task records its failure as a sweep does,
+  and is skipped by later sweeps; an artifact file without a completion
+  record or an error file stops the sweep for inspection (the log of an
+  interrupted case is not one).
+  `test_svbmc_pool_run.py` generates a short campaign and checks the
+  artifact, resume, revision, selection and summary contracts.
 - `scripts/svbmc_pool_io.py` — the campaign's per-run artifact: `save_run`
   stores one finished run through the oracle snapshot codec (the returned
   posterior with all of `stats`, the GP that produced those statistics,
@@ -478,20 +491,33 @@ reason.
   0.1.1 (in a long-lived worker whose `PYTHONPATH` carries the pinned
   checkout, so no controller can import it), never at the same time and
   alternating which goes first, both arms rebuilding the subset's
-  posteriors with one seed per entry derived from the cell's seed. Each
-  cell records the weights, every ELBO variant, the entropy, the seconds
-  and the quality of 100 000 draws (`benchmark_targets.sample_metrics`,
-  plus the Monte Carlo expected log joint over a random subsample of
-  them); the outputs are `results.json`, `summary.json` / `summary.md`
-  (medians with bootstrap intervals, paired differences with exact
-  signed-rank tests Holm-corrected over every condition and `M`,
-  `max |dw|`, runtime ratio) and `sources.json`. It refuses to start
-  unless `experiments/svbmc_pool/baseline_environment.json` re-verifies,
-  and needs `PYTHONPATH` to carry that record's Torch overlay.
+  posteriors with one seed per entry derived from the cell's seed. A
+  condition's filtered pool is what its directory's `selection.json`
+  names, or every passing completion record when the directory holds no
+  selection; the printed lines and `sources.json` say which. Each cell
+  records the weights, every ELBO variant, the entropy, the seconds and
+  the quality of 100 000 draws (`benchmark_targets.sample_metrics`, plus
+  the Monte Carlo expected log joint over a random subsample of them).
+  Every reported ELBO is scored by its bias against `elbo_mc`, the stacked
+  posterior's own Monte Carlo ELBO, whose entropy term the script
+  estimates for both arms with one estimator (the integrated class's
+  `stacked_entropy`, 200 draws per component in 8 batches) from equally
+  seeded generators, so that the reference is arm-independent — the same
+  component draws for both arms, differing only through the weights —
+  rather than taking each arm's own; the KL gap `ln Z - elbo_mc` is
+  reported per cell. The outputs are `results.json`, `summary.json` and
+  `summary.md` (medians with bootstrap intervals, the biases with
+  criterion 3's gates, paired differences with exact signed-rank tests
+  Holm-corrected over every condition and `M`, `max |dw|`, runtime ratio)
+  and `sources.json`. It refuses to start unless
+  `experiments/svbmc_pool/baseline_environment.json` re-verifies, and
+  needs `PYTHONPATH` to carry that record's Torch overlay.
   `--summarize-only --out DIR` rebuilds the summaries from a finished
-  `results.json` without running a cell or needing Torch. `--fixtures
-  GROUP` compares the shipped S-VBMC posterior fixtures instead of a
-  pool, which is what `test_svbmc_pool_stack.py` runs.
+  `results.json` without running a cell or needing Torch, describing that
+  comparison by the settings it recorded rather than by the script's
+  current constants. `--fixtures
+  GROUP` compares the shipped S-VBMC posterior fixtures instead of a pool,
+  which is what `test_svbmc_pool_stack.py` runs.
 - `scripts/svbmc_parity_check.py` — historical: the moved
   `pyvbmc.svbmc.SVBMC` against the pinned upstream package on the thirty
   posteriors with matched draws (upstream's `testing=True` mode). Runs only

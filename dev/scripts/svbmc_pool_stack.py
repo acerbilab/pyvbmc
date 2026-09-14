@@ -10,6 +10,31 @@ the grid and the acceptance criteria are
 "Metrics" and "Acceptance criteria for the comparison"; the pools come from
 ``svbmc_pool_run.py`` and are read through ``svbmc_pool_io.load_run``.
 
+Every ELBO an arm reports is scored by its bias against ``elbo_mc``, the
+Monte Carlo ELBO of the posterior that arm's fit produced::
+
+    elbo_mc = e_log_joint_mc + entropy_ref
+    bias_<variant> = elbo_<variant> - elbo_mc
+    kl_gap = ln Z - elbo_mc
+
+``e_log_joint_mc`` is the mean of the target's noiseless log density over
+``N_LOG_JOINT`` of the stack's own draws, and ``entropy_ref`` the entropy
+of the stacked mixture at that arm's final weights, estimated by this
+script rather than taken from the arm: one estimator for both arms, the
+integrated class's ``SVBMC.stacked_entropy`` on the cell's posteriors,
+``N_ENTROPY_REF`` draws per component in ``N_ENTROPY_BATCHES`` independent
+batches, from a generator seeded by the cell. An arm's own reported
+entropy is estimated at the weights that arm selected, from its own draws
+(the optimizer's 20 per component for the original, a fresh 100 for the
+integrated class), so a reference built on it would move with the arm and
+credit whichever entropy estimate came out high; the biases would then not
+be comparable between the arms. Both terms of ``elbo_mc`` carry their Monte
+Carlo standard deviation, and ``kl_gap`` measures how far the stacked
+posterior itself is from the target, in evidence units. The error against
+``ln Z``, ``elbo_err_<variant>``, stays in the outputs as a descriptive
+column: it adds the estimator's bias to that gap and so cannot rank
+estimators.
+
 Usage. ``TORCH_PATH`` is the Torch overlay recorded in
 ``dev/experiments/svbmc_pool/baseline_environment.json``, the only Torch on
 the campaign's machine, so every invocation that runs a cell needs it::
@@ -22,6 +47,13 @@ the campaign's machine, so every invocation that runs a cell needs it::
         --fixtures upstream_Ring --out DIR --M 2,3 --repetitions 2,2 \\
         --max-steps 3
     python dev/scripts/svbmc_pool_stack.py --summarize-only --out DIR
+
+A condition's filtered pool is the runs its pool directory's
+``selection.json`` names, written by ``svbmc_pool_run.py select``, which
+is the campaign's stopping rule applied to the generated runs; a directory
+without one contributes every run whose completion record says it passed
+the filters. The line printed for each condition and ``sources.json`` say
+which of the two it was.
 
 A cell is one subset of ``M`` runs drawn without replacement from a
 condition's filtered pool by ``np.random.default_rng([seed,
@@ -58,15 +90,23 @@ pool directory and is what ``test_svbmc_pool_stack.py`` exercises.
 Outputs under ``--out``: ``cells.jsonl`` (one line per finished cell,
 written as the sweep goes), ``results.json`` (every cell, the single-run
 rows and the settings), ``summary.json`` and ``summary.md`` (per condition
-and ``M``: medians with 10 000-resample bootstrap 95 % intervals, the
-paired differences integrated minus original with exact signed-rank tests
-on them, the maximum weight difference and the runtime ratio),
+and ``M``: medians with 10 000-resample bootstrap 95 % intervals of the
+biases, the KL gap, the metrics, the maximum weight difference and the
+runtime ratio, the paired differences integrated minus original with
+exact signed-rank tests on the metrics, and criterion 3's two gates,
+``headline_bias_not_worse`` per ``M`` and ``headline_bias_growth`` per
+condition),
 ``sources.json`` (both arms' commits, working-tree state, import paths,
 versions and thread settings, the baseline re-verification, the pools' or
 fixtures' identities and this file's SHA-256) and ``original_arm.log``
 (everything the worker wrote to its standard streams).
 ``--summarize-only`` rebuilds ``summary.json`` and ``summary.md`` from a
-finished ``results.json`` without running a cell.
+finished ``results.json`` without running a cell. It describes that
+comparison by the settings the file records — the draw counts, the
+entropy reference, the bootstrap and the stacking call — and falls back
+to this module's constants only for a field a results file written before
+it existed does not carry, so a rebuilt summary never attributes today's
+constants to an older run.
 """
 
 import argparse
@@ -79,6 +119,7 @@ import subprocess
 import sys
 import time
 import traceback
+from functools import partial
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -113,11 +154,49 @@ N_SAMPLES_FINAL = 100
 #: joint of the plan's ``elbo_mc`` averages over.
 N_DRAWS = 100_000
 N_LOG_JOINT = 10_000
+#: The entropy reference of ``elbo_mc``: draws per component, split into
+#: independent batches whose spread is the estimate's standard error. The
+#: mean of the batches is the estimate at the full draw count, because the
+#: estimator averages over each component's draws and the batches are
+#: equal and exhaust the total; batching bounds the peak memory of the
+#: draw matrix, which grows as ``K_total ** 2`` times the draws per
+#: component, and more batches buy degrees of freedom for the standard
+#: error at the same total cost.
+N_ENTROPY_REF = 200
+N_ENTROPY_BATCHES = 8
+N_ENTROPY_PER_BATCH = N_ENTROPY_REF // N_ENTROPY_BATCHES
+assert N_ENTROPY_PER_BATCH * N_ENTROPY_BATCHES == N_ENTROPY_REF, (
+    "the batches must be equal and exhaust the draws, or their mean is "
+    "not the estimate at N_ENTROPY_REF draws per component"
+)
+#: Each arm's entropy reference is drawn from a generator of its own,
+#: ``default_rng([cell_seed, 11])``, so that the two arms' references come
+#: from the same component draws and differ only through the weights.
+ENTROPY_REF_STREAM = 11
+#: Criterion 3 of the plan: the bound on how much the median bias of the
+#: integrated headline may grow from the smallest ``M`` to the largest.
+GROWTH_BOUND = 0.5
 BOOTSTRAP_RESAMPLES = 10_000
 #: Criterion 2 of the plan: the metrics tested for equivalence, and the
 #: level of the Holm correction over all condition-and-``M`` cells.
 TEST_METRICS = ("mmtv", "gskl")
 ALPHA = 0.05
+#: The constants ``results.json["settings"]`` records, and so what a
+#: summary describes a comparison by. The value is the fallback for a
+#: results file written before the field existed; the summary of an
+#: earlier comparison must report the settings that comparison ran under,
+#: not whatever this module's constants happen to be today.
+SETTING_DEFAULTS = {
+    "n_samples": N_SAMPLES,
+    "lr": LEARNING_RATE,
+    "version": VERSION,
+    "n_samples_final": N_SAMPLES_FINAL,
+    "n_draws": N_DRAWS,
+    "n_log_joint": N_LOG_JOINT,
+    "n_entropy_ref": N_ENTROPY_REF,
+    "n_entropy_batches": N_ENTROPY_BATCHES,
+    "bootstrap_resamples": BOOTSTRAP_RESAMPLES,
+}
 #: The ported target each fixture group's runs were fitted to, so that
 #: ``--fixtures`` scores the stacked posteriors against a truth.
 FIXTURE_PROBLEMS = {
@@ -126,6 +205,9 @@ FIXTURE_PROBLEMS = {
     "upstream_Ring": "ring_D2_noise3_svbmc",
 }
 ARMS = ("integrated", "original")
+#: The variant each arm reports as its ELBO; criterion 3 compares the
+#: biases of these two.
+HEADLINE_VARIANT = {"integrated": "headline", "original": "estimated"}
 
 
 def sha256(path):
@@ -221,15 +303,65 @@ def refuse_upstream_on_path(baseline_path):
 # --------------------------------------------------------------------------
 
 
+def pool_entry(directory, tag, origin="the pool directory"):
+    """One filtered run of a pool, from its completion record.
+
+    ``origin`` names the list the tag came from, so that a run whose
+    record or artifact the directory does not hold is reported as the
+    wrong entry of that list rather than as an absent file. A pool is
+    generated once and read many times, and the case that leads here is a
+    selection copied without the artifacts it names, or one whose run
+    failed after the selection was written.
+    """
+    import svbmc_pool_io as pool_io
+
+    record_file = pool_io.record_path(directory, tag)
+    if not record_file.exists():
+        raise RuntimeError(
+            f"{origin} names {tag}, which has no completion record "
+            f"({record_file}): the case failed or was never generated"
+        )
+    record = json.loads(record_file.read_text(encoding="utf-8"))
+    missing = [
+        path.name
+        for path in pool_io.artifact_paths(directory, record["tag"])
+        if not path.exists()
+    ]
+    if missing:
+        raise RuntimeError(
+            f"{origin} names {tag}, whose artifact {directory} does not "
+            f"hold: {', '.join(missing)} missing"
+        )
+    return {
+        "kind": "run",
+        "name": record["tag"],
+        "path": str(directory / record["tag"]),
+        "seed": int(record["seed"]),
+        "metrics": record["metrics"],
+        "passes": bool(record["verdict"]["passes"]),
+        "label": record["label"],
+    }
+
+
 def pool_conditions(pool_dirs, only=None):
     """The filtered runs of every condition, ordered by seed.
 
-    One entry per run that passed the pool's filters, carrying the artifact
-    path (without suffix) and the metrics recorded for that single run,
-    which are the comparison's ``M = 1`` rows. Returns the selected
-    conditions, the pools' identities, and every label the pools allocate
-    (the selection or lack of one does not change that list, which is what
-    indexes a condition when its subsets are drawn).
+    One entry per run of the condition's filtered pool, carrying the
+    artifact path (without suffix) and the metrics recorded for that single
+    run, which are the comparison's ``M = 1`` rows.
+
+    The filtered pool of a directory that holds a ``selection.json``
+    (``svbmc_pool_run.py select``) is the runs that file names: the
+    campaign's stopping rule applied once to the whole directory, which is
+    what a pool generated as an array job needs and what a sequential
+    sweep reproduces. Without one, every run whose record says it passed
+    the filters is taken, and the line printed for the condition says
+    which of the two it was.
+
+    Returns the selected conditions, the pools' identities, and every
+    label the pools allocate (which conditions are selected does not
+    change that list, and it is what indexes a condition when its subsets
+    are drawn).
     """
     conditions, identities, labels = {}, [], []
     for directory in pool_dirs:
@@ -237,14 +369,28 @@ def pool_conditions(pool_dirs, only=None):
         manifest = json.loads(
             (directory / "manifest.json").read_text(encoding="utf-8")
         )
-        identities.append(
-            {
-                "directory": str(directory),
-                "identity": manifest["identity"],
-                "gpyreg_source": manifest["gpyreg_source"],
-                "options": manifest["options"],
-            }
+        selection_path = directory / "selection.json"
+        selection = (
+            json.loads(selection_path.read_text(encoding="utf-8"))
+            if selection_path.exists()
+            else None
         )
+        selected = {
+            entry["label"]: entry
+            for entry in (selection["conditions"] if selection else [])
+        }
+        identity_record = {
+            "directory": str(directory),
+            "identity": manifest["identity"],
+            "gpyreg_source": manifest["gpyreg_source"],
+            "options": manifest["options"],
+            "selection": {
+                "path": str(selection_path) if selection else None,
+                "generated": selection["generated"] if selection else None,
+                "conditions": {},
+            },
+        }
+        identities.append(identity_record)
         for allocated in manifest["allocation"]:
             label = allocated["label"]
             labels.append(label)
@@ -254,20 +400,34 @@ def pool_conditions(pool_dirs, only=None):
                 raise RuntimeError(
                     f"{label} is allocated in more than one pool directory"
                 )
-            entries = []
-            for path in sorted((directory / "records").glob(f"{label}_seed*")):
-                record = json.loads(path.read_text(encoding="utf-8"))
-                if record["label"] != label or not record["verdict"]["passes"]:
-                    continue
-                entries.append(
-                    {
-                        "kind": "run",
-                        "name": record["tag"],
-                        "path": str(directory / record["tag"]),
-                        "seed": int(record["seed"]),
-                        "metrics": record["metrics"],
-                    }
-                )
+            if label in selected:
+                origin = "selection.json"
+                entries = [
+                    pool_entry(directory, run["tag"], str(selection_path))
+                    for run in selected[label]["runs"]
+                ]
+                wrong = [e["name"] for e in entries if not e["passes"]]
+                if wrong:
+                    raise RuntimeError(
+                        f"{selection_path} selects runs that their records "
+                        f"say do not pass the filters: {wrong}"
+                    )
+            else:
+                origin = "every passing record"
+                entries = []
+                for path in sorted(
+                    (directory / "records").glob(
+                        f"{label}_seed*.complete.json"
+                    )
+                ):
+                    entry = pool_entry(
+                        directory,
+                        path.name[: -len(".complete.json")],
+                        f"the completion records under {directory}",
+                    )
+                    if entry["label"] == label and entry["passes"]:
+                        entries.append(entry)
+            identity_record["selection"]["conditions"][label] = origin
             conditions[label] = sorted(entries, key=lambda e: e["seed"])
     missing = [label for label in (only or ()) if label not in conditions]
     if missing:
@@ -444,29 +604,45 @@ def log_joint_subsample(n, cell_seed, arm):
     )
 
 
-def stacked_outcome(problem, reference, samples, entropy, elbos, seed, arm):
-    """Everything a fitted stack is scored on, for either arm."""
+def stacked_outcome(problem, reference, samples, elbos, seed, arm):
+    """Everything a fitted stack is scored on, for either arm.
+
+    The expected log joint of ``elbo_mc`` is the mean of the target's
+    noiseless log density over the subsampled draws, with the standard
+    error of that mean. The entropy term of ``elbo_mc`` is deliberately
+    not the arm's own, so it is not added here: the controller estimates
+    it for both arms with one estimator once a cell's two fits are in, and
+    :func:`add_reference` then completes this record with ``entropy_ref``,
+    ``elbo_mc``, the biases and the KL gap.
+    """
     from benchmark_targets import sample_metrics
     from profile_run import jsonable
 
     started = time.perf_counter()
     samples = np.asarray(samples)
     index = log_joint_subsample(len(samples), seed, arm)
-    e_log_joint_mc = float(np.mean(problem.log_density_vec(samples[index])))
-    elbos = dict(elbos, mc=e_log_joint_mc + float(entropy))
+    values = np.asarray(problem.log_density_vec(samples[index]), dtype=float)
     measured = sample_metrics(problem, samples, elbos, reference=reference)
     return {
         "elbos": {k: float(v) for k, v in elbos.items()},
-        "e_log_joint_mc": e_log_joint_mc,
+        "e_log_joint_mc": float(np.mean(values)),
+        "e_log_joint_mc_sd": float(
+            np.std(values, ddof=1) / np.sqrt(values.size)
+        ),
         "n_log_joint": int(index.size),
-        "elbo_mc": elbos["mc"],
         "metrics": jsonable(measured),
         "metrics_seconds": time.perf_counter() - started,
     }
 
 
 def fit_integrated(entries, seeds, cell_seed, max_steps, problem, reference):
-    """One cell of the integrated arm, in this process."""
+    """One cell of the integrated arm, in this process.
+
+    Returns the cell's record and the fitted object, which
+    :func:`add_reference` then uses as the cell's entropy estimator: it
+    holds the cell's posteriors, filtered as both arms filter them, in the
+    order both arms weight them.
+    """
     from pyvbmc.svbmc import SVBMC
 
     started = time.perf_counter()
@@ -490,7 +666,6 @@ def fit_integrated(entries, seeds, cell_seed, max_steps, problem, reference):
         problem,
         reference,
         samples,
-        stacked.entropy,
         {
             "headline": float(stacked.elbo),
             "raw": float(details["raw"]),
@@ -521,7 +696,7 @@ def fit_integrated(entries, seeds, cell_seed, max_steps, problem, reference):
             "sample_seconds": sample_seconds,
         }
     )
-    return outcome
+    return outcome, stacked
 
 
 def fit_original(entries, seeds, cell_seed, max_steps, problem, reference):
@@ -550,7 +725,6 @@ def fit_original(entries, seeds, cell_seed, max_steps, problem, reference):
         problem,
         reference,
         samples,
-        stacked.entropy,
         {k: float(v) for k, v in stacked.elbo.items()},
         cell_seed,
         "original",
@@ -570,6 +744,97 @@ def fit_original(entries, seeds, cell_seed, max_steps, problem, reference):
         }
     )
     return outcome
+
+
+# --------------------------------------------------------------------------
+# The Monte Carlo ELBO reference
+# --------------------------------------------------------------------------
+
+
+def entropy_reference(stacked, w, rng):
+    """Entropy of the stacked mixture at given weights, and its MC error.
+
+    ``stacked`` is the cell's integrated object, used here only as an
+    estimator of the mixture its posteriors define: ``stacked_entropy``
+    draws from every component through the object's generator and averages
+    the mixture's log density over those draws, so the estimate depends on
+    the weights and the posteriors and not on which arm produced the
+    weights. The caller's generator serves for the length of the call, so
+    the draws come from the cell's seed rather than from wherever an arm
+    left the object's own stream.
+
+    ``N_ENTROPY_BATCHES`` independent batches of ``N_ENTROPY_PER_BATCH``
+    draws per component are averaged. The estimator averages over each
+    component's draws, so that mean is the estimate at ``N_ENTROPY_REF``
+    draws per component, and the spread of the batches gives it a standard
+    error without a second estimator.
+    """
+    import torch
+
+    weights = np.asarray(w, dtype=np.float64).ravel()
+    K_total = int(np.sum(stacked.K))
+    if weights.size != K_total:
+        raise RuntimeError(
+            f"the weights hold {weights.size} components but the cell's "
+            f"stacked posterior holds {K_total}: the arms and the entropy "
+            "reference did not retain the same runs"
+        )
+    tensor = torch.as_tensor(weights.reshape(1, -1), dtype=torch.float64)
+    estimates = []
+    previous, stacked.rng = stacked.rng, rng
+    try:
+        with torch.no_grad():
+            for _ in range(N_ENTROPY_BATCHES):
+                H, _corrections = stacked.stacked_entropy(
+                    tensor, N_ENTROPY_PER_BATCH
+                )
+                estimates.append(float(H.item()))
+    finally:
+        stacked.rng = previous
+    return {
+        "entropy_ref": float(np.mean(estimates)),
+        "entropy_ref_sd": float(
+            np.std(estimates, ddof=1) / np.sqrt(N_ENTROPY_BATCHES)
+        ),
+        "entropy_ref_batches": estimates,
+    }
+
+
+def add_reference(row, stacked, problem, cell_seed):
+    """Complete a cell's two records with the Monte Carlo ELBO reference.
+
+    Each arm is scored against the ELBO of the posterior it produced:
+    its own expected log joint (already recorded) plus the entropy of the
+    stacked mixture at the weights it returned, estimated here for both
+    arms by one estimator. Each arm's reference starts from its own
+    generator on the same seed, so both are computed from the same
+    component draws and differ only through the weights, and the
+    alternation of which arm is fitted first leaves the reference
+    unchanged.
+    """
+    for arm in ARMS:
+        outcome = row["arms"][arm]
+        rng = np.random.default_rng([int(cell_seed), ENTROPY_REF_STREAM])
+        outcome.update(entropy_reference(stacked, outcome["w"], rng))
+        elbo_mc = float(outcome["e_log_joint_mc"] + outcome["entropy_ref"])
+        outcome["elbo_mc"] = elbo_mc
+        outcome["elbo_mc_sd"] = float(
+            np.hypot(outcome["e_log_joint_mc_sd"], outcome["entropy_ref_sd"])
+        )
+        outcome["elbos"]["mc"] = elbo_mc
+        ln_Z = problem.ln_Z
+        outcome["kl_gap"] = (
+            float("nan") if ln_Z is None else float(ln_Z - elbo_mc)
+        )
+        outcome["metrics"]["elbo_err_mc"] = (
+            float("nan") if ln_Z is None else float(abs(elbo_mc - ln_Z))
+        )
+        outcome["bias"] = {
+            variant: float(value - elbo_mc)
+            for variant, value in outcome["elbos"].items()
+            if variant != "mc"
+        }
+    return row
 
 
 # --------------------------------------------------------------------------
@@ -771,21 +1036,29 @@ def fit_cell(
     problem,
     ref,
 ):
-    """One arm of one cell: in this process, or through the worker."""
+    """One arm of one cell: in this process, or through the worker.
+
+    Returns the arm's record and, for the integrated arm, the fitted
+    object that :func:`add_reference` scores the cell with; the original
+    arm's object lives in the worker process and never crosses back.
+    """
     if arm == "integrated":
         return fit_integrated(
             entries, seeds, cell_seed, max_steps, problem, ref
         )
-    return worker.request(
-        {
-            "op": "fit",
-            "condition": condition,
-            "kind": kind,
-            "entries": entries,
-            "entry_seeds": seeds,
-            "cell_seed": cell_seed,
-            "max_steps": max_steps,
-        }
+    return (
+        worker.request(
+            {
+                "op": "fit",
+                "condition": condition,
+                "kind": kind,
+                "entries": entries,
+                "entry_seeds": seeds,
+                "cell_seed": cell_seed,
+                "max_steps": max_steps,
+            }
+        ),
+        None,
     )
 
 
@@ -840,9 +1113,9 @@ def run_cells(plan, conditions, kind, worker, problems, max_steps, out):
                 f"{(time.time() - started) / 60:.1f} min elapsed)",
                 flush=True,
             )
-            outcomes = {}
+            outcomes, stacked = {}, None
             for arm in (first, ARMS[1 - ARMS.index(first)]):
-                outcomes[arm] = fit_cell(
+                outcomes[arm], fitted = fit_cell(
                     arm,
                     worker,
                     condition,
@@ -854,16 +1127,33 @@ def run_cells(plan, conditions, kind, worker, problems, max_steps, out):
                     problem,
                     reference,
                 )
+                stacked = fitted if arm == "integrated" else stacked
             row = dict(cell, first_arm=first, arms=outcomes)
             weights = [np.asarray(outcomes[arm]["w"]) for arm in ARMS]
+            where = f"{condition} M={cell['M']} r={cell['repetition']}"
+            # Both arms filter the subset with the same rule, so they must
+            # have retained the same runs with the same component counts;
+            # a difference means the cell's two fits are not of the same
+            # mixture and neither the weight difference nor the shared
+            # entropy reference would mean anything.
             if weights[0].shape != weights[1].shape:
                 raise RuntimeError(
-                    f"{condition} M={cell['M']} r={cell['repetition']}: the "
-                    "arms returned weight vectors of different lengths "
-                    f"({weights[0].size} and {weights[1].size}); the cell is "
-                    "not paired"
+                    f"{where}: the arms returned weight vectors of "
+                    f"different lengths ({weights[0].size} and "
+                    f"{weights[1].size}); the cell is not paired"
                 )
+            for key in ("K", "M_used"):
+                if outcomes["integrated"][key] != outcomes["original"][key]:
+                    raise RuntimeError(
+                        f"{where}: the arms retained different runs "
+                        f"({key} {outcomes['integrated'][key]} against "
+                        f"{outcomes['original'][key]}); the cell is not "
+                        "paired"
+                    )
             row["max_abs_dw"] = float(np.max(np.abs(weights[0] - weights[1])))
+            reference_started = time.perf_counter()
+            add_reference(row, stacked, problem, cell["cell_seed"])
+            row["reference_seconds"] = time.perf_counter() - reference_started
             rows.append(row)
             progress.write(json.dumps(row) + "\n")
             progress.flush()
@@ -871,7 +1161,10 @@ def run_cells(plan, conditions, kind, worker, problems, max_steps, out):
                 f"DONE  {condition} M={cell['M']} r={cell['repetition']}: "
                 f"max|dw| {row['max_abs_dw']:.4g}, "
                 f"{outcomes['integrated']['optimize_seconds']:.1f} s vs "
-                f"{outcomes['original']['optimize_seconds']:.1f} s",
+                f"{outcomes['original']['optimize_seconds']:.1f} s, bias "
+                f"{outcomes['integrated']['bias']['headline']:+.3f} vs "
+                f"{outcomes['original']['bias']['estimated']:+.3f} "
+                f"(reference {row['reference_seconds']:.1f} s)",
                 flush=True,
             )
     finally:
@@ -882,6 +1175,54 @@ def run_cells(plan, conditions, kind, worker, problems, max_steps, out):
 # --------------------------------------------------------------------------
 # Summary
 # --------------------------------------------------------------------------
+
+
+#: The per-arm fields of a cell that every summary reads and that cells
+#: recorded before the Monte Carlo ELBO reference (2026-09-14) do not
+#: carry.
+REFERENCE_FIELDS = (
+    "entropy_ref",
+    "entropy_ref_sd",
+    "e_log_joint_mc",
+    "elbo_mc",
+    "elbo_mc_sd",
+    "kl_gap",
+    "bias",
+)
+
+
+def require_reference_fields(rows, path):
+    """Refuse cells that predate the Monte Carlo ELBO reference.
+
+    The summaries are stated as biases against ``elbo_mc``, which a
+    comparison run before that reference existed never recorded. Such a
+    ``results.json`` cannot be summarized at all, only regenerated, so say
+    which field is missing rather than failing on the first lookup.
+    """
+    for row in rows:
+        for arm, outcome in row["arms"].items():
+            missing = [k for k in REFERENCE_FIELDS if k not in outcome]
+            if missing:
+                raise RuntimeError(
+                    f"{path}: the {arm} arm of {row['condition']} "
+                    f"M={row['M']} r={row['repetition']} records no "
+                    f"{missing[0]}. This file predates the Monte Carlo ELBO "
+                    "reference every summary is stated against (the bias of "
+                    "each estimate relative to `elbo_mc`), which cannot be "
+                    "recovered from the recorded cells: rerun the "
+                    "comparison to summarize it."
+                )
+
+
+def setting(settings, key):
+    """One setting of the comparison being summarized.
+
+    The recorded value, or this module's constant when the results file
+    predates the field, so that a summary rebuilt later describes the run
+    it summarizes rather than the code that rebuilt it.
+    """
+    value = settings.get(key)
+    return SETTING_DEFAULTS[key] if value is None else value
 
 
 def bootstrap_median(values, rng, resamples=BOOTSTRAP_RESAMPLES):
@@ -914,6 +1255,16 @@ def headline_errors(rows, arm):
         )
         for row in rows
     ]
+
+
+def arm_field(rows, arm, key):
+    """One recorded quantity of one arm, cell by cell."""
+    return [row["arms"][arm][key] for row in rows]
+
+
+def bias_values(rows, arm, variant):
+    """The bias of one ELBO variant of one arm against its ``elbo_mc``."""
+    return [row["arms"][arm]["bias"].get(variant) for row in rows]
 
 
 def paired(integrated, original):
@@ -1060,47 +1411,113 @@ def equivalence_tests(rows, metrics=TEST_METRICS, alpha=ALPHA):
     return tests
 
 
-def cell_summary(rows, rng):
+def median_bias(arms, arm):
+    """The median bias of one arm's headline, or ``None`` when it has none."""
+    entry = arms[arm]["bias"].get(HEADLINE_VARIANT[arm])
+    return None if entry is None else entry["median"]
+
+
+def headline_bias_gate(arms):
+    """Criterion 3's first clause, on one condition-and-``M`` cell set.
+
+    The integrated class's headline must be no further from the stacked
+    posterior's own Monte Carlo ELBO, in the median over the cells, than
+    the estimate the original implementation reports.
+    """
+    integrated, original = median_bias(arms, "integrated"), median_bias(
+        arms, "original"
+    )
+    return {
+        "median_bias_headline": integrated,
+        "median_bias_estimated": original,
+        "headline_bias_not_worse": (
+            None
+            if integrated is None or original is None
+            else bool(abs(integrated) <= abs(original))
+        ),
+    }
+
+
+def headline_bias_growth(entries):
+    """Criterion 3's second clause, on one condition's cell sets.
+
+    How much the median bias of the integrated headline grows from the
+    smallest ``M`` of the condition to the largest, which the criterion
+    bounds by ``GROWTH_BOUND`` nats; ``growth_within_bound`` is whether it
+    stays under it. The headline is the capped value on a
+    noisy stack, which is the case the bound was written for, and the raw
+    value where no cap applies, as on the noiseless control. A comparison
+    run at a single ``M`` reports a growth of zero, which meets the bound
+    by construction.
+    """
+    by_M = sorted(entries, key=lambda entry: entry["M"])
+    first, last = (
+        median_bias(entry["arms"], "integrated")
+        for entry in (by_M[0], by_M[-1])
+    )
+    growth = None if first is None or last is None else float(last - first)
+    return {
+        "M_min": by_M[0]["M"],
+        "M_max": by_M[-1]["M"],
+        "bias_at_M_min": first,
+        "bias_at_M_max": last,
+        "growth": growth,
+        "bound": GROWTH_BOUND,
+        "growth_within_bound": (
+            None if growth is None else bool(growth < GROWTH_BOUND)
+        ),
+    }
+
+
+def cell_summary(rows, rng, resamples=BOOTSTRAP_RESAMPLES):
     """Both arms, their paired differences and the ratios, for one cell set."""
+    boot = partial(bootstrap_median, rng=rng, resamples=resamples)
     keys = ("mmtv", "gskl", "gskl_normalized")
     summary = {"cells": len(rows), "arms": {}, "paired": {}}
     for arm in ARMS:
-        entry = {
-            key: bootstrap_median(arm_values(rows, arm, key), rng)
-            for key in keys
+        entry = {key: boot(arm_values(rows, arm, key)) for key in keys}
+        entry["elbo_err_headline"] = boot(headline_errors(rows, arm))
+        entry["elbo_err_mc"] = boot(arm_values(rows, arm, "elbo_err_mc"))
+        for key in (
+            "entropy",
+            "entropy_ref",
+            "entropy_ref_sd",
+            "e_log_joint_mc",
+            "elbo_mc",
+            "elbo_mc_sd",
+            "kl_gap",
+            "optimize_seconds",
+        ):
+            entry[key] = boot(arm_field(rows, arm, key))
+        entry["bias"] = {
+            variant: boot(bias_values(rows, arm, variant))
+            for variant in sorted(
+                {v for row in rows for v in row["arms"][arm]["bias"]}
+            )
         }
-        entry["elbo_err_headline"] = bootstrap_median(
-            headline_errors(rows, arm), rng
-        )
-        entry["elbo_err_mc"] = bootstrap_median(
-            arm_values(rows, arm, "elbo_err_mc"), rng
-        )
-        entry["entropy"] = bootstrap_median(
-            [row["arms"][arm]["entropy"] for row in rows], rng
-        )
-        entry["optimize_seconds"] = bootstrap_median(
-            [row["arms"][arm]["optimize_seconds"] for row in rows], rng
-        )
         summary["arms"][arm] = entry
+    summary["paired"]["bias_headline_minus_estimated"] = boot(
+        paired(
+            bias_values(rows, "integrated", HEADLINE_VARIANT["integrated"]),
+            bias_values(rows, "original", HEADLINE_VARIANT["original"]),
+        ),
+    )
+    summary["criterion3"] = headline_bias_gate(summary["arms"])
     for key in keys:
-        summary["paired"][key] = bootstrap_median(
+        summary["paired"][key] = boot(
             paired(
                 arm_values(rows, "integrated", key),
                 arm_values(rows, "original", key),
             ),
-            rng,
         )
-    summary["paired"]["elbo_err_headline"] = bootstrap_median(
+    summary["paired"]["elbo_err_headline"] = boot(
         paired(
             headline_errors(rows, "integrated"),
             headline_errors(rows, "original"),
         ),
-        rng,
     )
-    summary["max_abs_dw"] = bootstrap_median(
-        [row["max_abs_dw"] for row in rows], rng
-    )
-    summary["runtime_ratio"] = bootstrap_median(runtime_ratios(rows), rng)
+    summary["max_abs_dw"] = boot([row["max_abs_dw"] for row in rows])
+    summary["runtime_ratio"] = boot(runtime_ratios(rows))
     return summary
 
 
@@ -1112,30 +1529,39 @@ def build_summary(rows, singles, settings, rng):
     criteria 1 and 4 are stated at, and each condition-and-``M`` entry
     carries its two equivalence tests. The tests are also listed flat, in
     the two Holm families they were corrected in.
+
+    The bootstrap draws as many resamples as ``settings`` records, so that
+    rebuilding the summary of an earlier comparison gives the summary that
+    comparison wrote rather than one this module's constants imply.
     """
+    resamples = int(setting(settings, "bootstrap_resamples"))
+    boot = partial(bootstrap_median, rng=rng, resamples=resamples)
     conditions = []
     for condition in dict.fromkeys(row["condition"] for row in rows):
         here = [row for row in rows if row["condition"] == condition]
         entry = {
             "condition": condition,
             "M": [
-                dict(cell_summary([r for r in here if r["M"] == M], rng), M=M)
+                dict(
+                    cell_summary(
+                        [r for r in here if r["M"] == M], rng, resamples
+                    ),
+                    M=M,
+                )
                 for M in sorted({r["M"] for r in here})
             ],
             "all_M": {
                 "cells": len(here),
-                "runtime_ratio": bootstrap_median(runtime_ratios(here), rng),
-                "max_abs_dw": bootstrap_median(
-                    [row["max_abs_dw"] for row in here], rng
-                ),
+                "runtime_ratio": boot(runtime_ratios(here)),
+                "max_abs_dw": boot([row["max_abs_dw"] for row in here]),
             },
             "single_run": {
-                key: bootstrap_median(
-                    [row[key] for row in singles.get(condition, [])], rng
-                )
+                key: boot([row[key] for row in singles.get(condition, [])])
                 for key in ("elbo_err", "gskl", "gskl_normalized", "mmtv")
             },
         }
+        # Reads the per-`M` summaries the entry already holds.
+        entry["headline_bias_growth"] = headline_bias_growth(entry["M"])
         conditions.append(entry)
     tests = equivalence_tests(rows)
     for condition in conditions:
@@ -1161,6 +1587,16 @@ def number(value, digits=3):
     return "-" if value is None else f"{value:.{digits}f}"
 
 
+def spaced(count):
+    """A count as the prose writes it, thousands separated by a space."""
+    return f"{count:,}".replace(",", " ")
+
+
+def flag(value):
+    """One boolean of a table cell, or a dash when it is undetermined."""
+    return "-" if value is None else ("yes" if value else "**no**")
+
+
 def summary_markdown(summary):
     def cell(entry, digits=3):
         if entry["median"] is None:
@@ -1176,19 +1612,44 @@ def summary_markdown(summary):
         "",
         f"Generated {summary['generated']}. Every cell stacks the same "
         f"subset of filtered pool runs with both implementations, "
-        f"`n_samples={N_SAMPLES}`, `lr={LEARNING_RATE}`, "
-        f"`max_steps={settings['max_steps']}`, `version=\"{VERSION}\"`, "
+        f"`n_samples={setting(settings, 'n_samples')}`, "
+        f"`lr={setting(settings, 'lr')}`, "
+        f"`max_steps={settings['max_steps']}`, "
+        f"`version=\"{setting(settings, 'version')}\"`, "
         f"subsets drawn with seed {settings['seed']}. Medians over the "
-        "repetitions of a cell with a 10 000-resample bootstrap 95 % "
+        f"repetitions of a cell with a "
+        f"{spaced(setting(settings, 'bootstrap_resamples'))}"
+        "-resample bootstrap 95 % "
         "interval; `d` columns are the paired difference integrated minus "
         "original, so a negative value favours the integrated class. The "
         "headline ELBO is the capped value for the integrated class on "
         "noisy stacks and the raw estimate for the original, which is what "
-        "each implementation reports. The two arms' entropies are "
-        f"different estimators — the integrated class re-evaluates with "
-        f"{N_SAMPLES_FINAL} fresh draws, the original reports the "
-        f"optimizer's own {N_SAMPLES}-draw estimate — and that difference "
-        "enters `elbo_mc`. gsKL is the house convention (no `1/D` factor).",
+        "each implementation reports. gsKL is the house convention (no "
+        "`1/D` factor).",
+        "",
+        "Every reported ELBO is scored by its bias against `elbo_mc = "
+        "e_log_joint_mc + entropy_ref`, the Monte Carlo ELBO of the "
+        "posterior that arm's fit produced. `e_log_joint_mc` is the mean "
+        "of the target's noiseless log density over "
+        f"{spaced(setting(settings, 'n_log_joint'))} "
+        "of the stack's own draws; `entropy_ref` is the entropy of the "
+        "stacked "
+        "mixture at that arm's final weights, estimated here for both arms "
+        "by one estimator (the integrated class's `stacked_entropy`, "
+        f"{setting(settings, 'n_entropy_ref')} draws per component in "
+        f"{setting(settings, 'n_entropy_batches')} "
+        "batches, from a generator seeded by the cell, the same draws for "
+        "both arms). The reference is arm-independent by construction: an "
+        "arm's own reported entropy is estimated at the weights that arm "
+        "selected, from its own draws (the optimizer's "
+        f"{setting(settings, 'n_samples')} per component for the original, "
+        f"a fresh {setting(settings, 'n_samples_final')} for the "
+        "integrated class), so a "
+        "reference built on it would move with the arm and credit "
+        "whichever entropy estimate came out high. `kl_gap = ln Z - "
+        "elbo_mc` is how far the stacked posterior itself is from the "
+        "target, in evidence units; the `err` columns further below are "
+        "the error against `ln Z`, descriptive only.",
     ]
     for condition in summary["conditions"]:
         single = condition["single_run"]
@@ -1203,10 +1664,87 @@ def summary_markdown(summary):
             "",
             f"All {aggregate['cells']} cells of this condition: runtime "
             f"ratio {cell(aggregate['runtime_ratio'])}, "
-            f"max|dw| {cell(aggregate['max_abs_dw'], 4)}.",
+            f"max\\|dw\\| {cell(aggregate['max_abs_dw'], 4)}.",
+            "",
+            "Bias of every reported ELBO against `elbo_mc` (criterion 3), "
+            "and the KL gap of the stacked posterior. `d(head-est)` is the "
+            "paired difference of the two arms' headline biases; the last "
+            "column is the criterion's gate, `|median bias headline| <= "
+            "|median bias estimated|`.",
+            "",
+            "| M | cells | bias headline int | bias raw int | "
+            "bias estimated orig | bias debiased_I orig | d(head-est) | "
+            "KL gap int | KL gap orig | not worse |",
+            "|---|---|---|---|---|---|---|---|---|---|",
+        ]
+        for entry in condition["M"]:
+            integrated = entry["arms"]["integrated"]
+            original = entry["arms"]["original"]
+            gate = entry["criterion3"]["headline_bias_not_worse"]
+            lines.append(
+                "| {M} | {cells} | {bh} | {br} | {be} | {bd} | {dp} | "
+                "{ki} | {ko} | {gate} |".format(
+                    M=entry["M"],
+                    cells=entry["cells"],
+                    bh=cell(integrated["bias"]["headline"]),
+                    br=cell(integrated["bias"]["raw"]),
+                    be=cell(original["bias"]["estimated"]),
+                    bd=cell(original["bias"]["debiased_I_median"]),
+                    dp=cell(entry["paired"]["bias_headline_minus_estimated"]),
+                    ki=cell(integrated["kl_gap"]),
+                    ko=cell(original["kl_gap"]),
+                    gate=flag(gate),
+                )
+            )
+        growth = condition["headline_bias_growth"]
+        lines += [
+            "",
+            f"Growth of the integrated headline's median bias from "
+            f"`M = {growth['M_min']}` to `M = {growth['M_max']}`: "
+            f"{number(growth['growth'])} nats "
+            f"({number(growth['bias_at_M_min'])} to "
+            f"{number(growth['bias_at_M_max'])}), below the "
+            f"{growth['bound']}-nat bound: "
+            f"{flag(growth['growth_within_bound'])}. The headline is the "
+            "capped value on a noisy stack and the raw value where no cap "
+            "applies.",
+            "",
+            "The reference and the arms' own entropies. `H ref` is the "
+            "arm-independent estimate at that arm's weights, `H` what the "
+            "arm reports; `sd` columns are medians of the per-cell Monte "
+            "Carlo standard deviation of `elbo_mc`.",
+            "",
+            "| M | H ref int | H int | H ref orig | H orig | elbo_mc int | "
+            "sd | elbo_mc orig | sd |",
+            "|---|---|---|---|---|---|---|---|---|",
+        ]
+        for entry in condition["M"]:
+            integrated = entry["arms"]["integrated"]
+            original = entry["arms"]["original"]
+            lines.append(
+                "| {M} | {hri} | {hi} | {hro} | {ho} | {mi} | {si} | {mo} "
+                "| {so} |".format(
+                    M=entry["M"],
+                    hri=cell(integrated["entropy_ref"]),
+                    hi=cell(integrated["entropy"]),
+                    hro=cell(original["entropy_ref"]),
+                    ho=cell(original["entropy"]),
+                    mi=cell(integrated["elbo_mc"]),
+                    si=number(integrated["elbo_mc_sd"]["median"]),
+                    mo=cell(original["elbo_mc"]),
+                    so=number(original["elbo_mc_sd"]["median"]),
+                )
+            )
+        lines += [
+            "",
+            "Posterior quality, weights and runtime. The `err` columns are "
+            "the error of each arm's headline against `ln Z`, descriptive "
+            "only: they mix the estimator's bias with the stack's KL gap, "
+            "so a small value can arise by cancellation and cannot rank "
+            "estimators.",
             "",
             "| M | cells | MMTV int | MMTV orig | dMMTV | gsKL int | "
-            "gsKL orig | dgsKL | err int | err orig | derr | max|dw| | "
+            "gsKL orig | dgsKL | err int | err orig | derr | max\\|dw\\| | "
             "opt s int | opt s orig | ratio |",
             "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
         ]
@@ -1364,6 +1902,7 @@ def summarize_only(args):
     settings = results.get("settings")
     if settings is None:
         raise RuntimeError(f"{path} holds no settings, which a summary needs")
+    require_reference_fields(results["cells"], path)
     out.mkdir(parents=True, exist_ok=True)
     summary = build_summary(
         results["cells"],
@@ -1436,8 +1975,17 @@ def main(argv=None):
         labels = sorted(FIXTURE_PROBLEMS)
         fixtures = fixture_sources(conditions)
     indices = {label: labels.index(label) for label in conditions}
+    origins = {
+        label: origin
+        for record in pool_identities
+        for label, origin in record["selection"]["conditions"].items()
+    }
     for label, entries in conditions.items():
-        print(f"{label}: {len(entries)} filtered runs", flush=True)
+        print(
+            f"{label}: {len(entries)} filtered runs from "
+            f"{origins.get(label, 'the fixture group')}",
+            flush=True,
+        )
 
     problems = Problems()
     singles = {
@@ -1481,6 +2029,9 @@ def main(argv=None):
         "n_samples_final": N_SAMPLES_FINAL,
         "n_draws": N_DRAWS,
         "n_log_joint": N_LOG_JOINT,
+        "n_entropy_ref": N_ENTROPY_REF,
+        "n_entropy_batches": N_ENTROPY_BATCHES,
+        "growth_bound": GROWTH_BOUND,
         "bootstrap_resamples": BOOTSTRAP_RESAMPLES,
         "alpha": ALPHA,
         "kind": kind,

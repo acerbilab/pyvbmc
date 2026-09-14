@@ -14,22 +14,29 @@ record that permits resumption.
 Sub-commands::
 
     python dev/scripts/svbmc_pool_run.py prepare --out DIR \\
-        --suite svbmc_pool --target 60 --max-seeds 90 \\
-        --allocation ring_D2_noise3_svbmc=40/80 \\
-        --allocation gmm_D2_svbmc=30/45
+        --suite svbmc_pool
     python dev/scripts/svbmc_pool_run.py prepare --out DIR ... \\
         --ready --authorized-by NAME
     python -u dev/scripts/svbmc_pool_run.py run --out DIR --pilot-seeds 3
     python -u dev/scripts/svbmc_pool_run.py run --out DIR
+    python dev/scripts/svbmc_pool_run.py cases --out DIR
     python dev/scripts/svbmc_pool_run.py worker --out DIR --label L --seed S
+    python dev/scripts/svbmc_pool_run.py select --out DIR
     python dev/scripts/svbmc_pool_run.py summarize --out DIR
 
 ``prepare`` fixes the allocation, the run options and the identity of the
 code and environment the pool is generated with, and writes them unready;
 ``prepare --ready --authorized-by NAME`` records who authorized the
-launch and when. Of the ``svbmc_pool`` suite it allocates the campaign's
-five pool conditions (``POOL_LABELS``); the suite's sixth entry is the
-extension condition and is allocated only when ``--only`` names it.
+launch and when. It allocates every condition of the named suite, which
+for ``svbmc_pool`` is the campaign's eight pool conditions
+(``POOL_LABELS``); ``--only`` allocates a subset of them. The defaults are
+the campaign's approved allocation, so the command above needs no
+allocation flags: 100 filtered runs per noisy condition and 50 per
+noiseless control, seed caps 150, 200 for the ring (``DEFAULT_SEED_CAPS``)
+and 75 for the controls. The narrower the flag, the later it wins:
+``--target`` and ``--max-seeds`` set every condition including the
+controls, ``--control-target`` and ``--control-max-seeds`` the controls
+alone, ``--allocation LABEL=TARGET/MAXSEEDS`` one condition.
 Run on a directory that already holds a manifest, ``prepare`` marks the
 campaign ready and revises its allocation; nothing else about it can
 change. Filtered targets and seed caps may be revised and a condition
@@ -38,25 +45,84 @@ given a different first seed, and the previous allocation, the time and
 ``--authorized-by NAME`` are appended to ``allocation_history``, which is
 how the pilot's revision of the seed caps is recorded.
 
-``run`` refuses an unready manifest or an identity that
-differs from the prepared one, takes the campaign lock, and walks the
-conditions in manifest order, seeds upward, stopping each condition at
-its filtered target or its seed cap. A failing case writes
-``<tag>.error.txt``, counts towards the seed cap and the sweep continues;
-an artifact file of a case with neither a completion record nor an error
-file stops the sweep for inspection. The ``<tag>.log`` an interrupted
-sweep leaves behind is not such a file: it is truncated when the case
-runs again.
+``run`` is the laptop supervisor: it refuses an unready manifest or a
+source identity that differs from the prepared one, takes the campaign
+lock, and walks the conditions in manifest order, seeds upward, one
+worker subprocess at a time, stopping each condition at its filtered
+target or its seed cap. A failing case leaves ``<tag>.error.txt`` — the
+one its own worker wrote, or one the supervisor writes from the case log
+when the worker died before it could —, counts towards the seed cap, and
+the sweep continues; an artifact file of a case with neither a completion
+record nor an error file stops the sweep for inspection. The ``<tag>.log``
+an interrupted sweep leaves behind is not such a file: it is truncated
+when the case runs again. A sweep that runs
+to its targets leaves exactly the runs ``select`` would choose, so the
+comparison reads the same pool either way; a sweep run with
+``--pilot-seeds`` or under a lowered target leaves more than the target,
+and ``select`` is then what says which of them the pool is.
+
+``cases`` prints every ``label seed`` pair of the allocation over the
+full seed range, and ``worker`` runs one of them in one fresh process, so
+a cluster can generate the same pool as an array job, one task per case.
+The plan's section "Cluster generation" owns that hand-over; the shape of
+it is three separate pieces. On the login node, once the campaign is
+prepared and authorized, write the case list and submit the array::
+
+    python dev/scripts/svbmc_pool_run.py cases --out $DIR > $DIR/cases.txt
+    wc -l < $DIR/cases.txt      # 1100 for the campaign's allocation
+    sbatch --array=1-1000%50 --cpus-per-task=1 --mem=2G pool_task.sh
+    sbatch --array=1001-1100%50 --cpus-per-task=1 --mem=2G pool_task.sh
+
+Two submissions because Slurm's ``MaxArraySize`` defaults to 1001, which
+the allocation's 1100 cases exceed; ``scontrol show config | grep
+MaxArraySize`` gives the site's own limit, and the ``%50`` throttle caps
+how many tasks run at once. One core and under 2 GB per case is enough.
+
+``pool_task.sh`` is the array script, run once per task by Slurm. Its
+body is these lines, which belong in the script and nowhere else: run
+outside an array task, ``$SLURM_ARRAY_TASK_ID`` is empty and ``sed``
+prints every case::
+
+    #!/bin/bash
+    export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
+    export MPLBACKEND=Agg PYVBMC_GPYREG_SOURCE=<the manifest's gpyreg_source>
+    CASE=$(sed -n "${SLURM_ARRAY_TASK_ID}p" $DIR/cases.txt)
+    python -u dev/scripts/svbmc_pool_run.py worker --out $DIR \\
+        --label ${CASE% *} --seed ${CASE#* }
+
+When the array is done, on any machine that can read ``$DIR``::
+
+    python dev/scripts/svbmc_pool_run.py select --out $DIR
+    python dev/scripts/svbmc_pool_run.py summarize --out $DIR
+
+An array runs every seed of the range rather than stopping at the
+filtered target, and ``select`` then applies the campaign's stopping rule
+after the fact: per condition it takes the lowest-seed runs that pass the
+filters, up to the filtered target, and writes them to ``selection.json``,
+which is the authoritative definition of the filtered pool and what the
+stacking comparison reads. A task that fails leaves ``<tag>.error.txt``
+naming the case and carrying the end of its traceback, deletes whatever
+artifact files it had begun so that no truncated artifact is mistaken for
+a run, and exits non-zero, so Slurm records the failure too; the case is
+rerun or left out, and nothing else needs doing about it. ``cases`` and
+``worker`` refuse a manifest that ``prepare --ready --authorized-by NAME``
+has not released, as ``run`` does. ``run``'s campaign lock, its
+``status.json`` and its sequential stopping rule belong to the laptop
+sweep alone; no array task writes any of them.
 
 gpyreg is pinned to the frozen worktree the manifest names: every
 process prepends it to ``sys.path`` before PyVBMC is imported (through
 ``PYVBMC_GPYREG_SOURCE``, which the launcher also passes to its
 children) and refuses to run when ``gpyreg`` resolves elsewhere. PyVBMC
-itself is this checkout: the identity records its commit, whether the
-package or the suite module carries uncommitted changes, and the hashes
-of the suite module and of the two pool scripts, and ``run``
-refuses to generate a pool from a dirty tree unless the manifest was
-prepared with ``--allow-dirty``, which records the relaxation.
+itself is this checkout: the identity's ``source`` half records its
+commit, whether the package or the suite module carries uncommitted
+changes, and the hashes of the suite module and of the two pool scripts.
+``prepare``, ``run``, ``worker`` and the resumption check compare that
+half alone, so that one pool is generated by one code and library state
+while any node may run any case; the ``host`` half (hostname, platform,
+interpreter, import paths, threads) is recorded and never compared.
+``run`` refuses to generate a pool from a dirty tree unless the manifest
+was prepared with ``--allow-dirty``, which records the relaxation.
 """
 
 import argparse
@@ -65,6 +131,7 @@ import os
 import subprocess
 import sys
 import time
+import traceback
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -90,19 +157,33 @@ SUITE_MODULE = ROOT / "dev" / "scripts" / "benchmark_targets.py"
 IO_MODULE = HERE / "svbmc_pool_io.py"
 RUNNER_MODULE = Path(__file__).resolve()
 DEFAULT_GPYREG = (
-    ROOT / "dev" / "scripts" / "runs" / "svbmc_pool_20260913" / "gpyreg"
+    ROOT / "dev" / "scripts" / "runs" / "svbmc_pool_20260913" / "gpyreg_1.2.1"
 )
-#: The conditions the campaign allocates out of the ``svbmc_pool`` suite.
-#: The suite also holds the extension condition
-#: ``multisensory_s1_D6_noise1.3_svbmc``, which enters a pool only when
-#: ``prepare --only`` names it.
+#: The campaign's pool conditions, which are the whole ``svbmc_pool``
+#: suite of ``benchmark_targets.py`` in its order. ``prepare`` allocates
+#: every entry of the suite it is given, so this is what it allocates
+#: without ``--only``.
 POOL_LABELS = (
     "multisensory_s1_D6_noise3_svbmc",
+    "multisensory_s1_D6_noise1.3_svbmc",
     "rosenbrock_D2_noise3_svbmc",
     "gmm_D2_noise3_svbmc",
     "ring_D2_noise3_svbmc",
+    "student_D8_noise3_svbmc",
     "gmm_D2_svbmc",
+    "multisensory_s1_D6_svbmc",
 )
+#: The campaign's approved allocation, the defaults of ``prepare``: 100
+#: filtered runs per noisy condition and 50 per noiseless control, seed
+#: caps 150 and 75.
+DEFAULT_TARGET, DEFAULT_MAX_SEEDS = 100, 150
+DEFAULT_CONTROL_TARGET, DEFAULT_CONTROL_MAX_SEEDS = 50, 75
+#: Seed caps that depart from those defaults, per condition. The ring is
+#: the campaign's most expensive condition and the one whose runs most
+#: often fail the filters, so its seeds are over-provisioned.
+#: ``--allocation LABEL=TARGET/MAXSEEDS`` overrides both numbers and this
+#: table with them.
+DEFAULT_SEED_CAPS = {"ring_D2_noise3_svbmc": 200}
 BASE_OPTIONS = {
     "display": "off",
     "plot": False,
@@ -168,31 +249,79 @@ def activate_gpyreg(source):
     return str(source)
 
 
-def identity(gpyreg_source):
-    """The code and environment every process of the campaign must share.
+#: The identity fields every process of one campaign must agree on.
+#: ``svbmc_pool_io.environment`` provides the commits and library
+#: versions; :func:`identity` adds the working-tree state and the module
+#: hashes. Everything else an identity record holds says where the
+#: process ran and is never compared.
+SOURCE_KEYS = (
+    "python",
+    "pyvbmc_commit",
+    "pyvbmc_dirty",
+    "gpyreg_commit",
+    "gpyreg_clean",
+    "suite_module_dirty",
+    "suite_module_sha256",
+    "io_module_sha256",
+    "runner_sha256",
+    "numpy",
+    "scipy",
+)
 
-    The environment of ``svbmc_pool_io`` (commits, import paths,
-    versions, threads, host) plus the state of the working tree: whether
-    the package or the suite module carries uncommitted changes, whether
-    the frozen gpyreg worktree is clean, and the hashes of the three
-    modules a run is generated by (the suite, this harness and its
-    artifact layer), which the package commit does not cover while they
-    are uncommitted.
+
+def identity(gpyreg_source):
+    """What a pool is generated by, and where the process generating it ran.
+
+    Returns ``{"source": ..., "host": ...}``. ``source`` is the code and
+    library state every process of one campaign must share, so that a
+    resumed or distributed campaign cannot mix versions: the commits and
+    versions of ``svbmc_pool_io.environment`` plus the state of the
+    working tree (whether the package or the suite module carries
+    uncommitted changes, whether the frozen gpyreg worktree is clean) and
+    the hashes of the three modules a run is generated by (the suite,
+    this harness and its artifact layer), which the package commit does
+    not cover while they are uncommitted. ``host`` is where the process
+    ran, recorded and never compared, so that any node may run any case
+    of one campaign.
     """
     import svbmc_pool_io as pool_io
 
-    source = Path(gpyreg_source).resolve()
-    record = pool_io.environment(source)
-    record["gpyreg_source"] = str(source)
-    record["gpyreg_clean"] = not git(source, "status", "--porcelain")
-    record["pyvbmc_dirty"] = git(ROOT, "status", "--porcelain", "--", "pyvbmc")
-    record["suite_module_dirty"] = git(
-        ROOT, "status", "--porcelain", "--", str(SUITE_MODULE)
+    directory = Path(gpyreg_source).resolve()
+    record = pool_io.environment(directory)
+    record["source"].update(
+        {
+            "pyvbmc_dirty": git(ROOT, "status", "--porcelain", "--", "pyvbmc"),
+            "gpyreg_clean": not git(directory, "status", "--porcelain"),
+            "suite_module_dirty": git(
+                ROOT, "status", "--porcelain", "--", str(SUITE_MODULE)
+            ),
+            "suite_module_sha256": pool_io.sha256(SUITE_MODULE),
+            "io_module_sha256": pool_io.sha256(IO_MODULE),
+            "runner_sha256": pool_io.sha256(RUNNER_MODULE),
+        }
     )
-    record["suite_module_sha256"] = pool_io.sha256(SUITE_MODULE)
-    record["io_module_sha256"] = pool_io.sha256(IO_MODULE)
-    record["runner_sha256"] = pool_io.sha256(RUNNER_MODULE)
+    record["host"]["gpyreg_source"] = str(directory)
     return record
+
+
+def identity_source(record):
+    """The compared half of an identity record, in either stored shape.
+
+    Records written before the split hold one flat mapping of both
+    halves; selecting :data:`SOURCE_KEYS` out of it yields the same
+    ``source`` the split writes, so a campaign generated by an earlier
+    version of this harness is still readable here.
+    """
+    if "source" in record:
+        return record["source"]
+    return {key: record[key] for key in SOURCE_KEYS if key in record}
+
+
+def identity_host(record):
+    """The recorded-only half of an identity record, in either shape."""
+    if "host" in record:
+        return record["host"]
+    return {k: v for k, v in record.items() if k not in SOURCE_KEYS}
 
 
 def identity_differences(actual, expected):
@@ -200,8 +329,28 @@ def identity_differences(actual, expected):
     return sorted(k for k in keys if actual.get(k) != expected.get(k))
 
 
+def structural_differences(previous, manifest):
+    """The fields a campaign directory is bound to that a mapping changes.
+
+    Of the identity only the source half counts, so that a campaign
+    prepared on one machine and generated on another is one campaign.
+    """
+    differing = []
+    for key in STRUCTURAL_KEYS:
+        before, now = previous.get(key), manifest[key]
+        if key == "identity":
+            before, now = (
+                identity_source(before or {}),
+                identity_source(now),
+            )
+        if before != now:
+            differing.append(key)
+    return differing
+
+
 def check_tree(record, allow_dirty):
     """Refuse a dirty numerical source unless the manifest allows it."""
+    record = identity_source(record)
     if not record["gpyreg_clean"]:
         raise RuntimeError(
             "the frozen gpyreg worktree has uncommitted changes; the pin "
@@ -245,15 +394,42 @@ def parse_override(item):
 
 
 def allocation(args, configs):
-    """One entry per condition: label, first seed, seed cap, filter target."""
+    """One entry per condition: label, first seed, seed cap, filter target.
+
+    Asked for nothing, every condition takes the campaign's approved
+    allocation: the noiseless controls the ``DEFAULT_CONTROL_*`` numbers,
+    every other condition ``DEFAULT_TARGET`` and ``DEFAULT_MAX_SEEDS``,
+    and the conditions of :data:`DEFAULT_SEED_CAPS` their own seed cap.
+    The narrower the flag, the later it wins: ``--target`` and
+    ``--max-seeds`` set every condition including the controls,
+    ``--control-target`` and ``--control-max-seeds`` the controls alone,
+    ``--allocation LABEL=TARGET/MAXSEEDS`` one condition.
+    """
     overrides = dict(parse_override(item) for item in args.allocation or [])
+    asked = {
+        "target": args.target is not None,
+        "max_seeds": args.max_seeds is not None,
+    }
+    noisy_target = DEFAULT_TARGET if args.target is None else args.target
+    noisy_cap = DEFAULT_MAX_SEEDS if args.max_seeds is None else args.max_seeds
+    control_target = (
+        args.control_target
+        if args.control_target is not None
+        else (noisy_target if asked["target"] else DEFAULT_CONTROL_TARGET)
+    )
+    control_cap = (
+        args.control_max_seeds
+        if args.control_max_seeds is not None
+        else (noisy_cap if asked["max_seeds"] else DEFAULT_CONTROL_MAX_SEEDS)
+    )
     entries = []
     for cfg in configs:
         if cfg.noise_sd is None:
-            target = args.control_target or args.target
-            cap = args.control_max_seeds or args.max_seeds
+            target, cap = control_target, control_cap
         else:
-            target, cap = args.target, args.max_seeds
+            target, cap = noisy_target, noisy_cap
+        if not asked["max_seeds"]:
+            cap = DEFAULT_SEED_CAPS.get(cfg.label, cap)
         target, cap = overrides.get(cfg.label, (target, cap))
         if target > cap:
             raise RuntimeError(
@@ -275,29 +451,41 @@ def allocation(args, configs):
 
 
 def select_configs(args, configs):
-    """The conditions to allocate, and the extension conditions among them.
+    """The conditions to allocate: every entry of the suite, or ``--only``.
 
-    Without ``--only`` the ``svbmc_pool`` suite contributes exactly the
-    campaign's five pool conditions and any other suite all of its
-    entries; ``--only`` selects by label and is the only way an extension
-    condition of the pool suite enters an allocation.
+    ``--only`` selects a subset by label, in the order it names them.
     """
     by_label = {config.label: config for config in configs}
-    if args.only:
-        wanted = [s.strip() for s in args.only.split(",") if s.strip()]
-    elif args.suite == "svbmc_pool":
-        wanted = list(POOL_LABELS)
-    else:
-        wanted = list(by_label)
+    wanted = (
+        [s.strip() for s in args.only.split(",") if s.strip()]
+        if args.only
+        else list(by_label)
+    )
     missing = [label for label in wanted if label not in by_label]
     if missing:
         raise RuntimeError(f"not in suite {args.suite}: {missing}")
-    extensions = [
-        label
-        for label in wanted
-        if args.suite == "svbmc_pool" and label not in POOL_LABELS
-    ]
-    return [by_label[label] for label in wanted], extensions
+    return [by_label[label] for label in wanted]
+
+
+def read_manifest(out):
+    """The manifest of a campaign directory."""
+    path = Path(out) / "manifest.json"
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def require_launch_ready(manifest):
+    """Refuse a campaign that nobody has released for launch.
+
+    The authorization gates every command that generates runs, the laptop
+    sweep and the array path alike, so that a prepared but unapproved
+    allocation cannot be launched by going one level down.
+    """
+    if not manifest.get("launch_ready"):
+        raise RuntimeError(
+            "manifest is not marked ready for launch "
+            "(prepare --ready --authorized-by NAME)"
+        )
+    return manifest
 
 
 def condition_runs(out, label):
@@ -357,7 +545,7 @@ def cmd_prepare(args):
     source = activate_gpyreg(args.gpyreg_source)
     from benchmark_targets import suite_configs
 
-    configs, extensions = select_configs(args, suite_configs(args.suite))
+    configs = select_configs(args, suite_configs(args.suite))
     manifest = {
         "campaign": "svbmc_pool",
         "suite": args.suite,
@@ -376,9 +564,7 @@ def cmd_prepare(args):
     path = out / "manifest.json"
     if path.exists():
         previous = json.loads(path.read_text(encoding="utf-8"))
-        differing = [
-            k for k in STRUCTURAL_KEYS if previous.get(k) != manifest[k]
-        ]
+        differing = structural_differences(previous, manifest)
         if differing:
             raise RuntimeError(
                 f"{path} exists and differs in {differing}; prepare a new "
@@ -400,12 +586,6 @@ def cmd_prepare(args):
                 f"{args.authorized_by}",
                 flush=True,
             )
-    for label in extensions:
-        print(
-            f"{label}: extension condition of the campaign, allocated "
-            "because --only names it",
-            flush=True,
-        )
     if args.ready:
         if not args.authorized_by:
             raise RuntimeError("--ready needs --authorized-by NAME")
@@ -431,17 +611,22 @@ def cmd_prepare(args):
 
 
 def validate_case(out, tag, expected):
-    """Re-verify a completed case; never silently skip a changed one."""
+    """Re-verify a completed case; never silently skip a changed one.
+
+    Only the source half of the identity is compared, so a case generated
+    on another node of a distributed campaign is accepted and one
+    generated by other code is not.
+    """
     import svbmc_pool_io as pool_io
 
     done = json.loads(
         pool_io.record_path(out, tag).read_text(encoding="utf-8")
     )
-    if done["identity"] != expected:
-        raise RuntimeError(
-            f"{tag}: recorded identity differs in "
-            f"{identity_differences(done['identity'], expected)}"
-        )
+    differing = identity_differences(
+        identity_source(done["identity"]), identity_source(expected)
+    )
+    if differing:
+        raise RuntimeError(f"{tag}: recorded identity differs in {differing}")
     if not set(pool_io.SUFFIXES) <= set(done["hashes"]):
         raise RuntimeError(f"{tag}: incomplete file manifest")
     for suffix, digest in done["hashes"].items():
@@ -488,16 +673,13 @@ def condition_plan(entry, pilot_seeds):
 
 def cmd_run(args):
     out = args.out.resolve()
-    manifest = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
-    if not manifest.get("launch_ready"):
-        raise RuntimeError(
-            "manifest is not marked ready for launch "
-            "(prepare --ready --authorized-by NAME)"
-        )
+    manifest = require_launch_ready(read_manifest(out))
     source = activate_gpyreg(manifest["gpyreg_source"])
     expected = identity(source)
     check_tree(expected, manifest.get("allow_dirty"))
-    differing = identity_differences(expected, manifest["identity"])
+    differing = identity_differences(
+        identity_source(expected), identity_source(manifest["identity"])
+    )
     if differing:
         raise RuntimeError(
             f"identity differs from the manifest in {differing}; the pool "
@@ -507,13 +689,15 @@ def cmd_run(args):
     structural = {k: manifest[k] for k in STRUCTURAL_KEYS}
     if launch.exists():
         previous = json.loads(launch.read_text(encoding="utf-8"))
-        started_with = {
-            k: previous["manifest"].get(k) for k in STRUCTURAL_KEYS
-        }
-        if previous["identity"] != expected or started_with != structural:
+        differing = structural_differences(
+            previous["manifest"], manifest
+        ) + identity_differences(
+            identity_source(previous["identity"]), identity_source(expected)
+        )
+        if differing:
             raise RuntimeError(
                 "an existing campaign in this directory belongs to a "
-                "different setup"
+                f"different setup (differs in {sorted(set(differing))})"
             )
     else:
         write_json(
@@ -617,15 +801,21 @@ def cmd_run(args):
                     env=child_env,
                 )
             if result.returncode:
-                tail = log_path.read_text(
-                    encoding="utf-8", errors="replace"
-                ).splitlines()[-40:]
-                (out / f"{tag}.error.txt").write_text(
-                    f"exit code {result.returncode}\n"
-                    + "\n".join(tail)
-                    + "\n",
-                    encoding="utf-8",
-                )
+                # The worker records its own failure; the supervisor
+                # writes the record only for a worker that died before it
+                # could, so that the case is never counted as unfinished.
+                error_file = out / f"{tag}.error.txt"
+                if not error_file.exists():
+                    tail = log_path.read_text(
+                        encoding="utf-8", errors="replace"
+                    ).splitlines()[-40:]
+                    error_file.write_text(
+                        f"{tag}: worker exited with code "
+                        f"{result.returncode} leaving no error file\n"
+                        + "\n".join(tail)
+                        + "\n",
+                        encoding="utf-8",
+                    )
                 counts["failed"] += 1
                 failed.append(tag)
                 failed_now.append(tag)
@@ -665,20 +855,65 @@ def cmd_run(args):
 # --------------------------------------------------------------------------
 
 
+def record_failure(out, tag, error):
+    """Leave one failed case as ``<tag>.error.txt`` and nothing else.
+
+    The file names the case, the exception and the end of the traceback,
+    and every artifact file the case had begun is deleted, so that a case
+    which died between writing its artifact and writing its completion
+    record cannot leave a truncated run behind for ``select`` or the
+    comparison to read. A sweep and a Slurm array both read this file as
+    the whole of what a failed case leaves.
+    """
+    out = Path(out)
+    out.mkdir(parents=True, exist_ok=True)
+    tail = traceback.format_exc().splitlines()[-40:]
+    (out / f"{tag}.error.txt").write_text(
+        f"{tag}: {type(error).__name__}: {error}\n" + "\n".join(tail) + "\n",
+        encoding="utf-8",
+    )
+    for suffix in ARTIFACT_SUFFIXES:
+        (out / f"{tag}{suffix}").unlink(missing_ok=True)
+
+
 def cmd_worker(args):
+    """One case in one fresh process, recording its own failure.
+
+    A case that raises leaves ``<tag>.error.txt`` and no artifact, and the
+    process exits non-zero so that whatever launched it — a sweep, a Slurm
+    array — sees the failure; one that succeeds removes the error file of
+    an earlier attempt.
+    """
     out = args.out.resolve()
+    tag = f"{args.label}_seed{args.seed}"
+    # Outside the guard below: the authorization gates the array path as
+    # it gates a sweep, and a campaign nobody released is not a case that
+    # failed, so refusing it must leave nothing behind.
+    manifest = require_launch_ready(read_manifest(out))
+    try:
+        worker_case(args, out, tag, manifest)
+    except Exception as error:
+        record_failure(out, tag, error)
+        raise
+    (out / f"{tag}.error.txt").unlink(missing_ok=True)
+    return 0
+
+
+def worker_case(args, out, tag, manifest):
+    out = Path(out)
     launch = out / "launch.json"
     if launch.exists():
         loaded = json.loads(launch.read_text(encoding="utf-8"))
         manifest, expected = loaded["manifest"], loaded["identity"]
     else:  # invoked per case, outside a `run` sweep
-        manifest = json.loads(
-            (out / "manifest.json").read_text(encoding="utf-8")
-        )
         expected = manifest["identity"]
     source = activate_gpyreg(manifest["gpyreg_source"])
     actual = identity(source)
-    differing = identity_differences(actual, expected)
+    # The source half alone, so that any node of an array job may run any
+    # case while no node may run one with different code.
+    differing = identity_differences(
+        identity_source(actual), identity_source(expected)
+    )
     if differing:
         raise RuntimeError(f"worker identity differs in {differing}")
 
@@ -688,7 +923,6 @@ def cmd_worker(args):
 
     from pyvbmc import VBMC
 
-    tag = f"{args.label}_seed{args.seed}"
     started = time.time()
     cfg = find_config(args.label)
     problem = cfg.make(seed=args.seed)
@@ -749,6 +983,195 @@ def cmd_worker(args):
         f"max J_sjk {verdict['max_J_sjk']:.3f})",
         flush=True,
     )
+
+
+# --------------------------------------------------------------------------
+# cases and select
+# --------------------------------------------------------------------------
+
+
+def manifest_cases(manifest):
+    """Every ``(label, seed)`` of an allocation, in condition order.
+
+    One case per seed of each condition's whole range, whatever the
+    filtered target: an array job runs them all and :func:`cmd_select`
+    applies the stopping rule afterwards.
+    """
+    return [
+        (entry["label"], seed)
+        for entry in manifest["allocation"]
+        for seed in range(
+            int(entry["seed_start"]),
+            int(entry["seed_start"]) + int(entry["max_seeds"]),
+        )
+    ]
+
+
+def cmd_cases(args):
+    """Print the cases of a campaign, one per line, for an array job.
+
+    The line number is the array index: line ``i`` names the case that
+    ``worker --out DIR --label L --seed S`` generates. The count goes to
+    standard error, so that redirecting standard output yields exactly the
+    case list. An unready manifest is refused here as it is in ``run``:
+    the case list is what launches an array, so the authorization gates
+    the cluster path at the same point as the laptop one.
+    """
+    out = args.out.resolve()
+    manifest = require_launch_ready(read_manifest(out))
+    cases = manifest_cases(manifest)
+    if args.format == "json":
+        print(
+            json.dumps(
+                {
+                    "campaign": manifest["campaign"],
+                    "directory": str(out),
+                    "count": len(cases),
+                    "cases": [
+                        {"index": index, "label": label, "seed": seed}
+                        for index, (label, seed) in enumerate(cases, start=1)
+                    ],
+                },
+                indent=2,
+            ),
+            flush=True,
+        )
+    else:
+        for label, seed in cases:
+            print(f"{label} {seed}", flush=True)
+        print(f"{len(cases)} cases", file=sys.stderr, flush=True)
+    return 0
+
+
+def condition_selection(out, entry, target):
+    """The campaign's stopping rule applied to one condition's records.
+
+    The completed runs are walked in seed order and the ones that pass the
+    filters are taken until ``target`` of them are in hand, the paper's
+    "lowest indices" rule. Returns the selected tags, how many seeds were
+    scanned to find them, and the shortfall when the records run out
+    first. ``pass_rate_scanned`` is the selected runs over those scanned
+    seeds, which is not the condition's pass rate: the scan stops at the
+    target rather than at the end of the condition, and a seed whose case
+    failed is scanned like any other. The pass rate over every completed
+    case is ``summarize``'s.
+    """
+    import svbmc_pool_io as pool_io
+
+    label = entry["label"]
+    selected, scanned, failed = [], 0, 0
+    for tag in condition_runs(out, label):
+        if len(selected) >= target:
+            break
+        scanned += 1
+        path = pool_io.record_path(out, tag)
+        if not path.exists():  # the case failed and left an error file
+            failed += 1
+            continue
+        record = json.loads(path.read_text(encoding="utf-8"))
+        if record["verdict"]["passes"]:
+            selected.append({"tag": tag, "seed": int(record["seed"])})
+    return {
+        "label": label,
+        "seed_start": int(entry["seed_start"]),
+        "seed_cap": int(entry["max_seeds"]),
+        "target_filtered": int(target),
+        "selected": len(selected),
+        "shortfall": max(0, int(target) - len(selected)),
+        "seeds_scanned": scanned,
+        "failed_while_scanning": failed,
+        "pass_rate_scanned": (len(selected) / scanned) if scanned else None,
+        "last_seed": selected[-1]["seed"] if selected else None,
+        "runs": selected,
+    }
+
+
+def selection_markdown(selection):
+    lines = [
+        f"# S-VBMC filtered pool: {selection['directory']}",
+        "",
+        f"Written {selection['generated']} from the completion records of "
+        "the campaign. Per condition the runs are walked in seed order and "
+        "the ones that pass the filters (stable and `sqrt(max J_sjk) < "
+        "sqrt(5)`) are taken until the filtered target is met, so the pool "
+        "is the lowest-seed runs that pass, whatever order the cases were "
+        "generated in. The stacking comparison reads this file.",
+        "",
+        "The walk stops as soon as the target is met, so the seeds it "
+        "scanned are a prefix of the condition and the seeds beyond them "
+        "were never looked at; a seed whose case failed is scanned like "
+        "any other and leaves no run. `pass rate over the scanned seeds` "
+        "is the selected runs over that prefix, failures included, and is "
+        "therefore not the condition's pass rate, which `summarize` "
+        "reports over every completed case.",
+        "",
+    ]
+    if selection["target_override"] is not None:
+        lines += [
+            f"Every condition was selected to {selection['target_override']} "
+            "runs, not to the manifest's filtered target.",
+            "",
+        ]
+    lines += [
+        "| condition | selected | target | shortfall | seeds scanned | "
+        "pass rate over the scanned seeds | last seed |",
+        "|---|---|---|---|---|---|---|",
+    ]
+    for condition in selection["conditions"]:
+        rate = condition["pass_rate_scanned"]
+        lines.append(
+            "| {label} | {selected} | {target} | {shortfall} | {scanned} | "
+            "{rate} | {last} |".format(
+                label=condition["label"],
+                selected=condition["selected"],
+                target=condition["target_filtered"],
+                shortfall=condition["shortfall"] or "-",
+                scanned=condition["seeds_scanned"],
+                rate="-" if rate is None else f"{rate:.2f}",
+                last=(
+                    "-"
+                    if condition["last_seed"] is None
+                    else condition["last_seed"]
+                ),
+            )
+        )
+    return "\n".join(lines) + "\n"
+
+
+def cmd_select(args):
+    """Write the filtered pool of a campaign: ``selection.json`` and ``.md``.
+
+    The authoritative definition of the filtered pool, applied after the
+    fact to whatever runs the directory holds. ``run``'s sequential
+    stopping rule produces the same set when it walks the seeds in order;
+    an array job that runs every seed of the range needs this step.
+    """
+    out = args.out.resolve()
+    manifest = read_manifest(out)
+    conditions = [
+        condition_selection(
+            out,
+            entry,
+            entry["target_filtered"] if args.target is None else args.target,
+        )
+        for entry in manifest["allocation"]
+    ]
+    selection = {
+        "campaign": manifest["campaign"],
+        "directory": str(out),
+        "generated": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "target_override": args.target,
+        "identity": manifest["identity"],
+        "totals": {
+            "selected": sum(c["selected"] for c in conditions),
+            "shortfall": sum(c["shortfall"] for c in conditions),
+        },
+        "conditions": conditions,
+    }
+    write_json(out / "selection.json", selection)
+    text = selection_markdown(selection)
+    (out / "selection.md").write_text(text, encoding="utf-8")
+    print(text, flush=True)
     return 0
 
 
@@ -833,14 +1256,17 @@ def condition_summary(out, entry):
 
 
 def summary_markdown(summary):
-    gpyreg_commit = summary["identity"]["gpyreg_commit"] or "unknown"
+    source = identity_source(summary["identity"])
+    host = identity_host(summary["identity"])
+    gpyreg_commit = source["gpyreg_commit"] or "unknown"
     lines = [
         f"# S-VBMC pool: {summary['directory']}",
         "",
-        f"Generated {summary['generated']} from "
-        f"`{summary['identity']['pyvbmc_commit']}` "
-        f"(gpyreg `{gpyreg_commit[:12]}`) on "
-        f"{summary['identity']['hostname']}. Filters: stable and "
+        f"Generated {summary['generated']}. The campaign was prepared on "
+        f"{host['hostname']} at `{source['pyvbmc_commit']}` "
+        f"(gpyreg `{gpyreg_commit[:12]}`), the code every case was "
+        "generated with; each case records the host that ran it. "
+        "Filters: stable and "
         "`sqrt(max J_sjk) < sqrt(5)`; the counts are of the runs the "
         "directory holds, against the allocation's seed caps and filtered "
         "targets, and the metric quartiles are over the filtered runs, "
@@ -902,7 +1328,7 @@ def summary_markdown(summary):
 
 def cmd_summarize(args):
     out = args.out.resolve()
-    manifest = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
+    manifest = read_manifest(out)
     finished = out / "finished.json"
     pilot_seeds = None
     if finished.exists():
@@ -948,20 +1374,45 @@ def parse_args(argv=None):
     prepare.add_argument("--suite", default="svbmc_pool")
     prepare.add_argument(
         "--only",
-        help="comma-separated subset of labels; without it the svbmc_pool "
-        "suite allocates its five pool conditions and any other suite all "
-        "of its entries",
+        help="comma-separated subset of the suite's labels; without it "
+        "every entry of the suite is allocated",
     )
-    prepare.add_argument("--target", type=int, default=60)
-    prepare.add_argument("--max-seeds", type=int, default=90)
+    prepare.add_argument(
+        "--target",
+        type=int,
+        help="filtered runs per condition, the controls included; without "
+        f"it {DEFAULT_TARGET} per noisy condition and "
+        f"{DEFAULT_CONTROL_TARGET} per noiseless one",
+    )
+    prepare.add_argument(
+        "--max-seeds",
+        type=int,
+        help="seeds per condition, the controls included; without it "
+        f"{DEFAULT_MAX_SEEDS} per noisy condition, "
+        + ", ".join(
+            f"{cap} for {label}" for label, cap in DEFAULT_SEED_CAPS.items()
+        )
+        + f" and {DEFAULT_CONTROL_MAX_SEEDS} per noiseless one",
+    )
     prepare.add_argument("--seed-start", type=int, default=1000)
-    prepare.add_argument("--control-target", type=int)
-    prepare.add_argument("--control-max-seeds", type=int)
+    prepare.add_argument(
+        "--control-target",
+        type=int,
+        help="filtered runs per noiseless condition, overriding --target "
+        f"for those (default {DEFAULT_CONTROL_TARGET})",
+    )
+    prepare.add_argument(
+        "--control-max-seeds",
+        type=int,
+        help="seeds per noiseless condition, overriding --max-seeds for "
+        f"those (default {DEFAULT_CONTROL_MAX_SEEDS})",
+    )
     prepare.add_argument(
         "--allocation",
         action="append",
         metavar="LABEL=TARGET/MAXSEEDS",
-        help="per-condition allocation, repeatable",
+        help="per-condition allocation, repeatable; overrides every "
+        "default above for the condition it names",
     )
     prepare.add_argument("--gpyreg-source", type=Path, default=DEFAULT_GPYREG)
     prepare.add_argument(
@@ -982,11 +1433,32 @@ def parse_args(argv=None):
     )
     runner.add_argument("--save-vbmc", action="store_true")
 
+    cases = sub.add_parser(
+        "cases", help="print every (label, seed) of the allocation"
+    )
+    cases.add_argument("--out", type=Path, required=True)
+    cases.add_argument(
+        "--format",
+        choices=("lines", "json"),
+        default="lines",
+        help="one `label seed` per line (the array index is the line "
+        "number, and the count goes to standard error), or one JSON object",
+    )
+
     worker = sub.add_parser("worker", help="one run (one fresh process)")
     worker.add_argument("--out", type=Path, required=True)
     worker.add_argument("--label", required=True)
     worker.add_argument("--seed", type=int, required=True)
     worker.add_argument("--save-vbmc", action="store_true")
+
+    select = sub.add_parser("select", help="write the filtered pool")
+    select.add_argument("--out", type=Path, required=True)
+    select.add_argument(
+        "--target",
+        type=int,
+        help="select this many filtered runs per condition instead of the "
+        "manifest's filtered target",
+    )
 
     summarize = sub.add_parser("summarize", help="summarize a pool")
     summarize.add_argument("--out", type=Path, required=True)
@@ -997,12 +1469,18 @@ def main(argv=None):
     args = parse_args(argv)
     if args.command == "prepare":
         return cmd_prepare(args)
+    if args.command == "cases":
+        return cmd_cases(args)
     if args.command == "worker":
         return cmd_worker(args)
+    if args.command == "select":
+        return cmd_select(args)
     if args.command == "summarize":
         return cmd_summarize(args)
-    # Process-scoped request: permit display sleep, prevent idle system
-    # sleep while a long sweep is working.
+    # The sequential sweep below is the laptop supervisor: the campaign
+    # lock, `status.json` and the idle-sleep request are its own, and no
+    # other sub-command takes them. Process-scoped request: permit display
+    # sleep, prevent idle system sleep while a long sweep is working.
     if sys.platform == "win32":
         import ctypes
 

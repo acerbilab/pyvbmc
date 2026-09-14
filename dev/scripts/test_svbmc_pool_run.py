@@ -17,20 +17,18 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+import svbmc_pool_run as runner
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 SCRIPT = HERE / "svbmc_pool_run.py"
-GPYREG_SOURCE = (
-    ROOT / "dev" / "scripts" / "runs" / "svbmc_pool_20260913" / "gpyreg"
-)
+#: The campaign's pinned gpyreg worktree, as the harness names it; the
+#: runner imports no PyVBMC, so reading it costs nothing.
+GPYREG_SOURCE = runner.DEFAULT_GPYREG
 LABEL = "normal_D2"
 SEED_START = 4000
 TARGET, MAX_SEEDS = 2, 3
 AUTHORIZED_BY = "test_svbmc_pool_run"
-#: The campaign's extension condition: a suite entry that is not a pool
-#: condition (`svbmc_pool_run.POOL_LABELS`).
-EXTENSION = "multisensory_s1_D6_noise1.3_svbmc"
 #: The checks `verify_run` runs against live objects, in order. The
 #: hashes of the completion record are not among them: the record is
 #: written after the artifact it describes.
@@ -43,13 +41,12 @@ LIVE_CHECKS = [
     "gp_prediction",
 ]
 
-# The campaign pins gpyreg to a frozen worktree; the modules under test
-# read the variable when they are imported, and the workers inherit it.
+# The campaign pins gpyreg to a frozen worktree; the artifact module reads
+# the variable when it is imported, and the workers inherit it.
 if (GPYREG_SOURCE / "gpyreg").is_dir():
     os.environ["PYVBMC_GPYREG_SOURCE"] = str(GPYREG_SOURCE)
 
 import svbmc_pool_io as pool_io  # noqa: E402
-import svbmc_pool_run as runner  # noqa: E402
 
 pytestmark = pytest.mark.skipif(
     not (GPYREG_SOURCE / "gpyreg").is_dir(),
@@ -137,9 +134,13 @@ def test_manifest_and_authorization(campaign):
         }
     ]
     assert manifest["options"] == runner.BASE_OPTIONS
-    assert manifest["identity"]["gpyreg_commit"] == runner.git(
+    identity = manifest["identity"]
+    assert set(identity) == {"source", "host"}
+    assert identity["source"]["gpyreg_commit"] == runner.git(
         GPYREG_SOURCE, "rev-parse", "HEAD"
     )
+    assert identity["host"]["gpyreg_source"] == str(GPYREG_SOURCE.resolve())
+    assert identity["host"]["hostname"] and identity["host"]["executable"]
 
 
 def test_every_case_wrote_both_files_and_a_valid_record(campaign):
@@ -152,7 +153,7 @@ def test_every_case_wrote_both_files_and_a_valid_record(campaign):
         for suffix in pool_io.SUFFIXES:
             assert (out / f"{tag}{suffix}").exists()
         record = runner.validate_case(out, tag, expected)
-        assert record["identity"]["gpyreg_import"].startswith(
+        assert record["identity"]["host"]["gpyreg_import"].startswith(
             str(GPYREG_SOURCE)
         )
         assert set(record["verdict"]) == {
@@ -199,7 +200,9 @@ def test_load_run_rebuilds_the_stored_posterior(campaign):
     assert meta["seed"] == int(tag.rsplit("seed", 1)[1])
     assert set(meta["filter"]) == {"stable", "max_J_sjk", "s_max", "passes"}
     assert np.isfinite(meta["metrics"]["gskl"])
-    assert meta["identity"]["gpyreg_import"].startswith(str(GPYREG_SOURCE))
+    assert meta["identity"]["host"]["gpyreg_import"].startswith(
+        str(GPYREG_SOURCE)
+    )
     assert state["vp"].rng is not None
 
 
@@ -280,6 +283,123 @@ def test_summarize_reports_the_counts(campaign):
     assert summary["totals"]["filtered"] == condition["filtered"]
     text = (out / "summary.md").read_text(encoding="utf-8")
     assert LABEL in text and "filtered" in text
+
+
+def test_manifest_cases_follows_the_allocation_order():
+    """Every seed of every condition's range, conditions in manifest order."""
+    manifest = {
+        "allocation": [
+            {"label": "second", "seed_start": 10, "max_seeds": 2},
+            {"label": "first", "seed_start": 1000, "max_seeds": 3},
+        ]
+    }
+    assert runner.manifest_cases(manifest) == [
+        ("second", 10),
+        ("second", 11),
+        ("first", 1000),
+        ("first", 1001),
+        ("first", 1002),
+    ]
+
+
+def test_cases_prints_one_worker_call_per_line(campaign):
+    """The array index is the line number; the count goes to stderr."""
+    out, _ = campaign
+    result = cli("cases", "--out", str(out))
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert result.stdout.splitlines() == [
+        f"{LABEL} {SEED_START + i}" for i in range(MAX_SEEDS)
+    ]
+    assert f"{MAX_SEEDS} cases" in result.stderr
+    listed = json.loads(
+        cli("cases", "--out", str(out), "--format", "json").stdout
+    )
+    assert listed["count"] == MAX_SEEDS
+    assert [
+        (case["index"], case["label"], case["seed"])
+        for case in listed["cases"]
+    ] == [(i + 1, LABEL, SEED_START + i) for i in range(MAX_SEEDS)]
+
+
+def test_select_takes_the_lowest_seeds_that_pass(campaign, tmp_path):
+    out, _ = campaign
+    passing = [
+        tag
+        for tag in completed_tags(out)
+        if json.loads(
+            pool_io.record_path(out, tag).read_text(encoding="utf-8")
+        )["verdict"]["passes"]
+    ]
+    result = cli("select", "--out", str(out))
+    assert result.returncode == 0, result.stdout + result.stderr
+    selection = json.loads(
+        (out / "selection.json").read_text(encoding="utf-8")
+    )
+    (condition,) = selection["conditions"]
+    assert condition["label"] == LABEL
+    assert condition["target_filtered"] == TARGET
+    assert [run["tag"] for run in condition["runs"]] == passing[:TARGET]
+    assert condition["selected"] == len(condition["runs"])
+    assert condition["shortfall"] == TARGET - condition["selected"]
+    assert condition["seeds_scanned"] >= condition["selected"]
+    # Over the scanned prefix, not over the condition: `summarize` owns
+    # the pass rate of every completed case.
+    assert "pass_rate" not in condition
+    assert 0.0 < condition["pass_rate_scanned"] <= 1.0
+    assert condition["pass_rate_scanned"] == (
+        condition["selected"] / condition["seeds_scanned"]
+    )
+    assert selection["totals"]["selected"] == condition["selected"]
+    markdown = (out / "selection.md").read_text(encoding="utf-8")
+    assert markdown.startswith("# S-VBMC filtered pool")
+    assert "pass rate over the scanned seeds" in markdown
+    assert "stops as soon as the target is met" in markdown
+
+    copy = tmp_path / "one"
+    shutil.copytree(out, copy)
+    assert cli("select", "--out", str(copy), "--target", "1").returncode == 0
+    lowered = json.loads((copy / "selection.json").read_text(encoding="utf-8"))
+    assert lowered["target_override"] == 1
+    assert [r["tag"] for r in lowered["conditions"][0]["runs"]] == passing[:1]
+
+
+def test_the_stack_harness_reads_the_selection(campaign, tmp_path):
+    """The comparison's pool reader prefers `selection.json` to the records.
+
+    The check lives in this module because this is where a pool directory
+    is generated; the rest of the comparison harness is exercised by
+    `test_svbmc_pool_stack.py`.
+    """
+    import svbmc_pool_stack as stack
+
+    out, _ = campaign
+    copy = tmp_path / "selected"
+    shutil.copytree(out, copy)
+    (copy / "selection.json").unlink(missing_ok=True)
+    conditions, identities, labels = stack.pool_conditions([copy])
+    assert labels == [LABEL]
+    every = [entry["name"] for entry in conditions[LABEL]]
+    assert identities[0]["selection"] == {
+        "path": None,
+        "generated": None,
+        "conditions": {LABEL: "every passing record"},
+    }
+    assert cli("select", "--out", str(copy), "--target", "1").returncode == 0
+    conditions, identities, _ = stack.pool_conditions([copy])
+    assert [entry["name"] for entry in conditions[LABEL]] == every[:1]
+    assert identities[0]["selection"]["path"] == str(copy / "selection.json")
+    assert identities[0]["selection"]["conditions"] == {
+        LABEL: "selection.json"
+    }
+
+    # A selection whose runs the directory no longer holds names the
+    # entry that is wrong, not only the file that is absent.
+    (copy / f"{every[0]}.npz").unlink()
+    with pytest.raises(RuntimeError, match=r"selection\.json"):
+        stack.pool_conditions([copy])
+    pool_io.record_path(copy, every[0]).unlink()
+    with pytest.raises(RuntimeError, match="no completion record"):
+        stack.pool_conditions([copy])
 
 
 def test_changed_artifact_stops_the_sweep(campaign, tmp_path):
@@ -421,6 +541,21 @@ def test_revised_allocation_and_pilot_seeds(campaign, tmp_path):
     assert condition["seeds"] == [SEED_START, SEED_START + 1]
 
 
+def bogus_case(out, label="no_such_target_D2", seed=1):
+    """Allocate a condition whose target the suite does not define."""
+    manifest = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
+    manifest["allocation"].append(
+        {
+            "label": label,
+            "seed_start": seed,
+            "max_seeds": 1,
+            "target_filtered": 1,
+        }
+    )
+    runner.write_json(out / "manifest.json", manifest)
+    return label, f"{label}_seed{seed}"
+
+
 def test_a_failed_case_is_skipped_and_counted(tmp_path):
     """A case that failed earlier costs its seed and does not fail a sweep."""
     out = tmp_path / "failures"
@@ -446,43 +581,168 @@ def test_a_failed_case_is_skipped_and_counted(tmp_path):
 
     # A case that fails in this sweep does fail it: an allocation entry
     # naming a target the suite does not define makes its worker exit.
-    manifest = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
-    manifest["allocation"].append(
-        {
-            "label": "no_such_target_D2",
-            "seed_start": 1,
-            "max_seeds": 1,
-            "target_filtered": 1,
-        }
-    )
-    runner.write_json(out / "manifest.json", manifest)
+    bogus_case(out)
     result = cli("run", "--out", str(out), "--pilot-seeds", "1")
     assert result.returncode == 1, result.stdout + result.stderr
     assert "FAILED no_such_target_D2_seed1" in result.stdout
-    assert (out / "no_such_target_D2_seed1.error.txt").exists()
+    # The worker wrote the record of its own failure; the supervisor kept
+    # it rather than replacing it with the exit code and the log tail.
+    error = (out / "no_such_target_D2_seed1.error.txt").read_text(
+        encoding="utf-8"
+    )
+    assert error.startswith("no_such_target_D2_seed1: ValueError")
     finished = json.loads((out / "finished.json").read_text(encoding="utf-8"))
     assert finished["failed_this_sweep"] == ["no_such_target_D2_seed1"]
 
 
-def test_prepare_allocates_the_pool_conditions(tmp_path):
+def test_a_failing_worker_records_the_case_and_exits_non_zero(tmp_path):
+    """`<tag>.error.txt` is the whole of what a failed array task leaves.
+
+    The worker itself writes it, deletes the artifact files an earlier
+    attempt had begun so that no truncated run can be read as one, writes
+    no completion record, and exits non-zero, which is how Slurm sees the
+    failure. `select` and `summarize` then count the case as failed.
+    """
+    out = tmp_path / "array"
+    assert (
+        prepare(out, "--ready", "--authorized-by", AUTHORIZED_BY).returncode
+        == 0
+    )
+    label, tag = bogus_case(out)
+    for suffix in runner.ARTIFACT_SUFFIXES:
+        (out / f"{tag}{suffix}").write_text("partial", encoding="utf-8")
+
+    result = cli("worker", "--out", str(out), "--label", label, "--seed", "1")
+    assert result.returncode != 0
+    error = (out / f"{tag}.error.txt").read_text(encoding="utf-8")
+    assert error.startswith(f"{tag}: ValueError")
+    assert label in error and "Traceback" in error
+    assert not pool_io.record_path(out, tag).exists()
+    assert runner.partial_artifacts(out, tag) == []
+
+    assert cli("select", "--out", str(out)).returncode == 0
+    selection = json.loads(
+        (out / "selection.json").read_text(encoding="utf-8")
+    )
+    (failed,) = [c for c in selection["conditions"] if c["label"] == label]
+    assert failed["failed_while_scanning"] == 1
+    assert failed["selected"] == 0 and failed["shortfall"] == 1
+
+    assert cli("summarize", "--out", str(out)).returncode == 0
+    summary = json.loads((out / "summary.json").read_text(encoding="utf-8"))
+    (counted,) = [c for c in summary["conditions"] if c["label"] == label]
+    assert counted["failed"] == 1 and counted["completed"] == 0
+    assert counted["failures"][0]["tag"] == tag
+    assert "ValueError" in counted["failures"][0]["reason"]
+
+
+def test_a_successful_worker_clears_a_stale_error_file(tmp_path, monkeypatch):
+    """A rerun that works leaves no trace of the attempt that did not.
+
+    The case itself is stubbed out: what is under test is the bookkeeping
+    around it, which every generated case of the module shares.
+    """
+    tag = f"{LABEL}_seed{SEED_START}"
+    (tmp_path / f"{tag}.error.txt").write_text(
+        "an attempt\n", encoding="utf-8"
+    )
+    runner.write_json(tmp_path / "manifest.json", {"launch_ready": True})
+    monkeypatch.setattr(runner, "worker_case", lambda *args: None)
+    assert (
+        runner.main(
+            [
+                "worker",
+                "--out",
+                str(tmp_path),
+                "--label",
+                LABEL,
+                "--seed",
+                str(SEED_START),
+            ]
+        )
+        == 0
+    )
+    assert not (tmp_path / f"{tag}.error.txt").exists()
+
+
+def test_cases_and_worker_refuse_an_unready_manifest(tmp_path):
+    """The authorization gates the array path where it gates the sweep.
+
+    A refusal is not a failed case: neither command may leave an error
+    file, which a later sweep would read as a seed already spent.
+    """
+    out = tmp_path / "unready"
+    assert prepare(out).returncode == 0
+    tag = f"{LABEL}_seed{SEED_START}"
+    for command in (
+        ["cases", "--out", str(out)],
+        [
+            "worker",
+            "--out",
+            str(out),
+            "--label",
+            LABEL,
+            "--seed",
+            str(SEED_START),
+        ],
+    ):
+        result = cli(*command)
+        assert result.returncode != 0, result.stdout
+        assert "not marked ready" in result.stderr
+    assert not (out / f"{tag}.error.txt").exists()
+    assert (
+        prepare(out, "--ready", "--authorized-by", AUTHORIZED_BY).returncode
+        == 0
+    )
+    assert cli("cases", "--out", str(out)).returncode == 0
+
+
+def test_prepare_allocates_the_whole_pool_suite(tmp_path):
+    """The campaign's approved allocation, with no flag but `--out`.
+
+    Without `--only` the allocation is the eight pool conditions, and
+    without allocation flags it is the sizes the PI approved: 100 filtered
+    runs per noisy condition and 50 per noiseless control, seed caps 150,
+    200 for the ring and 75 for the controls.
+    """
     out = tmp_path / "pool"
     result = cli("prepare", "--out", str(out), "--allow-dirty")
     assert result.returncode == 0, result.stdout + result.stderr
     manifest = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
     allocated = [entry["label"] for entry in manifest["allocation"]]
     assert allocated == list(runner.POOL_LABELS)
-    assert manifest["suite"] == "svbmc_pool" and EXTENSION not in allocated
+    assert manifest["suite"] == "svbmc_pool"
+    sizes = {
+        entry["label"]: (entry["target_filtered"], entry["max_seeds"])
+        for entry in manifest["allocation"]
+    }
+    assert sizes == {
+        "multisensory_s1_D6_noise3_svbmc": (100, 150),
+        "multisensory_s1_D6_noise1.3_svbmc": (100, 150),
+        "rosenbrock_D2_noise3_svbmc": (100, 150),
+        "gmm_D2_noise3_svbmc": (100, 150),
+        "ring_D2_noise3_svbmc": (100, 200),
+        "student_D8_noise3_svbmc": (100, 150),
+        "gmm_D2_svbmc": (50, 75),
+        "multisensory_s1_D6_svbmc": (50, 75),
+    }
+    assert all(entry["seed_start"] == 1000 for entry in manifest["allocation"])
 
 
-def test_the_extension_condition_needs_an_explicit_only(tmp_path):
-    out = tmp_path / "extension"
+def test_only_allocates_a_subset(tmp_path):
+    out = tmp_path / "subset"
+    wanted = [runner.POOL_LABELS[4], runner.POOL_LABELS[1]]
     result = cli(
-        "prepare", "--out", str(out), "--only", EXTENSION, "--allow-dirty"
+        "prepare",
+        "--out",
+        str(out),
+        "--only",
+        ",".join(wanted),
+        "--allow-dirty",
     )
     assert result.returncode == 0, result.stdout + result.stderr
-    assert "extension condition" in result.stdout
     manifest = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
-    assert [e["label"] for e in manifest["allocation"]] == [EXTENSION]
+    assert [e["label"] for e in manifest["allocation"]] == wanted
 
 
 def test_check_tree_refuses_an_uncommitted_numerical_source():
@@ -511,14 +771,54 @@ def test_identity_differences_names_every_mismatch():
 
 
 def test_identity_pins_the_harness_modules():
-    record = runner.identity(GPYREG_SOURCE)
-    assert record["suite_module_sha256"] == pool_io.sha256(
+    source = runner.identity(GPYREG_SOURCE)["source"]
+    assert set(source) == set(runner.SOURCE_KEYS)
+    assert source["suite_module_sha256"] == pool_io.sha256(
         HERE / "benchmark_targets.py"
     )
-    assert record["io_module_sha256"] == pool_io.sha256(
+    assert source["io_module_sha256"] == pool_io.sha256(
         HERE / "svbmc_pool_io.py"
     )
-    assert record["runner_sha256"] == pool_io.sha256(SCRIPT)
+    assert source["runner_sha256"] == pool_io.sha256(SCRIPT)
+
+
+def test_identity_source_reads_the_flat_records_of_earlier_campaigns():
+    """A record written before the split holds both halves in one mapping."""
+    record = runner.identity(GPYREG_SOURCE)
+    flat = dict(record["source"], **record["host"])
+    assert runner.identity_source(flat) == record["source"]
+    assert runner.identity_host(flat) == record["host"]
+
+
+def test_only_the_source_half_of_a_record_is_compared(campaign, tmp_path):
+    """Another node may have run a case; other code may not have.
+
+    The host half of a completion record names where the case ran, which
+    an array job spreads over the cluster, so it is recorded and not
+    compared; the source half is the code and library state the pool is
+    generated by, and a difference there stops the campaign.
+    """
+    out, _ = campaign
+    copy = tmp_path / "elsewhere"
+    shutil.copytree(out, copy)
+    tag = completed_tags(copy)[0]
+    path = pool_io.record_path(copy, tag)
+    record = json.loads(path.read_text(encoding="utf-8"))
+    expected = runner.identity(GPYREG_SOURCE)
+    record["identity"]["host"].update(
+        {
+            "hostname": "cluster-node-07",
+            "executable": "/scratch/venv/bin/python",
+            "platform": "Linux-5.14.0-x86_64-with-glibc2.34",
+        }
+    )
+    runner.write_json(path, record)
+    assert runner.validate_case(copy, tag, expected)["tag"] == tag
+
+    record["identity"]["source"]["suite_module_sha256"] = "0" * 64
+    runner.write_json(path, record)
+    with pytest.raises(RuntimeError, match="suite_module_sha256"):
+        runner.validate_case(copy, tag, expected)
 
 
 def test_a_stale_log_is_not_a_partial_artifact(tmp_path):
@@ -533,23 +833,52 @@ def test_a_stale_log_is_not_a_partial_artifact(tmp_path):
 
 
 def test_allocation_overrides_and_bounds():
+    """The narrower the flag, the later it wins."""
+
     class Args:
-        target, max_seeds, seed_start = 60, 90, 1000
-        control_target = control_max_seeds = None
-        allocation = ["ring_D2_noise3_svbmc=40/80"]
+        target = max_seeds = control_target = control_max_seeds = None
+        seed_start = 1000
+        allocation = []
 
     from benchmark_targets import suite_configs
 
-    entries = runner.allocation(Args(), suite_configs("svbmc_pool"))
-    by_label = {e["label"]: e for e in entries}
-    assert by_label["ring_D2_noise3_svbmc"]["target_filtered"] == 40
-    assert by_label["ring_D2_noise3_svbmc"]["max_seeds"] == 80
-    assert by_label["rosenbrock_D2_noise3_svbmc"]["target_filtered"] == 60
+    def allocate():
+        return {
+            entry["label"]: (entry["target_filtered"], entry["max_seeds"])
+            for entry in runner.allocation(Args(), suite_configs("svbmc_pool"))
+        }
+
+    # Nothing asked for: the campaign's approved allocation, with the
+    # ring's own seed cap.
+    sizes = allocate()
+    assert sizes["rosenbrock_D2_noise3_svbmc"] == (
+        runner.DEFAULT_TARGET,
+        runner.DEFAULT_MAX_SEEDS,
+    )
+    assert sizes["ring_D2_noise3_svbmc"] == (
+        runner.DEFAULT_TARGET,
+        runner.DEFAULT_SEED_CAPS["ring_D2_noise3_svbmc"],
+    )
+    assert sizes["gmm_D2_svbmc"] == (
+        runner.DEFAULT_CONTROL_TARGET,
+        runner.DEFAULT_CONTROL_MAX_SEEDS,
+    )
+    # `--target` and `--max-seeds` set every condition, the noiseless
+    # control and the ring included, so a small campaign stays small.
+    Args.target, Args.max_seeds = 2, 3
+    assert set(allocate().values()) == {(2, 3)}
+    # `--control-*` then narrows the noiseless conditions alone.
+    Args.target, Args.max_seeds = 60, 90
     Args.control_target, Args.control_max_seeds = 30, 45
-    entries = runner.allocation(Args(), suite_configs("svbmc_pool"))
-    by_label = {e["label"]: e for e in entries}
-    assert by_label["gmm_D2_svbmc"]["target_filtered"] == 30
-    assert by_label["gmm_D2_svbmc"]["max_seeds"] == 45
+    sizes = allocate()
+    assert sizes["gmm_D2_svbmc"] == (30, 45)
+    assert sizes["rosenbrock_D2_noise3_svbmc"] == (60, 90)
+    assert sizes["ring_D2_noise3_svbmc"] == (60, 90)
+    # `--allocation` then names one condition.
+    Args.allocation = ["ring_D2_noise3_svbmc=40/80"]
+    sizes = allocate()
+    assert sizes["ring_D2_noise3_svbmc"] == (40, 80)
+    assert sizes["rosenbrock_D2_noise3_svbmc"] == (60, 90)
     Args.target, Args.max_seeds = 90, 60
     with pytest.raises(RuntimeError, match="exceeds the seed cap"):
         runner.allocation(Args(), suite_configs("svbmc_pool"))
