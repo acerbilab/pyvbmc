@@ -47,7 +47,10 @@ the sbatch sketch.
    stores the gpyreg path as given.
 3. Enumerate the cases and submit them as a Slurm array, one case per
    task, one core and under 2 GB each, following the sketch in the
-   runner's docstring: `cases` writes the `(label, seed)` list (1100
+   runner's docstring. A case took one to six minutes on the laptop that
+   ran the pilot, so a time limit of about 30 minutes per task
+   (`--time=00:30:00`) leaves ample margin for a slower node; the whole
+   allocation is roughly 45 CPU-hours. `cases` writes the `(label, seed)` list (1100
    lines; Slurm's default array limit is 1001, so submit in two chunks or
    with a throttle), and each task runs
    `svbmc_pool_run.py worker --out DIR --label L --seed S` with
