@@ -16,7 +16,12 @@ regression harness (`golden_trace.py`) and its per-change replay gate
 (`golden_replay.py`); `dev/README.md` describes them,
 `dev/plans/benchmark-suite-and-golden-traces.md` records how they were built
 and what they measured, and `dev/plans/benchmark-realistic-targets.md`
-records the real-data targets.
+records the real-data targets. Raw campaign artifacts (traces, run pools,
+captured states, frozen worktrees) are gitignored under `dev/scripts/runs/`
+and exist only on the machines that produced them; such a machine lists
+them in the gitignored `dev/scripts/runs/LOCAL.md`, so if that file is
+absent nothing is stored locally, and tracked documents point at it
+rather than saying "this machine".
 
 Before touching the numerical core, read `dev/2026-09-02-modernization-discussion.md`:
 it maps the hot paths, catalogues every hand-derived gradient, lists known
