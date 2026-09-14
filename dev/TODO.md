@@ -57,6 +57,11 @@ and subsequent possibilities.
   GP estimates against ground truth, including noisy targets and different
   numbers of stacked runs. The stacking objective stays unchanged. Phase 1
   reporting/corrections are complete; Phase 2 is the remaining investigation.
+  Its estimator is prototyped (`dev/scripts/svbmc_honest_elbo.py`) and
+  scored on the pilot pool; the
+  [pilot report](results/2026-09-14-svbmc-honest-elbo-pilot.md) records the
+  checks and a cross-run under-prediction on two noisy conditions that the
+  full pools must settle.
   Decide the reported estimator, fallback and interface from its results.
   See the [ELBO optimism note](2026-09-12-svbmc-elbo-optimism.md) and
   completed [Phase 1 plan](plans/svbmc-elbo-reporting.md).

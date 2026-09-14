@@ -526,6 +526,24 @@ reason.
   current constants. `--fixtures
   GROUP` compares the shipped S-VBMC posterior fixtures instead of a pool,
   which is what `test_svbmc_pool_stack.py` runs.
+- `scripts/svbmc_honest_elbo.py` — the Phase 2 estimator of the S-VBMC
+  ELBO optimism note on the pool artifacts: for every component of a
+  stacked cell (a pool directory plus the comparison's `results.json`),
+  the other runs' GPs that cover it estimate its expected log joint from
+  draws mapped into each run's transformed space (predict mean minus
+  log-Jacobian; the mean predictive variance drives the coverage rule
+  against the component's own run), combined by median, precision
+  weighting or mean, and every estimate (raw, the class's caps, honest
+  under a grid of rules) is scored by its bias against the cell's
+  `e_log_joint_mc`; the same draws give per-component truths,
+  calibration `z` statistics of the self-reported SDs, effective
+  training-point counts and own-run consistency checks. Writes
+  `results.json`, per-cell component arrays, summaries, figures and
+  `sources.json`; `--self-check` runs the run-level checks on a pool
+  without cells, `--summarize-only` rebuilds summaries and figures. Needs
+  no Torch. `test_svbmc_honest_elbo.py` checks the contracts on a
+  generated two-run pool; the first run, on the pilot artifacts, is
+  [results/2026-09-14-svbmc-honest-elbo-pilot.md](results/2026-09-14-svbmc-honest-elbo-pilot.md).
 - `scripts/svbmc_parity_check.py` — historical: the moved
   `pyvbmc.svbmc.SVBMC` against the pinned upstream package on the thirty
   posteriors with matched draws (upstream's `testing=True` mode). Runs only

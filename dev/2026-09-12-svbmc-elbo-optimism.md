@@ -438,7 +438,10 @@ Slurm support listed there as a follow-up. The stacking and the estimates
 are seconds. The pools, their per-run artifact (posterior, GP, transformer
 and evaluation record as plain arrays) and the stacked cells with a Monte
 Carlo `ELBO_MC` reference are produced by the
-[run-pool campaign](plans/svbmc-benchmark-campaign.md).
+[run-pool campaign](plans/svbmc-benchmark-campaign.md). The estimator
+script is `dev/scripts/svbmc_honest_elbo.py`; its first run, on the
+campaign's pilot artifacts, is reported in
+[results/2026-09-14-svbmc-honest-elbo-pilot.md](results/2026-09-14-svbmc-honest-elbo-pilot.md).
 
 **Interface, decided after the results.** VBMC objects, posterior-GP
 pairs, or the GP attached to the posterior at the end of a run so that a

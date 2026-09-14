@@ -67,3 +67,23 @@ bootstrap intervals, paired differences and equivalence tests, and
 `sources.json` both arms' environments and the baseline re-verification.
 The plan's Phase 4 acceptance and worklog read from these files; the raw
 artifacts stay under the ignored `dev/scripts/runs/`.
+
+## Phase 2 prototype (2026-09-14)
+
+`pilot/phase2/` holds the outputs of `svbmc_honest_elbo.py` on the 25
+cells of `pilot/stack/`: `results.json` (per cell the raw, capped and
+honest expected log joints under every coverage rule and combination
+with their biases against the cell's `e_log_joint_mc`, the Monte Carlo
+and GP-side uncertainties, the covered weight, per-run own and cross-run
+errors, calibration `z` statistics, effective training-point counts and
+the own-run checks; per run the self-check row; the settings),
+`summary.json` and `summary.md` (medians with bootstrap intervals per
+condition and rule), `sources.json` (commits, import paths, versions, the
+hashes of the script and of the cells file) and `figures/` (bias by
+condition, own against honest error per component, coverage and bias
+under every rule, calibration, errors against effective training
+points). `pilot/phase2_newconds_selfcheck/` is the script's
+`--self-check` on the artifacts of the two later conditions under gpyreg
+1.2.1. The per-cell component arrays stay with the raw artifacts. The
+report is
+[results/2026-09-14-svbmc-honest-elbo-pilot.md](../../results/2026-09-14-svbmc-honest-elbo-pilot.md).

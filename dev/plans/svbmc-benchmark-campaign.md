@@ -1,7 +1,8 @@
 # S-VBMC run-pool benchmark campaign
 
 Created 2026-09-13. Status: **harness complete and reviewed; pool
-generation handed to the cluster; comparison and Phase 2 pending**. The
+generation handed to the cluster; Phase 2 estimator prototyped on the
+pilot; comparison and the Phase 2 study pending**. The
 design was approved by the PI on 2026-09-13 and revised on 2026-09-14
 (decisions 7–10). The harness and target changes were developed on the
 feature branch `dev-svbmc-pool` and merged into `dev-next` on
@@ -523,7 +524,11 @@ and log-Jacobian available), the filter records, and the comparison cells
 honest estimator needs (per-run GP with predictive variance, transformer,
 `J_sjk`) is in the saved artifact. The estimator script and report of
 Phase 2 stay under `dev/scripts/` and `dev/results/`, with the package
-untouched until its result is in, as the optimism note decided.
+untouched until its result is in, as the optimism note decided. The
+script is `dev/scripts/svbmc_honest_elbo.py`: it reads a pool directory
+and the comparison's `results.json` and scores every cell, so stage D's
+cells are its input as they are; its first run, on the pilot artifacts,
+is [results/2026-09-14-svbmc-honest-elbo-pilot.md](../results/2026-09-14-svbmc-honest-elbo-pilot.md).
 
 ## Execution
 
@@ -1405,6 +1410,47 @@ draft had left open:
   stop and the worker's error file stay, since they protect the data.
   The pool archive comes back as a draft-release asset with its hash in
   the PR, since the PI has no direct access to the cluster.
+- 2026-09-14: the Phase 2 honest estimator is prototyped on the pilot
+  artifacts while the pools are generated on the cluster
+  (`dev/scripts/svbmc_honest_elbo.py` and `test_svbmc_honest_elbo.py`,
+  9 tests; developed on `dev-svbmc-honest-elbo`, merged into `dev-next`).
+  For every component of a cell the covering other runs' GPs estimate
+  its expected log joint from 100 draws mapped into each run's space
+  (predict mean minus log-Jacobian); the coverage rule compares a run's
+  mean predictive SD on the component with the own run's (ratios 1.5–5
+  with the `sqrt(5)` cap and a 0.1-nat floor, plus `cap_only` and
+  `none`); the covering runs are combined by median, precision weighting
+  or mean; every estimate is scored by its bias against the cell's
+  `e_log_joint_mc`, and the same draws give per-component truths, `z`
+  statistics of the own and cross-run errors against the self-reported
+  SDs, and effective training-point counts. Checks on the 15 pilot runs
+  and 25 cells: own-run Monte Carlo reproduces the stored `I_corr`
+  (weighted offsets within 2.9 SE), the Jacobian terms agree, the
+  recomputed raw expected log joint equals the arm's record to 2e-16,
+  the stratified truth agrees with `e_log_joint_mc` within 0.03. At
+  `M = 3` the honest value is accurate where other runs cover a
+  noiseless target (cross `|z|` median 0.04), removes most of the
+  optimism on multisensory (+0.10 against raw +0.56 and capped +0.27)
+  and is small on the ring (+0.05, 30 % of the weight covered), but is
+  *low* on the noisy GMM (−0.82 against raw +0.69) and Rosenbrock
+  (−0.23 against +0.12): every covering run's GP under-predicts the
+  other runs' components by 0.1–1.4 nats with a predictive SD of the
+  same size, a fit effect (kernel and mean function tuned to the run's
+  own region) that persists at 8 effective training points, while the
+  own run's optimism is partly in its data (the training values around
+  a heavy component average +1 nat above the truth). The rule (ratio
+  1.5–5 or the cap alone) and the combination move the honest bias by at
+  most 0.02 nats; `none` is off by 8–1000 nats. Report:
+  [results/2026-09-14-svbmc-honest-elbo-pilot.md](../results/2026-09-14-svbmc-honest-elbo-pilot.md);
+  tracked outputs under `dev/experiments/svbmc_pool/pilot/phase2/` and
+  `pilot/phase2_newconds_selfcheck/` (the two later conditions
+  self-checked under gpyreg 1.2.1); the pilot's gpyreg 1.2.0 worktree
+  was recreated at the path its manifest names (`LOCAL.md`). Stage D
+  scores its cells with the script in minutes; the growth with `M`, the
+  level of the cross-run under-prediction and two variants that would
+  address it (a leave-one-run-out GP refit on the pooled evaluations of
+  the other runs; a per-run offset correction) are set out in the report
+  for the PI's decision.
 
 ## Execution tracking
 
@@ -1423,3 +1469,4 @@ Live status of the phases above (`[ ]` not started, `[~]` in progress,
 - [x] Evidence yardstick change (decision 7): `elbo_mc` with an arm-independent entropy reference, bias and KL-gap columns, criterion 3 gates, `--summarize-only`; reviewed, no must-fix (2026-09-14)
 - [x] Harness pass for the cluster (decisions 8–10): gpyreg default at the 1.2.1 worktree, source/host identity split, `select` and `cases` subcommands, approved defaults with an explicit precedence, the bias-review fixes; reviewed, every finding fixed; 38 + 16 tests pass; pilot comparison regenerated with the final harness (2026-09-14)
 - [ ] Hand-over of the pool generation to the cluster developer (the "Cluster generation" section and the runner docstring are the brief); stage D and the Phase 2 analyses run on the PI's laptop once the pools are back
+- [x] Phase 2 estimator prototype on the pilot artifacts (Fable; 2026-09-14; `svbmc_honest_elbo.py`, 9 tests pass, 25 cells scored and the two later conditions self-checked, report under `results/`; the study on the full pools waits for them)
