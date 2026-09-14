@@ -1345,11 +1345,18 @@ def cmd_summarize(args):
 # verify
 # --------------------------------------------------------------------------
 
-#: The case states :func:`cmd_verify` counts per condition. A case whose
-#: own verification raised is counted under ``verify_failed`` in the
-#: totals alone: that is a fault of the stored artifact, not of the
-#: allocation.
-VERIFY_STATUSES = ("verified", "failed", "partial", "missing")
+#: The case states :func:`cmd_verify` counts, in the totals and per
+#: condition. ``verify_failed`` is a case whose own verification raised,
+#: a fault of the stored artifact rather than of the allocation; it is
+#: counted with the others so that a condition's counts add up to its
+#: cases.
+VERIFY_STATUSES = (
+    "verified",
+    "failed",
+    "partial",
+    "missing",
+    "verify_failed",
+)
 
 
 def error_reason(out, tag):
@@ -1487,7 +1494,7 @@ def cmd_verify(args):
             }
         )
     stray = stray_tags(out, [case["tag"] for case in cases])
-    counts = status_counts(cases, VERIFY_STATUSES + ("verify_failed",))
+    counts = status_counts(cases, VERIFY_STATUSES)
     counts["stray"] = len(stray)
     by_label = {}
     for case in cases:

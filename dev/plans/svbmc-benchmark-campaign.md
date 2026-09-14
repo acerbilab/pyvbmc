@@ -1467,9 +1467,10 @@ draft had left open:
   peak memory at most 302 MB, so the 30-minute and 2 GB requests were
   ample; nodes of three families, recorded per case). `verify`: 1100
   verified, no failed, partial, missing or stray case; the recomputation
-  gate is exact on 1094 artifacts and within 3.0e-9 (`I_sk`) and 1.6e-9
-  (`J_sjk`) on the six generated on another node family than the
-  verifying one. `select`: every condition at its
+  gate is exact on 1094 artifacts and within 3.0e-9 (`I_sk`) and 1.5e-9
+  (`J_sjk`) on six (three generated on the Intel `kale` nodes and three
+  on AMD `ukko3` nodes; the verifying node was an AMD `carrington`).
+  `select`: every condition at its
   target, 700 selected runs, no shortfall; the ring needed 142 seeds
   (pass rate 0.73 over its 200 runs: 48 unstable, 6 above `s_max`), every
   other condition 100–103 seeds (pass rates 0.97–1.00). Cluster wall

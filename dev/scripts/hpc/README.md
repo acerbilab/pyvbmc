@@ -65,20 +65,22 @@ node `turso02`); every site-specific value is an environment variable.
   `POOL_DIR/slurm/<jobid>_<array index>.out`; in a chunk with an offset
   the array index is the case index minus the offset, and the task's
   first line names its case.
-- `svbmc_pool_finish.sh POOL_DIR [--no-archive] [--allow-missing]` —
+- `svbmc_pool_finish.sh POOL_DIR [--no-archive] [--allow-missing] [--allow-running]` —
   `sacct` for every recorded job into `slurm/sacct.txt`, `verify` under
   `srun` (`verification.json`; `VERIFY_TIME`, default 01:00:00, and
   `VERIFY_MEM`, default 2G, size that step), then `select`, `summarize`
   and the archive `<parent>/<name>.tar.zst` with its SHA-256 and size. It
   stops while tasks of the recorded jobs are still queued or running,
   when verification fails, or when cases are missing, printing the
-  indices to resubmit; `--allow-missing` lets it go on past the queue
-  check and the missing cases.
+  indices to resubmit; `--allow-missing` lets it go on past the missing
+  cases, `--allow-running` past the queue check (a look at a campaign
+  in flight, whose selection and summary leave out the runs in flight;
+  it is never archived while tasks run).
 
 ## A campaign, step by step
 
 ```
-REPO=~/francesco_projects/pyvbmc          # a clean checkout at the campaign's commit
+REPO=~/pyvbmc                             # a clean checkout at the campaign's commit
 GPYREG=$REPO/dev/scripts/runs/svbmc_pool_20260913/gpyreg_1.2.1
 POOL=$REPO/dev/scripts/runs/svbmc_pool_20260914
 cd $REPO
@@ -114,8 +116,8 @@ dev/scripts/hpc/svbmc_pool_finish.sh $POOL
   therefore means a new commit and a fresh campaign directory (`prepare`
   refuses to change the identity of an existing one).
 - **Only light commands on the login node**: `prepare`, `cases`,
-  `select`, `summarize`, `sbatch`, `sacct`, `tar`. The tests and `verify`
-  run under `srun`.
+  `select`, `summarize`, `sbatch`, `sacct`, `tar`, `zstd` at its light
+  setting and `sha256sum`. The tests and `verify` run under `srun`.
 - **A failed case** leaves `<tag>.error.txt` and no artifact, exits
   non-zero, and is skipped by `select`; rerun it (`ARRAY=<index>`; a
   success clears the error file) or leave it out. **A task Slurm kills**

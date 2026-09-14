@@ -3,6 +3,7 @@
 # run-pool campaign.
 #
 #   svbmc_pool_finish.sh POOL_DIR [--no-archive] [--allow-missing]
+#                                 [--allow-running]
 #
 # On the login node. Writes the Slurm accounting of every submitted job
 # to POOL_DIR/slurm/sacct.txt, runs `svbmc_pool_run.py verify` under
@@ -11,9 +12,12 @@
 # or if cases are missing, printing the array indices to resubmit with
 # `ARRAY=... svbmc_pool_submit.sh POOL_DIR` (raise TIME or MEM when Slurm
 # killed them). It also stops while tasks of the recorded jobs are still
-# queued or running. With --allow-missing it goes on in both cases. Then
-# `select` and `summarize`, and, unless --no-archive, the whole directory
-# as <parent>/<name>.tar.zst with its SHA-256 and size.
+# queued or running. --allow-missing goes on past the missing cases;
+# --allow-running goes on past the queue check, for a look at a campaign
+# still in flight, whose selection and summary then leave out the runs
+# in flight and which is never archived. Then `select` and `summarize`,
+# and, unless --no-archive, the whole directory as
+# <parent>/<name>.tar.zst with its SHA-256 and size.
 #
 # Environment (all optional): PARTITION (short), VERIFY_TIME (01:00:00)
 # and VERIFY_MEM (2G) for the srun that runs `verify`, POOL_CONDA_ENV,
@@ -37,10 +41,12 @@ export POOL_DIR
 shift
 ARCHIVE=1
 ALLOW_MISSING=0
+ALLOW_RUNNING=0
 for arg in "$@"; do
     case $arg in
         --no-archive) ARCHIVE=0 ;;
         --allow-missing) ALLOW_MISSING=1 ;;
+        --allow-running) ALLOW_RUNNING=1 ;;
         *) usage ;;
     esac
 done
@@ -56,12 +62,15 @@ if [ -s "$POOL_DIR/slurm/jobs.txt" ]; then
     # squeue fail, which must not hide another job's running tasks.
     running=""
     for job in $(awk '{print $1}' "$POOL_DIR/slurm/jobs.txt"); do
-        running+=$(squeue -h -j "$job" -o "%i %T %M" 2>/dev/null || true)
+        tasks=$(squeue -h -j "$job" -o "%i %T %M" 2>/dev/null || true)
+        if [ -n "$tasks" ]; then
+            running+="$tasks"$'\n'
+        fi
     done
     if [ -n "$running" ]; then
         echo "tasks of the recorded jobs are still queued or running:" >&2
-        echo "$running" >&2
-        if [ "$ALLOW_MISSING" = 0 ]; then
+        printf '%s' "$running" >&2
+        if [ "$ALLOW_RUNNING" = 0 ]; then
             exit 1
         fi
     fi
@@ -116,6 +125,11 @@ python -u dev/scripts/svbmc_pool_run.py summarize --out "$POOL_DIR"
 #    already compressed, so a light zstd setting is enough and the shared
 #    login node is not loaded for nothing.
 if [ "$ARCHIVE" = 1 ]; then
+    if [ -n "${running:-}" ]; then
+        echo "not archiving a campaign whose tasks are still queued or" \
+            "running; run again when the queue is empty" >&2
+        exit 1
+    fi
     if ! command -v zstd >/dev/null 2>&1; then
         echo "zstd is not on the PATH of the $POOL_CONDA_ENV environment" \
             "(conda activate drops the base environment's bin); install it" \

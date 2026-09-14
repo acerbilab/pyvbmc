@@ -102,7 +102,13 @@ else
         > "$POOL_DIR/cases.txt"
 fi
 N=$(wc -l < "$POOL_DIR/cases.txt")
-DONE=$(ls "$POOL_DIR/records" 2>/dev/null | wc -l)
+# A fresh campaign has no records/ yet (the first worker creates it), and
+# under `set -o pipefail` a failing `ls` piped into `wc` would end the
+# script here.
+DONE=0
+if [ -d "$POOL_DIR/records" ]; then
+    DONE=$(ls "$POOL_DIR/records" | wc -l)
+fi
 echo "$N cases in $POOL_DIR/cases.txt; $DONE already have a completion" \
     "record (their tasks exit at once)"
 mkdir -p "$POOL_DIR/slurm"

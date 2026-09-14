@@ -43,7 +43,13 @@ on the machine that holds it, which lists it in its `LOCAL.md`.
   `short` partition, no node constraint (the partition mixes AMD
   carrington/ukko3 and Intel kale/ukko2 nodes; runs on different node
   families are not bitwise reproducible against each other, which the
-  campaign plan accepts for a pool).
+  campaign plan accepts for a pool). The Slurm scripts were revised
+  after this run, in the review of the pull request that delivered it
+  (`ARRAY` mapped onto the `MaxArraySize` chunks, a task exiting at once
+  when its case has a completion record, one queue query per recorded
+  job, the guards of the finish script), so the committed scripts are
+  not the exact ones that ran these commands; the commands and the
+  worker each task ran are the same.
 
 ## Outcome
 
@@ -82,7 +88,7 @@ Verification (`verification.json`, one `srun` task of 34 s on
 `carrington-810`, job 75349018): 1100 verified, 0 failed, 0 partial,
 0 missing, 0 stray. The recomputation gate reproduces the stored `I_sk`
 and `J_sjk` bit for bit on 1094 of the 1100 artifacts; the six that
-deviate do so by at most 3.0e-9 (`I_sk`) and 1.6e-9 (`J_sjk`) against
+deviate do so by at most 3.0e-9 (`I_sk`) and 1.5e-9 (`J_sjk`) against
 the tolerance of 1e-8, and they are the three tasks that ran on the Intel
 `kale` nodes plus three of the 838 that ran on `ukko3`, so the AMD
 `carrington` nodes (259 tasks, the verifying node among them) and almost
@@ -144,9 +150,12 @@ the cluster's absolute path in `selection.json` and `verification.json`.
   `directory`, `generated`, `gpyreg_source` (the checkout used),
   `identity` (the manifest's), `counts` (`verified`, `failed`, `partial`,
   `missing`, `verify_failed`, `stray`), `conditions` (per condition the
-  first four counts), `stray` (tags of artifact files the allocation does
-  not name) and `cases`, one entry per allocated case with its 1-based
-  `index` (the line of `cases.txt`, the Slurm array index), `tag`,
+  counts `verified`, `failed`, `partial` and `missing`; this file
+  predates the per-condition `verify_failed` count), `stray` (tags of
+  artifact files the allocation does not name) and `cases`, one entry
+  per allocated case with its 1-based `index` (the line of `cases.txt`,
+  the case index that `svbmc_pool_submit.sh` takes in `ARRAY`; a task's
+  Slurm array index is this minus its chunk's offset), `tag`,
   `label`, `seed`, `status` and, for a verified case, `passes` (the
   filter verdict) and `differences` (the maximum absolute deviation of the
   recomputed `I_sk` and `J_sjk` from the stored statistics, the

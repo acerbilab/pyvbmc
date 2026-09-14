@@ -891,6 +891,7 @@ def test_verify_reconciles_the_allocation(campaign, tmp_path):
         + counts["failed"]
         + counts["partial"]
         + counts["missing"]
+        + counts["verify_failed"]
         == MAX_SEEDS
     )
     assert counts["stray"] == 0 and counts["partial"] == 0
@@ -946,7 +947,7 @@ def test_verify_distinguishes_partial_from_missing(campaign, tmp_path):
     gone = tmp_path / "pool2"
     shutil.copytree(out, gone)
     pool_io.record_path(gone, tag).unlink()
-    for suffix in (".npz", ".json", ".log", ".error.txt"):
+    for suffix in (".npz", ".json", ".vbmc.pkl", ".log", ".error.txt"):
         (gone / f"{tag}{suffix}").unlink(missing_ok=True)
     result = cli("verify", "--out", str(gone))
     assert result.returncode == 0, result.stdout + result.stderr
