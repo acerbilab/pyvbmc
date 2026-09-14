@@ -1375,3 +1375,45 @@ def test_ns_gp_max_active_caps_the_in_loop_refits(mocker):
     assert len(gp.posteriors) == 1  # the MAP fit
     assert vbmc.options["ns_gp_max_warmup"] == 8
     assert vbmc.options["ns_gp_max_main"] == np.inf
+
+
+class _VarLogJointAcquisition(AbstractAcqFcn):
+    """A flat acquisition that asks for the log-joint uncertainty."""
+
+    def __init__(self):
+        super().__init__()
+        self.acq_info["compute_var_log_joint"] = True
+
+    def _compute_acquisition_function(self, Xs, *args):
+        return np.zeros(Xs.shape[0])
+
+
+def test_compute_var_log_joint_hook_through_active_sample(mocker):
+    """``compute_var_log_joint`` stores the variance of the expected log
+    joint per hyperparameter sample and the covariance of the components'
+    integrals before the search, and points are acquired."""
+    vbmc, gp, function_logger, optim_state = _noisy_run(
+        mocker, {"search_optimizer": "none"}
+    )
+    vbmc.options.__setitem__(
+        "search_acq_fcn", [_VarLogJointAcquisition()], force=True
+    )
+    Xn0 = function_logger.Xn
+    function_logger, optim_state, _, gp = active_sample(
+        gp,
+        2,
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+    Ns = len(gp.posteriors)
+    K = vbmc.vp.K
+    # The variance is a scalar with a single hyperparameter sample.
+    var_samples = np.atleast_1d(optim_state["var_log_joint_samples"])
+    assert var_samples.shape == (Ns,)
+    assert np.all(np.isfinite(var_samples))
+    assert np.shape(optim_state["cov_log_joint_components"]) == (Ns, K, K)
+    assert np.all(np.isfinite(optim_state["cov_log_joint_components"]))
+    assert function_logger.Xn == Xn0 + 2

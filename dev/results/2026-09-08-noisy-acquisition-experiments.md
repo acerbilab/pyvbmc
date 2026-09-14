@@ -6,6 +6,12 @@ one BLAS thread per process; 2026-09-08/09. No default was changed. The
 companion report on the acquisition search is
 [2026-09-09-acquisition-search-analysis.md](2026-09-09-acquisition-search-analysis.md).
 
+VIQR's `var_reduction` and `sd_reduction` losses and the `AcqFcnEIG`
+acquisition measured here are not part of the package: they were removed
+on 2026-09-14, and their implementation is retained on the branch
+`retain-experimental-acquisitions` at `fa6922f`. The decision is recorded
+in [TODO.md](../TODO.md).
+
 ## Where a noisy run spends its time
 
 `dev/scripts/profile_run.py --config rosenbrock_D2_noise1 --cprofile`
