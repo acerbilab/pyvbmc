@@ -1,7 +1,7 @@
 {
   "campaign": "svbmc_pool_phase2",
-  "generated": "2026-09-14 14:02:31",
-  "elapsed_seconds": 1.3568627999629825,
+  "generated": "2026-09-14 14:18:33",
+  "elapsed_seconds": 1.379037700011395,
   "settings": {
     "arm": "integrated",
     "draws": 100,
@@ -94,7 +94,7 @@
       },
       "bq_sd_median": 0.06628469751773006,
       "pred_sd_median": 0.19779396041040126,
-      "seconds": 0.7987008999916725
+      "seconds": 0.8148020000080578
     },
     {
       "tag": "student_D8_noise3_svbmc_seed1000",
@@ -126,7 +126,7 @@
       },
       "bq_sd_median": 0.4417124332538265,
       "pred_sd_median": 0.8407979772294544,
-      "seconds": 0.043371899984776974
+      "seconds": 0.04433569998946041
     }
   ],
   "cells": [],

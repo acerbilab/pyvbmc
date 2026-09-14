@@ -10,8 +10,15 @@ reproduce the stored statistics, the recomputed raw expected log joint
 equals the recorded one, a Gaussian target fitted by two runs is fully
 cross-covered and estimated within a small tolerance of the truth, the
 outputs carry what the analysis reads, ``--summarize-only`` rebuilds the
-same summary, and ``--self-check`` runs without cells. Outside default
-pytest discovery; run it by path::
+same summary, ``--self-check`` runs without cells, the original arm is
+scored under its own variant names, and a headline ratio outside the grid
+or ``--self-check`` with ``--cells`` are parse errors. Three synthetic
+checks need no pool: the combination rules and correlated standard errors
+on hand-built arrays, the own-run checks flagging a broken mapping, and
+the mapping of draws between two runs with different transformers (one
+unbounded, one bounded probit) through stand-in GPs that know the target,
+whose estimates must agree to rounding. Outside default pytest discovery;
+run it by path::
 
     python -m pytest dev/scripts/test_svbmc_honest_elbo.py -vv
 """
@@ -214,7 +221,8 @@ def test_outputs_and_settings(scored):
     assert set(settings["rules"]) == set(
         honest.coverage_rules(honest.RATIOS, honest.SD_CAP)
     )
-    assert settings["headline_rule"] == HEADLINE in settings["rules"]
+    assert settings["headline_rule"] == HEADLINE
+    assert HEADLINE in settings["rules"]
     assert len(results["runs"]) == SEEDS and len(results["cells"]) == 1
     assert results["skipped"] == []
     lines = (target / "cells.jsonl").read_text(encoding="utf-8").splitlines()

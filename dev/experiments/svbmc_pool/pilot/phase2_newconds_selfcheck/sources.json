@@ -1,12 +1,12 @@
 {
-  "generated": "2026-09-14 14:02:31",
+  "generated": "2026-09-14 14:18:33",
   "script": {
     "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\svbmc_honest_elbo.py",
-    "sha256": "e785d68d60fd1c723b0a30c4d4fe3dab4fb50640fa69edb0a69a9990f00b883f"
+    "sha256": "b27f13f7411efdae1530f181f6149ce60d164335f91352b4af77fa378fb950d8"
   },
   "pyvbmc": {
-    "commit": "02aa363e7830d9f41151d80f3e051a04733f2af8",
-    "dirty": "M dev/scripts/svbmc_honest_elbo.py\n M dev/scripts/test_svbmc_honest_elbo.py\n?? dev/scripts/pymc_feasibility.py",
+    "commit": "c5964dc0dfaa700ca7dc64e071a809f77b078c3d",
+    "dirty": "M dev/scripts/svbmc_honest_elbo.py\n M dev/scripts/test_svbmc_honest_elbo.py",
     "import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc"
   },
   "gpyreg": {
