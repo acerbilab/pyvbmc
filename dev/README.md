@@ -486,7 +486,8 @@ reason.
   later sweeps; an artifact file without a completion record or an error
   file stops the sweep for inspection (the log of an interrupted case is
   not one). `test_svbmc_pool_run.py` generates a short campaign and checks
-  the artifact, resume, revision, selection and summary contracts.
+  the artifact, resume, revision, selection, summary and post-hoc
+  verification contracts.
 - `scripts/svbmc_pool_io.py` — the campaign's per-run artifact: `save_run`
   stores one finished run through the oracle snapshot codec (the returned
   posterior with all of `stats`, the GP that produced those statistics,

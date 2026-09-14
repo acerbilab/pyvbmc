@@ -37,8 +37,8 @@ on the machine that holds it, which lists it in its `LOCAL.md`.
   dev/scripts/hpc/svbmc_pool_finish.sh $POOL                                   # verify (job 75349018), select, summarize, archive
   ```
   No case failed and none went missing, so no reconciliation or
-  resubmission was needed; the canary ran first (job 75347909, 6.5 min),
-  the other 1099 tasks as job 75347910 between 17:46 and 18:19.
+  resubmission was needed; the canary ran first (job 75347909, 6 min
+  37 s), the other 1099 tasks as job 75347910 between 17:46 and 18:19.
   Every task ran with `--cpus-per-task=1 --mem=2G --time=00:30:00` on the
   `short` partition, no node constraint (the partition mixes AMD
   carrington/ukko3 and Intel kale/ukko2 nodes; runs on different node
@@ -47,9 +47,12 @@ on the machine that holds it, which lists it in its `LOCAL.md`.
 
 ## Outcome
 
-All 1100 cases completed and every artifact verifies; 1035 runs pass the
-filters and every condition reaches its filtered target, 700 selected
-runs in all with no shortfall. Per condition, from `summary.json`,
+All 1100 cases completed and every artifact passes the post-hoc checks of
+`verify_run` (the stats keys, the recomputation gate, the float64 canary
+and the hashes of its completion record; the comparisons against the live
+run were made when each artifact was saved); 1035 runs pass the filters
+and every condition reaches its filtered target, 700 selected runs in all
+with no shortfall. Per condition, from `summary.json`,
 `selection.json` and the Slurm accounting (task elapsed time, which
 includes the interpreter start-up and the artifact's verification on
 saving, so it exceeds the run's own wall in `summary.md` by a few
@@ -62,7 +65,7 @@ seconds; memory is the batch step's `MaxRSS`):
 | `rosenbrock_D2_noise3_svbmc` | 150 | 147 (0.98) | 100 / 100 | 103 | 3.5 [3.2, 4.0], 9.0 | 202, 263 |
 | `gmm_D2_noise3_svbmc` | 150 | 145 (0.97) | 100 / 100 | 103 | 3.0 [2.5, 3.4], 5.3 | 195, 254 |
 | `ring_D2_noise3_svbmc` | 200 | 146 (0.73) | 100 / 100 | 142 | 5.1 [3.8, 5.7], 7.3 | 210, 262 |
-| `student_D8_noise3_svbmc` | 150 | 150 (1.00) | 100 / 100 | 100 | 9.3 [8.9, 9.8], 11.4 | 273, 302 |
+| `student_D8_noise3_svbmc` | 150 | 150 (1.00) | 100 / 100 | 100 | 9.3 [8.9, 9.8], 11.5 | 273, 302 |
 | `gmm_D2_svbmc` | 75 | 75 (1.00) | 50 / 50 | 50 | 0.7 [0.6, 0.9], 1.6 | 0, 142 |
 | `multisensory_s1_D6_svbmc` | 75 | 75 (1.00) | 50 / 50 | 50 | 2.4 [2.2, 2.8], 4.2 | 149, 210 |
 
@@ -75,28 +78,33 @@ construction on the multimodal targets, as in the pilot: one run covers a
 piece of the ring or some of the GMM's clusters, which is the regime
 stacking is for.
 
-Verification (`verification.json`, run as one `srun` task in about a
-minute): 1100 verified, 0 failed, 0 partial, 0 missing, 0 stray; the
-recomputation gate reproduces the stored `I_sk` within 3.0e-9 and
-`J_sjk` within 1.5e-9 over all 1100 artifacts (tolerance 1e-8). The
-deviations are not the exact zeros of the pilot because the verifying
-node's BLAS is not always the generating node's: the tasks ran on three
-node families (838 on `ukko3`, 259 on `carrington`, both AMD, 3 on the
-Intel `kale` nodes), recorded per case in `identity.host` of each
-completion record.
+Verification (`verification.json`, one `srun` task of 34 s on
+`carrington-810`, job 75349018): 1100 verified, 0 failed, 0 partial,
+0 missing, 0 stray. The recomputation gate reproduces the stored `I_sk`
+and `J_sjk` bit for bit on 1094 of the 1100 artifacts; the six that
+deviate do so by at most 3.0e-9 (`I_sk`) and 1.6e-9 (`J_sjk`) against
+the tolerance of 1e-8, and they are the three tasks that ran on the Intel
+`kale` nodes plus three of the 838 that ran on `ukko3`, so the AMD
+`carrington` nodes (259 tasks, the verifying node among them) and almost
+every `ukko3` node reproduce each other exactly. Each completion record
+names its node in `identity.host`.
 
 Resource fit (`slurm/sacct.txt` in the archive): 1100 tasks, all
 `COMPLETED`, all `AllocCPUS=1`; elapsed median 4.6 min, quartiles 3.1
-and 6.6 min, maximum 11.4 min (Student D8); `MaxRSS` median 210 MB,
+and 6.6 min, maximum 11.5 min (Student D8); `MaxRSS` median 210 MB,
 maximum 302 MB (the noiseless GMM control's tasks are shorter than the
 accounting sampling interval, hence its zero median); 90.5 CPU-hours in
 33 minutes of wall time at 200 concurrent tasks. The requested
-`--time=00:30:00 --mem=2G` had a margin of about 2.6× on time and 6.6× on
+`--time=00:30:00 --mem=2G` had a margin of about 2.6× on time and 6.8× on
 memory. Cluster wall times are about twice the laptop pilot's per run
 (the canary took 6.5 min against the pilot's 3.3 min median on the same
 condition), so the plan's 45 CPU-hour estimate became 90 on these cores.
 
 ## Files
+
+In every file `campaign` is `svbmc_pool` and `generated` the time it was
+written; `directory` is the bare directory name in `summary.json` and
+the cluster's absolute path in `selection.json` and `verification.json`.
 
 - `manifest.json` — written by `prepare`: `campaign` (`svbmc_pool`),
   `suite`, `options` (the base VBMC options every run used), `allocation`
@@ -117,8 +125,8 @@ condition), so the plan's 45 CPU-hour estimate became 90 on these cores.
   `selected`, `shortfall`, `seeds_scanned` (the prefix of seeds walked
   until the target was met), `failed_while_scanning`,
   `pass_rate_scanned` (selected over scanned, failures included, which
-  is not the condition's pass rate), `last_seed`, and `runs` (the
-  selected `tag`, `seed` pairs in seed order).
+  is not the condition's pass rate), `last_seed` (the last selected
+  seed), and `runs` (the selected `tag`, `seed` pairs in seed order).
 - `summary.json` / `summary.md` — written by `summarize` over every case
   the directory holds: `campaign`, `directory`, `generated`,
   `pilot_seeds` (null), `identity`, `options`, `totals` (`seeds_run`,
@@ -129,8 +137,9 @@ condition), so the plan's 45 CPU-hour estimate became 90 on these cores.
   under the house thresholds `elbo_err < 1`, `gskl < 1`, `mmtv < 0.2`),
   and quartile blocks (`n`, `median`, `q1`, `q3`) for `wall_minutes`,
   `func_count`, `K`, `max_J_sjk`, `elbo_err`, `gskl`, `mmtv`, `rmse`
-  (the metric blocks over the filtered runs, the wall times over every
-  completed run).
+  (`wall_minutes`, `func_count` and `max_J_sjk` over every completed run;
+  `K` and the four metric blocks over the filtered runs, which is why
+  their `n` is the `filtered` count).
 - `verification.json` — written by `verify` after the array: `campaign`,
   `directory`, `generated`, `gpyreg_source` (the checkout used),
   `identity` (the manifest's), `counts` (`verified`, `failed`, `partial`,

@@ -70,20 +70,6 @@ bootstrap intervals, paired differences and equivalence tests, and
 The plan's Phase 4 acceptance and worklog read from these files; the raw
 artifacts stay under the ignored `dev/scripts/runs/`.
 
-## Cluster pool (2026-09-14)
-
-`pool_20260914/` holds the tracked side of the eight-condition pool
-generated on the University of Helsinki `kale` cluster with the Slurm
-scripts under `dev/scripts/hpc/`: `manifest.json`, `selection.json` /
-`selection.md` (700 selected runs, every condition at its filtered
-target), `summary.json` / `summary.md` (1100 completed runs, 1035 passing
-the filters) and `verification.json` (every artifact re-verified after
-the array, none failed, partial, missing or stray). Its
-[README](pool_20260914/README.md) describes every key of those files, the
-commands and environment that generated the pool, its resource fit, and
-the archive of the raw directory (`svbmc_pool_20260914.tar.zst`, an asset
-of the draft release `svbmc-pool-20260914`, with its size and SHA-256).
-
 ## Phase 2 prototype (2026-09-14)
 
 `pilot/phase2/` holds the outputs of `svbmc_honest_elbo.py` on the 25
@@ -106,3 +92,17 @@ points). `pilot/phase2_newconds_selfcheck/` is the script's
 1.2.1. The per-cell component arrays stay with the raw artifacts. The
 report is
 [results/2026-09-14-svbmc-honest-elbo-pilot.md](../../results/2026-09-14-svbmc-honest-elbo-pilot.md).
+
+## Cluster pool (2026-09-14)
+
+`pool_20260914/` holds the tracked side of the eight-condition pool
+generated on the University of Helsinki `kale` cluster with the Slurm
+scripts under `dev/scripts/hpc/`: `manifest.json`, `selection.json` /
+`selection.md` (700 selected runs, every condition at its filtered
+target), `summary.json` / `summary.md` (1100 completed runs, 1035 passing
+the filters) and `verification.json` (every artifact re-verified after
+the array, none failed, partial, missing or stray). Its
+[README](pool_20260914/README.md) describes every key of those files, the
+commands and environment that generated the pool, its resource fit, and
+the archive of the raw directory (`svbmc_pool_20260914.tar.zst`, an asset
+of the draft release `svbmc-pool-20260914`, with its size and SHA-256).
