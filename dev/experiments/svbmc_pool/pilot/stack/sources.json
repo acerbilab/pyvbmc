@@ -1,0 +1,154 @@
+{
+  "campaign": "svbmc_pool",
+  "generated": "2026-09-14 04:15:09",
+  "harness": {
+    "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\svbmc_pool_stack.py",
+    "sha256": "896e9f23dfa012ea56c36d022b556c2a8480086a7c591916d37a41085f72a3f4"
+  },
+  "settings": {
+    "seed": 0,
+    "M": [
+      3
+    ],
+    "repetitions": [
+      5
+    ],
+    "max_steps": 500,
+    "n_samples": 20,
+    "lr": 0.1,
+    "version": "all-weights",
+    "n_samples_final": 100,
+    "n_draws": 100000,
+    "n_log_joint": 10000,
+    "bootstrap_resamples": 10000,
+    "alpha": 0.05,
+    "kind": "run"
+  },
+  "hostname": "ASUS-LUIGI",
+  "arms": {
+    "integrated": {
+      "environment": {
+        "hostname": "ASUS-LUIGI",
+        "python": "3.12.6",
+        "pyvbmc_commit": "e2aaef507f0eedd38616a33563c5d95287d156b0",
+        "pyvbmc_import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc",
+        "pyvbmc_version": "1.0.5.dev317+g9d54ca3fb.d20260913",
+        "gpyreg_commit": "39536b000a8c8465133f4eaef625486991db8257",
+        "gpyreg_import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg\\gpyreg",
+        "gpyreg_version": "1.2.0",
+        "numpy": "2.5.2",
+        "scipy": "1.18.1",
+        "threads": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1"
+        },
+        "gpyreg_source": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg",
+        "gpyreg_clean": true,
+        "pyvbmc_dirty": "",
+        "suite_module_dirty": "",
+        "suite_module_sha256": "98b1321193334f488a1352b01dc76fc353840cc486dbdb930288646cf77ec3dc",
+        "io_module_sha256": "7ab68d431b419f78d765e3e16224de7155c40b6763b36a4d27655c202e06f12c",
+        "runner_sha256": "e186c2aca2cf57544b49da37e58746fda7fcd3f81acfb109c1e6420140a1f41a"
+      },
+      "torch_version": "2.14.0+cpu",
+      "torch_import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_compat_20260908\\deps\\torch\\__init__.py",
+      "torch_threads": 1,
+      "pythonpath": "C:/Users/luigi/Documents/GitHub/pyvbmc/dev/scripts/runs/svbmc_compat_20260908/deps"
+    },
+    "original": {
+      "ready": true,
+      "svbmc_version": "0.1.1",
+      "svbmc_import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_compat_20260908\\source\\src\\svbmc\\__init__.py",
+      "torch_version": "2.14.0+cpu",
+      "torch_import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_compat_20260908\\deps\\torch\\__init__.py",
+      "torch_threads": 1,
+      "executable": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Scripts\\python.exe",
+      "environment": {
+        "hostname": "ASUS-LUIGI",
+        "python": "3.12.6",
+        "pyvbmc_commit": "e2aaef507f0eedd38616a33563c5d95287d156b0",
+        "pyvbmc_import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc",
+        "pyvbmc_version": "1.0.5.dev317+g9d54ca3fb.d20260913",
+        "gpyreg_commit": "39536b000a8c8465133f4eaef625486991db8257",
+        "gpyreg_import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg\\gpyreg",
+        "gpyreg_version": "1.2.0",
+        "numpy": "2.5.2",
+        "scipy": "1.18.1",
+        "threads": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1"
+        },
+        "gpyreg_source": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg",
+        "gpyreg_clean": true,
+        "pyvbmc_dirty": "",
+        "suite_module_dirty": "",
+        "suite_module_sha256": "98b1321193334f488a1352b01dc76fc353840cc486dbdb930288646cf77ec3dc",
+        "io_module_sha256": "7ab68d431b419f78d765e3e16224de7155c40b6763b36a4d27655c202e06f12c",
+        "runner_sha256": "e186c2aca2cf57544b49da37e58746fda7fcd3f81acfb109c1e6420140a1f41a"
+      }
+    }
+  },
+  "path_sets": {
+    "TORCH_PATH": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_compat_20260908\\deps",
+    "BASELINE_PATH": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_compat_20260908\\deps;C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_compat_20260908\\source\\src"
+  },
+  "baseline_environment": {
+    "record": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\experiments\\svbmc_pool\\baseline_environment.json",
+    "commit": "13a78f6c4a3ffe9c4557fee4f4b8f67c98b29e01",
+    "clean": true,
+    "files_sha256": {
+      "__init__.py": "3ee177fafb1a211ab66b9dc078c1934d410fc0f14033f4a4827e2f7114449ab7",
+      "svbmc.py": "98465fbb75de8636afde5c96b538483ff02fa457da0e6421356907a82a3a9607",
+      "targets.py": "680c76c70411058b1194ff8f96d59904bff1a731efc98b491ccbd38f9db34d8a",
+      "utils.py": "75a0e8348865fd906f2a023bf654ae5a656a885fcec380f05ff55116de4d8c68"
+    },
+    "torch_version": "2.14.0+cpu",
+    "torch_import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_compat_20260908\\deps\\torch\\__init__.py",
+    "verified": "2026-09-14 04:13:22"
+  },
+  "gpyreg_source": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg",
+  "pools": [
+    {
+      "directory": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\pool",
+      "identity": {
+        "hostname": "ASUS-LUIGI",
+        "python": "3.12.6",
+        "pyvbmc_commit": "e2aaef507f0eedd38616a33563c5d95287d156b0",
+        "pyvbmc_import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc",
+        "pyvbmc_version": "1.0.5.dev317+g9d54ca3fb.d20260913",
+        "gpyreg_commit": "39536b000a8c8465133f4eaef625486991db8257",
+        "gpyreg_import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg\\gpyreg",
+        "gpyreg_version": "1.2.0",
+        "numpy": "2.5.2",
+        "scipy": "1.18.1",
+        "threads": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1"
+        },
+        "gpyreg_source": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg",
+        "gpyreg_clean": true,
+        "pyvbmc_dirty": "",
+        "suite_module_dirty": "",
+        "suite_module_sha256": "98b1321193334f488a1352b01dc76fc353840cc486dbdb930288646cf77ec3dc",
+        "io_module_sha256": "7ab68d431b419f78d765e3e16224de7155c40b6763b36a4d27655c202e06f12c",
+        "runner_sha256": "e186c2aca2cf57544b49da37e58746fda7fcd3f81acfb109c1e6420140a1f41a"
+      },
+      "gpyreg_source": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg",
+      "options": {
+        "display": "off",
+        "plot": false,
+        "print_iteration_header": false,
+        "performance_calibration": "off"
+      }
+    }
+  ],
+  "fixtures": [],
+  "threads": {
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+  }
+}

@@ -1,0 +1,1248 @@
+{
+  "campaign": "svbmc_pool",
+  "generated": "2026-09-14 04:15:09",
+  "settings": {
+    "seed": 0,
+    "M": [
+      3
+    ],
+    "repetitions": [
+      5
+    ],
+    "max_steps": 500,
+    "n_samples": 20,
+    "lr": 0.1,
+    "version": "all-weights",
+    "n_samples_final": 100,
+    "n_draws": 100000,
+    "n_log_joint": 10000,
+    "bootstrap_resamples": 10000,
+    "alpha": 0.05,
+    "kind": "run"
+  },
+  "alpha": 0.05,
+  "equivalence_tests": [
+    {
+      "condition": "rosenbrock_D2_noise3_svbmc",
+      "M": 3,
+      "metric": "mmtv",
+      "method": "exact signed-rank over all sign assignments",
+      "n_pairs": 5,
+      "improved": 1,
+      "worsened": 4,
+      "tied": 0,
+      "median_paired_difference": 0.005475649776406848,
+      "statistic": 1.0,
+      "pvalue": 0.125,
+      "holm_adjusted_pvalue": 0.5,
+      "holm_rejected": false,
+      "integrated_worse": false
+    },
+    {
+      "condition": "gmm_D2_svbmc",
+      "M": 3,
+      "metric": "mmtv",
+      "method": "exact signed-rank over all sign assignments",
+      "n_pairs": 5,
+      "improved": 3,
+      "worsened": 2,
+      "tied": 0,
+      "median_paired_difference": -0.00048065711493058827,
+      "statistic": 7.0,
+      "pvalue": 1.0,
+      "holm_adjusted_pvalue": 1.0,
+      "holm_rejected": false,
+      "integrated_worse": false
+    },
+    {
+      "condition": "gmm_D2_noise3_svbmc",
+      "M": 3,
+      "metric": "mmtv",
+      "method": "exact signed-rank over all sign assignments",
+      "n_pairs": 5,
+      "improved": 2,
+      "worsened": 3,
+      "tied": 0,
+      "median_paired_difference": 0.00855254570448205,
+      "statistic": 6.0,
+      "pvalue": 0.8125,
+      "holm_adjusted_pvalue": 1.0,
+      "holm_rejected": false,
+      "integrated_worse": false
+    },
+    {
+      "condition": "ring_D2_noise3_svbmc",
+      "M": 3,
+      "metric": "mmtv",
+      "method": "exact signed-rank over all sign assignments",
+      "n_pairs": 5,
+      "improved": 2,
+      "worsened": 3,
+      "tied": 0,
+      "median_paired_difference": 0.0026731828684368186,
+      "statistic": 5.0,
+      "pvalue": 0.625,
+      "holm_adjusted_pvalue": 1.0,
+      "holm_rejected": false,
+      "integrated_worse": false
+    },
+    {
+      "condition": "multisensory_s1_D6_noise3_svbmc",
+      "M": 3,
+      "metric": "mmtv",
+      "method": "exact signed-rank over all sign assignments",
+      "n_pairs": 5,
+      "improved": 0,
+      "worsened": 5,
+      "tied": 0,
+      "median_paired_difference": 0.03443371080203819,
+      "statistic": 0.0,
+      "pvalue": 0.0625,
+      "holm_adjusted_pvalue": 0.3125,
+      "holm_rejected": false,
+      "integrated_worse": false
+    },
+    {
+      "condition": "rosenbrock_D2_noise3_svbmc",
+      "M": 3,
+      "metric": "gskl",
+      "method": "exact signed-rank over all sign assignments",
+      "n_pairs": 5,
+      "improved": 4,
+      "worsened": 1,
+      "tied": 0,
+      "median_paired_difference": -0.0020753112638055016,
+      "statistic": 4.0,
+      "pvalue": 0.4375,
+      "holm_adjusted_pvalue": 1.0,
+      "holm_rejected": false,
+      "integrated_worse": false
+    },
+    {
+      "condition": "gmm_D2_svbmc",
+      "M": 3,
+      "metric": "gskl",
+      "method": "exact signed-rank over all sign assignments",
+      "n_pairs": 5,
+      "improved": 3,
+      "worsened": 2,
+      "tied": 0,
+      "median_paired_difference": -0.007043642601894051,
+      "statistic": 4.0,
+      "pvalue": 0.4375,
+      "holm_adjusted_pvalue": 1.0,
+      "holm_rejected": false,
+      "integrated_worse": false
+    },
+    {
+      "condition": "gmm_D2_noise3_svbmc",
+      "M": 3,
+      "metric": "gskl",
+      "method": "exact signed-rank over all sign assignments",
+      "n_pairs": 5,
+      "improved": 2,
+      "worsened": 3,
+      "tied": 0,
+      "median_paired_difference": 0.04125086196721739,
+      "statistic": 4.0,
+      "pvalue": 0.4375,
+      "holm_adjusted_pvalue": 1.0,
+      "holm_rejected": false,
+      "integrated_worse": false
+    },
+    {
+      "condition": "ring_D2_noise3_svbmc",
+      "M": 3,
+      "metric": "gskl",
+      "method": "exact signed-rank over all sign assignments",
+      "n_pairs": 5,
+      "improved": 1,
+      "worsened": 4,
+      "tied": 0,
+      "median_paired_difference": 0.04914900439664849,
+      "statistic": 5.0,
+      "pvalue": 0.625,
+      "holm_adjusted_pvalue": 1.0,
+      "holm_rejected": false,
+      "integrated_worse": false
+    },
+    {
+      "condition": "multisensory_s1_D6_noise3_svbmc",
+      "M": 3,
+      "metric": "gskl",
+      "method": "exact signed-rank over all sign assignments",
+      "n_pairs": 5,
+      "improved": 0,
+      "worsened": 5,
+      "tied": 0,
+      "median_paired_difference": 0.06329887000620449,
+      "statistic": 0.0,
+      "pvalue": 0.0625,
+      "holm_adjusted_pvalue": 0.3125,
+      "holm_rejected": false,
+      "integrated_worse": false
+    }
+  ],
+  "conditions": [
+    {
+      "condition": "rosenbrock_D2_noise3_svbmc",
+      "M": [
+        {
+          "cells": 5,
+          "arms": {
+            "integrated": {
+              "mmtv": {
+                "n": 5,
+                "median": 0.04812819658869638,
+                "lo": 0.040751318412526744,
+                "hi": 0.05112867347049471
+              },
+              "gskl": {
+                "n": 5,
+                "median": 0.006343216236576632,
+                "lo": 0.003984177211274531,
+                "hi": 0.007181075305412288
+              },
+              "gskl_normalized": {
+                "n": 5,
+                "median": 0.003171608118288316,
+                "lo": 0.0019920886056372655,
+                "hi": 0.003590537652706144
+              },
+              "elbo_err_headline": {
+                "n": 5,
+                "median": 0.007201846497429276,
+                "lo": 0.0017554504963692708,
+                "hi": 0.008469509415577114
+              },
+              "elbo_err_mc": {
+                "n": 5,
+                "median": 0.022706702092991637,
+                "lo": 0.010698926816905985,
+                "hi": 0.040325308203886134
+              },
+              "entropy": {
+                "n": 5,
+                "median": 2.5472345181821154,
+                "lo": 2.535236484298899,
+                "hi": 2.5512671062825834
+              },
+              "optimize_seconds": {
+                "n": 5,
+                "median": 0.7318653999827802,
+                "lo": 0.6206031999900006,
+                "hi": 0.8858789000078104
+              }
+            },
+            "original": {
+              "mmtv": {
+                "n": 5,
+                "median": 0.04054010650527867,
+                "lo": 0.03598362820154719,
+                "hi": 0.047423023174600634
+              },
+              "gskl": {
+                "n": 5,
+                "median": 0.008418527500382134,
+                "lo": 0.00408807167338221,
+                "hi": 0.008888395916021974
+              },
+              "gskl_normalized": {
+                "n": 5,
+                "median": 0.004209263750191067,
+                "lo": 0.002044035836691105,
+                "hi": 0.004444197958010987
+              },
+              "elbo_err_headline": {
+                "n": 5,
+                "median": 0.14722147637742644,
+                "lo": 0.12652163866303612,
+                "hi": 0.17142288970499875
+              },
+              "elbo_err_mc": {
+                "n": 5,
+                "median": 0.011957514055727092,
+                "lo": 0.0011568286255525528,
+                "hi": 0.032839421107067945
+              },
+              "entropy": {
+                "n": 5,
+                "median": 2.574037488719309,
+                "lo": 2.5612627302263293,
+                "hi": 2.591395711956924
+              },
+              "optimize_seconds": {
+                "n": 5,
+                "median": 2.5169230999890715,
+                "lo": 1.835542400018312,
+                "hi": 2.885800299991388
+              }
+            }
+          },
+          "paired": {
+            "mmtv": {
+              "n": 5,
+              "median": 0.005475649776406848,
+              "lo": -0.0006022539217228201,
+              "hi": 0.01058856696521604
+            },
+            "gskl": {
+              "n": 5,
+              "median": -0.0020753112638055016,
+              "lo": -0.0041826700247886706,
+              "hi": 0.003093003632030078
+            },
+            "gskl_normalized": {
+              "n": 5,
+              "median": -0.0010376556319027508,
+              "lo": -0.0020913350123943353,
+              "hi": 0.001546501816015039
+            },
+            "elbo_err_headline": {
+              "n": 5,
+              "median": -0.14278455506231724,
+              "lo": -0.1687637520141716,
+              "hi": -0.118052129247459
+            }
+          },
+          "max_abs_dw": {
+            "n": 5,
+            "median": 0.024044947946060498,
+            "lo": 0.014763801661256373,
+            "hi": 0.027748028545543754
+          },
+          "runtime_ratio": {
+            "n": 5,
+            "median": 0.30697858753790214,
+            "lo": 0.24657217377547022,
+            "hi": 0.35951040956361124
+          },
+          "M": 3,
+          "tests": {
+            "mmtv": {
+              "condition": "rosenbrock_D2_noise3_svbmc",
+              "M": 3,
+              "metric": "mmtv",
+              "method": "exact signed-rank over all sign assignments",
+              "n_pairs": 5,
+              "improved": 1,
+              "worsened": 4,
+              "tied": 0,
+              "median_paired_difference": 0.005475649776406848,
+              "statistic": 1.0,
+              "pvalue": 0.125,
+              "holm_adjusted_pvalue": 0.5,
+              "holm_rejected": false,
+              "integrated_worse": false
+            },
+            "gskl": {
+              "condition": "rosenbrock_D2_noise3_svbmc",
+              "M": 3,
+              "metric": "gskl",
+              "method": "exact signed-rank over all sign assignments",
+              "n_pairs": 5,
+              "improved": 4,
+              "worsened": 1,
+              "tied": 0,
+              "median_paired_difference": -0.0020753112638055016,
+              "statistic": 4.0,
+              "pvalue": 0.4375,
+              "holm_adjusted_pvalue": 1.0,
+              "holm_rejected": false,
+              "integrated_worse": false
+            }
+          }
+        }
+      ],
+      "all_M": {
+        "cells": 5,
+        "runtime_ratio": {
+          "n": 5,
+          "median": 0.30697858753790214,
+          "lo": 0.24657217377547022,
+          "hi": 0.35951040956361124
+        },
+        "max_abs_dw": {
+          "n": 5,
+          "median": 0.024044947946060498,
+          "lo": 0.014763801661256373,
+          "hi": 0.027748028545543754
+        }
+      },
+      "single_run": {
+        "elbo_err": {
+          "n": 3,
+          "median": 0.034049004478788,
+          "lo": 0.021565755567902745,
+          "hi": 0.27175603302430984
+        },
+        "gskl": {
+          "n": 3,
+          "median": 0.035751529362350154,
+          "lo": 0.026029663800136826,
+          "hi": 0.14354870376090778
+        },
+        "gskl_normalized": {
+          "n": 3,
+          "median": 0.017875764681175077,
+          "lo": 0.013014831900068413,
+          "hi": 0.07177435188045389
+        },
+        "mmtv": {
+          "n": 3,
+          "median": 0.08319196248760102,
+          "lo": 0.030368897146786266,
+          "hi": 0.10038313746779998
+        }
+      }
+    },
+    {
+      "condition": "gmm_D2_svbmc",
+      "M": [
+        {
+          "cells": 5,
+          "arms": {
+            "integrated": {
+              "mmtv": {
+                "n": 5,
+                "median": 0.2054064554111966,
+                "lo": 0.18779711798688006,
+                "hi": 0.21856388522130632
+              },
+              "gskl": {
+                "n": 5,
+                "median": 0.9128361207196176,
+                "lo": 0.9034698986339589,
+                "hi": 0.9304752791337363
+              },
+              "gskl_normalized": {
+                "n": 5,
+                "median": 0.4564180603598088,
+                "lo": 0.45173494931697944,
+                "hi": 0.46523763956686814
+              },
+              "elbo_err_headline": {
+                "n": 5,
+                "median": 0.30053010286585513,
+                "lo": 0.272684995186006,
+                "hi": 0.31804131141187986
+              },
+              "elbo_err_mc": {
+                "n": 5,
+                "median": 0.32968421154234173,
+                "lo": 0.2879419143248412,
+                "hi": 0.3450471106789115
+              },
+              "entropy": {
+                "n": 5,
+                "median": 4.314667870238363,
+                "lo": 4.298238383798314,
+                "hi": 4.346751004077037
+              },
+              "optimize_seconds": {
+                "n": 5,
+                "median": 0.5037462000036612,
+                "lo": 0.46152479999000207,
+                "hi": 0.5998569999937899
+              }
+            },
+            "original": {
+              "mmtv": {
+                "n": 5,
+                "median": 0.1996400166956271,
+                "lo": 0.18565837853896222,
+                "hi": 0.22664543833060274
+              },
+              "gskl": {
+                "n": 5,
+                "median": 0.9211794866024989,
+                "lo": 0.9038691694567702,
+                "hi": 0.9695768214676428
+              },
+              "gskl_normalized": {
+                "n": 5,
+                "median": 0.46058974330124947,
+                "lo": 0.4519345847283851,
+                "hi": 0.4847884107338214
+              },
+              "elbo_err_headline": {
+                "n": 5,
+                "median": 0.24307222106879633,
+                "lo": 0.23936089186591536,
+                "hi": 0.25943477956787486
+              },
+              "elbo_err_mc": {
+                "n": 5,
+                "median": 0.2533434885071748,
+                "lo": 0.24149265915398432,
+                "hi": 0.2656279048164616
+              },
+              "entropy": {
+                "n": 5,
+                "median": 4.367348404868607,
+                "lo": 4.3553754089938295,
+                "hi": 4.380725039789102
+              },
+              "optimize_seconds": {
+                "n": 5,
+                "median": 1.111704999988433,
+                "lo": 0.8528231999953277,
+                "hi": 1.6751158999977633
+              }
+            }
+          },
+          "paired": {
+            "mmtv": {
+              "n": 5,
+              "median": -0.00048065711493058827,
+              "lo": -0.028999173151672664,
+              "hi": 0.02256123540450633
+            },
+            "gskl": {
+              "n": 5,
+              "median": -0.007043642601894051,
+              "lo": -0.056740700748025175,
+              "hi": 0.008181407875336166
+            },
+            "gskl_normalized": {
+              "n": 5,
+              "median": -0.0035218213009470256,
+              "lo": -0.028370350374012587,
+              "hi": 0.004090703937668083
+            },
+            "elbo_err_headline": {
+              "n": 5,
+              "median": 0.052092101287529946,
+              "lo": 0.033324103320090614,
+              "hi": 0.07383329701776908
+            }
+          },
+          "max_abs_dw": {
+            "n": 5,
+            "median": 0.009350823814104292,
+            "lo": 0.0021913700848988434,
+            "hi": 0.03905085656102121
+          },
+          "runtime_ratio": {
+            "n": 5,
+            "median": 0.5136187656486287,
+            "lo": 0.29957622632841585,
+            "hi": 0.5906806944351667
+          },
+          "M": 3,
+          "tests": {
+            "mmtv": {
+              "condition": "gmm_D2_svbmc",
+              "M": 3,
+              "metric": "mmtv",
+              "method": "exact signed-rank over all sign assignments",
+              "n_pairs": 5,
+              "improved": 3,
+              "worsened": 2,
+              "tied": 0,
+              "median_paired_difference": -0.00048065711493058827,
+              "statistic": 7.0,
+              "pvalue": 1.0,
+              "holm_adjusted_pvalue": 1.0,
+              "holm_rejected": false,
+              "integrated_worse": false
+            },
+            "gskl": {
+              "condition": "gmm_D2_svbmc",
+              "M": 3,
+              "metric": "gskl",
+              "method": "exact signed-rank over all sign assignments",
+              "n_pairs": 5,
+              "improved": 3,
+              "worsened": 2,
+              "tied": 0,
+              "median_paired_difference": -0.007043642601894051,
+              "statistic": 4.0,
+              "pvalue": 0.4375,
+              "holm_adjusted_pvalue": 1.0,
+              "holm_rejected": false,
+              "integrated_worse": false
+            }
+          }
+        }
+      ],
+      "all_M": {
+        "cells": 5,
+        "runtime_ratio": {
+          "n": 5,
+          "median": 0.5136187656486287,
+          "lo": 0.29957622632841585,
+          "hi": 0.5906806944351667
+        },
+        "max_abs_dw": {
+          "n": 5,
+          "median": 0.009350823814104292,
+          "lo": 0.0021913700848988434,
+          "hi": 0.03905085656102121
+        }
+      },
+      "single_run": {
+        "elbo_err": {
+          "n": 3,
+          "median": 0.7053740725442097,
+          "lo": 0.6919621991968032,
+          "hi": 1.3917825050661832
+        },
+        "gskl": {
+          "n": 3,
+          "median": 10.956555286098,
+          "lo": 5.3300442151305845,
+          "hi": 36.17603046849493
+        },
+        "gskl_normalized": {
+          "n": 3,
+          "median": 5.478277643049,
+          "lo": 2.6650221075652922,
+          "hi": 18.088015234247464
+        },
+        "mmtv": {
+          "n": 3,
+          "median": 0.363049053809572,
+          "lo": 0.26146867028267484,
+          "hi": 0.570310591996721
+        }
+      }
+    },
+    {
+      "condition": "gmm_D2_noise3_svbmc",
+      "M": [
+        {
+          "cells": 5,
+          "arms": {
+            "integrated": {
+              "mmtv": {
+                "n": 5,
+                "median": 0.30524350650366805,
+                "lo": 0.2996639161700356,
+                "hi": 0.3144612190345046
+              },
+              "gskl": {
+                "n": 5,
+                "median": 0.4200712749031835,
+                "lo": 0.3574499721918494,
+                "hi": 0.45686426101353417
+              },
+              "gskl_normalized": {
+                "n": 5,
+                "median": 0.21003563745159176,
+                "lo": 0.1787249860959247,
+                "hi": 0.22843213050676708
+              },
+              "elbo_err_headline": {
+                "n": 5,
+                "median": 0.8753953723761092,
+                "lo": 0.8320305961183521,
+                "hi": 0.8775962417203398
+              },
+              "elbo_err_mc": {
+                "n": 5,
+                "median": 0.5571099967579691,
+                "lo": 0.5488015303168905,
+                "hi": 0.5886582017962034
+              },
+              "entropy": {
+                "n": 5,
+                "median": 4.037624380374759,
+                "lo": 4.035423511030529,
+                "hi": 4.0809891566325165
+              },
+              "optimize_seconds": {
+                "n": 5,
+                "median": 0.624834899965208,
+                "lo": 0.565181499987375,
+                "hi": 0.7366547000128776
+              }
+            },
+            "original": {
+              "mmtv": {
+                "n": 5,
+                "median": 0.3038377043031198,
+                "lo": 0.29159423916622973,
+                "hi": 0.31468456167054526
+              },
+              "gskl": {
+                "n": 5,
+                "median": 0.3824292980011402,
+                "lo": 0.3427058790973504,
+                "hi": 0.4264862580798586
+              },
+              "gskl_normalized": {
+                "n": 5,
+                "median": 0.1912146490005701,
+                "lo": 0.1713529395486752,
+                "hi": 0.2132431290399293
+              },
+              "elbo_err_headline": {
+                "n": 5,
+                "median": 0.20572025781236603,
+                "lo": 0.17679980652156457,
+                "hi": 0.26256486322194705
+              },
+              "elbo_err_mc": {
+                "n": 5,
+                "median": 0.5072370734844664,
+                "lo": 0.4326946464148711,
+                "hi": 0.5172215007648804
+              },
+              "entropy": {
+                "n": 5,
+                "median": 4.1298931068415765,
+                "lo": 4.084485027098617,
+                "hi": 4.14794323124422
+              },
+              "optimize_seconds": {
+                "n": 5,
+                "median": 2.2817602999857627,
+                "lo": 1.6432204999728128,
+                "hi": 2.4669603999936953
+              }
+            }
+          },
+          "paired": {
+            "mmtv": {
+              "n": 5,
+              "median": 0.00855254570448205,
+              "lo": -0.01406852742632514,
+              "hi": 0.021133403479707935
+            },
+            "gskl": {
+              "n": 5,
+              "median": 0.04125086196721739,
+              "lo": -0.0575240644402073,
+              "hi": 0.08800858198910888
+            },
+            "gskl_normalized": {
+              "n": 5,
+              "median": 0.020625430983608695,
+              "lo": -0.02876203222010365,
+              "hi": 0.04400429099455444
+            },
+            "elbo_err_headline": {
+              "n": 5,
+              "median": 0.6718759839079738,
+              "lo": 0.569465732896405,
+              "hi": 0.6763847926671636
+            }
+          },
+          "max_abs_dw": {
+            "n": 5,
+            "median": 0.030338727733702137,
+            "lo": 0.01624625557682116,
+            "hi": 0.037929074307873414
+          },
+          "runtime_ratio": {
+            "n": 5,
+            "median": 0.2869794055534472,
+            "lo": 0.2291003536128182,
+            "hi": 0.40680284439205794
+          },
+          "M": 3,
+          "tests": {
+            "mmtv": {
+              "condition": "gmm_D2_noise3_svbmc",
+              "M": 3,
+              "metric": "mmtv",
+              "method": "exact signed-rank over all sign assignments",
+              "n_pairs": 5,
+              "improved": 2,
+              "worsened": 3,
+              "tied": 0,
+              "median_paired_difference": 0.00855254570448205,
+              "statistic": 6.0,
+              "pvalue": 0.8125,
+              "holm_adjusted_pvalue": 1.0,
+              "holm_rejected": false,
+              "integrated_worse": false
+            },
+            "gskl": {
+              "condition": "gmm_D2_noise3_svbmc",
+              "M": 3,
+              "metric": "gskl",
+              "method": "exact signed-rank over all sign assignments",
+              "n_pairs": 5,
+              "improved": 2,
+              "worsened": 3,
+              "tied": 0,
+              "median_paired_difference": 0.04125086196721739,
+              "statistic": 4.0,
+              "pvalue": 0.4375,
+              "holm_adjusted_pvalue": 1.0,
+              "holm_rejected": false,
+              "integrated_worse": false
+            }
+          }
+        }
+      ],
+      "all_M": {
+        "cells": 5,
+        "runtime_ratio": {
+          "n": 5,
+          "median": 0.2869794055534472,
+          "lo": 0.2291003536128182,
+          "hi": 0.40680284439205794
+        },
+        "max_abs_dw": {
+          "n": 5,
+          "median": 0.030338727733702137,
+          "lo": 0.01624625557682116,
+          "hi": 0.037929074307873414
+        }
+      },
+      "single_run": {
+        "elbo_err": {
+          "n": 3,
+          "median": 0.4567143344486859,
+          "lo": 0.21302437735720536,
+          "hi": 0.9357453980647499
+        },
+        "gskl": {
+          "n": 3,
+          "median": 1.165900063871689,
+          "lo": 0.3944349404391392,
+          "hi": 4.713733023696393
+        },
+        "gskl_normalized": {
+          "n": 3,
+          "median": 0.5829500319358445,
+          "lo": 0.1972174702195696,
+          "hi": 2.3568665118481964
+        },
+        "mmtv": {
+          "n": 3,
+          "median": 0.3168668674467995,
+          "lo": 0.2302839133508276,
+          "hi": 0.42886957527011377
+        }
+      }
+    },
+    {
+      "condition": "ring_D2_noise3_svbmc",
+      "M": [
+        {
+          "cells": 5,
+          "arms": {
+            "integrated": {
+              "mmtv": {
+                "n": 5,
+                "median": 0.46731162590246633,
+                "lo": 0.46472177425281613,
+                "hi": 0.4685694996447307
+              },
+              "gskl": {
+                "n": 5,
+                "median": 0.9740579500073157,
+                "lo": 0.9100117714761692,
+                "hi": 0.9815215553834925
+              },
+              "gskl_normalized": {
+                "n": 5,
+                "median": 0.4870289750036578,
+                "lo": 0.4550058857380846,
+                "hi": 0.49076077769174625
+              },
+              "elbo_err_headline": {
+                "n": 5,
+                "median": 1.1861848612724808,
+                "lo": 1.1732788200564626,
+                "hi": 1.198686863469108
+              },
+              "elbo_err_mc": {
+                "n": 5,
+                "median": 1.1886956322814801,
+                "lo": 1.1778974912801004,
+                "hi": 1.200960736036076
+              },
+              "entropy": {
+                "n": 5,
+                "median": 1.9698266196833751,
+                "lo": 1.957324617486748,
+                "hi": 1.9827326608993934
+              },
+              "optimize_seconds": {
+                "n": 5,
+                "median": 0.5642563000437804,
+                "lo": 0.5133832999854349,
+                "hi": 0.6860810999642126
+              }
+            },
+            "original": {
+              "mmtv": {
+                "n": 5,
+                "median": 0.4644656213117488,
+                "lo": 0.46287259326477925,
+                "hi": 0.47135586855727546
+              },
+              "gskl": {
+                "n": 5,
+                "median": 0.9206801721850564,
+                "lo": 0.9075044980937135,
+                "hi": 1.0061506158970408
+              },
+              "gskl_normalized": {
+                "n": 5,
+                "median": 0.4603400860925282,
+                "lo": 0.45375224904685674,
+                "hi": 0.5030753079485204
+              },
+              "elbo_err_headline": {
+                "n": 5,
+                "median": 1.0399717880261434,
+                "lo": 1.0111973269970307,
+                "hi": 1.043645132179156
+              },
+              "elbo_err_mc": {
+                "n": 5,
+                "median": 1.1903103138466418,
+                "lo": 1.1632603857438228,
+                "hi": 1.2127800782758205
+              },
+              "entropy": {
+                "n": 5,
+                "median": 1.994437640847541,
+                "lo": 1.9735992746928583,
+                "hi": 2.000057049965908
+              },
+              "optimize_seconds": {
+                "n": 5,
+                "median": 2.030777500011027,
+                "lo": 1.7583394999965094,
+                "hi": 3.037449800001923
+              }
+            }
+          },
+          "paired": {
+            "mmtv": {
+              "n": 5,
+              "median": 0.0026731828684368186,
+              "lo": -0.004044242654809127,
+              "hi": 0.005696906379951461
+            },
+            "gskl": {
+              "n": 5,
+              "median": 0.04914900439664849,
+              "lo": -0.09613884442087162,
+              "hi": 0.07292666952758564
+            },
+            "gskl_normalized": {
+              "n": 5,
+              "median": 0.024574502198324244,
+              "lo": -0.04806942221043581,
+              "hi": 0.03646333476379282
+            },
+            "elbo_err_headline": {
+              "n": 5,
+              "median": 0.14801675042251006,
+              "lo": 0.13172265049043497,
+              "hi": 0.16256426792041845
+            }
+          },
+          "max_abs_dw": {
+            "n": 5,
+            "median": 0.021460323530079296,
+            "lo": 0.01701231857474662,
+            "hi": 0.04391620085373711
+          },
+          "runtime_ratio": {
+            "n": 5,
+            "median": 0.2528013531677632,
+            "lo": 0.20168583527379658,
+            "hi": 0.3901869348698443
+          },
+          "M": 3,
+          "tests": {
+            "mmtv": {
+              "condition": "ring_D2_noise3_svbmc",
+              "M": 3,
+              "metric": "mmtv",
+              "method": "exact signed-rank over all sign assignments",
+              "n_pairs": 5,
+              "improved": 2,
+              "worsened": 3,
+              "tied": 0,
+              "median_paired_difference": 0.0026731828684368186,
+              "statistic": 5.0,
+              "pvalue": 0.625,
+              "holm_adjusted_pvalue": 1.0,
+              "holm_rejected": false,
+              "integrated_worse": false
+            },
+            "gskl": {
+              "condition": "ring_D2_noise3_svbmc",
+              "M": 3,
+              "metric": "gskl",
+              "method": "exact signed-rank over all sign assignments",
+              "n_pairs": 5,
+              "improved": 1,
+              "worsened": 4,
+              "tied": 0,
+              "median_paired_difference": 0.04914900439664849,
+              "statistic": 5.0,
+              "pvalue": 0.625,
+              "holm_adjusted_pvalue": 1.0,
+              "holm_rejected": false,
+              "integrated_worse": false
+            }
+          }
+        }
+      ],
+      "all_M": {
+        "cells": 5,
+        "runtime_ratio": {
+          "n": 5,
+          "median": 0.2528013531677632,
+          "lo": 0.20168583527379658,
+          "hi": 0.3901869348698443
+        },
+        "max_abs_dw": {
+          "n": 5,
+          "median": 0.021460323530079296,
+          "lo": 0.01701231857474662,
+          "hi": 0.04391620085373711
+        }
+      },
+      "single_run": {
+        "elbo_err": {
+          "n": 3,
+          "median": 1.9067908622681273,
+          "lo": 1.6894825603869643,
+          "hi": 2.2780542219403324
+        },
+        "gskl": {
+          "n": 3,
+          "median": 154.21456481764264,
+          "lo": 6.238211049210646,
+          "hi": 1153.831613528316
+        },
+        "gskl_normalized": {
+          "n": 3,
+          "median": 77.10728240882132,
+          "lo": 3.119105524605323,
+          "hi": 576.915806764158
+        },
+        "mmtv": {
+          "n": 3,
+          "median": 0.6506008936054427,
+          "lo": 0.6488253768062414,
+          "hi": 0.8258873047755215
+        }
+      }
+    },
+    {
+      "condition": "multisensory_s1_D6_noise3_svbmc",
+      "M": [
+        {
+          "cells": 5,
+          "arms": {
+            "integrated": {
+              "mmtv": {
+                "n": 5,
+                "median": 0.20106330894448066,
+                "lo": 0.18212237409268361,
+                "hi": 0.21778396658654264
+              },
+              "gskl": {
+                "n": 5,
+                "median": 0.3426965108692319,
+                "lo": 0.3082506128145339,
+                "hi": 0.40019337414706935
+              },
+              "gskl_normalized": {
+                "n": 5,
+                "median": 0.057116085144871986,
+                "lo": 0.051375102135755656,
+                "hi": 0.06669889569117822
+              },
+              "elbo_err_headline": {
+                "n": 5,
+                "median": 0.4029556610856275,
+                "lo": 0.34507525241184567,
+                "hi": 0.42226582234940224
+              },
+              "elbo_err_mc": {
+                "n": 5,
+                "median": 0.6880907456267664,
+                "lo": 0.5971571956003459,
+                "hi": 0.6917858916892783
+              },
+              "entropy": {
+                "n": 5,
+                "median": 3.2217817919533305,
+                "lo": 3.202471630689569,
+                "hi": 3.2796622006271314
+              },
+              "optimize_seconds": {
+                "n": 5,
+                "median": 0.5557057000114582,
+                "lo": 0.5174922999576665,
+                "hi": 0.6670379000133835
+              }
+            },
+            "original": {
+              "mmtv": {
+                "n": 5,
+                "median": 0.17159052619748716,
+                "lo": 0.1663209054450587,
+                "hi": 0.18335025578450445
+              },
+              "gskl": {
+                "n": 5,
+                "median": 0.28903578207142866,
+                "lo": 0.27000703943484394,
+                "hi": 0.31634518711112514
+              },
+              "gskl_normalized": {
+                "n": 5,
+                "median": 0.04817263034523811,
+                "lo": 0.04500117323914066,
+                "hi": 0.05272419785185419
+              },
+              "elbo_err_headline": {
+                "n": 5,
+                "median": 0.022640539971462204,
+                "lo": 0.003922665624202182,
+                "hi": 0.06802396099215002
+              },
+              "elbo_err_mc": {
+                "n": 5,
+                "median": 0.5693049153332481,
+                "lo": 0.5575995994804543,
+                "hi": 0.5933062262765816
+              },
+              "entropy": {
+                "n": 5,
+                "median": 3.3684509874298127,
+                "lo": 3.3625068581930946,
+                "hi": 3.392162387563977
+              },
+              "optimize_seconds": {
+                "n": 5,
+                "median": 2.751725100039039,
+                "lo": 2.251529000001028,
+                "hi": 5.4287865000078455
+              }
+            }
+          },
+          "paired": {
+            "mmtv": {
+              "n": 5,
+              "median": 0.03443371080203819,
+              "lo": 0.010531847895196456,
+              "hi": 0.03728288533827184
+            },
+            "gskl": {
+              "n": 5,
+              "median": 0.06329887000620449,
+              "lo": 0.01921483074310526,
+              "hi": 0.08384818703594421
+            },
+            "gskl_normalized": {
+              "n": 5,
+              "median": 0.010549811667700748,
+              "lo": 0.0032024717905175457,
+              "hi": 0.013974697839324028
+            },
+            "elbo_err_headline": {
+              "n": 5,
+              "median": 0.37022966427628035,
+              "lo": 0.3349317000934775,
+              "hi": 0.41006328779508294
+            }
+          },
+          "max_abs_dw": {
+            "n": 5,
+            "median": 0.025882519899522755,
+            "lo": 0.019258983343561277,
+            "hi": 0.03156941679431118
+          },
+          "runtime_ratio": {
+            "n": 5,
+            "median": 0.20194811611217067,
+            "lo": 0.12287053469728815,
+            "hi": 0.2818627844421422
+          },
+          "M": 3,
+          "tests": {
+            "mmtv": {
+              "condition": "multisensory_s1_D6_noise3_svbmc",
+              "M": 3,
+              "metric": "mmtv",
+              "method": "exact signed-rank over all sign assignments",
+              "n_pairs": 5,
+              "improved": 0,
+              "worsened": 5,
+              "tied": 0,
+              "median_paired_difference": 0.03443371080203819,
+              "statistic": 0.0,
+              "pvalue": 0.0625,
+              "holm_adjusted_pvalue": 0.3125,
+              "holm_rejected": false,
+              "integrated_worse": false
+            },
+            "gskl": {
+              "condition": "multisensory_s1_D6_noise3_svbmc",
+              "M": 3,
+              "metric": "gskl",
+              "method": "exact signed-rank over all sign assignments",
+              "n_pairs": 5,
+              "improved": 0,
+              "worsened": 5,
+              "tied": 0,
+              "median_paired_difference": 0.06329887000620449,
+              "statistic": 0.0,
+              "pvalue": 0.0625,
+              "holm_adjusted_pvalue": 0.3125,
+              "holm_rejected": false,
+              "integrated_worse": false
+            }
+          }
+        }
+      ],
+      "all_M": {
+        "cells": 5,
+        "runtime_ratio": {
+          "n": 5,
+          "median": 0.20194811611217067,
+          "lo": 0.12287053469728815,
+          "hi": 0.2818627844421422
+        },
+        "max_abs_dw": {
+          "n": 5,
+          "median": 0.025882519899522755,
+          "lo": 0.019258983343561277,
+          "hi": 0.03156941679431118
+        }
+      },
+      "single_run": {
+        "elbo_err": {
+          "n": 3,
+          "median": 0.7186235196094231,
+          "lo": 0.44303223734812036,
+          "hi": 1.3286064030472176
+        },
+        "gskl": {
+          "n": 3,
+          "median": 5.845635854883616,
+          "lo": 5.778109479136639,
+          "hi": 7.468033222253742
+        },
+        "gskl_normalized": {
+          "n": 3,
+          "median": 0.9742726424806026,
+          "lo": 0.9630182465227732,
+          "hi": 1.244672203708957
+        },
+        "mmtv": {
+          "n": 3,
+          "median": 0.34301441760862383,
+          "lo": 0.3046706288711558,
+          "hi": 0.3823886063633833
+        }
+      }
+    }
+  ]
+}

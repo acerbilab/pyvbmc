@@ -1,0 +1,73 @@
+{
+  "campaign": "svbmc_pool",
+  "suite": "svbmc_pool",
+  "options": {
+    "display": "off",
+    "plot": false,
+    "print_iteration_header": false,
+    "performance_calibration": "off"
+  },
+  "allocation": [
+    {
+      "label": "rosenbrock_D2_noise3_svbmc",
+      "seed_start": 1000,
+      "max_seeds": 90,
+      "target_filtered": 60
+    },
+    {
+      "label": "gmm_D2_svbmc",
+      "seed_start": 1000,
+      "max_seeds": 45,
+      "target_filtered": 30
+    },
+    {
+      "label": "gmm_D2_noise3_svbmc",
+      "seed_start": 1000,
+      "max_seeds": 90,
+      "target_filtered": 60
+    },
+    {
+      "label": "ring_D2_noise3_svbmc",
+      "seed_start": 1000,
+      "max_seeds": 80,
+      "target_filtered": 40
+    },
+    {
+      "label": "multisensory_s1_D6_noise3_svbmc",
+      "seed_start": 1000,
+      "max_seeds": 90,
+      "target_filtered": 60
+    }
+  ],
+  "gpyreg_source": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg",
+  "identity": {
+    "hostname": "ASUS-LUIGI",
+    "python": "3.12.6",
+    "pyvbmc_commit": "e2aaef507f0eedd38616a33563c5d95287d156b0",
+    "pyvbmc_import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc",
+    "pyvbmc_version": "1.0.5.dev317+g9d54ca3fb.d20260913",
+    "gpyreg_commit": "39536b000a8c8465133f4eaef625486991db8257",
+    "gpyreg_import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg\\gpyreg",
+    "gpyreg_version": "1.2.0",
+    "numpy": "2.5.2",
+    "scipy": "1.18.1",
+    "threads": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1"
+    },
+    "gpyreg_source": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg",
+    "gpyreg_clean": true,
+    "pyvbmc_dirty": "",
+    "suite_module_dirty": "",
+    "suite_module_sha256": "98b1321193334f488a1352b01dc76fc353840cc486dbdb930288646cf77ec3dc",
+    "io_module_sha256": "7ab68d431b419f78d765e3e16224de7155c40b6763b36a4d27655c202e06f12c",
+    "runner_sha256": "e186c2aca2cf57544b49da37e58746fda7fcd3f81acfb109c1e6420140a1f41a"
+  },
+  "allow_dirty": false,
+  "created": "2026-09-14 03:45:35",
+  "launch_ready": true,
+  "authorized_by": "Luigi Acerbi (PI, 2026-09-13)",
+  "authorized_at": "2026-09-14 03:45:35",
+  "allocation_history": []
+}

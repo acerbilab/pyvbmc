@@ -1,0 +1,358 @@
+{
+  "campaign": "svbmc_pool",
+  "directory": "pool",
+  "generated": "2026-09-14 04:12:09",
+  "pilot_seeds": 3,
+  "identity": {
+    "hostname": "ASUS-LUIGI",
+    "python": "3.12.6",
+    "pyvbmc_commit": "e2aaef507f0eedd38616a33563c5d95287d156b0",
+    "pyvbmc_import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc",
+    "pyvbmc_version": "1.0.5.dev317+g9d54ca3fb.d20260913",
+    "gpyreg_commit": "39536b000a8c8465133f4eaef625486991db8257",
+    "gpyreg_import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg\\gpyreg",
+    "gpyreg_version": "1.2.0",
+    "numpy": "2.5.2",
+    "scipy": "1.18.1",
+    "threads": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1"
+    },
+    "gpyreg_source": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg",
+    "gpyreg_clean": true,
+    "pyvbmc_dirty": "",
+    "suite_module_dirty": "",
+    "suite_module_sha256": "98b1321193334f488a1352b01dc76fc353840cc486dbdb930288646cf77ec3dc",
+    "io_module_sha256": "7ab68d431b419f78d765e3e16224de7155c40b6763b36a4d27655c202e06f12c",
+    "runner_sha256": "e186c2aca2cf57544b49da37e58746fda7fcd3f81acfb109c1e6420140a1f41a"
+  },
+  "options": {
+    "display": "off",
+    "plot": false,
+    "print_iteration_header": false,
+    "performance_calibration": "off"
+  },
+  "conditions": [
+    {
+      "label": "rosenbrock_D2_noise3_svbmc",
+      "seed_start": 1000,
+      "seed_cap": 90,
+      "target_filtered": 60,
+      "seeds_run": 3,
+      "completed": 3,
+      "failed": 0,
+      "failures": [],
+      "filtered": 3,
+      "pass_rate": 1.0,
+      "unstable": 0,
+      "above_s_max": 0,
+      "usable_fraction": 1.0,
+      "wall_minutes": {
+        "n": 3,
+        "median": 1.5613390649998715,
+        "q1": 1.5430026649997064,
+        "q3": 1.7087555474999438
+      },
+      "func_count": {
+        "n": 3,
+        "median": 180.0,
+        "q1": 175.0,
+        "q3": 192.5
+      },
+      "K": {
+        "n": 3,
+        "median": 50.0,
+        "q1": 50.0,
+        "q3": 50.0
+      },
+      "max_J_sjk": {
+        "n": 3,
+        "median": 0.26788330078125,
+        "q1": 0.243560791015625,
+        "q3": 0.4625244140625
+      },
+      "elbo_err": {
+        "n": 3,
+        "median": 0.034049004478788,
+        "q1": 0.027807380023345374,
+        "q3": 0.15290251875154892
+      },
+      "gskl": {
+        "n": 3,
+        "median": 0.035751529362350154,
+        "q1": 0.03089059658124349,
+        "q3": 0.08965011656162897
+      },
+      "mmtv": {
+        "n": 3,
+        "median": 0.08319196248760102,
+        "q1": 0.056780429817193646,
+        "q3": 0.0917875499777005
+      },
+      "rmse": {
+        "n": 3,
+        "median": 0.10339007232292763,
+        "q1": 0.10266876201648834,
+        "q3": 0.1929350100360081
+      }
+    },
+    {
+      "label": "gmm_D2_svbmc",
+      "seed_start": 1000,
+      "seed_cap": 45,
+      "target_filtered": 30,
+      "seeds_run": 3,
+      "completed": 3,
+      "failed": 0,
+      "failures": [],
+      "filtered": 3,
+      "pass_rate": 1.0,
+      "unstable": 0,
+      "above_s_max": 0,
+      "usable_fraction": 0.0,
+      "wall_minutes": {
+        "n": 3,
+        "median": 0.2247135316671726,
+        "q1": 0.2236821558336184,
+        "q3": 0.2560201766667888
+      },
+      "func_count": {
+        "n": 3,
+        "median": 75.0,
+        "q1": 75.0,
+        "q3": 82.5
+      },
+      "K": {
+        "n": 3,
+        "median": 50.0,
+        "q1": 50.0,
+        "q3": 50.0
+      },
+      "max_J_sjk": {
+        "n": 3,
+        "median": 0.019701143213278982,
+        "q1": 0.01330305441776991,
+        "q3": 0.18843387156608316
+      },
+      "elbo_err": {
+        "n": 3,
+        "median": 0.7053740725442097,
+        "q1": 0.6986681358705065,
+        "q3": 1.0485782888051964
+      },
+      "gskl": {
+        "n": 3,
+        "median": 10.956555286098,
+        "q1": 8.143299750614293,
+        "q3": 23.566292877296465
+      },
+      "mmtv": {
+        "n": 3,
+        "median": 0.363049053809572,
+        "q1": 0.3122588620461234,
+        "q3": 0.46667982290314647
+      },
+      "rmse": {
+        "n": 3,
+        "median": 4.740254353694703,
+        "q1": 2.8496385792161787,
+        "q3": 5.702377768079067
+      }
+    },
+    {
+      "label": "gmm_D2_noise3_svbmc",
+      "seed_start": 1000,
+      "seed_cap": 90,
+      "target_filtered": 60,
+      "seeds_run": 3,
+      "completed": 3,
+      "failed": 0,
+      "failures": [],
+      "filtered": 3,
+      "pass_rate": 1.0,
+      "unstable": 0,
+      "above_s_max": 0,
+      "usable_fraction": 0.0,
+      "wall_minutes": {
+        "n": 3,
+        "median": 1.539691814999484,
+        "q1": 1.5361337791662661,
+        "q3": 1.7513665974998731
+      },
+      "func_count": {
+        "n": 3,
+        "median": 175.0,
+        "q1": 167.5,
+        "q3": 187.5
+      },
+      "K": {
+        "n": 3,
+        "median": 50.0,
+        "q1": 50.0,
+        "q3": 50.0
+      },
+      "max_J_sjk": {
+        "n": 3,
+        "median": 0.7146801237690283,
+        "q1": 0.6733356927250709,
+        "q3": 0.7291022912438336
+      },
+      "elbo_err": {
+        "n": 3,
+        "median": 0.4567143344486859,
+        "q1": 0.33486935590294564,
+        "q3": 0.6962298662567179
+      },
+      "gskl": {
+        "n": 3,
+        "median": 1.165900063871689,
+        "q1": 0.7801675021554141,
+        "q3": 2.939816543784041
+      },
+      "mmtv": {
+        "n": 3,
+        "median": 0.3168668674467995,
+        "q1": 0.2735753903988135,
+        "q3": 0.37286822135845665
+      },
+      "rmse": {
+        "n": 3,
+        "median": 3.0169310321814176,
+        "q1": 1.887997760994206,
+        "q3": 4.230476178545097
+      }
+    },
+    {
+      "label": "ring_D2_noise3_svbmc",
+      "seed_start": 1000,
+      "seed_cap": 80,
+      "target_filtered": 40,
+      "seeds_run": 3,
+      "completed": 3,
+      "failed": 0,
+      "failures": [],
+      "filtered": 3,
+      "pass_rate": 1.0,
+      "unstable": 0,
+      "above_s_max": 0,
+      "usable_fraction": 0.0,
+      "wall_minutes": {
+        "n": 3,
+        "median": 1.8715426416669894,
+        "q1": 1.6244412708333886,
+        "q3": 1.981220171666549
+      },
+      "func_count": {
+        "n": 3,
+        "median": 170.0,
+        "q1": 162.5,
+        "q3": 190.0
+      },
+      "K": {
+        "n": 3,
+        "median": 50.0,
+        "q1": 50.0,
+        "q3": 50.0
+      },
+      "max_J_sjk": {
+        "n": 3,
+        "median": 0.42474224930629134,
+        "q1": 0.4210049870889634,
+        "q3": 0.7593117449359852
+      },
+      "elbo_err": {
+        "n": 3,
+        "median": 1.9067908622681273,
+        "q1": 1.7981367113275457,
+        "q3": 2.09242254210423
+      },
+      "gskl": {
+        "n": 3,
+        "median": 154.21456481764264,
+        "q1": 80.22638793342664,
+        "q3": 654.0230891729793
+      },
+      "mmtv": {
+        "n": 3,
+        "median": 0.6506008936054427,
+        "q1": 0.6497131352058421,
+        "q3": 0.7382440991904822
+      },
+      "rmse": {
+        "n": 3,
+        "median": 5.308665865781526,
+        "q1": 3.9579160460404363,
+        "q3": 5.444310244122713
+      }
+    },
+    {
+      "label": "multisensory_s1_D6_noise3_svbmc",
+      "seed_start": 1000,
+      "seed_cap": 90,
+      "target_filtered": 60,
+      "seeds_run": 3,
+      "completed": 3,
+      "failed": 0,
+      "failures": [],
+      "filtered": 3,
+      "pass_rate": 1.0,
+      "unstable": 0,
+      "above_s_max": 0,
+      "usable_fraction": 0.0,
+      "wall_minutes": {
+        "n": 3,
+        "median": 3.3404113299999154,
+        "q1": 3.2348182825002976,
+        "q3": 3.395565193333217
+      },
+      "func_count": {
+        "n": 3,
+        "median": 265.0,
+        "q1": 260.0,
+        "q3": 267.5
+      },
+      "K": {
+        "n": 3,
+        "median": 50.0,
+        "q1": 50.0,
+        "q3": 50.0
+      },
+      "max_J_sjk": {
+        "n": 3,
+        "median": 1.7309923145471657,
+        "q1": 1.1764210616057937,
+        "q3": 1.8097248274936533
+      },
+      "elbo_err": {
+        "n": 3,
+        "median": 0.7186235196094231,
+        "q1": 0.5808278784787717,
+        "q3": 1.0236149613283203
+      },
+      "gskl": {
+        "n": 3,
+        "median": 5.845635854883616,
+        "q1": 5.811872667010128,
+        "q3": 6.656834538568679
+      },
+      "mmtv": {
+        "n": 3,
+        "median": 0.34301441760862383,
+        "q1": 0.3238425232398898,
+        "q3": 0.36270151198600353
+      },
+      "rmse": {
+        "n": 3,
+        "median": 1.4302928265004295,
+        "q1": 1.3097981431892656,
+        "q3": 1.5246251619606104
+      }
+    }
+  ],
+  "totals": {
+    "seeds_run": 15,
+    "filtered": 15,
+    "failed": 0
+  }
+}
