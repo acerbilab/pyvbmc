@@ -103,7 +103,12 @@ records its execution.
   review; run examples, check links, build Sphinx and inspect rendered pages.
   Check the [agent skill](../skills/pyvbmc/SKILL.md) against the release docs.
   Run final integrated tests, the required CI matrix and package checks;
-  prepare the golden-trace release archive. Documentation can proceed
+  prepare the golden-trace release archive. Search the documentation for
+  references to the `dev-next` branch and remove those that are not
+  historical: `dev-next` merges into `main` for the release, so release
+  docs, `AGENTS.md`, `dev/README.md`, the hand-off notes and the skill
+  should not point at it; dated devlogs and plan worklogs may keep it as
+  history. Documentation can proceed
   alongside implementation; final checks must cover settled release code.
   See the [documentation checklist](plans/modernization-roadmap.md#pre-release-documentation-review)
   and [reference record](golden/promotion_20260913/README.md).
