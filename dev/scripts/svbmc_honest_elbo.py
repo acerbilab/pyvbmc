@@ -41,10 +41,10 @@ by precision weighting with their mean predictive variances, or by the
 plain mean; a component no other run covers keeps its own stored,
 Jacobian-corrected estimate. The stack's honest expected log joint is the
 weighted sum over components. A grid of rules is evaluated on every cell
-(``ratio1.5`` … ``ratio5`` with the cap, ``cap_only`` with the cap alone,
+(``ratio1.5`` ... ``ratio5`` with the cap, ``cap_only`` with the cap alone,
 ``none`` with every other run), so the sensitivity to the rule is a
-column rather than an assumption; the headline is ``ratio2`` with the
-median.
+column rather than an assumption; the headline is ``--headline-ratio``
+(2) with the median.
 
 Scoring. Every estimate of the expected log joint (raw ``sum w I_corr``,
 capped at the component median and at the run median as the class caps
@@ -64,33 +64,53 @@ component by component, shows the run's own optimism; and dividing the
 errors by the self-reported standard deviations (the run's
 Bayesian-quadrature SD ``sqrt(J_kk)`` for its own components, the GP's
 mean predictive SD for the cross-run estimates) answers the optimism
-note's error-scale question as ``z`` statistics per cell. Every pair of
-evaluating run and component also records ``n_eff``, the run's training
-inputs weighted by the component's Gaussian kernel relative to its mode
-(a point at the mode counts one), so that an error can be read against
-how much data the evaluating run had where it was asked to predict.
+note's error-scale question as ``z`` statistics per cell. The two SDs are
+not the same notion of uncertainty: the quadrature SD is the mean over
+hyperparameter samples of the per-sample variance, while the predictive
+variance also carries the spread of the per-sample means. Monte Carlo
+standard errors respect that every evaluating run and the truth average
+over the *same* draws of a component: the standard error of a combined
+estimate is that of the combined per-draw series, and a cross-run ``z``
+divides by the standard error of the per-draw difference between the
+estimate and the truth.
+
+Every pair of evaluating run and component also records ``n_eff`` (the
+run's training inputs weighted by the component's Gaussian kernel relative
+to its mode; a point at the mode counts one), ``n_within`` (the training
+inputs within two component SDs), ``data_offset`` (the mean over those
+inputs of the stored noisy value, Jacobian removed, minus the true log
+joint there: what the run's data say about the component, before any
+fit) and ``mean_fn`` (the run's GP mean function alone, Jacobian removed,
+averaged over the component's draws: where the fit falls back to without
+data). For the heaviest component of every run of a cell these are
+written out as a ``decomposition`` record with every run's estimate, so
+that a run's own optimism and another run's under- or over-prediction can
+be read against the data each run had at that component.
 
 Checks. On every run the own-run Monte Carlo estimate must reproduce the
 stored ``I_corr`` within sampling error (the weighted offset over
 components within ``Z_FLAG`` standard errors, no component beyond
 ``Z_FLAG_MAX``) and the Monte Carlo log-Jacobian must reproduce the
 deterministic ``expected_log_jacobian`` the same way; these gate the
-mapping and the units. On every cell the
-recomputed raw expected log joint must equal the arm's ``raw ELBO -
-entropy`` (``raw_consistency``; exact for the integrated arm, whose
-Jacobian corrections are the same deterministic ones, within the original
-arm's 20-draw Monte Carlo correction otherwise), which gates the weights
-and the component order. ``--self-check`` runs the run-level checks on
-every artifact of a pool without cells, which is how a pool generated
-elsewhere is first looked at.
+mapping and the units. On every cell the recomputed raw expected log joint
+must equal the arm's ``raw ELBO - entropy`` (``raw_consistency``; exact
+for the integrated arm, whose Jacobian corrections are the same
+deterministic ones, within the original arm's 20-draw Monte Carlo
+correction otherwise), which gates the weights and the component order.
+``--self-check`` runs the run-level checks on every artifact of a pool
+without cells, which is how a pool generated elsewhere is first looked at.
+A cell whose scoring fails (an arm that dropped a run, an artifact that
+does not load) is recorded under ``skipped`` with the reason and the sweep
+continues; every finished cell is appended to ``cells.jsonl`` as it
+completes.
 
 Usage::
 
     python dev/scripts/svbmc_honest_elbo.py --pool DIR [--pool DIR2] \\
         --cells RESULTS.json --out DIR [--arm integrated] [--draws 100] \\
-        [--seed 0] [--ratios 1.5,2,3,5] [--sd-cap 2.2360679775] \\
-        [--sd-floor 0.1] [--conditions L1,L2] [--gpyreg-source PATH] \\
-        [--no-figures]
+        [--seed 0] [--ratios 1.5,2,3,5] [--headline-ratio 2] \\
+        [--sd-cap 2.2360679775] [--sd-floor 0.1] [--conditions L1,L2] \\
+        [--gpyreg-source PATH] [--no-figures]
     python dev/scripts/svbmc_honest_elbo.py --pool DIR --out DIR --self-check
     python dev/scripts/svbmc_honest_elbo.py --summarize-only --out DIR
 
@@ -105,23 +125,30 @@ stream constant and the cell's seed (or the run's tag), so a cell is
 reproducible from its record. Nothing here needs Torch.
 
 Outputs under ``--out``: ``results.json`` (every cell row, every run's
-checks, the settings), ``cells/<condition>_M<M>_r<rep>.npz`` (the
-per-component arrays of a cell: every run's estimate, standard error and
-mean predictive variance for every component, the truth, the own-run
-values, the weights), ``summary.json`` and ``summary.md`` (per condition
-and ``M``: medians over cells with 10 000-resample bootstrap 95 %
-intervals of every bias, the cross-covered weight under every rule, the
-checks, the runs' own errors), ``figures/*.png`` (bias by condition,
-component errors own against honest, coverage sensitivity, calibration of
-the self-reported uncertainties) and ``sources.json`` (commits, import
-paths, versions, the hashes of this file and of the cells file, the
-pools' identities). ``--summarize-only`` rebuilds the summaries and the
-figures from a finished ``results.json``.
+checks, the skipped cells, the settings), ``cells.jsonl`` (one line per
+finished cell, written as the sweep goes),
+``cells/<condition>_M<M>_r<rep>.npz`` (the per-component arrays of a
+cell: every run's estimate, standard error, mean predictive variance,
+``n_eff``, ``n_within``, ``data_offset`` and ``mean_fn`` for every
+component, the truth, the own-run values, the weights, the headline
+coverage and combination weights), ``summary.json`` and ``summary.md``
+(per condition and ``M``: medians over cells with 10 000-resample
+bootstrap 95 % intervals of every bias, the cross-covered weight under
+every rule, the checks, the runs' own errors, the decomposition of the
+heaviest components), ``figures/*.png`` (bias by condition, component
+errors own against honest, coverage sensitivity, calibration of the
+self-reported uncertainties, errors against effective training points)
+and ``sources.json`` (commits, import paths, versions, thread settings,
+the hashes of this file and of the cells file, the pools' identities).
+``--summarize-only`` rebuilds the summaries and the figures from a
+finished ``results.json``; the three figures that read the per-cell
+arrays are skipped, with a message, when ``cells/`` is absent.
 """
 
 import argparse
 import hashlib
 import json
+import os
 import platform
 import sys
 import time
@@ -133,13 +160,20 @@ ROOT = HERE.parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(HERE))
 
-import numpy as np  # noqa: E402
-
 # The pool generator's module body pins BLAS to one thread and selects the
-# non-interactive matplotlib backend, both before NumPy is imported, and
-# imports nothing from PyVBMC, so the gpyreg pin can still be activated
-# in `main` before the first PyVBMC import.
-from svbmc_pool_run import activate_gpyreg, git, write_json  # noqa: E402
+# non-interactive matplotlib backend, both of which must happen before
+# NumPy is imported, so this import stays above the one below; it imports
+# nothing from PyVBMC, so the gpyreg pin can still be activated in `main`
+# before the first PyVBMC import.
+from svbmc_pool_run import (  # noqa: E402
+    THREAD_KEYS,
+    activate_gpyreg,
+    git,
+    write_json,
+)
+
+# isort: split
+import numpy as np  # noqa: E402
 
 #: Draws per component.
 DRAWS = 100
@@ -147,6 +181,7 @@ DRAWS = 100
 #: mean predictive SD on the component is at most this multiple of the
 #: component's own run's.
 RATIOS = (1.5, 2.0, 3.0, 5.0)
+HEADLINE_RATIO = 2.0
 #: Absolute cap on a covering run's mean predictive SD, in nats: the
 #: S-VBMC filter's scale for the Bayesian-quadrature SD of a component.
 SD_CAP = float(np.sqrt(5.0))
@@ -158,7 +193,6 @@ SD_CAP = float(np.sqrt(5.0))
 SD_FLOOR = 0.1
 #: Combinations of the covering runs' estimates.
 METHODS = ("median", "precision", "mean")
-HEADLINE_RULE = "ratio2"
 HEADLINE_METHOD = "median"
 #: Stream constants keying the draws of a cell and of a run's self-check.
 DRAW_STREAM = 23
@@ -190,10 +224,16 @@ VARIANTS = {
 #: Agreement required of the recomputed raw expected log joint with the
 #: integrated arm's record (both use the deterministic Jacobian terms).
 RAW_TOLERANCE = 1e-8
+#: Mahalanobis radius, in component SDs, of ``n_within``.
+WITHIN_RADIUS = 2.0
 
 
 def sha256(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def rule_name(ratio):
+    return f"ratio{float(ratio):g}"
 
 
 def coverage_rules(ratios, sd_cap, sd_floor=SD_FLOOR):
@@ -204,7 +244,7 @@ def coverage_rules(ratios, sd_cap, sd_floor=SD_FLOOR):
     either case at most ``cap``.
     """
     rules = {
-        f"ratio{r:g}": (float(r), float(sd_cap), float(sd_floor))
+        rule_name(r): (float(r), float(sd_cap), float(sd_floor))
         for r in ratios
     }
     rules["cap_only"] = (np.inf, float(sd_cap), float(sd_floor))
@@ -224,6 +264,12 @@ class Runs:
         self.paths = {}
         for directory in pool_dirs:
             for npz in sorted(Path(directory).glob("*.npz")):
+                if npz.stem in self.paths:
+                    raise RuntimeError(
+                        f"the artifact {npz.stem} is in more than one pool "
+                        f"directory ({self.paths[npz.stem].parent} and "
+                        f"{npz.parent})"
+                    )
                 self.paths[npz.stem] = npz.with_suffix("")
         self.cache = {}
 
@@ -256,6 +302,7 @@ def prepare_run(tag, path):
     diag = np.arange(K)
     jac = np.asarray(expected_log_jacobian(vp), dtype=np.float64)
     I = I_sk.mean(axis=0)
+    identity = state["meta"]["identity"]
     return {
         "tag": tag,
         "label": state["meta"]["label"],
@@ -276,9 +323,7 @@ def prepare_run(tag, path):
         "I_corr": I - jac,
         "bq_sd": np.sqrt(np.maximum(J_sjk[:, diag, diag].mean(axis=0), 0.0)),
         "noisy": int(vp.stats["uncertainty_handling_level"]) > 0,
-        "gpyreg_commit": state["meta"]["identity"]
-        .get("source", state["meta"]["identity"])
-        .get("gpyreg_commit"),
+        "gpyreg_commit": identity.get("source", identity).get("gpyreg_commit"),
     }
 
 
@@ -294,18 +339,33 @@ def predict(gp, U, rows=PREDICT_ROWS):
     return f, s2
 
 
+def mean_function(gp, U):
+    """The GP's mean function at ``U``, averaged over hyperparameter samples."""
+    D = U.shape[1]
+    cov_N = gp.covariance.hyperparameter_count(D)
+    noise_N = gp.noise.hyperparameter_count()
+    values = [
+        np.ravel(gp.mean.compute(p.hyp[cov_N + noise_N :], U))
+        for p in gp.posteriors
+    ]
+    return np.mean(values, axis=0)
+
+
 # --------------------------------------------------------------------------
 # One cell
 # --------------------------------------------------------------------------
 
 
-def evaluate(runs, w, problem, rng, draws, headline_ratio=2.0):
+def evaluate(runs, w, problem, rng, draws):
     """Every run's estimate of every component's expected log joint.
 
     ``runs`` are the cell's runs in stacking order, ``w`` the normalized
     weights of all their components in that order. Returns the
     per-component arrays described in the module docstring, with every
-    ``(M, K_total)`` array indexed by evaluating run and component.
+    ``(M, K_total)`` array indexed by evaluating run and component, and
+    the per-draw series ``g`` of shape ``(M, K_total, draws)`` (predict
+    mean minus log-Jacobian) and ``truth_draws`` of shape ``(K_total,
+    draws)`` that the standard errors are built from.
     """
     M = len(runs)
     K = [r["K"] for r in runs]
@@ -333,17 +393,21 @@ def evaluate(runs, w, problem, rng, draws, headline_ratio=2.0):
         block = slice(offsets[m] * n, offsets[m + 1] * n)
         U_own[block] = U.reshape(K[m] * n, D)
         X[block] = r["pt"].inverse(U_own[block])
-    truth, truth_se = per_component(
-        np.asarray(problem.log_density_vec(X), dtype=np.float64)
+    truth_draws = np.reshape(
+        np.asarray(problem.log_density_vec(X), dtype=np.float64),
+        (K_total, n),
     )
+    truth = truth_draws.mean(axis=1)
+    truth_se = truth_draws.std(axis=1, ddof=1) / np.sqrt(n)
 
     # Every run evaluates every draw: its transform, its log-Jacobian, its
-    # GP. The own block keeps the draws themselves rather than the round
-    # trip through the original space, which differs by rounding only.
-    est = np.empty((M, K_total))
-    se = np.empty((M, K_total))
+    # GP and its mean function. The own block keeps the draws themselves
+    # rather than the round trip through the original space (identical
+    # up to rounding, and up to the clipping of an extreme draw on a
+    # bounded coordinate).
+    g = np.empty((M, K_total, n))
     v = np.empty((M, K_total))
-    s2_all = np.empty((M, K_total * n))
+    mean_fn = np.empty((M, K_total))
     lj_own = np.empty(K_total * n)
     for rr, r in enumerate(runs):
         block = slice(offsets[rr] * n, offsets[rr + 1] * n)
@@ -351,42 +415,65 @@ def evaluate(runs, w, problem, rng, draws, headline_ratio=2.0):
         U[block] = U_own[block]
         lj = np.asarray(r["pt"].log_abs_det_jacobian(U), dtype=np.float64)
         f, s2 = predict(r["gp"], U)
-        est[rr], se[rr] = per_component(f - lj)
+        g[rr] = np.reshape(f - lj, (K_total, n))
         v[rr] = np.reshape(s2, (K_total, n)).mean(axis=1)
-        s2_all[rr] = s2
+        mean_fn[rr] = np.reshape(
+            mean_function(r["gp"], U) - lj, (K_total, n)
+        ).mean(axis=1)
         lj_own[block] = lj[block]
-    # How much of each run's training data sits on each component: the
-    # run's training inputs mapped into the component's run's space and
-    # weighted by the component's Gaussian kernel relative to its mode (a
-    # point at the mode counts one, at one SD about 0.6).
+    est = g.mean(axis=2)
+    se = g.std(axis=2, ddof=1) / np.sqrt(n)
+    se_diff = (g - truth_draws[None]).std(axis=2, ddof=1) / np.sqrt(n)
+
+    # What each run's training data say about each component: the run's
+    # training inputs mapped into the component's run's space, weighted
+    # by the component's Gaussian kernel relative to its mode (`n_eff`),
+    # counted within two SDs (`n_within`), and their stored values with
+    # the Jacobian removed against the true log joint there
+    # (`data_offset`, the noise realization the run saw).
     n_eff = np.empty((M, K_total))
+    n_within = np.empty((M, K_total), dtype=int)
+    data_offset = np.full((M, K_total), np.nan)
     for rr, r in enumerate(runs):
-        X_train = r["pt"].inverse(np.asarray(r["gp"].X, dtype=np.float64))
+        X_train_u = np.asarray(r["gp"].X, dtype=np.float64)
+        X_train = r["pt"].inverse(X_train_u)
+        residual = (
+            np.ravel(r["gp"].y)
+            - np.asarray(r["pt"].log_abs_det_jacobian(X_train_u), dtype=float)
+            - np.asarray(problem.log_density_vec(X_train), dtype=float)
+        )
         for m, other in enumerate(runs):
             U_m = np.asarray(other["pt"](X_train), dtype=np.float64)
             U_m = U_m.reshape(-1, D)
             scaled = (U_m[:, None, :] - other["mu"].T[None, :, :]) / other[
                 "sig"
             ].T[None, :, :]
-            n_eff[rr, offsets[m] : offsets[m + 1]] = np.exp(
-                -0.5 * np.sum(scaled**2, axis=2)
-            ).sum(axis=0)
+            d2 = np.sum(scaled**2, axis=2)  # (N_r, K_m)
+            block = slice(offsets[m], offsets[m + 1])
+            n_eff[rr, block] = np.exp(-0.5 * d2).sum(axis=0)
+            within = d2 < WITHIN_RADIUS**2
+            count = within.sum(axis=0)
+            n_within[rr, block] = count
+            total = (residual[:, None] * within).sum(axis=0)
+            data_offset[rr, block] = np.where(
+                count > 0, total / np.maximum(count, 1), np.nan
+            )
     columns = np.arange(K_total)
-    own_rows = np.repeat(run_index, n)
-    s2_own = s2_all[own_rows, np.arange(K_total * n)]
-    frac = np.reshape(
-        s2_all <= headline_ratio**2 * s2_own[None, :], (M, K_total, n)
-    ).mean(axis=2)
     jac_mc, jac_se = per_component(lj_own)
     return {
         "K": np.asarray(K, dtype=int),
         "w": w,
         "run_index": run_index,
+        "g": g,
+        "truth_draws": truth_draws,
         "est": est,
         "se": se,
+        "se_diff": se_diff,
         "v": v,
-        "frac": frac,
+        "mean_fn": mean_fn,
         "n_eff": n_eff,
+        "n_within": n_within,
+        "data_offset": data_offset,
         "truth": truth,
         "truth_se": truth_se,
         "own_mc": est[run_index, columns],
@@ -404,9 +491,14 @@ def combine(arrays, rule, method, exclude_own=True):
 
     Returns the cell-level numbers and the per-component estimate,
     coverage mask (evaluating run by component) and combination weights.
+    The Monte Carlo standard error of a combined estimate is that of the
+    combined per-draw series (every evaluating run averages the same
+    draws), from ``arrays["g"]``.
     """
     est, se, v = arrays["est"], arrays["se"], arrays["v"]
     w, run_index = arrays["w"], arrays["run_index"]
+    g = arrays["g"]
+    n = g.shape[2]
     M, K_total = est.shape
     ratio, cap, floor = rule
     columns = np.arange(K_total)
@@ -438,7 +530,8 @@ def combine(arrays, rule, method, exclude_own=True):
         else:
             raise ValueError(f"unknown method {method!r}")
         G[k] = a[:, k] @ est[:, k]
-        mc_se[k] = np.sqrt(np.sum(a[:, k] ** 2 * se[:, k] ** 2))
+        series = a[:, k] @ g[:, k, :]
+        mc_se[k] = series.std(ddof=1) / np.sqrt(n)
     # GP-side uncertainty of the weighted sum, under independence across
     # components and under full correlation within each evaluating run
     # (a fallback component is evaluated by its own run's quadrature).
@@ -522,7 +615,60 @@ def run_checks(arrays):
     }
 
 
-def score_cell(cell, arm, runs, problem, rng, draws, rules, methods):
+def _optional(value):
+    value = float(value)
+    return None if not np.isfinite(value) else value
+
+
+def decomposition(runs, arrays, cover):
+    """The heaviest component of every run, seen by every run of the cell."""
+    w = arrays["w"]
+    offsets = np.concatenate([[0], np.cumsum(arrays["K"])]).astype(int)
+    rows = []
+    for m, r in enumerate(runs):
+        block = slice(offsets[m], offsets[m + 1])
+        k = offsets[m] + int(np.argmax(w[block]))
+
+        def data(rr):
+            return {
+                "n_eff": float(arrays["n_eff"][rr, k]),
+                "n_within": int(arrays["n_within"][rr, k]),
+                "data_offset": _optional(arrays["data_offset"][rr, k]),
+                "mean_fn": float(arrays["mean_fn"][rr, k]),
+            }
+
+        rows.append(
+            {
+                "run": r["tag"],
+                "component": int(k - offsets[m]),
+                "weight": float(w[k]),
+                "truth": float(arrays["truth"][k]),
+                "truth_se": float(arrays["truth_se"][k]),
+                "own": {
+                    "I_corr": float(arrays["I_corr"][k]),
+                    "error": float(arrays["I_corr"][k] - arrays["truth"][k]),
+                    "bq_sd": float(arrays["bq_sd"][k]),
+                    **data(m),
+                },
+                "others": {
+                    runs[rr]["tag"]: {
+                        "estimate": float(arrays["est"][rr, k]),
+                        "error": float(
+                            arrays["est"][rr, k] - arrays["truth"][k]
+                        ),
+                        "sd": float(np.sqrt(arrays["v"][rr, k])),
+                        "covered": bool(cover[rr, k]),
+                        **data(rr),
+                    }
+                    for rr in range(len(runs))
+                    if rr != m
+                },
+            }
+        )
+    return rows
+
+
+def score_cell(cell, arm, runs, problem, rng, draws, rules, methods, headline):
     """One cell: every estimate, its bias and the diagnostics."""
     record = cell["arms"][arm]
     names = VARIANTS[arm]
@@ -537,7 +683,7 @@ def score_cell(cell, arm, runs, problem, rng, draws, rules, methods):
     w = w / w.sum()
     started = time.perf_counter()
     arrays = evaluate(runs, w, problem, rng, draws)
-    seconds_evaluate = time.perf_counter() - started
+    evaluate_seconds = time.perf_counter() - started
 
     I_corr = arrays["I_corr"]
     offsets = np.concatenate([[0], np.cumsum(arrays["K"])]).astype(int)
@@ -561,9 +707,9 @@ def score_cell(cell, arm, runs, problem, rng, draws, rules, methods):
     G_true_se = float(np.sqrt(np.sum(w**2 * arrays["truth_se"] ** 2)))
 
     honest = {}
-    per_component = {}
-    for rule_name, rule in rules.items():
-        honest[rule_name] = {}
+    per_component = None
+    for name, rule in rules.items():
+        honest[name] = {}
         for method in methods:
             summary, G_k, cover, a = combine(arrays, rule, method)
             summary["bias"] = summary["G"] - e_mc
@@ -572,11 +718,13 @@ def score_cell(cell, arm, runs, problem, rng, draws, rules, methods):
             )
             summary["elbo"] = summary["G"] + entropy_ref
             summary["elbo_arm_entropy"] = summary["G"] + entropy_arm
-            honest[rule_name][method] = summary
-            if rule_name == HEADLINE_RULE and method == HEADLINE_METHOD:
+            honest[name][method] = summary
+            if name == headline[0] and method == headline[1]:
                 per_component = {"G": G_k, "cover": cover, "a": a}
+    if per_component is None:
+        raise RuntimeError(f"the headline {headline} is not in the grid")
     pooled, _, _, _ = combine(
-        arrays, rules[HEADLINE_RULE], HEADLINE_METHOD, exclude_own=False
+        arrays, rules[headline[0]], headline[1], exclude_own=False
     )
     pooled["bias"] = pooled["G"] - e_mc
 
@@ -586,9 +734,7 @@ def score_cell(cell, arm, runs, problem, rng, draws, rules, methods):
     cover = per_component["cover"]
     rows, cols = np.nonzero(cover)
     cross_z = (arrays["est"][rows, cols] - truth[cols]) / np.sqrt(
-        arrays["v"][rows, cols]
-        + arrays["se"][rows, cols] ** 2
-        + truth_se[cols] ** 2
+        arrays["v"][rows, cols] + arrays["se_diff"][rows, cols] ** 2
     )
     honest_error = per_component["G"] - truth
 
@@ -611,7 +757,9 @@ def score_cell(cell, arm, runs, problem, rng, draws, rules, methods):
             covered = mine & cover[rr]
             covered_share = float(w[covered].sum())
             seen_by[other["tag"]] = {
-                "weight_covered": covered_share / share if share > 0 else None,
+                "weight_covered": (
+                    covered_share / share if share > 0 else None
+                ),
                 "error": (
                     float(
                         w[covered]
@@ -649,54 +797,48 @@ def score_cell(cell, arm, runs, problem, rng, draws, rules, methods):
     if arm == "integrated" and abs(checks["raw_consistency"]) > RAW_TOLERANCE:
         checks["flagged"] = True
 
-    return (
-        {
-            "condition": cell["condition"],
-            "M": int(cell["M"]),
-            "repetition": int(cell["repetition"]),
-            "cell_seed": int(cell["cell_seed"]),
-            "arm": arm,
-            "entries": [r["tag"] for r in runs],
-            "K": K_runs,
-            "K_total": int(sum(K_runs)),
-            "draws": int(draws),
-            "reference": {
-                "e_log_joint_mc": e_mc,
-                "e_log_joint_mc_sd": e_mc_sd,
-                "entropy_ref": entropy_ref,
-                "entropy_ref_sd": float(record["entropy_ref_sd"]),
-                "entropy_arm": entropy_arm,
-                "elbo_mc": float(record["elbo_mc"]),
-                "elbo_mc_sd": float(record["elbo_mc_sd"]),
-                "kl_gap": float(record["kl_gap"]),
-                "ln_Z": None if problem.ln_Z is None else float(problem.ln_Z),
-            },
-            "estimates": estimates,
-            "bias": {k: float(v - e_mc) for k, v in estimates.items()},
-            "recorded_bias": {
-                k: float(record["bias"][name]) for k, name in names.items()
-            },
-            "truth_strat": {
-                "G": G_true,
-                "se": G_true_se,
-                "bias": G_true - e_mc,
-            },
-            "honest": honest,
-            "pooled": pooled,
-            "calibration": {
-                "own": z_stats(own_z, w),
-                "cross": z_stats(cross_z, w[cols]),
-                "honest_error_weighted": float(w @ honest_error),
-                "own_error_weighted": float(w @ (I_corr - truth)),
-            },
-            "sparsity": sparsity,
-            "runs": run_rows,
-            "checks": checks,
-            "seconds": seconds_evaluate,
+    row = {
+        "condition": cell["condition"],
+        "M": int(cell["M"]),
+        "repetition": int(cell["repetition"]),
+        "cell_seed": int(cell["cell_seed"]),
+        "arm": arm,
+        "entries": [r["tag"] for r in runs],
+        "K": K_runs,
+        "K_total": int(sum(K_runs)),
+        "draws": int(draws),
+        "reference": {
+            "e_log_joint_mc": e_mc,
+            "e_log_joint_mc_sd": e_mc_sd,
+            "entropy_ref": entropy_ref,
+            "entropy_ref_sd": float(record["entropy_ref_sd"]),
+            "entropy_arm": entropy_arm,
+            "elbo_mc": float(record["elbo_mc"]),
+            "elbo_mc_sd": float(record["elbo_mc_sd"]),
+            "kl_gap": float(record["kl_gap"]),
+            "ln_Z": None if problem.ln_Z is None else float(problem.ln_Z),
         },
-        arrays,
-        per_component,
-    )
+        "estimates": estimates,
+        "bias": {k: float(v - e_mc) for k, v in estimates.items()},
+        "recorded_bias": {
+            k: float(record["bias"][name]) for k, name in names.items()
+        },
+        "truth_strat": {"G": G_true, "se": G_true_se, "bias": G_true - e_mc},
+        "honest": honest,
+        "pooled": pooled,
+        "calibration": {
+            "own": z_stats(own_z, w),
+            "cross": z_stats(cross_z, w[cols]),
+            "honest_error_weighted": float(w @ honest_error),
+            "own_error_weighted": float(w @ (I_corr - truth)),
+        },
+        "sparsity": sparsity,
+        "runs": run_rows,
+        "decomposition": decomposition(runs, arrays, cover),
+        "checks": checks,
+        "evaluate_seconds": evaluate_seconds,
+    }
+    return row, arrays, per_component
 
 
 def self_check(run, problem, rng, draws):
@@ -752,10 +894,25 @@ def bootstrap_median(values, rng, resamples=BOOTSTRAP_RESAMPLES):
     }
 
 
+HONEST_KEYS = (
+    "bias",
+    "bias_arm_entropy",
+    "weight_covered",
+    "mc_se",
+    "gp_sd_indep",
+    "gp_sd_corr",
+    "covering_runs_weighted",
+)
+
+
 def build_summary(results, rng):
     settings = results["settings"]
     rules = list(settings["rules"])
     methods = list(settings["methods"])
+    head_rule, head_method = (
+        settings["headline_rule"],
+        settings["headline_method"],
+    )
     conditions = {r["condition"]: {} for r in results["runs"]}
     for row in results["cells"]:
         conditions.setdefault(row["condition"], {}).setdefault(
@@ -773,41 +930,31 @@ def build_summary(results, rng):
             honest = {
                 rule: {
                     method: {
-                        "bias": agg(
-                            lambda r: r["honest"][rule][method]["bias"]
-                        ),
-                        "bias_arm_entropy": agg(
-                            lambda r: r["honest"][rule][method][
-                                "bias_arm_entropy"
-                            ]
-                        ),
-                        "weight_covered": agg(
-                            lambda r: r["honest"][rule][method][
-                                "weight_covered"
-                            ]
-                        ),
-                        "mc_se": agg(
-                            lambda r: r["honest"][rule][method]["mc_se"]
-                        ),
-                        "gp_sd_indep": agg(
-                            lambda r: r["honest"][rule][method]["gp_sd_indep"]
-                        ),
-                        "gp_sd_corr": agg(
-                            lambda r: r["honest"][rule][method]["gp_sd_corr"]
-                        ),
-                        "covering_runs_weighted": agg(
-                            lambda r: r["honest"][rule][method][
-                                "covering_runs_weighted"
-                            ]
-                        ),
+                        key: agg(
+                            lambda r, rule=rule, method=method, key=key: r[
+                                "honest"
+                            ][rule][method][key]
+                        )
+                        for key in HONEST_KEYS
                     }
                     for method in methods
                 }
                 for rule in rules
             }
-            headline = honest[settings["headline_rule"]][
-                settings["headline_method"]
+            head = [r["honest"][head_rule][head_method] for r in rows]
+            within = [
+                abs(h["bias"])
+                <= 2
+                * np.hypot(h["mc_se"], r["reference"]["e_log_joint_mc_sd"])
+                for h, r in zip(head, rows)
             ]
+            medians = {
+                key: float(np.median([abs(r["bias"][key]) for r in rows]))
+                for key in ("raw", "capped_I", "capped_E")
+            }
+            medians["honest"] = float(
+                np.median([abs(h["bias"]) for h in head])
+            )
             by_M.append(
                 {
                     "M": M,
@@ -829,32 +976,13 @@ def build_summary(results, rng):
                     "kl_gap": agg(lambda r: r["reference"]["kl_gap"]),
                     "honest": honest,
                     "pooled_bias": agg(lambda r: r["pooled"]["bias"]),
-                    "headline_within_se": float(
-                        np.mean(
-                            [
-                                abs(
-                                    r["honest"][settings["headline_rule"]][
-                                        settings["headline_method"]
-                                    ]["bias"]
-                                )
-                                <= 2
-                                * np.hypot(
-                                    r["honest"][settings["headline_rule"]][
-                                        settings["headline_method"]
-                                    ]["mc_se"],
-                                    r["reference"]["e_log_joint_mc_sd"],
-                                )
-                                for r in rows
-                            ]
-                        )
-                    ),
+                    "headline_within_se": float(np.mean(within)),
+                    "median_abs_bias": medians,
                     "headline_not_worse_than_raw": bool(
-                        abs(headline["bias"]["median"])
-                        <= abs(
-                            bootstrap_median(
-                                [r["bias"]["raw"] for r in rows], rng
-                            )["median"]
-                        )
+                        medians["honest"] <= medians["raw"]
+                    ),
+                    "headline_not_worse_than_capped": bool(
+                        medians["honest"] <= medians["capped_I"]
                     ),
                     "calibration": {
                         side: {
@@ -891,6 +1019,11 @@ def build_summary(results, rng):
                             bool(r["checks"]["flagged"]) for r in rows
                         ),
                     },
+                    "decomposition": rows[0]["decomposition"],
+                    "decomposition_cell": {
+                        "repetition": rows[0]["repetition"],
+                        "cell_seed": rows[0]["cell_seed"],
+                    },
                 }
             )
         runs = [r for r in results["runs"] if r["condition"] == condition]
@@ -921,6 +1054,7 @@ def build_summary(results, rng):
     return {
         "generated": time.strftime("%Y-%m-%d %H:%M:%S"),
         "settings": settings,
+        "skipped": results.get("skipped", []),
         "conditions": out,
     }
 
@@ -938,6 +1072,34 @@ def interval(entry, digits=3):
         f"{entry['median']:.{digits}f} "
         f"[{entry['lo']:.{digits}f}, {entry['hi']:.{digits}f}]"
     )
+
+
+def decomposition_markdown(rows):
+    """The heaviest component of every run of a cell, seen by every run."""
+    lines = [
+        "| Run, heaviest component (weight) | truth | own I_corr (error; "
+        "BQ sd; points within 2 SD, their data offset; mean fn) | other "
+        "runs: estimate (error; pred sd; covered; points within 2 SD, "
+        "their data offset; mean fn) |",
+        "|---|---:|---|---|",
+    ]
+    for row in rows:
+        own = row["own"]
+        others = "; ".join(
+            f"{tag}: {o['estimate']:.3f} ({o['error']:+.3f}; {o['sd']:.3f}; "
+            f"{'yes' if o['covered'] else 'no'}; {o['n_within']}, "
+            f"{number(o['data_offset'])}; {o['mean_fn']:.1f})"
+            for tag, o in row["others"].items()
+        )
+        lines.append(
+            f"| {row['run']}, component {row['component']} "
+            f"({row['weight']:.3f}) | {row['truth']:.3f} ± "
+            f"{row['truth_se']:.3f} | {own['I_corr']:.3f} "
+            f"({own['error']:+.3f}; {own['bq_sd']:.3f}; {own['n_within']}, "
+            f"{number(own['data_offset'])}; {own['mean_fn']:.1f}) | "
+            f"{others} |"
+        )
+    return lines
 
 
 def summary_markdown(summary):
@@ -977,32 +1139,46 @@ def summary_markdown(summary):
         f"`M` with a {settings['bootstrap_resamples']:,}-resample "
         "bootstrap 95 % interval. `covered` is the stacked weight on "
         "components at least one other run covers. `mc_se` is the "
-        "Monte Carlo standard error of the honest value from the draws, "
-        "`gp_sd` its GP-side standard deviation under independence "
-        "across components and under full correlation within each "
-        "evaluating run.",
-        "",
-        "## Headline across conditions",
-        "",
-        "| Condition | M | cells | raw | capped_I | honest "
-        f"({rule}, {method}) | honest ({rule}, precision) | covered | "
-        "mc_se | within 2 SE | KL gap |",
-        "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "Monte Carlo standard error of the honest value from the draws "
+        "(the covering runs average the same draws), `gp_sd` its GP-side "
+        "standard deviation under independence across components and "
+        "under full correlation within each evaluating run. `within 2 SE` "
+        "is the fraction of cells whose headline bias is within twice the "
+        "combined Monte Carlo standard error of the estimate and of the "
+        "reference.",
     ]
-    for condition in summary["conditions"]:
-        for entry in condition["by_M"]:
-            h = entry["honest"][rule]
-            lines.append(
-                f"| {condition['condition']} | {entry['M']} | "
-                f"{entry['cells']} | {interval(entry['bias']['raw'])} | "
-                f"{interval(entry['bias']['capped_I'])} | "
-                f"{interval(h[method]['bias'])} | "
-                f"{interval(h['precision']['bias'])} | "
-                f"{number(h[method]['weight_covered']['median'])} | "
-                f"{number(h[method]['mc_se']['median'])} | "
-                f"{entry['headline_within_se']:.2f} | "
-                f"{interval(entry['kl_gap'], 2)} |"
-            )
+    if summary.get("skipped"):
+        lines += [
+            "",
+            f"Skipped cells: {len(summary['skipped'])} (see `results.json`).",
+        ]
+    if any(c["by_M"] for c in summary["conditions"]):
+        lines += [
+            "",
+            "## Headline across conditions",
+            "",
+            "| Condition | M | cells | raw | capped_I | honest "
+            f"({rule}, {method}) | honest ({rule}, precision) | covered | "
+            "mc_se | within 2 SE | median abs bias raw / capped_I / "
+            "honest | KL gap |",
+            "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|",
+        ]
+        for condition in summary["conditions"]:
+            for entry in condition["by_M"]:
+                h = entry["honest"][rule]
+                mab = entry["median_abs_bias"]
+                lines.append(
+                    f"| {condition['condition']} | {entry['M']} | "
+                    f"{entry['cells']} | {interval(entry['bias']['raw'])} | "
+                    f"{interval(entry['bias']['capped_I'])} | "
+                    f"{interval(h[method]['bias'])} | "
+                    f"{interval(h['precision']['bias'])} | "
+                    f"{number(h[method]['weight_covered']['median'])} | "
+                    f"{number(h[method]['mc_se']['median'])} | "
+                    f"{entry['headline_within_se']:.2f} | "
+                    f"{mab['raw']:.3f} / {mab['capped_I']:.3f} / "
+                    f"{mab['honest']:.3f} | {interval(entry['kl_gap'], 2)} |"
+                )
     for condition in summary["conditions"]:
         lines += [
             "",
@@ -1020,9 +1196,11 @@ def summary_markdown(summary):
                 f"| raw | {interval(entry['bias']['raw'])} | "
                 f"{interval(entry['recorded_bias']['raw'])} | - | - | - |",
                 f"| capped_I | {interval(entry['bias']['capped_I'])} | "
-                f"{interval(entry['recorded_bias']['capped_I'])} | - | - | - |",
+                f"{interval(entry['recorded_bias']['capped_I'])} | - | - | "
+                "- |",
                 f"| capped_E | {interval(entry['bias']['capped_E'])} | "
-                f"{interval(entry['recorded_bias']['capped_E'])} | - | - | - |",
+                f"{interval(entry['recorded_bias']['capped_E'])} | - | - | "
+                "- |",
             ]
             for r in settings["rules"]:
                 for m in settings["methods"]:
@@ -1035,55 +1213,78 @@ def summary_markdown(summary):
                         f"{number(h['gp_sd_indep']['median'])} / "
                         f"{number(h['gp_sd_corr']['median'])} |"
                     )
+            mab = entry["median_abs_bias"]
+            own_c, cross_c = (
+                entry["calibration"]["own"],
+                entry["calibration"]["cross"],
+            )
+            checks = entry["checks"]
             lines += [
                 f"| pooled ({rule}, own included) | "
                 f"{interval(entry['pooled_bias'])} | - | - | - | - |",
-                f"| truth_strat | {interval(entry['truth_strat_bias'])} | - | "
-                "- | - | - |",
+                f"| truth_strat | {interval(entry['truth_strat_bias'])} | - "
+                "| - | - | - |",
                 "",
                 f"Reference `e_log_joint_mc_sd` median "
                 f"{number(entry['reference_sd']['median'])}; the headline "
-                f"bias is within 2 SE (Monte Carlo of both sides) in "
-                f"{entry['headline_within_se']:.0%} of the cells and its "
-                "median absolute bias is "
+                f"bias is within 2 SE in {entry['headline_within_se']:.0%} "
+                "of the cells; median absolute bias raw "
+                f"{mab['raw']:.3f}, capped_I {mab['capped_I']:.3f}, "
+                f"capped_E {mab['capped_E']:.3f}, honest {mab['honest']:.3f} "
+                "(the honest estimate is "
                 + (
-                    "not larger"
+                    "not worse"
                     if entry["headline_not_worse_than_raw"]
-                    else "**larger**"
+                    else "**worse**"
                 )
-                + " than the raw estimate's. Calibration of the "
-                "self-reported SDs (weighted over components): own "
-                f"z median {interval(entry['calibration']['own']['median'], 2)}, "
-                f"|z| median {interval(entry['calibration']['own']['abs_median'], 2)}, "
-                f"|z| > 2 fraction {interval(entry['calibration']['own']['frac_gt2'], 2)}; "
-                f"cross z median {interval(entry['calibration']['cross']['median'], 2)}, "
-                f"|z| median {interval(entry['calibration']['cross']['abs_median'], 2)}, "
-                f"|z| > 2 fraction {interval(entry['calibration']['cross']['frac_gt2'], 2)}. "
-                "Effective training points on a component (weighted "
-                "median): own run "
+                + " than raw and "
+                + (
+                    "not worse"
+                    if entry["headline_not_worse_than_capped"]
+                    else "**worse**"
+                )
+                + " than capped_I). Calibration of the self-reported SDs "
+                "(weighted over components): own z median "
+                f"{interval(own_c['median'], 2)}, abs z median "
+                f"{interval(own_c['abs_median'], 2)}, abs z > 2 fraction "
+                f"{interval(own_c['frac_gt2'], 2)}; cross z median "
+                f"{interval(cross_c['median'], 2)}, abs z median "
+                f"{interval(cross_c['abs_median'], 2)}, abs z > 2 fraction "
+                f"{interval(cross_c['frac_gt2'], 2)}. Effective training "
+                "points on a component (weighted median): own run "
                 f"{interval(entry['sparsity']['own_n_eff_median'], 1)}, "
                 "covering other runs "
                 f"{interval(entry['sparsity']['cross_n_eff_median'], 1)}. "
-                f"Checks: own-run max |z| {entry['checks']['own_mc_max_z']:.2f} "
-                f"(weighted offset |z| {entry['checks']['own_offset_max_z']:.2f}), "
-                f"Jacobian max |z| {entry['checks']['jac_max_z']:.2f} "
-                f"(offset |z| {entry['checks']['jac_offset_max_z']:.2f}), "
-                f"raw consistency {entry['checks']['raw_consistency_max']:.1e}, "
-                f"flagged cells {entry['checks']['flagged_cells']}.",
+                f"Checks: own-run max abs z {checks['own_mc_max_z']:.2f} "
+                f"(weighted offset abs z {checks['own_offset_max_z']:.2f}), "
+                f"Jacobian max abs z {checks['jac_max_z']:.2f} (offset abs z "
+                f"{checks['jac_offset_max_z']:.2f}), raw consistency "
+                f"{checks['raw_consistency_max']:.1e}, flagged cells "
+                f"{checks['flagged_cells']}.",
             ]
+            if entry["M"] <= 4:
+                lines += [
+                    "",
+                    "Heaviest component of every run, repetition "
+                    f"{entry['decomposition_cell']['repetition']}:",
+                    "",
+                    *decomposition_markdown(entry["decomposition"]),
+                ]
         lines += [
             "",
-            "| Run | own error | se | own z median | own |z| median | "
-            "BQ sd median | pred sd median | own-run max |z| (offset z) | "
-            "Jacobian max |z| (offset z) |",
+            "| Run | own error | se | own z median | own abs z median | "
+            "BQ sd median | pred sd median | own-run max abs z (offset z) | "
+            "Jacobian max abs z (offset z) |",
             "|---|---:|---:|---:|---:|---:|---:|---:|---:|",
         ]
         for r in condition["runs"]:
             lines.append(
                 f"| {r['tag']} | {number(r['own_error'])} | "
-                f"{number(r['own_error_se'])} | {number(r['own_z_median'], 2)} | "
+                f"{number(r['own_error_se'])} | "
+                f"{number(r['own_z_median'], 2)} | "
                 f"{number(r['own_abs_z_median'], 2)} | "
-                f"{number(r['bq_sd_median'])} | {number(r['pred_sd_median'])} | "
+                f"{number(r['bq_sd_median'])} | "
+                f"{number(r['pred_sd_median'])} | "
                 f"{r['own_mc_max_z']:.2f} ({r['own_offset_z']:+.2f}) | "
                 f"{r['jac_max_z']:.2f} ({r['jac_offset_z']:+.2f})"
                 + (" (flagged)" if r["flagged"] else "")
@@ -1138,43 +1339,45 @@ def _short(condition):
     return condition.replace("_svbmc", "")
 
 
+def _save(fig, path):
+    fig.savefig(path, dpi=150, bbox_inches="tight", pad_inches=0.15)
+
+
 def figure_bias(summary, out):
     import matplotlib.pyplot as plt
 
     settings = summary["settings"]
     rule, method = settings["headline_rule"], settings["headline_method"]
     Ms = sorted({e["M"] for c in summary["conditions"] for e in c["by_M"]})
+    n_conditions = max(1, len(summary["conditions"]))
     fig, axes = plt.subplots(
         1,
         len(Ms),
-        figsize=(
-            max(5.5, 2.2 * len(summary["conditions"])) * len(Ms) ** 0.5,
-            3.8,
-        ),
+        figsize=(max(5.5, 2.0 * n_conditions) * len(Ms) ** 0.5, 3.8),
         squeeze=False,
         sharey=True,
     )
     series = [
-        ("raw", SERIES["raw"], "o", "full", lambda e: e["bias"]["raw"]),
+        ("raw", SERIES["raw"], "o", True, lambda e: e["bias"]["raw"]),
         (
             "capped_I",
             SERIES["capped"],
             "o",
-            "full",
+            True,
             lambda e: e["bias"]["capped_I"],
         ),
         (
             f"honest {rule} {method}",
             SERIES["honest"],
             "o",
-            "full",
+            True,
             lambda e: e["honest"][rule][method]["bias"],
         ),
         (
             f"honest {rule} precision",
             SERIES["honest"],
             "s",
-            "none",
+            False,
             lambda e: e["honest"][rule]["precision"]["bias"],
         ),
     ]
@@ -1186,7 +1389,7 @@ def figure_bias(summary, out):
             labels.append(_short(condition["condition"]))
             if entry is None:
                 continue
-            for offset, (name, color, marker, fill, get) in zip(
+            for offset, (name, color, marker, filled, get) in zip(
                 offsets, series
             ):
                 stat = get(entry)
@@ -1201,7 +1404,7 @@ def figure_bias(summary, out):
                     ],
                     fmt=marker,
                     color=color,
-                    markerfacecolor=color if fill == "full" else SURFACE,
+                    markerfacecolor=color if filled else SURFACE,
                     markeredgewidth=1.5,
                     markersize=6,
                     capsize=2,
@@ -1211,59 +1414,60 @@ def figure_bias(summary, out):
         ax.axhline(0, color=INK_SOFT, linewidth=0.8)
         ax.set_xticks(range(len(labels)))
         ax.set_xticklabels(labels, rotation=20, ha="right")
-        ax.set_title(
-            f"M = {M}: bias of the expected log joint against e_log_joint_mc"
-        )
+        ax.set_title(f"M = {M}: bias against e_log_joint_mc")
         ax.grid(axis="x", visible=False)
-    axes[0][0].set_ylabel(
-        "bias (nats), median over cells with 95 % bootstrap interval"
-    )
+    axes[0][0].set_ylabel("bias (nats); median over cells, 95 % bootstrap")
     axes[0][0].legend(loc="best")
-    fig.tight_layout()
-    fig.savefig(out / "bias_by_condition.png", dpi=150)
+    _save(fig, out / "bias_by_condition.png")
     plt.close(fig)
 
 
-def figure_components(results, out):
+def _cell_files(results, out):
+    """The per-cell arrays available for the figures, one per condition/M."""
+    cells_dir = Path(out).parent / "cells"
+    picks = {}
+    for row in results["cells"]:
+        key = (row["condition"], row["M"])
+        current = picks.get(key)
+        if current is None or row["repetition"] < current["repetition"]:
+            picks[key] = row
+    available, missing = {}, []
+    for key, row in sorted(picks.items()):
+        path = cells_dir / cell_filename(row)
+        if path.exists():
+            available[key] = (row, path)
+        else:
+            missing.append(path.name)
+    return available, missing
+
+
+def figure_components(results, out, available):
     import matplotlib.pyplot as plt
 
     settings = results["settings"]
-    cells_dir = out.parent / "cells"
+    rule, method = settings["headline_rule"], settings["headline_method"]
     picks = {}
-    for row in results["cells"]:
-        current = picks.get(row["condition"])
-        if current is None or (row["M"], -row["repetition"]) > (
-            current["M"],
-            -current["repetition"],
-        ):
-            picks[row["condition"]] = row
+    for (condition, M), (row, path) in available.items():
+        if condition not in picks or M > picks[condition][0]["M"]:
+            picks[condition] = (row, path)
     conditions = sorted(picks)
-    if not conditions:
-        return
     cols = min(3, len(conditions))
     rows_n = int(np.ceil(len(conditions) / cols))
     fig, axes = plt.subplots(
-        rows_n, cols, figsize=(3.6 * cols, 3.4 * rows_n), squeeze=False
+        rows_n, cols, figsize=(3.6 * cols, 3.6 * rows_n), squeeze=False
     )
     for ax in axes.ravel()[len(conditions) :]:
         ax.axis("off")
     for ax, condition in zip(axes.ravel(), conditions):
-        row = picks[condition]
-        path = cells_dir / cell_filename(row)
-        if not path.exists():
-            ax.set_title(f"{_short(condition)}: no per-component file")
-            continue
+        row, path = picks[condition]
         with np.load(path, allow_pickle=False) as data:
             own_error = data["I_corr"] - data["truth"]
             honest_error = data["honest_G"] - data["truth"]
             covered = data["covered"]
             w = data["w"]
         size = 6 + 140 * w / max(w.max(), np.finfo(float).tiny)
-        lim = (
-            float(np.max(np.abs(np.concatenate([own_error, honest_error]))))
-            * 1.08
-        )
-        lim = max(lim, 0.1)
+        lim = float(np.max(np.abs(np.concatenate([own_error, honest_error]))))
+        lim = max(lim * 1.08, 0.1)
         ax.plot(
             [-lim, lim], [-lim, lim], color=GRID, linewidth=1, linestyle="--"
         )
@@ -1293,20 +1497,27 @@ def figure_components(results, out):
         ax.set_ylim(-lim, lim)
         ax.set_aspect("equal")
         ax.set_title(
-            f"{_short(condition)} (M = {row['M']}, r = {row['repetition']}); "
-            f"covered weight {row['honest'][settings['headline_rule']][settings['headline_method']]['weight_covered']:.2f}"
+            f"{_short(condition)} (M = {row['M']}, r = {row['repetition']})"
+        )
+        weight_covered = row["honest"][rule][method]["weight_covered"]
+        ax.text(
+            0.03,
+            0.97,
+            f"covered weight {weight_covered:.2f}",
+            transform=ax.transAxes,
+            va="top",
+            fontsize=8,
+            color=INK_SOFT,
         )
         ax.set_xlabel("own estimate − truth (nats)")
         ax.set_ylabel("honest estimate − truth (nats)")
         ax.legend(loc="lower right")
     fig.suptitle(
-        "Per-component error of the run's own expected log joint against the "
-        f"honest one ({settings['headline_rule']}, {settings['headline_method']}); "
-        "marker area follows the stacked weight",
+        "Per-component error, own expected log joint against the honest "
+        f"one ({rule}, {method}); marker area follows the stacked weight",
         fontsize=10,
     )
-    fig.tight_layout()
-    fig.savefig(out / "component_errors.png", dpi=150)
+    _save(fig, out / "component_errors.png")
     plt.close(fig)
 
 
@@ -1316,18 +1527,11 @@ def figure_coverage(summary, out):
     settings = summary["settings"]
     rules = list(settings["rules"])
     method = settings["headline_method"]
-    conditions = summary["conditions"]
-    M_max = {
-        c["condition"]: max(e["M"] for e in c["by_M"]) for c in conditions
-    }
+    conditions = [c for c in summary["conditions"] if c["by_M"]]
     fig, axes = plt.subplots(1, 2, figsize=(9, 3.6))
     x = np.arange(len(rules))
     for i, condition in enumerate(conditions):
-        entry = next(
-            e
-            for e in condition["by_M"]
-            if e["M"] == M_max[condition["condition"]]
-        )
+        entry = max(condition["by_M"], key=lambda e: e["M"])
         color = CONDITION_COLORS[i % len(CONDITION_COLORS)]
         marker = CONDITION_MARKERS[i % len(CONDITION_MARKERS)]
         label = f"{_short(condition['condition'])} (M = {entry['M']})"
@@ -1362,25 +1566,15 @@ def figure_coverage(summary, out):
     axes[1].set_title("Honest bias under each rule")
     axes[1].set_yscale("symlog", linthresh=1.0)
     axes[0].legend(loc="lower left")
-    fig.tight_layout()
-    fig.savefig(out / "coverage.png", dpi=150)
+    _save(fig, out / "coverage.png")
     plt.close(fig)
 
 
-def figure_calibration(results, out):
+def figure_calibration(out, available):
     import matplotlib.pyplot as plt
 
-    cells_dir = out.parent / "cells"
     own, cross = [], []
-    seen = set()
-    for row in results["cells"]:
-        key = (row["condition"], row["M"])
-        if key in seen:
-            continue
-        seen.add(key)
-        path = cells_dir / cell_filename(row)
-        if not path.exists():
-            continue
+    for row, path in available.values():
         with np.load(path, allow_pickle=False) as data:
             truth, truth_se = data["truth"], data["truth_se"]
             own.append(
@@ -1391,16 +1585,12 @@ def figure_calibration(results, out):
             cross.append(
                 (data["est"][rows, cols] - truth[cols])
                 / np.sqrt(
-                    data["v"][rows, cols]
-                    + data["se"][rows, cols] ** 2
-                    + truth_se[cols] ** 2
+                    data["v"][rows, cols] + data["se_diff"][rows, cols] ** 2
                 )
             )
-    if not own:
-        return
     own = np.concatenate(own)
     cross = np.concatenate(cross) if cross else np.empty(0)
-    fig, axes = plt.subplots(1, 2, figsize=(9, 3.4), sharey=False)
+    fig, axes = plt.subplots(1, 2, figsize=(9, 3.4))
     grid = np.linspace(-6, 6, 241)
     normal = np.exp(-0.5 * grid**2) / np.sqrt(2 * np.pi)
     for ax, z, color, title in (
@@ -1413,9 +1603,8 @@ def figure_calibration(results, out):
         ),
     ):
         if z.size:
-            clipped = np.clip(z, -6, 6)
             ax.hist(
-                clipped,
+                np.clip(z, -6, 6),
                 bins=np.linspace(-6, 6, 49),
                 density=True,
                 color=color,
@@ -1426,7 +1615,9 @@ def figure_calibration(results, out):
             ax.text(
                 0.02,
                 0.95,
-                f"n = {z.size}\nmedian z {np.median(z):+.2f}\nmedian |z| {np.median(np.abs(z)):.2f}\n|z| > 2: {np.mean(np.abs(z) > 2):.0%}",
+                f"n = {z.size}\nmedian z {np.median(z):+.2f}\n"
+                f"median abs z {np.median(np.abs(z)):.2f}\n"
+                f"abs z > 2: {np.mean(np.abs(z) > 2):.0%}",
                 transform=ax.transAxes,
                 va="top",
                 fontsize=8,
@@ -1445,28 +1636,21 @@ def figure_calibration(results, out):
         ax.grid(axis="x", visible=False)
         ax.legend(loc="upper right")
     axes[0].set_ylabel("density over components (unweighted)")
-    fig.tight_layout()
-    fig.savefig(out / "calibration.png", dpi=150)
+    _save(fig, out / "calibration.png")
     plt.close(fig)
 
 
-def figure_sparsity(results, out):
+def figure_sparsity(out, available):
     import matplotlib.pyplot as plt
 
-    cells_dir = out.parent / "cells"
-    seen = set()
     fig, axes = plt.subplots(1, 2, figsize=(9, 3.6), sharey=True)
-    conditions = sorted({row["condition"] for row in results["cells"]})
+    conditions = sorted({key[0] for key in available})
     for i, condition in enumerate(conditions):
         color = CONDITION_COLORS[i % len(CONDITION_COLORS)]
         marker = CONDITION_MARKERS[i % len(CONDITION_MARKERS)]
-        for row in results["cells"]:
-            key = (row["condition"], row["M"])
-            if row["condition"] != condition or key in seen:
-                continue
-            seen.add(key)
-            path = cells_dir / cell_filename(row)
-            if not path.exists():
+        first = True
+        for (name, M), (row, path) in available.items():
+            if name != condition:
                 continue
             with np.load(path, allow_pickle=False) as data:
                 columns = np.arange(len(data["w"]))
@@ -1477,7 +1661,8 @@ def figure_sparsity(results, out):
                 cross_error = (
                     data["est"][rows_c, cols_c] - data["truth"][cols_c]
                 )
-            label = _short(condition)
+            label = _short(condition) if first else None
+            first = False
             axes[0].scatter(
                 np.maximum(own_n, 1e-2),
                 own_error,
@@ -1512,21 +1697,35 @@ def figure_sparsity(results, out):
         ax.set_title(title)
     axes[0].set_ylabel("error of the expected log joint (nats, symlog)")
     axes[1].legend(loc="lower right", markerscale=2)
-    fig.tight_layout()
-    fig.savefig(out / "sparsity.png", dpi=150)
+    _save(fig, out / "sparsity.png")
     plt.close(fig)
 
 
 def make_figures(results, summary, out):
+    """Write the figures; the per-cell figures only when their arrays exist."""
     _style()
     figures = Path(out) / "figures"
     figures.mkdir(parents=True, exist_ok=True)
-    if results["cells"]:
-        figure_bias(summary, figures)
-        figure_components(results, figures)
-        figure_coverage(summary, figures)
-        figure_calibration(results, figures)
-        figure_sparsity(results, figures)
+    if not results["cells"]:
+        return figures
+    figure_bias(summary, figures)
+    figure_coverage(summary, figures)
+    available, missing = _cell_files(results, figures)
+    if missing:
+        print(
+            f"{len(missing)} per-cell array file(s) missing under "
+            f"{Path(out) / 'cells'}; the component, calibration and "
+            "sparsity figures use the cells that are present"
+            + (
+                " (none: those figures are left as they are)"
+                if not available
+                else ""
+            )
+        )
+    if available:
+        figure_components(results, figures, available)
+        figure_calibration(figures, available)
+        figure_sparsity(figures, available)
     return figures
 
 
@@ -1547,9 +1746,12 @@ def save_cell_arrays(path, arrays, per_component):
         run_index=arrays["run_index"],
         est=arrays["est"],
         se=arrays["se"],
+        se_diff=arrays["se_diff"],
         v=arrays["v"],
-        frac=arrays["frac"],
+        mean_fn=arrays["mean_fn"],
         n_eff=arrays["n_eff"],
+        n_within=arrays["n_within"],
+        data_offset=arrays["data_offset"],
         truth=arrays["truth"],
         truth_se=arrays["truth_se"],
         own_mc=arrays["own_mc"],
@@ -1593,7 +1795,7 @@ def gpyreg_source(manifests, override):
     return sources.pop()
 
 
-def sources_record(args, manifests, source, cells_path, settings, tags):
+def sources_record(manifests, source, cells_path, settings, tags):
     import gpyreg
 
     import pyvbmc
@@ -1621,12 +1823,15 @@ def sources_record(args, manifests, source, cells_path, settings, tags):
         "numpy": np.__version__,
         "platform": platform.platform(),
         "hostname": platform.node(),
-        "cells": None
-        if cells_path is None
-        else {
-            "path": str(Path(cells_path).resolve()),
-            "sha256": sha256(cells_path),
-        },
+        "threads": {k: os.environ.get(k) for k in THREAD_KEYS},
+        "cells": (
+            None
+            if cells_path is None
+            else {
+                "path": str(Path(cells_path).resolve()),
+                "sha256": sha256(cells_path),
+            }
+        ),
         "pools": [
             {
                 "directory": m["directory"],
@@ -1654,6 +1859,7 @@ def parse_args(argv=None):
     parser.add_argument("--draws", type=int, default=DRAWS)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--ratios", default=",".join(f"{r:g}" for r in RATIOS))
+    parser.add_argument("--headline-ratio", type=float, default=HEADLINE_RATIO)
     parser.add_argument("--sd-cap", type=float, default=SD_CAP)
     parser.add_argument("--sd-floor", type=float, default=SD_FLOOR)
     parser.add_argument("--conditions", default=None)
@@ -1666,10 +1872,22 @@ def parse_args(argv=None):
         return args
     if not args.pool:
         parser.error("--pool is required unless --summarize-only")
+    if args.self_check and args.cells is not None:
+        parser.error("--self-check takes no --cells")
     if not args.self_check and args.cells is None:
         parser.error("--cells is required unless --self-check")
     if args.draws < 2:
         parser.error("--draws must be at least 2")
+    args.ratio_list = tuple(
+        float(x) for x in args.ratios.split(",") if x.strip()
+    )
+    if rule_name(args.headline_ratio) not in coverage_rules(
+        args.ratio_list, args.sd_cap, args.sd_floor
+    ):
+        parser.error(
+            f"--headline-ratio {args.headline_ratio:g} is not among "
+            f"--ratios {args.ratios}"
+        )
     return args
 
 
@@ -1698,20 +1916,22 @@ def main(argv=None):
     activate_gpyreg(source)
     from benchmark_targets import find_config
 
-    ratios = tuple(float(x) for x in args.ratios.split(",") if x.strip())
-    rules = coverage_rules(ratios, args.sd_cap, args.sd_floor)
+    rules = coverage_rules(args.ratio_list, args.sd_cap, args.sd_floor)
+    headline = (rule_name(args.headline_ratio), HEADLINE_METHOD)
     settings = {
         "arm": args.arm,
         "draws": int(args.draws),
         "seed": int(args.seed),
-        "ratios": list(ratios),
+        "ratios": list(args.ratio_list),
         "sd_cap": float(args.sd_cap),
         "sd_floor": float(args.sd_floor),
         "rules": {k: [float(x) for x in rule] for k, rule in rules.items()},
         "methods": list(METHODS),
-        "headline_rule": HEADLINE_RULE,
-        "headline_method": HEADLINE_METHOD,
+        "headline_rule": headline[0],
+        "headline_method": headline[1],
         "z_flag": Z_FLAG,
+        "z_flag_max": Z_FLAG_MAX,
+        "within_radius": WITHIN_RADIUS,
         "bootstrap_resamples": BOOTSTRAP_RESAMPLES,
         "cells": None if args.cells is None else str(args.cells),
         "pools": [m["directory"] for m in manifests],
@@ -1743,7 +1963,6 @@ def main(argv=None):
                 f"{args.cells} holds no cell of arm {args.arm}"
                 + ("" if only is None else f" for {sorted(only)}")
             )
-    tags = sorted({t for c in cells for t in c["entries"]})
     if args.self_check:
         tags = [
             t
@@ -1752,6 +1971,8 @@ def main(argv=None):
         ]
         if not tags:
             raise RuntimeError("the pools hold no artifact to check")
+    else:
+        tags = sorted({t for c in cells for t in c["entries"]})
 
     run_rows = []
     for tag in tags:
@@ -1761,42 +1982,65 @@ def main(argv=None):
         )
         row = self_check(run, problem_of(run["label"]), rng, args.draws)
         run_rows.append(row)
+        checks = row["checks"]
         print(
-            f"[run] {tag}: own-run max |z| {row['checks']['own_mc_max_z']:.2f} "
-            f"(offset z {row['checks']['own_offset_z']:+.2f}), Jacobian max "
-            f"|z| {row['checks']['jac_max_z']:.2f} (offset z "
-            f"{row['checks']['jac_offset_z']:+.2f}), own error "
-            f"{row['own_error']:+.3f} ± {row['own_error_se']:.3f}"
-            + (" FLAGGED" if row["checks"]["flagged"] else ""),
+            f"[run] {tag}: own-run max abs z {checks['own_mc_max_z']:.2f} "
+            f"(offset z {checks['own_offset_z']:+.2f}), Jacobian max abs z "
+            f"{checks['jac_max_z']:.2f} (offset z "
+            f"{checks['jac_offset_z']:+.2f}), own error "
+            f"{row['own_error']:+.3f} +- {row['own_error_se']:.3f}"
+            + (" FLAGGED" if checks["flagged"] else ""),
             flush=True,
         )
 
-    cell_rows = []
+    cell_rows, skipped = [], []
+    jsonl = args.out / "cells.jsonl"
+    jsonl.write_text("", encoding="utf-8")
     for cell in cells:
-        cell_runs = [runs.get(tag) for tag in cell["entries"]]
-        rng = np.random.default_rng(
-            [int(args.seed), DRAW_STREAM, int(cell["cell_seed"])]
-        )
-        row, arrays, per_component = score_cell(
-            cell,
-            args.arm,
-            cell_runs,
-            problem_of(cell["condition"]),
-            rng,
-            args.draws,
-            rules,
-            METHODS,
-        )
+        label = f"{cell['condition']} M={cell['M']} r={cell['repetition']}"
+        cell_started = time.perf_counter()
+        try:
+            cell_runs = [runs.get(tag) for tag in cell["entries"]]
+            rng = np.random.default_rng(
+                [int(args.seed), DRAW_STREAM, int(cell["cell_seed"])]
+            )
+            row, arrays, per_component = score_cell(
+                cell,
+                args.arm,
+                cell_runs,
+                problem_of(cell["condition"]),
+                rng,
+                args.draws,
+                rules,
+                METHODS,
+                headline,
+            )
+        except Exception as error:  # noqa: BLE001
+            skipped.append(
+                {
+                    "condition": cell["condition"],
+                    "M": int(cell["M"]),
+                    "repetition": int(cell["repetition"]),
+                    "reason": f"{type(error).__name__}: {error}",
+                }
+            )
+            print(
+                f"[cell] {label}: SKIPPED ({skipped[-1]['reason']})",
+                flush=True,
+            )
+            continue
+        row["seconds"] = time.perf_counter() - cell_started
         save_cell_arrays(
             args.out / "cells" / cell_filename(row), arrays, per_component
         )
         cell_rows.append(row)
-        headline = row["honest"][HEADLINE_RULE][HEADLINE_METHOD]
+        with jsonl.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(row) + "\n")
+        head = row["honest"][headline[0]][headline[1]]
         print(
-            f"[cell] {row['condition']} M={row['M']} r={row['repetition']}: "
-            f"bias raw {row['bias']['raw']:+.3f}, capped_I "
-            f"{row['bias']['capped_I']:+.3f}, honest {headline['bias']:+.3f} "
-            f"± {headline['mc_se']:.3f} (covered {headline['weight_covered']:.2f}), "
+            f"[cell] {label}: bias raw {row['bias']['raw']:+.3f}, capped_I "
+            f"{row['bias']['capped_I']:+.3f}, honest {head['bias']:+.3f} "
+            f"+- {head['mc_se']:.3f} (covered {head['weight_covered']:.2f}), "
             f"truth_strat {row['truth_strat']['bias']:+.3f}; "
             f"{row['seconds']:.1f} s"
             + (" FLAGGED" if row["checks"]["flagged"] else ""),
@@ -1810,11 +2054,12 @@ def main(argv=None):
         "settings": settings,
         "runs": run_rows,
         "cells": cell_rows,
+        "skipped": skipped,
     }
     write_json(args.out / "results.json", results)
     write_json(
         args.out / "sources.json",
-        sources_record(args, manifests, source, args.cells, settings, tags),
+        sources_record(manifests, source, args.cells, settings, tags),
     )
     summary = build_summary(results, np.random.default_rng(args.seed))
     write_json(args.out / "summary.json", summary)
@@ -1827,11 +2072,12 @@ def main(argv=None):
         cell_filename(r) for r in cell_rows if r["checks"]["flagged"]
     ]
     print(
-        f"{len(run_rows)} runs checked, {len(cell_rows)} cells scored in "
-        f"{results['elapsed_seconds']:.0f} s; outputs under {args.out}"
+        f"{len(run_rows)} runs checked, {len(cell_rows)} cells scored, "
+        f"{len(skipped)} skipped in {results['elapsed_seconds']:.0f} s; "
+        f"outputs under {args.out}"
         + (f"; FLAGGED: {flagged}" if flagged else "")
     )
-    return 1 if flagged else 0
+    return 1 if flagged or skipped else 0
 
 
 if __name__ == "__main__":
