@@ -1,14 +1,15 @@
 # S-VBMC run-pool benchmark campaign
 
-Created 2026-09-13. Status: **design approved (PI, 2026-09-13)**; harness
-implementation (Phases 1–3 and 5) may proceed, the pilot and every pool
-or comparison stage start only on a separate PI instruction. Planning and
-status edits live on `dev-next`; the harness and target changes go on a
-feature branch `dev-svbmc-pool` branched from `dev-next`. The pools and
-the comparison are long campaigns under the working rules of
-[dev/README.md](../README.md#scripts): one heavy process at a time,
-started only on explicit PI instruction, in stages that are authorized
-separately.
+Created 2026-09-13. Status: **harness complete and reviewed; pool
+generation handed to the cluster; comparison and Phase 2 pending**. The
+design was approved by the PI on 2026-09-13 and revised on 2026-09-14
+(decisions 7–10). The harness and target changes were developed on the
+feature branch `dev-svbmc-pool` and merged into `dev-next` on
+2026-09-14 (`647698b`), so a clone of `dev-next` is self-contained for
+the hand-over. The pools and the comparison are long campaigns under the
+working rules of [dev/README.md](../README.md#scripts): one heavy process
+at a time, started only on explicit PI instruction, in stages that are
+authorized separately.
 
 This plan owns the design, harnesses, allocation, gates and worklog of the
 campaign. The [integration plan](svbmc-integration.md#benchmark-campaign-required-for-15)
