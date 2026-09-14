@@ -30,10 +30,13 @@ installs it from GitHub at the commit pinned in
 `.github/workflows/test-matrix.yml` (`GPYREG_PIN`); only the twice-monthly
 scheduled run tests against gpyreg `main`, so that is where a gpyreg change
 breaking PyVBMC shows up first. Bump the pin when gpyreg `main` moves and
-that run is green. PyVBMC requires gpyreg 1.2.0 or later
-(`GP.predict(return_cross_covariance=True)` for VIQR kernel reuse,
-acerbilab/gpyreg#45); the sibling checkout below is
-for developing against gpyreg `main`.
+that run is green. PyVBMC requires gpyreg 1.2.1 or later: 1.2.0 added
+`GP.predict(return_cross_covariance=True)` for VIQR kernel reuse
+(acerbilab/gpyreg#45), and 1.2.1 fixed the heteroskedastic quadrature
+variance, which moves the VIQR acquisition by one ulp and nothing else
+(the `acq_AcqFcnVIQR` oracle was re-baselined to it on 2026-09-14; every
+other oracle is bit-identical). The sibling checkout below is for
+developing against gpyreg `main`.
 
 ```console
 git clone https://github.com/acerbilab/gpyreg ../gpyreg

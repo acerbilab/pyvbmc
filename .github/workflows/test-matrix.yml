@@ -23,8 +23,9 @@ on:
         default: ''
 
 env:
-  # gpyreg v1.2.0: GP.predict(return_cross_covariance=True) for VIQR reuse.
-  GPYREG_PIN: 39536b000a8c8465133f4eaef625486991db8257
+  # gpyreg v1.2.1: GP.predict(return_cross_covariance=True) for VIQR reuse
+  # (1.2.0) and the heteroskedastic quadrature-variance fix (1.2.1).
+  GPYREG_PIN: 9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b
 
 jobs:
   tests:
