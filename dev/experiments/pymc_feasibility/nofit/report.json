@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-14 13:37:54",
+ "generated": "2026-09-14 14:31:07",
  "environment": {
   "python": "3.12.6",
   "platform": "Windows-11-10.0.26200-SP0",
@@ -13,14 +13,21 @@
   "numpy": "2.5.3",
   "scipy": "1.18.1",
   "pyvbmc": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc",
+  "pyvbmc_commit": "04183511e508d6acc45dcc5cf0bad56bf597df70",
+  "pyvbmc_dirty": "M dev/scripts/pymc_feasibility.py",
   "gpyreg": "C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg",
+  "gpyreg_commit": "9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b",
+  "script_sha256": "03b278f7faee9e052b3712a1ffc9f91dba6b4e52948fac04fd9bd6cbc0fa650c",
   "executable": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\pymc_feasibility_20260914\\venv\\Scripts\\python.exe"
  },
  "seed": 0,
+ "plausible": "laplace",
  "models": [
   {
    "name": "scalar",
    "reference": "analytic (conjugate normal-normal)",
+   "ln_Z": -35.97216327792224,
+   "ln_Z_error": 0.0,
    "D": 1,
    "names": [
     "mu"
@@ -41,22 +48,24 @@
    "coordinates": "mu [-inf, inf]",
    "dims": {},
    "coords": {},
-   "ln_Z": -35.97216327792224,
    "density": {
     "points": 25,
     "max_abs_difference": 2.1762372170996969e-07,
     "offset": 2.1762369470934572e-07,
     "max_abs_deviation_from_offset": 2.984279489663025e-14,
-    "passes": true,
-    "outside_bounds_value": null
+    "outside_bounds_value": null,
+    "passes": true
    },
    "jacobian": {
     "applicable": false
-   }
+   },
+   "ms_per_call": 0.05976550019113347
   },
   {
    "name": "positive",
    "reference": "one-dimensional quadrature over sigma",
+   "ln_Z": -20.982796103874524,
+   "ln_Z_error": 1.9722292276375146e-10,
    "D": 1,
    "names": [
     "sigma"
@@ -79,14 +88,13 @@
    "coordinates": "sigma_log__ (LogTransform kept, unbounded)",
    "dims": {},
    "coords": {},
-   "ln_Z": -20.982796103874524,
    "density": {
     "points": 25,
     "max_abs_difference": 1.9046595411964518e-09,
     "offset": -1.9046507304665284e-09,
     "max_abs_deviation_from_offset": 2.671640686464594e-14,
-    "passes": true,
-    "outside_bounds_value": null
+    "outside_bounds_value": null,
+    "passes": true
    },
    "jacobian": {
     "applicable": true,
@@ -96,11 +104,14 @@
     "checked": true,
     "max_abs_difference": 1.532107773982716e-14,
     "passes": true
-   }
+   },
+   "ms_per_call": 0.008424999832641333
   },
   {
    "name": "vector",
    "reference": "beta marginalized analytically, quadrature over sigma",
+   "ln_Z": -39.43075739300434,
+   "ln_Z_error": 2.6917588470352953e-08,
    "D": 3,
    "names": [
     "beta",
@@ -121,15 +132,21 @@
    ],
    "support": {
     "beta": [
-     -Infinity,
-     Infinity
+     [
+      -Infinity,
+      -Infinity
+     ],
+     [
+      Infinity,
+      Infinity
+     ]
     ],
     "sigma": [
      0.0,
      Infinity
     ]
    },
-   "coordinates": "beta [-inf, inf]; sigma_log__ (LogTransform kept, unbounded)",
+   "coordinates": "beta [-inf, inf] [-inf, inf]; sigma_log__ (LogTransform kept, unbounded)",
    "dims": {
     "beta": [
      "coef"
@@ -141,14 +158,13 @@
      "slope"
     ]
    },
-   "ln_Z": -39.43075739300434,
    "density": {
     "points": 25,
     "max_abs_difference": 6.204936653375626e-08,
     "offset": -6.204628789419076e-08,
     "max_abs_deviation_from_offset": 4.197318048686828e-12,
-    "passes": true,
-    "outside_bounds_value": null
+    "outside_bounds_value": null,
+    "passes": true
    },
    "jacobian": {
     "applicable": true,
@@ -158,7 +174,61 @@
     "checked": true,
     "max_abs_difference": 3.873346088312246e-12,
     "passes": true
-   }
+   },
+   "ms_per_call": 0.011028500157408416
+  },
+  {
+   "name": "bounded",
+   "reference": "u[0] integrated in closed form, quadrature over p, u[1]",
+   "ln_Z": -14.622235630280173,
+   "ln_Z_error": 1.6661663759077177e-14,
+   "D": 3,
+   "names": [
+    "p",
+    "u"
+   ],
+   "value_names": [
+    "p",
+    "u"
+   ],
+   "kept_transforms": {},
+   "shapes": [
+    [],
+    [
+     2
+    ]
+   ],
+   "support": {
+    "p": [
+     0.0,
+     1.0
+    ],
+    "u": [
+     [
+      -1.0,
+      0.0
+     ],
+     [
+      2.0,
+      1.0
+     ]
+    ]
+   },
+   "coordinates": "p [0, 1]; u [-1, 2] [0, 1]",
+   "dims": {},
+   "coords": {},
+   "density": {
+    "points": 25,
+    "max_abs_difference": 2.173874591449021e-08,
+    "offset": 2.173874214861371e-08,
+    "max_abs_deviation_from_offset": 6.89226453832881e-15,
+    "outside_bounds_value": -Infinity,
+    "passes": true
+   },
+   "jacobian": {
+    "applicable": false
+   },
+   "ms_per_call": 0.07073599990690127
   }
  ],
  "rejections": [
@@ -169,8 +239,18 @@
   },
   {
    "rejected": true,
-   "message": "w: the support of a variable with a SimplexTransform is not a box of independent bounds, which VBMC cannot represent",
+   "message": "w: unsupported transform SimplexTransform",
    "name": "simplex"
+  },
+  {
+   "rejected": true,
+   "message": "s: its LogTransform was suppressed at construction, so its support is not the unbounded one an untransformed variable would be handed over with",
+   "name": "suppressed"
+  },
+  {
+   "rejected": true,
+   "message": "h: an interval limit depends on another random variable, so it has no fixed value",
+   "name": "random_bounds"
   }
  ],
  "errors": []

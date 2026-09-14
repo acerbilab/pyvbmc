@@ -6,11 +6,14 @@ PyMC model adapter for PyVBMC that the
 asks for; the write-up is
 [results/2026-09-14-pymc-feasibility.md](../../results/2026-09-14-pymc-feasibility.md).
 Each directory holds one run's `report.json` (the environment with the
-PyTensor compiler state, and per model the coordinates and bounds VBMC
-received, the density and Jacobian checks with their numbers, the VBMC
-fit against the model's evidence, the posterior moments, the structured
-export and return path, and the rejections of the two unsupported models)
-and `report.md` (the same as a table).
+PyTensor compiler state, the PyVBMC and gpyreg commits and the script's
+hash; per model the coordinates and bounds VBMC received, the density and
+Jacobian checks with their numbers, the cost of the compiled density, the
+VBMC fit against the model's evidence with the box it started from, the
+posterior moments, the structured export and return path; the rejections
+of the four unsupported models; and, for a failed fit, the error with the
+box and the log joint at its corners) and `report.md` (the same as a
+table).
 
 - `fit_laplace/`: starting point and plausible box from the mode and its
   Laplace approximation (`--plausible laplace`, the script's default);
