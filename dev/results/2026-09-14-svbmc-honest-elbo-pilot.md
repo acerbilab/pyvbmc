@@ -81,8 +81,10 @@ in short:
   units; the recomputed raw expected log joint against the arm's
   `raw ELBO − entropy` gates the weights and the component order.
 
-Inputs: the 15 pilot artifacts (gpyreg 1.2.0 from the worktree the pool's
-manifest names, recreated at tag `v1.2.0`), the 25 cells of the pilot
+Inputs: the 15 pilot artifacts (generated under gpyreg 1.2.0, scored here
+under the campaign's pin 1.2.1 through `--gpyreg-source`; a scoring
+under 1.2.0 gave every number identically, as the 1.2.1 release changed
+nothing in GP prediction), the 25 cells of the pilot
 comparison (`pilot_stack/results.json`: five cell seeds per condition at
 `M = 3`, the integrated arm's weights; the tracked copy
 `experiments/svbmc_pool/pilot/stack/results.json` is the same file), 100
