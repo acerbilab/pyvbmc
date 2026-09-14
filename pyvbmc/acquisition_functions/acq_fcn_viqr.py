@@ -86,7 +86,7 @@ class AcqFcnVIQR(AbstractAcqFcn):
         default 0.75 gives :math:`u = \Phi^{-1}(0.75)`.
     loss : {"iqr", "iqr_reduction"}, optional
         The loss whose expectation under the variational posterior the
-        acquisition minimizes. Both members share the same look-ahead
+        acquisition minimizes. Both losses share the same look-ahead
         predictive standard deviation :math:`s_{\Xi \cup \theta_*}(\theta_a)`
         at the importance points :math:`\theta_a`: the GP posterior after a
         hypothetical observation at the candidate :math:`\theta_*`, which
@@ -271,6 +271,7 @@ class AcqFcnVIQR(AbstractAcqFcn):
         ValueError
             For choices of GP covariance function which are not implemented.
             Currently, only ``SquaredExponential`` covariance is implemented.
+            Also when the instance carries a ``loss`` outside ``LOSSES``.
         """
         return self._compute_viqr(Xs, gp, optim_state, f_mu, f_s2)
 
@@ -302,8 +303,14 @@ class AcqFcnVIQR(AbstractAcqFcn):
 
         active_is = optim_state["active_importance_sampling"]
         Xa = active_is["X"]
-        # Instances pickled before the ``loss`` argument existed are VIQR.
+        # Instances pickled before the ``loss`` argument existed are VIQR;
+        # one carrying a loss this version does not implement is rejected
+        # rather than computed as another.
         loss = getattr(self, "loss", "iqr")
+        if loss not in self.LOSSES:
+            raise ValueError(
+                f"Unknown loss {loss!r}; expected one of {self.LOSSES}."
+            )
         acq = np.zeros((Nx, Ns_gp))
 
         # Compute acquisition function via importance sampling

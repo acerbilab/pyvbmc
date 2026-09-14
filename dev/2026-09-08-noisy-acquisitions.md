@@ -2,6 +2,12 @@
 
 *Written 10 September 2026 from a two-day measurement session; interim.*
 
+VIQR's `var_reduction` and `sd_reduction` losses and the `AcqFcnEIG`
+acquisition discussed here are not part of the package: they were removed
+on 2026-09-14, and their implementation is retained on the branch
+`retain-experimental-acquisitions` at `fa6922f`. The decision is recorded
+in [TODO.md](TODO.md).
+
 The question was whether VIQR, which makes noisy runs slow, could be
 replaced or joined by acquisition functions that work with noisy targets,
 given that every pointwise acquisition in the package is unusable with

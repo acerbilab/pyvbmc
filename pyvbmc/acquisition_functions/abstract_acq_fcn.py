@@ -12,6 +12,18 @@ from pyvbmc.variational_posterior import VariationalPosterior
 class AbstractAcqFcn(ABC):
     """
     Abstract acquisition function for VBMC.
+
+    Notes
+    -----
+    A subclass that sets ``acq_info["compute_var_log_joint"] = True`` is
+    given the posterior uncertainty of the expected log joint before each
+    search: ``active_sample`` then writes its variance per GP
+    hyperparameter sample to ``optim_state["var_log_joint_samples"]``,
+    shape ``(Ns,)`` and a scalar when ``Ns == 1``, and the covariance of
+    the mixture components' integrals to
+    ``optim_state["cov_log_joint_components"]``, shape ``(Ns, K, K)``.
+    The built-in acquisitions leave the flag disabled and neither entry
+    exists for them.
     """
 
     def __init__(self):

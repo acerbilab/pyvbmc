@@ -184,7 +184,9 @@ def test_no_reduction_is_worst():
 
 @pytest.mark.parametrize("ns_gp", [1, 2])
 @pytest.mark.parametrize("M", [1, 3])
-def test_reduction_variance_regularization_batch_matches_pointwise(ns_gp, M):
+def test_iqr_reduction_variance_regularization_batch_matches_pointwise(
+    ns_gp, M
+):
     check_variance_regularization(AcqFcnVIQR(loss="iqr_reduction"), ns_gp, M)
 
 
@@ -198,6 +200,17 @@ def test_loss_argument():
     assert acq.loss == "iqr_reduction"
     with pytest.raises(ValueError):
         AcqFcnVIQR(loss="iqr_squared")
+
+
+def test_unknown_loss_attribute_raises():
+    """An instance carrying a ``loss`` outside ``LOSSES``, such as one
+    unpickled from a version with a different family, is rejected instead
+    of being computed as another member."""
+    gp, vp, optim_state, X_eval = _setup(1)
+    acq = AcqFcnVIQR()
+    acq.loss = "var_reduction"
+    with pytest.raises(ValueError, match="Unknown loss"):
+        acq(X_eval, gp, vp, None, optim_state)
 
 
 def test_instance_without_loss_attribute_is_viqr():
