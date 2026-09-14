@@ -1,0 +1,131 @@
+{
+  "generated": "2026-09-14 13:11:14",
+  "script": {
+    "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\svbmc_honest_elbo.py",
+    "sha256": "b2d9f7642bb89e27bf075f5c469fc6e8e8a134523e64bb8fe582a4a2ef3dd636"
+  },
+  "pyvbmc": {
+    "commit": "6c1b89cf878fd3a40eb87af9c6e7c82c1e49a739",
+    "dirty": "?? dev/scripts/svbmc_honest_elbo.py\n?? dev/scripts/test_svbmc_honest_elbo.py",
+    "import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc"
+  },
+  "gpyreg": {
+    "source": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg",
+    "import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg\\gpyreg",
+    "commit": "39536b000a8c8465133f4eaef625486991db8257"
+  },
+  "python": "3.12.6",
+  "numpy": "2.5.2",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "hostname": "ASUS-LUIGI",
+  "cells": {
+    "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\pilot_stack\\results.json",
+    "sha256": "3bddddef6a18e41c96048ea0a148564beb05a7395e59f3e2c5527eac4ee62806"
+  },
+  "pools": [
+    {
+      "directory": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\pool",
+      "identity": {
+        "hostname": "ASUS-LUIGI",
+        "python": "3.12.6",
+        "pyvbmc_commit": "e2aaef507f0eedd38616a33563c5d95287d156b0",
+        "pyvbmc_import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc",
+        "pyvbmc_version": "1.0.5.dev317+g9d54ca3fb.d20260913",
+        "gpyreg_commit": "39536b000a8c8465133f4eaef625486991db8257",
+        "gpyreg_import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg\\gpyreg",
+        "gpyreg_version": "1.2.0",
+        "numpy": "2.5.2",
+        "scipy": "1.18.1",
+        "threads": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1"
+        },
+        "gpyreg_source": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg",
+        "gpyreg_clean": true,
+        "pyvbmc_dirty": "",
+        "suite_module_dirty": "",
+        "suite_module_sha256": "98b1321193334f488a1352b01dc76fc353840cc486dbdb930288646cf77ec3dc",
+        "io_module_sha256": "7ab68d431b419f78d765e3e16224de7155c40b6763b36a4d27655c202e06f12c",
+        "runner_sha256": "e186c2aca2cf57544b49da37e58746fda7fcd3f81acfb109c1e6420140a1f41a"
+      },
+      "gpyreg_source": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg"
+    }
+  ],
+  "runs": [
+    "gmm_D2_noise3_svbmc_seed1000",
+    "gmm_D2_noise3_svbmc_seed1001",
+    "gmm_D2_noise3_svbmc_seed1002",
+    "gmm_D2_svbmc_seed1000",
+    "gmm_D2_svbmc_seed1001",
+    "gmm_D2_svbmc_seed1002",
+    "multisensory_s1_D6_noise3_svbmc_seed1000",
+    "multisensory_s1_D6_noise3_svbmc_seed1001",
+    "multisensory_s1_D6_noise3_svbmc_seed1002",
+    "ring_D2_noise3_svbmc_seed1000",
+    "ring_D2_noise3_svbmc_seed1001",
+    "ring_D2_noise3_svbmc_seed1002",
+    "rosenbrock_D2_noise3_svbmc_seed1000",
+    "rosenbrock_D2_noise3_svbmc_seed1001",
+    "rosenbrock_D2_noise3_svbmc_seed1002"
+  ],
+  "settings": {
+    "arm": "integrated",
+    "draws": 100,
+    "seed": 0,
+    "ratios": [
+      1.5,
+      2.0,
+      3.0,
+      5.0
+    ],
+    "sd_cap": 2.23606797749979,
+    "sd_floor": 0.1,
+    "rules": {
+      "ratio1.5": [
+        1.5,
+        2.23606797749979,
+        0.1
+      ],
+      "ratio2": [
+        2.0,
+        2.23606797749979,
+        0.1
+      ],
+      "ratio3": [
+        3.0,
+        2.23606797749979,
+        0.1
+      ],
+      "ratio5": [
+        5.0,
+        2.23606797749979,
+        0.1
+      ],
+      "cap_only": [
+        Infinity,
+        2.23606797749979,
+        0.1
+      ],
+      "none": [
+        Infinity,
+        Infinity,
+        0.0
+      ]
+    },
+    "methods": [
+      "median",
+      "precision",
+      "mean"
+    ],
+    "headline_rule": "ratio2",
+    "headline_method": "median",
+    "z_flag": 4.0,
+    "bootstrap_resamples": 10000,
+    "cells": "dev\\scripts\\runs\\svbmc_pool_20260913\\pilot_stack\\results.json",
+    "pools": [
+      "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\pool"
+    ],
+    "self_check": false
+  }
+}
