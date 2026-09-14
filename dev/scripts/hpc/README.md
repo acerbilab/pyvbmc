@@ -15,9 +15,12 @@ node `turso02`); every site-specific value is an environment variable.
 - A clone of this repository at the commit the pool is to be generated
   with, **clean**, with the package installed editable in a conda
   environment together with the `test` extra, `gpyreg==1.2.1` and
-  `psutil` (`pip install -e ".[test]" "gpyreg==1.2.1" psutil`). The
-  environment's name goes in `POOL_CONDA_ENV` (default `pyvbmc-pool`) and
-  conda's hook in `CONDA_SH` (default `~/miniconda3/etc/profile.d/conda.sh`).
+  `psutil` (`pip install -e ".[test]" "gpyreg==1.2.1" psutil`), and with
+  `zstd` for the archive (`conda install -n pyvbmc-pool zstd`; activating
+  the environment drops the base environment's binaries from the PATH).
+  The environment's name goes in `POOL_CONDA_ENV` (default `pyvbmc-pool`)
+  and conda's hook in `CONDA_SH` (default
+  `~/miniconda3/etc/profile.d/conda.sh`).
 - A gpyreg checkout at the pinned tag (`v1.2.1`, commit `9e70e6b`) that is
   a real, clean git repository. Put it at the harness default
   `dev/scripts/runs/svbmc_pool_20260913/gpyreg_1.2.1` (gitignored): the

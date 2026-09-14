@@ -108,6 +108,12 @@ python -u dev/scripts/svbmc_pool_run.py summarize --out "$POOL_DIR"
 #    already compressed, so a light zstd setting is enough and the shared
 #    login node is not loaded for nothing.
 if [ "$ARCHIVE" = 1 ]; then
+    if ! command -v zstd >/dev/null 2>&1; then
+        echo "zstd is not on the PATH of the $POOL_CONDA_ENV environment" \
+            "(conda activate drops the base environment's bin); install it" \
+            "there with 'conda install -n $POOL_CONDA_ENV zstd'" >&2
+        exit 1
+    fi
     NAME=$(basename "$POOL_DIR")
     PARENT=$(dirname "$POOL_DIR")
     OUT="$PARENT/$NAME.tar.zst"
