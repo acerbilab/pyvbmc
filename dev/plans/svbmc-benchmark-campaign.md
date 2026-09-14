@@ -1434,9 +1434,10 @@ draft had left open:
   own run's data and the other run's fit, and the open questions for the
   full pools; tracked outputs are under
   `dev/experiments/svbmc_pool/pilot/phase2/` and
-  `pilot/phase2_newconds_selfcheck/`. The pilot's gpyreg 1.2.0 worktree
-  was recreated at the path its manifest names (the gitignored
-  `dev/scripts/runs/LOCAL.md` lists it).
+  `pilot/phase2_newconds_selfcheck/`. The pilot artifacts were scored
+  under the campaign's gpyreg pin 1.2.1 (`--gpyreg-source`), not the
+  1.2.0 their manifest names; a scoring under 1.2.0 gave every number
+  identically, and that worktree is not kept (decision 10).
 
 ## Execution tracking
 
