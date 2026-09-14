@@ -1,4 +1,5 @@
-"""Contracts of the S-VBMC pool generator: artifact, resume, summary.
+"""Contracts of the S-VBMC pool generator: artifact, resume, selection,
+summary and post-hoc verification.
 
 One short campaign (``normal_D2``, at most three seeds, about a minute of
 inference) is generated once for the whole module through the command
@@ -931,7 +932,8 @@ def test_verify_distinguishes_partial_from_missing(campaign, tmp_path):
     out, _ = campaign
     copy = tmp_path / "pool"
     shutil.copytree(out, copy)
-    assert cli("verify", "--out", str(copy)).returncode == 0
+    result = cli("verify", "--out", str(copy))
+    assert result.returncode == 0, result.stdout + result.stderr
     before = verification(copy)["counts"]["missing"]
     tag = completed_tags(copy)[0]
     pool_io.record_path(copy, tag).unlink()
@@ -990,7 +992,14 @@ def test_verify_refuses_a_gpyreg_source_at_another_commit(campaign, tmp_path):
     (other / "gpyreg" / "__init__.py").write_text(
         "# not the campaign's gpyreg\n", encoding="utf-8"
     )
-    author = ["-c", "user.name=t", "-c", "user.email=t@example.com"]
+    author = [
+        "-c",
+        "user.name=t",
+        "-c",
+        "user.email=t@example.com",
+        "-c",
+        "commit.gpgsign=false",
+    ]
     subprocess.run(["git", "-C", str(other), *author, "add", "-A"], check=True)
     subprocess.run(
         ["git", "-C", str(other), *author, "commit", "-q", "-m", "x"],
@@ -999,6 +1008,14 @@ def test_verify_refuses_a_gpyreg_source_at_another_commit(campaign, tmp_path):
     result = cli("verify", "--out", str(copy), "--gpyreg-source", str(other))
     assert result.returncode != 0
     manifest = json.loads((copy / "manifest.json").read_text(encoding="utf-8"))
-    commit = manifest["identity"]["source"]["gpyreg_commit"]
-    assert commit[:12] in result.stderr or "commit" in result.stderr
+    pinned = manifest["identity"]["source"]["gpyreg_commit"]
+    # The refusal names the manifest's commit, and nothing was verified.
+    assert f"not the manifest's {pinned}" in result.stderr
+    assert not (copy / "verification.json").exists()
+    # A directory that is no git checkout is refused with a plain message.
+    plain = tmp_path / "plain"
+    (plain / "gpyreg").mkdir(parents=True)
+    result = cli("verify", "--out", str(copy), "--gpyreg-source", str(plain))
+    assert result.returncode != 0
+    assert "is not a git checkout" in result.stderr
     assert not (copy / "verification.json").exists()

@@ -2,8 +2,8 @@
 
 # Scripts
 *.sh text eol=lf
+*.sbatch text eol=lf
 
 # These are explicitly windows files and should use crlf
 *.bat text eol=crlf
 *.cmd text eol=crlf
-*.sbatch text eol=lf

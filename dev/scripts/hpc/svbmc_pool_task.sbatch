@@ -25,6 +25,13 @@ case "$CASE" in
 esac
 LABEL=${CASE% *}
 SEED=${CASE#* }
+TAG="${LABEL}_seed${SEED}"
+# A completed case is never regenerated: resubmitting a range that
+# includes finished cases costs nothing but these lines.
+if [ -f "$POOL_DIR/records/$TAG.complete.json" ]; then
+    echo "task ${SLURM_ARRAY_JOB_ID:-?}_${SLURM_ARRAY_TASK_ID} line $LINE: $TAG already has a completion record; nothing to do"
+    exit 0
+fi
 
 # shellcheck source=svbmc_pool_env.sh
 source "$REPO/dev/scripts/hpc/svbmc_pool_env.sh"

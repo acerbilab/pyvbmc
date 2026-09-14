@@ -10,12 +10,14 @@
 # result in POOL_DIR/verification.json), and stops if verification fails
 # or if cases are missing, printing the array indices to resubmit with
 # `ARRAY=... svbmc_pool_submit.sh POOL_DIR` (raise TIME or MEM when Slurm
-# killed them). With --allow-missing it goes on regardless. Then `select`
-# and `summarize`, and, unless --no-archive, the whole directory as
-# <parent>/<name>.tar.zst with its SHA-256 and size.
+# killed them). It also stops while tasks of the recorded jobs are still
+# queued or running. With --allow-missing it goes on in both cases. Then
+# `select` and `summarize`, and, unless --no-archive, the whole directory
+# as <parent>/<name>.tar.zst with its SHA-256 and size.
 #
-# Environment (all optional): PARTITION (short), VERIFY_TIME (01:00:00),
-# VERIFY_MEM (2G), POOL_CONDA_ENV, CONDA_SH (see svbmc_pool_env.sh).
+# Environment (all optional): PARTITION (short), VERIFY_TIME (01:00:00)
+# and VERIFY_MEM (2G) for the srun that runs `verify`, POOL_CONDA_ENV,
+# CONDA_SH (see svbmc_pool_env.sh).
 set -euo pipefail
 
 usage() {
@@ -50,9 +52,15 @@ cd "$REPO"
 # 1. Accounting of every job the submit script recorded.
 if [ -s "$POOL_DIR/slurm/jobs.txt" ]; then
     JOBS=$(awk '{print $1}' "$POOL_DIR/slurm/jobs.txt" | paste -sd,)
-    if [ -n "$(squeue -h -j "$JOBS" 2>/dev/null || true)" ]; then
-        echo "tasks of $JOBS are still queued or running:" >&2
-        squeue -j "$JOBS" >&2 || true
+    # One query per job: an id that has aged out of the queue makes
+    # squeue fail, which must not hide another job's running tasks.
+    running=""
+    for job in $(awk '{print $1}' "$POOL_DIR/slurm/jobs.txt"); do
+        running+=$(squeue -h -j "$job" -o "%i %T %M" 2>/dev/null || true)
+    done
+    if [ -n "$running" ]; then
+        echo "tasks of the recorded jobs are still queued or running:" >&2
+        echo "$running" >&2
         if [ "$ALLOW_MISSING" = 0 ]; then
             exit 1
         fi

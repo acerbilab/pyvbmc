@@ -45,24 +45,35 @@ node `turso02`); every site-specific value is an environment variable.
   and, when `POOL_DIR` holds a manifest, `PYVBMC_GPYREG_SOURCE` from it.
 - `svbmc_pool_submit.sh POOL_DIR [prepare flags]` — refuses a dirty
   checkout, runs `prepare` when the directory holds no manifest (the
-  flags go to `prepare`; a prepared campaign is never revised here),
-  writes `cases.txt` once and refuses to overwrite it with a different
-  list, and submits the array. `ARRAY=1` submits a canary,
-  `ARRAY=17,233` a resubmission; otherwise every case, in chunks that stay
-  below the site's `MaxArraySize` (the largest valid index is one less),
-  each chunk carrying an `INDEX_OFFSET`. `THROTTLE` (200), `TIME`
-  (00:30:00), `MEM` (2G), `PARTITION` (short) and `SBATCH_EXTRA` tune the
-  submission. Job ids go to `POOL_DIR/slurm/jobs.txt`.
+  flags go to `prepare`, whose suite defaults to `svbmc_pool`; a prepared
+  campaign is never revised here), writes `cases.txt` once and refuses to
+  overwrite it with a different list, and submits the array in chunks
+  that stay below the site's `MaxArraySize` (the largest valid array
+  index is one less, so chunk `k` carries `INDEX_OFFSET = k × (MaxArraySize − 1)`
+  and array indices from 1). `ARRAY` names case indices, the lines of
+  `cases.txt`, as an sbatch-style list of numbers and ranges and is
+  mapped onto those chunks, one submission per chunk touched, so
+  `ARRAY=1` is a canary and `ARRAY=17,233` a resubmission on any site.
+  A task whose case already has a completion record exits at once, so
+  resubmitting a range that includes finished cases is safe. `THROTTLE`
+  (200), `TIME` (00:30:00), `MEM` (2G), `PARTITION` (short) and
+  `SBATCH_EXTRA` tune the submission. Job ids go to
+  `POOL_DIR/slurm/jobs.txt`.
 - `svbmc_pool_task.sbatch` — the array task: line
   `INDEX_OFFSET + SLURM_ARRAY_TASK_ID` of `cases.txt`, one `worker` call
   with the required environment. Its output is
-  `POOL_DIR/slurm/<jobid>_<index>.out`.
+  `POOL_DIR/slurm/<jobid>_<array index>.out`; in a chunk with an offset
+  the array index is the case index minus the offset, and the task's
+  first line names its case.
 - `svbmc_pool_finish.sh POOL_DIR [--no-archive] [--allow-missing]` —
   `sacct` for every recorded job into `slurm/sacct.txt`, `verify` under
-  `srun` (`verification.json`), then `select`, `summarize` and the archive
-  `<parent>/<name>.tar.zst` with its SHA-256 and size. It stops when
-  verification fails or cases are missing and prints the indices to
-  resubmit.
+  `srun` (`verification.json`; `VERIFY_TIME`, default 01:00:00, and
+  `VERIFY_MEM`, default 2G, size that step), then `select`, `summarize`
+  and the archive `<parent>/<name>.tar.zst` with its SHA-256 and size. It
+  stops while tasks of the recorded jobs are still queued or running,
+  when verification fails, or when cases are missing, printing the
+  indices to resubmit; `--allow-missing` lets it go on past the queue
+  check and the missing cases.
 
 ## A campaign, step by step
 
