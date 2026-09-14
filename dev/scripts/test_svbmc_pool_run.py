@@ -1,4 +1,5 @@
-"""Contracts of the S-VBMC pool generator: artifact, resume, summary.
+"""Contracts of the S-VBMC pool generator: artifact, resume, selection,
+summary and post-hoc verification.
 
 One short campaign (``normal_D2``, at most three seeds, about a minute of
 inference) is generated once for the whole module through the command
@@ -853,3 +854,169 @@ def test_allocation_overrides_and_bounds():
 def test_allocation_rejects_a_malformed_argument(item):
     with pytest.raises(RuntimeError, match="LABEL=TARGET/MAXSEEDS"):
         runner.parse_override(item)
+
+
+def verification(out):
+    """The report `verify` wrote in a campaign directory."""
+    return json.loads((out / "verification.json").read_text(encoding="utf-8"))
+
+
+def reported(report, tag):
+    """The one reported case of a tag."""
+    (case,) = [c for c in report["cases"] if c["tag"] == tag]
+    return case
+
+
+def test_verify_reconciles_the_allocation(campaign, tmp_path):
+    """Every case of the allocation is placed, and the counts add up."""
+    out, _ = campaign
+    copy = tmp_path / "pool"
+    shutil.copytree(out, copy)
+    result = cli("verify", "--out", str(copy))
+    assert result.returncode == 0, result.stdout + result.stderr
+    report = verification(copy)
+    assert [case["index"] for case in report["cases"]] == list(
+        range(1, MAX_SEEDS + 1)
+    )
+    assert [case["seed"] for case in report["cases"]] == [
+        SEED_START + i for i in range(MAX_SEEDS)
+    ]
+    counts = report["counts"]
+    assert counts["verified"] == len(completed_tags(copy))
+    assert counts["failed"] == len(list(copy.glob("*.error.txt")))
+    # The sweep stops at the filtered target or walks every seed; either
+    # way the allocation's cases are each placed exactly once.
+    assert (
+        counts["verified"]
+        + counts["failed"]
+        + counts["partial"]
+        + counts["missing"]
+        + counts["verify_failed"]
+        == MAX_SEEDS
+    )
+    assert counts["stray"] == 0 and counts["partial"] == 0
+    for case in report["cases"]:
+        if case["status"] == "verified":
+            assert isinstance(case["passes"], bool)
+            assert case["differences"]["I_sk"] <= pool_io.TOL_STATS
+            assert case["differences"]["J_sjk"] <= pool_io.TOL_STATS
+    (condition,) = report["conditions"]
+    assert condition["label"] == LABEL
+    assert [condition[key] for key in runner.VERIFY_STATUSES] == [
+        counts[key] for key in runner.VERIFY_STATUSES
+    ]
+
+
+def test_verify_reports_a_tampered_artifact(campaign, tmp_path):
+    """A flipped byte in a stored `.npz` fails that case and the command."""
+    out, _ = campaign
+    copy = tmp_path / "pool"
+    shutil.copytree(out, copy)
+    tag = completed_tags(copy)[0]
+    artifact = copy / f"{tag}.npz"
+    stored = bytearray(artifact.read_bytes())
+    stored[10] ^= 0xFF
+    artifact.write_bytes(bytes(stored))
+    result = cli("verify", "--out", str(copy))
+    assert result.returncode == 1, result.stdout + result.stderr
+    case = reported(verification(copy), tag)
+    assert case["status"] == "verify_failed" and case["error"]
+    assert f"{tag} verify_failed" in result.stdout
+
+
+def test_verify_distinguishes_partial_from_missing(campaign, tmp_path):
+    """An artifact without its record is partial; nothing at all is missing.
+
+    The second is what a task Slurm killed leaves, which `select` and
+    `summarize` cannot see, so `verify` names it with its array index.
+    """
+    out, _ = campaign
+    copy = tmp_path / "pool"
+    shutil.copytree(out, copy)
+    result = cli("verify", "--out", str(copy))
+    assert result.returncode == 0, result.stdout + result.stderr
+    before = verification(copy)["counts"]["missing"]
+    tag = completed_tags(copy)[0]
+    pool_io.record_path(copy, tag).unlink()
+    result = cli("verify", "--out", str(copy))
+    assert result.returncode == 1, result.stdout + result.stderr
+    case = reported(verification(copy), tag)
+    assert case["status"] == "partial"
+    assert case["files"] == [f"{tag}.npz", f"{tag}.json"]
+
+    gone = tmp_path / "pool2"
+    shutil.copytree(out, gone)
+    pool_io.record_path(gone, tag).unlink()
+    for suffix in (".npz", ".json", ".vbmc.pkl", ".log", ".error.txt"):
+        (gone / f"{tag}{suffix}").unlink(missing_ok=True)
+    result = cli("verify", "--out", str(gone))
+    assert result.returncode == 0, result.stdout + result.stderr
+    report = verification(gone)
+    case = reported(report, tag)
+    assert case["status"] == "missing"
+    assert report["counts"]["missing"] == before + 1
+    assert f"{case['index']} {tag} missing" in result.stdout
+
+
+def test_verify_flags_a_stray_artifact(campaign, tmp_path):
+    """An artifact the allocation does not name is stray; nothing else is."""
+    out, _ = campaign
+    copy = tmp_path / "pool"
+    shutil.copytree(out, copy)
+    (copy / "foo_seed1.npz").write_bytes(b"not an artifact")
+    # The campaign's own files and the array's directory are not runs.
+    (copy / "slurm").mkdir(exist_ok=True)
+    (copy / "slurm" / "sacct.txt").write_text(
+        "JobID|State|ExitCode\n", encoding="utf-8"
+    )
+    (copy / "cases.txt").write_text(
+        f"{LABEL} {SEED_START}\n", encoding="utf-8"
+    )
+    result = cli("verify", "--out", str(copy))
+    assert result.returncode == 1, result.stdout + result.stderr
+    report = verification(copy)
+    assert report["stray"] == ["foo_seed1"]
+    assert report["counts"]["stray"] == 1
+    assert "stray: 1 (foo_seed1)" in result.stdout
+    assert "sacct" not in result.stdout and "cases.txt" not in result.stdout
+
+
+def test_verify_refuses_a_gpyreg_source_at_another_commit(campaign, tmp_path):
+    """A copied pool is verified against the pinned library alone."""
+    out, _ = campaign
+    copy = tmp_path / "pool"
+    shutil.copytree(out, copy)
+    (copy / "verification.json").unlink(missing_ok=True)
+    other = tmp_path / "other_gpyreg"
+    (other / "gpyreg").mkdir(parents=True)
+    subprocess.run(["git", "-C", str(other), "init", "-q"], check=True)
+    (other / "gpyreg" / "__init__.py").write_text(
+        "# not the campaign's gpyreg\n", encoding="utf-8"
+    )
+    author = [
+        "-c",
+        "user.name=t",
+        "-c",
+        "user.email=t@example.com",
+        "-c",
+        "commit.gpgsign=false",
+    ]
+    subprocess.run(["git", "-C", str(other), *author, "add", "-A"], check=True)
+    subprocess.run(
+        ["git", "-C", str(other), *author, "commit", "-q", "-m", "x"],
+        check=True,
+    )
+    result = cli("verify", "--out", str(copy), "--gpyreg-source", str(other))
+    assert result.returncode != 0
+    manifest = json.loads((copy / "manifest.json").read_text(encoding="utf-8"))
+    pinned = manifest["identity"]["source"]["gpyreg_commit"]
+    # The refusal names the manifest's commit, and nothing was verified.
+    assert f"not the manifest's {pinned}" in result.stderr
+    assert not (copy / "verification.json").exists()
+    # A directory that is no git checkout is refused with a plain message.
+    plain = tmp_path / "plain"
+    (plain / "gpyreg").mkdir(parents=True)
+    result = cli("verify", "--out", str(copy), "--gpyreg-source", str(plain))
+    assert result.returncode != 0
+    assert "is not a git checkout" in result.stderr
+    assert not (copy / "verification.json").exists()

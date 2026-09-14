@@ -21,6 +21,7 @@ Sub-commands::
     python dev/scripts/svbmc_pool_run.py worker --out DIR --label L --seed S
     python dev/scripts/svbmc_pool_run.py select --out DIR
     python dev/scripts/svbmc_pool_run.py summarize --out DIR
+    python dev/scripts/svbmc_pool_run.py verify --out DIR
 
 ``prepare`` writes the manifest: the allocation, the run options and the
 identity of the code and environment the pool is generated with. It
@@ -62,28 +63,36 @@ and ``select`` is then what says which of them the pool is.
 full seed range, and ``worker`` runs one of them in one fresh process, so
 a cluster can generate the same pool as an array job, one task per case.
 The plan's section "Cluster generation" owns that hand-over; the shape of
-it is three separate pieces. On the login node, once the campaign is
-prepared, write the case list and submit the array::
+it is three separate pieces. ``dev/scripts/hpc/`` holds the scripts that
+implement this sketch (its README is the operator's guide). On the login
+node, once the campaign is prepared, write the case list and submit the
+array::
 
     python dev/scripts/svbmc_pool_run.py cases --out $DIR > $DIR/cases.txt
     wc -l < $DIR/cases.txt      # 1100 for the campaign's allocation
     sbatch --array=1-1000%50 --cpus-per-task=1 --mem=2G pool_task.sh
-    sbatch --array=1001-1100%50 --cpus-per-task=1 --mem=2G pool_task.sh
+    sbatch --array=1-100%50 --export=ALL,INDEX_OFFSET=1000 \\
+        --cpus-per-task=1 --mem=2G pool_task.sh
 
-Two submissions because Slurm's ``MaxArraySize`` defaults to 1001, which
-the allocation's 1100 cases exceed; ``scontrol show config | grep
-MaxArraySize`` gives the site's own limit, and the ``%50`` throttle caps
-how many tasks run at once. One core and under 2 GB per case is enough.
+Two submissions because Slurm's ``MaxArraySize`` defaults to 1001 and caps
+the largest index rather than the number of tasks: the valid indices are
+0..1000, which the allocation's 1100 cases exceed. The second submission
+therefore runs indices 1..100 again and has the script add
+``INDEX_OFFSET`` to them, so those tasks read lines 1001..1100 of the case
+list; ``scontrol show config | grep MaxArraySize`` gives the site's own
+limit, and the ``%50`` throttle caps how many tasks run at once. One core
+and under 2 GB per case is enough.
 
 ``pool_task.sh`` is the array script, run once per task by Slurm. Its
-body is these lines, which belong in the script and nowhere else: run
-outside an array task, ``$SLURM_ARRAY_TASK_ID`` is empty and ``sed``
-prints every case::
+body is these lines, which belong in the script and nowhere else; the
+line of the case list one task reads is its array index plus the offset
+its submission exported, which is nothing for the first chunk::
 
     #!/bin/bash
     export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
     export MPLBACKEND=Agg PYVBMC_GPYREG_SOURCE=<the manifest's gpyreg_source>
-    CASE=$(sed -n "${SLURM_ARRAY_TASK_ID}p" $DIR/cases.txt)
+    LINE=$((SLURM_ARRAY_TASK_ID + ${INDEX_OFFSET:-0}))
+    CASE=$(sed -n "${LINE}p" $DIR/cases.txt)
     python -u dev/scripts/svbmc_pool_run.py worker --out $DIR \\
         --label ${CASE% *} --seed ${CASE#* }
 
@@ -104,6 +113,24 @@ a run, and exits non-zero, so Slurm records the failure too; the case is
 rerun or left out, and nothing else needs doing about it. ``run``'s
 campaign lock, its ``status.json`` and its sequential stopping rule belong
 to the laptop sweep alone; no array task writes any of them.
+
+``verify`` is what reads an array's output before ``select``. It re-checks
+every completed case against its completion record (the recorded identity,
+which must match the manifest's source identity, and the hashes of both
+files) and then post hoc with ``svbmc_pool_io.verify_run``, the
+recomputation gate on the rebuilt posterior and GP included, and it
+reconciles the allocation case by case: the ``failed`` cases with the last
+line of their error file, the ``partial`` artifacts left without a record
+or an error file, and the ``missing`` cases, which is what a task Slurm
+kills for its time limit or its memory leaves behind, printed with the
+array index that resubmits them; artifact files the allocation does not
+name are reported as stray. The report is ``verification.json``. The
+command exits non-zero when an artifact fails its checks or the directory
+holds a partial or a stray file, and zero for failed and missing cases,
+which are reported and then rerun or left out. A pool copied to another
+machine is verified with ``--gpyreg-source`` naming a local checkout of the
+pinned library instead of the manifest's path, which is accepted only at
+the manifest's gpyreg commit.
 
 gpyreg is pinned to the frozen worktree the manifest names: every
 process prepends it to ``sys.path`` before PyVBMC is imported (through
@@ -1315,6 +1342,213 @@ def cmd_summarize(args):
 
 
 # --------------------------------------------------------------------------
+# verify
+# --------------------------------------------------------------------------
+
+#: The case states :func:`cmd_verify` counts, in the totals and per
+#: condition. ``verify_failed`` is a case whose own verification raised,
+#: a fault of the stored artifact rather than of the allocation; it is
+#: counted with the others so that a condition's counts add up to its
+#: cases.
+VERIFY_STATUSES = (
+    "verified",
+    "failed",
+    "partial",
+    "missing",
+    "verify_failed",
+)
+
+
+def error_reason(out, tag):
+    """The last non-empty line of one failed case's error file."""
+    lines = (
+        (Path(out) / f"{tag}.error.txt")
+        .read_text(encoding="utf-8", errors="replace")
+        .strip()
+        .splitlines()
+    )
+    return lines[-1] if lines else ""
+
+
+def stray_tags(out, tags):
+    """The artifact tags of a directory that the allocation does not name.
+
+    Only what a case leaves is looked at, its ``<tag>.npz``, its optional
+    ``<tag>.vbmc.pkl`` and its completion record, so that the campaign's
+    own files (the manifest, the reports, the case list, the lock, a log
+    or an error file) and the directories beside them (``records/``,
+    ``slurm/``) are never mistaken for a run.
+    """
+    out = Path(out)
+    candidates = {path.name[: -len(".npz")] for path in out.glob("*.npz")}
+    candidates |= {
+        path.name[: -len(".vbmc.pkl")] for path in out.glob("*.vbmc.pkl")
+    }
+    candidates |= {
+        path.name[: -len(".complete.json")]
+        for path in (out / "records").glob("*.complete.json")
+    }
+    return sorted(candidates - set(tags))
+
+
+def status_counts(cases, statuses):
+    return {
+        status: sum(1 for case in cases if case["status"] == status)
+        for status in statuses
+    }
+
+
+def case_verification(out, tag, expected, pool_io):
+    """One case of the allocation, re-checked against what it left behind.
+
+    The guard is broad on purpose: ``case_state`` raises ``RuntimeError``
+    for a record that no longer describes its files, and ``verify_run`` on
+    a truncated ``.npz`` raises whatever the codec beneath it raises
+    (``zlib.error``, ``OSError``, ``KeyError``, ``ValueError``). Every one
+    of them is this case failing its verification, not the command.
+    """
+    try:
+        state, detail = case_state(out, tag, expected)
+        if state == "done":
+            report = pool_io.verify_run(Path(out) / tag)
+            return {
+                "status": "verified",
+                "passes": bool(detail["verdict"]["passes"]),
+                "differences": report["differences"],
+            }
+        if state == "failed":
+            return {"status": "failed", "reason": error_reason(out, tag)}
+        if state == "partial":
+            return {"status": "partial", "files": detail}
+        return {"status": "missing"}
+    except Exception as error:
+        return {
+            "status": "verify_failed",
+            "error": f"{type(error).__name__}: {error}",
+        }
+
+
+def case_line(case):
+    """One reported case: ``index tag status``, and what it left."""
+    line = f"{case['index']} {case['tag']} {case['status']}"
+    detail = {
+        "failed": case.get("reason"),
+        "partial": ", ".join(case.get("files", [])),
+        "verify_failed": case.get("error"),
+    }.get(case["status"])
+    return f"{line}: {detail}" if detail else line
+
+
+def cmd_verify(args):
+    """Re-check every artifact of a campaign and reconcile the allocation.
+
+    The post-hoc verification of a pool an array job generated, and what
+    makes ``select`` and ``summarize`` trustworthy on one: those two read
+    the cases that left a completion record or an error file, and a task
+    Slurm killed leaves neither, so it would silently be left out. Every
+    case of the allocation is placed instead — ``verified``, ``failed``,
+    ``partial``, ``missing``, or ``verify_failed`` when the check itself
+    raised — and every artifact file the allocation does not name is
+    reported as stray.
+    """
+    out = args.out.resolve()
+    manifest = read_manifest(out)
+    if args.gpyreg_source is not None:
+        try:
+            commit = git(args.gpyreg_source, "rev-parse", "HEAD")
+            dirty = git(args.gpyreg_source, "status", "--porcelain")
+        except (OSError, subprocess.CalledProcessError) as error:
+            raise RuntimeError(
+                f"{args.gpyreg_source} is not a git checkout; --gpyreg-source "
+                "names a clone of gpyreg at the manifest's commit"
+            ) from error
+        pinned = identity_source(manifest["identity"])["gpyreg_commit"]
+        if commit != pinned:
+            raise RuntimeError(
+                f"{args.gpyreg_source} is at gpyreg commit {commit}, not "
+                f"the manifest's {pinned}; the pool was generated by that "
+                "commit and is verified against it"
+            )
+        if dirty:
+            raise RuntimeError(
+                f"{args.gpyreg_source} has uncommitted changes; the pool is "
+                "verified against the pinned library as committed"
+            )
+    source = activate_gpyreg(args.gpyreg_source or manifest["gpyreg_source"])
+    # The manifest's identity, not this process's: a pool is verified
+    # against the code it was prepared with, wherever it is read.
+    expected = manifest["identity"]
+
+    import svbmc_pool_io as pool_io
+
+    cases = []
+    for index, (label, seed) in enumerate(manifest_cases(manifest), start=1):
+        tag = f"{label}_seed{seed}"
+        cases.append(
+            {
+                "index": index,
+                "tag": tag,
+                "label": label,
+                "seed": int(seed),
+                **case_verification(out, tag, expected, pool_io),
+            }
+        )
+    stray = stray_tags(out, [case["tag"] for case in cases])
+    counts = status_counts(cases, VERIFY_STATUSES)
+    counts["stray"] = len(stray)
+    by_label = {}
+    for case in cases:
+        by_label.setdefault(case["label"], []).append(case)
+    conditions = [
+        {
+            "label": entry["label"],
+            **status_counts(by_label.get(entry["label"], []), VERIFY_STATUSES),
+        }
+        for entry in manifest["allocation"]
+    ]
+    write_json(
+        out / "verification.json",
+        {
+            "campaign": manifest["campaign"],
+            "directory": str(out),
+            "generated": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "gpyreg_source": source,
+            "identity": manifest["identity"],
+            "counts": counts,
+            "conditions": conditions,
+            "stray": stray,
+            "cases": cases,
+        },
+    )
+    print("| condition | " + " | ".join(VERIFY_STATUSES) + " |", flush=True)
+    print("|" + "---|" * (len(VERIFY_STATUSES) + 1), flush=True)
+    for condition in conditions:
+        cells = " | ".join(
+            str(condition[key]) for key in ("label",) + VERIFY_STATUSES
+        )
+        print(f"| {cells} |", flush=True)
+    print(
+        f"stray: {counts['stray']}"
+        + (f" ({', '.join(stray)})" if stray else ""),
+        flush=True,
+    )
+    for case in cases:
+        if case["status"] != "verified":
+            print(case_line(case), flush=True)
+    print(
+        f"{len(cases)} cases: "
+        + ", ".join(f"{key} {value}" for key, value in counts.items()),
+        flush=True,
+    )
+    # A failed case is rerun or left out and a missing one is resubmitted,
+    # both of which the operator reads off this report; an artifact that
+    # fails its checks, a partial one and a stray file are the faults that
+    # must be settled before the pool is read.
+    fatal = ("verify_failed", "partial", "stray")
+    return 1 if any(counts[key] for key in fatal) else 0
+
+
+# --------------------------------------------------------------------------
 # Main
 # --------------------------------------------------------------------------
 
@@ -1414,6 +1648,19 @@ def parse_args(argv=None):
 
     summarize = sub.add_parser("summarize", help="summarize a pool")
     summarize.add_argument("--out", type=Path, required=True)
+
+    verify = sub.add_parser(
+        "verify",
+        help="re-check every artifact and reconcile the allocation",
+    )
+    verify.add_argument("--out", type=Path, required=True)
+    verify.add_argument(
+        "--gpyreg-source",
+        type=Path,
+        help="a gpyreg checkout to use instead of the manifest's path, for "
+        "a pool copied to another machine; it must be at the manifest's "
+        "gpyreg commit",
+    )
     return parser.parse_args(argv)
 
 
@@ -1429,6 +1676,8 @@ def main(argv=None):
         return cmd_select(args)
     if args.command == "summarize":
         return cmd_summarize(args)
+    if args.command == "verify":
+        return cmd_verify(args)
     # The sequential sweep below is the laptop supervisor: the campaign
     # lock, `status.json` and the idle-sleep request are its own, and no
     # other sub-command takes them. Process-scoped request: permit display
