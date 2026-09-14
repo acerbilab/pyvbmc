@@ -461,27 +461,32 @@ reason.
   `--save-vbmc` also pickles the whole `VBMC` object); `worker` is one run
   and is invocable on its own; `cases` prints every `label seed` of the
   allocation, one per line, so a Slurm array can map its index to one
-  `worker` call (the plan's "Cluster generation"; the docstring's sketch
-  chunks the array around Slurm's default `MaxArraySize` of 1001);
+  `worker` call (the plan's "Cluster generation"; `scripts/hpc/` holds the
+  Slurm scripts that implement the docstring's sketch);
   `select` then defines the filtered pool post hoc, per condition the
   lowest-seed runs that pass the filters up to the target, in
   `selection.json`, which the comparison reads, and reports its pass rate
   over the seeds it scanned before the target was met, which is not
   `summarize`'s over every completed case; `summarize` writes the
   per-condition pass rates, wall times and metric quartiles from the cases
-  the directory holds. gpyreg is pinned to a frozen worktree through
-  `PYVBMC_GPYREG_SOURCE` as in `population_run.py`; the identity is split
-  into a `source` half (commits, library versions, working-tree state and
-  the hashes of the suite module and both pool scripts) that every process
-  of one campaign must match and a `host` half that is recorded only, so
-  any node may run any case. Hash-verified completion records permit
-  resumption; a failing case leaves `<tag>.error.txt` and no artifact,
-  written by the worker itself so that an array task records its failure
-  as a sweep does, and is skipped by later sweeps; an artifact file
-  without a completion record or an error file stops the sweep for
-  inspection (the log of an interrupted case is not one).
-  `test_svbmc_pool_run.py` generates a short campaign and checks the
-  artifact, resume, revision, selection and summary contracts.
+  the directory holds; `verify` re-checks every stored artifact post hoc
+  against its completion record and the manifest's source identity, the
+  recomputation gate included, reconciles the allocation (failed, partial,
+  missing and stray cases, the missing ones printed with their array index
+  for resubmission) into `verification.json`, and takes `--gpyreg-source`
+  for a pool copied to another machine. gpyreg is pinned to a frozen
+  worktree through `PYVBMC_GPYREG_SOURCE` as in `population_run.py`; the
+  identity is split into a `source` half (commits, library versions,
+  working-tree state and the hashes of the suite module and both pool
+  scripts) that every process of one campaign must match and a `host` half
+  that is recorded only, so any node may run any case. Hash-verified
+  completion records permit resumption; a failing case leaves
+  `<tag>.error.txt` and no artifact, written by the worker itself so that
+  an array task records its failure as a sweep does, and is skipped by
+  later sweeps; an artifact file without a completion record or an error
+  file stops the sweep for inspection (the log of an interrupted case is
+  not one). `test_svbmc_pool_run.py` generates a short campaign and checks
+  the artifact, resume, revision, selection and summary contracts.
 - `scripts/svbmc_pool_io.py` — the campaign's per-run artifact: `save_run`
   stores one finished run through the oracle snapshot codec (the returned
   posterior with all of `stats`, the GP that produced those statistics,
@@ -494,6 +499,17 @@ reason.
   GP alone) without the live run, and post hoc also against the hashes of
   the completion record; `filter_verdict` applies the pool's stability and
   `J_sjk` filters.
+- `scripts/hpc/` — Slurm tooling for generating the S-VBMC pools on a
+  cluster ([README](scripts/hpc/README.md)): `svbmc_pool_submit.sh`
+  refuses a dirty checkout, prepares a campaign once and submits
+  `svbmc_pool_task.sbatch` as a throttled array (chunked below the site's
+  `MaxArraySize` with an index offset, the checkout frozen until the array
+  is done because every worker compares the identity fixed at `prepare`);
+  `svbmc_pool_finish.sh` collects the Slurm accounting, runs `verify`
+  under `srun`, then `select`, `summarize` and the archive with its
+  SHA-256; `svbmc_pool_env.sh` is the shared environment. Written for the
+  University of Helsinki `kale` cluster; every site-specific value is an
+  environment variable.
 - `scripts/svbmc_pool_stack.py` — the stacking comparison of the same
   campaign: for every condition, every `M` on a grid and every repetition,
   one subset of the filtered pool is stacked by both the integrated
