@@ -75,13 +75,16 @@ cells of `pilot/stack/`: `results.json` (per cell the raw, capped and
 honest expected log joints under every coverage rule and combination
 with their biases against the cell's `e_log_joint_mc`, the Monte Carlo
 and GP-side uncertainties, the covered weight, per-run own and cross-run
-errors, calibration `z` statistics, effective training-point counts and
-the own-run checks; per run the self-check row; the settings),
-`summary.json` and `summary.md` (medians with bootstrap intervals per
-condition and rule), `sources.json` (commits, import paths, versions, the
-hashes of the script and of the cells file) and `figures/` (bias by
-condition, own against honest error per component, coverage and bias
-under every rule, calibration, errors against effective training
+errors, calibration `z` statistics, effective training-point counts, the
+decomposition of every run's heaviest component into what each run's
+data and GP said about it, and the own-run checks; per run the self-check
+row; the skipped cells; the settings), `cells.jsonl` (the same cell rows
+as written during the sweep), `summary.json` and `summary.md` (medians
+with bootstrap intervals per condition and rule, the decomposition
+tables), `sources.json` (commits, import paths, versions, thread
+settings, the hashes of the script and of the cells file) and `figures/`
+(bias by condition, own against honest error per component, coverage and
+bias under every rule, calibration, errors against effective training
 points). `pilot/phase2_newconds_selfcheck/` is the script's
 `--self-check` on the artifacts of the two later conditions under gpyreg
 1.2.1. The per-cell component arrays stay with the raw artifacts. The

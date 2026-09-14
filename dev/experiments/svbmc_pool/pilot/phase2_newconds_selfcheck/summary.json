@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-14 13:11:19",
+  "generated": "2026-09-14 14:02:31",
   "settings": {
     "arm": "integrated",
     "draws": 100,
@@ -52,6 +52,8 @@
     "headline_rule": "ratio2",
     "headline_method": "median",
     "z_flag": 4.0,
+    "z_flag_max": 6.0,
+    "within_radius": 2.0,
     "bootstrap_resamples": 10000,
     "cells": null,
     "pools": [
@@ -59,6 +61,7 @@
     ],
     "self_check": true
   },
+  "skipped": [],
   "conditions": [
     {
       "condition": "multisensory_s1_D6_svbmc",
@@ -74,7 +77,7 @@
           "bq_sd_median": 0.06628469751773006,
           "pred_sd_median": 0.19779396041040126,
           "own_mc_max_z": 2.9598847135899513,
-          "own_offset_z": 0.3409107738499109,
+          "own_offset_z": 0.3409107738514226,
           "jac_max_z": 3.2592645774689695,
           "jac_offset_z": -0.22580598662466175,
           "flagged": false
@@ -95,7 +98,7 @@
           "bq_sd_median": 0.4417124332538265,
           "pred_sd_median": 0.8407979772294544,
           "own_mc_max_z": 2.654707135896759,
-          "own_offset_z": -1.4059496374024492,
+          "own_offset_z": -1.405949637402448,
           "jac_max_z": 0.0,
           "jac_offset_z": 0.0,
           "flagged": false
