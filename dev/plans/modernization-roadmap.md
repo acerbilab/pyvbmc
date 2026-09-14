@@ -27,8 +27,8 @@ The remaining numerical work for 1.5 is improving the efficiency of existing
 noisy acquisitions (sieve/search, importance sampling, criterion evaluation
 and GP-update costs) and checking/improving S-VBMC's reported ELBO
 debiasing. The S-VBMC preparation/entropy speedups that preserve the
-method are implemented and measured on `dev-svbmc-speedups`
-([svbmc-speedups.md](svbmc-speedups.md)), pending merge.
+method are implemented, measured and merged into `dev-next` (2026-09-13,
+[svbmc-speedups.md](svbmc-speedups.md)).
 Designing new acquisition functions or criteria is outside scope. Keep
 standard VIQR (`loss="iqr"`); evaluating `iqr_reduction` as a reformulation
 for numerical search is within the efficiency work and requires validation.
@@ -1059,7 +1059,12 @@ its implementation design remains open.
 - [ ] Improve support for running benchmarks on Slurm HPC systems, including
   submission, resource configuration, resumption and collection of results
   with reproducible run provenance. Choose the execution design when this
-  work starts.
+  work starts. The S-VBMC run-pool campaign
+  ([svbmc-benchmark-campaign.md](svbmc-benchmark-campaign.md)) is the
+  first cluster job: its per-case worker, `cases` enumeration and
+  hash-verified completion records are cluster-ready, and the sbatch
+  scripts the cluster developer returns with the pool PR are the seed of
+  this item.
 - [ ] Make the distinction between reference generation and candidate
   checking explicit in benchmark workflows and documentation. A golden
   reference may contain many traces and require a long campaign to generate.
