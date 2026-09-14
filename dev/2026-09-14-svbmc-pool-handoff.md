@@ -74,15 +74,16 @@ plan); you do not need a further go-ahead to run it.
    (A `verify` subcommand wrapping this would be a welcome addition.)
 5. Hand back **two things**. First, the whole campaign directory
    (artifacts, `records/`, `manifest.json`, `selection.json`, summaries,
-   logs) as one archive (`tar.zst` or zip, about 100–150 MB), copied
-   directly to the PI's machine with `rsync`/`scp` or through the lab's
-   shared storage, to be placed under `dev/scripts/runs/` here; it stays
-   gitignored. Record the archive's SHA-256 and size in the README of
-   your PR (below): every artifact's hash is already in its completion
-   record, so the transfer is verified here before anything runs on it,
-   and the same archive is later published as a release asset of the
-   repository, as the golden traces are, under that recorded hash.
-   Second, a **pull request to
+   logs) as one archive (`tar.zst` or zip, about 100–150 MB). Leave it
+   on the cluster's filesystem or the lab's shared storage and record
+   its path, size and SHA-256 in the README of your PR (below); the PI
+   pulls it from there onto the laptop with `scp`/`rsync` into
+   `dev/scripts/runs/`, where it stays gitignored. Every artifact's hash
+   is already in its completion record, so the copy is verified here
+   before anything runs on it. If shared storage is awkward, attaching
+   the archive to a draft release of the repository works too; the
+   promoted pool is published that way later in any case, as the golden
+   traces are. Second, a **pull request to
    `dev-next`** from a branch you create off `dev-next` (for example
    `dev-svbmc-pool-hpc`), containing: your sbatch scripts (under
    `dev/scripts/hpc/` or a similar new directory, documented in
