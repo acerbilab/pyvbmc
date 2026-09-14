@@ -203,6 +203,14 @@ plan and consolidated human summary.
   branch/full-matrix/integrated CI and all local integration checks passed.
   Reference snapshot: `reference/stage3-20260906`.
 
+- [plans/pymc-target-adapter.md](plans/pymc-target-adapter.md) — the
+  PyMC target adapter for 1.5: the design settled from the feasibility
+  check (`PyMCTarget`, coordinates and bounds, the Laplace box and its
+  fallbacks, the structured `to_arviz` export, the `pymc >= 6.3` floor
+  and the capability guards, save and load), what it rests on, the
+  phased work with its executors, decisions and the execution record.
+  Pending approval; implementation runs on `dev-pymc-adapter`.
+
 - [plans/stage4-torch-feasibility.md](plans/stage4-torch-feasibility.md) -
   Completed bounded PyTorch feasibility prototype: complete variational fits,
   current estimator/optimizer semantics, float64 CPU/GPU evidence,

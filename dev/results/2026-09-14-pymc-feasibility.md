@@ -21,8 +21,9 @@ box. Tracked outputs:
 [`experiments/pymc_feasibility/`](../experiments/pymc_feasibility/)
 (`fit_laplace/`, `fit_prior/`, `nofit/`, each with `report.json` and
 `report.md`; every report records the PyVBMC and gpyreg commits and the
-script's hash). Environment: PyMC 6.3.2, PyTensor 3.3.1 (no C++ compiler,
-Python mode, `floatX` float64), ArviZ 1.3.0, Python 3.12, in a dedicated
+script's hash). Environment: PyMC 6.3.2, PyTensor 3.3.1 (no C++ compiler;
+the default `auto` linker, which resolves to the numba backend with or
+without one; `floatX` float64), ArviZ 1.3.0, Python 3.12, in a dedicated
 virtual environment with this checkout of PyVBMC and gpyreg 1.2.1
 installed editable (the project venv has neither PyMC nor ArviZ; the
 environment's location is listed in the gitignored
@@ -170,9 +171,10 @@ unimodal models.
    width or the box, which the bounded model required. An adapter that
    offers a default should offer the Laplace route with these fallbacks
    and accept explicit bounds.
-6. **Cost.** Without a C++ compiler the compiled density runs in
-   PyTensor's Python mode at 0.02–0.16 ms per call, so the target is not
-   what VBMC's few hundred evaluations spend their time on; the fits took
+6. **Cost.** The compiled density runs on PyTensor's default numba
+   backend at 0.02–0.16 ms per call, after a just-in-time compilation of
+   well under a second on the first call, so the target is not what
+   VBMC's few hundred evaluations spend their time on; the fits took
    5 to 36 seconds and the mode-plus-Hessian setup 0.2 to 3.7 seconds on
    a laptop in mixed use.
 

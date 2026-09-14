@@ -4,6 +4,9 @@
 the current PyVBMC source and current PyMC/ArviZ documentation. The next
 technical step would be a bounded feasibility prototype. No adapter has
 been implemented or executed; effort estimates below are provisional.
+The feasibility check has since run (see the end of this note), the PI
+chose the target adapter with the tested scope for 1.5, and the
+[implementation plan](plans/pymc-target-adapter.md) awaits approval.
 
 ## Purpose
 

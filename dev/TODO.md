@@ -81,12 +81,13 @@ records its execution.
   by name; the mode's Laplace box with fallbacks as the default plausible
   box, explicit bounds accepted; structured ArviZ export with the model's
   names, shapes and coordinates; deterministics and posterior predictions
-  through PyMC's own functions. Next: an implementation plan under
-  `dev/plans/` (module and optional extra, public function and return
-  value, the `to_arviz` extension, version guards for the three
-  semi-private PyMC reaches, a tested PyMC and ArviZ version range with a
-  CI cell, `VBMC.save` on an adapter target, tests, docs and an example
-  notebook), then the implementation on a feature branch. Automatic
+  through PyMC's own functions. The
+  [implementation plan](plans/pymc-target-adapter.md) is drafted and
+  reviewed (module and extra, the `PyMCTarget` class, the `to_arviz`
+  extension, the four guarded PyMC reaches, the `pymc >= 6.3` floor with
+  the CI cell, save and load, tests, docs, Example 8) and awaits the PI's
+  approval; then Phase 0 creates the branch `dev-pymc-adapter` and Opus
+  sub-agents implement Phases 1 to 5 as written. Automatic
   initialization and inference orchestration stay deferred. See the
   [PyMC proposal](2026-09-13-pymc-integration.md).
 
