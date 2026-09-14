@@ -1012,7 +1012,15 @@ run against the acceptance criteria, and the results recorded.
   new targets and the `svbmc_pool` suite.
 - `dev/experiments/svbmc_pool/README.md` (new): owns the description of
   the machine-readable evidence (manifest, summaries, comparison JSON,
-  baseline environment) and the reproduction commands.
+  baseline environment) and the reproduction commands; each generated
+  pool's subdirectory (`pool_<date>/`) carries its own README with every
+  key of its files, the commands that generated it and its archive's
+  name, size and SHA-256.
+- `dev/scripts/hpc/README.md` (new, with the cluster PR): owns how the
+  pool is generated on a Slurm cluster with the scripts beside it
+  (submit, array task, finish), the identity rule that freezes the
+  checkout while the array runs, and the reconciliation of missing cases
+  with `svbmc_pool_run.py verify`.
 - `dev/results/<date>-svbmc-pool-comparison.md` (new, Phase 6): owns the
   reading of the comparison numbers.
 - Not needed: `MANIFEST.in` (nothing under `dev/` ships; the packages are
@@ -1438,6 +1446,35 @@ draft had left open:
   under the campaign's gpyreg pin 1.2.1 (`--gpyreg-source`), not the
   1.2.0 their manifest names; a scoring under 1.2.0 gave every number
   identically, and that worktree is not kept (decision 10).
+- 2026-09-14: the pool was generated on the University of Helsinki `kale`
+  cluster by the cluster developer (PR from `dev-svbmc-pool-hpc`), as a
+  Slurm array of `worker` tasks from commit `d63c477` of that branch (a
+  descendant of `dev-next` `613f2a8`; the branch adds the `verify`
+  subcommand to the runner and the Slurm scripts under
+  `dev/scripts/hpc/`) with gpyreg 1.2.1 (`9e70e6b`) in a dedicated conda
+  environment (Python 3.12.14, numpy 2.5.3, scipy 1.18.1, OpenBLAS,
+  single-threaded): a one-task canary, then `--array=2-1100%200`; 1100
+  tasks, all completed on one core each, 33 minutes of wall time and
+  90.5 CPU-hours (elapsed median 4.6 min, maximum 11.4 min on Student D8,
+  peak memory at most 302 MB, so the 30-minute and 2 GB requests were
+  ample; nodes of three families, recorded per case). `verify`: 1100
+  verified, no failed, partial, missing or stray case, the recomputation
+  gate within 3.0e-9 (`I_sk`) and 1.5e-9 (`J_sjk`) of the stored
+  statistics across node families. `select`: every condition at its
+  target, 700 selected runs, no shortfall; the ring needed 142 seeds
+  (pass rate 0.73 over its 200 runs: 48 unstable, 6 above `s_max`), every
+  other condition 100–103 seeds (pass rates 0.97–1.00). Cluster wall
+  times per run are about twice the laptop pilot's. The archive
+  `svbmc_pool_20260914.tar.zst` (88,740,881 bytes, SHA-256
+  `f2863d96…7bb1`) is an asset of the draft release `svbmc-pool-20260914`
+  (target `d63c477`); the tracked copies and a README with every key are
+  under `dev/experiments/svbmc_pool/pool_20260914/`. For the analysis
+  machine: the manifest stores the cluster's absolute `gpyreg_source`,
+  which `svbmc_pool_stack.py --pool` reads and does not let
+  `--gpyreg-source` override, so that one field must be pointed at a
+  local 1.2.1 checkout before stage D; `verify --gpyreg-source` re-checks
+  the unpacked copy first. Stage D and the Phase 2 study can start on the
+  pool once the PR is reviewed.
 
 ## Execution tracking
 
@@ -1455,5 +1492,5 @@ Live status of the phases above (`[ ]` not started, `[~]` in progress,
 - [x] Doublecheck of the implemented phases (three fresh reviewers on 2026-09-14; every finding fixed and re-verified, see worklog)
 - [x] Evidence yardstick change (decision 7): `elbo_mc` with an arm-independent entropy reference, bias and KL-gap columns, criterion 3 gates, `--summarize-only`; reviewed, no must-fix (2026-09-14)
 - [x] Harness pass for the cluster (decisions 8–10): gpyreg default at the 1.2.1 worktree, source/host identity split, `select` and `cases` subcommands, approved defaults with an explicit precedence, the bias-review fixes; reviewed, every finding fixed; 38 + 16 tests pass; pilot comparison regenerated with the final harness (2026-09-14)
-- [ ] Hand-over of the pool generation to the cluster developer (the "Cluster generation" section and the runner docstring are the brief); stage D and the Phase 2 analyses run on the PI's laptop once the pools are back
+- [~] Hand-over of the pool generation to the cluster developer (the "Cluster generation" section and the runner docstring are the brief); stage D and the Phase 2 analyses run on the PI's laptop once the pools are back (pool generated on the cluster and handed back 2026-09-14: 1100 runs, 700 selected, every artifact verified, draft release `svbmc-pool-20260914`, PR from `dev-svbmc-pool-hpc` awaiting review)
 - [x] The optimism note's Phase 2 estimator, prototyped on the pilot artifacts (Fable; 2026-09-14; `svbmc_honest_elbo.py`, 12 tests pass, 25 cells scored and the two later conditions self-checked, report under `results/`, reviewed; the study on the full pools waits for them)

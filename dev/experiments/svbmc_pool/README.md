@@ -27,9 +27,11 @@ against, and the interpreter, library versions, PyVBMC and gpyreg
 checkouts and thread settings of the machine that ran it. The checkout
 and the overlay are machine-local, so that record is what makes the
 baseline verifiable here and recoverable elsewhere; the stacking harness
-re-verifies it before every campaign. This file gains a description of
-every key of every JSON and the exact reproduction commands once the
-campaign's runs are in.
+re-verifies it before every campaign. Each generated pool has its own
+subdirectory with a README that describes every key of its JSON files
+and the exact commands that generated it; this file indexes them and
+owns the description of the comparison's outputs once the campaign's
+stacking runs are in.
 
 ## Pilot (2026-09-14)
 
@@ -67,6 +69,20 @@ bootstrap intervals, paired differences and equivalence tests, and
 `sources.json` both arms' environments and the baseline re-verification.
 The plan's Phase 4 acceptance and worklog read from these files; the raw
 artifacts stay under the ignored `dev/scripts/runs/`.
+
+## Cluster pool (2026-09-14)
+
+`pool_20260914/` holds the tracked side of the eight-condition pool
+generated on the University of Helsinki `kale` cluster with the Slurm
+scripts under `dev/scripts/hpc/`: `manifest.json`, `selection.json` /
+`selection.md` (700 selected runs, every condition at its filtered
+target), `summary.json` / `summary.md` (1100 completed runs, 1035 passing
+the filters) and `verification.json` (every artifact re-verified after
+the array, none failed, partial, missing or stray). Its
+[README](pool_20260914/README.md) describes every key of those files, the
+commands and environment that generated the pool, its resource fit, and
+the archive of the raw directory (`svbmc_pool_20260914.tar.zst`, an asset
+of the draft release `svbmc-pool-20260914`, with its size and SHA-256).
 
 ## Phase 2 prototype (2026-09-14)
 

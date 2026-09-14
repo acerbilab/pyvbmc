@@ -1,0 +1,94 @@
+{
+  "campaign": "svbmc_pool",
+  "suite": "svbmc_pool",
+  "options": {
+    "display": "off",
+    "plot": false,
+    "print_iteration_header": false,
+    "performance_calibration": "off"
+  },
+  "allocation": [
+    {
+      "label": "multisensory_s1_D6_noise3_svbmc",
+      "seed_start": 1000,
+      "max_seeds": 150,
+      "target_filtered": 100
+    },
+    {
+      "label": "multisensory_s1_D6_noise1.3_svbmc",
+      "seed_start": 1000,
+      "max_seeds": 150,
+      "target_filtered": 100
+    },
+    {
+      "label": "rosenbrock_D2_noise3_svbmc",
+      "seed_start": 1000,
+      "max_seeds": 150,
+      "target_filtered": 100
+    },
+    {
+      "label": "gmm_D2_noise3_svbmc",
+      "seed_start": 1000,
+      "max_seeds": 150,
+      "target_filtered": 100
+    },
+    {
+      "label": "ring_D2_noise3_svbmc",
+      "seed_start": 1000,
+      "max_seeds": 200,
+      "target_filtered": 100
+    },
+    {
+      "label": "student_D8_noise3_svbmc",
+      "seed_start": 1000,
+      "max_seeds": 150,
+      "target_filtered": 100
+    },
+    {
+      "label": "gmm_D2_svbmc",
+      "seed_start": 1000,
+      "max_seeds": 75,
+      "target_filtered": 50
+    },
+    {
+      "label": "multisensory_s1_D6_svbmc",
+      "seed_start": 1000,
+      "max_seeds": 75,
+      "target_filtered": 50
+    }
+  ],
+  "gpyreg_source": "/home/fsilvest/francesco_projects/pyvbmc/dev/scripts/runs/svbmc_pool_20260913/gpyreg_1.2.1",
+  "identity": {
+    "source": {
+      "python": "3.12.14",
+      "pyvbmc_commit": "d63c4778e34ca3a17dcfcc72c1c31988e58e6589",
+      "gpyreg_commit": "9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b",
+      "numpy": "2.5.3",
+      "scipy": "1.18.1",
+      "pyvbmc_dirty": "",
+      "gpyreg_clean": true,
+      "suite_module_dirty": "",
+      "suite_module_sha256": "0ec5c1483dbd2a74fad6ac7634ef877cd7ab744de72587ffb7efb40b1f7c524d",
+      "io_module_sha256": "7fa94d062f81323290a3ba84c63bf868aea22f6e2990983f4f112b00f5a0d98c",
+      "runner_sha256": "97e2706073143fcc66a1038ce0b1b67f27746c1bd543a1dc16be41695825f502"
+    },
+    "host": {
+      "hostname": "turso02.cs.helsinki.fi",
+      "platform": "Linux-4.18.0-372.9.1.el8.x86_64-x86_64-with-glibc2.28",
+      "executable": "/home/fsilvest/miniconda3/envs/pyvbmc-pool/bin/python",
+      "pyvbmc_import": "/home/fsilvest/francesco_projects/pyvbmc/pyvbmc",
+      "pyvbmc_version": "1.0.5.dev378+g613f2a8a8",
+      "gpyreg_import": "/home/fsilvest/francesco_projects/pyvbmc/dev/scripts/runs/svbmc_pool_20260913/gpyreg_1.2.1/gpyreg",
+      "gpyreg_version": "1.2.1",
+      "threads": {
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1"
+      },
+      "gpyreg_source": "/home/fsilvest/francesco_projects/pyvbmc/dev/scripts/runs/svbmc_pool_20260913/gpyreg_1.2.1"
+    }
+  },
+  "allow_dirty": false,
+  "created": "2026-09-14 17:39:23",
+  "allocation_history": []
+}

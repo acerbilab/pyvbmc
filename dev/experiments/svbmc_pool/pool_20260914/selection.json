@@ -1,0 +1,2954 @@
+{
+  "campaign": "svbmc_pool",
+  "directory": "/home/fsilvest/francesco_projects/pyvbmc/dev/scripts/runs/svbmc_pool_20260914",
+  "generated": "2026-09-14 18:20:05",
+  "target_override": null,
+  "identity": {
+    "source": {
+      "python": "3.12.14",
+      "pyvbmc_commit": "d63c4778e34ca3a17dcfcc72c1c31988e58e6589",
+      "gpyreg_commit": "9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b",
+      "numpy": "2.5.3",
+      "scipy": "1.18.1",
+      "pyvbmc_dirty": "",
+      "gpyreg_clean": true,
+      "suite_module_dirty": "",
+      "suite_module_sha256": "0ec5c1483dbd2a74fad6ac7634ef877cd7ab744de72587ffb7efb40b1f7c524d",
+      "io_module_sha256": "7fa94d062f81323290a3ba84c63bf868aea22f6e2990983f4f112b00f5a0d98c",
+      "runner_sha256": "97e2706073143fcc66a1038ce0b1b67f27746c1bd543a1dc16be41695825f502"
+    },
+    "host": {
+      "hostname": "turso02.cs.helsinki.fi",
+      "platform": "Linux-4.18.0-372.9.1.el8.x86_64-x86_64-with-glibc2.28",
+      "executable": "/home/fsilvest/miniconda3/envs/pyvbmc-pool/bin/python",
+      "pyvbmc_import": "/home/fsilvest/francesco_projects/pyvbmc/pyvbmc",
+      "pyvbmc_version": "1.0.5.dev378+g613f2a8a8",
+      "gpyreg_import": "/home/fsilvest/francesco_projects/pyvbmc/dev/scripts/runs/svbmc_pool_20260913/gpyreg_1.2.1/gpyreg",
+      "gpyreg_version": "1.2.1",
+      "threads": {
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1"
+      },
+      "gpyreg_source": "/home/fsilvest/francesco_projects/pyvbmc/dev/scripts/runs/svbmc_pool_20260913/gpyreg_1.2.1"
+    }
+  },
+  "totals": {
+    "selected": 700,
+    "shortfall": 0
+  },
+  "conditions": [
+    {
+      "label": "multisensory_s1_D6_noise3_svbmc",
+      "seed_start": 1000,
+      "seed_cap": 150,
+      "target_filtered": 100,
+      "selected": 100,
+      "shortfall": 0,
+      "seeds_scanned": 100,
+      "failed_while_scanning": 0,
+      "pass_rate_scanned": 1.0,
+      "last_seed": 1099,
+      "runs": [
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1000",
+          "seed": 1000
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1001",
+          "seed": 1001
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1002",
+          "seed": 1002
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1003",
+          "seed": 1003
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1004",
+          "seed": 1004
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1005",
+          "seed": 1005
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1006",
+          "seed": 1006
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1007",
+          "seed": 1007
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1008",
+          "seed": 1008
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1009",
+          "seed": 1009
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1010",
+          "seed": 1010
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1011",
+          "seed": 1011
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1012",
+          "seed": 1012
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1013",
+          "seed": 1013
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1014",
+          "seed": 1014
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1015",
+          "seed": 1015
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1016",
+          "seed": 1016
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1017",
+          "seed": 1017
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1018",
+          "seed": 1018
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1019",
+          "seed": 1019
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1020",
+          "seed": 1020
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1021",
+          "seed": 1021
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1022",
+          "seed": 1022
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1023",
+          "seed": 1023
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1024",
+          "seed": 1024
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1025",
+          "seed": 1025
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1026",
+          "seed": 1026
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1027",
+          "seed": 1027
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1028",
+          "seed": 1028
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1029",
+          "seed": 1029
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1030",
+          "seed": 1030
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1031",
+          "seed": 1031
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1032",
+          "seed": 1032
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1033",
+          "seed": 1033
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1034",
+          "seed": 1034
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1035",
+          "seed": 1035
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1036",
+          "seed": 1036
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1037",
+          "seed": 1037
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1038",
+          "seed": 1038
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1039",
+          "seed": 1039
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1040",
+          "seed": 1040
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1041",
+          "seed": 1041
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1042",
+          "seed": 1042
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1043",
+          "seed": 1043
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1044",
+          "seed": 1044
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1045",
+          "seed": 1045
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1046",
+          "seed": 1046
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1047",
+          "seed": 1047
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1048",
+          "seed": 1048
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1049",
+          "seed": 1049
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1050",
+          "seed": 1050
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1051",
+          "seed": 1051
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1052",
+          "seed": 1052
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1053",
+          "seed": 1053
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1054",
+          "seed": 1054
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1055",
+          "seed": 1055
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1056",
+          "seed": 1056
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1057",
+          "seed": 1057
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1058",
+          "seed": 1058
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1059",
+          "seed": 1059
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1060",
+          "seed": 1060
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1061",
+          "seed": 1061
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1062",
+          "seed": 1062
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1063",
+          "seed": 1063
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1064",
+          "seed": 1064
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1065",
+          "seed": 1065
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1066",
+          "seed": 1066
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1067",
+          "seed": 1067
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1068",
+          "seed": 1068
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1069",
+          "seed": 1069
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1070",
+          "seed": 1070
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1071",
+          "seed": 1071
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1072",
+          "seed": 1072
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1073",
+          "seed": 1073
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1074",
+          "seed": 1074
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1075",
+          "seed": 1075
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1076",
+          "seed": 1076
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1077",
+          "seed": 1077
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1078",
+          "seed": 1078
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1079",
+          "seed": 1079
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1080",
+          "seed": 1080
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1081",
+          "seed": 1081
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1082",
+          "seed": 1082
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1083",
+          "seed": 1083
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1084",
+          "seed": 1084
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1085",
+          "seed": 1085
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1086",
+          "seed": 1086
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1087",
+          "seed": 1087
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1088",
+          "seed": 1088
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1089",
+          "seed": 1089
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1090",
+          "seed": 1090
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1091",
+          "seed": 1091
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1092",
+          "seed": 1092
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1093",
+          "seed": 1093
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1094",
+          "seed": 1094
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1095",
+          "seed": 1095
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1096",
+          "seed": 1096
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1097",
+          "seed": 1097
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1098",
+          "seed": 1098
+        },
+        {
+          "tag": "multisensory_s1_D6_noise3_svbmc_seed1099",
+          "seed": 1099
+        }
+      ]
+    },
+    {
+      "label": "multisensory_s1_D6_noise1.3_svbmc",
+      "seed_start": 1000,
+      "seed_cap": 150,
+      "target_filtered": 100,
+      "selected": 100,
+      "shortfall": 0,
+      "seeds_scanned": 102,
+      "failed_while_scanning": 0,
+      "pass_rate_scanned": 0.9803921568627451,
+      "last_seed": 1101,
+      "runs": [
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1000",
+          "seed": 1000
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1001",
+          "seed": 1001
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1002",
+          "seed": 1002
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1003",
+          "seed": 1003
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1004",
+          "seed": 1004
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1005",
+          "seed": 1005
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1006",
+          "seed": 1006
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1007",
+          "seed": 1007
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1008",
+          "seed": 1008
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1009",
+          "seed": 1009
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1010",
+          "seed": 1010
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1011",
+          "seed": 1011
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1012",
+          "seed": 1012
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1013",
+          "seed": 1013
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1014",
+          "seed": 1014
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1015",
+          "seed": 1015
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1016",
+          "seed": 1016
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1017",
+          "seed": 1017
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1018",
+          "seed": 1018
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1019",
+          "seed": 1019
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1020",
+          "seed": 1020
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1021",
+          "seed": 1021
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1022",
+          "seed": 1022
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1023",
+          "seed": 1023
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1024",
+          "seed": 1024
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1025",
+          "seed": 1025
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1026",
+          "seed": 1026
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1027",
+          "seed": 1027
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1028",
+          "seed": 1028
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1029",
+          "seed": 1029
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1030",
+          "seed": 1030
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1031",
+          "seed": 1031
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1032",
+          "seed": 1032
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1033",
+          "seed": 1033
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1034",
+          "seed": 1034
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1035",
+          "seed": 1035
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1036",
+          "seed": 1036
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1037",
+          "seed": 1037
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1038",
+          "seed": 1038
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1039",
+          "seed": 1039
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1040",
+          "seed": 1040
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1041",
+          "seed": 1041
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1042",
+          "seed": 1042
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1043",
+          "seed": 1043
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1044",
+          "seed": 1044
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1045",
+          "seed": 1045
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1046",
+          "seed": 1046
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1047",
+          "seed": 1047
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1048",
+          "seed": 1048
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1050",
+          "seed": 1050
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1051",
+          "seed": 1051
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1052",
+          "seed": 1052
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1053",
+          "seed": 1053
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1054",
+          "seed": 1054
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1055",
+          "seed": 1055
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1056",
+          "seed": 1056
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1057",
+          "seed": 1057
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1058",
+          "seed": 1058
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1059",
+          "seed": 1059
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1060",
+          "seed": 1060
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1061",
+          "seed": 1061
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1062",
+          "seed": 1062
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1063",
+          "seed": 1063
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1064",
+          "seed": 1064
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1065",
+          "seed": 1065
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1066",
+          "seed": 1066
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1067",
+          "seed": 1067
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1068",
+          "seed": 1068
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1069",
+          "seed": 1069
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1070",
+          "seed": 1070
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1071",
+          "seed": 1071
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1073",
+          "seed": 1073
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1074",
+          "seed": 1074
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1075",
+          "seed": 1075
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1076",
+          "seed": 1076
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1077",
+          "seed": 1077
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1078",
+          "seed": 1078
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1079",
+          "seed": 1079
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1080",
+          "seed": 1080
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1081",
+          "seed": 1081
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1082",
+          "seed": 1082
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1083",
+          "seed": 1083
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1084",
+          "seed": 1084
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1085",
+          "seed": 1085
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1086",
+          "seed": 1086
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1087",
+          "seed": 1087
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1088",
+          "seed": 1088
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1089",
+          "seed": 1089
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1090",
+          "seed": 1090
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1091",
+          "seed": 1091
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1092",
+          "seed": 1092
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1093",
+          "seed": 1093
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1094",
+          "seed": 1094
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1095",
+          "seed": 1095
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1096",
+          "seed": 1096
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1097",
+          "seed": 1097
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1098",
+          "seed": 1098
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1099",
+          "seed": 1099
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1100",
+          "seed": 1100
+        },
+        {
+          "tag": "multisensory_s1_D6_noise1.3_svbmc_seed1101",
+          "seed": 1101
+        }
+      ]
+    },
+    {
+      "label": "rosenbrock_D2_noise3_svbmc",
+      "seed_start": 1000,
+      "seed_cap": 150,
+      "target_filtered": 100,
+      "selected": 100,
+      "shortfall": 0,
+      "seeds_scanned": 103,
+      "failed_while_scanning": 0,
+      "pass_rate_scanned": 0.970873786407767,
+      "last_seed": 1102,
+      "runs": [
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1000",
+          "seed": 1000
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1001",
+          "seed": 1001
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1002",
+          "seed": 1002
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1003",
+          "seed": 1003
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1004",
+          "seed": 1004
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1005",
+          "seed": 1005
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1006",
+          "seed": 1006
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1007",
+          "seed": 1007
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1008",
+          "seed": 1008
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1009",
+          "seed": 1009
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1010",
+          "seed": 1010
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1011",
+          "seed": 1011
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1012",
+          "seed": 1012
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1013",
+          "seed": 1013
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1014",
+          "seed": 1014
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1015",
+          "seed": 1015
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1016",
+          "seed": 1016
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1017",
+          "seed": 1017
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1018",
+          "seed": 1018
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1019",
+          "seed": 1019
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1020",
+          "seed": 1020
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1021",
+          "seed": 1021
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1022",
+          "seed": 1022
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1023",
+          "seed": 1023
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1024",
+          "seed": 1024
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1025",
+          "seed": 1025
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1026",
+          "seed": 1026
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1027",
+          "seed": 1027
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1028",
+          "seed": 1028
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1029",
+          "seed": 1029
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1030",
+          "seed": 1030
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1031",
+          "seed": 1031
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1032",
+          "seed": 1032
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1034",
+          "seed": 1034
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1035",
+          "seed": 1035
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1036",
+          "seed": 1036
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1037",
+          "seed": 1037
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1038",
+          "seed": 1038
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1039",
+          "seed": 1039
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1040",
+          "seed": 1040
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1041",
+          "seed": 1041
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1042",
+          "seed": 1042
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1043",
+          "seed": 1043
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1044",
+          "seed": 1044
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1045",
+          "seed": 1045
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1046",
+          "seed": 1046
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1047",
+          "seed": 1047
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1048",
+          "seed": 1048
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1049",
+          "seed": 1049
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1050",
+          "seed": 1050
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1051",
+          "seed": 1051
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1052",
+          "seed": 1052
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1053",
+          "seed": 1053
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1054",
+          "seed": 1054
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1055",
+          "seed": 1055
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1056",
+          "seed": 1056
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1057",
+          "seed": 1057
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1058",
+          "seed": 1058
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1059",
+          "seed": 1059
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1060",
+          "seed": 1060
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1061",
+          "seed": 1061
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1062",
+          "seed": 1062
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1063",
+          "seed": 1063
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1064",
+          "seed": 1064
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1066",
+          "seed": 1066
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1067",
+          "seed": 1067
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1068",
+          "seed": 1068
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1069",
+          "seed": 1069
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1070",
+          "seed": 1070
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1071",
+          "seed": 1071
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1072",
+          "seed": 1072
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1073",
+          "seed": 1073
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1074",
+          "seed": 1074
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1075",
+          "seed": 1075
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1076",
+          "seed": 1076
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1077",
+          "seed": 1077
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1078",
+          "seed": 1078
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1079",
+          "seed": 1079
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1080",
+          "seed": 1080
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1081",
+          "seed": 1081
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1082",
+          "seed": 1082
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1083",
+          "seed": 1083
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1084",
+          "seed": 1084
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1085",
+          "seed": 1085
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1086",
+          "seed": 1086
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1087",
+          "seed": 1087
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1088",
+          "seed": 1088
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1089",
+          "seed": 1089
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1090",
+          "seed": 1090
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1091",
+          "seed": 1091
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1092",
+          "seed": 1092
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1093",
+          "seed": 1093
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1094",
+          "seed": 1094
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1095",
+          "seed": 1095
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1096",
+          "seed": 1096
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1097",
+          "seed": 1097
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1099",
+          "seed": 1099
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1100",
+          "seed": 1100
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1101",
+          "seed": 1101
+        },
+        {
+          "tag": "rosenbrock_D2_noise3_svbmc_seed1102",
+          "seed": 1102
+        }
+      ]
+    },
+    {
+      "label": "gmm_D2_noise3_svbmc",
+      "seed_start": 1000,
+      "seed_cap": 150,
+      "target_filtered": 100,
+      "selected": 100,
+      "shortfall": 0,
+      "seeds_scanned": 103,
+      "failed_while_scanning": 0,
+      "pass_rate_scanned": 0.970873786407767,
+      "last_seed": 1102,
+      "runs": [
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1000",
+          "seed": 1000
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1001",
+          "seed": 1001
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1002",
+          "seed": 1002
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1003",
+          "seed": 1003
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1004",
+          "seed": 1004
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1005",
+          "seed": 1005
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1006",
+          "seed": 1006
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1007",
+          "seed": 1007
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1008",
+          "seed": 1008
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1009",
+          "seed": 1009
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1010",
+          "seed": 1010
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1011",
+          "seed": 1011
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1012",
+          "seed": 1012
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1013",
+          "seed": 1013
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1014",
+          "seed": 1014
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1015",
+          "seed": 1015
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1016",
+          "seed": 1016
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1017",
+          "seed": 1017
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1018",
+          "seed": 1018
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1019",
+          "seed": 1019
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1020",
+          "seed": 1020
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1022",
+          "seed": 1022
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1024",
+          "seed": 1024
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1025",
+          "seed": 1025
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1026",
+          "seed": 1026
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1027",
+          "seed": 1027
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1028",
+          "seed": 1028
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1029",
+          "seed": 1029
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1030",
+          "seed": 1030
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1031",
+          "seed": 1031
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1032",
+          "seed": 1032
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1033",
+          "seed": 1033
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1034",
+          "seed": 1034
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1035",
+          "seed": 1035
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1036",
+          "seed": 1036
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1037",
+          "seed": 1037
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1038",
+          "seed": 1038
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1039",
+          "seed": 1039
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1040",
+          "seed": 1040
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1041",
+          "seed": 1041
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1042",
+          "seed": 1042
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1043",
+          "seed": 1043
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1044",
+          "seed": 1044
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1045",
+          "seed": 1045
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1046",
+          "seed": 1046
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1047",
+          "seed": 1047
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1048",
+          "seed": 1048
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1049",
+          "seed": 1049
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1050",
+          "seed": 1050
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1051",
+          "seed": 1051
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1052",
+          "seed": 1052
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1053",
+          "seed": 1053
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1054",
+          "seed": 1054
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1055",
+          "seed": 1055
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1056",
+          "seed": 1056
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1057",
+          "seed": 1057
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1058",
+          "seed": 1058
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1059",
+          "seed": 1059
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1060",
+          "seed": 1060
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1061",
+          "seed": 1061
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1062",
+          "seed": 1062
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1063",
+          "seed": 1063
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1064",
+          "seed": 1064
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1065",
+          "seed": 1065
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1066",
+          "seed": 1066
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1067",
+          "seed": 1067
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1068",
+          "seed": 1068
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1069",
+          "seed": 1069
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1070",
+          "seed": 1070
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1071",
+          "seed": 1071
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1072",
+          "seed": 1072
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1073",
+          "seed": 1073
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1074",
+          "seed": 1074
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1076",
+          "seed": 1076
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1077",
+          "seed": 1077
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1078",
+          "seed": 1078
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1079",
+          "seed": 1079
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1080",
+          "seed": 1080
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1081",
+          "seed": 1081
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1082",
+          "seed": 1082
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1083",
+          "seed": 1083
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1084",
+          "seed": 1084
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1085",
+          "seed": 1085
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1086",
+          "seed": 1086
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1087",
+          "seed": 1087
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1088",
+          "seed": 1088
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1089",
+          "seed": 1089
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1090",
+          "seed": 1090
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1091",
+          "seed": 1091
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1092",
+          "seed": 1092
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1093",
+          "seed": 1093
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1094",
+          "seed": 1094
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1095",
+          "seed": 1095
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1096",
+          "seed": 1096
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1097",
+          "seed": 1097
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1098",
+          "seed": 1098
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1099",
+          "seed": 1099
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1100",
+          "seed": 1100
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1101",
+          "seed": 1101
+        },
+        {
+          "tag": "gmm_D2_noise3_svbmc_seed1102",
+          "seed": 1102
+        }
+      ]
+    },
+    {
+      "label": "ring_D2_noise3_svbmc",
+      "seed_start": 1000,
+      "seed_cap": 200,
+      "target_filtered": 100,
+      "selected": 100,
+      "shortfall": 0,
+      "seeds_scanned": 142,
+      "failed_while_scanning": 0,
+      "pass_rate_scanned": 0.704225352112676,
+      "last_seed": 1141,
+      "runs": [
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1002",
+          "seed": 1002
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1003",
+          "seed": 1003
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1004",
+          "seed": 1004
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1005",
+          "seed": 1005
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1007",
+          "seed": 1007
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1009",
+          "seed": 1009
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1010",
+          "seed": 1010
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1012",
+          "seed": 1012
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1013",
+          "seed": 1013
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1014",
+          "seed": 1014
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1015",
+          "seed": 1015
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1017",
+          "seed": 1017
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1018",
+          "seed": 1018
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1019",
+          "seed": 1019
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1020",
+          "seed": 1020
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1021",
+          "seed": 1021
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1023",
+          "seed": 1023
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1025",
+          "seed": 1025
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1029",
+          "seed": 1029
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1030",
+          "seed": 1030
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1031",
+          "seed": 1031
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1034",
+          "seed": 1034
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1037",
+          "seed": 1037
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1039",
+          "seed": 1039
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1043",
+          "seed": 1043
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1045",
+          "seed": 1045
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1047",
+          "seed": 1047
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1048",
+          "seed": 1048
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1049",
+          "seed": 1049
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1050",
+          "seed": 1050
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1051",
+          "seed": 1051
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1052",
+          "seed": 1052
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1053",
+          "seed": 1053
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1054",
+          "seed": 1054
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1055",
+          "seed": 1055
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1056",
+          "seed": 1056
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1057",
+          "seed": 1057
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1058",
+          "seed": 1058
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1059",
+          "seed": 1059
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1060",
+          "seed": 1060
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1062",
+          "seed": 1062
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1063",
+          "seed": 1063
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1065",
+          "seed": 1065
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1066",
+          "seed": 1066
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1067",
+          "seed": 1067
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1068",
+          "seed": 1068
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1069",
+          "seed": 1069
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1071",
+          "seed": 1071
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1072",
+          "seed": 1072
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1073",
+          "seed": 1073
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1074",
+          "seed": 1074
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1075",
+          "seed": 1075
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1076",
+          "seed": 1076
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1077",
+          "seed": 1077
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1078",
+          "seed": 1078
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1080",
+          "seed": 1080
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1083",
+          "seed": 1083
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1084",
+          "seed": 1084
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1085",
+          "seed": 1085
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1087",
+          "seed": 1087
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1090",
+          "seed": 1090
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1091",
+          "seed": 1091
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1092",
+          "seed": 1092
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1093",
+          "seed": 1093
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1094",
+          "seed": 1094
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1096",
+          "seed": 1096
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1097",
+          "seed": 1097
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1098",
+          "seed": 1098
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1099",
+          "seed": 1099
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1100",
+          "seed": 1100
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1101",
+          "seed": 1101
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1104",
+          "seed": 1104
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1105",
+          "seed": 1105
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1106",
+          "seed": 1106
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1107",
+          "seed": 1107
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1109",
+          "seed": 1109
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1110",
+          "seed": 1110
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1111",
+          "seed": 1111
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1113",
+          "seed": 1113
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1115",
+          "seed": 1115
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1116",
+          "seed": 1116
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1117",
+          "seed": 1117
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1118",
+          "seed": 1118
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1119",
+          "seed": 1119
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1120",
+          "seed": 1120
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1121",
+          "seed": 1121
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1122",
+          "seed": 1122
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1123",
+          "seed": 1123
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1124",
+          "seed": 1124
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1126",
+          "seed": 1126
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1128",
+          "seed": 1128
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1129",
+          "seed": 1129
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1130",
+          "seed": 1130
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1131",
+          "seed": 1131
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1132",
+          "seed": 1132
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1133",
+          "seed": 1133
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1134",
+          "seed": 1134
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1135",
+          "seed": 1135
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1140",
+          "seed": 1140
+        },
+        {
+          "tag": "ring_D2_noise3_svbmc_seed1141",
+          "seed": 1141
+        }
+      ]
+    },
+    {
+      "label": "student_D8_noise3_svbmc",
+      "seed_start": 1000,
+      "seed_cap": 150,
+      "target_filtered": 100,
+      "selected": 100,
+      "shortfall": 0,
+      "seeds_scanned": 100,
+      "failed_while_scanning": 0,
+      "pass_rate_scanned": 1.0,
+      "last_seed": 1099,
+      "runs": [
+        {
+          "tag": "student_D8_noise3_svbmc_seed1000",
+          "seed": 1000
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1001",
+          "seed": 1001
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1002",
+          "seed": 1002
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1003",
+          "seed": 1003
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1004",
+          "seed": 1004
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1005",
+          "seed": 1005
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1006",
+          "seed": 1006
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1007",
+          "seed": 1007
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1008",
+          "seed": 1008
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1009",
+          "seed": 1009
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1010",
+          "seed": 1010
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1011",
+          "seed": 1011
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1012",
+          "seed": 1012
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1013",
+          "seed": 1013
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1014",
+          "seed": 1014
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1015",
+          "seed": 1015
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1016",
+          "seed": 1016
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1017",
+          "seed": 1017
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1018",
+          "seed": 1018
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1019",
+          "seed": 1019
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1020",
+          "seed": 1020
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1021",
+          "seed": 1021
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1022",
+          "seed": 1022
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1023",
+          "seed": 1023
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1024",
+          "seed": 1024
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1025",
+          "seed": 1025
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1026",
+          "seed": 1026
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1027",
+          "seed": 1027
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1028",
+          "seed": 1028
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1029",
+          "seed": 1029
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1030",
+          "seed": 1030
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1031",
+          "seed": 1031
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1032",
+          "seed": 1032
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1033",
+          "seed": 1033
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1034",
+          "seed": 1034
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1035",
+          "seed": 1035
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1036",
+          "seed": 1036
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1037",
+          "seed": 1037
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1038",
+          "seed": 1038
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1039",
+          "seed": 1039
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1040",
+          "seed": 1040
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1041",
+          "seed": 1041
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1042",
+          "seed": 1042
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1043",
+          "seed": 1043
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1044",
+          "seed": 1044
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1045",
+          "seed": 1045
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1046",
+          "seed": 1046
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1047",
+          "seed": 1047
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1048",
+          "seed": 1048
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1049",
+          "seed": 1049
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1050",
+          "seed": 1050
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1051",
+          "seed": 1051
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1052",
+          "seed": 1052
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1053",
+          "seed": 1053
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1054",
+          "seed": 1054
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1055",
+          "seed": 1055
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1056",
+          "seed": 1056
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1057",
+          "seed": 1057
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1058",
+          "seed": 1058
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1059",
+          "seed": 1059
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1060",
+          "seed": 1060
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1061",
+          "seed": 1061
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1062",
+          "seed": 1062
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1063",
+          "seed": 1063
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1064",
+          "seed": 1064
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1065",
+          "seed": 1065
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1066",
+          "seed": 1066
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1067",
+          "seed": 1067
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1068",
+          "seed": 1068
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1069",
+          "seed": 1069
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1070",
+          "seed": 1070
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1071",
+          "seed": 1071
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1072",
+          "seed": 1072
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1073",
+          "seed": 1073
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1074",
+          "seed": 1074
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1075",
+          "seed": 1075
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1076",
+          "seed": 1076
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1077",
+          "seed": 1077
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1078",
+          "seed": 1078
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1079",
+          "seed": 1079
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1080",
+          "seed": 1080
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1081",
+          "seed": 1081
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1082",
+          "seed": 1082
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1083",
+          "seed": 1083
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1084",
+          "seed": 1084
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1085",
+          "seed": 1085
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1086",
+          "seed": 1086
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1087",
+          "seed": 1087
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1088",
+          "seed": 1088
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1089",
+          "seed": 1089
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1090",
+          "seed": 1090
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1091",
+          "seed": 1091
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1092",
+          "seed": 1092
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1093",
+          "seed": 1093
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1094",
+          "seed": 1094
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1095",
+          "seed": 1095
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1096",
+          "seed": 1096
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1097",
+          "seed": 1097
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1098",
+          "seed": 1098
+        },
+        {
+          "tag": "student_D8_noise3_svbmc_seed1099",
+          "seed": 1099
+        }
+      ]
+    },
+    {
+      "label": "gmm_D2_svbmc",
+      "seed_start": 1000,
+      "seed_cap": 75,
+      "target_filtered": 50,
+      "selected": 50,
+      "shortfall": 0,
+      "seeds_scanned": 50,
+      "failed_while_scanning": 0,
+      "pass_rate_scanned": 1.0,
+      "last_seed": 1049,
+      "runs": [
+        {
+          "tag": "gmm_D2_svbmc_seed1000",
+          "seed": 1000
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1001",
+          "seed": 1001
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1002",
+          "seed": 1002
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1003",
+          "seed": 1003
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1004",
+          "seed": 1004
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1005",
+          "seed": 1005
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1006",
+          "seed": 1006
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1007",
+          "seed": 1007
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1008",
+          "seed": 1008
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1009",
+          "seed": 1009
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1010",
+          "seed": 1010
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1011",
+          "seed": 1011
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1012",
+          "seed": 1012
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1013",
+          "seed": 1013
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1014",
+          "seed": 1014
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1015",
+          "seed": 1015
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1016",
+          "seed": 1016
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1017",
+          "seed": 1017
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1018",
+          "seed": 1018
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1019",
+          "seed": 1019
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1020",
+          "seed": 1020
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1021",
+          "seed": 1021
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1022",
+          "seed": 1022
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1023",
+          "seed": 1023
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1024",
+          "seed": 1024
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1025",
+          "seed": 1025
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1026",
+          "seed": 1026
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1027",
+          "seed": 1027
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1028",
+          "seed": 1028
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1029",
+          "seed": 1029
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1030",
+          "seed": 1030
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1031",
+          "seed": 1031
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1032",
+          "seed": 1032
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1033",
+          "seed": 1033
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1034",
+          "seed": 1034
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1035",
+          "seed": 1035
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1036",
+          "seed": 1036
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1037",
+          "seed": 1037
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1038",
+          "seed": 1038
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1039",
+          "seed": 1039
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1040",
+          "seed": 1040
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1041",
+          "seed": 1041
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1042",
+          "seed": 1042
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1043",
+          "seed": 1043
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1044",
+          "seed": 1044
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1045",
+          "seed": 1045
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1046",
+          "seed": 1046
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1047",
+          "seed": 1047
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1048",
+          "seed": 1048
+        },
+        {
+          "tag": "gmm_D2_svbmc_seed1049",
+          "seed": 1049
+        }
+      ]
+    },
+    {
+      "label": "multisensory_s1_D6_svbmc",
+      "seed_start": 1000,
+      "seed_cap": 75,
+      "target_filtered": 50,
+      "selected": 50,
+      "shortfall": 0,
+      "seeds_scanned": 50,
+      "failed_while_scanning": 0,
+      "pass_rate_scanned": 1.0,
+      "last_seed": 1049,
+      "runs": [
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1000",
+          "seed": 1000
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1001",
+          "seed": 1001
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1002",
+          "seed": 1002
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1003",
+          "seed": 1003
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1004",
+          "seed": 1004
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1005",
+          "seed": 1005
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1006",
+          "seed": 1006
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1007",
+          "seed": 1007
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1008",
+          "seed": 1008
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1009",
+          "seed": 1009
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1010",
+          "seed": 1010
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1011",
+          "seed": 1011
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1012",
+          "seed": 1012
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1013",
+          "seed": 1013
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1014",
+          "seed": 1014
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1015",
+          "seed": 1015
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1016",
+          "seed": 1016
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1017",
+          "seed": 1017
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1018",
+          "seed": 1018
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1019",
+          "seed": 1019
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1020",
+          "seed": 1020
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1021",
+          "seed": 1021
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1022",
+          "seed": 1022
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1023",
+          "seed": 1023
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1024",
+          "seed": 1024
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1025",
+          "seed": 1025
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1026",
+          "seed": 1026
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1027",
+          "seed": 1027
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1028",
+          "seed": 1028
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1029",
+          "seed": 1029
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1030",
+          "seed": 1030
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1031",
+          "seed": 1031
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1032",
+          "seed": 1032
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1033",
+          "seed": 1033
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1034",
+          "seed": 1034
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1035",
+          "seed": 1035
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1036",
+          "seed": 1036
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1037",
+          "seed": 1037
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1038",
+          "seed": 1038
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1039",
+          "seed": 1039
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1040",
+          "seed": 1040
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1041",
+          "seed": 1041
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1042",
+          "seed": 1042
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1043",
+          "seed": 1043
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1044",
+          "seed": 1044
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1045",
+          "seed": 1045
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1046",
+          "seed": 1046
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1047",
+          "seed": 1047
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1048",
+          "seed": 1048
+        },
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1049",
+          "seed": 1049
+        }
+      ]
+    }
+  ]
+}
