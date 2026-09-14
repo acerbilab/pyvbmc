@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-14 13:46:10",
+ "generated": "2026-09-14 14:31:57",
  "environment": {
   "python": "3.12.6",
   "platform": "Windows-11-10.0.26200-SP0",
@@ -13,7 +13,11 @@
   "numpy": "2.5.3",
   "scipy": "1.18.1",
   "pyvbmc": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc",
+  "pyvbmc_commit": "04183511e508d6acc45dcc5cf0bad56bf597df70",
+  "pyvbmc_dirty": "M dev/scripts/pymc_feasibility.py",
   "gpyreg": "C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg",
+  "gpyreg_commit": "9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b",
+  "script_sha256": "03b278f7faee9e052b3712a1ffc9f91dba6b4e52948fac04fd9bd6cbc0fa650c",
   "executable": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\pymc_feasibility_20260914\\venv\\Scripts\\python.exe"
  },
  "seed": 0,
@@ -22,6 +26,8 @@
   {
    "name": "scalar",
    "reference": "analytic (conjugate normal-normal)",
+   "ln_Z": -35.97216327792224,
+   "ln_Z_error": 0.0,
    "D": 1,
    "names": [
     "mu"
@@ -42,30 +48,25 @@
    "coordinates": "mu [-inf, inf]",
    "dims": {},
    "coords": {},
-   "ln_Z": -35.97216327792224,
    "density": {
     "points": 25,
     "max_abs_difference": 2.1762372170996969e-07,
     "offset": 2.1762369470934572e-07,
     "max_abs_deviation_from_offset": 2.984279489663025e-14,
-    "passes": true,
-    "outside_bounds_value": null
+    "outside_bounds_value": null,
+    "passes": true
    },
    "jacobian": {
     "applicable": false
    },
+   "ms_per_call": 0.06085300003178418,
    "fit": {
     "plausible": "prior",
-    "setup_seconds": 0.10469770000781864,
-    "seconds": 3.4413302000029944,
-    "func_count": 65,
-    "iterations": 11,
-    "success_flag": true,
-    "elbo": -35.97267781671991,
-    "elbo_sd": 5.434520442360779e-05,
-    "ln_Z": -35.97216327792224,
-    "elbo_minus_ln_Z": -0.0005145387976668303,
-    "K": 50,
+    "laplace_fallback": {
+     "curvature": [],
+     "clipped": []
+    },
+    "setup_seconds": 0.07473160000517964,
     "plb": [
      -4.953814266654245
     ],
@@ -75,6 +76,22 @@
     "x0": [
      0.0
     ],
+    "log_joint_at_plb_pub_centre_x0": [
+     -190.7230494353833,
+     -102.69681637266142,
+     -40.345600245271655,
+     -39.55020770572456
+    ],
+    "seconds": 3.2113538999692537,
+    "func_count": 65,
+    "iterations": 11,
+    "success_flag": true,
+    "elbo": -35.97267781671991,
+    "elbo_sd": 5.434520442360779e-05,
+    "ln_Z": -35.97216327792224,
+    "ln_Z_error": 0.0,
+    "elbo_minus_ln_Z": -0.0005145387976668303,
+    "K": 50,
     "posterior_mean": {
      "mu": 0.9270984524209617
     },
@@ -121,6 +138,8 @@
   {
    "name": "positive",
    "reference": "one-dimensional quadrature over sigma",
+   "ln_Z": -20.982796103874524,
+   "ln_Z_error": 1.9722292276375146e-10,
    "D": 1,
    "names": [
     "sigma"
@@ -143,14 +162,13 @@
    "coordinates": "sigma_log__ (LogTransform kept, unbounded)",
    "dims": {},
    "coords": {},
-   "ln_Z": -20.982796103874524,
    "density": {
     "points": 25,
     "max_abs_difference": 1.9046808574785246e-09,
     "offset": -1.904652151552e-09,
     "max_abs_deviation_from_offset": 8.498091119705687e-14,
-    "passes": true,
-    "outside_bounds_value": null
+    "outside_bounds_value": null,
+    "passes": true
    },
    "jacobian": {
     "applicable": true,
@@ -161,18 +179,14 @@
     "max_abs_difference": 1.5987211554602254e-14,
     "passes": true
    },
+   "ms_per_call": 0.008631999953649938,
    "fit": {
     "plausible": "prior",
-    "setup_seconds": 0.08456769998883829,
-    "seconds": 5.9511343000340275,
-    "func_count": 65,
-    "iterations": 11,
-    "success_flag": true,
-    "elbo": -20.983684873975633,
-    "elbo_sd": 0.0008270385383871438,
-    "ln_Z": -20.982796103874524,
-    "elbo_minus_ln_Z": -0.0008887701011097704,
-    "K": 50,
+    "laplace_fallback": {
+     "curvature": [],
+     "clipped": []
+    },
+    "setup_seconds": 0.07360340002924204,
     "plb": [
      -2.141166538910382
     ],
@@ -182,6 +196,22 @@
     "x0": [
      0.6931471805599453
     ],
+    "log_joint_at_plb_pub_centre_x0": [
+     -389.71638766496943,
+     -36.4001993393847,
+     -21.392995437786258,
+     -26.305338925283586
+    ],
+    "seconds": 5.413481299998239,
+    "func_count": 65,
+    "iterations": 11,
+    "success_flag": true,
+    "elbo": -20.983684873975633,
+    "elbo_sd": 0.0008270385383871438,
+    "ln_Z": -20.982796103874524,
+    "ln_Z_error": 1.9722292276375146e-10,
+    "elbo_minus_ln_Z": -0.0008887701011097704,
+    "K": 50,
     "posterior_mean": {
      "sigma": 0.9443390114576414
     },
@@ -222,6 +252,8 @@
   {
    "name": "vector",
    "reference": "beta marginalized analytically, quadrature over sigma",
+   "ln_Z": -40.093587510406955,
+   "ln_Z_error": 1.03178720139606e-09,
    "D": 3,
    "names": [
     "beta",
@@ -242,15 +274,21 @@
    ],
    "support": {
     "beta": [
-     -Infinity,
-     Infinity
+     [
+      -Infinity,
+      -Infinity
+     ],
+     [
+      Infinity,
+      Infinity
+     ]
     ],
     "sigma": [
      0.0,
      Infinity
     ]
    },
-   "coordinates": "beta [-inf, inf]; sigma_log__ (LogTransform kept, unbounded)",
+   "coordinates": "beta [-inf, inf] [-inf, inf]; sigma_log__ (LogTransform kept, unbounded)",
    "dims": {
     "beta": [
      "coef"
@@ -262,14 +300,13 @@
      "slope"
     ]
    },
-   "ln_Z": -40.093587510406955,
    "density": {
     "points": 25,
     "max_abs_difference": 6.204936653375626e-08,
     "offset": -6.204456724390184e-08,
     "max_abs_deviation_from_offset": 1.7028582988135963e-11,
-    "passes": true,
-    "outside_bounds_value": null
+    "outside_bounds_value": null,
+    "passes": true
    },
    "jacobian": {
     "applicable": true,
@@ -279,6 +316,159 @@
     "checked": true,
     "max_abs_difference": 8.659739592076221e-13,
     "passes": true
+   },
+   "ms_per_call": 0.011653999972622842
+  },
+  {
+   "name": "bounded",
+   "reference": "u[0] integrated in closed form, quadrature over p, u[1]",
+   "ln_Z": -14.62254986972562,
+   "ln_Z_error": 1.6661667331422944e-14,
+   "D": 3,
+   "names": [
+    "p",
+    "u"
+   ],
+   "value_names": [
+    "p",
+    "u"
+   ],
+   "kept_transforms": {},
+   "shapes": [
+    [],
+    [
+     2
+    ]
+   ],
+   "support": {
+    "p": [
+     0.0,
+     1.0
+    ],
+    "u": [
+     [
+      -1.0,
+      0.0
+     ],
+     [
+      2.0,
+      1.0
+     ]
+    ]
+   },
+   "coordinates": "p [0, 1]; u [-1, 2] [0, 1]",
+   "dims": {},
+   "coords": {},
+   "density": {
+    "points": 25,
+    "max_abs_difference": 2.1738756572631246e-08,
+    "offset": 2.1738742432830803e-08,
+    "max_abs_deviation_from_offset": 1.413980044321418e-14,
+    "outside_bounds_value": -Infinity,
+    "passes": true
+   },
+   "jacobian": {
+    "applicable": false
+   },
+   "ms_per_call": 0.09694499982288107,
+   "fit": {
+    "plausible": "prior",
+    "laplace_fallback": {
+     "curvature": [],
+     "clipped": []
+    },
+    "setup_seconds": 0.11786060000304133,
+    "plb": [
+     0.13283405553860272,
+     -0.8501932353544478,
+     0.04903362191637222
+    ],
+    "pub": [
+     0.8609024087981778,
+     1.8489323064158139,
+     0.9474911391730454
+    ],
+    "x0": [
+     0.5,
+     0.5,
+     0.5
+    ],
+    "log_joint_at_plb_pub_centre_x0": [
+     -41.60832713144908,
+     -43.84551441209417,
+     -13.904597566210622,
+     -13.907633661965214
+    ],
+    "seconds": 16.29362549999496,
+    "func_count": 75,
+    "iterations": 14,
+    "success_flag": true,
+    "elbo": -14.64209542395746,
+    "elbo_sd": 0.002720653281159794,
+    "ln_Z": -14.62254986972562,
+    "ln_Z_error": 1.6661667331422944e-14,
+    "elbo_minus_ln_Z": -0.0195455542318399,
+    "K": 50,
+    "posterior_mean": {
+     "p": 0.498953826371534,
+     "u": [
+      0.4575341005962634,
+      0.4996777437189929
+     ]
+    },
+    "posterior_sd": {
+     "p": 0.22476455129602788,
+     "u": [
+      0.44650059321606045,
+      0.2887272323591059
+     ]
+    }
+   },
+   "return_path": {
+    "container": "DataTree",
+    "variables": {
+     "p": {
+      "dims": [
+       "chain",
+       "draw"
+      ],
+      "shape": [
+       1,
+       2000
+      ]
+     },
+     "u": {
+      "dims": [
+       "chain",
+       "draw",
+       "u_dim_0"
+      ],
+      "shape": [
+       1,
+       2000,
+       2
+      ]
+     }
+    },
+    "coords": {
+     "u_dim_0": [
+      0,
+      1
+     ]
+    },
+    "posterior_predictive": {
+     "name": "y",
+     "dims": [
+      "chain",
+      "draw",
+      "y_dim_0"
+     ],
+     "shape": [
+      1,
+      2000,
+      12
+     ]
+    }
    }
   }
  ],
@@ -290,15 +480,54 @@
   },
   {
    "rejected": true,
-   "message": "w: the support of a variable with a SimplexTransform is not a box of independent bounds, which VBMC cannot represent",
+   "message": "w: unsupported transform SimplexTransform",
    "name": "simplex"
+  },
+  {
+   "rejected": true,
+   "message": "s: its LogTransform was suppressed at construction, so its support is not the unbounded one an untransformed variable would be handed over with",
+   "name": "suppressed"
+  },
+  {
+   "rejected": true,
+   "message": "h: an interval limit depends on another random variable, so it has no fixed value",
+   "name": "random_bounds"
   }
  ],
  "errors": [
   {
    "where": "vector",
    "error": "LinAlgError: Singular matrix for L Cholesky decomposition",
-   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\pymc_feasibility.py\", line 1002, in main\n    fitted, vp, draws = fit(\n                        ^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\pymc_feasibility.py\", line 699, in fit\n    vp, results = vbmc.optimize()\n                  ^^^^^^^^^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc\\vbmc\\vbmc.py\", line 1245, in optimize\n    self.gp, Ns_gp, sn2_hpd, self.hyp_dict = train_gp(\n                                             ^^^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc\\vbmc\\gaussian_process_train.py\", line 174, in train_gp\n    hyp_dict[\"hyp\"], _, res = gp.fit(\n                              ^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\gaussian_process.py\", line 1230, in fit\n    X0, y0 = f_min_fill(\n             ^^^^^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\f_min_fill.py\", line 185, in f_min_fill\n    y[i] = f(X[i, :])\n           ^^^^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\gaussian_process.py\", line 1218, in <lambda>\n    objective_f_1 = lambda hyp_: self.__gp_obj_fun(\n                                 ^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\gaussian_process.py\", line 1739, in __gp_obj_fun\n    nlZ = self.__compute_nlZ(\n          ^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\gaussian_process.py\", line 1717, in __compute_nlZ\n    nlZ = self.__core_computation(hyp, 1, compute_grad, cache)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\gaussian_process.py\", line 2771, in __core_computation\n    raise sp.linalg.LinAlgError(\nnumpy.linalg.LinAlgError: Singular matrix for L Cholesky decomposition\n"
+   "context": {
+    "plausible": "prior",
+    "laplace_fallback": {
+     "curvature": [],
+     "clipped": []
+    },
+    "setup_seconds": 0.16783819999545813,
+    "plb": [
+     -8.20201003323745,
+     -8.320048914579257,
+     -2.0003850210341514
+    ],
+    "pub": [
+     8.334855409766911,
+     8.309412013519617,
+     1.362617713772141
+    ],
+    "x0": [
+     0.0,
+     0.0,
+     0.6931471805599453
+    ],
+    "log_joint_at_plb_pub_centre_x0": [
+     -117368.98206922936,
+     -241.99976900921317,
+     -65.92348299995568,
+     -59.786392195968496
+    ]
+   },
+   "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\pymc_feasibility.py\", line 925, in fit\n    vp, results = vbmc.optimize()\n                  ^^^^^^^^^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc\\vbmc\\vbmc.py\", line 1245, in optimize\n    self.gp, Ns_gp, sn2_hpd, self.hyp_dict = train_gp(\n                                             ^^^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc\\vbmc\\gaussian_process_train.py\", line 174, in train_gp\n    hyp_dict[\"hyp\"], _, res = gp.fit(\n                              ^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\gaussian_process.py\", line 1230, in fit\n    X0, y0 = f_min_fill(\n             ^^^^^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\f_min_fill.py\", line 185, in f_min_fill\n    y[i] = f(X[i, :])\n           ^^^^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\gaussian_process.py\", line 1218, in <lambda>\n    objective_f_1 = lambda hyp_: self.__gp_obj_fun(\n                                 ^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\gaussian_process.py\", line 1739, in __gp_obj_fun\n    nlZ = self.__compute_nlZ(\n          ^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\gaussian_process.py\", line 1717, in __compute_nlZ\n    nlZ = self.__core_computation(hyp, 1, compute_grad, cache)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\gaussian_process.py\", line 2771, in __core_computation\n    raise sp.linalg.LinAlgError(\nnumpy.linalg.LinAlgError: Singular matrix for L Cholesky decomposition\n"
   }
  ]
 }

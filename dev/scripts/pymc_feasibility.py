@@ -27,31 +27,54 @@ The adapter's route through PyMC:
   Jacobian, so VBMC's ELBO still estimates the model's evidence) and
   removes it for a variable bounded on both sides or unbounded
   (``pymc.model.transform.conditioning.remove_value_transforms`` with the
-  variables to untransform), handing VBMC the interval as hard bounds and
-  the density in the model's own coordinates there. Draws come back
-  through the kept transforms' ``backward`` maps, so the exported
-  posterior is over the model's variables (``sigma``, not
-  ``sigma_log__``).
-- **Bounds.** Read from the transform PyMC attached: none means
-  unbounded, a log transform means positive (kept), a log-odds transform
-  means the unit interval (removed), an interval transform gives its two
-  limits (evaluated through the transform's ``args_fn`` on the variable's
-  inputs, the one place the adapter reaches past documented attributes;
-  removed when both limits are finite, kept otherwise). Any other
-  transform (simplex, ordered, zero-sum, Cholesky) describes a support
-  that is not a box, and any discrete free variable is not continuous:
-  both are rejected before anything is compiled.
+  variables to untransform), handing VBMC the interval as hard bounds,
+  coordinate by coordinate, and the density in the model's own
+  coordinates there. Draws come back through the kept transforms'
+  ``backward`` maps, so the exported posterior is over the model's
+  variables (``sigma``, not ``sigma_log__``).
+- **Bounds.** Read from the transform PyMC attached: a log transform
+  means positive (kept), a log-odds transform means the unit interval
+  (removed), an interval transform gives its two limits, evaluated per
+  coordinate through the transform's ``args_fn`` on the variable's inputs
+  (removed when both limits are finite everywhere, kept when exactly one
+  limit is finite everywhere, rejected when the coordinates disagree). A
+  limit that depends on another random variable is rejected, since its
+  value would be a draw. No transform means unbounded only when the
+  distribution's default transform is none too; a variable whose default
+  transform was suppressed at construction (``default_transform=None``)
+  is rejected, since its density would be handed over as unbounded while
+  its support is not. Any other transform (simplex, ordered, zero-sum,
+  Cholesky, softplus) and any discrete free variable are rejected before
+  anything is compiled.
 - **Mapping.** Free variables in model order, shapes from the initial
   point of the partially transformed model, flattened in C order into the
   vector VBMC sees; the inverse rebuilds named arrays from draws, maps
-  kept transforms back, and hands the result to ``arviz.from_dict`` with
+  kept transforms back, and hands the result to ``arviz.from_dict`` (the
+  ArviZ 1.x signature: a dict of groups, returning a ``DataTree``) with
   the dimensions and coordinates the model declares.
 - **Return path.** ``pymc.compute_deterministics`` on the posterior group
   and ``pymc.sample_posterior_predictive`` with the model, both on the
   structured draws.
+- **Starting point and plausible box** (``--plausible``). ``laplace``
+  (the default): ``pymc.find_MAP`` on the fully transformed model, whose
+  returned point (``include_transformed=True``) carries every coordinate
+  this adapter uses, then a central finite-difference Hessian of the
+  adapter's own log joint at that point and a box of three marginal
+  standard deviations, clipped strictly inside the hard bounds. The
+  point is the mode of the model's density in its own variables
+  (``find_MAP`` maximizes the density without the Jacobian), so for a
+  kept transform it is not exactly the stationary point of the adapter's
+  target; a coordinate whose curvature is not negative there falls back
+  to the prior-quantile width, and one whose Laplace interval leaves the
+  hard box (a ridge of the posterior) is clipped to the middle 98 % of
+  the box, both recorded (``laplace_fallback``). ``prior``: the model's
+  initial point and the 5 % and 95 % quantiles of prior draws
+  (``pymc.draw``), which for a vague regression prior puts the box where
+  the log likelihood spans tens of thousands of nats and the GP fit of
+  the initial design fails.
 
 Models (data simulated from fixed seeds; every density has a closed form
-and every evidence a closed form or a one-dimensional quadrature):
+and every evidence a closed form or a low-dimensional quadrature):
 
 1. ``scalar``: ``mu ~ Normal(0, 3)``, ``y ~ Normal(mu, 1.5)``, 20 data;
    conjugate, so the posterior and the evidence are analytic.
@@ -63,42 +86,49 @@ and every evidence a closed form or a one-dimensional quadrature):
    ``y ~ Normal(mu, sigma)``, 30 data; the evidence by integrating the
    conjugate marginal over ``beta`` against the half-normal prior on
    ``sigma`` by quadrature.
-4. ``discrete`` (``k ~ Poisson``) and ``simplex`` (``w ~ Dirichlet``):
-   must be rejected with an informative error.
+4. ``bounded``: ``p ~ Beta(2, 2)`` (log-odds transform, removed),
+   ``u ~ Uniform([-1, 0], [2, 1], shape=2)`` (interval transform with
+   per-coordinate limits, removed), ``y ~ Normal(p + u[0] + u[1], 1)``,
+   12 data; the evidence by integrating over ``u[0]`` in closed form and
+   over ``p`` and ``u[1]`` by quadrature.
+5. Rejected: ``discrete`` (``k ~ Poisson``), ``simplex`` (``w ~
+   Dirichlet``), ``suppressed`` (``HalfNormal(default_transform=None)``)
+   and ``random_bounds`` (``Uniform(lower=mu, upper=mu + 1)`` with ``mu``
+   a free variable).
 
 For every accepted model the script checks the adapter's density against
 the hand-written one at random points (the shape to 1e-8 nats; a constant
 offset of about 1e-8 nats per constant-scale term is PyTensor folding the
 logarithm of a Python-float scale in float32, allowed up to 1e-6 and
-reported), checks the Jacobian increment of the kept transforms against
-``log sigma``, runs ``VBMC`` with PyVBMC defaults from a starting point
-and plausible box chosen by ``--plausible`` (the proposal leaves both as
-explicit user steps; the two routes here are the candidates an adapter
-could offer), compares the ELBO with the evidence, exports draws through
-the mapping, and runs the return path, checking names, dimensions,
-shapes and, for the deterministic, the values against ``X @ beta``.
+reported), probes a point outside a finite bound, checks the Jacobian
+increment of the kept transforms against ``log sigma``, times the compiled
+density, runs ``VBMC`` with PyVBMC defaults from the chosen starting point
+and plausible box, compares the ELBO with the evidence, exports draws
+through the mapping, and runs the return path, checking names,
+dimensions, shapes and, for the deterministic, the values against
+``X @ beta``. A fit that fails records the box it was given and the log
+joint at its corners with the error.
 
-Usage (from a Python environment with PyMC, ArviZ and this checkout of
-PyVBMC installed; the project venv has neither PyMC nor ArviZ)::
+Usage (from a Python environment with PyMC 6.3, ArviZ 1.x and this
+checkout of PyVBMC installed; the project venv has neither PyMC nor
+ArviZ; the versions the script was written against are the tested
+ones)::
 
     python dev/scripts/pymc_feasibility.py --out DIR [--seed 0] [--no-fit] \\
         [--plausible laplace|prior]
 
-``--plausible`` chooses the starting point and plausible box of every
-fit: ``laplace`` (the default) takes the mode from ``pymc.find_MAP`` and
-the box from a finite-difference Laplace approximation at the mode;
-``prior`` takes the model's initial point and the 5 % and 95 % quantiles
-of prior draws, which for a vague regression prior puts the box where the
-log likelihood spans tens of thousands of nats and the GP fit of the
-initial design fails. Outputs under ``--out``: ``report.json`` (versions,
-the PyTensor compiler state, every check with its numbers, the VBMC
-results, the rejections) and ``report.md`` (the same as tables).
-``--no-fit`` runs every check that needs no VBMC fit.
+Outputs under ``--out``: ``report.json`` (versions, the PyTensor compiler
+state, the PyVBMC and gpyreg commits and this file's hash, every check
+with its numbers, the fits, the return path, the rejections, the errors
+with their context) and ``report.md`` (the same as tables). ``--no-fit``
+runs every check that needs no VBMC fit.
 """
 
 import argparse
+import hashlib
 import json
 import platform
+import subprocess
 import sys
 import time
 import traceback
@@ -118,6 +148,8 @@ N_CHECK_POINTS = 25
 N_DRAWS = 2000
 PRIOR_DRAWS = 4000
 PLAUSIBLE_QUANTILES = (0.05, 0.95)
+N_TIMING_CALLS = 200
+LAPLACE_K = 3.0
 
 
 # --------------------------------------------------------------------------
@@ -129,23 +161,55 @@ class UnsupportedModel(ValueError):
     """A PyMC model the adapter cannot represent as a box-bounded target."""
 
 
-def _remove_value_transforms():
-    try:
-        from pymc.model.transform.conditioning import remove_value_transforms
-    except ImportError:  # older layout
-        from pymc.model.transform import remove_value_transforms
-    return remove_value_transforms
+class FitFailure(RuntimeError):
+    """A VBMC fit that failed, carrying the box it was given."""
+
+    def __init__(self, context, error):
+        super().__init__(f"{type(error).__name__}: {error}")
+        self.context = context
+        self.error = error
 
 
-def _support(rv, transform):
-    """Hard bounds of one variable from the transform PyMC attached to it."""
+def _has_random_ancestor(expression):
+    from pytensor.graph.traversal import ancestors
+    from pytensor.tensor.random.op import RandomVariable
+
+    return any(
+        node.owner is not None and isinstance(node.owner.op, RandomVariable)
+        for node in ancestors([expression])
+    )
+
+
+def _limit(rv, bound, shape, default):
+    """One interval limit as an array of the variable's shape."""
+    if bound is None:
+        return np.full(shape, default, dtype=float)
+    if hasattr(bound, "eval"):
+        if _has_random_ancestor(bound):
+            raise UnsupportedModel(
+                f"{rv.name}: an interval limit depends on another random "
+                "variable, so it has no fixed value"
+            )
+        bound = bound.eval()
+    return np.broadcast_to(np.asarray(bound, dtype=float), shape).copy()
+
+
+def _support(rv, transform, default_transform, shape):
+    """Hard bounds of one variable, per coordinate, from its transform."""
     if transform is None:
-        return -np.inf, np.inf
+        if default_transform is not None:
+            raise UnsupportedModel(
+                f"{rv.name}: its {type(default_transform).__name__} was "
+                "suppressed at construction, so its support is not the "
+                "unbounded one an untransformed variable would be handed "
+                "over with"
+            )
+        return np.full(shape, -np.inf), np.full(shape, np.inf)
     name = type(transform).__name__
     if name == "LogTransform":
-        return 0.0, np.inf
+        return np.zeros(shape), np.full(shape, np.inf)
     if name == "LogOddsTransform":
-        return 0.0, 1.0
+        return np.zeros(shape), np.ones(shape)
     if name in ("IntervalTransform", "Interval"):
         args_fn = getattr(transform, "args_fn", None)
         if args_fn is None:
@@ -153,13 +217,11 @@ def _support(rv, transform):
                 f"{rv.name}: interval transform without readable limits"
             )
         lower, upper = args_fn(*rv.owner.inputs)
-        lower = -np.inf if lower is None else float(np.asarray(lower.eval()))
-        upper = np.inf if upper is None else float(np.asarray(upper.eval()))
-        return lower, upper
-    raise UnsupportedModel(
-        f"{rv.name}: the support of a variable with a {name} is not a box "
-        "of independent bounds, which VBMC cannot represent"
-    )
+        return (
+            _limit(rv, lower, shape, -np.inf),
+            _limit(rv, upper, shape, np.inf),
+        )
+    raise UnsupportedModel(f"{rv.name}: unsupported transform {name}")
 
 
 class PyMCTarget:
@@ -174,8 +236,12 @@ class PyMCTarget:
         variable's own name, or PyMC's transformed value variable
         (``sigma_log__``) for a variable bounded on one side.
     kept : dict
-        For every variable whose transform is kept, the transform and the
-        compiled forward and backward maps.
+        For every variable whose transform is kept, the transform's class
+        name and the compiled forward and backward maps.
+    support : dict
+        Per variable, the hard bounds of every coordinate in the model's
+        own variables, as ``(lower, upper)`` arrays of the variable's
+        shape.
     D : int
         Length of the flat vector.
     lb, ub : np.ndarray, shape (1, D)
@@ -189,6 +255,8 @@ class PyMCTarget:
         import pymc as pm
         import pytensor
         import pytensor.tensor as pt
+        from pymc.distributions.transforms import _default_transform
+        from pymc.model.transform.conditioning import remove_value_transforms
 
         self.model = model
         self.names = [rv.name for rv in model.free_RVs]
@@ -198,20 +266,27 @@ class PyMCTarget:
                     f"{rv.name} is {rv.dtype}: VBMC needs continuous "
                     "parameters"
                 )
-        support = {
-            rv.name: _support(rv, model.rvs_to_transforms[rv])
-            for rv in model.free_RVs
-        }
-        # A variable bounded on one side keeps PyMC's transform (VBMC
-        # cannot take a half-bounded box); every other one is handed over
-        # in its own coordinates.
-        untransform = [
-            rv
-            for rv in model.free_RVs
-            if model.rvs_to_transforms[rv] is None
-            or np.isfinite(support[rv.name]).all()
-        ]
-        self.partial = _remove_value_transforms()(model, vars=untransform)
+        point = model.initial_point()
+        self.support, untransform = {}, []
+        for rv in model.free_RVs:
+            transform = model.rvs_to_transforms[rv]
+            shape = np.asarray(point[model.rvs_to_values[rv].name]).shape
+            lower, upper = _support(
+                rv, transform, _default_transform(rv.owner.op, rv), shape
+            )
+            self.support[rv.name] = (lower, upper)
+            two_sided = np.isfinite(lower) & np.isfinite(upper)
+            unbounded = ~np.isfinite(lower) & ~np.isfinite(upper)
+            if transform is None or np.all(two_sided):
+                # Handed over in the model's own coordinates: VBMC takes
+                # the box (or no box) itself.
+                untransform.append(rv)
+            elif np.any(two_sided | unbounded):
+                raise UnsupportedModel(
+                    f"{rv.name}: its coordinates mix one-sided and other "
+                    "bounds, which one transform cannot represent for VBMC"
+                )
+        self.partial = remove_value_transforms(model, vars=untransform)
         self.kept = {}
         for rv in self.partial.free_RVs:
             transform = self.partial.rvs_to_transforms[rv]
@@ -242,17 +317,17 @@ class PyMCTarget:
         self.shapes = [np.asarray(point[v]).shape for v in self.value_names]
         self.sizes = [int(np.prod(s)) for s in self.shapes]
         self.D = int(sum(self.sizes))
-        bounds = [
-            (-np.inf, np.inf) if n in self.kept else support[n]
-            for n in self.names
-        ]
-        self.support = support
-        self.lb = np.concatenate(
-            [np.full(k, b[0]) for b, k in zip(bounds, self.sizes)]
-        ).reshape(1, -1)
-        self.ub = np.concatenate(
-            [np.full(k, b[1]) for b, k in zip(bounds, self.sizes)]
-        ).reshape(1, -1)
+        self.offsets = np.concatenate([[0], np.cumsum(self.sizes)]).astype(int)
+        lb, ub = [], []
+        for n, shape, k in zip(self.names, self.shapes, self.sizes):
+            if n in self.kept:
+                lb.append(np.full(k, -np.inf))
+                ub.append(np.full(k, np.inf))
+            else:
+                lb.append(self.support[n][0].reshape(k))
+                ub.append(self.support[n][1].reshape(k))
+        self.lb = np.concatenate(lb).reshape(1, -1)
+        self.ub = np.concatenate(ub).reshape(1, -1)
         self.x0 = self.flatten(point).reshape(1, -1)
         self._logp = self.partial.compile_logp(jacobian=True)
         self._logp_plain = self.partial.compile_logp(jacobian=False)
@@ -281,11 +356,20 @@ class PyMCTarget:
     def unflatten(self, x):
         """The flat vector to a dict over value names."""
         x = np.asarray(x, dtype=float).ravel()
-        out, start = {}, 0
-        for v, shape, k in zip(self.value_names, self.shapes, self.sizes):
-            out[v] = x[start : start + k].reshape(shape)
-            start += k
-        return out
+        return {
+            v: x[self.offsets[i] : self.offsets[i + 1]].reshape(shape)
+            for i, (v, shape) in enumerate(zip(self.value_names, self.shapes))
+        }
+
+    def values_from_draws(self, X):
+        """Flat draws ``(n, D)`` to a dict of ``(n, *shape)`` value arrays."""
+        X = np.asarray(X, dtype=float)
+        return {
+            v: X[:, self.offsets[i] : self.offsets[i + 1]].reshape(
+                (len(X),) + shape
+            )
+            for i, (v, shape) in enumerate(zip(self.value_names, self.shapes))
+        }
 
     def to_original(self, values, draws_axis=False):
         """Value-space arrays (dict over value names) to the model's variables.
@@ -333,7 +417,37 @@ class PyMCTarget:
         """The model's density in its own variables, at a flat point."""
         return float(self._logp_plain(self.unflatten(np.asarray(x))))
 
-    def plausible_bounds(self, rng, quantiles=PLAUSIBLE_QUANTILES):
+    def _clip(self, plb, pub):
+        """Plausible bounds strictly inside the hard box, 1 % of it away.
+
+        A coordinate whose plausible interval collapses or falls outside
+        the box after clipping is widened to the middle 98 % of the box
+        (both bounds finite) or left as given (unbounded).
+        """
+        lb, ub = self.lb.ravel(), self.ub.ravel()
+        plb, pub = (
+            np.array(plb, dtype=float).ravel(),
+            np.array(pub, dtype=float).ravel(),
+        )
+        finite = np.isfinite(lb) & np.isfinite(ub)
+        margin = np.where(finite, 0.01 * (ub - lb), 0.0)
+        clipped = finite & ((plb < lb + margin) | (pub > ub - margin))
+        plb = np.where(finite, np.maximum(plb, lb + margin), plb)
+        pub = np.where(finite, np.minimum(pub, ub - margin), pub)
+        bad = finite & ~(pub - plb > 0)
+        plb = np.where(bad, lb + margin, plb)
+        pub = np.where(bad, ub - margin, pub)
+        return plb.reshape(1, -1), pub.reshape(1, -1), clipped | bad
+
+    def _coordinate_names(self, mask):
+        return [
+            self.value_names[
+                int(np.searchsorted(self.offsets, i, side="right")) - 1
+            ]
+            for i in np.flatnonzero(mask)
+        ]
+
+    def prior_box(self, rng, quantiles=PLAUSIBLE_QUANTILES):
         """Plausible bounds from prior quantiles, strictly inside the box."""
         draws = self.pm.draw(
             self.model.free_RVs, draws=PRIOR_DRAWS, random_seed=rng
@@ -345,30 +459,28 @@ class PyMCTarget:
         flat = np.column_stack(
             [values[v].reshape(PRIOR_DRAWS, -1) for v in self.value_names]
         )
-        plb = np.quantile(flat, quantiles[0], axis=0)
-        pub = np.quantile(flat, quantiles[1], axis=0)
-        lb, ub = self.lb.ravel(), self.ub.ravel()
-        width = pub - plb
-        plb = np.where(
-            np.isfinite(lb), np.maximum(plb, lb + 0.01 * width), plb
+        plb, pub, _ = self._clip(
+            np.quantile(flat, quantiles[0], axis=0),
+            np.quantile(flat, quantiles[1], axis=0),
         )
-        pub = np.where(
-            np.isfinite(ub), np.minimum(pub, ub - 0.01 * width), pub
-        )
-        return plb.reshape(1, -1), pub.reshape(1, -1)
+        return plb, pub
 
-    def laplace_box(self, k=3.0, step=1e-4):
-        """Starting point and plausible bounds from the mode and its curvature.
+    def laplace_box(self, rng, k=LAPLACE_K, step=1e-4):
+        """Starting point and plausible bounds from the mode and curvature.
 
         ``pymc.find_MAP`` on the original model (whose variables are all
-        transformed, so the optimizer runs unconstrained) gives the mode;
-        with ``include_transformed=True`` the returned point carries every
-        name this adapter's coordinates use. The curvature is a central
-        finite-difference Hessian of the adapter's own log joint at the
-        mode, so no coordinate convention has to be matched with PyMC's;
-        the plausible box is the mode plus and minus ``k`` marginal
-        standard deviations of the resulting Gaussian, clipped strictly
-        inside the hard bounds.
+        transformed, so the optimizer runs unconstrained) gives the mode
+        of the model's density in its own variables; with
+        ``include_transformed=True`` the returned point carries every name
+        this adapter's coordinates use. ``find_MAP`` maximizes the density
+        without the Jacobian, so for a kept transform the point is not
+        exactly the stationary point of the adapter's log joint; the
+        curvature is a central finite-difference Hessian of that log joint
+        at the point anyway, and a coordinate whose curvature is not
+        negative there takes the prior-quantile width instead (recorded
+        in ``fallback``). The box is the point plus and minus ``k``
+        marginal standard deviations, clipped strictly inside the hard
+        bounds.
         """
         point = self.pm.find_MAP(
             model=self.model, include_transformed=True, progressbar=False
@@ -395,18 +507,32 @@ class PyMCTarget:
                         - self.log_joint(x - e_i + e_j)
                         + self.log_joint(x - e_i - e_j)
                     ) / (4 * h[i] * h[j])
-        cov = np.linalg.inv(-H)
-        sd = np.sqrt(np.maximum(np.diag(cov), 0.0))
-        plb, pub = x - k * sd, x + k * sd
-        lb, ub = self.lb.ravel(), self.ub.ravel()
-        width = pub - plb
-        plb = np.where(
-            np.isfinite(lb), np.maximum(plb, lb + 0.01 * width), plb
+        fallback = []
+        try:
+            cov = np.linalg.inv(-H)
+            sd = np.sqrt(np.diag(cov))
+            usable = np.isfinite(sd) & (sd > 0)
+        except np.linalg.LinAlgError:
+            sd = np.zeros(D)
+            usable = np.zeros(D, dtype=bool)
+        if not np.all(usable):
+            plb_prior, pub_prior = self.prior_box(rng)
+            half = 0.5 * (pub_prior - plb_prior).ravel() / k
+            sd = np.where(usable, sd, half)
+            fallback = self._coordinate_names(~usable)
+        plb, pub, clipped = self._clip(x - k * sd, x + k * sd)
+        # A coordinate whose Laplace interval leaves the hard box (a ridge
+        # of the posterior gives a huge curvature-based width) is clipped
+        # to the box; recorded next to the curvature fallbacks.
+        return (
+            x.reshape(1, -1),
+            plb,
+            pub,
+            {
+                "curvature": fallback,
+                "clipped": self._coordinate_names(clipped),
+            },
         )
-        pub = np.where(
-            np.isfinite(ub), np.minimum(pub, ub - 0.01 * width), pub
-        )
-        return x.reshape(1, -1), plb.reshape(1, -1), pub.reshape(1, -1)
 
     # -- the structured export ---------------------------------------------
 
@@ -414,29 +540,22 @@ class PyMCTarget:
         """Structured posterior draws over the model's variables.
 
         One ``(chain, draw, *shape)`` array per variable, in the model's
-        coordinates, with the model's dimension names and coordinates.
+        coordinates, with the model's dimension names and coordinates
+        (ArviZ 1.x: ``from_dict`` takes a dict of groups and returns a
+        ``DataTree``).
         """
         import arviz as az
 
-        X = np.asarray(X, dtype=float)
-        values, start = {}, 0
-        for v, shape, k in zip(self.value_names, self.shapes, self.sizes):
-            values[v] = X[:, start : start + k].reshape((len(X),) + shape)
-            start += k
-        original = self.to_original(values, draws_axis=True)
-        posterior = {n: a[None] for n, a in original.items()}
-        dims = self.dims or None
-        coords = self.coords or None
-        try:  # ArviZ 1.x: a dict of groups
-            return az.from_dict(
-                {"posterior": posterior}, dims=dims, coords=coords
-            )
-        except TypeError:  # ArviZ 0.x: one keyword per group
-            return az.from_dict(posterior=posterior, dims=dims, coords=coords)
+        original = self.to_original(self.values_from_draws(X), draws_axis=True)
+        return az.from_dict(
+            {"posterior": {n: a[None] for n, a in original.items()}},
+            dims=self.dims or None,
+            coords=self.coords or None,
+        )
 
 
 def posterior_dataset(data):
-    """The posterior group of an InferenceData or DataTree as a Dataset."""
+    """The posterior group of a DataTree (or InferenceData) as a Dataset."""
     group = data["posterior"] if "posterior" in data else data.posterior
     return group.to_dataset() if hasattr(group, "to_dataset") else group
 
@@ -489,6 +608,7 @@ def model_scalar(rng):
         "model": model,
         "hand": hand,
         "ln_Z": ln_Z,
+        "ln_Z_error": 0.0,
         "truth": {
             "mu_mean": float(np.sum(y) / 1.5**2 / precision),
             "mu_sd": float(np.sqrt(1 / precision)),
@@ -572,6 +692,62 @@ def model_vector(rng):
     }
 
 
+def model_bounded(rng):
+    """A unit-interval and a per-coordinate interval variable, both removed."""
+    import pymc as pm
+    from scipy.integrate import dblquad
+    from scipy.special import betaln, ndtr
+
+    n = 12
+    lower, upper = np.array([-1.0, 0.0]), np.array([2.0, 1.0])
+    y = rng.normal(0.6 + 0.4 + 0.5, 1.0, size=n)
+    with pm.Model() as model:
+        p = pm.Beta("p", 2.0, 2.0)
+        u = pm.Uniform("u", lower=lower, upper=upper, shape=2)
+        pm.Normal("y", p + u[0] + u[1], 1.0, observed=y)
+    log_uniform = float(-np.sum(np.log(upper - lower)))
+
+    def log_beta(p):
+        return float(np.log(p) + np.log(1 - p) - betaln(2.0, 2.0))
+
+    def hand(point):
+        p, u = float(point["p"]), np.asarray(point["u"], dtype=float)
+        if not (0 < p < 1) or np.any(u <= lower) or np.any(u >= upper):
+            return -np.inf
+        return float(
+            log_beta(p)
+            + log_uniform
+            + np.sum(_log_normal(y, p + u.sum(), 1.0))
+        )
+
+    # The likelihood depends on s = p + u0 + u1 only: prod N(y_i; s, 1) =
+    # A exp(-n (s - ybar)^2 / 2); the integral over u0 in its interval is
+    # a difference of normal CDFs, the rest is a two-dimensional
+    # quadrature over p and u1.
+    ybar = float(np.mean(y))
+    log_A = float(-0.5 * n * np.log(2 * np.pi) - 0.5 * np.sum((y - ybar) ** 2))
+    root_n = np.sqrt(n)
+
+    def inner(u1, p):
+        c = p + u1 - ybar
+        return (
+            np.exp(log_beta(p))
+            * np.sqrt(2 * np.pi / n)
+            * (ndtr(root_n * (upper[0] + c)) - ndtr(root_n * (lower[0] + c)))
+        )
+
+    value, error = dblquad(inner, 0.0, 1.0, lower[1], upper[1])
+    return {
+        "name": "bounded",
+        "model": model,
+        "hand": hand,
+        "ln_Z": float(log_A + log_uniform + np.log(value)),
+        "ln_Z_error": float(error / value),
+        "truth": {},
+        "reference": "u[0] integrated in closed form, quadrature over p, u[1]",
+    }
+
+
 def model_discrete(rng):
     import pymc as pm
 
@@ -590,6 +766,25 @@ def model_simplex(rng):
     return {"name": "simplex", "model": model}
 
 
+def model_suppressed(rng):
+    import pymc as pm
+
+    with pm.Model() as model:
+        s = pm.HalfNormal("s", 2.0, default_transform=None)
+        pm.Normal("y", 0.0, s, observed=rng.normal(0.0, 1.0, size=5))
+    return {"name": "suppressed", "model": model}
+
+
+def model_random_bounds(rng):
+    import pymc as pm
+
+    with pm.Model() as model:
+        mu = pm.Normal("mu", 0.0, 1.0)
+        h = pm.Uniform("h", lower=mu, upper=mu + 1.0)
+        pm.Normal("y", h, 1.0, observed=rng.normal(0.5, 1.0, size=5))
+    return {"name": "random_bounds", "model": model}
+
+
 # --------------------------------------------------------------------------
 # Checks
 # --------------------------------------------------------------------------
@@ -606,8 +801,9 @@ def check_density(spec, target, rng):
     such as ``Normal(mu, 1.5)`` into a float32 constant, so a model with
     constant scales carries an offset of about 1e-8 nats per such term;
     the shape must agree to ``TOL_LOGP`` and the offset to ``TOL_OFFSET``.
+    A point one unit outside a finite bound must give ``-inf``.
     """
-    plb, pub = target.plausible_bounds(rng)
+    plb, pub = target.prior_box(rng)
     points = rng.uniform(plb, pub, size=(N_CHECK_POINTS, target.D))
     differences = np.asarray(
         [
@@ -619,19 +815,23 @@ def check_density(spec, target, rng):
     offset = float(np.mean(differences))
     deviation = float(np.max(np.abs(differences - offset)))
     lb = target.lb.ravel()
-    below = None
+    outside = None
     if np.any(np.isfinite(lb)):
         x = points[0].copy()
         i = int(np.flatnonzero(np.isfinite(lb))[0])
         x[i] = lb[i] - 1.0
-        below = target.log_joint(x)
+        outside = target.log_joint(x)
     return {
         "points": int(len(points)),
         "max_abs_difference": float(np.max(np.abs(differences))),
         "offset": offset,
         "max_abs_deviation_from_offset": deviation,
-        "passes": bool(deviation <= TOL_LOGP and abs(offset) <= TOL_OFFSET),
-        "outside_bounds_value": None if below is None else float(below),
+        "outside_bounds_value": None if outside is None else float(outside),
+        "passes": bool(
+            deviation <= TOL_LOGP
+            and abs(offset) <= TOL_OFFSET
+            and (outside is None or outside == -np.inf)
+        ),
     }
 
 
@@ -648,7 +848,7 @@ def check_jacobian(spec, target, rng):
     kinds = {n: k["transform"] for n, k in target.kept.items()}
     if any(kind != "LogTransform" for kind in kinds.values()):
         return {"applicable": True, "kept": kinds, "checked": False}
-    plb, pub = target.plausible_bounds(rng)
+    plb, pub = target.prior_box(rng)
     points = rng.uniform(plb, pub, size=(N_CHECK_POINTS, target.D))
     worst = 0.0
     for x in points:
@@ -669,62 +869,82 @@ def check_jacobian(spec, target, rng):
     }
 
 
+def time_density(target, calls=N_TIMING_CALLS):
+    """Milliseconds per call of the compiled log joint at the start point."""
+    x = target.x0.ravel()
+    started = time.perf_counter()
+    for _ in range(calls):
+        target.log_joint(x)
+    return 1000.0 * (time.perf_counter() - started) / calls
+
+
+def choose_box(target, rng, plausible):
+    if plausible == "prior":
+        plb, pub = target.prior_box(rng)
+        return target.x0, plb, pub, {"curvature": [], "clipped": []}
+    return target.laplace_box(rng)
+
+
 def fit(spec, target, rng, seed, plausible):
     """One VBMC run from the chosen starting point and plausible box.
 
-    ``plausible="prior"`` starts from the model's initial point inside a
-    box of prior quantiles; ``plausible="laplace"`` starts from the mode
-    inside the mode's Laplace box (:meth:`PyMCTarget.laplace_box`).
+    Raises :class:`FitFailure` carrying the box and the log joint at its
+    corners and centre when VBMC fails.
     """
     from pyvbmc import VBMC
 
     started = time.perf_counter()
-    if plausible == "prior":
-        x0 = target.x0
-        plb, pub = target.plausible_bounds(rng)
-    else:
-        x0, plb, pub = target.laplace_box()
+    x0, plb, pub, fallback = choose_box(target, rng, plausible)
     setup_seconds = time.perf_counter() - started
-    started = time.perf_counter()
-    vbmc = VBMC(
-        target.log_joint,
-        x0,
-        target.lb,
-        target.ub,
-        plb,
-        pub,
-        options={"display": "off", "plot": False},
-        seed=seed,
+    corners = np.array(
+        [plb.ravel(), pub.ravel(), 0.5 * (plb + pub).ravel(), x0.ravel()]
     )
-    vp, results = vbmc.optimize()
-    seconds = time.perf_counter() - started
-    out = {
+    context = {
         "plausible": plausible,
+        "laplace_fallback": fallback,
         "setup_seconds": setup_seconds,
-        "seconds": seconds,
-        "func_count": int(results["func_count"]),
-        "iterations": int(results["iterations"]),
-        "success_flag": bool(results["success_flag"]),
-        "elbo": float(results["elbo"]),
-        "elbo_sd": float(results["elbo_sd"]),
-        "ln_Z": spec["ln_Z"],
-        "elbo_minus_ln_Z": float(results["elbo"] - spec["ln_Z"]),
-        "K": int(vp.K),
         "plb": plb.ravel().tolist(),
         "pub": pub.ravel().tolist(),
         "x0": np.ravel(x0).tolist(),
+        "log_joint_at_plb_pub_centre_x0": [
+            target.log_joint(c) for c in corners
+        ],
     }
-    draws = vp.sample(N_DRAWS)[0]
-    values = {
-        v: draws[:, start : start + k].reshape((len(draws),) + shape)
-        for v, shape, k, start in zip(
-            target.value_names,
-            target.shapes,
-            target.sizes,
-            np.concatenate([[0], np.cumsum(target.sizes)[:-1]]).astype(int),
+    started = time.perf_counter()
+    try:
+        vbmc = VBMC(
+            target.log_joint,
+            x0,
+            target.lb,
+            target.ub,
+            plb,
+            pub,
+            options={"display": "off", "plot": False},
+            seed=seed,
         )
-    }
-    original = target.to_original(values, draws_axis=True)
+        vp, results = vbmc.optimize()
+    except Exception as error:  # noqa: BLE001
+        raise FitFailure(context, error) from error
+    seconds = time.perf_counter() - started
+    out = dict(context)
+    out.update(
+        {
+            "seconds": seconds,
+            "func_count": int(results["func_count"]),
+            "iterations": int(results["iterations"]),
+            "success_flag": bool(results["success_flag"]),
+            "elbo": float(results["elbo"]),
+            "elbo_sd": float(results["elbo_sd"]),
+            "ln_Z": spec["ln_Z"],
+            "ln_Z_error": spec["ln_Z_error"],
+            "elbo_minus_ln_Z": float(results["elbo"] - spec["ln_Z"]),
+            "K": int(vp.K),
+        }
+    )
+    draws = vp.sample(N_DRAWS)[0]
+    original = target.to_original(
+        target.values_from_draws(draws), draws_axis=True
+    )
     out["posterior_mean"] = {
         n: np.asarray(a.mean(axis=0)).tolist() for n, a in original.items()
     }
@@ -813,6 +1033,15 @@ def check_rejection(spec):
 # --------------------------------------------------------------------------
 
 
+def _git(path, *args):
+    try:
+        return subprocess.check_output(
+            ["git", "-C", str(path), *args], text=True
+        ).strip()
+    except (OSError, subprocess.CalledProcessError):
+        return None
+
+
 def environment():
     import arviz
     import gpyreg
@@ -822,6 +1051,7 @@ def environment():
 
     import pyvbmc
 
+    gp_dir = Path(gpyreg.__file__).resolve().parent
     return {
         "python": sys.version.split()[0],
         "platform": platform.platform(),
@@ -835,7 +1065,15 @@ def environment():
         "numpy": np.__version__,
         "scipy": scipy.__version__,
         "pyvbmc": str(Path(pyvbmc.__file__).resolve().parent),
-        "gpyreg": str(Path(gpyreg.__file__).resolve().parent),
+        "pyvbmc_commit": _git(ROOT, "rev-parse", "HEAD"),
+        "pyvbmc_dirty": _git(
+            ROOT, "status", "--porcelain", "--", "pyvbmc", "dev/scripts"
+        ),
+        "gpyreg": str(gp_dir),
+        "gpyreg_commit": _git(gp_dir.parent, "rev-parse", "HEAD"),
+        "script_sha256": hashlib.sha256(
+            Path(__file__).read_bytes().replace(b"\r\n", b"\n")
+        ).hexdigest(),
         "executable": sys.executable,
     }
 
@@ -848,15 +1086,22 @@ def markdown(report):
         f"Generated {report['generated']}; PyMC {env['pymc']}, PyTensor "
         f"{env['pytensor']} (C++ compiler {env['pytensor_cxx']}, mode "
         f"{env['pytensor_mode']}, floatX {env['pytensor_floatX']}), ArviZ "
-        f"{env['arviz']}, Python {env['python']}. Starting point and "
-        f"plausible box: `{report.get('plausible', 'prior')}` (prior "
-        "quantiles from the model's initial point, or the mode and its "
-        "Laplace box).",
+        f"{env['arviz']}, Python {env['python']}; PyVBMC commit "
+        f"{(env['pyvbmc_commit'] or '?')[:7]}, gpyreg commit "
+        f"{(env['gpyreg_commit'] or '?')[:7]}, script "
+        f"{env['script_sha256'][:12]}. Starting point and plausible box: "
+        f"`{report['plausible']}` "
+        + (
+            "(the mode from `find_MAP` and its Laplace box)"
+            if report["plausible"] == "laplace"
+            else "(the model's initial point and prior quantiles)"
+        )
+        + ".",
         "",
-        "| Model | D | VBMC coordinates and bounds | density (offset; "
-        "max |Δ − offset|) | Jacobian increment | ELBO − ln Z (± sd) | "
-        "evaluations | seconds | return path |",
-        "|---|---:|---|---:|---|---:|---:|---:|---|",
+        "| Model | D | VBMC coordinates and bounds | density: offset; max "
+        "abs deviation | Jacobian increment | ms per call | ELBO − ln Z "
+        "(± sd) | evaluations | setup + fit seconds | return path |",
+        "|---|---:|---|---:|---|---:|---:|---:|---:|---|",
     ]
     for m in report["models"]:
         density = m.get("density", {})
@@ -882,28 +1127,36 @@ def markdown(report):
                     f"{rp['deterministic']['shape']}"
                 )
                 if "max_abs_difference_from_X_beta" in rp["deterministic"]:
-                    rp_text += (
-                        " (max |Δ| from X beta "
-                        f"{rp['deterministic']['max_abs_difference_from_X_beta']:.1e})"
-                    )
+                    delta = rp["deterministic"][
+                        "max_abs_difference_from_X_beta"
+                    ]
+                    rp_text += f" (max abs difference from X beta {delta:.1e})"
             rp_text += f"; predictive {rp['posterior_predictive']['shape']}"
         else:
             rp_text = "not run"
         lines.append(
-            f"| {m['name']} | {m.get('D', '-')} | {m.get('coordinates', '-')} | "
+            f"| {m['name']} | {m.get('D', '-')} | "
+            f"{m.get('coordinates', '-')} | "
             f"{density.get('offset', float('nan')):+.1e}; "
             f"{density.get('max_abs_deviation_from_offset', float('nan')):.1e}"
             + (" ok" if density.get("passes") else " FAIL")
             + f" | {jac_text} | "
+            + (f"{m['ms_per_call']:.2f}" if "ms_per_call" in m else "-")
+            + " | "
             + (
-                f"{fitted['elbo_minus_ln_Z']:+.3f} (± {fitted['elbo_sd']:.3f})"
+                f"{fitted['elbo_minus_ln_Z']:+.4f} "
+                f"(± {fitted['elbo_sd']:.4f})"
                 if fitted
                 else "not run"
             )
             + " | "
             + (str(fitted["func_count"]) if fitted else "-")
             + " | "
-            + (f"{fitted['seconds']:.0f}" if fitted else "-")
+            + (
+                f"{fitted['setup_seconds']:.1f} + {fitted['seconds']:.1f}"
+                if fitted
+                else "-"
+            )
             + f" | {rp_text} |"
         )
     lines += ["", "## Rejections", ""]
@@ -917,25 +1170,29 @@ def markdown(report):
         lines += ["", "## Errors", ""]
         for e in report["errors"]:
             lines.append(f"- {e['where']}: `{e['error']}`")
+            context = e.get("context")
+            if context:
+                lines.append(
+                    f"  - box: plb {context['plb']}, pub {context['pub']}, "
+                    f"x0 {context['x0']}; log joint at plb, pub, centre, "
+                    f"x0: {context['log_joint_at_plb_pub_centre_x0']}"
+                )
     return "\n".join(lines) + "\n"
 
 
 def describe_coordinates(target):
     parts = []
-    for n, v, (lo, hi) in zip(
-        target.names,
-        target.value_names,
-        zip(
-            target.lb.ravel()[np.cumsum([0] + target.sizes[:-1])],
-            target.ub.ravel()[np.cumsum([0] + target.sizes[:-1])],
-        ),
-    ):
+    for i, (n, v) in enumerate(zip(target.names, target.value_names)):
+        lo = target.lb.ravel()[target.offsets[i] : target.offsets[i + 1]]
+        hi = target.ub.ravel()[target.offsets[i] : target.offsets[i + 1]]
         if n in target.kept:
             parts.append(
                 f"{v} ({target.kept[n]['transform']} kept, unbounded)"
             )
         else:
-            parts.append(f"{n} [{lo:g}, {hi:g}]")
+            parts.append(
+                f"{n} " + " ".join(f"[{a:g}, {b:g}]" for a, b in zip(lo, hi))
+            )
     return "; ".join(parts)
 
 
@@ -959,9 +1216,14 @@ def main(argv=None):
         "errors": [],
     }
     rng = np.random.default_rng(args.seed)
-    for build in (model_scalar, model_positive, model_vector):
+    for build in (model_scalar, model_positive, model_vector, model_bounded):
         spec = build(rng)
-        entry = {"name": spec["name"], "reference": spec["reference"]}
+        entry = {
+            "name": spec["name"],
+            "reference": spec["reference"],
+            "ln_Z": spec["ln_Z"],
+            "ln_Z_error": spec["ln_Z_error"],
+        }
         try:
             target = PyMCTarget(spec["model"])
             entry.update(
@@ -974,47 +1236,78 @@ def main(argv=None):
                     },
                     "shapes": [list(s) for s in target.shapes],
                     "support": {
-                        n: [float(lo), float(hi)]
+                        n: [lo.tolist(), hi.tolist()]
                         for n, (lo, hi) in target.support.items()
                     },
                     "coordinates": describe_coordinates(target),
                     "dims": target.dims,
                     "coords": target.coords,
-                    "ln_Z": spec["ln_Z"],
                     "density": check_density(spec, target, rng),
                     "jacobian": check_jacobian(spec, target, rng),
+                    "ms_per_call": time_density(target),
                 }
             )
             print(
                 f"[{spec['name']}] D={target.D}; {entry['coordinates']}; "
                 f"density offset {entry['density']['offset']:+.1e}, max "
-                f"|diff - offset| "
-                f"{entry['density']['max_abs_deviation_from_offset']:.1e}"
+                f"abs deviation "
+                f"{entry['density']['max_abs_deviation_from_offset']:.1e}, "
+                f"outside {entry['density']['outside_bounds_value']}"
                 + (
-                    f"; Jacobian increment max |diff| "
+                    "; Jacobian increment max abs difference "
                     f"{entry['jacobian']['max_abs_difference']:.1e}"
                     if entry["jacobian"].get("checked")
                     else ""
-                ),
+                )
+                + f"; {entry['ms_per_call']:.2f} ms per call",
                 flush=True,
             )
             if not args.no_fit:
-                fitted, vp, draws = fit(
-                    spec, target, rng, args.seed, args.plausible
-                )
-                entry["fit"] = fitted
-                print(
-                    f"[{spec['name']}] VBMC: elbo {fitted['elbo']:.3f} ± "
-                    f"{fitted['elbo_sd']:.3f}, ln Z {spec['ln_Z']:.3f}, "
-                    f"{fitted['func_count']} evaluations, "
-                    f"{fitted['seconds']:.0f} s",
-                    flush=True,
-                )
-                entry["return_path"] = check_return_path(spec, target, draws)
-                print(
-                    f"[{spec['name']}] return path: {entry['return_path']}",
-                    flush=True,
-                )
+                try:
+                    fitted, vp, draws = fit(
+                        spec, target, rng, args.seed, args.plausible
+                    )
+                except FitFailure as failure:
+                    report["errors"].append(
+                        {
+                            "where": spec["name"],
+                            "error": str(failure),
+                            "context": failure.context,
+                            "traceback": "".join(
+                                traceback.format_exception(failure.error)
+                            ),
+                        }
+                    )
+                    print(
+                        f"[{spec['name']}] FIT FAILED {failure}; box "
+                        f"{failure.context['plb']} .. "
+                        f"{failure.context['pub']}",
+                        flush=True,
+                    )
+                else:
+                    entry["fit"] = fitted
+                    print(
+                        f"[{spec['name']}] VBMC: elbo {fitted['elbo']:.4f} +- "
+                        f"{fitted['elbo_sd']:.4f}, ln Z {spec['ln_Z']:.4f} "
+                        f"(quadrature error {spec['ln_Z_error']:.1e}), "
+                        f"{fitted['func_count']} evaluations, "
+                        f"{fitted['setup_seconds']:.1f} + "
+                        f"{fitted['seconds']:.1f} s"
+                        + (
+                            f", Laplace fallback {fitted['laplace_fallback']}"
+                            if any(fitted["laplace_fallback"].values())
+                            else ""
+                        ),
+                        flush=True,
+                    )
+                    entry["return_path"] = check_return_path(
+                        spec, target, draws
+                    )
+                    print(
+                        f"[{spec['name']}] return path: "
+                        f"{entry['return_path']}",
+                        flush=True,
+                    )
         except Exception as error:  # noqa: BLE001
             report["errors"].append(
                 {
@@ -1028,7 +1321,12 @@ def main(argv=None):
                 flush=True,
             )
         report["models"].append(entry)
-    for build in (model_discrete, model_simplex):
+    for build in (
+        model_discrete,
+        model_simplex,
+        model_suppressed,
+        model_random_bounds,
+    ):
         spec = build(rng)
         outcome = check_rejection(spec)
         outcome["name"] = spec["name"]
