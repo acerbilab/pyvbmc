@@ -2,8 +2,11 @@
 
 Implementation plan for the PyMC integration chosen for PyVBMC 1.5.
 Created 2026-09-14 on `dev-next` at `613f2a8`. Status: **pending
-approval**; code work runs on the feature branch `dev-pymc-adapter` and
-merges back into `dev-next`. Design inputs: the
+approval**, after the two investigations of
+[Before approval](#before-approval-the-setup-probe-and-evaluation-reuse)
+have run and their answers are written into this plan; code work runs on
+the feature branch `dev-pymc-adapter` and merges back into `dev-next`.
+Design inputs: the
 [PyMC proposal](../2026-09-13-pymc-integration.md), the
 [feasibility report](../results/2026-09-14-pymc-feasibility.md) and the
 prototype `dev/scripts/pymc_feasibility.py`, whose module docstring is the
@@ -21,16 +24,23 @@ keeps PyMC's transform and Jacobian and travels as an unbounded
 coordinate, a variable bounded on both sides or unbounded is handed over
 in the model's own coordinates with its interval as hard bounds, and
 everything else is rejected by variable name before anything is compiled.
-The adapter proposes the starting point and the plausible box (the mode
-from `pymc.find_MAP` and a Laplace box with two fallbacks; explicit values
-are accepted), exports a fitted posterior as an ArviZ `DataTree` over the
-model's variables with their shapes, dimensions and coordinates, and the
+The adapter proposes the starting point and the plausible box within a
+budget of `20 + 5 D` log-density evaluations: a gradient search for the
+mode of its own log joint and a Laplace box from the exact Hessian there,
+both from PyTensor's derivatives, with fallbacks that cost no evaluations;
+explicit values are accepted and cost one evaluation, a finiteness check.
+Every evaluation the setup spends is retained for VBMC to use as training
+data. The adapter exports a fitted posterior as an ArviZ `DataTree` over
+the model's variables with their shapes, dimensions and coordinates, and
+the
 user computes deterministics and posterior predictions with PyMC's own
 functions on that export. The structured export is a generic extension of
 `VariationalPosterior.to_arviz` (vector and matrix parameters with names,
 dimensions and coordinates) that is useful without PyMC. PyMC is an
 optional extra, imported only when the adapter is constructed. The
-inference defaults, the numerical core and gpyreg are untouched.
+inference defaults, the numerical core and gpyreg are untouched; whether
+`VBMC`'s interface gains a way to receive precomputed evaluations is
+settled before approval.
 
 ## Scope
 
@@ -44,6 +54,9 @@ In scope:
   (`variables`, `dims`, `coords`), backwards compatible.
 - Tests, including `VBMC.save` and `VBMC.load` on an adapter target and
   one short seeded end-to-end run.
+- The route by which the setup evaluations reach `VBMC`, as settled
+  before approval (possibly an extension of `VBMC`'s interface, which
+  would then be in scope on its own branch).
 - User documentation (quickstart section, installation, API page, FAQ,
   README and index bullets, agent skill row) and Example 8.
 
@@ -153,9 +166,14 @@ and package metadata:
   no transform, preserves `named_vars_to_dims` and `coords`, and returns
   a model whose `free_RVs` may be in a different order), `pymc.draw`
   (`random_seed=` takes a `Generator` and leaves NumPy's global state
-  untouched), `pymc.find_MAP` (`include_transformed=True` is its default,
-  its seed keyword is `seed`, and its returned point carries every value
-  name the adapter uses), `compute_deterministics`,
+  untouched), `Model.compile_dlogp(vars=, jacobian=)` and
+  `Model.compile_d2logp(vars=, jacobian=, negate_output=)` (the exact
+  gradient and Hessian of the log density with respect to the value
+  variables of `vars`, in the order of `vars`, each variable flattened;
+  the Hessian is the Jacobian of the symbolic gradient, a
+  `pytensor.map` over the gradient's components, so one call costs about
+  `D` gradient passes; `negate_output=True`, the default, negates the
+  result and emits a `FutureWarning`), `compute_deterministics`,
   `sample_posterior_predictive`, the transform classes `LogTransform`,
   `LogOddsTransform`, `IntervalTransform` (`pymc.logprob.transforms`) and
   `Interval` (`pymc.distributions.transforms`, a subclass of
@@ -189,6 +207,22 @@ and package metadata:
   property of how the user wrote the model and the adapter cannot remove
   it, so density checks compare the shape of the density and allow the
   offset.
+- **Precomputed evaluations in `VBMC`.** `x0` may have `n0` rows, and the
+  advanced option `f_vals` (length `n0`) supplies their values;
+  `_init_optim_state` stores both in `optim_state["cache"]` (a length
+  mismatch raises `vbmc:MismatchedStartingInputs`). The initial design
+  (`active_sample` before the first GP, `fun_eval_start = max(D, 10)`
+  points) takes the cached rows, evaluates those whose value is `nan`,
+  and fills the remainder with uniform draws in the plausible box. Rows
+  beyond `fun_eval_start` are dropped from the cache (the first ones are
+  kept; MATLAB's clustering selection is not ported). `_bounds_check`
+  expands the plausible box to contain every row of `x0`
+  (`vbmc:InitialPointsOutsidePB`) and moves a row closer than `1e-3` of
+  the range to a finite hard bound inside without changing its entry in
+  `f_vals`, after which that value no longer belongs to its point.
+  Supplied values enter through `FunctionLogger.add`, which raises
+  `cache_count`, not `func_count`, so they do not count towards
+  `max_fun_evals` or the reported `func_count`.
 
 ## Design
 
@@ -199,6 +233,7 @@ from pyvbmc import VBMC, PyMCTarget          # PyMCTarget resolves lazily
 target = PyMCTarget(model)                    # or PyMCTarget(model, plausible_bounds=..., start=..., seed=...)
 print(target)                                 # variable, VBMC coordinate(s), hard and plausible bounds
 vbmc = VBMC(target.log_joint, target.x0, target.lb, target.ub, target.plb, target.pub)
+                                              # plus the setup evaluations, by the route settled before approval
 vp, results = vbmc.optimize()
 data = target.to_arviz(vp, n_samples=2000)    # DataTree over the model's variables
 pm.compute_deterministics(data, model=model)  # a Dataset of the deterministics
@@ -226,13 +261,14 @@ PyMC nor PyTensor; constructing a `PyMCTarget` without PyMC raises an
   coordinate, since a one-sided interval transform bounded above is
   decreasing. The mapping must cover every free variable (a missing or
   unknown name raises `ValueError` naming it).
-- `start`: `None` (the default) takes the mode from `pymc.find_MAP`.
-  Otherwise a mapping from every free variable's name to a value in the
-  model's variables, strictly inside the support, mapped to VBMC's
-  coordinates the same way.
+- `start`: `None` (the default) takes the best point of the mode search
+  below. Otherwise a mapping from every free variable's name to a value
+  in the model's variables, strictly inside the support, mapped to VBMC's
+  coordinates the same way; no search runs.
 - `seed`: an `int`, a `numpy.random.Generator` or `None`, through
-  `pyvbmc.rng.get_rng`. Only the prior-quantile fallback of the Laplace
-  box draws from it (`pymc.draw(random_seed=...)`); the mode search is
+  `pyvbmc.rng.get_rng`. Only the prior draws (the curvature fallback, the
+  location check and the route without gradients) use it
+  (`pymc.draw(random_seed=...)`); the mode search and the Hessian are
   deterministic. A `PyMCTarget` never reads or writes NumPy's global
   state.
 
@@ -251,12 +287,22 @@ the coordinate label in place of the index on that axis,
 the variables whose transform is kept); `support` (variable name to the
 `(lower, upper)` arrays of the hard bounds in the model's variables, of
 the variable's shape); `plausible_info` (a dictionary with exactly the
-keys `route`, either `"laplace"` or `"explicit"`; `start`, either
-`"mode"` or `"user"`; `mode`, the mode as a dictionary over the model's
-variables when `find_MAP` ran, else `None`; `start_moved`, `curvature`
-and `clipped`, lists of coordinate names, empty when the corresponding
-step did not run); `model` (the model as given; the partially
-untransformed model the adapter compiles is private).
+keys `route`, one of `"laplace"` (the box from the Hessian),
+`"prior"` (the model has no gradient, the box from prior quantiles) or
+`"explicit"`; `start`, one of `"mode"` (the best point of the search),
+`"initial"` (the model's initial point, when there is no gradient) or
+`"user"`; `mode`, the best point of the search as a dictionary over the
+model's variables when the search ran, else `None`; `n_evaluations`, the
+log-density evaluations spent, the Hessian counted as `D`; `cap_reached`,
+whether the search stopped at its budget; `start_moved`, `curvature`,
+`relocated` and `clipped`, lists of coordinate names, empty when the
+corresponding step did not run or changed nothing);
+`setup_evaluations` (the pair `(X, y)`: the `(n, D)` points in VBMC's
+coordinates at which the setup evaluated `log_joint`, the search's calls
+and the finiteness check, and the `(n,)` finite values, in call order;
+how they reach `VBMC` is settled before approval); `model` (the model as
+given; the partially untransformed model the adapter compiles is
+private).
 
 Methods:
 
@@ -337,59 +383,90 @@ variables are PyTensor functions compiled once at construction from
 
 ### Starting point and plausible box
 
-The default route is the feasibility report's `laplace` route, which
-fitted all five models where prior quantiles failed on one:
+The setup spends at most `20 + 5 D` evaluations of the log joint (25 at
+`D = 1`, 70 at `D = 10`, 120 at `D = 20`), the Hessian counted as `D`;
+one, the finiteness check, when the model has no gradient or the user
+gives both `start` and `plausible_bounds`. Every evaluation is recorded
+in `setup_evaluations`. The budget, the stopping rule and the width of
+the location check are provisional until the setup probe of
+[Before approval](#before-approval-the-setup-probe-and-evaluation-reuse)
+has run. The default route, `laplace`:
 
-1. `x0`: `pymc.find_MAP(model=model, include_transformed=True,
-   progressbar=False)` on the fully transformed model (so the optimizer
-   runs unconstrained) and the returned point read at the adapter's
-   value names. `find_MAP` maximizes the density without the Jacobian,
-   so the point is the mode of the model's density in its own variables,
-   not the stationary point of the adapter's log joint for a kept
-   variable; the box below is computed from the adapter's log joint at
-   that point regardless. A coordinate of `x0` (the mode or a
-   user-supplied `start`) closer than `2e-3` of the range to a finite
-   hard bound, or on it (a mode of a bounded density on its boundary maps
-   back onto the bound), is moved to that distance and listed in
-   `plausible_info["start_moved"]`; the finiteness check and the
-   curvature below then see the point VBMC will use.
-2. Curvature: a central finite-difference Hessian of `log_joint` at `x0`
-   (step `1e-4 * max(1, |x_i|)`, `D (D + 1) / 2` distinct pairs, so at
-   most a few thousand density evaluations for `D <= 20`). The box is
-   `x0 ± 3` marginal standard deviations from the inverse of the negative
-   Hessian. A probe that leaves a narrow hard box returns `-inf` and
-   lands the coordinate in the curvature fallback.
-3. Fallback 1, curvature: a coordinate whose marginal variance is not
-   finite and positive (a ridge, a saddle, a singular Hessian) takes as
-   its standard deviation half the width of the prior box divided by 3,
-   the prior box being the 5 % to 95 % quantiles of 4000 prior draws
-   (`pymc.draw`, seeded by `seed`, mapped to value space) after the same
-   clipping as below, as in the prototype.
-4. Fallback 2, clipping: each plausible bound is kept at least 1 % of a
-   finite range inside its hard bound, and a coordinate whose plausible
-   interval collapses or falls outside the box is widened to the middle
-   98 % of the box; the coordinates touched are listed in
-   `plausible_info["clipped"]`. Where the 1 % margin would put a
-   plausible bound at or beyond `x0` (a start point within 1 % of a hard
-   bound), that bound is placed halfway between the hard bound and `x0`
-   instead, which is at least `1e-3` of the range inside the hard bound
-   and strictly on the far side of `x0`.
+1. **Search start.** The initial point of the partially untransformed
+   model (`initial_point()`, read at the adapter's value names), moved by
+   the start-point rule of step 5.
+2. **Mode search.** L-BFGS-B (`scipy.optimize.minimize` with `jac=True`)
+   on `-log_joint` in VBMC's coordinates, through one compiled function
+   of the partially untransformed model returning the log joint and its
+   gradient (`logp(jacobian=True)` and `dlogp(vars=<free variables in
+   the adapter's order>, jacobian=True)`), with the start-point rule's
+   interval as bounds for a coordinate with finite hard bounds and none
+   otherwise, at most `19 + 4 D` calls, and a loose stopping rule (the
+   box needs a point well inside the posterior, not the mode to many
+   digits). The search maximizes the target VBMC sees, Jacobian
+   included, so for a kept variable the point is the stationary point of
+   the adapter's log joint. `x0` is the best point found. A search that
+   exhausts its calls sets `cap_reached`; the steps below run at the best
+   point.
+3. **Curvature.** The exact Hessian at `x0` (`compile_d2logp(vars=...,
+   jacobian=True, negate_output=False)`), counted as `D` evaluations.
+   The box is `x0 ± 3` marginal standard deviations from the inverse of
+   the negative Hessian.
+4. **Fallbacks without evaluations.** The prior box below is the 5 % to
+   95 % quantiles of 4000 prior draws (`pymc.draw`, seeded by `seed`,
+   mapped to value space).
+   - *Curvature*: a coordinate whose marginal variance is not finite and
+     positive (a ridge, a saddle, a singular Hessian), and every
+     coordinate when the graph has a gradient but no second derivative,
+     takes as its standard deviation half the width of the prior box
+     divided by 3; listed in `curvature`.
+   - *Location*: a coordinate of `x0` outside the prior's `q` to `1 - q`
+     quantile interval (`q` from the probe) means the search ran away,
+     as it does on a density without a mode (a centered hierarchical
+     model whose group scale goes to zero). That coordinate of `x0` moves
+     to the midpoint of the prior box, takes the prior width, and is
+     listed in `relocated`.
+   - *No gradient*: when the gradient cannot be built (a custom `Op`
+     without `grad` in the graph), no search and no Hessian run: `route`
+     is `"prior"`, `start` is `"initial"`, `x0` is the model's initial
+     point after the start-point rule, the box is the prior box, and a
+     warning recommends explicit `plausible_bounds`.
+5. **Start-point rule and clipping.** A coordinate of `x0` (the search
+   start, the best point, a relocated point or a user-supplied `start`)
+   closer than `2e-3` of the range to a finite hard bound, or on it (a
+   mode of a bounded density on its boundary maps back onto the bound),
+   is moved to that distance and listed in `start_moved`; the search's
+   bounds are the same interval, so no search point is one that
+   `VBMC.__init__` would move. Each plausible bound is kept at least 1 %
+   of a finite range inside its hard bound, and a coordinate whose
+   plausible interval collapses or falls outside the box is widened to
+   the middle 98 % of the box; the coordinates touched are listed in
+   `clipped`. Where the 1 % margin would put a plausible bound at or
+   beyond `x0` (a start point within 1 % of a hard bound), that bound is
+   placed halfway between the hard bound and `x0` instead, which is at
+   least `1e-3` of the range inside the hard bound and strictly on the
+   far side of `x0`.
+6. **Finiteness.** `log_joint(x0)` must be finite; the search's value is
+   reused when `x0` is its best point, and otherwise the check is one
+   more evaluation, which the search's `19 + 4 D` leaves room for. A
+   non-finite value raises `ValueError` naming the variables and values,
+   before a user reaches VBMC's less specific error.
 
 With these rules none of the `VBMC.__init__` adjustments (`TooCloseBounds`,
 `InitialPointsTooClosePB`, `InitialPointsOutsidePB`) fires on an adapter
-target, and `test_plausible.py` asserts it. The three lists
-(`start_moved`, `curvature`, `clipped`) are reported through the logger
-`logging.getLogger("pyvbmc.pymc")` at `WARNING` (Python's last-resort
-handler shows warnings when no logging is configured, and a configured
-root logger receives them), because a ridge or a boundary mode is worth
-the user's attention. The mode is recorded in `plausible_info["mode"]`.
-With `plausible_bounds` given, no Hessian is computed and no prior draws
-happen; with `start` given, `find_MAP` does not run; the clipping and
-the start-point rule apply in every case.
+target, and `test_plausible.py` asserts it. The lists (`start_moved`,
+`curvature`, `relocated`, `clipped`), `cap_reached` and the `prior`
+route are reported through the logger `logging.getLogger("pyvbmc.pymc")`
+at `WARNING` (Python's last-resort handler shows warnings when no logging
+is configured, and a configured root logger receives them), because each
+is worth the user's attention. With `plausible_bounds` given, no Hessian
+is computed and no prior draws happen; with `start` given, no search
+runs; the clipping and the start-point rule apply in every case.
 
-The adapter checks that `log_joint(x0)` is finite at construction, after
-the start-point rule, and raises `ValueError` otherwise, naming the
-variables and values, before a user reaches VBMC's less specific error.
+A model whose observed data are `pm.Data` containers reads them when the
+compiled functions are called: `pm.set_data` after construction changes
+`log_joint` and leaves the box and `setup_evaluations` describing the old
+data. The documentation says to build a new target after changing data.
 
 ### The structured ArviZ export
 
@@ -512,14 +589,123 @@ examples/pyvbmc_example_8_pymc.ipynb          Example 8 (+ scripts/pyvbmc_exampl
 
 `pyproject.toml`: `pyvbmc.pymc` in `packages`; the `pymc` extra.
 
+## Before approval: the setup probe and evaluation reuse
+
+Two investigations settle what the setup design leaves provisional. Both
+run before the plan is approved, both are the orchestrator's, and
+neither changes the package; their answers are written into the design,
+Phase 2 and the decisions, and summarized in the execution record. They
+run in the PyMC environment named by `LOCAL.md`, from one script,
+`dev/scripts/pymc_setup_probe.py`, with raw outputs under
+`dev/scripts/runs/pymc_setup_probe_<date>/`, tracked copies under
+`dev/experiments/pymc_setup_probe/` and a report
+`dev/results/<date>-pymc-setup-probe.md`.
+
+### Part A: the evaluation budget
+
+**Question.** Does `20 + 5 D` evaluations (a search of `19 + 4 D` calls,
+the Hessian counted as `D`, one finiteness check) give a box close to the
+one at the converged mode, and which stopping rule and location-check
+width `q` should the search use?
+
+**Method.** Part A counts evaluations and takes seconds per model. For
+each model the script builds the prototype's `PyMCTarget` for the
+coordinate mapping, compiles the log joint with its gradient and the
+exact Hessian on the partially untransformed model (`jacobian=True`), and
+runs L-BFGS-B from the model's initial point to tight convergence (at
+most 2000 calls), logging every call. Models: the five accepted models of
+the feasibility check; the eight-schools model, centered (a density
+without a mode as the group scale goes to zero) and non-centered; a
+linear regression with uncentred covariates on very different scales
+(`D = 5`, badly conditioned); a logistic regression with 20 correlated
+coefficients; a non-centered varying-intercept model with `D = 20`; and a
+model whose likelihood is a custom `Op` without `grad`.
+
+**Recorded per model.** The calls until the best point so far is within
+1 and 0.1 nats of the optimum, and within 1 and 0.3 standard deviations
+of it (Mahalanobis distance under the exact Hessian at the optimum); at
+`19 + 4 D` calls, that distance, the largest shift of the box centre in
+the optimum's marginal standard deviations and the range of the ratios of
+the marginal standard deviations; whether the Hessian at the optimum is
+negative definite; which coordinates of the best point fall outside the
+prior's quantile intervals for `q` in 0.005, 0.01 and 0.05; the calls
+each candidate stopping rule (relative and absolute improvement in nats,
+projected gradient) would have stopped at; compilation and search
+times; and, for the custom `Op`, that the gradient cannot be built and
+how PyTensor reports it.
+
+**Decides.** The budget (kept, or changed with the evidence), the
+stopping rule (the loosest that keeps the box centre within 0.3 marginal
+standard deviations of the converged one on every model with a mode),
+`q` (the widest that relocates nothing on the models with a mode and
+catches the centered eight-schools model), and the expectations
+`test_plausible.py` asserts.
+
+### Part B: handing the setup evaluations to VBMC
+
+**Question.** How should the `setup_evaluations` of a target reach
+`VBMC`, and does it help?
+
+**What exists.** `VBMC` accepts precomputed values through a
+multi-row `x0` and the advanced option `f_vals` ("What the plan rests
+on"). For this use it has four limits: rows beyond `fun_eval_start`
+(`max(D, 10)`) are dropped, where the search yields up to `19 + 4 D`; the
+plausible box is expanded to contain every row, so the early points of a
+search path far from the mode would widen it; a row within `1e-3` of the
+range of a finite hard bound is moved without its value, a defect for any
+caller of `f_vals` that the adapter avoids by keeping its search inside
+the start-point rule's interval; and supplied values count towards
+neither `max_fun_evals` nor the reported `func_count`.
+
+**Options.**
+
+1. No change to `VBMC`: the adapter's documentation passes the setup
+   points inside the plausible box as `x0` (best point first), their
+   values as `f_vals`, and `fun_eval_start` raised to the number of
+   points; points outside the box are dropped.
+2. An extension of `VBMC`'s interface that seeds the function logger with
+   evaluated points as training data, independent of `x0`, of the
+   plausible box and of `fun_eval_start` (a constructor argument such as
+   `initial_evaluations=(X, y)`), with a documented rule on whether they
+   count towards `max_fun_evals`, and the moved-row defect fixed. Unused,
+   it must leave every oracle (`--check --exact`) and the golden replay
+   bit-identical. It would be implemented and reviewed on its own branch
+   before Phase 2, with its own tests and documentation.
+3. Option 1 or 2, plus a method on the target that returns the
+   arguments for `VBMC` (`x0`, bounds, the evaluations, the options), so
+   that the documented call cannot pass them inconsistently.
+
+**Also to decide.** Whether supplied evaluations count towards the
+budget; whether VBMC's uniform initial design still runs in full on top
+of them (a search path clusters along its way to the mode and is not
+space-filling) or is shortened by their number; whether points far below
+the best value (the first calls of a path started in the tail) are
+passed at all.
+
+**Method.** Part B runs VBMC and takes the heavy slot. On the vector
+model, the non-centered eight-schools model and the badly conditioned
+regression, with five seeds each, three arms at equal total evaluations,
+the setup's included: no reuse (the setup's evaluations discarded, VBMC's
+default initial design); option 1 as documented (the points inside the
+box, the uniform design shortened by their number); every setup point
+with VBMC's full uniform initial design on top, which only option 2
+allows and the probe script emulates by filling the function logger
+before the first iteration, without changing the package. Scored by the
+ELBO's error where the evidence is known and by posterior distances
+against a long NUTS reference, with VBMC's iterations to stability and
+wall time.
+
+**Decides.** The PI chooses among the options on the recorded evidence;
+the design's public surface, Phase 2's steps and tests, Phase 4's
+documentation and Example 8's call are revised to the choice.
+
 ## Phases
 
 Executors: the orchestrating Fable session keeps the design, the
 integration and the heavy verification; Opus sub-agents implement the
 phases whose steps are spelled out below. At most one heavy process runs
-at a time; the S-VBMC pool campaign is on the cluster, so local test
-runs are free to proceed. Sub-agents run only the test files they own,
-in the PyMC environment named by `LOCAL.md`, one sub-agent at a time
+at a time. Sub-agents run only the test files they own, in the PyMC
+environment named by `LOCAL.md`, one sub-agent at a time
 except where a phase says otherwise; the full suite runs once, in
 Phase 6. Every phase ends with the formatting hooks (black 79, isort,
 pycln, black-jupyter) and conventional-commit messages: `feat(pymc):`
@@ -537,7 +723,10 @@ The plan, the status pointers (the PyMC item in `dev/TODO.md`, the plans
 list of `dev/README.md`, the header of the proposal) and the correction
 of the feasibility report's environment description were committed on
 `dev-next` on 2026-09-14, when the plan was handed off pending approval.
-On approval:
+The investigations of
+[Before approval](#before-approval-the-setup-probe-and-evaluation-reuse)
+run first, and their answers are written into the design, the phases and
+the decisions. On approval:
 
 1. Set this plan's status line to in progress and commit it on
    `dev-next` (`docs(dev):`).
@@ -626,28 +815,42 @@ hand-written densities.
    `names` taken from the given model; `value_names` and
    `coordinate_names`; `plausible_bounds` (support check for every
    variable, mapping, per-coordinate sort), `start` and `seed`; the
-   start-point rule and the finiteness check at `x0`; `log_joint`
+   compiled log joint with its gradient and the compiled Hessian
+   (`compile_d2logp`), both with the free variables in the adapter's
+   order, and the detection of a graph without a gradient or without a
+   second derivative (the exception PyTensor raises while building the
+   graph, caught narrowly and turned into the `prior` route or the
+   curvature fallback); the evaluation counter and `setup_evaluations`;
+   the start-point rule and the finiteness check at `x0`; `log_joint`
    accepting `(1, D)` and raising the named `ValueError` on a non-finite
    density inside the box; `log_joint_no_jacobian`, `flatten`,
    `unflatten`, `to_model_variables`, `from_model_variables`;
    `to_arviz(vp, n_samples)` in the order of the design section through
-   `datatree_from_arrays`; `plausible_info` with exactly the six keys;
+   `datatree_from_arrays`; `plausible_info` with exactly the nine keys;
    the `pyvbmc.pymc` logger; `__str__`. Numpydoc docstrings in the
    `VariationalPosterior` style, with Raises sections.
-3. `pyvbmc/pymc/_plausible.py`, pure NumPy over callables, no PyMC
+3. `pyvbmc/pymc/_plausible.py`, NumPy and SciPy over callables, no PyMC
    import: `move_inside(x0, lb, ub, fraction=2e-3) -> (x0, moved_mask)`;
-   `hessian(f, x, step=1e-4) -> (D, D)` (central differences, the
-   prototype's loop); `marginal_sd(H) -> (sd, usable_mask)` (inverse of
-   `-H`, `sd` finite and positive where usable; a `LinAlgError` makes
-   nothing usable); `quantile_box(draws, quantiles=(0.05, 0.95)) ->
-   (plb, pub)` on `(n, D)` value-space draws; `clip_inside(plb, pub, lb,
-   ub, x0, margin=0.01) -> (plb, pub, clipped_mask)` implementing
-   fallback 2 including the halfway rule; `laplace_box(x0, log_joint,
-   lb, ub, prior_draws, k=3.0, step=1e-4) -> (plb, pub, curvature_mask,
-   clipped_mask)` composing them, where `prior_draws()` is a callable
-   returning the `(4000, D)` value-space prior draws and is called only
-   when a coordinate needs the fallback. `_target.py` turns the masks
-   into coordinate-name lists and logs them.
+   `search_mode(value_and_grad, x_start, lb, ub, max_calls) -> (x_best,
+   X, y, cap_reached)` (L-BFGS-B with the start-point rule's interval as
+   bounds, the stopping rule set by the probe, every call's point and
+   finite value returned in call order, the best point by value);
+   `marginal_sd(H) -> (sd, usable_mask)` (inverse of `-H`, `sd` finite
+   and positive where usable; a `LinAlgError` makes nothing usable);
+   `quantile_box(draws, quantiles=(0.05, 0.95)) -> (plb, pub)` on `(n,
+   D)` value-space draws; `relocate(x0, draws, q) -> (x0, moved_mask)`
+   (the location check); `clip_inside(plb, pub, lb, ub, x0,
+   margin=0.01) -> (plb, pub, clipped_mask)` implementing the clipping
+   including the halfway rule; `laplace_box(x0, hessian, lb, ub,
+   prior_draws, k=3.0) -> (x0, plb, pub, curvature_mask,
+   relocated_mask, clipped_mask)` composing them, where `hessian()`
+   returns the `(D, D)` Hessian at `x0` or `None` when the graph has no
+   second derivative, and `prior_draws()` is a callable returning the
+   `(4000, D)` value-space prior draws, called at most once and only
+   when a coordinate needs a fallback or the location check. `_target.py`
+   turns the masks into coordinate-name lists and logs them. The
+   budget, the stopping rule and `q` are module constants with the
+   values the probe settled.
 4. `pyvbmc/pymc/__init__.py` (docstring naming the extra and the lazy
    import) and the `PyMCTarget` branch in `pyvbmc/__init__.py`'s
    `__getattr__` and `__dir__`.
@@ -660,8 +863,10 @@ hand-written densities.
    accepted models of the prototype (`scalar`, `positive`, `vector`,
    `bounded`, `one_sided`, data simulated from a seeded generator as the
    prototype does) with their hand-written densities, the `scalar`
-   model's analytic posterior mean and standard deviation, and eight
-   rejected models: the prototype's four (`discrete`, `simplex`,
+   model's analytic posterior mean and standard deviation, three models
+   for the setup (the eight-schools model, centered and non-centered,
+   and a model whose likelihood is a custom `Op` without `grad`), and
+   eight rejected models: the prototype's four (`discrete`, `simplex`,
    `suppressed`, `random_bounds`), an ordered transform
    (`Normal(..., shape=3, transform=pm.distributions.transforms.ordered)`),
    a zero-sum variable (`ZeroSumNormal`), an interval variable mixing a
@@ -711,12 +916,21 @@ hand-written densities.
    - `test_plausible.py`: on the `scalar` model the box equals the
      analytic posterior mean `± 3` standard deviations to `1e-3`
      relative and `plausible_info` is `{"route": "laplace", "start":
-     "mode", "mode": {...}, "start_moved": [], "curvature": [],
-     "clipped": []}`; the `bounded` model lists all three coordinates
-     under `curvature` and one under `clipped`, and the `pyvbmc.pymc`
-     logger emits a warning (`caplog`); a `Beta(1, 3)` variable with no
-     data, whose mode is on the bound, lists its coordinate under
-     `start_moved`, has finite `log_joint(x0)`, and building
+     "mode", "mode": {...}, "n_evaluations": n, "cap_reached": False,
+     "start_moved": [], "curvature": [], "relocated": [], "clipped":
+     []}` with `n <= 25` equal to the number of rows of
+     `setup_evaluations` plus 1 for the Hessian (`D = 1`); for every
+     model `n_evaluations <= 20 + 5 D`, and the rows of
+     `setup_evaluations` satisfy `y[i] == log_joint(X[i])` exactly and
+     lie inside the start-point rule's interval; the `bounded` model's
+     `curvature` and `clipped` lists and the `cap_reached` and
+     `relocated` entries of both eight-schools models are asserted as
+     the probe recorded them, and each fallback emits a warning from the
+     `pyvbmc.pymc` logger (`caplog`); the custom-`Op` model gives
+     `route == "prior"`, `start == "initial"`, `n_evaluations == 1` and
+     a warning; a `Beta(1, 3)` variable with no data, whose mode is on
+     the bound, lists its coordinate under `start_moved`, has finite
+     `log_joint(x0)`, and building
      `VBMC(target.log_joint, target.x0, target.lb, target.ub,
      target.plb, target.pub, options={"display": "off"})` on it and on
      the five accepted models emits no record from the `VBMC_init`
@@ -725,8 +939,10 @@ hand-written densities.
      `sigma`'s pair, `plausible_info["route"] == "explicit"`, and a
      bound on the support boundary raises `ValueError` for `sigma`
      (kept) and for `p` of the `bounded` model (removed); `start` sets
-     `x0` without calling `find_MAP` (monkeypatch `pymc.find_MAP` to
-     fail) and gives `plausible_info["start"] == "user"`, `mode` None;
+     `x0` without a search (monkeypatch `_plausible.search_mode` to
+     fail) and gives `plausible_info["start"] == "user"`, `mode` None,
+     `n_evaluations == 1 + D`; `start` together with `plausible_bounds`
+     gives `n_evaluations == 1`;
      a mapping missing a variable or naming an unknown one raises
      `ValueError` naming it; two targets built with `seed=3` on the
      `bounded` model have identical boxes, and NumPy's global state is
@@ -816,11 +1032,13 @@ adapter.
    vector, `PyMCTarget`, what `print(target)` shows (which coordinate is
    which, the kept transform), the `VBMC` call, the structured export
    and the two PyMC calls, then the supported scope and the rejections,
-   the default box and how to override it, float64, the generator, and
-   that saving works under a compatible PyMC. Run every code block of
-   the section in the PyMC environment (as a script; no full
-   `optimize()` is needed beyond one short run) and paste the actual
-   `print(target)` output; do not invent it.
+   the default box, its evaluation budget, how its evaluations reach
+   VBMC and how to override it, building a new target after
+   `pm.set_data`, float64, the generator, and that saving works under a
+   compatible PyMC. Run every code block of the section in the PyMC
+   environment (as a script; no full `optimize()` is needed beyond one
+   short run) and paste the actual `print(target)` output; do not
+   invent it.
 2. `docsrc/source/installation.rst`: a `PyMC` subsection after `ArviZ`
    (pip, the Python 3.12 requirement in the ArviZ paragraph's words,
    the tested versions as `TESTED_RANGE` states them, `conda install
@@ -957,8 +1175,10 @@ Existing documents updated: `docsrc/source/quickstart.rst`,
 linker). New documents, each with a role no existing one has:
 `docsrc/source/api/classes/pymc_target.rst` (the API page every public
 class has), `examples/pyvbmc_example_8_pymc.ipynb` with its script (the
-worked example), and this plan (the design decisions and the execution
-record).
+worked example), `dev/results/<date>-pymc-setup-probe.md` with
+`dev/scripts/pymc_setup_probe.py` and `dev/experiments/pymc_setup_probe/`
+(the evidence for the setup budget and the reuse of its evaluations),
+and this plan (the design decisions and the execution record).
 
 ## Decisions
 
@@ -984,13 +1204,34 @@ record).
   guarded by a closed-form check at construction. Rejected: PyMC's
   public `constrain_values` and `unconstrain_values`, which fail under
   the default linker on the tested PyMC (see "What the plan rests on").
-- **The Laplace route with its two fallbacks is the default; explicit
-  `plausible_bounds` and `start` are accepted; prior quantiles are not a
-  user-facing route** — what the feasibility check established. The
-  mapping form of `plausible_bounds` is all-or-nothing (every free
-  variable), because a partial mapping would have to combine user
-  intervals with Laplace intervals coordinate by coordinate and the
+- **A setup budget of `20 + 5 D` evaluations, spent on a gradient search
+  and one exact Hessian of the adapter's own log joint** — the PI's
+  decision of 2026-09-14: VBMC exists for targets whose evaluations are
+  expensive, so the setup must be nearly free of them, and PyTensor
+  supplies exact first and second derivatives of every PyMC model built
+  from differentiable operations. The budget is provisional until the
+  setup probe has run. Rejected: a finite-difference Hessian (about
+  `2 D²` evaluations, 800 at `D = 20`, where the exact one costs about
+  `D`), `pymc.find_MAP` (a search on the density without the Jacobian,
+  allowed 5000 evaluations by default and falling back to Powell's
+  derivative-free search on a model without a gradient), and prior
+  quantiles alone as the
+  default (no evaluations, but on the feasibility check's regression
+  with `Normal(0, 5)` coefficients their box spanned log joints from
+  −93 827 to −63 and the initial GP fit failed).
+- **Fallbacks that cost no evaluations** — prior-quantile widths for a
+  coordinate without usable curvature, a location check against the
+  prior for a search that ran away, and the prior box for a model without
+  a gradient, each reported. Explicit `plausible_bounds` and `start` are
+  accepted; the mapping form of `plausible_bounds` is all-or-nothing
+  (every free variable), because a partial mapping would have to combine
+  user intervals with Laplace intervals coordinate by coordinate and the
   fallbacks already handle the ridge case that would motivate it.
+- **The setup's evaluations go to VBMC** — every evaluation the search
+  spends is a valid training point, and discarding them would waste
+  evaluations of an expensive target. The route (the existing `f_vals`
+  option or an extension of `VBMC`'s interface) is settled before
+  approval.
 - **The adapter applies VBMC's own start-point and margin rules before
   handing over** — a start point moved inside by `2e-3` of the range and
   plausible bounds never clipped past it, so that the finiteness check
@@ -1051,3 +1292,18 @@ record).
   numba 0.67.0 resolves `linker = auto` to `NumbaLinker` with no C++
   compiler present) committed on `dev-next` at the handoff. No
   implementation has started.
+- 2026-09-14: the PI's review, before approval, changed the setup. The
+  finite-difference Hessian and `pymc.find_MAP` gave way to a budget of
+  `20 + 5 D` evaluations spent on an L-BFGS-B search with PyTensor's
+  gradient and one exact Hessian (`compile_d2logp`) of the adapter's own
+  log joint, with fallbacks that cost no evaluations, among them a
+  location check against the prior for a search that runs away (a
+  concern for hierarchical models, none of which the feasibility check
+  covered; the eight-schools models join the tests). The evaluations
+  the setup spends are to be handed to `VBMC` rather than discarded.
+  Two investigations were added before approval: the setup probe (Part
+  A: the budget, the stopping rule, the location check) and the reuse of
+  the setup evaluations (Part B: `f_vals` or an extension of `VBMC`'s
+  interface, measured in short VBMC runs). The PI kept the short
+  end-to-end run in the PyMC tests; the documentation gains the
+  `pm.set_data` caveat.

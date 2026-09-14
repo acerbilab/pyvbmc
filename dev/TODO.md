@@ -78,16 +78,23 @@ records its execution.
   (`dev/scripts/pymc_feasibility.py`) exercised: continuous variables with
   none, log, log-odds or fixed-interval transforms, a variable bounded on
   one side keeping PyMC's transform and Jacobian, everything else rejected
-  by name; the mode's Laplace box with fallbacks as the default plausible
-  box, explicit bounds accepted; structured ArviZ export with the model's
-  names, shapes and coordinates; deterministics and posterior predictions
-  through PyMC's own functions. The
+  by name; a default starting point and plausible box, explicit values
+  accepted; structured ArviZ export with the model's names, shapes and
+  coordinates; deterministics and posterior predictions through PyMC's
+  own functions. The PI's review of the plan set the default's cost: at
+  most `20 + 5 D` evaluations (a gradient search and an exact Hessian of
+  the log joint, fallbacks that cost none), all of them handed to VBMC.
+  The
   [implementation plan](plans/pymc-target-adapter.md) is drafted and
   reviewed (module and extra, the `PyMCTarget` class, the `to_arviz`
   extension, the four guarded PyMC reaches, the `pymc >= 6.3` floor with
-  the CI cell, save and load, tests, docs, Example 8) and awaits the PI's
-  approval; then Phase 0 creates the branch `dev-pymc-adapter` and Opus
-  sub-agents implement Phases 1 to 5 as written. Automatic
+  the CI cell, save and load, tests, docs, Example 8). Next, before
+  approval: the plan's two investigations, the setup probe (the budget,
+  the stopping rule, the location check) and the route by which the setup
+  evaluations reach VBMC (the existing `f_vals` option or an extension of
+  `VBMC`'s interface, measured in short runs); then approval, Phase 0
+  creates the branch `dev-pymc-adapter` and Opus sub-agents implement
+  Phases 1 to 5. Automatic
   initialization and inference orchestration stay deferred. See the
   [PyMC proposal](2026-09-13-pymc-integration.md).
 
