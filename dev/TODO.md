@@ -96,8 +96,9 @@ and subsequent possibilities.
   gpyreg pinned to the released 1.2.1. No retained artifact carried a
   posterior with its GP, so the pools are generated fresh. The harness
   is implemented and reviewed and a three-seed pilot has run; the pool
-  generation is handed over and the comparison follows on instruction.
-  See the
+  generation is handed over with the
+  [hand-off note](2026-09-14-svbmc-pool-handoff.md) (branch off
+  `dev-next`, PR back) and the comparison follows on instruction. See the
   [campaign requirement](plans/svbmc-integration.md#benchmark-campaign-required-for-15).
 
 - [ ] **Slurm/HPC benchmark support.** Design reproducible submission,

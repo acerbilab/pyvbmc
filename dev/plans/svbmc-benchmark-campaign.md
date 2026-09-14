@@ -271,8 +271,11 @@ against it, as the working rules require for golden references.
 ### Cluster generation
 
 The pools are generated on a Slurm cluster by another developer as a
-once-in-a-while golden-fixture job (decision 8). What the harness
-provides for that, and what the hand-over needs:
+once-in-a-while golden-fixture job (decision 8); the short brief handed
+to them is [the hand-off note](../2026-09-14-svbmc-pool-handoff.md),
+which asks for the campaign directory as an archive and a pull request
+to `dev-next` from a branch off it. What the harness provides for that,
+and what the hand-over needs:
 
 - **A clean checkout at a named commit** of this repository (the pool's
   identity records it and every worker refuses a different one) with
@@ -1374,6 +1377,19 @@ draft had left open:
   prefix quantity it is, `growth_within_bound`, `pool_entry` through
   `record_path`, the experiments README. Tests: 38 pool-generator and
   16 comparison tests pass. The superseded 1.2.0 worktree was removed.
+- 2026-09-14: everything merged into `dev-next` (`1903506`) and pushed;
+  the feature branch deleted. End-to-end check of the two conditions
+  the pilot had not run, one seed each, from the clean committed tree
+  through `prepare` (no `--allow-dirty`), `cases`, `run`, `select` and
+  `summarize`: `student_D8_noise3_svbmc` 3.8 min, 280 evaluations,
+  `K = 50`, passes the filters, 95 KB artifact; `multisensory_s1_D6_svbmc`
+  0.9 min, 150 evaluations, `K = 50`, passes, 118 KB. Both artifacts
+  verify post hoc with exact zeros on the recomputation gate under
+  gpyreg 1.2.1, and two rebuilt copies of each stack in the integrated
+  class (the noisy one with the capped headline, the noiseless one raw).
+  All eight conditions have now run end to end here. The hand-off note
+  for the cluster developer is
+  [2026-09-14-svbmc-pool-handoff.md](../2026-09-14-svbmc-pool-handoff.md).
 
 ## Execution tracking
 

@@ -59,6 +59,12 @@ For the release overview, start with
 - [Scoped PyMC integration](2026-09-13-pymc-integration.md) —
   PR #73 compared with 1.5, the proposed split between model/export adapters
   and automatic fitting, and the feasibility questions for release scope.
+- [S-VBMC pool hand-off](2026-09-14-svbmc-pool-handoff.md) —
+  Short brief for the developer generating the S-VBMC run pools on the
+  cluster: what the pools are for, the steps (`prepare`, `cases`, a Slurm
+  array of `worker` calls, `select`, `summarize`), what to hand back and
+  the branch-and-PR flow; the specification is in
+  [plans/svbmc-benchmark-campaign.md](plans/svbmc-benchmark-campaign.md).
 
 `TODO.md` contains only current actions, constraints and links. Do not
 accumulate completed handoffs there; the roadmap and plans retain execution
