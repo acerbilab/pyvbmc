@@ -1,0 +1,1545 @@
+"""Matched comparison of the two S-VBMC implementations on pooled runs.
+
+The integrated ``pyvbmc.svbmc.SVBMC`` and the original standalone ``svbmc``
+0.1.1 stack the same subsets of the same finished VBMC runs, cell by cell,
+and every cell records the optimized weights, every ELBO variant, the
+entropy, the seconds spent, and the quality of 100 000 draws from the
+stacked posterior against the target's truth. The design, the conditions,
+the grid and the acceptance criteria are
+``dev/plans/svbmc-benchmark-campaign.md``, sections "Stacking comparison",
+"Metrics" and "Acceptance criteria for the comparison"; the pools come from
+``svbmc_pool_run.py`` and are read through ``svbmc_pool_io.load_run``.
+
+Usage. ``TORCH_PATH`` is the Torch overlay recorded in
+``dev/experiments/svbmc_pool/baseline_environment.json``, the only Torch on
+the campaign's machine, so every invocation that runs a cell needs it::
+
+    PYTHONPATH="<TORCH_PATH>" python -u dev/scripts/svbmc_pool_stack.py \\
+        --pool DIR --out DIR [--conditions L1,L2] [--M 2,4,8,16] \\
+        [--repetitions 20,20,20,10] [--seed 0] [--max-steps 500] \\
+        [--overwrite]
+    PYTHONPATH="<TORCH_PATH>" python -u dev/scripts/svbmc_pool_stack.py \\
+        --fixtures upstream_Ring --out DIR --M 2,3 --repetitions 2,2 \\
+        --max-steps 3
+    python dev/scripts/svbmc_pool_stack.py --summarize-only --out DIR
+
+A cell is one subset of ``M`` runs drawn without replacement from a
+condition's filtered pool by ``np.random.default_rng([seed,
+condition_index, M, repetition])``, where ``condition_index`` is the
+condition's place among every label the pools hold, so that the subsets do
+not depend on which conditions an invocation selects.
+``np.random.SeedSequence`` on the same key yields the cell's seed, and
+spawning that sequence yields one seed per entry of the subset, with which
+both arms rebuild the cell's posteriors: the original draws each run's
+block of samples from that run's own generator, which one shared seed
+would couple. Both arms receive the subset in the same order and never run
+at the same time; which arm runs first alternates from cell to cell. The
+integrated arm runs in this process, seeded through
+``SVBMC(seed=cell_seed)``; the original arm runs in one long-lived worker
+subprocess, seeded by ``np.random.seed(cell_seed)`` immediately before
+construction, because it draws its entropy samples from NumPy's global
+legacy stream and its posterior samples from the input posteriors' own
+generators.
+
+The two arms need different import paths, both recorded in
+``dev/experiments/svbmc_pool/baseline_environment.json``, which this script
+re-verifies (commit, clean tree, file hashes, Torch version) before any
+cell runs: the controller carries only the Torch overlay, so that no
+``import svbmc`` here can reach the pinned upstream package, and the worker
+carries the overlay and the upstream source. Both arms import gpyreg from
+the campaign's frozen worktree through ``PYVBMC_GPYREG_SOURCE`` and record
+where it resolved.
+
+``--fixtures`` presents the shipped S-VBMC posterior fixtures
+(``pyvbmc/testing/svbmc/fixtures/``) as pools, one condition per fixture
+group, scored against the ported target the group's runs used. It needs no
+pool directory and is what ``test_svbmc_pool_stack.py`` exercises.
+
+Outputs under ``--out``: ``cells.jsonl`` (one line per finished cell,
+written as the sweep goes), ``results.json`` (every cell, the single-run
+rows and the settings), ``summary.json`` and ``summary.md`` (per condition
+and ``M``: medians with 10 000-resample bootstrap 95 % intervals, the
+paired differences integrated minus original with exact signed-rank tests
+on them, the maximum weight difference and the runtime ratio),
+``sources.json`` (both arms' commits, working-tree state, import paths,
+versions and thread settings, the baseline re-verification, the pools' or
+fixtures' identities and this file's SHA-256) and ``original_arm.log``
+(everything the worker wrote to its standard streams).
+``--summarize-only`` rebuilds ``summary.json`` and ``summary.md`` from a
+finished ``results.json`` without running a cell.
+"""
+
+import argparse
+import inspect
+import json
+import logging
+import os
+import platform
+import subprocess
+import sys
+import time
+import traceback
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+ROOT = HERE.parents[1]
+sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(HERE))
+
+# The pool generator's module body pins BLAS to one thread and selects the
+# non-interactive matplotlib backend, both of which must happen before
+# NumPy is imported, so this import stays above the one below.
+from svbmc_pool_run import (  # noqa: E402
+    DEFAULT_GPYREG,
+    THREAD_KEYS,
+    activate_gpyreg,
+    git,
+    identity,
+    write_json,
+)
+
+# isort: split
+import numpy as np  # noqa: E402
+
+BASELINE_RECORD = (
+    ROOT / "dev" / "experiments" / "svbmc_pool" / "baseline_environment.json"
+)
+#: The stacking call both arms make; ``n_samples_final`` is integrated-only.
+N_SAMPLES = 20
+LEARNING_RATE = 0.1
+VERSION = "all-weights"
+N_SAMPLES_FINAL = 100
+#: Draws scored per cell, and how many of them the Monte Carlo expected log
+#: joint of the plan's ``elbo_mc`` averages over.
+N_DRAWS = 100_000
+N_LOG_JOINT = 10_000
+BOOTSTRAP_RESAMPLES = 10_000
+#: Criterion 2 of the plan: the metrics tested for equivalence, and the
+#: level of the Holm correction over all condition-and-``M`` cells.
+TEST_METRICS = ("mmtv", "gskl")
+ALPHA = 0.05
+#: The ported target each fixture group's runs were fitted to, so that
+#: ``--fixtures`` scores the stacked posteriors against a truth.
+FIXTURE_PROBLEMS = {
+    "upstream_GMM": "gmm_D2_svbmc",
+    "upstream_GMM_noisy": "gmm_D2_noise3_svbmc",
+    "upstream_Ring": "ring_D2_noise3_svbmc",
+}
+ARMS = ("integrated", "original")
+
+
+def sha256(path):
+    # Imported here rather than at module level: svbmc_pool_io imports
+    # PyVBMC and with it gpyreg, which must not happen before
+    # `activate_gpyreg` has put the campaign's frozen worktree on the path.
+    import svbmc_pool_io as pool_io
+
+    return pool_io.sha256(path)
+
+
+# --------------------------------------------------------------------------
+# Baseline environment
+# --------------------------------------------------------------------------
+
+
+def verify_baseline(record, path):
+    """Re-verify the recorded original-S-VBMC baseline; return the report.
+
+    The checkout must sit at the recorded commit with a clean tree and the
+    recorded SHA-256 for every file of the package, and the Torch overlay
+    must still hold the recorded version. Raises ``RuntimeError`` naming
+    every mismatch: the baseline is the comparison's other arm, so a
+    campaign that cannot identify it must not start.
+    """
+    import torch
+
+    baseline = record["baseline"]
+    checkout = Path(baseline["checkout"])
+    source = Path(baseline["source_dir"])
+    failures = []
+    if not source.is_dir():
+        raise RuntimeError(f"the baseline checkout is missing: {source}")
+    commit = git(checkout, "rev-parse", "HEAD")
+    if commit != baseline["commit"]:
+        failures.append(f"commit {commit}, recorded {baseline['commit']}")
+    status = git(checkout, "status", "--porcelain")
+    if status:
+        failures.append(f"the checkout has uncommitted changes: {status}")
+    files = {}
+    for name, stored in baseline["files_sha256"].items():
+        actual = sha256(source / name)
+        files[name] = actual
+        if actual != stored["sha256"]:
+            failures.append(f"{name} differs from the recorded hash")
+    if torch.__version__ != record["torch"]["version"]:
+        failures.append(
+            f"Torch {torch.__version__}, recorded {record['torch']['version']}"
+        )
+    if failures:
+        raise RuntimeError(
+            f"{path} does not re-verify: " + "; ".join(failures)
+        )
+    return {
+        "record": str(path),
+        "commit": commit,
+        "clean": True,
+        "files_sha256": files,
+        "torch_version": torch.__version__,
+        "torch_import": str(Path(torch.__file__).resolve()),
+        "verified": time.strftime("%Y-%m-%d %H:%M:%S"),
+    }
+
+
+def path_sets(record):
+    """``(TORCH_PATH, BASELINE_PATH)`` of the plan, from the record."""
+    overlay = str(Path(record["torch"]["overlay_dir"]).resolve())
+    upstream = str(Path(record["baseline"]["source_dir"]).resolve().parent)
+    return overlay, os.pathsep.join([overlay, upstream])
+
+
+def refuse_upstream_on_path(baseline_path):
+    """The controller must not be able to ``import svbmc`` from upstream."""
+    upstream = baseline_path.split(os.pathsep)[-1]
+    entries = [
+        Path(p).resolve()
+        for p in (
+            *sys.path,
+            *os.environ.get("PYTHONPATH", "").split(os.pathsep),
+        )
+        if p
+    ]
+    if Path(upstream).resolve() in entries:
+        raise RuntimeError(
+            f"{upstream} is on this process's import path; the controller "
+            "must carry only the Torch overlay, so that the integrated "
+            "class is the only S-VBMC it can import"
+        )
+
+
+# --------------------------------------------------------------------------
+# Pools, entries and problems
+# --------------------------------------------------------------------------
+
+
+def pool_conditions(pool_dirs, only=None):
+    """The filtered runs of every condition, ordered by seed.
+
+    One entry per run that passed the pool's filters, carrying the artifact
+    path (without suffix) and the metrics recorded for that single run,
+    which are the comparison's ``M = 1`` rows. Returns the selected
+    conditions, the pools' identities, and every label the pools allocate
+    (the selection or lack of one does not change that list, which is what
+    indexes a condition when its subsets are drawn).
+    """
+    conditions, identities, labels = {}, [], []
+    for directory in pool_dirs:
+        directory = Path(directory).resolve()
+        manifest = json.loads(
+            (directory / "manifest.json").read_text(encoding="utf-8")
+        )
+        identities.append(
+            {
+                "directory": str(directory),
+                "identity": manifest["identity"],
+                "gpyreg_source": manifest["gpyreg_source"],
+                "options": manifest["options"],
+            }
+        )
+        for allocated in manifest["allocation"]:
+            label = allocated["label"]
+            labels.append(label)
+            if only and label not in only:
+                continue
+            if label in conditions:
+                raise RuntimeError(
+                    f"{label} is allocated in more than one pool directory"
+                )
+            entries = []
+            for path in sorted((directory / "records").glob(f"{label}_seed*")):
+                record = json.loads(path.read_text(encoding="utf-8"))
+                if record["label"] != label or not record["verdict"]["passes"]:
+                    continue
+                entries.append(
+                    {
+                        "kind": "run",
+                        "name": record["tag"],
+                        "path": str(directory / record["tag"]),
+                        "seed": int(record["seed"]),
+                        "metrics": record["metrics"],
+                    }
+                )
+            conditions[label] = sorted(entries, key=lambda e: e["seed"])
+    missing = [label for label in (only or ()) if label not in conditions]
+    if missing:
+        raise RuntimeError(f"no pool holds the conditions {missing}")
+    sources = {entry["gpyreg_source"] for entry in identities}
+    if len(sources) > 1:
+        raise RuntimeError(
+            f"the pools were generated against different gpyreg sources: "
+            f"{sorted(sources)}"
+        )
+    return conditions, identities, sorted(set(labels))
+
+
+def fixture_conditions(groups):
+    """Fixture groups presented as pools: one condition per group.
+
+    The shipped posteriors carry no artifact path, so an entry names the
+    fixture instead; the single-run metrics are computed on demand. A
+    fixture belongs to the group its sidecar records, not to every group
+    whose name is a prefix of its own. Only the posteriors that pass the
+    pool's filters are kept, as in a pool.
+    """
+    from svbmc_pool_io import filter_verdict
+
+    from pyvbmc.testing.svbmc._fixtures import (
+        FIXTURES_DIR,
+        _group_of,
+        fixture_names,
+        load_vp,
+    )
+
+    conditions = {}
+    for group in groups:
+        if group not in FIXTURE_PROBLEMS:
+            raise RuntimeError(
+                f"no ported target is recorded for the fixture group "
+                f"{group!r}; known groups: {sorted(FIXTURE_PROBLEMS)}"
+            )
+        entries = []
+        for index, name in enumerate(sorted(fixture_names())):
+            if _group_of(name, FIXTURES_DIR) != group:
+                continue
+            vp, _ = load_vp(name, rng=0)
+            if filter_verdict(vp)["passes"]:
+                entries.append(
+                    {
+                        "kind": "fixture",
+                        "name": name,
+                        "path": None,
+                        "seed": index,
+                        "metrics": None,
+                    }
+                )
+        if not entries:
+            raise RuntimeError(f"no fixture of group {group!r} passes")
+        conditions[group] = entries
+    return conditions
+
+
+def fixture_sources(conditions):
+    """The files behind every ``--fixtures`` condition, with their hashes."""
+    from pyvbmc.testing.svbmc._fixtures import FIXTURES_DIR
+
+    return [
+        {
+            "condition": condition,
+            "directory": str(FIXTURES_DIR),
+            "fixtures": [
+                {
+                    "name": entry["name"],
+                    "sha256": {
+                        suffix: sha256(FIXTURES_DIR / (entry["name"] + suffix))
+                        for suffix in (".npz", ".json")
+                    },
+                }
+                for entry in entries
+            ],
+        }
+        for condition, entries in conditions.items()
+    ]
+
+
+def load_entry(entry, rng):
+    """Rebuild one pool entry's posterior with its own generator."""
+    if entry["kind"] == "fixture":
+        from pyvbmc.testing.svbmc._fixtures import load_vp
+
+        return load_vp(entry["name"], rng=rng)[0]
+    from svbmc_pool_io import load_run
+
+    return load_run(entry["path"], rng=rng)["vp"]
+
+
+class Problems:
+    """The target of every condition, with its exact reference draws.
+
+    A condition's label is a suite configuration; a fixture group maps to
+    the ported target its runs were fitted to. The 100 000 reference draws
+    that ``sample_metrics`` scores against are drawn once per problem, so
+    that every cell and both arms are compared with the same reference;
+    they are drawn with the generator ``sample_metrics`` uses when it is
+    given no reference of its own.
+    """
+
+    def __init__(self):
+        self._problems, self._references = {}, {}
+
+    def get(self, condition, kind):
+        from benchmark_targets import find_config
+
+        if condition not in self._problems:
+            label = (
+                FIXTURE_PROBLEMS[condition] if kind == "fixture" else condition
+            )
+            self._problems[condition] = find_config(label).make(seed=0)
+        return self._problems[condition]
+
+    def reference(self, condition, kind):
+        from benchmark_targets import DIAG_TV_SAMPLES, sample_metrics
+
+        problem = self.get(condition, kind)
+        if condition not in self._references:
+            seed = inspect.signature(sample_metrics).parameters["seed"].default
+            self._references[condition] = (
+                None
+                if problem.sampler is None
+                else problem.sampler(
+                    DIAG_TV_SAMPLES, np.random.default_rng(seed)
+                )
+            )
+        return self._references[condition]
+
+
+def single_run_rows(condition, kind, entries, problems):
+    """The ``M = 1`` rows of one condition: every filtered run's metrics."""
+    from benchmark_targets import metrics
+
+    problem = problems.get(condition, kind)
+    rows = []
+    for entry in entries:
+        measured = entry["metrics"]
+        if measured is None:
+            vp = load_entry(entry, rng=0)
+            measured = metrics(problem, vp, float(vp.stats["elbo"]))
+        row = {
+            key: float(measured[key])
+            for key in ("elbo_err", "gskl", "mmtv")
+            if key in measured
+        }
+        row["gskl_normalized"] = row["gskl"] / problem.D
+        row["name"] = entry["name"]
+        rows.append(row)
+    return rows
+
+
+# --------------------------------------------------------------------------
+# The two arms
+# --------------------------------------------------------------------------
+
+
+def log_joint_subsample(n, cell_seed, arm):
+    """Which draws the Monte Carlo expected log joint averages over.
+
+    Both implementations return their draws grouped by input posterior, and
+    the original concatenates one block per run without shuffling, so the
+    first ``N_LOG_JOINT`` rows would measure the stack's first runs rather
+    than the stack. The subsample is drawn without replacement from a
+    generator derived from the cell's seed and the arm's position, so the
+    same procedure runs on both arms and either is reproducible from the
+    cell's record.
+    """
+    return np.random.default_rng([int(cell_seed), ARMS.index(arm)]).choice(
+        n, min(N_LOG_JOINT, n), replace=False
+    )
+
+
+def stacked_outcome(problem, reference, samples, entropy, elbos, seed, arm):
+    """Everything a fitted stack is scored on, for either arm."""
+    from benchmark_targets import sample_metrics
+    from profile_run import jsonable
+
+    started = time.perf_counter()
+    samples = np.asarray(samples)
+    index = log_joint_subsample(len(samples), seed, arm)
+    e_log_joint_mc = float(np.mean(problem.log_density_vec(samples[index])))
+    elbos = dict(elbos, mc=e_log_joint_mc + float(entropy))
+    measured = sample_metrics(problem, samples, elbos, reference=reference)
+    return {
+        "elbos": {k: float(v) for k, v in elbos.items()},
+        "e_log_joint_mc": e_log_joint_mc,
+        "n_log_joint": int(index.size),
+        "elbo_mc": elbos["mc"],
+        "metrics": jsonable(measured),
+        "metrics_seconds": time.perf_counter() - started,
+    }
+
+
+def fit_integrated(entries, seeds, cell_seed, max_steps, problem, reference):
+    """One cell of the integrated arm, in this process."""
+    from pyvbmc.svbmc import SVBMC
+
+    started = time.perf_counter()
+    vps = [load_entry(e, rng=s) for e, s in zip(entries, seeds)]
+    stacked = SVBMC(vps, seed=cell_seed)
+    construction_seconds = time.perf_counter() - started
+    started = time.perf_counter()
+    stacked.optimize(
+        n_samples=N_SAMPLES,
+        lr=LEARNING_RATE,
+        max_steps=max_steps,
+        version=VERSION,
+        n_samples_final=N_SAMPLES_FINAL,
+    )
+    optimize_seconds = time.perf_counter() - started
+    started = time.perf_counter()
+    samples = stacked.sample(N_DRAWS)
+    sample_seconds = time.perf_counter() - started
+    details = stacked.elbo_details
+    outcome = stacked_outcome(
+        problem,
+        reference,
+        samples,
+        stacked.entropy,
+        {
+            "headline": float(stacked.elbo),
+            "raw": float(details["raw"]),
+            "capped_I_median": float(details["capped_I_median"]),
+            "capped_E_median": float(details["capped_E_median"]),
+            "naive": float(details["naive"]),
+        },
+        cell_seed,
+        "integrated",
+    )
+    outcome.update(
+        {
+            "arm": "integrated",
+            "headline": "headline",
+            "M_used": int(stacked.M),
+            "K": [int(k) for k in stacked.K],
+            "w": np.ravel(stacked.w).tolist(),
+            "entry_seeds": [int(s) for s in seeds],
+            "entropy": float(stacked.entropy),
+            "elbo_sd": float(stacked.elbo_sd),
+            "cap_amount": float(details["cap_amount"]),
+            "entropy_sd": float(details["entropy_sd"]),
+            "gp_sd": float(details["gp_sd"]),
+            "noisy": bool(details["noisy"]),
+            "noise_status_source": list(details["noise_status_source"]),
+            "construction_seconds": construction_seconds,
+            "optimize_seconds": optimize_seconds,
+            "sample_seconds": sample_seconds,
+        }
+    )
+    return outcome
+
+
+def fit_original(entries, seeds, cell_seed, max_steps, problem, reference):
+    """One cell of the original arm; runs inside the worker process."""
+    import svbmc
+
+    started = time.perf_counter()
+    vps = [load_entry(e, rng=s) for e, s in zip(entries, seeds)]
+    # The original draws its entropy samples from NumPy's global legacy
+    # stream, so the cell's seed is set immediately before construction.
+    np.random.seed(cell_seed)
+    stacked = svbmc.SVBMC(vps, s_max=float(np.sqrt(5)), M_min=2 / 3)
+    construction_seconds = time.perf_counter() - started
+    started = time.perf_counter()
+    stacked.optimize(
+        n_samples=N_SAMPLES,
+        lr=LEARNING_RATE,
+        max_steps=max_steps,
+        version=VERSION,
+    )
+    optimize_seconds = time.perf_counter() - started
+    started = time.perf_counter()
+    samples = stacked.sample(N_DRAWS)
+    sample_seconds = time.perf_counter() - started
+    outcome = stacked_outcome(
+        problem,
+        reference,
+        samples,
+        stacked.entropy,
+        {k: float(v) for k, v in stacked.elbo.items()},
+        cell_seed,
+        "original",
+    )
+    outcome.update(
+        {
+            "arm": "original",
+            "headline": "estimated",
+            "M_used": int(stacked.M),
+            "K": [int(k) for k in stacked.K],
+            "w": np.ravel(stacked.w).tolist(),
+            "entry_seeds": [int(s) for s in seeds],
+            "entropy": float(stacked.entropy),
+            "construction_seconds": construction_seconds,
+            "optimize_seconds": optimize_seconds,
+            "sample_seconds": sample_seconds,
+        }
+    )
+    return outcome
+
+
+# --------------------------------------------------------------------------
+# The original arm's worker
+# --------------------------------------------------------------------------
+
+
+def worker_main(gpyreg_source):
+    """Serve stacking requests for the original implementation.
+
+    Requests and replies are one JSON object per line. The original
+    implementation prints progress and warnings, so file descriptor 1 is
+    pointed at stderr (which the controller captures into a log) and the
+    protocol keeps a private copy of the real stdout.
+    """
+    protocol = os.fdopen(os.dup(sys.stdout.fileno()), "w", buffering=1)
+    os.dup2(sys.stderr.fileno(), sys.stdout.fileno())
+    sys.stdout = sys.stderr
+
+    activate_gpyreg(gpyreg_source)
+    import torch
+
+    torch.set_num_threads(1)
+    import svbmc
+
+    def send(payload):
+        protocol.write(json.dumps(payload) + "\n")
+        protocol.flush()
+
+    send(
+        {
+            "ready": True,
+            "svbmc_version": svbmc.__version__,
+            "svbmc_import": str(Path(svbmc.__file__).resolve()),
+            "torch_version": torch.__version__,
+            "torch_import": str(Path(torch.__file__).resolve()),
+            "torch_threads": torch.get_num_threads(),
+            "executable": sys.executable,
+            "environment": identity(gpyreg_source),
+        }
+    )
+
+    problems = Problems()
+    for line in sys.stdin:
+        request = json.loads(line)
+        if request["op"] == "quit":
+            send({"bye": True})
+            break
+        try:
+            condition, kind = request["condition"], request["kind"]
+            send(
+                fit_original(
+                    request["entries"],
+                    [int(s) for s in request["entry_seeds"]],
+                    int(request["cell_seed"]),
+                    int(request["max_steps"]),
+                    problems.get(condition, kind),
+                    problems.reference(condition, kind),
+                )
+            )
+        except Exception:  # reported to the controller, which stops
+            send({"error": traceback.format_exc()})
+
+
+class Worker:
+    """The original implementation, served by one long-lived subprocess."""
+
+    def __init__(self, baseline_path, gpyreg_source, log_path):
+        environment = dict(os.environ)
+        environment["PYTHONPATH"] = baseline_path
+        environment["PYTHONUNBUFFERED"] = "1"
+        environment["PYVBMC_GPYREG_SOURCE"] = str(gpyreg_source)
+        environment["MPLBACKEND"] = "Agg"
+        environment.update({key: "1" for key in THREAD_KEYS})
+        self.log = Path(log_path).open("w", encoding="utf-8")
+        self.process = subprocess.Popen(
+            [
+                sys.executable,
+                "-u",
+                str(Path(__file__).resolve()),
+                "--worker",
+                str(gpyreg_source),
+            ],
+            cwd=str(ROOT),
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=self.log,
+            env=environment,
+            text=True,
+            bufsize=1,
+        )
+        self.info = self._read()
+        if not self.info.get("ready"):
+            raise RuntimeError(f"the original arm did not start: {self.info}")
+
+    def _read(self):
+        line = self.process.stdout.readline()
+        if not line:
+            raise RuntimeError(
+                "the original arm's worker exited; see its log for the "
+                "traceback"
+            )
+        return json.loads(line)
+
+    def request(self, payload):
+        self.process.stdin.write(json.dumps(payload) + "\n")
+        self.process.stdin.flush()
+        reply = self._read()
+        if "error" in reply:
+            raise RuntimeError("the original arm failed:\n" + reply["error"])
+        return reply
+
+    def close(self):
+        try:
+            self.request({"op": "quit"})
+        except (OSError, ValueError, RuntimeError):
+            pass
+        try:
+            self.process.wait(timeout=60)
+        except subprocess.TimeoutExpired:
+            self.process.kill()
+            self.process.wait()
+        self.log.close()
+
+
+# --------------------------------------------------------------------------
+# The sweep
+# --------------------------------------------------------------------------
+
+
+def entry_seeds(cell_seed, M):
+    """One generator seed per entry of a cell, from the cell's seed.
+
+    Every posterior of a cell is rebuilt with its own seed, in both arms:
+    the original implementation draws each run's block of samples from that
+    run's own generator, so one seed shared by the whole subset would
+    couple the blocks.
+    """
+    return [
+        int(child.generate_state(1, dtype=np.uint32)[0])
+        for child in np.random.SeedSequence(int(cell_seed)).spawn(int(M))
+    ]
+
+
+def plan_cells(conditions, grid, repetitions, seed, indices):
+    """Every cell of the comparison, in the order it will be run.
+
+    ``indices`` gives each condition its place among all the labels the
+    pools hold, so that the subsets drawn for a condition do not depend on
+    which conditions this invocation selected.
+    """
+    plan, skipped = [], []
+    for condition, entries in conditions.items():
+        index = indices[condition]
+        for M, R in zip(grid, repetitions):
+            if M > len(entries):
+                skipped.append(
+                    {"condition": condition, "M": M, "pool": len(entries)}
+                )
+                continue
+            for repetition in range(R):
+                key = [seed, index, M, repetition]
+                subset = sorted(
+                    int(i)
+                    for i in np.random.default_rng(key).choice(
+                        len(entries), M, replace=False
+                    )
+                )
+                cell_seed = int(
+                    np.random.SeedSequence(key).generate_state(
+                        1, dtype=np.uint32
+                    )[0]
+                )
+                plan.append(
+                    {
+                        "condition": condition,
+                        "condition_index": index,
+                        "M": int(M),
+                        "repetition": int(repetition),
+                        "indices": subset,
+                        "entries": [entries[i]["name"] for i in subset],
+                        "seeds": [entries[i]["seed"] for i in subset],
+                        "cell_seed": cell_seed,
+                        "entry_seeds": entry_seeds(cell_seed, M),
+                    }
+                )
+    return plan, skipped
+
+
+def fit_cell(
+    arm,
+    worker,
+    condition,
+    kind,
+    entries,
+    seeds,
+    cell_seed,
+    max_steps,
+    problem,
+    ref,
+):
+    """One arm of one cell: in this process, or through the worker."""
+    if arm == "integrated":
+        return fit_integrated(
+            entries, seeds, cell_seed, max_steps, problem, ref
+        )
+    return worker.request(
+        {
+            "op": "fit",
+            "condition": condition,
+            "kind": kind,
+            "entries": entries,
+            "entry_seeds": seeds,
+            "cell_seed": cell_seed,
+            "max_steps": max_steps,
+        }
+    )
+
+
+def warm_up(plan, conditions, kind, worker, problems):
+    """One short discarded fit per arm, so no cell pays the first-call cost.
+
+    Both implementations build their Torch graph, import what they need
+    lazily and touch the sampling and metric paths on their first fit, which
+    would otherwise land on the first recorded cell and inflate its
+    optimization seconds. The fit is two Adam steps on the first two runs of
+    the first cell and nothing about it is recorded; every recorded cell
+    rebuilds its posteriors and reseeds both arms, so it leaves no trace.
+    """
+    cell = plan[0]
+    condition = cell["condition"]
+    entries = [conditions[condition][i] for i in cell["indices"][:2]]
+    for arm in ARMS:
+        started = time.perf_counter()
+        fit_cell(
+            arm,
+            worker,
+            condition,
+            kind,
+            entries,
+            cell["entry_seeds"][:2],
+            cell["cell_seed"],
+            2,
+            problems.get(condition, kind),
+            problems.reference(condition, kind),
+        )
+        print(
+            f"warmed up {arm} in {time.perf_counter() - started:.1f} s",
+            flush=True,
+        )
+
+
+def run_cells(plan, conditions, kind, worker, problems, max_steps, out):
+    """Run every planned cell, both arms, one at a time; return the rows."""
+    progress = (out / "cells.jsonl").open("w", encoding="utf-8")
+    rows = []
+    started = time.time()
+    try:
+        for number, cell in enumerate(plan):
+            condition = cell["condition"]
+            entries = [conditions[condition][i] for i in cell["indices"]]
+            problem = problems.get(condition, kind)
+            reference = problems.reference(condition, kind)
+            first = ARMS[number % 2]
+            print(
+                f"START {condition} M={cell['M']} r={cell['repetition']} "
+                f"({number + 1}/{len(plan)}, {first} first, "
+                f"{(time.time() - started) / 60:.1f} min elapsed)",
+                flush=True,
+            )
+            outcomes = {}
+            for arm in (first, ARMS[1 - ARMS.index(first)]):
+                outcomes[arm] = fit_cell(
+                    arm,
+                    worker,
+                    condition,
+                    kind,
+                    entries,
+                    cell["entry_seeds"],
+                    cell["cell_seed"],
+                    max_steps,
+                    problem,
+                    reference,
+                )
+            row = dict(cell, first_arm=first, arms=outcomes)
+            weights = [np.asarray(outcomes[arm]["w"]) for arm in ARMS]
+            if weights[0].shape != weights[1].shape:
+                raise RuntimeError(
+                    f"{condition} M={cell['M']} r={cell['repetition']}: the "
+                    "arms returned weight vectors of different lengths "
+                    f"({weights[0].size} and {weights[1].size}); the cell is "
+                    "not paired"
+                )
+            row["max_abs_dw"] = float(np.max(np.abs(weights[0] - weights[1])))
+            rows.append(row)
+            progress.write(json.dumps(row) + "\n")
+            progress.flush()
+            print(
+                f"DONE  {condition} M={cell['M']} r={cell['repetition']}: "
+                f"max|dw| {row['max_abs_dw']:.4g}, "
+                f"{outcomes['integrated']['optimize_seconds']:.1f} s vs "
+                f"{outcomes['original']['optimize_seconds']:.1f} s",
+                flush=True,
+            )
+    finally:
+        progress.close()
+    return rows
+
+
+# --------------------------------------------------------------------------
+# Summary
+# --------------------------------------------------------------------------
+
+
+def bootstrap_median(values, rng, resamples=BOOTSTRAP_RESAMPLES):
+    """Median of ``values`` with a percentile bootstrap 95 % interval."""
+    finite = np.asarray(
+        [v for v in values if v is not None and np.isfinite(v)], dtype=float
+    )
+    if finite.size == 0:
+        return {"n": 0, "median": None, "lo": None, "hi": None}
+    draws = np.median(
+        finite[rng.integers(0, finite.size, size=(resamples, finite.size))],
+        axis=1,
+    )
+    return {
+        "n": int(finite.size),
+        "median": float(np.median(finite)),
+        "lo": float(np.percentile(draws, 2.5)),
+        "hi": float(np.percentile(draws, 97.5)),
+    }
+
+
+def arm_values(rows, arm, key):
+    return [row["arms"][arm]["metrics"].get(key) for row in rows]
+
+
+def headline_errors(rows, arm):
+    return [
+        row["arms"][arm]["metrics"].get(
+            "elbo_err_" + row["arms"][arm]["headline"]
+        )
+        for row in rows
+    ]
+
+
+def paired(integrated, original):
+    """Differences integrated minus original, NaN where either is missing."""
+    return [
+        float("nan") if a is None or b is None else float(a) - float(b)
+        for a, b in zip(integrated, original)
+    ]
+
+
+def runtime_ratios(rows):
+    return [
+        row["arms"]["integrated"]["optimize_seconds"]
+        / row["arms"]["original"]["optimize_seconds"]
+        for row in rows
+    ]
+
+
+def exact_signed_rank(delta):
+    """Two-sided exact signed-rank test over all sign assignments.
+
+    Zero differences are dropped, tied absolute differences receive
+    midranks, and the null distribution of the positive-rank sum is
+    enumerated by dynamic programming over the midranks, so ties are
+    handled exactly at any sample size. Returns the smaller rank sum and
+    the p-value. ``dev/scripts/analyze_population_run.py`` holds the same
+    procedure; importing it here would import PyVBMC and gpyreg through
+    ``population_run``, which the summaries must not depend on.
+    """
+    from scipy import stats
+
+    d = np.asarray(delta, dtype=float)
+    d = d[d != 0]
+    m = len(d)
+    if m < 2:
+        return 0.0, 1.0
+    if m > 62:
+        raise ValueError("exact enumeration counts exceed int64 beyond 62")
+    ranks = stats.rankdata(np.abs(d))
+    units = np.rint(2 * ranks).astype(np.int64)  # midranks are half-integers
+    assert np.array_equal(units, 2 * ranks)
+    total = int(units.sum())
+    counts = np.zeros(total + 1, dtype=np.int64)
+    counts[0] = 1
+    for unit in units:
+        shifted = counts.copy()
+        shifted[unit:] += counts[: total + 1 - unit]
+        counts = shifted
+    positive = int(units[d > 0].sum())
+    assignments = float(2**m)
+    less = counts[: positive + 1].sum() / assignments
+    greater = counts[positive:].sum() / assignments
+    statistic = float(min(ranks[d > 0].sum(), ranks[d < 0].sum()))
+    return statistic, float(min(1.0, 2 * min(less, greater)))
+
+
+def holm(tests, alpha=ALPHA):
+    """Annotate one test family in place with Holm-adjusted p-values.
+
+    ``integrated_worse`` is the criterion's flag: the family rejects and
+    the median paired difference is positive, the integrated class being
+    the worse of the two on that cell.
+    """
+    import golden_trace
+
+    order = np.argsort([test["pvalue"] for test in tests])
+    adjusted = 0.0
+    for rank, index in enumerate(order):
+        adjusted = float(
+            max(
+                adjusted,
+                min(1.0, (len(tests) - rank) * tests[index]["pvalue"]),
+            )
+        )
+        median = tests[index]["median_paired_difference"]
+        tests[index]["holm_adjusted_pvalue"] = adjusted
+        tests[index]["holm_rejected"] = bool(adjusted <= alpha)
+        tests[index]["integrated_worse"] = bool(
+            adjusted <= alpha and median is not None and median > 0
+        )
+    assert [test["holm_rejected"] for test in tests] == list(
+        golden_trace._holm([test["pvalue"] for test in tests], alpha)
+    )
+    return tests
+
+
+def signed_rank_test(condition, M, metric, rows):
+    """The paired test of one metric on one condition-and-``M`` cell set."""
+    delta = np.asarray(
+        [
+            d
+            for d in paired(
+                arm_values(rows, "integrated", metric),
+                arm_values(rows, "original", metric),
+            )
+            if np.isfinite(d)
+        ],
+        dtype=float,
+    )
+    statistic, pvalue = exact_signed_rank(delta)
+    return {
+        "condition": condition,
+        "M": int(M),
+        "metric": metric,
+        "method": "exact signed-rank over all sign assignments",
+        "n_pairs": int(delta.size),
+        "improved": int(np.sum(delta < 0)),
+        "worsened": int(np.sum(delta > 0)),
+        "tied": int(np.sum(delta == 0)),
+        "median_paired_difference": (
+            float(np.median(delta)) if delta.size else None
+        ),
+        "statistic": statistic,
+        "pvalue": pvalue,
+    }
+
+
+def equivalence_tests(rows, metrics=TEST_METRICS, alpha=ALPHA):
+    """Criterion 2: the paired differences per condition and ``M``.
+
+    One exact signed-rank test on the per-cell paired differences
+    (integrated minus original) of every condition-and-``M`` cell set, with
+    one Holm family per metric over all of those cells.
+    """
+    tests = []
+    for metric in metrics:
+        family = [
+            signed_rank_test(
+                condition,
+                M,
+                metric,
+                [
+                    r
+                    for r in rows
+                    if r["condition"] == condition and r["M"] == M
+                ],
+            )
+            for condition in dict.fromkeys(row["condition"] for row in rows)
+            for M in sorted(
+                {r["M"] for r in rows if r["condition"] == condition}
+            )
+        ]
+        tests += holm(family, alpha)
+    return tests
+
+
+def cell_summary(rows, rng):
+    """Both arms, their paired differences and the ratios, for one cell set."""
+    keys = ("mmtv", "gskl", "gskl_normalized")
+    summary = {"cells": len(rows), "arms": {}, "paired": {}}
+    for arm in ARMS:
+        entry = {
+            key: bootstrap_median(arm_values(rows, arm, key), rng)
+            for key in keys
+        }
+        entry["elbo_err_headline"] = bootstrap_median(
+            headline_errors(rows, arm), rng
+        )
+        entry["elbo_err_mc"] = bootstrap_median(
+            arm_values(rows, arm, "elbo_err_mc"), rng
+        )
+        entry["entropy"] = bootstrap_median(
+            [row["arms"][arm]["entropy"] for row in rows], rng
+        )
+        entry["optimize_seconds"] = bootstrap_median(
+            [row["arms"][arm]["optimize_seconds"] for row in rows], rng
+        )
+        summary["arms"][arm] = entry
+    for key in keys:
+        summary["paired"][key] = bootstrap_median(
+            paired(
+                arm_values(rows, "integrated", key),
+                arm_values(rows, "original", key),
+            ),
+            rng,
+        )
+    summary["paired"]["elbo_err_headline"] = bootstrap_median(
+        paired(
+            headline_errors(rows, "integrated"),
+            headline_errors(rows, "original"),
+        ),
+        rng,
+    )
+    summary["max_abs_dw"] = bootstrap_median(
+        [row["max_abs_dw"] for row in rows], rng
+    )
+    summary["runtime_ratio"] = bootstrap_median(runtime_ratios(rows), rng)
+    return summary
+
+
+def build_summary(rows, singles, settings, rng):
+    """Per condition and ``M``, with the single-run medians per condition.
+
+    Each condition also carries an ``all_M`` aggregate over its cells of
+    the runtime ratio and the maximum weight difference, which is the level
+    criteria 1 and 4 are stated at, and each condition-and-``M`` entry
+    carries its two equivalence tests. The tests are also listed flat, in
+    the two Holm families they were corrected in.
+    """
+    conditions = []
+    for condition in dict.fromkeys(row["condition"] for row in rows):
+        here = [row for row in rows if row["condition"] == condition]
+        entry = {
+            "condition": condition,
+            "M": [
+                dict(cell_summary([r for r in here if r["M"] == M], rng), M=M)
+                for M in sorted({r["M"] for r in here})
+            ],
+            "all_M": {
+                "cells": len(here),
+                "runtime_ratio": bootstrap_median(runtime_ratios(here), rng),
+                "max_abs_dw": bootstrap_median(
+                    [row["max_abs_dw"] for row in here], rng
+                ),
+            },
+            "single_run": {
+                key: bootstrap_median(
+                    [row[key] for row in singles.get(condition, [])], rng
+                )
+                for key in ("elbo_err", "gskl", "gskl_normalized", "mmtv")
+            },
+        }
+        conditions.append(entry)
+    tests = equivalence_tests(rows)
+    for condition in conditions:
+        for entry in condition["M"]:
+            entry["tests"] = {
+                test["metric"]: test
+                for test in tests
+                if test["condition"] == condition["condition"]
+                and test["M"] == entry["M"]
+            }
+    return {
+        "campaign": "svbmc_pool",
+        "generated": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "settings": settings,
+        "alpha": ALPHA,
+        "equivalence_tests": tests,
+        "conditions": conditions,
+    }
+
+
+def number(value, digits=3):
+    """One number of a table cell, or a dash when it is missing."""
+    return "-" if value is None else f"{value:.{digits}f}"
+
+
+def summary_markdown(summary):
+    def cell(entry, digits=3):
+        if entry["median"] is None:
+            return "-"
+        return (
+            f"{entry['median']:.{digits}f} "
+            f"[{entry['lo']:.{digits}f}, {entry['hi']:.{digits}f}]"
+        )
+
+    settings = summary["settings"]
+    lines = [
+        "# S-VBMC stacking comparison: integrated against original 0.1.1",
+        "",
+        f"Generated {summary['generated']}. Every cell stacks the same "
+        f"subset of filtered pool runs with both implementations, "
+        f"`n_samples={N_SAMPLES}`, `lr={LEARNING_RATE}`, "
+        f"`max_steps={settings['max_steps']}`, `version=\"{VERSION}\"`, "
+        f"subsets drawn with seed {settings['seed']}. Medians over the "
+        "repetitions of a cell with a 10 000-resample bootstrap 95 % "
+        "interval; `d` columns are the paired difference integrated minus "
+        "original, so a negative value favours the integrated class. The "
+        "headline ELBO is the capped value for the integrated class on "
+        "noisy stacks and the raw estimate for the original, which is what "
+        "each implementation reports. The two arms' entropies are "
+        f"different estimators — the integrated class re-evaluates with "
+        f"{N_SAMPLES_FINAL} fresh draws, the original reports the "
+        f"optimizer's own {N_SAMPLES}-draw estimate — and that difference "
+        "enters `elbo_mc`. gsKL is the house convention (no `1/D` factor).",
+    ]
+    for condition in summary["conditions"]:
+        single = condition["single_run"]
+        aggregate = condition["all_M"]
+        lines += [
+            "",
+            f"## {condition['condition']}",
+            "",
+            f"Single runs (`M = 1`, n = {single['mmtv']['n']}): "
+            f"MMTV {cell(single['mmtv'])}, gsKL {cell(single['gskl'], 2)}, "
+            f"evidence error {cell(single['elbo_err'], 2)}.",
+            "",
+            f"All {aggregate['cells']} cells of this condition: runtime "
+            f"ratio {cell(aggregate['runtime_ratio'])}, "
+            f"max|dw| {cell(aggregate['max_abs_dw'], 4)}.",
+            "",
+            "| M | cells | MMTV int | MMTV orig | dMMTV | gsKL int | "
+            "gsKL orig | dgsKL | err int | err orig | derr | max|dw| | "
+            "opt s int | opt s orig | ratio |",
+            "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
+        ]
+        for entry in condition["M"]:
+            integrated = entry["arms"]["integrated"]
+            original = entry["arms"]["original"]
+            lines.append(
+                "| {M} | {cells} | {mi} | {mo} | {dm} | {gi} | {go} | {dg} "
+                "| {ei} | {eo} | {de} | {dw} | {ti} | {to} | {ratio} |".format(
+                    M=entry["M"],
+                    cells=entry["cells"],
+                    mi=cell(integrated["mmtv"]),
+                    mo=cell(original["mmtv"]),
+                    dm=cell(entry["paired"]["mmtv"], 4),
+                    gi=cell(integrated["gskl"], 2),
+                    go=cell(original["gskl"], 2),
+                    dg=cell(entry["paired"]["gskl"], 3),
+                    ei=cell(integrated["elbo_err_headline"], 2),
+                    eo=cell(original["elbo_err_headline"], 2),
+                    de=cell(entry["paired"]["elbo_err_headline"], 3),
+                    dw=cell(entry["max_abs_dw"], 4),
+                    ti=cell(integrated["optimize_seconds"], 1),
+                    to=cell(original["optimize_seconds"], 1),
+                    ratio=cell(entry["runtime_ratio"]),
+                )
+            )
+        lines += [
+            "",
+            "Paired equivalence tests (exact signed-rank on the per-cell "
+            "differences, one Holm family per metric over every condition "
+            f"and `M` at alpha {summary['alpha']}); a flagged cell is one "
+            "the family rejects with the integrated class the worse of the "
+            "two.",
+            "",
+            "| M | pairs | dMMTV median | MMTV p | MMTV Holm | dgsKL median "
+            "| gsKL p | gsKL Holm | flagged |",
+            "|---|---|---|---|---|---|---|---|---|",
+        ]
+        for entry in condition["M"]:
+            tests = entry["tests"]
+            mmtv, gskl = tests["mmtv"], tests["gskl"]
+            flagged = [
+                metric
+                for metric, test in tests.items()
+                if test["integrated_worse"]
+            ]
+            lines.append(
+                "| {M} | {n} | {dm} | {pm:.4g} | {hm:.4g} | {dg} | "
+                "{pg:.4g} | {hg:.4g} | {flag} |".format(
+                    M=entry["M"],
+                    n=mmtv["n_pairs"],
+                    dm=number(mmtv["median_paired_difference"], 4),
+                    pm=mmtv["pvalue"],
+                    hm=mmtv["holm_adjusted_pvalue"],
+                    dg=number(gskl["median_paired_difference"], 3),
+                    pg=gskl["pvalue"],
+                    hg=gskl["holm_adjusted_pvalue"],
+                    flag=", ".join(flagged) if flagged else "no",
+                )
+            )
+    return "\n".join(lines) + "\n"
+
+
+# --------------------------------------------------------------------------
+# Main
+# --------------------------------------------------------------------------
+
+
+def parse_args(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    parser.add_argument(
+        "--pool",
+        action="append",
+        type=Path,
+        default=None,
+        help="a pool directory written by svbmc_pool_run.py, repeatable",
+    )
+    parser.add_argument(
+        "--fixtures",
+        help="comma-separated fixture groups to compare instead of pools",
+    )
+    parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--conditions", help="comma-separated pool labels")
+    parser.add_argument("--M", default="2,4,8,16")
+    parser.add_argument("--repetitions", default="20,20,20,10")
+    parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--max-steps", type=int, default=500)
+    parser.add_argument(
+        "--gpyreg-source",
+        type=Path,
+        help=f"the frozen gpyreg worktree for --fixtures runs, which have "
+        f"no pool manifest to name one (default: {DEFAULT_GPYREG})",
+    )
+    parser.add_argument(
+        "--baseline-record", type=Path, default=BASELINE_RECORD
+    )
+    parser.add_argument("--overwrite", action="store_true")
+    parser.add_argument(
+        "--summarize-only",
+        action="store_true",
+        help="rebuild summary.json and summary.md from a finished "
+        "results.json, running no cell",
+    )
+    parser.add_argument(
+        "--from-results",
+        type=Path,
+        help="the results.json to summarize (default: <out>/results.json)",
+    )
+    args = parser.parse_args(argv)
+    args.M = [int(v) for v in args.M.split(",") if v.strip()]
+    args.repetitions = [
+        int(v) for v in args.repetitions.split(",") if v.strip()
+    ]
+    if len(args.M) != len(args.repetitions):
+        parser.error("--M and --repetitions must have the same length")
+    if args.summarize_only:
+        unusable = [
+            flag
+            for flag, value in (
+                ("--pool", args.pool),
+                ("--fixtures", args.fixtures),
+                ("--conditions", args.conditions),
+                ("--gpyreg-source", args.gpyreg_source),
+            )
+            if value
+        ]
+        if unusable:
+            parser.error(
+                f"--summarize-only runs no cell, so {', '.join(unusable)} "
+                "cannot apply"
+            )
+        return args
+    if args.from_results:
+        parser.error("--from-results needs --summarize-only")
+    if bool(args.pool) == bool(args.fixtures):
+        parser.error("give either --pool (repeatable) or --fixtures")
+    if args.fixtures and args.conditions:
+        parser.error(
+            "--conditions selects labels of a pool; --fixtures already "
+            "names the groups to compare"
+        )
+    if args.pool and args.gpyreg_source:
+        parser.error(
+            "--gpyreg-source applies to --fixtures; a pool's manifest names "
+            "the gpyreg worktree it was generated against"
+        )
+    return args
+
+
+def summarize_only(args):
+    """Rebuild the summaries of a finished comparison, running no cell."""
+    out = args.out.resolve()
+    path = (args.from_results or out / "results.json").resolve()
+    results = json.loads(path.read_text(encoding="utf-8"))
+    settings = results.get("settings")
+    if settings is None:
+        raise RuntimeError(f"{path} holds no settings, which a summary needs")
+    out.mkdir(parents=True, exist_ok=True)
+    summary = build_summary(
+        results["cells"],
+        results["single_run"],
+        settings,
+        np.random.default_rng(settings["seed"]),
+    )
+    write_json(out / "summary.json", summary)
+    text = summary_markdown(summary)
+    (out / "summary.md").write_text(text, encoding="utf-8")
+    print(text, flush=True)
+    print(f"{len(results['cells'])} cells from {path} -> {out}", flush=True)
+    return 0
+
+
+def main(argv=None):
+    if argv is None:
+        argv = sys.argv[1:]
+    if argv and argv[0] == "--worker":
+        return worker_main(argv[1])
+    args = parse_args(argv)
+    if args.summarize_only:
+        return summarize_only(args)
+    out = args.out.resolve()
+    if (out / "results.json").exists() and not args.overwrite:
+        raise RuntimeError(f"{out} already holds a comparison; --overwrite")
+    out.mkdir(parents=True, exist_ok=True)
+
+    kind = "fixture" if args.fixtures else "run"
+    only = [s.strip() for s in (args.conditions or "").split(",") if s.strip()]
+    if kind == "run":
+        first = json.loads(
+            (Path(args.pool[0]).resolve() / "manifest.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        gpyreg_source = activate_gpyreg(first["gpyreg_source"])
+    else:
+        gpyreg_source = activate_gpyreg(args.gpyreg_source or DEFAULT_GPYREG)
+
+    baseline = json.loads(
+        Path(args.baseline_record).read_text(encoding="utf-8")
+    )
+    torch_path, baseline_path = path_sets(baseline)
+    refuse_upstream_on_path(baseline_path)
+    try:
+        import torch
+    except ImportError as error:  # the overlay is the only Torch here
+        raise RuntimeError(
+            "the integrated class needs Torch: start this script with "
+            f'PYTHONPATH="{torch_path}"'
+        ) from error
+
+    torch.set_num_threads(1)
+    logging.getLogger("SVBMC").setLevel(logging.WARNING)
+    import svbmc_pool_io as pool_io
+
+    # This raises unless PyVBMC imported gpyreg from the campaign's frozen
+    # worktree, so the controller's own environment is settled before the
+    # baseline's is checked and long before a cell runs.
+    integrated_identity = identity(gpyreg_source)
+    verification = verify_baseline(baseline, args.baseline_record)
+
+    if kind == "run":
+        conditions, pool_identities, labels = pool_conditions(args.pool, only)
+        fixtures = []
+    else:
+        groups = [s.strip() for s in args.fixtures.split(",") if s.strip()]
+        conditions, pool_identities = fixture_conditions(groups), []
+        labels = sorted(FIXTURE_PROBLEMS)
+        fixtures = fixture_sources(conditions)
+    indices = {label: labels.index(label) for label in conditions}
+    for label, entries in conditions.items():
+        print(f"{label}: {len(entries)} filtered runs", flush=True)
+
+    problems = Problems()
+    singles = {
+        condition: single_run_rows(condition, kind, entries, problems)
+        for condition, entries in conditions.items()
+    }
+    plan, skipped = plan_cells(
+        conditions, args.M, args.repetitions, args.seed, indices
+    )
+    for entry in skipped:
+        print(
+            f"skipping {entry['condition']} M={entry['M']}: the filtered "
+            f"pool holds {entry['pool']} runs",
+            flush=True,
+        )
+    if not plan:
+        raise RuntimeError(
+            "no cell to run: every requested M exceeds the filtered pools"
+        )
+    print(f"{len(plan)} cells, both arms", flush=True)
+
+    worker = Worker(baseline_path, gpyreg_source, out / "original_arm.log")
+    started = time.time()
+    try:
+        warm_up(plan, conditions, kind, worker, problems)
+        rows = run_cells(
+            plan, conditions, kind, worker, problems, args.max_steps, out
+        )
+    finally:
+        worker.close()
+    elapsed = time.time() - started
+
+    settings = {
+        "seed": args.seed,
+        "M": args.M,
+        "repetitions": args.repetitions,
+        "max_steps": args.max_steps,
+        "n_samples": N_SAMPLES,
+        "lr": LEARNING_RATE,
+        "version": VERSION,
+        "n_samples_final": N_SAMPLES_FINAL,
+        "n_draws": N_DRAWS,
+        "n_log_joint": N_LOG_JOINT,
+        "bootstrap_resamples": BOOTSTRAP_RESAMPLES,
+        "alpha": ALPHA,
+        "kind": kind,
+    }
+    write_json(
+        out / "results.json",
+        {
+            "campaign": "svbmc_pool",
+            "kind": kind,
+            "generated": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "elapsed_seconds": elapsed,
+            "settings": settings,
+            "skipped": skipped,
+            "cells": rows,
+            "single_run": singles,
+        },
+    )
+    summary = build_summary(
+        rows, singles, settings, np.random.default_rng(args.seed)
+    )
+    write_json(out / "summary.json", summary)
+    text = summary_markdown(summary)
+    (out / "summary.md").write_text(text, encoding="utf-8")
+    write_json(
+        out / "sources.json",
+        {
+            "campaign": "svbmc_pool",
+            "generated": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "harness": {
+                "path": str(Path(__file__).resolve()),
+                "sha256": pool_io.sha256(Path(__file__).resolve()),
+            },
+            "settings": settings,
+            "hostname": platform.node(),
+            "arms": {
+                "integrated": {
+                    "environment": integrated_identity,
+                    "torch_version": torch.__version__,
+                    "torch_import": str(Path(torch.__file__).resolve()),
+                    "torch_threads": torch.get_num_threads(),
+                    "pythonpath": os.environ.get("PYTHONPATH"),
+                },
+                "original": worker.info,
+            },
+            "path_sets": {
+                "TORCH_PATH": torch_path,
+                "BASELINE_PATH": baseline_path,
+            },
+            "baseline_environment": verification,
+            "gpyreg_source": str(gpyreg_source),
+            "pools": pool_identities,
+            "fixtures": fixtures,
+            "threads": {key: os.environ.get(key) for key in THREAD_KEYS},
+        },
+    )
+    print(text, flush=True)
+    print(f"{len(rows)} cells in {elapsed / 60:.1f} min -> {out}", flush=True)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -104,6 +104,12 @@ plan and consolidated human summary.
   the numerical contract (references unchanged, equivalence tests at
   1e-12), the paired before/after measurement and its evidence in
   [results/2026-09-13-svbmc-speedups.md](results/2026-09-13-svbmc-speedups.md).
+- [plans/svbmc-benchmark-campaign.md](plans/svbmc-benchmark-campaign.md) —
+  the S-VBMC run-pool campaign: pools of independent VBMC runs on noisy
+  targets saved with their posteriors and GPs (the input of the Phase 2
+  ELBO estimator), the matched comparison of the integrated S-VBMC against
+  the original standalone package, the harness scripts, allocation, gates
+  and execution worklog.
 - [plans/benchmark-realistic-targets.md](plans/benchmark-realistic-targets.md) —
   the real-data benchmark targets from benchflow (Bayesian timing,
   multisensory causal inference on two subjects): the decisions, the
@@ -269,16 +275,23 @@ box is the papers' prior box (family mean ± 3 marginal SD); see the audit
 in `plans/benchmark-suite-and-golden-traces.md` for every deviation and its
 reason.
 
-- `scripts/benchmark_targets.py` — the benchmark target suite: nine
+- `scripts/benchmark_targets.py` — the benchmark target suite: eleven
   synthetic targets with ground truth (normal, corr, halfnormal,
-  rosenbrock, banana, cigar, lumpy, student, logreg), three real-data
-  targets (the Bayesian timing model and the multisensory causal-inference
-  model on two subjects, from the 2020 noisy-VBMC paper, with
-  spline-trapezoidal priors; see
+  rosenbrock, banana, cigar, lumpy, student, logreg, and gmm and ring,
+  the S-VBMC paper's two two-dimensional targets, ported from
+  `src/svbmc/targets.py` of the standalone `svbmc` package at `13a78f6`;
+  the ring is defined without the `log r` term of that source, which the
+  paper's own fitted posteriors rule out, see
+  [plans/svbmc-benchmark-campaign.md](plans/svbmc-benchmark-campaign.md)),
+  three real-data targets (the Bayesian timing model and the multisensory
+  causal-inference model on two subjects, from the 2020 noisy-VBMC paper,
+  with spline-trapezoidal priors; see
   [plans/benchmark-realistic-targets.md](plans/benchmark-realistic-targets.md)),
-  a generic noise wrapper, the `smoke` / `profile` / `golden` suites,
-  shared posterior-moment and metric helpers, and `--list` / `--check` /
-  `--smoke` self-tests. Every other script takes its targets from here.
+  a generic noise wrapper, the `smoke` / `profile` / `golden` /
+  `svbmc_pool` suites (the last one the pool conditions of the S-VBMC
+  campaign, at PyVBMC's default budget and tagged `svbmc`), shared
+  posterior-moment and metric helpers, and `--list` / `--check` / `--smoke`
+  self-tests. Every other script takes its targets from here.
 - `scripts/export_benchflow_data.py` — exports the real-data targets' data
   from a benchflow checkout into the plain `.npz` archives under
   `scripts/data/` (layout and provenance in `scripts/data/README.md`).
@@ -420,6 +433,65 @@ reason.
   checks weights, evaluation counts and generator states agree. Written
   for `plans/svbmc-speedups.md`; the evidence is in
   `experiments/svbmc_speedups/`.
+- `scripts/svbmc_pool_run.py` — the run-pool generator of the S-VBMC
+  benchmark campaign (`plans/svbmc-benchmark-campaign.md`): `prepare`
+  fixes the allocation (the campaign's five pool conditions, `POOL_LABELS`,
+  with a first seed, a seed cap and a filtered target each; the suite's
+  sixth entry is the extension condition and is allocated only when
+  `--only` names it), the run options and the identity of the code the
+  pool is generated with, and `--ready --authorized-by NAME` records the
+  authorization; re-running it on a prepared directory is how the campaign
+  is marked ready and how its targets and seed caps are revised, the
+  previous allocation and its authorization kept in `allocation_history`,
+  and nothing else about the campaign can change; `run` walks the
+  conditions in manifest order,
+  seeds upward, one fresh worker process at a time, stopping each
+  condition once its filtered target or its seed cap is reached
+  (`--pilot-seeds K` runs exactly K seeds per condition instead;
+  `--save-vbmc` also pickles the whole `VBMC` object); `worker` is one run
+  and is invocable on its own; `summarize` writes the per-condition pass
+  rates, wall times and metric quartiles from the cases the directory
+  holds. gpyreg is pinned to a frozen worktree through
+  `PYVBMC_GPYREG_SOURCE` as in `population_run.py`, the identity also
+  hashes the suite module and both pool scripts, hash-verified completion
+  records permit resumption, a failing case is recorded and skipped by
+  later sweeps, and an artifact file without a completion record or an
+  error file stops the sweep for inspection (the log of an interrupted
+  case is not one). `test_svbmc_pool_run.py` generates a short campaign
+  and checks the artifact, resume, revision and summary contracts.
+- `scripts/svbmc_pool_io.py` — the campaign's per-run artifact: `save_run`
+  stores one finished run through the oracle snapshot codec (the returned
+  posterior with all of `stats`, the GP that produced those statistics,
+  the transformer, every evaluation, the run's state, options and
+  metadata) and verifies it against the live objects, posterior,
+  statistics and evaluations alike; `load_run` rebuilds every object
+  through the public constructors; `verify_run` re-runs the checks on a
+  stored artifact, including the recomputation gate (`_gp_log_joint`
+  reproduces the stored `I_sk` and `J_sjk` from the rebuilt posterior and
+  GP alone) without the live run, and post hoc also against the hashes of
+  the completion record; `filter_verdict` applies the pool's stability and
+  `J_sjk` filters.
+- `scripts/svbmc_pool_stack.py` — the stacking comparison of the same
+  campaign: for every condition, every `M` on a grid and every repetition,
+  one subset of the filtered pool is stacked by both the integrated
+  `pyvbmc.svbmc.SVBMC` (in process) and the original standalone `svbmc`
+  0.1.1 (in a long-lived worker whose `PYTHONPATH` carries the pinned
+  checkout, so no controller can import it), never at the same time and
+  alternating which goes first, both arms rebuilding the subset's
+  posteriors with one seed per entry derived from the cell's seed. Each
+  cell records the weights, every ELBO variant, the entropy, the seconds
+  and the quality of 100 000 draws (`benchmark_targets.sample_metrics`,
+  plus the Monte Carlo expected log joint over a random subsample of
+  them); the outputs are `results.json`, `summary.json` / `summary.md`
+  (medians with bootstrap intervals, paired differences with exact
+  signed-rank tests Holm-corrected over every condition and `M`,
+  `max |dw|`, runtime ratio) and `sources.json`. It refuses to start
+  unless `experiments/svbmc_pool/baseline_environment.json` re-verifies,
+  and needs `PYTHONPATH` to carry that record's Torch overlay.
+  `--summarize-only --out DIR` rebuilds the summaries from a finished
+  `results.json` without running a cell or needing Torch. `--fixtures
+  GROUP` compares the shipped S-VBMC posterior fixtures instead of a
+  pool, which is what `test_svbmc_pool_stack.py` runs.
 - `scripts/svbmc_parity_check.py` — historical: the moved
   `pyvbmc.svbmc.SVBMC` against the pinned upstream package on the thirty
   posteriors with matched draws (upstream's `testing=True` mode). Runs only

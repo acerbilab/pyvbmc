@@ -1,0 +1,105 @@
+{
+ "baseline": {
+  "checkout": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_compat_20260908\\source",
+  "clean": true,
+  "commit": "13a78f6c4a3ffe9c4557fee4f4b8f67c98b29e01",
+  "commit_matches_pin": true,
+  "files_note": "Every file under src/svbmc/ except __pycache__; paths are relative to source_dir.",
+  "files_sha256": {
+   "__init__.py": {
+    "bytes": 804,
+    "sha256": "3ee177fafb1a211ab66b9dc078c1934d410fc0f14033f4a4827e2f7114449ab7"
+   },
+   "svbmc.py": {
+    "bytes": 28899,
+    "sha256": "98465fbb75de8636afde5c96b538483ff02fa457da0e6421356907a82a3a9607"
+   },
+   "targets.py": {
+    "bytes": 5267,
+    "sha256": "680c76c70411058b1194ff8f96d59904bff1a731efc98b491ccbd38f9db34d8a"
+   },
+   "utils.py": {
+    "bytes": 11375,
+    "sha256": "75a0e8348865fd906f2a023bf654ae5a656a885fcec380f05ff55116de4d8c68"
+   }
+  },
+  "import_path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_compat_20260908\\source\\src\\svbmc\\__init__.py",
+  "pin": "13a78f6c4a3ffe9c4557fee4f4b8f67c98b29e01",
+  "recreation": "git clone https://github.com/acerbilab/S-VBMC and check out 13a78f6c4a3ffe9c4557fee4f4b8f67c98b29e01; install CPU Torch 2.14.0 with `pip install --target deps torch==2.14.0` ; the files_sha256 entries verify the source tree.",
+  "source_dir": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_compat_20260908\\source\\src\\svbmc",
+  "status_porcelain": "",
+  "upstream_repository": "https://github.com/acerbilab/S-VBMC",
+  "version": "0.1.1"
+ },
+ "created": "2026-09-13",
+ "gpyreg": {
+  "branch": "fix-quad-heteroskedastic-variance",
+  "checkout": "C:\\Users\\luigi\\Documents\\GitHub\\gpyreg",
+  "ci_pin": "39536b000a8c8465133f4eaef625486991db8257",
+  "commit": "ba0c2bfb90419f72c1cba5ccba95e6d6fb33e552",
+  "dirty_files": [
+   "M AGENTS.md",
+   " M docsrc/source/release_notes.rst",
+   " M gpyreg/gaussian_process.py",
+   " M gpyreg/slice_sample.py",
+   " M gpyreg/testing/test_gaussian_process.py",
+   " M gpyreg/testing/test_slice_sample.py"
+  ],
+  "dirty_tracked": true,
+  "import_path": "C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg\\__init__.py",
+  "note": "This block records the state of the sibling checkout at the time of Phase 1. The campaign pins gpyreg to a frozen worktree at the CI pin (recorded above as ci_pin), which every campaign process imports and which the pool manifests and sources.json record.",
+  "subject": "docs: add 1.2.1 release notes",
+  "version": "1.2.0"
+ },
+ "hostname": "ASUS-LUIGI",
+ "numpy": {
+  "import_path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Lib\\site-packages\\numpy\\__init__.py",
+  "version": "2.5.2"
+ },
+ "path_sets": {
+  "BASELINE_PATH": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_compat_20260908\\deps;C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_compat_20260908\\source\\src",
+  "TORCH_PATH": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_compat_20260908\\deps",
+  "note": "TORCH_PATH alone for anything importing pyvbmc.svbmc; BASELINE_PATH (os.pathsep-joined) only for the original arm's worker, so that no controller can `import svbmc` from upstream."
+ },
+ "platform": "Windows-11-10.0.26200-SP0",
+ "purpose": "Identity of the original S-VBMC 0.1.1 baseline used as the comparison arm of the S-VBMC run-pool benchmark campaign. The checkout and the Torch overlay are machine-local and gitignored; this record is what makes them recoverable and verifiable.",
+ "python": {
+  "executable": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Scripts\\python.exe",
+  "version": "3.12.6 (tags/v3.12.6:a4a2d2b, Sep  6 2024, 20:11:23) [MSC v.1940 64 bit (AMD64)]",
+  "version_info": [
+   3,
+   12,
+   6
+  ]
+ },
+ "pyvbmc": {
+  "branch": "dev-svbmc-pool",
+  "checkout": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc",
+  "commit": "4216b6d2bf3d59f9a45e3f09204668c0a0e6b28f",
+  "dirty_files": [
+   "M dev/scripts/benchmark_targets.py"
+  ],
+  "dirty_tracked": true,
+  "import_path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc\\__init__.py",
+  "subject": "docs: record S-VBMC speedups local artifacts",
+  "version": "1.0.5.dev317+g9d54ca3fb.d20260913"
+ },
+ "repo_root": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc",
+ "scipy": {
+  "import_path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Lib\\site-packages\\scipy\\__init__.py",
+  "version": "1.18.1"
+ },
+ "thread_env": {
+  "MKL_NUM_THREADS": "1",
+  "MPLBACKEND": "Agg",
+  "OMP_NUM_THREADS": "1",
+  "OPENBLAS_NUM_THREADS": "1"
+ },
+ "torch": {
+  "import_path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_compat_20260908\\deps\\torch\\__init__.py",
+  "overlay_dir": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_compat_20260908\\deps",
+  "version": "2.14.0+cpu"
+ },
+ "torch_num_threads_default": 1,
+ "written_by": "dev/plans/svbmc-benchmark-campaign.md, Phase 1 step 3"
+}

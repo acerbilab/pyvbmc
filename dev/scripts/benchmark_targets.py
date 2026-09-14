@@ -31,6 +31,17 @@ Extras, declared as such (not paper targets):
                 bounded with a uniform prior in the 2020 style; truth by
                 defensive importance sampling, stored as constants
 
+The S-VBMC paper's two synthetic targets (Silvestrin, Li & Acerbi 2025),
+ported from the standalone ``svbmc`` package at commit 13a78f6; D = 2,
+unnormalized, unbounded, plausible box [-10, 10]^2:
+
+``gmm``         20 Gaussian components in four well-separated clusters;
+                truth analytic, ln Z = log 20
+``ring``        thin circular ridge, radius 8 and radial SD 0.1; truth by
+                radial quadrature. The pinned source adds a ``log r`` term
+                that the paper's own runs did not use; ``_ring`` records
+                how that was settled
+
 Real-data targets (problems of the 2020 noisy paper), bounded, spline-
 trapezoidal prior with pivots at the plausible bounds:
 
@@ -93,7 +104,7 @@ from pathlib import Path
 from typing import Callable, Optional
 
 import numpy as np
-from scipy import stats
+from scipy import integrate, stats
 from scipy.special import expit, log_expit, logsumexp
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -600,12 +611,24 @@ def _cigar(D):
     )
 
 
-def _mixture_moments(w, mus, vars_):
-    """Mean and covariance of a mixture of diagonal Gaussians."""
+def _mixture_moments(w, mus, covs):
+    """Mean and covariance of a Gaussian mixture.
+
+    ``w`` are the weights ``(K,)``, ``mus`` the component means ``(K, D)``
+    and ``covs`` either the per-coordinate variances ``(K, D)`` of diagonal
+    components or the full component covariances ``(K, D, D)``.
+    """
+    covs = np.asarray(covs, dtype=float)
+    if covs.ndim not in (2, 3):
+        raise ValueError(
+            "covs must be (K, D) variances or (K, D, D) covariances, got"
+            f" shape {covs.shape}"
+        )
     mean = w @ mus
     cov = np.zeros((mus.shape[1], mus.shape[1]))
     for k in range(len(w)):
-        cov += w[k] * (np.diag(vars_[k]) + np.outer(mus[k], mus[k]))
+        cov_k = np.diag(covs[k]) if covs.ndim == 2 else covs[k]
+        cov += w[k] * (cov_k + np.outer(mus[k], mus[k]))
     cov -= np.outer(mean, mean)
     return mean, cov
 
@@ -921,6 +944,264 @@ def logreg_reference(
         out["draws"] = W
         out["weights"] = wn
     return out
+
+
+# --------------------------------------------------------------------------
+# The two synthetic targets of the S-VBMC paper (Silvestrin, Li & Acerbi
+# 2025): a 20-component Gaussian mixture and a thin ring, both
+# two-dimensional, unnormalized and unbounded. They are ported from
+# ``src/svbmc/targets.py`` of the standalone ``svbmc`` package at commit
+# 13a78f6c4a3ffe9c4557fee4f4b8f67c98b29e01; the mixture reproduces that
+# source bit for bit, the ring deliberately does not (see ``_ring``). Three
+# values of each log density are pinned, so that the definitions are
+# checkable without that source; the samplers and the ground truths below
+# are this suite's own. Both targets are used on the plausible box
+# [-10, 10]^2, the box of the upstream example notebook
+# (``examples/svbmc_example_1_basic_usage.ipynb``) and of the fitted
+# posteriors the paper's runs left behind.
+# --------------------------------------------------------------------------
+
+SVBMC_PLB, SVBMC_PUB = -10.0, 10.0
+
+# The paper's 20 component means and covariances: five components around
+# each of four centres, unit variances and correlations of +-0.5.
+GMM_MUS = np.array(
+    [
+        [-8.26197841, -8.75505571],
+        [-6.99244831, -8.41215022],
+        [-7.94352608, -7.96066128],
+        [-6.94653653, -6.25663673],
+        [-8.31800964, -8.86116925],
+        [-5.35377745, 9.09808750],
+        [-6.57295220, 7.03574990],
+        [-6.51023244, 7.15063425],
+        [-6.45464607, 6.41256552],
+        [-5.08644145, 8.34791521],
+        [5.39972878, -5.16531348],
+        [6.84830038, -4.83860713],
+        [6.79133501, -4.86439174],
+        [6.04858289, -7.71908624],
+        [6.67275726, -4.80883357],
+        [5.30248146, 4.88622069],
+        [6.22996358, 4.04107658],
+        [4.86277661, 6.56073311],
+        [4.38009601, 6.32750016],
+        [5.11056247, 6.32234096],
+    ]
+)
+_GMM_RHO = np.array(
+    # one correlation per component, in the order of GMM_MUS: five
+    # components per row, one row per cluster
+    # fmt: off
+    [+0.5, +0.5, -0.5, -0.5, -0.5,
+     -0.5, +0.5, +0.5, -0.5, +0.5,
+     +0.5, -0.5, -0.5, +0.5, +0.5,
+     -0.5, -0.5, -0.5, +0.5, -0.5]
+    # fmt: on
+)
+GMM_SIGMAS = np.array([[[1.0, rho], [rho, 1.0]] for rho in _GMM_RHO])
+# Values of the upstream log densities, to full precision.
+GMM_PINS = (
+    ((0.0, 0.0), -22.64583186718372),
+    ((5.39972878, -5.16531348), -1.1124777729834854),
+    ((-7.0, 7.0), -0.690501796850522),
+)
+
+RING_R, RING_SIGMA = 8.0, 0.1
+RING_CENTER = (1.0, -2.0)
+# Values of the ring log density as ``_ring`` defines it, at the centre,
+# on the ridge and at the origin.
+RING_PINS = (
+    ((1.0, -2.0), -3200.0),  # the centre, r = 0
+    ((9.0, -2.0), 0.0),  # on the ridge, r = R exactly
+    ((0.0, 0.0), -1661.1456180001683),
+)
+# The pinned source's ``Ring().log_pdf`` values at the same three points,
+# to full precision: the density above plus ``log r`` -- the term dropped
+# here -- with ``r`` clamped to ``np.finfo(float).tiny`` at the centre.
+# ``check_problem`` adds that term back and compares, which is the check
+# on the port that ``RING_PINS`` alone cannot give.
+RING_UPSTREAM_PINS = (
+    -3908.396418532264,
+    2.0794415416798357,
+    -1660.3408990439511,
+)
+SVBMC_PIN_TOL = 1e-10
+
+
+def _gmm(D):
+    """The S-VBMC paper's multimodal target: 20 Gaussian components in two
+    dimensions, in four well-separated clusters of five.
+
+    The log density is the log-sum-exp of the 20 *normalized* component
+    densities with no ``- log K`` term, as the upstream ``GMM.log_pdf``
+    computes it, so the target integrates to ``K = 20`` over the plane and
+    ``ln Z = log 20``. Mean and covariance are those of the equally
+    weighted mixture; the sampler picks a component uniformly.
+    """
+    if D != 2:
+        raise ValueError("gmm is defined for D = 2 only")
+    mus, sigmas = GMM_MUS, GMM_SIGMAS
+    K = mus.shape[0]
+    inv_sigmas = np.linalg.inv(sigmas)
+    log_norm = -0.5 * (
+        np.linalg.slogdet(sigmas)[1] + D * np.log(2 * np.pi)
+    )  # (K,)
+    chols = np.linalg.cholesky(sigmas)
+
+    def logp(X):
+        X = np.atleast_2d(X)
+        diff = mus[None, :, :] - X[:, None, :]  # (n, K, D)
+        quad = np.einsum("nki,kij,nkj->nk", diff, inv_sigmas, diff)
+        return logsumexp(-0.5 * quad + log_norm, axis=1)
+
+    comps = [stats.multivariate_normal(mus[k], sigmas[k]) for k in range(K)]
+
+    def ref(X):
+        X = np.atleast_2d(X)
+        lc = np.stack([np.atleast_1d(c.logpdf(X)) for c in comps])  # (K, n)
+        return logsumexp(lc, axis=0)
+
+    def sampler(n, rng):
+        k = rng.integers(K, size=n)
+        z = rng.standard_normal((n, D))
+        return mus[k] + np.einsum("nij,nj->ni", chols[k], z)
+
+    mean, cov = _mixture_moments(np.full(K, 1.0 / K), mus, sigmas)
+    lb, ub = _inf_bounds(D)
+    return Problem(
+        name="gmm",
+        D=D,
+        log_density_vec=logp,
+        x0=None,
+        lb=lb,
+        ub=ub,
+        plb=np.full((1, D), SVBMC_PLB),
+        pub=np.full((1, D), SVBMC_PUB),
+        ln_Z=float(np.log(K)),
+        true_mean=mean.reshape(1, D),
+        true_cov=cov,
+        sampler=sampler,
+        reference_logpdf=ref,
+        pins=tuple(
+            (x, expected, "logp", SVBMC_PIN_TOL) for x, expected in GMM_PINS
+        ),
+        notes=(
+            f"{K} unit-variance Gaussians with correlations -+0.5, five"
+            " around each of four centres about 15 apart (the S-VBMC"
+            " paper's multimodal target); unnormalized, ln Z = log"
+            f" {K}; box [{SVBMC_PLB:g}, {SVBMC_PUB:g}]^2 as upstream"
+        ),
+    )
+
+
+_RING_CACHE = {}
+
+
+def _ring(D):
+    """The S-VBMC paper's ring: a thin circular ridge of radius 8 and radial
+    width 0.1 around ``(1, -2)``, in two dimensions.
+
+    The log density is ``-(r - R)^2 / (2 sigma^2)``, with ``r`` the distance
+    to the centre. The upstream ``Ring.log_pdf`` adds ``log r`` (clamped
+    away from zero at the centre), which the posteriors of the paper's runs
+    say the runs themselves did not: recomputing the ELBO of each of the ten
+    fitted ring posteriors kept as fixtures (group ``upstream_Ring`` of
+    ``pyvbmc/testing/svbmc/fixtures/``) by Monte Carlo under the two
+    definitions reproduces the stored value to within 0.24 nats without the
+    term -- a near-uniform residual of about +0.23 nats, the surrogate's own
+    optimism on a ridge this thin -- and misses by 2.31 with it: the two
+    residuals differ by exactly ``log R = 2.08``, the value of the dropped
+    term on the ridge where those posteriors sit. The definition here is
+    therefore the paper's, not the pinned source's; ``check_problem`` adds
+    the term back at the three pinned points and compares with the source's
+    values there (``RING_UPSTREAM_PINS``), so the departure stays a
+    deliberate one and not a porting error.
+
+    In polar coordinates the radial marginal is proportional to
+    ``r exp(-(r - R)^2 / 2 sigma^2)`` (the factor of ``r`` is the area
+    element) and the angle is uniform, which gives ``ln Z``, the mean (the
+    centre) and the covariance ``(E[r^2] / 2) I`` below. Upstream's own
+    sampler draws the radius from ``N(R, sigma)``, which is not this
+    marginal; the sampler here inverts the radial CDF on a fine grid.
+    """
+    if D != 2:
+        raise ValueError("ring is defined for D = 2 only")
+    R, sigma = RING_R, RING_SIGMA
+    center = np.array(RING_CENTER, dtype=float)
+
+    def logp(X):
+        r = np.linalg.norm(np.atleast_2d(X) - center, axis=-1)
+        return -0.5 * ((r - R) / sigma) ** 2
+
+    def ref(X):
+        # a different route to the same value: the log density of the
+        # radius under N(R, sigma), less that normal's normalizing constant
+        X = np.atleast_2d(X)
+        r = np.hypot(X[:, 0] - center[0], X[:, 1] - center[1])
+        return stats.norm.logpdf(r, R, sigma) + 0.5 * np.log(
+            2 * np.pi * sigma**2
+        )
+
+    if "grid" not in _RING_CACHE:
+        # Z = 2 pi int_0^inf r e(r) dr and E[r^2] = int r^3 e / int r e,
+        # with e(r) = exp(-(r - R)^2 / 2 sigma^2). The integrand is a narrow
+        # peak at r = R, so the quadrature is told where it is; 20 sigma of
+        # tail is all there is to double precision.
+        def e(r):
+            return np.exp(-0.5 * ((r - R) / sigma) ** 2)
+
+        hi = R + 20 * sigma
+        i1 = integrate.quad(lambda r: r * e(r), 0.0, hi, points=(R,))[0]
+        i3 = integrate.quad(lambda r: r**3 * e(r), 0.0, hi, points=(R,))[0]
+        # Over the whole line int r e(r) dr = sigma sqrt(2 pi) R, and the
+        # mass below r = 0 is exp(-R^2 / 2 sigma^2), zero in doubles: the
+        # closed form is the check on the quadrature.
+        _RING_CACHE.update(
+            ln_Z=float(np.log(2 * np.pi * i1)),
+            ln_Z_closed=float(
+                np.log(2 * np.pi * sigma * np.sqrt(2 * np.pi) * R)
+            ),
+            e_r2=float(i3 / i1),
+            grid=_Grid1D(
+                lambda r: np.log(r) - 0.5 * ((r - R) / sigma) ** 2,
+                max(0.0, R - 10 * sigma),
+                R + 10 * sigma,
+            ),
+        )
+    cache = _RING_CACHE
+
+    def sampler(n, rng):
+        r = cache["grid"].sample(n, rng)
+        theta = 2 * np.pi * rng.random(n)
+        return center + r[:, None] * np.c_[np.cos(theta), np.sin(theta)]
+
+    lb, ub = _inf_bounds(D)
+    return Problem(
+        name="ring",
+        D=D,
+        log_density_vec=logp,
+        x0=None,
+        lb=lb,
+        ub=ub,
+        plb=np.full((1, D), SVBMC_PLB),
+        pub=np.full((1, D), SVBMC_PUB),
+        ln_Z=cache["ln_Z"],
+        true_mean=center.reshape(1, D),
+        true_cov=0.5 * cache["e_r2"] * np.eye(D),
+        sampler=sampler,
+        reference_logpdf=ref,
+        pins=tuple(
+            (x, expected, "logp", SVBMC_PIN_TOL) for x, expected in RING_PINS
+        ),
+        notes=(
+            f"ring of radius {R:g} and radial SD {sigma:g} centred at"
+            f" {RING_CENTER}, density -(r - R)^2 / 2 sigma^2 (the S-VBMC"
+            " paper's hardest target, without the log r term of the pinned"
+            f" upstream source); unnormalized, ln Z = {cache['ln_Z']:.4f} by"
+            f" quadrature; box [{SVBMC_PLB:g}, {SVBMC_PUB:g}]^2 as upstream"
+        ),
+    )
 
 
 # --------------------------------------------------------------------------
@@ -1342,6 +1623,8 @@ _REGISTRY = {
     "lumpy": _lumpy,
     "student": _student,
     "logreg": _logreg,
+    "gmm": _gmm,
+    "ring": _ring,
     "timing": _timing,
     "multisensory_s1": _multisensory_s1,
     "multisensory_s2": _multisensory_s2,
@@ -1473,6 +1756,25 @@ SUITES = {
         Config("multisensory_s2", 6, noise_sd=1.3, options=_paper_budget(6)),
         _EXHAUST,
     ],
+    # The pool inputs of the S-VBMC run-pool campaign
+    # (dev/plans/svbmc-benchmark-campaign.md): independent VBMC runs whose
+    # finished posteriors are stacked, in the paper's conditions plus a
+    # noiseless control. They run at PyVBMC's default evaluation budget,
+    # 75 (D + 2) on a noisy target, which is the S-VBMC paper's convention
+    # and what users get, so no entry pins the 2020 paper's budget; the
+    # `svbmc` tag gives them their own labels, so that `find_config` cannot
+    # return a golden entry, which does pin that budget, for the same
+    # target, dimension and noise level. The last entry is the campaign's
+    # extension condition, the 2020 paper's IBS noise level for the
+    # multisensory model, and is not part of the pool allocation.
+    "svbmc_pool": [
+        Config("multisensory_s1", 6, noise_sd=3.0, tag="svbmc"),
+        Config("rosenbrock", 2, noise_sd=3.0, tag="svbmc"),
+        Config("gmm", 2, noise_sd=3.0, tag="svbmc"),
+        Config("ring", 2, noise_sd=3.0, tag="svbmc"),
+        Config("gmm", 2, tag="svbmc"),
+        Config("multisensory_s1", 6, noise_sd=1.3, tag="svbmc"),
+    ],
 }
 
 
@@ -1578,6 +1880,132 @@ def metrics(problem, vp, elbo):
     return out
 
 
+def _normalized_kde(x, nkde, lower, upper):
+    """A 1-D kernel density estimate normalized over its own grid."""
+    from pyvbmc.stats import kde_1d
+
+    yy, mesh, _ = kde_1d(x, nkde, lower, upper)
+    return yy / (np.trapezoid(yy) * (mesh[1] - mesh[0])), mesh
+
+
+def _marginal_tv(xx1, xx2, bounds1, bounds2, nkde=2**13, n_grid=100_000):
+    """Per-dimension total variation distance between two sets of samples.
+
+    The procedure of ``VariationalPosterior.mtv``, applied to two sample
+    sets rather than to a posterior and a sample set: in each dimension a
+    ``nkde``-point kernel density estimate over the range of that set's own
+    draws widened by a tenth and clipped to its bounds, each estimate
+    normalized by its trapezoid integral, then half the integral of the
+    absolute difference of the two cubic interpolants, taken piecewise
+    between the sorted endpoints of the two grids so that the region where
+    only one density is defined counts as well.
+    """
+    from scipy.interpolate import interp1d
+
+    def limits(xx, bounds):
+        low, high = np.amin(xx, axis=0), np.amax(xx, axis=0)
+        span = high - low
+        lb, ub = bounds
+        return (
+            np.maximum(low - span / 10, np.ravel(lb)),
+            np.minimum(high + span / 10, np.ravel(ub)),
+        )
+
+    lb1, ub1 = limits(xx1, bounds1)
+    lb2, ub2 = limits(xx2, bounds2)
+    tv = np.zeros(xx1.shape[1])
+    for d in range(xx1.shape[1]):
+        yy1, mesh1 = _normalized_kde(xx1[:, d], nkde, lb1[d], ub1[d])
+        yy2, mesh2 = _normalized_kde(xx2[:, d], nkde, lb2[d], ub2[d])
+        curves = [
+            interp1d(
+                mesh,
+                yy,
+                kind="cubic",
+                fill_value=np.array([0]),
+                bounds_error=False,
+            )
+            for mesh, yy in ((mesh1, yy1), (mesh2, yy2))
+        ]
+        edges = np.sort([mesh1[0], mesh1[-1], mesh2[0], mesh2[-1]])
+        for j in range(3):
+            grid = np.linspace(edges[j], edges[j + 1], num=int(n_grid))
+            difference = np.abs(curves[0](grid) - curves[1](grid))
+            tv[d] += 0.5 * np.trapezoid(difference) * (grid[1] - grid[0])
+    return tv
+
+
+def sample_metrics(
+    problem, samples, elbos, reference=None, seed=DIAG_SEED + 1
+):
+    """Metrics of a posterior that is only available as draws.
+
+    The counterpart of :func:`metrics` for a posterior with no closed-form
+    moments and no ``log_pdf``, such as a stacked S-VBMC mixture. The
+    moments come from ``samples``; ``gskl`` is the house convention (half
+    the sum of the two Kullback-Leibler directions between the Gaussians
+    with those moments and the truth, no ``1/D`` factor) and
+    ``gskl_normalized`` the S-VBMC paper's ``1/(2D) sum KL``; ``mmtv`` is
+    the mean over dimensions of the marginal total variation distance to
+    exact draws from the problem, computed as
+    ``VariationalPosterior.mtv`` computes it: the density estimate of the
+    posterior draws is taken over a range clipped to the problem's bounds,
+    that of the exact draws over an unclipped one. One
+    ``elbo_err_<name>`` is returned per entry of the ``elbos`` mapping.
+    Entries whose truth is unknown are NaN.
+
+    ``reference`` are exact draws to compare against; without them
+    ``DIAG_TV_SAMPLES`` are drawn from ``problem.sampler`` with a dedicated
+    generator seeded by ``seed``, so a caller that scores many posteriors
+    against one problem can draw the reference once. The default ``seed``
+    is the one :func:`metrics` uses for the same draws, so that posteriors
+    scored by either function are compared against one reference.
+    """
+    from pyvbmc.stats import kl_div_mvn
+
+    samples = np.atleast_2d(np.asarray(samples, dtype=float))
+    mean = np.mean(samples, axis=0, keepdims=True)
+    cov = np.cov(samples, rowvar=False).reshape(problem.D, problem.D)
+    out = {
+        "n_samples": int(samples.shape[0]),
+        "post_mean": mean,
+        "post_cov": cov,
+        "mmtv": float("nan"),
+        "gskl": float("nan"),
+        "gskl_normalized": float("nan"),
+    }
+    for name, elbo in dict(elbos).items():
+        out[f"elbo_err_{name}"] = (
+            float("nan")
+            if problem.ln_Z is None or elbo is None
+            else float(abs(float(elbo) - problem.ln_Z))
+        )
+    if reference is None and problem.sampler is not None:
+        reference = problem.sampler(
+            DIAG_TV_SAMPLES, np.random.default_rng(seed)
+        )
+    if reference is not None:
+        unbounded = (
+            np.full((1, problem.D), -np.inf),
+            np.full((1, problem.D), np.inf),
+        )
+        out["mmtv"] = float(
+            np.mean(
+                _marginal_tv(
+                    samples,
+                    np.atleast_2d(np.asarray(reference, dtype=float)),
+                    (problem.lb, problem.ub),
+                    unbounded,
+                )
+            )
+        )
+    if problem.true_cov is not None and problem.true_mean is not None:
+        kl = kl_div_mvn(mean, cov, problem.true_mean, problem.true_cov)
+        out["gskl"] = float(0.5 * np.sum(kl))
+        out["gskl_normalized"] = out["gskl"] / problem.D
+    return out
+
+
 # --------------------------------------------------------------------------
 # Checks
 # --------------------------------------------------------------------------
@@ -1644,6 +2072,37 @@ def check_problem(prob, n_ref=200, n_draws=2_000_000, seed=7):
             n=2 * len(g.x) - 1,
         )
         res["ln_Z_grid_refine_diff"] = float(abs(g2.ln_Z - g.ln_Z))
+    if prob.name == "ring":
+        # the quadrature that produced ln Z against the closed form of the
+        # same integral over the whole line
+        d = abs(prob.ln_Z - _RING_CACHE["ln_Z_closed"])
+        res["ln_Z_closed_form_diff"] = float(d)
+        if d > 1e-9:
+            res["ok"] = False
+            res["msgs"].append(f"ln Z quadrature off by {d:.2e}")
+        # the port against the pinned upstream source: the density here
+        # drops upstream's ``log r`` term, so ``pins`` cannot compare with
+        # that source. Adding the term back at the ``RING_PINS`` points
+        # must reproduce its values there.
+        Xp = np.array([x for x, _ in RING_PINS], dtype=float)
+        r = np.linalg.norm(Xp - np.asarray(RING_CENTER, dtype=float), axis=-1)
+        log_r = np.log(np.maximum(r, np.finfo(float).tiny))
+        d = float(
+            np.max(
+                np.abs(
+                    prob.log_density_vec(Xp)
+                    + log_r
+                    - np.asarray(RING_UPSTREAM_PINS)
+                )
+            )
+        )
+        res["upstream_pin_diff"] = d
+        if d > SVBMC_PIN_TOL:
+            res["ok"] = False
+            res["msgs"].append(
+                f"upstream ring values differ by {d:.2e}"
+                f" (tolerance {SVBMC_PIN_TOL:.0e})"
+            )
     if prob.name == "student":
         d = 0.0
         for gr in _STUDENT_CACHE[D]:
@@ -1806,7 +2265,9 @@ def main(argv=None):
     ap.add_argument("--list", action="store_true", help="list suites")
     ap.add_argument("--check", action="store_true", help="verify targets")
     ap.add_argument("--smoke", action="store_true", help="2-iteration runs")
-    ap.add_argument("--suite", default=None, help="smoke|profile|golden|all")
+    ap.add_argument(
+        "--suite", default=None, help="smoke|profile|golden|svbmc_pool|all"
+    )
     ap.add_argument(
         "--only",
         default=None,
