@@ -1,0 +1,106 @@
+{
+  "generated": "2026-09-14 13:11:19",
+  "settings": {
+    "arm": "integrated",
+    "draws": 100,
+    "seed": 0,
+    "ratios": [
+      1.5,
+      2.0,
+      3.0,
+      5.0
+    ],
+    "sd_cap": 2.23606797749979,
+    "sd_floor": 0.1,
+    "rules": {
+      "ratio1.5": [
+        1.5,
+        2.23606797749979,
+        0.1
+      ],
+      "ratio2": [
+        2.0,
+        2.23606797749979,
+        0.1
+      ],
+      "ratio3": [
+        3.0,
+        2.23606797749979,
+        0.1
+      ],
+      "ratio5": [
+        5.0,
+        2.23606797749979,
+        0.1
+      ],
+      "cap_only": [
+        Infinity,
+        2.23606797749979,
+        0.1
+      ],
+      "none": [
+        Infinity,
+        Infinity,
+        0.0
+      ]
+    },
+    "methods": [
+      "median",
+      "precision",
+      "mean"
+    ],
+    "headline_rule": "ratio2",
+    "headline_method": "median",
+    "z_flag": 4.0,
+    "bootstrap_resamples": 10000,
+    "cells": null,
+    "pools": [
+      "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\newconds_check"
+    ],
+    "self_check": true
+  },
+  "conditions": [
+    {
+      "condition": "multisensory_s1_D6_svbmc",
+      "noisy": false,
+      "by_M": [],
+      "runs": [
+        {
+          "tag": "multisensory_s1_D6_svbmc_seed1000",
+          "own_error": -0.017292897801689137,
+          "own_error_se": 0.030560132802465972,
+          "own_z_median": -0.37065405498249787,
+          "own_abs_z_median": 0.9925415177737734,
+          "bq_sd_median": 0.06628469751773006,
+          "pred_sd_median": 0.19779396041040126,
+          "own_mc_max_z": 2.9598847135899513,
+          "own_offset_z": 0.3409107738499109,
+          "jac_max_z": 3.2592645774689695,
+          "jac_offset_z": -0.22580598662466175,
+          "flagged": false
+        }
+      ]
+    },
+    {
+      "condition": "student_D8_noise3_svbmc",
+      "noisy": true,
+      "by_M": [],
+      "runs": [
+        {
+          "tag": "student_D8_noise3_svbmc_seed1000",
+          "own_error": 0.3156474202319697,
+          "own_error_se": 0.05672109133743004,
+          "own_z_median": 0.4412674218339084,
+          "own_abs_z_median": 0.44871879174380636,
+          "bq_sd_median": 0.4417124332538265,
+          "pred_sd_median": 0.8407979772294544,
+          "own_mc_max_z": 2.654707135896759,
+          "own_offset_z": -1.4059496374024492,
+          "jac_max_z": 0.0,
+          "jac_offset_z": 0.0,
+          "flagged": false
+        }
+      ]
+    }
+  ]
+}

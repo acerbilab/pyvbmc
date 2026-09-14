@@ -1,0 +1,121 @@
+{
+  "generated": "2026-09-14 13:11:19",
+  "script": {
+    "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\svbmc_honest_elbo.py",
+    "sha256": "b2d9f7642bb89e27bf075f5c469fc6e8e8a134523e64bb8fe582a4a2ef3dd636"
+  },
+  "pyvbmc": {
+    "commit": "6c1b89cf878fd3a40eb87af9c6e7c82c1e49a739",
+    "dirty": "?? dev/scripts/svbmc_honest_elbo.py\n?? dev/scripts/test_svbmc_honest_elbo.py",
+    "import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc"
+  },
+  "gpyreg": {
+    "source": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg_1.2.1",
+    "import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg_1.2.1\\gpyreg",
+    "commit": "9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b"
+  },
+  "python": "3.12.6",
+  "numpy": "2.5.2",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "hostname": "ASUS-LUIGI",
+  "cells": null,
+  "pools": [
+    {
+      "directory": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\newconds_check",
+      "identity": {
+        "source": {
+          "python": "3.12.6",
+          "pyvbmc_commit": "190350626efe03691837656f7d31fc19f466eafd",
+          "gpyreg_commit": "9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b",
+          "numpy": "2.5.2",
+          "scipy": "1.18.1",
+          "pyvbmc_dirty": "",
+          "gpyreg_clean": true,
+          "suite_module_dirty": "",
+          "suite_module_sha256": "668d9af9d78280608a53c9dd0ba6afe929e28f78dd128bca8895bdf4b6889c86",
+          "io_module_sha256": "f7db8d37056f3027c5029271e5bf6839a05b41695c3665962dd60df8c988265e",
+          "runner_sha256": "62d90148f2b282fb3197af14a7a8dbb4236d2e82a8d4d1b3d350eda4cf0ec666"
+        },
+        "host": {
+          "hostname": "ASUS-LUIGI",
+          "platform": "Windows-11-10.0.26200-SP0",
+          "executable": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Scripts\\python.exe",
+          "pyvbmc_import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc",
+          "pyvbmc_version": "1.0.5.dev317+g9d54ca3fb.d20260913",
+          "gpyreg_import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg_1.2.1\\gpyreg",
+          "gpyreg_version": "1.2.1",
+          "threads": {
+            "OMP_NUM_THREADS": "1",
+            "OPENBLAS_NUM_THREADS": "1",
+            "MKL_NUM_THREADS": "1"
+          },
+          "gpyreg_source": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg_1.2.1"
+        }
+      },
+      "gpyreg_source": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg_1.2.1"
+    }
+  ],
+  "runs": [
+    "multisensory_s1_D6_svbmc_seed1000",
+    "student_D8_noise3_svbmc_seed1000"
+  ],
+  "settings": {
+    "arm": "integrated",
+    "draws": 100,
+    "seed": 0,
+    "ratios": [
+      1.5,
+      2.0,
+      3.0,
+      5.0
+    ],
+    "sd_cap": 2.23606797749979,
+    "sd_floor": 0.1,
+    "rules": {
+      "ratio1.5": [
+        1.5,
+        2.23606797749979,
+        0.1
+      ],
+      "ratio2": [
+        2.0,
+        2.23606797749979,
+        0.1
+      ],
+      "ratio3": [
+        3.0,
+        2.23606797749979,
+        0.1
+      ],
+      "ratio5": [
+        5.0,
+        2.23606797749979,
+        0.1
+      ],
+      "cap_only": [
+        Infinity,
+        2.23606797749979,
+        0.1
+      ],
+      "none": [
+        Infinity,
+        Infinity,
+        0.0
+      ]
+    },
+    "methods": [
+      "median",
+      "precision",
+      "mean"
+    ],
+    "headline_rule": "ratio2",
+    "headline_method": "median",
+    "z_flag": 4.0,
+    "bootstrap_resamples": 10000,
+    "cells": null,
+    "pools": [
+      "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\newconds_check"
+    ],
+    "self_check": true
+  }
+}
