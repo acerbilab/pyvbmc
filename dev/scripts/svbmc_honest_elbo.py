@@ -229,7 +229,14 @@ WITHIN_RADIUS = 2.0
 
 
 def sha256(path):
-    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+    """SHA-256 of a text file with line endings normalized to LF.
+
+    The script and the cells file are text; a checkout with CRLF line
+    endings must record the same hash as one with LF, and as the git blob.
+    """
+    return hashlib.sha256(
+        Path(path).read_bytes().replace(b"\r\n", b"\n")
+    ).hexdigest()
 
 
 def rule_name(ratio):
@@ -340,7 +347,7 @@ def predict(gp, U, rows=PREDICT_ROWS):
 
 
 def mean_function(gp, U):
-    """The GP's mean function at ``U``, averaged over hyperparameter samples."""
+    """The GP's mean function at ``U``, averaged over the samples."""
     D = U.shape[1]
     cov_N = gp.covariance.hyperparameter_count(D)
     noise_N = gp.noise.hyperparameter_count()
@@ -437,11 +444,17 @@ def evaluate(runs, w, problem, rng, draws):
     for rr, r in enumerate(runs):
         X_train_u = np.asarray(r["gp"].X, dtype=np.float64)
         X_train = r["pt"].inverse(X_train_u)
-        residual = (
-            np.ravel(r["gp"].y)
-            - np.asarray(r["pt"].log_abs_det_jacobian(X_train_u), dtype=float)
-            - np.asarray(problem.log_density_vec(X_train), dtype=float)
-        )
+        if "train_residual" not in r:
+            # The run's stored values against the truth at its training
+            # inputs depend on the run alone; cached across cells.
+            r["train_residual"] = (
+                np.ravel(r["gp"].y)
+                - np.asarray(
+                    r["pt"].log_abs_det_jacobian(X_train_u), dtype=float
+                )
+                - np.asarray(problem.log_density_vec(X_train), dtype=float)
+            )
+        residual = r["train_residual"]
         for m, other in enumerate(runs):
             U_m = np.asarray(other["pt"](X_train), dtype=np.float64)
             U_m = U_m.reshape(-1, D)
@@ -495,7 +508,7 @@ def combine(arrays, rule, method, exclude_own=True):
     combined per-draw series (every evaluating run averages the same
     draws), from ``arrays["g"]``.
     """
-    est, se, v = arrays["est"], arrays["se"], arrays["v"]
+    est, v = arrays["est"], arrays["v"]
     w, run_index = arrays["w"], arrays["run_index"]
     g = arrays["g"]
     n = g.shape[2]
@@ -955,6 +968,19 @@ def build_summary(results, rng):
             medians["honest"] = float(
                 np.median([abs(h["bias"]) for h in head])
             )
+            # A verdict on the median absolute biases with a tie band of
+            # one reference standard error, so that Monte Carlo noise
+            # does not flip it.
+            tie = float(
+                np.median([r["reference"]["e_log_joint_mc_sd"] for r in rows])
+            )
+
+            def verdict(other):
+                gap = medians["honest"] - medians[other]
+                if abs(gap) <= tie:
+                    return "tie"
+                return "worse" if gap > 0 else "better"
+
             by_M.append(
                 {
                     "M": M,
@@ -978,12 +1004,9 @@ def build_summary(results, rng):
                     "pooled_bias": agg(lambda r: r["pooled"]["bias"]),
                     "headline_within_se": float(np.mean(within)),
                     "median_abs_bias": medians,
-                    "headline_not_worse_than_raw": bool(
-                        medians["honest"] <= medians["raw"]
-                    ),
-                    "headline_not_worse_than_capped": bool(
-                        medians["honest"] <= medians["capped_I"]
-                    ),
+                    "verdict_tie_band": tie,
+                    "headline_vs_raw": verdict("raw"),
+                    "headline_vs_capped": verdict("capped_I"),
                     "calibration": {
                         side: {
                             stat: agg(
@@ -1074,6 +1097,10 @@ def interval(entry, digits=3):
     )
 
 
+def _verdict_text(verdict):
+    return {"worse": "**worse**", "better": "better", "tie": "a tie"}[verdict]
+
+
 def decomposition_markdown(rows):
     """The heaviest component of every run of a cell, seen by every run."""
     lines = [
@@ -1105,10 +1132,30 @@ def decomposition_markdown(rows):
 def summary_markdown(summary):
     settings = summary["settings"]
     rule, method = settings["headline_rule"], settings["headline_method"]
+    if settings["cells"] is None:
+        lines = [
+            "# Own-run checks of pool artifacts (`--self-check`)",
+            "",
+            f"Generated {summary['generated']} from the artifacts of the "
+            f"pool alone, {settings['draws']} draws per component, seed "
+            f"{settings['seed']}. For every run the own-run Monte Carlo "
+            "estimate of each component's expected log joint is compared "
+            "with the stored, Jacobian-corrected `I_corr` and the Monte "
+            "Carlo log-Jacobian with the deterministic one (`abs z` per "
+            "component and the weighted offset in standard errors; a run "
+            f"is flagged beyond {settings['z_flag_max']:g} for a component "
+            f"or {settings['z_flag']:g} for the offset); `own error` is the "
+            "run's own expected log joint against the target's true one "
+            "over its draws, weighted by the run's own weights; `BQ sd` and "
+            "`pred sd` are the medians over components of the run's "
+            "quadrature SD and of its GP's mean predictive SD on the "
+            "component.",
+        ]
+        for condition in summary["conditions"]:
+            lines += _run_table(condition)
+        return "\n".join(lines) + "\n"
     origin = (
-        "the artifacts of the pool alone (`--self-check`, no cells)"
-        if settings["cells"] is None
-        else f"the cells of `{Path(settings['cells']).name}` "
+        f"the cells of `{Path(settings['cells']).name}` "
         f"(arm `{settings['arm']}`)"
     )
     lines = [
@@ -1231,19 +1278,11 @@ def summary_markdown(summary):
                 "of the cells; median absolute bias raw "
                 f"{mab['raw']:.3f}, capped_I {mab['capped_I']:.3f}, "
                 f"capped_E {mab['capped_E']:.3f}, honest {mab['honest']:.3f} "
-                "(the honest estimate is "
-                + (
-                    "not worse"
-                    if entry["headline_not_worse_than_raw"]
-                    else "**worse**"
-                )
-                + " than raw and "
-                + (
-                    "not worse"
-                    if entry["headline_not_worse_than_capped"]
-                    else "**worse**"
-                )
-                + " than capped_I). Calibration of the self-reported SDs "
+                "(against raw the honest estimate is "
+                f"{_verdict_text(entry['headline_vs_raw'])}, against "
+                f"capped_I {_verdict_text(entry['headline_vs_capped'])}; "
+                f"tie band {entry['verdict_tie_band']:.3f}, one reference "
+                "standard error). Calibration of the self-reported SDs "
                 "(weighted over components): own z median "
                 f"{interval(own_c['median'], 2)}, abs z median "
                 f"{interval(own_c['abs_median'], 2)}, abs z > 2 fraction "
@@ -1270,27 +1309,38 @@ def summary_markdown(summary):
                     "",
                     *decomposition_markdown(entry["decomposition"]),
                 ]
-        lines += [
-            "",
-            "| Run | own error | se | own z median | own abs z median | "
-            "BQ sd median | pred sd median | own-run max abs z (offset z) | "
-            "Jacobian max abs z (offset z) |",
-            "|---|---:|---:|---:|---:|---:|---:|---:|---:|",
-        ]
-        for r in condition["runs"]:
-            lines.append(
-                f"| {r['tag']} | {number(r['own_error'])} | "
-                f"{number(r['own_error_se'])} | "
-                f"{number(r['own_z_median'], 2)} | "
-                f"{number(r['own_abs_z_median'], 2)} | "
-                f"{number(r['bq_sd_median'])} | "
-                f"{number(r['pred_sd_median'])} | "
-                f"{r['own_mc_max_z']:.2f} ({r['own_offset_z']:+.2f}) | "
-                f"{r['jac_max_z']:.2f} ({r['jac_offset_z']:+.2f})"
-                + (" (flagged)" if r["flagged"] else "")
-                + " |"
-            )
+        lines += _run_table(condition)
     return "\n".join(lines) + "\n"
+
+
+def _run_table(condition):
+    lines = [
+        "",
+        f"## {condition['condition']}"
+        + (" (noisy)" if condition["noisy"] else " (noiseless)")
+        if not condition["by_M"]
+        else "",
+        "| Run | own error | se | own z median | own abs z median | "
+        "BQ sd median | pred sd median | own-run max abs z (offset z) | "
+        "Jacobian max abs z (offset z) |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|---:|",
+    ]
+    if condition["by_M"]:
+        lines.pop(1)
+    for r in condition["runs"]:
+        lines.append(
+            f"| {r['tag']} | {number(r['own_error'])} | "
+            f"{number(r['own_error_se'])} | "
+            f"{number(r['own_z_median'], 2)} | "
+            f"{number(r['own_abs_z_median'], 2)} | "
+            f"{number(r['bq_sd_median'])} | "
+            f"{number(r['pred_sd_median'])} | "
+            f"{r['own_mc_max_z']:.2f} ({r['own_offset_z']:+.2f}) | "
+            f"{r['jac_max_z']:.2f} ({r['jac_offset_z']:+.2f})"
+            + (" (flagged)" if r["flagged"] else "")
+            + " |"
+        )
+    return lines
 
 
 # --------------------------------------------------------------------------
@@ -1594,12 +1644,17 @@ def figure_calibration(out, available):
     grid = np.linspace(-6, 6, 241)
     normal = np.exp(-0.5 * grid**2) / np.sqrt(2 * np.pi)
     for ax, z, color, title in (
-        (axes[0], own, SERIES["raw"], "own run: (I_corr − truth) / BQ sd"),
+        (
+            axes[0],
+            own,
+            SERIES["raw"],
+            "own run: (I_corr − truth) / sqrt(BQ sd² + MC se²)",
+        ),
         (
             axes[1],
             cross,
             SERIES["honest"],
-            "other runs: (estimate − truth) / GP predictive sd",
+            "other runs: (estimate − truth) / sqrt(pred sd² + MC se²)",
         ),
     ):
         if z.size:
@@ -1878,9 +1933,16 @@ def parse_args(argv=None):
         parser.error("--cells is required unless --self-check")
     if args.draws < 2:
         parser.error("--draws must be at least 2")
-    args.ratio_list = tuple(
-        float(x) for x in args.ratios.split(",") if x.strip()
-    )
+    try:
+        args.ratio_list = tuple(
+            float(x) for x in args.ratios.split(",") if x.strip()
+        )
+    except ValueError:
+        parser.error(
+            f"--ratios must be comma-separated numbers: {args.ratios}"
+        )
+    if not args.ratio_list:
+        parser.error("--ratios must name at least one ratio")
     if rule_name(args.headline_ratio) not in coverage_rules(
         args.ratio_list, args.sd_cap, args.sd_floor
     ):

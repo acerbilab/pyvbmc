@@ -23,7 +23,7 @@ Tracked outputs: [`experiments/svbmc_pool/pilot/phase2/`](../experiments/svbmc_p
 (`results.json`, `cells.jsonl`, `summary.md`, `summary.json`,
 `sources.json`, `figures/`) and
 [`pilot/phase2_newconds_selfcheck/`](../experiments/svbmc_pool/pilot/phase2_newconds_selfcheck/).
-Every number below is in `summary.md` or `results.json`. The per-cell
+Every measurement below is in `summary.md` or `results.json`. The per-cell
 component arrays (`cells/*.npz`) stay with the raw pilot artifacts on the
 machine that holds them (listed in its gitignored
 `dev/scripts/runs/LOCAL.md`); the three figures that read them are
@@ -139,8 +139,9 @@ Reading the table:
   GP's own SD). The honest value equals the raw one because the fallback
   dominates.
 - **Multisensory.** One pair covers each other (runs 1000 and 1002),
-  with cross-run errors of +0.10 and +0.11 nats, while the runs' own
-  errors with the run's own weights are +0.89, +0.33 and +0.37. The
+  with cross-run errors of +0.10 and +0.18 nats in the two directions
+  (medians over the five cells; +0.03 to +0.20 per cell), while the runs'
+  own errors with the run's own weights are +0.89, +0.33 and +0.37. The
   honest value removes most of the raw optimism and more than the cap
   does. The rule is not watertight here: 0.5–5.4 % of run 1001's weight
   passes ratio 2 in every cell, and on that sliver the covering runs are
@@ -157,7 +158,7 @@ Reading the table:
 - **Rule and combination.** Where coverage saturates (noisy GMM,
   Rosenbrock) the rule is immaterial from ratio 2 upward and ratio 1.5
   differs by at most 0.05 (GMM: −0.78 against −0.82), and the median,
-  precision and mean combinations differ by at most 0.02 (two covering
+  precision and mean combinations differ by at most 0.03 (two covering
   runs). Where coverage does not saturate (ring, noiseless GMM) the rule
   is what moves the honest value (noiseless GMM: +0.03 at ratio 2, −0.05
   under the cap alone with 65 % covered). Without any rule (`none`) the
@@ -180,21 +181,24 @@ truth −0.93):
 | Other run 1002 (predictive sd 0.60, covered) | −1.94 | −1.00 | 11 points, +0.63 | −59 |
 | Other run 1000 (predictive sd 8.4, not covered) | −30.7 | −29.8 | no points | −31 |
 
-The same pattern holds for the heaviest components of the other two GMM
-runs (own errors −0.07 and +0.60 with data offsets −0.01 and +0.78;
-covering other runs −1.25, −1.16, −0.16 and −0.37 with data offsets
-between −2.3 and −0.5) and for all three Rosenbrock runs (own +0.18,
-+0.30, −0.53; covering others −0.47, −0.38, −0.20, −0.22, −0.06, −0.07).
-Two effects, both systematic:
+The cross-run half of this pattern holds for the heaviest components of
+the other two GMM runs (covering other runs −1.25, −1.16, −0.16 and
+−0.37) and of all three Rosenbrock runs (−0.47, −0.38, −0.20, −0.22,
+−0.06, −0.07): every one of the ten covering estimates is low. The own
+half varies: the own errors of those components are −0.07 and +0.60 (GMM)
+and +0.18, +0.30 and −0.53 (Rosenbrock), and each follows the sign of the
+run's own data offset at the component (−0.01, +0.78; −0.43, +0.83,
+−0.66). Two effects, the second systematic:
 
-1. **The own run's optimism is partly in its data.** Where a run's heavy
-   component sits, its own noisy evaluations average above the true log
-   joint (+0.86 nats over 23 points at the component above; the
-   acquisition returns to regions the surrogate rates highly, and the
-   variational optimization places components on the surrogate's
-   maxima), so the training values around a heavy component carry a
-   noise realization of the same sign. This is the selection the honest
-   estimator is meant to escape.
+1. **The own run's optimism, where it occurs, is in its data.** A run's
+   own error on a heavy component moves with the noise realization of its
+   evaluations there: +0.91 with an offset of +0.86 over 23 points at the
+   component above, and negative where the offset is negative. The
+   positive cases carry the optimism (the acquisition returns to regions
+   the surrogate rates highly, and the variational optimization places
+   components on the surrogate's maxima, which favours regions where the
+   noise came out high), and they are the selection the honest estimator
+   is meant to escape.
 2. **Another run's GP is tuned to its own region.** Run 1002 had 11
    points within two SDs of the same component whose values average +0.63
    *above* the truth, and its GP still predicts 1.0 nats *below* it with a
