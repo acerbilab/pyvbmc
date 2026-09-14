@@ -482,7 +482,13 @@ reason.
   recomputation gate included, reconciles the allocation (failed, partial,
   missing and stray cases, the missing ones printed with their array index
   for resubmission) into `verification.json`, and takes `--gpyreg-source`
-  for a pool copied to another machine. gpyreg is pinned to a frozen
+  for a pool copied to another machine (a clean checkout at the manifest's
+  gpyreg commit, checked by `pinned_gpyreg_source`, which the stacking
+  comparison shares). On such a machine the recomputation gate is met up
+  to the other BLAS's rounding amplified by each run's GP condition
+  number, which `verify_run` allows and reports (`--rounding-factor`
+  scales the allowance); the report also records the verifying checkout's
+  identity next to the pool's. gpyreg is pinned to a frozen
   worktree through `PYVBMC_GPYREG_SOURCE` as in `population_run.py`; the
   identity is split into a `source` half (commits, library versions,
   working-tree state and the hashes of the suite module and both pool
@@ -505,9 +511,12 @@ reason.
   through the public constructors; `verify_run` re-runs the checks on a
   stored artifact, including the recomputation gate (`_gp_log_joint`
   reproduces the stored `I_sk` and `J_sjk` from the rebuilt posterior and
-  GP alone) without the live run, and post hoc also against the hashes of
-  the completion record; `filter_verdict` applies the pool's stability and
-  `J_sjk` filters.
+  GP alone, exactly on the machine that generated the run and, on
+  another, within that machine's rounding amplified by the condition
+  number of the GP's kernel matrix, which the gate allows as a fixed
+  multiple of `eps` times that number and reports) without the live run,
+  and post hoc also against the hashes of the completion record;
+  `filter_verdict` applies the pool's stability and `J_sjk` filters.
 - `scripts/hpc/` — Slurm tooling for generating the S-VBMC pools on a
   cluster ([README](scripts/hpc/README.md)): `svbmc_pool_submit.sh`
   refuses a dirty checkout, prepares a campaign once and submits
@@ -546,7 +555,10 @@ reason.
   Holm-corrected over every condition and `M`, `max |dw|`, runtime ratio)
   and `sources.json`. It refuses to start unless
   `experiments/svbmc_pool/baseline_environment.json` re-verifies, and
-  needs `PYTHONPATH` to carry that record's Torch overlay.
+  needs `PYTHONPATH` to carry that record's Torch overlay. Both arms
+  import gpyreg from the checkout the pool's manifest names, or, for a
+  pool copied from another machine, from `--gpyreg-source`, a local clean
+  checkout at the manifest's gpyreg commit.
   `--summarize-only --out DIR` rebuilds the summaries from a finished
   `results.json` without running a cell or needing Torch, describing that
   comparison by the settings it recorded rather than by the script's

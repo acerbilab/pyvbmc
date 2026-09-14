@@ -42,7 +42,7 @@ the campaign's machine, so every invocation that runs a cell needs it::
     PYTHONPATH="<TORCH_PATH>" python -u dev/scripts/svbmc_pool_stack.py \\
         --pool DIR --out DIR [--conditions L1,L2] [--M 2,4,8,16] \\
         [--repetitions 20,20,20,10] [--seed 0] [--max-steps 500] \\
-        [--overwrite]
+        [--gpyreg-source DIR] [--overwrite]
     PYTHONPATH="<TORCH_PATH>" python -u dev/scripts/svbmc_pool_stack.py \\
         --fixtures upstream_Ring --out DIR --M 2,3 --repetitions 2,2 \\
         --max-steps 3
@@ -80,7 +80,12 @@ cell runs: the controller carries only the Torch overlay, so that no
 ``import svbmc`` here can reach the pinned upstream package, and the worker
 carries the overlay and the upstream source. Both arms import gpyreg from
 the campaign's frozen worktree through ``PYVBMC_GPYREG_SOURCE`` and record
-where it resolved.
+where it resolved. A pool's manifest names that worktree as an absolute
+path on the machine that generated the pool; for a pool copied from
+another machine, ``--gpyreg-source`` names a local clean checkout at the
+manifest's gpyreg commit (``svbmc_pool_run.pinned_gpyreg_source``), which
+is checked before PyVBMC is imported, and ``sources.json`` records which
+of the two named the checkout.
 
 ``--fixtures`` presents the shipped S-VBMC posterior fixtures
 (``pyvbmc/testing/svbmc/fixtures/``) as pools, one condition per fixture
@@ -136,6 +141,7 @@ from svbmc_pool_run import (  # noqa: E402
     activate_gpyreg,
     git,
     identity,
+    pinned_gpyreg_source,
     write_json,
 )
 
@@ -343,12 +349,18 @@ def pool_entry(directory, tag, origin="the pool directory"):
     }
 
 
-def pool_conditions(pool_dirs, only=None):
+def pool_conditions(pool_dirs, only=None, gpyreg_source=None):
     """The filtered runs of every condition, ordered by seed.
 
     One entry per run of the condition's filtered pool, carrying the
     artifact path (without suffix) and the metrics recorded for that single
     run, which are the comparison's ``M = 1`` rows.
+
+    The pools must have been generated against one gpyreg source. With
+    ``gpyreg_source`` given, a local checkout that :func:`main` has already
+    checked against every manifest's gpyreg commit, the paths the
+    manifests name are not compared, since they belong to the machines
+    that generated the pools.
 
     The filtered pool of a directory that holds a ``selection.json``
     (``svbmc_pool_run.py select``) is the runs that file names: the
@@ -433,7 +445,7 @@ def pool_conditions(pool_dirs, only=None):
     if missing:
         raise RuntimeError(f"no pool holds the conditions {missing}")
     sources = {entry["gpyreg_source"] for entry in identities}
-    if len(sources) > 1:
+    if gpyreg_source is None and len(sources) > 1:
         raise RuntimeError(
             f"the pools were generated against different gpyreg sources: "
             f"{sorted(sources)}"
@@ -1835,8 +1847,12 @@ def parse_args(argv=None):
     parser.add_argument(
         "--gpyreg-source",
         type=Path,
-        help=f"the frozen gpyreg worktree for --fixtures runs, which have "
-        f"no pool manifest to name one (default: {DEFAULT_GPYREG})",
+        help="the gpyreg checkout both arms import: for --fixtures runs, "
+        "which have no pool manifest to name one (default: "
+        f"{DEFAULT_GPYREG}); for --pool runs, a local checkout in place of "
+        "the path the manifest names, for a pool copied from another "
+        "machine, accepted only as a clean checkout at the manifest's "
+        "gpyreg commit",
     )
     parser.add_argument(
         "--baseline-record", type=Path, default=BASELINE_RECORD
@@ -1886,11 +1902,6 @@ def parse_args(argv=None):
             "--conditions selects labels of a pool; --fixtures already "
             "names the groups to compare"
         )
-    if args.pool and args.gpyreg_source:
-        parser.error(
-            "--gpyreg-source applies to --fixtures; a pool's manifest names "
-            "the gpyreg worktree it was generated against"
-        )
     return args
 
 
@@ -1934,14 +1945,32 @@ def main(argv=None):
     kind = "fixture" if args.fixtures else "run"
     only = [s.strip() for s in (args.conditions or "").split(",") if s.strip()]
     if kind == "run":
-        first = json.loads(
-            (Path(args.pool[0]).resolve() / "manifest.json").read_text(
-                encoding="utf-8"
+        manifests = [
+            json.loads(
+                (Path(pool).resolve() / "manifest.json").read_text(
+                    encoding="utf-8"
+                )
             )
-        )
-        gpyreg_source = activate_gpyreg(first["gpyreg_source"])
+            for pool in args.pool
+        ]
+        if args.gpyreg_source:
+            # A pool copied from another machine: the local checkout must
+            # be at every pool's gpyreg commit, the library the pools'
+            # numerics were produced by.
+            for manifest in manifests:
+                gpyreg_source = pinned_gpyreg_source(
+                    args.gpyreg_source, manifest
+                )
+            gpyreg_origin = "--gpyreg-source"
+        else:
+            gpyreg_source = manifests[0]["gpyreg_source"]
+            gpyreg_origin = "the pool manifest"
+        gpyreg_source = activate_gpyreg(gpyreg_source)
     else:
         gpyreg_source = activate_gpyreg(args.gpyreg_source or DEFAULT_GPYREG)
+        gpyreg_origin = (
+            "--gpyreg-source" if args.gpyreg_source else "the default"
+        )
 
     baseline = json.loads(
         Path(args.baseline_record).read_text(encoding="utf-8")
@@ -1967,7 +1996,9 @@ def main(argv=None):
     verification = verify_baseline(baseline, args.baseline_record)
 
     if kind == "run":
-        conditions, pool_identities, labels = pool_conditions(args.pool, only)
+        conditions, pool_identities, labels = pool_conditions(
+            args.pool, only, gpyreg_source=args.gpyreg_source
+        )
         fixtures = []
     else:
         groups = [s.strip() for s in args.fixtures.split(",") if s.strip()]
@@ -2009,6 +2040,13 @@ def main(argv=None):
 
     worker = Worker(baseline_path, gpyreg_source, out / "original_arm.log")
     started = time.time()
+    # Process-scoped request, as in the pool runner's sweep: permit display
+    # sleep, prevent idle system sleep while the cells run, since a full
+    # grid takes hours on a laptop.
+    if sys.platform == "win32":
+        import ctypes
+
+        ctypes.windll.kernel32.SetThreadExecutionState(0x80000001)
     try:
         warm_up(plan, conditions, kind, worker, problems)
         rows = run_cells(
@@ -2016,6 +2054,8 @@ def main(argv=None):
         )
     finally:
         worker.close()
+        if sys.platform == "win32":
+            ctypes.windll.kernel32.SetThreadExecutionState(0x80000000)
     elapsed = time.time() - started
 
     settings = {
@@ -2082,6 +2122,7 @@ def main(argv=None):
             },
             "baseline_environment": verification,
             "gpyreg_source": str(gpyreg_source),
+            "gpyreg_source_origin": gpyreg_origin,
             "pools": pool_identities,
             "fixtures": fixtures,
             "threads": {key: os.environ.get(key) for key in THREAD_KEYS},

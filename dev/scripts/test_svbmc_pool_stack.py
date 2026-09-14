@@ -22,6 +22,7 @@ the tests pass whether or not pytest was started with it.
 import hashlib
 import json
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -564,3 +565,125 @@ def test_existing_comparison_is_not_overwritten(comparison):
     again = run_harness(comparison["out"])
     assert again.returncode != 0
     assert "--overwrite" in again.stderr
+
+
+RUNNER = HERE / "svbmc_pool_run.py"
+POOL_LABEL = "normal_D2"
+
+
+def run_runner(*arguments):
+    return subprocess.run(
+        [sys.executable, "-u", str(RUNNER), *arguments],
+        cwd=str(ROOT),
+        env=harness_environment(),
+        capture_output=True,
+        text=True,
+    )
+
+
+@pytest.fixture(scope="module")
+def pool(tmp_path_factory):
+    """A two-run pool of the smoke configuration, generated and selected."""
+    out = tmp_path_factory.mktemp("svbmc_pool")
+    prepared = run_runner(
+        "prepare",
+        "--out",
+        str(out),
+        "--suite",
+        "smoke",
+        "--only",
+        POOL_LABEL,
+        "--target",
+        "2",
+        "--max-seeds",
+        "2",
+        "--seed-start",
+        "4000",
+        "--allow-dirty",
+    )
+    assert prepared.returncode == 0, prepared.stdout + prepared.stderr
+    for command in ("run", "select"):
+        result = run_runner(command, "--out", str(out))
+        assert result.returncode == 0, result.stdout + result.stderr
+    return out
+
+
+def copied_pool(pool, tmp_path):
+    """The pool as a copy from another machine: its manifest names a
+    gpyreg checkout that does not exist here."""
+    copy = tmp_path / "pool"
+    shutil.copytree(pool, copy)
+    path = copy / "manifest.json"
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    manifest["gpyreg_source"] = str(tmp_path / "elsewhere" / "gpyreg_1.2.1")
+    path.write_text(json.dumps(manifest, indent=1), encoding="utf-8")
+    return copy
+
+
+def run_pool_harness(copy, out, *extra):
+    return run_script(
+        "--pool",
+        str(copy),
+        "--out",
+        str(out),
+        "--M",
+        "2",
+        "--repetitions",
+        "1",
+        "--max-steps",
+        str(MAX_STEPS),
+        *extra,
+    )
+
+
+def test_pool_accepts_a_gpyreg_source_at_the_manifest_commit(pool, tmp_path):
+    """A pool copied from another machine is stacked against a local
+    checkout at its manifest's gpyreg commit, and nothing else."""
+    copy = copied_pool(pool, tmp_path)
+    manifest = json.loads((copy / "manifest.json").read_text(encoding="utf-8"))
+    pinned = manifest["identity"]["source"]["gpyreg_commit"]
+    # The manifest's path is not here, so without the flag nothing runs.
+    result = run_pool_harness(copy, tmp_path / "out_manifest")
+    assert result.returncode != 0
+    assert "no gpyreg package under" in result.stderr
+    # A checkout at another commit is refused by name, before any cell.
+    other = tmp_path / "other_gpyreg"
+    (other / "gpyreg").mkdir(parents=True)
+    author = [
+        "-c",
+        "user.name=t",
+        "-c",
+        "user.email=t@example.com",
+        "-c",
+        "commit.gpgsign=false",
+    ]
+    subprocess.run(["git", "-C", str(other), "init", "-q"], check=True)
+    (other / "gpyreg" / "__init__.py").write_text("\n", encoding="utf-8")
+    subprocess.run(["git", "-C", str(other), *author, "add", "-A"], check=True)
+    subprocess.run(
+        ["git", "-C", str(other), *author, "commit", "-q", "-m", "x"],
+        check=True,
+    )
+    result = run_pool_harness(
+        copy, tmp_path / "out_other", "--gpyreg-source", str(other)
+    )
+    assert result.returncode != 0
+    assert f"not the manifest's {pinned}" in result.stderr
+    assert not (tmp_path / "out_other" / "results.json").exists()
+    # The frozen worktree is at the pin, so the comparison runs on it.
+    out = tmp_path / "out_pinned"
+    result = run_pool_harness(copy, out, "--gpyreg-source", str(GPYREG_SOURCE))
+    assert result.returncode == 0, result.stdout + result.stderr
+    results = json.loads((out / "results.json").read_text(encoding="utf-8"))
+    assert results["kind"] == "run"
+    assert [cell["condition"] for cell in results["cells"]] == [POOL_LABEL]
+    assert all(arm in results["cells"][0]["arms"] for arm in harness.ARMS)
+    sources = json.loads((out / "sources.json").read_text(encoding="utf-8"))
+    assert sources["gpyreg_source"] == str(GPYREG_SOURCE.resolve())
+    assert sources["gpyreg_source_origin"] == "--gpyreg-source"
+    assert sources["pools"][0]["gpyreg_source"] == manifest["gpyreg_source"]
+    expected = str((GPYREG_SOURCE / "gpyreg").resolve())
+    for arm in harness.ARMS:
+        environment = sources["arms"][arm]["environment"]
+        assert environment["host"]["gpyreg_import"] == expected
+        assert environment["source"]["gpyreg_commit"] == pinned

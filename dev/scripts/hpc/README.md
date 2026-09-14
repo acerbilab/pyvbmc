@@ -138,6 +138,9 @@ and its name, size and SHA-256 recorded in the README under
 copies of `manifest.json`, `selection.json`, `selection.md`,
 `summary.json`, `summary.md` and `verification.json`. The manifest stores
 the cluster's absolute gpyreg path; on another machine
-`svbmc_pool_run.py verify --gpyreg-source PATH` overrides it, while the
-stacking comparison (`svbmc_pool_stack.py --pool`) reads the manifest's
-path and needs that one field edited to a local 1.2.1 checkout.
+`svbmc_pool_run.py verify`, the stacking comparison
+(`svbmc_pool_stack.py --pool`) and the Phase 2 estimator each take
+`--gpyreg-source PATH`, a local clean checkout at the manifest's gpyreg
+commit, in its place. That machine's BLAS does not reproduce the
+cluster's recomputation bit for bit; `verify` allows each artifact the
+rounding its own GP's condition number amplifies and reports both.

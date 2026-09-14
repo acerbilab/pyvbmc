@@ -190,7 +190,15 @@ a tag), GP predictions at the training inputs equal within 1e-10, and the
 `(G, dG, varG, dvarG, var_ss, I_sk, J_sjk)` from the rebuilt posterior and
 GP alone, and both arrays must match the stored statistics within 1e-8.
 They are weight-independent, so a pruned posterior recomputes exactly.
-The gate also runs post hoc without the live objects. A
+The gate also runs post hoc without the live objects. That absolute
+tolerance is met exactly on the machine that generated a run; on another
+machine the BLAS rounds differently, and the rebuilt posterior factors
+carry that rounding amplified by the condition number of the GP's
+kernel matrix, which the noisy Rosenbrock condition's far-tail
+evaluations push to 1e15 (worklog, 2026-09-14). The gate therefore
+allows each artifact a relative deviation of 100 times machine epsilon
+times its own condition number on top of the absolute tolerance, and
+reports the deviation and the condition number. A
 `records/<tag>.complete.json` holds SHA-256 hashes of both files, elapsed
 time, identity and verdict, and gates resumption as in
 `population_run.py`. `--save-vbmc` additionally writes `<tag>.vbmc.pkl`
@@ -1485,6 +1493,63 @@ draft had left open:
   local 1.2.1 checkout before stage D; `verify --gpyreg-source` re-checks
   the unpacked copy first. Stage D and the Phase 2 study can start on the
   pool once the PR is reviewed.
+- 2026-09-14: the pool PR (#177) reviewed and merged into `dev-next`
+  (`2738a2f`). The review found one must-fix, a records count in the
+  submit script that ends the script on a fresh campaign under
+  `pipefail` (added after the cluster run, never exercised), and the
+  should-fix items were applied in a follow-up commit on the branch
+  before the merge; the module's 43 tests pass on the analysis machine.
+  The archive was downloaded, its SHA-256 checked, and unpacked to
+  `dev/scripts/runs/svbmc_pool_20260914/` (4411 files, 121 MB; the
+  cluster's `verification.json` is kept beside the local one as
+  `verification.cluster.json`). `verify --gpyreg-source` there, on
+  Windows with NumPy 2.5.2 and scipy-openblas 0.3.34, did **not** pass
+  the absolute recomputation gate: 902 artifacts within 1e-8 and 198
+  beyond it (126 Rosenbrock, 70 ring, 2 noiseless multisensory). A
+  recomputation of all 1100 artifacts on this machine explains it: the
+  relative deviation of the recomputed `I_sk` and `J_sjk` from the
+  stored ones is at most 1e-8 on six conditions (typically 1e-11), at
+  most 6e-7 on the ring, and up to 0.29 on Rosenbrock at noise 3, where
+  80 of the 100 selected runs deviate by more than 1e-6 and 67 by more
+  than 1e-3; case by case the deviation equals machine epsilon times
+  the condition number of the GP's kernel matrix (condition 3.9e15
+  gives an observed 0.13 against a predicted 0.88, condition 465 gives
+  1e-13 against 1e-13). The Rosenbrock GPs are ill-conditioned because
+  their training sets hold far-tail evaluations, log densities down to
+  -1.5e6 among the selected runs (-6.5e9 in an unselected one), 17 to
+  100 points below the maximum minus 1e3, with mean-function
+  hyperparameters of 1e3 to 5e5; the laptop pilot's three Rosenbrock
+  runs have the same structure (conditions 1e12 to 1e14), so this is
+  how the noisy Rosenbrock configuration behaves and not a cluster
+  effect, and the pilot only recomputed exactly because it was checked
+  on the machine that generated it. The PI's decision: lenient as
+  needed if it is rounding, unless a better fix exists. Implemented as a
+  conditioning-aware gate rather than a blanket tolerance:
+  `verify_run` allows each artifact 100 times epsilon times its own
+  condition number, relative to the largest stored value, on top of the
+  absolute 1e-8, and reports the relative deviation and the condition
+  number (`--rounding-factor` scales the allowance, 0 restores the
+  absolute gate); `verify` records the verifying checkout's identity
+  next to the pool's and the per-condition maxima. Under it the copy
+  verifies, 1100 of 1100, with per-condition maximum relative
+  deviation and condition number: multisensory noise 3 2.2e-11 /
+  7.1e4, noise 1.3 2.4e-11 / 2.2e5, Rosenbrock 0.29 / 2.9e17, noisy GMM
+  7.5e-11 / 3.0e5, ring 5.9e-7 / 1.9e9, Student 6.6e-13 / 1.4e3,
+  noiseless GMM 1.3e-10 / 8.8e7, noiseless multisensory 2.6e-8 /
+  4.7e10. In the same pass `svbmc_pool_stack.py --pool` accepts
+  `--gpyreg-source` at the manifest's gpyreg commit through the check
+  `verify` uses (`pinned_gpyreg_source`), recording in `sources.json`
+  which of the two named the checkout, and the comparison keeps the
+  laptop awake as the pool runner does; 45 pool-generator and 17
+  comparison tests pass. What this means for the analyses: both arms
+  stack the stored statistics, the cluster's, so stage D is internally
+  consistent on every condition; the Phase 2 estimator re-evaluates the
+  runs' GPs on this machine, where the Rosenbrock GPs' predictions
+  carry the same platform-level sensitivity (relative deviations up to
+  0.3 in `I_sk`-like quantities), which its report must state; whether
+  the Rosenbrock noise-3 condition is kept with that caveat,
+  regenerated under a change that keeps far-tail evaluations out of the
+  GP, or dropped from the evidence analysis is open for the PI.
 
 ## Execution tracking
 
@@ -1502,5 +1567,5 @@ Live status of the phases above (`[ ]` not started, `[~]` in progress,
 - [x] Doublecheck of the implemented phases (three fresh reviewers on 2026-09-14; every finding fixed and re-verified, see worklog)
 - [x] Evidence yardstick change (decision 7): `elbo_mc` with an arm-independent entropy reference, bias and KL-gap columns, criterion 3 gates, `--summarize-only`; reviewed, no must-fix (2026-09-14)
 - [x] Harness pass for the cluster (decisions 8–10): gpyreg default at the 1.2.1 worktree, source/host identity split, `select` and `cases` subcommands, approved defaults with an explicit precedence, the bias-review fixes; reviewed, every finding fixed; 38 + 16 tests pass; pilot comparison regenerated with the final harness (2026-09-14)
-- [~] Hand-over of the pool generation to the cluster developer (the "Cluster generation" section and the runner docstring are the brief); stage D and the Phase 2 analyses run on the PI's laptop once the pools are back (pool generated on the cluster and handed back 2026-09-14: 1100 runs, 700 selected, every artifact verified, draft release `svbmc-pool-20260914`, PR from `dev-svbmc-pool-hpc` awaiting review)
+- [x] Hand-over of the pool generation to the cluster developer (the "Cluster generation" section and the runner docstring are the brief); stage D and the Phase 2 analyses run on the PI's laptop once the pools are back (pool generated on the cluster and handed back 2026-09-14: 1100 runs, 700 selected, every artifact verified there, draft release `svbmc-pool-20260914`; PR #177 reviewed and merged the same day; the copy on the analysis machine verified under the conditioning-aware gate, see the worklog)
 - [x] The optimism note's Phase 2 estimator, prototyped on the pilot artifacts (Fable; 2026-09-14; `svbmc_honest_elbo.py`, 12 tests pass, 25 cells scored and the two later conditions self-checked, report under `results/`, reviewed; the study on the full pools waits for them)
