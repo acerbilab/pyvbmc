@@ -31,7 +31,7 @@ Two open items of PyVBMC 1.5 need the same input:
   targets, stacked at different numbers of runs by both implementations,
   scored for posterior quality, evidence accuracy and runtime.
 
-Nothing retained on this machine serves either as it stands. The
+No retained artifact serves either as it stands. The
 population campaigns left 990 boost captures under
 `dev/scripts/runs/population_*/results/*.boost.pkl` whose final posteriors
 carry `I_sk` and `J_sjk` and could be stacked today, but they have no GP,
@@ -233,9 +233,9 @@ the seed caps: about 1200 runs and roughly 45 CPU-hours (150 × 3.3 +
 150 × 3.2 + 150 × 1.6 + 150 × 1.5 + 200 × 1.9 + 150 × 5.5 + 75 × 0.25 +
 75 × 1.25 min), about 30 CPU-hours if every condition reaches its
 filtered target at the pilot's pass rates: an afternoon as a cluster
-array job, or several nights on this laptop one process at a time. The
+array job, or several nights on a laptop one process at a time. The
 pools are generated on the cluster (section "Cluster generation"); the
-comparison (stage D) and the Phase 2 analyses run here. The worker is
+comparison (stage D) and the Phase 2 analyses run locally. The worker is
 invocable per case, which is what the array job calls.
 
 ### GP library pin
@@ -307,7 +307,8 @@ and what the hand-over needs:
   partial artifact, leaves `<tag>.error.txt` with the traceback, exits
   non-zero, and is rerun or left out; `select` and `summarize` count it.
   The manifest stores the gpyreg source as an absolute path, so
-  `prepare` runs on the cluster, never here for a directory copied there.
+  `prepare` runs on the cluster, never on another machine for a
+  directory that is then copied there.
 - **`select`** then defines the filtered pool post hoc, per condition
   the lowest-seed runs that pass the filters up to the target, written
   to `selection.json`, which the comparison reads; **`summarize`**
@@ -316,7 +317,8 @@ and what the hand-over needs:
   are not used on the cluster.
 - **Hand-back**: the campaign directory (artifacts, records,
   `manifest.json`, `selection.json`, summaries) is copied back under
-  `dev/scripts/runs/` here and its manifest, selection and summaries
+  `dev/scripts/runs/` on the analysis machine, which lists it in its
+  gitignored `dev/scripts/runs/LOCAL.md`, and its manifest, selection and summaries
   into `dev/experiments/svbmc_pool/`. Pool runs on Linux with the
   cluster's BLAS will not reproduce laptop runs bit for bit; that is
   expected for a pool, and the records carry the platform.
@@ -426,8 +428,8 @@ arm on `M ≤ 16`, about 7 hours in all, inside the overnight budget of
 decision 8; `M = 40` for the integrated arm on the four paper conditions
 at `R = 10` would add about an hour. The grid is fixed when stage D is
 authorized. The paper's timings (about 2300 s at `M = 40` on multisensory
-for the original) had put the paper's full protocol near 100 hours here;
-that was an overestimate for this machine.
+for the original) had put the paper's full protocol near 100 hours on
+the pilot machine; that was an overestimate.
 
 Summaries report the median over repetitions with a 95 % bootstrap
 interval (10 000 resamples), the paired differences integrated minus
@@ -830,7 +832,7 @@ filter the state ad hoc.
 **Executor**: Fable (orchestrator), holding the single heavy slot in the
 main thread.
 
-**Goal**: measured wall times and filter pass rates on this machine for
+**Goal**: measured wall times and filter pass rates on the pilot machine for
 every condition, stacking times of both arms at `M = 3`, artifacts proven
 to reload and stack in both implementations, and a fixed allocation for
 the pools and the comparison grid.
@@ -1088,7 +1090,7 @@ draft had left open:
    (the most expensive condition), 30 for the control; `M` capped at 16.
    Rejected: the paper's 100, about a third more pool compute for `M` up
    to 40.
-4. **Compute**: staged on this laptop, each stage on a separate
+4. **Compute**: staged on the PI's laptop, each stage on a separate
    instruction; the per-case worker stays reusable for a Slurm array
    job. Rejected: waiting for the Slurm support item.
 5. **Phase 5 timing**: the comparison harness is built now, alongside
@@ -1107,7 +1109,7 @@ draft had left open:
    error against `ln Z` as the gate, which mixes estimator bias with the
    stack's KL gap and can rank a more optimistic estimator higher by
    cancellation.
-8. **Pools on the cluster, analyses on the laptop (2026-09-14)**: pool
+8. **Pools on the cluster, analyses on the PI's laptop (2026-09-14)**: pool
    generation is a once-in-a-while golden-fixture job handed to another
    developer for the HPC cluster; everything that consumes the pools
    (the two-arm comparison, the Phase 2 estimator study, any later
@@ -1387,7 +1389,7 @@ draft had left open:
   verify post hoc with exact zeros on the recomputation gate under
   gpyreg 1.2.1, and two rebuilt copies of each stack in the integrated
   class (the noisy one with the capped headline, the noiseless one raw).
-  All eight conditions have now run end to end here. The hand-off note
+  All eight conditions have now run end to end on the pilot machine. The hand-off note
   for the cluster developer is
   [2026-09-14-svbmc-pool-handoff.md](../2026-09-14-svbmc-pool-handoff.md).
 - 2026-09-14: the launch-authorization gate of the pool generator

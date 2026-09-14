@@ -179,56 +179,14 @@ owns the assessment, independent review, hashes and passed gates;
 [the population plan](plans/final-population-benchmark.md) owns execution
 history. The [roadmap](plans/modernization-roadmap.md) retains completed work.
 
-Raw traces, boost captures, diagnostic scripts and frozen checkouts remain
-local and gitignored under `dev/scripts/runs/` on the original Windows
-benchmark machine: `population_overnight_20260910/`,
-`population_extension_20260911/`, `population_completion_20260912/`,
-`population_realdata_20260912/`, and `golden/reference_990_20260913/` with
-its previous references. A fresh clone has tracked sidecars, assessments,
-manifests and reports. Copy those directories to revalidate raw artifacts;
-follow the population plan for the environment and repair or recreate copied
-worktrees at their recorded commits.
-
-Reproduce the historical comparison on that machine with
-`.venv/Scripts/python.exe -u dev/scripts/runs/population_completion_20260912/assess.py`.
-This archived wrapper selects the frozen classes and historical 870-case
-baseline; the active baseline contains the promoted candidates. No completed
-campaign or replay needs reattachment. The controller's final
-`assessment_ready_for_review` state precedes the acceptance and publication
-recorded in the promotion record.
-
-The completed VIQR campaigns additionally retain `viqr_sinh_20260913/` and
-`viqr_kernel_20260913/` under `dev/scripts/runs/`. They hold the raw replay
-traces, captured GP/VP states, before-source worktrees, oracle dumps and
-per-run logs. Their consolidated results, source/input hashes and validation
-records are tracked under `dev/experiments/noisy-acquisition-efficiency/`.
-For raw revalidation on another machine, copy both directories and recreate
-worktrees at the revisions in the
-[efficiency plan](plans/noisy-acquisition-efficiency.md); a fresh clone does
-not contain these ignored artifacts. They are not needed to read the results
-or choose the next experiment.
-
-The S-VBMC run-pool campaign retains `svbmc_pool_20260913/` under
-`dev/scripts/runs/`: `pool/` (the three-seed pilot of five conditions, 15
-artifacts with their records, run against gpyreg 1.2.0), `pilot_stack/`
-(the `M = 3` two-arm comparison on those artifacts, final harness),
-`newconds_check/` (one seed each of the two conditions added later), the
-frozen gpyreg worktree `gpyreg_1.2.1/` (`git worktree` of `../gpyreg` at
-`v1.2.1`, the campaign's pin) and the run logs. Their tracked copies are
-under `dev/experiments/svbmc_pool/`, and the
-[campaign plan](plans/svbmc-benchmark-campaign.md) records how to recreate
-the worktrees. A fresh clone does not contain these ignored artifacts and
-does not need them to read the results; the campaign pools themselves are
-generated on the cluster per the
-[hand-off note](2026-09-14-svbmc-pool-handoff.md) and come back as a
-draft-release asset.
-
-The S-VBMC speedups measurement retains `svbmc_speedups_20260913/` under
-`dev/scripts/runs/`: the detached before-source worktree at `83692ac`
-(`before/`, registered with `git worktree`) and the raw outputs of both
-timing campaigns. Their tracked copies and provenance are under
-`dev/experiments/svbmc_speedups/`, and the
-[speedups plan](plans/svbmc-speedups.md) records the revision and the
-harness. The worktree is needed only to rerun the paired comparison;
-`git worktree remove` clears it. A fresh clone does not contain these
-ignored artifacts and does not need them to read the results.
+Raw traces, boost captures, run pools, captured states and frozen
+worktrees are gitignored under `dev/scripts/runs/` and exist only on the
+machines that produced them. A machine that holds such artifacts lists
+them, with the commands that recreate its worktrees, in
+`dev/scripts/runs/LOCAL.md`; that file is gitignored with the rest, so its
+absence in a checkout means nothing is stored locally. The tracked side of
+every campaign (sidecars, manifests, summaries, hashes, reports) is under
+`dev/experiments/`, `dev/golden/` and `dev/results/`, and each plan names
+the revisions needed to recreate a worktree, so a fresh clone can read every
+result and revalidate raw artifacts copied from the holding machine. No
+completed campaign or replay needs reattachment.

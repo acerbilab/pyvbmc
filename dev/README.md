@@ -225,7 +225,11 @@ devlogs.
 `scripts/` holds developer tooling that is not part of the package or the
 test suite. Output directories under it (e.g. `scripts/runs/`) are gitignored;
 results that matter get summarized in the relevant `plans/` worklog (and
-decisions taken with a person in a dated devlog), not committed raw. Run the
+decisions taken with a person in a dated devlog), not committed raw. A
+machine that holds raw artifacts under `scripts/runs/` lists them, with the
+commands that recreate its frozen worktrees, in the gitignored
+`scripts/runs/LOCAL.md`; if that file is absent, nothing is stored locally.
+Tracked documents never say "this machine": they point at that file. Run the
 scripts from the repo root with the project venv; they import each other by
 plain module name, so run them as `python dev/scripts/<name>.py`. They need
 `psutil` (not a package dependency; `pip install psutil`). Keep to **one
