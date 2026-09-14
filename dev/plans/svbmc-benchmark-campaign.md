@@ -80,11 +80,14 @@ as the integration plan requires.
 
 | # | Label | D | Noise SD | Origin | Filtered pool | Seed cap | Role |
 |---|---|---|---|---|---|---|---|
-| 1 | `multisensory_s1_D6_noise3_svbmc` | 6 | 3 | new configuration; the paper's real-data condition | 60 | 90 | primary, paper parity |
-| 2 | `rosenbrock_D2_noise3_svbmc` | 2 | 3 | the golden target at the default budget | 60 | 90 | primary; PI priority target |
-| 3 | `gmm_D2_noise3_svbmc` | 2 | 3 | ported from the pinned upstream `targets.py` | 60 | 90 | the paper's multimodal noisy target; Phase 2 needs the per-mode coverage case |
-| 4 | `ring_D2_noise3_svbmc` | 2 | 3 | ported from upstream | 40 | 80 | paper parity; the condition with the largest residual bias after capping in the paper |
-| 5 | `gmm_D2_svbmc` | 2 | none | ported | 30 | 45 | noiseless control: no ELBO overshoot expected |
+| 1 | `multisensory_s1_D6_noise3_svbmc` | 6 | 3 | new configuration; the paper's real-data condition | 100 | 150 | real data, bounded; paper parity |
+| 2 | `multisensory_s1_D6_noise1.3_svbmc` | 6 | 1.3 | the 2020 paper's IBS noise level; the hardest golden configuration ([summary](../golden/baseline/summary.md)) | 100 | 150 | real data at the realistic noise level; the noise-scaling point |
+| 3 | `rosenbrock_D2_noise3_svbmc` | 2 | 3 | the golden target at the default budget | 100 | 150 | PI priority target |
+| 4 | `gmm_D2_noise3_svbmc` | 2 | 3 | ported from the pinned upstream `targets.py` | 100 | 150 | the paper's multimodal target; Phase 2 needs the per-mode coverage case |
+| 5 | `ring_D2_noise3_svbmc` | 2 | 3 | ported from upstream | 100 | 200 | paper parity; the largest residual bias after capping in the paper |
+| 6 | `student_D8_noise3_svbmc` | 8 | 3 | golden target at the default budget | 100 | 150 | heavy tails at higher dimension |
+| 7 | `gmm_D2_svbmc` | 2 | none | ported | 50 | 75 | noiseless synthetic control: no ELBO overshoot expected |
+| 8 | `multisensory_s1_D6_svbmc` | 6 | none | golden target at the default budget | 50 | 75 | noiseless real-data control |
 
 Every pool configuration is a separate `Config(..., tag="svbmc")` entry
 in the suite `svbmc_pool` at PyVBMC's default evaluation budget
@@ -92,23 +95,22 @@ in the suite `svbmc_pool` at PyVBMC's default evaluation budget
 convention and what users get (PI, 2026-09-13). The tag keeps
 `find_config` from confusing a pool configuration with a golden one, which
 pins 50 (D + 2) on noisy targets; `M = 1` baselines come from the pool
-itself. Pool sizes are 60 filtered runs per noisy condition, 40 for the
-ring and 30 for the control (PI, 2026-09-13), which supports `M` up to 16
-with diverse subsets; the paper used 100 and `M` up to 40. The ring is the
-most expensive condition (the paper needed about 9 minutes per run and a
-third of its runs did not converge), hence its smaller pool. The seed caps
-scale the paper's over-provisioning (Table A.2 of
-`papers/silvestrin2025stacking_appendix.md`: 150 runs for 145 filtered on
-GMM, 149 for 100 on the ring, 150 for 149 on multisensory, all at noise 3)
-with margin.
+itself. Pool sizes are the paper's 100 filtered runs per noisy condition
+and 50 per noiseless control (PI, 2026-09-14), which supports `M` up to 40
+with diverse subsets. The seed caps scale the paper's over-provisioning
+(Table A.2 of `papers/silvestrin2025stacking_appendix.md`: 150 runs for
+145 filtered on GMM, 149 for 100 on the ring, 150 for 149 on
+multisensory, all at noise 3) with margin. The pools are generated on a
+cluster (section "Cluster generation"); the analyses that consume them
+run on a laptop within an overnight budget of 8–10 hours.
 
-**Extension condition, not in the initial allocation:**
-`multisensory_s1_D6_noise1.3_svbmc`, the 2020 paper's IBS noise level for
-this model and the hardest golden configuration
-([summary](../golden/baseline/summary.md)). It would add a second point
-on how the optimism scales with noise, at about 5 hours of pool runs and
-2.5 hours of comparison; the harness adds it as one suite entry when
-wanted.
+Conditions considered and left out (PI, 2026-09-14): multisensory
+subject 2 (the same model on a second dataset), the timing model (real
+data is covered, and its likelihood costs about 50 times more per
+evaluation), Rosenbrock at noise 1 (redundant with noise 3), logistic
+regression at noise 3 (bounded posteriors are covered by multisensory),
+lumpy at D = 10 and noise 3 (never validated in a campaign), and the
+noiseless ring (one synthetic control suffices).
 
 Noise is the suite's generic wrapper (homoskedastic Gaussian noise on the
 log density, known SD returned to VBMC, `specify_target_noise=True`), as
@@ -221,35 +223,100 @@ The single-run quality of the ring and the two GMM conditions is poor by
 construction (one run covers a piece of the ring or some of the four
 clusters), which is the regime stacking is for. Per-run costs are well
 below the paper's server timings (about 9 min for the ring and 14 min for
-multisensory at noise 3) and below the pre-pilot assumptions. Projected
-pool cost: about 8 hours if every condition reaches its filtered target
-at the pilot's pass rate (60 × 1.6 + 30 × 0.25 + 60 × 1.5 + 40 × 1.9 +
-60 × 3.3 min), about 12.5 hours at the seed caps. Stages: B conditions
-1–3 (about 6.5 hours expected, 9 at the caps), C conditions 4–5 (about
-1.5 hours expected, 2.7 at the caps), D the comparison (see below). Each
-stage is a separate PI authorization. The worker is invocable per case,
-so a later Slurm array job can reuse it unchanged if the HPC workflow
-lands first. The previous reference points were the
-`reference_990_20260913` sidecars (3.16 min for the noise-1.3 multisensory
-configuration and 2.50 min for noisy Rosenbrock, both at the pinned
-budget).
+multisensory at noise 3) and below the pre-pilot assumptions. For the two
+conditions the pilot did not run, the `reference_990_20260913` sidecars
+give 3.16 min for the noise-1.3 multisensory configuration and 5.3 min
+for Student D8 at noise 3, both at the pinned budget, and 1.25 min for
+noiseless multisensory. Projected cost of the eight-condition pool at
+the seed caps: about 1200 runs and roughly 45 CPU-hours (150 × 3.3 +
+150 × 3.2 + 150 × 1.6 + 150 × 1.5 + 200 × 1.9 + 150 × 5.5 + 75 × 0.25 +
+75 × 1.25 min), about 30 CPU-hours if every condition reaches its
+filtered target at the pilot's pass rates: an afternoon as a cluster
+array job, or several nights on this laptop one process at a time. The
+pools are generated on the cluster (section "Cluster generation"); the
+comparison (stage D) and the Phase 2 analyses run here. The worker is
+invocable per case, which is what the array job calls.
 
 ### GP library pin
 
 Every pool run and both comparison arms import gpyreg from a frozen,
-detached worktree at the CI pin `39536b000a8c8465133f4eaef625486991db8257`
-(tag `v1.2.0`, the version PyVBMC requires) under
-`dev/scripts/runs/svbmc_pool_20260913/gpyreg/`, through the environment
-variable `PYVBMC_GPYREG_SOURCE` prepended to `sys.path` before PyVBMC is
-imported, the mechanism `population_run.py` uses. The identity check of
-every process refuses to run when `gpyreg.__file__` does not resolve
-under that directory. The sibling checkout `../gpyreg`, which the venv's
-editable install points at, is an in-progress release branch with
-uncommitted changes to the GP core (`gaussian_process.py`,
-`slice_sample.py`); `baseline_environment.json` records its state at the
-time of Phase 1 without depending on it. If a gpyreg change to the GP
-numerics lands before 1.5, the pools must be regenerated against it, as
-the working rules require for golden references.
+detached worktree at a released tag, through the environment variable
+`PYVBMC_GPYREG_SOURCE` prepended to `sys.path` before PyVBMC is imported,
+the mechanism `population_run.py` uses. The identity check of every
+process refuses to run when `gpyreg.__file__` does not resolve under that
+directory. The pin is `v1.2.1`, commit
+`9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b`, worktree
+`dev/scripts/runs/svbmc_pool_20260913/gpyreg_1.2.1/` (PI, 2026-09-14,
+the day 1.2.1 was released; the CI pin in `test-matrix.yml` moved with
+it). Under 1.2.1 the exact oracle check is bit-identical on 10 of the 11
+fixtures and the VIQR acquisition oracle moves by one ulp (8.9e-16), the
+footprint of that release's heteroskedastic quadrature-variance fix, with
+the CMA-ES search oracle downstream of it still exact; the 15 pilot
+artifacts recompute their `I_sk` and `J_sjk` with zero difference, so the
+GP numerics S-VBMC depends on are unchanged. The pilot itself ran against
+`v1.2.0` (`39536b0`); its worktree was removed once the pilot comparison
+had been regenerated, so that no process can pick up the old version by
+habit, and its records name the commit. To re-run anything against the
+pilot pool, recreate it with
+`git -C ../gpyreg worktree add --detach dev/scripts/runs/svbmc_pool_20260913/gpyreg v1.2.0`.
+The pools generated for the campaign use 1.2.1.
+At the time of Phase 1 the sibling checkout `../gpyreg`, which the venv's
+editable install points at, was an in-progress release branch with
+uncommitted changes to the GP core, which is why the campaign never
+imports it; `baseline_environment.json` records that state. If a gpyreg
+change to the GP numerics lands before 1.5, the pools must be regenerated
+against it, as the working rules require for golden references.
+
+### Cluster generation
+
+The pools are generated on a Slurm cluster by another developer as a
+once-in-a-while golden-fixture job (decision 8). What the harness
+provides for that, and what the hand-over needs:
+
+- **A clean checkout at a named commit** of this repository (the pool's
+  identity records it and every worker refuses a different one) with
+  the package installed, `psutil` and `filelock`; a gpyreg checkout at
+  the tag of the "GP library pin" section, named through
+  `PYVBMC_GPYREG_SOURCE` or `prepare --gpyreg-source`; no Torch and no
+  original-svbmc checkout are needed on the cluster (both belong to the
+  local comparison only). The targets' data and ground truths are
+  tracked files.
+- **`prepare`** on the login node writes the manifest for the eight
+  conditions with their targets, seed ranges and caps; the identity's
+  *source* part (PyVBMC commit and clean state, gpyreg commit and clean
+  state, the hashes of the suite, io and runner modules, and the Python,
+  NumPy and SciPy versions) is what workers are compared against, its
+  *host* part (hostname, platform, interpreter, import paths, installed
+  distribution versions, thread settings) is recorded only (decision 9).
+  `identity()` runs `git` on both checkouts, so the cluster needs `git`
+  and real repositories, not exported tarballs.
+- **`cases`** prints every `(label, seed)` of the allocation over the
+  full seed range, one per line, so a Slurm array maps its index to one
+  `worker --out DIR --label L --seed S` call; it refuses a manifest that
+  has not been authorized with `--ready`, so the array path is gated
+  like the laptop path. The default allocation is 1100 cases and Slurm's
+  default `MaxArraySize` is 1001, so the array is submitted in two
+  chunks or with a throttle. Each task sets
+  `OMP_NUM_THREADS=OPENBLAS_NUM_THREADS=MKL_NUM_THREADS=1`,
+  `MPLBACKEND=Agg` and `PYVBMC_GPYREG_SOURCE`, runs one case, writes its
+  artifact and its hash-verified completion record, and needs one core
+  and under 2 GB of memory for a few minutes. A failed task removes its
+  partial artifact, leaves `<tag>.error.txt` with the traceback, exits
+  non-zero, and is rerun or left out; `select` and `summarize` count it.
+  The manifest stores the gpyreg source as an absolute path, so
+  `prepare` runs on the cluster, never here for a directory copied there.
+- **`select`** then defines the filtered pool post hoc, per condition
+  the lowest-seed runs that pass the filters up to the target, written
+  to `selection.json`, which the comparison reads; **`summarize`**
+  writes the pool summary. The sequential `run` supervisor, its
+  `FileLock`, `status.json` and stopping rule are the laptop path and
+  are not used on the cluster.
+- **Hand-back**: the campaign directory (artifacts, records,
+  `manifest.json`, `selection.json`, summaries) is copied back under
+  `dev/scripts/runs/` here and its manifest, selection and summaries
+  into `dev/experiments/svbmc_pool/`. Pool runs on Linux with the
+  cluster's BLAS will not reproduce laptop runs bit for bit; that is
+  expected for a pool, and the records carry the platform.
 
 ### Baseline: original S-VBMC 0.1.1
 
@@ -321,11 +388,19 @@ The same subset goes to both implementations, run one after the other,
 never concurrently, alternating which arm runs first. Each cell records
 the optimized weights, every ELBO variant, entropy, construction and
 optimization wall seconds, metrics of 100 000 draws from the stacked
-posterior, and the Monte Carlo expected log joint of the stacked mixture
-(`e_log_joint_mc`: the mean of the noiseless `problem.log_density_vec`
-over 10 000 of the draws, and `elbo_mc = e_log_joint_mc + entropy` with the
-arm's entropy estimate). The multisensory likelihood costs about
-0.6 ms per evaluation, so this adds seconds per cell and gives Phase 2 the
+posterior, and the Monte Carlo ELBO of the stacked posterior, `elbo_mc`,
+the reference every reported estimate is scored against:
+`e_log_joint_mc`, the mean of the noiseless `problem.log_density_vec`
+over a seeded random subsample of 10 000 of the draws, plus
+`entropy_ref`, the entropy of the stacked mixture at the arm's final
+weights estimated afresh by the harness with the integrated class's
+entropy machinery (a few hundred draws per component, a dedicated
+generator, the same estimator for both arms), never an arm's own
+reported entropy; both terms carry their Monte Carlo standard deviation.
+Per cell and arm the harness records `bias_<variant> = elbo_<variant> −
+elbo_mc` for every ELBO variant the arm reports and the KL gap
+`ln Z − elbo_mc`. The multisensory likelihood costs about 0.6 ms per
+evaluation, so the reference adds seconds per cell and gives Phase 2 the
 `ELBO_MC` reference on every cell without a rerun. `M = 1` rows are the
 filtered pool's own single-run metrics.
 
@@ -335,14 +410,21 @@ draw at every Adam step, so a cell costs about `M²`. Measured in the pilot
 single-threaded): the integrated arm's `optimize` takes 0.5–0.7 s on every
 condition, the original's 1.1 s (noiseless GMM), 2.0–2.5 s (noisy D = 2)
 and 2.8 s (multisensory); the runtime ratio is 0.20–0.51. Extrapolating
-with `M²`, the approved grid (PI, 2026-09-13) of `M ∈ {2, 4, 8, 16}` with
-`R = 20, 20, 20, 10`, both arms on every cell of the five conditions (700
-cells), costs about 25 minutes of stacking plus about 10 minutes of
-metrics per condition, about 3 hours in all. The paper's timings (about
-2300 s at `M = 40` on multisensory for the original) had put the paper's
-full protocol near 100 hours here and the approved grid near 5; both were
-overestimates for this machine. Adding `M = 32` at `R = 10` would cost
-about an hour per condition more.
+with `M²`, a cell at `M = 16` costs about 17 s for the integrated arm
+and 70–80 s for the original, at `M = 32` four times that. The grid of
+decision 6 (`M ∈ {2, 4, 8, 16}`, `R = 20, 20, 20, 10`, both arms) costs
+about 35 minutes per condition; over the eight conditions of decision 8
+that is under 5 hours, and the entropy reference adds a few minutes.
+With pools of 100 the grid can follow the paper further: the integrated
+arm at `M = 32` with `R = 10` adds about 15 minutes per condition, the
+original arm about an hour, so the proposal for stage D is the integrated
+arm on `M ∈ {2, 4, 8, 16, 32}` over all eight conditions and the original
+arm on `M ≤ 16`, about 7 hours in all, inside the overnight budget of
+decision 8; `M = 40` for the integrated arm on the four paper conditions
+at `R = 10` would add about an hour. The grid is fixed when stage D is
+authorized. The paper's timings (about 2300 s at `M = 40` on multisensory
+for the original) had put the paper's full protocol near 100 hours here;
+that was an overestimate for this machine.
 
 Summaries report the median over repetitions with a 95 % bootstrap
 interval (10 000 resamples), the paired differences integrated minus
@@ -404,13 +486,22 @@ paper-comparable figures can be drawn; every figure names its convention.
    the integrated class (exact signed-rank tests, Holm-corrected across
    conditions and `M` at α = 0.05), and both implementations improve on
    the `M = 1` medians as the paper reports.
-3. **Evidence accuracy (measurement).** At every `M`, the median
-   `elbo_err` of the integrated headline is at most that of the original
-   raw estimate; and the median capped `elbo_err` at the largest `M`
-   exceeds its value at the smallest `M` by less than 0.5 nats, the bound
-   the paper reports for the capped bias. The raw curve's growth with `M`
-   and the honest estimator's later value on the same cells are reported,
-   not gated.
+3. **Evidence accuracy (measurement).** The yardstick is the stacked
+   posterior's own ELBO, `ELBO(q) = E_q[log p] + H[q] = ln Z − KL(q‖p)`,
+   estimated per cell as `elbo_mc` (see "Stacking comparison"); every
+   reported estimate is scored by its bias `estimate − elbo_mc`. At
+   every `M`, the absolute value of the median bias of the integrated
+   headline is at most that of the original's raw estimate; and the
+   median headline bias at the largest `M` exceeds its value at the
+   smallest `M` by less than 0.5 nats, the bound the paper reports for
+   the capped bias. The raw
+   bias curve with `M` and the honest estimator's later bias on the same
+   cells are reported, not gated. The error against `ln Z`,
+   `|estimate − ln Z|`, is reported as a descriptive column only: it
+   mixes the estimator's bias with the stack's KL gap, so a small value
+   can arise by cancellation and cannot rank estimators (PI, 2026-09-14).
+   The KL gap `ln Z − elbo_mc` is reported per cell as the
+   posterior-quality measure in evidence units.
 4. **Runtime (measurement).** Per condition, the median over cells of
    the paired ratio integrated / original optimization seconds is below 1
    with its 95 % bootstrap interval below 1, on the same machine, one
@@ -830,9 +921,13 @@ design above, tested on the upstream fixture groups.
      (per condition and `M`: medians with 10 000-resample bootstrap 95 %
      intervals of the median, paired differences with exact signed-rank
      p-values Holm-corrected across all condition-and-`M` cells at
-     α = 0.05 for MMTV and gsKL, `max |Δw|`, runtime ratio with its
-     interval, per-condition aggregates over all `M` of the runtime ratio
-     and `max |Δw|`, and the `M = 1` medians), and `sources` (both trees'
+     α = 0.05 for MMTV and gsKL, the bias of every ELBO variant relative
+     to `elbo_mc` with the criterion 3 gate (the absolute median bias of
+     the integrated headline at most that of the original's raw estimate
+     at every `M`, headline-bias growth below 0.5 nats) and the KL gap,
+     `max |Δw|`, runtime ratio with its interval,
+     per-condition aggregates over all `M` of the runtime ratio and
+     `max |Δw|`, and the `M = 1` medians), and `sources` (both trees'
      commits, working-tree state, the suite module's hash, import paths,
      versions, thread settings, the baseline environment record, the
      harness's own SHA-256). A `--summarize-only` mode rebuilds the
@@ -999,6 +1094,38 @@ draft had left open:
    Rejected: the paper's `2–40` grid with 20 repetitions (about 100
    hours), whose cost sits in the `M ≥ 32` cells that the pool size no
    longer supports.
+7. **Evidence yardstick (2026-09-14, after the pilot)**: every reported
+   ELBO is scored by its bias relative to the stacked posterior's own
+   Monte Carlo ELBO, whose entropy term the harness estimates
+   independently of both arms; the error against `ln Z` is descriptive
+   only, and the KL gap `ln Z − ELBO(q)` is reported as the
+   posterior-quality measure in evidence units. Rejected: the draft's
+   error against `ln Z` as the gate, which mixes estimator bias with the
+   stack's KL gap and can rank a more optimistic estimator higher by
+   cancellation.
+8. **Pools on the cluster, analyses on the laptop (2026-09-14)**: pool
+   generation is a once-in-a-while golden-fixture job handed to another
+   developer for the HPC cluster; everything that consumes the pools
+   (the two-arm comparison, the Phase 2 estimator study, any later
+   regression check) must fit an overnight laptop run of 8–10 hours.
+   Consequently the pool returns to the paper's 100 filtered runs per
+   noisy condition with `M` up to 40, and the condition set is the eight
+   of the table (decision 2's one-level, five-condition allocation is
+   superseded). Rejected: adding conditions merely because the cluster
+   can afford them; each of the six left out is named with its reason.
+9. **Source identity, not host identity (2026-09-14)**: a pool must be
+   generated by one code and library state, so the worker still refuses
+   a case whose PyVBMC or gpyreg commit, harness module hashes or library
+   versions differ from the manifest's, but hostname, interpreter path,
+   thread settings and platform are recorded without being compared, so
+   any cluster node may run any case. Rejected: dropping the refusal and
+   only flagging mixed identities in the summary (a mixed pool is a
+   corrupted fixture, and the refusal is cheap).
+10. **gpyreg 1.2.1 everywhere (2026-09-14)**: the campaign pin, the CI
+    pin and PyVBMC's minimum version all move to the released 1.2.1;
+    the `acq_AcqFcnVIQR` oracle reference is re-baselined to it (one
+    ulp). Rejected: staying on 1.2.0 for the pool while the package
+    moves on, which would only invite a forgotten mismatch.
 
 ## Risks and rollback
 
@@ -1170,6 +1297,82 @@ draft had left open:
   regime is wanted; the pool of 60 supports it with less subset
   diversity than the paper's 100. Stages B, C and D await the PI's
   instruction.
+- 2026-09-14: the PI accepted the three-part proposal on the evidence
+  yardstick (decision 7): criterion 3 restated as bias relative to the
+  stack's Monte Carlo ELBO, that reference hardened with an
+  arm-independent entropy estimate and Monte Carlo standard deviations,
+  and the KL gap reported as its own column. Implemented the same day:
+  the reference entropy is the integrated class's `stacked_entropy` at
+  each arm's final weights, four batches of 50 draws per component from
+  a generator seeded by the cell, its standard error from the batch
+  spread; `e_log_joint_mc` carries its own standard error; every
+  `bias_<variant>`, `kl_gap` and the two gates are in the cell records
+  and the summaries, and `--summarize-only` reproduces them. The pilot
+  measurement was regenerated with the final harness (25 cells, 1.9
+  min; eight batches of 25 reference draws shared by both arms). At
+  `M = 3`, medians over five cells: headline bias 0.03 (Rosenbrock),
+  0.02 (noiseless GMM, no cap active), −0.30 (noisy GMM), 0.00 (ring),
+  0.27 (multisensory) against raw biases of 0.13, 0.02, 0.69, 0.12, 0.55
+  for the integrated class and 0.20, 0.06, 0.79, 0.17, 0.63 for the
+  original's raw estimate; `headline_bias_not_worse` holds on every
+  condition with the paired difference's interval below zero; `elbo_mc`
+  standard errors are 0.01–0.02 nats. The KL gaps of the three-run
+  stacks are 0.03 (Rosenbrock), 0.33 (noiseless GMM), 0.56 (noisy GMM),
+  1.19 (ring) and 0.67 (multisensory). The reference confirms the reason
+  for the change:
+  the original's own reported entropy sits 0.02–0.08 nats above the
+  arm-independent estimate on every condition, the integrated class's
+  fresh evaluation within ±0.015. Stage D note: the entropy machinery
+  allocates a `(K_total · draws, K_total)` array, about 256 MB per
+  reference batch and about 512 MB for the class's own 100-draw final
+  evaluation at `M = 16`; to be checked against the machine's memory
+  before stage D. Stages B, C and D remain unauthorized.
+- 2026-09-14: three further PI decisions (8–10 above). The pools become
+  a cluster job for another developer and the local budget applies to
+  the analyses only, so the allocation returns to 100 filtered runs per
+  noisy condition over the eight conditions of the table (six noisy, two
+  noiseless controls); the identity check compares source only; gpyreg
+  moves to the released 1.2.1 everywhere. Done the same day: editable
+  gpyreg reinstalled at 1.2.1, a frozen worktree at the tag, the CI pin
+  and `pyproject.toml` minimum moved, the full test suite green under
+  1.2.1 (1288 passed, 47 skipped, one rerun, 6.5 minutes), the exact
+  oracle check 10 of 11 with the VIQR acquisition one ulp off, that
+  reference re-baselined with the sanctioned tool and the exact check 11
+  of 11 again, the 15 pilot artifacts recomputing exactly under 1.2.1,
+  and the two new suite entries (`student_D8_noise3_svbmc`,
+  `multisensory_s1_D6_svbmc`). The review of the evidence-bias change
+  found no must-fix; its should-fix items (the same reference draws for
+  both arms, eight batches of 25, a component-count pairing guard, a
+  direct unit test, wording) are being applied in one harness pass
+  together with the cluster changes: the source/host identity split, a
+  `select` step that defines the filtered pool post hoc, and a `cases`
+  enumeration for array jobs.
+- 2026-09-14: the harness pass is complete and reviewed. Implemented:
+  gpyreg default at the 1.2.1 worktree; identity split into a compared
+  source half and a recorded host half, with a fallback that reads the
+  pilot's flat records (the pilot directory stays readable but cannot be
+  extended under the new pin, as intended); `select` writing
+  `selection.json` and `selection.md`, read by the comparison and named
+  in its `sources.json`; `cases` with `lines` and `json` formats and a
+  three-part sbatch sketch in the runner's docstring (login-node
+  commands, the array script, the post-array `select` and `summarize`),
+  chunked for Slurm's default array limit; `prepare` defaults of
+  100/150, controls 50/75, the ring's cap 200, with the precedence
+  defaults → `--target`/`--max-seeds` → `--control-*` → `--allocation`;
+  the eight `POOL_LABELS`; the evidence-review fixes (the same reference
+  draws for both arms, eight batches of 25, a component-count pairing
+  guard, a direct unit test of the reference, `headline_bias_growth`,
+  a clear error for results files without the reference fields, GFM
+  header escaping). The fresh review found two must-fix items, both
+  fixed: the array-path worker now records its own failure
+  (`<tag>.error.txt`, partial artifact removed, non-zero exit, stale
+  file cleared on success) and the tracked pilot comparison was
+  regenerated with the final harness; also fixed: `--summarize-only`
+  describes a run from its recorded settings, `cases` and `worker`
+  refuse an unauthorized manifest, `select`'s pass rate is named as the
+  prefix quantity it is, `growth_within_bound`, `pool_entry` through
+  `record_path`, the experiments README. Tests: 38 pool-generator and
+  16 comparison tests pass. The superseded 1.2.0 worktree was removed.
 
 ## Execution tracking
 
@@ -1185,3 +1388,6 @@ Live status of the phases above (`[ ]` not started, `[~]` in progress,
 - [ ] Phase 6: campaign, comparison and report (waits for PI go per stage)
 - [ ] Documentation updates listed above
 - [x] Doublecheck of the implemented phases (three fresh reviewers on 2026-09-14; every finding fixed and re-verified, see worklog)
+- [x] Evidence yardstick change (decision 7): `elbo_mc` with an arm-independent entropy reference, bias and KL-gap columns, criterion 3 gates, `--summarize-only`; reviewed, no must-fix (2026-09-14)
+- [x] Harness pass for the cluster (decisions 8–10): gpyreg default at the 1.2.1 worktree, source/host identity split, `select` and `cases` subcommands, approved defaults with an explicit precedence, the bias-review fixes; reviewed, every finding fixed; 38 + 16 tests pass; pilot comparison regenerated with the final harness (2026-09-14)
+- [ ] Hand-over of the pool generation to the cluster developer (the "Cluster generation" section and the runner docstring are the brief); stage D and the Phase 2 analyses run here once the pools are back

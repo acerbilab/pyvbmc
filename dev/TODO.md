@@ -83,16 +83,21 @@ and subsequent possibilities.
   reference comparable to VBMC's golden campaign. Establish and preserve the
   original S-VBMC baseline and reproducible campaign results. The
   [campaign plan](plans/svbmc-benchmark-campaign.md) owns the approved
-  design (2026-09-13): five pool conditions (multisensory subject 1,
-  Rosenbrock, the paper's GMM and ring, all at noise 3, plus a noiseless
-  GMM control) at PyVBMC's default budget, each run saved with its
-  posterior and the GP behind its statistics so the same pools serve the
-  Phase 2 estimator; pools of 60 (ring 40, control 30); a matched
-  comparison at `M` in {2, 4, 8, 16}; gpyreg pinned to a frozen worktree.
-  No retained artifact carried a posterior with its GP, so the pools are
-  generated fresh. The harness is implemented and reviewed; the pilot is
-  authorized and the pool stages and the comparison follow on separate
-  instructions. See the
+  design (2026-09-13, revised 2026-09-14): eight pool conditions
+  (multisensory subject 1 at noise 3 and 1.3, Rosenbrock, the paper's
+  GMM and ring, and Student D8, all at noise 3, plus noiseless GMM and
+  multisensory controls) at PyVBMC's default budget, each run saved with
+  its posterior and the GP behind its statistics so the same pools serve
+  the Phase 2 estimator; 100 filtered runs per noisy condition and 50
+  per control, generated on the cluster by another developer as a
+  once-in-a-while golden fixture, while the comparison and the Phase 2
+  analyses run on a laptop within an overnight budget; every reported
+  ELBO scored by its bias against the stack's own Monte Carlo ELBO;
+  gpyreg pinned to the released 1.2.1. No retained artifact carried a
+  posterior with its GP, so the pools are generated fresh. The harness
+  is implemented and reviewed and a three-seed pilot has run; the pool
+  generation is handed over and the comparison follows on instruction.
+  See the
   [campaign requirement](plans/svbmc-integration.md#benchmark-campaign-required-for-15).
 
 - [ ] **Slurm/HPC benchmark support.** Design reproducible submission,
