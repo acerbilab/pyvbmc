@@ -44,7 +44,7 @@ records its execution.
   the checks, a systematic cross-run under-prediction on two noisy
   conditions, and that at three runs the existing component-median cap is
   closer to the reference than the honest estimate on four of five
-  conditions. Next: once the pools are back and stage D has run, score its
+  conditions. Next: once stage D has run on the full pools, score its
   cells (minutes to an hour), read the raw, capped and honest bias against
   the number of runs, and if the under-prediction holds try the two
   variants the report names (a leave-one-run-out GP refit on the pooled
@@ -63,12 +63,23 @@ records its execution.
   runs per noisy condition and 50 per control, each run saved with its
   posterior and the GP behind its statistics so the same pools serve the
   Phase 2 estimator, gpyreg pinned to 1.2.1. The harness is implemented
-  and reviewed and a three-seed pilot has run. Status: the pools are being
-  generated on the cluster by another developer per the
-  [hand-off note](2026-09-14-svbmc-pool-handoff.md) and return as a
-  draft-release asset plus a PR to `dev-next`; then, on instruction, stage
-  D (the two-arm comparison, about seven hours on a laptop) and the Phase
-  2 scoring run locally, followed by the report. See the
+  and reviewed and a three-seed pilot has run. Status: the pools were
+  generated on the cluster per the
+  [hand-off note](2026-09-14-svbmc-pool-handoff.md) (1100 runs, 700
+  selected) and came back as the archive of the draft release
+  `svbmc-pool-20260914` and a PR to `dev-next` with the Slurm scripts, a
+  `verify` subcommand and the tracked records. Next: review and merge that
+  PR; download the archive into `dev/scripts/runs/` (`gh release download
+  svbmc-pool-20260914`), check its SHA-256 against the pool README and
+  unpack it (it needs a zstd decoder); run `svbmc_pool_run.py verify` with
+  `--gpyreg-source` pointing at the local gpyreg 1.2.1 worktree; on a
+  feature branch, let `svbmc_pool_stack.py` accept `--gpyreg-source` at
+  the manifest's gpyreg commit, with a test (the unpacked manifest names
+  the cluster's gpyreg path and the stack harness refuses the flag today;
+  the PI chose this over editing the manifest by hand); then, on
+  instruction, stage D (the two-arm comparison, about seven hours on a
+  laptop) and the Phase 2 scoring run locally, followed by the report. See
+  the
   [campaign requirement](plans/svbmc-integration.md#benchmark-campaign-required-for-15).
 
 - [ ] **PyMC integration: the target adapter with the tested scope.** The
