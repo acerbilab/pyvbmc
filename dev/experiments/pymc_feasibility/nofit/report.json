@@ -1,0 +1,177 @@
+{
+ "generated": "2026-09-14 13:37:54",
+ "environment": {
+  "python": "3.12.6",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "pymc": "6.3.2",
+  "pytensor": "3.3.1",
+  "pytensor_cxx": "''",
+  "pytensor_mode": "Mode",
+  "pytensor_linker": "auto",
+  "pytensor_floatX": "float64",
+  "arviz": "1.3.0",
+  "numpy": "2.5.3",
+  "scipy": "1.18.1",
+  "pyvbmc": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc",
+  "gpyreg": "C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg",
+  "executable": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\pymc_feasibility_20260914\\venv\\Scripts\\python.exe"
+ },
+ "seed": 0,
+ "models": [
+  {
+   "name": "scalar",
+   "reference": "analytic (conjugate normal-normal)",
+   "D": 1,
+   "names": [
+    "mu"
+   ],
+   "value_names": [
+    "mu"
+   ],
+   "kept_transforms": {},
+   "shapes": [
+    []
+   ],
+   "support": {
+    "mu": [
+     -Infinity,
+     Infinity
+    ]
+   },
+   "coordinates": "mu [-inf, inf]",
+   "dims": {},
+   "coords": {},
+   "ln_Z": -35.97216327792224,
+   "density": {
+    "points": 25,
+    "max_abs_difference": 2.1762372170996969e-07,
+    "offset": 2.1762369470934572e-07,
+    "max_abs_deviation_from_offset": 2.984279489663025e-14,
+    "passes": true,
+    "outside_bounds_value": null
+   },
+   "jacobian": {
+    "applicable": false
+   }
+  },
+  {
+   "name": "positive",
+   "reference": "one-dimensional quadrature over sigma",
+   "D": 1,
+   "names": [
+    "sigma"
+   ],
+   "value_names": [
+    "sigma_log__"
+   ],
+   "kept_transforms": {
+    "sigma": "LogTransform"
+   },
+   "shapes": [
+    []
+   ],
+   "support": {
+    "sigma": [
+     0.0,
+     Infinity
+    ]
+   },
+   "coordinates": "sigma_log__ (LogTransform kept, unbounded)",
+   "dims": {},
+   "coords": {},
+   "ln_Z": -20.982796103874524,
+   "density": {
+    "points": 25,
+    "max_abs_difference": 1.9046595411964518e-09,
+    "offset": -1.9046507304665284e-09,
+    "max_abs_deviation_from_offset": 2.671640686464594e-14,
+    "passes": true,
+    "outside_bounds_value": null
+   },
+   "jacobian": {
+    "applicable": true,
+    "kept": {
+     "sigma": "LogTransform"
+    },
+    "checked": true,
+    "max_abs_difference": 1.532107773982716e-14,
+    "passes": true
+   }
+  },
+  {
+   "name": "vector",
+   "reference": "beta marginalized analytically, quadrature over sigma",
+   "D": 3,
+   "names": [
+    "beta",
+    "sigma"
+   ],
+   "value_names": [
+    "beta",
+    "sigma_log__"
+   ],
+   "kept_transforms": {
+    "sigma": "LogTransform"
+   },
+   "shapes": [
+    [
+     2
+    ],
+    []
+   ],
+   "support": {
+    "beta": [
+     -Infinity,
+     Infinity
+    ],
+    "sigma": [
+     0.0,
+     Infinity
+    ]
+   },
+   "coordinates": "beta [-inf, inf]; sigma_log__ (LogTransform kept, unbounded)",
+   "dims": {
+    "beta": [
+     "coef"
+    ]
+   },
+   "coords": {
+    "coef": [
+     "intercept",
+     "slope"
+    ]
+   },
+   "ln_Z": -39.43075739300434,
+   "density": {
+    "points": 25,
+    "max_abs_difference": 6.204936653375626e-08,
+    "offset": -6.204628789419076e-08,
+    "max_abs_deviation_from_offset": 4.197318048686828e-12,
+    "passes": true,
+    "outside_bounds_value": null
+   },
+   "jacobian": {
+    "applicable": true,
+    "kept": {
+     "sigma": "LogTransform"
+    },
+    "checked": true,
+    "max_abs_difference": 3.873346088312246e-12,
+    "passes": true
+   }
+  }
+ ],
+ "rejections": [
+  {
+   "rejected": true,
+   "message": "k is int64: VBMC needs continuous parameters",
+   "name": "discrete"
+  },
+  {
+   "rejected": true,
+   "message": "w: the support of a variable with a SimplexTransform is not a box of independent bounds, which VBMC cannot represent",
+   "name": "simplex"
+  }
+ ],
+ "errors": []
+}
