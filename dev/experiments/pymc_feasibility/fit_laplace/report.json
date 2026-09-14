@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-14 14:31:11",
+ "generated": "2026-09-14 14:53:31",
  "environment": {
   "python": "3.12.6",
   "platform": "Windows-11-10.0.26200-SP0",
@@ -13,11 +13,11 @@
   "numpy": "2.5.3",
   "scipy": "1.18.1",
   "pyvbmc": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc",
-  "pyvbmc_commit": "04183511e508d6acc45dcc5cf0bad56bf597df70",
+  "pyvbmc_commit": "59e9a52cb5b967730cfa031299b9a14e23ff40bd",
   "pyvbmc_dirty": "M dev/scripts/pymc_feasibility.py",
   "gpyreg": "C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg",
   "gpyreg_commit": "9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b",
-  "script_sha256": "03b278f7faee9e052b3712a1ffc9f91dba6b4e52948fac04fd9bd6cbc0fa650c",
+  "script_sha256": "f2ade815a503db0b24f7e646a1fc046a63183de79b20b7ca6431bd0477460379",
   "executable": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\pymc_feasibility_20260914\\venv\\Scripts\\python.exe"
  },
  "seed": 0,
@@ -50,23 +50,23 @@
    "coords": {},
    "density": {
     "points": 25,
-    "max_abs_difference": 2.1762372170996969e-07,
-    "offset": 2.1762369470934572e-07,
-    "max_abs_deviation_from_offset": 2.984279489663025e-14,
+    "max_abs_difference": 2.176237359208244e-07,
+    "offset": 2.1762369954103632e-07,
+    "max_abs_deviation_from_offset": 3.637978807832867e-14,
     "outside_bounds_value": null,
     "passes": true
    },
    "jacobian": {
     "applicable": false
    },
-   "ms_per_call": 0.06356800004141405,
+   "ms_per_call": 0.09231300005922094,
    "fit": {
     "plausible": "laplace",
     "laplace_fallback": {
      "curvature": [],
      "clipped": []
     },
-    "setup_seconds": 0.16903499996988103,
+    "setup_seconds": 0.24774349998915568,
     "plb": [
      -0.08619013747341975
     ],
@@ -82,7 +82,7 @@
      -35.792489304835115,
      -35.792489304835115
     ],
-    "seconds": 3.375570699980017,
+    "seconds": 5.248279799998272,
     "func_count": 65,
     "iterations": 11,
     "success_flag": true,
@@ -138,8 +138,8 @@
   {
    "name": "positive",
    "reference": "one-dimensional quadrature over sigma",
-   "ln_Z": -20.982796103874524,
-   "ln_Z_error": 1.9722292276375146e-10,
+   "ln_Z": -19.94639648585764,
+   "ln_Z_error": 6.365895652828309e-10,
    "D": 1,
    "names": [
     "sigma"
@@ -164,9 +164,9 @@
    "coords": {},
    "density": {
     "points": 25,
-    "max_abs_difference": 1.9046595411964518e-09,
-    "offset": -1.9046507304665284e-09,
-    "max_abs_deviation_from_offset": 2.671640686464594e-14,
+    "max_abs_difference": 1.9046666466238094e-09,
+    "offset": -1.9046481725126798e-09,
+    "max_abs_deviation_from_offset": 8.100187187681686e-14,
     "outside_bounds_value": null,
     "passes": true
    },
@@ -176,47 +176,47 @@
      "sigma": "LogTransform"
     },
     "checked": true,
-    "max_abs_difference": 1.532107773982716e-14,
+    "max_abs_difference": 1.2656542480726785e-14,
     "passes": true
    },
-   "ms_per_call": 0.008824999968055636,
+   "ms_per_call": 0.018878999981097877,
    "fit": {
     "plausible": "laplace",
     "laplace_fallback": {
      "curvature": [],
      "clipped": []
     },
-    "setup_seconds": 0.19635040004504845,
+    "setup_seconds": 1.0446943000424653,
     "plb": [
-     -0.6939098729604377
+     -0.7668901656375104
     ],
     "pub": [
-     0.3883280475907417
+     0.31709354284360103
     ],
     "x0": [
-     -0.15279091268484804
+     -0.22489831139695468
     ],
     "log_joint_at_plb_pub_centre_x0": [
-     -27.42582274739501,
-     -22.983857244824183,
-     -20.248114588889283,
-     -20.248114588889283
+     -26.40245773708666,
+     -21.94181730192326,
+     -19.21387960039967,
+     -19.21387960039967
     ],
-    "seconds": 2.955493799992837,
+    "seconds": 5.1031394000165164,
     "func_count": 65,
     "iterations": 11,
     "success_flag": true,
-    "elbo": -20.9844685587082,
-    "elbo_sd": 0.0008716045116260692,
-    "ln_Z": -20.982796103874524,
-    "ln_Z_error": 1.9722292276375146e-10,
-    "elbo_minus_ln_Z": -0.0016724548336775058,
+    "elbo": -19.947212716864065,
+    "elbo_sd": 0.0008227155073124569,
+    "ln_Z": -19.94639648585764,
+    "ln_Z_error": 6.365895652828309e-10,
+    "elbo_minus_ln_Z": -0.0008162310064250278,
     "K": 50,
     "posterior_mean": {
-     "sigma": 0.9412107949646301
+     "sigma": 0.864613495195864
     },
     "posterior_sd": {
-     "sigma": 0.1861893942547271
+     "sigma": 0.1724894050640094
     }
    },
    "return_path": {
@@ -252,8 +252,8 @@
   {
    "name": "vector",
    "reference": "beta marginalized analytically, quadrature over sigma",
-   "ln_Z": -39.43075739300434,
-   "ln_Z_error": 2.6917588470352953e-08,
+   "ln_Z": -40.500750400169956,
+   "ln_Z_error": 2.7969358444196365e-09,
    "D": 3,
    "names": [
     "beta",
@@ -302,9 +302,9 @@
    },
    "density": {
     "points": 25,
-    "max_abs_difference": 6.204936653375626e-08,
-    "offset": -6.204628789419076e-08,
-    "max_abs_deviation_from_offset": 4.197318048686828e-12,
+    "max_abs_difference": 6.205300451256335e-08,
+    "offset": -6.204567029044484e-08,
+    "max_abs_deviation_from_offset": 2.5407587145314956e-11,
     "outside_bounds_value": null,
     "passes": true
    },
@@ -314,61 +314,61 @@
      "sigma": "LogTransform"
     },
     "checked": true,
-    "max_abs_difference": 3.873346088312246e-12,
+    "max_abs_difference": 3.3382185904429207e-12,
     "passes": true
    },
-   "ms_per_call": 0.012440000136848539,
+   "ms_per_call": 0.015178999747149646,
    "fit": {
     "plausible": "laplace",
     "laplace_fallback": {
      "curvature": [],
      "clipped": []
     },
-    "setup_seconds": 0.27774590003537014,
+    "setup_seconds": 2.376232499955222,
     "plb": [
-     0.04939100324831436,
-     -1.431763883115182,
-     -0.8216071777950671
+     0.21064612145368639,
+     -1.3661412278239322,
+     -0.7866453903735062
     ],
     "pub": [
-     0.7636312588188384,
-     -0.6930611989305068,
-     -0.0496963976090633
+     0.9675641537412818,
+     -0.6867321991671467,
+     -0.014928671995113219
     ],
     "x0": [
-     0.4065111310335764,
-     -1.0624125410228444,
-     -0.4356517877020652
+     0.5891051375974841,
+     -1.0264367134955394,
+     -0.40078703118430975
     ],
     "log_joint_at_plb_pub_centre_x0": [
-     -64.64994928997704,
-     -43.963924657073534,
-     -36.04042600233347,
-     -36.04042600233347
+     -58.96344447585102,
+     -43.55608090018906,
+     -37.061224579289416,
+     -37.061224579289416
     ],
-    "seconds": 12.435034800029825,
+    "seconds": 22.90888120001182,
     "func_count": 65,
     "iterations": 11,
     "success_flag": true,
-    "elbo": -39.4377844821313,
-    "elbo_sd": 0.0007924089250331087,
-    "ln_Z": -39.43075739300434,
-    "ln_Z_error": 2.6917588470352953e-08,
-    "elbo_minus_ln_Z": -0.007027089126957264,
+    "elbo": -40.50445145337605,
+    "elbo_sd": 0.0008656946720284388,
+    "ln_Z": -40.500750400169956,
+    "ln_Z_error": 2.7969358444196365e-09,
+    "elbo_minus_ln_Z": -0.0037010532060932633,
     "K": 50,
     "posterior_mean": {
      "beta": [
-      0.40807661956699975,
-      -1.0662157605176386
+      0.5910874300796771,
+      -1.026000158806071
      ],
-     "sigma": 0.7019150855988445
+     "sigma": 0.7247928334016551
     },
     "posterior_sd": {
      "beta": [
-      0.13028242106183005,
-      0.13388467756882752
+      0.14157413055866605,
+      0.12289236335052682
      ],
-     "sigma": 0.09955715524078462
+     "sigma": 0.10066345567403237
     }
    },
    "return_path": {
@@ -435,8 +435,8 @@
   {
    "name": "bounded",
    "reference": "u[0] integrated in closed form, quadrature over p, u[1]",
-   "ln_Z": -14.622235630280173,
-   "ln_Z_error": 1.6661663759077177e-14,
+   "ln_Z": -15.880803770528754,
+   "ln_Z_error": 1.6676902537635122e-14,
    "D": 3,
    "names": [
     "p",
@@ -474,70 +474,72 @@
    "coords": {},
    "density": {
     "points": 25,
-    "max_abs_difference": 2.173874591449021e-08,
-    "offset": 2.173874214861371e-08,
-    "max_abs_deviation_from_offset": 6.89226453832881e-15,
+    "max_abs_difference": 2.1738756572631246e-08,
+    "offset": 2.1738743285482086e-08,
+    "max_abs_deviation_from_offset": 1.3287149159507967e-14,
     "outside_bounds_value": -Infinity,
     "passes": true
    },
    "jacobian": {
     "applicable": false
    },
-   "ms_per_call": 0.06937199999811128,
+   "ms_per_call": 0.1598145000752993,
    "fit": {
     "plausible": "laplace",
     "laplace_fallback": {
-     "curvature": [],
-     "clipped": [
+     "curvature": [
       "p",
       "u",
       "u"
+     ],
+     "clipped": [
+      "u"
      ]
     },
-    "setup_seconds": 0.35226369998417795,
+    "setup_seconds": 3.7190496000112034,
     "plb": [
-     0.01,
+     0.13645731807523442,
      -0.97,
-     0.01
+     0.030543390228544187
     ],
     "pub": [
-     0.99,
-     1.97,
-     0.99
+     0.8635514619010163,
+     1.6722250652873674,
+     0.9281820337175797
     ],
     "x0": [
-     0.5000013751155729,
-     0.4556849043129436,
-     0.49507461340928643
+     0.5000043899881254,
+     0.31515382221050525,
+     0.4793627119730619
     ],
     "log_joint_at_plb_pub_centre_x0": [
-     -51.70356543124841,
-     -54.5987979797034,
-     -13.9072555447542,
-     -13.892708877559024
+     -42.29984454253105,
+     -44.14113983756477,
+     -15.157910133925625,
+     -15.15015171222123
     ],
-    "seconds": 20.044666500005405,
-    "func_count": 80,
-    "iterations": 15,
+    "seconds": 35.565143599989824,
+    "func_count": 75,
+    "iterations": 14,
     "success_flag": true,
-    "elbo": -14.633322455966717,
-    "elbo_sd": 0.002001125231668693,
-    "ln_Z": -14.622235630280173,
-    "ln_Z_error": 1.6661663759077177e-14,
-    "elbo_minus_ln_Z": -0.011086825686543733,
+    "elbo": -15.888102058669919,
+    "elbo_sd": 0.0028975707914536734,
+    "ln_Z": -15.880803770528754,
+    "ln_Z_error": 1.6676902537635122e-14,
+    "elbo_minus_ln_Z": -0.007298288141164733,
     "K": 50,
     "posterior_mean": {
-     "p": 0.4982118152353787,
+     "p": 0.5009529818061662,
      "u": [
-      0.450010398817942,
-      0.5000085255662644
+      0.29524209270031554,
+      0.5009758178928521
      ]
     },
     "posterior_sd": {
-     "p": 0.22470055790998936,
+     "p": 0.22425488548576555,
      "u": [
-      0.4433707592300814,
-      0.2888208982244466
+      0.45291617444368343,
+      0.2912237416332091
      ]
     }
    },
@@ -584,6 +586,144 @@
       1,
       2000,
       12
+     ]
+    }
+   }
+  },
+  {
+   "name": "one_sided",
+   "reference": "two one-dimensional quadratures (t and v independent)",
+   "ln_Z": -25.24097666751248,
+   "ln_Z_error": 9.208467613905747e-09,
+   "D": 2,
+   "names": [
+    "t",
+    "v"
+   ],
+   "value_names": [
+    "t_interval__",
+    "v_interval__"
+   ],
+   "kept_transforms": {
+    "v": "Interval",
+    "t": "Interval"
+   },
+   "shapes": [
+    [],
+    []
+   ],
+   "support": {
+    "t": [
+     1.0,
+     Infinity
+    ],
+    "v": [
+     -Infinity,
+     -0.5
+    ]
+   },
+   "coordinates": "t_interval__ (Interval kept, unbounded); v_interval__ (Interval kept, unbounded)",
+   "dims": {},
+   "coords": {},
+   "density": {
+    "points": 25,
+    "max_abs_difference": 8.027789988318546e-09,
+    "offset": -8.027784019759565e-09,
+    "max_abs_deviation_from_offset": 8.242295734221592e-15,
+    "outside_bounds_value": null,
+    "passes": true
+   },
+   "jacobian": {
+    "applicable": true,
+    "kept": {
+     "v": "Interval",
+     "t": "Interval"
+    },
+    "checked": true,
+    "max_abs_difference": 6.217248937900877e-15,
+    "passes": true
+   },
+   "ms_per_call": 0.022996499901637435,
+   "fit": {
+    "plausible": "laplace",
+    "laplace_fallback": {
+     "curvature": [],
+     "clipped": []
+    },
+    "setup_seconds": 2.831352600012906,
+    "plb": [
+     -0.1448015602430024,
+     -1.4051510404804843
+    ],
+    "pub": [
+     1.1309845345705458,
+     1.067708642731366
+    ],
+    "x0": [
+     0.4930914871637717,
+     -0.16872119887455908
+    ],
+    "log_joint_at_plb_pub_centre_x0": [
+     -30.452630677847644,
+     -49.14341349760703,
+     -24.636613954603746,
+     -24.636613954603746
+    ],
+    "seconds": 19.408381299988832,
+    "func_count": 75,
+    "iterations": 13,
+    "success_flag": true,
+    "elbo": -25.24576452779199,
+    "elbo_sd": 0.0007588367039753059,
+    "ln_Z": -25.24097666751248,
+    "ln_Z_error": 9.208467613905747e-09,
+    "elbo_minus_ln_Z": -0.00478786027951017,
+    "K": 50,
+    "posterior_mean": {
+     "t": 2.640962200670275,
+     "v": -1.3527384049796405
+    },
+    "posterior_sd": {
+     "t": 0.34577521462789057,
+     "v": 0.33917266106549876
+    }
+   },
+   "return_path": {
+    "container": "DataTree",
+    "variables": {
+     "t": {
+      "dims": [
+       "chain",
+       "draw"
+      ],
+      "shape": [
+       1,
+       2000
+      ]
+     },
+     "v": {
+      "dims": [
+       "chain",
+       "draw"
+      ],
+      "shape": [
+       1,
+       2000
+      ]
+     }
+    },
+    "coords": {},
+    "posterior_predictive": {
+     "name": "y_t",
+     "dims": [
+      "chain",
+      "draw",
+      "y_t_dim_0"
+     ],
+     "shape": [
+      1,
+      2000,
+      8
      ]
     }
    }

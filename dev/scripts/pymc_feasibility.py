@@ -73,8 +73,10 @@ The adapter's route through PyMC:
   the log likelihood spans tens of thousands of nats and the GP fit of
   the initial design fails.
 
-Models (data simulated from fixed seeds; every density has a closed form
-and every evidence a closed form or a low-dimensional quadrature):
+Models (data simulated from a generator per model keyed by ``--seed`` and
+the model's position, so the same data appear on both routes; every
+density has a closed form and every evidence a closed form or a
+low-dimensional quadrature):
 
 1. ``scalar``: ``mu ~ Normal(0, 3)``, ``y ~ Normal(mu, 1.5)``, 20 data;
    conjugate, so the posterior and the evidence are analytic.
@@ -91,7 +93,12 @@ and every evidence a closed form or a low-dimensional quadrature):
    per-coordinate limits, removed), ``y ~ Normal(p + u[0] + u[1], 1)``,
    12 data; the evidence by integrating over ``u[0]`` in closed form and
    over ``p`` and ``u[1]`` by quadrature.
-5. Rejected: ``discrete`` (``k ~ Poisson``), ``simplex`` (``w ~
+5. ``one_sided``: ``t ~ TruncatedNormal(0, 2, lower=1)`` and
+   ``v ~ TruncatedNormal(0, 2, upper=-0.5)`` (interval transforms with
+   one infinite limit, kept), each with 8 normal observations; the
+   evidence is a product of two one-dimensional quadratures and the
+   Jacobian increment of both kept transforms is checked.
+6. Rejected: ``discrete`` (``k ~ Poisson``), ``simplex`` (``w ~
    Dirichlet``), ``suppressed`` (``HalfNormal(default_transform=None)``)
    and ``random_bounds`` (``Uniform(lower=mu, upper=mu + 1)`` with ``mu``
    a free variable).
@@ -748,6 +755,71 @@ def model_bounded(rng):
     }
 
 
+def model_one_sided(rng):
+    """Two one-sided interval variables, transforms kept.
+
+    ``t`` is bounded below at 1 and ``v`` above at -0.5; PyMC attaches an
+    interval transform with one infinite limit to each (``lower + exp``
+    and ``upper - exp``), which the adapter keeps, so VBMC sees two
+    unbounded coordinates and the Jacobian increment is the value variable
+    itself, as for the log transform. Each variable has its own data, so
+    the evidence is a product of two one-dimensional quadratures.
+    """
+    import pymc as pm
+    from scipy.integrate import quad
+    from scipy.stats import norm
+
+    y_t = rng.normal(1.8, 1.0, size=8)
+    y_v = rng.normal(-1.2, 1.0, size=8)
+    with pm.Model() as model:
+        t = pm.TruncatedNormal("t", 0.0, 2.0, lower=1.0)
+        v = pm.TruncatedNormal("v", 0.0, 2.0, upper=-0.5)
+        pm.Normal("y_t", t, 1.0, observed=y_t)
+        pm.Normal("y_v", v, 1.0, observed=y_v)
+    log_norm_t = float(norm.logsf(1.0, 0.0, 2.0))
+    log_norm_v = float(norm.logcdf(-0.5, 0.0, 2.0))
+
+    def log_t(t):
+        if t <= 1.0:
+            return -np.inf
+        return float(
+            _log_normal(t, 0.0, 2.0)
+            - log_norm_t
+            + np.sum(_log_normal(y_t, t, 1.0))
+        )
+
+    def log_v(v):
+        if v >= -0.5:
+            return -np.inf
+        return float(
+            _log_normal(v, 0.0, 2.0)
+            - log_norm_v
+            + np.sum(_log_normal(y_v, v, 1.0))
+        )
+
+    def hand(point):
+        return log_t(float(point["t"])) + log_v(float(point["v"]))
+
+    peak_t, peak_v = log_t(max(1.0, y_t.mean()) + 1e-3), log_v(
+        min(-0.5, y_v.mean()) - 1e-3
+    )
+    value_t, error_t = quad(
+        lambda x: np.exp(log_t(x) - peak_t), 1.0, 30.0, limit=200
+    )
+    value_v, error_v = quad(
+        lambda x: np.exp(log_v(x) - peak_v), -30.0, -0.5, limit=200
+    )
+    return {
+        "name": "one_sided",
+        "model": model,
+        "hand": hand,
+        "ln_Z": float(np.log(value_t) + peak_t + np.log(value_v) + peak_v),
+        "ln_Z_error": float(error_t / value_t + error_v / value_v),
+        "truth": {},
+        "reference": "two one-dimensional quadratures (t and v independent)",
+    }
+
+
 def model_discrete(rng):
     import pymc as pm
 
@@ -836,17 +908,22 @@ def check_density(spec, target, rng):
 
 
 def check_jacobian(spec, target, rng):
-    """The Jacobian increment of the kept transforms against ``log sigma``.
+    """The Jacobian increment of the kept transforms against the value.
 
     ``log_joint - log_density_plain`` is what ``compile_logp(jacobian=True)``
-    adds for the kept transforms; for a log transform of a scalar it is the
-    value variable itself, ``log sigma``. The constant offsets of the
-    folded scales cancel in the increment.
+    adds for the kept transforms. For a log transform (``exp``) and for a
+    one-sided interval transform (``lower + exp`` or ``upper - exp``) of a
+    scalar the log-Jacobian is the value variable itself, so the expected
+    increment is the sum of the kept value variables. The constant
+    offsets of the folded scales cancel in the increment.
     """
     if not target.kept:
         return {"applicable": False}
     kinds = {n: k["transform"] for n, k in target.kept.items()}
-    if any(kind != "LogTransform" for kind in kinds.values()):
+    if any(
+        kind not in ("LogTransform", "Interval", "IntervalTransform")
+        for kind in kinds.values()
+    ):
         return {"applicable": True, "kept": kinds, "checked": False}
     plb, pub = target.prior_box(rng)
     points = rng.uniform(plb, pub, size=(N_CHECK_POINTS, target.D))
@@ -1215,9 +1292,20 @@ def main(argv=None):
         "rejections": [],
         "errors": [],
     }
-    rng = np.random.default_rng(args.seed)
-    for build in (model_scalar, model_positive, model_vector, model_bounded):
-        spec = build(rng)
+    # Every model's data come from a generator of their own, keyed by the
+    # model's position, so that the models are the same whichever route
+    # is run and however many draws the checks and boxes consume.
+    rng = np.random.default_rng([args.seed, 1])
+    for index, build in enumerate(
+        (
+            model_scalar,
+            model_positive,
+            model_vector,
+            model_bounded,
+            model_one_sided,
+        )
+    ):
+        spec = build(np.random.default_rng([args.seed, 0, index]))
         entry = {
             "name": spec["name"],
             "reference": spec["reference"],
@@ -1321,13 +1409,15 @@ def main(argv=None):
                 flush=True,
             )
         report["models"].append(entry)
-    for build in (
-        model_discrete,
-        model_simplex,
-        model_suppressed,
-        model_random_bounds,
+    for index, build in enumerate(
+        (
+            model_discrete,
+            model_simplex,
+            model_suppressed,
+            model_random_bounds,
+        )
     ):
-        spec = build(rng)
+        spec = build(np.random.default_rng([args.seed, 2, index]))
         outcome = check_rejection(spec)
         outcome["name"] = spec["name"]
         report["rejections"].append(outcome)
