@@ -41,17 +41,21 @@ and subsequent possibilities.
   criterion for fixed samples and weights, but can change numerical search
   behavior and needs end-to-end validation.
 
-- [ ] **Remove experimental acquisition alternatives from the 1.5 public
-  interface.** The decision covers VIQR's `var_reduction` and `sd_reduction`,
-  scalar `AcqFcnEIG()` and per-component `AcqFcnEIG(components=True)`.
-  The VIQR alternatives change the criterion. In the Rosenbrock D2
-  experiments, scalar EIG underperformed at both tested noise levels;
-  per-component EIG was competitive at low noise but worse at higher noise.
-  Neither EIG variant demonstrated a robust advantage over default VIQR.
-  Preserve their implementation on a retained experimental development
-  branch when carrying out the cleanup, and keep the
+- [x] **Remove experimental acquisition alternatives from the 1.5 public
+  interface.** `AcqFcnVIQR` offers the losses `iqr` and `iqr_reduction`,
+  and the package has no expected-information-gain acquisition: VIQR's
+  `var_reduction` and `sd_reduction`, scalar `AcqFcnEIG()` and
+  per-component `AcqFcnEIG(components=True)` are gone. The VIQR
+  alternatives change the criterion. In the Rosenbrock D2 experiments,
+  scalar EIG underperformed at both tested noise levels; per-component EIG
+  was competitive at low noise but worse at higher noise. Neither EIG
+  variant demonstrated a robust advantage over default VIQR. Their
+  implementation is retained on the branch
+  `retain-experimental-acquisitions` (at `fa6922f`, the last commit that
+  carries it), alongside the
   [experiment records](results/2026-09-08-noisy-acquisition-experiments.md).
-  Code removal and branch preservation remain to be done.
+  The default `iqr` path is untouched: the 11 oracle fixtures pass
+  `--check --exact`.
 
 - [ ] **S-VBMC ELBO debiasing.** Evaluate raw, capped and proposed cross-run
   GP estimates against ground truth, including noisy targets and different

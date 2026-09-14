@@ -32,11 +32,12 @@ method are implemented and measured on `dev-svbmc-speedups`
 Designing new acquisition functions or criteria is outside scope. Keep
 standard VIQR (`loss="iqr"`); evaluating `iqr_reduction` as a reformulation
 for numerical search is within the efficiency work and requires validation.
-PI decision 2026-09-13: remove VIQR's `var_reduction` and `sd_reduction`,
-scalar `AcqFcnEIG()` and per-component `AcqFcnEIG(components=True)` from
-the 1.5 public interface, preserving their code on a retained experimental
-development branch during the later cleanup. Code removal and branch
-preservation remain to be done. The
+PI decision 2026-09-13: VIQR's `var_reduction` and `sd_reduction`, scalar
+`AcqFcnEIG()` and per-component `AcqFcnEIG(components=True)` are outside
+the 1.5 public interface. They are removed from the package; their
+implementation is retained on the branch
+`retain-experimental-acquisitions` (at `fa6922f`, the last commit that
+carries it). The
 [acquisition experiments](../results/2026-09-08-noisy-acquisition-experiments.md)
 record scalar EIG's poor results and per-component EIG's mixed results on
 Rosenbrock D2 at two noise levels; neither demonstrated a robust advantage

@@ -366,9 +366,9 @@ def active_sample(
                     "active_importance_sampling"
                 ] = active_importance_sampling(vp, gp, acq_eval, options)
 
-            # Re-evaluate variance of the log joint if requested (per
-            # hyperparameter sample, with the covariance of the components'
-            # integrals for the per-component information gain).
+            # Re-evaluate variance of the log joint if requested: per
+            # hyperparameter sample, together with the covariance of the
+            # components' integrals.
             if acq_eval.acq_info.get("compute_var_log_joint"):
                 out = _gp_log_joint(vp, gp, 0, 0, 0, 1, separate_K=True)
                 optim_state["var_log_joint_samples"] = out[2]

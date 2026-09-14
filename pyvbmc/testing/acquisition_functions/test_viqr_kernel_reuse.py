@@ -10,7 +10,7 @@ import pytest
 import pyvbmc.acquisition_functions.acq_fcn_viqr as viqr_module
 from pyvbmc.acquisition_functions import AcqFcnVIQR
 
-from .test_acq_fcn_viqr_losses import REDUCTIONS, _setup
+from .test_acq_fcn_viqr_losses import _setup
 
 
 def _active_arrays(optim_state):
@@ -125,12 +125,11 @@ def test_fast_and_fallback_match_both_factor_representations(
     np.testing.assert_array_equal(fast, fallback)
 
 
-def test_reduction_losses_and_custom_viqr_subclass_fall_back():
+def test_reduction_loss_and_custom_viqr_subclass_fall_back():
     gp, vp, optim_state, X_eval = _setup(2)
 
-    for loss in REDUCTIONS:
-        acq = AcqFcnVIQR(loss=loss)
-        assert acq._predict_with_context(X_eval, gp)[2] is None
+    acq = AcqFcnVIQR(loss="iqr_reduction")
+    assert acq._predict_with_context(X_eval, gp)[2] is None
 
     calls = []
 

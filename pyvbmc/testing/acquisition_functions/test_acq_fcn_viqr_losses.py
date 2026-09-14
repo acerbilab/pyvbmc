@@ -1,10 +1,10 @@
-"""The reduction losses of ``AcqFcnVIQR`` against exact identities.
+"""The losses of ``AcqFcnVIQR`` against exact identities.
 
-The look-ahead variance reduction ``tau2`` that all members of the family
-share is checked against a brute-force computation from the full GP
-posterior covariance (``gp.predict_full``), and the ``"iqr_reduction"``
-member against the algebraic identity that ties it to the default VIQR on
-the same importance samples.
+The look-ahead variance reduction ``tau2`` that both members share is
+checked against a brute-force computation from the full GP posterior
+covariance (``gp.predict_full``), and the ``"iqr_reduction"`` member
+against the algebraic identity that ties it to the default VIQR on the
+same importance samples.
 """
 
 import os
@@ -20,8 +20,6 @@ from pyvbmc.vbmc import active_importance_sampling
 from pyvbmc.vbmc.options import Options
 
 from ._regularization import check_variance_regularization
-
-REDUCTIONS = ("iqr_reduction", "var_reduction", "sd_reduction")
 
 
 def _setup(ns_gp, seed=0, D=2, N=25, Na=40):
@@ -132,20 +130,14 @@ def test_stored_importance_variance_matches_full_covariance(ns_gp):
 
 
 @pytest.mark.parametrize("ns_gp", [1, 2])
-@pytest.mark.parametrize("loss", REDUCTIONS)
-def test_reduction_losses_match_brute_force(ns_gp, loss):
+def test_iqr_reduction_matches_brute_force(ns_gp):
     gp, vp, optim_state, X_eval = _setup(ns_gp)
-    acq_fcn = AcqFcnVIQR(loss=loss)
+    acq_fcn = AcqFcnVIQR(loss="iqr_reduction")
     s2_a, tau2 = _brute_force(acq_fcn, gp, optim_state, X_eval)
     s_a = np.sqrt(s2_a)[None, :, :]
     s_pred = np.sqrt(np.maximum(s2_a[None, :, :] - tau2, 0.0))
     u = acq_fcn.u
-    if loss == "var_reduction":
-        term = tau2
-    elif loss == "sd_reduction":
-        term = s_a - s_pred
-    else:
-        term = np.sinh(u * s_a) - np.sinh(u * s_pred)
+    term = np.sinh(u * s_a) - np.sinh(u * s_pred)
     # Uniform weights, normalized over samples and hyperparameters; the
     # reductions are averaged over the hyperparameter samples.
     w = np.exp(optim_state["active_importance_sampling"]["ln_weights"])
@@ -178,13 +170,12 @@ def test_iqr_reduction_identity_with_viqr():
     assert np.argmin(a_iqr) == np.argmin(a_red)
 
 
-@pytest.mark.parametrize("loss", REDUCTIONS)
-def test_no_reduction_is_worst(loss):
+def test_no_reduction_is_worst():
     """A candidate far from the importance points reduces nothing: the
     acquisition is +inf there, the worst value for a minimizer."""
     gp, vp, optim_state, X_eval = _setup(1)
     far = np.array([[60.0, -60.0]])
-    acq_fcn = AcqFcnVIQR(loss=loss)
+    acq_fcn = AcqFcnVIQR(loss="iqr_reduction")
     # Neighbouring points keep the far one from being clamped by bounds.
     a = acq_fcn(np.vstack([X_eval[:1], far]), gp, vp, None, optim_state)
     assert np.isfinite(a[0])
@@ -193,22 +184,18 @@ def test_no_reduction_is_worst(loss):
 
 @pytest.mark.parametrize("ns_gp", [1, 2])
 @pytest.mark.parametrize("M", [1, 3])
-@pytest.mark.parametrize("loss", REDUCTIONS)
-def test_reduction_variance_regularization_batch_matches_pointwise(
-    ns_gp, M, loss
-):
-    check_variance_regularization(AcqFcnVIQR(loss=loss), ns_gp, M)
+def test_reduction_variance_regularization_batch_matches_pointwise(ns_gp, M):
+    check_variance_regularization(AcqFcnVIQR(loss="iqr_reduction"), ns_gp, M)
 
 
 def test_loss_argument():
     assert AcqFcnVIQR().loss == "iqr"
     assert AcqFcnVIQR().acq_info["loss"] == "iqr"
-    for loss in REDUCTIONS:
-        acq = string_to_acq(f'AcqFcnVIQR(loss="{loss}")')
-        assert acq.loss == loss
-        assert acq.acq_info["loss"] == loss
-        acq = string_to_acq(f'AcqFcnVIQR(0.6, "{loss}")')
-        assert acq.loss == loss
+    acq = string_to_acq('AcqFcnVIQR(loss="iqr_reduction")')
+    assert acq.loss == "iqr_reduction"
+    assert acq.acq_info["loss"] == "iqr_reduction"
+    acq = string_to_acq('AcqFcnVIQR(0.6, "iqr_reduction")')
+    assert acq.loss == "iqr_reduction"
     with pytest.raises(ValueError):
         AcqFcnVIQR(loss="iqr_squared")
 

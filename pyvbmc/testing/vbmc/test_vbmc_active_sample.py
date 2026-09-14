@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 from pyvbmc import VBMC
-from pyvbmc.acquisition_functions import AbstractAcqFcn, AcqFcnEIG
+from pyvbmc.acquisition_functions import AbstractAcqFcn
 from pyvbmc.stats import get_hpd
 from pyvbmc.vbmc import active_sample
 from pyvbmc.vbmc.active_sample import _get_search_points
@@ -1375,32 +1375,3 @@ def test_ns_gp_max_active_caps_the_in_loop_refits(mocker):
     assert len(gp.posteriors) == 1  # the MAP fit
     assert vbmc.options["ns_gp_max_warmup"] == 8
     assert vbmc.options["ns_gp_max_main"] == np.inf
-
-
-def test_eig_through_active_sample(mocker):
-    """The expected information gain runs through ``active_sample``: the
-    ``compute_var_log_joint`` hook stores the variance of the expected
-    log joint per hyperparameter sample and the covariance of the
-    components' integrals, and points are acquired."""
-    vbmc, gp, function_logger, optim_state = _noisy_run(
-        mocker, {"search_optimizer": "none"}
-    )
-    vbmc.options.__setitem__(
-        "search_acq_fcn", [AcqFcnEIG(components=True)], force=True
-    )
-    Xn0 = function_logger.Xn
-    function_logger, optim_state, _, gp = active_sample(
-        gp,
-        2,
-        optim_state,
-        function_logger,
-        vbmc.iteration_history,
-        vbmc.vp,
-        vbmc.options,
-    )
-    Ns = len(gp.posteriors)
-    K = vbmc.vp.K
-    assert np.shape(optim_state["var_log_joint_samples"]) == (Ns,)
-    assert np.shape(optim_state["cov_log_joint_components"]) == (Ns, K, K)
-    assert np.all(np.isfinite(optim_state["cov_log_joint_components"]))
-    assert function_logger.Xn == Xn0 + 2
