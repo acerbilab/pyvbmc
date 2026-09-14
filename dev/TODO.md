@@ -66,19 +66,32 @@ records its execution.
   and reviewed and a three-seed pilot has run. Status: the pools were
   generated on the cluster per the
   [hand-off note](2026-09-14-svbmc-pool-handoff.md) (1100 runs, 700
-  selected) and came back as the archive of the draft release
-  `svbmc-pool-20260914` and a PR to `dev-next` with the Slurm scripts, a
-  `verify` subcommand and the tracked records. Next: review and merge that
-  PR; download the archive into `dev/scripts/runs/` (`gh release download
-  svbmc-pool-20260914`), check its SHA-256 against the pool README and
-  unpack it (it needs a zstd decoder); run `svbmc_pool_run.py verify` with
-  `--gpyreg-source` pointing at the local gpyreg 1.2.1 worktree; on a
-  feature branch, let `svbmc_pool_stack.py` accept `--gpyreg-source` at
-  the manifest's gpyreg commit, with a test (the unpacked manifest names
-  the cluster's gpyreg path and the stack harness refuses the flag today;
-  the PI chose this over editing the manifest by hand); then, on
-  instruction, stage D (the two-arm comparison, about seven hours on a
-  laptop) and the Phase 2 scoring run locally, followed by the report. See
+  selected), handed back as the archive of the draft release
+  `svbmc-pool-20260914` and PR #177 (Slurm scripts, a `verify`
+  subcommand, the tracked records under
+  `experiments/svbmc_pool/pool_20260914/`), reviewed and merged on
+  2026-09-14. The archive is unpacked and verified on the analysis
+  machine, whose BLAS does not recompute the stored statistics bit for
+  bit; the recomputation gate now allows each artifact the rounding its
+  own GP's condition number amplifies, which on the noisy Rosenbrock
+  condition (GPs trained on far-tail evaluations) reaches a relative
+  0.3 (the plan's worklog of 2026-09-14 has the numbers). The stacking
+  harness reads a copied pool through `--gpyreg-source`. Stage D, the
+  two-arm comparison on the decision-6 grid (both arms, 560 cells,
+  about five hours), was authorized and launched the same day from
+  `dev-next` `744864a` into `dev/scripts/runs/svbmc_pool_20260914_stack/`.
+  Next: when it finishes, copy `results.json`, `summary.json`,
+  `summary.md` and `sources.json` under `experiments/svbmc_pool/`, run
+  the Phase 2 scoring on its cells (`svbmc_honest_elbo.py --pool
+  dev/scripts/runs/svbmc_pool_20260914 --cells <results.json>
+  --gpyreg-source <the 1.2.1 worktree>`, minutes to an hour), assess
+  criteria 1 to 5 and write `results/<date>-svbmc-pool-comparison.md`.
+  Two decisions for the PI on the way: what to do with the Rosenbrock
+  noise-3 condition, whose GPs are numerically fragile (keep with the
+  caveat, regenerate under a change that keeps far-tail evaluations out
+  of the GP, or leave it out of the evidence analysis), and whether to
+  add `M = 32` for the integrated arm, which needs a per-arm grid in
+  the harness. See
   the
   [campaign requirement](plans/svbmc-integration.md#benchmark-campaign-required-for-15).
 

@@ -889,10 +889,13 @@ and pass-rate assumption are revised before stage B.
       allocation alone and records the previous one in
       `allocation_history`); the pilot's artifacts are the first runs of
       stages B and C.
-- [ ] The PI authorizes stage B, stage C and the comparison grid in a
-      dated worklog entry before any further pool run starts. Open for
-      that decision: criterion 3's yardstick (see the worklog of
-      2026-09-14) and whether to add `M = 32` at `R = 10`.
+- [x] The PI authorizes stage B, stage C and the comparison grid in a
+      dated worklog entry before any further pool run starts (stages B
+      and C became the cluster pool of decision 8, generated 2026-09-14;
+      the yardstick is decision 7; stage D was authorized on 2026-09-14
+      on the decision-6 grid, see the worklog; `M = 32` for the
+      integrated arm alone remains a separate decision, since the
+      harness runs both arms on one grid).
 
 ### Phase 5: stacking comparison harness
 
@@ -1550,6 +1553,23 @@ draft had left open:
   the Rosenbrock noise-3 condition is kept with that caveat,
   regenerated under a change that keeps far-tail evaluations out of the
   GP, or dropped from the evidence analysis is open for the PI.
+- 2026-09-14: stage D authorized by the PI once the checks above were
+  clean, and launched from `dev-next` `744864a` (clean tree) into
+  `dev/scripts/runs/svbmc_pool_20260914_stack/`:
+  `svbmc_pool_stack.py --pool dev/scripts/runs/svbmc_pool_20260914
+  --gpyreg-source dev/scripts/runs/svbmc_pool_20260913/gpyreg_1.2.1
+  --seed 0` with the harness defaults, which are the decision-6 grid
+  (`M ∈ {2, 4, 8, 16}`, `R = 20, 20, 20, 10`, 500 Adam steps), both arms
+  on all eight conditions from their `selection.json`, 560 cells, Torch
+  from the overlay, BLAS and Torch single-threaded, one process. The
+  `M = 32` cells for the integrated arm alone, which the cost paragraph
+  proposed, are not part of this run: the harness stacks both arms on
+  one grid, and running the original arm at `M = 32` would add about an
+  hour per condition; a per-arm cap is a small harness change if that
+  regime is wanted. The first cells take about 5 s (`M = 2`), in line
+  with the pilot's timings, so the run is expected to take under five
+  hours; the controller's log is `controller_<timestamp>.log` in the
+  output directory and `cells.jsonl` grows one line per finished cell.
 
 ## Execution tracking
 
@@ -1562,7 +1582,7 @@ Live status of the phases above (`[ ]` not started, `[~]` in progress,
 - [x] Phase 3: pool generator (Opus sub-agent; 2026-09-14, 16 tests pass, manual gate on `rosenbrock_D2_noise3_svbmc` verified and stacked; see worklog)
 - [x] Phase 4: pilot (Fable; authorized by the PI on 2026-09-13; run 2026-09-14 from the harness commit `e2aaef5`, campaign directory `dev/scripts/runs/svbmc_pool_20260913/pool/`, three seeds per condition, `--save-vbmc`; 15/15 runs pass the filters, all artifacts verify, `M = 3` stacking measured in both arms; stages B–D await authorization)
 - [x] Phase 5: stacking comparison harness (Opus sub-agent; 2026-09-14, steps 1–3 and 5 done, 7 tests pass; step 4, the dry run on the pilot artifacts, waits for Phase 4)
-- [ ] Phase 6: campaign, comparison and report (waits for PI go per stage)
+- [~] Phase 6: campaign, comparison and report (stages B and C became the cluster pool of decision 8; stage D authorized by the PI and launched 2026-09-14 from `dev-next` `744864a` into `dev/scripts/runs/svbmc_pool_20260914_stack/`, the decision-6 grid on all eight conditions, both arms, 560 cells; the Phase 2 scoring, the assessment of criteria 1–5 and the report follow)
 - [ ] Documentation updates listed above
 - [x] Doublecheck of the implemented phases (three fresh reviewers on 2026-09-14; every finding fixed and re-verified, see worklog)
 - [x] Evidence yardstick change (decision 7): `elbo_mc` with an arm-independent entropy reference, bias and KL-gap columns, criterion 3 gates, `--summarize-only`; reviewed, no must-fix (2026-09-14)
