@@ -58,7 +58,9 @@ For the release overview, start with
 
 - [Scoped PyMC integration](2026-09-13-pymc-integration.md) —
   PR #73 compared with 1.5, the proposed split between model/export adapters
-  and automatic fitting, and the feasibility questions for release scope.
+  and automatic fitting, and the feasibility questions for release scope;
+  the bounded feasibility check is done, with its result in
+  [results/2026-09-14-pymc-feasibility.md](results/2026-09-14-pymc-feasibility.md).
 - [S-VBMC pool hand-off](2026-09-14-svbmc-pool-handoff.md) —
   Short brief for the developer generating the S-VBMC run pools on the
   cluster: what the pools are for, the steps (`prepare`, `cases`, a Slurm
