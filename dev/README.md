@@ -561,10 +561,12 @@ reason.
   PyMC's transform and Jacobian, the others are handed over in their own
   coordinates with their bounds), the fitted posterior is exported with
   the model's names, shapes and coordinates, and PyMC computes
-  deterministics and posterior predictions on it; three models with
-  hand-written densities and evidences, two rejected ones, density and
-  Jacobian checks, and two routes to the starting point and plausible box
-  (`--plausible laplace|prior`). Needs a Python environment with PyMC and
+  deterministics and posterior predictions on it; five models with
+  hand-written densities and evidences (unbounded, one-sided through the
+  log and interval transforms, two-sided per coordinate), four rejected
+  ones, density and Jacobian checks, and two routes to the starting point
+  and plausible box (`--plausible laplace|prior`, the Laplace one with
+  recorded fallbacks). Needs a Python environment with PyMC and
   ArviZ (the project venv has neither; the machine that ran it lists the
   environment in its gitignored `scripts/runs/LOCAL.md`). Outputs under
   `experiments/pymc_feasibility/`; the write-up is

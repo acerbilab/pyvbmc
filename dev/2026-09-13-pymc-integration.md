@@ -140,6 +140,9 @@ The prototype is `dev/scripts/pymc_feasibility.py`; its results, on PyMC
 6.3.2 and ArviZ 1.3.0, are in
 [results/2026-09-14-pymc-feasibility.md](results/2026-09-14-pymc-feasibility.md):
 the adapter is feasible through public APIs when a variable bounded on one
-side keeps PyMC's transform (VBMC takes no half-bounded box), the
-structured export and the return path work, and prior quantiles fail as a
-default plausible box where the mode's Laplace box succeeds.
+side keeps PyMC's transform (VBMC takes no half-bounded box), two-sided
+variables are handed over with per-coordinate bounds, the structured
+export and the return path work, and prior quantiles fail as a default
+plausible box where the mode's Laplace box with fallbacks succeeds. On
+that record the PI chose (2026-09-14) the target adapter with the tested
+scope for 1.5; `dev/TODO.md` carries the decision.

@@ -129,18 +129,25 @@ and subsequent possibilities.
 
 ## Scope or disposition still to be decided
 
-- [ ] **PyMC integration: include what in 1.5?** The proposal covers
-  structured ArviZ export, a model-to-target adapter and a worked example
-  with explicit initialization and plausible bounds. The bounded
-  feasibility check is done (`dev/scripts/pymc_feasibility.py`, results in
-  the [feasibility report](results/2026-09-14-pymc-feasibility.md)): the
-  adapter works through public PyMC APIs on the three prototype models
-  when a variable bounded on one side keeps PyMC's transform, the
-  structured export and the return path work on ArviZ 1.x, and prior
-  quantiles are not a usable default for the plausible box while the mode's
-  Laplace box is. Decide the supported model scope and inclusion on that
-  record. Automatic initialization and inference orchestration are
-  deferred in the proposal. See the [PyMC proposal](2026-09-13-pymc-integration.md).
+- [ ] **PyMC integration: the target adapter with the tested scope.** The
+  proposal covers structured ArviZ export, a model-to-target adapter and a
+  worked example with explicit initialization and plausible bounds. The
+  bounded feasibility check is done (`dev/scripts/pymc_feasibility.py`,
+  results in the [feasibility report](results/2026-09-14-pymc-feasibility.md)):
+  the adapter works through public PyMC APIs, with three named reaches
+  into semi-private ones, on five prototype models covering unbounded,
+  one-sided (PyMC's transform kept, log and interval) and two-sided
+  (interval and log-odds, per coordinate) variables; the structured export
+  and the return path work on ArviZ 1.x; prior quantiles are not a usable
+  default for the plausible box while the mode's Laplace box with fallbacks
+  is. The PI chose (2026-09-14) to include the target adapter with that
+  scope in 1.5: continuous variables with none, log, log-odds or
+  fixed-interval transforms, everything else rejected by name; the Laplace
+  route as the default box with explicit bounds accepted. Implementation
+  design, the PyMC/ArviZ version range and `VBMC.save` on an adapter
+  target remain to be worked out. Automatic initialization and inference
+  orchestration stay deferred. See the
+  [PyMC proposal](2026-09-13-pymc-integration.md).
 
 ## Outside 1.5 scope
 
