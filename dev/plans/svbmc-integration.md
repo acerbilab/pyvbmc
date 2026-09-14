@@ -105,8 +105,10 @@ the existing VBMC results supply target coverage and input provenance.
 Target and seed allocation, metrics and acceptance criteria remain to be
 designed before execution. Baseline preparation can proceed independently;
 the final comparison must cover the settled S-VBMC release candidate and be
-assessed before the 1.5 release. Track execution in the
-[remaining-work checklist](../TODO.md).
+assessed before the 1.5 release. The
+[campaign plan](svbmc-benchmark-campaign.md) owns the design, the
+harness, the allocation, the acceptance criteria and the execution
+worklog; the [remaining-work checklist](../TODO.md) tracks its status.
 
 ## Layout
 

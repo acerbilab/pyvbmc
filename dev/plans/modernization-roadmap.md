@@ -1016,10 +1016,11 @@ After the included S-VBMC changes are settled, a benchmark campaign against
 the original standalone S-VBMC is required before release, covering their
 combined effect on posterior quality, reported evidence accuracy and runtime.
 The existing numerical fixtures and parity checks do not provide a population
-benchmark reference comparable to VBMC's golden campaign. Establish and
-preserve that S-VBMC baseline; campaign allocation and acceptance criteria
-remain to be designed. See the
-[campaign requirement](svbmc-integration.md#benchmark-campaign-required-for-15).
+benchmark reference comparable to VBMC's golden campaign. The
+[campaign plan](svbmc-benchmark-campaign.md) owns the design (approved
+2026-09-13), the harness, the allocation, the acceptance criteria and the
+execution worklog; the requirement itself is stated in the
+[integration plan](svbmc-integration.md#benchmark-campaign-required-for-15).
 
 ## Golden population acceptance
 

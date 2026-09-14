@@ -1,0 +1,1131 @@
+# S-VBMC run-pool benchmark campaign
+
+Created 2026-09-13. Status: **design approved (PI, 2026-09-13)**; harness
+implementation (Phases 1–3 and 5) may proceed, the pilot and every pool
+or comparison stage start only on a separate PI instruction. Planning and
+status edits live on `dev-next`; the harness and target changes go on a
+feature branch `dev-svbmc-pool` branched from `dev-next`. The pools and
+the comparison are long campaigns under the working rules of
+[dev/README.md](../README.md#scripts): one heavy process at a time,
+started only on explicit PI instruction, in stages that are authorized
+separately.
+
+This plan owns the design, harnesses, allocation, gates and worklog of the
+campaign. The [integration plan](svbmc-integration.md#benchmark-campaign-required-for-15)
+owns the requirement; the [optimism note](../2026-09-12-svbmc-elbo-optimism.md#phase-2-measuring-instead-of-capping-with-the-runs-surrogates)
+owns the Phase 2 estimator that consumes the pools; the
+[reporting plan](svbmc-elbo-reporting.md) owns the Phase 1 corrections
+that the integrated class ships.
+
+## Purpose
+
+Two open items of PyVBMC 1.5 need the same input:
+
+- **Phase 2 of the ELBO debiasing** evaluates every stacked component's
+  draws under the GPs of the *other* runs. It needs pools of independent
+  VBMC runs on noisy targets, each saved with its final posterior and the
+  GP that produced the posterior's expected-log-joint statistics.
+- **The comparison against the original S-VBMC** (standalone `svbmc`
+  0.1.1, pinned at `13a78f6`) needs matched groups of input runs on noisy
+  targets, stacked at different numbers of runs by both implementations,
+  scored for posterior quality, evidence accuracy and runtime.
+
+Nothing retained on this machine serves either as it stands. The
+population campaigns left 990 boost captures under
+`dev/scripts/runs/population_*/results/*.boost.pkl` whose final posteriors
+carry `I_sk` and `J_sjk` and could be stacked today, but they have no GP,
+predate the `uncertainty_handling_level` stat (added 2026-09-12 in
+`483a8da`; the captures are from `68a43db` and `fc50ee1`, so every noisy
+stack of them would fall back to the `elbo_sd > 0.1` proxy), and were run
+with the 2020 paper's pinned budget. The 870 dills of the 2026-09-08 boost
+campaign pair posteriors with GPs, but the GPs were reconstructed from
+traces at an older code state and there are no real-data targets. The
+golden traces hold hyperparameters and training sets from which GPs could
+be rebuilt next to the capture posteriors, at the price of an audit of the
+reconstruction. The S-VBMC paper's own corpus (30 posteriors in the pinned
+checkout, converted to `pyvbmc/testing/svbmc/fixtures/`) has no GPs. No
+whole `VBMC` object was saved anywhere.
+
+The campaign therefore generates fresh pools with a per-run artifact both
+consumers read, builds the harnesses (pool generator, baseline
+environment, stacking comparison), measures a pilot, and fixes the
+allocation from the pilot.
+
+## What the comparison tests
+
+The two implementations optimize the same stacking objective on the same
+inputs, so posterior quality is expected to coincide up to Monte Carlo
+noise and, on bounded targets, up to the deterministic Jacobian correction
+the integrated class applies (the reporting plan measured a bounded
+all-weights L1 weight change of about 0.01 against a seed-to-seed spread
+of about 0.12). The comparison is therefore three things:
+
+- an **equivalence check** that the source move, the preparation and
+  entropy speedups and the Phase 1 corrections did not regress the
+  stacked posterior (criteria 1 and 2 below);
+- a **measurement** of what the reporting change does to evidence
+  accuracy as the number of stacked runs grows: the original reports the
+  raw stacked ELBO, the integrated class the capped headline, and the
+  Phase 2 honest estimator is later evaluated on the same cells
+  (criterion 3);
+- a **measurement** of runtime (criterion 4), with reproducibility as the
+  fifth criterion.
+
+The intended reporting differences are documented next to the results,
+as the integration plan requires.
+
+## Design
+
+### Conditions
+
+| # | Label | D | Noise SD | Origin | Filtered pool | Seed cap | Role |
+|---|---|---|---|---|---|---|---|
+| 1 | `multisensory_s1_D6_noise3_svbmc` | 6 | 3 | new configuration; the paper's real-data condition | 60 | 90 | primary, paper parity |
+| 2 | `rosenbrock_D2_noise3_svbmc` | 2 | 3 | the golden target at the default budget | 60 | 90 | primary; PI priority target |
+| 3 | `gmm_D2_noise3_svbmc` | 2 | 3 | ported from the pinned upstream `targets.py` | 60 | 90 | the paper's multimodal noisy target; Phase 2 needs the per-mode coverage case |
+| 4 | `ring_D2_noise3_svbmc` | 2 | 3 | ported from upstream | 40 | 80 | paper parity; the condition with the largest residual bias after capping in the paper |
+| 5 | `gmm_D2_svbmc` | 2 | none | ported | 30 | 45 | noiseless control: no ELBO overshoot expected |
+
+Every pool configuration is a separate `Config(..., tag="svbmc")` entry
+in the suite `svbmc_pool` at PyVBMC's default evaluation budget
+(75 (D + 2) for noisy targets, 50 (D + 2) otherwise), the S-VBMC paper's
+convention and what users get (PI, 2026-09-13). The tag keeps
+`find_config` from confusing a pool configuration with a golden one, which
+pins 50 (D + 2) on noisy targets; `M = 1` baselines come from the pool
+itself. Pool sizes are 60 filtered runs per noisy condition, 40 for the
+ring and 30 for the control (PI, 2026-09-13), which supports `M` up to 16
+with diverse subsets; the paper used 100 and `M` up to 40. The ring is the
+most expensive condition (the paper needed about 9 minutes per run and a
+third of its runs did not converge), hence its smaller pool. The seed caps
+scale the paper's over-provisioning (Table A.2 of
+`papers/silvestrin2025stacking_appendix.md`: 150 runs for 145 filtered on
+GMM, 149 for 100 on the ring, 150 for 149 on multisensory, all at noise 3)
+with margin.
+
+**Extension condition, not in the initial allocation:**
+`multisensory_s1_D6_noise1.3_svbmc`, the 2020 paper's IBS noise level for
+this model and the hardest golden configuration
+([summary](../golden/baseline/summary.md)). It would add a second point
+on how the optimism scales with noise, at about 5 hours of pool runs and
+2.5 hours of comparison; the harness adds it as one suite entry when
+wanted.
+
+Noise is the suite's generic wrapper (homoskedastic Gaussian noise on the
+log density, known SD returned to VBMC, `specify_target_noise=True`), as
+in both papers. The paper's neuronal (NEURON) benchmark is not
+reproducible here and is not substituted. `dev/plans/benchmark-realistic-targets.md`
+lists a "bimodal ring" among rejected candidates; that rejection was about
+real-data coverage and does not bear on a synthetic pool target. Noisy
+runs at noise 1.3 terminate on the reliability index at about 205
+evaluations, well inside the budget; at noise 3 the budget may bind.
+
+### Seeds, filters and stopping rule
+
+Seeds are contiguous from 1000 per condition, disjoint from the golden
+population's 0–49 so the two populations are never conflated. One integer
+seeds the target's noise and start-point streams (`Config.make(seed=)`)
+and VBMC (`VBMC(seed=)`), as `golden_trace.run_task` does.
+
+A run enters the filtered pool when it passes the paper's two filters,
+which are also both implementations' defaults: `stats["stable"]` is true
+and `sqrt(max J_sjk) < sqrt(5)`, the maximum taken over the whole
+`(Ns, K, K)` array. Every run is kept and recorded with its verdict and
+`max_J_sjk = float(np.max(vp.stats["J_sjk"]))`; the seeds run in order and
+a condition stops when the filtered count reaches its target or the seed
+cap is reached, the paper's "lowest indices" rule. The pilot stage runs a
+fixed number of seeds per condition regardless of the filters.
+
+### Per-run artifact
+
+One `<label>_seed<seed>.npz` plus `.json` sidecar per run, written with the
+oracle snapshot codec (`pyvbmc/testing/oracles/_state.py`,
+`snapshot_from_objects` / `save_snapshot`), holding as plain arrays:
+
+- the returned posterior `vbmc.vp` with all of `stats` (`I_sk`, `J_sjk`,
+  `elbo`, `elbo_sd`, `e_log_joint`, `e_log_joint_sd`, `entropy`,
+  `entropy_sd`, `stable`, `uncertainty_handling_level`);
+- the GP that produced those statistics, `vbmc.get_gp(results["best_iter"])`:
+  training inputs and targets (log joint with the log-Jacobian folded in,
+  in the run's transformed space), `s2`, every hyperparameter sample, and
+  the covariance, mean and noise specification. `optimize()` boosts the
+  best iteration's posterior with exactly this GP
+  (`pyvbmc/vbmc/vbmc.py`, `final_boost(self.vp, self.get_gp(idx_best))`);
+  when the boost candidate is rejected the returned posterior is the best
+  iteration's, whose statistics that iteration's GP produced, so the
+  choice holds in both branches. The optimism note speaks of "the final
+  GP of each run, `vbmc.gp`"; `vbmc.gp` is the last iteration's GP, which
+  differs from the best iteration's whenever the best iteration is not
+  the last, and the recomputation gate below makes the choice checkable;
+- the parameter transformer;
+- the live function logger (every evaluation of the run, `X_orig`,
+  `y_orig`, `S`, `n_evals`);
+- `vbmc._optim_state_record()` (the live state without the noisy
+  acquisitions' importance samples, a private method the two pool scripts
+  depend on) and the user options. The codec reads `gp_cov_fun`,
+  `gp_mean_fun`, `gp_noise_fun`, `plb_orig` and `pub_orig` from this
+  state; the three function specifications are set once at
+  initialization, and the plausible bounds only seed a transformer whose
+  `mu`, `delta`, `type`, `R_mat` and `scale` the codec then overwrites
+  from the saved transformer, so a warp during the run does not corrupt
+  the rebuilt state;
+- `meta`: label, seed, target name, `D`, noise SD, requested and effective
+  options, `results` passed through `profile_run.jsonable` (ELBO, ELBO SD,
+  `best_iter`, `success_flag`, `func_count`, and the nested `rng_state`
+  and `performance_calibration` dicts), `K`, wall and target-evaluation
+  seconds, metrics against the truth (`elbo_err`, `gskl`, `mmtv`, `rmse`;
+  the moment arrays through `jsonable`), the filter verdict, `pyvbmc` and
+  `gpyreg` commits and import paths, library and Python versions, thread
+  settings and hostname.
+
+`build_state` rebuilds every object through public constructors. Saving
+verifies the artifact against the live objects: posterior arrays and
+stats equal (`equal_nan=True`, since non-finite floats round-trip through
+a tag), GP predictions at the training inputs equal within 1e-10, and the
+**recomputation gate**: `_gp_log_joint(vp, gp, False, True, True, True, True)`
+(`pyvbmc/vbmc/variational_optimization.py`) returns
+`(G, dG, varG, dvarG, var_ss, I_sk, J_sjk)` from the rebuilt posterior and
+GP alone, and both arrays must match the stored statistics within 1e-8.
+They are weight-independent, so a pruned posterior recomputes exactly.
+The gate also runs post hoc without the live objects. A
+`records/<tag>.complete.json` holds SHA-256 hashes of both files, elapsed
+time, identity and verdict, and gates resumption as in
+`population_run.py`. `--save-vbmc` additionally writes `<tag>.vbmc.pkl`
+through `VBMC.save` for the pilot runs only (a few MB each, the whole
+iteration history), so the Phase 2 interface question (VBMC objects,
+posterior-GP pairs, or the GP attached to the posterior) can be
+prototyped against real objects.
+
+About 300 KB per run (the `J_sjk` array dominates; the noisy VIQR oracle
+fixture with four iterations of state is 150 KB); the 395 runs at the
+seed caps are about 120 MB, gitignored under
+`dev/scripts/runs/svbmc_pool_<date>/`. Curated summaries, manifests and
+comparison outputs are tracked under `dev/experiments/svbmc_pool/` with a
+README that explains every key.
+
+### Pool runtime estimate (before the pilot)
+
+Single-process medians of the `reference_990_20260913` sidecars, BLAS
+single-threaded, on this machine: 3.16 min for `multisensory_s1_D6_noise1.3`
+and 2.50 min for `rosenbrock_D2_noise3`, both at the pinned budget. The
+noise-3 multisensory, GMM and ring conditions have no measurement here;
+the paper's runs took about 4 min (GMM), 9 min (ring) and 14 min
+(multisensory) at noise 3 on its server, where the noise-1.3 multisensory
+comparison suggests this machine is faster. Provisional per-run
+assumptions: 5 min multisensory, 2.5 min Rosenbrock, 4 min GMM, 9 min
+ring, 1.5 min control. Totals: about 30 hours at the seed caps, about 22
+hours if the conditions reach their filtered targets at the paper's pass
+rates. The pilot replaces these guesses (Phase 4). Stages: A pilot (about
+one hour of pool runs plus the stacking timing), B conditions 1–3 (about
+12 hours expected, 17 at the caps), C conditions 4–5 (about 10 hours
+expected, 13 at the caps), D the comparison (about 5 hours, see below).
+Each stage is a separate PI authorization. The worker is invocable per
+case, so a later Slurm array job can reuse it unchanged if the HPC
+workflow lands first.
+
+### GP library pin
+
+Every pool run and both comparison arms import gpyreg from a frozen,
+detached worktree at the CI pin `39536b000a8c8465133f4eaef625486991db8257`
+(tag `v1.2.0`, the version PyVBMC requires) under
+`dev/scripts/runs/svbmc_pool_20260913/gpyreg/`, through the environment
+variable `PYVBMC_GPYREG_SOURCE` prepended to `sys.path` before PyVBMC is
+imported, the mechanism `population_run.py` uses. The identity check of
+every process refuses to run when `gpyreg.__file__` does not resolve
+under that directory. The sibling checkout `../gpyreg`, which the venv's
+editable install points at, is an in-progress release branch with
+uncommitted changes to the GP core (`gaussian_process.py`,
+`slice_sample.py`); `baseline_environment.json` records its state at the
+time of Phase 1 without depending on it. If a gpyreg change to the GP
+numerics lands before 1.5, the pools must be regenerated against it, as
+the working rules require for golden references.
+
+### Baseline: original S-VBMC 0.1.1
+
+The pinned checkout `dev/scripts/runs/svbmc_compat_20260908/source/` (git
+HEAD `13a78f6c4a3ffe9c4557fee4f4b8f67c98b29e01`, clean tree) is the
+baseline implementation. It declares `pyvbmc>=1.0.4`, `GPyReg>=1.0.2`,
+`torch>=2.7`, `numpy>=2.3`, `scipy>=1.16`, `corner` and `matplotlib`; it
+imports PyVBMC and gpyreg from the project's editable installs (this
+checkout and the sibling gpyreg checkout), and the sibling `deps/`
+overlay supplies CPU Torch 2.14.0, which is **not** installed in the
+project venv. The compatibility campaign's `environment.json` records
+exactly that layout. Two path sets are used throughout this plan:
+
+- `TORCH_PATH` = `dev/scripts/runs/svbmc_compat_20260908/deps`: needed by
+  anything that imports the integrated `pyvbmc.svbmc` (tests, the
+  comparison controller, the pool generator's stacking check);
+- `BASELINE_PATH` = `TORCH_PATH` joined with
+  `dev/scripts/runs/svbmc_compat_20260908/source/src` by `os.pathsep`:
+  the original arm's worker only. The controller must not carry
+  `source/src`, or a stray `import svbmc` would pick up upstream. In Git
+  Bash a two-entry value must be quoted (`PYTHONPATH="…/deps;…/source/src"`).
+  Subprocesses set `env["PYTHONPATH"]` to the joined value explicitly;
+  `svbmc_speedup_benchmark.py` replaces the variable with a single path
+  and must not be copied for this. The overlay also shadows a few venv
+  packages (`filelock`, `setuptools`, `typing_extensions`, `jinja2`,
+  `networkx`, `sympy`, `fsspec`, `mpmath`) with its own versions.
+
+The original constructor is `SVBMC(vp_list, s_max=np.sqrt(5), M_min=2/3, testing=False)`
+and `optimize(n_samples=20, lr=0.1, max_steps=500, version="all-weights")`;
+it reports `elbo["estimated"]` (raw), `elbo["debiased_I_median"]` and
+`elbo["debiased_E_median"]` from the optimization's own 20-draw estimate
+(no final re-evaluation), and `sample(n)` returns approximately `n` rows
+by deep-copying each input posterior and drawing `round(n · ω_m)` from it.
+The integrated class reports the capped headline for noisy stacks with
+`elbo_details["raw"]`, `raw_sd`, `cap_amount` and `noise_status_source`,
+re-evaluates with `n_samples_final=100`, and `sample(n)` returns exactly
+`n` rows.
+
+**Randomness.** Neither implementation draws from Torch; Torch supplies
+autodiff and Adam only, and `torch.manual_seed` controls nothing. The
+integrated class draws from its own NumPy generator, `SVBMC(seed=)`. The
+original draws its entropy samples from NumPy's global legacy state
+(`scipy.stats.multivariate_normal.rvs` without `random_state`) and its
+posterior samples through the input posteriors' own generators, which
+`VariationalPosterior.__deepcopy__` shares. The original arm is therefore
+seeded with `np.random.seed(cell_seed)` and receives posteriors rebuilt
+afresh for the cell, each with its own generator seeded from
+`np.random.SeedSequence(cell_seed).spawn(M)` (the same per-entry seeds in
+both arms, recorded in the cell), so the original's per-run sample blocks
+are independent of one another; reusing loaded posteriors across cells
+would make its results order-dependent, and one shared seed would couple
+the blocks.
+
+The baseline is machine-local and gitignored. Its identity is preserved
+in `dev/experiments/svbmc_pool/baseline_environment.json` (commit, clean
+tree, SHA-256 of every `svbmc/*.py`, Torch, Python, NumPy, SciPy, PyVBMC
+and gpyreg commits), and it is recoverable elsewhere by cloning the
+upstream repository (`acerbilab/S-VBMC`) at `13a78f6` and installing CPU
+Torch 2.14.0 into a `deps/` directory with `pip install --target`; the
+recorded hashes verify the recreation. The stacking harness re-verifies
+the environment before every campaign.
+
+### Stacking comparison
+
+For every condition, `M` on a grid capped at the filtered pool size, and
+`R(M)` repetitions, a subset of `M` runs is drawn without replacement from
+the filtered pool by `np.random.default_rng([seed, condition_index, M, r])`.
+The same subset goes to both implementations, run one after the other,
+never concurrently, alternating which arm runs first. Each cell records
+the optimized weights, every ELBO variant, entropy, construction and
+optimization wall seconds, metrics of 100 000 draws from the stacked
+posterior, and the Monte Carlo expected log joint of the stacked mixture
+(`e_log_joint_mc`: the mean of the noiseless `problem.log_density_vec`
+over 10 000 of the draws, and `elbo_mc = e_log_joint_mc + entropy` with the
+arm's entropy estimate). The multisensory likelihood costs about
+0.6 ms per evaluation, so this adds seconds per cell and gives Phase 2 the
+`ELBO_MC` reference on every cell without a rerun. `M = 1` rows are the
+filtered pool's own single-run metrics.
+
+**Cost.** The entropy Monte Carlo evaluates every component against every
+draw at every Adam step, so a cell costs about `M²`. The paper's timings
+for the original at `M = 40` are about 2300 s on multisensory (D = 6),
+450–540 s on the noisy D = 2 targets and 150 s on the noiseless GMM; the
+speedups campaign measured the integrated class at about half. With the
+paper's full protocol (`M` from 2 to 40, `R = 20`, six conditions) the
+comparison alone would have taken on the order of 100 hours here, most of
+it in the `M ≥ 32` cells and the D = 6 conditions. The approved grid
+(PI, 2026-09-13) is `M ∈ {2, 4, 8, 16}` with `R = 20, 20, 20, 10`, both
+arms on every cell of the five conditions, 700 cells in all: about 2.5
+hours for multisensory, half an hour per noisy D = 2 condition, a quarter
+of an hour for the control and about an hour of metrics, about 5 hours in
+all from the paper's timings. Phase 4 times both arms at `M = 3` on every
+condition and the estimate is replaced by the `M²` extrapolation before
+stage D is authorized; if it comes out too high, the original arm's
+repetitions are halved first.
+
+Summaries report the median over repetitions with a 95 % bootstrap
+interval (10 000 resamples), the paired differences integrated minus
+original, the maximum weight difference, and the runtime ratio.
+
+### Metrics
+
+The house triple, as `benchmark_targets.metrics` computes it for single
+runs: `elbo_err = |ELBO − ln Z|`, `gskl = 0.5 · Σ kl_div_mvn(both directions)`
+(the 2020 paper's convention, no `1/D` factor), `mmtv` (mean marginal
+total variation against exact reference draws through `kde_1d`), with the
+usability thresholds evidence error < 1, gsKL < 1, MMTV < 0.2. For stacked
+posteriors the same quantities are computed from draws (`sample` in both
+implementations): moments from the draws for gsKL, the
+`VariationalPosterior.mtv` procedure applied to two sample sets for MMTV,
+and `elbo_err` for every reported ELBO variant. The S-VBMC paper's
+normalized GsKL, `(1/2D) Σ KL`, equals the house value divided by `D`
+and is stored as `gskl_normalized` (paper threshold 1/8) so
+paper-comparable figures can be drawn; every figure names its convention.
+
+### Acceptance criteria for the comparison
+
+1. **Agreement (equivalence).** For every condition, the paired weight
+   difference between the two implementations, `max |Δw|` per cell, lies
+   within the within-arm seed-to-seed spread measured on the same inputs
+   (Phase 1 measures it on unbounded, bounded and warped fixture groups
+   at five seeds per arm; Phase 4 repeats it on the pilot posteriors of
+   every condition), and the integrated capped headline agrees with the
+   original's `debiased_I_median` within their Monte Carlo standard
+   deviations. On bounded targets a deterministic offset of the order
+   the reporting plan measured is expected and is not a failure. A
+   difference beyond the spread stops the campaign for investigation.
+   *Agreement tolerance.* Phase 1 (2026-09-13, three Adam steps, five
+   seeds per arm): paired `max |Δw|` at most 0.0085 on the unbounded
+   upstream groups (`M = 10`, `K = 50`) against within-arm spreads of
+   0.0086–0.0096, and at most 0.0076 on the bounded and warped
+   supplementary groups (`M = 3`) against spreads of 0.0077–0.0096, so
+   the paired difference is below the within-arm spread everywhere
+   (ratios 0.79–1.0). The capped headline agreed with
+   `debiased_I_median` within 0.25 `elbo_sd` on the one group where
+   both caps were active; on `bounded_D2` and `corr_D3` only the
+   original's cap is active (their `elbo_sd` is below the 0.1 proxy),
+   which is a reporting difference, not a disagreement. Phase 4 adds the
+   pilot posteriors of every condition at the full step count.
+2. **Posterior quality (equivalence).** For every condition and `M`, the
+   paired differences in MMTV and gsKL are not significantly worse for
+   the integrated class (exact signed-rank tests, Holm-corrected across
+   conditions and `M` at α = 0.05), and both implementations improve on
+   the `M = 1` medians as the paper reports.
+3. **Evidence accuracy (measurement).** At every `M`, the median
+   `elbo_err` of the integrated headline is at most that of the original
+   raw estimate; and the median capped `elbo_err` at the largest `M`
+   exceeds its value at the smallest `M` by less than 0.5 nats, the bound
+   the paper reports for the capped bias. The raw curve's growth with `M`
+   and the honest estimator's later value on the same cells are reported,
+   not gated.
+4. **Runtime (measurement).** Per condition, the median over cells of
+   the paired ratio integrated / original optimization seconds is below 1
+   with its 95 % bootstrap interval below 1, on the same machine, one
+   process at a time, single-threaded BLAS and Torch.
+5. **Reproducibility.** Every artifact is hash-recorded; rerunning the
+   analysis from the tracked JSON reproduces every table; the pool
+   manifest, identity and environment records name every source.
+
+### What Phase 2 receives
+
+The filtered pools (posterior plus GP per run, with the run's transformer
+and log-Jacobian available), the filter records, and the comparison cells
+(subsets, weights, raw and capped values, `elbo_mc`). Everything the
+honest estimator needs (per-run GP with predictive variance, transformer,
+`J_sjk`) is in the saved artifact. The estimator script and report of
+Phase 2 stay under `dev/scripts/` and `dev/results/`, with the package
+untouched until its result is in, as the optimism note decided.
+
+## Execution
+
+### Phase 1: baseline environment, agreement spread and save-contract probe
+
+**Executor**: Opus sub-agent. Light compute: two short VBMC runs (one
+about 1.5 minutes) are the heaviest steps; nothing else runs
+concurrently.
+
+**Goal**: establish that the original implementation runs in its recorded
+environment against current PyVBMC posteriors, measure the weight
+agreement between the two implementations and the within-arm spread, and
+confirm that the snapshot codec captures a finished run so that the
+recomputation gate of the artifact contract is feasible.
+
+**Steps**:
+
+1. From the repository root (Git Bash), run the integrated S-VBMC tests
+   with Torch from the overlay:
+   `PYTHONPATH="dev/scripts/runs/svbmc_compat_20260908/deps" .venv/Scripts/python.exe -m pytest pyvbmc/testing/svbmc -q`.
+   Expected: all pass, none skipped for a missing Torch. If Torch does not
+   import, stop and report the traceback.
+2. Agreement and spread, throwaway script in the scratchpad run with
+   `PYTHONPATH` set to `BASELINE_PATH` (quoted, `;`-joined). Import
+   `svbmc` and `torch`; print `svbmc.__version__` (expected `0.1.1`, via
+   the module constant since it is not installed), `svbmc.__file__`
+   (under `source/src`), `torch.__version__` (expected `2.14.0+cpu`) and
+   `pyvbmc.__file__` (this checkout). For each fixture group in
+   `("upstream_GMM_noisy", "upstream_Ring", "bounded_D2", "corr_D3")`
+   (unbounded, unbounded, probit-bounded, rotoscale-warped) and each seed
+   `s` in 0–4: rebuild the posteriors with
+   `vps, metas = pyvbmc.testing.svbmc._fixtures.load_group(group, rng=s)`
+   (a 2-tuple); original arm: `np.random.seed(s)` then
+   `svbmc.SVBMC(vps).optimize(n_samples=20, lr=0.1, max_steps=3, version="all-weights")`;
+   integrated arm, on posteriors loaded again with `rng=s`:
+   `pyvbmc.svbmc.SVBMC(vps, seed=s).optimize(n_samples=20, lr=0.1, max_steps=3, n_samples_final=100)`.
+   Record per group: the paired `max |Δw|` at each seed, the within-arm
+   maximum pairwise `max |Δw|` across the five seeds for each arm, both
+   raw ELBOs, and the original's `debiased_I_median` against the
+   integrated headline. Report the table; it becomes the first entry of
+   the agreement tolerance in criterion 1. If on an unbounded group the
+   paired difference exceeds the within-arm spread by more than a factor
+   of two, do not tune anything: report which quantities differ and stop.
+3. Write `dev/experiments/svbmc_pool/baseline_environment.json`: the
+   checkout's `git rev-parse HEAD` (must equal
+   `13a78f6c4a3ffe9c4557fee4f4b8f67c98b29e01`) and `git status --porcelain`
+   (must be empty), SHA-256 of every file under `source/src/svbmc/`,
+   Torch version and path, Python version and executable, NumPy and SciPy
+   versions, PyVBMC commit and import path, gpyreg commit (`git -C ../gpyreg rev-parse HEAD`)
+   and version, thread environment variables, hostname, and the date.
+   Create the directory with a one-paragraph `README.md` naming this
+   plan; the README grows in Phase 6.
+4. Save-contract probe, throwaway script in the scratchpad, BLAS threads
+   set to 1: for the smoke configuration `normal_D2` and seed 0, build the
+   problem with `find_config("normal_D2").make(seed=0)`, set options
+   `display="off", plot=False, print_iteration_header=False, performance_calibration="off"`,
+   run `vp, results = VBMC(*args, options=options, seed=0).optimize()`,
+   then
+   `snapshot_from_objects(vbmc.vp, vbmc.get_gp(results["best_iter"]), vbmc.function_logger, vbmc._optim_state_record(), vbmc.options, meta={"probe": True})`,
+   `save_snapshot`, `load_snapshot`, `build_state`. Check: (a) rebuilt
+   `vp.stats` equal to the live stats with `equal_nan=True`; (b) rebuilt
+   GP predictions at the logger's live `X` equal the live
+   `get_gp(best_iter)` predictions within 1e-10; (c) the recomputation
+   gate: `_gp_log_joint(vp, gp, False, True, True, True, True)` on the
+   rebuilt pair, last two outputs within 1e-8 of the stored `I_sk` and
+   `J_sjk`; (d) `pyvbmc.testing._dtype.assert_float64` on
+   `load_bearing_arrays(vp=, gp=, logger=, pt=)` of the rebuilt state.
+   Repeat (a)–(d) for `rosenbrock_D2_noise1` seed 0 (a VIQR run; verify
+   that the encoded `optim_state` has `active_importance_sampling` absent
+   or `None` and that the `.npz` is under 1 MB). Report the outcome of
+   every check, the file sizes, and any exception verbatim. If the codec
+   raises (an unencodable `optim_state` entry, or `_encode_user_options`
+   rejecting an array-valued option), report the key and stop; do not
+   extend the codec.
+
+**Verification**:
+
+- [ ] Step 1 passes with Torch from the overlay.
+- [ ] Step 2 table reported for four groups and five seeds; unbounded
+      groups agree within the within-arm spread.
+- [ ] `baseline_environment.json` written with the fields above; commit
+      equals the pin; tree clean.
+- [ ] Step 4 checks (a)–(d) pass on both configurations, or the mismatch
+      is documented.
+- [ ] Nothing is committed except the new experiments directory.
+
+If any check contradicts an assumption above, stop and report rather
+than adapting the contract.
+
+### Phase 2: targets
+
+**Executor**: Opus sub-agent. Light compute (`--check` quadratures, Monte
+Carlo ELBO recomputations on fixture posteriors, a two-iteration smoke).
+
+**Goal**: make every pool condition buildable from a clean checkout by
+`find_config(label).make(seed)` with a ground truth the metrics can use,
+and settle which ring definition the paper's runs used.
+
+**Steps**:
+
+1. In `dev/scripts/benchmark_targets.py`, add registry entries `gmm` and
+   `ring` (both require `D == 2`, raise otherwise) whose **log densities**
+   reproduce `dev/scripts/runs/svbmc_compat_20260908/source/src/svbmc/targets.py`
+   at `13a78f6` pointwise; say so in each docstring with the commit. The
+   upstream functions take one point and use the NumPy global stream for
+   sampling, so the port is vectorized over `(n, D)` rows and has its own
+   samplers. GMM: the 20 component means `DEFAULT_MUS` and covariances
+   `DEFAULT_SIGMAS` (unit variances, correlation ±0.5), unnormalized log
+   density `logsumexp_k(−½ quad_k − ½ log|Σ_k| − log 2π)` with no
+   `−log K`, so `ln Z = log 20` on the unbounded plane; `true_mean` is the
+   mean of the component means, `true_cov` the mixture covariance,
+   `sampler` picks a component and draws from it with the passed
+   generator. Ring: `R = 8`, `σ = 0.1`, centre `(1, −2)`, log density
+   `log r − (r − R)² / (2σ²)` with `r` the distance to the centre (clamped
+   away from zero as upstream does). Its normalizer in polar coordinates
+   is `2π ∫₀^∞ r² exp(−(r − R)²/(2σ²)) dr`: compute `ln Z` with
+   `scipy.integrate.quad` and check it against the closed form
+   `log(2π σ √(2π) (R² + σ²))` (4.6133 at these parameters; the mass
+   below `r = 0` is negligible); `true_mean` is the centre;
+   `true_cov = (E[r²]/2) I` with `E[r²] = ∫ r⁴ e(r) dr / ∫ r² e(r) dr`;
+   `sampler` draws the radius by inverse CDF on a fine table of the
+   radial density `∝ r² e(r)` over `[max(0, R − 10σ), R + 10σ]` and the
+   angle uniformly. Upstream's `Ring.sample` draws `r ~ N(R, σ)`, which
+   is not the target's radial marginal, so the sampler is a deliberate
+   departure. Give each target an independent `reference_logpdf` (GMM
+   through `scipy.stats.multivariate_normal`, ring through `np.hypot`).
+   Bounds: unbounded. Plausible box `[−10, 10]²` for both, the box the
+   upstream runs used: the upstream notebook
+   `source/examples/svbmc_example_1_basic_usage.ipynb` sets
+   `PLB = [−10, −10]`, `PUB = [10, 10]`, and the fixtures'
+   `pt/mu = [0, 0]`, `pt/delta = [20, 20]` agree (their `pt/plb_orig` and
+   `pt/pub_orig` are placeholders written by the converter and must not
+   be read).
+2. Pointwise port check and pins: load the upstream module by file path
+   (`importlib.util.spec_from_file_location` on `targets.py`, so the
+   `svbmc` package and Torch are not imported) and compare
+   `log_density_vec` against `GMM().log_pdf` and `Ring().log_pdf` on a
+   21 × 21 grid over `[−12, 12]²` plus 200 random points, to 1e-12
+   absolute. Pin three of those values per target into `Problem.pins`
+   (`(x, expected, "logp", 1e-10)`) so the check survives in a clean
+   checkout; `--check` enforces pins but never verifies `ln_Z`, which
+   step 1's quadrature does.
+3. Which ring did the paper's runs use? For every posterior of the
+   fixture groups `upstream_Ring`, `upstream_GMM` and `upstream_GMM_noisy`
+   (`load_group(group, rng=0)`), recompute its ELBO under the ported
+   target by Monte Carlo, `mean(log p(x)) − mean(log q(x))` over 100 000
+   draws `x = vp.sample(...)` in the original space with `vp.log_pdf`,
+   and compare with `stats["elbo"]`. For the ring do it under two
+   variants: the upstream definition (with the `log r` term, `ln Z`
+   4.613) and the same density without that term (`ln Z` 2.534). VBMC's
+   own ELBO standard deviations are at most 0.02 on the ring group, and
+   the two variants differ by about `log 8 ≈ 2.1` nats on the ring, so
+   the recomputation identifies the variant: the one whose recomputed
+   ELBOs sit within about 0.3 nats of the stored values. If the variant
+   without `log r` matches, port that definition instead (its normalizer
+   is `log(2π σ √(2π) R)`, `true_cov = (E[r²]/2) I` with the radial
+   density `∝ r e(r)`), and record in the docstring and the worklog that
+   the pinned upstream `targets.py` differs from the target of the
+   paper's runs, with the numbers. If neither variant matches within
+   0.5 nats for most posteriors, stop and report. For GMM the
+   recomputation must match the stored ELBOs within about 0.3 nats.
+   Also require every stored ELBO to be at most `ln Z + 3 elbo_sd + 0.5`
+   under the chosen definition. Record min, median and max stored ELBO
+   per group next to `ln Z` in the worklog (0.31 / 1.15 / 1.25 on the
+   ring, 1.61 / 2.29 / 2.70 on GMM, 1.23 / 1.74 / 2.28 on noisy GMM).
+4. Add the suite `SUITES["svbmc_pool"]` with the five conditions of the
+   table plus the extension condition, every entry
+   `Config(name, D, noise_sd=..., tag="svbmc")` with no `_paper_budget`
+   (the labels then end in `_svbmc`; the extension entry is present in
+   the suite but not in the pool manifest). Then check, in a one-liner,
+   that `find_config(label)` returns the pool entry for every pool label
+   and that no two configurations in `suite_configs("all")` share a label
+   while differing in `options` (`suite_configs("all")` keeps the first
+   configuration per label silently).
+5. Run `python dev/scripts/benchmark_targets.py --check --only gmm,ring`
+   (target names, since the labels carry the suffix) and require it to
+   pass, then
+   `python dev/scripts/benchmark_targets.py --smoke --suite svbmc_pool`
+   (two VBMC iterations per configuration).
+6. Update the module docstring, the `dev/README.md` entry for
+   `benchmark_targets.py` (eleven synthetic targets, naming `gmm` and
+   `ring` and their upstream origin, and the `svbmc_pool` suite). Run
+   `pre-commit run --files` on the changed files.
+
+**Verification**:
+
+- [ ] Pointwise port check passes; pins added; `--check --only gmm,ring`
+      passes.
+- [ ] Ring variant identified from the ELBO recomputation and recorded;
+      no stored ELBO above the truth beyond noise.
+- [ ] `find_config` returns the pool entries; no shadowed labels;
+      `--smoke --suite svbmc_pool` passes.
+- [ ] `python -m pytest pyvbmc/testing/oracles -q` still passes (the
+      `active_sample_step` oracle imports the suite module).
+- [ ] Docs updated; pre-commit clean.
+
+### Phase 3: pool generator
+
+**Executor**: Opus sub-agent. Light compute except one manual single-seed
+run of a noisy condition at the end (about 3 minutes, the only heavy
+process at that time).
+
+**Goal**: a resumable, hash-verified generator that writes the per-run
+artifact of the contract above and a summary, following
+`population_run.py`.
+
+**Steps**:
+
+1. Create `dev/scripts/svbmc_pool_io.py` with:
+   `save_run(out_dir, tag, vbmc, results, problem, cfg, seed, timing, meta_extra)`
+   building the snapshot exactly as the contract says (`vbmc.vp`,
+   `vbmc.get_gp(results["best_iter"])`, `vbmc.function_logger`,
+   `vbmc._optim_state_record()`, `vbmc.options`, the listed `meta`
+   fields with `profile_run.jsonable` on nested values), calling
+   `save_snapshot`, then `verify_run` against the live objects;
+   `load_run(path, rng=None)` returning
+   `dict(vp, gp, pt, logger, optim_state, options, meta)` through
+   `load_snapshot` and `build_state(fun=None, rng=rng)`;
+   `verify_run(path, vbmc=None, results=None)` implementing checks
+   (a)–(d) of Phase 1 step 4 and, without live objects, checks (c) and
+   (d) plus the hash record; `filter_verdict(vp, s_max=np.sqrt(5))`
+   returning `dict(stable, max_J_sjk, passes)` with
+   `max_J_sjk = float(np.max(vp.stats["J_sjk"]))`.
+2. Create `dev/scripts/svbmc_pool_run.py` with subcommands:
+   - `prepare --out DIR --suite svbmc_pool [--only LABELS] --target N --max-seeds M --seed-start 1000 [--control-target 50 --control-max-seeds 75]`
+     writing `manifest.json`: allocation per condition (`label`,
+     `seed_start`, `max_seeds`, `target_filtered`), base options
+     (`display="off"`, `plot=False`, `print_iteration_header=False`,
+     `performance_calibration="off"`), identity (PyVBMC commit, import
+     path and whether `pyvbmc/` or `dev/scripts/benchmark_targets.py`
+     has uncommitted changes; the gpyreg source directory from
+     `--gpyreg-source DIR` (default the frozen worktree named under "GP
+     library pin"), its commit and clean state; NumPy, SciPy, Python
+     versions; thread environment; hostname), and `launch_ready: false`;
+     `--ready --authorized-by NAME` flips it and records who authorized
+     the launch and when. This identity is a deliberate relaxation of
+     `population_run.identity()`, which demands a frozen PyVBMC checkout
+     as well; gpyreg is pinned the same way as there.
+   - `run --out DIR [--pilot-seeds K] [--save-vbmc]`: refuse without
+     `launch_ready` or when the package directory or the suite module
+     has uncommitted changes; set `PYVBMC_GPYREG_SOURCE` to the
+     manifest's gpyreg source for itself and every child, prepend it to
+     `sys.path` before importing PyVBMC, and refuse when
+     `gpyreg.__file__` resolves elsewhere; `FileLock` on `campaign.lock`;
+     identity must equal the manifest's; BLAS thread variables set to 1
+     and `MPLBACKEND=Agg` in the child environment; Windows idle-sleep
+     prevention as in `population_run.py`; for each condition in
+     manifest order, seeds from `seed_start` upward; skip a seed whose
+     `records/<tag>.complete.json` re-verifies (hashes and identity);
+     stop the condition when the filtered count reaches
+     `target_filtered` or `max_seeds` seeds have run; with
+     `--pilot-seeds K`, run exactly the first `K` seeds of every
+     condition instead. One worker subprocess per case
+     (`sys.executable -u <this file> worker ...`), stdout and stderr to
+     `<tag>.log`, `START`/`DONE`/`FAILED` lines with `flush=True`,
+     `status.json` rewritten before and after every case (active case,
+     per-condition counts, totals, timestamps); a failing case writes
+     `<tag>.error.txt` and the sweep continues; a partial artifact
+     without a valid record stops the sweep for inspection.
+   - `worker --out DIR --label L --seed S [--save-vbmc]`: identity check;
+     `cfg = find_config(label)`; `prob = cfg.make(seed=seed)`; options from
+     `prob.vbmc_args()` updated with the base options; `VBMC(*args,
+     options=options, seed=seed)`; `vp, results = vbmc.optimize()` timed
+     with `perf_counter`; `metrics(prob, vp, results["elbo"])`;
+     `save_run`; `filter_verdict`; `records/<tag>.complete.json` with
+     hashes, elapsed seconds, identity, verdict and metrics; with
+     `--save-vbmc`, `vbmc.save(out / f"{tag}.vbmc.pkl")`.
+   - `summarize --out DIR`: `summary.json` and `summary.md` per condition:
+     seeds run, filtered count, pass rate, failure reasons, wall median
+     and IQR, evaluation-count median, `K`, metric medians and IQRs, and
+     the usable fraction under the house thresholds.
+3. Create `dev/scripts/test_svbmc_pool_run.py` (explicit path, outside
+   default discovery, modelled on `dev/scripts/test_population_run.py`):
+   a manifest for `normal_D2` with `target 2`, `max_seeds 3`, run end to
+   end into a temporary directory (about one minute); assert both
+   artifact files and the record exist per run, `load_run` returns
+   objects whose `vp.stats["I_sk"]` matches the sidecar, `verify_run`
+   passes post hoc, a second `run` skips every completed case,
+   `summarize` reports the right counts, and a corrupted record (edit
+   one hash) makes the second `run` stop for inspection rather than
+   rerun silently.
+4. Manual gate, the one heavy process: `prepare` into a scratch
+   directory for `rosenbrock_D2_noise3_svbmc` with
+   `--max-seeds 1 --target 1`, `--ready`, `run`, `summarize`; then
+   `verify_run` post hoc on the artifact; then, with `PYTHONPATH` set to
+   `TORCH_PATH`, rebuild the posterior with `load_run(path, rng=0)` and
+   construct `pyvbmc.svbmc.SVBMC([vp, vp], noisy=True)` to confirm the
+   rebuilt posterior passes `_validate_posteriors` (two copies suffice).
+5. Add both scripts to the `dev/README.md` scripts list (one bullet each,
+   in the style of the existing entries) and run pre-commit.
+
+**Verification**:
+
+- [ ] `python -m pytest dev/scripts/test_svbmc_pool_run.py -vv` passes.
+- [ ] Manual gate: artifact under 1 MB, `verify_run` passes post hoc,
+      rebuilt posterior accepted by the integrated class.
+- [ ] `git status` shows only the new scripts, the test and the README
+      change.
+
+If the codec rejects a live object, report the key and stop; do not
+filter the state ad hoc.
+
+### Phase 4: pilot
+
+**Executor**: Fable (orchestrator), holding the single heavy slot in the
+main thread.
+
+**Goal**: measured wall times and filter pass rates on this machine for
+every condition, stacking times of both arms at `M = 3`, artifacts proven
+to reload and stack in both implementations, and a fixed allocation for
+the pools and the comparison grid.
+
+**Constraints**: three seeds per condition (`--pilot-seeds 3`), one
+process, BLAS single-threaded, `--save-vbmc` on; the pool runs and the
+stacking timings are taken with nothing else computing (Phase 5's test
+and dry run wait until they finish); timings under other load are
+informational only. Nothing in the package changes.
+
+**Failure path**: a run that errors is recorded and the pilot continues;
+an artifact that fails `verify_run` stops the pilot for investigation
+(the contract, not the run, is in question); a condition whose three
+seeds all fail the filters is reported with the reasons and its seed cap
+and pass-rate assumption are revised before stage B.
+
+**Acceptance**:
+
+- [ ] 15 artifacts (three seeds of five conditions) verify post hoc, or
+      the failures are documented.
+- [ ] For every condition, the integrated class constructs and runs a
+      full `optimize` from the three rebuilt posteriors with
+      `seed=cell_seed`; the original does the same in `BASELINE_PATH`
+      with `np.random.seed(cell_seed)`; the paired `max |Δw|` and both
+      arms' within-arm spread over five seeds are recorded per condition
+      and appended to criterion 1's tolerance line; both arms' `optimize`
+      seconds at `M = 3` are recorded.
+- [ ] The pool runtime table and the comparison cost paragraph are
+      replaced by measured medians and the `M²` extrapolation; the seed
+      caps, stage split and comparison grid are revised; the worklog
+      records the pilot. A revised allocation is applied to the same
+      campaign directory by running `prepare` again with the new
+      `--allocation` values (the manifest accepts a change of the
+      allocation alone and records the previous one in
+      `allocation_history`), so the pilot's artifacts are the first runs
+      of stages B and C.
+- [ ] The PI authorizes stage B, stage C, the comparison grid, or a
+      revised allocation in a dated worklog entry before any further
+      pool run starts.
+
+### Phase 5: stacking comparison harness
+
+**Executor**: Opus sub-agent. Light compute; authoring proceeds alongside
+Phase 4, its test and dry run wait until the pilot's timed runs finish.
+
+**Goal**: `dev/scripts/svbmc_pool_stack.py`, the matched comparison of the
+design above, tested on the upstream fixture groups.
+
+**Steps**:
+
+1. Add to `dev/scripts/benchmark_targets.py` a function
+   `sample_metrics(problem, samples, elbos)` returning `mmtv`, `gskl`
+   (house convention), `gskl_normalized = gskl / D`, and
+   `elbo_err_<name>` for every entry of the `elbos` dict, plus the sample
+   moments; MMTV mirrors `VariationalPosterior.mtv` (2^13-point `kde_1d`
+   per dimension, ranges from the samples widened by a tenth and clipped
+   to the problem's bounds) between `samples` and
+   `problem.sampler(100_000, rng)` with a dedicated generator.
+2. Create `dev/scripts/svbmc_pool_stack.py`:
+   - inputs: one or more pool directories, `--conditions`, `--M` grid
+     (default `2,4,8,16`), `--repetitions` per `M` (default
+     `20,20,20,10`), `--seed 0`, `--max-steps 500`, `--out DIR`,
+     `--overwrite`; refuses to start unless
+     `baseline_environment.json` re-verifies (commit, clean tree,
+     file hashes, Torch version);
+   - for each condition, the filtered runs ordered by seed; subsets from
+     `np.random.default_rng([seed, condition_index, M, r]).choice(n, M, replace=False)`;
+     `cell_seed` derived from the same tuple;
+   - integrated arm in-process (controller started with `PYTHONPATH`
+     = `TORCH_PATH`): posteriors rebuilt for the cell with
+     `load_run(path, rng=entry_seed)`, one seed per entry from
+     `SeedSequence(cell_seed).spawn(M)`, `SVBMC(vps, seed=cell_seed)`,
+     `optimize(n_samples=20, lr=0.1, max_steps=..., version="all-weights", n_samples_final=100)`;
+     record `w`, `elbo`, `elbo_sd`, `elbo_details`, `entropy`,
+     construction and optimization seconds, `sample_metrics` of
+     `sample(100_000)`, and `e_log_joint_mc` / `elbo_mc` from 10 000 of
+     those draws through the noiseless `problem.log_density_vec`;
+   - original arm in a long-lived worker subprocess whose environment
+     sets `PYTHONPATH` to `BASELINE_PATH` (`os.pathsep.join`), receiving
+     the artifact paths, the subset indices and `cell_seed`; the worker
+     rebuilds the posteriors with the same per-entry seeds, calls
+     `np.random.seed(cell_seed)`, then
+     `svbmc.SVBMC(vps, s_max=np.sqrt(5), M_min=2/3)` and
+     `optimize(n_samples=20, lr=0.1, max_steps=..., version="all-weights")`;
+     records `w`, the three `elbo` entries, `entropy`, seconds,
+     `sample_metrics` of `sample(100_000)` (approximately that many rows)
+     and `e_log_joint_mc` / `elbo_mc` the same way;
+   - the two arms never run at the same time; alternate which arm runs
+     first in every cell;
+   - `M = 1` rows from the pool sidecars' metrics;
+   - outputs `results.json` (every cell), `summary.json` and `summary.md`
+     (per condition and `M`: medians with 10 000-resample bootstrap 95 %
+     intervals of the median, paired differences with exact signed-rank
+     p-values Holm-corrected across all condition-and-`M` cells at
+     α = 0.05 for MMTV and gsKL, `max |Δw|`, runtime ratio with its
+     interval, per-condition aggregates over all `M` of the runtime ratio
+     and `max |Δw|`, and the `M = 1` medians), and `sources` (both trees'
+     commits, working-tree state, the suite module's hash, import paths,
+     versions, thread settings, the baseline environment record, the
+     harness's own SHA-256). A `--summarize-only` mode rebuilds the
+     summaries from an existing `results.json` without running a cell,
+     which is what criterion 5 requires.
+3. Create `dev/scripts/test_svbmc_pool_stack.py`: run the harness on the
+   fixture groups `upstream_GMM_noisy` and `upstream_Ring` (through a
+   small adapter that presents fixtures as a pool) with `--M 2,3
+   --repetitions 2,2 --max-steps 3`; assert the output schema, that both
+   arms produced every cell, and that `max |Δw|` is within the Phase 1
+   spread for those groups. Skip cleanly when Torch is not importable.
+4. Dry run on the pilot artifacts (`--M 2,3 --repetitions 2,2`) once the
+   pilot's timed runs are done; report the summary table in the worklog.
+5. Add the script to the `dev/README.md` list; pre-commit.
+
+**Verification**:
+
+- [ ] `PYTHONPATH="<TORCH_PATH>" .venv/Scripts/python.exe -m pytest dev/scripts/test_svbmc_pool_stack.py -vv` passes.
+- [ ] Dry run on the pilot completes with the two arms agreeing within
+      the recorded spread.
+
+### Phase 6: campaign, comparison and report
+
+**Executor**: Fable (orchestrator) for the runs (single heavy slot) and
+the assessment; Opus sub-agents for the report drafting and the
+experiments README if delegated.
+
+**Goal**: the authorized pools generated and summarized, the comparison
+run against the acceptance criteria, and the results recorded.
+
+**Work**:
+
+- Stage B then stage C with `svbmc_pool_run.py run`, each on explicit PI
+  instruction, resuming from the pilot directory; `summarize` after
+  each; copy `manifest.json`, `summary.json`, `summary.md` and the
+  records index into `dev/experiments/svbmc_pool/`.
+- Stage D: `svbmc_pool_stack.py` over the filtered pools with the
+  authorized grid; copy `results.json`, `summary.json`, `summary.md` and
+  `sources` into `dev/experiments/svbmc_pool/`.
+- Assess criteria 1–5; write `dev/results/<date>-svbmc-pool-comparison.md`
+  (lead paragraph with the headline and links, comparison design,
+  results tables, agreement, runtime, limitations); complete
+  `dev/experiments/svbmc_pool/README.md` (every key of every JSON, the
+  exact reproduction commands, the raw location under
+  `dev/scripts/runs/`).
+- Update the documents listed below and this plan's status and worklog.
+
+**Acceptance**:
+
+- [ ] Every filtered pool reaches its target or its seed cap, with the
+      shortfall recorded.
+- [ ] Criteria 1–5 assessed with the numbers in the report; any failure
+      is stated as such.
+- [ ] Phase 2 hand-off paragraph in the worklog names the pool directory,
+      the filtered counts and the comparison cells.
+
+## Documentation
+
+- `dev/TODO.md`: the "S-VBMC benchmark campaign" item links to this plan
+  and drops "remain to be designed" once the design is approved.
+- `dev/plans/svbmc-integration.md`, section "Benchmark campaign required
+  for 1.5": one sentence pointing here as the owner of the design and
+  execution.
+- `dev/2026-09-12-svbmc-elbo-optimism.md`, "Where and on what": one
+  sentence pointing here for the pools and the `elbo_mc` cells.
+- `dev/plans/modernization-roadmap.md`: the S-VBMC workstream entry
+  names this plan.
+- `dev/README.md`: the plans index lists this plan; the scripts list
+  gains `svbmc_pool_run.py`, `svbmc_pool_io.py` and
+  `svbmc_pool_stack.py`; the `benchmark_targets.py` entry names the two
+  new targets and the `svbmc_pool` suite.
+- `dev/experiments/svbmc_pool/README.md` (new): owns the description of
+  the machine-readable evidence (manifest, summaries, comparison JSON,
+  baseline environment) and the reproduction commands.
+- `dev/results/<date>-svbmc-pool-comparison.md` (new, Phase 6): owns the
+  reading of the comparison numbers.
+- Not needed: `MANIFEST.in` (nothing under `dev/` ships; the packages are
+  enumerated in `pyproject.toml`) and `dev/golden/README.md` (the pools
+  are not golden traces).
+- The Phase 2 report is not part of this campaign.
+
+## Decisions
+
+Choices made while drafting that could reasonably have gone the other
+way and would be costly to reverse.
+
+- **Generate fresh pools rather than reuse retained captures, on every
+  axis.** The captures carry no GP, predate the recorded noise level,
+  and were run at an older code state under the pinned budget; and the
+  comparison must run on the same inputs Phase 2 uses so that raw,
+  capped, honest and Monte Carlo values land on the same cells.
+  Rejected: rebuilding GPs from the golden traces next to the capture
+  posteriors (zero VBMC compute, but a reconstruction audit and an
+  older code state); rejected: stacking the captures for the
+  posterior-quality axis alone (different inputs from Phase 2, noise
+  level inferred by proxy).
+- **Plain-array snapshots, not pickled `VBMC` objects.** The oracle codec
+  already captures posterior, GP, transformer, logger and state
+  independently of class layout, rebuilds through public constructors,
+  and is exercised by the oracle tests; the shipped `.pkl` fixtures show
+  how renamed attributes break pickles. `VBMC.save` is used only for the
+  pilot runs to prototype the Phase 2 interface.
+- **The saved GP is `get_gp(best_iter)`, not the last iteration's
+  `vbmc.gp`.** It is the GP behind the returned statistics in both boost
+  branches, and the recomputation gate checks it.
+- **GMM and ring are ported into the developer benchmark suite.** The
+  integration decision kept the toy targets out of the package, which
+  this respects; importing them from the gitignored checkout would make
+  the pool irreproducible from a clean clone. Log densities are
+  reproduced pointwise against the pinned source and pinned; samplers
+  are the suite's own.
+- **Seeds disjoint from the golden population.** A cross-check against
+  the golden traces would be weak (the guarded-sinh change moved one of
+  the 18 replayed trajectories, and the budget convention may differ),
+  and disjoint ranges keep the populations from being conflated.
+- **Matched subsets, fresh posteriors and one cell seed per cell for both
+  arms.** Paired cells turn the comparison into differences on identical
+  inputs; the original's use of the global NumPy stream and of the input
+  posteriors' generators is contained by seeding and rebuilding per cell.
+- **Criterion 1 is an equivalence within measured spread, not a fixed
+  tolerance.** The Phase 1 corrections intentionally move weights on
+  bounded targets; a fixed tolerance measured on unbounded fixtures
+  would stop the campaign on multisensory by design.
+- **House gsKL convention as the gate, normalized variant stored.** The
+  repository's analyses all use the 2020 convention with threshold 1;
+  the paper's variant is kept for paper-comparable figures only.
+- **One artifact contract for both consumers.** The comparison runs on
+  the pools Phase 2 uses, so raw, capped, honest and Monte Carlo values
+  land on the same cells; the `elbo_mc` field is recorded during the
+  comparison because the draws are already in hand.
+- **Cost drivers named and bounded.** The cell cost grows as `M²` and a
+  D = 6 stack costs about five D = 2 stacks; the grid, the pool sizes and
+  the condition set were sized together (see the PI decisions) so the
+  comparison stays near 5 hours.
+- **The plan lives in `dev/plans/`.** The repository convention keeps
+  execution plans there, slug-named; the reporting plan already records
+  executor-labelled phases in this form.
+
+## PI decisions (2026-09-13)
+
+The design above was approved with these choices, each of which the
+draft had left open:
+
+1. **Evaluation budget**: PyVBMC defaults (75 (D + 2) for noisy targets),
+   the S-VBMC paper's convention; every pool configuration is a tagged
+   suite entry. Rejected: the golden suite's pinned 50 (D + 2), which
+   would have made conditions 2 and 3 directly comparable with the golden
+   single-run baseline at the price of a budget users never see.
+2. **Condition set**: one multisensory noise level (3, paper parity);
+   the noise-1.3 condition is an extension, since its only unique
+   contribution is a second point on the noise scaling of the optimism.
+   The noiseless GMM control stays.
+3. **Pool sizes**: 60 filtered runs per noisy condition, 40 for the ring
+   (the most expensive condition), 30 for the control; `M` capped at 16.
+   Rejected: the paper's 100, about a third more pool compute for `M` up
+   to 40.
+4. **Compute**: staged on this laptop, each stage on a separate
+   instruction; the per-case worker stays reusable for a Slurm array
+   job. Rejected: waiting for the Slurm support item.
+5. **Phase 5 timing**: the comparison harness is built now, alongside
+   the pilot, since it is needed whatever Phase 2 decides.
+6. **Comparison grid**: `M ∈ {2, 4, 8, 16}` with `R = 20, 20, 20, 10`,
+   both arms on every cell, about 5 hours from the paper's timings.
+   Rejected: the paper's `2–40` grid with 20 repetitions (about 100
+   hours), whose cost sits in the `M ≥ 32` cells that the pool size no
+   longer supports.
+
+## Risks and rollback
+
+- Noise-3 multisensory or ring runs may pass the filters rarely; the
+  seed caps bound the cost, and the shortfall is recorded rather than
+  chased.
+- A snapshot that does not reproduce the stored statistics would mean
+  the GP behind the posterior is not the one the contract assumes; Phase
+  1 tests this before any harness is written.
+- The original implementation prints warnings and draws from the global
+  NumPy stream and the input posteriors' generators; the harness seeds
+  the stream and rebuilds the posteriors per cell and never runs both
+  arms at once.
+- The comparison's cost estimate rests on the paper's hardware; the
+  pilot's `M = 3` timings and the `M²` extrapolation replace it before
+  stage D is authorized.
+- Rollback: the harness lives in three new scripts and one suite entry;
+  removing them and the `gmm`/`ring` registry entries restores the tree.
+  Pool artifacts are gitignored.
+
+## Worklog
+
+- 2026-09-13: plan drafted after an inventory of retained artifacts
+  (population captures, boost-campaign dills, golden traces, fixtures,
+  the pinned upstream checkout), the paper protocols and the campaign
+  conventions, then revised after a two-reviewer check: the randomness
+  of both implementations is NumPy's, not Torch's; the agreement
+  criterion became an equivalence within measured spread because the
+  Phase 1 corrections move weights on bounded targets by design; the
+  comparison grid was sized (`M²` cost) and reduced; the ring's
+  normalizer under the upstream definition is 4.613 against a paper
+  figure reading near 2.25, to be settled by ELBO recomputation on the
+  upstream posteriors.
+- 2026-09-13: design approved by the PI with the six decisions recorded
+  above (default budget, one multisensory level, pools of 60/40/30, this
+  laptop in stages, comparison harness now, grid `{2, 4, 8, 16}`).
+  Harness implementation may start; the pilot waits for its own go.
+- 2026-09-13: the PI authorized the pilot to start once Phases 1–3 are
+  complete and verified. Phase 1 complete: 192 integrated S-VBMC tests
+  pass with Torch from the overlay; the original runs at the pin against
+  current posteriors; agreement and spread measured (criterion 1);
+  `baseline_environment.json` written; the snapshot probe on `normal_D2`
+  and the VIQR run `rosenbrock_D2_noise1` round-trips with exact zeros
+  on the GP predictions and the recomputation gate, 35 KB and 61 KB per
+  artifact, `active_importance_sampling` present as `None` on the noisy
+  run and absent on the noiseless one. The sibling gpyreg checkout was
+  found on an in-progress branch with uncommitted GP-core changes, so
+  the campaign pins gpyreg to a frozen worktree at the CI pin (section
+  "GP library pin").
+- 2026-09-13: Phase 2 complete. `gmm` and `ring` are in the suite with
+  pins; the GMM log density is bit-identical to the upstream module on
+  641 points, `ln Z = log 20`. The ring question of Phase 2 step 3 is
+  settled: recomputing every upstream ring posterior's ELBO by Monte
+  Carlo reproduces the stored values within 0.23–0.24 nats under the
+  density **without** the `log r` term and misses by 2.30–2.32 nats
+  (`log R` exactly, the posteriors sit on the ridge) with it, against
+  stored `elbo_sd` at most 0.02; the noiseless GMM control reproduces to
+  a median of 0.011 nats. The ported ring therefore omits the term,
+  `ln Z = 2.5337` (quadrature and closed form agree to 1e-15),
+  `true_cov = 32.015 I`, and the `_ring` docstring records that the
+  pinned upstream `targets.py` differs from the target of the paper's
+  runs. `--check` passes for both targets, `--smoke --suite svbmc_pool`
+  passes for all six entries, the oracle suite still passes (143 passed,
+  the platform-bound oracles included), `_mixture_moments` now accepts
+  full covariances (the `lumpy` check is unchanged), and no stored
+  upstream ELBO exceeds its truth beyond noise. Phase 3 was interrupted
+  by the usage limit while reading files and resumed at 02:31 on
+  2026-09-14.
+- 2026-09-14: Phase 3 complete. `svbmc_pool_io.py`, `svbmc_pool_run.py`
+  and `test_svbmc_pool_run.py` are in place (16 tests, 35 s, on
+  `normal_D2`); the manual gate on `rosenbrock_D2_noise3_svbmc` seed 1000
+  took 1.6 min, 170 evaluations, `K = 50`, passes the filters
+  (`max_J_sjk` 0.66), 73 KB per artifact, `verify_run` post hoc with
+  exact zeros on the recomputation gate, and two rebuilt copies stack in
+  the integrated class as a noisy pair; `--save-vbmc` writes a 742 KB
+  pickle for a small run. Every worker imports gpyreg from the frozen
+  worktree (`sys.path.insert(1, …)` suffices because the editable
+  finder appends itself to `sys.meta_path`). Departures from the Phase 3
+  text, all recorded in the scripts' docstrings: `prepare` has
+  `--allow-dirty` (used only by the test and the gate while the tree
+  carried uncommitted work; a campaign manifest is prepared from a
+  committed tree without it) and a repeatable `--allocation LABEL=T/M`
+  for per-condition pool sizes; the identity also hashes the suite
+  module; metadata goes through the codec's own `encode` because a
+  `results` field is NaN and the sidecar is written with
+  `allow_nan=False`; a failed case leaves `<tag>.error.txt` and a resume
+  continues past it, while a partial artifact without a record or error
+  file stops the sweep. `prepare --suite svbmc_pool` must be given
+  `--only` with the five pool labels, since the extension condition is
+  a suite entry. Note for harness code: the integrated class is imported
+  as `from pyvbmc.svbmc import SVBMC`; `pyvbmc.svbmc` is not an
+  attribute of the top-level package.
+- 2026-09-14: Phase 5 complete except the dry run on pilot artifacts.
+  `sample_metrics` sits next to `metrics` in the suite module and agrees
+  with it to Monte Carlo noise on fixture posteriors; `svbmc_pool_stack.py`
+  takes `--pool DIR` or `--fixtures GROUP` (the fixture adapter lives in
+  the harness because the original arm's subprocess must load the same
+  entries; groups map to the ported targets), re-verifies the baseline
+  record before any cell, warms both arms with two discarded Adam steps,
+  runs the arms one at a time alternating order, and writes
+  `results.json`, `summary.json`, `summary.md`, `sources.json`,
+  `cells.jsonl` and `original_arm.log`. Its 7 tests pass in 18 s on the
+  upstream GMM-noisy and ring groups at `M = 2, 3`, three Adam steps:
+  paired `max |Δw|` at most 0.015, both arms improving on the `M = 1`
+  medians, both arms importing gpyreg from the frozen worktree. A dry
+  run on the two-run `normal_D2` pool of Phase 3's test exercised the
+  `--pool` path end to end (`noise_status_source` recorded). Guards
+  checked: a tampered baseline record and an upstream path on the
+  controller are refused; an `M` above the filtered pool is skipped and
+  recorded.
+- 2026-09-14: doublecheck of Phases 1, 2, 3 and 5 by three fresh
+  reviewers, every finding fixed and re-verified (29 pool-generator
+  tests, 11 comparison tests, the target checks, 143 oracle tests and 192
+  S-VBMC tests pass). Corrections of substance: the comparison's Monte
+  Carlo log joint took the first 10 000 draws, which for the original
+  arm (unshuffled per-run blocks) measured one run rather than the stack;
+  it now takes a seeded random subsample in both arms. The fixture
+  adapter matched groups by name prefix and would have merged the noisy
+  GMM fixtures into `upstream_GMM`; it now reads the sidecar group.
+  Every posterior of a cell was rebuilt with the same seed, coupling the
+  original arm's sample blocks; each entry now gets its own seed spawned
+  from the cell seed (the Randomness paragraph records this). `prepare`
+  could allocate the extension condition by default; it now allocates
+  exactly the five pool labels unless `--only` names the extension. A
+  stale `<tag>.log` blocked resumption; only artifact suffixes count as
+  partial now. The allocation may be revised in place with a recorded
+  history (Phase 4 needs this). The identity pins the io and runner
+  modules as well as the suite module; the comparison records
+  working-tree state for both arms and checks the controller's gpyreg at
+  start. Criterion 2's exact signed-rank tests with Holm correction and
+  criterion 5's `--summarize-only` mode exist. The ring's `--check` now
+  uses an independent reference route and machine-checks the three
+  upstream `log_pdf` values (the port plus `log r`), and the S-VBMC
+  paper's author list was corrected in two citations. `sample_metrics`
+  and `metrics` now draw the same reference set by default.
+  `baseline_environment.json`'s gpyreg note states the pin. Phase 4 was
+  cleared to start once the tree is committed.
+
+## Execution tracking
+
+Live status of the phases above (`[ ]` not started, `[~]` in progress,
+`[x]` complete, `[!]` blocked). Implementation runs on `dev-svbmc-pool`
+(branched from `dev-next` at `4216b6d`, 2026-09-13).
+
+- [x] Phase 1: baseline environment, agreement spread, save-contract probe (Opus sub-agent; 2026-09-13, all checks pass; see worklog)
+- [x] Phase 2: targets (Opus sub-agent; 2026-09-13, all checks pass; ring ported without the log-radius term, see worklog)
+- [x] Phase 3: pool generator (Opus sub-agent; 2026-09-14, 16 tests pass, manual gate on `rosenbrock_D2_noise3_svbmc` verified and stacked; see worklog)
+- [ ] Phase 4: pilot (Fable; authorized by the PI on 2026-09-13 to start once Phases 1–3 are complete and verified)
+- [x] Phase 5: stacking comparison harness (Opus sub-agent; 2026-09-14, steps 1–3 and 5 done, 7 tests pass; step 4, the dry run on the pilot artifacts, waits for Phase 4)
+- [ ] Phase 6: campaign, comparison and report (waits for PI go per stage)
+- [ ] Documentation updates listed above
+- [x] Doublecheck of the implemented phases (three fresh reviewers on 2026-09-14; every finding fixed and re-verified, see worklog)

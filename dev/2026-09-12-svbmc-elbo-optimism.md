@@ -435,7 +435,10 @@ of `dev/README.md`, one heavy process at a time on the laptop and started
 only on PI instruction, placed after the reference campaigns that
 `dev/TODO.md` orders first; running them on the cluster depends on the
 Slurm support listed there as a follow-up. The stacking and the estimates
-are seconds.
+are seconds. The pools, their per-run artifact (posterior, GP, transformer
+and evaluation record as plain arrays) and the stacked cells with a Monte
+Carlo `ELBO_MC` reference are produced by the
+[run-pool campaign](plans/svbmc-benchmark-campaign.md).
 
 **Interface, decided after the results.** VBMC objects, posterior-GP
 pairs, or the GP attached to the posterior at the end of a run so that a

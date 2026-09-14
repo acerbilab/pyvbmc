@@ -81,11 +81,18 @@ and subsequent possibilities.
   and different numbers of stacked runs. S-VBMC has numerical regression
   fixtures and integration parity checks, but lacks a population benchmark
   reference comparable to VBMC's golden campaign. Establish and preserve the
-  original S-VBMC baseline and reproducible campaign results. Target/seed
-  allocation and acceptance criteria remain to be designed. Reuse suitable
-  VBMC numerical fixtures and retained runs, prioritizing hard targets such
-  as noisy multisensory and Rosenbrock; check that the required posterior
-  and GP state is available. See the
+  original S-VBMC baseline and reproducible campaign results. The
+  [campaign plan](plans/svbmc-benchmark-campaign.md) owns the approved
+  design (2026-09-13): five pool conditions (multisensory subject 1,
+  Rosenbrock, the paper's GMM and ring, all at noise 3, plus a noiseless
+  GMM control) at PyVBMC's default budget, each run saved with its
+  posterior and the GP behind its statistics so the same pools serve the
+  Phase 2 estimator; pools of 60 (ring 40, control 30); a matched
+  comparison at `M` in {2, 4, 8, 16}; gpyreg pinned to a frozen worktree.
+  No retained artifact carried a posterior with its GP, so the pools are
+  generated fresh. The harness is implemented and reviewed; the pilot is
+  authorized and the pool stages and the comparison follow on separate
+  instructions. See the
   [campaign requirement](plans/svbmc-integration.md#benchmark-campaign-required-for-15).
 
 - [ ] **Slurm/HPC benchmark support.** Design reproducible submission,
