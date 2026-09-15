@@ -67,6 +67,16 @@ For the release overview, start with
   array of `worker` calls, `select`, `summarize`), what to hand back and
   the branch-and-PR flow; the specification is in
   [plans/svbmc-benchmark-campaign.md](plans/svbmc-benchmark-campaign.md).
+- [S-VBMC headline shrinkage](2026-09-15-svbmc-headline-shrinkage.md) —
+  What the run pools showed about the stacked ELBO on noisy targets: the
+  comparison passes except on the reported number, the component-median
+  cap over-corrects on a heavy-tailed target and the cross-run estimator
+  does not repair it, the optimism lives inside each run's own estimate,
+  and an empirical-Bayes shrinkage by the GP's own covariance is the first
+  correction acceptable everywhere; the candidates side by side and the
+  decision to make the two-level shrinkage the headline candidate. The
+  evidence is the
+  [stage D report](results/2026-09-15-svbmc-pool-comparison.md).
 
 `TODO.md` contains only current actions, constraints and links. Do not
 accumulate completed handoffs there; the roadmap and plans retain execution
@@ -617,10 +627,17 @@ reason.
   of the population's spread that is the GP's own estimation variance
   (from `J_sjk` and the between-sample variance of `I_sk`), within each
   run with the diagonal or the full estimation covariance, or over the
-  whole stack, and re-evaluated at the recorded weights; every variant's
-  bias is scored against the cell's `elbo_mc`. Same rebuild, inputs and
-  outputs as `svbmc_cap_kappa.py`; its one run is
-  `experiments/svbmc_pool/shrink_20260915/`, read in the same report.
+  whole stack, at the run level (each run's own value shrunk toward the
+  runs' mean by its run-level estimation variance, composed with the
+  within-run forms), and re-evaluated at the recorded weights; a `hybrid`
+  rule applies the class's cap when the cell's noise share (the share of
+  the components' spread the GP attributes to estimation noise) is at
+  least 0.2 and the within-run shrinkage otherwise. Every variant's bias
+  is scored against the cell's `elbo_mc`. Same rebuild, inputs and
+  outputs as `svbmc_cap_kappa.py`; its runs are
+  `experiments/svbmc_pool/shrink_20260915/` and `shrink_M35_20260915/`,
+  read in the same report and in the
+  [headline note](2026-09-15-svbmc-headline-shrinkage.md).
 - `scripts/pymc_feasibility.py` — the bounded feasibility check of a PyMC
   model adapter (`2026-09-13-pymc-integration.md`): a PyMC model becomes a
   box-bounded log joint for `VBMC` (a variable bounded on one side keeps

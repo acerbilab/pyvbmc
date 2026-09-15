@@ -63,9 +63,16 @@ records its execution.
   0.56 to 0.82 nats against 0.77 to 1.07 for raw and 0.95 to 1.26 for
   the cap, with the noiseless controls untouched and Student D8 within
   0.4; it has no tuned constant and uses only `I_sk`, `J_sjk` and the
-  runs' own weights. Untested: re-optimizing the weights on the
-  shrunken estimates. The PI postponed the decision on the reported
-  estimator (2026-09-15) on the earlier evidence; 1.5 must still
+  runs' own weights; its two-level form (each run's own value also
+  shrunk toward the runs' mean) is as good or better at every `M`, and a
+  hybrid that applies the cap only where the noise share is at least
+  0.2 does better still on these eight conditions but rests on a
+  threshold chosen on them. The PI endorsed the two-level shrinkage as
+  the headline candidate for noisy stacks (2026-09-15; the
+  [headline note](2026-09-15-svbmc-headline-shrinkage.md) records the
+  reasons and what implementing it entails). Untested: re-optimizing
+  the weights on the shrunken estimates. Whether the switch ships in 1.5
+  or after is the next decision; 1.5 must still
   report a headline, so until it is made the current default stands
   (the component-median cap on a noisy stack, the raw value otherwise,
   every variant and the cap amount in `elbo_details`), and the

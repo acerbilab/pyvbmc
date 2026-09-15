@@ -1702,6 +1702,17 @@ draft had left open:
   summary over every `M`, through the harness's merged
   `--from-results`). Untested: re-optimizing the weights on the
   shrunken estimates, and the `M = 32` cells.
+- 2026-09-15: a rule that applies the cap only where the GP attributes
+  at least a fifth of the components' spread to estimation noise (the
+  `hybrid` of `svbmc_shrink_elbo.py`, scored on the same cells) halves
+  the worst case of the best single rule on these eight conditions
+  (0.38 to 0.56 nats against 0.51 to 0.75), with the same numbers for
+  any threshold from 0.15 to 0.30; its threshold is chosen on the data
+  it is scored on. The PI endorsed the two-level shrinkage as the
+  headline candidate for noisy stacks and the hybrid as the one to
+  revisit with more conditions; the
+  [headline note](../2026-09-15-svbmc-headline-shrinkage.md) is the
+  summary and the decision record, the stage D report the evidence.
 
 ## Execution tracking
 

@@ -25,8 +25,15 @@ does not repair that condition: it is accurate on the noiseless controls
 and on Rosenbrock, under-predicts by 0.2 to 0.7 nats on the typical
 noisy conditions, and lands as low as the cap on Student D8; and no
 weight-aware variant of the cap separates the heavy-tailed case from
-the typical one. The `M = 32` cells of the integrated arm are reported
-in a section added when that run completes.
+the typical one. An empirical-Bayes shrinkage of the components'
+expected log joints by the GP's own estimation covariance, within each
+run and at the run level, is the first correction acceptable on every
+condition, and a rule that applies the cap only where the GP attributes
+enough of the components' spread to noise does better still on these
+eight conditions; the reading and the decision are in the
+[headline note](../2026-09-15-svbmc-headline-shrinkage.md). The `M = 32`
+cells of the integrated arm are reported in a section added when that
+run completes.
 
 Tracked outputs:
 [`experiments/svbmc_pool/stack_20260914/`](../experiments/svbmc_pool/stack_20260914/)
@@ -450,6 +457,43 @@ at `M` = 2 / 3 / 4 / 5: raw 0.77 / 0.84 / 1.07 / 1.04, cap 0.95 / 0.97
 0.51 / 0.57 / 0.71 / 0.66; the mean over the six: raw 0.37 to 0.50, cap
 0.29 to 0.37, `within_full` 0.24 to 0.31, `two_level_full` 0.23 to
 0.26. The ordering is the same at every `M` a user is likely to run.
+
+**A switch by the noise share.** The cap keeps an edge of 0.1 to 0.3 nats
+on the two multisensory conditions and Rosenbrock, and what breaks it on
+Student is visible in the data the class holds: the share of the
+components' spread that the GP attributes to estimation noise, taken
+per run and mass-weighted over the stack, is 0.23 to 1.5 on the five
+typical noisy conditions, 0.10 on Student D8 and on the noiseless
+multisensory control, 0.01 on the noiseless GMM. The `hybrid` rule of
+`svbmc_shrink_elbo.py` applies the cap when the share is at least 0.2
+and the within-run shrinkage otherwise; it chooses the cap on 89 to
+100 % of the cells of the five typical conditions and on none of
+Student's or the controls'. Worst and mean median bias over the six
+noisy conditions:
+
+| rule | worst, M = 2 / 3 / 4 / 5 / 8 / 16 | mean |
+|---|---|---|
+| raw | 0.77 / 0.84 / 1.07 / 1.04 / 1.16 / 1.31 | 0.37 to 0.74 |
+| capped median | 0.95 / 0.97 / 1.17 / 1.26 / 1.39 / 1.78 | 0.29 to 0.45 |
+| `within_full` | 0.56 / 0.59 / 0.82 / 0.74 / 0.77 / 0.92 | 0.24 to 0.39 |
+| `two_level_full` | 0.51 / 0.57 / 0.71 / 0.66 / 0.65 / 0.75 | 0.23 to 0.28 |
+| hybrid (cap if share ≥ 0.2, else `within_full`) | 0.38 / 0.42 / 0.56 / 0.43 / 0.40 / 0.44 | 0.15 to 0.21 |
+
+Any threshold from 0.15 to 0.30 gives the hybrid the same numbers, since
+the shares cluster far apart. Its caveat is that the threshold sits in a
+gap between six conditions on one side and two on the other, chosen on
+the data it is scored on, and that it switches between two estimates
+that differ by up to 0.3 nats on the typical conditions and by 0.6 or
+more on Student.
+
+**What the numbers support.** For a headline that must not fail
+silently, the two-level shrinkage: worst case below the cap's at every
+`M`, mean at or below it, within 0.4 nats on the heavy-tailed target and
+0.09 on the noiseless ones, one formula with no constant. The cap is the
+better estimate on the well-behaved noisy conditions by 0.1 to 0.3 nats,
+which the noise share can tell apart on this data; the
+[headline note](../2026-09-15-svbmc-headline-shrinkage.md) records the
+decision taken on these tables.
 
 ## Limitations
 

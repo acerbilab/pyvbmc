@@ -30,6 +30,15 @@ of the estimate (the mean over hyperparameter samples of the diagonal of
 - ``two_level`` and ``two_level_full``: the run-level shift composed with
   ``within`` or ``within_full``.
 
+Each cell also records its noise share, the mass-weighted mean over its
+runs of the within-run share, and the ``hybrid`` rule built on it: the
+class's component-median cap when the share is at least
+``HYBRID_SHARE``, the ``within_full`` shrinkage otherwise. The share is
+what separates the targets the cap is right on (components of similar
+density, a large share of their spread being estimation noise) from
+those it over-corrects (a heavy-tailed target, whose components' spread
+is real).
+
 Only the value changes: ``G`` is re-evaluated at the cell's recorded
 weights with the shrunken ``I_k``, and every variant's bias is scored
 against the cell's ``elbo_mc`` with the cell's own entropy, as
@@ -80,7 +89,11 @@ VARIANTS = (
     "run_level",
     "two_level",
     "two_level_full",
+    "hybrid",
 )
+#: The noise share at or above which the ``hybrid`` rule applies the
+#: class's cap instead of the within-run shrinkage.
+HYBRID_SHARE = 0.2
 
 
 def run_estimates(vp, jacobian):
@@ -238,13 +251,40 @@ def score_cell(cell, pool):
             float(np.mean(V_all) / spread_stack) if spread_stack else None
         ),
     }
+    masses = np.array([run["mass"] for run in record["runs"]])
+    shares = np.array(
+        [
+            0.0 if run["noise_share"] is None else run["noise_share"]
+            for run in record["runs"]
+        ]
+    )
+    record["noise_share"] = float(np.sum(masses * shares) / np.sum(masses))
     for name in VARIANTS:
+        if name == "hybrid":
+            continue
         G_shrunk = float(np.dot(w, shrunk[name]))
         record["variants"][name] = {
             "G": G_shrunk,
             "bias": G_shrunk + H - elbo_mc,
             "factor": float(np.dot(w, factors[name]) / np.sum(w)),
         }
+    use_cap = record["noise_share"] >= HYBRID_SHARE
+    record["variants"]["hybrid"] = {
+        "G": (
+            float(arm["elbos"]["capped_I_median"]) - H
+            if use_cap
+            else record["variants"]["within_full"]["G"]
+        ),
+        "bias": (
+            record["bias_class_cap"]
+            if use_cap
+            else record["variants"]["within_full"]["bias"]
+        ),
+        "factor": 0.0
+        if use_cap
+        else record["variants"]["within_full"]["factor"],
+        "cap": bool(use_cap),
+    }
     return record
 
 
@@ -297,6 +337,12 @@ def summarize(records):
                     "noise_share_runs": (
                         float(np.median(run_shares)) if run_shares else None
                     ),
+                    "noise_share_cell": float(
+                        np.median([r["noise_share"] for r in rows])
+                    ),
+                    "hybrid_cap_fraction": float(
+                        np.mean([r["variants"]["hybrid"]["cap"] for r in rows])
+                    ),
                     "variants": {
                         name: {
                             "bias": float(
@@ -329,6 +375,7 @@ def summarize(records):
     return {
         "generated": time.strftime("%Y-%m-%d %H:%M:%S"),
         "variants": list(VARIANTS),
+        "hybrid_share": HYBRID_SHARE,
         "cells": len(records),
         "conditions": conditions,
     }
@@ -348,7 +395,10 @@ def markdown(summary):
         "population mean). `noise share` is the mean estimation variance "
         "of the components over the spread of their estimates, the share "
         "of the spread that is noise, within a run, over the stack's "
-        "components and over the runs' levels.",
+        "components and over the runs' levels. `hybrid` is the class's cap "
+        f"when the cell's noise share is at least {summary['hybrid_share']} "
+        "and `within_full` otherwise; its bracket is the fraction of cells "
+        "on which it chose the cap.",
         "",
         "| condition | M | raw | class | "
         + " | ".join(f"{name} [factor]" for name in names)
@@ -366,7 +416,12 @@ def markdown(summary):
                 f"| {entry['condition'].replace('_svbmc', '')} | {item['M']} | "
                 f"{item['bias_raw']:+.2f} | {item['bias_class_cap']:+.2f} | "
                 + " | ".join(
-                    f"{v[name]['bias']:+.2f} [{v[name]['factor']:.2f}]"
+                    f"{v[name]['bias']:+.2f} "
+                    + (
+                        f"[{item['hybrid_cap_fraction']:.2f}]"
+                        if name == "hybrid"
+                        else f"[{v[name]['factor']:.2f}]"
+                    )
                     for name in names
                 )
                 + f" | {share(item['noise_share_within'])} / "
