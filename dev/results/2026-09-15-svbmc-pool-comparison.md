@@ -409,6 +409,24 @@ weights were held at the values selected on the unshrunken estimates
 toward the population mean), and the run-level moments rest on two to
 four values at `M ≤ 4`.
 
+**At the `M` users run.** Stacks of three to five runs are the common
+case, so the small-`M` cells decide. There the run-level term is
+unreliable and nearly irrelevant: with two to four runs its
+moment-matched `τ²` is zero in 40 to 65 % of the cells (a full shrink to
+the runs' mean) and 0.4 to 0.8 otherwise, a coin flip, yet
+`two_level_full` and `within_full` differ by at most 0.06 nats on every
+condition at `M = 2` and `4`, so the within-run full-covariance
+shrinkage does the work at small `M` without depending on that
+estimate. Cell by cell the corrections scatter alike (10th to 90th
+percentile ranges of 0.5 to 0.7 nats for raw, cap and shrinkage on the
+noisy conditions). Worst case over the six noisy conditions, median
+bias in magnitude: at `M = 2`, raw 0.77, cap 0.95, `within_full` 0.56,
+`two_level_full` 0.51; at `M = 4`, raw 1.07, cap 1.17, `within_full`
+0.82, `two_level_full` 0.71. The cap remains 0.1 to 0.25 nats closer on
+the two multisensory conditions and 0.6 to 0.8 further on Student D8.
+The grid holds no `M = 3` or `5` cells; the integrated arm alone would
+score them in minutes.
+
 ## Limitations
 
 - **The Rosenbrock GPs are numerically fragile.** The runs of that
