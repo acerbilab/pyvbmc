@@ -144,7 +144,9 @@ the 560 cells of stage D against the cluster pool (`--pool
 dev/scripts/runs/svbmc_pool_20260914 --cells <stage D results.json>
 --gpyreg-source <the 1.2.1 worktree>`, defaults otherwise: 100 draws per
 component, seed 0, coverage ratios 1.5, 2, 3 and 5 with the headline at
-2, from `dev-next` `cd59443`, 2.0 hours): `summary.json` / `summary.md`
+2, launched from `dev-next` `cd59443`, 2.0 hours; its `sources.json`
+records `d6a4fe6`, the head when the run ended, which differs from
+`cd59443` in documentation only): `summary.json` / `summary.md`
 (the headline table across conditions, then per condition and `M` the
 biases of every estimate, the coverage, the calibration of the
 self-reported SDs, the runs' own errors and the decomposition of the
@@ -169,7 +171,9 @@ weighted median, and the run-level caps `E_max` (the largest run-level
 expected log joint) and `E_top` (that of the run carrying the largest
 stacking mass), next to the class's run-median cap, with the fraction
 of cells each cap binds on and the count of cells on which a cap at the
-largest component would bind, zero by construction).
+largest component would bind, zero by construction) and
+`sources.json` (the script's and the cells file's hashes, the pool,
+the process's identity).
 
 ## Empirical-Bayes shrinkage (2026-09-15)
 
@@ -185,7 +189,9 @@ and the variants `within`, `within_full`, `stack`, `run_level`,
 noise shares, the mean estimation variance over the spread of the
 estimates, within a run, over the stack's components and over the runs'
 levels; each cell's record also carries every run's level, its
-estimation variance and its shift).
+estimation variance and its shift), and `sources.json`. The noise in
+a spread of correlated estimates is `(tr Σ − 1ᵀ Σ 1 / K) / (K − 1)`,
+which the script uses for `tau2` and the shares.
 
 ## The integrated arm at `M = 3` and `5` (2026-09-15)
 
@@ -208,8 +214,9 @@ machine.
 
 ## Raw outputs of the analyses (release asset)
 
-What the three analyses above wrote per cell is too large to track and
-is `svbmc_pool_20260914_analyses.tar.gz` (113 585 523 bytes, SHA-256 `59ada698d573f40e733b598b4cc667b571b552d3da261b7168f2c18edd06aa3b`), the asset of the draft release `svbmc-analyses-20260915` of `acerbilab/pyvbmc` (target commit `24646b6`), as the pool
+What stage D and the Phase 2 scoring wrote per cell is too large to
+track and is, with the first run of the weight-aware caps,
+`svbmc_pool_20260914_analyses.tar.gz` (113 585 523 bytes, SHA-256 `59ada698d573f40e733b598b4cc667b571b552d3da261b7168f2c18edd06aa3b`), the asset of the draft release `svbmc-analyses-20260915` of `acerbilab/pyvbmc` (target commit `24646b6`), as the pool
 itself is the asset of `svbmc-pool-20260914`. It holds the three raw
 directories in full, `svbmc_pool_20260914_stack/` (stage D:
 `results.json`, `cells.jsonl`, the summaries, `sources.json`, the

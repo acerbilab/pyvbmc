@@ -75,7 +75,7 @@ legacy stream and its posterior samples from the input posteriors' own
 generators.
 
 ``--arms integrated`` runs the integrated arm alone, for the larger-``M``
-regime where the original's cost, quadratic in ``M`` and four to five
+regime where the original's cost, quadratic in ``M`` and two to four
 times the integrated arm's, is not worth paying: every cell then carries
 one arm and no paired quantity, and the summaries carry the integrated
 arm's medians, biases and headline-bias growth. ``--summarize-only``
@@ -2035,8 +2035,11 @@ def load_results(paths):
     ``repetitions`` and ``arms`` widened to cover every file and a
     ``merged_from`` record of each file, and the single-run rows are the
     first file's, since every run scores the same pools. Files that
-    differ in the seed, the Adam steps or the kind of input, or that hold
-    the same cell twice, cannot be summarized together.
+    differ in any setting they share other than ``M``, ``repetitions``
+    and ``arms``, that hold the same cell twice, or that hold cells of
+    one condition and ``M`` with different arm sets, cannot be
+    summarized together; the repetitions of an ``M`` are counted from
+    the merged cells.
     """
     results = [
         (path, json.loads(path.read_text(encoding="utf-8"))) for path in paths
@@ -2050,16 +2053,19 @@ def load_results(paths):
     first_path, first = results[0]
     settings = dict(first["settings"])
     if len(results) > 1:
+        # Every setting the files share must agree, except the ones a
+        # split by M or by arm set is allowed to differ in.
+        free = {"M", "repetitions", "arms", "merged_from"}
         for path, result in results[1:]:
-            for key in ("seed", "max_steps", "kind"):
-                if result["settings"].get(key) != settings.get(key):
+            for key in sorted(set(settings) & set(result["settings"]) - free):
+                if result["settings"][key] != settings[key]:
                     raise RuntimeError(
                         f"{path} was run with {key}="
-                        f"{result['settings'].get(key)!r} and {first_path} "
-                        f"with {settings.get(key)!r}; their cells cannot be "
+                        f"{result['settings'][key]!r} and {first_path} "
+                        f"with {settings[key]!r}; their cells cannot be "
                         "summarized together"
                     )
-        seen = {}
+        seen, arm_sets = {}, {}
         for path, result in results:
             for row in result["cells"]:
                 key = (row["condition"], row["M"], row["repetition"])
@@ -2070,12 +2076,29 @@ def load_results(paths):
                         "summarized once"
                     )
                 seen[key] = path
+                # A cell set is summarized with one arm set: its paired
+                # quantities and tests would otherwise be computed on a
+                # subset of the cells its medians describe.
+                arms = tuple(sorted(row["arms"]))
+                held = arm_sets.setdefault(key[:2], (arms, path))
+                if held[0] != arms:
+                    raise RuntimeError(
+                        f"{path} and {held[1]} hold cells of {key[0]} "
+                        f"M={key[1]} with different arm sets "
+                        f"({', '.join(arms)} against {', '.join(held[0])}); "
+                        "a cell set is summarized with one arm set"
+                    )
         repetitions = {}
         for path, result in results:
             for M, R in zip(
                 result["settings"]["M"], result["settings"]["repetitions"]
             ):
                 repetitions[int(M)] = max(repetitions.get(int(M), 0), int(R))
+            for row in result["cells"]:
+                repetitions[int(row["M"])] = max(
+                    repetitions.get(int(row["M"]), 0),
+                    int(row["repetition"]) + 1,
+                )
         settings["M"] = sorted(repetitions)
         settings["repetitions"] = [repetitions[M] for M in settings["M"]]
         settings["arms"] = [

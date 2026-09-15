@@ -32,7 +32,7 @@ The checks a saved artifact must pass, in the numbering of the plan:
     the run the recomputation is bit-identical; on another machine its
     BLAS rounds differently, and the rebuilt posterior factors carry
     that rounding amplified by the condition number of the GP's kernel
-    matrix, which reaches 1e15 on runs whose training set holds far-tail
+    matrix, which reaches 1e17 on runs whose training set holds far-tail
     evaluations (the noisy Rosenbrock pool condition). The gate
     therefore allows each artifact ``TOL_STATS`` plus
     ``ROUNDING_FACTOR`` times machine epsilon times that condition
@@ -279,7 +279,13 @@ def gp_condition_number(gp):
 def gate_tolerance(stored, condition, rounding_factor):
     """The recomputation gate's tolerance for one stored array."""
     scale = float(np.max(np.abs(stored))) if np.size(stored) else 0.0
-    rounding = rounding_factor * np.finfo(float).eps * condition
+    # A factor of 0 is the absolute gate whatever the condition number,
+    # a singular factor included (its condition number is infinite).
+    rounding = (
+        rounding_factor * np.finfo(float).eps * condition
+        if rounding_factor > 0
+        else 0.0
+    )
     return TOL_STATS + rounding * scale
 
 

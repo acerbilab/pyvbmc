@@ -1,0 +1,47 @@
+{
+  "generated": "2026-09-15 13:09:51",
+  "script": {
+    "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\svbmc_shrink_elbo.py",
+    "sha256": "6bf94ced82d0049cc3affd63e363ef6d74db93a6fddb3610a3149458c1fc25cb"
+  },
+  "cells": {
+    "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260914_stack_M35\\results.json",
+    "sha256": "7dd63a476a5b67e02c70c1f66b3801786c707da49e9803775945a97ab843f259"
+  },
+  "pool": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260914",
+  "environment": {
+    "source": {
+      "python": "3.12.6",
+      "pyvbmc_commit": "c16dbe5084898f0b3849754ac060b37a8c014620",
+      "gpyreg_commit": "9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b",
+      "numpy": "2.5.2",
+      "scipy": "1.18.1",
+      "pyvbmc_dirty": "",
+      "gpyreg_clean": true,
+      "suite_module_dirty": "",
+      "suite_module_sha256": "668d9af9d78280608a53c9dd0ba6afe929e28f78dd128bca8895bdf4b6889c86",
+      "io_module_sha256": "891e6f99ae4ce6f3e54bd5229ae48115064d39b7b19bc8042f0bc8cdd16520d4",
+      "runner_sha256": "6249d04b85c359d9b2a52c1cf91a4c08028f0fac1aa8bee33274a2bef0980e4d"
+    },
+    "host": {
+      "hostname": "ASUS-LUIGI",
+      "platform": "Windows-11-10.0.26200-SP0",
+      "executable": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Scripts\\python.exe",
+      "pyvbmc_import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc",
+      "pyvbmc_version": "1.0.5.dev378+g613f2a8a8",
+      "gpyreg_import": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg_1.2.1\\gpyreg",
+      "gpyreg_version": "1.2.1",
+      "threads": {
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1"
+      },
+      "gpyreg_source": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg_1.2.1"
+    }
+  },
+  "threads": {
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+  }
+}

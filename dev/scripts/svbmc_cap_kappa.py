@@ -46,7 +46,8 @@ Outputs under ``--out``: ``cells.jsonl`` (one line per cell: the levels,
 biases and whether each cap binds), ``summary.json`` and ``summary.md``
 (per condition and ``M``, the median bias over cells of the raw value,
 the class's cap, every ``kappa`` cap and the weighted median, with the
-fraction of cells each cap binds on).
+fraction of cells each cap binds on) and ``sources.json`` (the script's
+and the cells file's hashes, the pool, the process's identity).
 """
 
 import argparse
@@ -65,6 +66,7 @@ from svbmc_pool_run import (  # noqa: E402
     DEFAULT_GPYREG,
     THREAD_KEYS,
     activate_gpyreg,
+    analysis_sources,
     write_json,
 )
 
@@ -78,9 +80,12 @@ def kappa_level(I, w, kappa):
     """The cap level: the median ``I_k`` over the top-weight components
     whose cumulative mass reaches ``kappa``, the crossing one included."""
     order = np.argsort(-w, kind="stable")
-    cumulative = np.cumsum(w[order]) / np.sum(w)
-    count = int(np.searchsorted(cumulative, kappa - 1e-12, side="left")) + 1
-    count = min(count, w.size)
+    if kappa >= 1.0:
+        count = w.size
+    else:
+        cumulative = np.cumsum(w[order]) / np.sum(w)
+        count = int(np.searchsorted(cumulative, kappa, side="left")) + 1
+        count = min(count, w.size)
     chosen = order[:count]
     return float(np.median(I[chosen])), int(count)
 
@@ -364,6 +369,10 @@ def main(argv=None):
     write_json(out / "summary.json", summary)
     text = markdown(summary)
     (out / "summary.md").write_text(text, encoding="utf-8")
+    write_json(
+        out / "sources.json",
+        analysis_sources(__file__, args.cells, pool, args.gpyreg_source),
+    )
     print(text, flush=True)
     return 0
 

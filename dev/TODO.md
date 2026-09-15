@@ -47,8 +47,8 @@ records its execution.
   conditions. The full pools are scored (2026-09-15; the
   [stage D report](results/2026-09-15-svbmc-pool-comparison.md),
   sections "Phase 2" and "Weight-aware caps"): the honest estimate is
-  within 0.04 nats on the noiseless controls and Rosenbrock, under-
-  predicts by 0.2 to 0.7 on noisy GMM and both multisensory conditions
+  within 0.035 nats on the noiseless controls and 0.07 on Rosenbrock,
+  under-predicts by 0.2 to 0.7 on noisy GMM and both multisensory conditions
   where the cap is closer, and on Student D8 is as low as the cap (both
   1 to 1.8 nats below the reference) while the raw value is within
   0.3; the pilot's under-prediction holds at scale, and no weight-aware
@@ -60,10 +60,11 @@ records its execution.
   the GP's own estimation variance, within each run with the full
   covariance, is the first correction acceptable on every condition:
   at `M` = 2 to 5 its worst median bias over the noisy conditions is
-  0.56 to 0.82 nats against 0.77 to 1.07 for raw and 0.95 to 1.26 for
-  the cap, with the noiseless controls untouched and Student D8 within
-  0.4; it has no tuned constant and uses only `I_sk`, `J_sjk` and the
-  runs' own weights; its two-level form (each run's own value also
+  0.57 to 0.83 nats against 0.77 to 1.07 for raw and 0.95 to 1.26 for
+  the cap, with the noiseless controls moved by at most 0.03 and
+  Student D8 within 0.4 (though worse than raw there); it has no tuned
+  constant and uses only `I_sk`, `J_sjk` and the runs' own weights;
+  its two-level form (each run's own value also
   shrunk toward the runs' mean) is as good or better at every `M`, and a
   hybrid that applies the cap only where the noise share is at least
   0.2 does better still on these eight conditions but rests on a

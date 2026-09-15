@@ -571,7 +571,7 @@ reason.
   checkout at the manifest's gpyreg commit.
   `--arms integrated` stacks every cell with the integrated class alone,
   for the larger-`M` regime where the original's cost (quadratic in `M`,
-  four to five times the integrated arm's) is not worth paying; such
+  two to four times the integrated arm's) is not worth paying; such
   cells carry no paired quantity. `--summarize-only --out DIR` rebuilds
   the summaries from a finished `results.json` without running a cell or
   needing Torch, describing that comparison by the settings it recorded

@@ -189,7 +189,7 @@ clean checkout at the manifest's gpyreg commit (nothing hashes the
 field; only a repeated `prepare` compares it); and that machine's BLAS
 does not recompute the stored statistics bit for bit. The rounding it
 introduces is amplified by the condition number of each run's GP,
-which reaches 1e15 on the noisy Rosenbrock condition (training sets
+which reaches 3e17 on the noisy Rosenbrock condition (training sets
 with far-tail evaluations), so `verify` there holds every artifact to
 the absolute gate plus its own amplified rounding and reports the
 relative differences and condition numbers; the campaign plan's worklog

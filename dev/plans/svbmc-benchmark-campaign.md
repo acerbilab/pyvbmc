@@ -195,7 +195,7 @@ tolerance is met exactly on the machine that generated a run; on another
 machine the BLAS rounds differently, and the rebuilt posterior factors
 carry that rounding amplified by the condition number of the GP's
 kernel matrix, which the noisy Rosenbrock condition's far-tail
-evaluations push to 1e15 (worklog, 2026-09-14). The gate therefore
+evaluations push to 3e17 (worklog, 2026-09-14). The gate therefore
 allows each artifact a relative deviation of 100 times machine epsilon
 times its own condition number on top of the absolute tolerance, and
 reports the deviation and the condition number. A
@@ -1676,43 +1676,51 @@ draft had left open:
 - 2026-09-15: three further estimates scored on stage D's recorded
   cells, each in minutes without refitting (the scripts rebuild every
   cell's stack from the artifacts and re-evaluate at the recorded
-  weights): run-level caps (`E_max`, `E_top`; the stacked value sits
-  below the best input run's own expected log joint on most cells, so
-  they change the raw value by at most 0.1 nats and show that the
-  optimism is already inside each run's own estimate); empirical-Bayes
-  shrinkage of the components' expected log joints by the GP's own
-  estimation variance (`svbmc_shrink_elbo.py`; safe on the noiseless
-  controls and on Student D8, a fifth to a half of the optimism removed
-  elsewhere); and its two-level form with each run's level shrunk
-  toward the runs' mean, whose full-covariance variant is the first
-  correction acceptable on every condition (matches the cap on
-  Rosenbrock, noisy GMM and the ring, within 0.4 nats on Student where
-  the cap is off by up to 1.8, worst case +0.75 on multisensory noise 3
-  against the cap's 1.78 and raw's 1.31). Because users stack three to
-  five runs, the integrated arm was run at `M = 3` and `5` (320 cells,
-  15 minutes) and scored the same way: at `M` = 2 to 5 the within-run
-  full-covariance shrinkage alone is within 0.06 nats of the two-level
-  form (whose run-level moment estimate rests on two to five values
-  and is zero in half the cells), and the worst median bias over the
-  six noisy conditions is 0.56 to 0.82 for it against 0.77 to 1.07 for
-  raw and 0.95 to 1.26 for the cap. The stage D report carries every
-  table; the tracked directories are `shrink_20260915/`,
-  `stack_M35_20260915/`, `shrink_M35_20260915/`,
-  `cap_kappa_M35_20260915/` and `stack_merged_20260915/` (the one
-  summary over every `M`, through the harness's merged
-  `--from-results`). Untested: re-optimizing the weights on the
-  shrunken estimates, and the `M = 32` cells.
-- 2026-09-15: a rule that applies the cap only where the GP attributes
-  at least a fifth of the components' spread to estimation noise (the
-  `hybrid` of `svbmc_shrink_elbo.py`, scored on the same cells) halves
-  the worst case of the best single rule on these eight conditions
-  (0.38 to 0.56 nats against 0.51 to 0.75), with the same numbers for
-  any threshold from 0.15 to 0.30; its threshold is chosen on the data
-  it is scored on. The PI endorsed the two-level shrinkage as the
-  headline candidate for noisy stacks and the hybrid as the one to
+  weights): run-level caps (`E_max`, `E_top`, in `svbmc_cap_kappa.py`),
+  empirical-Bayes shrinkage of the components' expected log joints by
+  the GP's own estimation covariance (`svbmc_shrink_elbo.py`: within a
+  run, over the stack, and a two-level form with each run's level
+  shrunk toward the runs' mean), and a `hybrid` rule that applies the
+  cap only where the noise share is at least 0.2. Because users stack
+  three to five runs, the integrated arm was also run at `M = 3` and
+  `5` (320 cells, 15 minutes) and scored the same way, and the
+  harness's merged `--from-results` gives one summary over every `M`.
+  The stage D report's sections "Weight-aware caps" and
+  "Empirical-Bayes shrinkage" carry every number and the reading; the
+  tracked directories are `shrink_20260915/`, `stack_M35_20260915/`,
+  `shrink_M35_20260915/`, `cap_kappa_M35_20260915/` and
+  `stack_merged_20260915/`. The PI endorsed the two-level shrinkage as
+  the headline candidate for noisy stacks and the hybrid as the one to
   revisit with more conditions; the
   [headline note](../2026-09-15-svbmc-headline-shrinkage.md) is the
-  summary and the decision record, the stage D report the evidence.
+  summary and the decision record.
+- 2026-09-15: doublecheck of the day's work by three independent
+  reviewers (write-ups, code, methodology with a recomputation of every
+  table from the tracked cells). Code: the shrinkage's `τ²` subtracted
+  the mean diagonal of the estimation covariance, which is the noise in
+  a spread of independent estimates only; for one GP's correlated
+  estimates the noise term is `(tr Σ − 1ᵀ Σ 1 / K) / (K − 1)`, 20 to
+  50 % smaller, so `τ²` was biased low and the noise shares high (by
+  about a factor of two on Student). Corrected and re-scored: the
+  shrinkage biases moved by a few hundredths, the corrected noise
+  shares are 0.21 to 1.1 on the typical noisy conditions and 0.05 on
+  Student, and the hybrid's worst case is unchanged with its plateau
+  now at thresholds 0.08 to 0.20. Also fixed: the reported factor of
+  the full-covariance forms (row sums of the shrinkage matrix), a
+  singular solve at `τ² = 0`, undefined noise shares, merged summaries
+  refusing mixed arm sets and comparing every shared setting, `κ = 1`
+  including every component, the gate's rounding term at a factor of
+  0, and provenance records (`sources.json`) for the two scoring
+  scripts. Write-ups: every table reproduced from the tracked evidence;
+  several summarizing sentences did not (the `κ ≤ 0.8` claim, the
+  "within 0.06 nats" claim about the run-level term at `M = 4`, the
+  Student single-run error, "halves", the hybrid's control cells and
+  threshold plateau) and were corrected from the regenerated numbers;
+  the inference from the run-level caps, the Student mechanism and the
+  headline-to-raw "range" were restated as the evidence supports
+  (paired bootstrap intervals over cells added where a comparison rests
+  on them, with the caveat that cells share runs). Tests: 45
+  pool-generator and 19 comparison tests pass.
 
 ## Execution tracking
 
@@ -1726,7 +1734,7 @@ Live status of the phases above (`[ ]` not started, `[~]` in progress,
 - [x] Phase 4: pilot (Fable; authorized by the PI on 2026-09-13; run 2026-09-14 from the harness commit `e2aaef5`, campaign directory `dev/scripts/runs/svbmc_pool_20260913/pool/`, three seeds per condition, `--save-vbmc`; 15/15 runs pass the filters, all artifacts verify, `M = 3` stacking measured in both arms; stages B–D await authorization)
 - [x] Phase 5: stacking comparison harness (Opus sub-agent; 2026-09-14, steps 1–3 and 5 done, 7 tests pass; step 4, the dry run on the pilot artifacts, waits for Phase 4)
 - [~] Phase 6: campaign, comparison and report (stages B and C became the cluster pool of decision 8; stage D authorized by the PI and launched 2026-09-14 from `dev-next` `744864a` into `dev/scripts/runs/svbmc_pool_20260914_stack/`, the decision-6 grid on all eight conditions, both arms, 560 cells, finished 2026-09-15 in 8.1 hours: criteria 1, 2, 4 and 5 hold on every condition and criterion 3's gate fails on Student D8 at every `M`, see the worklog; the Phase 2 scoring and the weight-aware-cap experiment are done and reported, the report `dev/results/2026-09-15-svbmc-pool-comparison.md` covers them; the `M = 32` integrated-arm cells wait for an overnight slot)
-- [ ] Documentation updates listed above
+- [x] Documentation updates listed above (the experiments README with its per-pool and per-analysis sections, the hpc README, the stage D report and the `dev/README.md` entries; 2026-09-15)
 - [x] Doublecheck of the implemented phases (three fresh reviewers on 2026-09-14; every finding fixed and re-verified, see worklog)
 - [x] Evidence yardstick change (decision 7): `elbo_mc` with an arm-independent entropy reference, bias and KL-gap columns, criterion 3 gates, `--summarize-only`; reviewed, no must-fix (2026-09-14)
 - [x] Harness pass for the cluster (decisions 8–10): gpyreg default at the 1.2.1 worktree, source/host identity split, `select` and `cases` subcommands, approved defaults with an explicit precedence, the bias-review fixes; reviewed, every finding fixed; 38 + 16 tests pass; pilot comparison regenerated with the final harness (2026-09-14)

@@ -370,6 +370,31 @@ def identity(gpyreg_source):
     return record
 
 
+def analysis_sources(script, cells, pool, gpyreg_source):
+    """The provenance record of a script that scores recorded cells.
+
+    The script's path and hash, the cells file's path and hash, the pool
+    directory, this process's identity (commits, versions, working-tree
+    state, where gpyreg resolved) and the thread settings.
+    """
+    import svbmc_pool_io as pool_io
+
+    return {
+        "generated": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "script": {
+            "path": str(Path(script).resolve()),
+            "sha256": pool_io.sha256(script),
+        },
+        "cells": {
+            "path": str(Path(cells).resolve()),
+            "sha256": pool_io.sha256(cells),
+        },
+        "pool": str(Path(pool).resolve()),
+        "environment": identity(gpyreg_source),
+        "threads": {key: os.environ.get(key) for key in THREAD_KEYS},
+    }
+
+
 def identity_source(record):
     """The compared half of an identity record, in either stored shape.
 

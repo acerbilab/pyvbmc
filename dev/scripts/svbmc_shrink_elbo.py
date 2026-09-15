@@ -11,8 +11,14 @@ spread that is estimation noise: with ``I_k ~ N(θ_k, V_k)`` and
 of the estimate (the mean over hyperparameter samples of the diagonal of
 ``J_sjk`` plus the between-sample variance of ``I_sk``, the class's
 ``_expected_log_joint_variance`` at a unit weight), ``μ`` the mean of the
-``I_k`` over the population and ``τ²`` their excess variance over the mean
-``V_k`` (method of moments, floored at zero). Three variants:
+``I_k`` over the population and ``τ²`` their excess variance over the
+noise (method of moments, floored at zero). One GP estimates a run's
+components jointly, so their errors are correlated, and the noise that
+the sample variance of ``K`` estimates carries is
+``(tr Σ − 1ᵀ Σ 1 / K) / (K − 1)`` for the estimation covariance ``Σ``,
+which is the mean ``V_k`` only when ``Σ`` is diagonal; a shared error
+moves every estimate together and adds nothing to their spread. The
+variants:
 
 - ``within``: the population is the run's own components, so every run is
   shrunk toward its own level with its own noise;
@@ -54,10 +60,14 @@ Needs Torch on ``PYTHONPATH`` and the pool's gpyreg through
 
 Outputs under ``--out``: ``cells.jsonl`` (per cell: ``G``, ``H``,
 ``elbo_mc``, the raw and class-cap biases, and per variant the shrunken
-``G``, its bias, the weight-averaged shrinkage factor and, per run,
+``G``, its bias, the weight-averaged shrinkage factor (for the
+full-covariance forms the row sums of the shrinkage matrix, the factor a
+deviation shared by every component is kept by) and, per run,
 ``μ``, ``τ²`` and the mean ``V_k``), ``summary.json`` and ``summary.md``
 (per condition and ``M``, medians over cells of every bias and of the
-shrinkage factor and the noise share ``mean V / var I``).
+shrinkage factor and the noise share, the noise in the spread over the
+spread) and ``sources.json`` (the script's and the cells file's hashes,
+the pool, the process's identity).
 """
 
 import argparse
@@ -76,6 +86,7 @@ from svbmc_pool_run import (  # noqa: E402
     DEFAULT_GPYREG,
     THREAD_KEYS,
     activate_gpyreg,
+    analysis_sources,
     write_json,
 )
 
@@ -114,12 +125,33 @@ def run_estimates(vp, jacobian):
     return I, variance, covariance
 
 
-def moments(I, variance):
-    """Population mean and excess variance (method of moments)."""
+def noise_in_spread(covariance):
+    """The part of the sample variance of correlated estimates that their
+    estimation covariance accounts for: ``(tr Σ − 1ᵀ Σ 1 / K) / (K − 1)``."""
+    K = covariance.shape[0]
+    if K < 2:
+        return 0.0
+    return float((np.trace(covariance) - np.sum(covariance) / K) / (K - 1))
+
+
+def moments(I, covariance):
+    """Population mean, excess variance and the noise in the spread."""
     mu = float(np.mean(I))
     spread = float(np.var(I, ddof=1)) if I.size > 1 else 0.0
-    tau2 = max(spread - float(np.mean(variance)), 0.0)
-    return mu, tau2, spread
+    noise = noise_in_spread(covariance)
+    tau2 = max(spread - noise, 0.0)
+    return mu, tau2, spread, noise
+
+
+def block_diagonal(blocks):
+    total = sum(block.shape[0] for block in blocks)
+    matrix = np.zeros((total, total))
+    offset = 0
+    for block in blocks:
+        n = block.shape[0]
+        matrix[offset : offset + n, offset : offset + n] = block
+        offset += n
+    return matrix
 
 
 def shrink_diagonal(I, variance, mu, tau2):
@@ -128,9 +160,13 @@ def shrink_diagonal(I, variance, mu, tau2):
 
 
 def shrink_full(I, covariance, mu, tau2):
+    """The posterior mean under the full estimation covariance; the
+    reported factor is the row sum of the shrinkage matrix."""
     n = I.size
+    if tau2 <= 0.0:
+        return np.full(n, mu), np.zeros(n)
     factor = tau2 * np.linalg.solve(tau2 * np.eye(n) + covariance, np.eye(n))
-    return mu + factor @ (I - mu), np.diag(factor)
+    return mu + factor @ (I - mu), factor.sum(axis=1)
 
 
 def score_cell(cell, pool):
@@ -181,9 +217,15 @@ def score_cell(cell, pool):
         "variants": {},
         "runs": [],
     }
-    shrunk = {name: np.empty_like(I_all) for name in VARIANTS}
-    factors = {name: np.empty_like(I_all) for name in VARIANTS}
-    mu_stack, tau2_stack, spread_stack = moments(I_all, V_all)
+    shrunk = {
+        name: np.empty_like(I_all) for name in VARIANTS if name != "hybrid"
+    }
+    factors = {
+        name: np.empty_like(I_all) for name in VARIANTS if name != "hybrid"
+    }
+    mu_stack, tau2_stack, spread_stack, noise_stack = moments(
+        I_all, block_diagonal([C for _, _, C in runs])
+    )
     # Run level: each run's own weighted expected log joint and its
     # estimation variance, shrunk toward the runs' mean.
     own = [np.ravel(vp.w) / np.sum(vp.w) for vp in stacked.vp_list]
@@ -191,7 +233,9 @@ def score_cell(cell, pool):
     level_variance = np.array(
         [float(o @ C @ o) for o, (_, _, C) in zip(own, runs)]
     )
-    mu_runs, tau2_runs, spread_runs = moments(levels, level_variance)
+    mu_runs, tau2_runs, spread_runs, noise_runs = moments(
+        levels, np.diag(level_variance)
+    )
     shrunk_levels, level_factors = shrink_diagonal(
         levels, level_variance, mu_runs, tau2_runs
     )
@@ -201,15 +245,12 @@ def score_cell(cell, pool):
         "tau2": tau2_runs,
         "spread": spread_runs,
         "mean_variance": float(np.mean(level_variance)),
-        "noise_share": (
-            float(np.mean(level_variance) / spread_runs)
-            if spread_runs
-            else None
-        ),
+        "noise": noise_runs,
+        "noise_share": noise_runs / spread_runs if spread_runs else None,
     }
     for m, (I, V, C) in enumerate(runs):
         sl = slice(offsets[m], offsets[m + 1])
-        mu, tau2, spread = moments(I, V)
+        mu, tau2, spread, noise = moments(I, C)
         shrunk["within"][sl], factors["within"][sl] = shrink_diagonal(
             I, V, mu, tau2
         )
@@ -235,7 +276,8 @@ def score_cell(cell, pool):
                 "tau2": tau2,
                 "spread": spread,
                 "mean_variance": float(np.mean(V)),
-                "noise_share": float(np.mean(V) / spread) if spread else None,
+                "noise": noise,
+                "noise_share": noise / spread if spread else None,
                 "level": float(levels[m]),
                 "level_variance": float(level_variance[m]),
                 "level_shift": float(shifts[m]),
@@ -247,18 +289,22 @@ def score_cell(cell, pool):
         "tau2": tau2_stack,
         "spread": spread_stack,
         "mean_variance": float(np.mean(V_all)),
-        "noise_share": (
-            float(np.mean(V_all) / spread_stack) if spread_stack else None
-        ),
+        "noise": noise_stack,
+        "noise_share": noise_stack / spread_stack if spread_stack else None,
     }
-    masses = np.array([run["mass"] for run in record["runs"]])
-    shares = np.array(
-        [
-            0.0 if run["noise_share"] is None else run["noise_share"]
-            for run in record["runs"]
-        ]
+    # The cell's share: mass-weighted over the runs whose share is
+    # defined (a run of one component, or of identical estimates, has no
+    # spread to attribute); a cell with no defined share has none.
+    defined = [run for run in record["runs"] if run["noise_share"] is not None]
+    masses = np.array([run["mass"] for run in defined])
+    record["noise_share"] = (
+        float(
+            np.sum(masses * np.array([run["noise_share"] for run in defined]))
+            / np.sum(masses)
+        )
+        if defined and np.sum(masses) > 0
+        else None
     )
-    record["noise_share"] = float(np.sum(masses * shares) / np.sum(masses))
     for name in VARIANTS:
         if name == "hybrid":
             continue
@@ -268,7 +314,10 @@ def score_cell(cell, pool):
             "bias": G_shrunk + H - elbo_mc,
             "factor": float(np.dot(w, factors[name]) / np.sum(w)),
         }
-    use_cap = record["noise_share"] >= HYBRID_SHARE
+    use_cap = (
+        record["noise_share"] is not None
+        and record["noise_share"] >= HYBRID_SHARE
+    )
     record["variants"]["hybrid"] = {
         "G": (
             float(arm["elbos"]["capped_I_median"]) - H
@@ -311,6 +360,14 @@ def summarize(records):
                 for r in rows
                 if r["run_population"]["noise_share"] is not None
             ]
+            stack_shares = [
+                r["stack_population"]["noise_share"]
+                for r in rows
+                if r["stack_population"]["noise_share"] is not None
+            ]
+            cell_shares = [
+                r["noise_share"] for r in rows if r["noise_share"] is not None
+            ]
             entry["M"].append(
                 {
                     "M": M,
@@ -324,21 +381,16 @@ def summarize(records):
                     "noise_share_within": (
                         float(np.median(shares)) if shares else None
                     ),
-                    "noise_share_stack": float(
-                        np.median(
-                            [
-                                r["stack_population"]["noise_share"]
-                                for r in rows
-                                if r["stack_population"]["noise_share"]
-                                is not None
-                            ]
-                        )
+                    "noise_share_stack": (
+                        float(np.median(stack_shares))
+                        if stack_shares
+                        else None
                     ),
                     "noise_share_runs": (
                         float(np.median(run_shares)) if run_shares else None
                     ),
-                    "noise_share_cell": float(
-                        np.median([r["noise_share"] for r in rows])
+                    "noise_share_cell": (
+                        float(np.median(cell_shares)) if cell_shares else None
                     ),
                     "hybrid_cap_fraction": float(
                         np.mean([r["variants"]["hybrid"]["cap"] for r in rows])
@@ -391,7 +443,8 @@ def markdown(summary):
         "of the bias against `elbo_mc`: `raw` the uncapped value, `class` "
         "the component-median cap the class applies, then each shrinkage "
         "variant with, in brackets, the weight-averaged shrinkage factor "
-        "(1 leaves the estimates unchanged, 0 replaces them by the "
+        "(for the full-covariance forms the row sum of the shrinkage "
+        "matrix; 1 leaves the estimates unchanged, 0 replaces them by the "
         "population mean). `noise share` is the mean estimation variance "
         "of the components over the spread of their estimates, the share "
         "of the spread that is noise, within a run, over the stack's "
@@ -492,6 +545,10 @@ def main(argv=None):
     write_json(out / "summary.json", summary)
     text = markdown(summary)
     (out / "summary.md").write_text(text, encoding="utf-8")
+    write_json(
+        out / "sources.json",
+        analysis_sources(__file__, args.cells, pool, args.gpyreg_source),
+    )
     print(text, flush=True)
     return 0
 
