@@ -74,6 +74,9 @@ records its execution.
   5, so the two-level shrinkage stays the candidate; the untested
   refinement is a run-level error term that includes the run-to-run
   scatter of the runs' own optimism, which the stacking selects on.
+  Pickup (end of 2026-09-15): nothing is running; the analyses and
+  their write-ups were reviewed and corrected (the campaign plan's
+  worklog records what changed); the next step is decision (1).
   Decisions to make: (1) whether the switch ships in 1.5 or 1.5 keeps
   the component-median cap; (2) the headline's user-facing caveat
   either way (the shrinkage remains optimistic by about 0.8 nats on a
