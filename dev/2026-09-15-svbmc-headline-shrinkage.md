@@ -15,19 +15,20 @@ mixture of Gaussian components, and stacks them into one mixture by
 optimizing the weights of all the components together. It estimates the
 ELBO of the stack as the weighted sum of the components' expected log
 joints, each taken from its own run's GP, plus the entropy of the
-mixture. On a noisy target the estimate is optimistic: the weights are
-chosen to maximize a sum of noisy GP estimates, so the selected
-components are high partly by noise.
+mixture. On a noisy target the estimate is optimistic (biased): the weights are
+chosen to maximize a sum of noisy GP estimates, so the selected components are
+high partly by noise, an example of "winner's curse".
 
 PyVBMC 1.5 ships S-VBMC as `pyvbmc.svbmc.SVBMC`, ported from the
 standalone `svbmc` package (version 0.1.1). The standalone package
 returns three estimates side by side, the raw value and two debiased
-variants, and leaves the choice to the user. The port returns one
-headline `elbo`: the raw value for a noiseless stack, and for a noisy
+variants, and leaves the choice to the user. For our port we decided to return
+one *headline* `elbo`: the raw value for a noiseless stack, and for a noisy
 stack the component-median cap, the first of the standalone package's
-variants. This note answers two questions about the port. Does it match
-the standalone package? And which single number should it report on a
-noisy stack?
+variants. This note answers two questions about the port.
+
+1. Does it match the standalone package?
+2. Which single number should it report on a noisy stack?
 
 ## The benchmark
 
@@ -49,7 +50,7 @@ of one target and one M.
 ## Does the port match the standalone package?
 
 Yes. On every target the two implementations reach the same weights and
-the same posterior quality, the port is 1.9 to 4 times faster, and
+the same posterior quality, **the port is 1.9 to 4 times faster**, and
 every table rebuilds from the recorded results. Their capped estimates
 agree within 0.25 nats.
 
@@ -145,9 +146,9 @@ planned) and further targets.
 
 The class keeps the raw value and the cap in `elbo_details` and adds
 the noise share as a diagnostic. The documentation must state that the
-headline can remain optimistic by about 0.8 nats on a high-noise
-real-data target and pessimistic by up to 0.4 nats on a heavy-tailed
-one, and that the raw value is not an upper bound on the truth.
+headline can remain optimistic (in our benchmarks, by about 0.8 nats on a
+high-noise real-data target and pessimistic by up to 0.4 nats on a
+heavy-tailed one), and that the raw value is not an upper bound on the truth.
 
 Whether the switch ships in 1.5, or 1.5 keeps the cap with that caveat
 and switches later, is the next decision. The change is contained: a
