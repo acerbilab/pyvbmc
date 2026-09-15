@@ -26,8 +26,10 @@ and on Rosenbrock, under-predicts by 0.2 to 0.7 nats on the typical
 noisy conditions, and lands as low as the cap on Student D8; and no
 weight-aware variant of the cap separates the heavy-tailed case from
 the typical one. An empirical-Bayes shrinkage of the components'
-expected log joints by the GP's own estimation covariance, within each
-run and at the run level, is the first correction acceptable on every
+expected log joints by their estimation covariance (from the `J_sjk`
+and `I_sk` statistics saved with each posterior; no GP object is
+needed), within each run and at the run level, is the first
+correction acceptable on every
 condition, and a rule that applies the cap only where the GP attributes
 enough of the components' spread to noise does better still on these
 eight conditions; the reading and the decision are in the
@@ -348,8 +350,10 @@ Since the optimism is a selection on noisy GP estimates, the textbook
 correction is to shrink each component's estimate toward its population
 mean by the share of the population's spread that is estimation noise:
 with `I_k ~ N(θ_k, V_k)` and `θ_k ~ N(μ, τ²)`, report
-`μ + τ² / (τ² + V_k) (I_k − μ)`, where `V_k` is the GP's own variance of
-the estimate (the class already carries it in `J_sjk`) and `τ²` the
+`μ + τ² / (τ² + V_k) (I_k − μ)`, where `V_k` is the estimation variance
+of the estimate, read from the `J_sjk` statistic VBMC saves with every
+posterior and the class already requires (the GP itself is not
+needed), and `τ²` the
 excess of the estimates' spread over the noise in it, by moments. One
 GP estimates a run's components jointly, so their errors are
 correlated, and the noise a sample variance of `K` estimates carries is

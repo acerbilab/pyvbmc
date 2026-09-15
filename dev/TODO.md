@@ -38,7 +38,8 @@ records its execution.
 - [ ] **S-VBMC ELBO debiasing (the optimism note's Phase 2).** Decide
   the headline `elbo` of a noisy stack. The candidate is the two-level
   empirical-Bayes shrinkage of the components' expected log joints by
-  the GP's own estimation covariance (PI, 2026-09-15): the
+  the estimation covariance saved with each posterior (PI,
+  2026-09-15): the
   [headline note](2026-09-15-svbmc-headline-shrinkage.md) is the
   summary and decision record, the
   [stage D report](results/2026-09-15-svbmc-pool-comparison.md)

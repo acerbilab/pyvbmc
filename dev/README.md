@@ -72,8 +72,10 @@ For the release overview, start with
   benchmark: it matches the standalone package (same weights and
   posterior quality, 1.9 to 4 times faster), and the number it should
   report on a noisy stack is a two-level empirical-Bayes shrinkage of
-  the components' expected log joints by the GP's own covariance, not
-  the component-median cap, which over-corrects on a heavy-tailed
+  the components' expected log joints by the estimation covariance
+  saved with each posterior (`J_sjk`; the class's inputs do not
+  change), not the component-median cap, which over-corrects on a
+  heavy-tailed
   target; the candidates side by side, the decision and what
   implementing it entails. The evidence is the
   [stage D report](results/2026-09-15-svbmc-pool-comparison.md).
@@ -626,8 +628,8 @@ reason.
 - `scripts/svbmc_shrink_elbo.py` — empirical-Bayes shrinkage of the
   stacked expected log joint on a comparison's recorded cells: each
   component's estimate is shrunk toward its population mean by the share
-  of the population's spread that is the GP's own estimation variance
-  (from `J_sjk` and the between-sample variance of `I_sk`), within each
+  of the population's spread that is estimation noise (from the `J_sjk`
+  and `I_sk` statistics saved with each posterior; no GP object), within each
   run with the diagonal or the full estimation covariance, or over the
   whole stack, at the run level (each run's own value shrunk toward the
   runs' mean by its run-level estimation variance, composed with the

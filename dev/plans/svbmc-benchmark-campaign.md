@@ -1693,7 +1693,8 @@ draft had left open:
   cell's stack from the artifacts and re-evaluate at the recorded
   weights): run-level caps (`E_max`, `E_top`, in `svbmc_cap_kappa.py`),
   empirical-Bayes shrinkage of the components' expected log joints by
-  the GP's own estimation covariance (`svbmc_shrink_elbo.py`: within a
+  their estimation covariance, from the `J_sjk` and `I_sk` statistics
+  saved with each posterior (`svbmc_shrink_elbo.py`: within a
   run, over the stack, and a two-level form with each run's level
   shrunk toward the runs' mean), and a `hybrid` rule that applies the
   cap only where the noise share is at least 0.2. Because users stack

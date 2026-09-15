@@ -83,10 +83,15 @@ the cap on Student.
 on every target. Each component's estimate is treated as a noisy
 measurement, `I_k ~ N(θ_k, Σ)`, of a true value drawn from the run's
 population, `θ_k ~ N(μ, τ²)`, and replaced by its posterior mean. `Σ` is
-the run's estimation covariance, which the GP provides and the class
-already stores; `μ` and `τ²` are estimated by moments within the run;
-the full `Σ` is used because one GP estimates all of a run's components
-and their errors are correlated. A second level treats each run's own
+the run's estimation covariance, computed from two statistics VBMC
+saves with every posterior and the class already requires of every
+input: `J_sjk`, the covariance of the GP quadrature over the
+components, averaged over the hyperparameter samples, plus the
+covariance of `I_sk` across those samples. No GP object is needed and
+the class's inputs do not change. `μ` and `τ²` are estimated by
+moments within the run; the full `Σ` is used because one GP estimated
+all of a run's components and their errors are correlated. A second
+level treats each run's own
 expected log joint the same way, shrinking it toward the mean over
 runs by its run-level estimation variance. This two-level estimate
 matches the cap on Rosenbrock, the Gaussian mixture and the ring
