@@ -1,11 +1,7 @@
 # The S-VBMC headline on noisy stacks: what the pools showed and the way forward
 
 *Written 15 September 2026 from the day's results and a discussion with
-the PI, and revised the same day after an independent review of the
-evidence (the estimation of the shrinkage's `τ²` was corrected for
-correlated errors, which moved the shrinkage numbers by a few
-hundredths and the noise shares by up to a factor of two; every number
-here is from the corrected run). The evidence is in
+the PI. The evidence is in
 [results/2026-09-15-svbmc-pool-comparison.md](results/2026-09-15-svbmc-pool-comparison.md);
 the execution record is the worklog of
 [plans/svbmc-benchmark-campaign.md](plans/svbmc-benchmark-campaign.md);
