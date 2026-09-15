@@ -376,7 +376,16 @@ def main(argv=None):
         )
     added = json.loads((single_dir / "added.json").read_text(encoding="utf-8"))
     noisy_added = [c for c in added["conditions"] if "noise" in c["condition"]]
-    for name in ("raw", "capped_I_median", "run_level", "two_level_full"):
+    for name in (
+        "raw",
+        "capped_I_median",
+        "run_level",
+        "two_level_full",
+        "anchored",
+        "two_level_anchored",
+        "anchored_mean",
+        "two_level_anchored_mean",
+    ):
         parts = []
         for M in GRID:
             v = [

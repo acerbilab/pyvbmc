@@ -39,8 +39,10 @@ set on 2026-09-15 (a stack must not add to the optimism its runs
 already carry), a single VBMC run is optimistic by 0.13 to 0.74 nats
 on the typical noisy conditions, the raw stack adds 0.02 to 0.15 nats
 at `M = 2` and 0.27 to 0.60 at `M = 16`, the cap removes more than
-the stacking added on every condition, and the two-level shrinkage
-adds nothing within 0.23 nats (section "The inputs' own bias"). The
+the stacking added on every condition, the two-level shrinkage adds
+nothing within 0.23 nats, and an anchored variant that removes only
+the stacking's own selection halves the addition but still adds 0.1
+to 0.2 nats at `M` = 3 to 5 (section "The inputs' own bias"). The
 `M = 32` cells of the integrated arm are reported in a section added
 when that run completes.
 
@@ -603,15 +605,15 @@ estimate at every `M`, the bootstrap interval on the raw value's added
 bias, the bias of the input with the highest reported ELBO and the
 fraction of cells whose raw added bias is positive.
 
-| condition | raw, `M` = 2 / 3 / 5 / 16 | cap | run level alone | two-level full |
-|---|---|---|---|---|
-| multisensory noise 3 | +0.10 / +0.20 / +0.24 / +0.55 | −0.33 / −0.29 / −0.26 / −0.31 | +0.06 / +0.11 / +0.20 / +0.40 | −0.19 / −0.10 / −0.08 / +0.01 |
-| multisensory noise 1.3 | +0.02 / +0.07 / +0.18 / +0.27 | −0.25 / −0.21 / −0.20 / −0.19 | +0.01 / +0.05 / +0.13 / +0.21 | −0.14 / −0.09 / −0.04 / +0.03 |
-| Rosenbrock noise 3 | +0.15 / +0.21 / +0.36 / +0.60 | −0.04 / +0.00 / −0.00 / −0.01 | +0.10 / +0.10 / +0.18 / +0.34 | −0.04 / −0.01 / +0.03 / +0.01 |
-| GMM noise 3 | +0.08 / +0.14 / +0.19 / +0.50 | −0.16 / −0.24 / −0.16 / −0.14 | +0.06 / +0.09 / +0.16 / +0.34 | −0.16 / −0.23 / −0.15 / −0.08 |
-| ring noise 3 | +0.03 / +0.10 / +0.13 / +0.43 | −0.08 / −0.11 / −0.07 / −0.16 | +0.06 / +0.06 / +0.10 / +0.30 | −0.17 / −0.14 / −0.13 / −0.11 |
-| Student D8 noise 3 | +0.02 / +0.20 / +0.24 / +0.54 | −0.76 / −0.86 / −1.00 / −1.54 | +0.02 / +0.17 / +0.19 / +0.46 | −0.22 / −0.03 / −0.07 / +0.15 |
-| noiseless controls, every `M` | within 0.04 | within 0.09 | within 0.04 | within 0.05 |
+| condition | raw, `M` = 2 / 3 / 5 / 16 | cap | run level alone | two-level full | two-level anchored (mean add-back) |
+|---|---|---|---|---|---|
+| multisensory noise 3 | +0.10 / +0.20 / +0.24 / +0.55 | −0.33 / −0.29 / −0.26 / −0.31 | +0.06 / +0.11 / +0.20 / +0.40 | −0.19 / −0.10 / −0.08 / +0.01 | +0.03 / +0.13 / +0.17 / +0.24 |
+| multisensory noise 1.3 | +0.02 / +0.07 / +0.18 / +0.27 | −0.25 / −0.21 / −0.20 / −0.19 | +0.01 / +0.05 / +0.13 / +0.21 | −0.14 / −0.09 / −0.04 / +0.03 | +0.01 / +0.04 / +0.11 / +0.19 |
+| Rosenbrock noise 3 | +0.15 / +0.21 / +0.36 / +0.60 | −0.04 / +0.00 / −0.00 / −0.01 | +0.10 / +0.10 / +0.18 / +0.34 | −0.04 / −0.01 / +0.03 / +0.01 | +0.11 / +0.14 / +0.21 / +0.13 |
+| GMM noise 3 | +0.08 / +0.14 / +0.19 / +0.50 | −0.16 / −0.24 / −0.16 / −0.14 | +0.06 / +0.09 / +0.16 / +0.34 | −0.16 / −0.23 / −0.15 / −0.08 | +0.03 / +0.02 / +0.07 / +0.16 |
+| ring noise 3 | +0.03 / +0.10 / +0.13 / +0.43 | −0.08 / −0.11 / −0.07 / −0.16 | +0.06 / +0.06 / +0.10 / +0.30 | −0.17 / −0.14 / −0.13 / −0.11 | −0.00 / +0.00 / +0.00 / +0.02 |
+| Student D8 noise 3 | +0.02 / +0.20 / +0.24 / +0.54 | −0.76 / −0.86 / −1.00 / −1.54 | +0.02 / +0.17 / +0.19 / +0.46 | −0.22 / −0.03 / −0.07 / +0.15 | +0.02 / +0.17 / +0.15 / +0.41 |
+| noiseless controls, every `M` | within 0.04 | within 0.09 | within 0.04 | within 0.05 | within 0.05 |
 
 What the yardstick shows:
 
@@ -643,13 +645,30 @@ What the yardstick shows:
   level of its inputs. The within-run term debiases the runs, which
   the requirement does not ask for, and the two effects roughly
   cancel.
-- **The natural estimator under the yardstick is untested.** Shrink
-  the components as the two-level estimate does, then add back, per
-  run and weighted by the run's mass in the stack, what the shrinkage
-  removes at the run's own weights, so that a stack of one run reports
-  the run's own ELBO and only the selection the stacking adds is
-  removed. It reads the same statistics and would be scored on the
-  same cells in minutes.
+- **An estimator that removes only the stacking's selection halves
+  the addition and still adds.** The anchored variants of
+  `svbmc_shrink_elbo.py` shrink as the two-level estimate does and add
+  back what the within-run shrinkage removes at each run's own
+  weights, weighted by the runs' masses in the stack (`anchored`,
+  `two_level_anchored`) or as their plain mean (`anchored_mean`,
+  `two_level_anchored_mean`), so that a stack of one run reports the
+  run's own ELBO by construction. With the within-run term alone the
+  add-back cancels nearly everything (`anchored` adds +0.06 to +0.32
+  at `M = 5` against raw's +0.13 to +0.36): the stacking's addition
+  is not a reweighting within runs. With the run-level term the two
+  forms differ by at most 0.06 and add +0.00 to +0.21 at `M` = 3 to
+  5 and +0.02 to +0.41 at `M = 16`, removing 16 to 99 % of the raw
+  addition (nearly all of it on the ring, least on Student and
+  multisensory noise 3); at `M = 5` the bootstrap intervals exclude
+  zero on four of the six conditions. The run-level term as built is
+  too weak to remove the selection among runs by itself: it takes the
+  GP's variance of a run's ELBO at fixed weights (`wᵀ Σ w`, about
+  0.1) as the level's error and leaves out the run-to-run scatter of
+  the runs' own optimism (interquartile ranges of 0.3 to 0.5 nats in
+  the single-run table), which is what the stacking selects on. The
+  two-level estimate without the add-back ends nearer zero because
+  its within-run term removes part of that optimism from every run
+  before the levels are compared, and the two effects offset.
 
 ## Limitations
 

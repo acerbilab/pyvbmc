@@ -1782,6 +1782,24 @@ draft had left open:
   the headline note carry the reading; the anchored variant (add
   back per run what the shrinkage removes at the run's own weights)
   is the untested next candidate.
+- 2026-09-15: the anchored variants tested. `svbmc_shrink_elbo.py`
+  gained `anchored` and `two_level_anchored` (add back, per run and
+  weighted by its stack mass, what the within-run shrinkage removes
+  at the run's own weights, so that a stack of one run reports its
+  own value) and `anchored_mean`, `two_level_anchored_mean` (the mean
+  over runs added back); both scorings were rerun (the earlier
+  variants' values unchanged to the last digit) and the single-run
+  join regenerated. Added bias over the noisy conditions: `anchored`
+  +0.06 to +0.32 at `M = 5` against raw's +0.13 to +0.36, so the
+  stacking's addition is not a reweighting within runs;
+  `two_level_anchored` +0.02 to +0.18 at `M` = 3 to 5 and +0.05 to
+  +0.42 at `M = 16`, the mean form within 0.06 of it, removing 16 to
+  99 % of the raw addition. Neither meets the yardstick; the two-level
+  shrinkage without the add-back (−0.23 to +0.15) stays the
+  candidate. Reading: the run-level term's error variance, `wᵀ Σ w`
+  at fixed weights, leaves out the run-to-run scatter of the runs'
+  own optimism, which is what the stacking selects on; a run-level
+  error that includes it is the refinement to try.
 
 ## Execution tracking
 

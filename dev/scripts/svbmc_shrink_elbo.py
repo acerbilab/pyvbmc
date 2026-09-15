@@ -34,7 +34,22 @@ variants:
   change of its level. This targets the selection among runs, which the
   within-run populations cannot see;
 - ``two_level`` and ``two_level_full``: the run-level shift composed with
-  ``within`` or ``within_full``.
+  ``within`` or ``within_full``;
+- ``anchored`` and ``two_level_anchored``: ``within_full`` and
+  ``two_level_full`` with, added back to every component of a run, what
+  the within-run shrinkage removes at the run's own weights
+  (``Σ_k o_k (I_k − Ĩ_k)`` over the run's components, ``o`` its
+  posterior weights), so that a stack of one run reports the run's own
+  value and only the selection the stacking adds is removed;
+- ``anchored_mean`` and ``two_level_anchored_mean``: as the two above
+  but adding back the *mean over the stack's runs* of what the
+  shrinkage removes at each run's own weights, the same for every
+  component. The mass-weighted add-back of ``anchored`` restores the
+  selected runs' own optimism, on which the stacking also selected;
+  the mean add-back keeps the inputs' average level and removes the
+  selection among runs on their optimism as well. These are the
+  estimators the inputs yardstick calls for (the campaign plan's
+  decision 11: a stack must not add to the optimism its runs carry).
 
 Each cell also records its noise share, the mass-weighted mean over its
 runs of the within-run share, and the ``hybrid`` rule built on it: the
@@ -103,6 +118,10 @@ VARIANTS = (
     "run_level",
     "two_level",
     "two_level_full",
+    "anchored",
+    "two_level_anchored",
+    "anchored_mean",
+    "two_level_anchored_mean",
     "hybrid",
 )
 #: The noise share at or above which the ``hybrid`` rule applies the
@@ -271,6 +290,17 @@ def score_cell(cell, pool):
         factors["two_level_full"][sl] = (
             factors["within_full"][sl] * level_factors[m]
         )
+        # Anchored: add back, per run, what the within-run shrinkage
+        # removes at the run's own weights, so that a stack of one run
+        # reports the run's own value and only the selection the
+        # stacking adds is removed.
+        removed = float(np.dot(own[m], I - shrunk["within_full"][sl]))
+        shrunk["anchored"][sl] = shrunk["within_full"][sl] + removed
+        factors["anchored"][sl] = factors["within_full"][sl]
+        shrunk["two_level_anchored"][sl] = (
+            shrunk["two_level_full"][sl] + removed
+        )
+        factors["two_level_anchored"][sl] = factors["two_level_full"][sl]
         record["runs"].append(
             {
                 "K": int(I.size),
@@ -285,8 +315,19 @@ def score_cell(cell, pool):
                 "level_variance": float(level_variance[m]),
                 "level_shift": float(shifts[m]),
                 "level_factor": float(level_factors[m]),
+                "anchor": removed,
             }
         )
+    # Anchored to the inputs' mean: add back the mean over runs of what
+    # the within-run shrinkage removes at each run's own weights, the
+    # same for every component, so that the selection among runs on
+    # their own optimism is removed too and the stack keeps its inputs'
+    # average level.
+    mean_removed = float(np.mean([run["anchor"] for run in record["runs"]]))
+    shrunk["anchored_mean"] = shrunk["within_full"] + mean_removed
+    factors["anchored_mean"] = factors["within_full"]
+    shrunk["two_level_anchored_mean"] = shrunk["two_level_full"] + mean_removed
+    factors["two_level_anchored_mean"] = factors["two_level_full"]
     record["stack_population"] = {
         "mu": mu_stack,
         "tau2": tau2_stack,

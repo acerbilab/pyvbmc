@@ -66,10 +66,14 @@ records its execution.
   (`svbmc_single_run_bias.py`; the report's section "The inputs' own
   bias"): the raw value adds 0.02 to 0.60 nats growing with `M`, the
   cap removes more than the stacking added on every noisy condition,
-  the two-level shrinkage adds nothing within 0.23 nats. Untested and
-  next to try: the anchored variant, which adds back per run what the
+  the two-level shrinkage adds nothing within 0.23 nats. Tried the
+  same day: the anchored variants (add back per run what the
   shrinkage removes at the run's own weights, so that a stack of one
-  run reports the run's own ELBO (minutes on the recorded cells).
+  run reports its own ELBO) halve what the raw value adds and still
+  add 0.1 to 0.2 nats at `M` = 3 to 5, so the two-level shrinkage
+  stays the candidate; the untested refinement is a run-level error
+  term that includes the run-to-run scatter of the runs' own
+  optimism, which the stacking selects on.
   Decisions to make: (1) whether the switch ships in 1.5 or 1.5 keeps
   the component-median cap; (2) the headline's user-facing caveat
   either way (the shrinkage remains optimistic by about 0.8 nats on a

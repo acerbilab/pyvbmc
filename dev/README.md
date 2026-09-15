@@ -640,7 +640,11 @@ reason.
   run with the diagonal or the full estimation covariance, or over the
   whole stack, at the run level (each run's own value shrunk toward the
   runs' mean by its run-level estimation variance, composed with the
-  within-run forms), and re-evaluated at the recorded weights; a `hybrid`
+  within-run forms), in anchored forms that add back what the
+  within-run shrinkage removes at each run's own weights (mass-weighted
+  or averaged over runs, so that a stack of one run reports its own
+  value and only the stacking's selection is removed), and
+  re-evaluated at the recorded weights; a `hybrid`
   rule applies the class's cap when the cell's noise share (the share of
   the components' spread the GP attributes to estimation noise) is at
   least 0.2 and the within-run shrinkage otherwise. Every variant's bias

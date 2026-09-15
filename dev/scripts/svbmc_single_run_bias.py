@@ -92,6 +92,10 @@ SHRINK_ESTIMATES = (
     "run_level",
     "two_level",
     "two_level_full",
+    "anchored",
+    "two_level_anchored",
+    "anchored_mean",
+    "two_level_anchored_mean",
     "hybrid",
 )
 
@@ -344,7 +348,14 @@ def summarize_added(records, rng):
                         [c["added"][name] for c in cells], rng
                     )
                     for name in names
-                    if name in ("raw", "two_level_full", "run_level")
+                    if name
+                    in (
+                        "raw",
+                        "two_level_full",
+                        "run_level",
+                        "two_level_anchored",
+                        "two_level_anchored_mean",
+                    )
                 },
                 "raw_added_positive": float(
                     np.mean([c["added"]["raw"] > 0 for c in cells])

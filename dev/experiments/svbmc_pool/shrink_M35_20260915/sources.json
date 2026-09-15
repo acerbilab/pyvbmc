@@ -1,8 +1,8 @@
 {
-  "generated": "2026-09-15 13:09:51",
+  "generated": "2026-09-15 15:47:06",
   "script": {
     "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\svbmc_shrink_elbo.py",
-    "sha256": "6bf94ced82d0049cc3affd63e363ef6d74db93a6fddb3610a3149458c1fc25cb"
+    "sha256": "77e735ddca1654a79ae890f652e63b43fe2416cb9e17e260a73f7aec15b598f4"
   },
   "cells": {
     "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260914_stack_M35\\results.json",
@@ -12,7 +12,7 @@
   "environment": {
     "source": {
       "python": "3.12.6",
-      "pyvbmc_commit": "c16dbe5084898f0b3849754ac060b37a8c014620",
+      "pyvbmc_commit": "e93fdea9272d3514779a5f4f6ebdc737f2d41ed2",
       "gpyreg_commit": "9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b",
       "numpy": "2.5.2",
       "scipy": "1.18.1",

@@ -185,13 +185,22 @@ excess variance `tau2`, the spread and the mean estimation variance),
 `summary.json` and `summary.md` (per condition and `M`, the median bias
 and median absolute bias over cells of the raw value, the class's cap
 and the variants `within`, `within_full`, `stack`, `run_level`,
-`two_level` and `two_level_full`, with the shrinkage factor and the
+`two_level`, `two_level_full`, the anchored forms `anchored`,
+`two_level_anchored`, `anchored_mean` and `two_level_anchored_mean`
+(what the within-run shrinkage removes at each run's own weights
+added back, mass-weighted or averaged over runs, so that a stack of
+one run reports its own value; each cell's record carries the
+per-run amount as `anchor`) and `hybrid`, with the shrinkage factor and the
 noise shares, the mean estimation variance over the spread of the
 estimates, within a run, over the stack's components and over the runs'
 levels; each cell's record also carries every run's level, its
 estimation variance and its shift), and `sources.json`. The noise in
 a spread of correlated estimates is `(tr Σ − 1ᵀ Σ 1 / K) / (K − 1)`,
-which the script uses for `tau2` and the shares.
+which the script uses for `tau2` and the shares. The directory (and
+`shrink_M35_20260915/`) is the rerun of 2026-09-15 that added the
+anchored forms; the values of the earlier variants are unchanged, and
+its `sources.json` hashes the script as run, before the formatting hook
+reflowed it without changing its logic.
 
 ## The integrated arm at `M = 3` and `5` (2026-09-15)
 
@@ -244,7 +253,9 @@ added bias of `raw`, `run_level` and `two_level_full`, and the
 fraction of cells whose raw added bias is positive); and
 `sources.json`. The raw directory,
 `dev/scripts/runs/svbmc_pool_20260914_single_run/`, holds the same
-files and the controller's log.
+files and the controller's log. `cells.jsonl` and `added.*` were
+regenerated with `--reuse` after the shrinkage rerun that added the
+anchored forms; the runs' own scores are unchanged.
 
 ## Raw outputs of the analyses (release asset)
 

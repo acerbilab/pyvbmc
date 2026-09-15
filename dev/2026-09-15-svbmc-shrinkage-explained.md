@@ -371,11 +371,17 @@ among runs, removes only a sixth to a half of the addition. The
 two-level estimate adds nothing within 0.23 nats at any $M$, and at
 small $M$ sits 0.1 to 0.2 nats below its inputs, because its
 within-run term also removes part of the runs' own optimism. An
-estimator that removes exactly the stacking's addition follows from
-the yardstick and is untested: shrink as in section 9, then add back
-per run, weighted by the run's mass in the stack, what the shrinkage
-removes at the run's own weights, so that a stack of one run reports
-the run's own ELBO.
+estimator that removes only the stacking's own selection was also
+tried: shrink as in section 9, then add back per run what the
+shrinkage removes at the run's own weights (weighted by the run's
+mass in the stack, or averaged over runs), so that a stack of one run
+reports its own ELBO. It halves what the raw value adds and still
+adds 0.1 to 0.2 nats at $M$ = 3 to 5, because the run-level term
+takes the GP's variance at fixed weights as a level's error and
+misses the run-to-run scatter of the runs' own optimism, which is
+what the stacking selects on. The two-level estimate ends nearer
+zero because its within-run term removes part of that optimism from
+every run first.
 
 Two properties are worth keeping in mind. The method has no tuned
 constant: $\mu$, $\tau^2$ and $\Sigma$ come from the data of the run.

@@ -135,8 +135,11 @@ term alone removes a sixth to a half of the addition; and the
 two-level shrinkage adds nothing within 0.23 nats at every M on every
 noisy target, sitting 0.1 to 0.2 nats below the inputs' level at
 M ≤ 5 because its within-run term also removes part of the runs' own
-optimism. The report's section "The inputs' own bias" has the
-tables. Debiasing the VBMC ELBO itself is a separate question,
+optimism. An anchored variant that adds back what the shrinkage
+removes at each run's own weights, so that a stack of one run reports
+its own ELBO and only the stacking's selection is removed, halves
+what the raw value adds but still adds 0.1 to 0.2 nats at M = 3 to
+5. The report's section "The inputs' own bias" has the tables. Debiasing the VBMC ELBO itself is a separate question,
 recorded in the TODO as outside 1.5.
 
 Worst and mean, over the six noisy targets, of the median absolute
@@ -169,11 +172,13 @@ shrinkage is the headline candidate for a noisy stack. The raw value
 stays the headline of a noiseless stack, where shrinkage changes it by
 at most 0.03 nats. Under the inputs yardstick, set later the same
 day, the endorsement stands: it is the one estimate that neither adds
-to the inputs' optimism nor removes much of it. The estimator the
-yardstick itself suggests, the same shrinkage with what it removes at
-each run's own weights added back, so that a stack of one run
-reports the run's own ELBO and only the stacking's addition is
-removed, is untested and listed under Open.
+to the inputs' optimism nor removes much of it. The anchored
+variants, which add back what the shrinkage removes at each run's
+own weights so that only the stacking's selection is removed, were
+scored the same day: they halve what the raw value adds and still
+add 0.1 to 0.2 nats at M = 3 to 5, so the two-level shrinkage remains
+the candidate, with the caveat that part of what it removes is the
+runs' own optimism.
 
 Against the alternatives: the cap fails silently and without bound on
 heavy tails. The hybrid has the best numbers, but its threshold was
@@ -199,11 +204,13 @@ that pin the capped headline, and the user documentation.
 
 ## Open
 
-- The anchored variant of the shrinkage (add back, per run and
-  weighted by its mass in the stack, what the shrinkage removes at
-  the run's own weights) removes exactly the stacking's addition by
-  construction and is untested; it reads the same statistics and
-  scores on the same subsets in minutes.
+- The run-level term is too weak on its own: it takes the GP's
+  variance of a run's ELBO at fixed weights as the level's error and
+  leaves out the run-to-run scatter of the runs' own optimism, which
+  the stacking selects on (interquartile ranges of 0.3 to 0.5 nats
+  across the runs of a noisy target). A run-level error that includes
+  that scatter is the untested refinement; with it, the anchored
+  variant would be the estimator the yardstick asks for.
 - Re-optimizing the weights on the shrunken estimates is untested; only
   the reported value is shrunk today.
 - Stacks of 32 runs (a later overnight or cluster run) test the
