@@ -559,10 +559,16 @@ reason.
   import gpyreg from the checkout the pool's manifest names, or, for a
   pool copied from another machine, from `--gpyreg-source`, a local clean
   checkout at the manifest's gpyreg commit.
-  `--summarize-only --out DIR` rebuilds the summaries from a finished
-  `results.json` without running a cell or needing Torch, describing that
-  comparison by the settings it recorded rather than by the script's
-  current constants. `--fixtures
+  `--arms integrated` stacks every cell with the integrated class alone,
+  for the larger-`M` regime where the original's cost (quadratic in `M`,
+  four to five times the integrated arm's) is not worth paying; such
+  cells carry no paired quantity. `--summarize-only --out DIR` rebuilds
+  the summaries from a finished `results.json` without running a cell or
+  needing Torch, describing that comparison by the settings it recorded
+  rather than by the script's current constants, and with several
+  `--from-results` files summarizes their cells together (both arms up
+  to one `M`, the integrated arm beyond it), the paired quantities and
+  equivalence tests covering the cell sets both arms ran. `--fixtures
   GROUP` compares the shipped S-VBMC posterior fixtures instead of a pool,
   which is what `test_svbmc_pool_stack.py` runs.
 - `scripts/svbmc_honest_elbo.py` — the Phase 2 estimator of the S-VBMC

@@ -687,3 +687,163 @@ def test_pool_accepts_a_gpyreg_source_at_the_manifest_commit(pool, tmp_path):
         environment = sources["arms"][arm]["environment"]
         assert environment["host"]["gpyreg_import"] == expected
         assert environment["source"]["gpyreg_commit"] == pinned
+
+
+@pytest.fixture(scope="module")
+def integrated_only(tmp_path_factory):
+    """The same comparison run with the integrated arm alone."""
+    out = tmp_path_factory.mktemp("svbmc_stack_integrated")
+    completed = run_harness(out, "--arms", "integrated")
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+    return {
+        name: json.loads((out / f"{name}.json").read_text(encoding="utf-8"))
+        for name in ("results", "summary", "sources")
+    } | {"out": out, "stdout": completed.stdout}
+
+
+def test_integrated_arm_alone(comparison, integrated_only):
+    """`--arms integrated`: one arm per cell, no paired quantity, and the
+    same integrated fits as the two-arm run of the same cells."""
+    results = integrated_only["results"]
+    assert results["settings"]["arms"] == ["integrated"]
+    assert comparison["results"]["settings"]["arms"] == list(harness.ARMS)
+    cells = results["cells"]
+    assert len(cells) == len(GROUPS) * sum(REPETITIONS)
+    for cell in cells:
+        assert set(cell["arms"]) == {"integrated"}
+        assert cell["first_arm"] == "integrated"
+        assert cell["max_abs_dw"] is None
+        outcome = cell["arms"]["integrated"]
+        assert all(key in outcome for key in harness.REFERENCE_FIELDS)
+    assert "the integrated arm alone" in integrated_only["stdout"]
+    assert not (integrated_only["out"] / "original_arm.log").exists()
+    assert integrated_only["sources"]["arms"]["original"] is None
+    # The integrated arm is seeded by the cell and rebuilds its posteriors,
+    # so the same cells give the same fit whether or not the original arm
+    # runs beside it.
+    twins = {
+        (c["condition"], c["M"], c["repetition"]): c
+        for c in comparison["results"]["cells"]
+    }
+    for cell in cells:
+        twin = twins[(cell["condition"], cell["M"], cell["repetition"])]
+        assert cell["entry_seeds"] == twin["entry_seeds"]
+        np.testing.assert_allclose(
+            cell["arms"]["integrated"]["w"],
+            twin["arms"]["integrated"]["w"],
+            rtol=0,
+            atol=1e-8,
+        )
+        assert cell["arms"]["integrated"]["elbo_mc"] == pytest.approx(
+            twin["arms"]["integrated"]["elbo_mc"], abs=1e-6
+        )
+    summary = integrated_only["summary"]
+    assert summary["equivalence_tests"] == []
+    for condition in summary["conditions"]:
+        assert condition["all_M"]["runtime_ratio"]["n"] == 0
+        assert condition["all_M"]["max_abs_dw"]["n"] == 0
+        for entry in condition["M"]:
+            assert entry["arms_present"] == ["integrated"]
+            assert set(entry["arms"]) == {"integrated"}
+            assert entry["paired"] == {}
+            assert entry["tests"] == {}
+            assert entry["runtime_ratio"]["n"] == 0
+            gate = entry["criterion3"]
+            assert gate["median_bias_headline"] is not None
+            assert gate["median_bias_estimated"] is None
+            assert gate["headline_bias_not_worse"] is None
+        growth = condition["headline_bias_growth"]
+        assert growth["growth"] is not None
+        assert growth["growth_within_bound"] is not None
+    text = (integrated_only["out"] / "summary.md").read_text(encoding="utf-8")
+    for condition in summary["conditions"]:
+        assert f"## {condition['condition']}" in text
+
+
+def filtered_results(source, out, keep_M):
+    """A copy of a run's results file holding only the cells of some M."""
+    results = json.loads((source / "results.json").read_text(encoding="utf-8"))
+    results["cells"] = [c for c in results["cells"] if c["M"] in keep_M]
+    settings = results["settings"]
+    kept = [
+        (M, R)
+        for M, R in zip(settings["M"], settings["repetitions"])
+        if M in keep_M
+    ]
+    settings["M"] = [M for M, _ in kept]
+    settings["repetitions"] = [R for _, R in kept]
+    out.mkdir(parents=True, exist_ok=True)
+    path = out / "results.json"
+    path.write_text(json.dumps(results), encoding="utf-8")
+    return path
+
+
+def test_summarize_only_merges_a_two_arm_run_with_an_integrated_run(
+    comparison, integrated_only, tmp_path
+):
+    """Both arms up to one M and the integrated arm beyond it summarize
+    together: paired quantities where both ran, growth across every M."""
+    low = filtered_results(comparison["out"], tmp_path / "low", {GRID[0]})
+    high = filtered_results(
+        integrated_only["out"], tmp_path / "high", {GRID[1]}
+    )
+    out = tmp_path / "merged"
+    result = run_script(
+        "--summarize-only",
+        "--out",
+        str(out),
+        "--from-results",
+        str(low),
+        "--from-results",
+        str(high),
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    summary = json.loads((out / "summary.json").read_text(encoding="utf-8"))
+    settings = summary["settings"]
+    assert settings["M"] == list(GRID)
+    assert settings["repetitions"] == list(REPETITIONS)
+    assert settings["arms"] == list(harness.ARMS)
+    assert [part["arms"] for part in settings["merged_from"]] == [
+        list(harness.ARMS),
+        ["integrated"],
+    ]
+    assert len(summary["equivalence_tests"]) == len(GROUPS) * len(
+        harness.TEST_METRICS
+    )
+    for condition in summary["conditions"]:
+        low_entry, high_entry = condition["M"]
+        assert (low_entry["M"], high_entry["M"]) == GRID
+        assert low_entry["arms_present"] == list(harness.ARMS)
+        assert low_entry["tests"] and low_entry["paired"]
+        assert high_entry["arms_present"] == ["integrated"]
+        assert high_entry["tests"] == {} and high_entry["paired"] == {}
+        growth = condition["headline_bias_growth"]
+        assert (growth["M_min"], growth["M_max"]) == GRID
+        assert growth["growth"] is not None
+        assert condition["all_M"]["runtime_ratio"]["n"] == REPETITIONS[0]
+    text = (out / "summary.md").read_text(encoding="utf-8")
+    assert "summarized together" in text
+    # The same cell in two files is refused by name.
+    result = run_script(
+        "--summarize-only",
+        "--out",
+        str(tmp_path / "dup"),
+        "--from-results",
+        str(comparison["out"] / "results.json"),
+        "--from-results",
+        str(integrated_only["out"] / "results.json"),
+    )
+    assert result.returncode != 0
+    assert "summarized once" in result.stderr
+    # And --arms cannot apply to a summary, which runs no cell.
+    result = run_script(
+        "--summarize-only",
+        "--out",
+        str(tmp_path / "flag"),
+        "--from-results",
+        str(low),
+        "--arms",
+        "integrated",
+    )
+    assert result.returncode != 0
+    assert "--arms" in result.stderr
