@@ -1,7 +1,6 @@
 # The S-VBMC headline on noisy stacks: what the benchmark showed and the way forward
 
-*Written 15 September 2026 from the day's results and a discussion with
-the PI. The evidence is in
+*Written 15 September 2026. The evidence is in
 [results/2026-09-15-svbmc-pool-comparison.md](results/2026-09-15-svbmc-pool-comparison.md);
 the execution record is the worklog of
 [plans/svbmc-benchmark-campaign.md](plans/svbmc-benchmark-campaign.md);
@@ -43,7 +42,8 @@ Gaussian mixture and a ring in 2 dimensions and a Student-t product in
 8 dimensions at noise 3. Two are noiseless controls: the Gaussian
 mixture and the multisensory model. From each target's runs, subsets of
 M = 2, 3, 4, 5, 8 and 16 runs were drawn at random, 20 subsets per M
-(10 at M = 16), and each subset was stacked by both implementations.
+(10 at M = 16); the subsets of 2, 4, 8 and 16 runs were stacked by
+both implementations, those of 3 and 5 by the port alone.
 Every reported ELBO is scored by its bias against the truth for that
 stack: the stack's own ELBO, computed by Monte Carlo from the true log
 density. All numbers below are medians of that bias over the subsets
@@ -58,8 +58,10 @@ agree within 0.25 nats.
 
 ## Which number should the port report?
 
-**The raw value** is optimistic on every noisy target: by 0.25 to 0.9
-nats at M = 2 and by 0.6 to 1.3 at M = 16. Most of it is inherited:
+**The raw value** is optimistic on the five typical noisy targets: by
+0.25 to 0.77 nats at M = 2 and by 0.6 to 1.3 at M = 16 (on the
+heavy-tailed Student target it is 0.11 low at M = 2 and 0.27 high at
+M = 16). Most of it is inherited:
 a single VBMC run, scored against its own Monte Carlo ELBO, is
 already optimistic by 0.13 to 0.74 nats on the typical noisy targets
 (0.74 on the multisensory target at noise 3), because its variational
@@ -78,13 +80,15 @@ tail component. Where the cap works, it works because the components
 with small weight are the ones the optimization did not select, so
 they act as an unselected control group. Variants of the cap that leave
 out the small-weight components lose the debiasing. Relative to its
-inputs the cap over-corrects everywhere: the capped headline sits
-0.04 to 0.33 nats below the bias level of the runs it was built from
-on the typical targets and 0.8 to 1.5 nats below on Student, more
-than the stacking added.
+inputs the cap over-corrects on five of the six noisy targets: the
+capped headline sits up to 0.38 nats below the bias level of the runs
+it was built from on four typical targets, at that level on
+Rosenbrock, and 0.8 to 1.5 nats below on Student, more than the
+stacking added.
 
 **Scoring each component with the other runs' GPs**, the replacement
-that had been planned, is not the answer. It is unbiased on the two
+the [ELBO optimism note](2026-09-12-svbmc-elbo-optimism.md) had
+planned as its Phase 2, is not the answer. It is unbiased on the two
 noiseless targets (within 0.035 nats) and on Rosenbrock (within 0.07),
 biased low by 0.2 to 0.7 nats on the other noisy targets, and as low as
 the cap on Student.
@@ -119,10 +123,12 @@ attributes to estimation noise. In the median over subsets it separates
 the targets: 0.21 to 1.1 where the cap is right, 0.05 on Student, at
 most 0.085 on the noiseless targets; subset by subset the ranges
 overlap. The rule "cap when the share is at least 0.2, otherwise
-shrink" lowers the worst case of the best single estimate by a fifth to
-a third, with the same worst case for any threshold from 0.08 to 0.20;
-its gain is statistically resolvable only on the multisensory target at
-noise 3.
+shrink" lowers the worst case of the best single estimate by a fifth
+to two fifths, with the same worst case for any threshold from 0.08 to
+0.20. Its gain is statistically resolvable on the multisensory target
+at both noise levels, on Rosenbrock and the Gaussian mixture at M = 16
+and on Student at M ≤ 5; on the ring at M = 5 and 8 it is resolvably
+worse than the two-level shrinkage.
 
 **The yardstick.** The PI restated the requirement after these
 results (2026-09-15): S-VBMC is not asked to remove the optimism VBMC
@@ -130,22 +136,25 @@ builds into each run's ELBO, only not to add to it, so a headline is
 judged by its bias relative to the mean bias of its input runs, each
 run scored against its own Monte Carlo ELBO. Under that yardstick the
 raw value adds +0.02 to +0.60 nats, growing with M; the cap removes
-more than the stacking added, on every noisy target; the run-level
-term alone removes a sixth to a half of the addition; and the
-two-level shrinkage adds nothing within 0.23 nats at every M on every
-noisy target, sitting 0.1 to 0.2 nats below the inputs' level at
-M ≤ 5 because its within-run term also removes part of the runs' own
-optimism. An anchored variant that adds back what the shrinkage
-removes at each run's own weights, so that a stack of one run reports
-its own ELBO and only the stacking's selection is removed, halves
-what the raw value adds but still adds 0.1 to 0.2 nats at M = 3 to
-5. The report's section "The inputs' own bias" has the tables. Debiasing the VBMC ELBO itself is a separate question,
-recorded in the TODO as outside 1.5.
+more than the stacking added on five of the six noisy targets and
+lands at the inputs' level on Rosenbrock; the run-level term alone
+removes a sixth to a half of the addition at M ≥ 3; and the two-level
+shrinkage adds nothing within 0.23 nats at every M on every noisy
+target, sitting up to 0.23 nats below the inputs' level at M ≤ 5
+because its within-run term also removes part of the runs' own
+optimism. Anchored variants that add back what the shrinkage removes
+at each run's own weights, so that only the stacking's selection is
+removed, leave −0.02 to +0.21 nats of the addition at M = 3 to 5. The
+baseline is the plain mean over the inputs; the mass-weighted mean is
+not neutral, since the mass already concentrates on the runs that
+came out highest, and against it every estimate sits lower. The
+report's section "The inputs' own bias, and what stacking adds" has
+the tables and the sensitivity. Debiasing the VBMC ELBO itself is a
+separate question, recorded in the TODO as outside 1.5.
 
 Worst and mean, over the six noisy targets, of the median absolute
-bias against the truth (the earlier yardstick). The two noiseless
-targets are within 0.09 nats for every
-estimate. The six targets are not exchangeable: the worst is the
+bias against the truth, the stack's own Monte Carlo ELBO. The two
+noiseless targets are within 0.1 nats for every estimate. The six targets are not exchangeable: the worst is the
 multisensory target at noise 3 for the shrinkage estimates and Student
 for the cap, and the mean weights the targets equally.
 
@@ -153,7 +162,7 @@ for the cap, and the mean weights the targets equally.
 |---|---|---|
 | raw | 0.84 / 1.04 / 1.31 | 0.39 / 0.50 / 0.74 |
 | capped median (the headline today) | 0.97 / 1.26 / 1.78 | 0.29 / 0.37 / 0.45 |
-| within-run shrinkage | 0.60 / 0.75 / 0.94 | 0.25 / 0.31 / 0.40 |
+| within-run shrinkage (full covariance) | 0.60 / 0.75 / 0.94 | 0.25 / 0.31 / 0.40 |
 | two-level shrinkage | 0.58 / 0.67 / 0.77 | 0.24 / 0.26 / 0.28 |
 | cap if noise share ≥ 0.2, else within-run shrinkage | 0.42 / 0.43 / 0.44 | 0.19 / 0.22 / 0.15 |
 
@@ -162,23 +171,22 @@ multisensory run at noise 3 is optimistic by 0.74 nats, and shrinking
 toward a population mean removes selection within the population, not
 an error common to all of a run's components. On those targets the
 GP's own uncertainty is also miscalibrated (a quarter to two thirds
-of the components have |z| > 2 against the truth), and the shrinkage
-takes it at face value.
+of the components, weighted by mass, have |z| > 2 against the truth:
+the own-GP calibration lines of
+[experiments/svbmc_pool/phase2_20260915/summary.md](experiments/svbmc_pool/phase2_20260915/summary.md)),
+and the shrinkage takes it at face value.
 
 ## Decision
 
 The PI endorsed the recommendation on 2026-09-15: the two-level
 shrinkage is the headline candidate for a noisy stack. The raw value
 stays the headline of a noiseless stack, where shrinkage changes it by
-at most 0.03 nats. Under the inputs yardstick, set later the same
-day, the endorsement stands: it is the one estimate that neither adds
-to the inputs' optimism nor removes much of it. The anchored
-variants, which add back what the shrinkage removes at each run's
-own weights so that only the stacking's selection is removed, were
-scored the same day: they halve what the raw value adds and still
-add 0.1 to 0.2 nats at M = 3 to 5, so the two-level shrinkage remains
-the candidate, with the caveat that part of what it removes is the
-runs' own optimism.
+at most 0.03 nats. Under the inputs yardstick the endorsement stands:
+it is the one estimate that neither adds to the inputs' optimism nor
+removes much of it, and the anchored variants leave part of the
+stacking's addition, so the two-level shrinkage remains the
+candidate, with the caveat that part of what it removes is the runs'
+own optimism.
 
 Against the alternatives: the cap fails silently and without bound on
 heavy tails. The hybrid has the best numbers, but its threshold was
@@ -191,11 +199,11 @@ The shrinkage applies to the reported value at the weights the raw
 optimization chose, as the cap does today. Re-optimizing the weights
 on the shrunken values was tested at M = 3 to 5 and rejected: the
 optimizer then selects on the shrinkage's own errors, the headline
-comes out 0.06 to 0.4 nats more optimistic than the value-only
+comes out 0.05 to 0.40 nats more optimistic than the value-only
 shrinkage on four of the six noisy targets, and the posterior
-improves on the multisensory and ring targets and worsens on
-Rosenbrock (report, section "Re-optimizing on the shrunken
-estimates").
+improves on the multisensory and ring targets, worsens on Rosenbrock
+and, in the KL gap, on the Gaussian mixture and Student (report,
+section "Re-optimizing on the shrunken estimates").
 
 The class keeps the raw value and the cap in `elbo_details` and adds
 the noise share as a diagnostic. The documentation must state that the
@@ -215,12 +223,13 @@ that pin the capped headline, and the user documentation.
 ## Open
 
 - The run-level term is too weak on its own: it takes the GP's
-  variance of a run's ELBO at fixed weights as the level's error and
-  leaves out the run-to-run scatter of the runs' own optimism, which
-  the stacking selects on (interquartile ranges of 0.3 to 0.5 nats
-  across the runs of a noisy target). A run-level error that includes
-  that scatter is the untested refinement; with it, the anchored
-  variant would be the estimator the yardstick asks for.
+  variance of a run's ELBO at fixed weights (a standard deviation of
+  0.2 to 0.35 nats) as the level's error, while the runs' own
+  optimism scatters by a comparable amount on top of it
+  (interquartile ranges of 0.3 to 0.5 nats across the runs of a noisy
+  target), which the model reads as real spread between runs and the
+  stacking selects on. A run-level error term that includes that
+  scatter is the untested refinement.
 - Stacks of 32 runs (a later overnight or cluster run) test the
   run-level term where it matters most.
 - The subsets of one target and one M share runs (ten subsets of 16

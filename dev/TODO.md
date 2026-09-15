@@ -64,16 +64,16 @@ records its execution.
   already carry, so it is judged by its bias minus the mean bias of
   its inputs, each scored against its own Monte Carlo ELBO
   (`svbmc_single_run_bias.py`; the report's section "The inputs' own
-  bias"): the raw value adds 0.02 to 0.60 nats growing with `M`, the
-  cap removes more than the stacking added on every noisy condition,
-  the two-level shrinkage adds nothing within 0.23 nats. Tried the
-  same day: the anchored variants (add back per run what the
-  shrinkage removes at the run's own weights, so that a stack of one
-  run reports its own ELBO) halve what the raw value adds and still
-  add 0.1 to 0.2 nats at `M` = 3 to 5, so the two-level shrinkage
-  stays the candidate; the untested refinement is a run-level error
-  term that includes the run-to-run scatter of the runs' own
-  optimism, which the stacking selects on.
+  bias, and what stacking adds"): the raw value adds 0.02 to 0.60
+  nats growing with `M`, the cap removes more than the stacking added
+  on five of the six noisy conditions and lands at the inputs' level
+  on Rosenbrock, the two-level shrinkage adds nothing within 0.23
+  nats, and the anchored variants (what the shrinkage removes at each
+  run's own weights added back, so that only the stacking's selection
+  is removed) leave −0.02 to +0.21 nats of the addition at `M` = 3 to
+  5, so the two-level shrinkage stays the candidate; the untested
+  refinement is a run-level error term that includes the run-to-run
+  scatter of the runs' own optimism, which the stacking selects on.
   Decisions to make: (1) whether the switch ships in 1.5 or 1.5 keeps
   the component-median cap; (2) the headline's user-facing caveat
   either way (the shrinkage remains optimistic by about 0.8 nats on a
@@ -89,9 +89,10 @@ records its execution.
   the user documentation. Rejected on the evidence: re-optimizing
   the weights on the shrunken estimates (`svbmc_shrink_optimize.py`,
   `M` = 3 to 5: the optimizer selects on the shrinkage's own errors,
-  the headline is 0.06 to 0.4 nats more optimistic than the
+  the headline is 0.05 to 0.40 nats more optimistic than the
   value-only shrinkage on four of six noisy conditions, and the
-  posterior improves on three conditions and worsens on two). Not
+  posterior improves on the multisensory conditions and the ring and
+  worsens on Rosenbrock and, in the KL gap, on GMM and Student). Not
   planned: the cross-run variants the report names (a
   leave-one-run-out GP refit, a per-run offset) unless a cross-run
   estimator is still wanted. The stacking
@@ -106,7 +107,8 @@ records its execution.
   ran on eight pool conditions (100 filtered runs per noisy condition
   and 50 per control, generated on the cluster per the
   [hand-off brief](plans/svbmc-pool-handoff.md), the asset of the
-  draft release `svbmc-pool-20260914`) at `M` = 2, 3, 4, 5, 8 and 16.
+  draft release `svbmc-pool-20260914`) at `M` = 2, 4, 8 and 16 with
+  both implementations and at `M` = 3 and 5 with the port alone.
   Criteria 1, 2, 4 and 5 hold on every condition: same weights, same
   posterior quality, the port 1.9 to 4 times faster, every table
   rebuilt from the recorded results. Criterion 3's gate fails on

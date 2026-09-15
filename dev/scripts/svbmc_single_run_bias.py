@@ -11,10 +11,10 @@ draws from the posterior, plus the entropy of the mixture by the
 comparison's estimator), and its reported ELBO is compared with that
 reference. Two values are scored per run: ``elbo_vbmc``, the ELBO the run
 itself reports (``vp.stats["elbo"]``, with VBMC's own entropy estimate),
-and ``elbo_raw``, what the integrated class reports for the run alone at
-its own weights (``G + H`` with the class's entropy at
-``N_SAMPLES_FINAL`` draws per component, the value a stack of one run
-would report); the component-median cap at those weights is scored too.
+and ``elbo_raw``, the integrated class's value for the run alone at its
+own weights, without optimization (``G + H`` with the class's entropy
+at ``N_SAMPLES_FINAL`` draws per component); the component-median cap
+at those weights is scored too.
 
 With ``--cells`` (the comparison's ``results.json``, repeatable) the
 script also joins the runs' biases to every cell that holds an
@@ -28,7 +28,7 @@ variants of the same cells are joined too. Needs Torch on
 
     PYTHONPATH="<TORCH_PATH>" python -u dev/scripts/svbmc_single_run_bias.py \\
         --pool DIR --out DIR --gpyreg-source PATH \\
-        [--conditions L1,L2] [--limit N] \\
+        [--conditions L1,L2] [--limit N] [--reuse] \\
         [--cells RESULTS.json ...] [--shrink CELLS.jsonl ...]
 
 Outputs under ``--out``: ``runs.jsonl`` (one record per run: the
@@ -41,10 +41,15 @@ of the KL gap), ``sources.json``, and with ``--cells`` also
 ``cells.jsonl`` (per cell: the input biases and every estimate's bias and
 added bias) and ``added.json`` / ``added.md`` (per condition and ``M``,
 medians over cells of the inputs' mean bias, of each estimate's bias
-and added bias, a bootstrap interval on the added bias of the raw
-value and of the two-level shrinkage, and the fraction of cells whose
-raw added bias is positive). ``--limit N`` scores the first ``N`` runs
-of every condition, for a smoke test.
+and added bias, a bootstrap interval on the added bias of ``raw``,
+``run_level``, ``two_level_full``, ``two_level_anchored`` and
+``two_level_anchored_mean``, and the fraction of cells whose raw added
+bias is positive). ``--limit N`` scores the first ``N`` runs of every
+condition, for a smoke test. ``--reuse`` reads the ``runs.jsonl``
+already under ``--out`` instead of scoring the runs again and redoes
+the summaries and the join; every pass rewrites ``summary.*`` and
+``sources.json`` (which hashes the script, the runs file and every
+``--cells`` and ``--shrink`` file it read).
 """
 
 import argparse
@@ -81,22 +86,21 @@ from svbmc_pool_stack import (  # noqa: E402
     pool_conditions,
     stacked_outcome,
 )
+from svbmc_shrink_elbo import VARIANTS  # noqa: E402
 
 BIASES = ("bias_vbmc", "bias_raw", "bias_cap")
 #: Stacked estimates joined per cell, from the comparison's record and,
-#: when given, the shrinkage cells.
+#: when given, the shrinkage cells (every variant the shrinkage script
+#: writes).
 STACK_ESTIMATES = ("raw", "capped_I_median")
-SHRINK_ESTIMATES = (
-    "within",
-    "within_full",
-    "run_level",
-    "two_level",
+SHRINK_ESTIMATES = VARIANTS
+#: The estimates whose added bias gets a bootstrap interval.
+INTERVAL_ESTIMATES = (
+    "raw",
     "two_level_full",
-    "anchored",
+    "run_level",
     "two_level_anchored",
-    "anchored_mean",
     "two_level_anchored_mean",
-    "hybrid",
 )
 
 
@@ -323,6 +327,13 @@ def summarize_added(records, rng):
         for M in Ms:
             cells = [r for r in rows if r["M"] == M]
             names = list(cells[0]["bias"])
+            for c in cells:
+                if list(c["bias"]) != names:
+                    raise RuntimeError(
+                        f"{condition} M={M}: the cells carry different "
+                        "estimate sets; a summary needs the same shrinkage "
+                        "coverage on every cell"
+                    )
             row = {
                 "M": M,
                 "n": len(cells),
@@ -348,14 +359,7 @@ def summarize_added(records, rng):
                         [c["added"][name] for c in cells], rng
                     )
                     for name in names
-                    if name
-                    in (
-                        "raw",
-                        "two_level_full",
-                        "run_level",
-                        "two_level_anchored",
-                        "two_level_anchored_mean",
-                    )
+                    if name in INTERVAL_ESTIMATES
                 },
                 "raw_added_positive": float(
                     np.mean([c["added"]["raw"] > 0 for c in cells])
@@ -389,7 +393,9 @@ def added_markdown(summary):
             + " | raw added > 0 |"
         )
         lines.append(header)
-        lines.append("|" + "---|" * (7 + len(names) - 1 + 1))
+        # M, n, inputs mean, inputs best, stack raw, raw added [CI], one
+        # column per other estimate, raw added > 0.
+        lines.append("|" + "---|" * (len(names) + 6))
         for row in c["by_M"]:
             lines.append(
                 f"| {row['M']} | {row['n']} | {row['inputs_mean_bias']:+.2f} | "
@@ -439,20 +445,18 @@ def main(argv=None):
     logging.getLogger("SVBMC").setLevel(logging.WARNING)
     out = args.out.resolve()
     out.mkdir(parents=True, exist_ok=True)
-    rng = np.random.default_rng(0)
+    from svbmc_pool_io import sha256
 
+    only = [c.strip() for c in (args.conditions or "").split(",") if c.strip()]
+    conditions, identities, _ = pool_conditions(
+        [pool], only, gpyreg_source=args.gpyreg_source
+    )
     if args.reuse:
         records = [
             json.loads(line)
             for line in (out / "runs.jsonl").open(encoding="utf-8")
         ]
     else:
-        only = [
-            c.strip() for c in (args.conditions or "").split(",") if c.strip()
-        ]
-        conditions, identities, _ = pool_conditions(
-            [pool], only, gpyreg_source=args.gpyreg_source
-        )
         problems = Problems()
         records = []
         total = sum(
@@ -477,33 +481,47 @@ def main(argv=None):
                             f"({condition})",
                             flush=True,
                         )
-        summary = summarize_runs(records, rng)
-        summary["pool"] = str(pool)
-        summary["pools"] = identities
-        summary["settings"] = {
-            "n_draws": N_DRAWS,
-            "n_samples_final": N_SAMPLES_FINAL,
-            "limit": args.limit,
-        }
-        write_json(out / "summary.json", summary)
-        text = runs_markdown(summary)
-        (out / "summary.md").write_text(text, encoding="utf-8")
-        write_json(
-            out / "sources.json",
-            {
-                "generated": time.strftime("%Y-%m-%d %H:%M:%S"),
-                "script": {
-                    "path": str(Path(__file__).resolve()),
-                    "sha256": __import__("svbmc_pool_io").sha256(__file__),
-                },
-                "pool": str(pool),
-                "cells": [str(Path(p).resolve()) for p in args.cells],
-                "shrink": [str(Path(p).resolve()) for p in args.shrink],
-                "environment": identity(gpyreg_source),
-                "torch_version": torch.__version__,
-                "threads": {key: os.environ.get(key) for key in THREAD_KEYS},
+    # The summaries and the provenance record are rewritten on every
+    # pass, so that they describe the files under --out whether the
+    # runs were scored now or read back.
+    summary = summarize_runs(records, np.random.default_rng(0))
+    summary["pool"] = str(pool)
+    summary["pools"] = identities
+    summary["settings"] = {
+        "n_draws": N_DRAWS,
+        "n_samples_final": N_SAMPLES_FINAL,
+        "limit": args.limit,
+        "reuse": bool(args.reuse),
+    }
+    write_json(out / "summary.json", summary)
+    text = runs_markdown(summary)
+    (out / "summary.md").write_text(text, encoding="utf-8")
+
+    def hashed(paths):
+        return [
+            {"path": str(Path(p).resolve()), "sha256": sha256(p)}
+            for p in paths
+        ]
+
+    write_json(
+        out / "sources.json",
+        {
+            "generated": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "script": {
+                "path": str(Path(__file__).resolve()),
+                "sha256": sha256(__file__),
             },
-        )
+            "pool": str(pool),
+            "reuse": bool(args.reuse),
+            "runs": (hashed([out / "runs.jsonl"])[0] if args.reuse else None),
+            "cells": hashed(args.cells),
+            "shrink": hashed(args.shrink),
+            "environment": identity(gpyreg_source),
+            "torch_version": torch.__version__,
+            "threads": {key: os.environ.get(key) for key in THREAD_KEYS},
+        },
+    )
+    if not args.reuse:
         print(text, flush=True)
 
     if args.cells:
@@ -519,7 +537,7 @@ def main(argv=None):
                 record = join_cell(cell, runs_by_name, shrink)
                 joined.append(record)
                 progress.write(json.dumps(record) + "\n")
-        added = summarize_added(joined, rng)
+        added = summarize_added(joined, np.random.default_rng(1))
         added["cells"] = [str(Path(p).resolve()) for p in args.cells]
         added["shrink"] = [str(Path(p).resolve()) for p in args.shrink]
         added["skipped_cells"] = skipped

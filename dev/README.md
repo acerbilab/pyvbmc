@@ -64,13 +64,13 @@ For the release overview, start with
 - [S-VBMC headline shrinkage](2026-09-15-svbmc-headline-shrinkage.md) —
   Two questions about the S-VBMC port, answered from the run-pool
   benchmark: it matches the standalone package (same weights and
-  posterior quality, 1.9 to 4 times faster), and the number it should
-  report on a noisy stack is a two-level empirical-Bayes shrinkage of
-  the components' expected log joints by the estimation covariance
-  saved with each posterior (`J_sjk`; the class's inputs do not
-  change), not the component-median cap, which over-corrects on a
-  heavy-tailed
-  target; the candidates side by side, the decision and what
+  posterior quality, 1.9 to 4 times faster), and the candidate for the
+  number it should report on a noisy stack is a two-level
+  empirical-Bayes shrinkage of the components' expected log joints by
+  the estimation covariance saved with each posterior (`J_sjk`; the
+  class's inputs do not change), in place of the component-median
+  cap, which over-corrects on a heavy-tailed target; the candidates
+  side by side, the decision and what
   implementing it entails. The evidence is the
   [stage D report](results/2026-09-15-svbmc-pool-comparison.md).
 - [S-VBMC shrinkage explained](2026-09-15-svbmc-shrinkage-explained.md) —
@@ -681,13 +681,23 @@ reason.
   `experiments/svbmc_pool/shrink_opt_20260915/` (`M` = 3, 4 and 5),
   read in the [stage D report](results/2026-09-15-svbmc-pool-comparison.md)
   (section "Re-optimizing on the shrunken estimates").
-- `scripts/svbmc_headline_numbers.py` — prints every number the headline
-  note and the report's shrinkage and cap sections quote (per-condition
-  tables, worst and mean cases over the noisy conditions per `M`,
-  noise-share percentiles, the hybrid threshold sweep, the caps' bind
-  fractions, paired bootstrap intervals) from the four tracked
-  `cells.jsonl` files under `experiments/svbmc_pool/`; NumPy only, no
-  pool or raw directory needed. The check for a quoted number.
+- `scripts/svbmc_headline_numbers.py` — prints the numbers the headline
+  note and the report's shrinkage, cap, single-run and re-optimization
+  sections quote (per-condition tables, worst and mean cases over the
+  noisy conditions per `M`, noise-share percentiles, the hybrid
+  threshold sweep, the caps' bind fractions, paired bootstrap
+  intervals, the single-run biases and added-bias ranges, the
+  re-optimization's rows) from the tracked `cells.jsonl`,
+  `summary.json` and `added.json` files under
+  `experiments/svbmc_pool/`; NumPy only, no pool or raw directory
+  needed. The check for a quoted number.
+- `scripts/svbmc_shrink_worked_example.py` — prints the worked example
+  of the [tutorial note](2026-09-15-svbmc-shrinkage-explained.md)
+  (section 7): one recorded `M = 4` stack per condition rebuilt from
+  the pool with the shrinkage script's own functions, with each run's
+  spread, estimation standard deviation, error correlation, noise
+  share, shrinkage factors and level shift and the stack's biases.
+  Needs the pool and Torch, like the scoring scripts.
 - `scripts/pymc_feasibility.py` — the bounded feasibility check of a PyMC
   model adapter (`2026-09-13-pymc-integration.md`): a PyMC model becomes a
   box-bounded log joint for `VBMC` (a variable bounded on one side keeps

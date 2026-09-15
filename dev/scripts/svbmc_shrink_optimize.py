@@ -7,7 +7,10 @@ the shrunken values: for every recorded cell it rebuilds the stack from
 the pool, replaces the class's corrected expected log joints by the
 two-level full-covariance shrinkage of ``svbmc_shrink_elbo.py`` (within
 each run with the full estimation covariance, plus the run-level shift),
-optimizes the weights with the comparison's settings, and scores the
+optimizes the weights with the comparison's settings (the optimizer's
+warm start, which the class takes from the runs' own reported ELBOs,
+is shifted by the change of each run's own level under the shrinkage,
+so that nothing the optimization reads is unshrunk), and scores the
 result as the comparison scores a cell: draws from the new stack, the
 target's noiseless log density over them, the entropy reference at the
 new weights, ``elbo_mc``, the biases, the KL gap and the posterior
@@ -127,25 +130,43 @@ def fit_cell(cell, pool, problem, reference, max_steps, shrink, runs_by_name):
             f"weights {list(arm['K'])}"
         )
     I_raw = np.ravel(stacked.I_corrected).astype(float).copy()
+    w_recorded = np.asarray(arm["w"], dtype=float)
+    G_recorded = float(arm["elbos"]["raw"]) - float(arm["entropy"])
+    if abs(float(np.dot(w_recorded, I_raw)) - G_recorded) > 1e-6:
+        raise RuntimeError(
+            f"{cell['condition']} M={cell['M']} r={cell['repetition']}: the "
+            f"rebuilt expected log joint {np.dot(w_recorded, I_raw):.6f} "
+            f"differs from the recorded {G_recorded:.6f}"
+        )
     I_shrunk = two_level_full(stacked)
     # The objective and the reported value read ``I_corrected`` at call
     # time, so the optimization runs on the shrunken estimates.
     offsets = np.concatenate([[0], np.cumsum(stacked.K)])
+    own = [np.ravel(vp.w) / np.sum(vp.w) for vp in stacked.vp_list]
+    E_raw = np.array(
+        [
+            float(np.dot(I_raw[offsets[m] : offsets[m + 1]], o))
+            for m, o in enumerate(own)
+        ]
+    )
+    E_shrunk = np.array(
+        [
+            float(np.dot(I_shrunk[offsets[m] : offsets[m + 1]], o))
+            for m, o in enumerate(own)
+        ]
+    )
     stacked.I_corrected = I_shrunk.reshape(1, -1)
     stacked.I = stacked.I_corrected + np.reshape(
         stacked._jacobian_corrections, (1, -1)
     )
-    stacked.E_corrected = np.array(
-        [
-            float(
-                np.dot(
-                    I_shrunk[offsets[m] : offsets[m + 1]],
-                    np.ravel(vp.w) / np.sum(vp.w),
-                )
-            )
-            for m, vp in enumerate(stacked.vp_list)
-        ]
-    )
+    stacked.E_corrected = E_shrunk
+    # The class warm-starts the logits from the runs' own reported
+    # ELBOs; shift each by the change of its run's level, so that the
+    # start favours the runs the shrunken values favour.
+    stacked.individual_elbos = [
+        float(elbo + E_shrunk[m] - E_raw[m])
+        for m, elbo in enumerate(stacked.individual_elbos)
+    ]
     construction_seconds = time.perf_counter() - started
     started = time.perf_counter()
     stacked.optimize(
@@ -173,7 +194,6 @@ def fit_cell(cell, pool, problem, reference, max_steps, shrink, runs_by_name):
     outcome.update(entropy_reference(stacked, w, rng))
     elbo_mc = float(outcome["e_log_joint_mc"] + outcome["entropy_ref"])
     ln_Z = problem.ln_Z
-    w_recorded = np.asarray(arm["w"], dtype=float)
     key = (cell["condition"], int(cell["M"]), int(cell["repetition"]))
     record = {
         "condition": cell["condition"],
@@ -206,6 +226,7 @@ def fit_cell(cell, pool, problem, reference, max_steps, shrink, runs_by_name):
             "gskl_recorded": float(arm["metrics"]["gskl"]),
             "mmtv_recorded": float(arm["metrics"]["mmtv"]),
         },
+        "level_shift": (E_shrunk - E_raw).tolist(),
         "max_abs_dw": float(np.max(np.abs(w - w_recorded))),
         "mass_shift": float(0.5 * np.sum(np.abs(w - w_recorded))),
         "construction_seconds": construction_seconds,
@@ -213,6 +234,12 @@ def fit_cell(cell, pool, problem, reference, max_steps, shrink, runs_by_name):
         "reference_seconds": outcome["metrics_seconds"],
     }
     if runs_by_name:
+        if len(cell["entries"]) != len(arm["K"]):
+            raise RuntimeError(
+                f"{cell['condition']} M={cell['M']} r={cell['repetition']}: "
+                f"{len(cell['entries'])} inputs but the stack retained "
+                f"{len(arm['K'])} runs"
+            )
         inputs = [runs_by_name[name]["bias_vbmc"] for name in cell["entries"]]
         record["inputs_mean_bias"] = float(np.mean(inputs))
         record["added"] = {
@@ -427,6 +454,21 @@ def main(argv=None):
     out = args.out.resolve()
     out.mkdir(parents=True, exist_ok=True)
     problems = Problems()
+    if runs_by_name is not None:
+        # A cell whose inputs were not scored has no yardstick; skip it
+        # as the join in svbmc_single_run_bias.py does, and say so.
+        unscored = [
+            c
+            for c in cells
+            if any(name not in runs_by_name for name in c["entries"])
+        ]
+        if unscored:
+            print(
+                f"{len(unscored)} cells skipped: inputs not in the single-run "
+                "file",
+                flush=True,
+            )
+            cells = [c for c in cells if c not in unscored]
     records = []
     started = time.perf_counter()
     with (out / "cells.jsonl").open("w", encoding="utf-8") as progress:
@@ -456,23 +498,33 @@ def main(argv=None):
         "n_draws": N_DRAWS,
         "M": Ms or "all",
         "limit": args.limit,
+        "warm_start": "the runs' reported ELBOs shifted by the change of "
+        "their own level under the shrinkage",
     }
     write_json(out / "summary.json", summary)
     text = markdown(summary)
     (out / "summary.md").write_text(text, encoding="utf-8")
+    from svbmc_pool_io import sha256
+
+    def hashed(paths):
+        return [
+            {"path": str(Path(p).resolve()), "sha256": sha256(p)}
+            for p in paths
+        ]
+
     write_json(
         out / "sources.json",
         {
             "generated": time.strftime("%Y-%m-%d %H:%M:%S"),
             "script": {
                 "path": str(Path(__file__).resolve()),
-                "sha256": __import__("svbmc_pool_io").sha256(__file__),
+                "sha256": sha256(__file__),
             },
             "pool": str(pool),
-            "cells": [str(Path(p).resolve()) for p in args.cells],
-            "shrink": [str(Path(p).resolve()) for p in args.shrink],
+            "cells": hashed(args.cells),
+            "shrink": hashed(args.shrink),
             "single_runs": (
-                str(args.single_runs.resolve()) if args.single_runs else None
+                hashed([args.single_runs])[0] if args.single_runs else None
             ),
             "environment": identity(gpyreg_source),
             "torch_version": torch.__version__,

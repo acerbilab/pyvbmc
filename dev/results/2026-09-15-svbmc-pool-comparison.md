@@ -10,7 +10,7 @@ at `M ∈ {2, 4, 8, 16}` runs per stack with 20, 20, 20 and 10 repetitions:
 the plan's five acceptance criteria, four hold on every condition: the
 two implementations optimize the same objective to the same weights
 (criterion 1), neither is worse than the other on posterior quality
-anywhere (2), the integrated class is two to four times faster (4), and
+anywhere (2), the integrated class is 1.9 to 4 times faster (4), and
 the tables rebuild from the recorded cells (5). Criterion 3, on evidence
 accuracy, holds on seven conditions and fails on one: on the
 eight-dimensional Student target at noise 3 the component-median cap
@@ -39,16 +39,17 @@ set on 2026-09-15 (a stack must not add to the optimism its runs
 already carry), a single VBMC run is optimistic by 0.13 to 0.74 nats
 on the typical noisy conditions, the raw stack adds 0.02 to 0.15 nats
 at `M = 2` and 0.27 to 0.60 at `M = 16`, the cap removes more than
-the stacking added on every condition, the two-level shrinkage adds
-nothing within 0.23 nats, and an anchored variant that removes only
-the stacking's own selection halves the addition but still adds 0.1
-to 0.2 nats at `M` = 3 to 5 (section "The inputs' own bias").
+the stacking added on five of the six noisy conditions and lands at
+the inputs' level on Rosenbrock, the two-level shrinkage adds nothing
+within 0.23 nats, and anchored variants that remove only the
+stacking's own selection leave −0.02 to +0.21 nats of it at `M` = 3
+to 5 (section "The inputs' own bias, and what stacking adds").
 Re-optimizing the weights on the shrunken values, tried at `M` = 3
-to 5, makes the headline 0.1 to 0.2 nats more optimistic than
-shrinking the value alone and moves the posterior for better or
-worse depending on the target, so the shrinkage stays a correction
-of the reported value (section "Re-optimizing on the shrunken
-estimates"). The
+to 5, makes the headline 0.05 to 0.40 nats more optimistic than
+shrinking the value alone on four of the six noisy conditions and
+moves the posterior for better or worse depending on the target, so
+the shrinkage stays a correction of the reported value (section
+"Re-optimizing on the shrunken estimates"). The
 `M = 32` cells of the integrated arm are reported in a section added
 when that run completes.
 
@@ -407,7 +408,8 @@ a factor of 0.87 to 0.89 on the noiseless multisensory control, whose
 GPs carry a little noise), and on Student D8, where the spread of the
 components is real (noise share 0.04), the full-covariance form lands
 within 0.01 at `M = 16`. On the typical noisy conditions it removes a
-third to two thirds of the optimism (the full-covariance form: noisy
+quarter to two thirds of the optimism at `M = 16` (the full-covariance
+form: noisy
 GMM from +0.73 to +0.27, the ring from +0.76 to +0.32, multisensory
 noise 3 from +1.31 to +0.94) but does not reach the cap, and what it
 leaves grows with `M`. The full form shrinks harder than the diagonal
@@ -444,9 +446,11 @@ Median bias against `elbo_mc` at `M` = 2 / 4 / 8 / 16:
 acceptable on every condition: on Rosenbrock, noisy GMM and the ring
 its distance from the reference is within 0.10 nats of the cap's at
 every `M` (paired bootstrap intervals over cells of the difference of
-median absolute biases include zero at `M = 3` and `5`; at `M = 16` the
-cap is closer on Rosenbrock by 0.10 [0.02, 0.50] and on noisy GMM by
-0.08 [0.01, 0.13]); on Student D8 it stays within 0.4 nats where the
+median absolute biases include zero at `M = 3` and `5`, except on the
+ring at `M = 5`, where the two-level estimate is closer by 0.09
+[0.03, 0.15]; at `M = 16` the cap is closer on Rosenbrock by 0.10
+[0.02, 0.50] and on noisy GMM by 0.08 [0.01, 0.13]); on Student D8 it
+stays within 0.4 nats where the
 cap is off by up to 1.8; it moves the noiseless controls by at most
 0.03; and its worst case, +0.77 on multisensory noise 3 at `M = 16`,
 compares with the cap's 1.78 and the raw value's 1.31. It has no tuned
@@ -459,11 +463,10 @@ and on Student D8 it is worse than the raw value at `M ≤ 5` (0.24 to
 0.39 nats low against raw's 0.04 to 0.11, on 65 to 85 % of the cells).
 The run-level shift alone does little below `M = 8` and most of its
 work above, as expected of a selection among runs; the within-run
-shrinkage with the full covariance does most of the rest. Two things
-remain untested: the weights were held at the values selected on the
-unshrunken estimates (re-optimizing on the shrunken ones would also
-move the posterior toward the population mean), and the run-level
-moments rest on two to five values at `M ≤ 5`.
+shrinkage with the full covariance does most of the rest. The
+run-level moments rest on two to five values at `M ≤ 5`. The weights
+are held at the values selected on the unshrunken estimates, which
+the section "Re-optimizing on the shrunken estimates" relaxes.
 
 **At the `M` users run.** Stacks of three to five runs are the common
 case, so the small-`M` cells decide. The integrated arm was run at
@@ -507,7 +510,8 @@ is the same at every `M` a user is likely to run. The cap remains
 closer than `two_level_full` on the two multisensory conditions (by
 0.09 to 0.32 nats) and further on Student D8 (by 0.6 to 1.7); on
 Rosenbrock, noisy GMM and the ring the two are within 0.10 of each
-other, inside the bootstrap intervals at `M ≤ 5`.
+other, inside the bootstrap intervals at `M ≤ 5` on all but the ring
+at `M = 5`.
 
 **A switch by the noise share.** What breaks the cap on Student is
 visible in the data the class holds: the cell's noise share, the share
@@ -536,11 +540,15 @@ and mean median bias over the six noisy conditions:
 The worst case is the same for any threshold from 0.08 to 0.20 and the
 mean moves by at most 0.03 over that range; above 0.25 the rule stops
 capping part of multisensory noise 1.3 and the worst case rises. The
-hybrid lowers the worst case of the best single rule by a fifth to a
-third; its gain over `two_level_full` is resolvable by the paired
-bootstrap on multisensory noise 3 (0.17 to 0.32 nats) and on
-multisensory noise 1.3 at `M = 16` (0.21), and within the intervals
-elsewhere. Its caveats: the threshold sits in a gap between six
+hybrid lowers the worst case of the best single rule by a fifth to
+two fifths (22 to 43 %); its gain over `two_level_full` is resolvable
+by the paired bootstrap on multisensory noise 3 at every `M` but 4
+(0.14 to 0.32 nats), on multisensory noise 1.3 at `M` = 8 and 16
+(0.20, 0.21), on Rosenbrock and noisy GMM at `M = 16` (0.10, 0.08)
+and on Student at `M` = 2, 4 and 5 (0.02 to 0.06); on the ring at
+`M` = 5 and 8 the hybrid is resolvably worse (0.09 [0.03, 0.15],
+0.07 [0.01, 0.11]); elsewhere the intervals include zero. Its
+caveats: the threshold sits in a gap between six
 conditions on one side and two on the other, chosen on the data it is
 scored on; the shares overlap cell by cell; and it switches between two
 estimates that differ by up to 0.5 nats on the typical conditions and
@@ -607,9 +615,11 @@ stack's bias minus the mean bias of its inputs, for the raw value, the
 cap, the run-level shrinkage alone and the two-level full shrinkage;
 positive means the stacked estimate is more optimistic than the runs
 it was built from. `added.md` in the tracked directory has every
-estimate at every `M`, the bootstrap interval on the raw value's added
-bias, the bias of the input with the highest reported ELBO and the
-fraction of cells whose raw added bias is positive.
+estimate at every `M`, bootstrap intervals on the added bias of the raw
+value, the run-level and two-level shrinkages and the two-level
+anchored forms (over cells that share runs, so optimistic, as the
+Limitations say), the bias of the input with the highest reported ELBO
+and the fraction of cells whose raw added bias is positive.
 
 | condition | raw, `M` = 2 / 3 / 5 / 16 | cap | run level alone | two-level full | two-level anchored (mean add-back) |
 |---|---|---|---|---|---|
@@ -632,12 +642,14 @@ What the yardstick shows:
   ELBO within 0.25 nats at every `M`: the stacking's own optimism is
   the winner's curse among the runs (and the components) it was
   given.
-- **The cap over-corrects relative to the inputs everywhere.** Its
-  added bias is −0.04 to −0.33 on the typical noisy conditions and
-  −0.76 to −1.54 on Student D8: the capped headline is less
-  optimistic than the runs it was built from, by more than the
-  stacking added. Under this yardstick the cap fails on every noisy
-  condition, not only on the heavy-tailed one.
+- **The cap over-corrects relative to the inputs on five of the six
+  noisy conditions.** Its added bias is +0.00 to −0.38 on the typical
+  noisy conditions over every `M`, on Rosenbrock within 0.04 of zero
+  at every `M`, and −0.76 to −1.54 on Student D8: except on
+  Rosenbrock, where it lands at the inputs' level, the capped
+  headline is less optimistic than the runs it was built from, by
+  more than the stacking added. Under this yardstick the cap fails
+  on five noisy conditions, not only on the heavy-tailed one.
 - **The run-level term alone is not enough.** The shrinkage of the
   runs' levels, the term aimed at selection among runs, removes only
   15 to 51 % of the raw addition at `M = 5` and 16 to 44 % at
@@ -647,7 +659,7 @@ What the yardstick shows:
   every `M`, and within 0.15 at `M = 16`. It gets there by removing
   part of the inputs' own optimism as well, through its within-run
   term: at `M ≤ 5` its added bias is negative on most conditions, by
-  0.04 to 0.23 nats, so the stacked headline sits a little below the
+  0.01 to 0.23 nats, so the stacked headline sits a little below the
   level of its inputs. The within-run term debiases the runs, which
   the requirement does not ask for, and the two effects roughly
   cancel.
@@ -662,78 +674,97 @@ What the yardstick shows:
   add-back cancels nearly everything (`anchored` adds +0.06 to +0.32
   at `M = 5` against raw's +0.13 to +0.36): the stacking's addition
   is not a reweighting within runs. With the run-level term the two
-  forms differ by at most 0.06 and add +0.00 to +0.21 at `M` = 3 to
-  5 and +0.02 to +0.41 at `M = 16`, removing 16 to 99 % of the raw
-  addition (nearly all of it on the ring, least on Student and
+  forms differ by at most 0.06 and add −0.02 to +0.21 at `M` = 3 to
+  5 and +0.02 to +0.42 at `M = 16`, removing 16 to 114 % of the raw
+  addition at `M ≥ 3` (all of it on the ring, least on Student and
   multisensory noise 3); at `M = 5` the bootstrap intervals exclude
-  zero on four of the six conditions. The run-level term as built is
-  too weak to remove the selection among runs by itself: it takes the
-  GP's variance of a run's ELBO at fixed weights (`wᵀ Σ w`, about
-  0.1) as the level's error and leaves out the run-to-run scatter of
-  the runs' own optimism (interquartile ranges of 0.3 to 0.5 nats in
-  the single-run table), which is what the stacking selects on. The
+  zero on six of the six conditions for the mass-weighted form and
+  on five for the mean form. The run-level term as built is too weak
+  to remove the selection among runs by itself: it takes the GP's
+  variance of a run's ELBO at fixed weights (`wᵀ Σ w`, 0.04 to 0.12,
+  a standard deviation of 0.2 to 0.35 nats) as the level's error,
+  while the runs' own optimism scatters by a comparable amount on
+  top of it (interquartile ranges of 0.3 to 0.5 nats in the
+  single-run table, not net of the GP error), which the model reads
+  as real spread between runs and the stacking selects on. The
   two-level estimate without the add-back ends nearer zero because
   its within-run term removes part of that optimism from every run
   before the levels are compared, and the two effects offset.
+- **The baseline is the plain mean of the inputs, by choice.** The
+  mass-weighted mean over the inputs (`inputs_mass_bias` in the
+  tracked cells) is not a neutral baseline: the mass concentrates on
+  the runs whose reported ELBO came out highest, so it already
+  contains the selection among runs the yardstick is meant to
+  measure. Against it every estimate sits lower: the two-level
+  shrinkage's added bias is −0.06 to −0.41 on every noisy condition
+  at every `M` and the raw value's −0.01 to +0.32. The conclusion
+  that the two-level shrinkage adds nothing is specific to the
+  unweighted baseline.
 
 ## Re-optimizing on the shrunken estimates
 
 The shrinkage above changes the reported value at the weights the raw
 optimization chose. `svbmc_shrink_optimize.py` runs the optimization
 on the shrunken values instead: for every cell at `M` = 3, 4 and 5
-(480 cells, 26 minutes; tracked under
+(480 cells, 23 minutes; tracked under
 [`experiments/svbmc_pool/shrink_opt_20260915/`](../experiments/svbmc_pool/shrink_opt_20260915/summary.md))
 it rebuilds the stack, replaces the class's corrected expected log
-joints by the two-level full shrinkage, optimizes the weights with the
+joints by the two-level full shrinkage, shifts the optimizer's warm
+start (the runs' own reported ELBOs) by the change of each run's
+level under the shrinkage, optimizes the weights with the
 comparison's settings, and scores the new stack as a cell is scored,
-against its own `elbo_mc`. Medians over cells: the bias of the
-shrunken value at the new weights (the headline this variant would
-report), of the value-only shrinkage at the raw weights and of the raw
-optimization; the added bias of the new headline; the ratio of the
-new stack's gsKL to the raw optimization's, with the fraction of
-cells it improves; the change in the KL gap; and the mass moved
-between components (half the L1 distance between the two weight
-vectors).
+against its own `elbo_mc`. (A first run that kept the unshrunk warm
+start gave the same medians within 0.02 nats; the warm start does not
+matter.) Medians over cells: the bias of the shrunken value at the
+new weights (the headline this variant would report), of the
+value-only shrinkage at the raw weights and of the raw optimization;
+the added bias of the new headline; the ratio of the new stack's
+gsKL to the raw optimization's, with the fraction of cells it
+improves; the change in the KL gap; and the mass moved between
+components (half the L1 distance between the two weight vectors).
 
 | condition | bias, `M` = 3 / 4 / 5: re-optimized | value-only | raw | added, re-optimized | gsKL ratio (cells improved) | KL gap change | mass moved |
 |---|---|---|---|---|---|---|---|
-| multisensory noise 3 | +0.69 / +0.89 / +0.82 | +0.58 / +0.72 / +0.67 | +0.84 / +1.07 / +1.04 | +0.01 / +0.10 / +0.10 | 0.78 (0.85 to 1.00) | −0.04 | 0.33 |
-| multisensory noise 1.3 | +0.31 / +0.30 / +0.43 | +0.25 / +0.26 / +0.35 | +0.44 / +0.47 / +0.55 | −0.04 / −0.03 / +0.02 | 0.86 (0.90 to 0.95) | −0.02 | 0.24 |
-| Rosenbrock noise 3 | +0.32 / +0.36 / +0.59 | +0.12 / +0.07 / +0.18 | +0.29 / +0.35 / +0.53 | +0.17 / +0.22 / +0.29 | 5.3 (0.15 to 0.25) | +0.09 | 0.48 |
-| GMM noise 3 | +0.35 / +0.37 / +0.36 | −0.05 / −0.01 / −0.00 | +0.34 / +0.30 / +0.40 | +0.15 / +0.18 / +0.09 | 0.83 (0.55 to 0.80) | +0.07 | 0.42 |
-| ring noise 3 | +0.11 / +0.10 / +0.19 | +0.10 / +0.06 / +0.13 | +0.37 / +0.40 / +0.42 | −0.08 / −0.15 / −0.11 | 0.70 (0.75 to 0.80) | −0.10 | 0.28 |
-| Student D8 noise 3 | −0.23 / −0.35 / −0.17 | −0.32 / −0.39 / −0.24 | −0.09 / −0.10 / +0.04 | −0.03 / −0.07 / +0.03 | 1.04 (0.15 to 0.25) | +0.03 | 0.10 |
-| noiseless controls | within 0.09 | within 0.08 | within 0.07 | within 0.05 | 0.99 to 1.00 | ≤ 0.004 | ≤ 0.02 |
+| multisensory noise 3 | +0.71 / +0.83 / +0.90 | +0.58 / +0.72 / +0.67 | +0.84 / +1.07 / +1.04 | +0.01 / +0.08 / +0.13 | 0.80 (0.85 to 0.90) | −0.04 | 0.36 |
+| multisensory noise 1.3 | +0.31 / +0.31 / +0.40 | +0.25 / +0.26 / +0.35 | +0.44 / +0.47 / +0.55 | −0.04 / −0.00 / +0.01 | 0.83 (0.85 to 0.95) | −0.02 | 0.25 |
+| Rosenbrock noise 3 | +0.31 / +0.36 / +0.57 | +0.12 / +0.07 / +0.18 | +0.29 / +0.35 / +0.53 | +0.17 / +0.23 / +0.29 | 5.8 (0.10 to 0.25) | +0.09 | 0.50 |
+| GMM noise 3 | +0.32 / +0.36 / +0.31 | −0.05 / −0.01 / −0.00 | +0.34 / +0.30 / +0.40 | +0.09 / +0.15 / +0.07 | 0.84 (0.55 to 0.80) | +0.06 | 0.41 |
+| ring noise 3 | +0.11 / +0.09 / +0.20 | +0.10 / +0.06 / +0.13 | +0.37 / +0.40 / +0.42 | −0.09 / −0.13 / −0.10 | 0.71 (0.75 to 0.85) | −0.09 | 0.28 |
+| Student D8 noise 3 | −0.25 / −0.36 / −0.13 | −0.32 / −0.39 / −0.24 | −0.09 / −0.10 / +0.04 | −0.02 / −0.06 / −0.00 | 1.07 (0.20 to 0.45) | +0.03 | 0.12 |
+| noiseless controls (medians) | within 0.09 | within 0.08 | within 0.07 | within 0.05 | 0.99 to 1.00 | ≤ 0.01 | ≤ 0.02 |
 
 Re-optimizing recovers part of the optimism the value-only shrinkage
 removed. On the two multisensory conditions, Rosenbrock and noisy GMM
-the re-optimized headline is 0.06 to 0.4 nats more optimistic than
-the value-only one (the median difference over the noisy cells is
-+0.08 to +0.13 at the three `M`, and the value-only value is closer
-to the truth on 85 to 95 % of those conditions' cells), and its added
-bias is +0.09 to +0.29 on Rosenbrock and GMM. The optimizer selects on
-the shrunken values as it selected on the raw ones, and the
-shrinkage's own errors become the noise to win on: the raw value at
-the re-optimized weights is 0.1 to 0.3 nats less optimistic than at
-the raw weights, since the new weights select less on the raw noise,
-but the shrunken value at those weights sits 0.1 to 0.25 nats above
+the re-optimized headline is 0.05 to 0.40 nats more optimistic than
+the value-only one (differences of the per-condition medians; the
+median difference over all noisy cells is +0.08 to +0.12 at the three
+`M`, and the value-only value is closer to the truth on 82 to 95 % of
+those four conditions' cells), and its added bias is +0.07 to +0.29
+on Rosenbrock and GMM. The optimizer selects on the shrunken values
+as it selected on the raw ones, and the shrinkage's own errors become
+the noise to win on: the raw value at the re-optimized weights is
+0.06 to 0.28 nats less optimistic than at the raw weights on those
+four conditions, since the new weights select less on the raw noise,
+but the shrunken value at those weights sits 0.07 to 0.20 nats above
 the raw value there on Rosenbrock and GMM, because the optimizer
 found the below-average components the shrinkage had raised toward
 their run's mean. On the ring and Student the two headlines agree
-within 0.1.
+within 0.11.
 
-The posterior moves with the weights (a tenth to a half of the mass,
-no single weight by more than 0.08), and where it lands depends on
-the target: better on the multisensory conditions and the ring (gsKL
-down by a fifth to a third and MMTV by a tenth to a fifth on 75 to
-100 % of the cells, the KL gap smaller by 0.02 to 0.10 nats),
-unchanged on Student, worse on Rosenbrock (gsKL five times and MMTV
-twice the raw optimization's, the KL gap larger by 0.09) and on noisy
-GMM's KL gap (+0.07 despite a smaller gsKL). The shrinkage therefore
-stays a correction of the reported value at the raw weights, as the
-cap is applied today; the posterior gains on the real-data target are
-noted for later work on the stacking objective, with the losses
-elsewhere.
+The posterior moves with the weights (a tenth to a half of the mass
+in the median; the largest single weight change is 0.03 in the
+median but exceeds 0.08 on a tenth of the cells, on Rosenbrock on
+45 % of them and up to 0.98), and where it lands depends on the
+target: better on the multisensory conditions and the ring (gsKL
+down by a sixth to a third and MMTV by a tenth to a fifth, on 75 to
+100 % of the cells; the KL gap smaller by 0.02 to 0.09 nats), a
+little worse on Student (gsKL and MMTV up by 5 to 7 %, the KL gap
+larger by 0.03), worse on Rosenbrock (gsKL six times and MMTV twice
+the raw optimization's, the KL gap larger by 0.09) and on noisy GMM's
+KL gap (+0.06 despite a smaller gsKL). The shrinkage therefore stays
+a correction of the reported value at the raw weights, as the cap is
+applied today; the posterior gains on the real-data target are noted
+for later work on the stacking objective, with the losses elsewhere.
 
 ## Limitations
 

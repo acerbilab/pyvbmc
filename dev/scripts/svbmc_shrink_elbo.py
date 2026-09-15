@@ -39,8 +39,9 @@ variants:
   ``two_level_full`` with, added back to every component of a run, what
   the within-run shrinkage removes at the run's own weights
   (``Σ_k o_k (I_k − Ĩ_k)`` over the run's components, ``o`` its
-  posterior weights), so that a stack of one run reports the run's own
-  value and only the selection the stacking adds is removed;
+  posterior weights), so that at a run's own weights the add-back
+  cancels the shrinkage exactly and only the selection the stacking
+  adds (its departure from those weights, and among runs) is removed;
 - ``anchored_mean`` and ``two_level_anchored_mean``: as the two above
   but adding back the *mean over the stack's runs* of what the
   shrinkage removes at each run's own weights, the same for every
@@ -291,9 +292,9 @@ def score_cell(cell, pool):
             factors["within_full"][sl] * level_factors[m]
         )
         # Anchored: add back, per run, what the within-run shrinkage
-        # removes at the run's own weights, so that a stack of one run
-        # reports the run's own value and only the selection the
-        # stacking adds is removed.
+        # removes at the run's own weights, so that at those weights the
+        # add-back cancels the shrinkage exactly and only the selection
+        # the stacking adds is removed.
         removed = float(np.dot(own[m], I - shrunk["within_full"][sl]))
         shrunk["anchored"][sl] = shrunk["within_full"][sl] + removed
         factors["anchored"][sl] = factors["within_full"][sl]

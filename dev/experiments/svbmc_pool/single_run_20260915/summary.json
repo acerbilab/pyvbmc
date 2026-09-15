@@ -437,6 +437,7 @@
   "settings": {
     "n_draws": 100000,
     "n_samples_final": 100,
-    "limit": null
+    "limit": null,
+    "reuse": true
   }
 }

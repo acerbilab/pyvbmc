@@ -399,10 +399,14 @@ def main(argv=None):
             parts.append(f"M={M}: {min(v):+.2f}..{max(v):+.2f}")
         print(f"  added bias of {name}, noisy conditions: " + "; ".join(parts))
     for M in GRID:
-        rows = [r for c in noisy_added for r in c["by_M"] if r["M"] == M]
-        pos = [r["raw_added_positive"] for r in rows]
-        best = [r["inputs_best_bias"] - r["bias"]["raw"] for r in rows]
-        fr = [1 - r["added"]["run_level"] / r["added"]["raw"] for r in rows]
+        by_M = [r for c in noisy_added for r in c["by_M"] if r["M"] == M]
+        pos = [r["raw_added_positive"] for r in by_M]
+        best = [r["inputs_best_bias"] - r["bias"]["raw"] for r in by_M]
+        fr = [
+            1 - r["added"]["run_level"] / r["added"]["raw"]
+            for r in by_M
+            if abs(r["added"]["raw"]) > 1e-9
+        ]
         print(
             f"  M={M}: raw added > 0 in {min(pos):.2f}..{max(pos):.2f} of "
             f"cells; best input minus stack raw {min(best):+.2f}..{max(best):+.2f}; "

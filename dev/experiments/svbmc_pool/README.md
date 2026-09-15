@@ -197,10 +197,11 @@ levels; each cell's record also carries every run's level, its
 estimation variance and its shift), and `sources.json`. The noise in
 a spread of correlated estimates is `(tr Σ − 1ᵀ Σ 1 / K) / (K − 1)`,
 which the script uses for `tau2` and the shares. The directory (and
-`shrink_M35_20260915/`) is the rerun of 2026-09-15 that added the
+`shrink_M35_20260915/`) holds the rerun of 2026-09-15 that added the
 anchored forms; the values of the earlier variants are unchanged, and
 its `sources.json` hashes the script as run, before the formatting hook
-reflowed it without changing its logic.
+reflowed it without changing its logic (the tracked cells reproduce
+from the current script to 1e-13).
 
 ## The integrated arm at `M = 3` and `5` (2026-09-15)
 
@@ -227,9 +228,11 @@ analyses release described below.
 --cells <stage D results.json> --cells <M = 3 and 5 results.json>
 --shrink shrink_20260915/cells.jsonl --shrink
 shrink_M35_20260915/cells.jsonl` (700 runs in 10.2 minutes, from
-`dev-next` `0ca7dcd` with the script uncommitted; its `sources.json`
-hashes the script as run, before the formatting hook reflowed it
-without changing its logic): `runs.jsonl`, one
+`dev-next` `0ca7dcd` with the script uncommitted; the join was then
+regenerated with `--reuse` after the shrinkage rerun that added the
+anchored forms and again after the doublecheck of 2026-09-15, and
+`sources.json` describes that last pass, hashing the script, the runs
+file and every input file): `runs.jsonl`, one
 record per filtered run of the pool scored as a stack of one
 (`condition`, `name`, `seed`, `K`, `noisy`; `elbo_vbmc`, the ELBO the
 run reports; `elbo_raw`, the class's raw value for the run alone at
@@ -249,13 +252,14 @@ the comparison and every shrinkage variant's from the shrinkage cells;
 `added`: each minus the inputs' mean bias); `added.json` / `added.md`
 (per condition and `M`, medians over cells of the inputs' biases, of
 every estimate's bias and added bias, bootstrap intervals on the
-added bias of `raw`, `run_level` and `two_level_full`, and the
-fraction of cells whose raw added bias is positive); and
+added bias of `raw`, `run_level`, `two_level_full`,
+`two_level_anchored` and `two_level_anchored_mean`, and the fraction
+of cells whose raw added bias is positive); and
 `sources.json`. The raw directory,
 `dev/scripts/runs/svbmc_pool_20260914_single_run/`, holds the same
-files and the controller's log. `cells.jsonl` and `added.*` were
-regenerated with `--reuse` after the shrinkage rerun that added the
-anchored forms; the runs' own scores are unchanged.
+files and the controller's log. The runs' own scores are those of the
+first pass; `cells.jsonl`, `added.*`, `summary.*` and `sources.json`
+are the last pass's.
 
 ## Re-optimizing on the shrunken estimates (2026-09-15)
 
@@ -264,10 +268,15 @@ anchored forms; the runs' own scores are unchanged.
 1.2.1> --cells <stage D results.json> --cells <M = 3 and 5
 results.json> --shrink shrink_20260915/cells.jsonl --shrink
 shrink_M35_20260915/cells.jsonl --single-runs
-single_run_20260915/runs.jsonl --M 3,4,5` (480 cells in 26 minutes,
-from `dev-next` `9918c93` with the script uncommitted): `cells.jsonl`,
-one record per cell (`w`, the weights optimized on the two-level full
-shrinkage of the corrected expected log joints; `G_shrunk` and
+single_run_20260915/runs.jsonl --M 3,4,5` (480 cells in 23 minutes,
+from `dev-next` `48f46f0` with the doublecheck's fixes to the script
+uncommitted; a first run of 26 minutes that warm-started the
+optimizer from the runs' unshrunk reported ELBOs gave the same
+medians within 0.02 and is superseded): `cells.jsonl`, one record per
+cell (`w`, the weights optimized on the two-level full shrinkage of
+the corrected expected log joints, from a warm start shifted by
+`level_shift`, the change of each run's own level under the
+shrinkage; `G_shrunk` and
 `G_raw_at_opt`, the shrunken and the raw expected log joint at those
 weights; `H`; `elbo_mc` with its standard error, computed as the
 comparison computes a cell's reference; `kl_gap` and
@@ -322,6 +331,9 @@ and the shrinkage and cap sections of the
 quote: the per-condition tables, the worst and mean cases over the
 noisy conditions per `M`, the noise-share percentiles, the hybrid
 threshold sweep, the caps' bind fractions, the paired bootstrap
-intervals, and from `single_run_20260915/` the single-run biases and
-the added-bias ranges. Check a sentence of those documents against
-its output rather than against the raw directories.
+intervals, from `single_run_20260915/` the single-run biases and the
+added-bias ranges, and from `shrink_opt_20260915/` the
+re-optimization's rows. Check a sentence of those documents against
+its output rather than against the raw directories. The tutorial's
+worked example is printed by `dev/scripts/svbmc_shrink_worked_example.py`
+from the pool and the stage D `results.json`.

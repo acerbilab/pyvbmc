@@ -1,23 +1,38 @@
 {
-  "generated": "2026-09-15 17:34:28",
+  "generated": "2026-09-15 21:31:26",
   "script": {
     "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\svbmc_shrink_optimize.py",
-    "sha256": "cfdd7129ffe5654e5e1f3827d1bfef5fb3e084309e7d34040b95c0d0ce2f538e"
+    "sha256": "712f4c12ec7914300e0647720abf99aac93cf7b082e168bb2a83fc86422415af"
   },
   "pool": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260914",
   "cells": [
-    "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260914_stack\\results.json",
-    "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260914_stack_M35\\results.json"
+    {
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260914_stack\\results.json",
+      "sha256": "63d372f47ee968be3d8bf5d1c2abf9ba1465a9ab69e6b326488fda063cbbaaa8"
+    },
+    {
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260914_stack_M35\\results.json",
+      "sha256": "7dd63a476a5b67e02c70c1f66b3801786c707da49e9803775945a97ab843f259"
+    }
   ],
   "shrink": [
-    "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\experiments\\svbmc_pool\\shrink_20260915\\cells.jsonl",
-    "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\experiments\\svbmc_pool\\shrink_M35_20260915\\cells.jsonl"
+    {
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260914_shrink\\cells.jsonl",
+      "sha256": "eccd87d7dd768d78269deb24a68ad2bc5a2d17af38ff5804d30dbf669914bb56"
+    },
+    {
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260914_shrink_M35\\cells.jsonl",
+      "sha256": "bb0d9183bf972f1cd9159a70cbc8a8de3ca59e7056619c40527c0506e4b2c108"
+    }
   ],
-  "single_runs": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\experiments\\svbmc_pool\\single_run_20260915\\runs.jsonl",
+  "single_runs": {
+    "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260914_single_run\\runs.jsonl",
+    "sha256": "39e58f862ebc57ed8c5511f3e5c811062634425edd883678c9197f7cd964ded5"
+  },
   "environment": {
     "source": {
       "python": "3.12.6",
-      "pyvbmc_commit": "9918c93bd4f7a111b9c458abbadedb7d68eb9224",
+      "pyvbmc_commit": "48f46f0c7c57edef14ec4f3362e234a343532566",
       "gpyreg_commit": "9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b",
       "numpy": "2.5.2",
       "scipy": "1.18.1",

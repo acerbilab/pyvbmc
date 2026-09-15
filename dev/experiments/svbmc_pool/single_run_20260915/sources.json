@@ -1,22 +1,39 @@
 {
-  "generated": "2026-09-15 15:12:49",
+  "generated": "2026-09-15 21:03:49",
   "script": {
     "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\svbmc_single_run_bias.py",
-    "sha256": "73cacb7129bf177a07a36881a352a02da94e01d4daf29c6e8e287bd4d61c2b37"
+    "sha256": "f247155f5ce2357b1cf9fa87d466f6cdd729708f5ef14800f86eabce7484bddc"
   },
   "pool": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260914",
+  "reuse": true,
+  "runs": {
+    "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260914_single_run\\runs.jsonl",
+    "sha256": "39e58f862ebc57ed8c5511f3e5c811062634425edd883678c9197f7cd964ded5"
+  },
   "cells": [
-    "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260914_stack\\results.json",
-    "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260914_stack_M35\\results.json"
+    {
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260914_stack\\results.json",
+      "sha256": "63d372f47ee968be3d8bf5d1c2abf9ba1465a9ab69e6b326488fda063cbbaaa8"
+    },
+    {
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260914_stack_M35\\results.json",
+      "sha256": "7dd63a476a5b67e02c70c1f66b3801786c707da49e9803775945a97ab843f259"
+    }
   ],
   "shrink": [
-    "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\experiments\\svbmc_pool\\shrink_20260915\\cells.jsonl",
-    "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\experiments\\svbmc_pool\\shrink_M35_20260915\\cells.jsonl"
+    {
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260914_shrink\\cells.jsonl",
+      "sha256": "eccd87d7dd768d78269deb24a68ad2bc5a2d17af38ff5804d30dbf669914bb56"
+    },
+    {
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260914_shrink_M35\\cells.jsonl",
+      "sha256": "bb0d9183bf972f1cd9159a70cbc8a8de3ca59e7056619c40527c0506e4b2c108"
+    }
   ],
   "environment": {
     "source": {
       "python": "3.12.6",
-      "pyvbmc_commit": "0ca7dcdcff10ef18a6a0d2b4b4ac5e9336f0fbda",
+      "pyvbmc_commit": "48f46f0c7c57edef14ec4f3362e234a343532566",
       "gpyreg_commit": "9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b",
       "numpy": "2.5.2",
       "scipy": "1.18.1",

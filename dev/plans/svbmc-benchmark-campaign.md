@@ -631,8 +631,7 @@ recomputation gate of the artifact contract is feasible.
 
 **Verification**:
 
-- [x] Step 1 passes with Torch from the overlay (2026-09-13; this
-      block and the next three are ticked from the worklog).
+- [x] Step 1 passes with Torch from the overlay (2026-09-13).
 - [x] Step 2 table reported for four groups and five seeds; unbounded
       groups agree within the within-arm spread.
 - [x] `baseline_environment.json` written with the fields above; commit
@@ -1180,9 +1179,9 @@ draft had left open:
     ulp). Rejected: staying on 1.2.0 for the pool while the package
     moves on, which would only invite a forgotten mismatch.
 11. **The headline's yardstick is the bias of the inputs (2026-09-15,
-    after stage D)**: S-VBMC's job is not to remove the optimism
-    VBMC's own optimization builds into each run's ELBO but not to add
-    to it, so a stacked estimate is judged by its bias relative to the
+    after stage D)**: S-VBMC is not asked to remove the optimism
+    VBMC's own optimization builds into each run's ELBO, only not to
+    add to it, so a stacked estimate is judged by its bias relative to the
     mean bias of the runs it was built from, each run scored against
     its own `elbo_mc` as a stack of one (`svbmc_single_run_bias.py`),
     and a correction by the part of the stack's bias it removes beyond
@@ -1775,8 +1774,9 @@ draft had left open:
   0.02. Added bias (the stack's bias minus its inputs' mean, medians
   over cells): raw +0.02 to +0.15 at `M = 2`, +0.13 to +0.36 at
   `M = 5`, +0.27 to +0.60 at `M = 16`, tracking the highest-reported
-  input within 0.25; the cap −0.04 to −0.33 on the typical conditions
-  and −0.76 to −1.54 on Student; `run_level` alone removes 15 to 51 %
+  input within 0.25; the cap +0.00 to −0.38 on the typical conditions
+  (at the inputs' level on Rosenbrock) and −0.76 to −1.54 on Student;
+  `run_level` alone removes 15 to 51 %
   of the addition at `M = 5`; `two_level_full` within −0.23 and
   +0.15 everywhere. The report's section "The inputs' own bias" and
   the headline note carry the reading; the anchored variant (add
@@ -1792,9 +1792,10 @@ draft had left open:
   join regenerated. Added bias over the noisy conditions: `anchored`
   +0.06 to +0.32 at `M = 5` against raw's +0.13 to +0.36, so the
   stacking's addition is not a reweighting within runs;
-  `two_level_anchored` +0.02 to +0.18 at `M` = 3 to 5 and +0.05 to
-  +0.42 at `M = 16`, the mean form within 0.06 of it, removing 16 to
-  99 % of the raw addition. Neither meets the yardstick; the two-level
+  `two_level_anchored` +0.01 to +0.18 at `M` = 3 to 5 and +0.05 to
+  +0.42 at `M = 16`, the mean form within 0.06 of it, the two
+  together removing 16 to 114 % of the raw addition at `M ≥ 3`.
+  Neither meets the yardstick; the two-level
   shrinkage without the add-back (−0.23 to +0.15) stays the
   candidate. Reading: the run-level term's error variance, `wᵀ Σ w`
   at fixed weights, leaves out the run-to-run scatter of the runs'
@@ -1804,20 +1805,47 @@ draft had left open:
   (`svbmc_shrink_optimize.py`: the class's corrected expected log
   joints replaced by the two-level full shrinkage before `optimize`,
   the comparison's settings, the new stack scored against its own
-  `elbo_mc`; `M` = 3, 4 and 5 on every condition, 480 cells in 26
+  `elbo_mc`; `M` = 3, 4 and 5 on every condition, 480 cells in 23
   minutes, tracked under
-  `dev/experiments/svbmc_pool/shrink_opt_20260915/`). The
-  re-optimized headline is 0.06 to 0.4 nats more optimistic than the
-  value-only shrinkage on the two multisensory conditions, Rosenbrock
-  and noisy GMM (added bias +0.09 to +0.29 on the last two) and within
-  0.1 of it on the ring and Student: the optimizer selects on the
-  shrinkage's own errors. The posterior improves on the multisensory
-  conditions and the ring (gsKL ratios 0.70 to 0.86, the KL gap
-  smaller by 0.02 to 0.10), is unchanged on Student and worsens on
-  Rosenbrock (gsKL ratio 5.3, KL gap +0.09) and on GMM's KL gap
-  (+0.07); a tenth to a half of the mass moves, no weight by more
-  than 0.08. Rejected: the shrinkage stays a correction of the
-  reported value at the raw weights.
+  `dev/experiments/svbmc_pool/shrink_opt_20260915/`; the tracked run
+  shifts the optimizer's warm start by the change of each run's level
+  under the shrinkage, a first run with the unshrunk warm start gave
+  the same medians within 0.02). The re-optimized headline is 0.05 to
+  0.40 nats more optimistic than the value-only shrinkage on the two
+  multisensory conditions, Rosenbrock and noisy GMM (added bias +0.07
+  to +0.29 on the last two) and within 0.11 of it on the ring and
+  Student: the optimizer selects on the shrinkage's own errors. The
+  posterior improves on the multisensory conditions and the ring
+  (gsKL ratios 0.71 to 0.83, the KL gap smaller by 0.02 to 0.09), is
+  a little worse on Student (ratios 1.05 to 1.07, KL gap +0.03) and
+  worse on Rosenbrock (gsKL ratio 5.8, KL gap +0.09) and on GMM's KL
+  gap (+0.06); a tenth to a half of the mass moves in the median, the
+  largest single weight change exceeds 0.08 on a tenth of the cells
+  (45 % on Rosenbrock, up to 0.98). Rejected: the shrinkage stays a
+  correction of the reported value at the raw weights.
+- 2026-09-15: doublecheck of the single-run baseline, the anchored
+  variants, the re-optimization and the day's documents by three
+  independent reviewers (code, numbers, prose). Code: the `added.md`
+  delimiter row had one cell too many (no table rendered); the
+  single-run `--reuse` pass left `sources.json` and the summaries
+  describing an earlier pass and shared its bootstrap stream with the
+  full pass; the re-optimization warm-started from the unshrunk run
+  ELBOs and lacked the rebuilt-stack value check; the anchored forms
+  were described as reporting a run's own value at `M = 1`, which
+  holds at the run's own weights only. All fixed, the join and the
+  re-optimization rerun, the worked example of the tutorial made a
+  tracked script. Write-ups: every table reproduced from the tracked
+  evidence; the prose ranges were narrower than the tables in a dozen
+  places, always dropping the edge condition (Rosenbrock for the cap,
+  which lands at the inputs' level there; the ring for the anchored
+  forms and for one paired bootstrap; Student for the raw value; the
+  original arm's 0.9 quoted as the port's), one "untested" sentence
+  survived the test it referred to, the note said the `M` = 3 and 5
+  subsets ran both arms, and the hybrid's resolvable gains and losses
+  were incomplete; all corrected from recomputation. Recorded as a
+  choice with its sensitivity: the added-bias baseline is the plain
+  mean over the inputs; against the mass-weighted mean every
+  estimate sits lower.
 
 ## Execution tracking
 

@@ -114,8 +114,9 @@ and is assessed in the
 [stage D report](../results/2026-09-15-svbmc-pool-comparison.md):
 posterior quality, agreement, runtime and reproducibility hold on every
 condition, and the evidence-accuracy gate failed on the heavy-tailed
-condition because of the capped headline, whose replacement the
-[headline note](../2026-09-15-svbmc-headline-shrinkage.md) records; an
+condition because of the capped headline, for which the
+[headline note](../2026-09-15-svbmc-headline-shrinkage.md) records
+the candidate replacement; an
 `M = 32` extension is pending.
 
 ## Layout
