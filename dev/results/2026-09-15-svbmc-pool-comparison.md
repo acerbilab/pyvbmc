@@ -49,9 +49,16 @@ to 5, makes the headline 0.05 to 0.40 nats more optimistic than
 shrinking the value alone on four of the six noisy conditions and
 moves the posterior for better or worse depending on the target, so
 the shrinkage stays a correction of the reported value (section
-"Re-optimizing on the shrunken estimates"). The
-`M = 32` cells of the integrated arm are reported in a section added
-when that run completes.
+"Re-optimizing on the shrunken estimates"). At `M = 32`, run for the
+integrated arm alone, the picture holds: posterior quality still
+improves, the raw stacked ELBO overshoots by 0.7 to 1.45 nats on the
+typical noisy conditions and adds 0.36 to 0.79 to its inputs' bias,
+the cap stays within 0.45 there and lands 1.85 below the reference on
+Student D8, the two-level shrinkage stays within 0.86 everywhere and
+adds −0.15 to +0.19; and a stack of 32 runs of the noiseless
+multisensory control is optimistic by 0.14 nats, 0.11 above its
+inputs, which no estimate scored here removes (section "The
+integrated arm at `M = 32`").
 
 Tracked outputs:
 [`experiments/svbmc_pool/stack_20260914/`](../experiments/svbmc_pool/stack_20260914/)
@@ -64,7 +71,8 @@ later sections name the directories they read. The comparison's
 and of `--summarize-only`, is in the analyses asset of the draft release
 `svbmc-analyses-20260915` together with the Phase 2 and weight-aware-cap
 per-cell outputs (the experiments README, "Raw outputs of the
-analyses").
+analyses"); the release's second and third assets hold the per-cell
+files of the `M = 3` and `5` run and of the `M = 32` run.
 
 ## What was compared, and how
 
@@ -318,7 +326,9 @@ the cap binds on in brackets:
 | ring noise 3 | +0.76 | +0.76 [0.20] | +0.70 [0.70] | +0.54 [0.90] | +0.39 [1.00] | +0.14 [1.00] |
 | Student D8 noise 3 | +0.27 | +0.17 [0.70] | −0.32 [1.00] | −0.73 [1.00] | −1.16 [1.00] | −1.78 [1.00] |
 
-For `κ ≤ 0.7` the cap binds on at most 35 % of the cells and moves the
+Over the cells through `M = 16` (the `M = 32` cells are read in their
+own section), for `κ ≤ 0.7` the cap binds on at most 35 % of the
+cells and moves the
 median headline from the raw value by at most 0.08 nats; at `κ = 0.8`
 it binds on up to 70 % (Student at `M = 16`) and moves it by up to
 0.16; `κ` from 0.9 to 0.99 binds on most cells but leaves 0.1 to 1.0
@@ -400,7 +410,7 @@ noise in the spread over the spread:
 | GMM noise 3 | +0.73 | +0.05 | +0.53 [0.65] | +0.27 [0.14] | +0.46 [0.74] | 0.32 |
 | ring noise 3 | +0.76 | +0.14 | +0.44 [0.20] | +0.32 [0.03] | +0.34 [0.29] | 1.04 |
 | Student D8 noise 3 | +0.27 | −1.78 | +0.22 [0.94] | −0.00 [0.37] | +0.20 [0.96] | 0.04 |
-| noiseless controls, over every `M` | within 0.07 | within 0.05 | within 0.09 [0.95 to 1.00] | within 0.09 [0.87 to 1.00] | within 0.08 [0.96 to 1.00] | 0.005 to 0.11 |
+| noiseless controls, over every `M` through 16 | within 0.07 | within 0.05 | within 0.09 [0.95 to 1.00] | within 0.09 [0.87 to 1.00] | within 0.08 [0.96 to 1.00] | 0.005 to 0.11 |
 
 Shrinkage is safe where the caps were not: it moves the noiseless
 controls by at most 0.03 nats (nothing to shrink on the noiseless GMM;
@@ -523,11 +533,12 @@ Rosenbrock's cells span 0.02 to 1.3, the noiseless multisensory
 control's reach 0.24, Student's 0.10, multisensory noise 1.3's start at
 0.12. The `hybrid` rule of `svbmc_shrink_elbo.py` applies the cap when
 the share is at least 0.2 and the within-run shrinkage otherwise; over
-every `M` it chooses the cap on all cells of multisensory noise 3 and
-the ring, on 88 % of noisy GMM's, 71 % of Rosenbrock's and 61 % of
-multisensory noise 1.3's, on none of Student's or the noiseless GMM's
-and on 3 of the 110 cells of the noiseless multisensory control. Worst
-and mean median bias over the six noisy conditions:
+every `M` through 16 it chooses the cap on all cells of multisensory
+noise 3 and the ring, on 88 % of noisy GMM's, 71 % of Rosenbrock's
+and 61 % of multisensory noise 1.3's, on none of Student's or the
+noiseless GMM's and on 3 of the 110 cells of the noiseless
+multisensory control. Worst and mean median bias over the six noisy
+conditions:
 
 | rule | worst, M = 2 / 3 / 4 / 5 / 8 / 16 | mean |
 |---|---|---|
@@ -556,8 +567,10 @@ by 0.6 or more on Student.
 
 **What the numbers support.** For a headline that must not fail
 silently, the two-level shrinkage: worst case below the cap's at every
-`M`, mean at or below it, within 0.4 nats on the heavy-tailed target and
-0.09 on the noiseless ones, one formula with no constant. The cap is
+`M` through 16, mean at or below it, within 0.4 nats on the
+heavy-tailed target and 0.09 on the noiseless ones (0.18 on one of
+them at `M = 32`, see the section "The integrated arm at `M = 32`"),
+one formula with no constant. The cap is
 the better estimate on the two multisensory conditions by 0.09 to 0.32
 nats, which the noise share tells apart in the median on this data; the
 [headline note](../2026-09-15-svbmc-headline-shrinkage.md) records the
@@ -629,7 +642,7 @@ and the fraction of cells whose raw added bias is positive.
 | GMM noise 3 | +0.08 / +0.14 / +0.19 / +0.50 | −0.16 / −0.24 / −0.16 / −0.14 | +0.06 / +0.09 / +0.16 / +0.34 | −0.16 / −0.23 / −0.15 / −0.08 | +0.03 / +0.02 / +0.07 / +0.16 |
 | ring noise 3 | +0.03 / +0.10 / +0.13 / +0.43 | −0.08 / −0.11 / −0.07 / −0.16 | +0.06 / +0.06 / +0.10 / +0.30 | −0.17 / −0.14 / −0.13 / −0.11 | −0.00 / +0.00 / +0.00 / +0.02 |
 | Student D8 noise 3 | +0.02 / +0.20 / +0.24 / +0.54 | −0.76 / −0.86 / −1.00 / −1.54 | +0.02 / +0.17 / +0.19 / +0.46 | −0.22 / −0.03 / −0.07 / +0.15 | +0.02 / +0.17 / +0.15 / +0.41 |
-| noiseless controls, every `M` | within 0.04 | within 0.09 | within 0.04 | within 0.05 | within 0.05 |
+| noiseless controls, every `M` through 16 | within 0.04 | within 0.09 | within 0.04 | within 0.05 | within 0.05 |
 
 What the yardstick shows:
 
@@ -766,6 +779,142 @@ a correction of the reported value at the raw weights, as the cap is
 applied today; the posterior gains on the real-data target are noted
 for later work on the stacking objective, with the losses elsewhere.
 
+## The integrated arm at `M = 32`
+
+The integrated arm was run alone at `M = 32`, 10 repetitions on every
+condition (80 cells; `svbmc_pool_stack.py --M 32 --repetitions 10
+--arms integrated`, the other settings stage D's, from `dev-next`
+`1888688` with a clean tree, 237 minutes overnight on 2026-09-15/16;
+tracked under
+[`experiments/svbmc_pool/stack_M32_20260915/`](../experiments/svbmc_pool/stack_M32_20260915/),
+its scorings under `shrink_M32_20260916/` and `cap_kappa_M32_20260916/`,
+the join of the section "The inputs' own bias" regenerated with its
+cells, and
+[`stack_merged_20260915/`](../experiments/svbmc_pool/stack_merged_20260915/)
+regenerated over every `M` from 2 to 32). The original arm did not
+run at this size, so the cells carry no paired quantity and no
+equivalence test, and criterion 3's first clause has nothing to gate
+against; the numbers below are the integrated arm's own. The fit took
+2.4 to 3.9 times its `M = 16` time (138 to 187 s in the median on the
+noisy conditions, 49 s on the noiseless GMM, 156 s on the noiseless
+multisensory control), under the `M²` extrapolation that had put the
+run at 8 hours, and the reference 21 to 40 s per cell.
+
+**Posterior quality keeps improving.** Medians over the ten cells at
+`M = 16` and `32`:
+
+| condition | MMTV, `M = 16` → `32` | gsKL | KL gap |
+|---|---|---|---|
+| multisensory noise 3 | 0.122 → 0.141 | 0.48 → 0.49 | 0.43 → 0.38 |
+| multisensory noise 1.3 | 0.120 → 0.098 | 0.35 → 0.23 | 0.25 → 0.19 |
+| Rosenbrock noise 3 | 0.076 → 0.064 | 0.01 → 0.02 | 0.05 → 0.05 |
+| GMM noise 3 | 0.109 → 0.109 | 0.02 → 0.02 | 0.13 → 0.16 |
+| ring noise 3 | 0.134 → 0.096 | 0.03 → 0.01 | 0.15 → 0.10 |
+| Student D8 noise 3 | 0.079 → 0.070 | 0.10 → 0.06 | 0.25 → 0.19 |
+| GMM (noiseless) | 0.024 → 0.021 | 0.00 → 0.00 | 0.01 → 0.02 |
+| multisensory (noiseless) | 0.046 → 0.027 | 0.06 → 0.03 | 0.14 → 0.15 |
+
+MMTV falls on six conditions, is flat on noisy GMM and rises by 0.02
+on multisensory noise 3, inside that cell set's bootstrap interval
+(0.107 to 0.155, against 0.108 to 0.162 at `M = 16`); the KL gap
+shrinks on four conditions and changes by at most 0.03 on the others.
+The stacked posterior is within 0.2 nats of the target on seven
+conditions and 0.38 on multisensory noise 3.
+
+**Evidence.** Median bias against `elbo_mc` at `M = 32`, with the
+weight-averaged shrinkage factor in brackets, the fraction of cells on
+which the hybrid chose the cap, and the noise share within a run, over
+the stack's components and over the runs' levels:
+
+| condition (`M = 32`) | raw | class cap | `within_full` | `run_level` | `two_level_full` | hybrid | noise share within / stack / runs |
+|---|---|---|---|---|---|---|---|
+| multisensory noise 3 | +1.45 | +0.45 | +1.06 [0.09] | +1.25 [0.49] | +0.86 [0.05] | +0.45 [1.00] | 0.39 / 0.38 / 0.51 |
+| multisensory noise 1.3 | +0.71 | +0.19 | +0.51 [0.25] | +0.64 [0.56] | +0.43 [0.14] | +0.19 [0.90] | 0.22 / 0.22 / 0.44 |
+| Rosenbrock noise 3 | +0.91 | +0.06 | +0.46 [0.07] | +0.47 [0.09] | +0.06 [0.01] | +0.06 [1.00] | 0.39 / 0.33 / 0.89 |
+| GMM noise 3 | +0.92 | +0.04 | +0.46 [0.18] | +0.67 [0.40] | +0.21 [0.08] | +0.04 [1.00] | 0.29 / 0.29 / 0.61 |
+| ring noise 3 | +0.84 | +0.13 | +0.29 [0.03] | +0.64 [0.11] | +0.10 [0.00] | +0.13 [1.00] | 0.98 / 0.84 / 0.90 |
+| Student D8 noise 3 | +0.38 | −1.85 | +0.07 [0.36] | +0.26 [0.92] | −0.06 [0.34] | +0.07 [0.00] | 0.05 / 0.05 / 0.08 |
+| GMM (noiseless) | +0.01 | +0.00 | +0.01 [1.00] | +0.01 [0.99] | +0.01 [0.99] | +0.01 [0.00] | 0.01 / 0.01 / 0.01 |
+| multisensory (noiseless) | +0.14 | +0.14 | +0.18 [0.83] | +0.14 [0.45] | +0.18 [0.39] | +0.18 [0.00] | 0.09 / 0.08 / 0.62 |
+
+- **The raw optimism keeps growing.** From `M = 16` to `32` the raw
+  bias rises from +1.31 to +1.45 on multisensory noise 3, +0.61 to
+  +0.71 on multisensory noise 1.3, +0.74 to +0.91 on Rosenbrock, +0.73
+  to +0.92 on noisy GMM, +0.76 to +0.84 on the ring and +0.27 to +0.38
+  on Student D8. Against the inputs it adds +0.36 to +0.79 nats
+  (positive on every cell; +0.27 to +0.60 at `M = 16`), and it still
+  tracks the input with the highest reported ELBO within 0.25 nats.
+- **The cap holds where it held and fails where it failed.** On the
+  five typical noisy conditions the capped headline is +0.04 to +0.45,
+  its growth from `M = 2` to `32` at most +0.11 nats (multisensory
+  noise 1.3), inside the criterion's 0.5-nat bound on every condition,
+  and its added bias −0.05 to −0.25. On Student D8 it lands 1.85 nats
+  below the reference, the deepest of the campaign (added −1.57).
+- **The two-level shrinkage stays acceptable everywhere; the
+  multisensory gap widens.** `two_level_full` is +0.86 / +0.43 / +0.06
+  / +0.21 / +0.10 / −0.06 on the six noisy conditions in the order of
+  the table: worst case 0.86 (multisensory noise 3) against the cap's
+  1.85 and the raw value's 1.45, mean 0.29 against 0.45 and 0.87
+  (`within_full` 1.06 and 0.47). Its added bias is −0.15 to +0.19
+  (−0.23 to +0.15 through `M = 16`), so it still adds nothing within
+  0.2 nats. The cap is closer than the shrinkage on both multisensory
+  conditions, by 0.41 [0.30, 0.53] and 0.24 [0.20, 0.30] (0.32 and
+  0.22 at `M = 16`), on noisy GMM by 0.16 [0.13, 0.21] and on
+  Rosenbrock by 0.11 [0.01, 0.29]; on the ring the two are within
+  0.03, and on Student the shrinkage is closer by 1.77 [1.53, 1.90].
+- **The run-level term does more at this size, and still not most of
+  it.** The run-level shift alone removes 0.07 to 0.44 nats of the raw
+  bias (0.04 to 0.27 at `M = 16`; most on Rosenbrock, least on
+  multisensory noise 1.3), 15 to 55 % of the stacking's addition (16
+  to 44 % at `M = 16`). The selection among 32 runs is larger than
+  among 16 and the term follows it; the within-run term still does
+  most of the two-level estimate's work.
+- **The hybrid keeps its numbers.** Worst case 0.45 (multisensory
+  noise 3), mean 0.15; it chooses the cap on every cell of
+  multisensory noise 3, Rosenbrock, noisy GMM and the ring, on 9 of
+  the 10 cells of multisensory noise 1.3 and on none of Student's or
+  the controls'; the worst case is the same for any threshold from
+  0.05 to 0.20 and rises to 0.51 at 0.25. Its added bias is −0.05 to
+  −0.25 on the typical conditions and +0.30 on Student.
+- **Caps by weight change nothing in the reading.** `κ = 0.8` binds
+  on 10 to 80 % of a noisy condition's cells and moves the median by
+  at most 0.23
+  (Student, +0.38 to +0.15); `κ = 0.9` leaves +0.59 to +1.23 on the
+  typical conditions and lands at −0.20 on Student; `κ = 0.99` +0.35
+  to +0.73 and −1.16. `E_max` binds on at most 20 % of the cells and
+  moves the median by at most 0.01; `E_top` binds on 80 % of the
+  ring's cells and moves its median by 0.30 (+0.84 to +0.54), by at
+  most 0.02 elsewhere.
+- **A noiseless control shows the winner's curse at this size.** On
+  the noiseless multisensory control the raw stacked ELBO is +0.14 at
+  `M = 32` (+0.03 at `M = 2`, +0.05 at `M = 16`): 0.11 nats [0.10,
+  0.13] above the mean bias of its inputs (+0.03), positive on every
+  cell, and 0.07 above the input with the highest reported ELBO
+  (+0.07). No cap applies on a noiseless stack, so this is the
+  headline; and the shrinkage moves it further from the reference, to
+  +0.18 (the within-run full form raises the value by 0.04 at these
+  weights; the run-level term leaves it at +0.14), since the GP
+  attributes 0.09 of the components' spread to noise within a run and
+  0.08 over the stack, so the estimator sees little to remove. The
+  stacked posterior is 0.15 nats from the target (its KL gap; gsKL
+  0.03), and the reported value is within 0.01 of `ln Z` by
+  cancellation. Through `M = 16` both controls' headlines were within
+  0.07 and every estimate within 0.09; with 32 runs the selection
+  among their components
+  on the small errors of GPs the class treats as noiseless (the runs
+  of this real-data target carry a little noise, the noise share
+  0.085 in the median over their cells) becomes visible, and no
+  estimate scored here removes it. The noiseless GMM stays within
+  0.01 for every estimate.
+
+What `M = 32` adds to the reading: the ordering of the estimates
+through `M = 16` holds (the hybrid, then the two-level shrinkage, then
+the cap on the typical conditions and the raw value on Student); the
+run-level term grows with the selection among runs, as intended, but
+the two-level estimate's residual on the multisensory conditions grows
+with it (+0.77 to +0.86 on noise 3); and the optimism that stacking
+adds is not confined to the targets the class treats as noisy.
+
 ## Limitations
 
 - **The Rosenbrock GPs are numerically fragile.** The runs of that
@@ -778,13 +927,14 @@ for later work on the stacking objective, with the losses elsewhere.
   GPs on the analysis machine, is not, and its Rosenbrock results are to
   be read with that in mind. The PI decided to keep the condition with
   this caveat; the behaviour itself is a TODO item on GP robustness.
-- **`M` stops at 16 here.** The paper's protocol goes to `M = 40`; the
-  integrated arm alone is to be run at `M = 32` (10 repetitions on
-  every condition, on a later overnight or cluster slot), since the
-  original's cost at that size is about an hour per condition for no
-  equivalence information that `M ≤ 16` has not given.
+- **`M` stops at 16 for the comparison and at 32 for the integrated
+  arm.** The paper's protocol goes to `M = 40`; the original arm was
+  not run beyond `M = 16`, since its cost at `M = 32` is about an hour
+  per condition for no equivalence information that `M ≤ 16` has not
+  given, so the `M = 32` cells carry no paired quantity.
 - **Cost.** Stage D took 8.1 hours rather than the plan's 5, the `M = 16`
-  cells dominating; the harness's per-`M` costs above are the figures
+  cells dominating, and the `M = 32` run 4 hours for 80 cells of the
+  integrated arm; the harness's per-`M` costs above are the figures
   for planning further runs.
 - **One machine, one seed, shared runs.** The subsets are those of seed
   0; the paired design makes the arm-to-arm differences robust to that,
@@ -807,14 +957,18 @@ for later work on the stacking objective, with the losses elsewhere.
 - The later sections' directories under `experiments/svbmc_pool/`:
   `phase2_20260915/`, `cap_kappa_20260915/`, `shrink_20260915/`,
   `stack_M35_20260915/`, `shrink_M35_20260915/`,
-  `cap_kappa_M35_20260915/` and `stack_merged_20260915/`, each
+  `cap_kappa_M35_20260915/`, `stack_M32_20260915/`,
+  `shrink_M32_20260916/`, `cap_kappa_M32_20260916/` and
+  `stack_merged_20260915/`, each
   described in the experiments README; the scoring directories carry
   a `sources.json` with the script's and the cells file's hashes.
 - The per-cell outputs of stage D, the Phase 2 scoring and the
   weight-aware caps: the asset `svbmc_pool_20260914_analyses.tar.gz` of
   the draft release `svbmc-analyses-20260915` (the experiments README
   names its size and SHA-256), unpacking to the three raw directories
-  under `dev/scripts/runs/`.
+  under `dev/scripts/runs/`; the per-cell outputs of the `M = 3` and
+  `5` run and of the `M = 32` run are the second and third assets of
+  the same release.
 - The re-optimization on the shrunken estimates:
   [`experiments/svbmc_pool/shrink_opt_20260915/`](../experiments/svbmc_pool/shrink_opt_20260915/summary.md)
   (`cells.jsonl` with the new weights, the summaries, `sources.json`).

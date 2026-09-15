@@ -1,22 +1,23 @@
 # S-VBMC run-pool benchmark campaign
 
-Created 2026-09-13. Status: **comparison complete; the `M = 32`
-extension pending**. The design was approved by the PI on 2026-09-13
+Created 2026-09-13. Status: **complete**. The design was approved by
+the PI on 2026-09-13
 and revised on 2026-09-14 (decisions 7–10); the harness was merged
 into `dev-next` on 2026-09-14 (`647698b`); the pools were generated on
 the cluster the same day (draft release `svbmc-pool-20260914`); stage
 D, the two-arm comparison on all eight conditions at `M` = 2, 4, 8
-and 16, ran on 2026-09-14/15, and the integrated arm alone at `M` = 3
-and 5 on 2026-09-15. Criteria 1, 2, 4 and 5 hold on every condition;
+and 16, ran on 2026-09-14/15, the integrated arm alone at `M` = 3
+and 5 on 2026-09-15 and at `M = 32` overnight on 2026-09-15/16.
+Criteria 1, 2, 4 and 5 hold on every condition;
 criterion 3's gate fails on Student D8, where the capped headline
 over-corrects (the
 [stage D report](../results/2026-09-15-svbmc-pool-comparison.md) and
 the worklog). The Phase 2 scoring and the estimates scored afterwards
 on the same cells are in the report and summarized in the
-[headline note](../2026-09-15-svbmc-headline-shrinkage.md). What
-remains is the `M = 32` run of the integrated arm (80 cells, about 8
-hours) on a night the PI chooses, its scoring and the report's
-`M = 32` section. The pools and the comparison are long campaigns
+[headline note](../2026-09-15-svbmc-headline-shrinkage.md). The
+`M = 32` run of the integrated arm (80 cells, 4 hours) closed the
+campaign on 2026-09-16; the report's section "The integrated arm at
+`M = 32`" reads it. The pools and the comparison are long campaigns
 under the working rules of [dev/README.md](../README.md#scripts): one
 heavy process at a time, started only on explicit PI instruction, in
 stages that are authorized separately.
@@ -1846,6 +1847,39 @@ draft had left open:
   choice with its sensitivity: the added-bias baseline is the plain
   mean over the inputs; against the mass-weighted mean every
   estimate sits lower.
+- 2026-09-16: the `M = 32` extension. The integrated arm alone at
+  `M = 32`, 10 repetitions per condition (`svbmc_pool_stack.py --M 32
+  --repetitions 10 --arms integrated`, stage D's other settings, from
+  `dev-next` `1888688`), authorized by the PI for the night of
+  2026-09-15 and run on the analysis machine: 80 cells in 237 minutes
+  (the fit 2.4 to 3.9 times its `M = 16` time, under the `M²`
+  extrapolation that had put the run at 8 hours). Scored with
+  `svbmc_shrink_elbo.py` and `svbmc_cap_kappa.py`, joined to the
+  single-run baseline (`--reuse`, the third `--cells` and `--shrink`
+  files) and merged into the one summary over every `M`; tracked
+  under `stack_M32_20260915/`, `shrink_M32_20260916/`,
+  `cap_kappa_M32_20260916/` and the regenerated `single_run_20260915/`
+  and `stack_merged_20260915/`; the per-cell files are the third asset
+  of `svbmc-analyses-20260915` (`svbmc_pool_20260914_stack_M32.tar.gz`,
+  2 943 060 bytes, SHA-256
+  `11780b8d7998d2e6742d47b1a92980eeb89a6872813062f303d6ba65cc41d171`).
+  `svbmc_headline_numbers.py` reads the new cells and prints every
+  aggregate over `M` both for the grid through 16 and for every `M`,
+  so the sentences written before this run stay checkable. Findings
+  (the report's section "The integrated arm at `M = 32`"): posterior
+  quality still improves (MMTV down on six conditions, the KL gap
+  within 0.2 nats of the target on seven); the raw bias reaches +0.71
+  to +1.45 on the typical noisy conditions and +0.38 on Student,
+  adding +0.36 to +0.79 to the inputs'; the cap stays at +0.04 to
+  +0.45 on the typical conditions (headline growth from `M = 2` at
+  most +0.11) and −1.85 on Student; `two_level_full` +0.86 / +0.43 /
+  +0.06 / +0.21 / +0.10 / −0.06, adding −0.15 to +0.19, the cap closer
+  on the multisensory conditions by 0.41 and 0.24; the run-level term
+  removes 15 to 55 % of the addition; the hybrid's worst case 0.45;
+  and the noiseless multisensory control at this size is optimistic
+  by 0.14 nats, 0.11 above its inputs, which no estimate removes. The
+  campaign item of `dev/TODO.md` closes; the two decisions of the
+  debiasing item remain.
 
 ## Execution tracking
 
@@ -1858,7 +1892,7 @@ Live status of the phases above (`[ ]` not started, `[~]` in progress,
 - [x] Phase 3: pool generator (Opus sub-agent; 2026-09-14, 16 tests pass, manual gate on `rosenbrock_D2_noise3_svbmc` verified and stacked; see worklog)
 - [x] Phase 4: pilot (Fable; authorized by the PI on 2026-09-13; run 2026-09-14 from the harness commit `e2aaef5`, campaign directory `dev/scripts/runs/svbmc_pool_20260913/pool/`, three seeds per condition, `--save-vbmc`; 15/15 runs pass the filters, all artifacts verify, `M = 3` stacking measured in both arms; stages B–D await authorization)
 - [x] Phase 5: stacking comparison harness (Opus sub-agent; 2026-09-14, steps 1–3 and 5 done, 7 tests pass; step 4, the dry run on the pilot artifacts, waits for Phase 4)
-- [~] Phase 6: campaign, comparison and report (stages B and C became the cluster pool of decision 8; stage D authorized by the PI and launched 2026-09-14 from `dev-next` `744864a` into `dev/scripts/runs/svbmc_pool_20260914_stack/`, the decision-6 grid on all eight conditions, both arms, 560 cells, finished 2026-09-15 in 8.1 hours: criteria 1, 2, 4 and 5 hold on every condition and criterion 3's gate fails on Student D8 at every `M`, see the worklog; the integrated arm alone at `M` = 3 and 5 (320 cells) on 2026-09-15; the Phase 2 scoring, the weight-aware caps and the shrinkage estimates are done and reported in `dev/results/2026-09-15-svbmc-pool-comparison.md`, the acceptance checks above are met; complete except the `M = 32` integrated-arm cells, which wait for a night the PI chooses)
+- [x] Phase 6: campaign, comparison and report (stages B and C became the cluster pool of decision 8; stage D authorized by the PI and launched 2026-09-14 from `dev-next` `744864a` into `dev/scripts/runs/svbmc_pool_20260914_stack/`, the decision-6 grid on all eight conditions, both arms, 560 cells, finished 2026-09-15 in 8.1 hours: criteria 1, 2, 4 and 5 hold on every condition and criterion 3's gate fails on Student D8 at every `M`, see the worklog; the integrated arm alone at `M` = 3 and 5 (320 cells) on 2026-09-15 and at `M = 32` (80 cells, 4 hours) overnight on 2026-09-15/16; the Phase 2 scoring, the weight-aware caps and the shrinkage estimates are done and reported in `dev/results/2026-09-15-svbmc-pool-comparison.md`, the acceptance checks above are met)
 - [x] Documentation updates listed above (the experiments README with its per-pool and per-analysis sections, the hpc README, the stage D report and the `dev/README.md` entries; 2026-09-15)
 - [x] Doublecheck of the implemented phases (three fresh reviewers on 2026-09-14; every finding fixed and re-verified, see worklog)
 - [x] Evidence yardstick change (decision 7): `elbo_mc` with an arm-independent entropy reference, bias and KL-gap columns, criterion 3 gates, `--summarize-only`; reviewed, no must-fix (2026-09-14)

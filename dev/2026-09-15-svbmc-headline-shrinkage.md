@@ -41,9 +41,10 @@ on real data in 6 dimensions at both noise levels, and Rosenbrock, a
 Gaussian mixture and a ring in 2 dimensions and a Student-t product in
 8 dimensions at noise 3. Two are noiseless controls: the Gaussian
 mixture and the multisensory model. From each target's runs, subsets of
-M = 2, 3, 4, 5, 8 and 16 runs were drawn at random, 20 subsets per M
-(10 at M = 16); the subsets of 2, 4, 8 and 16 runs were stacked by
-both implementations, those of 3 and 5 by the port alone.
+M = 2, 3, 4, 5, 8, 16 and 32 runs were drawn at random, 20 subsets per
+M (10 at M = 16 and 32); the subsets of 2, 4, 8 and 16 runs were
+stacked by both implementations, those of 3, 5 and 32 by the port
+alone.
 Every reported ELBO is scored by its bias against the truth for that
 stack: the stack's own ELBO, computed by Monte Carlo from the true log
 density. All numbers below are medians of that bias over the subsets
@@ -192,8 +193,10 @@ Against the alternatives: the cap fails silently and without bound on
 heavy tails. The hybrid has the best numbers, but its threshold was
 chosen on the benchmark it is scored on, in a gap between six targets
 and two, and it switches between estimates that differ by up to 0.5
-nats; it is the candidate to revisit with larger stacks (M = 32 is
-planned) and further targets.
+nats; it is the candidate to revisit with further targets. At M = 32
+it keeps its numbers (a worst case of 0.45 nats, the cap chosen on 90
+to 100 % of the typical noisy cells; report, section "The integrated
+arm at M = 32").
 
 The shrinkage applies to the reported value at the weights the raw
 optimization chose, as the cap does today. Re-optimizing the weights
@@ -230,8 +233,20 @@ that pin the capped headline, and the user documentation.
   target), which the model reads as real spread between runs and the
   stacking selects on. A run-level error term that includes that
   scatter is the untested refinement.
-- Stacks of 32 runs (a later overnight or cluster run) test the
-  run-level term where it matters most.
+- Stacks of 32 runs (the port alone, 2026-09-15/16) confirm the
+  reading: the run-level term removes 0.07 to 0.44 nats of the raw
+  bias, 15 to 55 % of what the stacking adds, against 16 to 44 % at
+  M = 16; the two-level shrinkage adds −0.15 to +0.19 nats and its
+  residual on multisensory noise 3 grows to +0.86, where the cap
+  stays at +0.45. The refinement above remains the untested one.
+- A stack of 32 runs of the noiseless multisensory control is
+  optimistic by 0.14 nats, 0.11 above its inputs' bias and 0.07 above
+  its best input, on every subset. No cap applies to a noiseless
+  stack, and the shrinkage moves the value to +0.18, since the GP
+  attributes only 0.08 to 0.09 of the components' spread to noise on
+  that target. The optimism that stacking adds is not confined to the
+  targets the class treats as noisy; through M = 16 the controls'
+  headlines stay within 0.07.
 - The subsets of one target and one M share runs (ten subsets of 16
   draw 160 slots from 100 runs), so intervals over subsets are
   optimistic, and the benchmark is one pool of runs at one seed.

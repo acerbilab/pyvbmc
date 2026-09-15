@@ -99,49 +99,13 @@ records its execution.
   planned: the cross-run variants the report names (a
   leave-one-run-out GP refit, a per-run offset) unless a cross-run
   estimator is still wanted. The stacking
-  objective stays unchanged. The campaign item's `M = 32` cells
-  extend the evidence when they run. See the
+  objective stays unchanged. The campaign's `M = 32` cells (the
+  report's section "The integrated arm at `M = 32`") keep the ordering
+  of the estimates and add one observation for the caveat: a stack of
+  32 runs of the noiseless multisensory control is optimistic by 0.14
+  nats, 0.11 above its inputs, and no estimate removes it. See the
   [ELBO optimism note](2026-09-12-svbmc-elbo-optimism.md) and the
   completed [Phase 1 plan](plans/svbmc-elbo-reporting.md).
-
-- [ ] **S-VBMC benchmark campaign against the original implementation.**
-  Done except one extension. The comparison of the integrated
-  `pyvbmc.svbmc` against the original standalone S-VBMC (`13a78f6`)
-  ran on eight pool conditions (100 filtered runs per noisy condition
-  and 50 per control, generated on the cluster per the
-  [hand-off brief](plans/svbmc-pool-handoff.md), the asset of the
-  draft release `svbmc-pool-20260914`) at `M` = 2, 4, 8 and 16 with
-  both implementations and at `M` = 3 and 5 with the port alone.
-  Criteria 1, 2, 4 and 5 hold on every condition: same weights, same
-  posterior quality, the port 1.9 to 4 times faster, every table
-  rebuilt from the recorded results. Criterion 3's gate fails on
-  Student D8 at every `M` because the capped headline over-corrects
-  on heavy tails, a finding about the headline that the debiasing
-  item above owns. The
-  [stage D report](results/2026-09-15-svbmc-pool-comparison.md) reads
-  the numbers; the [campaign plan](plans/svbmc-benchmark-campaign.md)
-  owns the design and its worklog the execution and the PI's
-  decisions (the Rosenbrock noise-3 condition kept with its
-  numerically fragile GPs as a caveat); the
-  [experiments README](experiments/svbmc_pool/README.md) indexes the
-  tracked outputs, and the per-cell outputs are the two assets of the
-  draft release `svbmc-analyses-20260915`; every filtered run is also
-  scored as a stack of one against its own Monte Carlo ELBO
-  (`svbmc_single_run_bias.py`,
-  `experiments/svbmc_pool/single_run_20260915/`), the baseline of the
-  plan's decision 11. Remaining: the `M = 32`
-  run of the integrated arm alone (80 cells, about 8 hours, one heavy
-  process, on a night the PI chooses, overnight on the analysis
-  machine or on the cluster):
-  `svbmc_pool_stack.py --pool <pool> --gpyreg-source <gpyreg 1.2.1>
-  --seed 0 --M 32 --repetitions 10 --arms integrated`, which needs the
-  pool unpacked and verified under `dev/scripts/runs/` and a clean
-  gpyreg 1.2.1 checkout; then its shrinkage and cap scorings
-  (`svbmc_shrink_elbo.py` and `svbmc_cap_kappa.py` on its cells), one
-  merged summary (`--summarize-only` with the stage D, `M = 3` and
-  `5`, and `M = 32` results files) and the report's `M = 32` section,
-  after which the item closes. See the
-  [campaign requirement](plans/svbmc-integration.md#benchmark-campaign-required-for-15).
 
 - [ ] **Robustness of the GP on noisy unbounded targets (investigate;
   algorithmic changes are outside 1.5 unless the cause is a bug).** In
@@ -282,7 +246,19 @@ Core modernization, S-VBMC integration with its preparation and entropy
 speedups and Phase 1 ELBO reporting, the real-data benchmark extension,
 the population assessment and the removal of the experimental
 acquisitions are complete; the [roadmap](plans/modernization-roadmap.md)
-retains them. The active reference is **`reference_990_20260913`**: 870
+retains them. The S-VBMC benchmark campaign against the original
+implementation is complete (2026-09-16): eight pool conditions at
+`M` = 2, 4, 8 and 16 with both implementations and at `M` = 3, 5 and 32
+with the port alone; criteria 1, 2, 4 and 5 hold on every condition,
+criterion 3's gate fails on Student D8 because the capped headline
+over-corrects on heavy tails, which the debiasing item owns. The
+[stage D report](results/2026-09-15-svbmc-pool-comparison.md) reads
+the numbers, the [campaign plan](plans/svbmc-benchmark-campaign.md)
+owns the design, worklog and the PI's decisions, the
+[experiments README](experiments/svbmc_pool/README.md) indexes the
+tracked outputs, and the per-cell outputs are the three assets of the
+draft release `svbmc-analyses-20260915` (the pool itself the asset of
+`svbmc-pool-20260914`). The active reference is **`reference_990_20260913`**: 870
 candidate pairs plus 120 unchanged real-data pairs. The
 [promotion record](golden/promotion_20260913/README.md) owns the
 assessment, independent review, hashes and passed gates;

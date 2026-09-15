@@ -131,9 +131,9 @@ plan and consolidated human summary.
   targets saved with their posteriors and GPs (the input of the Phase 2
   ELBO estimator), the matched comparison of the integrated S-VBMC against
   the original standalone package, the harness scripts, allocation, gates
-  and execution worklog. Run on 2026-09-14/15 and assessed in
-  [results/2026-09-15-svbmc-pool-comparison.md](results/2026-09-15-svbmc-pool-comparison.md);
-  the `M = 32` extension is pending.
+  and execution worklog. Run on 2026-09-14/15, extended to `M = 32` for
+  the integrated arm on 2026-09-15/16, and assessed in
+  [results/2026-09-15-svbmc-pool-comparison.md](results/2026-09-15-svbmc-pool-comparison.md).
 - [plans/svbmc-pool-handoff.md](plans/svbmc-pool-handoff.md) — the brief
   under which the S-VBMC run pools were generated on the cluster
   (2026-09-14): what the pools are for, the steps (`prepare`, `cases`, a
@@ -629,8 +629,9 @@ reason.
   cap) and at the weighted median, every variant's bias scored against
   the cell's `elbo_mc`. Needs Torch on `PYTHONPATH` and the pool's
   gpyreg through `--gpyreg-source`; writes `cells.jsonl`, `summary.json`
-  and `summary.md`. Its one run is
-  `experiments/svbmc_pool/cap_kappa_20260915/`, read in the
+  and `summary.md`. Its runs are
+  `experiments/svbmc_pool/cap_kappa_20260915/`, `cap_kappa_M35_20260915/`
+  and `cap_kappa_M32_20260916/`, read in the
   [stage D report](results/2026-09-15-svbmc-pool-comparison.md).
 - `scripts/svbmc_shrink_elbo.py` — empirical-Bayes shrinkage of the
   stacked expected log joint on a comparison's recorded cells: each
@@ -650,8 +651,8 @@ reason.
   least 0.2 and the within-run shrinkage otherwise. Every variant's bias
   is scored against the cell's `elbo_mc`. Same rebuild, inputs and
   outputs as `svbmc_cap_kappa.py`; its runs are
-  `experiments/svbmc_pool/shrink_20260915/` and `shrink_M35_20260915/`,
-  read in the same report and in the
+  `experiments/svbmc_pool/shrink_20260915/`, `shrink_M35_20260915/` and
+  `shrink_M32_20260916/`, read in the same report and in the
   [headline note](2026-09-15-svbmc-headline-shrinkage.md); the method
   is explained in the
   [tutorial note](2026-09-15-svbmc-shrinkage-explained.md).
@@ -682,12 +683,13 @@ reason.
   read in the [stage D report](results/2026-09-15-svbmc-pool-comparison.md)
   (section "Re-optimizing on the shrunken estimates").
 - `scripts/svbmc_headline_numbers.py` — prints the numbers the headline
-  note and the report's shrinkage, cap, single-run and re-optimization
-  sections quote (per-condition tables, worst and mean cases over the
-  noisy conditions per `M`, noise-share percentiles, the hybrid
-  threshold sweep, the caps' bind fractions, paired bootstrap
-  intervals, the single-run biases and added-bias ranges, the
-  re-optimization's rows) from the tracked `cells.jsonl`,
+  note and the report's shrinkage, cap, single-run, re-optimization
+  and `M = 32` sections quote (per-condition tables, worst and mean
+  cases over the noisy conditions per `M`, noise-share percentiles,
+  the hybrid threshold sweep, the caps' bind fractions, paired
+  bootstrap intervals, the single-run biases and added-bias ranges,
+  the re-optimization's rows; every aggregate over `M` both for the
+  grid through 16 and for every `M`) from the tracked `cells.jsonl`,
   `summary.json` and `added.json` files under
   `experiments/svbmc_pool/`; NumPy only, no pool or raw directory
   needed. The check for a quoted number.
