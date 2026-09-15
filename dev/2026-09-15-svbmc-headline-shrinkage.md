@@ -6,7 +6,9 @@ the PI. The evidence is in
 the execution record is the worklog of
 [plans/svbmc-benchmark-campaign.md](plans/svbmc-benchmark-campaign.md);
 the tracked outputs are under
-[experiments/svbmc_pool/](experiments/svbmc_pool/README.md).*
+[experiments/svbmc_pool/](experiments/svbmc_pool/README.md); the
+shrinkage itself is explained step by step, with a worked example, in
+[2026-09-15-svbmc-shrinkage-explained.md](2026-09-15-svbmc-shrinkage-explained.md).*
 
 ## The problem
 

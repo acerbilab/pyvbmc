@@ -68,6 +68,9 @@ deviation shared by every component is kept by) and, per run,
 shrinkage factor and the noise share, the noise in the spread over the
 spread) and ``sources.json`` (the script's and the cells file's hashes,
 the pool, the process's identity).
+
+The method, its derivation and a worked example are in
+``dev/2026-09-15-svbmc-shrinkage-explained.md``.
 """
 
 import argparse

@@ -73,6 +73,14 @@ For the release overview, start with
   target; the candidates side by side, the decision and what
   implementing it entails. The evidence is the
   [stage D report](results/2026-09-15-svbmc-pool-comparison.md).
+- [S-VBMC shrinkage explained](2026-09-15-svbmc-shrinkage-explained.md) —
+  Tutorial companion to the headline note, for a reader who knows what
+  a GP and an ELBO are: what the stacked ELBO is built from, why it is
+  optimistic on a noisy target, the empirical-Bayes model and its
+  moments, why the correlation of a run's estimation errors changes the
+  noise term and the shrinkage, the second level over runs, a worked
+  example on three stacks from the run pool, what the method cannot
+  fix, and the computation step by step.
 
 `TODO.md` contains only current actions, constraints and links. Do not
 accumulate completed handoffs there; the roadmap and plans retain execution
@@ -640,7 +648,9 @@ reason.
   outputs as `svbmc_cap_kappa.py`; its runs are
   `experiments/svbmc_pool/shrink_20260915/` and `shrink_M35_20260915/`,
   read in the same report and in the
-  [headline note](2026-09-15-svbmc-headline-shrinkage.md).
+  [headline note](2026-09-15-svbmc-headline-shrinkage.md); the method
+  is explained in the
+  [tutorial note](2026-09-15-svbmc-shrinkage-explained.md).
 - `scripts/svbmc_headline_numbers.py` — prints every number the headline
   note and the report's shrinkage and cap sections quote (per-condition
   tables, worst and mean cases over the noisy conditions per `M`,

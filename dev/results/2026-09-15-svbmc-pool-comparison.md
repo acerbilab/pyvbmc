@@ -346,6 +346,10 @@ sits between the two.
 
 ## Empirical-Bayes shrinkage
 
+The method, its derivation and a worked example are in the
+[tutorial note](../2026-09-15-svbmc-shrinkage-explained.md); this
+section records what it does on stage D's cells.
+
 Since the optimism is a selection on noisy GP estimates, the textbook
 correction is to shrink each component's estimate toward its population
 mean by the share of the population's spread that is estimation noise:

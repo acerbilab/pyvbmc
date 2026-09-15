@@ -44,7 +44,9 @@ records its execution.
   summary and decision record, the
   [stage D report](results/2026-09-15-svbmc-pool-comparison.md)
   (sections "Phase 2", "Weight-aware caps" and "Empirical-Bayes
-  shrinkage") the evidence, and
+  shrinkage") the evidence, the
+  [tutorial note](2026-09-15-svbmc-shrinkage-explained.md) the
+  explanation of the method with a worked example, and
   `python dev/scripts/svbmc_headline_numbers.py` regenerates every
   number they quote. What the run pools settled: the cross-run
   "honest" estimator (`dev/scripts/svbmc_honest_elbo.py`; the
