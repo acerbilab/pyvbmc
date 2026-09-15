@@ -83,7 +83,7 @@ records its execution.
   `pyvbmc.svbmc` against the original standalone S-VBMC (`13a78f6`)
   ran on eight pool conditions (100 filtered runs per noisy condition
   and 50 per control, generated on the cluster per the
-  [hand-off note](2026-09-14-svbmc-pool-handoff.md), the asset of the
+  [hand-off brief](plans/svbmc-pool-handoff.md), the asset of the
   draft release `svbmc-pool-20260914`) at `M` = 2, 3, 4, 5, 8 and 16.
   Criteria 1, 2, 4 and 5 hold on every condition: same weights, same
   posterior quality, the port 1.9 to 4 times faster, every table

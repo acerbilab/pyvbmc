@@ -3,7 +3,7 @@
 Scripts for the cluster half of the S-VBMC run-pool campaign
 ([plans/svbmc-benchmark-campaign.md](../../plans/svbmc-benchmark-campaign.md),
 section "Cluster generation"; the brief is
-[2026-09-14-svbmc-pool-handoff.md](../../2026-09-14-svbmc-pool-handoff.md)).
+[plans/svbmc-pool-handoff.md](../../plans/svbmc-pool-handoff.md)).
 They implement the sbatch sketch in the module docstring of
 [`svbmc_pool_run.py`](../svbmc_pool_run.py): `prepare` once on the login
 node, one `worker` per Slurm array task, then `verify`, `select` and

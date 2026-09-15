@@ -290,7 +290,7 @@ against it, as the working rules require for golden references.
 
 The pools are generated on a Slurm cluster by another developer as a
 once-in-a-while golden-fixture job (decision 8); the short brief handed
-to them is [the hand-off note](../2026-09-14-svbmc-pool-handoff.md),
+to them is [the hand-off brief](svbmc-pool-handoff.md),
 which asks for the campaign directory as an archive and a pull request
 to `dev-next` from a branch off it. What the harness provides for that,
 and what the hand-over needs:
@@ -1438,7 +1438,7 @@ draft had left open:
   class (the noisy one with the capped headline, the noiseless one raw).
   All eight conditions have now run end to end on the pilot machine. The hand-off note
   for the cluster developer is
-  [2026-09-14-svbmc-pool-handoff.md](../2026-09-14-svbmc-pool-handoff.md).
+  [svbmc-pool-handoff.md](svbmc-pool-handoff.md).
 - 2026-09-14: the launch-authorization gate of the pool generator
   (`launch_ready`, `--ready`, `--authorized-by`, and the refusals in
   `run`, `cases` and `worker`) was removed (PI). It had grown out of the

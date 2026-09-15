@@ -61,12 +61,6 @@ For the release overview, start with
   and automatic fitting, and the feasibility questions for release scope;
   the bounded feasibility check is done, with its result in
   [results/2026-09-14-pymc-feasibility.md](results/2026-09-14-pymc-feasibility.md).
-- [S-VBMC pool hand-off](2026-09-14-svbmc-pool-handoff.md) —
-  Short brief for the developer generating the S-VBMC run pools on the
-  cluster: what the pools are for, the steps (`prepare`, `cases`, a Slurm
-  array of `worker` calls, `select`, `summarize`), what to hand back and
-  the branch-and-PR flow; the specification is in
-  [plans/svbmc-benchmark-campaign.md](plans/svbmc-benchmark-campaign.md).
 - [S-VBMC headline shrinkage](2026-09-15-svbmc-headline-shrinkage.md) —
   Two questions about the S-VBMC port, answered from the run-pool
   benchmark: it matches the standalone package (same weights and
@@ -132,6 +126,11 @@ plan and consolidated human summary.
   and execution worklog. Run on 2026-09-14/15 and assessed in
   [results/2026-09-15-svbmc-pool-comparison.md](results/2026-09-15-svbmc-pool-comparison.md);
   the `M = 32` extension is pending.
+- [plans/svbmc-pool-handoff.md](plans/svbmc-pool-handoff.md) — the brief
+  under which the S-VBMC run pools were generated on the cluster
+  (2026-09-14): what the pools are for, the steps (`prepare`, `cases`, a
+  Slurm array of `worker` calls, `select`, `summarize`), what to hand
+  back and the branch-and-PR flow; carried out, and retained as written.
 - [plans/benchmark-realistic-targets.md](plans/benchmark-realistic-targets.md) —
   the real-data benchmark targets from benchflow (Bayesian timing,
   multisensory causal inference on two subjects): the decisions, the

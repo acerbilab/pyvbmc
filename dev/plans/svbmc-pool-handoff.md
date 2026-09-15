@@ -2,7 +2,12 @@
 
 Written 2026-09-14 for the developer (and their coding agents) who will
 generate the pools on the HPC cluster. Everything referenced is on
-`dev-next` from commit `1903506`.
+`dev-next` from commit `1903506`. Carried out the same day: the pool
+came back as the draft release `svbmc-pool-20260914` and PR #177, its
+tracked records are under
+[experiments/svbmc_pool/pool_20260914/](../experiments/svbmc_pool/pool_20260914/README.md)
+and the Slurm scripts under [scripts/hpc/](../scripts/hpc/README.md);
+the brief is retained as written.
 
 ## What this is and why
 
@@ -19,7 +24,7 @@ one to six minutes each, roughly 45 CPU-hours) to belong on the cluster;
 the analyses that consume them stay local.
 
 The design, decisions and status live in
-[plans/svbmc-benchmark-campaign.md](plans/svbmc-benchmark-campaign.md);
+[svbmc-benchmark-campaign.md](svbmc-benchmark-campaign.md);
 the section **"Cluster generation"** there is the specification of this
 job, and the module docstring of `dev/scripts/svbmc_pool_run.py` carries
 the sbatch sketch.
@@ -107,7 +112,7 @@ the sbatch sketch.
 - Runs on Linux with the cluster's BLAS will not reproduce laptop runs bit
   for bit. That is expected for a pool; the records carry the platform.
 - Working rules for this repository are in `AGENTS.md` and the "Scripts"
-  section of [dev/README.md](README.md): conventional commits, formatting
+  section of [dev/README.md](../README.md): conventional commits, formatting
   by the pre-commit hook, nothing written into `docs/`, results
   summarized in the plan's worklog rather than committed raw.
 - Questions about the design go to the plan; questions about the

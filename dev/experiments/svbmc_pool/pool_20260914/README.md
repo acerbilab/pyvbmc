@@ -3,7 +3,7 @@
 The eight-condition run pool of the S-VBMC benchmark campaign
 ([`dev/plans/svbmc-benchmark-campaign.md`](../../../plans/svbmc-benchmark-campaign.md),
 section "Cluster generation"; the brief was
-[`dev/2026-09-14-svbmc-pool-handoff.md`](../../../2026-09-14-svbmc-pool-handoff.md)),
+[`dev/plans/svbmc-pool-handoff.md`](../../../plans/svbmc-pool-handoff.md)),
 generated as a Slurm array on the University of Helsinki `kale` cluster
 with the scripts under [`dev/scripts/hpc/`](../../../scripts/hpc/README.md).
 This directory holds the tracked copies of the campaign's summary files;
