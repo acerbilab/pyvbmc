@@ -14,8 +14,11 @@ estimated by its run's GP, plus the entropy of the mixture. On a noisy
 target that number is too high. The
 [optimism note](2026-09-12-svbmc-elbo-optimism.md) planned two remedies.
 The first is the component-median cap, which the integrated class
-reports as its headline today. The second is a cross-run estimate that
-scores each component with the GPs of the other runs. The run-pool
+reports as its headline today. (The integrated class is
+`pyvbmc.svbmc.SVBMC`, the S-VBMC that ships inside PyVBMC; the campaign
+compares it against the original implementation, the standalone `svbmc`
+0.1.1 package.) The second is a cross-run estimate that scores each
+component with the GPs of the other runs. The run-pool
 campaign measured both on eight conditions, with 100 filtered runs per
 noisy condition and 50 per noiseless control. The reference is the
 stacked posterior's own Monte Carlo ELBO, which no estimator sees. This
