@@ -86,10 +86,15 @@ records its execution.
   `dev/scripts/svbmc_shrink_elbo.py`, applied at the selected weights
   so the posterior does not move, an `elbo_details` key and the noise
   share as a diagnostic, the tests that pin the capped headline, and
-  the user documentation. Not planned: re-optimizing the weights on
-  the shrunken estimates (untested), and the cross-run variants the
-  report names (a leave-one-run-out GP refit, a per-run offset)
-  unless a cross-run estimator is still wanted. The stacking
+  the user documentation. Rejected on the evidence: re-optimizing
+  the weights on the shrunken estimates (`svbmc_shrink_optimize.py`,
+  `M` = 3 to 5: the optimizer selects on the shrinkage's own errors,
+  the headline is 0.06 to 0.4 nats more optimistic than the
+  value-only shrinkage on four of six noisy conditions, and the
+  posterior improves on three conditions and worsens on two). Not
+  planned: the cross-run variants the report names (a
+  leave-one-run-out GP refit, a per-run offset) unless a cross-run
+  estimator is still wanted. The stacking
   objective stays unchanged. The campaign item's `M = 32` cells
   extend the evidence when they run. See the
   [ELBO optimism note](2026-09-12-svbmc-elbo-optimism.md) and the

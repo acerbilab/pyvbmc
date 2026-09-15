@@ -1800,6 +1800,24 @@ draft had left open:
   at fixed weights, leaves out the run-to-run scatter of the runs'
   own optimism, which is what the stacking selects on; a run-level
   error that includes it is the refinement to try.
+- 2026-09-15: re-optimizing on the shrunken estimates tested
+  (`svbmc_shrink_optimize.py`: the class's corrected expected log
+  joints replaced by the two-level full shrinkage before `optimize`,
+  the comparison's settings, the new stack scored against its own
+  `elbo_mc`; `M` = 3, 4 and 5 on every condition, 480 cells in 26
+  minutes, tracked under
+  `dev/experiments/svbmc_pool/shrink_opt_20260915/`). The
+  re-optimized headline is 0.06 to 0.4 nats more optimistic than the
+  value-only shrinkage on the two multisensory conditions, Rosenbrock
+  and noisy GMM (added bias +0.09 to +0.29 on the last two) and within
+  0.1 of it on the ring and Student: the optimizer selects on the
+  shrinkage's own errors. The posterior improves on the multisensory
+  conditions and the ring (gsKL ratios 0.70 to 0.86, the KL gap
+  smaller by 0.02 to 0.10), is unchanged on Student and worsens on
+  Rosenbrock (gsKL ratio 5.3, KL gap +0.09) and on GMM's KL gap
+  (+0.07); a tenth to a half of the mass moves, no weight by more
+  than 0.08. Rejected: the shrinkage stays a correction of the
+  reported value at the raw weights.
 
 ## Execution tracking
 

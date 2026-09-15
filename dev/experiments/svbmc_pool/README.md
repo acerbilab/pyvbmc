@@ -257,6 +257,33 @@ files and the controller's log. `cells.jsonl` and `added.*` were
 regenerated with `--reuse` after the shrinkage rerun that added the
 anchored forms; the runs' own scores are unchanged.
 
+## Re-optimizing on the shrunken estimates (2026-09-15)
+
+`shrink_opt_20260915/` holds the outputs of
+`svbmc_shrink_optimize.py --pool <pool> --gpyreg-source <gpyreg
+1.2.1> --cells <stage D results.json> --cells <M = 3 and 5
+results.json> --shrink shrink_20260915/cells.jsonl --shrink
+shrink_M35_20260915/cells.jsonl --single-runs
+single_run_20260915/runs.jsonl --M 3,4,5` (480 cells in 26 minutes,
+from `dev-next` `9918c93` with the script uncommitted): `cells.jsonl`,
+one record per cell (`w`, the weights optimized on the two-level full
+shrinkage of the corrected expected log joints; `G_shrunk` and
+`G_raw_at_opt`, the shrunken and the raw expected log joint at those
+weights; `H`; `elbo_mc` with its standard error, computed as the
+comparison computes a cell's reference; `kl_gap` and
+`kl_gap_recorded`; `bias` for `shrunk_opt`, `raw_at_opt`, `raw` (from
+the cell's record) and `two_level_full` (from the shrinkage cells);
+`metrics` with `gskl` and `mmtv` of the new stack and `_recorded` of
+the raw optimization; `max_abs_dw` and `mass_shift`, the largest
+weight change and half the L1 distance between the two weight
+vectors; `inputs_mean_bias` and `added`; the timings), `summary.json`
+/ `summary.md` (per condition and `M`, the medians over cells of the
+biases and added biases with bootstrap intervals, the metrics of both
+optimizations with the fraction of cells the new weights improve, the
+KL gaps and the weight changes) and `sources.json`. The raw directory
+`dev/scripts/runs/svbmc_pool_20260914_shrink_opt/` holds the same
+files and the controller's log.
+
 ## Raw outputs of the analyses (release asset)
 
 What stage D and the Phase 2 scoring wrote per cell is too large to

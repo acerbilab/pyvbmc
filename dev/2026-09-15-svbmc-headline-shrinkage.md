@@ -187,6 +187,16 @@ and two, and it switches between estimates that differ by up to 0.5
 nats; it is the candidate to revisit with larger stacks (M = 32 is
 planned) and further targets.
 
+The shrinkage applies to the reported value at the weights the raw
+optimization chose, as the cap does today. Re-optimizing the weights
+on the shrunken values was tested at M = 3 to 5 and rejected: the
+optimizer then selects on the shrinkage's own errors, the headline
+comes out 0.06 to 0.4 nats more optimistic than the value-only
+shrinkage on four of the six noisy targets, and the posterior
+improves on the multisensory and ring targets and worsens on
+Rosenbrock (report, section "Re-optimizing on the shrunken
+estimates").
+
 The class keeps the raw value and the cap in `elbo_details` and adds
 the noise share as a diagnostic. The documentation must state that the
 headline can remain optimistic (in our benchmarks, by about 0.8 nats on a
@@ -211,8 +221,6 @@ that pin the capped headline, and the user documentation.
   across the runs of a noisy target). A run-level error that includes
   that scatter is the untested refinement; with it, the anchored
   variant would be the estimator the yardstick asks for.
-- Re-optimizing the weights on the shrunken estimates is untested; only
-  the reported value is shrunk today.
 - Stacks of 32 runs (a later overnight or cluster run) test the
   run-level term where it matters most.
 - The subsets of one target and one M share runs (ten subsets of 16

@@ -42,7 +42,13 @@ at `M = 2` and 0.27 to 0.60 at `M = 16`, the cap removes more than
 the stacking added on every condition, the two-level shrinkage adds
 nothing within 0.23 nats, and an anchored variant that removes only
 the stacking's own selection halves the addition but still adds 0.1
-to 0.2 nats at `M` = 3 to 5 (section "The inputs' own bias"). The
+to 0.2 nats at `M` = 3 to 5 (section "The inputs' own bias").
+Re-optimizing the weights on the shrunken values, tried at `M` = 3
+to 5, makes the headline 0.1 to 0.2 nats more optimistic than
+shrinking the value alone and moves the posterior for better or
+worse depending on the target, so the shrinkage stays a correction
+of the reported value (section "Re-optimizing on the shrunken
+estimates"). The
 `M = 32` cells of the integrated arm are reported in a section added
 when that run completes.
 
@@ -670,6 +676,65 @@ What the yardstick shows:
   its within-run term removes part of that optimism from every run
   before the levels are compared, and the two effects offset.
 
+## Re-optimizing on the shrunken estimates
+
+The shrinkage above changes the reported value at the weights the raw
+optimization chose. `svbmc_shrink_optimize.py` runs the optimization
+on the shrunken values instead: for every cell at `M` = 3, 4 and 5
+(480 cells, 26 minutes; tracked under
+[`experiments/svbmc_pool/shrink_opt_20260915/`](../experiments/svbmc_pool/shrink_opt_20260915/summary.md))
+it rebuilds the stack, replaces the class's corrected expected log
+joints by the two-level full shrinkage, optimizes the weights with the
+comparison's settings, and scores the new stack as a cell is scored,
+against its own `elbo_mc`. Medians over cells: the bias of the
+shrunken value at the new weights (the headline this variant would
+report), of the value-only shrinkage at the raw weights and of the raw
+optimization; the added bias of the new headline; the ratio of the
+new stack's gsKL to the raw optimization's, with the fraction of
+cells it improves; the change in the KL gap; and the mass moved
+between components (half the L1 distance between the two weight
+vectors).
+
+| condition | bias, `M` = 3 / 4 / 5: re-optimized | value-only | raw | added, re-optimized | gsKL ratio (cells improved) | KL gap change | mass moved |
+|---|---|---|---|---|---|---|---|
+| multisensory noise 3 | +0.69 / +0.89 / +0.82 | +0.58 / +0.72 / +0.67 | +0.84 / +1.07 / +1.04 | +0.01 / +0.10 / +0.10 | 0.78 (0.85 to 1.00) | −0.04 | 0.33 |
+| multisensory noise 1.3 | +0.31 / +0.30 / +0.43 | +0.25 / +0.26 / +0.35 | +0.44 / +0.47 / +0.55 | −0.04 / −0.03 / +0.02 | 0.86 (0.90 to 0.95) | −0.02 | 0.24 |
+| Rosenbrock noise 3 | +0.32 / +0.36 / +0.59 | +0.12 / +0.07 / +0.18 | +0.29 / +0.35 / +0.53 | +0.17 / +0.22 / +0.29 | 5.3 (0.15 to 0.25) | +0.09 | 0.48 |
+| GMM noise 3 | +0.35 / +0.37 / +0.36 | −0.05 / −0.01 / −0.00 | +0.34 / +0.30 / +0.40 | +0.15 / +0.18 / +0.09 | 0.83 (0.55 to 0.80) | +0.07 | 0.42 |
+| ring noise 3 | +0.11 / +0.10 / +0.19 | +0.10 / +0.06 / +0.13 | +0.37 / +0.40 / +0.42 | −0.08 / −0.15 / −0.11 | 0.70 (0.75 to 0.80) | −0.10 | 0.28 |
+| Student D8 noise 3 | −0.23 / −0.35 / −0.17 | −0.32 / −0.39 / −0.24 | −0.09 / −0.10 / +0.04 | −0.03 / −0.07 / +0.03 | 1.04 (0.15 to 0.25) | +0.03 | 0.10 |
+| noiseless controls | within 0.09 | within 0.08 | within 0.07 | within 0.05 | 0.99 to 1.00 | ≤ 0.004 | ≤ 0.02 |
+
+Re-optimizing recovers part of the optimism the value-only shrinkage
+removed. On the two multisensory conditions, Rosenbrock and noisy GMM
+the re-optimized headline is 0.06 to 0.4 nats more optimistic than
+the value-only one (the median difference over the noisy cells is
++0.08 to +0.13 at the three `M`, and the value-only value is closer
+to the truth on 85 to 95 % of those conditions' cells), and its added
+bias is +0.09 to +0.29 on Rosenbrock and GMM. The optimizer selects on
+the shrunken values as it selected on the raw ones, and the
+shrinkage's own errors become the noise to win on: the raw value at
+the re-optimized weights is 0.1 to 0.3 nats less optimistic than at
+the raw weights, since the new weights select less on the raw noise,
+but the shrunken value at those weights sits 0.1 to 0.25 nats above
+the raw value there on Rosenbrock and GMM, because the optimizer
+found the below-average components the shrinkage had raised toward
+their run's mean. On the ring and Student the two headlines agree
+within 0.1.
+
+The posterior moves with the weights (a tenth to a half of the mass,
+no single weight by more than 0.08), and where it lands depends on
+the target: better on the multisensory conditions and the ring (gsKL
+down by a fifth to a third and MMTV by a tenth to a fifth on 75 to
+100 % of the cells, the KL gap smaller by 0.02 to 0.10 nats),
+unchanged on Student, worse on Rosenbrock (gsKL five times and MMTV
+twice the raw optimization's, the KL gap larger by 0.09) and on noisy
+GMM's KL gap (+0.07 despite a smaller gsKL). The shrinkage therefore
+stays a correction of the reported value at the raw weights, as the
+cap is applied today; the posterior gains on the real-data target are
+noted for later work on the stacking objective, with the losses
+elsewhere.
+
 ## Limitations
 
 - **The Rosenbrock GPs are numerically fragile.** The runs of that
@@ -719,6 +784,9 @@ What the yardstick shows:
   the draft release `svbmc-analyses-20260915` (the experiments README
   names its size and SHA-256), unpacking to the three raw directories
   under `dev/scripts/runs/`.
+- The re-optimization on the shrunken estimates:
+  [`experiments/svbmc_pool/shrink_opt_20260915/`](../experiments/svbmc_pool/shrink_opt_20260915/summary.md)
+  (`cells.jsonl` with the new weights, the summaries, `sources.json`).
 - The single-run baseline and the added-bias join:
   [`experiments/svbmc_pool/single_run_20260915/`](../experiments/svbmc_pool/single_run_20260915/added.md)
   (`runs.jsonl`, `cells.jsonl`, the summaries, `sources.json`).

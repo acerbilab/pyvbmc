@@ -13,8 +13,10 @@ documents can be checked or updated without the raw directories::
 
 Reads ``shrink_20260915/cells.jsonl``, ``shrink_M35_20260915/cells.jsonl``,
 ``cap_kappa_20260915/cells.jsonl``, ``cap_kappa_M35_20260915/cells.jsonl``
-and the ``summary.json`` and ``added.json`` of ``single_run_20260915/``
-(the single-run biases and the added-bias ranges). Needs NumPy only.
+the ``summary.json`` and ``added.json`` of ``single_run_20260915/``
+(the single-run biases and the added-bias ranges) and the
+``summary.json`` of ``shrink_opt_20260915/`` (the re-optimization).
+Needs NumPy only.
 """
 
 import argparse
@@ -416,6 +418,25 @@ def main(argv=None):
     print(
         f"  controls: max |added| over estimates and M {max(controls_added):.3f}"
     )
+    print("\n# Re-optimizing on the shrunken estimates (shrink_opt_20260915)")
+    opt = json.loads(
+        (
+            Path(args.experiments) / "shrink_opt_20260915" / "summary.json"
+        ).read_text(encoding="utf-8")
+    )
+    for c in opt["conditions"]:
+        for r in c["by_M"]:
+            b = r["bias"]
+            print(
+                f"  {SHORT[c['condition']]} M={r['M']}: re-optimized "
+                f"{b['shrunk_opt']:+.2f}, value-only {b['two_level_full']:+.2f}, "
+                f"raw {b['raw']:+.2f}, raw at new weights {b['raw_at_opt']:+.2f}; "
+                f"added {r['added']['shrunk_opt']:+.2f}; gsKL "
+                f"{r['gskl']:.2f}/{r['gskl_recorded']:.2f} (improved "
+                f"{r['gskl_improved']:.2f}), MMTV improved {r['mmtv_improved']:.2f}; "
+                f"KL gap {r['kl_gap']:+.2f}/{r['kl_gap_recorded']:+.2f}; "
+                f"mass moved {r['mass_shift']:.2f}, max |dw| {r['max_abs_dw']:.3f}"
+            )
     return 0
 
 

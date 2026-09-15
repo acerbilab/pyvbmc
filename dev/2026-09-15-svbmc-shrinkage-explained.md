@@ -422,7 +422,14 @@ $$
 $$
 
 Only the reported value changes; the weights and the posterior are
-those of the raw optimization, as with the cap today. The diagnostic
+those of the raw optimization, as with the cap today.
+Running the optimization on the shrunken values instead was
+tried on the benchmark at $M$ = 3 to 5 and is worse: the optimizer
+selects on the shrinkage's own errors (a below-average component
+raised toward its run's mean looks better than it is), the headline
+comes out 0.1 to 0.2 nats more optimistic than the value-only
+shrinkage, and the posterior improves on some targets and worsens on
+others. The diagnostic
 to report alongside is the noise share, $\nu / s^2$ per run and
 mass-weighted over runs: it is 0.2 to 1.1 on the typical noisy
 targets, 0.05 on the heavy-tailed one and at most 0.09 on the

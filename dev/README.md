@@ -669,6 +669,18 @@ reason.
   [stage D report](results/2026-09-15-svbmc-pool-comparison.md)
   (section "The inputs' own bias") and the
   [headline note](2026-09-15-svbmc-headline-shrinkage.md).
+- `scripts/svbmc_shrink_optimize.py` — re-optimizes the stacking
+  weights on the shrunken expected log joints: for every recorded cell
+  the stack is rebuilt, the class's corrected expected log joints are
+  replaced by the two-level full shrinkage of `svbmc_shrink_elbo.py`,
+  the weights are optimized with the comparison's settings, and the
+  new stack is scored as a cell is scored (its own `elbo_mc`, the
+  biases, gsKL, MMTV, the KL gap) next to the raw optimization's
+  record, the value-only shrinkage's bias (`--shrink`) and the added
+  bias against the input runs (`--single-runs`). Its run is
+  `experiments/svbmc_pool/shrink_opt_20260915/` (`M` = 3, 4 and 5),
+  read in the [stage D report](results/2026-09-15-svbmc-pool-comparison.md)
+  (section "Re-optimizing on the shrunken estimates").
 - `scripts/svbmc_headline_numbers.py` — prints every number the headline
   note and the report's shrinkage and cap sections quote (per-condition
   tables, worst and mean cases over the noisy conditions per `M`,
