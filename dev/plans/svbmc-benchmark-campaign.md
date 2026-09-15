@@ -1,16 +1,25 @@
 # S-VBMC run-pool benchmark campaign
 
-Created 2026-09-13. Status: **harness complete and reviewed; pool
-generation handed to the cluster; the optimism note's Phase 2 estimator
-prototyped on the pilot; comparison and the Phase 2 study pending**. The
-design was approved by the PI on 2026-09-13 and revised on 2026-09-14
-(decisions 7–10). The harness and target changes were developed on the
-feature branch `dev-svbmc-pool` and merged into `dev-next` on
-2026-09-14 (`647698b`), so a clone of `dev-next` is self-contained for
-the hand-over. The pools and the comparison are long campaigns under the
-working rules of [dev/README.md](../README.md#scripts): one heavy process
-at a time, started only on explicit PI instruction, in stages that are
-authorized separately.
+Created 2026-09-13. Status: **comparison complete; the `M = 32`
+extension pending**. The design was approved by the PI on 2026-09-13
+and revised on 2026-09-14 (decisions 7–10); the harness was merged
+into `dev-next` on 2026-09-14 (`647698b`); the pools were generated on
+the cluster the same day (draft release `svbmc-pool-20260914`); stage
+D, the two-arm comparison on all eight conditions at `M` = 2, 4, 8
+and 16, ran on 2026-09-14/15, and the integrated arm alone at `M` = 3
+and 5 on 2026-09-15. Criteria 1, 2, 4 and 5 hold on every condition;
+criterion 3's gate fails on Student D8, where the capped headline
+over-corrects (the
+[stage D report](../results/2026-09-15-svbmc-pool-comparison.md) and
+the worklog). The Phase 2 scoring and the estimates scored afterwards
+on the same cells are in the report and summarized in the
+[headline note](../2026-09-15-svbmc-headline-shrinkage.md). What
+remains is the `M = 32` run of the integrated arm (80 cells, about 8
+hours) on a night the PI chooses, its scoring and the report's
+`M = 32` section. The pools and the comparison are long campaigns
+under the working rules of [dev/README.md](../README.md#scripts): one
+heavy process at a time, started only on explicit PI instruction, in
+stages that are authorized separately.
 
 This plan owns the design, harnesses, allocation, gates and worklog of the
 campaign. The [integration plan](svbmc-integration.md#benchmark-campaign-required-for-15)
@@ -622,14 +631,15 @@ recomputation gate of the artifact contract is feasible.
 
 **Verification**:
 
-- [ ] Step 1 passes with Torch from the overlay.
-- [ ] Step 2 table reported for four groups and five seeds; unbounded
+- [x] Step 1 passes with Torch from the overlay (2026-09-13; this
+      block and the next three are ticked from the worklog).
+- [x] Step 2 table reported for four groups and five seeds; unbounded
       groups agree within the within-arm spread.
-- [ ] `baseline_environment.json` written with the fields above; commit
+- [x] `baseline_environment.json` written with the fields above; commit
       equals the pin; tree clean.
-- [ ] Step 4 checks (a)–(d) pass on both configurations, or the mismatch
+- [x] Step 4 checks (a)–(d) pass on both configurations, or the mismatch
       is documented.
-- [ ] Nothing is committed except the new experiments directory.
+- [x] Nothing is committed except the new experiments directory.
 
 If any check contradicts an assumption above, stop and report rather
 than adapting the contract.
@@ -731,15 +741,15 @@ and settle which ring definition the paper's runs used.
 
 **Verification**:
 
-- [ ] Pointwise port check passes; pins added; `--check --only gmm,ring`
+- [x] Pointwise port check passes; pins added; `--check --only gmm,ring`
       passes.
-- [ ] Ring variant identified from the ELBO recomputation and recorded;
+- [x] Ring variant identified from the ELBO recomputation and recorded;
       no stored ELBO above the truth beyond noise.
-- [ ] `find_config` returns the pool entries; no shadowed labels;
+- [x] `find_config` returns the pool entries; no shadowed labels;
       `--smoke --suite svbmc_pool` passes.
-- [ ] `python -m pytest pyvbmc/testing/oracles -q` still passes (the
+- [x] `python -m pytest pyvbmc/testing/oracles -q` still passes (the
       `active_sample_step` oracle imports the suite module).
-- [ ] Docs updated; pre-commit clean.
+- [x] Docs updated; pre-commit clean.
 
 ### Phase 3: pool generator
 
@@ -839,10 +849,10 @@ artifact of the contract above and a summary, following
 
 **Verification**:
 
-- [ ] `python -m pytest dev/scripts/test_svbmc_pool_run.py -vv` passes.
-- [ ] Manual gate: artifact under 1 MB, `verify_run` passes post hoc,
+- [x] `python -m pytest dev/scripts/test_svbmc_pool_run.py -vv` passes.
+- [x] Manual gate: artifact under 1 MB, `verify_run` passes post hoc,
       rebuilt posterior accepted by the integrated class.
-- [ ] `git status` shows only the new scripts, the test and the README
+- [x] `git status` shows only the new scripts, the test and the README
       change.
 
 If the codec rejects a live object, report the key and stop; do not
@@ -975,9 +985,10 @@ design above, tested on the upstream fixture groups.
 
 **Verification**:
 
-- [ ] `PYTHONPATH="<TORCH_PATH>" .venv/Scripts/python.exe -m pytest dev/scripts/test_svbmc_pool_stack.py -vv` passes.
-- [ ] Dry run on the pilot completes with the two arms agreeing within
-      the recorded spread.
+- [x] `PYTHONPATH="<TORCH_PATH>" .venv/Scripts/python.exe -m pytest dev/scripts/test_svbmc_pool_stack.py -vv` passes.
+- [x] Dry run on the pilot completes with the two arms agreeing within
+      the recorded spread (run as the pilot's `M = 3` measurement,
+      25 cells; worklog of 2026-09-14).
 
 ### Phase 6: campaign, comparison and report
 
@@ -1007,12 +1018,16 @@ run against the acceptance criteria, and the results recorded.
 
 **Acceptance**:
 
-- [ ] Every filtered pool reaches its target or its seed cap, with the
-      shortfall recorded.
-- [ ] Criteria 1–5 assessed with the numbers in the report; any failure
-      is stated as such.
-- [ ] Phase 2 hand-off paragraph in the worklog names the pool directory,
-      the filtered counts and the comparison cells.
+- [x] Every filtered pool reaches its target or its seed cap, with the
+      shortfall recorded (every condition at its target, no
+      shortfall; worklog of 2026-09-14).
+- [x] Criteria 1–5 assessed with the numbers in the report; any failure
+      is stated as such (criterion 3 fails on Student D8; the report
+      and the worklog of 2026-09-15). The `M = 32` cells, an
+      extension of the grid for the integrated arm, are pending.
+- [x] Phase 2 hand-off paragraph in the worklog names the pool directory,
+      the filtered counts and the comparison cells (the Phase 2
+      scoring itself ran on the cells; worklog of 2026-09-15).
 
 ## Documentation
 
@@ -1721,6 +1736,18 @@ draft had left open:
   (paired bootstrap intervals over cells added where a comparison rests
   on them, with the caveat that cells share runs). Tests: 45
   pool-generator and 19 comparison tests pass.
+- 2026-09-15: hand-off. The `M = 3` and `5` run's per-cell outputs are
+  the second asset of `svbmc-analyses-20260915`
+  (`svbmc_pool_20260914_stack_M35.tar.gz`; the experiments README has
+  the size and hash); `dev/scripts/svbmc_headline_numbers.py`
+  regenerates every number the headline note and the report's
+  shrinkage and cap sections quote from the tracked cells. The
+  per-phase checklists above are reconciled with this worklog (every
+  check of Phases 1–3 and 5 passed when its phase completed; Phase 6's
+  acceptance is met except the `M = 32` extension), and the status
+  paragraph and `dev/TODO.md` state what remains: the `M = 32` run,
+  and the two decisions of the debiasing item (whether the two-level
+  shrinkage ships in 1.5, and the headline's user-facing caveat).
 
 ## Execution tracking
 
@@ -1733,7 +1760,7 @@ Live status of the phases above (`[ ]` not started, `[~]` in progress,
 - [x] Phase 3: pool generator (Opus sub-agent; 2026-09-14, 16 tests pass, manual gate on `rosenbrock_D2_noise3_svbmc` verified and stacked; see worklog)
 - [x] Phase 4: pilot (Fable; authorized by the PI on 2026-09-13; run 2026-09-14 from the harness commit `e2aaef5`, campaign directory `dev/scripts/runs/svbmc_pool_20260913/pool/`, three seeds per condition, `--save-vbmc`; 15/15 runs pass the filters, all artifacts verify, `M = 3` stacking measured in both arms; stages B–D await authorization)
 - [x] Phase 5: stacking comparison harness (Opus sub-agent; 2026-09-14, steps 1–3 and 5 done, 7 tests pass; step 4, the dry run on the pilot artifacts, waits for Phase 4)
-- [~] Phase 6: campaign, comparison and report (stages B and C became the cluster pool of decision 8; stage D authorized by the PI and launched 2026-09-14 from `dev-next` `744864a` into `dev/scripts/runs/svbmc_pool_20260914_stack/`, the decision-6 grid on all eight conditions, both arms, 560 cells, finished 2026-09-15 in 8.1 hours: criteria 1, 2, 4 and 5 hold on every condition and criterion 3's gate fails on Student D8 at every `M`, see the worklog; the Phase 2 scoring and the weight-aware-cap experiment are done and reported, the report `dev/results/2026-09-15-svbmc-pool-comparison.md` covers them; the `M = 32` integrated-arm cells wait for an overnight slot)
+- [~] Phase 6: campaign, comparison and report (stages B and C became the cluster pool of decision 8; stage D authorized by the PI and launched 2026-09-14 from `dev-next` `744864a` into `dev/scripts/runs/svbmc_pool_20260914_stack/`, the decision-6 grid on all eight conditions, both arms, 560 cells, finished 2026-09-15 in 8.1 hours: criteria 1, 2, 4 and 5 hold on every condition and criterion 3's gate fails on Student D8 at every `M`, see the worklog; the integrated arm alone at `M` = 3 and 5 (320 cells) on 2026-09-15; the Phase 2 scoring, the weight-aware caps and the shrinkage estimates are done and reported in `dev/results/2026-09-15-svbmc-pool-comparison.md`, the acceptance checks above are met; complete except the `M = 32` integrated-arm cells, which wait for a night the PI chooses)
 - [x] Documentation updates listed above (the experiments README with its per-pool and per-analysis sections, the hpc README, the stage D report and the `dev/README.md` entries; 2026-09-15)
 - [x] Doublecheck of the implemented phases (three fresh reviewers on 2026-09-14; every finding fixed and re-verified, see worklog)
 - [x] Evidence yardstick change (decision 7): `elbo_mc` with an arm-independent entropy reference, bias and KL-gap columns, criterion 3 gates, `--summarize-only`; reviewed, no must-fix (2026-09-14)

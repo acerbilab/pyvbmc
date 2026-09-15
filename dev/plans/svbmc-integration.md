@@ -109,6 +109,14 @@ assessed before the 1.5 release. The
 [campaign plan](svbmc-benchmark-campaign.md) owns the design, the
 harness, the allocation, the acceptance criteria and the execution
 worklog; the [remaining-work checklist](../TODO.md) tracks its status.
+The campaign ran on 2026-09-14/15 on eight conditions at `M` = 2 to 16
+and is assessed in the
+[stage D report](../results/2026-09-15-svbmc-pool-comparison.md):
+posterior quality, agreement, runtime and reproducibility hold on every
+condition, and the evidence-accuracy gate failed on the heavy-tailed
+condition because of the capped headline, whose replacement the
+[headline note](../2026-09-15-svbmc-headline-shrinkage.md) records; an
+`M = 32` extension is pending.
 
 ## Layout
 

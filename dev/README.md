@@ -68,14 +68,14 @@ For the release overview, start with
   the branch-and-PR flow; the specification is in
   [plans/svbmc-benchmark-campaign.md](plans/svbmc-benchmark-campaign.md).
 - [S-VBMC headline shrinkage](2026-09-15-svbmc-headline-shrinkage.md) —
-  What the run pools showed about the stacked ELBO on noisy targets: the
-  comparison passes except on the reported number, the component-median
-  cap over-corrects on a heavy-tailed target and the cross-run estimator
-  does not repair it, the optimism lives inside each run's own estimate,
-  and an empirical-Bayes shrinkage by the GP's own covariance is the first
-  correction acceptable everywhere; the candidates side by side and the
-  decision to make the two-level shrinkage the headline candidate. The
-  evidence is the
+  Two questions about the S-VBMC port, answered from the run-pool
+  benchmark: it matches the standalone package (same weights and
+  posterior quality, 1.9 to 4 times faster), and the number it should
+  report on a noisy stack is a two-level empirical-Bayes shrinkage of
+  the components' expected log joints by the GP's own covariance, not
+  the component-median cap, which over-corrects on a heavy-tailed
+  target; the candidates side by side, the decision and what
+  implementing it entails. The evidence is the
   [stage D report](results/2026-09-15-svbmc-pool-comparison.md).
 
 `TODO.md` contains only current actions, constraints and links. Do not
@@ -127,7 +127,9 @@ plan and consolidated human summary.
   targets saved with their posteriors and GPs (the input of the Phase 2
   ELBO estimator), the matched comparison of the integrated S-VBMC against
   the original standalone package, the harness scripts, allocation, gates
-  and execution worklog.
+  and execution worklog. Run on 2026-09-14/15 and assessed in
+  [results/2026-09-15-svbmc-pool-comparison.md](results/2026-09-15-svbmc-pool-comparison.md);
+  the `M = 32` extension is pending.
 - [plans/benchmark-realistic-targets.md](plans/benchmark-realistic-targets.md) —
   the real-data benchmark targets from benchflow (Bayesian timing,
   multisensory causal inference on two subjects): the decisions, the

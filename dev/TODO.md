@@ -1,6 +1,6 @@
 # PyVBMC 1.5: remaining work and scope
 
-Updated 2026-09-14. These lists describe scope, not priority or execution
+Updated 2026-09-15. These lists describe scope, not priority or execution
 order; independent workstreams can be picked up in any order. Inclusion in
 scope does not settle an implementation design or launch a campaign.
 Completed 1.5 work is not listed here: the
@@ -35,117 +35,80 @@ records its execution.
   can change numerical search behavior and needs end-to-end validation
   before any use. IMIQR cache reuse is optional cleanup.
 
-- [ ] **S-VBMC ELBO debiasing (the optimism note's Phase 2).** Decide the
-  reported estimator, fallback and interface from the cross-run honest
-  estimator's results on the full run pools. The estimator
-  (`dev/scripts/svbmc_honest_elbo.py`) scores every cell of the stacking
-  comparison and is prototyped on the pilot pool: the
-  [pilot report](results/2026-09-14-svbmc-honest-elbo-pilot.md) records
-  the checks, a systematic cross-run under-prediction on two noisy
-  conditions, and that at three runs the existing component-median cap is
-  closer to the reference than the honest estimate on four of five
-  conditions. The full pools are scored (2026-09-15; the
-  [stage D report](results/2026-09-15-svbmc-pool-comparison.md),
-  sections "Phase 2" and "Weight-aware caps"): the honest estimate is
-  within 0.035 nats on the noiseless controls and 0.07 on Rosenbrock,
-  under-predicts by 0.2 to 0.7 on noisy GMM and both multisensory conditions
-  where the cap is closer, and on Student D8 is as low as the cap (both
-  1 to 1.8 nats below the reference) while the raw value is within
-  0.3; the pilot's under-prediction holds at scale, and no weight-aware
-  variant of the cap separates the heavy-tailed case from the typical
-  one. Of the estimates scored afterwards on the same cells (the
-  report's "Weight-aware caps" and "Empirical-Bayes shrinkage"
-  sections, with `M = 3` and `5` added for the integrated arm), the
+- [ ] **S-VBMC ELBO debiasing (the optimism note's Phase 2).** Decide
+  the headline `elbo` of a noisy stack. The candidate is the two-level
   empirical-Bayes shrinkage of the components' expected log joints by
-  the GP's own estimation variance, within each run with the full
-  covariance, is the first correction acceptable on every condition:
-  at `M` = 2 to 5 its worst median bias over the noisy conditions is
-  0.57 to 0.83 nats against 0.77 to 1.07 for raw and 0.95 to 1.26 for
-  the cap, with the noiseless controls moved by at most 0.03 and
-  Student D8 within 0.4 (though worse than raw there); it has no tuned
-  constant and uses only `I_sk`, `J_sjk` and the runs' own weights;
-  its two-level form (each run's own value also
-  shrunk toward the runs' mean) is as good or better at every `M`, and a
-  hybrid that applies the cap only where the noise share is at least
-  0.2 does better still on these eight conditions but rests on a
-  threshold chosen on them. The PI endorsed the two-level shrinkage as
-  the headline candidate for noisy stacks (2026-09-15; the
-  [headline note](2026-09-15-svbmc-headline-shrinkage.md) records the
-  reasons and what implementing it entails). Untested: re-optimizing
-  the weights on the shrunken estimates. Whether the switch ships in 1.5
-  or after is the next decision; 1.5 must still
-  report a headline, so until it is made the current default stands
-  (the component-median cap on a noisy stack, the raw value otherwise,
-  every variant and the cap amount in `elbo_details`), and the
-  user-facing documentation of the headline must say that on a
-  heavy-tailed target the cap can sit well below the true ELBO, a
-  `cap_amount` large against `elbo_sd` being the sign. Next: the
-  `M = 32` cells once they run, and, if a cross-run estimator is still
-  wanted, the two
-  variants the report names (a leave-one-run-out GP refit on the pooled
-  evaluations of the other runs; a per-run offset correction). The
-  stacking objective stays unchanged. See the
+  the GP's own estimation covariance (PI, 2026-09-15): the
+  [headline note](2026-09-15-svbmc-headline-shrinkage.md) is the
+  summary and decision record, the
+  [stage D report](results/2026-09-15-svbmc-pool-comparison.md)
+  (sections "Phase 2", "Weight-aware caps" and "Empirical-Bayes
+  shrinkage") the evidence, and
+  `python dev/scripts/svbmc_headline_numbers.py` regenerates every
+  number they quote. What the run pools settled: the cross-run
+  "honest" estimator (`dev/scripts/svbmc_honest_elbo.py`; the
+  [pilot report](results/2026-09-14-svbmc-honest-elbo-pilot.md) is
+  its first run) is not the answer, under-predicting by 0.2 to 0.7
+  nats on three noisy conditions and matching the cap's error on
+  Student D8; no weight-aware variant of the cap separates the
+  heavy-tailed case from the typical one; the shrinkage is the first
+  estimate acceptable on every condition, with no tuned constant. It
+  reads only `I_sk`, `J_sjk` and each run's own weights, which
+  `SVBMC` already requires of every input posterior, so the class's
+  interface does not change and no GP or VBMC object is needed.
+  Decisions to make: (1) whether the switch ships in 1.5 or 1.5 keeps
+  the component-median cap; (2) the headline's user-facing caveat
+  either way (the shrinkage remains optimistic by about 0.8 nats on a
+  high-noise real-data target and pessimistic by up to 0.4 on a
+  heavy-tailed one; the cap sits 1 to 1.8 nats below the truth on
+  heavy tails, a `cap_amount` large against `elbo_sd` being the sign;
+  the raw value is not an upper bound on the truth). If it ships, the
+  note's "Decision" section lists the change: a headline method in
+  `pyvbmc/svbmc/svbmc.py` from the reference
+  `dev/scripts/svbmc_shrink_elbo.py`, applied at the selected weights
+  so the posterior does not move, an `elbo_details` key and the noise
+  share as a diagnostic, the tests that pin the capped headline, and
+  the user documentation. Not planned: re-optimizing the weights on
+  the shrunken estimates (untested), and the cross-run variants the
+  report names (a leave-one-run-out GP refit, a per-run offset)
+  unless a cross-run estimator is still wanted. The stacking
+  objective stays unchanged. The campaign item's `M = 32` cells
+  extend the evidence when they run. See the
   [ELBO optimism note](2026-09-12-svbmc-elbo-optimism.md) and the
   completed [Phase 1 plan](plans/svbmc-elbo-reporting.md).
 
 - [ ] **S-VBMC benchmark campaign against the original implementation.**
-  Assess the combined effect of the 1.5 S-VBMC changes (debiasing,
-  preparation and entropy speedups) against the original standalone
-  S-VBMC on matched input-run groups: posterior quality, evidence accuracy
-  scored by bias against the stack's own Monte Carlo ELBO, runtime. The
-  [campaign plan](plans/svbmc-benchmark-campaign.md) owns the approved
-  design: eight pool conditions at PyVBMC's default budget, 100 filtered
-  runs per noisy condition and 50 per control, each run saved with its
-  posterior and the GP behind its statistics so the same pools serve the
-  Phase 2 estimator, gpyreg pinned to 1.2.1. The harness is implemented
-  and reviewed and a three-seed pilot has run. Status: the pools were
-  generated on the cluster per the
-  [hand-off note](2026-09-14-svbmc-pool-handoff.md) (1100 runs, 700
-  selected), handed back as the archive of the draft release
-  `svbmc-pool-20260914` and PR #177 (Slurm scripts, a `verify`
-  subcommand, the tracked records under
-  `experiments/svbmc_pool/pool_20260914/`), reviewed and merged on
-  2026-09-14. The archive is unpacked and verified on the analysis
-  machine, whose BLAS does not recompute the stored statistics bit for
-  bit; the recomputation gate now allows each artifact the rounding its
-  own GP's condition number amplifies, which on the noisy Rosenbrock
-  condition (GPs trained on far-tail evaluations) reaches a relative
-  0.3 (the plan's worklog of 2026-09-14 has the numbers). The stacking
-  harness reads a copied pool through `--gpyreg-source`. Stage D, the
-  two-arm comparison on the decision-6 grid (both arms, 560 cells), ran
-  on the analysis machine from `dev-next` `744864a` in 8.1 hours into
-  `dev/scripts/runs/svbmc_pool_20260914_stack/`, its summaries tracked
-  under `experiments/svbmc_pool/stack_20260914/`. Criteria 1, 2, 4 and
-  5 hold on every condition; criterion 3's gate fails on Student D8 at
-  every `M`, where the capped headline sits 0.9 to 1.8 nats below the
-  stack's own Monte Carlo ELBO while both raw estimates are within 0.4
-  (the plan's worklog of 2026-09-15 has every number). The PI decided
-  (2026-09-15): the Rosenbrock noise-3 condition stays, with its
-  numerically fragile GPs stated as a caveat; Phase 2 scores every
-  condition and its own-run consistency check marks Rosenbrock's honest
-  estimates as unreliable, so Phase 2's conclusions rest on the other
-  five noisy conditions; and `M = 32` runs for the integrated arm alone
-  (`svbmc_pool_stack.py --arms integrated`, merged 2026-09-15 together
-  with `--summarize-only` over several `--from-results` files). The
-  [stage D report](results/2026-09-15-svbmc-pool-comparison.md) covers
-  the comparison, the Phase 2 scoring of its cells (2026-09-15) and the
-  weight-aware-cap experiment. Next: the `M = 32` run for the
-  integrated arm (80 cells, about 8 hours, on a night the PI chooses:
-  `svbmc_pool_stack.py --pool ... --gpyreg-source ... --M 32
-  --repetitions 10 --arms integrated`), its Phase 2 scoring, one merged
-  summary (`--summarize-only` with both `--from-results` files), and
-  the report's `M = 32` section; the PI's decision (2026-09-15) is
-  that it runs later, overnight on the analysis machine or on the
-  cluster. The per-cell outputs of the three analyses and of the
-  `M = 3` and `5` run are the two assets of the draft release
-  `svbmc-analyses-20260915` (the experiments README, "Raw outputs of
-  the analyses"), as the pool is of `svbmc-pool-20260914`; the M = 32
-  run needs the pool unpacked under `dev/scripts/runs/` and a clean
-  gpyreg 1.2.1 checkout (`--gpyreg-source`), nothing from the assets.
-  Pickup (2026-09-15): nothing is running; the next actions are the
-  two decisions of the debiasing item above (whether the two-level
-  shrinkage ships in 1.5, and the headline's user-facing caveat) and
-  the `M = 32` run on a night the PI chooses. See the
+  Done except one extension. The comparison of the integrated
+  `pyvbmc.svbmc` against the original standalone S-VBMC (`13a78f6`)
+  ran on eight pool conditions (100 filtered runs per noisy condition
+  and 50 per control, generated on the cluster per the
+  [hand-off note](2026-09-14-svbmc-pool-handoff.md), the asset of the
+  draft release `svbmc-pool-20260914`) at `M` = 2, 3, 4, 5, 8 and 16.
+  Criteria 1, 2, 4 and 5 hold on every condition: same weights, same
+  posterior quality, the port 1.9 to 4 times faster, every table
+  rebuilt from the recorded results. Criterion 3's gate fails on
+  Student D8 at every `M` because the capped headline over-corrects
+  on heavy tails, a finding about the headline that the debiasing
+  item above owns. The
+  [stage D report](results/2026-09-15-svbmc-pool-comparison.md) reads
+  the numbers; the [campaign plan](plans/svbmc-benchmark-campaign.md)
+  owns the design and its worklog the execution and the PI's
+  decisions (the Rosenbrock noise-3 condition kept with its
+  numerically fragile GPs as a caveat); the
+  [experiments README](experiments/svbmc_pool/README.md) indexes the
+  tracked outputs, and the per-cell outputs are the two assets of the
+  draft release `svbmc-analyses-20260915`. Remaining: the `M = 32`
+  run of the integrated arm alone (80 cells, about 8 hours, one heavy
+  process, on a night the PI chooses, overnight on the analysis
+  machine or on the cluster):
+  `svbmc_pool_stack.py --pool <pool> --gpyreg-source <gpyreg 1.2.1>
+  --seed 0 --M 32 --repetitions 10 --arms integrated`, which needs the
+  pool unpacked and verified under `dev/scripts/runs/` and a clean
+  gpyreg 1.2.1 checkout; then its shrinkage and cap scorings
+  (`svbmc_shrink_elbo.py` and `svbmc_cap_kappa.py` on its cells), one
+  merged summary (`--summarize-only` with the stage D, `M = 3` and
+  `5`, and `M = 32` results files) and the report's `M = 32` section,
+  after which the item closes. See the
   [campaign requirement](plans/svbmc-integration.md#benchmark-campaign-required-for-15).
 
 - [ ] **Robustness of the GP on noisy unbounded targets (investigate;
@@ -257,8 +220,9 @@ records its execution.
   estimators. If an accepted change moves default trajectories, update the
   affected golden references after assessment and preserve the old ones.
 - The Phase 2 estimator and the stacking comparison both consume the run
-  pools, which arrive from the cluster as a verified archive; nothing that
-  needs them runs before the archive is in and every artifact re-verifies.
+  pools, the asset of the draft release `svbmc-pool-20260914`; nothing
+  that needs them runs on a machine before every artifact re-verifies
+  there (`svbmc_pool_run.py verify`).
 - At most one heavy computation runs at a time. Read-only investigation
   and documentation may proceed alongside it.
 - Final release checks depend on included changes being settled.
