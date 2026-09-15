@@ -86,14 +86,36 @@ records its execution.
   dev/scripts/runs/svbmc_pool_20260914 --cells <results.json>
   --gpyreg-source <the 1.2.1 worktree>`, minutes to an hour), assess
   criteria 1 to 5 and write `results/<date>-svbmc-pool-comparison.md`.
-  Two decisions for the PI on the way: what to do with the Rosenbrock
-  noise-3 condition, whose GPs are numerically fragile (keep with the
-  caveat, regenerate under a change that keeps far-tail evaluations out
-  of the GP, or leave it out of the evidence analysis), and whether to
-  add `M = 32` for the integrated arm, which needs a per-arm grid in
-  the harness. See
+  The PI decided (2026-09-15): the Rosenbrock noise-3 condition stays,
+  with its numerically fragile GPs stated as a caveat; Phase 2 scores
+  every condition and its own-run consistency check marks Rosenbrock's
+  honest estimates as unreliable, so Phase 2's conclusions rest on the
+  other five noisy conditions; and `M = 32` is run for the integrated
+  arm alone, after stage D, once the harness has a per-arm cap on `M`
+  (a feature branch with tests). See
   the
   [campaign requirement](plans/svbmc-integration.md#benchmark-campaign-required-for-15).
+
+- [ ] **Robustness of the GP on noisy unbounded targets (investigate;
+  algorithmic changes are outside 1.5 unless the cause is a bug).** In
+  the S-VBMC pool's Rosenbrock condition at noise 3 (D = 2, unbounded,
+  N(0, 3²) prior, VIQR), most runs evaluate points far in the tails, log
+  densities of -1e5 to -1e6 and once -6.5e9, and the GP that fits them
+  next to values near zero with the negative-quadratic mean ends with
+  kernel-matrix condition numbers of 1e10 to 1e17, so its posterior
+  factors are at the edge of double precision: another machine's BLAS
+  recomputes the run's expected-log-joint statistics with relative
+  deviations up to 0.3 (the campaign plan's worklog of 2026-09-14 has
+  the numbers; the laptop pilot's runs show the same). The runs' own
+  answers are fine (median evidence error 0.17, gsKL 0.11, MMTV 0.09),
+  but a GP this ill-conditioned makes every consumer of its posterior
+  fragile. To find out: why the acquisition samples such points on a
+  noisy unbounded target and whether that is intended, whether noise
+  shaping (`gaussian_process_train.py`) is doing what it should for
+  them, and whether the acquisition's search or the plausible box
+  should bound the candidates. The PI decided (2026-09-15) that an
+  algorithmic fix belongs after 1.5 unless the investigation finds a
+  bug.
 
 - [ ] **PyMC integration: the target adapter with the tested scope.** The
   PI chose (2026-09-14), on the
