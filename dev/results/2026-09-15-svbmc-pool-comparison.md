@@ -368,9 +368,46 @@ run-level selection the within-run population cannot see (the stack
 puts its mass on the runs whose own values came out highest, and the
 best of more runs is more optimistic), and the stack-wide population
 does not capture it either, since it reads the runs' different levels
-as real signal. A two-level version, each run's level shrunk toward the
-runs' mean by its own run-level estimation variance and then the
-components within it, is the natural next variant.
+as real signal.
+
+The two-level version does see it: each run's level, its own weighted
+expected log joint with the run-level estimation variance
+`w_mᵀ Σ_m w_m`, is shrunk toward the runs' mean by the share of the runs'
+spread that is estimation noise, every component of the run is shifted
+by the change of its level, and the within-run shrinkage is applied on
+top (`run_level` is the shift alone, `two_level` and `two_level_full`
+the composition with the diagonal and the full within-run variants).
+Median bias against `elbo_mc` at `M` = 2 / 4 / 8 / 16:
+
+| condition | `two_level_full` | `two_level` | `run_level` | class cap |
+|---|---|---|---|---|
+| multisensory noise 3 | +0.51 / +0.71 / +0.65 / +0.75 | +0.62 / +0.84 / +0.81 / +0.93 | +0.70 / +1.00 / +1.00 / +1.15 | +0.38 / +0.56 / +0.40 / +0.44 |
+| multisensory noise 1.3 | +0.20 / +0.25 / +0.35 / +0.37 | +0.33 / +0.39 / +0.47 / +0.51 | +0.38 / +0.44 / +0.51 / +0.57 | +0.08 / +0.11 / +0.14 / +0.16 |
+| Rosenbrock noise 3 | +0.14 / +0.09 / +0.12 / +0.16 | +0.15 / +0.16 / +0.20 / +0.27 | +0.19 / +0.28 / +0.33 / +0.47 | +0.09 / +0.07 / +0.10 / +0.11 |
+| GMM noise 3 | +0.08 / −0.02 / +0.03 / +0.11 | +0.21 / +0.14 / +0.22 / +0.35 | +0.29 / +0.28 / +0.40 / +0.56 | +0.07 / −0.01 / +0.06 / +0.05 |
+| ring noise 3 | +0.15 / +0.06 / +0.09 / +0.19 | +0.18 / +0.06 / +0.14 / +0.26 | +0.40 / +0.34 / +0.40 / +0.62 | +0.21 / +0.16 / +0.16 / +0.14 |
+| Student D8 noise 3 | −0.37 / −0.39 / −0.20 / −0.08 | −0.19 / −0.19 / +0.09 / +0.14 | −0.15 / −0.13 / +0.14 / +0.20 | −0.95 / −1.17 / −1.39 / −1.78 |
+| GMM (noiseless) | +0.01 / +0.01 / +0.01 / +0.01 | +0.01 / +0.00 / +0.00 / +0.01 | +0.01 / +0.00 / +0.00 / +0.01 | −0.02 / −0.01 / −0.03 / −0.02 |
+| multisensory (noiseless) | +0.06 / +0.06 / +0.09 / +0.07 | +0.04 / +0.05 / +0.08 / +0.06 | +0.03 / +0.04 / +0.07 / +0.05 | −0.05 / −0.02 / +0.03 / +0.02 |
+
+`two_level_full` is the first correction in this report that is
+acceptable on every condition: it matches the cap on Rosenbrock, noisy
+GMM and the ring, stays within 0.4 nats on Student D8 where the cap is
+off by up to 1.8, leaves the noiseless controls alone, and its worst
+case, +0.75 on multisensory noise 3 at `M = 16`, compares with the
+cap's 1.78 and the raw value's 1.31. It has no tuned constant and uses
+only what the class already holds (`I_sk`, `J_sjk`, the runs' own
+weights). What it leaves on the two multisensory conditions, 0.2 to
+0.75 nats, is the part of the optimism that the GP's own covariance
+does not account for, a mean bias of the estimates rather than
+variance; nothing keyed on `J` can see it. The run-level shift alone
+does little at small `M` and most of its work at `M ≥ 8`, as expected
+of a selection among runs; the within-run shrinkage with the full
+covariance does most of the rest. Two things remain untested: the
+weights were held at the values selected on the unshrunken estimates
+(re-optimizing on the shrunken ones would also move the posterior
+toward the population mean), and the run-level moments rest on two to
+four values at `M ≤ 4`.
 
 ## Limitations
 

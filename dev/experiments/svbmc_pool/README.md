@@ -180,9 +180,12 @@ weight-averaged shrinkage factor, and per run the population mean, the
 excess variance `tau2`, the spread and the mean estimation variance),
 `summary.json` and `summary.md` (per condition and `M`, the median bias
 and median absolute bias over cells of the raw value, the class's cap
-and the three variants `within`, `within_full` and `stack`, with the
-shrinkage factor and the noise share, the mean estimation variance over
-the spread of the estimates).
+and the variants `within`, `within_full`, `stack`, `run_level`,
+`two_level` and `two_level_full`, with the shrinkage factor and the
+noise shares, the mean estimation variance over the spread of the
+estimates, within a run, over the stack's components and over the runs'
+levels; each cell's record also carries every run's level, its
+estimation variance and its shift).
 
 ## Raw outputs of the analyses (release asset)
 

@@ -19,7 +19,16 @@ of the estimate (the mean over hyperparameter samples of the diagonal of
 - ``within_full``: as ``within`` with the full estimation covariance
   ``Σ`` of the run's components (the estimates share one GP), the
   posterior mean ``μ + τ² (τ² I + Σ)⁻¹ (I − μ)``;
-- ``stack``: the population is every component of the stack.
+- ``stack``: the population is every component of the stack;
+- ``run_level``: the runs are the population. Each run's level is its
+  own weighted expected log joint ``E_m`` (its posterior weights times
+  its ``I_k``) with the estimation variance ``w_mᵀ Σ_m w_m``; the level is
+  shrunk toward the runs' mean by the share of the runs' spread that is
+  estimation noise, and every component of the run is shifted by the
+  change of its level. This targets the selection among runs, which the
+  within-run populations cannot see;
+- ``two_level`` and ``two_level_full``: the run-level shift composed with
+  ``within`` or ``within_full``.
 
 Only the value changes: ``G`` is re-evaluated at the cell's recorded
 weights with the shrunken ``I_k``, and every variant's bias is scored
@@ -64,7 +73,14 @@ from svbmc_pool_run import (  # noqa: E402
 # isort: split
 import numpy as np  # noqa: E402
 
-VARIANTS = ("within", "within_full", "stack")
+VARIANTS = (
+    "within",
+    "within_full",
+    "stack",
+    "run_level",
+    "two_level",
+    "two_level_full",
+)
 
 
 def run_estimates(vp, jacobian):
@@ -155,6 +171,29 @@ def score_cell(cell, pool):
     shrunk = {name: np.empty_like(I_all) for name in VARIANTS}
     factors = {name: np.empty_like(I_all) for name in VARIANTS}
     mu_stack, tau2_stack, spread_stack = moments(I_all, V_all)
+    # Run level: each run's own weighted expected log joint and its
+    # estimation variance, shrunk toward the runs' mean.
+    own = [np.ravel(vp.w) / np.sum(vp.w) for vp in stacked.vp_list]
+    levels = np.array([float(np.dot(o, I)) for o, (I, _, _) in zip(own, runs)])
+    level_variance = np.array(
+        [float(o @ C @ o) for o, (_, _, C) in zip(own, runs)]
+    )
+    mu_runs, tau2_runs, spread_runs = moments(levels, level_variance)
+    shrunk_levels, level_factors = shrink_diagonal(
+        levels, level_variance, mu_runs, tau2_runs
+    )
+    shifts = shrunk_levels - levels
+    record["run_population"] = {
+        "mu": mu_runs,
+        "tau2": tau2_runs,
+        "spread": spread_runs,
+        "mean_variance": float(np.mean(level_variance)),
+        "noise_share": (
+            float(np.mean(level_variance) / spread_runs)
+            if spread_runs
+            else None
+        ),
+    }
     for m, (I, V, C) in enumerate(runs):
         sl = slice(offsets[m], offsets[m + 1])
         mu, tau2, spread = moments(I, V)
@@ -167,6 +206,14 @@ def score_cell(cell, pool):
         shrunk["stack"][sl], factors["stack"][sl] = shrink_diagonal(
             I, V, mu_stack, tau2_stack
         )
+        shrunk["run_level"][sl] = I + shifts[m]
+        factors["run_level"][sl] = level_factors[m]
+        shrunk["two_level"][sl] = shrunk["within"][sl] + shifts[m]
+        factors["two_level"][sl] = factors["within"][sl] * level_factors[m]
+        shrunk["two_level_full"][sl] = shrunk["within_full"][sl] + shifts[m]
+        factors["two_level_full"][sl] = (
+            factors["within_full"][sl] * level_factors[m]
+        )
         record["runs"].append(
             {
                 "K": int(I.size),
@@ -176,6 +223,10 @@ def score_cell(cell, pool):
                 "spread": spread,
                 "mean_variance": float(np.mean(V)),
                 "noise_share": float(np.mean(V) / spread) if spread else None,
+                "level": float(levels[m]),
+                "level_variance": float(level_variance[m]),
+                "level_shift": float(shifts[m]),
+                "level_factor": float(level_factors[m]),
             }
         )
     record["stack_population"] = {
@@ -215,6 +266,11 @@ def summarize(records):
                 for run in r["runs"]
                 if run["noise_share"] is not None
             ]
+            run_shares = [
+                r["run_population"]["noise_share"]
+                for r in rows
+                if r["run_population"]["noise_share"] is not None
+            ]
             entry["M"].append(
                 {
                     "M": M,
@@ -237,6 +293,9 @@ def summarize(records):
                                 is not None
                             ]
                         )
+                    ),
+                    "noise_share_runs": (
+                        float(np.median(run_shares)) if run_shares else None
                     ),
                     "variants": {
                         name: {
@@ -276,6 +335,7 @@ def summarize(records):
 
 
 def markdown(summary):
+    names = list(summary["variants"])
     lines = [
         "# Empirical-Bayes shrinkage of the stacked expected log joint",
         "",
@@ -287,31 +347,38 @@ def markdown(summary):
         "(1 leaves the estimates unchanged, 0 replaces them by the "
         "population mean). `noise share` is the mean estimation variance "
         "of the components over the spread of their estimates, the share "
-        "of the spread that is noise, within a run and over the stack.",
+        "of the spread that is noise, within a run, over the stack's "
+        "components and over the runs' levels.",
         "",
-        "| condition | M | raw | class | within [factor] | within full [factor] | stack [factor] | noise share within / stack |",
-        "|---|---|---|---|---|---|---|---|",
+        "| condition | M | raw | class | "
+        + " | ".join(f"{name} [factor]" for name in names)
+        + " | noise share within / stack / runs |",
+        "|" + "---|" * (5 + len(names)),
     ]
+
+    def share(value):
+        return "-" if value is None else f"{value:.2f}"
+
     for entry in summary["conditions"]:
         for item in entry["M"]:
             v = item["variants"]
-            share = item["noise_share_within"]
             lines.append(
                 f"| {entry['condition'].replace('_svbmc', '')} | {item['M']} | "
                 f"{item['bias_raw']:+.2f} | {item['bias_class_cap']:+.2f} | "
-                f"{v['within']['bias']:+.2f} [{v['within']['factor']:.2f}] | "
-                f"{v['within_full']['bias']:+.2f} "
-                f"[{v['within_full']['factor']:.2f}] | "
-                f"{v['stack']['bias']:+.2f} [{v['stack']['factor']:.2f}] | "
-                f"{share if share is None else round(share, 2)} / "
-                f"{item['noise_share_stack']:.2f} |"
+                + " | ".join(
+                    f"{v[name]['bias']:+.2f} [{v[name]['factor']:.2f}]"
+                    for name in names
+                )
+                + f" | {share(item['noise_share_within'])} / "
+                f"{share(item['noise_share_stack'])} / "
+                f"{share(item.get('noise_share_runs'))} |"
             )
     lines += [
         "",
         "Median absolute bias over the cells of each condition and `M`:",
         "",
-        "| condition | M | raw | class | within | within full | stack |",
-        "|---|---|---|---|---|---|---|",
+        "| condition | M | raw | class | " + " | ".join(names) + " |",
+        "|" + "---|" * (4 + len(names)),
     ]
     for entry in summary["conditions"]:
         for item in entry["M"]:
@@ -319,9 +386,8 @@ def markdown(summary):
             lines.append(
                 f"| {entry['condition'].replace('_svbmc', '')} | {item['M']} | "
                 f"{abs(item['bias_raw']):.2f} | {abs(item['bias_class_cap']):.2f} | "
-                f"{v['within']['abs_bias']:.2f} | "
-                f"{v['within_full']['abs_bias']:.2f} | "
-                f"{v['stack']['abs_bias']:.2f} |"
+                + " | ".join(f"{v[name]['abs_bias']:.2f}" for name in names)
+                + " |"
             )
     return "\n".join(lines) + "\n"
 
