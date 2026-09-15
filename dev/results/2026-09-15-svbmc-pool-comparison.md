@@ -34,10 +34,11 @@ Tracked outputs:
 comparison, stage D" of the
 [experiments README](../experiments/svbmc_pool/README.md) describes
 their keys). Every number below is in `summary.md`. The comparison's
-`results.json` (17.6 MB, every cell) stays with the raw directory on
-the analysis machine, listed in its gitignored
-`dev/scripts/runs/LOCAL.md`; it is the input of the Phase 2 scoring and
-of `--summarize-only`.
+`results.json` (17.6 MB, every cell), the input of the Phase 2 scoring
+and of `--summarize-only`, is in the analyses asset of the draft release
+`svbmc-analyses-20260915` together with the Phase 2 and weight-aware-cap
+per-cell outputs (the experiments README, "Raw outputs of the
+analyses").
 
 ## What was compared, and how
 
@@ -332,7 +333,9 @@ biased, and no `κ` separates that case from the typical one.
   and reference columns, and the equivalence tests.
 - [`experiments/svbmc_pool/stack_20260914/summary.json`](../experiments/svbmc_pool/stack_20260914/summary.json),
   [`sources.json`](../experiments/svbmc_pool/stack_20260914/sources.json).
-- The raw directory `dev/scripts/runs/svbmc_pool_20260914_stack/` on the
-  analysis machine: `results.json`, `cells.jsonl`, the controller's log,
-  `original_arm.log`.
+- The per-cell outputs of stage D, the Phase 2 scoring and the
+  weight-aware caps: the asset `svbmc_pool_20260914_analyses.tar.gz` of
+  the draft release `svbmc-analyses-20260915` (the experiments README
+  names its size and SHA-256), unpacking to the three raw directories
+  under `dev/scripts/runs/`.
 - The pool: [`experiments/svbmc_pool/pool_20260914/`](../experiments/svbmc_pool/pool_20260914/README.md).

@@ -1663,6 +1663,16 @@ draft had left open:
   `--from-results`) and, by the PI's instruction of 2026-09-15, waits
   for an overnight slot rather than a working day; it costs about 8
   hours.
+- 2026-09-15: the PI's decisions on the day's results: the `M = 32`
+  integrated-arm run happens later, overnight on the analysis machine
+  or on the cluster; the per-cell outputs of stage D, the Phase 2
+  scoring and the weight-aware caps, too large to track, are published
+  as `svbmc_pool_20260914_analyses.tar.gz` (113 585 523 bytes, SHA-256 `59ada698d573f40e733b598b4cc667b571b552d3da261b7168f2c18edd06aa3b`), the asset of the draft release `svbmc-analyses-20260915` (target `24646b6`), the experiments README's "Raw outputs
+  of the analyses" saying what it holds and how it unpacks; and the
+  decision on the reported estimator is postponed, 1.5 keeping the
+  current headline (the component-median cap on a noisy stack) with
+  every variant in `elbo_details` and a documented caveat for
+  heavy-tailed targets until it is made.
 
 ## Execution tracking
 

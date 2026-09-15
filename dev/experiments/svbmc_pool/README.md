@@ -132,10 +132,10 @@ Torch and gpyreg, the checkout the pool's manifest names against the
 `--gpyreg-source` used), the baseline re-verification, the pool's
 identity and the harness's SHA-256. The comparison's `results.json`
 (17.6 MB, every cell with its subset, seeds, weights, ELBO variants,
-metrics and reference terms) and `cells.jsonl` stay with the raw
-directory, `dev/scripts/runs/svbmc_pool_20260914_stack/` on the
-analysis machine; `results.json` is what `--summarize-only` and the
-Phase 2 estimator read.
+metrics and reference terms) and `cells.jsonl` are in the analyses
+asset described under "Raw outputs of the analyses" below;
+`results.json` is what `--summarize-only` and the Phase 2 estimator
+read.
 
 ## Phase 2 scoring of stage D (2026-09-15)
 
@@ -153,8 +153,8 @@ heaviest components), `sources.json` and `figures/`. The pilot's
 every quantity; the reading of this run is in the
 [stage D report](../../results/2026-09-15-svbmc-pool-comparison.md).
 The 27.6 MB `results.json`, the 17.4 MB `cells.jsonl` and the per-cell
-component arrays (`cells/`, 95 MB) stay with the raw directory,
-`dev/scripts/runs/svbmc_pool_20260914_phase2/` on the analysis machine.
+component arrays (`cells/`, 95 MB) are in the analyses asset described
+under "Raw outputs of the analyses" below.
 
 ## Weight-aware caps (2026-09-15)
 
@@ -166,3 +166,21 @@ number of components in its set, the bias and whether it binds),
 and median absolute bias over cells of the raw value, the class's cap,
 each `kappa` in 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99 and 1, and the
 weighted median, with the fraction of cells each cap binds on).
+
+## Raw outputs of the analyses (release asset)
+
+What the three analyses above wrote per cell is too large to track and
+is `svbmc_pool_20260914_analyses.tar.gz` (113 585 523 bytes, SHA-256 `59ada698d573f40e733b598b4cc667b571b552d3da261b7168f2c18edd06aa3b`), the asset of the draft release `svbmc-analyses-20260915` of `acerbilab/pyvbmc` (target commit `24646b6`), as the pool
+itself is the asset of `svbmc-pool-20260914`. It holds the three raw
+directories in full, `svbmc_pool_20260914_stack/` (stage D:
+`results.json`, `cells.jsonl`, the summaries, `sources.json`, the
+controller's and the original arm's logs), `svbmc_pool_20260914_phase2/`
+(the Phase 2 scoring: `results.json`, `cells.jsonl`, `cells/`, the
+summaries, `figures/`, `sources.json`, the controller's log) and
+`svbmc_pool_20260914_cap_kappa/` (the weight-aware caps), and unpacks
+with `tar -xzf` to those directories, which belong under
+`dev/scripts/runs/` on the machine that reads them (`gh release download
+svbmc-analyses-20260915 --pattern svbmc_pool_20260914_analyses.tar.gz`).
+`svbmc_pool_stack.py --summarize-only --from-results
+<stack results.json>` rebuilds the stage D summaries from it, and the
+Phase 2 estimator and `svbmc_cap_kappa.py` take that file as `--cells`.

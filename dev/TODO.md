@@ -53,9 +53,16 @@ records its execution.
   1 to 1.8 nats below the reference) while the raw value is within
   0.3; the pilot's under-prediction holds at scale, and no weight-aware
   variant of the cap separates the heavy-tailed case from the typical
-  one. No single rule wins, so the decision on the reported estimator
-  is open for the PI with that evidence. Next: the `M = 32` cells once
-  they run, and, if a cross-run estimator is still wanted, the two
+  one. No single rule wins. The PI postponed the decision on the
+  reported estimator (2026-09-15) on that evidence; 1.5 must still
+  report a headline, so until it is made the current default stands
+  (the component-median cap on a noisy stack, the raw value otherwise,
+  every variant and the cap amount in `elbo_details`), and the
+  user-facing documentation of the headline must say that on a
+  heavy-tailed target the cap can sit well below the true ELBO, a
+  `cap_amount` large against `elbo_sd` being the sign. Next: the
+  `M = 32` cells once they run, and, if a cross-run estimator is still
+  wanted, the two
   variants the report names (a leave-one-run-out GP refit on the pooled
   evaluations of the other runs; a per-run offset correction). The
   stacking objective stays unchanged. See the
@@ -108,10 +115,12 @@ records its execution.
   `svbmc_pool_stack.py --pool ... --gpyreg-source ... --M 32
   --repetitions 10 --arms integrated`), its Phase 2 scoring, one merged
   summary (`--summarize-only` with both `--from-results` files), and
-  the report's `M = 32` section. Whether the large per-cell files
-  (stage D's 17.6 MB `results.json`, the scoring's 27.6 MB
-  `results.json` and 17.4 MB `cells.jsonl`) are tracked or published
-  as a release asset like the pool is open. See
+  the report's `M = 32` section; the PI's decision (2026-09-15) is
+  that it runs later, overnight on the analysis machine or on the
+  cluster. The per-cell outputs of the three analyses are the asset of
+  the draft release `svbmc-analyses-20260915` (the experiments README,
+  "Raw outputs of the analyses"), as the pool is of
+  `svbmc-pool-20260914`. See
   the
   [campaign requirement](plans/svbmc-integration.md#benchmark-campaign-required-for-15).
 
