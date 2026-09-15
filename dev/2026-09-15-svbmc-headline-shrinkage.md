@@ -1,4 +1,4 @@
-# The S-VBMC headline on noisy stacks: what the pools showed and the way forward
+# The S-VBMC headline on noisy stacks: what the benchmark showed and the way forward
 
 *Written 15 September 2026 from the day's results and a discussion with
 the PI. The evidence is in
@@ -8,95 +8,111 @@ the execution record is the worklog of
 the tracked outputs are under
 [experiments/svbmc_pool/](experiments/svbmc_pool/README.md).*
 
-S-VBMC stacks several finished VBMC posteriors and estimates the ELBO
-of the stack as the weighted sum of the components' expected log joints
-(from each run's GP) plus the mixture entropy. On noisy targets the
-estimate is optimistic: a winner's curse on noisy GP estimates.
+## The problem
+
+S-VBMC takes M finished VBMC posteriors of the same target, each a
+mixture of Gaussian components, and stacks them into one mixture by
+optimizing the weights of all the components together. It estimates the
+ELBO of the stack as the weighted sum of the components' expected log
+joints, each taken from its own run's GP, plus the entropy of the
+mixture. On a noisy target the estimate is optimistic: the weights are
+chosen to maximize a sum of noisy GP estimates, so the selected
+components are high partly by noise.
 
 PyVBMC 1.5 ships S-VBMC as `pyvbmc.svbmc.SVBMC`, ported from the
-standalone `svbmc` 0.1.1 (the original implementation). The run-pool
-campaign settled two questions:
+standalone `svbmc` package (version 0.1.1). The standalone package
+returns three estimates side by side, the raw value and two debiased
+variants, and leaves the choice to the user. The port returns one
+headline `elbo`: the raw value for a noiseless stack, and for a noisy
+stack the component-median cap, the first of the standalone package's
+variants. This note answers two questions about the port. Does it match
+the standalone package? And which single number should it report on a
+noisy stack?
 
-1. Does the port match the original?
-2. Which single number should the port report as the ELBO of a noisy
-   stack?
+## The benchmark
 
-Both implementations were run on the same stacks of the same runs, on
-eight conditions with 100 filtered runs per noisy condition and 50 per
-noiseless control. Every estimate is scored by its bias against the
-stacked posterior's own Monte Carlo ELBO, computed from the true log
-density.
+For each of eight targets, 100 independent VBMC runs were generated (50
+for the two noiseless targets), each saved with its posterior and the
+GP behind it. Six targets are noisy (a Gaussian noise of standard
+deviation 3 on the log density, 1.3 in one case): a multisensory model
+on real data in 6 dimensions at both noise levels, and Rosenbrock, a
+Gaussian mixture and a ring in 2 dimensions and a Student-t product in
+8 dimensions at noise 3. Two are noiseless controls: the Gaussian
+mixture and the multisensory model. From each target's runs, subsets of
+M = 2, 3, 4, 5, 8 and 16 runs were drawn at random, 20 subsets per M
+(10 at M = 16), and each subset was stacked by both implementations.
+Every reported ELBO is scored by its bias against the truth for that
+stack: the stack's own ELBO, computed by Monte Carlo from the true log
+density. All numbers below are medians of that bias over the subsets
+of one target and one M.
 
-## 1. The port matches the original
+## Does the port match the standalone package?
 
-Same weights, same posterior quality, 1.9 to 4 times faster,
-reproducible tables (the report's criteria 1, 2, 4 and 5, all
-conditions). The two implementations' capped estimates agree within
-0.25 nats.
+Yes. On every target the two implementations reach the same weights and
+the same posterior quality, the port is 1.9 to 4 times faster, and
+every table rebuilds from the recorded results. Their capped estimates
+agree within 0.25 nats.
 
-## 2. Which number to report
+## Which number should the port report?
 
-The original does not choose: it returns the raw estimate and two
-debiased variants (the expected log joint capped at the median over
-components or over runs) side by side. The port returns one headline,
-the raw value on a noiseless stack and the component-median cap on a
-noisy one. The campaign tested that choice; it fails on one of eight
-conditions.
+**The raw value** is optimistic on every noisy target: by 0.25 to 0.9
+nats at M = 2 and by 0.6 to 1.3 at M = 16. Most of the bias is present
+in each run before stacking, because VBMC's own variational
+optimization already selects components with high GP estimates.
+Stacking adds a smaller part that grows with M.
 
-**Raw.** Optimistic on every noisy condition: bias +0.25 to +0.9 nats at
-M = 2 and +0.6 to +1.3 at M = 16. Most of the bias is within-run, created
-by VBMC's own variational optimization selecting components with high
-GP estimates; the cross-run part added by stacking is smaller and grows
-with M.
+**The cap** replaces the stack's expected log joint by the median of the
+expected log joints over all components, weighted or not. It brings the
+headline within 0.56 nats of the truth on five of the six noisy targets
+at every M. On the 8-dimensional Student target it is 0.9 to 1.8 nats
+pessimistic, worse than the raw value, and the error grows with M. The
+reason is plain: on a heavy-tailed posterior the median component is a
+tail component. Where the cap works, it works because the components
+with small weight are the ones the optimization did not select, so
+they act as an unselected control group. Variants of the cap that leave
+out the small-weight components lose the debiasing.
 
-**The cap.** Within 0.56 nats on five of the six noisy conditions at
-every M. On the eight-dimensional Student target it is 0.9 to 1.8 nats
-pessimistic, worse than raw, and the error grows with M. The mechanism
-is plain: the cap replaces the stack's expected log joint by the
-unweighted median over components, and on a heavy-tailed posterior the
-median component is a tail component. Where the cap works, it works
-because the low-weight components are the ones the optimization did
-not select, so they serve as an unselected control group; variants that
-drop them (the κ experiment) lose the debiasing.
+**Scoring each component with the other runs' GPs**, the replacement
+that had been planned, is not the answer. It is unbiased on the two
+noiseless targets (within 0.035 nats) and on Rosenbrock (within 0.07),
+biased low by 0.2 to 0.7 nats on the other noisy targets, and as low as
+the cap on Student.
 
-**The cross-run estimate** (each component scored by the other runs'
-GPs, the optimism note's Phase 2) is unbiased on the noiseless controls
-(within 0.035 nats) and on Rosenbrock (within 0.07; nine Rosenbrock
-runs fail its own-run check, their GPs being numerically fragile),
-biased low by 0.2 to 0.7 nats on the typical noisy conditions, and as
-low as the cap on Student.
+**Empirical-Bayes shrinkage** is the first estimate that is acceptable
+on every target. Each component's estimate is treated as a noisy
+measurement, `I_k ~ N(θ_k, Σ)`, of a true value drawn from the run's
+population, `θ_k ~ N(μ, τ²)`, and replaced by its posterior mean. `Σ` is
+the run's estimation covariance, which the GP provides and the class
+already stores; `μ` and `τ²` are estimated by moments within the run;
+the full `Σ` is used because one GP estimates all of a run's components
+and their errors are correlated. A second level treats each run's own
+expected log joint the same way, shrinking it toward the mean over
+runs by its run-level estimation variance. This two-level estimate
+matches the cap on Rosenbrock, the Gaussian mixture and the ring
+(differences inside paired bootstrap intervals over subsets at M = 3
+and 5), is within 0.4 nats on Student, moves the noiseless targets by
+at most 0.03 nats, and has no tuned constant. Its costs: on Student it
+is 0.24 to 0.39 nats pessimistic at M ≤ 5, where the raw value is
+within 0.11; on the two multisensory targets the cap is closer by 0.09
+to 0.32 nats. Users stack three to five runs, which is why M = 3 and 5
+are in the grid; the ordering of the estimates is the same there.
 
-**Empirical-Bayes shrinkage** is the first estimate acceptable on every
-condition. Each component's estimate is the posterior mean under
-`I_k ~ N(θ_k, Σ)`, `θ_k ~ N(μ, τ²)`, with `Σ` the run's estimation
-covariance from `J_sjk`, `μ` and `τ²` moment-matched within the run,
-and the full `Σ` used because one GP estimates all of a run's
-components. A second level shrinks each run's own expected log joint
-toward the mean over runs by its run-level estimation variance. The
-two-level estimate matches the cap on Rosenbrock, noisy GMM and the
-ring (differences inside the paired bootstrap intervals at M = 3 and
-5), is within 0.4 nats on Student, moves the noiseless controls by at
-most 0.03 nats, and has no tuned constant. Its costs: on Student it is
-0.24 to 0.39 nats pessimistic at M ≤ 5, where raw is within 0.11; on
-the two multisensory conditions the cap is closer by 0.09 to 0.32 nats.
-Users stack three to five runs, so the integrated arm was also run at
-M = 3 and 5; the ordering of the estimates is the same.
+**A hybrid** does better still on this benchmark. Call the noise share
+the fraction of the spread of a run's component estimates that its GP
+attributes to estimation noise. In the median over subsets it separates
+the targets: 0.21 to 1.1 where the cap is right, 0.05 on Student, at
+most 0.085 on the noiseless targets; subset by subset the ranges
+overlap. The rule "cap when the share is at least 0.2, otherwise
+shrink" lowers the worst case of the best single estimate by a fifth to
+a third, with the same worst case for any threshold from 0.08 to 0.20;
+its gain is statistically resolvable only on the multisensory target at
+noise 3.
 
-**A hybrid** does better on this data. The noise share (the fraction of
-the components' spread that the GP attributes to estimation noise)
-separates the conditions in the median over cells: 0.21 to 1.1 where
-the cap is right, 0.05 on Student, at most 0.085 on the noiseless
-controls; cell by cell the ranges overlap. "Cap when the share is at
-least 0.2, otherwise shrink" lowers the worst case of the best single
-estimate by a fifth to a third, with the same worst case for any
-threshold from 0.08 to 0.20, and its gain is resolvable only on
-multisensory noise 3.
-
-Worst and mean over the six noisy conditions of the median absolute
-bias (the two controls are within 0.09 for every estimate; the
-conditions are not exchangeable, so "worst" is multisensory noise 3 for
-the shrinkage estimates and Student for the cap, and the mean weights
-them equally):
+Worst and mean, over the six noisy targets, of the median absolute
+bias. The two noiseless targets are within 0.09 nats for every
+estimate. The six targets are not exchangeable: the worst is the
+multisensory target at noise 3 for the shrinkage estimates and Student
+for the cap, and the mean weights the targets equally.
 
 | headline | worst, M = 3 / 5 / 16 | mean, M = 3 / 5 / 16 |
 |---|---|---|
@@ -106,40 +122,39 @@ them equally):
 | two-level shrinkage | 0.58 / 0.67 / 0.77 | 0.24 / 0.26 / 0.28 |
 | cap if noise share ≥ 0.2, else within-run shrinkage | 0.42 / 0.43 / 0.44 | 0.19 / 0.22 / 0.15 |
 
-The residual on the multisensory conditions is invisible to shrinkage
-by construction: shrinkage toward a population mean removes selection
+The residual on the multisensory targets is invisible to shrinkage by
+construction: shrinking toward a population mean removes selection
 within the population, not an error common to all of a run's
-components or to all runs. On those conditions the GP's own uncertainty
+components or to all runs. On those targets the GP's own uncertainty
 is also miscalibrated (a quarter to two thirds of the components have
-|z| > 2 in the Phase 2 calibration), which the shrinkage takes at face
-value.
+|z| > 2 against the truth), and the shrinkage takes it at face value.
 
 ## Decision
 
 The PI endorsed the recommendation on 2026-09-15: the two-level
-shrinkage is the headline candidate for a noisy stack; the raw value
+shrinkage is the headline candidate for a noisy stack. The raw value
 stays the headline of a noiseless stack, where shrinkage changes it by
 at most 0.03 nats.
 
 Against the alternatives: the cap fails silently and without bound on
 heavy tails. The hybrid has the best numbers, but its threshold was
-chosen on the data it is scored on, in a gap between six conditions and
-two, and it switches between estimates that differ by up to 0.5 nats;
-it is the candidate to revisit with the M = 32 cells and further
-targets.
+chosen on the benchmark it is scored on, in a gap between six targets
+and two, and it switches between estimates that differ by up to 0.5
+nats; it is the candidate to revisit with larger stacks (M = 32 is
+planned) and further targets.
 
 The class keeps the raw value and the cap in `elbo_details` and adds
 the noise share as a diagnostic. The documentation must state that the
 headline can remain optimistic by about 0.8 nats on a high-noise
-real-data target and pessimistic by up to 0.4 on a heavy-tailed one,
-and that the raw value is not an upper bound on the truth.
+real-data target and pessimistic by up to 0.4 nats on a heavy-tailed
+one, and that the raw value is not an upper bound on the truth.
 
 Whether the switch ships in 1.5, or 1.5 keeps the cap with that caveat
 and switches later, is the next decision. The change is contained: a
-function in `pyvbmc/svbmc/svbmc.py` computing the shrunken expected log
-joint from `I_sk`, `J_sjk` and the runs' own weights at the selected
-weights (as the cap is applied today, so the posterior does not move),
-a new `elbo_details` key and headline method, the reporting-plan tests
+function in `pyvbmc/svbmc/svbmc.py` that computes the shrunken expected
+log joint from the stored `I_sk`, `J_sjk` and the runs' own weights at
+the selected weights (as the cap is applied today, so the posterior
+does not move), a new `elbo_details` key and headline method, the tests
 that pin the capped headline, and the user documentation.
 `dev/scripts/svbmc_shrink_elbo.py` is the reference implementation.
 
@@ -147,11 +162,11 @@ that pin the capped headline, and the user documentation.
 
 - Re-optimizing the weights on the shrunken estimates is untested; only
   the reported value is shrunk today.
-- The M = 32 cells of the integrated arm (a later overnight or cluster
-  run) test the run-level term where it matters most.
-- Cells of one condition and M share runs (ten M = 16 cells draw 160
-  run slots from 100), so intervals over cells are optimistic, and the
-  comparison is one pool at one seed.
+- Stacks of 32 runs (a later overnight or cluster run) test the
+  run-level term where it matters most.
+- The subsets of one target and one M share runs (ten subsets of 16
+  draw 160 slots from 100 runs), so intervals over subsets are
+  optimistic, and the benchmark is one pool of runs at one seed.
 - The multisensory residual is an error common to a run's estimates;
   the GP-robustness item in the TODO (far-tail evaluations, the
   quadratic mean on heavy tails) is where its cause may show up.
