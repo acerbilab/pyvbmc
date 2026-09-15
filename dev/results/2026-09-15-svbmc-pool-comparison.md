@@ -301,6 +301,28 @@ unselected components are worse than the selected ones for a real
 reason, the tails, not by selection luck, so the control group is
 biased, and no `κ` separates that case from the typical one.
 
+Two run-level caps were scored on the same cells: `E_max`, the stacked
+expected log joint capped at the largest of the runs' own expected log
+joints (each run's posterior weights times its `I_k`), so that a stack
+cannot report more than its best input run, and `E_top`, capped at the
+value of the run carrying the largest stacking mass. (A cap at the
+largest *component* `I_k` can never bind, since the stacked value is a
+convex combination of the `I_k`; the script confirms it on every cell.)
+Neither helps: `E_max` binds on 0 to 50 % of the cells and moves the
+headline by at most 0.1 nats from the raw value on every condition
+(multisensory noise 3 at `M = 16`: +1.31 against raw +1.31; noisy GMM
++0.67 against +0.73; Student +0.27, never binding), `E_top` by at most
+0.16. That is itself a finding: the stacked value sits *below* the best
+input run's own expected log joint on most cells, so the 0.3 to 1.3
+nats of optimism are already inside each run's own value, placed there
+by VBMC's own variational optimization, which weights components where
+its GP estimate is high; stacking adds little cross-run selection on
+top. The component-median cap works because the low-weight components
+are the ones that optimization did not favour, the least selected-on
+estimates the stack holds; the run-median cap (`capped_E_median`, +0.17
+to +0.82 at `M = 16` on the typical noisy conditions, −1.13 on Student)
+sits between the two.
+
 ## Limitations
 
 - **The Rosenbrock GPs are numerically fragile.** The runs of that

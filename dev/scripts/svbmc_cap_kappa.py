@@ -16,7 +16,14 @@ weights, without refitting anything:
   ``I_k`` of that set. ``kappa = 1`` includes every component, which is the
   cap the class applies.
 - the weighted median: the ``I_k`` at which the cumulative weight, with
-  the components ordered by ``I_k``, reaches one half.
+  the components ordered by ``I_k``, reaches one half;
+- run-level caps: ``E_max`` caps ``G`` at the largest of the runs' own
+  expected log joints ``E_m`` (each run's posterior weights times its
+  ``I_k``, the class's ``E_corrected``), so that a stack cannot report
+  more than its best input run, and ``E_top`` at the ``E_m`` of the run
+  carrying the largest stacking mass. A cap at the largest component
+  ``I_k`` can never bind, since ``G`` is a convex combination of the
+  ``I_k``; the script checks that on every cell and reports it.
 
 ``G`` and ``H`` are the cell's own (``raw − entropy`` and ``entropy`` of the
 integrated arm), so only the cap level moves; the bias of every variant
@@ -142,6 +149,27 @@ def score_cell(cell, pool, kappas):
         "bias": min(G, level) + H - elbo_mc,
         "binds": bool(level < G),
     }
+    E = np.ravel(stacked.E_corrected).astype(float)
+    offsets = np.concatenate([[0], np.cumsum(arm["K"])])
+    run_mass = np.array(
+        [np.sum(w[offsets[m] : offsets[m + 1]]) for m in range(len(arm["K"]))]
+    )
+    for name, level in (
+        ("E_max", float(np.max(E))),
+        ("E_top", float(E[int(np.argmax(run_mass))])),
+    ):
+        record["caps"][name] = {
+            "level": level,
+            "components": None,
+            "bias": min(G, level) + H - elbo_mc,
+            "binds": bool(level < G),
+        }
+    record["bias_class_cap_E"] = (
+        float(arm["elbos"]["capped_E_median"]) - elbo_mc
+    )
+    # A cap at the largest component I_k is the raw value: G is a convex
+    # combination of the I_k.
+    record["component_max_binds"] = bool(float(np.max(I)) < G - 1e-9)
     # kappa = 1 is the class's own cap; the rebuild must reproduce it.
     if 1.0 in kappas:
         difference = abs(
@@ -155,8 +183,16 @@ def score_cell(cell, pool, kappas):
     return record
 
 
+def cap_names(kappas):
+    return [f"kappa_{k:g}" for k in kappas] + [
+        "weighted_median",
+        "E_max",
+        "E_top",
+    ]
+
+
 def summarize(records, kappas):
-    names = [f"kappa_{k:g}" for k in kappas] + ["weighted_median"]
+    names = cap_names(kappas)
     conditions = []
     for condition in dict.fromkeys(r["condition"] for r in records):
         entry = {"condition": condition, "M": []}
@@ -174,6 +210,12 @@ def summarize(records, kappas):
                 "bias_raw": float(np.median([r["bias_raw"] for r in rows])),
                 "bias_class_cap": float(
                     np.median([r["bias_class_cap"] for r in rows])
+                ),
+                "bias_class_cap_E": float(
+                    np.median([r["bias_class_cap_E"] for r in rows])
+                ),
+                "component_max_binds": int(
+                    sum(r["component_max_binds"] for r in rows)
                 ),
                 "caps": {
                     name: {
@@ -203,7 +245,12 @@ def summarize(records, kappas):
 
 
 def markdown(summary):
-    names = [f"kappa_{k:g}" for k in summary["kappa"]] + ["weighted_median"]
+    names = cap_names(summary["kappa"])
+    never = sum(
+        item["component_max_binds"]
+        for entry in summary["conditions"]
+        for item in entry["M"]
+    )
     lines = [
         "# Weight-aware caps on the stacked expected log joint",
         "",
@@ -214,19 +261,23 @@ def markdown(summary):
         "applies (every component; equal to `kappa_1`), `kappa_x` the cap "
         "at the median of the top-weight components carrying mass `x`, "
         "`wmed` the weighted median of the components' expected log "
-        "joints. In brackets, the fraction of cells on which the cap "
-        "binds.",
+        "joints, `E_max` the cap at the largest run-level expected log "
+        "joint, `E_top` at that of the run carrying the largest stacking "
+        "mass, `classE` the class's run-median cap (`capped_E_median`). "
+        "In brackets, the fraction of cells on which the cap binds. A cap "
+        "at the largest component expected log joint would bind on "
+        f"{never} of {summary['cells']} cells: it is the raw value.",
         "",
     ]
     header = (
-        "| condition | M | raw | class | "
+        "| condition | M | raw | class | classE | "
         + " | ".join(
             n.replace("kappa_", "κ ").replace("weighted_median", "wmed")
             for n in names
         )
         + " |"
     )
-    lines += [header, "|" + "---|" * (4 + len(names))]
+    lines += [header, "|" + "---|" * (5 + len(names))]
     for entry in summary["conditions"]:
         for item in entry["M"]:
             cells = [
@@ -236,6 +287,7 @@ def markdown(summary):
             lines.append(
                 f"| {entry['condition'].replace('_svbmc', '')} | {item['M']} | "
                 f"{item['bias_raw']:+.2f} | {item['bias_class_cap']:+.2f} | "
+                f"{item['bias_class_cap_E']:+.2f} | "
                 + " | ".join(cells)
                 + " |"
             )
@@ -245,13 +297,14 @@ def markdown(summary):
         "quantity a headline should make small:",
         "",
         header,
-        "|" + "---|" * (4 + len(names)),
+        "|" + "---|" * (5 + len(names)),
     ]
     for entry in summary["conditions"]:
         for item in entry["M"]:
             lines.append(
                 f"| {entry['condition'].replace('_svbmc', '')} | {item['M']} | "
                 f"{abs(item['bias_raw']):.2f} | {abs(item['bias_class_cap']):.2f} | "
+                f"{abs(item['bias_class_cap_E']):.2f} | "
                 + " | ".join(
                     f"{item['caps'][n]['abs_bias']:.2f}" for n in names
                 )

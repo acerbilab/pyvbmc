@@ -164,8 +164,12 @@ joint `G`, entropy `H` and `elbo_mc`, and for every cap the level, the
 number of components in its set, the bias and whether it binds),
 `summary.json` and `summary.md` (per condition and `M`, the median bias
 and median absolute bias over cells of the raw value, the class's cap,
-each `kappa` in 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99 and 1, and the
-weighted median, with the fraction of cells each cap binds on).
+each `kappa` in 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99 and 1, the
+weighted median, and the run-level caps `E_max` (the largest run-level
+expected log joint) and `E_top` (that of the run carrying the largest
+stacking mass), next to the class's run-median cap, with the fraction
+of cells each cap binds on and the count of cells on which a cap at the
+largest component would bind, zero by construction).
 
 ## Raw outputs of the analyses (release asset)
 
