@@ -42,11 +42,12 @@ the campaign's machine, so every invocation that runs a cell needs it::
     PYTHONPATH="<TORCH_PATH>" python -u dev/scripts/svbmc_pool_stack.py \\
         --pool DIR --out DIR [--conditions L1,L2] [--M 2,4,8,16] \\
         [--repetitions 20,20,20,10] [--seed 0] [--max-steps 500] \\
-        [--gpyreg-source DIR] [--overwrite]
+        [--gpyreg-source DIR] [--arms both|integrated] [--overwrite]
     PYTHONPATH="<TORCH_PATH>" python -u dev/scripts/svbmc_pool_stack.py \\
         --fixtures upstream_Ring --out DIR --M 2,3 --repetitions 2,2 \\
         --max-steps 3
-    python dev/scripts/svbmc_pool_stack.py --summarize-only --out DIR
+    python dev/scripts/svbmc_pool_stack.py --summarize-only --out DIR \\
+        [--from-results R1.json --from-results R2.json]
 
 A condition's filtered pool is the runs its pool directory's
 ``selection.json`` names, written by ``svbmc_pool_run.py select``, which
@@ -72,6 +73,17 @@ subprocess, seeded by ``np.random.seed(cell_seed)`` immediately before
 construction, because it draws its entropy samples from NumPy's global
 legacy stream and its posterior samples from the input posteriors' own
 generators.
+
+``--arms integrated`` runs the integrated arm alone, for the larger-``M``
+regime where the original's cost, quadratic in ``M`` and four to five
+times the integrated arm's, is not worth paying: every cell then carries
+one arm and no paired quantity, and the summaries carry the integrated
+arm's medians, biases and headline-bias growth. ``--summarize-only``
+takes several ``--from-results`` files and summarizes their cells
+together, so a run of both arms up to one ``M`` and a run of the
+integrated arm beyond it give one summary, whose paired quantities and
+equivalence tests cover the cell sets both arms ran and whose
+headline-bias growth spans every ``M``.
 
 The two arms need different import paths, both recorded in
 ``dev/experiments/svbmc_pool/baseline_environment.json``, which this script
@@ -202,6 +214,7 @@ SETTING_DEFAULTS = {
     "n_entropy_ref": N_ENTROPY_REF,
     "n_entropy_batches": N_ENTROPY_BATCHES,
     "bootstrap_resamples": BOOTSTRAP_RESAMPLES,
+    "arms": ["integrated", "original"],
 }
 #: The ported target each fixture group's runs were fitted to, so that
 #: ``--fixtures`` scores the stacked posteriors against a truth.
@@ -813,7 +826,7 @@ def entropy_reference(stacked, w, rng):
 
 
 def add_reference(row, stacked, problem, cell_seed):
-    """Complete a cell's two records with the Monte Carlo ELBO reference.
+    """Complete a cell's records with the Monte Carlo ELBO reference.
 
     Each arm is scored against the ELBO of the posterior it produced:
     its own expected log joint (already recorded) plus the entropy of the
@@ -824,7 +837,7 @@ def add_reference(row, stacked, problem, cell_seed):
     alternation of which arm is fitted first leaves the reference
     unchanged.
     """
-    for arm in ARMS:
+    for arm in row["arms"]:
         outcome = row["arms"][arm]
         rng = np.random.default_rng([int(cell_seed), ENTROPY_REF_STREAM])
         outcome.update(entropy_reference(stacked, outcome["w"], rng))
@@ -1074,7 +1087,7 @@ def fit_cell(
     )
 
 
-def warm_up(plan, conditions, kind, worker, problems):
+def warm_up(plan, conditions, kind, worker, problems, arms=ARMS):
     """One short discarded fit per arm, so no cell pays the first-call cost.
 
     Both implementations build their Torch graph, import what they need
@@ -1087,7 +1100,7 @@ def warm_up(plan, conditions, kind, worker, problems):
     cell = plan[0]
     condition = cell["condition"]
     entries = [conditions[condition][i] for i in cell["indices"][:2]]
-    for arm in ARMS:
+    for arm in arms:
         started = time.perf_counter()
         fit_cell(
             arm,
@@ -1107,8 +1120,39 @@ def warm_up(plan, conditions, kind, worker, problems):
         )
 
 
-def run_cells(plan, conditions, kind, worker, problems, max_steps, out):
-    """Run every planned cell, both arms, one at a time; return the rows."""
+def check_pairing(where, outcomes):
+    """Both arms filter the subset with the same rule, so they must have
+    retained the same runs with the same component counts; a difference
+    means the cell's two fits are not of the same mixture and neither the
+    weight difference nor the shared entropy reference would mean
+    anything. Returns the maximum absolute weight difference."""
+    weights = [np.asarray(outcomes[arm]["w"]) for arm in ARMS]
+    if weights[0].shape != weights[1].shape:
+        raise RuntimeError(
+            f"{where}: the arms returned weight vectors of "
+            f"different lengths ({weights[0].size} and "
+            f"{weights[1].size}); the cell is not paired"
+        )
+    for key in ("K", "M_used"):
+        if outcomes["integrated"][key] != outcomes["original"][key]:
+            raise RuntimeError(
+                f"{where}: the arms retained different runs "
+                f"({key} {outcomes['integrated'][key]} against "
+                f"{outcomes['original'][key]}); the cell is not "
+                "paired"
+            )
+    return float(np.max(np.abs(weights[0] - weights[1])))
+
+
+def run_cells(
+    plan, conditions, kind, worker, problems, max_steps, out, arms=ARMS
+):
+    """Run every planned cell, its arms one at a time; return the rows.
+
+    With both arms, which arm goes first alternates from cell to cell and
+    the cell records their pairing; with the integrated arm alone, the
+    cell carries that arm's record and no paired quantity.
+    """
     progress = (out / "cells.jsonl").open("w", encoding="utf-8")
     rows = []
     started = time.time()
@@ -1118,7 +1162,7 @@ def run_cells(plan, conditions, kind, worker, problems, max_steps, out):
             entries = [conditions[condition][i] for i in cell["indices"]]
             problem = problems.get(condition, kind)
             reference = problems.reference(condition, kind)
-            first = ARMS[number % 2]
+            first = arms[number % len(arms)]
             print(
                 f"START {condition} M={cell['M']} r={cell['repetition']} "
                 f"({number + 1}/{len(plan)}, {first} first, "
@@ -1126,7 +1170,7 @@ def run_cells(plan, conditions, kind, worker, problems, max_steps, out):
                 flush=True,
             )
             outcomes, stacked = {}, None
-            for arm in (first, ARMS[1 - ARMS.index(first)]):
+            for arm in (first, *[a for a in arms if a != first]):
                 outcomes[arm], fitted = fit_cell(
                     arm,
                     worker,
@@ -1141,44 +1185,41 @@ def run_cells(plan, conditions, kind, worker, problems, max_steps, out):
                 )
                 stacked = fitted if arm == "integrated" else stacked
             row = dict(cell, first_arm=first, arms=outcomes)
-            weights = [np.asarray(outcomes[arm]["w"]) for arm in ARMS]
             where = f"{condition} M={cell['M']} r={cell['repetition']}"
-            # Both arms filter the subset with the same rule, so they must
-            # have retained the same runs with the same component counts;
-            # a difference means the cell's two fits are not of the same
-            # mixture and neither the weight difference nor the shared
-            # entropy reference would mean anything.
-            if weights[0].shape != weights[1].shape:
-                raise RuntimeError(
-                    f"{where}: the arms returned weight vectors of "
-                    f"different lengths ({weights[0].size} and "
-                    f"{weights[1].size}); the cell is not paired"
-                )
-            for key in ("K", "M_used"):
-                if outcomes["integrated"][key] != outcomes["original"][key]:
-                    raise RuntimeError(
-                        f"{where}: the arms retained different runs "
-                        f"({key} {outcomes['integrated'][key]} against "
-                        f"{outcomes['original'][key]}); the cell is not "
-                        "paired"
-                    )
-            row["max_abs_dw"] = float(np.max(np.abs(weights[0] - weights[1])))
+            row["max_abs_dw"] = (
+                check_pairing(where, outcomes)
+                if set(arms) == set(ARMS)
+                else None
+            )
             reference_started = time.perf_counter()
             add_reference(row, stacked, problem, cell["cell_seed"])
             row["reference_seconds"] = time.perf_counter() - reference_started
             rows.append(row)
             progress.write(json.dumps(row) + "\n")
             progress.flush()
-            print(
-                f"DONE  {condition} M={cell['M']} r={cell['repetition']}: "
-                f"max|dw| {row['max_abs_dw']:.4g}, "
-                f"{outcomes['integrated']['optimize_seconds']:.1f} s vs "
-                f"{outcomes['original']['optimize_seconds']:.1f} s, bias "
-                f"{outcomes['integrated']['bias']['headline']:+.3f} vs "
-                f"{outcomes['original']['bias']['estimated']:+.3f} "
-                f"(reference {row['reference_seconds']:.1f} s)",
-                flush=True,
-            )
+            if set(arms) == set(ARMS):
+                print(
+                    f"DONE  {where}: "
+                    f"max|dw| {row['max_abs_dw']:.4g}, "
+                    f"{outcomes['integrated']['optimize_seconds']:.1f} s vs "
+                    f"{outcomes['original']['optimize_seconds']:.1f} s, bias "
+                    f"{outcomes['integrated']['bias']['headline']:+.3f} vs "
+                    f"{outcomes['original']['bias']['estimated']:+.3f} "
+                    f"(reference {row['reference_seconds']:.1f} s)",
+                    flush=True,
+                )
+            else:
+                print(
+                    f"DONE  {where}: "
+                    + ", ".join(
+                        f"{arm} {outcomes[arm]['optimize_seconds']:.1f} s, "
+                        f"bias "
+                        f"{outcomes[arm]['bias'][HEADLINE_VARIANT[arm]]:+.3f}"
+                        for arm in arms
+                    )
+                    + f" (reference {row['reference_seconds']:.1f} s)",
+                    flush=True,
+                )
     finally:
         progress.close()
     return rows
@@ -1279,6 +1320,16 @@ def bias_values(rows, arm, variant):
     return [row["arms"][arm]["bias"].get(variant) for row in rows]
 
 
+def paired_row(row):
+    """Whether a cell ran both arms, so that it has paired quantities."""
+    return all(arm in row["arms"] for arm in ARMS)
+
+
+def arms_present(rows):
+    """The arms every cell of a set ran, in ``ARMS`` order."""
+    return [arm for arm in ARMS if all(arm in row["arms"] for row in rows)]
+
+
 def paired(integrated, original):
     """Differences integrated minus original, NaN where either is missing."""
     return [
@@ -1288,10 +1339,12 @@ def paired(integrated, original):
 
 
 def runtime_ratios(rows):
+    """Integrated over original optimization seconds, on the paired cells."""
     return [
         row["arms"]["integrated"]["optimize_seconds"]
         / row["arms"]["original"]["optimize_seconds"]
         for row in rows
+        if paired_row(row)
     ]
 
 
@@ -1399,8 +1452,12 @@ def equivalence_tests(rows, metrics=TEST_METRICS, alpha=ALPHA):
 
     One exact signed-rank test on the per-cell paired differences
     (integrated minus original) of every condition-and-``M`` cell set, with
-    one Holm family per metric over all of those cells.
+    one Holm family per metric over all of those cells. Cell sets the
+    original arm did not run have no pairs and no test.
     """
+    rows = [row for row in rows if paired_row(row)]
+    if not rows:
+        return []
     tests = []
     for metric in metrics:
         family = [
@@ -1424,8 +1481,12 @@ def equivalence_tests(rows, metrics=TEST_METRICS, alpha=ALPHA):
 
 
 def median_bias(arms, arm):
-    """The median bias of one arm's headline, or ``None`` when it has none."""
-    entry = arms[arm]["bias"].get(HEADLINE_VARIANT[arm])
+    """The median bias of one arm's headline, or ``None`` when it has none
+    or the arm did not run on that cell set."""
+    outcome = arms.get(arm)
+    entry = (
+        None if outcome is None else outcome["bias"].get(HEADLINE_VARIANT[arm])
+    )
     return None if entry is None else entry["median"]
 
 
@@ -1482,11 +1543,22 @@ def headline_bias_growth(entries):
 
 
 def cell_summary(rows, rng, resamples=BOOTSTRAP_RESAMPLES):
-    """Both arms, their paired differences and the ratios, for one cell set."""
+    """The arms a cell set ran, their paired differences and the ratios.
+
+    ``arms_present`` names the arms every cell of the set ran; the paired
+    differences, the weight difference, the runtime ratio and criterion
+    3's gate exist only when both did.
+    """
     boot = partial(bootstrap_median, rng=rng, resamples=resamples)
     keys = ("mmtv", "gskl", "gskl_normalized")
-    summary = {"cells": len(rows), "arms": {}, "paired": {}}
-    for arm in ARMS:
+    present = arms_present(rows)
+    summary = {
+        "cells": len(rows),
+        "arms_present": present,
+        "arms": {},
+        "paired": {},
+    }
+    for arm in present:
         entry = {key: boot(arm_values(rows, arm, key)) for key in keys}
         entry["elbo_err_headline"] = boot(headline_errors(rows, arm))
         entry["elbo_err_mc"] = boot(arm_values(rows, arm, "elbo_err_mc"))
@@ -1508,26 +1580,29 @@ def cell_summary(rows, rng, resamples=BOOTSTRAP_RESAMPLES):
             )
         }
         summary["arms"][arm] = entry
-    summary["paired"]["bias_headline_minus_estimated"] = boot(
-        paired(
-            bias_values(rows, "integrated", HEADLINE_VARIANT["integrated"]),
-            bias_values(rows, "original", HEADLINE_VARIANT["original"]),
-        ),
-    )
     summary["criterion3"] = headline_bias_gate(summary["arms"])
-    for key in keys:
-        summary["paired"][key] = boot(
+    if set(present) == set(ARMS):
+        summary["paired"]["bias_headline_minus_estimated"] = boot(
             paired(
-                arm_values(rows, "integrated", key),
-                arm_values(rows, "original", key),
+                bias_values(
+                    rows, "integrated", HEADLINE_VARIANT["integrated"]
+                ),
+                bias_values(rows, "original", HEADLINE_VARIANT["original"]),
             ),
         )
-    summary["paired"]["elbo_err_headline"] = boot(
-        paired(
-            headline_errors(rows, "integrated"),
-            headline_errors(rows, "original"),
-        ),
-    )
+        for key in keys:
+            summary["paired"][key] = boot(
+                paired(
+                    arm_values(rows, "integrated", key),
+                    arm_values(rows, "original", key),
+                ),
+            )
+        summary["paired"]["elbo_err_headline"] = boot(
+            paired(
+                headline_errors(rows, "integrated"),
+                headline_errors(rows, "original"),
+            ),
+        )
     summary["max_abs_dw"] = boot([row["max_abs_dw"] for row in rows])
     summary["runtime_ratio"] = boot(runtime_ratios(rows))
     return summary
@@ -1618,6 +1693,14 @@ def summary_markdown(summary):
             f"[{entry['lo']:.{digits}f}, {entry['hi']:.{digits}f}]"
         )
 
+    def optional(mapping, *keys, digits=3):
+        """A bootstrap cell reached through ``keys``, or a dash when the
+        mapping or any key is missing (an arm that did not run)."""
+        value = mapping
+        for key in keys:
+            value = None if value is None else value.get(key)
+        return "-" if value is None else cell(value, digits)
+
     settings = summary["settings"]
     lines = [
         "# S-VBMC stacking comparison: integrated against original 0.1.1",
@@ -1663,6 +1746,20 @@ def summary_markdown(summary):
         "target, in evidence units; the `err` columns further below are "
         "the error against `ln Z`, descriptive only.",
     ]
+    if settings.get("merged_from"):
+        lines += [
+            "",
+            "Cells of several comparison runs summarized together: "
+            + "; ".join(
+                f"`{Path(part['path']).name}` from `{part['path']}` "
+                f"(M {', '.join(str(M) for M in part['M'])}; "
+                f"{' and '.join(part['arms'])})"
+                for part in settings["merged_from"]
+            )
+            + ". A cell set that only the integrated arm ran has no "
+            "paired quantity, no weight difference, no runtime ratio and "
+            "no equivalence test, shown as dashes.",
+        ]
     for condition in summary["conditions"]:
         single = condition["single_run"]
         aggregate = condition["all_M"]
@@ -1691,7 +1788,7 @@ def summary_markdown(summary):
         ]
         for entry in condition["M"]:
             integrated = entry["arms"]["integrated"]
-            original = entry["arms"]["original"]
+            original = entry["arms"].get("original")
             gate = entry["criterion3"]["headline_bias_not_worse"]
             lines.append(
                 "| {M} | {cells} | {bh} | {br} | {be} | {bd} | {dp} | "
@@ -1700,11 +1797,13 @@ def summary_markdown(summary):
                     cells=entry["cells"],
                     bh=cell(integrated["bias"]["headline"]),
                     br=cell(integrated["bias"]["raw"]),
-                    be=cell(original["bias"]["estimated"]),
-                    bd=cell(original["bias"]["debiased_I_median"]),
-                    dp=cell(entry["paired"]["bias_headline_minus_estimated"]),
+                    be=optional(original, "bias", "estimated"),
+                    bd=optional(original, "bias", "debiased_I_median"),
+                    dp=optional(
+                        entry["paired"], "bias_headline_minus_estimated"
+                    ),
                     ki=cell(integrated["kl_gap"]),
-                    ko=cell(original["kl_gap"]),
+                    ko=optional(original, "kl_gap"),
                     gate=flag(gate),
                 )
             )
@@ -1732,19 +1831,23 @@ def summary_markdown(summary):
         ]
         for entry in condition["M"]:
             integrated = entry["arms"]["integrated"]
-            original = entry["arms"]["original"]
+            original = entry["arms"].get("original")
             lines.append(
                 "| {M} | {hri} | {hi} | {hro} | {ho} | {mi} | {si} | {mo} "
                 "| {so} |".format(
                     M=entry["M"],
                     hri=cell(integrated["entropy_ref"]),
                     hi=cell(integrated["entropy"]),
-                    hro=cell(original["entropy_ref"]),
-                    ho=cell(original["entropy"]),
+                    hro=optional(original, "entropy_ref"),
+                    ho=optional(original, "entropy"),
                     mi=cell(integrated["elbo_mc"]),
                     si=number(integrated["elbo_mc_sd"]["median"]),
-                    mo=cell(original["elbo_mc"]),
-                    so=number(original["elbo_mc_sd"]["median"]),
+                    mo=optional(original, "elbo_mc"),
+                    so=(
+                        "-"
+                        if original is None
+                        else number(original["elbo_mc_sd"]["median"])
+                    ),
                 )
             )
         lines += [
@@ -1762,24 +1865,26 @@ def summary_markdown(summary):
         ]
         for entry in condition["M"]:
             integrated = entry["arms"]["integrated"]
-            original = entry["arms"]["original"]
+            original = entry["arms"].get("original")
             lines.append(
                 "| {M} | {cells} | {mi} | {mo} | {dm} | {gi} | {go} | {dg} "
                 "| {ei} | {eo} | {de} | {dw} | {ti} | {to} | {ratio} |".format(
                     M=entry["M"],
                     cells=entry["cells"],
                     mi=cell(integrated["mmtv"]),
-                    mo=cell(original["mmtv"]),
-                    dm=cell(entry["paired"]["mmtv"], 4),
+                    mo=optional(original, "mmtv"),
+                    dm=optional(entry["paired"], "mmtv", digits=4),
                     gi=cell(integrated["gskl"], 2),
-                    go=cell(original["gskl"], 2),
-                    dg=cell(entry["paired"]["gskl"], 3),
+                    go=optional(original, "gskl", digits=2),
+                    dg=optional(entry["paired"], "gskl", digits=3),
                     ei=cell(integrated["elbo_err_headline"], 2),
-                    eo=cell(original["elbo_err_headline"], 2),
-                    de=cell(entry["paired"]["elbo_err_headline"], 3),
+                    eo=optional(original, "elbo_err_headline", digits=2),
+                    de=optional(
+                        entry["paired"], "elbo_err_headline", digits=3
+                    ),
                     dw=cell(entry["max_abs_dw"], 4),
                     ti=cell(integrated["optimize_seconds"], 1),
-                    to=cell(original["optimize_seconds"], 1),
+                    to=optional(original, "optimize_seconds", digits=1),
                     ratio=cell(entry["runtime_ratio"]),
                 )
             )
@@ -1797,6 +1902,11 @@ def summary_markdown(summary):
         ]
         for entry in condition["M"]:
             tests = entry["tests"]
+            if not tests:
+                lines.append(
+                    f"| {entry['M']} | 0 | - | - | - | - | - | - | - |"
+                )
+                continue
             mmtv, gskl = tests["mmtv"], tests["gskl"]
             flagged = [
                 metric
@@ -1867,7 +1977,17 @@ def parse_args(argv=None):
     parser.add_argument(
         "--from-results",
         type=Path,
-        help="the results.json to summarize (default: <out>/results.json)",
+        action="append",
+        help="the results.json to summarize (default: <out>/results.json); "
+        "repeatable, and the files' cells are then summarized together",
+    )
+    parser.add_argument(
+        "--arms",
+        choices=("both", "integrated"),
+        default="both",
+        help="which implementations stack every cell: both (default), or "
+        "the integrated class alone, for the larger-M regime where the "
+        "original's cost is not worth paying",
     )
     args = parser.parse_args(argv)
     args.M = [int(v) for v in args.M.split(",") if v.strip()]
@@ -1884,6 +2004,7 @@ def parse_args(argv=None):
                 ("--fixtures", args.fixtures),
                 ("--conditions", args.conditions),
                 ("--gpyreg-source", args.gpyreg_source),
+                ("--arms", None if args.arms == "both" else args.arms),
             )
             if value
         ]
@@ -1905,27 +2026,98 @@ def parse_args(argv=None):
     return args
 
 
+def load_results(paths):
+    """The cells, single-run rows and settings of one or more results files.
+
+    Several files are the runs of one comparison split by arm set or by
+    ``M`` (both arms up to one ``M``, the integrated arm beyond it): their
+    cells are concatenated, the settings are the first file's with ``M``,
+    ``repetitions`` and ``arms`` widened to cover every file and a
+    ``merged_from`` record of each file, and the single-run rows are the
+    first file's, since every run scores the same pools. Files that
+    differ in the seed, the Adam steps or the kind of input, or that hold
+    the same cell twice, cannot be summarized together.
+    """
+    results = [
+        (path, json.loads(path.read_text(encoding="utf-8"))) for path in paths
+    ]
+    for path, result in results:
+        if result.get("settings") is None:
+            raise RuntimeError(
+                f"{path} holds no settings, which a summary needs"
+            )
+        require_reference_fields(result["cells"], path)
+    first_path, first = results[0]
+    settings = dict(first["settings"])
+    if len(results) > 1:
+        for path, result in results[1:]:
+            for key in ("seed", "max_steps", "kind"):
+                if result["settings"].get(key) != settings.get(key):
+                    raise RuntimeError(
+                        f"{path} was run with {key}="
+                        f"{result['settings'].get(key)!r} and {first_path} "
+                        f"with {settings.get(key)!r}; their cells cannot be "
+                        "summarized together"
+                    )
+        seen = {}
+        for path, result in results:
+            for row in result["cells"]:
+                key = (row["condition"], row["M"], row["repetition"])
+                if key in seen:
+                    raise RuntimeError(
+                        f"{path} and {seen[key]} both hold the cell "
+                        f"{key[0]} M={key[1]} r={key[2]}; a cell is "
+                        "summarized once"
+                    )
+                seen[key] = path
+        repetitions = {}
+        for path, result in results:
+            for M, R in zip(
+                result["settings"]["M"], result["settings"]["repetitions"]
+            ):
+                repetitions[int(M)] = max(repetitions.get(int(M), 0), int(R))
+        settings["M"] = sorted(repetitions)
+        settings["repetitions"] = [repetitions[M] for M in settings["M"]]
+        settings["arms"] = [
+            arm
+            for arm in ARMS
+            if any(arm in setting(r["settings"], "arms") for _, r in results)
+        ]
+        settings["merged_from"] = [
+            {
+                "path": str(path),
+                "generated": result.get("generated"),
+                "M": result["settings"]["M"],
+                "repetitions": result["settings"]["repetitions"],
+                "arms": setting(result["settings"], "arms"),
+                "cells": len(result["cells"]),
+            }
+            for path, result in results
+        ]
+    cells = [row for _, result in results for row in result["cells"]]
+    return cells, first["single_run"], settings
+
+
 def summarize_only(args):
     """Rebuild the summaries of a finished comparison, running no cell."""
     out = args.out.resolve()
-    path = (args.from_results or out / "results.json").resolve()
-    results = json.loads(path.read_text(encoding="utf-8"))
-    settings = results.get("settings")
-    if settings is None:
-        raise RuntimeError(f"{path} holds no settings, which a summary needs")
-    require_reference_fields(results["cells"], path)
+    paths = [
+        path.resolve()
+        for path in (args.from_results or [out / "results.json"])
+    ]
+    cells, single_run, settings = load_results(paths)
     out.mkdir(parents=True, exist_ok=True)
     summary = build_summary(
-        results["cells"],
-        results["single_run"],
-        settings,
-        np.random.default_rng(settings["seed"]),
+        cells, single_run, settings, np.random.default_rng(settings["seed"])
     )
     write_json(out / "summary.json", summary)
     text = summary_markdown(summary)
     (out / "summary.md").write_text(text, encoding="utf-8")
     print(text, flush=True)
-    print(f"{len(results['cells'])} cells from {path} -> {out}", flush=True)
+    print(
+        f"{len(cells)} cells from {', '.join(str(p) for p in paths)} -> {out}",
+        flush=True,
+    )
     return 0
 
 
@@ -2036,9 +2228,18 @@ def main(argv=None):
         raise RuntimeError(
             "no cell to run: every requested M exceeds the filtered pools"
         )
-    print(f"{len(plan)} cells, both arms", flush=True)
+    arms = ARMS if args.arms == "both" else ("integrated",)
+    print(
+        f"{len(plan)} cells, "
+        + ("both arms" if len(arms) == 2 else "the integrated arm alone"),
+        flush=True,
+    )
 
-    worker = Worker(baseline_path, gpyreg_source, out / "original_arm.log")
+    worker = (
+        Worker(baseline_path, gpyreg_source, out / "original_arm.log")
+        if "original" in arms
+        else None
+    )
     started = time.time()
     # Process-scoped request, as in the pool runner's sweep: permit display
     # sleep, prevent idle system sleep while the cells run, since a full
@@ -2048,12 +2249,13 @@ def main(argv=None):
 
         ctypes.windll.kernel32.SetThreadExecutionState(0x80000001)
     try:
-        warm_up(plan, conditions, kind, worker, problems)
+        warm_up(plan, conditions, kind, worker, problems, arms)
         rows = run_cells(
-            plan, conditions, kind, worker, problems, args.max_steps, out
+            plan, conditions, kind, worker, problems, args.max_steps, out, arms
         )
     finally:
-        worker.close()
+        if worker is not None:
+            worker.close()
         if sys.platform == "win32":
             ctypes.windll.kernel32.SetThreadExecutionState(0x80000000)
     elapsed = time.time() - started
@@ -2075,6 +2277,7 @@ def main(argv=None):
         "bootstrap_resamples": BOOTSTRAP_RESAMPLES,
         "alpha": ALPHA,
         "kind": kind,
+        "arms": list(arms),
     }
     write_json(
         out / "results.json",
@@ -2114,7 +2317,7 @@ def main(argv=None):
                     "torch_threads": torch.get_num_threads(),
                     "pythonpath": os.environ.get("PYTHONPATH"),
                 },
-                "original": worker.info,
+                "original": None if worker is None else worker.info,
             },
             "path_sets": {
                 "TORCH_PATH": torch_path,
