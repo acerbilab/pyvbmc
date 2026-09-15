@@ -611,6 +611,16 @@ reason.
   and `summary.md`. Its one run is
   `experiments/svbmc_pool/cap_kappa_20260915/`, read in the
   [stage D report](results/2026-09-15-svbmc-pool-comparison.md).
+- `scripts/svbmc_shrink_elbo.py` — empirical-Bayes shrinkage of the
+  stacked expected log joint on a comparison's recorded cells: each
+  component's estimate is shrunk toward its population mean by the share
+  of the population's spread that is the GP's own estimation variance
+  (from `J_sjk` and the between-sample variance of `I_sk`), within each
+  run with the diagonal or the full estimation covariance, or over the
+  whole stack, and re-evaluated at the recorded weights; every variant's
+  bias is scored against the cell's `elbo_mc`. Same rebuild, inputs and
+  outputs as `svbmc_cap_kappa.py`; its one run is
+  `experiments/svbmc_pool/shrink_20260915/`, read in the same report.
 - `scripts/pymc_feasibility.py` — the bounded feasibility check of a PyMC
   model adapter (`2026-09-13-pymc-integration.md`): a PyMC model becomes a
   box-bounded log joint for `VBMC` (a variable bounded on one side keeps

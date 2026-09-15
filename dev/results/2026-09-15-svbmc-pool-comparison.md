@@ -323,6 +323,55 @@ estimates the stack holds; the run-median cap (`capped_E_median`, +0.17
 to +0.82 at `M = 16` on the typical noisy conditions, −1.13 on Student)
 sits between the two.
 
+## Empirical-Bayes shrinkage
+
+Since the optimism is a selection on noisy GP estimates, the textbook
+correction is to shrink each component's estimate toward its population
+mean by the share of the population's spread that is estimation noise:
+with `I_k ~ N(θ_k, V_k)` and `θ_k ~ N(μ, τ²)`, report
+`μ + τ² / (τ² + V_k) (I_k − μ)`, where `V_k` is the GP's own variance of
+the estimate (the class already carries it in `J_sjk`) and `τ²` the
+excess variance of the estimates over the mean `V_k`, by moments.
+`svbmc_shrink_elbo.py` scored it on stage D's cells at the recorded
+weights (tracked under
+[`experiments/svbmc_pool/shrink_20260915/`](../experiments/svbmc_pool/shrink_20260915/)),
+the population being the run's own components (`within`, with the
+diagonal of the estimation covariance, or `within full` with all of it,
+since one GP estimates a run's components jointly) or the whole stack
+(`stack`). Median bias against `elbo_mc` at `M = 16`, with the
+weight-averaged shrinkage factor in brackets (1 leaves the estimates
+alone), and the share of the within-run spread that is estimation noise:
+
+| condition (`M = 16`) | raw | class cap | within | within full | stack | noise share |
+|---|---|---|---|---|---|---|
+| multisensory noise 3 | +1.31 | +0.44 | +1.10 [0.63] | +0.92 [0.85] | +1.07 [0.70] | 0.45 |
+| multisensory noise 1.3 | +0.61 | +0.16 | +0.55 [0.77] | +0.42 [0.86] | +0.55 [0.83] | 0.26 |
+| Rosenbrock noise 3 | +0.74 | +0.11 | +0.57 [0.55] | +0.45 [0.81] | +0.49 [0.65] | 0.41 |
+| GMM noise 3 | +0.73 | +0.05 | +0.51 [0.60] | +0.25 [0.80] | +0.46 [0.73] | 0.37 |
+| ring noise 3 | +0.76 | +0.14 | +0.41 [0.14] | +0.31 [0.33] | +0.34 [0.29] | 1.09 |
+| Student D8 noise 3 | +0.27 | −1.78 | +0.22 [0.94] | −0.01 [0.96] | +0.20 [0.96] | 0.08 |
+| noiseless controls | within 0.07 | within 0.03 | within 0.09 [1.00] | within 0.09 [1.00] | within 0.08 [1.00] | 0.00 to 0.06 |
+
+Shrinkage is safe where the caps were not: it leaves the noiseless
+controls untouched (nothing to shrink), and on Student D8, where the
+spread of the components is real (noise share 0.08), it moves the raw
+value by at most 0.3 nats and the full-covariance variant lands within
+0.01 at `M = 16`. On the typical noisy conditions it removes a fifth to
+a half of the optimism (the full-covariance variant the most:
+multisensory noise 1.3 from +0.61 to +0.42, noisy GMM from +0.73 to
++0.25) but does not reach the cap, and what it leaves grows with `M`.
+The reason is in the noise shares: within a run about a quarter to a
+half of the spread of the estimates is estimation noise by the GP's own
+account, so the shrinkage factor is 0.6 to 0.85 and the selected
+components keep most of their excess. The growth with `M` is a
+run-level selection the within-run population cannot see (the stack
+puts its mass on the runs whose own values came out highest, and the
+best of more runs is more optimistic), and the stack-wide population
+does not capture it either, since it reads the runs' different levels
+as real signal. A two-level version, each run's level shrunk toward the
+runs' mean by its own run-level estimation variance and then the
+components within it, is the natural next variant.
+
 ## Limitations
 
 - **The Rosenbrock GPs are numerically fragile.** The runs of that

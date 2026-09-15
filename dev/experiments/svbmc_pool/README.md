@@ -171,6 +171,19 @@ stacking mass), next to the class's run-median cap, with the fraction
 of cells each cap binds on and the count of cells on which a cap at the
 largest component would bind, zero by construction).
 
+## Empirical-Bayes shrinkage (2026-09-15)
+
+`shrink_20260915/` is the one run of `svbmc_shrink_elbo.py` on stage D's
+cells: `cells.jsonl` (per cell, `G`, `H`, `elbo_mc`, the raw and
+class-cap biases, per variant the shrunken `G`, its bias and the
+weight-averaged shrinkage factor, and per run the population mean, the
+excess variance `tau2`, the spread and the mean estimation variance),
+`summary.json` and `summary.md` (per condition and `M`, the median bias
+and median absolute bias over cells of the raw value, the class's cap
+and the three variants `within`, `within_full` and `stack`, with the
+shrinkage factor and the noise share, the mean estimation variance over
+the spread of the estimates).
+
 ## Raw outputs of the analyses (release asset)
 
 What the three analyses above wrote per cell is too large to track and
